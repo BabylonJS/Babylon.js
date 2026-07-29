@@ -1,5 +1,5 @@
 {
-    "fromTag": "9.18.0",
+    "fromTag": "9.18.1",
     "changelog": {
         "9.18.1": [
             {
@@ -186,6 +186,186 @@
                     "packages/dev/core/src/Misc/rgbdTextureTools.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "9.18.2": [
+            {
+                "pr": "18743",
+                "title": "Replace the Lottie player's sprite atlas with a stencil-then-cover vector renderer",
+                "description": "Replaces the Lottie player's sprite-atlas renderer with a WebGL2 stencil-then-cover vector renderer.\r\n\r\nThe old pipeline rasterized every shape and text block to a Canvas2D texture atlas at load time, then drew them as sprites through core's `SpriteRenderer`. The new pipeline keeps paths as vectors and draws them directly on the GPU:\r\n\r\n1. A **stencil** pass writes each compound path's nonzero winding number.\r\n2. A **cover** pass paints the bounding quad where the stencil is non-zero, evaluating solid colors and gradients in the fragment shader.\r\n\r\nRendering still runs on a `ThinEngine`, either on the main thread (`LocalPlayer`) or in a worker on an `OffscreenCanvas` (`Player`).\r\n\r\n## Why\r\n\r\n- **Resolution independence.** Artwork is no longer baked to a fixed-resolution atlas, so it stays crisp at any scale and there is no atlas-size ceiling.\r\n- **Smaller bundle.** The main-thread player drops from **373,317 to 225,075 bytes raw** and **94,585 to 60,087 bytes gzipped** (**-39.7% / -36.5%**), measured with the same esbuild and gzip settings before and after.\r\n- **Less rendering infrastructure.** Stencil-then-cover does not need `SpriteRenderer`; it uses `Effect`, vertex buffers, and stencil state already available in `ThinEngine`.\r\n- **Faster startup.** No atlas packing or rasterization pass is required before the first frame.\r\n\r\n## What it renders\r\n\r\n- Shapes and solid layers\r\n- Solid, linear-gradient, and radial-gradient fills\r\n- Solid and gradient strokes, including dash patterns\r\n- Text and image layers\r\n- Animated (morphing) paths\r\n- Add-mode layer masks\r\n- Alpha track mattes between vector shape/solid layers\r\n\r\nCore's two-sided stencil support means nonzero winding needs one draw instead of the cull-twice emulation this technique often requires.\r\n\r\n## Automatic Renderer Loading\r\n\r\nThe public API remains `Player` and `LocalPlayer`; users do not choose a profile. After parsing the animation, the player selects renderer chunks automatically:\r\n\r\n- The vector fill/stroke renderer is always part of the base player.\r\n- The text renderer loads only when text layers are present (**1.66 KB gzip**).\r\n- The image renderer and FileTools load only when image layers are present (**4.82 KB gzip** together).\r\n\r\nPre-warming `Player` loads the worker and base renderer. Animation-specific text or image chunks load after the animation JSON is known.\r\n\r\n## Behavior changes worth knowing about\n\r\n- **Default rendering resolution.** With `devicePixelRatio: 0`, the old renderer supersampled 2x to 4x to keep atlas sprites crisp. The vector renderer uses MSAA instead and now follows the system device pixel ratio. This creates a smaller backing store and lowers memory use. Pass an explicit `devicePixelRatio` to override it.\r\n- **Keyframe easing.** Cubic-bezier easing is solved to a fixed tolerance instead of a fixed step count, so mid-animation frames can differ by a fraction of a pixel.\r\n- **Deprecated but still accepted:** `spriteAtlasWidth`, `spriteAtlasHeight`, `gapSize`, `spritesCapacity`, `scaleMultiplier`, `easingSteps`, `debug`, and `compatibility`. These options are now inert so existing code keeps compiling.\r\n- `Player`, `LocalPlayer`, `AnimationInput`, and the public `RawLottieAnimation` type name remain available.\r\n\r\n## Testing\r\n\r\n- **83 Lottie visual tests pass.** Only 3 of 31 reference images changed; the other 28 matched the sprite renderer within the existing tolerance.\r\n  - `lottie-animated-dash-frame0`: the old output drew square dash ends despite the file declaring `lc: 2` (round), and bent dashes at corners. Dash caps now honor the declared line cap.\r\n  - `lottie-gradient-stroke-frame0`: the radial dashed stroke distributes its dashes slightly differently.\r\n  - `lottie-text-paragraph-box-wrap`: same text and wrap points, with a roughly 1 px sub-pixel glyph-rasterization shift.\r\n  - The Multi-Page Atlas test and its reference image were removed because atlas paging no longer exists.\r\n- **66 unit tests pass**, including coverage for parsing, property sampling, matrices, path flattening, stroke geometry, malformed keyframes, invalid frame rates, invalid loop ranges, and allocation-free reuse paths.\r\n- Manually validated in the dev host across approximately 50 production animations on both the main-thread and worker paths.\r\n- Review fixes remove per-frame allocations for frame state, matrices, sampled contours, transformed-point scratch, dash spans, and draw records.\r\n\r\n## Unsupported features\r\n\r\nSubtract, intersect, and inverted masks; luma, inverted, and cross-renderer track mattes; and per-character text animators remain unsupported.\r\n",
+                "author": {
+                    "name": "VicenteCartas",
+                    "url": "https://github.com/VicenteCartas"
+                },
+                "files": [
+                    "packages/dev/lottiePlayer/src/animation/geometry.ts",
+                    "packages/dev/lottiePlayer/src/animation/loadAnimation.ts",
+                    "packages/dev/lottiePlayer/src/animation/lottieRaw.ts",
+                    "packages/dev/lottiePlayer/src/animation/matrix2D.ts",
+                    "packages/dev/lottiePlayer/src/animation/parse.ts",
+                    "packages/dev/lottiePlayer/src/animation/sample.ts",
+                    "packages/dev/lottiePlayer/src/animationConfiguration.ts",
+                    "packages/dev/lottiePlayer/src/index.ts",
+                    "packages/dev/lottiePlayer/src/localPlayer.ts",
+                    "packages/dev/lottiePlayer/src/maths/bezier.ts",
+                    "packages/dev/lottiePlayer/src/maths/boundingBox.ts",
+                    "packages/dev/lottiePlayer/src/maths/matrix.ts",
+                    "packages/dev/lottiePlayer/src/messageTypes.ts",
+                    "packages/dev/lottiePlayer/src/nodes/controlNode.ts",
+                    "packages/dev/lottiePlayer/src/nodes/node.ts",
+                    "packages/dev/lottiePlayer/src/nodes/spriteNode.ts",
+                    "packages/dev/lottiePlayer/src/parsing/parsedTypes.ts",
+                    "packages/dev/lottiePlayer/src/parsing/parser.ts",
+                    "packages/dev/lottiePlayer/src/parsing/rawPropertyHelpers.ts",
+                    "packages/dev/lottiePlayer/src/parsing/rawTypes.ts",
+                    "packages/dev/lottiePlayer/src/parsing/spritePacker.ts",
+                    "packages/dev/lottiePlayer/src/parsing/textLayout.ts",
+                    "packages/dev/lottiePlayer/src/player.ts",
+                    "packages/dev/lottiePlayer/src/player/playerCore.ts",
+                    "packages/dev/lottiePlayer/src/player/playerFactory.ts",
+                    "packages/dev/lottiePlayer/src/rendering/animationController.ts",
+                    "packages/dev/lottiePlayer/src/rendering/calculateScaleFactor.ts",
+                    "packages/dev/lottiePlayer/src/rendering/renderingManager.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/fillRenderer.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/imageRenderer.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/layerRenderer.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/strokeGeometry.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/textRenderer.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/texturedQuad.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/vectorFrame.ts",
+                    "packages/dev/lottiePlayer/src/types.ts",
+                    "packages/dev/lottiePlayer/src/worker.ts",
+                    "packages/dev/lottiePlayer/test/unit/animationController.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/boundingBox.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/lottieTextLayout.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/node.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/parse.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/parser.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/rawPropertyHelpers.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/renderingManager.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/sample.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/vectorGeometry.test.ts",
+                    "packages/public/@babylonjs/lottiePlayer/readme.md",
+                    "packages/tools/devHost/readme.md",
+                    "packages/tools/devHost/src/lottie/main.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lottie-animated-dash-frame0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lottie-gradient-stroke-frame0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lottie-multiPageAtlas.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lottie-text-paragraph-box-wrap.png",
+                    "packages/tools/tests/test/visualization/config.lottie.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18744",
+                "title": "build: update dependencies and clear npm audit findings",
+                "description": "## What\n\nRefreshes all in-range dependency versions across the workspaces and addresses the outstanding `npm audit` advisories.\n\n**`npm audit`: 23 findings (1 low, 5 moderate, 17 high) → 11 (2 moderate, 9 high).**\n\n## Security fixes\n\n| Package | Change | Clears |\n|---|---|---|\n| `sharp` | `^0.33.0` → `^0.35.0` in `@dev/inspector-v2` | GHSA-f88m-g3jw-g9cj (libvips CVEs) |\n| `dompurify` | override `3.4.0` → `3.4.12` | 9 DOMPurify advisories + the `monaco-editor` advisory |\n| `axios` | `1.16.0` → `1.18.1` via a new `nx`-scoped override | 10 axios advisories (`nx` pins axios to an exact version, so an override is the only route) |\n\n`fast-uri`, `hono`, `immutable`, `js-yaml`, `linkify-it`, `postcss`, `svgo`, `body-parser` and `@eslint/eslintrc` picked up patched versions through `npm audit fix`.\n\n## Dependency refresh\n\n~205 packages moved to their latest in-range versions, notably: `eslint` 10.7.0, `typescript-eslint` 8.65.0, `prettier` 3.9.6, `webpack` 5.108.4, `rollup` 4.62.2, `sass` 1.101.3, `typescript` 6.0.3, `nx` 22.7.7, FluentUI 9.74.4, `typedoc` 0.28.20, `vitest`/`vite`, `memlab` 2.0.4.\n\n`react` / `react-dom` / `@types/react*` were deliberately excluded: the permissive peer ranges in `@babylonjs/inspector-v2` make npm resolve React 19, which hard-fails `ERESOLVE` against the `^18.2.0` pins in the other 25 workspaces.\n\n## Fallout handled\n\n- **prettier 3.9** changed union-type formatting, so `npm run format:fix` reflowed 24 source files. No behavioral changes.\n- **webpack 5.108** no longer pulls in `terser-webpack-plugin` transitively (it switched to `minimizer-webpack-plugin`). `treeShakingSideEffects.test.ts` does `require(\"terser-webpack-plugin\")` directly, so it is now declared explicitly in `@tools/tests`.\n\n## Remaining 11 findings\n\nAll 11 trace back to two root packages, and **both fixes are blocked by this repo's own `min-release-age=7` supply-chain policy** in `.npmrc`:\n\n| Root cause | Cascades to | Fixed in | Published | Eligible |\n|---|---|---|---|---|\n| `brace-expansion` | `minimatch`, `@eslint/eslintrc`, `eslint-plugin-{github,import,jsx-a11y}`, `nx`, `serve`, `serve-handler` | 5.0.8 | 2026-07-23 | 2026-07-30 |\n| `@modelcontextprotocol/sdk` | `@hono/node-server` | 1.30.0 | 2026-07-27 | 2026-08-03 |\n\nConfirmed blocked:\n\n```\nnpm error notarget No matching version found for brace-expansion@^5.0.8\n  with a date before 7/22/2026, 10:55:19 AM.\n```\n\nBoth should be picked up by a follow-up `npm audit fix` once the cooldown window passes.\n\n## Not included\n\nOut-of-range major bumps were intentionally left alone: React 19, `@types/react` 19, Playwright 1.62, `monaco-editor` 0.56, `chokidar` 5, `jsdom` 29, Babel 8, `uuid` 14, `es-check` 9, `cross-env` 10, `@rollup/plugin-*` majors, FontAwesome 7, `react-dnd` 16, `sonda` 0.14, `rollup-plugin-visualizer` 7, TypeScript 7, `nx` 23.\n\n## Validation\n\nAll run locally with npm 11.18.0 (the version `engines` requires — npm 10 silently ignores `min-release-age`):\n\n- `npm run build:source` ✅\n- `npm run format:check` ✅\n- `npm run lint:check` ✅ (incl. all 16 tree-shaking checks + side-effects sync)\n- `npm run test:unit` ✅ 273 files, 4321 tests passed",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/core/src/Animations/animatable.core.ts",
+                    "packages/dev/core/src/Cameras/inputMapper.ts",
+                    "packages/dev/core/src/Debug/physicsViewer.pure.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Types/nodeRenderGraphTypes.ts",
+                    "packages/dev/core/src/LibDeclarations/webgl2.d.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/ambientOcclusionBlock.pure.ts",
+                    "packages/dev/core/src/Meshes/Builders/textBuilder.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/bevelBlock.pure.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline.pure.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline.pure.ts",
+                    "packages/dev/core/src/PostProcesses/thinSSAO2PostProcess.ts",
+                    "packages/dev/core/src/types.ts",
+                    "packages/dev/inspector-v2/package.json",
+                    "packages/dev/inspector-v2/src/components/properties/boundProperty.tsx",
+                    "packages/dev/loaders/src/FBX/interpreter/connections.ts",
+                    "packages/dev/loaders/src/SPLAT/gaussianSplattingBlockAllocator.ts",
+                    "packages/dev/serializers/src/3MF/core/model/3mf.builder.ts",
+                    "packages/dev/sharedUiComponents/src/modularTool/modularTool.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/smartFilters/src/connection/connectionPointType.ts",
+                    "packages/tools/guiEditor/src/diagram/coordinateHelper.tsx",
+                    "packages/tools/playground/package.json",
+                    "packages/tools/snippetLoader/src/types.ts",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/viewer/src/full/viewerFactory.ts",
+                    "packages/tools/viewer/src/viewerElementBase.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18747",
+                "title": "Fix pure engine disposal without loading screen registration",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\n- Make `Engine.dispose()` and `WebGPUEngine.dispose()` tolerate pure builds that intentionally omit loading-screen registration.\n- Make `RegisterLoadingScreen()` also register the `AbstractEngine` loading-screen APIs, so the legacy loading-screen deep import remains self-contained.\n- Add regression tests for both disposal paths and composed registration.\n\n## Motivation\n\nPure WebGPU consumers could hit `TypeError: this.hideLoadingUI is not a function` during engine disposal after the generated fallback stubs were removed. Importing the loading-screen entrypoint also registered only the default factory, not the engine APIs that expose it.\n\nRelated forum report: https://forum.babylonjs.com/t/this-hideloadingui-is-not-a-function/63863\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.pure.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/src/Loading/loadingScreen.pure.ts",
+                    "packages/dev/core/test/unit/Engines/engine.loadingScreen.test.ts",
+                    "packages/dev/core/test/unit/Loading/loadingScreen.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18745",
+                "title": "fix(AudioV2): spatialize MediaStream/WebRTC sound sources out of the box",
+                "description": "## Problem\n\nSpatial audio appears broken for remote WebRTC streams (forum report: [AudioEngineV2 upgrade questions](https://forum.babylonjs.com/t/audioenginev2-upgrade-questions/63740)).\n\nThe root cause is a browser (notably Chromium) behavior, **not** a Babylon bug: a `MediaStreamAudioSourceNode` created from a remote `RTCPeerConnection` stream only delivers audio samples while the underlying `MediaStream` is *also* being pulled by an `HTMLMediaElement`. When the stream is fed straight into the Web Audio graph (via `CreateSoundSourceAsync`) with no media element, the source node emits pure silence — so the `PannerNode` has nothing to spatialize.\n\nI verified this with an isolated diagnostic that routes several sources through the **same** `PannerNode(HRTF)` and measures the L/R balance while panning hard left/right:\n\n| Source | Result |\n|---|---|\n| Pure oscillator `AudioNode` | spatial ✅ |\n| Local `MediaStream`, no sink | silent ❌ |\n| Remote WebRTC, no sink | silent ❌ |\n| Remote WebRTC + muted `<audio>` sink | spatial ✅ (identical swing to the oscillator) |\n\nThe same panner spatializes a pure oscillator **and** the WebRTC stream once a muted `HTMLMediaElement` keeps the stream pulled. So the fix is to attach that element automatically.\n\n## Fix\n\n`CreateSoundSourceAsync` now attaches a hidden, **muted** `HTMLAudioElement` (`srcObject = stream`) whenever the wrapped node is a `MediaStreamAudioSourceNode`, keeping the stream flowing so it can be heard and spatialized. The element is released on `dispose()`.\n\n- New `mediaStreamSinkEnabled` option on `ISoundSourceOptions` (default `true`). Set it to `false` if you already route the same `MediaStream` through your own media element, to avoid a redundant one.\n- The microphone path (`createMicrophoneSoundSourceAsync`) opts out, preserving its existing behavior exactly.\n\nThe element is muted, so it never adds a second, non-spatial playback of the stream.\n\n## Backwards compatibility\n\nAdditive and non-breaking: the new option is optional and defaults to the new behavior, which fixes currently-silent remote streams and is a harmless muted no-op for cases that already worked. Callers who previously added a manual muted `<audio>` workaround can drop it (or pass `mediaStreamSinkEnabled: false`).\n\n## Tests\n\nAdded `packages/tools/tests/test/audioV2/soundSource.mediaStreamSink.test.ts` (Playwright, AudioV2 project) using a synthetic oscillator-backed `MediaStream` — **no microphone / `getUserMedia`**:\n\n1. A `MediaStreamAudioSourceNode` source attaches a hidden **muted** element whose `srcObject` is the stream.\n2. `mediaStreamSinkEnabled: false` attaches nothing.\n3. A non-`MediaStream` source attaches nothing.\n4. `dispose()` releases the element (no leak).\n\n**Validation:** all 4 pass on Chrome (headed + headless) and Firefox (CI default); all 78 existing `SoundSource` tests still pass; core `tsc`, ESLint, and Prettier are clean.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSoundSource.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioSoundSource.ts",
+                    "packages/tools/tests/test/audioV2/soundSource.mediaStreamSink.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18749",
+                "title": "Fix GitHub release creation for version tags",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\n- Resolve the published package version and its exact tagged commit before creating the release.\n- Pass the version as an explicit GitHub release tag instead of searching the moving `master` branch for an associated tag.\n- Reuse the package version variable for snapshot deployment.\n\n## Motivation\n\nThe `9.18.1` publish run skipped GitHub release creation because `master` advanced after the version tag was pushed. `GitHubRelease@1` searched the newer `master` commit for a tag and emitted: `Release will not be created as the tags for the target commit do not match with the given tag pattern`.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".azure-pipelines/cd-publish.yml"
+                ],
+                "tags": [
+                    "bug",
+                    "build",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "18742",
+                "title": "Fix .babylonproj transform node duplication",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\n## Summary\r\n- track transform nodes loaded through Smart Asset Manager\r\n- prevent asset-owned transform nodes from being serialized into `.babylonproj` local scene data\r\n- add regression coverage for transform-node ownership tracking\r\n\r\n## Motivation\r\nExporting and re-importing a `.babylonproj` duplicated transform nodes from GLB assets at the scene root because those nodes were incorrectly treated as user-created local objects. Meshes were already tracked correctly and were not duplicated.\r\n\r\n## Testing\r\n- focused Smart Asset Manager and project file unit tests\r\n",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/core/src/SmartAssets/smartAssetManager.pure.ts",
+                    "packages/dev/core/test/unit/SmartAssets/smartAssetManager.test.ts",
+                    "packages/dev/sharedUiComponents/test/unit/overrideManager.test.ts",
+                    "packages/dev/sharedUiComponents/test/unit/projectFile.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
             }
         ],
         "9.18.0": [
