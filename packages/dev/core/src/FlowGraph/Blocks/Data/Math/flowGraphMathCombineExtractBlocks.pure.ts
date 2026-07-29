@@ -130,25 +130,14 @@ export class FlowGraphCombineVector4Block extends FlowGraphMathCombineBlock<Vect
 }
 
 /**
- * Configuration for the matrix combine blocks.
- */
-export interface IFlowGraphCombineMatrixBlockConfiguration extends IFlowGraphBlockConfiguration {
-    /**
-     * Whether the input is in column-major order. Default is false.
-     * Note - Babylon's matrix is the same as WebGL's. So unless your matrix requires transformation, you should leave this as false.
-     */
-    inputIsColumnMajor?: boolean;
-}
-
-/**
- * Combines 16 floats into a new Matrix
+ * Combines 16 floats into a new Matrix.
  *
- * Note that glTF interactivity's combine4x4 provides its inputs in column-major order, and Babylon.js's
- * {@link Matrix} also stores its elements column-major, so column-major inputs map directly onto the matrix
- * storage with no reordering.
+ * The inputs are in column-major order, matching Babylon's {@link Matrix} storage and the order used
+ * by `Matrix.FromArray`, `Matrix.FromValues` and {@link FlowGraphExtractMatrixBlock}, so combining
+ * and extracting round-trip.
  */
 export class FlowGraphCombineMatrixBlock extends FlowGraphMathCombineBlock<Matrix> {
-    constructor(config?: IFlowGraphCombineMatrixBlockConfiguration) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(16, RichTypeMatrix, config);
     }
 
@@ -157,47 +146,24 @@ export class FlowGraphCombineMatrixBlock extends FlowGraphMathCombineBlock<Matri
             context._setExecutionVariable(this, "cachedMatrix", new Matrix());
         }
         const matrix = context._getExecutionVariable<Nullable<Matrix>>(this, "cachedMatrix", null) as Matrix;
-        if (this.config?.inputIsColumnMajor) {
-            // Column-major inputs map directly onto Babylon's column-major matrix storage.
-            matrix.set(
-                this.getDataInput("input_0")!.getValue(context),
-                this.getDataInput("input_1")!.getValue(context),
-                this.getDataInput("input_2")!.getValue(context),
-                this.getDataInput("input_3")!.getValue(context),
-                this.getDataInput("input_4")!.getValue(context),
-                this.getDataInput("input_5")!.getValue(context),
-                this.getDataInput("input_6")!.getValue(context),
-                this.getDataInput("input_7")!.getValue(context),
-                this.getDataInput("input_8")!.getValue(context),
-                this.getDataInput("input_9")!.getValue(context),
-                this.getDataInput("input_10")!.getValue(context),
-                this.getDataInput("input_11")!.getValue(context),
-                this.getDataInput("input_12")!.getValue(context),
-                this.getDataInput("input_13")!.getValue(context),
-                this.getDataInput("input_14")!.getValue(context),
-                this.getDataInput("input_15")!.getValue(context)
-            );
-        } else {
-            // Row-major inputs are transposed into Babylon's column-major storage.
-            matrix.set(
-                this.getDataInput("input_0")!.getValue(context),
-                this.getDataInput("input_4")!.getValue(context),
-                this.getDataInput("input_8")!.getValue(context),
-                this.getDataInput("input_12")!.getValue(context),
-                this.getDataInput("input_1")!.getValue(context),
-                this.getDataInput("input_5")!.getValue(context),
-                this.getDataInput("input_9")!.getValue(context),
-                this.getDataInput("input_13")!.getValue(context),
-                this.getDataInput("input_2")!.getValue(context),
-                this.getDataInput("input_6")!.getValue(context),
-                this.getDataInput("input_10")!.getValue(context),
-                this.getDataInput("input_14")!.getValue(context),
-                this.getDataInput("input_3")!.getValue(context),
-                this.getDataInput("input_7")!.getValue(context),
-                this.getDataInput("input_11")!.getValue(context),
-                this.getDataInput("input_15")!.getValue(context)
-            );
-        }
+        matrix.set(
+            this.getDataInput("input_0")!.getValue(context),
+            this.getDataInput("input_1")!.getValue(context),
+            this.getDataInput("input_2")!.getValue(context),
+            this.getDataInput("input_3")!.getValue(context),
+            this.getDataInput("input_4")!.getValue(context),
+            this.getDataInput("input_5")!.getValue(context),
+            this.getDataInput("input_6")!.getValue(context),
+            this.getDataInput("input_7")!.getValue(context),
+            this.getDataInput("input_8")!.getValue(context),
+            this.getDataInput("input_9")!.getValue(context),
+            this.getDataInput("input_10")!.getValue(context),
+            this.getDataInput("input_11")!.getValue(context),
+            this.getDataInput("input_12")!.getValue(context),
+            this.getDataInput("input_13")!.getValue(context),
+            this.getDataInput("input_14")!.getValue(context),
+            this.getDataInput("input_15")!.getValue(context)
+        );
         return matrix;
     }
 
@@ -207,10 +173,10 @@ export class FlowGraphCombineMatrixBlock extends FlowGraphMathCombineBlock<Matri
 }
 
 /**
- * Combines 4 floats into a new Matrix
+ * Combines 4 floats into a new Matrix2D, in column-major order.
  */
 export class FlowGraphCombineMatrix2DBlock extends FlowGraphMathCombineBlock<FlowGraphMatrix2D> {
-    constructor(config?: IFlowGraphCombineMatrixBlockConfiguration) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(4, RichTypeMatrix2D, config);
     }
 
@@ -219,23 +185,12 @@ export class FlowGraphCombineMatrix2DBlock extends FlowGraphMathCombineBlock<Flo
             context._setExecutionVariable(this, "cachedMatrix", new FlowGraphMatrix2D());
         }
         const matrix = context._getExecutionVariable<Nullable<FlowGraphMatrix2D>>(this, "cachedMatrix", null) as FlowGraphMatrix2D;
-        const array = this.config?.inputIsColumnMajor
-            ? [
-                  // Column-major inputs are stored as-is: FlowGraphMatrix2D keeps the glTF column-major array, which is
-                  // also how matrix literals are parsed and how math/extract2x2 reads the elements back.
-                  this.getDataInput("input_0")!.getValue(context),
-                  this.getDataInput("input_1")!.getValue(context),
-                  this.getDataInput("input_2")!.getValue(context),
-                  this.getDataInput("input_3")!.getValue(context),
-              ]
-            : [
-                  // Row-major inputs are transposed into the column-major storage.
-                  this.getDataInput("input_0")!.getValue(context),
-                  this.getDataInput("input_2")!.getValue(context),
-                  this.getDataInput("input_1")!.getValue(context),
-                  this.getDataInput("input_3")!.getValue(context),
-              ];
-        matrix.fromArray(array);
+        matrix.fromArray([
+            this.getDataInput("input_0")!.getValue(context),
+            this.getDataInput("input_1")!.getValue(context),
+            this.getDataInput("input_2")!.getValue(context),
+            this.getDataInput("input_3")!.getValue(context),
+        ]);
         return matrix;
     }
 
@@ -245,10 +200,10 @@ export class FlowGraphCombineMatrix2DBlock extends FlowGraphMathCombineBlock<Flo
 }
 
 /**
- * Combines 9 floats into a new Matrix3D
+ * Combines 9 floats into a new Matrix3D, in column-major order.
  */
 export class FlowGraphCombineMatrix3DBlock extends FlowGraphMathCombineBlock<FlowGraphMatrix3D> {
-    constructor(config?: IFlowGraphCombineMatrixBlockConfiguration) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(9, RichTypeMatrix3D, config);
     }
 
@@ -257,33 +212,17 @@ export class FlowGraphCombineMatrix3DBlock extends FlowGraphMathCombineBlock<Flo
             context._setExecutionVariable(this, "cachedMatrix", new FlowGraphMatrix3D());
         }
         const matrix = context._getExecutionVariable<Nullable<FlowGraphMatrix3D>>(this, "cachedMatrix", null) as FlowGraphMatrix3D;
-        const array = this.config?.inputIsColumnMajor
-            ? [
-                  // Column-major inputs are stored as-is: FlowGraphMatrix3D keeps the glTF column-major array, which is
-                  // also how matrix literals are parsed and how math/extract3x3 reads the elements back.
-                  this.getDataInput("input_0")!.getValue(context),
-                  this.getDataInput("input_1")!.getValue(context),
-                  this.getDataInput("input_2")!.getValue(context),
-                  this.getDataInput("input_3")!.getValue(context),
-                  this.getDataInput("input_4")!.getValue(context),
-                  this.getDataInput("input_5")!.getValue(context),
-                  this.getDataInput("input_6")!.getValue(context),
-                  this.getDataInput("input_7")!.getValue(context),
-                  this.getDataInput("input_8")!.getValue(context),
-              ]
-            : [
-                  // Row-major inputs are transposed into the column-major storage.
-                  this.getDataInput("input_0")!.getValue(context),
-                  this.getDataInput("input_3")!.getValue(context),
-                  this.getDataInput("input_6")!.getValue(context),
-                  this.getDataInput("input_1")!.getValue(context),
-                  this.getDataInput("input_4")!.getValue(context),
-                  this.getDataInput("input_7")!.getValue(context),
-                  this.getDataInput("input_2")!.getValue(context),
-                  this.getDataInput("input_5")!.getValue(context),
-                  this.getDataInput("input_8")!.getValue(context),
-              ];
-        matrix.fromArray(array);
+        matrix.fromArray([
+            this.getDataInput("input_0")!.getValue(context),
+            this.getDataInput("input_1")!.getValue(context),
+            this.getDataInput("input_2")!.getValue(context),
+            this.getDataInput("input_3")!.getValue(context),
+            this.getDataInput("input_4")!.getValue(context),
+            this.getDataInput("input_5")!.getValue(context),
+            this.getDataInput("input_6")!.getValue(context),
+            this.getDataInput("input_7")!.getValue(context),
+            this.getDataInput("input_8")!.getValue(context),
+        ]);
         return matrix;
     }
 

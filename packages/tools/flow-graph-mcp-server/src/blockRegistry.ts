@@ -1503,7 +1503,6 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "value", type: "Matrix" },
             { name: "isValid", type: "boolean" },
         ],
-        config: { inputIsColumnMajor: "boolean — whether inputs are in column-major order" },
     },
 
     CombineMatrix2D: {
@@ -1521,7 +1520,6 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "value", type: "Matrix2D" },
             { name: "isValid", type: "boolean" },
         ],
-        config: { inputIsColumnMajor: "boolean — whether inputs are in column-major order" },
     },
 
     CombineMatrix3D: {
@@ -1539,7 +1537,6 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "value", type: "Matrix3D" },
             { name: "isValid", type: "boolean" },
         ],
-        config: { inputIsColumnMajor: "boolean — whether inputs are in column-major order" },
     },
 
     // ═══════════════════════════════════════════════════════════════════

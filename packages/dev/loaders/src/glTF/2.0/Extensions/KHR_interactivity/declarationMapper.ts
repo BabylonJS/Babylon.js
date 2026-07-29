@@ -822,12 +822,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 value: { name: "value" },
             },
         },
-        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
-            // configure it to work the way glTF specifies
-            serializedObjects[0].config ||= {};
-            serializedObjects[0].config.inputIsColumnMajor = true;
-            return serializedObjects;
-        },
     },
     "math/extract2x2": {
         blocks: [FlowGraphBlockNames.ExtractMatrix2D],
@@ -864,12 +858,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 value: { name: "value" },
             },
-        },
-        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
-            // configure it to work the way glTF specifies
-            serializedObjects[0].config ||= {};
-            serializedObjects[0].config.inputIsColumnMajor = true;
-            return serializedObjects;
         },
     },
     "math/extract3x3": {
@@ -919,12 +907,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 value: { name: "value" },
             },
-        },
-        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
-            // configure it to work the way glTF specifies
-            serializedObjects[0].config ||= {};
-            serializedObjects[0].config.inputIsColumnMajor = true;
-            return serializedObjects;
         },
     },
     "math/extract4x4": {
