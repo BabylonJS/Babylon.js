@@ -1,5 +1,5 @@
 import { type Nullable } from "core/types";
-import { type RawLottieAnimation } from "./parsing/rawTypes";
+import { type ILottieFile as RawLottieAnimation } from "./animation/lottieRaw";
 import { type AnimationConfiguration } from "./animationConfiguration";
 
 /**

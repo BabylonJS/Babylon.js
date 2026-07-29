@@ -1,9 +1,9 @@
 import { type Nullable } from "core/types";
 import { type AnimationInput } from "./types";
-import { type RawLottieAnimation } from "./parsing/rawTypes";
+import { type ILottieFile as RawLottieAnimation } from "./animation/lottieRaw";
 import { type ScaleFactors, CalculateScaleFactors } from "./rendering/calculateScaleFactor";
 
-import { GetRawAnimationDataAsync } from "./parsing/parser";
+import { GetRawAnimationDataAsync } from "./animation/loadAnimation";
 import { AnimationController } from "./rendering/animationController";
 
 /**
@@ -14,7 +14,7 @@ import { AnimationController } from "./rendering/animationController";
 export class LocalPlayer {
     private _input: Nullable<AnimationInput> = null;
     private _rawAnimation: RawLottieAnimation | undefined = undefined;
-    private _scaleFactors: ScaleFactors = { canvasScale: 1, atlasScale: 1 };
+    private _scaleFactors: ScaleFactors = { canvasScale: 1 };
     private _playing = false;
     private _disposed = false;
     private _canvas: HTMLCanvasElement | null = null;
@@ -59,11 +59,10 @@ export class LocalPlayer {
         // Append the canvas to the container
         this._input.container.appendChild(this._canvas);
 
-        this._animationController = new AnimationController(
+        this._animationController = await AnimationController.CreateAsync(
             this._canvas,
             this._rawAnimation,
             this._scaleFactors.canvasScale,
-            this._scaleFactors.atlasScale,
             this._input.variables ?? new Map<string, string>(),
             this._input.configuration ?? {},
             undefined, // mainThreadDevicePixelRatio not needed for main thread
