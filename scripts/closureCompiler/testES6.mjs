@@ -8,7 +8,7 @@ import ts from "typescript";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const packageRoot = path.join(repoRoot, "packages/public/@babylonjs");
 const fixturePath = path.join(repoRoot, "scripts/closureCompiler/es6SmokeTest.js");
-const entryName = `closureSmokeTest-${process.pid}.js`;
+const entryName = `closureSmokeTest-${process.pid}.mjs`;
 const entryPath = path.join(packageRoot, entryName);
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "bjs-closure-compiler-"));
 const outputPath = path.join(tempDir, "compiled.js");
