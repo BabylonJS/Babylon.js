@@ -16,7 +16,12 @@ import { Color3, Color4 } from "core/Maths/math";
 import { FilesInputStore } from "core/Misc/filesInputStore";
 
 import "./scss/main.scss";
+// `loadingScreen` supplies the default loading screen implementation, while
+// `abstractEngine.loadingScreen` is what augments AbstractEngine with the
+// displayLoadingUI/hideLoadingUI methods called below. Both are needed in a
+// tree-shaken build.
 import "core/Loading/loadingScreen";
+import "core/Engines/AbstractEngine/abstractEngine.loadingScreen";
 import fullScreenLogo from "./img/logo-fullscreen.svg";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
