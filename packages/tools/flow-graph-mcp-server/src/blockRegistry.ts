@@ -1130,7 +1130,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
     SmoothStep: {
         className: "FlowGraphSmoothStepBlock",
         category: "Math",
-        description: "Smooth Hermite interpolation coefficient: for edges a (low) and b (high) and value c, returns t*t*(3-2t) with t = saturate((c - a) / (b - a)).",
+        description: "Smooth Hermite interpolation coefficient: for edges a and b and value c, returns t*t*(3-2t) with t = saturate((c - min(a, b)) / |b - a|).",
         signalInputs: [],
         signalOutputs: [],
         dataInputs: [

@@ -85,9 +85,16 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
             // for the duration of the synchronous receiver flow.
             context.configuration.coordinator._beginEventDispatch(this.config.eventId, eventState);
             try {
-                const keys = Object.keys(eventData);
-                for (const key of keys) {
-                    this.getDataOutput(key)?.setValue(eventData[key], context);
+                // Drive the outputs from the configured payload schema rather than from the incoming
+                // keys, so a key the sender omitted (or sent as undefined) resets to its configured
+                // default instead of retaining the value from a previous dispatch.
+                for (const key in this.config.eventData) {
+                    const output = this.getDataOutput(key);
+                    if (!output) {
+                        continue;
+                    }
+                    const incoming = eventData?.[key];
+                    output.setValue(incoming === undefined ? this._getEventDataDefault(key) : incoming, context);
                 }
                 // Expose the event reference before activating downstream flow.
                 this.eventRef.setValue(context.getEventReference(this.config.eventId), context);
@@ -97,6 +104,17 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
             }
         });
         context._setExecutionVariable(this, "_eventObserver", eventObserver);
+    }
+
+    /**
+     * The value an output falls back to when the sender provides no value for it: the default
+     * declared by the payload schema, or the socket type's default when the schema declares none.
+     * @param key the payload key
+     * @returns the default value for that key
+     */
+    private _getEventDataDefault(key: string): any {
+        const entry = this.config.eventData?.[key] as { type: RichType<any>; value?: any } | undefined;
+        return entry?.value !== undefined ? entry.value : entry?.type?.defaultValue;
     }
     public override _cancelPendingTasks(context: FlowGraphContext): void {
         const observable = context.configuration.coordinator.getCustomEventObservable(this.config.eventId);

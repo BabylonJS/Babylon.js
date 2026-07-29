@@ -6,16 +6,17 @@ import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger.pure";
 import { RichTypeAny } from "./flowGraphRichTypes.pure";
 import { type IObjectAccessor } from "./typeDefinitions";
 
-// KHR_interactivity JSON Pointer templates may use either bracket style:
-//   {name}  → originally an integer template, repurposed by the "opaque reference" spec
-//             update for refs. Real-world assets mix both conventions, so the bracket
-//             style by itself is not enough to determine the input's type.
-//   [name]  → integer template (post-ref-update spec).
-// We therefore accept both and decide how to substitute at resolution time based on the
-// runtime value supplied to the input socket (FlowGraphInteger / number → int substitution,
-// string → ref substitution by extracting the matching JSON-Pointer segment).
-const RefTemplateRegex = new RegExp(/\/\{(\w+)\}(?=\/|$)/g);
-const IntTemplateRegex = new RegExp(/\/\[(\w+)\](?=\/|$)/g);
+// KHR_interactivity-style JSON Pointer templates may use either bracket style:
+//   {name}  → a reference template parameter.
+//   [name]  → an integer template parameter.
+// Real-world assets mix both conventions, so the bracket style by itself is not enough to determine
+// the input's type. We therefore accept both and decide how to substitute at resolution time based
+// on the runtime value supplied to the input socket (FlowGraphInteger / number → int substitution,
+// string → reference substitution by extracting the matching JSON-Pointer segment).
+// These are constructed per scan rather than shared, because a global regex carries `lastIndex`
+// state across calls and a scan that throws part-way would otherwise leave it set for the next one.
+const CreateRefTemplateRegex = () => new RegExp(/\/\{(\w+)\}(?=\/|$)/g);
+const CreateIntTemplateRegex = () => new RegExp(/\/\[(\w+)\](?=\/|$)/g);
 
 interface IPathTemplateInfo {
     /** Template variable name (without surrounding brackets). */
@@ -64,8 +65,8 @@ export class FlowGraphPathConverterComponent {
             }
         };
 
-        collect(RefTemplateRegex, "curly");
-        collect(IntTemplateRegex, "square");
+        collect(CreateRefTemplateRegex(), "curly");
+        collect(CreateIntTemplateRegex(), "square");
     }
 
     /**

@@ -95,7 +95,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             this._resetAfterCanceled(context);
         }
 
-        if (!this._preparePendingTasks(context)) {
+        if (!this._tryPreparePendingTasks(context)) {
             return;
         }
         context._addPendingBlock(this);
@@ -105,10 +105,20 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
 
     /**
      * @internal
-     * @param context
+     * @param context the graph context
+     */
+    public override _preparePendingTasks(context: FlowGraphContext): void {
+        this._tryPreparePendingTasks(context);
+    }
+
+    /**
+     * Prepares and starts the animation, reporting whether it could be started. Invalid inputs
+     * activate `err` and return false, so the caller neither activates `out` nor registers the
+     * block as pending.
+     * @param context the graph context
      * @returns whether the animation was prepared and started successfully
      */
-    public override _preparePendingTasks(context: FlowGraphContext): boolean {
+    private _tryPreparePendingTasks(context: FlowGraphContext): boolean {
         const ag = this.animationGroup.getValue(context);
         const animation = this.animation.getValue(context);
         if (!ag && !animation) {

@@ -131,16 +131,18 @@ export class GLTFPathToObjectConverter<T, BabylonType, BabylonValue> implements 
             } else {
                 // When ignoring object tree traversal and encountering a numeric array index,
                 // wrap the accessor functions to pass the index through as the second argument.
+                // The remaining arguments are forwarded unchanged so context-aware accessors, which
+                // receive the runtime context as their payload, keep working.
                 const numericIndex = parseInt(part);
                 if (!isNaN(numericIndex) && typeof infoTree.get === "function") {
                     const orig = infoTree;
                     infoTree = { ...orig };
-                    infoTree.get = (target: any) => orig.get(target, numericIndex);
+                    infoTree.get = (target: any, _index?: number, ...rest: any[]) => orig.get(target, numericIndex, ...rest);
                     if (typeof orig.set === "function") {
-                        infoTree.set = (value: any, target: any) => orig.set(value, target, numericIndex);
+                        infoTree.set = (value: any, target: any, _index?: number, ...rest: any[]) => orig.set(value, target, numericIndex, ...rest);
                     }
                     if (typeof orig.getTarget === "function") {
-                        infoTree.getTarget = (target: any) => orig.getTarget(target, numericIndex);
+                        infoTree.getTarget = (target: any, _index?: number, ...rest: any[]) => orig.getTarget(target, numericIndex, ...rest);
                     }
                 }
             }
