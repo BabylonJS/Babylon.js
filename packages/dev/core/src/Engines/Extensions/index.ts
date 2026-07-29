@@ -1,4 +1,5 @@
 /* eslint-disable import/export */
+export * from "./engine.alphaToCoverage";
 export * from "./engine.alpha";
 export * from "./engine.debugging";
 export * from "./engine.query";

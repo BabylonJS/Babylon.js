@@ -2,6 +2,7 @@
 
 import { Scene } from "core/scene.pure";
 import { type AbstractEngine } from "core/Engines/abstractEngine.pure";
+import { RegisterAbstractEngineTexture } from "core/Engines/AbstractEngine/abstractEngine.texture.pure";
 import { type FloatArray, type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable.pure";
 import { type Camera } from "core/Cameras/camera.pure";
@@ -547,6 +548,12 @@ export function RegisterFluidRenderer(): void {
         return;
     }
     _Registered = true;
+
+    // The fluid renderer creates depth-stencil textures on its render targets via
+    // AbstractEngine.createDepthStencilTexture, which is only installed by the
+    // abstractEngine.texture registration. This module imports the pure engine
+    // (side-effect free), so pull the registration in here.
+    RegisterAbstractEngineTexture();
 
     Object.defineProperty(Scene.prototype, "fluidRenderer", {
         get: function (this: Scene) {

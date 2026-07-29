@@ -82,7 +82,7 @@ import {
     FramingCameraBeta,
     throwIfAborted,
     observePromise,
-} from "./viewerBase";
+} from "../viewerBase";
 
 // eslint-disable-next-line @typescript-eslint/promise-function-async
 const LazySSAODependenciesPromise = new Lazy(() =>
@@ -1934,7 +1934,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
         abortSignal: AbortSignal | undefined,
         compositeAbortSignal: AbortSignal
     ): Promise<void> {
-        const getDefaultEnvironmentUrlAsync = async () => (await import("./defaultEnvironment")).default;
+        const getDefaultEnvironmentUrlAsync = async () => (await import("../defaultEnvironment")).default;
 
         const whenTextureLoadedAsync = async (cubeTexture: CubeTexture | HDRCubeTexture) => {
             await new Promise<void>((resolve, reject) => {

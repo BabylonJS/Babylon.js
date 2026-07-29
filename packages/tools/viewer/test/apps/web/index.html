@@ -184,7 +184,7 @@
                 </select>
             </div>
         </div>
-        <script type="module" src="/packages/tools/viewer/src/index.ts"></script>
+        <script type="module" src="/packages/tools/viewer/src/full/index.ts"></script>
         <script type="module">
             const viewerElement = document.querySelector("babylon-viewer");
             const lines = document.querySelectorAll("line");
@@ -228,7 +228,7 @@
 
             (async () => {
                 // The module referenced in the script tag above is loaded asynchronously, so we need to wait for it to load and for the custom element to be defined.
-                // Alternatively, we could just await import("/packages/tools/viewer/src/index.ts") here instead.
+                // Alternatively, we could just await import("/packages/tools/viewer/src/full/index.ts") here instead.
                 await customElements.whenDefined("babylon-viewer");
 
                 // setInterval(() => {

@@ -9,7 +9,7 @@ import Sonda from "sonda/rollup";
 const source = "dev";
 
 const commonConfig = {
-    input: "../../../tools/viewer/src/index.ts",
+    input: "../../../tools/viewer/src/full/index.ts",
     output: {
         dir: "dist",
         sourcemap: true,
@@ -45,9 +45,7 @@ const liteCommonConfig = {
     plugins: [
         typescript({ tsconfig: "tsconfig.build.dist.json" }),
         alias({
-            entries: [
-                { find: "core", replacement: `@${source}/core/dist` },
-            ],
+            entries: [{ find: "core", replacement: `@${source}/core/dist` }],
         }),
         nodeResolve({ mainFields: ["browser", "module", "main"] }),
         commonjs(),

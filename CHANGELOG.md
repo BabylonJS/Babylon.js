@@ -1,5 +1,75 @@
 # Changelog
 
+## 9.18.1
+
+### Addons
+
+- Move alpha-to-coverage support to engine extensions - by [VicenteCartas](https://github.com/VicenteCartas) ([#18725](https://github.com/BabylonJS/Babylon.js/pull/18725))
+
+### Core
+
+- Support array and uncompressed textures in the KTX2 decoder - [_New Feature_] by [ryantrem](https://github.com/ryantrem) ([#18740](https://github.com/BabylonJS/Babylon.js/pull/18740))
+- OpenPBR: Ensures relative IOR goes to one as the specular_weight goes to zero - by [MiiBond](https://github.com/MiiBond) ([#18739](https://github.com/BabylonJS/Babylon.js/pull/18739))
+- Fix GS with nosort+native - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18741](https://github.com/BabylonJS/Babylon.js/pull/18741))
+- Move alpha-to-coverage support to engine extensions - by [VicenteCartas](https://github.com/VicenteCartas) ([#18725](https://github.com/BabylonJS/Babylon.js/pull/18725))
+- Add onEffectiveEnabledStateChangedObservable to node class - by [AmoebaChant](https://github.com/AmoebaChant) ([#18726](https://github.com/BabylonJS/Babylon.js/pull/18726))
+- fix: scene can be nil in rgbd post process - by [jmheretik](https://github.com/jmheretik) ([#18724](https://github.com/BabylonJS/Babylon.js/pull/18724))
+
+### Loaders
+
+- Fix EXT_lights_ies profile texture naming - by [matthargett](https://github.com/matthargett) ([#18737](https://github.com/BabylonJS/Babylon.js/pull/18737))
+
+### Viewer
+
+- Add animated shadows to Viewer Lite - by [ryantrem](https://github.com/ryantrem) ([#18731](https://github.com/BabylonJS/Babylon.js/pull/18731))
+
+## 9.18.0
+
+### Core
+
+- Fix PerfCounter min/max initialization - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#18721](https://github.com/BabylonJS/Babylon.js/pull/18721))
+- Fix GS Texture leak with resize - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18720](https://github.com/BabylonJS/Babylon.js/pull/18720))
+- Check XRGPUBinding before native fallback - by [matthargett](https://github.com/matthargett) ([#18711](https://github.com/BabylonJS/Babylon.js/pull/18711))
+
+### Sandbox
+
+- fix(sandbox): apply persisted glTF loader options on page load - by [MiiBond](https://github.com/MiiBond) ([#18702](https://github.com/BabylonJS/Babylon.js/pull/18702))
+
+## 9.17.1
+
+### Core
+
+- feat(materials): add 2D array texture creation and image-source population - by [ryantrem](https://github.com/ryantrem) ([#18706](https://github.com/BabylonJS/Babylon.js/pull/18706))
+- fix(build): resolve TS2304 in bundled .module.d.ts for XRBody and SPZ types - by [RaananW](https://github.com/RaananW) ([#18714](https://github.com/BabylonJS/Babylon.js/pull/18714))
+- Fix .pure.ts transitive side-effect regressions (SceneLoader, depth-stencil, WGSL depth shaders) - by [RaananW](https://github.com/RaananW) ([#18717](https://github.com/BabylonJS/Babylon.js/pull/18717))
+- Fix NodeMaterial overlighting under HDR from default image-processing config - by [RaananW](https://github.com/RaananW) ([#18704](https://github.com/BabylonJS/Babylon.js/pull/18704))
+- Physics Controller shape options - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18716](https://github.com/BabylonJS/Babylon.js/pull/18716))
+- Coerce native dynamic texture dimensions before allocation - by [matthargett](https://github.com/matthargett) ([#18709](https://github.com/BabylonJS/Babylon.js/pull/18709))
+- Fix: GaussianSplattingStream misclassified as an ordinary mesh, causing severe rendering slowdowns - by [raymondyfei](https://github.com/raymondyfei) ([#18707](https://github.com/BabylonJS/Babylon.js/pull/18707))
+- Fix: IBL shadow procedural textures keep rendering every frame after being toggled off - by [raymondyfei](https://github.com/raymondyfei) ([#18708](https://github.com/BabylonJS/Babylon.js/pull/18708))
+- Fix world region crash - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18705](https://github.com/BabylonJS/Babylon.js/pull/18705))
+- Fix physics plugin not releasing empty Havok world regions - by [BarthPaleologue](https://github.com/BarthPaleologue) ([#18699](https://github.com/BabylonJS/Babylon.js/pull/18699))
+- feat(flowGraph): edit live scenes from the Flow Graph Editor + Inspector - by [RaananW](https://github.com/RaananW) ([#18695](https://github.com/BabylonJS/Babylon.js/pull/18695))
+
+### GUI
+
+- Fix Line.connectedControl with adaptive scaling - [_Bug Fix_] by [AmoebaChant](https://github.com/AmoebaChant) ([#18703](https://github.com/BabylonJS/Babylon.js/pull/18703))
+
+### Inspector
+
+- fix(inspector): correct malformed gif.worker.js CDN URL - by [RaananW](https://github.com/RaananW) ([#18712](https://github.com/BabylonJS/Babylon.js/pull/18712))
+- fix(inspector-v2): don't flood scene explorer with per-frame active camera notifications - by [marns](https://github.com/marns) ([#18700](https://github.com/BabylonJS/Babylon.js/pull/18700))
+- feat(flowGraph): edit live scenes from the Flow Graph Editor + Inspector - by [RaananW](https://github.com/RaananW) ([#18695](https://github.com/BabylonJS/Babylon.js/pull/18695))
+
+### Loaders
+
+- Preserve FBX skeletal animations through GLB round trips - [_Bug Fix_] by [alexchuber](https://github.com/alexchuber) ([#18715](https://github.com/BabylonJS/Babylon.js/pull/18715))
+- Fix: GaussianSplattingStream misclassified as an ordinary mesh, causing severe rendering slowdowns - by [raymondyfei](https://github.com/raymondyfei) ([#18707](https://github.com/BabylonJS/Babylon.js/pull/18707))
+
+### Viewer
+
+- Fix: GaussianSplattingStream misclassified as an ordinary mesh, causing severe rendering slowdowns - by [raymondyfei](https://github.com/raymondyfei) ([#18707](https://github.com/BabylonJS/Babylon.js/pull/18707))
+
 ## 9.17.0
 
 ### Addons

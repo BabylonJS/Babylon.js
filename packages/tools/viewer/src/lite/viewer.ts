@@ -37,6 +37,7 @@ import {
     onBeforeRender,
     pickAsync,
     registerScene,
+    registerSceneWithShadowSupport,
     removeFromScene,
     resetVariant,
     selectVariant,
@@ -80,7 +81,7 @@ import {
     FramingCameraBeta,
     throwIfAborted,
     observePromise,
-} from "./viewerBase";
+} from "../viewerBase";
 
 /**
  * The options for the Lite Viewer.
@@ -328,8 +329,12 @@ export class Viewer extends ViewerBase implements IViewer {
             this.onAfterRenderObservable.notifyObservers();
         });
 
-        // Start the render loop immediately (empty scene renders clear color)
-        observePromise(this._beginRendering());
+        // Keep the scene unbuilt until an initial shadow-casting model is added. Registering the
+        // empty scene first leaves later material groups without their boot-time builders, so the
+        // shadow task cannot materialize its caster renderables.
+        if (!_options?.source || this._shadowQuality === "none") {
+            observePromise(this._beginRendering());
+        }
 
         // Initial loads — each will restart the render loop to pick up new renderables
         const initialLightingUrl = _options?.environmentLighting ?? DefaultViewerOptions.environmentLighting;
@@ -709,7 +714,7 @@ export class Viewer extends ViewerBase implements IViewer {
             const skyboxOnlyBecomesEnv = !updateLighting && updateSkybox && this._currentLightingUrl === null;
 
             const effectiveLightingUrl = skyboxOnlyBecomesEnv ? (targetSkyboxUrl ?? "auto") : (targetLightingUrl ?? "auto");
-            const resolvedLightingUrl = effectiveLightingUrl === "auto" ? (await import("./defaultEnvironment")).default : effectiveLightingUrl;
+            const resolvedLightingUrl = effectiveLightingUrl === "auto" ? (await import("../defaultEnvironment")).default : effectiveLightingUrl;
             const ext = getExtension(resolvedLightingUrl, options.extension);
 
             // Lite's `loadHdrEnvironment` cannot suppress its skybox build. So:
@@ -730,7 +735,7 @@ export class Viewer extends ViewerBase implements IViewer {
                 this._currentLightingUrl = effectiveLightingUrl;
                 this._currentSkyboxUrl = effectiveLightingUrl;
             } else {
-                const resolvedSkyboxUrl = targetSkyboxUrl === "auto" ? (await import("./defaultEnvironment")).default : (targetSkyboxUrl ?? undefined);
+                const resolvedSkyboxUrl = targetSkyboxUrl === "auto" ? (await import("../defaultEnvironment")).default : (targetSkyboxUrl ?? undefined);
                 // Note: when skybox-only is requested but lighting already exists, we still call
                 // liteLoadEnvironment with the existing lighting URL — this re-fetches and re-uploads
                 // the cubemap (wasteful) but correctly builds the requested skybox. Per the contract
@@ -931,7 +936,7 @@ export class Viewer extends ViewerBase implements IViewer {
         );
     }
 
-    private _setupShadows(): void {
+    private async _setupShadows(abortSignal: AbortSignal | undefined, internalAbortSignal: AbortSignal): Promise<void> {
         if (!this._container || this._shadowQuality === "none") {
             return;
         }
@@ -943,6 +948,13 @@ export class Viewer extends ViewerBase implements IViewer {
         if (casterMeshes.length === 0) {
             return;
         }
+
+        // Keep deformation-aware shadow bounds behind one lazy entry so static casters don't pay
+        // for the morph-target or skeletal bounds providers.
+        const hasMorphTargets = casterMeshes.some((mesh) => !!mesh.morphTargets);
+        const hasSkeletons = casterMeshes.some((mesh) => !!mesh.skeleton);
+        const deformableShadows = hasMorphTargets || hasSkeletons ? await import("./viewerShadows") : undefined;
+        throwIfAborted(abortSignal, internalAbortSignal);
 
         // Bounds for ground placement, ground sizing, and shadow light positioning. Falls back
         // to a unit cube if no mesh has bounds info — shadows still set up sensibly.
@@ -962,7 +974,14 @@ export class Viewer extends ViewerBase implements IViewer {
         // typically sits with its base at or above origin — would be behind the shadow camera and
         // get clipped, leaving the shadow map empty. (Mirrors the full Viewer's positionFactor
         // logic: light.position = -direction * radius * 3.)
-        const lightDir: [number, number, number] = [0.5, -1, 0.5];
+        //
+        // The direction is kept nearly vertical (a small horizontal component relative to the -Y
+        // drop) so the cast shadow sits centered directly beneath the model rather than being
+        // pushed off to one side as an oblique streak. The full Viewer derives its light direction
+        // from the IBL's dominant direction, which for the typical diffuse studio environment is
+        // close to overhead (e.g. ~(-0.12, -0.99, -0.01)); Lite has no IBL dominant-direction
+        // analysis, so this near-overhead fixed direction approximates that soft, grounded look.
+        const lightDir: [number, number, number] = [0.12, -1, 0.05];
         const dirLen = Math.sqrt(lightDir[0] ** 2 + lightDir[1] ** 2 + lightDir[2] ** 2);
         const positionFactor = radius * 3;
         const light = createDirectionalLight(lightDir, 1);
@@ -970,11 +989,12 @@ export class Viewer extends ViewerBase implements IViewer {
         addToScene(this._scene, light);
         this._shadowLight = light;
 
-        // Shadow ground disc. Lite's PBR pipeline requires `baseColorTexture` and `ormTexture` on
-        // every PBR material (even if unused), so we provide tiny 1×1 solid textures. The
-        // `shadowOnly: true` flag enables Lite's shadow-only shader path, which mirrors BJS's
-        // `BackgroundMaterial.shadowOnly`: the surface is invisible everywhere except where shadow
-        // falls on it, where it appears in `shadowOnlyColor`.
+        // Shadow ground disc. The `shadowOnly: true` flag enables Lite's shadow-only shader path,
+        // which mirrors BJS's `BackgroundMaterial.shadowOnly`: the surface is invisible everywhere
+        // except where shadow falls on it, where it appears in `shadowOnlyColor` (black here). The
+        // ground needs `receiveShadows = true` so Lite compiles it on the multi-light path where the
+        // per-light `shadowFactors` the shadow-only path reads are actually written. `createPbrMaterial`
+        // installs its own 1×1 fallback base/ORM textures, so none need to be supplied here.
         //
         // Disc radius is intentionally enormous (~1000× the model radius) so the disc is
         // effectively an infinite ground plane. Animated models can move/translate well outside
@@ -985,18 +1005,22 @@ export class Viewer extends ViewerBase implements IViewer {
         ground.rotation.x = Math.PI / 2;
         ground.position.y = minY;
         ground.receiveShadows = true;
+        // Shadow-only is a tree-shakeable, opt-in PBR feature: setting `shadowOnly: true` is what
+        // pulls in the shadow-only shader fragment. Lite scans materials for the flag and lazily
+        // imports (and registers) the fragment only when it's actually used, so apps that never set
+        // it pay zero base-bundle cost. The flag also forces the alpha-blend path, so no separate
+        // `alphaBlend: true` is needed for the disc to composite over the scene.
         ground.material = createPbrMaterial({
-            // TODO: This was based on the babylon lite shadow-only branch.
-            //       Revisit when we have settled on a shadow approach.
-            // mode: "shadowOnly",
-            // color: [0, 0, 0],
-            // // Use the natural ESM falloff (falloff = 1) so the penumbra fades smoothly. With
-            // // a tight model-fit frustum the ESM gradient is already at the right scale; values
-            // // > 1 collapse the gradient into a hard aliased edge. Cap the maximum darkness via
-            // // `alpha` so the shadow looks soft rather than pitch black.
-            // falloff: 1,
-            alpha: 0.5,
-            alphaBlend: true,
+            shadowOnly: true,
+            shadowOnlyColor: [0, 0, 0],
+            // Keep the shadow light and translucent so it reads as a soft, subtle grounding shadow
+            // similar to the full Viewer (whose directional shadow darkness is only ~0.2–0.8),
+            // rather than a heavy pitch-black blob. Paired with the large blurKernel below, this
+            // gives a gentle penumbra instead of a hard silhouette.
+            shadowOnlyOpacity: 0.3,
+            // Use the natural ESM falloff (falloff = 1) so the penumbra fades smoothly. Values > 1
+            // collapse the gradient into a hard aliased edge.
+            shadowOnlyFalloff: 1,
         });
         addToScene(this._scene, ground);
         this._shadowGround = ground;
@@ -1027,7 +1051,17 @@ export class Viewer extends ViewerBase implements IViewer {
         this._shadowGenerator = createEsmDirectionalShadowGenerator(this._engine, light, {
             orthoMinZ,
             orthoMaxZ,
+            // Wide kernel blur on the ESM shadow map. The default (1) leaves a crisp, hard-edged
+            // shadow; a large kernel spreads the penumbra into a soft gradient that matches the full
+            // Viewer's soft shadow look (which ramps blurKernel up to 64 for diffuse environments).
+            blurKernel: 48,
         });
+        if (hasMorphTargets) {
+            deformableShadows?.enableMorphTargetShadows(this._shadowGenerator);
+        }
+        if (hasSkeletons) {
+            deformableShadows?.enableSkeletonShadows(this._shadowGenerator);
+        }
         setShadowTaskCasterMeshes(this._shadowGenerator, casterMeshes);
         light.shadowGenerator = this._shadowGenerator ?? undefined;
     }
@@ -1101,7 +1135,7 @@ export class Viewer extends ViewerBase implements IViewer {
             // builder is processed by the upcoming `registerScene` (Lite only runs deferred builders
             // during `registerScene`; meshes added afterwards stay invisible until re-registration).
             if (this._shadowQuality !== "none") {
-                this._setupShadows();
+                await this._setupShadows(abortSignal, internalAbortSignal);
             }
 
             // Materialize the newly-added model. There are two paths, and using the wrong one drops the
@@ -1773,7 +1807,13 @@ export class Viewer extends ViewerBase implements IViewer {
             unregisterScene(this._scene);
             this._renderLoopRunning = false;
         }
-        await registerScene(this._scene);
+        // Install the scene-owned frame-graph shadow task only when shadows are enabled, so the
+        // shadow-task bundle is tree-shaken out for viewers that never render shadows.
+        if (this._shadowQuality === "none") {
+            await registerScene(this._scene);
+        } else {
+            await registerSceneWithShadowSupport(this._scene);
+        }
         await startEngine(this._engine);
         this._renderLoopRunning = true;
     }

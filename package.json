@@ -9,7 +9,7 @@
     "devDependencies": {
         "@babel/core": "^7.29.7",
         "@babel/preset-env": "^7.29.7",
-        "@babylonjs/lite": "1.10.0",
+        "@babylonjs/lite": "1.14.0",
         "@dev/build-tools": "^1.0.0",
         "@eslint/js": "^10.0.1",
         "@playwright/test": "1.57.0",

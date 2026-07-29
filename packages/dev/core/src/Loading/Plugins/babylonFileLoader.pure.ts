@@ -7,8 +7,9 @@ import { Geometry } from "../../Meshes/geometry";
 import { TransformNode } from "../../Meshes/transformNode.pure";
 import { Material } from "../../Materials/material.pure";
 import { MultiMaterial } from "../../Materials/multiMaterial.pure";
-import { CubeTexture, CubeTextureCreateFromPrefilteredData, CubeTextureParse } from "../../Materials/Textures/cubeTexture.pure";
+import { CubeTexture, CubeTextureCreateFromPrefilteredData, CubeTextureParse, RegisterCubeTexture } from "../../Materials/Textures/cubeTexture.pure";
 import { HDRCubeTexture } from "../../Materials/Textures/hdrCubeTexture.pure";
+import { RegisterTexture } from "../../Materials/Textures/texture.pure";
 import { AnimationGroupParse } from "../../Animations/animationGroup.pure";
 import { Light } from "../../Lights/light";
 import { SceneLoaderFlags } from "../sceneLoaderFlags";
@@ -809,6 +810,15 @@ export function RegisterBabylonFileLoader(): void {
     // build that only imports the .babylon loader can still parse cameras. Without
     // this, Camera.Parse throws mid-load and the scene ends up with no active camera.
     RegisterCamera();
+
+    // The loader parses textures through SerializationHelper._TextureParser and cube
+    // textures through Texture._CubeTextureParser. These hooks are installed by the
+    // texture / cube texture registrations. Because this module imports the pure
+    // texture modules (side-effect free), pull the registrations in here so material
+    // textures (diffuse, reflection, etc.) actually load. Without this, materials
+    // parse but their textures are silently dropped (meshes render untextured).
+    RegisterTexture();
+    RegisterCubeTexture();
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const ParseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
