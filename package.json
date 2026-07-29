@@ -167,6 +167,9 @@
             ".": "^2.0.0",
             "eslint": "$eslint"
         },
-        "dompurify": "3.4.0"
+        "dompurify": "3.4.12",
+        "nx": {
+            "axios": "^1.18.1"
+        }
     }
 }

@@ -211,7 +211,7 @@ export class ThreeMfMeshBuilder extends ThreeMfObjectBuilder {
     private _buildVertices(p: ThreeMfFloatArray | null): I3mfVertices {
         const container = new ThreeMfVertices();
         if (p) {
-            for (let i = 0; i < p.length; ) {
+            for (let i = 0; i < p.length;) {
                 const x = p[i++];
                 const y = p[i++];
                 const z = p[i++];
@@ -229,7 +229,7 @@ export class ThreeMfMeshBuilder extends ThreeMfObjectBuilder {
     private _buildTriangle(indice: ThreeMfIndicesArray | null): I3mfTriangles {
         const container = new ThreeMfTriangles();
         if (indice) {
-            for (let i = 0; i < indice.length; ) {
+            for (let i = 0; i < indice.length;) {
                 const a = indice[i++];
                 const b = indice[i++];
                 const c = indice[i++];
