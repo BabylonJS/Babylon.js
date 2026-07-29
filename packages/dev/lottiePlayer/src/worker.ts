@@ -108,7 +108,7 @@ onmessage = async function (evt) {
                 return;
             }
 
-            const controller = new AnimationControllerClass(
+            const controller = await AnimationControllerClass.CreateAsync(
                 payload.canvas,
                 RawAnimation,
                 payload.canvasScale,

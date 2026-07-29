@@ -1,10 +1,5 @@
-// Player core — the renderer-agnostic spine shared by the full player and the minimal shapes-only
-// player. It owns engine creation, the per-frame render loop, readiness and disposal, and the
-// parent-transform resolution — none of which reference any specific renderer. The player
-// factories differ ONLY in which LayerRenderers they construct.
-//
-// Keeping this module free of fill/text/image imports is what lets a shapes-only entry point
-// tree-shake the text + image renderers (and the texture paths they pull in) away entirely.
+// Player core owns engine creation, the per-frame render loop, readiness, disposal, and parent
+// transform resolution without depending on any specific layer renderer.
 
 import { ThinEngine } from "core/Engines/thinEngine";
 import { type IColor4Like } from "core/Maths/math.like";
@@ -16,9 +11,8 @@ import { BuildLottieMatrixInto, MultiplyMat2DInto, type Mat2D } from "../animati
 import { BeginVectorFrame, EndVectorFrame, type IVectorScissorRect } from "../rendering/vector/vectorFrame";
 
 /**
- * Runtime handle for a Lottie player — returned by the player factories (`createLottiePlayer` /
- * `CreateShapePlayer`) and passed back to {@link RenderLottieFrame}, {@link IsPlayerReady}, and
- * {@link DisposeVectorPlayer}. Its fields are internal engine + parse state; treat it as opaque.
+ * Runtime handle for a Lottie player, passed to {@link RenderLottieFrame}, {@link IsPlayerReady},
+ * and {@link DisposeVectorPlayer}. Its fields are internal engine + parse state; treat it as opaque.
  */
 export interface ILottiePlayer {
     engine: ThinEngine;
@@ -83,9 +77,7 @@ export function CreateVectorEngine(canvas: HTMLCanvasElement | OffscreenCanvas, 
 }
 
 /**
- * Assemble a {@link ILottiePlayer} from a parsed animation and a prepared renderers map. The
- * internal seam the two player factories share: the full player passes fill + text + image
- * renderers, the shapes-only player passes just the fill renderer.
+ * Assemble a {@link ILottiePlayer} from a parsed animation and a prepared renderers map.
  * @internal
  */
 export function BuildPlayer(engine: ThinEngine, anim: IParsedAnimation, renderers: Map<number, ILayerRenderer>, backgroundColor?: IColor4Like): ILottiePlayer {

@@ -1,7 +1,7 @@
 import { type ILottieFile } from "../animation/lottieRaw";
 import { type AnimationConfiguration, type ResolvedAnimationConfiguration, UpdateConfiguration } from "../animationConfiguration";
 import { CreateVectorEngine, DisposeVectorPlayer, IsPlayerReady, RenderLottieFrame, type ILottiePlayer } from "../player/playerCore";
-import { CreateLottiePlayer } from "../player/fullPlayer";
+import { CreateLottiePlayerAsync } from "../player/fullPlayer";
 
 import { type ThinEngine } from "core/Engines/thinEngine";
 
@@ -31,7 +31,6 @@ export function WrapLoopFrame(frame: number, startFrame: number, endFrame: numbe
  * renderer. Owns the engine, the render loop and the animation clock.
  */
 export class AnimationController {
-    private readonly _canvas: HTMLCanvasElement | OffscreenCanvas;
     private _canvasScale: number;
     private readonly _configuration: ResolvedAnimationConfiguration;
     private readonly _engine: ThinEngine;
@@ -80,7 +79,7 @@ export class AnimationController {
     }
 
     /**
-     * Creates a new instance of the AnimationController.
+     * Creates an animation controller after loading the renderer chunks required by the animation.
      * @param canvas The canvas element to render the animation on.
      * @param animationData The raw lottie animation as a JSON object.
      * @param canvasScale The scale factor for the canvas / viewport (may be \< 1 when the animation is larger than the container).
@@ -88,8 +87,9 @@ export class AnimationController {
      * @param configuration The partial configuration for the animation player. Will be finalized after engine creation.
      * @param mainThreadDevicePixelRatio The devicePixelRatio from the main thread (used in worker scenarios).
      * @param onFirstRender Optional callback invoked after the first frame renders.
+     * @returns The initialized animation controller.
      */
-    public constructor(
+    public static async CreateAsync(
         canvas: HTMLCanvasElement | OffscreenCanvas,
         animationData: ILottieFile,
         canvasScale: number,
@@ -97,8 +97,33 @@ export class AnimationController {
         configuration: Partial<AnimationConfiguration>,
         mainThreadDevicePixelRatio?: number,
         onFirstRender?: () => void
+    ): Promise<AnimationController> {
+        const engine = CreateVectorEngine(canvas, configuration.supportDeviceLost ?? true);
+        const resolvedConfiguration = UpdateConfiguration(configuration, engine.getCaps().maxTextureSize, mainThreadDevicePixelRatio);
+        const variableRecord: Record<string, string> = {};
+        for (const [key, value] of variables) {
+            variableRecord[key] = value;
+        }
+        try {
+            const player = await CreateLottiePlayerAsync(engine, animationData, {
+                variables: variableRecord,
+                backgroundColor: resolvedConfiguration.backgroundColor,
+            });
+            return new AnimationController(animationData, canvasScale, resolvedConfiguration, engine, player, onFirstRender);
+        } catch (error) {
+            engine.dispose();
+            throw error;
+        }
+    }
+
+    private constructor(
+        animationData: ILottieFile,
+        canvasScale: number,
+        configuration: ResolvedAnimationConfiguration,
+        engine: ThinEngine,
+        player: ILottiePlayer,
+        onFirstRender?: () => void
     ) {
-        this._canvas = canvas;
         this._canvasScale = canvasScale;
         this._currentFrame = 0;
         this._isPlaying = false;
@@ -109,20 +134,10 @@ export class AnimationController {
         this._firstRun = true;
         this._hasRendered = false;
         this._onFirstRender = onFirstRender;
-
-        this._engine = CreateVectorEngine(this._canvas, configuration.supportDeviceLost ?? true);
-
-        this._configuration = UpdateConfiguration(configuration, this._engine.getCaps().maxTextureSize, mainThreadDevicePixelRatio);
+        this._engine = engine;
+        this._configuration = configuration;
         this._loop = this._configuration.loopAnimation;
-
-        const variableRecord: Record<string, string> = {};
-        for (const [key, value] of variables) {
-            variableRecord[key] = value;
-        }
-        this._player = CreateLottiePlayer(this._engine, animationData, {
-            variables: variableRecord,
-            backgroundColor: this._configuration.backgroundColor,
-        });
+        this._player = player;
 
         this._width = animationData.w;
         this._height = animationData.h;

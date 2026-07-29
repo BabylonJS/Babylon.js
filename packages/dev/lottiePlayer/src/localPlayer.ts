@@ -59,7 +59,7 @@ export class LocalPlayer {
         // Append the canvas to the container
         this._input.container.appendChild(this._canvas);
 
-        this._animationController = new AnimationController(
+        this._animationController = await AnimationController.CreateAsync(
             this._canvas,
             this._rawAnimation,
             this._scaleFactors.canvasScale,

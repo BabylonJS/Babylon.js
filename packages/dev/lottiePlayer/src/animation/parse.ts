@@ -10,7 +10,7 @@ import { type IAsset, type IFontDef, type ILayer, type ILottieFile, type IProp, 
  *  mapped value instead (whole-string match, mirroring the original Babylon.js Lottie player). */
 export type LottieVariables = Readonly<Record<string, string>>;
 
-/** Options for {@link createLottiePlayer} / `CreateShapePlayer`. */
+/** Options for the Lottie player factory. */
 export interface ILottiePlayerOptions {
     /** Runtime text substitutions for localization — see {@link LottieVariables}. */
     variables?: LottieVariables;

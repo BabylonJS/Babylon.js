@@ -42,6 +42,16 @@ You can use `AnimationConfiguration` to change certain parameters of the player.
 
 The following options are deprecated. They belonged to the previous sprite-atlas renderer and are still accepted so existing code keeps compiling, but they no longer have any effect: `spriteAtlasWidth`, `spriteAtlasHeight`, `gapSize`, `spritesCapacity`, `scaleMultiplier`, `easingSteps`, `debug`, and `compatibility`.
 
+## Renderer Loading
+
+`Player` and `LocalPlayer` select renderer chunks automatically after parsing the animation:
+
+- The vector fill/stroke renderer is always part of the base player.
+- The text renderer loads only when the animation contains text layers.
+- The image renderer and its file-loading support load only when the animation contains image layers.
+
+No separate player class or configuration is required. Pre-warming `Player` loads the worker and base renderer code; animation-specific text or image chunks load after the animation data is known.
+
 ## Upgrading
 
 The player renders vectors on the GPU instead of rasterizing a sprite atlas. Two behavior changes are worth knowing about when upgrading:

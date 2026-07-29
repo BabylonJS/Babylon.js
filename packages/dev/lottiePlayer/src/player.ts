@@ -57,8 +57,8 @@ export class Player {
     }
 
     /**
-     * Pre-warms the worker by loading necessary code ahead of time.
-     * This promise resolves when the worker has loaded all the code required to play an animation.
+     * Pre-warms the worker and base renderer code. Animation-specific text or image renderer chunks
+     * load later, after the animation data is known.
      * @returns A Promise that resolves to this Player instance when the worker is ready
      * @throws Error if the player is already playing or disposed
      */
