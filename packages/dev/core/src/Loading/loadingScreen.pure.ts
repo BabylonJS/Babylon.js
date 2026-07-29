@@ -2,6 +2,7 @@
 
 import { type Nullable } from "../types";
 import { AbstractEngine } from "../Engines/abstractEngine.pure";
+import { RegisterAbstractEngineLoadingScreen } from "../Engines/AbstractEngine/abstractEngine.loadingScreen.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { type Observer } from "../Misc/observable.pure";
 
@@ -356,6 +357,7 @@ export function RegisterLoadingScreen(): void {
     }
     _Registered = true;
 
+    RegisterAbstractEngineLoadingScreen();
     AbstractEngine.DefaultLoadingScreenFactory = (canvas: HTMLCanvasElement) => {
         return new DefaultLoadingScreen(canvas);
     };
