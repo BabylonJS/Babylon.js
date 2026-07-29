@@ -4,7 +4,7 @@
 import { CreateRibbon } from "./Builders/ribbonBuilder.pure";
 import { CreateDisc } from "./Builders/discBuilder.pure";
 import { CreateBox } from "./Builders/boxBuilder.pure";
-import { CreateTiledBox } from "./Builders/tiledBoxBuilder";
+import { CreateTiledBox } from "./Builders/tiledBoxBuilder.pure";
 import { CreateSphere } from "./Builders/sphereBuilder.pure";
 import { CreateCylinder } from "./Builders/cylinderBuilder.pure";
 import { CreateTorus } from "./Builders/torusBuilder.pure";
@@ -14,7 +14,7 @@ import { CreatePolygon, ExtrudePolygon } from "./Builders/polygonBuilder.pure";
 import { ExtrudeShape, ExtrudeShapeCustom } from "./Builders/shapeBuilder.pure";
 import { CreateLathe } from "./Builders/latheBuilder.pure";
 import { CreatePlane } from "./Builders/planeBuilder.pure";
-import { CreateTiledPlane } from "./Builders/tiledPlaneBuilder";
+import { CreateTiledPlane } from "./Builders/tiledPlaneBuilder.pure";
 import { CreateGround, CreateGroundFromHeightMap, CreateTiledGround } from "./Builders/groundBuilder.pure";
 import { CreateTube } from "./Builders/tubeBuilder.pure";
 import { CreatePolyhedron } from "./Builders/polyhedronBuilder.pure";

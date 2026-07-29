@@ -17,6 +17,8 @@
         "Meshes/Builders/ribbonBuilder.ts": ["top-level-call"],
         "Meshes/Builders/shapeBuilder.ts": ["top-level-call"],
         "Meshes/Builders/sphereBuilder.ts": ["top-level-call"],
+        "Meshes/Builders/tiledBoxBuilder.ts": ["top-level-call"],
+        "Meshes/Builders/tiledPlaneBuilder.ts": ["top-level-call"],
         "Meshes/Builders/torusBuilder.ts": ["top-level-call"],
         "Meshes/Builders/torusKnotBuilder.ts": ["top-level-call"],
         "Meshes/Builders/tubeBuilder.ts": ["top-level-call"],
