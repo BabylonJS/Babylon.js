@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { transformPackageLocation } from "./pathTransform.js";
 import { type BuildType } from "./packageMapping.js";
+import { PreserveClosurePropertyNames } from "./preserveClosurePropertyNames.js";
 import { checkArgs } from "./utils.js";
 
 /**
@@ -125,4 +126,8 @@ export function PostCompileTransformCommand(): void {
         basePackage,
         appendJS,
     });
+
+    if (buildType === "es6") {
+        PreserveClosurePropertyNames(outDir);
+    }
 }

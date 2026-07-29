@@ -345,7 +345,7 @@ jobs:
 
           - script: |
                 npm install
-                npm i google-closure-compiler
+                npm i google-closure-compiler@20240317.0.0
             displayName: "NPM install"
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
@@ -371,6 +371,11 @@ jobs:
 
           - script: npx google-closure-compiler --js ./packages/public/umd/babylonjs-serializers/babylonjs.serializers.js --js_output_file serializers.out.js
             displayName: "Test serializers"
+
+          - script: |
+                npm run build -w @babylonjs/core
+                node ./scripts/closureCompiler/testES6.mjs
+            displayName: "Test ES6 with advanced optimizations"
 
     # ============================================================================
     # WEEKLY PERFORMANCE TESTS (Saturday)
