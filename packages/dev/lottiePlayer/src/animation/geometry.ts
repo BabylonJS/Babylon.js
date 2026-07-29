@@ -6,6 +6,11 @@ import { type Mat2D, TransformPoint } from "./matrix2D";
 
 const Flatness = 0.25; // px
 const MaxDepth = 14;
+const TransformedStart: [number, number] = [0, 0];
+const P0: [number, number] = [0, 0];
+const P1: [number, number] = [0, 0];
+const P2: [number, number] = [0, 0];
+const P3: [number, number] = [0, 0];
 
 function FlattenCubic(p0x: number, p0y: number, p1x: number, p1y: number, p2x: number, p2y: number, p3x: number, p3y: number, out: number[], depth: number): void {
     // Flatness = summed perpendicular deviation of control points from the chord p0->p3.
@@ -59,15 +64,10 @@ export function BuildContourPoints(shape: IShapeData, m: Mat2D, out: number[]): 
         return 0;
     }
     const start = out.length;
-    const t: [number, number] = [0, 0];
-    TransformPoint(m, shape.v[0][0], shape.v[0][1], t);
-    out.push(t[0], t[1]);
+    TransformPoint(m, shape.v[0][0], shape.v[0][1], TransformedStart);
+    out.push(TransformedStart[0], TransformedStart[1]);
 
     const segCount = shape.c ? n : n - 1;
-    const p0: [number, number] = [0, 0];
-    const p1: [number, number] = [0, 0];
-    const p2: [number, number] = [0, 0];
-    const p3: [number, number] = [0, 0];
     for (let j = 0; j < segCount; j++) {
         const j1 = (j + 1) % n;
         const v0x = shape.v[j][0];
@@ -75,11 +75,11 @@ export function BuildContourPoints(shape: IShapeData, m: Mat2D, out: number[]): 
         const v1x = shape.v[j1][0];
         const v1y = shape.v[j1][1];
         // Absolute control points (tangents are relative in Lottie).
-        TransformPoint(m, v0x, v0y, p0);
-        TransformPoint(m, v0x + shape.o[j][0], v0y + shape.o[j][1], p1);
-        TransformPoint(m, v1x + shape.i[j1][0], v1y + shape.i[j1][1], p2);
-        TransformPoint(m, v1x, v1y, p3);
-        FlattenCubic(p0[0], p0[1], p1[0], p1[1], p2[0], p2[1], p3[0], p3[1], out, 0);
+        TransformPoint(m, v0x, v0y, P0);
+        TransformPoint(m, v0x + shape.o[j][0], v0y + shape.o[j][1], P1);
+        TransformPoint(m, v1x + shape.i[j1][0], v1y + shape.i[j1][1], P2);
+        TransformPoint(m, v1x, v1y, P3);
+        FlattenCubic(P0[0], P0[1], P1[0], P1[1], P2[0], P2[1], P3[0], P3[1], out, 0);
     }
     return (out.length - start) / 2;
 }

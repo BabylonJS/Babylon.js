@@ -33,7 +33,7 @@ import { type ThinEngine } from "core/Engines/thinEngine";
 import { type ILayerRenderContext, type ILayerRenderer } from "./layerRenderer";
 import { type IContour, type IDrawOp, type IParsedLayer, type IParsedMask, type IStrokeStyle, type ITransform } from "../../animation/parse";
 import { type IProp, type IShapeData } from "../../animation/lottieRaw";
-import { TransformPoint, BuildLottieMatrix, MultiplyMat2D, type Mat2D } from "../../animation/matrix2D";
+import { TransformPoint, BuildLottieMatrixInto, MultiplyMat2DInto, type Mat2D } from "../../animation/matrix2D";
 import { SampleEllipse, SampleMulti, SampleRect, SampleScalar, SampleShape } from "../../animation/sample";
 import { BuildContourPoints } from "../../animation/geometry";
 import { BuildDashedStrokePoints, BuildStrokePoints } from "./strokeGeometry";
@@ -124,17 +124,23 @@ function SamplePoint(prop: IProp | undefined, frame: number, dx: number, dy: num
     SampleMulti(prop, frame, out);
 }
 
-function BuildTransformMatrix(t: ITransform, frame: number, a: number[], p: number[], s: number[]): Mat2D {
+function BuildTransformMatrixInto(t: ITransform, frame: number, a: number[], p: number[], s: number[], out: Mat2D): void {
     SamplePoint(t.a, frame, 0, 0, a);
     SamplePoint(t.p, frame, 0, 0, p);
     SamplePoint(t.s, frame, 100, 100, s);
     const rot = SampleScalar(t.r, frame, 0);
-    return BuildLottieMatrix(a, p, s, rot);
+    BuildLottieMatrixInto(a, p, s, rot, out);
 }
 
 // Sample a contour's source (bezier path, rect, or ellipse) into an IShapeData, or null.
-function SampleContour(contour: IContour, frame: number): IShapeData | null {
-    return contour.rect ? SampleRect(contour.rect, frame) : contour.ellipse ? SampleEllipse(contour.ellipse, frame) : contour.path ? SampleShape(contour.path, frame) : null;
+function SampleContour(contour: IContour, frame: number, out: IShapeData): IShapeData | null {
+    return contour.rect
+        ? SampleRect(contour.rect, frame, out)
+        : contour.ellipse
+          ? SampleEllipse(contour.ellipse, frame, out)
+          : contour.path
+            ? SampleShape(contour.path, frame, out)
+            : null;
 }
 
 // Push the 6-vertex cover quad (the 1px-inflated bounds rect) that drives the cover /
@@ -211,6 +217,12 @@ export function CreateFillRenderer(engine: ThinEngine): ILayerRenderer {
     const s = [100, 100];
     const g0 = [0, 0, 0, 1];
     const g1 = [0, 0];
+    const gradientStart: [number, number] = [0, 0];
+    const gradientEnd: [number, number] = [0, 0];
+    const groupMatrix: Mat2D = [1, 0, 0, 1, 0, 0];
+    const transformMatrix: Mat2D = [1, 0, 0, 1, 0, 0];
+    const shapeScratch: IShapeData = { v: [], i: [], o: [], c: false };
+    let drawCount = 0;
 
     // Flat per-draw paint store (indexed by IFillDraw.paintIndex).
     const pKind: number[] = [];
@@ -272,11 +284,9 @@ export function CreateFillRenderer(engine: ThinEngine): ILayerRenderer {
         pSolid.push(0, 0, 0, 0);
         SamplePoint(paint.start, frame, 0, 0, g0);
         SamplePoint(paint.end, frame, 0, 0, g1);
-        const start: [number, number] = [0, 0];
-        const end: [number, number] = [0, 0];
-        TransformPoint(m, g0[0], g0[1], start);
-        TransformPoint(m, g1[0], g1[1], end);
-        pGrad.push(start[0], start[1], end[0], end[1]);
+        TransformPoint(m, g0[0], g0[1], gradientStart);
+        TransformPoint(m, g1[0], g1[1], gradientEnd);
+        pGrad.push(gradientStart[0], gradientStart[1], gradientEnd[0], gradientEnd[1]);
         const sourceStopCount = paint.stops.count;
         const stopCount = Math.min(sourceStopCount, MaxGradientStops);
         pStopCount.push(stopCount);
@@ -296,14 +306,33 @@ export function CreateFillRenderer(engine: ThinEngine): ILayerRenderer {
         return idx;
     }
 
+    function storeDraw(stroke: boolean, fanFirst: number, fanCount: number, coverFirst: number, paintIndex: number): void {
+        let draw = draws[drawCount];
+        if (!draw) {
+            draw = { stroke, fanFirst, fanCount, coverFirst, coverCount: 6, paintIndex };
+            draws.push(draw);
+        } else {
+            draw.stroke = stroke;
+            draw.fanFirst = fanFirst;
+            draw.fanCount = fanCount;
+            draw.coverFirst = coverFirst;
+            draw.paintIndex = paintIndex;
+        }
+        drawCount++;
+    }
+
     function emitOp(op: IDrawOp, worldLayer: Mat2D, frame: number, layerAlpha: number): void {
         // Compose the enclosing groups outermost-first; each contributes its transform and opacity.
-        let m = worldLayer;
+        for (let i = 0; i < 6; i++) {
+            groupMatrix[i] = worldLayer[i];
+        }
         let groupOpacity = 1;
         for (const groupTransform of op.groupTransforms) {
-            m = MultiplyMat2D(m, BuildTransformMatrix(groupTransform, frame, a, p, s));
+            BuildTransformMatrixInto(groupTransform, frame, a, p, s, transformMatrix);
+            MultiplyMat2DInto(groupMatrix, transformMatrix, groupMatrix);
             groupOpacity *= SampleScalar(groupTransform.o, frame, 100) / 100;
         }
+        const m = groupMatrix;
         const paintOpacity = SampleScalar(op.paintOpacity, frame, 100) / 100;
         const alpha = layerAlpha * groupOpacity * paintOpacity;
         if (alpha <= 0.0001) {
@@ -324,7 +353,7 @@ export function CreateFillRenderer(engine: ThinEngine): ILayerRenderer {
         bnds[2] = -Infinity;
         bnds[3] = -Infinity;
         for (const contour of op.contours) {
-            const shape = SampleContour(contour, frame);
+            const shape = SampleContour(contour, frame, shapeScratch);
             if (!shape) {
                 continue;
             }
@@ -343,7 +372,7 @@ export function CreateFillRenderer(engine: ThinEngine): ILayerRenderer {
         PushCoverQuad(verts, bnds[0], bnds[1], bnds[2], bnds[3]);
 
         const paintIndex = writePaintBlock(op, m, frame, alpha);
-        draws.push({ stroke: false, fanFirst, fanCount, coverFirst, coverCount: 6, paintIndex });
+        storeDraw(false, fanFirst, fanCount, coverFirst, paintIndex);
     }
 
     function emitStroke(op: IDrawOp, style: IStrokeStyle, m: Mat2D, frame: number, alpha: number): void {
@@ -367,7 +396,7 @@ export function CreateFillRenderer(engine: ThinEngine): ILayerRenderer {
         bnds[2] = -Infinity;
         bnds[3] = -Infinity;
         for (const contour of op.contours) {
-            const shape = SampleContour(contour, frame);
+            const shape = SampleContour(contour, frame, shapeScratch);
             if (!shape) {
                 continue;
             }
@@ -404,7 +433,7 @@ export function CreateFillRenderer(engine: ThinEngine): ILayerRenderer {
         const coverFirst = verts.length / 2;
         PushCoverQuad(verts, bnds[0], bnds[1], bnds[2], bnds[3]);
         const paintIndex = writePaintBlock(op, m, frame, alpha);
-        draws.push({ stroke: true, fanFirst, fanCount, coverFirst, coverCount: 6, paintIndex });
+        storeDraw(true, fanFirst, fanCount, coverFirst, paintIndex);
     }
 
     // Build a layer's mask geometry into `verts`: a winding fan for each supported (add-mode,
@@ -423,7 +452,7 @@ export function CreateFillRenderer(engine: ThinEngine): ILayerRenderer {
             if (mask.mode !== "a" || mask.inverted) {
                 continue;
             }
-            const shape = SampleShape(mask.path, frame);
+            const shape = SampleShape(mask.path, frame, shapeScratch);
             pts.length = 0;
             const np = BuildContourPoints(shape, world, pts);
             if (np < 2) {
@@ -555,7 +584,7 @@ export function CreateFillRenderer(engine: ThinEngine): ILayerRenderer {
         isReady,
         beginFrame() {
             verts.length = 0;
-            draws.length = 0;
+            drawCount = 0;
             ranges.length = 0;
             pKind.length = 0;
             pAlpha.length = 0;
@@ -570,12 +599,12 @@ export function CreateFillRenderer(engine: ThinEngine): ILayerRenderer {
             maskBboxFirst.length = 0;
         },
         emitLayer(layer: IParsedLayer, world: Mat2D, layerAlpha: number, ctx: ILayerRenderContext): number {
-            const drawStart = draws.length;
+            const drawStart = drawCount;
             // Lottie renders shape items back-to-front: iterate in reverse array order.
             for (let oi = layer.ops.length - 1; oi >= 0; oi--) {
                 emitOp(layer.ops[oi], world, ctx.frame, layerAlpha);
             }
-            const count = draws.length - drawStart;
+            const count = drawCount - drawStart;
             if (count === 0) {
                 return -1;
             }

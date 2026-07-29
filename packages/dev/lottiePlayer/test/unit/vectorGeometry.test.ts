@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { BuildLottieMatrix, MultiplyMat2D, TransformPoint, type Mat2D } from "../../src/animation/matrix2D";
+import { BuildLottieMatrix, BuildLottieMatrixInto, MultiplyMat2D, MultiplyMat2DInto, TransformPoint, type Mat2D } from "../../src/animation/matrix2D";
 import { BuildContourPoints } from "../../src/animation/geometry";
 import { BuildDashedStrokePoints, BuildStrokePoints } from "../../src/rendering/vector/strokeGeometry";
 import { type IShapeData } from "../../src/animation/lottieRaw";
@@ -26,6 +26,13 @@ describe("matrix2D", () => {
         expect(out).toEqual([12, 0]);
     });
 
+    it("writes an alias-safe product into an existing matrix", () => {
+        const translate: Mat2D = [1, 0, 0, 1, 10, 0];
+        const scale: Mat2D = [2, 0, 0, 2, 0, 0];
+        MultiplyMat2DInto(scale, translate, translate);
+        expect(translate).toEqual([2, 0, 0, 2, 20, 0]);
+    });
+
     it("maps the anchor onto the position", () => {
         const m = BuildLottieMatrix([5, 5], [100, 50], [100, 100], 0);
         const out: [number, number] = [0, 0];
@@ -48,6 +55,15 @@ describe("matrix2D", () => {
         TransformPoint(m, 1, 0, out);
         expect(out[0]).toBeCloseTo(0, 6);
         expect(out[1]).toBeCloseTo(1, 6);
+    });
+
+    it("builds into an existing matrix", () => {
+        const result: Mat2D = [0, 0, 0, 0, 0, 0];
+        BuildLottieMatrixInto([5, 5], [100, 50], [100, 100], 0, result);
+        const expected = [1, 0, 0, 1, 95, 45];
+        for (let i = 0; i < result.length; i++) {
+            expect(result[i]).toBeCloseTo(expected[i], 6);
+        }
     });
 });
 

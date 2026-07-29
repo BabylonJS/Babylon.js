@@ -68,11 +68,11 @@ script-src is used by the scripts the worker references, like the classes it nee
     - Layer animations: position, rotation, scale, opacity, anchor point — driven by keyframe interpolation with cubic-bezier easing (per-axis easing on Vector2 properties such as position and scale)
     - Shapes: rectangle (including rounded corners), ellipse, vector path, including animated (morphing) paths
     - Shape decorators: solid fill, gradient fill (linear and radial), stroke, gradient stroke, dashed strokes. Layer-level decorators are inherited by the layer's sibling shape groups when those groups don't define their own.
-    - Layer masks (add mode) and alpha track mattes
+    - Layer masks (add mode) and alpha track mattes between vector shape/solid layers
     - Text: font, size, weight, alignment, fill color, multi-line text and paragraph-box word wrapping with tracking and line height
     - Variables: for text strings and text fill color (useful for localization and themes)
 
-- Notable Lottie features that are **not** currently supported include precomp and audio layers, layer effects, expressions, subtract/intersect/inverted masks, luma track mattes, trim/repeater/merge-paths and other shape modifiers, and per-character text animators.
+- Notable Lottie features that are **not** currently supported include precomp and audio layers, layer effects, expressions, subtract/intersect/inverted masks, luma/inverted/cross-renderer track mattes, trim/repeater/merge-paths and other shape modifiers, and per-character text animators.
 
 - More features may be added in the future but there is no timeline for them.
 

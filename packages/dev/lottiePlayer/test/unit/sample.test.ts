@@ -25,6 +25,10 @@ describe("SampleScalar", () => {
         expect(SampleScalar(Static([7]), 10, 0)).toBe(7);
     });
 
+    it("returns the fallback for an animated property with no keyframes", () => {
+        expect(SampleScalar(Animated([]), 10, 42)).toBe(42);
+    });
+
     it("clamps before the first and after the last keyframe", () => {
         const prop = Animated([
             { t: 10, s: [100], ...LinearEase },
@@ -81,6 +85,10 @@ describe("SampleMulti", () => {
         expect(SampleMulti(prop, 0, [0, 0])).toEqual([3, 4]);
     });
 
+    it("leaves the output untouched for an animated property with no keyframes", () => {
+        expect(SampleMulti(Animated([]), 10, [3, 4])).toEqual([3, 4]);
+    });
+
     it("interpolates every component", () => {
         const prop = Animated([
             { t: 0, s: [0, 10], ...LinearEase },
@@ -114,6 +122,10 @@ describe("SampleShape", () => {
         expect(SampleShape(Static(shape), 5)).toBe(shape);
     });
 
+    it("returns an empty contour for an animated shape with no keyframes", () => {
+        expect(SampleShape(Animated([]), 5)).toEqual({ v: [], i: [], o: [], c: false });
+    });
+
     it("lerps vertices between morph keyframes", () => {
         const prop = Animated([
             { t: 0, s: [shapeAt(0)], ...LinearEase },
@@ -123,6 +135,18 @@ describe("SampleShape", () => {
         expect(result.v[0][0]).toBeCloseTo(50, 4);
         expect(result.v[1][0]).toBeCloseTo(60, 4);
         expect(result.c).toBe(true);
+    });
+
+    it("reuses the supplied contour for interpolated shapes", () => {
+        const prop = Animated([
+            { t: 0, s: [shapeAt(0)], ...LinearEase },
+            { t: 10, s: [shapeAt(100)], ...LinearEase },
+        ]);
+        const out: IShapeData = { v: [], i: [], o: [], c: false };
+        expect(SampleShape(prop, 5, out)).toBe(out);
+        const firstVertex = out.v[0];
+        SampleShape(prop, 7, out);
+        expect(out.v[0]).toBe(firstVertex);
     });
 });
 

@@ -6,6 +6,27 @@ import { CreateLottiePlayer } from "../player/fullPlayer";
 import { type ThinEngine } from "core/Engines/thinEngine";
 
 /**
+ * Returns a usable animation frame rate for timing calculations.
+ * @param frameRate The frame rate from the Lottie document.
+ * @returns The positive finite frame rate, or 30 for malformed input.
+ */
+export function GetSafeFrameRate(frameRate: number): number {
+    return Number.isFinite(frameRate) && frameRate > 0 ? frameRate : 30;
+}
+
+/**
+ * Wraps a frame into an animation's in/out-point range.
+ * @param frame The frame to wrap.
+ * @param startFrame The inclusive in point.
+ * @param endFrame The exclusive out point.
+ * @returns The wrapped frame, or `startFrame` when the range is empty or reversed.
+ */
+export function WrapLoopFrame(frame: number, startFrame: number, endFrame: number): number {
+    const span = endFrame - startFrame;
+    return span > 0 ? ((frame - startFrame) % span) + startFrame : startFrame;
+}
+
+/**
  * Controls the playback of a Lottie animation, rendering it with the stencil-then-cover vector
  * renderer. Owns the engine, the render loop and the animation clock.
  */
@@ -107,7 +128,7 @@ export class AnimationController {
         this._height = animationData.h;
         this._startFrame = animationData.ip;
         this._endFrame = animationData.op;
-        this._frameDuration = 1000 / (animationData.fr || 30);
+        this._frameDuration = 1000 / GetSafeFrameRate(animationData.fr);
 
         this._setSize();
     }
@@ -226,11 +247,12 @@ export class AnimationController {
         let stoppingAfterThisFrame = false;
         const effectiveEndFrame = this._configuration.stopAtFrame !== undefined ? Math.min(this._configuration.stopAtFrame, this._endFrame) : this._endFrame;
         // Lottie out-point (op) is exclusive — the last visible frame is op - 1
-        const lastVisibleFrame = this._configuration.stopAtFrame !== undefined ? effectiveEndFrame : effectiveEndFrame - 1;
+        const animationSpan = this._endFrame - this._startFrame;
+        const lastVisibleFrame = this._configuration.stopAtFrame !== undefined ? effectiveEndFrame : animationSpan > 0 ? effectiveEndFrame - 1 : this._startFrame;
 
         if (this._currentFrame > lastVisibleFrame) {
-            if (this._loop && this._configuration.stopAtFrame === undefined) {
-                this._currentFrame = ((this._currentFrame - this._startFrame) % (this._endFrame - this._startFrame)) + this._startFrame;
+            if (this._loop && this._configuration.stopAtFrame === undefined && animationSpan > 0) {
+                this._currentFrame = WrapLoopFrame(this._currentFrame, this._startFrame, this._endFrame);
             } else {
                 this._currentFrame = lastVisibleFrame;
                 stoppingAfterThisFrame = true;

@@ -14,6 +14,7 @@ function GetJoinSegments(halfWidth: number): number {
 
 /** Reused across dash spans so the render loop does not allocate per dash. */
 const TrimmedSpan: number[] = [];
+const DashSpan: number[] = [];
 
 // Shorten a polyline by `trim` at both ends, writing into `out`. Round caps then extend the
 // result back out to its original length, so a dash keeps the pattern's spacing instead of
@@ -53,6 +54,22 @@ function TrimSpanEnds(span: number[], trim: number, out: number[]): boolean {
         out.push(ax + (dx * (to - segStart)) / len, ay + (dy * (to - segStart)) / len);
     }
     return out.length >= 4;
+}
+
+function FlushDashSpan(span: number[], halfWidth: number, out: number[], roundCaps: boolean): number {
+    let added = 0;
+    if (span.length >= 4) {
+        if (roundCaps) {
+            // Inset so the round caps bring the dash back to its nominal length.
+            if (TrimSpanEnds(span, halfWidth, TrimmedSpan)) {
+                added = BuildStrokePoints(TrimmedSpan, TrimmedSpan.length / 2, halfWidth, false, out, true);
+            }
+        } else {
+            added = BuildStrokePoints(span, span.length / 2, halfWidth, false, out, false);
+        }
+    }
+    span.length = 0;
+    return added;
 }
 
 /**
@@ -121,7 +138,7 @@ export function BuildStrokePoints(poly: number[], count: number, halfWidth: numb
 
 /**
  * Appends the triangles for a dashed stroke: walks the contour by arc length, slicing it into the
- * pattern's "on" spans, and expands each span as its own open sub-stroke with butt caps.
+ * pattern's "on" spans, and expands each span as its own open sub-stroke.
  * @param poly The flattened contour, as `count` interleaved screen-space x,y pairs.
  * @param count The number of points in `poly`.
  * @param halfWidth Half the stroke width, in screen pixels.
@@ -155,21 +172,9 @@ export function BuildDashedStrokePoints(
         phase += period;
     }
 
-    const span: number[] = [];
+    const span = DashSpan;
+    span.length = 0;
     let added = 0;
-    const flushSpan = (): void => {
-        if (span.length >= 4) {
-            if (roundCaps) {
-                // Inset so the round caps bring the dash back to its nominal length.
-                if (TrimSpanEnds(span, halfWidth, TrimmedSpan)) {
-                    added += BuildStrokePoints(TrimmedSpan, TrimmedSpan.length / 2, halfWidth, false, out, true);
-                }
-            } else {
-                added += BuildStrokePoints(span, span.length / 2, halfWidth, false, out, false);
-            }
-        }
-        span.length = 0;
-    };
 
     const segs = closed ? count : count - 1;
     for (let i = 0; i < segs; i++) {
@@ -200,10 +205,10 @@ export function BuildDashedStrokePoints(
             if (phase >= period - 1e-9) {
                 phase = 0;
             } else if (inDash && phase >= dashLength - 1e-9) {
-                flushSpan();
+                added += FlushDashSpan(span, halfWidth, out, roundCaps);
             }
         }
     }
-    flushSpan();
+    added += FlushDashSpan(span, halfWidth, out, roundCaps);
     return added;
 }
