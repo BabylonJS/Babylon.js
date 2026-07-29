@@ -1,15 +1,20 @@
 /* eslint-disable no-console */
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdir, rename, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const RepositoryUrl = "https://github.com/KhronosGroup/glTF-Test-Assets-Interactivity.git";
-const RepositoryRevision = "6930de2ee3d7838cbbb4aef9af5fc7e5f34e8e47";
 const RootDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const CacheRoot = path.join(RootDirectory, "node_modules", ".cache", "khr-interactivity-assets");
+// The pinned revision lives in its own file so the CI pipeline can key its asset cache on the
+// same value without duplicating the SHA.
+const AssetManifest = JSON.parse(readFileSync(path.join(RootDirectory, "scripts", "khr-interactivity-assets.json"), "utf8"));
+const RepositoryUrl = AssetManifest.repository;
+const RepositoryRevision = AssetManifest.revision;
+const CacheRoot = process.env.KHR_ASSETS_CACHE_DIR
+    ? path.resolve(process.env.KHR_ASSETS_CACHE_DIR)
+    : path.join(RootDirectory, "node_modules", ".cache", "khr-interactivity-assets");
 const AssetDirectory = path.join(CacheRoot, RepositoryRevision);
 
 async function run(command, args, options = {}) {

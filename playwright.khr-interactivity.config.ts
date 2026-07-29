@@ -9,8 +9,15 @@ if (!integrationProject) {
 export default defineConfig(baseConfig, {
     testDir: "./packages/dev/loaders/test/external/KHR_interactivity",
     fullyParallel: false,
-    retries: 0,
+    // A single transient failure (asset fetch, renderer hiccup) should not fail the pipeline, but a
+    // retried test is reported as flaky rather than passed, so a genuine intermittent regression
+    // still shows up.
+    retries: process.env.CI ? 1 : 0,
     workers: 1,
+    // Dedicated report paths so this suite does not overwrite the visualization suite's output.
+    reporter: process.env.CI
+        ? [["line"], ["junit", { outputFile: "khr-interactivity-junit.xml" }], ["html", { open: "never", outputFolder: "khr-interactivity-report" }]]
+        : [["list"], ["html", { open: "never", outputFolder: "khr-interactivity-report" }]],
     projects: [
         {
             ...integrationProject,

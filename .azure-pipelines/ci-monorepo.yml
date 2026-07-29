@@ -75,6 +75,9 @@ variables:
       value: $(Pipeline.Workspace)/.nxcache
     - name: PLAYWRIGHT_BROWSERS_PATH
       value: $(Pipeline.Workspace)/.playwright
+    # Cache location for the pinned Khronos KHR_interactivity conformance assets.
+    - name: KHR_ASSETS_CACHE
+      value: $(Pipeline.Workspace)/.khr-interactivity-assets
 
 pool:
     vmImage: ubuntu-latest
@@ -669,6 +672,70 @@ jobs:
             inputs:
                 testResultsFormat: JUnit
                 testResultsFiles: "./packages/tools/tests/junit.xml"
+
+    # ============================================================================
+    # KHR_INTERACTIVITY CONFORMANCE
+    # Depends on: FormatLint
+    # Runs the pinned Khronos conformance corpus against a locally served build.
+    # Self-contained: builds and serves Babylon itself through the Playwright
+    # webServer, so it needs neither the snapshot nor BrowserStack.
+    # ============================================================================
+    - job: KHRInteractivityConformance
+      displayName: "KHR_interactivity conformance"
+      dependsOn:
+          - FormatLint
+      condition: succeeded()
+      timeoutInMinutes: 60
+      steps:
+          - template: templates/checkout-with-tag-override.yml
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "24.x"
+
+          - template: templates/cache-steps.yml
+            parameters:
+                playwright: true
+
+          # The conformance assets are a large, rarely changing binary corpus, so cache them on
+          # the pinned revision. The key comes from the same file the fetch script reads, so a
+          # bumped revision automatically misses the cache instead of serving stale assets.
+          - task: Cache@2
+            displayName: "Cache KHR_interactivity assets"
+            inputs:
+                key: 'khrassets | "$(Agent.OS)" | scripts/khr-interactivity-assets.json'
+                path: $(KHR_ASSETS_CACHE)
+
+          - script: |
+                npm install
+                npx playwright install --with-deps chromium
+            displayName: "npm install && playwright install"
+            retryCountOnTaskFailure: 1
+
+          - script: node ./scripts/runKHRInteractivityAssetTests.mjs
+            displayName: "run KHR_interactivity conformance tests"
+            env:
+                CI: "true"
+                KHR_ASSETS_CACHE_DIR: $(KHR_ASSETS_CACHE)
+
+          - task: PublishTestResults@2
+            displayName: "Publish KHR_interactivity conformance results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./khr-interactivity-junit.xml"
+                testRunTitle: "KHR_interactivity conformance"
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish conformance report"
+            condition: failed()
+            continueOnError: true
+            inputs:
+                targetPath: "khr-interactivity-report"
+                artifact: "khr-interactivity-report"
 
     # ============================================================================
     # VISUALIZATION TESTS - WEBGL 2
