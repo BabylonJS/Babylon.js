@@ -17,7 +17,7 @@ import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock"
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import { FlowGraphTernaryOperationBlock } from "../flowGraphTernaryOperationBlock";
 import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
-import { Quaternion, Vector3, Vector4, type Matrix, type Vector2 } from "core/Maths/math.vector.pure";
+import { Quaternion, Vector2, Vector3, Vector4, type Matrix } from "core/Maths/math.vector.pure";
 import { type FlowGraphMatrix2D, type FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes";
 import { type FlowGraphMatrix, type FlowGraphVector, _GetClassNameOf } from "core/FlowGraph/utils";
 import { type FlowGraphDataConnection } from "../../../flowGraphDataConnection.pure";
@@ -89,6 +89,26 @@ export class FlowGraphNormalizeBlock extends FlowGraphCachedOperationBlock<FlowG
         return this._polymorphicNormalize(this.a.getValue(context));
     }
 
+    /**
+     * A vector that cannot be normalized reports a vector of the same type with every component set
+     * to zero, so the output stays type-consistent with the input instead of being left undefined.
+     * @param context the graph context
+     * @returns a zero vector matching the input's type
+     */
+    protected override _getInvalidOutputValue(context: FlowGraphContext): FlowGraphVector {
+        const a = this.a.getValue(context);
+        switch (_GetClassNameOf(a)) {
+            case FlowGraphTypes.Vector2:
+                return new Vector2(0, 0);
+            case FlowGraphTypes.Vector4:
+                return new Vector4(0, 0, 0, 0);
+            case FlowGraphTypes.Quaternion:
+                return new Quaternion(0, 0, 0, 0);
+            default:
+                return new Vector3(0, 0, 0);
+        }
+    }
+
     private _polymorphicNormalize(a: FlowGraphVector): FlowGraphVector | undefined {
         const aClassName = _GetClassNameOf(a);
         switch (aClassName) {
@@ -96,9 +116,9 @@ export class FlowGraphNormalizeBlock extends FlowGraphCachedOperationBlock<FlowG
             case FlowGraphTypes.Vector3:
             case FlowGraphTypes.Vector4:
             case FlowGraphTypes.Quaternion: {
-                // Per the KHR_interactivity spec, normalization is only valid when the length is a positive finite
-                // number. For zero, NaN, or +Infinity length the operation is invalid: returning undefined makes the
-                // cached base report isValid = false (the `value` output keeps the type default).
+                // Normalization is only valid when the length is a positive finite number. For zero, NaN, or
+                // +Infinity length the operation is invalid: returning undefined makes the cached base report
+                // isValid = false and deliver a zero vector of the same type on `value`.
                 const length = (a as Vector3).length();
                 if (length === 0 || !Number.isFinite(length)) {
                     if (this.config?.nanOnZeroLength) {

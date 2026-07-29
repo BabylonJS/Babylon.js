@@ -16,7 +16,7 @@ import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import { FlowGraphCachedOperationBlock } from "../flowGraphCachedOperationBlock";
-import { type FlowGraphMatrix2D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
+import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "core/FlowGraph/CustomTypes/flowGraphMatrix";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { type FlowGraphMatrix } from "core/FlowGraph/utils";
 import { RegisterClass } from "core/Misc/typeStore";
@@ -26,6 +26,21 @@ import { RegisterClass } from "core/Misc/typeStore";
  * degenerate (non-decomposable) matrix whose columns are linearly dependent.
  */
 const MatrixDecomposeDegenerateEpsilon = 1e-6;
+
+/**
+ * Builds a matrix of the given flow graph matrix type with every element set to zero.
+ * @param matrixType the matrix type to build
+ * @returns the zero matrix
+ */
+function CreateZeroMatrix(matrixType: FlowGraphTypes): FlowGraphMatrix {
+    if (matrixType === FlowGraphTypes.Matrix2D) {
+        return new FlowGraphMatrix2D([0, 0, 0, 0]);
+    }
+    if (matrixType === FlowGraphTypes.Matrix3D) {
+        return new FlowGraphMatrix3D([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    }
+    return Matrix.FromArray(new Array(16).fill(0));
+}
 
 /**
  * Configuration for the matrix blocks.
@@ -92,20 +107,22 @@ export class FlowGraphInvertMatrixBlock extends FlowGraphCachedOperationBlock<Fl
      */
     public readonly a: FlowGraphDataConnection<FlowGraphMatrix>;
 
+    private readonly _matrixType: FlowGraphTypes;
+
     /**
      * Creates a new instance of the inverse block.
      * @param config the configuration of the block
      */
     constructor(config?: IFlowGraphMatrixBlockConfiguration) {
         super(getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix), config);
+        this._matrixType = config?.matrixType || FlowGraphTypes.Matrix;
         this.a = this.registerDataInput("a", getRichTypeByFlowGraphType(config?.matrixType || FlowGraphTypes.Matrix));
     }
 
     public override _doOperation(context: FlowGraphContext): FlowGraphMatrix | undefined {
         const a = this.a.getValue(context);
-        // Per the KHR_interactivity spec, math/inverse is only valid when the determinant is a finite, non-zero
-        // number. For a zero, NaN, or infinite determinant the matrix is not invertible: returning undefined makes
-        // the cached base report isValid = false.
+        // A matrix is only invertible when its determinant is a finite, non-zero number. For a zero, NaN, or
+        // infinite determinant, returning undefined makes the cached base report isValid = false.
         const determinant = a.determinant();
         if (determinant === 0 || !Number.isFinite(determinant)) {
             return undefined;
@@ -113,6 +130,14 @@ export class FlowGraphInvertMatrixBlock extends FlowGraphCachedOperationBlock<Fl
         return (a as FlowGraphMatrix2D).inverse ? (a as FlowGraphMatrix2D).inverse() : Matrix.Invert(a as Matrix);
     }
 
+    /**
+     * A matrix with no inverse reports an all-zero matrix rather than the identity default of the
+     * matrix type, so the output is not mistaken for a meaningful transform.
+     * @returns a matrix of the block's type with every element set to zero
+     */
+    protected override _getInvalidOutputValue(): FlowGraphMatrix {
+        return CreateZeroMatrix(this._matrixType);
+    }
     public override getClassName(): string {
         return FlowGraphBlockNames.InvertMatrix;
     }
