@@ -21,10 +21,12 @@ Currently this dev host supports two scenarios that you can access by adding the
 
 This experience allows you to test the Babylon lottie-player. It supports the following params:
 
-- `file=string` Renders this file from the Babylon assets repo. For example, `file=triangles.json` uses `https://assets.babylonjs.com/lottie/triangles.json`.
+- `file=string` Renders this file from the Babylon assets repo. For example, `file=triangles.json` uses `https://assets.babylonjs.com/lottie/triangles.json`. A path starting with `./` is served from the dev host's `public` folder instead.
 - `useWorker=boolean` Whether to use the webworker for rendering or not. Defaults to true if not used.
-- `textLayerPlacement=spec|babylon8` Optional override for text layer placement compatibility.
-- `solidLayerRendering=spec|babylon8` Optional override for solid layer rendering compatibility.
+- `useUrl=boolean` Whether to hand the player the file URL or a pre-parsed JSON object. Defaults to true.
+- `usePreWarm=boolean` Whether to pre-warm the worker before playing. Defaults to false.
+- `frame=number` Renders a single frame instead of playing (used by the visual tests).
+- `variables=string` Base64-encoded JSON object of text substitutions.
 
 To change lottie variables or more detailed configuration options, edit `src/lottie/main.ts` directly.
 

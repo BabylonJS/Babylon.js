@@ -163,7 +163,7 @@ export class PhysicsViewer {
      */
     protected _updateDebugMeshesV2(): void {
         const plugin = this._physicsEnginePlugin as IPhysicsEnginePluginV2;
-        for (let i = 0; i < this._numBodies; ) {
+        for (let i = 0; i < this._numBodies;) {
             const body = this._bodies[i];
             if (body && body.isDisposed && this.hideBody(body)) {
                 continue;
@@ -177,7 +177,7 @@ export class PhysicsViewer {
     }
 
     protected _updateInertiaMeshes(): void {
-        for (let i = 0; i < this._numInertiaBodies; ) {
+        for (let i = 0; i < this._numInertiaBodies;) {
             const body = this._inertiaBodies[i];
             if (body && body.isDisposed && this.hideInertia(body)) {
                 continue;
