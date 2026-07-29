@@ -4014,7 +4014,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public override dispose(): void {
         this._isDisposed = true;
-        this.hideLoadingUI();
+        this.hideLoadingUI?.();
         this._timestampQuery.dispose();
         this._mainTexture?.destroy();
         this._depthTexture?.destroy();
