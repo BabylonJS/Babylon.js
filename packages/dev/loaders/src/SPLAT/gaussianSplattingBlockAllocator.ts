@@ -501,7 +501,7 @@ export class GaussianSplattingBlockAllocator {
 
         // Phase 2: slide allocated blocks left into adjacent free gaps (cleans up interior fragmentation).
         let block = this._headAll;
-        for (let i = 0; i < phase2Moves && block; ) {
+        for (let i = 0; i < phase2Moves && block;) {
             const next = block._next;
 
             if (block._free && next && !next._free) {

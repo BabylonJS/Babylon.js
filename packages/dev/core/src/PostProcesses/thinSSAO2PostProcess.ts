@@ -227,7 +227,7 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
 
         const data = new Uint8Array(size * size * 4);
         const randVector = Vector2.Zero();
-        for (let index = 0; index < data.length; ) {
+        for (let index = 0; index < data.length;) {
             randVector.set(RandomRange(0, 1), RandomRange(0, 1)).normalize().scaleInPlace(255);
             data[index++] = Math.floor(randVector.x);
             data[index++] = Math.floor(randVector.y);
