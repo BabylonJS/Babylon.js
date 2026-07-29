@@ -59,6 +59,7 @@ describe("Closure Compiler property preservation", () => {
         fs.writeFileSync(
             path.join(tempDir, "class.js"),
             `
+                import { Constants } from "./constants.js";
                 class Test {
                     _callback() {}
                     read() {
@@ -91,7 +92,7 @@ describe("Closure Compiler property preservation", () => {
         expect(output).toContain('{ ["_value"]: _value }');
         expect(output).toContain('test?.["_callback"]()');
         expect(output).toContain("test.publicMethod()");
-        expect(output).toContain('import { JSCompiler_renameProperty } from "./closureTools.js"');
+        expect(output).toContain(';\nimport { JSCompiler_renameProperty } from "./closureTools.js";\n');
         expect(helperOutput).toContain("export function JSCompiler_renameProperty(propertyName, _target)");
         expect(output).toContain('Object.defineProperty(Test.prototype, JSCompiler_renameProperty("reflected", Test.prototype)');
         expect(output).toContain('JSCompiler_renameProperty("feature", Test.prototype) in Test.prototype');

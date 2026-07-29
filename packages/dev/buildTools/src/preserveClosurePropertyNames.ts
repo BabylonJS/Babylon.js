@@ -286,7 +286,7 @@ function CollectReflectionReplacements(sourceFile: ts.SourceFile, helperImportPa
     replacements.push({
         start: insertionPoint,
         end: insertionPoint,
-        text: `${insertionPoint ? " " : ""}import { ${ClosureRenameHelperName} } from ${JSON.stringify(helperImportPath)}; `,
+        text: `${insertionPoint ? "\n" : ""}import { ${ClosureRenameHelperName} } from ${JSON.stringify(helperImportPath)};\n`,
     });
     return replacements;
 }
