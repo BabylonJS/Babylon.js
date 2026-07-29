@@ -375,6 +375,7 @@ jobs:
           - script: |
                 npm run build -w @babylonjs/core
                 node ./scripts/closureCompiler/testES6.mjs
+                node ./scripts/closureCompiler/testPrepareLegacyPackages.mjs
             displayName: "Test ES6 with advanced optimizations"
 
     # ============================================================================
