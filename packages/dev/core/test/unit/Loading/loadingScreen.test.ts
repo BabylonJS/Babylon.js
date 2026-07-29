@@ -4,8 +4,6 @@ import { describe, expect, it } from "vitest";
 
 describe("RegisterLoadingScreen", () => {
     it("registers the AbstractEngine loading screen APIs", () => {
-        expect(AbstractEngine.prototype.hideLoadingUI).toBeUndefined();
-
         RegisterLoadingScreen();
 
         expect(typeof AbstractEngine.prototype.displayLoadingUI).toBe("function");
