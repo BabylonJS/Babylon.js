@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import ts from "typescript";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const packageRoot = path.join(repoRoot, "packages/public/@babylonjs");
@@ -42,10 +43,22 @@ function CollectDependencies(entryFile) {
 
         files.add(resolvedFilePath);
         const sourceText = fs.readFileSync(resolvedFilePath, "utf8");
-        const specifiers = [...sourceText.matchAll(/(?:import|export)\s+(?:[^"']*?\s+from\s+)?["']([^"']+)["']/g), ...sourceText.matchAll(/import\(\s*["']([^"']+)["']\s*\)/g)];
+        const sourceFile = ts.createSourceFile(resolvedFilePath, sourceText, ts.ScriptTarget.Latest, false, ts.ScriptKind.JS);
+        const specifiers = [];
 
-        for (const match of specifiers) {
-            visit(ResolveImport(resolvedFilePath, match[1]));
+        const collectSpecifiers = (node) => {
+            if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+                specifiers.push(node.moduleSpecifier.text);
+            } else if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword && node.arguments.length === 1 && ts.isStringLiteral(node.arguments[0])) {
+                specifiers.push(node.arguments[0].text);
+            }
+
+            ts.forEachChild(node, collectSpecifiers);
+        };
+        collectSpecifiers(sourceFile);
+
+        for (const specifier of specifiers) {
+            visit(ResolveImport(resolvedFilePath, specifier));
         }
     };
 

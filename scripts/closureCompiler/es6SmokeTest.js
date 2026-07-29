@@ -1,6 +1,8 @@
 import { Light } from "./core/Lights/light.js";
 import { FileTools } from "./core/Misc/fileTools.js";
 
+export const NonModuleSpecifier = 'export "not-a-module";';
+
 let sortCount = 0;
 const scene = {
     requireLightSorting: false,
