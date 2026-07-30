@@ -13,6 +13,8 @@ import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget.pure";
+import { Color4 } from "core/Maths/math.color.pure";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { Constants } from "core/Engines/constants";
 import { ToHalfFloat } from "core/Misc/textureTools";
@@ -522,6 +524,12 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _covariancesBTexture: Nullable<BaseTexture> = null;
     protected _centersTexture: Nullable<BaseTexture> = null;
     protected _colorsTexture: Nullable<BaseTexture> = null;
+    // When a streaming part is reserved, the four core data textures (centers, covA, covB, colors) are backed
+    // by this MRT's attachments instead of standalone RawTextures, so a streaming engine can GPU-decode into
+    // the reserved region while static parts still CPU-upload into it (see Gate 0). Null in the normal
+    // (non-streaming) path, which keeps using RawTextures unchanged.
+    protected _mrtAtlas: Nullable<MultiRenderTarget> = null;
+    protected _useMrtAtlas = false;
     protected _rotationsATexture: Nullable<BaseTexture> = null;
     protected _rotationsBTexture: Nullable<BaseTexture> = null;
     protected _rotationScaleTexture: Nullable<BaseTexture> = null;
@@ -2290,10 +2298,17 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      */
     public override dispose(doNotRecurse?: boolean): void {
-        this._covariancesATexture?.dispose();
-        this._covariancesBTexture?.dispose();
-        this._centersTexture?.dispose();
-        this._colorsTexture?.dispose();
+        if (this._mrtAtlas) {
+            // The four data textures are attachments of this MRT — dispose the MRT, not each attachment.
+            this._mrtAtlas.dispose();
+            this._mrtAtlas = null;
+            this._covariancesATexture = this._covariancesBTexture = this._centersTexture = this._colorsTexture = null;
+        } else {
+            this._covariancesATexture?.dispose();
+            this._covariancesBTexture?.dispose();
+            this._centersTexture?.dispose();
+            this._colorsTexture?.dispose();
+        }
         if (this._shTextures) {
             for (const shTexture of this._shTextures) {
                 shTexture.dispose();
@@ -2556,6 +2571,62 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._delayedTextureUpdate = { covA, covB, colors: colorArray, centers: this._splatPositions!, sh };
     }
 
+    /**
+     * Creates (or recreates) the MRT-backed data atlas at the given size and points the four core data
+     * textures at its attachments. The attachments use the same decoded GS layout as {@link GaussianSplattingWorkBuffer}
+     * — [centers F32, covA HALF_FLOAT, covB HALF_FLOAT, colors U8], all RGBA — so a streaming engine can render
+     * (decode/relayout) directly into the same textures the GS material samples, while static parts CPU-upload
+     * into them via {@link _updateSubTextures}. Covariance B is RGBA here (its extra channels unused), so the
+     * atlas forces {@link _useRGBACovariants}.
+     * @param textureSize atlas dimensions (width, height)
+     */
+    protected _createMrtAtlas(textureSize: Vector2): void {
+        // covB carries only Sigma12/Sigma22 but MRT attachments are RGBA, so switch to the RGBA covariant layout.
+        this._useRGBACovariants = true;
+        const engine = this.getEngine();
+        // No real GPU (NullEngine): skip MRT allocation. The reservation's part/index/range logic still runs;
+        // texture population requires a real backend (verified via the runtime spike / viewer).
+        const updateEngine = this._getTextureDataUpdateEngine();
+        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+            return;
+        }
+        const covType = engine.getCaps().textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
+        const mrt = new MultiRenderTarget(
+            this.name + "_gsAtlas",
+            { width: textureSize.x, height: textureSize.y },
+            4,
+            this._scene,
+            {
+                types: [Constants.TEXTURETYPE_FLOAT, covType, covType, Constants.TEXTURETYPE_UNSIGNED_BYTE],
+                formats: [Constants.TEXTUREFORMAT_RGBA, Constants.TEXTUREFORMAT_RGBA, Constants.TEXTUREFORMAT_RGBA, Constants.TEXTUREFORMAT_RGBA],
+                samplingModes: [
+                    Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                    Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                    Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                    Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                ],
+                generateDepthBuffer: false,
+                generateDepthTexture: false,
+                generateMipMaps: false,
+            },
+            [this.name + "_gsCenters", this.name + "_gsCovA", this.name + "_gsCovB", this.name + "_gsColors"]
+        );
+        mrt.clearColor = new Color4(0, 0, 0, 0);
+        mrt.renderList = [];
+        // Suppress clearing so a streaming engine's decode passes ACCUMULATE into the atlas (each decode writes
+        // only its region and must not wipe static parts or previously-decoded splats). All texels are defined by
+        // the initial full CPU sub-upload below (the reserved region's arrays are zero => invisible padding).
+        mrt.onClearObservable.add(() => {});
+        // Render once so the attachment textures are really allocated on the GPU before the CPU sub-uploads
+        // below (on WebGPU, writeTexture requires the destination texture to already exist).
+        mrt.render();
+        this._mrtAtlas = mrt;
+        this._centersTexture = mrt.textures[0];
+        this._covariancesATexture = mrt.textures[1];
+        this._covariancesBTexture = mrt.textures[2];
+        this._colorsTexture = mrt.textures[3];
+    }
+
     // NB: partIndices is assumed to be padded to a round texture size
     protected _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array, sh?: Uint8Array[]): void {
         const textureSize = this._getTextureSize(this._vertexCount);
@@ -2578,8 +2649,11 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         const firstTime = this._covariancesATexture === null;
         const textureSizeChanged = this._textureSize.y != textureSize.y;
+        // First streaming-part reservation must convert the existing RawTexture atlas to the MRT-backed atlas,
+        // which requires the full (re)build branch even when the texture height is unchanged.
+        const needsMrtConversion = this._useMrtAtlas && !this._mrtAtlas;
 
-        if (!firstTime && !textureSizeChanged) {
+        if (!firstTime && !textureSizeChanged && !needsMrtConversion) {
             this._setDelayedTextureUpdate(covA, covB, colorArray, sh);
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
@@ -2626,10 +2700,17 @@ export class GaussianSplattingMeshBase extends Mesh {
         } else {
             // Full rebuild: the texture size changed (or this is a size-changing reload), so the existing
             // GPU textures cannot be reused. Dispose them before recreating to avoid leaking the old ones.
-            this._covariancesATexture?.dispose();
-            this._covariancesBTexture?.dispose();
-            this._centersTexture?.dispose();
-            this._colorsTexture?.dispose();
+            if (this._mrtAtlas) {
+                // The four data textures are attachments of this MRT — dispose the MRT, not each attachment.
+                this._mrtAtlas.dispose();
+                this._mrtAtlas = null;
+                this._covariancesATexture = this._covariancesBTexture = this._centersTexture = this._colorsTexture = null;
+            } else {
+                this._covariancesATexture?.dispose();
+                this._covariancesBTexture?.dispose();
+                this._centersTexture?.dispose();
+                this._colorsTexture?.dispose();
+            }
             if (this._shTextures) {
                 for (const shTexture of this._shTextures) {
                     shTexture.dispose();
@@ -2638,15 +2719,24 @@ export class GaussianSplattingMeshBase extends Mesh {
             }
 
             this._textureSize = textureSize;
-            this._covariancesATexture = createTextureFromDataF16(covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-            this._covariancesBTexture = createTextureFromDataF16(
-                covB,
-                textureSize.x,
-                textureSize.y,
-                this._useRGBACovariants ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_RG
-            );
-            this._centersTexture = createTextureFromData(this._splatPositions!, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-            this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            if (this._useMrtAtlas) {
+                // Back the four data textures with a render-targetable MRT so a streaming engine can decode
+                // into the reserved region; static splats are CPU-uploaded into the same attachments below.
+                this._createMrtAtlas(textureSize);
+                if (this._mrtAtlas) {
+                    this._updateSubTextures(this._splatPositions!, covA, covB, colorArray, 0, textureSize.y);
+                }
+            } else {
+                this._covariancesATexture = createTextureFromDataF16(covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                this._covariancesBTexture = createTextureFromDataF16(
+                    covB,
+                    textureSize.x,
+                    textureSize.y,
+                    this._useRGBACovariants ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_RG
+                );
+                this._centersTexture = createTextureFromData(this._splatPositions!, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+                this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            }
 
             if (sh) {
                 this._shTextures = [];
@@ -2714,6 +2804,11 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (this._covariancesATexture === null) {
             return false;
         }
+        // Switching to the MRT-backed atlas (first streaming-part reservation) requires a full rebuild so the
+        // four data textures are recreated as MRT attachments; the incremental sub-upload path cannot convert them.
+        if (this._useMrtAtlas && !this._mrtAtlas) {
+            return false;
+        }
         // Can only do an incremental GPU update if texture height doesn't need to grow
         const newTextureSize = this._getTextureSize(vertexCount);
         return newTextureSize.y === this._textureSize.y;
@@ -2754,6 +2849,73 @@ export class GaussianSplattingMeshBase extends Mesh {
         const data = this._splatPositions.slice(floatOffset, floatOffset + splatCount * 4);
         this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS_UPDATE, offset: floatOffset, data }, [data.buffer]);
         this._sortIsDirty = true;
+    }
+
+    /**
+     * Decodes raw `.splat` bytes (32 bytes/splat) into a contiguous sub-range of the already-allocated atlas,
+     * uploading only the affected texels (never touching neighboring parts' texels) and patching just that
+     * range of positions in the sort worker. Used to populate a region reserved by
+     * {@link GaussianSplattingMesh.reserveStreamingPart} — the CPU path a streaming engine uses when GPU
+     * decode/readback is unavailable, and the seam that verifies reservation + interleaving before the
+     * streaming engine exists.
+     *
+     * The atlas textures and `_splatPositions` must already be sized to cover `[globalOffset, globalOffset+count)`
+     * (guaranteed after `reserveStreamingPart`). Bounds of the written centers are accumulated into `min`/`max`
+     * when provided (so the caller can grow the owning part's bounding info).
+     * @param globalOffset first atlas splat index to write
+     * @param count number of splats to write
+     * @param splatsData raw `.splat` bytes for `count` splats (stride 32)
+     * @param min optional running min accumulator for the written centers
+     * @param max optional running max accumulator for the written centers
+     */
+    protected _writeStreamingSplats(globalOffset: number, count: number, splatsData: ArrayBuffer | ArrayBufferView, min?: Vector3, max?: Vector3): void {
+        if (count <= 0 || !this._splatPositions || !this._covariancesATexture) {
+            return;
+        }
+        const textureSize = this._getTextureSize(this._vertexCount);
+        const width = textureSize.x;
+        const covBSItemSize = this._useRGBACovariants ? 4 : 2;
+        const end = globalOffset + count;
+
+        const fBuffer = GaussianSplattingMeshBase._GetSplatDataFloats(splatsData);
+        const uBuffer = GaussianSplattingMeshBase._GetSplatDataBytes(splatsData);
+
+        // _makeSplat indexes covA/covB/color by the destination (global) splat index and writes _splatPositions
+        // at that same index, so the transient CPU arrays must be atlas-indexed up to `end`. Only the written
+        // region is filled and only its texels are uploaded, so untouched atlas texels (other parts) are safe.
+        // NOTE: this transient allocation scales with `end`; the Phase-2 GPU decode path avoids it entirely.
+        const covA = new Uint16Array(end * 4);
+        const covB = new Uint16Array(end * covBSItemSize);
+        const colorArray = new Uint8Array(end * 4);
+        const localMin = min ?? new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        const localMax = max ?? new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+        for (let i = 0; i < count; i++) {
+            this._makeSplat(globalOffset + i, fBuffer, uBuffer, covA, covB, colorArray, localMin, localMax, this._flipY, i);
+        }
+
+        // Retain the written bytes so future full rebuilds / picking see the region's real data.
+        if (this._splatsData) {
+            const dst = new Uint8Array(GaussianSplattingMeshBase._GetSplatDataBytes(this._splatsData).buffer);
+            dst.set(uBuffer.subarray(0, count * 32), globalOffset * 32);
+        }
+
+        // Upload only the written texels, one contiguous per-row run at a time (rectangular sub-uploads never
+        // clobber texels outside [globalOffset, end), so neighboring parts on a shared boundary row are safe).
+        const positions = this._splatPositions;
+        let gi = globalOffset;
+        while (gi < end) {
+            const row = Math.floor(gi / width);
+            const runEnd = Math.min(end, (row + 1) * width);
+            const col = gi - row * width;
+            const runLen = runEnd - gi;
+            this._updateTextureFromDataRect(this._covariancesATexture!, new Uint16Array(covA.buffer, gi * 4 * 2, runLen * 4), col, row, runLen, 1);
+            this._updateTextureFromDataRect(this._covariancesBTexture!, new Uint16Array(covB.buffer, gi * covBSItemSize * 2, runLen * covBSItemSize), col, row, runLen, 1);
+            this._updateTextureFromDataRect(this._centersTexture!, new Float32Array(positions.buffer, gi * 4 * 4, runLen * 4), col, row, runLen, 1);
+            this._updateTextureFromDataRect(this._colorsTexture!, new Uint8Array(colorArray.buffer, gi * 4, runLen * 4), col, row, runLen, 1);
+            gi = runEnd;
+        }
+
+        this._postWorkerPositionsRange(globalOffset, count);
     }
 
     private *_updateData(

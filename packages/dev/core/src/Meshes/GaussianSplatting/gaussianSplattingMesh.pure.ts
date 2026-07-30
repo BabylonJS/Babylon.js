@@ -6,9 +6,10 @@ import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { type Vector2 } from "core/Maths/math.vector";
 import { type Effect } from "core/Materials/effect.pure";
 import { GetGaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
-import { GaussianSplattingMeshBase, AllocateShBuffers } from "./gaussianSplattingMeshBase.pure";
+import { GaussianSplattingMeshBase, AllocateShBuffers, type IGaussianSplattingSplatRange } from "./gaussianSplattingMeshBase.pure";
 import { GaussianSplattingSortWorkerCommand } from "./gaussianSplattingSortWorker";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { type MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget.pure";
 import { Constants } from "core/Engines/constants";
 import { DecodeBase64ToBinary, EncodeArrayBufferToBase64 } from "core/Misc/stringTools";
 import { Mesh } from "core/Meshes/mesh.pure";
@@ -30,6 +31,13 @@ interface IGaussianSplattingPartSource {
     getWorldMatrix(): Matrix;
     getBoundingInfo(): BoundingInfo;
     dispose(): void;
+    /**
+     * When true this is a placeholder that reserves `_vertexCount` empty (invisible) splats in the
+     * atlas instead of copying real data. Used by {@link GaussianSplattingMesh.reserveStreamingPart}
+     * so a streaming engine can later GPU-decode into the reserved region. Sources flagged this way
+     * are allowed to have a null `_splatsData`; their atlas region is left zeroed (invisible padding).
+     */
+    _isReservedEmpty?: boolean;
 }
 
 /**
@@ -81,6 +89,75 @@ function ParsePartIndices(compressed: Uint32Array | number[]): Uint8Array {
 }
 
 /**
+ * Handle to a region of a compound Gaussian Splatting mesh reserved for dynamic (streamed) content by
+ * {@link GaussianSplattingMesh.reserveStreamingPart}. It lets a streaming engine populate the region's
+ * splats over time and drive which of them are sorted/rendered, while the compound keeps depth-sorting
+ * and drawing every part (static + streamed) together in one pass.
+ *
+ * Ranges/offsets passed to this handle are LOCAL to the part (0-based within `[0, capacity)`); the handle
+ * translates them to the compound's global atlas coordinates.
+ */
+export interface IGaussianSplattingStreamingPart {
+    /** The proxy mesh controlling this part's world transform and visibility. */
+    readonly proxy: GaussianSplattingPartProxyMesh;
+    /** The part index assigned to this streaming region in the compound. */
+    readonly partIndex: number;
+    /** First atlas splat index of the reserved region. */
+    readonly base: number;
+    /** Number of splats reserved for the region. */
+    readonly capacity: number;
+    /** The compound's shared centers texture (the region occupies `[base, base+capacity)` within it). */
+    readonly centersTexture: Nullable<BaseTexture>;
+    /** The compound's shared covariance A texture. */
+    readonly covariancesATexture: Nullable<BaseTexture>;
+    /** The compound's shared covariance B texture. */
+    readonly covariancesBTexture: Nullable<BaseTexture>;
+    /** The compound's shared colors texture. */
+    readonly colorsTexture: Nullable<BaseTexture>;
+    /** The compound's shared CPU centers buffer consumed by the sort worker. */
+    readonly splatPositions: Nullable<Float32Array>;
+    /** The compound's shared render-target atlas a streaming engine decodes into, or null on a non-GPU backend. */
+    readonly mrtAtlas: Nullable<MultiRenderTarget>;
+    /** Width (in texels) of the atlas, used to address decode/readback over the wide layout. */
+    readonly atlasWidth: number;
+    /** Whether the compound's shared depth sort is settled (a streaming engine polls this to detect readiness). */
+    readonly isDepthSortSettled: boolean;
+    /**
+     * Restricts which of this part's splats are sorted/rendered, in LOCAL coordinates. `null` renders the
+     * whole reserved region. The compound merges this with every other part's ranges into the single sort.
+     * @param localRanges active local ranges, or `null` for the full region
+     */
+    setActiveRanges(localRanges: Nullable<readonly IGaussianSplattingSplatRange[]>): void;
+    /**
+     * CPU-decodes raw `.splat` bytes into the region at `localOffset`, uploading only those texels and
+     * patching the sort worker. Grows the part's bounding info to include the written centers. This is the
+     * CPU population path (used to seed the region or as a fallback when GPU decode is unavailable).
+     * @param localOffset first local splat index to write
+     * @param count number of splats to write
+     * @param splatsData raw `.splat` bytes for `count` splats (stride 32)
+     */
+    writeSplats(localOffset: number, count: number, splatsData: ArrayBuffer | ArrayBufferView): void;
+    /**
+     * Patches only `[localOffset, localOffset+count)` of the worker's position buffer (for the GPU path,
+     * where texel data is written directly to the atlas and only the CPU centers are pushed to the worker).
+     * @param localOffset first local splat index
+     * @param count number of splats
+     */
+    postPositionsRange(localOffset: number, count: number): void;
+    /**
+     * Grows the part's (and compound's) bounding info to include the given local-space centers extent.
+     * @param min minimum corner
+     * @param max maximum corner
+     */
+    expandBounds(min: Vector3, max: Vector3): void;
+    /**
+     * Re-posts the full merged position + part-index set to the compound's sort worker. Only needed after a
+     * relayout moved the region's data wholesale; per-decode updates use {@link postPositionsRange} instead.
+     */
+    notifyDataChanged(): void;
+}
+
+/**
  * Class used to render a Gaussian Splatting mesh. Supports both single-cloud and compound
  * (multi-part) rendering. In compound mode, multiple Gaussian Splatting source meshes are
  * merged into one draw call while retaining per-part world-matrix control via
@@ -108,6 +185,24 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * Visibility values for each part (0.0 to 1.0), indexed by part index.
      */
     protected _partVisibility: number[] = [];
+
+    /**
+     * Per-part active source-splat range overrides, indexed by part index, in GLOBAL source-splat
+     * coordinates (offsets into the merged atlas). A part with no entry (undefined) renders its full
+     * range; a part with an entry renders only those ranges. Used by streaming parts to render just
+     * their currently-active LOD splats while static parts render fully. No overrides at all means no
+     * filter (the base renders every splat, preserving the non-streaming fast path).
+     */
+    private _partSplatRanges: Nullable<IGaussianSplattingSplatRange[]>[] = [];
+
+    /**
+     * True once a streaming part has been reserved. A streamed region's data lives only on the GPU (no retained
+     * CPU source), so a later atlas rebuild — triggered by adding/removing another part — would regenerate it as
+     * zeros and lose the decoded splats. Until the rebuild is made streaming-aware (preserving GPU-authoritative
+     * regions) and multiple streaming parts are supported, we forbid structural changes after the first reserve.
+     * @internal
+     */
+    protected _hasStreamingPart = false;
 
     private _partIndicesTexture: Nullable<BaseTexture> = null;
     private _partIndices: Nullable<Uint8Array> = null;
@@ -463,6 +558,95 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._partVisibility[partIndex] = Math.max(0.0, Math.min(1.0, value));
     }
 
+    /**
+     * Restricts which source splats of a single part are sorted and rendered, in GLOBAL source-splat
+     * coordinates (offsets into the merged atlas). Static parts render fully by default; a streaming
+     * part uses this to render only its currently-active LOD splats. The compound recomputes the union
+     * of every part's active ranges and drives the single shared depth sort / draw with it, so all
+     * parts still sort together in one pass.
+     *
+     * Passing `null` clears the override for that part (it reverts to rendering its full range). When no
+     * part has an override, the compound clears the range filter entirely (renders every splat), which
+     * preserves the non-streaming fast path.
+     * @param partIndex index of the part to constrain
+     * @param ranges active global source-splat ranges for the part, or `null` to render the whole part
+     */
+    public setPartSplatRanges(partIndex: number, ranges: Nullable<readonly IGaussianSplattingSplatRange[]>): void {
+        if (partIndex < 0) {
+            return;
+        }
+        this._partSplatRanges[partIndex] = ranges ? ranges.map((r) => ({ offset: r.offset, count: r.count })) : null;
+        this._refreshPartRangeUnion();
+    }
+
+    /**
+     * Recomputes the global active-range union across all parts and pushes it to the shared sort/draw
+     * via the base {@link setSplatIndexRanges}. When no part carries an override the filter is cleared
+     * (render everything). A part without an override contributes its full `[offset, count)` derived
+     * from its proxy; a part with an override contributes exactly those ranges.
+     */
+    private _refreshPartRangeUnion(): void {
+        let hasOverride = false;
+        for (let i = 0; i < this._partSplatRanges.length; i++) {
+            if (this._partSplatRanges[i]) {
+                hasOverride = true;
+                break;
+            }
+        }
+        if (!hasOverride) {
+            // No part constrains its splats: render the whole atlas (base fast path).
+            this.setSplatIndexRanges(null);
+            return;
+        }
+
+        const collected: IGaussianSplattingSplatRange[] = [];
+        const partCount = this.partCount;
+        for (let partIndex = 0; partIndex < partCount; partIndex++) {
+            const override = this._partSplatRanges[partIndex];
+            if (override) {
+                for (const range of override) {
+                    if (range.count > 0) {
+                        collected.push({ offset: range.offset, count: range.count });
+                    }
+                }
+                continue;
+            }
+            // No override: render the part's full extent, derived from its proxy.
+            const proxy = this._partProxies[partIndex];
+            if (proxy && proxy._vertexCount > 0) {
+                collected.push({ offset: proxy._splatsDataOffset, count: proxy._vertexCount });
+            }
+        }
+
+        this.setSplatIndexRanges(GaussianSplattingMesh._CoalesceSplatRanges(collected));
+    }
+
+    /**
+     * Sorts and merges adjacent/overlapping source-splat ranges so the interval list handed to the sort
+     * worker stays compact (parts occupy disjoint regions, so this mainly coalesces contiguous parts).
+     * @param ranges raw ranges
+     * @returns coalesced ranges sorted by offset
+     */
+    private static _CoalesceSplatRanges(ranges: IGaussianSplattingSplatRange[]): IGaussianSplattingSplatRange[] {
+        if (ranges.length <= 1) {
+            return ranges;
+        }
+        const sorted = ranges.slice().sort((a, b) => a.offset - b.offset);
+        const merged: IGaussianSplattingSplatRange[] = [{ offset: sorted[0].offset, count: sorted[0].count }];
+        for (let i = 1; i < sorted.length; i++) {
+            const last = merged[merged.length - 1];
+            const range = sorted[i];
+            const lastEnd = last.offset + last.count;
+            if (range.offset <= lastEnd) {
+                const end = Math.max(lastEnd, range.offset + range.count);
+                last.count = end - last.offset;
+            } else {
+                merged.push({ offset: range.offset, count: range.count });
+            }
+        }
+        return merged;
+    }
+
     protected override _copyTextures(source: GaussianSplattingMeshBase): void {
         super._copyTextures(source);
         this._partIndicesTexture = (source as GaussianSplattingMesh)._partIndicesTexture?.clone()!;
@@ -676,7 +860,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
         // Validate
         for (const other of others) {
-            if (!other._splatsData) {
+            // Reserved-empty placeholders (reserveStreamingPart) intentionally carry no splat data —
+            // their atlas region is left zeroed (invisible) for a streaming engine to decode into later.
+            if (!other._splatsData && !other._isReservedEmpty) {
                 throw new Error(`To call addPart()/addParts(), each source mesh must be fully loaded`);
             }
             if (other.isCompound) {
@@ -1092,8 +1278,22 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * @deprecated Use {@link GaussianSplattingCompoundMesh.addPart} instead.
      */
     public addPart(other: GaussianSplattingMesh, disposeOther: boolean = true): GaussianSplattingPartProxyMesh {
+        this._assertMutableForStreaming("addPart");
         const { proxyMeshes } = this._addPartsInternal([other], disposeOther);
         return proxyMeshes[0];
+    }
+
+    /**
+     * Throws if the compound already hosts a streaming part. A streamed region is GPU-authoritative (no CPU
+     * source), so an atlas rebuild from adding/removing a part would zero it. Add all static parts first, then
+     * the streaming part(s) last. (Streaming-aware rebuilds land in a later phase.)
+     * @param op the operation name for the error message
+     * @internal
+     */
+    protected _assertMutableForStreaming(op: string): void {
+        if (this._hasStreamingPart) {
+            throw new Error(`${op} is not supported after a streaming part is reserved. Add all static parts before reserving a streaming part.`);
+        }
     }
 
     /**
@@ -1105,6 +1305,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * @deprecated Use {@link GaussianSplattingCompoundMesh.removePart} instead.
      */
     public removePart(index: number): void {
+        this._assertMutableForStreaming("removePart");
         if (index < 0 || index >= this.partCount) {
             throw new Error(`Part index ${index} is out of range [0, ${this.partCount})`);
         }
@@ -1249,6 +1450,145 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this._canPostToWorker = true;
             throw e;
         }
+    }
+
+    /**
+     * Reserves a contiguous region of `capacity` splats in the compound as a new part for dynamic (streamed)
+     * content. Unlike {@link addPart}, no source data is copied: the region is created as invisible padding
+     * (zeroed) for a streaming engine to populate over time via the returned handle. The reserved part
+     * participates in the compound's single shared depth sort and draw exactly like a static part — it has a
+     * `partIndex`, a per-part world matrix (via its proxy), and a per-part visibility — so streamed splats are
+     * sorted and rendered together in one pass with the static parts.
+     *
+     * Add the streaming part LAST (after all static parts). The returned handle drives which of the region's
+     * splats render (LOD) and writes their data.
+     * @param capacity number of splats to reserve
+     * @param worldMatrix initial world matrix for the region's proxy (e.g. carrying a source's up-axis
+     *   convention); defaults to identity
+     * @param name name for the region's proxy mesh
+     * @returns a handle used to populate and control the reserved region
+     */
+    public reserveStreamingPart(capacity: number, worldMatrix: Matrix = Matrix.Identity(), name: string = this.name + "_streamingPart"): IGaussianSplattingStreamingPart {
+        if (!(capacity > 0)) {
+            throw new Error("reserveStreamingPart: capacity must be a positive integer");
+        }
+        if (this._hasStreamingPart) {
+            // A second reserve would rebuild the atlas and zero the first stream's GPU-only region (multiple
+            // streaming parts + a streaming-aware rebuild land in a later phase).
+            throw new Error("reserveStreamingPart: only one streaming part per compound is currently supported.");
+        }
+        capacity = Math.floor(capacity);
+
+        // Back the atlas with a render-targetable MRT so a streaming engine can GPU-decode into the reserved
+        // region. Must be set before _addPartsInternal so the (forced) full rebuild builds MRT attachments and
+        // allocates covariance B as RGBA. Harmless/no-op if a streaming part was already reserved.
+        this._useMrtAtlas = true;
+        this._useRGBACovariants = true;
+
+        // Row-align the region so a later GPU relayout (defrag under a memory budget) can be scoped to whole
+        // atlas rows via scissor without ever touching a preceding part that shares a row (see Phase 3 / S3).
+        //   - Front alignment: start the usable region on the next row boundary. This only consumes the
+        //     preceding parts' already-allocated last-row tail padding, so it costs no extra memory.
+        //   - Capacity alignment: pad the region up to a whole number of rows so its end is a row boundary too
+        //     (needed when another part follows, e.g. multiple streaming parts).
+        const atlasWidth = this._getTextureSize(1).x;
+        const startOffset = this._vertexCount; // first atlas index the reserved part occupies
+        const alignedBase = Math.ceil(startOffset / atlasWidth) * atlasWidth;
+        const frontPad = alignedBase - startOffset; // invisible padding that fills the preceding row
+        const alignedCapacity = Math.ceil(capacity / atlasWidth) * atlasWidth;
+        const regionSplats = frontPad + alignedCapacity;
+
+        // Running local-space bounds of the region's written centers; grown as splats are populated.
+        const boundsMin = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        const boundsMax = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
+        // Synthetic placeholder source: no data, so _addPartsInternal leaves the region zeroed (invisible)
+        // while still assigning a part index, filling _partIndices, growing the atlas + _splatPositions,
+        // creating the proxy, and posting the (larger) position/interval set to the sort worker.
+        const reservedSource: IGaussianSplattingPartSource = {
+            name,
+            _vertexCount: regionSplats,
+            _splatsData: null,
+            _shData: null,
+            _shDegree: 0,
+            isCompound: false,
+            getWorldMatrix: () => worldMatrix,
+            getBoundingInfo: () => new BoundingInfo(Vector3.ZeroReadOnly, Vector3.ZeroReadOnly),
+            dispose: () => {},
+            _isReservedEmpty: true,
+        };
+
+        const { proxyMeshes, assignedPartIndices } = this._addPartsInternal([reservedSource], false);
+        const proxy = proxyMeshes[0];
+        const partIndex = assignedPartIndices[0];
+        // Usable region starts at the row-aligned base (past the front padding) and spans the aligned capacity.
+        // (proxy._splatsDataOffset === startOffset; the usable base is startOffset + frontPad === alignedBase.)
+        const base = alignedBase;
+        capacity = alignedCapacity;
+
+        // The handle's live getters need a stable reference to this compound (its atlas textures can be
+        // recreated on a later rebuild), so alias it for the closures below.
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const compound = this;
+        const applyBounds = () => {
+            if (boundsMin.x <= boundsMax.x) {
+                proxy.setBoundingInfo(new BoundingInfo(boundsMin.clone(), boundsMax.clone()));
+                compound._updateBoundingInfoFromProxies();
+            }
+        };
+
+        const handle: IGaussianSplattingStreamingPart = {
+            proxy,
+            partIndex,
+            base,
+            capacity,
+            get centersTexture() {
+                return compound.centersTexture;
+            },
+            get covariancesATexture() {
+                return compound.covariancesATexture;
+            },
+            get covariancesBTexture() {
+                return compound.covariancesBTexture;
+            },
+            get colorsTexture() {
+                return compound.colorsTexture;
+            },
+            get splatPositions() {
+                return compound._splatPositions;
+            },
+            get mrtAtlas() {
+                return compound._mrtAtlas;
+            },
+            get atlasWidth() {
+                return compound._getTextureSize(compound._vertexCount).x;
+            },
+            get isDepthSortSettled() {
+                return compound._isDepthSortSettled;
+            },
+            setActiveRanges: (localRanges) => {
+                const globalRanges = localRanges ? localRanges.map((r) => ({ offset: base + r.offset, count: r.count })) : null;
+                compound.setPartSplatRanges(partIndex, globalRanges);
+            },
+            writeSplats: (localOffset, count, splatsData) => {
+                compound._writeStreamingSplats(base + localOffset, count, splatsData, boundsMin, boundsMax);
+                applyBounds();
+            },
+            postPositionsRange: (localOffset, count) => {
+                compound._postWorkerPositionsRange(base + localOffset, count);
+            },
+            expandBounds: (min, max) => {
+                boundsMin.minimizeInPlace(min);
+                boundsMax.maximizeInPlace(max);
+                applyBounds();
+            },
+            notifyDataChanged: () => {
+                compound._notifyWorkerNewData();
+            },
+        };
+        // Mark AFTER the successful internal _addPartsInternal so its own call isn't blocked by the guard.
+        this._hasStreamingPart = true;
+        return handle;
     }
 
     /**

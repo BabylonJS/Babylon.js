@@ -38,6 +38,14 @@ export class GaussianSplattingWorkBuffer {
     private readonly _shaderLanguage: ShaderLanguage;
     private readonly _material: ShaderMaterial;
     private readonly _quad: Mesh;
+    // When true this work buffer owns (and disposes) its MRT. False when it wraps an external atlas (a compound
+    // mesh's MRT) it must not dispose. In the external case the MRT is wide (dstWidth x atlasHeight), decodes are
+    // offset by _baseOffset (the reserved region's first splat), and _textureSize is the atlas WIDTH.
+    private readonly _ownsMrt: boolean;
+    private readonly _baseOffset: number;
+    // Splat count this work buffer addresses. Standalone: the whole (square) buffer. Hosted: the reserved
+    // region's (row-aligned) capacity — used to scope a relayout to the region's atlas rows.
+    private readonly _capacity: number;
     // Relayout (defrag) copy material, created lazily on first relayout.
     private _copyMaterial: Nullable<ShaderMaterial> = null;
     // Reusable destination->source index map for the relayout pass (created lazily, sized to the work buffer).
@@ -77,16 +85,35 @@ export class GaussianSplattingWorkBuffer {
 
     /**
      * Creates a work buffer sized to hold `capacity` splats.
+     *
+     * Standalone (default): the work buffer creates and owns a square MRT sized `ceil(sqrt(capacity))`, with
+     * decodes addressed from splat 0.
+     *
+     * Hosted (`externalAtlas` provided): the work buffer decodes/reads back into an externally-owned MRT (a
+     * compound mesh's shared atlas) instead of creating its own. Decodes are placed at `externalAtlas.baseOffset`
+     * (the reserved region's first splat) and addressed over `externalAtlas.width` (the wide atlas width), so the
+     * streamed splats land in the compound's atlas and sort/draw together with the static parts.
      * @param scene hosting scene
      * @param capacity total number of splats the work buffer must address
+     * @param externalAtlas optional external atlas to decode into instead of creating an owned square MRT
      */
-    constructor(scene: Scene, capacity: number) {
+    constructor(scene: Scene, capacity: number, externalAtlas?: { mrt: MultiRenderTarget; width: number; baseOffset: number }) {
         this._scene = scene;
         this._shaderLanguage = scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
-        this._textureSize = Math.max(1, Math.ceil(Math.sqrt(Math.max(1, capacity))));
+        this._capacity = Math.max(1, capacity);
 
-        // The decode buffer accumulates (clear disabled) so each decode preserves previously-decoded files.
-        this._mrt = this._createMrt("gsWorkBuffer", true);
+        if (externalAtlas) {
+            this._mrt = externalAtlas.mrt;
+            this._textureSize = externalAtlas.width;
+            this._baseOffset = externalAtlas.baseOffset;
+            this._ownsMrt = false;
+        } else {
+            this._textureSize = Math.max(1, Math.ceil(Math.sqrt(Math.max(1, capacity))));
+            this._baseOffset = 0;
+            this._ownsMrt = true;
+            // The decode buffer accumulates (clear disabled) so each decode preserves previously-decoded files.
+            this._mrt = this._createMrt("gsWorkBuffer", true);
+        }
 
         // One persistent decode material + fullscreen-triangle quad, reused (with per-file uniforms)
         // for every decode so the shader is compiled only once.
@@ -104,13 +131,15 @@ export class GaussianSplattingWorkBuffer {
      * @param name MRT and attachment base name
      * @param disableClear when true, clearing is suppressed so renders accumulate (the decode buffer); when
      *   false the MRT clears to zero on each render (the temporary relayout buffer, so gaps stay zeroed)
+     * @param width texture width (defaults to the work-buffer size; the region row width for a scoped relayout)
+     * @param height texture height (defaults to the work-buffer size; the region row count for a scoped relayout)
      * @returns the created MRT
      */
-    private _createMrt(name: string, disableClear: boolean): MultiRenderTarget {
+    private _createMrt(name: string, disableClear: boolean, width: number = this._textureSize, height: number = this._textureSize): MultiRenderTarget {
         const covType = this._scene.getEngine()._caps.textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
         const mrt = new MultiRenderTarget(
             name,
-            { width: this._textureSize, height: this._textureSize },
+            { width, height },
             4,
             this._scene,
             {
@@ -196,10 +225,13 @@ export class GaussianSplattingWorkBuffer {
         if (this._disposed || !this._copyMaterial) {
             return;
         }
-        const size = this._textureSize;
-        // Reuse the map buffer and its GPU texture across relayouts (the work-buffer size is fixed).
+        // Map dimensions: standalone maps the whole square buffer; hosted maps just the region's rows.
+        const width = this._textureSize;
+        const mapW = width;
+        const mapH = this._ownsMrt ? width : Math.max(1, Math.floor(this._capacity / width));
+        // Reuse the map buffer + its GPU texture across relayouts (dimensions are fixed for a work buffer).
         if (!this._relayoutMapData) {
-            this._relayoutMapData = new Float32Array(size * size);
+            this._relayoutMapData = new Float32Array(mapW * mapH);
         }
         const mapData = this._relayoutMapData;
         mapData.fill(-1);
@@ -207,8 +239,8 @@ export class GaussianSplattingWorkBuffer {
         if (!this._relayoutMapTexture) {
             this._relayoutMapTexture = new RawTexture(
                 mapData,
-                size,
-                size,
+                mapW,
+                mapH,
                 Constants.TEXTUREFORMAT_R,
                 this._scene,
                 false,
@@ -220,14 +252,39 @@ export class GaussianSplattingWorkBuffer {
             this._relayoutMapTexture.update(mapData);
         }
         const mapTexture = this._relayoutMapTexture;
-        // The temporary ping-pong MRT is (re)created per relayout rather than kept resident: it is the same size
-        // as the work buffer, so a persistent copy would double GPU memory and defeat the streaming memory budget.
-        const temp = this._createMrt("gsRelayoutTemp", false);
+
+        if (this._ownsMrt) {
+            // Standalone: the work buffer owns the whole square texture, so a full ping-pong is safe.
+            const temp = this._createMrt("gsRelayoutTemp", false);
+            try {
+                this._renderRelayoutPass(temp, this._mrt.textures, mapTexture, 1); // old -> temp via map (gaps cleared)
+                this._renderRelayoutPass(this._mrt, temp.textures, mapTexture, 0); // temp -> old, identity full overwrite
+            } finally {
+                temp.dispose();
+                this._quad.material = this._material;
+            }
+            return;
+        }
+
+        // Hosted (shared compound atlas): scope the ping-pong to THIS region's row band so other parts are never
+        // touched. `_baseOffset` and `_capacity` are row-aligned (reserveStreamingPart), so the band is exact.
+        const baseRow = Math.floor(this._baseOffset / width);
+        const regionRows = mapH;
+        const engine = this._scene.getEngine();
+        // Region-sized temp (width x regionRows) — memory stays proportional to the region, not the whole atlas.
+        const temp = this._createMrt("gsRelayoutTemp", false, width, regionRows);
         try {
-            // Pass 1: old -> temp using the map (temp gets the new layout; gaps stay zeroed by the clear).
-            this._renderRelayoutPass(temp, this._mrt.textures, mapTexture, 1);
-            // Pass 2: temp -> old, identity (old textures get the new layout, full overwrite).
-            this._renderRelayoutPass(this._mrt, temp.textures, mapTexture, 0);
+            // Pass 1: atlas region -> temp via map. The map is region-local; uSrcBaseOffset shifts each source
+            // index to its GLOBAL atlas texel (uSrcWidth = atlas width). Temp is exactly the band, so no scissor.
+            this._renderRelayoutPass(temp, this._mrt.textures, mapTexture, 1, /*dstWidth*/ width, /*srcWidth*/ width, /*srcBaseOffset*/ this._baseOffset, /*dstBaseRow*/ 0);
+            // Pass 2: temp -> atlas region, identity within the band. uDstBaseRow maps the atlas destination row
+            // back into the region-local temp; the scissor confines writes to the band so static parts are safe.
+            engine.enableScissor(0, baseRow, width, regionRows);
+            try {
+                this._renderRelayoutPass(this._mrt, temp.textures, mapTexture, 0, /*dstWidth*/ width, /*srcWidth*/ width, /*srcBaseOffset*/ 0, /*dstBaseRow*/ baseRow);
+            } finally {
+                engine.disableScissor();
+            }
         } finally {
             temp.dispose();
             this._quad.material = this._material;
@@ -240,17 +297,32 @@ export class GaussianSplattingWorkBuffer {
      * @param sources the four source work-buffer textures
      * @param mapTexture the R32F destination-to-source index map
      * @param useMap 1 to read source indices from the map (gaps discarded), 0 for an identity copy
+     * @param dstWidth destination width used to linearize the destination texel (defaults to the work-buffer size)
+     * @param srcWidth source width used to convert a linear source index to a texel (defaults to the work-buffer size)
+     * @param srcBaseOffset added to each mapped source index so a region-local map reads the correct global atlas texel (hosted relayout)
+     * @param dstBaseRow subtracted from the destination row so an identity copy reads the region-local temp (hosted relayout)
      */
-    private _renderRelayoutPass(target: MultiRenderTarget, sources: Texture[], mapTexture: RawTexture, useMap: number): void {
+    private _renderRelayoutPass(
+        target: MultiRenderTarget,
+        sources: Texture[],
+        mapTexture: RawTexture,
+        useMap: number,
+        dstWidth: number = this._textureSize,
+        srcWidth: number = this._textureSize,
+        srcBaseOffset: number = 0,
+        dstBaseRow: number = 0
+    ): void {
         const material = this._copyMaterial!;
         material.setTexture("uMapTex", mapTexture);
         material.setTexture("uSrc0", sources[0]);
         material.setTexture("uSrc1", sources[1]);
         material.setTexture("uSrc2", sources[2]);
         material.setTexture("uSrc3", sources[3]);
-        material.setInt("uDstWidth", this._textureSize);
-        material.setInt("uSrcWidth", this._textureSize);
+        material.setInt("uDstWidth", dstWidth);
+        material.setInt("uSrcWidth", srcWidth);
         material.setInt("uUseMap", useMap);
+        material.setInt("uSrcBaseOffset", srcBaseOffset);
+        material.setInt("uDstBaseRow", dstBaseRow);
         this._quad.material = material;
         target.renderList = [this._quad];
         target.render();
@@ -267,7 +339,7 @@ export class GaussianSplattingWorkBuffer {
             },
             {
                 attributes: ["position"],
-                uniforms: ["uDstWidth", "uSrcWidth", "uUseMap"],
+                uniforms: ["uDstWidth", "uSrcWidth", "uUseMap", "uSrcBaseOffset", "uDstBaseRow"],
                 samplers: ["uMapTex", "uSrc0", "uSrc1", "uSrc2", "uSrc3"],
                 shaderLanguage: this._shaderLanguage,
             }
@@ -294,14 +366,17 @@ export class GaussianSplattingWorkBuffer {
         }
 
         const width = this._textureSize;
+        // Shift the region-local offset by the atlas base so the readback targets the same global texels the
+        // decode wrote (0 base for a standalone work buffer).
+        const globalOffset = this._baseOffset + splatOffset;
         // The range maps to whole texel rows [rowStart, rowEnd); read that rectangle and slice the exact range.
         // Splat i lives at texel (i % width, floor(i / width)) in both decode and draw, so the readback (which
         // indexes the same texture storage directly, with no UV/flip) yields splat i at buffer position
         // i - rowStart * width on every backend.
-        const rowStart = Math.floor(splatOffset / width);
-        const rowEnd = Math.ceil((splatOffset + splatCount) / width);
+        const rowStart = Math.floor(globalOffset / width);
+        const rowEnd = Math.ceil((globalOffset + splatCount) / width);
         const rowCount = rowEnd - rowStart;
-        const startInBuffer = (splatOffset - rowStart * width) * 4;
+        const startInBuffer = (globalOffset - rowStart * width) * 4;
         const sliceEnd = startInBuffer + splatCount * 4;
         const centers = this._mrt.textures[0];
 
@@ -371,7 +446,10 @@ export class GaussianSplattingWorkBuffer {
         this._material.dispose(true, false);
         this._copyMaterial?.dispose(true, false);
         this._relayoutMapTexture?.dispose();
-        this._mrt.dispose();
+        // Only dispose the MRT when we own it; an external atlas belongs to the hosting compound mesh.
+        if (this._ownsMrt) {
+            this._mrt.dispose();
+        }
     }
 
     private _createQuad(): Mesh {
@@ -431,7 +509,8 @@ export class GaussianSplattingWorkBuffer {
         material.setVector4("sogSh0Max", new Vector4(c0Max[0], c0Max[1], c0Max[2], c0Max[3]));
 
         material.setInt("uVersion", pack.version);
-        material.setInt("uOffset", offset);
+        // Place the file at its region-local offset shifted by the atlas base (0 for a standalone work buffer).
+        material.setInt("uOffset", this._baseOffset + offset);
         material.setInt("uCount", pack.splatCount);
         material.setInt("uDestWidth", this._textureSize);
         material.setInt("uSrcWidth", srcWidth);

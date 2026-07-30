@@ -280,6 +280,11 @@ uniform sampler2D uSrc3;
 uniform int uDstWidth;
 uniform int uSrcWidth;
 uniform int uUseMap;
+// Region-scoped relayout (hosted compound atlas), both default 0 (standalone square path unchanged):
+//   uSrcBaseOffset — added to the map's (region-local) source index so pass 1 reads the correct GLOBAL atlas texel.
+//   uDstBaseRow    — subtracted from the atlas destination row so pass 2's identity copy reads the region-local temp.
+uniform int uSrcBaseOffset;
+uniform int uDstBaseRow;
 
 layout(location = 0) out vec4 glFragData[4];
 
@@ -291,9 +296,9 @@ void main() {
         if (m < 0.0) {
             discard;
         }
-        srcIdx = int(m + 0.5);
+        srcIdx = uSrcBaseOffset + int(m + 0.5);
     } else {
-        srcIdx = p.y * uDstWidth + p.x;
+        srcIdx = (p.y - uDstBaseRow) * uDstWidth + p.x;
     }
     ivec2 s = ivec2(srcIdx - (srcIdx / uSrcWidth) * uSrcWidth, srcIdx / uSrcWidth);
     glFragData[0] = texelFetch(uSrc0, s, 0);
@@ -321,6 +326,9 @@ var uSrc3 : texture_2d<f32>;
 uniform uDstWidth : i32;
 uniform uSrcWidth : i32;
 uniform uUseMap : i32;
+// Region-scoped relayout (hosted compound atlas), both default 0 (standalone square path unchanged).
+uniform uSrcBaseOffset : i32;
+uniform uDstBaseRow : i32;
 
 @fragment
 fn main(input : FragmentInputs) -> FragmentOutputs {
@@ -331,9 +339,9 @@ fn main(input : FragmentInputs) -> FragmentOutputs {
         if (m < 0.0) {
             discard;
         }
-        srcIdx = i32(m + 0.5);
+        srcIdx = uniforms.uSrcBaseOffset + i32(m + 0.5);
     } else {
-        srcIdx = p.y * uniforms.uDstWidth + p.x;
+        srcIdx = (p.y - uniforms.uDstBaseRow) * uniforms.uDstWidth + p.x;
     }
     let s : vec2<i32> = vec2<i32>(srcIdx - (srcIdx / uniforms.uSrcWidth) * uniforms.uSrcWidth, srcIdx / uniforms.uSrcWidth);
     fragmentOutputs.fragData0 = textureLoad(uSrc0, s, 0);

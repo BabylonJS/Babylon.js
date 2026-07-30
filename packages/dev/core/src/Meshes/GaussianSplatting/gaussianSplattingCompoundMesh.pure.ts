@@ -50,6 +50,7 @@ export class GaussianSplattingCompoundMesh extends GaussianSplattingMesh {
         if (others.length === 0) {
             return [];
         }
+        this._assertMutableForStreaming("addParts");
         const { proxyMeshes } = this._addPartsInternal(others, disposeOthers);
         return proxyMeshes;
     }
