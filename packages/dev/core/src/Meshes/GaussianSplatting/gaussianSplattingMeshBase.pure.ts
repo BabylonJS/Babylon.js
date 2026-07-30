@@ -591,6 +591,21 @@ export class GaussianSplattingMeshBase extends Mesh {
     public readonly onPartRemovedObservable = new Observable<number>();
 
     /**
+     * Fired just before an existing MRT-backed atlas is recreated to grow it (e.g. adding a part while a streaming
+     * part exists). Payload is the OLD atlas. Streaming parts subscribe to back up their GPU-only region before it
+     * is disposed. Only fires when growing an existing MRT atlas (not on first creation).
+     * @internal
+     */
+    public readonly _onBeforeAtlasRebuildObservable = new Observable<MultiRenderTarget>();
+
+    /**
+     * Fired after the new (grown) MRT-backed atlas has been created and its CPU data uploaded. Payload is the NEW
+     * atlas. Streaming parts subscribe to rebind to it and restore their backed-up region.
+     * @internal
+     */
+    public readonly _onAfterAtlasRebuildObservable = new Observable<MultiRenderTarget>();
+
+    /**
      * Returns a byte-accurate view for retained splat data, preserving any non-zero byte offset.
      * @param data The retained splat source bytes.
      * @returns A Uint8Array covering the exact source byte range.
@@ -2700,6 +2715,12 @@ export class GaussianSplattingMeshBase extends Mesh {
         } else {
             // Full rebuild: the texture size changed (or this is a size-changing reload), so the existing
             // GPU textures cannot be reused. Dispose them before recreating to avoid leaking the old ones.
+            // Growing an EXISTING MRT atlas: let streaming parts back up their GPU-only region from the old atlas
+            // before it is disposed (they restore it into the new atlas via _onAfterAtlasRebuildObservable).
+            const growingMrtAtlas = this._useMrtAtlas && !!this._mrtAtlas;
+            if (growingMrtAtlas) {
+                this._onBeforeAtlasRebuildObservable.notifyObservers(this._mrtAtlas!);
+            }
             if (this._mrtAtlas) {
                 // The four data textures are attachments of this MRT — dispose the MRT, not each attachment.
                 this._mrtAtlas.dispose();
@@ -2710,6 +2731,20 @@ export class GaussianSplattingMeshBase extends Mesh {
                 this._covariancesBTexture?.dispose();
                 this._centersTexture?.dispose();
                 this._colorsTexture?.dispose();
+            }
+            // Dispose+null the rotation/scale textures here (they are recreated at the new size below). This must
+            // happen BEFORE the MRT-branch _updateSubTextures(0, textureSize.y) call: that helper also writes the
+            // rotation textures, and if they still existed at the OLD (smaller) height the upload would copy the
+            // new taller region out of bounds. Nulling them makes _updateSubTextures skip rotation; the block
+            // further down recreates them fully populated. (Only the MRT branch sub-uploads before that recreate;
+            // the non-MRT branch builds every texture with data directly, so this is harmless there.)
+            if (this._rotationsATexture) {
+                this._rotationsATexture.dispose();
+                this._rotationsBTexture?.dispose();
+                this._rotationScaleTexture?.dispose();
+                this._rotationsATexture = null;
+                this._rotationsBTexture = null;
+                this._rotationScaleTexture = null;
             }
             if (this._shTextures) {
                 for (const shTexture of this._shTextures) {
@@ -2725,6 +2760,11 @@ export class GaussianSplattingMeshBase extends Mesh {
                 this._createMrtAtlas(textureSize);
                 if (this._mrtAtlas) {
                     this._updateSubTextures(this._splatPositions!, covA, covB, colorArray, 0, textureSize.y);
+                    // New atlas is populated (streamed regions currently zeroed); let streaming parts rebind and
+                    // restore their backed-up region into it, overwriting those zeros with the preserved data.
+                    if (growingMrtAtlas) {
+                        this._onAfterAtlasRebuildObservable.notifyObservers(this._mrtAtlas);
+                    }
                 }
             } else {
                 this._covariancesATexture = createTextureFromDataF16(covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
@@ -2755,9 +2795,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                 const rotDataA = this._rotationDataA ?? new Uint16Array(covA.length);
                 const rotDataB = this._rotationDataB ?? new Uint16Array(covA.length);
                 const rotScaleData = this._rotationScaleData ?? new Uint16Array(covA.length);
-                this._rotationsATexture?.dispose();
-                this._rotationsBTexture?.dispose();
-                this._rotationScaleTexture?.dispose();
+                // Already disposed+nulled in the rebuild's disposal block above; just (re)create at the new size.
                 this._rotationsATexture = createTextureFromDataF16(rotDataA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
                 this._rotationsBTexture = createTextureFromDataF16(rotDataB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
                 this._rotationScaleTexture = createTextureFromDataF16(rotScaleData, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);

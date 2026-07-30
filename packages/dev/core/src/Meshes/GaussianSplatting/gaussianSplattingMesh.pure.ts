@@ -155,6 +155,20 @@ export interface IGaussianSplattingStreamingPart {
      * relayout moved the region's data wholesale; per-decode updates use {@link postPositionsRange} instead.
      */
     notifyDataChanged(): void;
+    /**
+     * Subscribes to the "about to recreate the shared atlas to grow it" event (e.g. another part is being added).
+     * The callback receives the OLD atlas and should back up this region's GPU-only data before it is disposed.
+     * @param callback invoked with the old atlas MRT
+     * @returns an unsubscribe function (call it on dispose)
+     */
+    onBeforeAtlasRebuild(callback: (oldAtlas: MultiRenderTarget) => void): () => void;
+    /**
+     * Subscribes to the "shared atlas has been recreated" event. The callback receives the NEW atlas and should
+     * rebind to it and restore this region's backed-up data.
+     * @param callback invoked with the new atlas MRT
+     * @returns an unsubscribe function (call it on dispose)
+     */
+    onAfterAtlasRebuild(callback: (newAtlas: MultiRenderTarget) => void): () => void;
 }
 
 /**
@@ -1278,22 +1292,38 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * @deprecated Use {@link GaussianSplattingCompoundMesh.addPart} instead.
      */
     public addPart(other: GaussianSplattingMesh, disposeOther: boolean = true): GaussianSplattingPartProxyMesh {
-        this._assertMutableForStreaming("addPart");
+        // Adding parts while a streaming part exists is supported: the grow rebuild preserves streamed regions
+        // (their GPU data is backed up/restored around the atlas recreation). Only removal is still restricted,
+        // because it shifts existing part offsets (which streamed regions' work buffers depend on).
         const { proxyMeshes } = this._addPartsInternal([other], disposeOther);
         return proxyMeshes[0];
     }
 
     /**
-     * Throws if the compound already hosts a streaming part. A streamed region is GPU-authoritative (no CPU
-     * source), so an atlas rebuild from adding/removing a part would zero it. Add all static parts first, then
-     * the streaming part(s) last. (Streaming-aware rebuilds land in a later phase.)
-     * @param op the operation name for the error message
-     * @internal
+     * Tombstones a part of a streaming compound: excludes it from the render union permanently and hides its
+     * proxy, leaving its atlas rows idle. Used instead of the compacting {@link removePart} rebuild whenever a
+     * streaming part is reserved — a streamed region has no retained CPU source and decodes at a FIXED base
+     * offset, so the rebuild can neither reconstruct it nor shift any part without desynchronizing the streaming
+     * engine. Every other part keeps its exact offset (no shift), so resident streams keep decoding at their base.
+     * The empty `[]` override survives future add-driven rebuilds, so the region stays invisible even though its
+     * texels get rebuilt; memory is only reclaimed by disposing/recreating the whole compound.
+     * @param index the part index to tombstone
      */
-    protected _assertMutableForStreaming(op: string): void {
-        if (this._hasStreamingPart) {
-            throw new Error(`${op} is not supported after a streaming part is reserved. Add all static parts before reserving a streaming part.`);
+    private _tombstonePart(index: number): void {
+        // Fire before mutation so the stream driving this part (subscribed via AddGaussianSplattingStreamPartAsync)
+        // can dispose itself: stop its LOD loop, free its work buffer, and drop its atlas-rebuild hooks.
+        this.onPartRemovedObservable.notifyObservers(index);
+        const proxy = this._partProxies[index];
+        if (proxy) {
+            proxy.setEnabled(false);
+            proxy.visibility = 0;
         }
+        this._partVisibility[index] = 0;
+        // Empty (non-null) override = "this part contributes no splats"; keeps the union filter engaged so the
+        // idle region is never rendered, even after another part's addition rebuilds the atlas.
+        this._partSplatRanges[index] = [];
+        this._refreshPartRangeUnion();
+        this._updateBoundingInfoFromProxies();
     }
 
     /**
@@ -1301,13 +1331,19 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * The remaining parts are rebuilt directly from the compound mesh's retained source buffers.
      * The current mesh is reset to a plain (single-part) state and then each remaining source is
      * re-added via addParts.
+     * When a streaming part is reserved the part is tombstoned instead of compacted (see {@link _tombstonePart}).
      * @param index - The index of the part to remove
      * @deprecated Use {@link GaussianSplattingCompoundMesh.removePart} instead.
      */
     public removePart(index: number): void {
-        this._assertMutableForStreaming("removePart");
         if (index < 0 || index >= this.partCount) {
             throw new Error(`Part index ${index} is out of range [0, ${this.partCount})`);
+        }
+
+        // Streaming compounds can't compact (a reserved region has no CPU source and a fixed base offset).
+        if (this._hasStreamingPart) {
+            this._tombstonePart(index);
+            return;
         }
 
         // Collect surviving proxy objects (sorted by current part index so part 0 is added first)
@@ -1472,11 +1508,6 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (!(capacity > 0)) {
             throw new Error("reserveStreamingPart: capacity must be a positive integer");
         }
-        if (this._hasStreamingPart) {
-            // A second reserve would rebuild the atlas and zero the first stream's GPU-only region (multiple
-            // streaming parts + a streaming-aware rebuild land in a later phase).
-            throw new Error("reserveStreamingPart: only one streaming part per compound is currently supported.");
-        }
         capacity = Math.floor(capacity);
 
         // Back the atlas with a render-targetable MRT so a streaming engine can GPU-decode into the reserved
@@ -1584,6 +1615,14 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             },
             notifyDataChanged: () => {
                 compound._notifyWorkerNewData();
+            },
+            onBeforeAtlasRebuild: (callback) => {
+                const observer = compound._onBeforeAtlasRebuildObservable.add(callback);
+                return () => compound._onBeforeAtlasRebuildObservable.remove(observer);
+            },
+            onAfterAtlasRebuild: (callback) => {
+                const observer = compound._onAfterAtlasRebuildObservable.add(callback);
+                return () => compound._onAfterAtlasRebuildObservable.remove(observer);
             },
         };
         // Mark AFTER the successful internal _addPartsInternal so its own call isn't blocked by the guard.

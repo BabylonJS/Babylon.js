@@ -7,6 +7,7 @@ import { VertexData } from "core/Meshes/mesh.vertexData";
 import { Color4 } from "core/Maths/math.color";
 import { Vector3, Vector4 } from "core/Maths/math.vector";
 import { type Texture } from "core/Materials/Textures/texture";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
 import { type ISogTexturePack } from "./splatDefs";
@@ -33,7 +34,8 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
  */
 export class GaussianSplattingWorkBuffer {
     private readonly _scene: Scene;
-    private readonly _mrt: MultiRenderTarget;
+    // Not readonly: a hosted work buffer is rebound to the compound's NEW atlas MRT after a grow (see rebindAtlas).
+    private _mrt: MultiRenderTarget;
     private readonly _textureSize: number;
     private readonly _shaderLanguage: ShaderLanguage;
     private readonly _material: ShaderMaterial;
@@ -51,6 +53,9 @@ export class GaussianSplattingWorkBuffer {
     // Reusable destination->source index map for the relayout pass (created lazily, sized to the work buffer).
     private _relayoutMapData: Nullable<Float32Array> = null;
     private _relayoutMapTexture: Nullable<RawTexture> = null;
+    // Transient backup of a hosted region's four textures, held between backupRegion() and restoreRegion() so the
+    // GPU-decoded data survives the compound recreating its atlas on a grow (adding a part / a second stream).
+    private _backupMrt: Nullable<MultiRenderTarget> = null;
     private _disposed = false;
     // Reused WebGL framebuffer for the async centers readback (created lazily, freed in dispose).
     private _readFbo: Nullable<WebGLFramebuffer> = null;
@@ -120,6 +125,68 @@ export class GaussianSplattingWorkBuffer {
         this._material = this._createMaterial();
         this._quad = this._createQuad();
         this._quad.material = this._material;
+
+        // Hosted: start compiling the copy shader now so backupRegion()/restoreRegion() are ready by the time
+        // the compound grows its atlas (a synchronous, non-frame-driven event we can't wait on).
+        if (!this._ownsMrt) {
+            this.isRelayoutReady();
+        }
+    }
+
+    /**
+     * Rebinds a hosted work buffer to a new atlas MRT (after the compound recreated it on a grow). No-op for a
+     * standalone work buffer, which owns its MRT.
+     * @param mrt the compound's new shared atlas
+     */
+    public rebindAtlas(mrt: MultiRenderTarget): void {
+        if (!this._ownsMrt) {
+            this._mrt = mrt;
+        }
+    }
+
+    /**
+     * Copies this hosted region's four decoded textures out of the shared atlas into an internal backup MRT so
+     * they survive the compound recreating the atlas on a grow. Call immediately before the atlas is recreated,
+     * then {@link rebindAtlas} + {@link restoreRegion} after. No-op if the copy shader isn't ready yet.
+     */
+    public backupRegion(): void {
+        if (this._disposed || this._ownsMrt || !this.isRelayoutReady()) {
+            return;
+        }
+        const width = this._textureSize;
+        const regionRows = Math.max(1, Math.floor(this._capacity / width));
+        const baseRow = Math.floor(this._baseOffset / width);
+        if (!this._backupMrt) {
+            this._backupMrt = this._createMrt("gsAtlasBackup", false, width, regionRows);
+        }
+        // Identity copy of the region out of the atlas: with useMap=0 and dstBaseRow=-baseRow the shader reads
+        // atlas texel ((p.y + baseRow) * width + p.x) — the region's global texel — into backup texel p.
+        this._renderRelayoutPass(this._backupMrt, this._mrt.textures, this._mrt.textures[0], 0, width, width, 0, -baseRow);
+        this._quad.material = this._material;
+    }
+
+    /**
+     * Restores the backed-up region into the (new) atlas, confined by a scissor to the region's rows so no other
+     * part is touched. Call {@link rebindAtlas} to the new atlas first. Frees the backup afterwards.
+     */
+    public restoreRegion(): void {
+        if (this._disposed || this._ownsMrt || !this._backupMrt || !this._copyMaterial) {
+            return;
+        }
+        const width = this._textureSize;
+        const regionRows = Math.max(1, Math.floor(this._capacity / width));
+        const baseRow = Math.floor(this._baseOffset / width);
+        const engine = this._scene.getEngine();
+        engine.enableScissor(0, baseRow, width, regionRows);
+        try {
+            // useMap=0 identity with dstBaseRow=baseRow: atlas texel p reads backup texel ((p.y - baseRow)*width + p.x).
+            this._renderRelayoutPass(this._mrt, this._backupMrt.textures, this._backupMrt.textures[0], 0, width, width, 0, baseRow);
+        } finally {
+            engine.disableScissor();
+            this._quad.material = this._material;
+        }
+        this._backupMrt.dispose();
+        this._backupMrt = null;
     }
 
     /**
@@ -295,7 +362,7 @@ export class GaussianSplattingWorkBuffer {
      * Renders one relayout copy pass into the target MRT, sampling the given source textures.
      * @param target destination MRT
      * @param sources the four source work-buffer textures
-     * @param mapTexture the R32F destination-to-source index map
+     * @param mapTexture the R32F destination-to-source index map (only sampled when `useMap` is 1; any bound texture otherwise)
      * @param useMap 1 to read source indices from the map (gaps discarded), 0 for an identity copy
      * @param dstWidth destination width used to linearize the destination texel (defaults to the work-buffer size)
      * @param srcWidth source width used to convert a linear source index to a texel (defaults to the work-buffer size)
@@ -305,7 +372,7 @@ export class GaussianSplattingWorkBuffer {
     private _renderRelayoutPass(
         target: MultiRenderTarget,
         sources: Texture[],
-        mapTexture: RawTexture,
+        mapTexture: BaseTexture,
         useMap: number,
         dstWidth: number = this._textureSize,
         srcWidth: number = this._textureSize,
@@ -446,6 +513,8 @@ export class GaussianSplattingWorkBuffer {
         this._material.dispose(true, false);
         this._copyMaterial?.dispose(true, false);
         this._relayoutMapTexture?.dispose();
+        this._backupMrt?.dispose();
+        this._backupMrt = null;
         // Only dispose the MRT when we own it; an external atlas belongs to the hosting compound mesh.
         if (this._ownsMrt) {
             this._mrt.dispose();

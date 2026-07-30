@@ -1,4 +1,5 @@
 import { GaussianSplattingMesh, type IGaussianSplattingStreamingPart } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { type GaussianSplattingPartProxyMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingPartProxyMesh";
 import { type IGaussianSplattingSplatRange } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
@@ -332,6 +333,16 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     private readonly _hostCompound: Nullable<GaussianSplattingMesh> = null;
     private _host: Nullable<IGaussianSplattingStreamingPart> = null;
     private _positionBase = 0;
+    // Unsubscribe functions for the host's atlas-rebuild hooks (backup/restore the region across a grow).
+    private _unsubBeforeRebuild: Nullable<() => void> = null;
+    private _unsubAfterRebuild: Nullable<() => void> = null;
+    // Hosted mode: resolves once the reserved part exists AND its base layer has decoded (proxy bounds are
+    // real); rejects if streaming fails/disposes before that. Lets AddGaussianSplattingStreamPartAsync hand
+    // back a ready part proxy, replacing the standalone waitForEnabled/waitForStreamedBounds handshake.
+    private _partReadyPromise: Nullable<Promise<void>> = null;
+    private _partReadyResolve: Nullable<() => void> = null;
+    private _partReadyReject: Nullable<(reason: Error) => void> = null;
+    private _partReadySettled = false;
 
     /**
      * Returns true when the parsed JSON looks like a PlayCanvas-style `lod-meta.json` payload.
@@ -430,6 +441,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             this.setEnabled(false);
             this.isPickable = false;
             this.doNotSerialize = true;
+            // Created before _streamAllAsync is kicked off (below) so there is no resolve-before-await race.
+            this._partReadyPromise = new Promise<void>((resolve, reject) => {
+                this._partReadyResolve = resolve;
+                this._partReadyReject = reject;
+            });
         }
 
         this._collectLodEntries(metadata.tree);
@@ -438,15 +454,60 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             this.debugDisplay = true;
         }
 
-        // Kick off streaming without blocking the caller or the render loop.
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-        this._streamAllAsync().catch((e) => {
-            Logger.Error("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
-        });
+        // Kick off streaming without blocking the caller or the render loop. In hosted mode settle the
+        // part-ready deferred: _streamAllAsync resolves it once the base layer has decoded; a resolve-without-
+        // ready (empty stream / disposed) or a throw rejects it here (both are no-ops once already settled).
+        // eslint-disable-next-line github/no-then
+        void this._streamAllAsync().then(
+            () => this._rejectPartReady("GaussianSplattingStream: stream produced no splats."),
+            (e) => {
+                Logger.Error("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
+                this._rejectPartReady("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
+            }
+        );
     }
 
     public override getClassName(): string {
         return "GaussianSplattingStream";
+    }
+
+    /**
+     * Hosted mode only: the compound part proxy this stream drives (world transform + visibility of the
+     * reserved region), or null before the part has been reserved (or when running standalone).
+     */
+    public get streamingPartProxy(): Nullable<GaussianSplattingPartProxyMesh> {
+        return this._host?.proxy ?? null;
+    }
+
+    /**
+     * Hosted mode only: resolves once the reserved part exists and its base layer has decoded (so the proxy's
+     * bounds are real and the part is ready to be placed/framed), or rejects if streaming fails/disposes first.
+     * Resolves immediately for a standalone stream. Used by {@link AddGaussianSplattingStreamPartAsync}.
+     * @returns a promise that settles when the hosted part is ready to use
+     */
+    public async whenPartReadyAsync(): Promise<void> {
+        await (this._partReadyPromise ?? Promise.resolve());
+    }
+
+    /** Resolves the part-ready deferred (hosted mode); no-op if already settled or standalone. */
+    private _resolvePartReady(): void {
+        if (this._partReadySettled) {
+            return;
+        }
+        this._partReadySettled = true;
+        this._partReadyResolve?.();
+    }
+
+    /**
+     * Rejects the part-ready deferred (hosted mode); no-op if already settled or standalone.
+     * @param message failure reason surfaced to the awaiter
+     */
+    private _rejectPartReady(message: string): void {
+        if (this._partReadySettled) {
+            return;
+        }
+        this._partReadySettled = true;
+        this._partReadyReject?.(new Error(message));
     }
 
     /**
@@ -619,6 +680,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     public override dispose(doNotRecurse?: boolean): void {
         this._disposed = true;
+        this._rejectPartReady("GaussianSplattingStream: disposed before the part was ready.");
+        this._unsubBeforeRebuild?.();
+        this._unsubAfterRebuild?.();
+        this._unsubBeforeRebuild = null;
+        this._unsubAfterRebuild = null;
         if (this._lodObserver) {
             this._scene.onBeforeRenderObservable.remove(this._lodObserver);
             this._lodObserver = null;
@@ -630,6 +696,23 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         this._workBuffer?.dispose();
         this._workBuffer = null;
         super.dispose(doNotRecurse);
+    }
+
+    /**
+     * The world matrix that actually places this stream's splats, used to map the camera into the space the
+     * node bounds live in (for LOD distance) and to build per-node world AABBs (for frustum culling). Standalone:
+     * this controller mesh carries the transform. Hosted: this controller is a hidden, unplaced node — the splats
+     * are placed by the reserved part's proxy (SOG up-axis basis composed with the host's placement), so LOD and
+     * culling MUST use the proxy's world matrix or they compute distances/frustum tests in the wrong space
+     * (producing wrong per-chunk LODs, i.e. holes, whenever the host applies a non-identity transform).
+     * @param force when true, forces a full world-matrix recompute (else uses the renderId/sync fast-path)
+     * @returns the effective world matrix for LOD/culling
+     */
+    private _getEffectiveWorldMatrix(force: boolean): Matrix {
+        if (this._host) {
+            return this._host.proxy.computeWorldMatrix(force);
+        }
+        return this.computeWorldMatrix(force);
     }
 
     /**
@@ -660,7 +743,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         const fovScale = Math.min(tanHalfV, tanHalfH) / RefTanHalfFov;
 
         // Transform the camera into the mesh's local space (where the node bounds live).
-        this.computeWorldMatrix(false).invertToRef(TmpInvWorld);
+        this._getEffectiveWorldMatrix(false).invertToRef(TmpInvWorld);
         const localCamera = Vector3.TransformCoordinatesToRef(camera.globalPosition, TmpInvWorld, TmpLocalCamera);
         const px = localCamera.x;
         const py = localCamera.y;
@@ -983,6 +1066,16 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             // Write decoded centers directly into the compound's shared position buffer (offset by the region base).
             this._splatPositions = host.splatPositions;
             this._vertexCount = capacity;
+            // Preserve this region's GPU-only data when the compound grows its atlas (adding a part / another
+            // stream): back it up before the old atlas is disposed, then rebind + restore into the new atlas.
+            const wb = this._workBuffer;
+            this._unsubBeforeRebuild = host.onBeforeAtlasRebuild(() => wb.backupRegion());
+            this._unsubAfterRebuild = host.onAfterAtlasRebuild(() => {
+                if (host.mrtAtlas) {
+                    wb.rebindAtlas(host.mrtAtlas);
+                }
+                wb.restoreRegion();
+            });
             // Nothing active until a resource is decoded (as a range on the reserved part).
             host.setActiveRanges([]);
         } else {
@@ -1027,6 +1120,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (!this._lodObserver) {
             this._lodObserver = this._scene.onBeforeRenderObservable.add(() => this._onLodFrame());
         }
+        // Hosted: the reserved part now exists with a decoded base layer and real bounds — release awaiters.
+        this._resolvePartReady();
     }
 
     /**
@@ -1740,7 +1835,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         // World-space frustum planes from the current view-projection, tested against each node's world AABB.
         // force=false uses the renderId/sync fast-path (still recomputes when the transform actually changed),
         // avoiding a full world-matrix recompute every frame for the per-node frustum test.
-        const world = this.computeWorldMatrix(false);
+        const world = this._getEffectiveWorldMatrix(false);
         camera.getViewMatrix().multiplyToRef(camera.getProjectionMatrix(), this._cullViewProj);
         Frustum.GetPlanesToRef(this._cullViewProj, this._frustumPlanes);
 
@@ -1905,4 +2000,54 @@ export function AddGaussianSplattingStreamPart(
     options: IGaussianSplattingStreamOptions = {}
 ): GaussianSplattingStream {
     return new GaussianSplattingStream(name, metadata, rootUrl, compound.getScene(), { ...options, hostCompound: compound });
+}
+
+/**
+ * Adds a PlayCanvas-style SOG LOD stream as a part of a compound Gaussian Splatting mesh and resolves once the
+ * part is ready to use, returning its {@link GaussianSplattingPartProxyMesh} — the same handle
+ * `GaussianSplattingCompoundMesh.addPart` returns for a static part. This lets a host application treat a
+ * streamed splat exactly like any other compound part (place/frame/gizmo via the proxy, remove via
+ * `compound.removePart(proxy.partIndex)`); the streaming controller lives behind the proxy and is disposed
+ * automatically when the part is removed.
+ *
+ * Resolves after the reserved region exists and its base layer has decoded (so the proxy's bounds are real),
+ * and rejects if streaming fails before that (the partially-constructed stream is disposed on rejection).
+ * @param compound the compound mesh to add the streamed part to
+ * @param name name for the streaming controller / part
+ * @param metadata parsed `lod-meta.json`
+ * @param rootUrl base URL the metadata's relative paths resolve against
+ * @param options streaming options
+ * @returns the part proxy driving the streamed region, ready to place/frame
+ * @experimental
+ */
+export async function AddGaussianSplattingStreamPartAsync(
+    compound: GaussianSplattingMesh,
+    name: string,
+    metadata: ISOGLODMetadata,
+    rootUrl: string,
+    options: IGaussianSplattingStreamOptions = {}
+): Promise<GaussianSplattingPartProxyMesh> {
+    const stream = new GaussianSplattingStream(name, metadata, rootUrl, compound.getScene(), { ...options, hostCompound: compound });
+    try {
+        await stream.whenPartReadyAsync();
+    } catch (e) {
+        stream.dispose();
+        throw e;
+    }
+    const proxy = stream.streamingPartProxy;
+    if (!proxy) {
+        stream.dispose();
+        throw new Error("GaussianSplattingStream: streaming part was not reserved.");
+    }
+    // Bind the controller's lifetime to the part it drives: removing the part (compound.removePart tombstones it
+    // and fires onPartRemovedObservable) tears down the stream — stops the LOD loop, frees the work buffer, and
+    // drops the atlas-rebuild subscriptions. Tombstoning does not dispose the proxy, so we key off the compound's
+    // removal signal rather than the proxy's disposal. The observer is removed when the stream disposes.
+    const removeObserver = compound.onPartRemovedObservable.add((removedIndex) => {
+        if (removedIndex === proxy.partIndex && !stream.isDisposed()) {
+            stream.dispose();
+        }
+    });
+    stream.onDisposeObservable.add(() => compound.onPartRemovedObservable.remove(removeObserver));
+    return proxy;
 }
