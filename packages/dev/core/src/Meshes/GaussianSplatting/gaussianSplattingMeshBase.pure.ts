@@ -2981,8 +2981,10 @@ export class GaussianSplattingMeshBase extends Mesh {
                     splatIndex[index++] = sourceIndex;
                 }
             }
+            // Pad with `vertexCount` itself, not 0: splat 0 is real data, not a reserved empty slot, and
+            // range filtering can leave it fully visible — see gaussianSplattingSortWorker.ts.
             for (; index < paddedVertexCount; index++) {
-                splatIndex[index] = 0;
+                splatIndex[index] = vertexCount;
             }
         } else {
             for (let i = 0; i < paddedVertexCount; i++) {
