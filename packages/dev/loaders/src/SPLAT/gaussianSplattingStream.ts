@@ -336,6 +336,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     // Unsubscribe functions for the host's atlas-rebuild hooks (backup/restore the region across a grow).
     private _unsubBeforeRebuild: Nullable<() => void> = null;
     private _unsubAfterRebuild: Nullable<() => void> = null;
+    // CPU snapshot of this region's shared `_splatPositions` taken before an atlas grow and restored after it —
+    // the grow rebuilds `_splatPositions` from CPU part sources, and a streamed region has none, so without this
+    // its sort-worker positions would be zeroed (the streamed splats would collapse to the origin).
+    private _positionSnapshot: Nullable<Float32Array> = null;
     // Hosted mode: resolves once the reserved part exists AND its base layer has decoded (proxy bounds are
     // real); rejects if streaming fails/disposes before that. Lets AddGaussianSplattingStreamPartAsync hand
     // back a ready part proxy, replacing the standalone waitForEnabled/waitForStreamedBounds handshake.
@@ -1069,12 +1073,28 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             // Preserve this region's GPU-only data when the compound grows its atlas (adding a part / another
             // stream): back it up before the old atlas is disposed, then rebind + restore into the new atlas.
             const wb = this._workBuffer;
-            this._unsubBeforeRebuild = host.onBeforeAtlasRebuild(() => wb.backupRegion());
+            this._unsubBeforeRebuild = host.onBeforeAtlasRebuild(() => {
+                // GPU: back the region's atlas texels up (restored below). CPU: snapshot this region's shared
+                // `_splatPositions` — the grow reallocates that array and rebuilds it from CPU part sources, and
+                // this streamed region has no CPU source, so its sort-worker positions would otherwise be zeroed
+                // (the streamed splats would sort/render at the origin — "a mess"). `this._splatPositions` here is
+                // still the pre-grow array (the stream holds its own reference), so it carries the real positions.
+                wb.backupRegion();
+                this._positionSnapshot = this._splatPositions ? this._splatPositions.slice(this._positionBase * 4, (this._positionBase + this._vertexCount) * 4) : null;
+            });
             this._unsubAfterRebuild = host.onAfterAtlasRebuild(() => {
                 if (host.mrtAtlas) {
                     wb.rebindAtlas(host.mrtAtlas);
                 }
                 wb.restoreRegion();
+                // Re-cache the reallocated shared array (future decodes write through this reference) and restore
+                // the region's CPU positions into it, so the full `_splatPositions` re-post that follows this
+                // rebuild hands the sort worker the streamed splats' real positions instead of zeros.
+                this._splatPositions = host.splatPositions;
+                if (this._positionSnapshot && this._splatPositions) {
+                    this._splatPositions.set(this._positionSnapshot, this._positionBase * 4);
+                    this._positionSnapshot = null;
+                }
             });
             // Nothing active until a resource is decoded (as a range on the reserved part).
             host.setActiveRanges([]);

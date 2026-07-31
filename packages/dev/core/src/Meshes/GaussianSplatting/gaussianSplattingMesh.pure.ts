@@ -1264,6 +1264,13 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                     });
                 }
                 this._canPostToWorker = true;
+                // A streaming compound renders the active-range UNION (a part carries an override), so a newly
+                // added static part must be folded into that union now — otherwise it stays out of the sorted
+                // set and isn't drawn until the stream's next LOD re-evaluation happens to refresh the union.
+                // (No-op for non-streaming compounds: with no override the union clears to the render-all path.)
+                if (this._hasStreamingPart) {
+                    this._refreshPartRangeUnion();
+                }
                 this._postToWorker(true);
             }
 
