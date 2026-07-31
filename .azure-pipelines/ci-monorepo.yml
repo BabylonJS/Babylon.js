@@ -947,7 +947,7 @@ jobs:
             condition: not(canceled())
             inputs:
                 targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\Results"
-                artifact: "native-rendered-pictures"
+                artifact: "native-rendered-pictures-$(System.JobAttempt)"
                 publishLocation: "pipeline"
 
           - task: PublishPipelineArtifact@1
@@ -955,7 +955,7 @@ jobs:
             condition: failed()
             inputs:
                 targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\Errors"
-                artifact: "native-error-pictures"
+                artifact: "native-error-pictures-$(System.JobAttempt)"
                 publishLocation: "pipeline"
 
     # ============================================================================
