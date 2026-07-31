@@ -9,7 +9,7 @@ import { GetRegisteredSceneLoaderPluginMetadata, ImportMeshAsync } from "core/Lo
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader.pure";
 
 // Builds a minimal, self-contained glTF 2.0 asset (a single triangle) as a data string.
-function buildMinimalGltf(): string {
+function buildMinimalGltf(nodeCount = 1): string {
     const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
     const bytes = new Uint8Array(positions.buffer);
     let binary = "";
@@ -21,8 +21,8 @@ function buildMinimalGltf(): string {
     const gltf = {
         asset: { version: "2.0", generator: "test" },
         scene: 0,
-        scenes: [{ nodes: [0] }],
-        nodes: [{ mesh: 0 }],
+        scenes: [{ nodes: Array.from({ length: nodeCount }, (_, index) => index) }],
+        nodes: Array.from({ length: nodeCount }, () => ({ mesh: 0 })),
         meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
         accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", max: [1, 1, 0], min: [0, 0, 0] }],
         bufferViews: [{ buffer: 0, byteLength: 36, byteOffset: 0 }],
@@ -84,5 +84,16 @@ describe("glTF 2.0 SceneLoader plugin auto-registration", () => {
         // A __root__ node plus at least one mesh with geometry should have loaded.
         const loadedMeshes = result.meshes.filter((m) => m.getTotalVertices() > 0);
         expect(loadedMeshes.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("loads repeated mesh nodes as instances after importing only glTF/2.0", async () => {
+        await import("loaders/glTF/2.0");
+
+        const gltf = buildMinimalGltf(2);
+        const result = await ImportMeshAsync(`data:${gltf}`, scene);
+        const loadedMeshes = result.meshes.filter((mesh) => mesh.getTotalVertices() > 0);
+
+        expect(loadedMeshes).toHaveLength(2);
+        expect(loadedMeshes.some((mesh) => mesh.getClassName() === "InstancedMesh")).toBe(true);
     });
 });
