@@ -44,7 +44,10 @@ export class GaussianSplattingWorkBuffer {
     // mesh's MRT) it must not dispose. In the external case the MRT is wide (dstWidth x atlasHeight), decodes are
     // offset by _baseOffset (the reserved region's first splat), and _textureSize is the atlas WIDTH.
     private readonly _ownsMrt: boolean;
-    private readonly _baseOffset: number;
+    // Not readonly: a hosted region can be RELOCATED to a new base when the compound compacts its atlas
+    // (reclaiming a removed part's rows). backupRegion() reads from the old base, setBaseOffset() updates it,
+    // then rebindAtlas() + restoreRegion() writes to the new base.
+    private _baseOffset: number;
     // Splat count this work buffer addresses. Standalone: the whole (square) buffer. Hosted: the reserved
     // region's (row-aligned) capacity — used to scope a relayout to the region's atlas rows.
     private readonly _capacity: number;
@@ -141,6 +144,20 @@ export class GaussianSplattingWorkBuffer {
     public rebindAtlas(mrt: MultiRenderTarget): void {
         if (!this._ownsMrt) {
             this._mrt = mrt;
+        }
+    }
+
+    /**
+     * Relocates this hosted region to a new base splat offset in the shared atlas (used when the compound
+     * compacts its atlas and this region's rows move). Subsequent decode/render/readback and
+     * {@link restoreRegion} all address from the new base. Call between {@link backupRegion} (which read from
+     * the old base) and {@link restoreRegion} (which will write to the new base). No-op for a standalone
+     * work buffer, which owns its square MRT at base 0.
+     * @param baseOffset the region's new first splat index in the atlas
+     */
+    public setBaseOffset(baseOffset: number): void {
+        if (!this._ownsMrt) {
+            this._baseOffset = baseOffset;
         }
     }
 

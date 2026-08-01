@@ -172,6 +172,27 @@ export interface IGaussianSplattingStreamingPart {
 }
 
 /**
+ * Internal mutable bookkeeping for one reserved streaming region. The handle's `base`/`partIndex` getters and
+ * the compaction re-post read from this object, so {@link GaussianSplattingMesh.compactAtlas} can RELOCATE a
+ * region (assign it a new base/partIndex) in place without invalidating the streaming engine's handle.
+ */
+interface IStreamingPartState {
+    /** The proxy mesh for this region (stable identity across a relocation). */
+    proxy: GaussianSplattingPartProxyMesh;
+    /** First usable atlas splat index of the region (row-aligned). Updated when the region is relocated. */
+    base: number;
+    /** The region's current part index. Updated when parts before it are removed. */
+    partIndex: number;
+    /** Usable capacity (row-aligned), fixed for the region's lifetime. */
+    capacity: number;
+    /** Running local-space bounds of the region's written centers (shared with the handle's closures). */
+    boundsMin: Vector3;
+    boundsMax: Vector3;
+    /** The region's last active LOD ranges in LOCAL coordinates, so a relocation can re-post them at the new base. */
+    localRanges: Nullable<readonly IGaussianSplattingSplatRange[]>;
+}
+
+/**
  * Class used to render a Gaussian Splatting mesh. Supports both single-cloud and compound
  * (multi-part) rendering. In compound mode, multiple Gaussian Splatting source meshes are
  * merged into one draw call while retaining per-part world-matrix control via
@@ -217,6 +238,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * @internal
      */
     protected _hasStreamingPart = false;
+
+    /** Mutable bookkeeping for each reserved streaming region, so {@link compactAtlas} can relocate them. */
+    private _streamingStates: IStreamingPartState[] = [];
+
+    /** Part indices tombstoned by {@link removePart} while streaming — excluded from render, reclaimed by {@link compactAtlas}. */
+    private _tombstonedPartIndices = new Set<number>();
 
     private _partIndicesTexture: Nullable<BaseTexture> = null;
     private _partIndices: Nullable<Uint8Array> = null;
@@ -1329,8 +1356,237 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // Empty (non-null) override = "this part contributes no splats"; keeps the union filter engaged so the
         // idle region is never rendered, even after another part's addition rebuilds the atlas.
         this._partSplatRanges[index] = [];
+        // Record the tombstone so compactAtlas() can drop this part's atlas rows and reclaim the memory.
+        this._tombstonedPartIndices.add(index);
         this._refreshPartRangeUnion();
         this._updateBoundingInfoFromProxies();
+    }
+
+    /**
+     * Tears the compound down to an empty state so a subsequent {@link _addPartsInternal} recreates fresh GPU
+     * textures. Shared by {@link removePart} (compacting rebuild) and {@link compactAtlas}. Does NOT dispose the
+     * part proxies — callers dispose only the proxies being removed and reuse the survivors' proxy objects.
+     * @internal
+     */
+    protected _resetForRebuild(): void {
+        // Terminate the sort worker before zeroing _vertexCount. The worker's onmessage handler compares
+        // depthMix.length against (_vertexCount + 15) & ~0xf; with _vertexCount = 0 that becomes 16, forcing a
+        // re-sort loop on stale data and resetting _canPostToWorker to true, defeating the rebuild gate. The
+        // worker is re-instantiated after the rebuild via the first _postToWorker call.
+        if (this._worker) {
+            this._worker.terminate();
+            this._worker = null;
+        }
+        // Dispose GPU textures and null them so _updateTextures sees firstTime=true and allocates fresh ones.
+        // For a streaming atlas the four data textures are attachments of _mrtAtlas — dispose the MRT, not each.
+        if (this._mrtAtlas) {
+            this._mrtAtlas.dispose();
+            this._mrtAtlas = null;
+            this._covariancesATexture = this._covariancesBTexture = this._centersTexture = this._colorsTexture = null;
+        } else {
+            this._covariancesATexture?.dispose();
+            this._covariancesBTexture?.dispose();
+            this._centersTexture?.dispose();
+            this._colorsTexture?.dispose();
+            this._covariancesATexture = null;
+            this._covariancesBTexture = null;
+            this._centersTexture = null;
+            this._colorsTexture = null;
+        }
+        this._rotationsATexture?.dispose();
+        this._rotationsBTexture?.dispose();
+        this._rotationScaleTexture?.dispose();
+        this._rotationsATexture = null;
+        this._rotationsBTexture = null;
+        this._rotationScaleTexture = null;
+        if (this._shTextures) {
+            for (const t of this._shTextures) {
+                t.dispose();
+            }
+            this._shTextures = null;
+        }
+        if (this._partIndicesTexture) {
+            this._partIndicesTexture.dispose();
+            this._partIndicesTexture = null;
+        }
+        this._vertexCount = 0;
+        this._splatPositions = null;
+        this._partIndices = null;
+        this._partMatrices = [];
+        this._partVisibility = [];
+        this._cachedBoundingMin = null;
+        this._cachedBoundingMax = null;
+        this._part0LocalMin = null;
+        this._part0LocalMax = null;
+        this._splatsData = null;
+        this._shData = null;
+        this._shDegree = 0;
+        this._partProxies = [];
+    }
+
+    /**
+     * Reclaims the atlas rows of parts removed (tombstoned) while a streaming part was resident. `removePart`
+     * on a streaming compound only tombstones — it excludes the part from the render union and hides its proxy,
+     * but leaves its rows allocated, since compacting them would relocate the still-resident streaming regions.
+     * This method performs that compaction: it rebuilds the shared atlas from the LIVE parts at new, contiguous
+     * (row-aligned for streaming) offsets, physically relocating each surviving streaming region's GPU texels,
+     * CPU sort positions, and decode/render base offset, and drops the tombstoned rows — shrinking the atlas.
+     *
+     * Call it after removing one or more models to actually free the GPU/CPU memory (e.g. on idle, or once a
+     * batch of removals settles). No-op when nothing is tombstoned. Safe while streams are actively decoding:
+     * each surviving region is backed up before the old atlas is disposed and restored at its new base after.
+     */
+    public compactAtlas(): void {
+        if (this._tombstonedPartIndices.size === 0) {
+            return;
+        }
+
+        const atlasWidth = this._getTextureSize(1).x;
+
+        // Build the compacted layout of the LIVE parts (skip tombstoned ones), in current part-index order.
+        // Static parts pack tightly from their retained CPU source; streaming regions are re-reserved as
+        // row-aligned empty sources (front-padded to the next row) and relocated via the atlas-rebuild hooks.
+        type LivePartSpec = {
+            oldProxy: GaussianSplattingPartProxyMesh;
+            source: IGaussianSplattingPartSource;
+            worldMatrix: Matrix;
+            visibility: number;
+            state: Nullable<IStreamingPartState>;
+            newBase: number; // streaming only: the region's usable base after compaction
+            frontPad: number; // streaming only
+        };
+        const specs: LivePartSpec[] = [];
+        let cumOffset = 0;
+        for (let i = 0; i < this._partProxies.length; i++) {
+            const proxy = this._partProxies[i];
+            if (!proxy || this._tombstonedPartIndices.has(i)) {
+                continue;
+            }
+            const state = this._streamingStates.find((s) => s.proxy === proxy) ?? null;
+            const worldMatrix = proxy.getWorldMatrix().clone();
+            const visibility = this._partVisibility[i] ?? 1.0;
+            if (state) {
+                // Streaming: reserve an empty, row-aligned region (front pad + capacity) at the compacted offset.
+                const alignedBase = Math.ceil(cumOffset / atlasWidth) * atlasWidth;
+                const frontPad = alignedBase - cumOffset;
+                const regionSplats = frontPad + state.capacity;
+                const source: IGaussianSplattingPartSource = {
+                    name: proxy.name,
+                    _vertexCount: regionSplats,
+                    _splatsData: null,
+                    _shData: null,
+                    _shDegree: 0,
+                    isCompound: false,
+                    getWorldMatrix: () => worldMatrix,
+                    getBoundingInfo: () => new BoundingInfo(Vector3.ZeroReadOnly, Vector3.ZeroReadOnly),
+                    dispose: () => {},
+                    _isReservedEmpty: true,
+                };
+                specs.push({ oldProxy: proxy, source, worldMatrix, visibility, state, newBase: alignedBase, frontPad });
+                cumOffset += regionSplats;
+            } else {
+                const source = this._createRetainedPartSource(proxy);
+                if (!source || !source._splatsData) {
+                    throw new Error(`compactAtlas: the retained source data for static part "${proxy.name}" is not available.`);
+                }
+                specs.push({ oldProxy: proxy, source, worldMatrix, visibility, state: null, newBase: 0, frontPad: 0 });
+                cumOffset += source._vertexCount;
+            }
+        }
+
+        // Back up every surviving streaming region's GPU texels + CPU positions before the atlas is torn down.
+        if (this._mrtAtlas) {
+            this._onBeforeAtlasRebuildObservable.notifyObservers(this._mrtAtlas);
+        }
+
+        // Dispose the tombstoned parts' proxies (their streams were already disposed when tombstoned).
+        for (const i of this._tombstonedPartIndices) {
+            this._partProxies[i]?.dispose();
+        }
+
+        // Tear the compound down to empty so _addPartsInternal recreates fresh (smaller) GPU textures.
+        this._resetForRebuild();
+
+        if (specs.length === 0) {
+            // Everything was tombstoned — nothing to rebuild.
+            this._streamingStates.length = 0;
+            this._hasStreamingPart = false;
+            this._tombstonedPartIndices.clear();
+            this.setEnabled(false);
+            this.onPartCountChangedObservable.notifyObservers(0);
+            return;
+        }
+
+        this._rebuilding = true;
+        this._canPostToWorker = false;
+        try {
+            const { proxyMeshes: newProxies } = this._addPartsInternal(
+                specs.map((s) => s.source),
+                false
+            );
+
+            // Re-map the surviving proxies onto their new indices/offsets and relocate streaming state.
+            for (let i = 0; i < specs.length; i++) {
+                const spec = specs[i];
+                const newProxy = newProxies[i];
+                const newPartIndex = newProxy.partIndex;
+
+                this.setWorldMatrixForPart(newPartIndex, spec.worldMatrix);
+                this.setPartVisibility(newPartIndex, spec.visibility);
+                const quaternion = new Quaternion();
+                spec.worldMatrix.decompose(newProxy.scaling, quaternion, newProxy.position);
+                newProxy.rotationQuaternion = quaternion;
+                newProxy.computeWorldMatrix(true);
+
+                spec.oldProxy.updatePartIndex(newPartIndex);
+                spec.oldProxy.updatePartMetadata(newProxy._vertexCount, newProxy._splatsDataOffset, newProxy._shDataOffset);
+                this._partProxies[newPartIndex] = spec.oldProxy;
+                newProxy.dispose();
+
+                if (spec.state) {
+                    // Relocate: the usable base is the (aligned) source start + front pad. Update BEFORE the
+                    // onAfter hook fires so the stream reads the new base from the handle.
+                    spec.state.partIndex = newPartIndex;
+                    spec.state.base = newProxy._splatsDataOffset + spec.frontPad;
+                    // Re-post the region's active ranges at the new base so the union stays correct with no flicker.
+                    this._partSplatRanges[newPartIndex] = spec.state.localRanges
+                        ? spec.state.localRanges.map((r) => ({ offset: spec.state!.base + r.offset, count: r.count }))
+                        : null;
+                } else {
+                    this._partSplatRanges[newPartIndex] = null; // static parts render fully
+                }
+            }
+
+            // Rebind + restore every surviving streaming region into the new (smaller) atlas at its new base.
+            if (this._mrtAtlas) {
+                this._onAfterAtlasRebuildObservable.notifyObservers(this._mrtAtlas);
+            }
+
+            // Drop the states of tombstoned streaming parts; keep only surviving ones.
+            this._streamingStates = specs.filter((s) => s.state).map((s) => s.state!);
+            this._hasStreamingPart = this._streamingStates.length > 0;
+            this._tombstonedPartIndices.clear();
+
+            this._rebuilding = false;
+            this._canPostToWorker = true;
+            // The streaming regions' CPU positions were restored into _splatPositions by the onAfter hook (after
+            // _addPartsInternal had already posted the rebuild's zeros), so re-post the full merged set: positions
+            // + part indices via _notifyWorkerNewData, then the per-part matrices (suppressed during _rebuilding),
+            // refresh the union, and fire one sort — so the worker's positions/partIndices/partMatrices all agree.
+            this._refreshPartRangeUnion();
+            this._notifyWorkerNewData();
+            const workerAfterRebuild = this._worker as Worker | null;
+            workerAfterRebuild?.postMessage({
+                command: GaussianSplattingSortWorkerCommand.PART_MATRICES,
+                partMatrices: this._partMatrices.map((matrix) => new Float32Array(matrix.m)),
+            });
+            this._postToWorker(true);
+            this.onPartCountChangedObservable.notifyObservers(this.partCount);
+        } catch (e) {
+            this._rebuilding = false;
+            this._canPostToWorker = true;
+            throw e;
+        }
     }
 
     /**
@@ -1381,61 +1637,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // Notify listeners before mutation so they can record state keyed on the original index.
         this.onPartRemovedObservable.notifyObservers(index);
 
-        // --- Reset this mesh to an empty state ---
-        // Terminate the sort worker before zeroing _vertexCount. The worker's onmessage handler
-        // compares depthMix.length against (_vertexCount + 15) & ~0xf; with _vertexCount = 0 that
-        // becomes 16, which causes a forced re-sort loop on stale data and resets _canPostToWorker
-        // to true, defeating the gate below. The worker will be re-instantiated naturally after
-        // the rebuild via the first _postToWorker call.
-        if (this._worker) {
-            this._worker.terminate();
-            this._worker = null;
-        }
-        // Dispose and null GPU textures so _updateTextures sees firstTime=true and creates
-        // fresh GPU textures.
-        this._covariancesATexture?.dispose();
-        this._covariancesBTexture?.dispose();
-        this._centersTexture?.dispose();
-        this._colorsTexture?.dispose();
-        this._rotationsATexture?.dispose();
-        this._rotationsBTexture?.dispose();
-        this._rotationScaleTexture?.dispose();
-        this._covariancesATexture = null;
-        this._covariancesBTexture = null;
-        this._centersTexture = null;
-        this._colorsTexture = null;
-        this._rotationsATexture = null;
-        this._rotationsBTexture = null;
-        this._rotationScaleTexture = null;
-        if (this._shTextures) {
-            for (const t of this._shTextures) {
-                t.dispose();
-            }
-            this._shTextures = null;
-        }
-        if (this._partIndicesTexture) {
-            this._partIndicesTexture.dispose();
-            this._partIndicesTexture = null;
-        }
-        this._vertexCount = 0;
-        this._splatPositions = null;
-        this._partIndices = null;
-        this._partMatrices = [];
-        this._partVisibility = [];
-        this._cachedBoundingMin = null;
-        this._cachedBoundingMax = null;
-        this._part0LocalMin = null;
-        this._part0LocalMax = null;
-        this._splatsData = null;
-        this._shData = null;
-        this._shDegree = 0;
-
-        // Remove the proxy for the removed part and dispose it
-        const proxyToRemove = this._partProxies[index];
-        if (proxyToRemove) {
-            proxyToRemove.dispose();
-        }
-        this._partProxies = [];
+        // Dispose the removed part's proxy, then reset to an empty state (survivors' proxy objects are held in
+        // `survivors` and reused after the rebuild).
+        this._partProxies[index]?.dispose();
+        this._resetForRebuild();
 
         // Rebuild from surviving sources. _addPartsInternal assigns part indices in order 0, 1, 2, …
         // so the new index for each survivor is simply its position in the survivors array.
@@ -1558,10 +1763,20 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
         const { proxyMeshes, assignedPartIndices } = this._addPartsInternal([reservedSource], false);
         const proxy = proxyMeshes[0];
-        const partIndex = assignedPartIndices[0];
         // Usable region starts at the row-aligned base (past the front padding) and spans the aligned capacity.
         // (proxy._splatsDataOffset === startOffset; the usable base is startOffset + frontPad === alignedBase.)
-        const base = alignedBase;
+        // `base`/`partIndex` live in mutable state so compactAtlas can RELOCATE this region (new base/index) in
+        // place; the handle's getters and closures read the state, so the streaming engine's handle stays valid.
+        const state: IStreamingPartState = {
+            proxy,
+            base: alignedBase,
+            partIndex: assignedPartIndices[0],
+            capacity: alignedCapacity,
+            boundsMin,
+            boundsMax,
+            localRanges: null,
+        };
+        this._streamingStates.push(state);
         capacity = alignedCapacity;
 
         // The handle's live getters need a stable reference to this compound (its atlas textures can be
@@ -1577,9 +1792,13 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
         const handle: IGaussianSplattingStreamingPart = {
             proxy,
-            partIndex,
-            base,
             capacity,
+            get partIndex() {
+                return state.partIndex;
+            },
+            get base() {
+                return state.base;
+            },
             get centersTexture() {
                 return compound.centersTexture;
             },
@@ -1605,15 +1824,17 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 return compound._isDepthSortSettled;
             },
             setActiveRanges: (localRanges) => {
-                const globalRanges = localRanges ? localRanges.map((r) => ({ offset: base + r.offset, count: r.count })) : null;
-                compound.setPartSplatRanges(partIndex, globalRanges);
+                // Remember the LOCAL ranges so compactAtlas can re-post them at the region's new base.
+                state.localRanges = localRanges ? localRanges.map((r) => ({ offset: r.offset, count: r.count })) : null;
+                const globalRanges = localRanges ? localRanges.map((r) => ({ offset: state.base + r.offset, count: r.count })) : null;
+                compound.setPartSplatRanges(state.partIndex, globalRanges);
             },
             writeSplats: (localOffset, count, splatsData) => {
-                compound._writeStreamingSplats(base + localOffset, count, splatsData, boundsMin, boundsMax);
+                compound._writeStreamingSplats(state.base + localOffset, count, splatsData, boundsMin, boundsMax);
                 applyBounds();
             },
             postPositionsRange: (localOffset, count) => {
-                compound._postWorkerPositionsRange(base + localOffset, count);
+                compound._postWorkerPositionsRange(state.base + localOffset, count);
             },
             expandBounds: (min, max) => {
                 boundsMin.minimizeInPlace(min);

@@ -1086,10 +1086,15 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 if (host.mrtAtlas) {
                     wb.rebindAtlas(host.mrtAtlas);
                 }
+                // Pick up a (possibly) new base offset: a plain grow keeps `host.base`, but a COMPACTION relocates
+                // this region to a smaller atlas at a new base. Update the decode/render/readback base and the CPU
+                // position base BEFORE restoring, so the region's texels and worker positions land at the new base.
+                this._positionBase = host.base;
+                wb.setBaseOffset(host.base);
                 wb.restoreRegion();
                 // Re-cache the reallocated shared array (future decodes write through this reference) and restore
-                // the region's CPU positions into it, so the full `_splatPositions` re-post that follows this
-                // rebuild hands the sort worker the streamed splats' real positions instead of zeros.
+                // the region's CPU positions into it at the (possibly relocated) base, so the full `_splatPositions`
+                // re-post that follows this rebuild hands the sort worker the streamed splats' real positions.
                 this._splatPositions = host.splatPositions;
                 if (this._positionSnapshot && this._splatPositions) {
                     this._splatPositions.set(this._positionSnapshot, this._positionBase * 4);
