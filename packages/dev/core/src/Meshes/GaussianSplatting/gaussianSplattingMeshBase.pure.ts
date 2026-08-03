@@ -2981,8 +2981,10 @@ export class GaussianSplattingMeshBase extends Mesh {
                     splatIndex[index++] = sourceIndex;
                 }
             }
+            // Pad with `vertexCount` itself, not 0: splat 0 is real data, not a reserved empty slot, and
+            // range filtering can leave it fully visible — see gaussianSplattingSortWorker.ts.
             for (; index < paddedVertexCount; index++) {
-                splatIndex[index] = 0;
+                splatIndex[index] = vertexCount;
             }
         } else {
             for (let i = 0; i < paddedVertexCount; i++) {
@@ -3121,8 +3123,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         );
 
         const positions = Float32Array.from(this._splatPositions!);
+        const vertexCount = this._vertexCount;
 
-        this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions }, [positions.buffer]);
+        this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
         // The main thread owns the active interval set: send it explicitly (covering all indices when
         // no LOD filter is active) rather than letting the worker assume the full source set.
         this._postIntervalsToWorker();
@@ -3223,8 +3226,24 @@ export class GaussianSplattingMeshBase extends Mesh {
             while (width * height < length) {
                 height *= 2;
             }
+            // See the WebGL2/WebGPU branch below for why this guarantees an extra row when `length`
+            // exactly fills every row. A power-of-2 height has to double to add any slack at all.
+            // Usually this is a no-op since it is rare that the asset exactly contains a power-of-2
+            // number of splats.
+            if (length > 0 && width * height === length) {
+                height *= 2;
+            }
         } else {
             height = Math.ceil(length / width);
+            // When `length` exactly fills every row, force one extra (fully zeroed) row so the atlas
+            // always has at least one genuinely-empty splat slot past the real data, at index `length`.
+            // The sort worker (gaussianSplattingSortWorker.ts) relies on that slot always existing to
+            // safely pad the 16-aligned draw order — without it, the only "spare" index would be the
+            // last real splat, which range-filtering (setSplatIndexRanges/opacity/size culling) can
+            // leave fully visible and opaque, reproducing the same "stuck in front" bug on that splat.
+            if (length > 0 && height * width === length) {
+                height += 1;
+            }
         }
 
         if (height > width) {
