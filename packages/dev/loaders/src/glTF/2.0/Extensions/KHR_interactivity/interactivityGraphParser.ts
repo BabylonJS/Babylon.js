@@ -4,7 +4,7 @@ import { type IGLTFToFlowGraphMapping, getMappingForDeclaration, getMappingForFu
 import { Logger } from "core/Misc/logger";
 import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphConnection, type ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc/guid";
-import { type FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
+import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 
@@ -68,6 +68,13 @@ export class InteractivityGraphToFlowGraphParser {
     private _events: InteractivityEvent[] = [];
     private _internalEventsCounter: number = 0;
     private _nodes: { blocks: ISerializedFlowGraphBlock[]; fullOperationName: string }[] = [];
+    /**
+     * Extra blocks the parser inserts between existing nodes (e.g. the seconds→frames multiply for
+     * connected animation-time inputs). Kept separate from any node's `blocks` array so per-node
+     * post-processing that indexes into that array (such as the animation extraProcessors targeting
+     * the last block) is not disturbed, then concatenated into the serialized graph.
+     */
+    private _insertedBlocks: ISerializedFlowGraphBlock[] = [];
 
     constructor(
         private _interactivityGraph: IKHRInteractivity_Graph,
@@ -408,6 +415,10 @@ export class InteractivityGraphToFlowGraphParser {
                 const socketIn = this._createNewSocketConnection(socketInName);
                 const block = (valueMapping && valueMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === valueMapping.toBlock)) || flowGraphBlocks.blocks[0];
                 block.dataInputs.push(socketIn);
+                // Captured before the connected branch below shadows `valueMapping`. When set and the
+                // value is supplied by a connection, the seconds→frames `dataTransformer` cannot run
+                // (it is parse-time only), so the raw connected value is scaled by a runtime multiply.
+                const convertConnectedTimeToFrames = !!valueMapping?.convertConnectedTimeToFrames;
                 if ((value as IKHRInteractivity_Variable).value !== undefined) {
                     const convertedValue = this._parseVariable(value as IKHRInteractivity_Variable, valueMapping && valueMapping.dataTransformer);
                     context._connectionValues[socketIn.uniqueId] = convertedValue;
@@ -455,8 +466,12 @@ export class InteractivityGraphToFlowGraphParser {
                         outBlock.dataOutputs.push(socketOut);
                     }
                     // connect the sockets
-                    socketIn.connectedPointIds.push(socketOut.uniqueId);
-                    socketOut.connectedPointIds.push(socketIn.uniqueId);
+                    if (convertConnectedTimeToFrames) {
+                        this._connectWithSecondsToFramesConversion(context, socketOut, socketIn);
+                    } else {
+                        socketIn.connectedPointIds.push(socketOut.uniqueId);
+                        socketOut.connectedPointIds.push(socketIn.uniqueId);
+                    }
                 } else {
                     Logger.Error(["Invalid value for value connection", value]);
                     throw new Error("Error parsing node connections");
@@ -499,6 +514,42 @@ export class InteractivityGraphToFlowGraphParser {
             _connectionType: isOutput ? FlowGraphConnectionType.Output : FlowGraphConnectionType.Input,
             connectedPointIds: [],
         };
+    }
+
+    /**
+     * Wires an upstream data output into a downstream data input through a runtime multiply block that
+     * scales the value by the animation target fps. This converts a KHR animation time (seconds),
+     * delivered by a connection (e.g. a `pointer/get` on the `maxTime` animation pointer), into the
+     * Babylon animation frames expected by the play/stop-animation blocks. Literal times are already
+     * converted at parse time by the input's `dataTransformer`, so this is only used for connections.
+     * @param context the serialized flow graph context that stores literal socket values
+     * @param upstreamOutput the data output socket providing the time value (in seconds)
+     * @param downstreamInput the data input socket that expects the time in frames
+     */
+    private _connectWithSecondsToFramesConversion(
+        context: ISerializedFlowGraphContext,
+        upstreamOutput: ISerializedFlowGraphConnection,
+        downstreamInput: ISerializedFlowGraphConnection
+    ): void {
+        const multiplyBlock = this._getEmptyBlock(FlowGraphBlockNames.Multiply, FlowGraphBlockNames.Multiply);
+        // Scalar (float) multiply; matches how the `math/mul` mapping configures the block.
+        multiplyBlock.config = { type: FlowGraphTypes.Number };
+        const inputA = this._createNewSocketConnection("a");
+        const inputB = this._createNewSocketConnection("b");
+        const output = this._createNewSocketConnection("value", true);
+        multiplyBlock.dataInputs.push(inputA, inputB);
+        multiplyBlock.dataOutputs.push(output);
+        // The second factor is the constant animation target fps.
+        context._connectionValues[inputB.uniqueId] = { type: FlowGraphTypes.Number, value: [this._animationTargetFps] };
+        // upstream time output -> multiply.a
+        inputA.connectedPointIds.push(upstreamOutput.uniqueId);
+        upstreamOutput.connectedPointIds.push(inputA.uniqueId);
+        // multiply.value (frames) -> downstream time input
+        downstreamInput.connectedPointIds.push(output.uniqueId);
+        output.connectedPointIds.push(downstreamInput.uniqueId);
+        // Register the inserted block separately so serializeToFlowGraph picks it up without
+        // appending to any node's block list (which would break per-node extraProcessors).
+        this._insertedBlocks.push(multiplyBlock);
     }
 
     private _connectFlowGraphNodes(input: string, output: string, serializedInput: ISerializedFlowGraphBlock, serializedOutput: ISerializedFlowGraphBlock, isVariable?: boolean) {
@@ -546,7 +597,7 @@ export class InteractivityGraphToFlowGraphParser {
             context._userVariables[this.getVariableName(i)] = variable;
         }
 
-        const allBlocks = this._nodes.reduce((acc, val) => acc.concat(val.blocks), [] as ISerializedFlowGraphBlock[]);
+        const allBlocks = this._nodes.reduce((acc, val) => acc.concat(val.blocks), [] as ISerializedFlowGraphBlock[]).concat(this._insertedBlocks);
 
         return {
             rightHanded: true,

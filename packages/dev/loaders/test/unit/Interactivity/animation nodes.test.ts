@@ -169,6 +169,49 @@ describe("Interactivity/animation nodes", () => {
         expect(stopSpy).not.toHaveBeenCalled();
     });
 
+    // Regression (WhackAMole): when endTime is supplied by a connection (here the read-only `maxTime`
+    // animation pointer) rather than a literal, the parse-time seconds→frames dataTransformer cannot
+    // run. The parser must insert a runtime multiply so the connected KHR time (seconds) is still
+    // converted to Babylon frames. Without it the animation plays a tiny fraction of its range.
+    test("animation/start converts a connected endTime (maxTime pointer) from seconds to frames", async () => {
+        const ag = new AnimationGroup("test");
+        ag.to = 600; // 600 frames == 10 seconds at 60 fps; maxTime therefore reads 10 (seconds)
+        const startSpy = vi.spyOn(ag, "start");
+        const gltf = {
+            animations: [
+                {}, // index 0 unused
+                { _babylonAnimationGroup: ag },
+            ],
+        };
+
+        await generateSimpleNodeGraph(
+            gltf,
+            [{ op: "animation/start" }, { op: "pointer/get" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        animation: { value: [1], type: 0 },
+                        // endTime is fed by the pointer/get output rather than a literal.
+                        endTime: { node: 1, socket: "value" },
+                    },
+                },
+                {
+                    declaration: 1,
+                    configuration: {
+                        pointer: { value: ["/animations/1/extensions/KHR_interactivity/maxTime"] },
+                        type: { value: [1] }, // float
+                    },
+                },
+            ],
+            [{ signature: "int" }, { signature: "float" }]
+        );
+
+        expect(startSpy).toHaveBeenCalledTimes(1);
+        // to === 600 frames proves the connected 10s maxTime was scaled by the 60 fps factor.
+        expect(startSpy).toHaveBeenCalledWith(false, 1, 0, 600);
+    });
+
     // animation/start input validation (KHR spec: err flow when speed/time inputs are invalid)
 
     test.each([

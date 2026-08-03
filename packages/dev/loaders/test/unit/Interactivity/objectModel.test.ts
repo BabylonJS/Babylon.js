@@ -145,6 +145,35 @@ describe("glTF interactivity Object Model", () => {
         expect(() => accessor.info.set?.(0.5, accessor.object)).not.toThrow();
     });
 
+    it("should resolve the KHR_interactivity animation maxTime pointer even though the animation has no stored extensions object", () => {
+        // Regression (WhackAMole): the animation `.../extensions/KHR_interactivity/maxTime` pointer
+        // (and its minTime/isPlaying/playhead siblings) is computed from the Babylon animation group
+        // and is NOT present in the glTF JSON, so the animation object has no `extensions` member to
+        // traverse into. The path converter must treat this like the node-visibility pointers and not
+        // reject the path. Without the `/animations/<i>/extensions/` exception, `pointer/get` on
+        // maxTime throws and aborts any graph that reads it — e.g. WhackAMole's `animation/start`
+        // reads maxTime for its end time, so the whole onStart pop-up chain never runs.
+        const converter = GetPathToObjectConverter({
+            animations: [
+                {
+                    _babylonAnimationGroup: { from: 0, to: 120, isPlaying: true },
+                },
+            ],
+        } as any);
+
+        let maxTime!: ReturnType<typeof converter.convert>;
+        expect(() => {
+            maxTime = converter.convert("/animations/0/extensions/KHR_interactivity/maxTime");
+        }).not.toThrow();
+        // maxTime is the group's end time converted from frames to seconds (fixed 1/60 factor).
+        expect(maxTime.info.get(maxTime.object)).toBe(2);
+        expect(maxTime.info.getTarget?.(maxTime.object)).toBeDefined();
+
+        // A boolean sibling under the same virtual namespace must resolve through the same exception.
+        const isPlaying = converter.convert("/animations/0/extensions/KHR_interactivity/isPlaying");
+        expect(isPlaying.info.get(isPlaying.object)).toBe(true);
+    });
+
     it("should find a node's translation", async () => {
         const mesh = new Mesh("mesh", scene);
         mesh.position.set(1, 2, 3);

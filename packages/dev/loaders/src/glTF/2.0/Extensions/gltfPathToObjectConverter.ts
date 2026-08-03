@@ -15,6 +15,12 @@ export const OptionalPathExceptionsList: {
         regex: new RegExp(`^/nodes/\\d+/extensions/`),
     },
     {
+        // KHR_interactivity animation pointers (e.g. /animations/{}/extensions/KHR_interactivity/maxTime)
+        // are virtual: they are computed from the Babylon animation group and are not stored in the
+        // glTF JSON, so the animation object has no `extensions` member to traverse into.
+        regex: new RegExp(`^/animations/\\d+/extensions/`),
+    },
+    {
         // weights may be undefined on nodes without morph targets
         regex: new RegExp(`^/nodes/\\d+/weights`),
     },

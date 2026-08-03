@@ -18,6 +18,7 @@ import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 
 import "core/Helpers/sceneHelpers";
 import "core/Loading/loadingScreen";
+import "core/Culling/ray";
 
 import "../scss/renderingZone.scss";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";

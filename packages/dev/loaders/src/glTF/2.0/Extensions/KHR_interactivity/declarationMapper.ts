@@ -57,6 +57,16 @@ interface IGLTFToFlowGraphMappingObject {
      * Used in configuration values. If defined, this will be the default value, if no value is provided.
      */
     defaultValue?: any;
+
+    /**
+     * When the input value comes from a connection (an upstream node output) rather than a literal,
+     * the parse-time {@link dataTransformer} cannot run. If this is `true`, the importer inserts a
+     * runtime multiply block that scales the connected value by the animation target fps, converting
+     * a KHR animation time (seconds) into Babylon animation frames. Literal values keep using the
+     * {@link dataTransformer}. Used by `animation/start` / `animation/stopAt` time inputs, which may
+     * be fed by a `pointer/get` (e.g. the read-only `maxTime` animation pointer).
+     */
+    convertConnectedTimeToFrames?: boolean;
 }
 
 /**
@@ -1571,8 +1581,18 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
                 speed: { name: "speed", gltfType: "number" },
-                startTime: { name: "from", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps] },
-                endTime: { name: "to", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps] },
+                startTime: {
+                    name: "from",
+                    gltfType: "number",
+                    convertConnectedTimeToFrames: true,
+                    dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps],
+                },
+                endTime: {
+                    name: "to",
+                    gltfType: "number",
+                    convertConnectedTimeToFrames: true,
+                    dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps],
+                },
             },
         },
         outputs: {
@@ -1646,7 +1666,12 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         inputs: {
             values: {
                 animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
-                stopTime: { name: "stopAtFrame", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps] },
+                stopTime: {
+                    name: "stopAtFrame",
+                    gltfType: "number",
+                    convertConnectedTimeToFrames: true,
+                    dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps],
+                },
             },
         },
         outputs: {
