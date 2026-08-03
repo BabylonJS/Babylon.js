@@ -4,30 +4,34 @@ This document catalogs all public npm packages published under the `@babylonjs` 
 
 ## Package Map
 
-| Public Package | npm Name | Implementation Package | Path |
-|---|---|---|---|
-| Core | `@babylonjs/core` | `@dev/core` | `packages/dev/core` |
-| GUI | `@babylonjs/gui` | `@dev/gui` | `packages/dev/gui` |
-| Loaders | `@babylonjs/loaders` | `@dev/loaders` | `packages/dev/loaders` |
-| Materials | `@babylonjs/materials` | `@dev/materials` | `packages/dev/materials` |
-| Serializers | `@babylonjs/serializers` | `@dev/serializers` | `packages/dev/serializers` |
-| Post-Processes | `@babylonjs/post-processes` | `@dev/post-processes` | `packages/dev/postProcesses` |
-| Procedural Textures | `@babylonjs/procedural-textures` | `@dev/procedural-textures` | `packages/dev/proceduralTextures` |
-| Addons | `@babylonjs/addons` | `@dev/addons` | `packages/dev/addons` |
-| Smart Filters | `@babylonjs/smart-filters` | `@dev/smart-filters` | `packages/dev/smartFilters` |
-| Smart Filters Blocks | `@babylonjs/smart-filters-blocks` | `@dev/smart-filters-blocks` | `packages/dev/smartFilterBlocks` |
-| Lottie Player | `@babylonjs/lottie-player` | `@dev/lottie-player` | `packages/dev/lottiePlayer` |
-| Inspector | `@babylonjs/inspector` | `@dev/inspector` | `packages/dev/inspector-v2` |
-| Inspector (Legacy) | `@babylonjs/inspector-legacy` | `@dev/inspector-legacy` | `packages/dev/inspector` |
-| Viewer | `@babylonjs/viewer` | `@tools/viewer` | `packages/tools/viewer` |
-| Node Editor | `@babylonjs/node-editor` | `@tools/node-editor` | `packages/tools/nodeEditor` |
-| Node Geometry Editor | `@babylonjs/node-geometry-editor` | `@tools/node-geometry-editor` | `packages/tools/nodeGeometryEditor` |
-| Node Particle Editor | `@babylonjs/node-particle-editor` | `@tools/node-particle-editor` | `packages/tools/nodeParticleEditor` |
-| Node Render Graph Editor | `@babylonjs/node-render-graph-editor` | `@tools/node-render-graph-editor` | `packages/tools/nodeRenderGraphEditor` |
-| GUI Editor | `@babylonjs/gui-editor` | `@tools/gui-editor` | `packages/tools/guiEditor` |
-| KTX2 Decoder | `@babylonjs/ktx2decoder` | `@tools/ktx2decoder` | `packages/tools/ktx2Decoder` |
-| Accessibility | `@babylonjs/accessibility` | `@tools/accessibility` | `packages/tools/accessibility` |
-| Shared UI Components | `@babylonjs/shared-ui-components` | `@dev/shared-ui-components` | `packages/dev/sharedUiComponents` |
+| Public Package                 | npm Name                              | Implementation Package                  | Path                                             |
+| ------------------------------ | ------------------------------------- | --------------------------------------- | ------------------------------------------------ |
+| Core                           | `@babylonjs/core`                     | `@dev/core`                             | `packages/dev/core`                              |
+| Core (Closure Compiler)        | `@babylonjs/core-closure`             | Generated from `@babylonjs/core`        | `packages/public/@babylonjs/core-closure`        |
+| GUI                            | `@babylonjs/gui`                      | `@dev/gui`                              | `packages/dev/gui`                               |
+| GUI (Closure Compiler)         | `@babylonjs/gui-closure`              | Generated from `@babylonjs/gui`         | `packages/public/@babylonjs/gui-closure`         |
+| Loaders                        | `@babylonjs/loaders`                  | `@dev/loaders`                          | `packages/dev/loaders`                           |
+| Loaders (Closure Compiler)     | `@babylonjs/loaders-closure`          | Generated from `@babylonjs/loaders`     | `packages/public/@babylonjs/loaders-closure`     |
+| Materials                      | `@babylonjs/materials`                | `@dev/materials`                        | `packages/dev/materials`                         |
+| Serializers                    | `@babylonjs/serializers`              | `@dev/serializers`                      | `packages/dev/serializers`                       |
+| Serializers (Closure Compiler) | `@babylonjs/serializers-closure`      | Generated from `@babylonjs/serializers` | `packages/public/@babylonjs/serializers-closure` |
+| Post-Processes                 | `@babylonjs/post-processes`           | `@dev/post-processes`                   | `packages/dev/postProcesses`                     |
+| Procedural Textures            | `@babylonjs/procedural-textures`      | `@dev/procedural-textures`              | `packages/dev/proceduralTextures`                |
+| Addons                         | `@babylonjs/addons`                   | `@dev/addons`                           | `packages/dev/addons`                            |
+| Smart Filters                  | `@babylonjs/smart-filters`            | `@dev/smart-filters`                    | `packages/dev/smartFilters`                      |
+| Smart Filters Blocks           | `@babylonjs/smart-filters-blocks`     | `@dev/smart-filters-blocks`             | `packages/dev/smartFilterBlocks`                 |
+| Lottie Player                  | `@babylonjs/lottie-player`            | `@dev/lottie-player`                    | `packages/dev/lottiePlayer`                      |
+| Inspector                      | `@babylonjs/inspector`                | `@dev/inspector`                        | `packages/dev/inspector-v2`                      |
+| Inspector (Legacy)             | `@babylonjs/inspector-legacy`         | `@dev/inspector-legacy`                 | `packages/dev/inspector`                         |
+| Viewer                         | `@babylonjs/viewer`                   | `@tools/viewer`                         | `packages/tools/viewer`                          |
+| Node Editor                    | `@babylonjs/node-editor`              | `@tools/node-editor`                    | `packages/tools/nodeEditor`                      |
+| Node Geometry Editor           | `@babylonjs/node-geometry-editor`     | `@tools/node-geometry-editor`           | `packages/tools/nodeGeometryEditor`              |
+| Node Particle Editor           | `@babylonjs/node-particle-editor`     | `@tools/node-particle-editor`           | `packages/tools/nodeParticleEditor`              |
+| Node Render Graph Editor       | `@babylonjs/node-render-graph-editor` | `@tools/node-render-graph-editor`       | `packages/tools/nodeRenderGraphEditor`           |
+| GUI Editor                     | `@babylonjs/gui-editor`               | `@tools/gui-editor`                     | `packages/tools/guiEditor`                       |
+| KTX2 Decoder                   | `@babylonjs/ktx2decoder`              | `@tools/ktx2decoder`                    | `packages/tools/ktx2Decoder`                     |
+| Accessibility                  | `@babylonjs/accessibility`            | `@tools/accessibility`                  | `packages/tools/accessibility`                   |
+| Shared UI Components           | `@babylonjs/shared-ui-components`     | `@dev/shared-ui-components`             | `packages/dev/sharedUiComponents`                |
 
 ## Product Categories
 
@@ -44,6 +48,8 @@ These packages are used directly in applications at runtime.
 - **Materials** (`@babylonjs/materials`) — Collection of specialized material implementations beyond the core PBR and Standard materials. Includes cel/toon shading, fire, fur, water, sky, grid, terrain, gradient, lava, tri-planar, and more.
 
 - **Serializers** (`@babylonjs/serializers`) — Scene export plugins for saving 3D content. Supports glTF 2.0, OBJ, STL, USDZ, BVH, and 3MF export formats.
+
+- **Closure Compiler packages** (`@babylonjs/core-closure`, `@babylonjs/gui-closure`, `@babylonjs/loaders-closure`, `@babylonjs/serializers-closure`) — Opt-in builds for Closure Compiler `ADVANCED` optimizations. They preserve Babylon.js property and serialized-data contracts without consumer-maintained extern files. Applications use bundler aliases to replace the corresponding standard packages; normal applications should keep using the standard packages.
 
 - **Post-Processes** (`@babylonjs/post-processes`) — Additional screen-space post-processing effects: ASCII art, digital rain, and edge detection.
 

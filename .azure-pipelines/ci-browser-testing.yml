@@ -374,8 +374,12 @@ jobs:
 
           - script: |
                 npm run build -w @babylonjs/core
-                node ./scripts/closureCompiler/testES6.mjs
-            displayName: "Test ES6 with advanced optimizations"
+                npm run build -w @babylonjs/gui
+                npm run build -w @babylonjs/loaders
+                npm run build -w @babylonjs/serializers
+                npm run build:closure
+                node ./scripts/closureCompiler/testClosurePackages.mjs
+            displayName: "Test Closure packages with advanced optimizations"
 
     # ============================================================================
     # WEEKLY PERFORMANCE TESTS (Saturday)

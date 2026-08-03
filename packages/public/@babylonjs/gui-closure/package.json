@@ -1,0 +1,92 @@
+{
+    "name": "@babylonjs/gui-closure",
+    "version": "9.18.1",
+    "description": "Closure Compiler compatible build of @babylonjs/gui",
+    "main": "index.js",
+    "module": "index.js",
+    "types": "index.d.ts",
+    "files": [
+        "**/*.js",
+        "**/*.d.ts",
+        "**/*.d.mts",
+        "**/*.wasm",
+        "**/*.license",
+        "readme.md",
+        "license.md",
+        "NOTICE.md"
+    ],
+    "scripts": {
+        "prepublishOnly": "node ../../../../scripts/closureCompiler/generateClosurePackages.mjs --check --package gui"
+    },
+    "peerDependencies": {
+        "@babylonjs/core-closure": "^9.0.0"
+    },
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylon.js",
+        "closure-compiler"
+    ],
+    "license": "Apache-2.0",
+    "esnext": "index.js",
+    "type": "module",
+    "sideEffects": [
+        "**/index.js",
+        "**/*fragment.js",
+        "**/fluent.vertex.js",
+        "**/fluentBackplate.vertex.js",
+        "**/fluentButton.vertex.js",
+        "**/handle.vertex.js",
+        "3D/materials/mrdl/shaders/*vertex.js",
+        "2D/FrameGraph/renderGraphGUIBlock.js",
+        "2D/controls/button.js",
+        "2D/controls/checkbox.js",
+        "2D/controls/colorpicker.js",
+        "2D/controls/container.js",
+        "2D/controls/control.js",
+        "2D/controls/displayGrid.js",
+        "2D/controls/ellipse.js",
+        "2D/controls/focusableButton.js",
+        "2D/controls/gradient/LinearGradient.js",
+        "2D/controls/gradient/RadialGradient.js",
+        "2D/controls/grid.js",
+        "2D/controls/image.js",
+        "2D/controls/inputPassword.js",
+        "2D/controls/inputText.js",
+        "2D/controls/inputTextArea.js",
+        "2D/controls/line.js",
+        "2D/controls/multiLine.js",
+        "2D/controls/radioButton.js",
+        "2D/controls/rectangle.js",
+        "2D/controls/scrollViewers/scrollViewer.js",
+        "2D/controls/sliders/imageBasedSlider.js",
+        "2D/controls/sliders/scrollBar.js",
+        "2D/controls/sliders/slider.js",
+        "2D/controls/stackPanel.js",
+        "2D/controls/statics.js",
+        "2D/controls/textBlock.js",
+        "2D/controls/toggleButton.js",
+        "2D/controls/virtualKeyboard.js",
+        "3D/materials/fluent/fluentMaterial.js",
+        "3D/materials/fluentBackplate/fluentBackplateMaterial.js",
+        "3D/materials/fluentButton/fluentButtonMaterial.js",
+        "3D/materials/handle/handleMaterial.js",
+        "3D/materials/mrdl/mrdlBackglowMaterial.js",
+        "3D/materials/mrdl/mrdlBackplateMaterial.js",
+        "3D/materials/mrdl/mrdlFrontplateMaterial.js",
+        "3D/materials/mrdl/mrdlInnerquadMaterial.js",
+        "3D/materials/mrdl/mrdlSliderBarMaterial.js",
+        "3D/materials/mrdl/mrdlSliderThumbMaterial.js",
+        "closure.externs.js"
+    ],
+    "homepage": "https://www.babylonjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
+}
