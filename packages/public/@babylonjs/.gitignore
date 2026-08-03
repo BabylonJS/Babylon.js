@@ -17,5 +17,3 @@ node_modules
 !node-particle-editor/**/*.*
 !gui-editor/**/*.*
 !accessibility/**/*.*
-*-closure/license.md
-*-closure/NOTICE.md
