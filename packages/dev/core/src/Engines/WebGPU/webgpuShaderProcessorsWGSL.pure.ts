@@ -429,18 +429,29 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         let fragmentOutputs = "struct FragmentOutputs {\n";
 
+        // A fragData location is float (vec4<f32>) unless the shader writes an integer vector to it — a shader
+        // that assigns vec4<u32>/vec4u(...) or vec4<i32>/vec4i(...) is rendering into an integer color target
+        // (e.g. RGBA_INTEGER u32), whose WGSL output type must match. Defaults to vec4<f32> (backward compatible).
+        const fragDataOutputType = (index: number): string => {
+            const m = fragmentCode.match(new RegExp(`fragmentOutputs\\.fragData${index}\\s*=\\s*(vec4<u32>|vec4u\\(|vec4<i32>|vec4i\\()`));
+            if (m) {
+                return m[1] === "vec4<u32>" || m[1] === "vec4u(" ? "vec4<u32>" : "vec4<i32>";
+            }
+            return "vec4<f32>";
+        };
+
         // Adding fragData output locations
         const regexRoot = "fragmentOutputs\\.fragData";
         let match = fragmentCode.match(new RegExp(regexRoot + "0", "g"));
         let indexLocation = 0;
 
         if (match) {
-            fragmentOutputs += ` @location(${indexLocation}) fragData0 : vec4<f32>,\n`;
+            fragmentOutputs += ` @location(${indexLocation}) fragData0 : ${fragDataOutputType(0)},\n`;
             indexLocation++;
             for (let index = 1; index < 8; index++) {
                 match = fragmentCode.match(new RegExp(regexRoot + index, "g"));
                 if (match) {
-                    fragmentOutputs += ` @location(${indexLocation}) fragData${indexLocation} : vec4<f32>,\n`;
+                    fragmentOutputs += ` @location(${indexLocation}) fragData${indexLocation} : ${fragDataOutputType(index)},\n`;
                     indexLocation++;
                 }
             }

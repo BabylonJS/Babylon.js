@@ -530,6 +530,13 @@ export class GaussianSplattingMeshBase extends Mesh {
     // (non-streaming) path, which keeps using RawTextures unchanged.
     protected _mrtAtlas: Nullable<MultiRenderTarget> = null;
     protected _useMrtAtlas = false;
+    // Higher-order SH atlas (Phase 6). When a streaming part needs baked SH, `_shTextures` become the single
+    // attachments of these render-targetable integer MRTs (one per packed-u32 SH texture) so the streaming engine
+    // GPU-decodes SH into the reserved region while static SH parts still CPU-upload into them. Null in the normal
+    // path (SH stays plain RawTextures). One MRT per attachment keeps within WebGPU's per-sample byte budget.
+    protected _shMrtAtlas: Nullable<MultiRenderTarget[]> = null;
+    protected _useShMrtAtlas = false;
+    protected _shMrtAtlasTextureCount = 0;
     protected _rotationsATexture: Nullable<BaseTexture> = null;
     protected _rotationsBTexture: Nullable<BaseTexture> = null;
     protected _rotationScaleTexture: Nullable<BaseTexture> = null;
@@ -576,7 +583,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     private static _PlyConversionBatchSize = 32768;
     /** @internal */
     public _shDegree = 0;
-    private _maxShDegree = 0;
+    protected _maxShDegree = 0;
 
     private static readonly _BatchSize = 16; // 16 splats per instance
     private _cameraViewInfos = new Map<number, ICameraViewInfo>();
@@ -824,6 +831,10 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param colors color texture
      * @param splatPositions stride-4 CPU centers for depth sorting (length vertexCount*4)
      * @param vertexCount number of splats addressable in the work buffer
+     * @param shTextures optional baked higher-order SH textures (packed-u32) produced by the work buffer's SH decode.
+     *   When provided, the draw path lights the decoded splats with view-dependent SH (the non-SOG `shTexture0..N`
+     *   path). `shDegree` sets both the max and active SH degree.
+     * @param shDegree SH degree of the baked SH textures (0 = none). Ignored when `shTextures` is empty/omitted.
      */
     protected _setExternalWorkBuffer(
         centers: BaseTexture,
@@ -831,7 +842,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         covariancesB: BaseTexture,
         colors: BaseTexture,
         splatPositions: Float32Array,
-        vertexCount: number
+        vertexCount: number,
+        shTextures?: Nullable<BaseTexture[]>,
+        shDegree: number = 0
     ): void {
         this._covariancesATexture = covariancesA;
         this._covariancesBTexture = covariancesB;
@@ -839,6 +852,11 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._colorsTexture = colors;
         this._splatPositions = splatPositions;
         this._vertexCount = vertexCount;
+        if (shTextures && shTextures.length) {
+            this._shTextures = shTextures;
+            this._maxShDegree = shDegree;
+            this._shDegree = shDegree;
+        }
         this._activeSplatRanges = null;
         this._activeSplatRangeKey = "";
         this._activeSplatRenderCount = 0;
@@ -2324,11 +2342,18 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._centersTexture?.dispose();
             this._colorsTexture?.dispose();
         }
-        if (this._shTextures) {
+        if (this._shMrtAtlas) {
+            // SH attachments belong to these MRTs — dispose the MRTs, not each attachment.
+            for (const mrt of this._shMrtAtlas) {
+                mrt.dispose();
+            }
+            this._shMrtAtlas = null;
+        } else if (this._shTextures) {
             for (const shTexture of this._shTextures) {
                 shTexture.dispose();
             }
         }
+        this._shTextures = null;
 
         this._rotationsATexture?.dispose();
         this._rotationsBTexture?.dispose();
@@ -2642,6 +2667,59 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._colorsTexture = mrt.textures[3];
     }
 
+    /**
+     * Creates the shared higher-order SH atlas: `_shMrtAtlasTextureCount` single-attachment integer render targets
+     * (RGBA_INTEGER / UNSIGNED_INTEGER, packed-u32), sized to the whole atlas, so a streaming engine can GPU-decode
+     * baked SH into the reserved region and static SH parts CPU-upload into the same attachments. `_shTextures` (the
+     * draw path's `shTexture0..N` samplers) are the attachments. One MRT per attachment keeps within WebGPU's
+     * per-sample color-attachment byte budget. No-op without a real GPU backend (mirrors {@link _createMrtAtlas}).
+     * @param textureSize atlas dimensions (width, height)
+     */
+    protected _createShMrtAtlas(textureSize: Vector2): void {
+        const updateEngine = this._getTextureDataUpdateEngine();
+        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+            return;
+        }
+        const count = this._shMrtAtlasTextureCount;
+        if (count <= 0) {
+            return;
+        }
+        const mrts: MultiRenderTarget[] = [];
+        const shTextures: BaseTexture[] = [];
+        for (let k = 0; k < count; k++) {
+            const name = `${this.name}_gsShAtlas${k}`;
+            const mrt = new MultiRenderTarget(
+                name,
+                { width: textureSize.x, height: textureSize.y },
+                1,
+                this._scene,
+                {
+                    types: [Constants.TEXTURETYPE_UNSIGNED_INTEGER],
+                    formats: [Constants.TEXTUREFORMAT_RGBA_INTEGER],
+                    samplingModes: [Constants.TEXTURE_NEAREST_SAMPLINGMODE],
+                    generateDepthBuffer: false,
+                    generateDepthTexture: false,
+                    generateMipMaps: false,
+                },
+                [name]
+            );
+            mrt.clearColor = new Color4(0, 0, 0, 0);
+            mrt.renderList = [];
+            // Accumulate: each SH decode writes only its region; the rest stays whatever was there (neutral for a
+            // fresh atlas — 128 == 0 lighting is guaranteed by decoding every splat's region, incl. no-SH files).
+            mrt.onClearObservable.add(() => {});
+            const attachment = mrt.textures[0];
+            attachment.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+            attachment.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+            // Allocate on the GPU before any CPU sub-upload (WebGPU writeTexture needs the resource to exist).
+            mrt.render();
+            mrts.push(mrt);
+            shTextures.push(attachment);
+        }
+        this._shMrtAtlas = mrts;
+        this._shTextures = shTextures;
+    }
+
     // NB: partIndices is assumed to be padded to a round texture size
     protected _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array, sh?: Uint8Array[]): void {
         const textureSize = this._getTextureSize(this._vertexCount);
@@ -2665,8 +2743,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         const firstTime = this._covariancesATexture === null;
         const textureSizeChanged = this._textureSize.y != textureSize.y;
         // First streaming-part reservation must convert the existing RawTexture atlas to the MRT-backed atlas,
-        // which requires the full (re)build branch even when the texture height is unchanged.
-        const needsMrtConversion = this._useMrtAtlas && !this._mrtAtlas;
+        // which requires the full (re)build branch even when the texture height is unchanged. Same for the SH atlas:
+        // a streaming SH part must convert the SH textures to render-targetable integer MRTs.
+        const needsMrtConversion = (this._useMrtAtlas && !this._mrtAtlas) || (this._useShMrtAtlas && !this._shMrtAtlas);
 
         if (!firstTime && !textureSizeChanged && !needsMrtConversion) {
             this._setDelayedTextureUpdate(covA, covB, colorArray, sh);
@@ -2678,8 +2757,9 @@ export class GaussianSplattingMeshBase extends Mesh {
                 this._postIntervalsToWorker();
             }
 
-            // Handle SH textures in update path - create if they don't exist
-            if (sh && !this._shTextures) {
+            // Handle SH textures in update path - create if they don't exist. Skip when the SH atlas is
+            // render-backed (_useShMrtAtlas): those targets are created/managed by _createShMrtAtlas, not here.
+            if (sh && !this._shTextures && !this._useShMrtAtlas) {
                 this._shTextures = [];
                 for (let textureIndex = 0; textureIndex < sh.length; textureIndex++) {
                     const shTexture = createEmptyTextureU32(textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
@@ -2747,8 +2827,16 @@ export class GaussianSplattingMeshBase extends Mesh {
                 this._rotationScaleTexture = null;
             }
             if (this._shTextures) {
-                for (const shTexture of this._shTextures) {
-                    shTexture.dispose();
+                // SH attachments belong to _shMrtAtlas MRTs (dispose the MRT, not each attachment) when render-backed.
+                if (this._shMrtAtlas) {
+                    for (const mrt of this._shMrtAtlas) {
+                        mrt.dispose();
+                    }
+                    this._shMrtAtlas = null;
+                } else {
+                    for (const shTexture of this._shTextures) {
+                        shTexture.dispose();
+                    }
                 }
                 this._shTextures = null;
             }
@@ -2758,8 +2846,24 @@ export class GaussianSplattingMeshBase extends Mesh {
                 // Back the four data textures with a render-targetable MRT so a streaming engine can decode
                 // into the reserved region; static splats are CPU-uploaded into the same attachments below.
                 this._createMrtAtlas(textureSize);
+                // Same for the higher-order SH atlas (integer render targets), when a streaming part needs baked SH.
+                if (this._useShMrtAtlas) {
+                    this._createShMrtAtlas(textureSize);
+                }
                 if (this._mrtAtlas) {
                     this._updateSubTextures(this._splatPositions!, covA, covB, colorArray, 0, textureSize.y);
+                    // Render-backed SH: CPU-upload the static parts' SH into the shared SH atlas HERE — before the
+                    // streaming restore below — so a streamed region's restored SH wins over the bulk (neutral) fill,
+                    // exactly like the core atlas's _updateSubTextures-then-restore ordering. (`sh` covers the whole
+                    // atlas; streamed rows are neutral in it and get overwritten by the restore.)
+                    if (this._useShMrtAtlas && sh) {
+                        const shTex = this._shTextures as Nullable<BaseTexture[]>;
+                        if (shTex) {
+                            for (let textureIndex = 0; textureIndex < sh.length && textureIndex < shTex.length; textureIndex++) {
+                                this._updateShTextureData(shTex[textureIndex], sh[textureIndex], textureSize.x, 0, textureSize.y);
+                            }
+                        }
+                    }
                     // New atlas is populated (streamed regions currently zeroed); let streaming parts rebind and
                     // restore their backed-up region into it, overwriting those zeros with the preserved data.
                     if (growingMrtAtlas) {
@@ -2778,16 +2882,20 @@ export class GaussianSplattingMeshBase extends Mesh {
                 this._colorsTexture = createTextureFromDataU8(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             }
 
-            if (sh) {
-                this._shTextures = [];
-                for (let textureIndex = 0; textureIndex < sh.length; textureIndex++) {
-                    const shTexture = createEmptyTextureU32(textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
-                    shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-                    shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-                    this._shTextures!.push(shTexture);
-                }
-                for (let textureIndex = 0; textureIndex < sh.length; textureIndex++) {
-                    this._updateShTextureData(this._shTextures[textureIndex], sh[textureIndex], textureSize.x, 0, textureSize.y);
+            // Render-backed SH (_useShMrtAtlas) was already CPU-uploaded above (before the streaming restore); only
+            // the plain RawTexture SH path is handled here.
+            if (sh && !this._useShMrtAtlas) {
+                {
+                    this._shTextures = [];
+                    for (let textureIndex = 0; textureIndex < sh.length; textureIndex++) {
+                        const shTexture = createEmptyTextureU32(textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA_INTEGER);
+                        shTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                        shTexture.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                        this._shTextures!.push(shTexture);
+                    }
+                    for (let textureIndex = 0; textureIndex < sh.length; textureIndex++) {
+                        this._updateShTextureData(this._shTextures[textureIndex], sh[textureIndex], textureSize.x, 0, textureSize.y);
+                    }
                 }
             }
 

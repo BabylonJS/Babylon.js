@@ -155,6 +155,13 @@ export interface IGaussianSplattingStreamOptions {
      * @internal
      */
     hostCompound?: GaussianSplattingMesh;
+    /**
+     * When true, higher-order spherical-harmonics carried by the SOG files (`shN`) are GPU-decoded into baked
+     * packed-u32 SH textures so the streamed splats render with view-dependent lighting (matching the non-stream
+     * `.spz`/`.sog` path) instead of flat DC-only color. The SH degree is the max `shN.bands` across the streamed
+     * files (lower-band files neutral-fill). No effect when the files carry no `shN`. Defaults to `false`.
+     */
+    decodeSh?: boolean;
 }
 
 // tan(22.5deg): reference half-FOV for a 45-degree vertical FOV, used for FOV compensation (matches PlayCanvas).
@@ -257,6 +264,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     // GPU work buffer holding all decoded splats; created once the total capacity is known.
     private _workBuffer: Nullable<GaussianSplattingWorkBuffer> = null;
+    // Higher-order SH (Phase 6). Enabled via options.decodeSh; the degree/texture-count are the MAX across the
+    // streamed files (learned in the meta pre-pass). 0 degree = no SH baking (files carry no shN or option is off).
+    private _decodeSh = false;
+    private _streamShDegree = 0;
+    private _shTextureCount = 0;
     // True once GPU position readback has been validated against a CPU decode (see _probeReadbackAsync). While
     // false, positions are decoded on the CPU from the means images; once validated, every SOG image uses the
     // fast direct upload and positions are read back from the work buffer (non-blocking).
@@ -375,6 +387,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         this._rootUrl = rootUrl;
         this._streamOptions = options;
         this._hostCompound = options.hostCompound ?? null;
+        this._decodeSh = options.decodeSh ?? false;
 
         // LOD heuristic parameters: take the provided values, otherwise keep the PlayCanvas-aligned defaults.
         const maxLod = Math.max(0, metadata.lodLevels - 1);
@@ -1058,14 +1071,22 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             // in one pass with the compound's other parts. The compound owns the worker/render; this mesh stays
             // a hidden controller.
             const sogWorld = Matrix.Compose(new Vector3(1, -1, 1), Quaternion.RotationYawPitchRoll(0, -Math.PI / 2, 0), Vector3.ZeroReadOnly);
-            const host = this._hostCompound.reserveStreamingPart(capacity, sogWorld, this.name + "_part");
+            // Reserve with SH so the compound converts its SH textures to shared render-targetable integer MRTs and
+            // sets its SH degree; the hosted work buffer bakes into those shared targets at the region base offset.
+            const host = this._hostCompound.reserveStreamingPart(capacity, sogWorld, this.name + "_part", this._shTextureCount, this._streamShDegree);
             this._host = host;
             this._positionBase = host.base;
-            this._workBuffer = new GaussianSplattingWorkBuffer(this._scene, capacity, {
-                mrt: host.mrtAtlas!,
-                width: host.atlasWidth,
-                baseOffset: host.base,
-            });
+            const shExternal = this._shTextureCount > 0 && host.shMrtAtlas ? { textureCount: this._shTextureCount, externalMrts: host.shMrtAtlas } : undefined;
+            this._workBuffer = new GaussianSplattingWorkBuffer(
+                this._scene,
+                capacity,
+                {
+                    mrt: host.mrtAtlas!,
+                    width: host.atlasWidth,
+                    baseOffset: host.base,
+                },
+                shExternal
+            );
             this._readbackCandidate = this._workBuffer.supportsAsyncCentersReadback;
             // Write decoded centers directly into the compound's shared position buffer (offset by the region base).
             this._splatPositions = host.splatPositions;
@@ -1086,6 +1107,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 if (host.mrtAtlas) {
                     wb.rebindAtlas(host.mrtAtlas);
                 }
+                // Rebind the baked SH targets too (the compound recreated its shared SH atlas on the grow/compaction);
+                // restoreRegion() below writes the backed-up SH into these new targets.
+                wb.rebindShAtlas(host.shMrtAtlas);
                 // Pick up a (possibly) new base offset: a plain grow keeps `host.base`, but a COMPACTION relocates
                 // this region to a smaller atlas at a new base. Update the decode/render/readback base and the CPU
                 // position base BEFORE restoring, so the region's texels and worker positions land at the new base.
@@ -1104,13 +1128,17 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             // Nothing active until a resource is decoded (as a range on the reserved part).
             host.setActiveRanges([]);
         } else {
-            this._workBuffer = new GaussianSplattingWorkBuffer(this._scene, capacity);
+            // Bake higher-order SH when requested and present: the work buffer owns `_shTextureCount` integer SH
+            // targets and the draw path lights the decoded splats with them (SH degree = max across files).
+            const sh = this._shTextureCount > 0 ? { textureCount: this._shTextureCount } : undefined;
+            this._workBuffer = new GaussianSplattingWorkBuffer(this._scene, capacity, undefined, sh);
             // GPU readback is only enabled after it is validated against a CPU decode on the first file (see
             // _probeReadbackAsync); until then positions are decoded on the CPU so there is always a correct result.
             this._readbackCandidate = this._workBuffer.supportsAsyncCentersReadback;
             const splatPositions = new Float32Array(capacity * 4);
             const textures = this._workBuffer.textures;
-            this._setExternalWorkBuffer(textures[0], textures[1], textures[2], textures[3], splatPositions, capacity);
+            const shTextures = sh ? this._workBuffer.shTextures : undefined;
+            this._setExternalWorkBuffer(textures[0], textures[1], textures[2], textures[3], splatPositions, capacity, shTextures, this._streamShDegree);
             // Nothing is active until at least one resource has been decoded.
             this.setSplatIndexRanges([]);
             this.setEnabled(true);
@@ -1174,6 +1202,19 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
      */
     private async _gatherCountsAsync(fileIds: number[]): Promise<number> {
         let envCount = 0;
+        // Track the max SH degree/coeffs across every streamed file (+ environment): the baked SH atlas is sized
+        // for the max once, up front, so no mid-stream resize — lower-degree files neutral-fill their higher bands.
+        let maxShDegree = 0;
+        let maxCoeffs = 0;
+        const foldSh = (data: SOGRootData) => {
+            const info = GaussianSplattingStream._GetShInfo(data);
+            if (info.degree > maxShDegree) {
+                maxShDegree = info.degree;
+            }
+            if (info.coeffs > maxCoeffs) {
+                maxCoeffs = info.coeffs;
+            }
+        };
         if (this._metadata.environment) {
             try {
                 const url = this._rootUrl + this._metadata.environment;
@@ -1183,6 +1224,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 if (metaBytes) {
                     const meta = JSON.parse(new TextDecoder().decode(metaBytes)) as SOGRootData;
                     envCount = GaussianSplattingStream._GetSplatCount(meta);
+                    foldSh(meta);
                     this._environmentFiles = files;
                 }
             } catch (e: any) {
@@ -1210,6 +1252,18 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 }
             })
         );
+
+        // Fold in every file's SH (done after the parallel fetch so _fileMeta is fully populated).
+        for (const { sogData } of this._fileMeta.values()) {
+            foldSh(sogData);
+        }
+
+        // Resolve the stream's baked-SH configuration: enabled only when requested AND the data carries shN.
+        if (this._decodeSh && maxShDegree > 0 && maxCoeffs > 0) {
+            this._streamShDegree = maxShDegree;
+            // Packed-u32 SH textures: 16 SH scalar-bytes per texel, 3 channels per coefficient (matches ParseSogDatas).
+            this._shTextureCount = Math.ceil((maxCoeffs * 3) / 16);
+        }
 
         return envCount;
     }
@@ -1882,6 +1936,21 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
      */
     private static _GetSplatCount(data: SOGRootData): number {
         return data.count ?? (Array.isArray(data.means.shape) ? data.means.shape[0] : 0);
+    }
+
+    /**
+     * Reads a SOG file's higher-order SH degree and coefficient count from its metadata, mirroring
+     * {@link ParseSogDatas}'s `coeffs`/`shDegree` derivation. Returns zeros when the file carries no `shN`.
+     * @param data parsed SOG root metadata
+     * @returns the SH degree and higher-order coefficient count (excludes the DC/SH0 term)
+     */
+    private static _GetShInfo(data: SOGRootData): { degree: number; coeffs: number } {
+        if (!data.shN) {
+            return { degree: 0, coeffs: 0 };
+        }
+        const coeffs = data.shN.bands ? (data.shN.bands + 1) ** 2 - 1 : Array.isArray(data.shN.shape) ? data.shN.shape[1] / 3 : 0;
+        const degree = data.shN.bands ?? Math.round(Math.sqrt(coeffs + 1) - 1);
+        return { degree, coeffs };
     }
 
     /**

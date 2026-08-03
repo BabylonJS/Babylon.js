@@ -19,6 +19,12 @@ import {
     GaussianSplattingWorkBufferRelayoutFragmentShaderGLSL,
     GaussianSplattingWorkBufferRelayoutFragmentShaderWGSL,
     GaussianSplattingWorkBufferRelayoutShaderName,
+    GaussianSplattingWorkBufferShDecodeShaderName,
+    GaussianSplattingWorkBufferShDecodeFragmentShaderGLSL,
+    GaussianSplattingWorkBufferShDecodeFragmentShaderWGSL,
+    GaussianSplattingWorkBufferShCopyShaderName,
+    GaussianSplattingWorkBufferShCopyFragmentShaderGLSL,
+    GaussianSplattingWorkBufferShCopyFragmentShaderWGSL,
 } from "./gaussianSplattingWorkBufferShaders";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 
@@ -63,6 +69,21 @@ export class GaussianSplattingWorkBuffer {
     // Reused WebGL framebuffer for the async centers readback (created lazily, freed in dispose).
     private _readFbo: Nullable<WebGLFramebuffer> = null;
 
+    // Higher-order spherical-harmonics (Phase 6). Each SH texture is its OWN single-attachment integer render
+    // target (RGBA_INTEGER/UNSIGNED_INTEGER, 16 SH scalar-bytes packed per texel) so a decode/relayout pass writes
+    // exactly one attachment — keeping within WebGPU's per-sample color-attachment byte budget. Empty when SH is off.
+    private _shMrts: MultiRenderTarget[] = [];
+    // True when this work buffer owns (and disposes) its SH render targets (standalone). False when they are the
+    // hosting compound's shared SH atlas (hosted) — borrowed, not disposed. Rebound alongside the core atlas.
+    private _ownsShMrts = false;
+    // The SH decode material (packed-u32 dequant), created only when SH is requested. Reused across files/passes.
+    private _shMaterial: Nullable<ShaderMaterial> = null;
+    // Integer SH relayout/backup copy material (usampler2D -> uvec4), created lazily alongside the float copy.
+    private _shCopyMaterial: Nullable<ShaderMaterial> = null;
+    // Transient region-sized integer backups of the SH textures, held between backupRegion() and restoreRegion()
+    // so the baked SH survives the compound recreating its SH atlas on a grow/compaction (parallel to _backupMrt).
+    private _backupShMrts: Nullable<MultiRenderTarget[]> = null;
+
     /**
      * True when the engine supports the non-blocking GPU readback used by {@link readCentersRangeAsync}:
      * WebGL2 (PBO + fence) or WebGPU (copyTextureToBuffer + mapAsync). When false (e.g. WebGL1), callers must
@@ -92,6 +113,14 @@ export class GaussianSplattingWorkBuffer {
     }
 
     /**
+     * The baked higher-order SH textures (packed-u32, one per `ceil(coeffs*3/16)`), consumed by the draw path's
+     * `computeSHWeighted`/`decompose` as `shTexture0..N`. Empty when SH decoding is not enabled.
+     */
+    public get shTextures(): Texture[] {
+        return this._shMrts.map((m) => m.textures[0]);
+    }
+
+    /**
      * Creates a work buffer sized to hold `capacity` splats.
      *
      * Standalone (default): the work buffer creates and owns a square MRT sized `ceil(sqrt(capacity))`, with
@@ -104,8 +133,16 @@ export class GaussianSplattingWorkBuffer {
      * @param scene hosting scene
      * @param capacity total number of splats the work buffer must address
      * @param externalAtlas optional external atlas to decode into instead of creating an owned square MRT
+     * @param sh optional higher-order SH decode configuration (Phase 6). `textureCount = ceil(coeffs*3/16)` for the
+     *   MAX SH degree across the streamed files. Standalone: the work buffer creates that many owned single-attachment
+     *   integer render targets. Hosted: `externalMrts` are the compound's shared SH atlas targets (borrowed).
      */
-    constructor(scene: Scene, capacity: number, externalAtlas?: { mrt: MultiRenderTarget; width: number; baseOffset: number }) {
+    constructor(
+        scene: Scene,
+        capacity: number,
+        externalAtlas?: { mrt: MultiRenderTarget; width: number; baseOffset: number },
+        sh?: { textureCount: number; externalMrts?: MultiRenderTarget[] }
+    ) {
         this._scene = scene;
         this._shaderLanguage = scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
         this._capacity = Math.max(1, capacity);
@@ -121,6 +158,21 @@ export class GaussianSplattingWorkBuffer {
             this._ownsMrt = true;
             // The decode buffer accumulates (clear disabled) so each decode preserves previously-decoded files.
             this._mrt = this._createMrt("gsWorkBuffer", true);
+        }
+
+        // Higher-order SH: one single-attachment integer target per packed-u32 SH texture. Standalone owns square
+        // targets sized like the core atlas; hosted borrows the compound's wide shared SH atlas targets.
+        if (sh && sh.textureCount > 0) {
+            if (sh.externalMrts) {
+                this._shMrts = sh.externalMrts.slice(0, sh.textureCount);
+                this._ownsShMrts = false;
+            } else {
+                for (let k = 0; k < sh.textureCount; k++) {
+                    this._shMrts.push(this._createShMrt(`gsWorkBufferSh${k}`, true));
+                }
+                this._ownsShMrts = true;
+            }
+            this._shMaterial = this._createShMaterial();
         }
 
         // One persistent decode material + fullscreen-triangle quad, reused (with per-file uniforms)
@@ -144,6 +196,17 @@ export class GaussianSplattingWorkBuffer {
     public rebindAtlas(mrt: MultiRenderTarget): void {
         if (!this._ownsMrt) {
             this._mrt = mrt;
+        }
+    }
+
+    /**
+     * Rebinds a hosted work buffer to the compound's NEW shared SH atlas (after the compound recreated it on a
+     * grow/compaction). No-op when SH isn't in use or the work buffer owns its SH targets (standalone).
+     * @param shMrts the compound's new shared SH render targets (one per packed-u32 SH texture)
+     */
+    public rebindShAtlas(shMrts: Nullable<MultiRenderTarget[]>): void {
+        if (!this._ownsShMrts && shMrts && this._shMrts.length) {
+            this._shMrts = shMrts.slice(0, this._shMrts.length);
         }
     }
 
@@ -179,6 +242,15 @@ export class GaussianSplattingWorkBuffer {
         // Identity copy of the region out of the atlas: with useMap=0 and dstBaseRow=-baseRow the shader reads
         // atlas texel ((p.y + baseRow) * width + p.x) — the region's global texel — into backup texel p.
         this._renderRelayoutPass(this._backupMrt, this._mrt.textures, this._mrt.textures[0], 0, width, width, 0, -baseRow);
+        // Same for each baked SH texture (one integer copy pass per texture).
+        if (this._shMrts.length && this._shCopyMaterial) {
+            if (!this._backupShMrts) {
+                this._backupShMrts = this._shMrts.map((_, k) => this._createShMrt(`gsShAtlasBackup${k}`, false, width, regionRows));
+            }
+            for (let k = 0; k < this._shMrts.length; k++) {
+                this._renderShCopyPass(this._backupShMrts[k], this._shMrts[k].textures[0], this._mrt.textures[0], 0, width, width, 0, -baseRow);
+            }
+        }
         this._quad.material = this._material;
     }
 
@@ -198,12 +270,26 @@ export class GaussianSplattingWorkBuffer {
         try {
             // useMap=0 identity with dstBaseRow=baseRow: atlas texel p reads backup texel ((p.y - baseRow)*width + p.x).
             this._renderRelayoutPass(this._mrt, this._backupMrt.textures, this._backupMrt.textures[0], 0, width, width, 0, baseRow);
+            // Restore each baked SH texture the same way (scissored to the region's rows). The map placeholder must
+            // be a FLOAT texture (uMapTex is texture_2d<f32>) even though useMap=0 doesn't sample it — WebGPU still
+            // validates the bound texture's sample type against the layout. Use the atlas centers (F32).
+            if (this._backupShMrts && this._shMrts.length && this._shCopyMaterial) {
+                for (let k = 0; k < this._shMrts.length && k < this._backupShMrts.length; k++) {
+                    this._renderShCopyPass(this._shMrts[k], this._backupShMrts[k].textures[0], this._mrt.textures[0], 0, width, width, 0, baseRow);
+                }
+            }
         } finally {
             engine.disableScissor();
             this._quad.material = this._material;
         }
         this._backupMrt.dispose();
         this._backupMrt = null;
+        if (this._backupShMrts) {
+            for (const mrt of this._backupShMrts) {
+                mrt.dispose();
+            }
+            this._backupShMrts = null;
+        }
     }
 
     /**
@@ -250,6 +336,40 @@ export class GaussianSplattingWorkBuffer {
     }
 
     /**
+     * Creates a single-attachment integer render target (RGBA_INTEGER / UNSIGNED_INTEGER) that holds one packed-u32
+     * baked-SH texture. One attachment per pass keeps within WebGPU's per-sample color-attachment byte budget and
+     * matches the format/type of the draw path's `shTexture0..N` samplers (`_GaussianSplattingBytesPerShTexel`).
+     * @param name attachment name
+     * @param disableClear when true, clearing is suppressed so SH decodes accumulate across files
+     * @param width texture width (defaults to the work-buffer size)
+     * @param height texture height (defaults to the work-buffer size)
+     * @returns the created single-attachment integer MRT
+     */
+    private _createShMrt(name: string, disableClear: boolean, width: number = this._textureSize, height: number = this._textureSize): MultiRenderTarget {
+        const mrt = new MultiRenderTarget(
+            name,
+            { width, height },
+            1,
+            this._scene,
+            {
+                types: [Constants.TEXTURETYPE_UNSIGNED_INTEGER],
+                formats: [Constants.TEXTUREFORMAT_RGBA_INTEGER],
+                samplingModes: [Constants.TEXTURE_NEAREST_SAMPLINGMODE],
+                generateDepthBuffer: false,
+                generateDepthTexture: false,
+                generateMipMaps: false,
+            },
+            [name]
+        );
+        mrt.clearColor = new Color4(0, 0, 0, 0);
+        mrt.renderList = [];
+        if (disableClear) {
+            mrt.onClearObservable.add(() => {});
+        }
+        return mrt;
+    }
+
+    /**
      * Decodes one SOG file into the work buffer at the given splat offset (accumulating; previously
      * decoded files are preserved). Resolves once the GPU decode has been issued. The caller may
      * dispose the source pack textures after this resolves.
@@ -261,6 +381,12 @@ export class GaussianSplattingWorkBuffer {
             return;
         }
         this._applyPack(pack, offset);
+        // When SH is enabled, bake EVERY file's region — even a file with no higher-order SH (a coarse LOD may drop
+        // it): those get uCoeffs=0 so the whole region neutral-fills (128), keeping mixed-degree files consistent.
+        const decodeSh = this._shMaterial !== null && this._shMrts.length > 0;
+        if (decodeSh) {
+            this._applyShPack(pack, offset);
+        }
         // Render the decode pass at the start of a frame (the safe point for custom render targets),
         // once the shader is compiled — never re-entrantly from a promise/observable continuation.
         await new Promise<void>((resolve) => {
@@ -269,12 +395,25 @@ export class GaussianSplattingWorkBuffer {
                     resolve();
                     return;
                 }
-                if (!this._material.isReady(this._quad)) {
+                if (!this._material.isReady(this._quad) || (decodeSh && !this._shMaterial!.isReady(this._quad))) {
                     this._scene.onBeforeRenderObservable.addOnce(attempt);
                     return;
                 }
+                this._quad.material = this._material;
                 this._mrt.renderList = [this._quad];
                 this._mrt.render();
+                // Bake this file's higher-order SH: one pass per packed-u32 SH texture (uShTextureIndex selects the
+                // 16 SH scalars written this pass), each into its own single-attachment integer target at the region
+                // offset. Files with fewer coefficients neutral-fill (128) their higher bands in-shader.
+                if (decodeSh) {
+                    for (let k = 0; k < this._shMrts.length; k++) {
+                        this._shMaterial!.setInt("uShTextureIndex", k);
+                        this._quad.material = this._shMaterial!;
+                        this._shMrts[k].renderList = [this._quad];
+                        this._shMrts[k].render();
+                    }
+                    this._quad.material = this._material;
+                }
                 resolve();
             };
             this._scene.onBeforeRenderObservable.addOnce(attempt);
@@ -293,7 +432,41 @@ export class GaussianSplattingWorkBuffer {
         if (!this._copyMaterial) {
             this._copyMaterial = this._createCopyMaterial();
         }
-        return this._copyMaterial.isReady(this._quad);
+        // When SH is in use, the integer copy shader must also be compiled before a backup/restore/relayout can run.
+        if (this._shMrts.length && !this._shCopyMaterial) {
+            this._shCopyMaterial = this._createShCopyMaterial();
+        }
+        // Trigger effect creation/compilation (isReady creates+compiles the effect even when it then reports the
+        // material "not ready" because a bound sampler is stale), then gate on the EFFECT's compilation only — NOT
+        // `material.isReady(mesh)`, which also fails on a stale/disposed texture binding. The copy passes bind fresh
+        // textures every call, so a leftover binding from a previous backup (whose temp MRT was freed) is irrelevant;
+        // gating on it would wrongly skip the backup and lose the region's data (all texels rebuilt as zeros).
+        // Point the copy materials at VALID atlas textures before the readiness check: a previous restore/relayout
+        // binds its temporary/backup MRTs as sources and then frees them, leaving the material with disposed sampler
+        // bindings that make `isReady` report "not ready" even though the shader is compiled. The copy passes bind
+        // fresh textures each call anyway, so keeping valid bindings here makes `isReady` reflect only compilation.
+        this._bindCopyMaterialsToAtlas();
+        const shReady = this._shMrts.length === 0 || (this._shCopyMaterial !== null && this._shCopyMaterial.isReady(this._quad));
+        return this._copyMaterial.isReady(this._quad) && shReady;
+    }
+
+    /**
+     * Re-points the relayout/backup copy materials' samplers at the live atlas textures (valid, never freed), so a
+     * later {@link isRelayoutReady} check isn't tripped by a stale binding to a disposed temp/backup MRT.
+     */
+    private _bindCopyMaterialsToAtlas(): void {
+        const t = this._mrt.textures;
+        if (this._copyMaterial) {
+            this._copyMaterial.setTexture("uMapTex", t[0]);
+            this._copyMaterial.setTexture("uSrc0", t[0]);
+            this._copyMaterial.setTexture("uSrc1", t[1]);
+            this._copyMaterial.setTexture("uSrc2", t[2]);
+            this._copyMaterial.setTexture("uSrc3", t[3]);
+        }
+        if (this._shCopyMaterial && this._shMrts.length) {
+            this._shCopyMaterial.setTexture("uMapTex", t[0]);
+            this._shCopyMaterial.setTexture("uSrcSh", this._shMrts[0].textures[0]);
+        }
     }
 
     /**
@@ -345,8 +518,20 @@ export class GaussianSplattingWorkBuffer {
                 this._renderRelayoutPass(this._mrt, temp.textures, mapTexture, 0); // temp -> old, identity full overwrite
             } finally {
                 temp.dispose();
-                this._quad.material = this._material;
             }
+            // Same ping-pong for each baked SH texture (integer copy, one temp per texture).
+            if (this._shMrts.length && this._shCopyMaterial) {
+                for (let k = 0; k < this._shMrts.length; k++) {
+                    const shTemp = this._createShMrt("gsShRelayoutTemp", false);
+                    try {
+                        this._renderShCopyPass(shTemp, this._shMrts[k].textures[0], mapTexture, 1);
+                        this._renderShCopyPass(this._shMrts[k], shTemp.textures[0], mapTexture, 0);
+                    } finally {
+                        shTemp.dispose();
+                    }
+                }
+            }
+            this._quad.material = this._material;
             return;
         }
 
@@ -357,20 +542,31 @@ export class GaussianSplattingWorkBuffer {
         const engine = this._scene.getEngine();
         // Region-sized temp (width x regionRows) — memory stays proportional to the region, not the whole atlas.
         const temp = this._createMrt("gsRelayoutTemp", false, width, regionRows);
+        // One region-sized integer temp per baked SH texture (same ping-pong, integer format).
+        const shTemps = this._shMrts.length && this._shCopyMaterial ? this._shMrts.map((_, k) => this._createShMrt(`gsShRelayoutTemp${k}`, false, width, regionRows)) : [];
         try {
             // Pass 1: atlas region -> temp via map. The map is region-local; uSrcBaseOffset shifts each source
             // index to its GLOBAL atlas texel (uSrcWidth = atlas width). Temp is exactly the band, so no scissor.
             this._renderRelayoutPass(temp, this._mrt.textures, mapTexture, 1, /*dstWidth*/ width, /*srcWidth*/ width, /*srcBaseOffset*/ this._baseOffset, /*dstBaseRow*/ 0);
+            for (let k = 0; k < shTemps.length; k++) {
+                this._renderShCopyPass(shTemps[k], this._shMrts[k].textures[0], mapTexture, 1, width, width, this._baseOffset, 0);
+            }
             // Pass 2: temp -> atlas region, identity within the band. uDstBaseRow maps the atlas destination row
             // back into the region-local temp; the scissor confines writes to the band so static parts are safe.
             engine.enableScissor(0, baseRow, width, regionRows);
             try {
                 this._renderRelayoutPass(this._mrt, temp.textures, mapTexture, 0, /*dstWidth*/ width, /*srcWidth*/ width, /*srcBaseOffset*/ 0, /*dstBaseRow*/ baseRow);
+                for (let k = 0; k < shTemps.length; k++) {
+                    this._renderShCopyPass(this._shMrts[k], shTemps[k].textures[0], mapTexture, 0, width, width, 0, baseRow);
+                }
             } finally {
                 engine.disableScissor();
             }
         } finally {
             temp.dispose();
+            for (const t of shTemps) {
+                t.dispose();
+            }
             this._quad.material = this._material;
         }
     }
@@ -425,6 +621,62 @@ export class GaussianSplattingWorkBuffer {
                 attributes: ["position"],
                 uniforms: ["uDstWidth", "uSrcWidth", "uUseMap", "uSrcBaseOffset", "uDstBaseRow"],
                 samplers: ["uMapTex", "uSrc0", "uSrc1", "uSrc2", "uSrc3"],
+                shaderLanguage: this._shaderLanguage,
+            }
+        );
+        material.backFaceCulling = false;
+        material.disableDepthWrite = true;
+        return material;
+    }
+
+    /**
+     * Renders one INTEGER SH copy pass (one packed-u32 SH texture) into the target, sampling one integer source.
+     * Same index/map/base math as {@link _renderRelayoutPass} but for the integer SH format.
+     * @param target destination single-attachment integer MRT
+     * @param srcSh the integer SH source texture
+     * @param mapTexture the R32F destination-to-source index map (sampled only when `useMap` is 1)
+     * @param useMap 1 to read source indices from the map (gaps discarded), 0 for an identity copy
+     * @param dstWidth destination width used to linearize the destination texel
+     * @param srcWidth source width used to convert a linear source index to a texel
+     * @param srcBaseOffset added to each mapped source index (region-local map -> global atlas texel)
+     * @param dstBaseRow subtracted from the destination row for an identity copy of a region-local temp
+     */
+    private _renderShCopyPass(
+        target: MultiRenderTarget,
+        srcSh: Texture,
+        mapTexture: BaseTexture,
+        useMap: number,
+        dstWidth: number = this._textureSize,
+        srcWidth: number = this._textureSize,
+        srcBaseOffset: number = 0,
+        dstBaseRow: number = 0
+    ): void {
+        const material = this._shCopyMaterial!;
+        material.setTexture("uMapTex", mapTexture);
+        material.setTexture("uSrcSh", srcSh);
+        material.setInt("uDstWidth", dstWidth);
+        material.setInt("uSrcWidth", srcWidth);
+        material.setInt("uUseMap", useMap);
+        material.setInt("uSrcBaseOffset", srcBaseOffset);
+        material.setInt("uDstBaseRow", dstBaseRow);
+        this._quad.material = material;
+        target.renderList = [this._quad];
+        target.render();
+    }
+
+    private _createShCopyMaterial(): ShaderMaterial {
+        const isWGSL = this._shaderLanguage === ShaderLanguage.WGSL;
+        const material = new ShaderMaterial(
+            GaussianSplattingWorkBufferShCopyShaderName,
+            this._scene,
+            {
+                vertexSource: isWGSL ? GaussianSplattingWorkBufferVertexShaderWGSL : GaussianSplattingWorkBufferVertexShaderGLSL,
+                fragmentSource: isWGSL ? GaussianSplattingWorkBufferShCopyFragmentShaderWGSL : GaussianSplattingWorkBufferShCopyFragmentShaderGLSL,
+            },
+            {
+                attributes: ["position"],
+                uniforms: ["uDstWidth", "uSrcWidth", "uUseMap", "uSrcBaseOffset", "uDstBaseRow"],
+                samplers: ["uMapTex", "uSrcSh"],
                 shaderLanguage: this._shaderLanguage,
             }
         );
@@ -528,14 +780,29 @@ export class GaussianSplattingWorkBuffer {
         }
         this._quad.dispose();
         this._material.dispose(true, false);
+        this._shMaterial?.dispose(true, false);
         this._copyMaterial?.dispose(true, false);
+        this._shCopyMaterial?.dispose(true, false);
         this._relayoutMapTexture?.dispose();
         this._backupMrt?.dispose();
         this._backupMrt = null;
+        if (this._backupShMrts) {
+            for (const mrt of this._backupShMrts) {
+                mrt.dispose();
+            }
+            this._backupShMrts = null;
+        }
         // Only dispose the MRT when we own it; an external atlas belongs to the hosting compound mesh.
         if (this._ownsMrt) {
             this._mrt.dispose();
         }
+        // Same ownership rule for the SH targets (standalone owns; hosted borrows the compound's shared SH atlas).
+        if (this._ownsShMrts) {
+            for (const mrt of this._shMrts) {
+                mrt.dispose();
+            }
+        }
+        this._shMrts = [];
     }
 
     private _createQuad(): Mesh {
@@ -600,5 +867,48 @@ export class GaussianSplattingWorkBuffer {
         material.setInt("uCount", pack.splatCount);
         material.setInt("uDestWidth", this._textureSize);
         material.setInt("uSrcWidth", srcWidth);
+    }
+
+    private _createShMaterial(): ShaderMaterial {
+        const isWGSL = this._shaderLanguage === ShaderLanguage.WGSL;
+        const material = new ShaderMaterial(
+            GaussianSplattingWorkBufferShDecodeShaderName,
+            this._scene,
+            {
+                vertexSource: isWGSL ? GaussianSplattingWorkBufferVertexShaderWGSL : GaussianSplattingWorkBufferVertexShaderGLSL,
+                fragmentSource: isWGSL ? GaussianSplattingWorkBufferShDecodeFragmentShaderWGSL : GaussianSplattingWorkBufferShDecodeFragmentShaderGLSL,
+            },
+            {
+                attributes: ["position"],
+                uniforms: ["sogShnMin", "sogShnMax", "uVersion", "uOffset", "uCount", "uDestWidth", "uSrcWidth", "uCoeffs", "uShTextureIndex"],
+                samplers: ["sogShLabelsTex", "sogShCentroidsTex", "sogCodebookTex"],
+                shaderLanguage: this._shaderLanguage,
+            }
+        );
+        material.backFaceCulling = false;
+        material.disableDepthWrite = true;
+        return material;
+    }
+
+    private _applyShPack(pack: ISogTexturePack, offset: number): void {
+        const material = this._shMaterial!;
+        // A file may carry no higher-order SH (coarse LOD): fall back to sh0Texture as a harmless placeholder for the
+        // label/centroid samplers and set uCoeffs=0 so the shader neutral-fills every coefficient (128 -> 0 lighting).
+        const hasSh = !!pack.shLabelsTexture && !!pack.shCentroidsTexture;
+        const labels = pack.shLabelsTexture ?? pack.sh0Texture;
+        const centroids = pack.shCentroidsTexture ?? pack.sh0Texture;
+        material.setTexture("sogShLabelsTex", labels);
+        material.setTexture("sogShCentroidsTex", centroids);
+        // Codebook only used for v2; bind a harmless placeholder otherwise so the sampler is always set.
+        material.setTexture("sogCodebookTex", pack.codebookTexture ?? labels);
+        material.setFloat("sogShnMin", pack.shnMin ?? 0);
+        material.setFloat("sogShnMax", pack.shnMax ?? 0);
+        material.setInt("uVersion", pack.version);
+        material.setInt("uOffset", this._baseOffset + offset);
+        material.setInt("uCount", pack.splatCount);
+        material.setInt("uDestWidth", this._textureSize);
+        material.setInt("uSrcWidth", (labels as Texture).getSize().width);
+        // Higher-order coefficient count for THIS file (bands=3 -> 15). 0 when the file has no SH -> full neutral fill.
+        material.setInt("uCoeffs", hasSh ? pack.shCoeffCount : 0);
     }
 }

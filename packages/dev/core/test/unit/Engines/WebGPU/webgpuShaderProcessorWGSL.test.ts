@@ -197,4 +197,37 @@ describe("WebGPUShaderProcessorWGSL", () => {
             expect(shadowsVertex).toContain("vertexOutputs.vPositionFromCamera{X} = uniforms.view * worldPos;");
         });
     });
+
+    describe("integer fragData outputs (render-to-integer-texture)", () => {
+        const vtx = "@vertex\nfn main(input : VertexInputs) -> FragmentInputs {\n  vertexOutputs.position = vec4<f32>(0.0);\n}\n";
+
+        it("defaults a fragData location to vec4<f32> (backward compatible)", () => {
+            const frag = "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n  fragmentOutputs.fragData0 = vec4<f32>(1.0);\n}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<f32>");
+            expect(fragmentCode).not.toContain("vec4<u32>");
+        });
+
+        it("emits vec4<u32> for a fragData location assigned a uint vector (RGBA_INTEGER target)", () => {
+            const frag =
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  fragmentOutputs.fragData0 = vec4<u32>(1u, 2u, 3u, 4u);\n" +
+                "  fragmentOutputs.fragData1 = vec4<f32>(0.5);\n" +
+                "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<u32>");
+            expect(fragmentCode).toContain("@location(1) fragData1 : vec4<f32>");
+        });
+
+        it("emits vec4<i32> for a vec4i(...) assignment and vec4<u32> for vec4u(...)", () => {
+            const frag =
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  fragmentOutputs.fragData0 = vec4i(1);\n" +
+                "  fragmentOutputs.fragData1 = vec4u(2u);\n" +
+                "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<i32>");
+            expect(fragmentCode).toContain("@location(1) fragData1 : vec4<u32>");
+        });
+    });
 });

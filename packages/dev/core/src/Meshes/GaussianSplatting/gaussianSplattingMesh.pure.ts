@@ -118,6 +118,11 @@ export interface IGaussianSplattingStreamingPart {
     readonly splatPositions: Nullable<Float32Array>;
     /** The compound's shared render-target atlas a streaming engine decodes into, or null on a non-GPU backend. */
     readonly mrtAtlas: Nullable<MultiRenderTarget>;
+    /**
+     * The compound's shared higher-order SH render-target atlas (one single-attachment integer MRT per packed-u32
+     * SH texture) a streaming engine bakes SH into, or null when SH decode was not requested for this part.
+     */
+    readonly shMrtAtlas: Nullable<MultiRenderTarget[]>;
     /** Width (in texels) of the atlas, used to address decode/readback over the wide layout. */
     readonly atlasWidth: number;
     /** Whether the compound's shared depth sort is settled (a streaming engine polls this to detect readiness). */
@@ -190,6 +195,12 @@ interface IStreamingPartState {
     boundsMax: Vector3;
     /** The region's last active LOD ranges in LOCAL coordinates, so a relocation can re-post them at the new base. */
     localRanges: Nullable<readonly IGaussianSplattingSplatRange[]>;
+    /** Number of packed-u32 SH textures this streaming part bakes into the shared SH atlas (0 = no SH). Used to
+     * recompute the compound's SH-atlas state from the SURVIVING parts when a part is removed (so removing the last
+     * SH part turns the SH atlas off instead of leaving stale render-target degree/count behind). */
+    shTextureCount: number;
+    /** SH degree of this streaming part's baked SH (0 = no SH). Feeds the compound's max-degree recompute. */
+    shDegree: number;
 }
 
 /**
@@ -241,6 +252,14 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     /** Mutable bookkeeping for each reserved streaming region, so {@link compactAtlas} can relocate them. */
     private _streamingStates: IStreamingPartState[] = [];
+
+    /**
+     * Max SH degree contributed by the currently-live (non-tombstoned) streaming parts. Recomputed from the
+     * surviving states by {@link _refreshStreamingShState} whenever parts change, so removing the last SH stream
+     * turns the shared render-target SH atlas off (rather than leaving a stale degree behind that would keep
+     * SH_DEGREE high while nothing refills the SH texels — leaving them at raw 0, which decodes to -1, not neutral).
+     */
+    private _streamingShDegree = 0;
 
     /** Part indices tombstoned by {@link removePart} while streaming — excluded from render, reclaimed by {@link compactAtlas}. */
     private _tombstonedPartIndices = new Set<number>();
@@ -932,9 +951,19 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         //     parts that had no SH also get neutral fill.
         // Deliberately excludes the case where the existing compound has no SH and no new part
         // has SH either (shDegreeNew stays 0, no SH textures allocated).
-        const hasSH = this._shDegree > 0 || others.some((o) => o._shData !== null);
-        const shDegreeNew = hasSH ? Math.max(this._shDegree, ...others.map((o) => o._shDegree)) : 0;
+        // A render-backed streaming SH atlas (a hosted stream that bakes SH) carries SH that no CPU part source
+        // represents — its degree lives in `_streamingShDegree` (recomputed from the LIVE streaming parts, so it
+        // shrinks when a SH stream is removed). Fold it in so `_shDegree` (which drives the draw's SH_DEGREE define)
+        // is preserved across a grow/compaction that reset `_shDegree` to 0 — but drops to 0 when no SH stream survives.
+        const streamingShDegree = this._streamingShDegree;
+        const staticHasSH = this._shDegree > 0 || others.some((o) => o._shData !== null);
+        const hasSH = staticHasSH || streamingShDegree > 0;
+        const shDegreeNew = hasSH ? Math.max(this._shDegree, streamingShDegree, ...others.map((o) => o._shDegree)) : 0;
         let sh: Uint8Array[] | undefined = undefined;
+        // Allocate a neutral (128 == 0 after decode) CPU SH base whenever the SH atlas is active — INCLUDING a
+        // stream-driven atlas. It is uploaded over the WHOLE atlas before any SH stream restores its own region, so
+        // non-SH regions (a non-SH streaming part like a plain LOD scene, or padding) read neutral instead of raw 0
+        // (which decodes to -1). SH streams' regions are overwritten by their restore/decode afterwards.
         if (hasSH && shDegreeNew > 0) {
             // Each SH texture holds one texel per splat; each texel is _GaussianSplattingBytesPerShTexel
             // bytes with one byte per scalar, so it carries that many scalars. Degree d has
@@ -1039,6 +1068,16 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                         if (!proxy) {
                             continue;
                         }
+                        // Streaming parts have no retained CPU source — their atlas rows (core + SH) are
+                        // GPU-authoritative and preserved across the rebuild by the backup/restore hooks. Leave their
+                        // rows at the fresh-array defaults (zero core, neutral SH) for the restore to overwrite; just
+                        // advance the offset. (With a static part present _splatsData is non-null and these would
+                        // otherwise reconstruct as a harmless zeros-slice; with only streaming parts it is null and
+                        // _createRetainedPartSource returns null — so this skip is required, not just an optimization.)
+                        if (this._streamingStates.some((s) => s.proxy === proxy)) {
+                            rebuildOffset += proxy._vertexCount;
+                            continue;
+                        }
                         const source = this._createRetainedPartSource(proxy);
                         if (!source) {
                             throw new Error(`Cannot rebuild compound part "${proxy.name}": the retained compound source data is not available.`);
@@ -1114,6 +1153,14 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                         if (!proxy) {
                             continue;
                         }
+                        // Streaming parts are GPU-authoritative (no CPU source) — skip reconstruction (their rows are
+                        // restored via the atlas hooks). Row-aligned regions mean a streamed part's splats never fall
+                        // in the partial boundary row anyway; leave its source buffers null and just track the offset.
+                        if (this._streamingStates.some((s) => s.proxy === proxy)) {
+                            partStarts[pi] = cumOffset;
+                            cumOffset += proxy._vertexCount;
+                            continue;
+                        }
                         const source = this._createRetainedPartSource(proxy);
                         if (!source || !source._splatsData) {
                             throw new Error(`Cannot rebuild compound part "${proxy.name}": the retained compound source data is not available.`);
@@ -1152,9 +1199,14 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (totalCount !== this._vertexCount) {
             this._updateSplatIndexBuffer(totalCount);
         }
-        this._retainMergedPartData(splatCountA, totalCount, others, shDegreeNew);
+        // Retain CPU SH only for the STATIC contribution — a stream-only SH atlas has no CPU SH to reconstruct on a
+        // later compaction (the stream re-decodes/backup-restores its own region), so don't retain neutral buffers.
+        this._retainMergedPartData(splatCountA, totalCount, others, staticHasSH ? shDegreeNew : 0);
         this._vertexCount = totalCount;
         this._shDegree = shDegreeNew;
+        // Keep the max in sync so the public `shDegree` setter's clamp tracks the current data (and shrinks when a
+        // higher-degree part is removed). The compound's SH degree is fully described by the live parts.
+        this._maxShDegree = shDegreeNew;
 
         // Gate the sort worker for the duration of this operation. _updateTextures (below) may create the worker and fire an
         // immediate sort via _postToWorker. At that point partMatrices has not yet been updated for the incoming parts, so the
@@ -1343,6 +1395,31 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * texels get rebuilt; memory is only reclaimed by disposing/recreating the whole compound.
      * @param index the part index to tombstone
      */
+    /**
+     * Recomputes the shared SH-atlas state ({@link _useShMrtAtlas}, {@link _shMrtAtlasTextureCount},
+     * {@link _streamingShDegree}) from the currently-live (non-tombstoned) streaming parts. Call before an atlas
+     * rebuild that follows a removal so a stale SH degree/count from a removed part can't keep the SH atlas active
+     * (and SH_DEGREE high) with nothing refilling the SH texels.
+     */
+    private _refreshStreamingShState(): void {
+        let count = 0;
+        let degree = 0;
+        for (const state of this._streamingStates) {
+            if (this._tombstonedPartIndices.has(state.partIndex)) {
+                continue;
+            }
+            if (state.shTextureCount > count) {
+                count = state.shTextureCount;
+            }
+            if (state.shDegree > degree) {
+                degree = state.shDegree;
+            }
+        }
+        this._shMrtAtlasTextureCount = count;
+        this._useShMrtAtlas = count > 0;
+        this._streamingShDegree = degree;
+    }
+
     private _tombstonePart(index: number): void {
         // Fire before mutation so the stream driving this part (subscribed via AddGaussianSplattingStreamPartAsync)
         // can dispose itself: stop its LOD loop, free its work buffer, and drop its atlas-rebuild hooks.
@@ -1399,7 +1476,14 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._rotationsATexture = null;
         this._rotationsBTexture = null;
         this._rotationScaleTexture = null;
-        if (this._shTextures) {
+        if (this._shMrtAtlas) {
+            // SH attachments belong to these MRTs — dispose the MRTs, not each attachment (mirrors _mrtAtlas).
+            for (const mrt of this._shMrtAtlas) {
+                mrt.dispose();
+            }
+            this._shMrtAtlas = null;
+            this._shTextures = null;
+        } else if (this._shTextures) {
             for (const t of this._shTextures) {
                 t.dispose();
             }
@@ -1516,6 +1600,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this.onPartCountChangedObservable.notifyObservers(0);
             return;
         }
+
+        // Recompute the SH-atlas state from the SURVIVING streaming parts BEFORE the rebuild: if the removed part
+        // was the only SH stream, this turns the SH atlas off (degree 0) so the rebuild neither recreates a stale
+        // SH atlas nor keeps SH_DEGREE high over now-unfilled (raw-0) texels; a lower surviving degree shrinks too.
+        this._refreshStreamingShState();
 
         this._rebuilding = true;
         this._canPostToWorker = false;
@@ -1714,9 +1803,19 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * @param worldMatrix initial world matrix for the region's proxy (e.g. carrying a source's up-axis
      *   convention); defaults to identity
      * @param name name for the region's proxy mesh
+     * @param shTextureCount number of packed-u32 higher-order SH textures to allocate as a shared render-target SH
+     *   atlas the streaming engine bakes into (`ceil(coeffs*3/16)` for the stream's max SH degree); 0 = no SH
+     * @param shDegree SH degree of the streamed content (drives the compound's `SH_DEGREE`); ignored when
+     *   `shTextureCount` is 0. The compound keeps the MAX SH degree across its parts.
      * @returns a handle used to populate and control the reserved region
      */
-    public reserveStreamingPart(capacity: number, worldMatrix: Matrix = Matrix.Identity(), name: string = this.name + "_streamingPart"): IGaussianSplattingStreamingPart {
+    public reserveStreamingPart(
+        capacity: number,
+        worldMatrix: Matrix = Matrix.Identity(),
+        name: string = this.name + "_streamingPart",
+        shTextureCount: number = 0,
+        shDegree: number = 0
+    ): IGaussianSplattingStreamingPart {
         if (!(capacity > 0)) {
             throw new Error("reserveStreamingPart: capacity must be a positive integer");
         }
@@ -1727,6 +1826,18 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // allocates covariance B as RGBA. Harmless/no-op if a streaming part was already reserved.
         this._useMrtAtlas = true;
         this._useRGBACovariants = true;
+
+        // Higher-order SH: convert the SH textures to render-targetable integer MRTs so the stream can bake SH into
+        // its region, and set the compound's SH degree so the draw path lights the decoded splats. Sized for the
+        // MAX SH texture count across parts (a later higher-degree part grows it; lower-degree parts neutral-fill).
+        if (shTextureCount > 0 && shDegree > 0) {
+            this._useShMrtAtlas = true;
+            this._shMrtAtlasTextureCount = Math.max(this._shMrtAtlasTextureCount, shTextureCount);
+            // Streaming SH degree is tracked separately from _maxShDegree (which folds in static parts too) and is
+            // recomputed from the surviving states on removal — so it shrinks correctly. The _addPartsInternal
+            // rebuild below folds it into _shDegree/_maxShDegree.
+            this._streamingShDegree = Math.max(this._streamingShDegree, shDegree);
+        }
 
         // Row-align the region so a later GPU relayout (defrag under a memory budget) can be scoped to whole
         // atlas rows via scissor without ever touching a preceding part that shares a row (see Phase 3 / S3).
@@ -1775,6 +1886,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             boundsMin,
             boundsMax,
             localRanges: null,
+            shTextureCount: shTextureCount > 0 && shDegree > 0 ? shTextureCount : 0,
+            shDegree: shTextureCount > 0 && shDegree > 0 ? shDegree : 0,
         };
         this._streamingStates.push(state);
         capacity = alignedCapacity;
@@ -1816,6 +1929,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             },
             get mrtAtlas() {
                 return compound._mrtAtlas;
+            },
+            get shMrtAtlas() {
+                return compound._shMrtAtlas;
             },
             get atlasWidth() {
                 return compound._getTextureSize(compound._vertexCount).x;

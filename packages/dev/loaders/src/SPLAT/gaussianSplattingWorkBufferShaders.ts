@@ -259,6 +259,154 @@ fn main(input : FragmentInputs) -> FragmentOutputs {
 `;
 
 /**
+ * Shader name for the SOG higher-order SH decode pass (bakes one packed-u32 SH texture per pass).
+ */
+export const GaussianSplattingWorkBufferShDecodeShaderName = "gsSogShDecodeToWorkBuffer";
+
+/**
+ * SH decode fragment shader (GLSL/WebGL2). Decodes one SOG file's higher-order spherical-harmonics into ONE
+ * baked, packed-u32 SH texture (attachment) at the region offset, matching the layout the standard draw path's
+ * `computeSHWeighted`/`decompose` expects (16 SH scalar-bytes per RGBA-u32 texel, little-endian; one texel per
+ * splat). Run once per SH texture (`uShTextureIndex` selects the 16 scalars packed this pass), so the output is
+ * a single integer attachment (keeps within WebGPU's per-sample color-attachment byte budget). Replicates the
+ * `USE_SOG computeSH` dequant (16-bit label -> centroid atlas -> v2 codebook / v1 lerp); coefficients this file
+ * lacks are written neutral (128 == 0 after `decompose`), so a lower-band file mixes with higher-band ones.
+ */
+export const GaussianSplattingWorkBufferShDecodeFragmentShaderGLSL = `precision highp float;
+precision highp int;
+
+uniform sampler2D sogShLabelsTex;
+uniform sampler2D sogShCentroidsTex;
+uniform sampler2D sogCodebookTex;
+uniform float sogShnMin;
+uniform float sogShnMax;
+uniform int uVersion;
+uniform int uOffset;
+uniform int uCount;
+uniform int uDestWidth;
+uniform int uSrcWidth;
+uniform int uCoeffs;
+uniform int uShTextureIndex;
+
+layout(location = 0) out uvec4 outSh;
+
+void main() {
+    ivec2 p = ivec2(gl_FragCoord.xy);
+    int global = p.y * uDestWidth + p.x;
+    if (global < uOffset || global >= uOffset + uCount) {
+        discard;
+    }
+    int kLocal = global - uOffset;
+
+    // 16-bit label for this source splat (LSB in r, MSB in g), indexed over the labels texture's own width.
+    ivec2 lsz = textureSize(sogShLabelsTex, 0);
+    ivec2 lsrc = ivec2(kLocal - (kLocal / lsz.x) * lsz.x, kLocal / lsz.x);
+    vec4 labelRaw = texelFetch(sogShLabelsTex, lsrc, 0);
+    int n = int(labelRaw.r * 255.0 + 0.5) + int(labelRaw.g * 255.0 + 0.5) * 256;
+    int u = (n - (n / 64) * 64) * uCoeffs;
+    int v = n / 64;
+
+    uint packed0 = 0u;
+    uint packed1 = 0u;
+    uint packed2 = 0u;
+    uint packed3 = 0u;
+
+    for (int b = 0; b < 16; b++) {
+        int s = uShTextureIndex * 16 + b; // flat SH scalar index
+        int kc = s / 3;                    // higher-order coefficient (0-based)
+        int j = s - kc * 3;                // channel (0=r,1=g,2=b)
+        float byteVal = 128.0;             // neutral (decompose(128) ~= 0)
+        if (kc < uCoeffs) {
+            vec4 centroidRaw = texelFetch(sogShCentroidsTex, ivec2(u + kc, v), 0);
+            float ch = (j == 0) ? centroidRaw.r : ((j == 1) ? centroidRaw.g : centroidRaw.b);
+            float coeff;
+            if (uVersion == 2) {
+                int cidx = int(ch * 255.0 + 0.5);
+                coeff = texelFetch(sogCodebookTex, ivec2(512 + cidx, 0), 0).r;
+            } else {
+                coeff = mix(sogShnMin, sogShnMax, ch);
+            }
+            byteVal = clamp(coeff * 127.5 + 127.5, 0.0, 255.0);
+        }
+        uint bv = uint(byteVal + 0.5);
+        int comp = b / 4;
+        uint contrib = bv << uint((b - comp * 4) * 8);
+        if (comp == 0) { packed0 |= contrib; }
+        else if (comp == 1) { packed1 |= contrib; }
+        else if (comp == 2) { packed2 |= contrib; }
+        else { packed3 |= contrib; }
+    }
+    outSh = uvec4(packed0, packed1, packed2, packed3);
+}
+`;
+
+/**
+ * SH decode fragment shader (WGSL/WebGPU) — same as the GLSL variant. The integer output (`vec4<u32>` fragData)
+ * requires the WGSL processor's integer-fragData support.
+ */
+export const GaussianSplattingWorkBufferShDecodeFragmentShaderWGSL = `
+var sogShLabelsTexSampler : sampler;
+var sogShLabelsTex : texture_2d<f32>;
+var sogShCentroidsTexSampler : sampler;
+var sogShCentroidsTex : texture_2d<f32>;
+var sogCodebookTexSampler : sampler;
+var sogCodebookTex : texture_2d<f32>;
+
+uniform sogShnMin : f32;
+uniform sogShnMax : f32;
+uniform uVersion : i32;
+uniform uOffset : i32;
+uniform uCount : i32;
+uniform uDestWidth : i32;
+uniform uSrcWidth : i32;
+uniform uCoeffs : i32;
+uniform uShTextureIndex : i32;
+
+@fragment
+fn main(input : FragmentInputs) -> FragmentOutputs {
+    let p : vec2<i32> = vec2<i32>(i32(fragmentInputs.position.x), i32(fragmentInputs.position.y));
+    let global : i32 = p.y * uniforms.uDestWidth + p.x;
+    if (global < uniforms.uOffset || global >= uniforms.uOffset + uniforms.uCount) {
+        discard;
+    }
+    let kLocal : i32 = global - uniforms.uOffset;
+
+    let lsz : vec2<i32> = vec2<i32>(textureDimensions(sogShLabelsTex, 0));
+    let lsrc : vec2<i32> = vec2<i32>(kLocal - (kLocal / lsz.x) * lsz.x, kLocal / lsz.x);
+    let labelRaw : vec4<f32> = textureLoad(sogShLabelsTex, lsrc, 0);
+    let n : i32 = i32(labelRaw.r * 255.0 + 0.5) + i32(labelRaw.g * 255.0 + 0.5) * 256;
+    let u : i32 = (n - (n / 64) * 64) * uniforms.uCoeffs;
+    let v : i32 = n / 64;
+
+    var packed : array<u32, 4> = array<u32, 4>(0u, 0u, 0u, 0u);
+
+    for (var b : i32 = 0; b < 16; b = b + 1) {
+        let s : i32 = uniforms.uShTextureIndex * 16 + b;
+        let kc : i32 = s / 3;
+        let j : i32 = s - kc * 3;
+        var byteVal : f32 = 128.0;
+        if (kc < uniforms.uCoeffs) {
+            let centroidRaw : vec4<f32> = textureLoad(sogShCentroidsTex, vec2<i32>(u + kc, v), 0);
+            var ch : f32 = centroidRaw.b;
+            if (j == 0) { ch = centroidRaw.r; } else if (j == 1) { ch = centroidRaw.g; }
+            var coeff : f32;
+            if (uniforms.uVersion == 2) {
+                let cidx : i32 = i32(ch * 255.0 + 0.5);
+                coeff = textureLoad(sogCodebookTex, vec2<i32>(512 + cidx, 0), 0).r;
+            } else {
+                coeff = mix(uniforms.sogShnMin, uniforms.sogShnMax, ch);
+            }
+            byteVal = clamp(coeff * 127.5 + 127.5, 0.0, 255.0);
+        }
+        let bv : u32 = u32(byteVal + 0.5);
+        let comp : i32 = b / 4;
+        packed[comp] = packed[comp] | (bv << u32((b - comp * 4) * 8));
+    }
+    fragmentOutputs.fragData0 = vec4<u32>(packed[0], packed[1], packed[2], packed[3]);
+}
+`;
+
+/**
  * Shader name for the work-buffer relayout (defrag/compaction) copy pass.
  */
 export const GaussianSplattingWorkBufferRelayoutShaderName = "gsWorkBufferRelayout";
@@ -305,6 +453,87 @@ void main() {
     glFragData[1] = texelFetch(uSrc1, s, 0);
     glFragData[2] = texelFetch(uSrc2, s, 0);
     glFragData[3] = texelFetch(uSrc3, s, 0);
+}
+`;
+
+/**
+ * Shader name for the INTEGER (packed-u32 SH) relayout/backup copy pass. Same index/map/base math as the float
+ * relayout shader, but samples ONE integer SH source texture (`usampler2D`) and writes ONE integer attachment,
+ * so it moves one baked SH texture per pass (parallel to the four-out float copy).
+ */
+export const GaussianSplattingWorkBufferShCopyShaderName = "gsWorkBufferShCopy";
+
+/**
+ * Integer SH relayout/backup copy fragment shader (GLSL/WebGL2). Copies one packed-u32 SH texture from a source
+ * layout to a destination layout, one output texel per draw. Map mode (`uUseMap == 1`) reads each destination
+ * texel's source splat index from `uMapTex` (R32F; negative = gap, discarded); identity mode copies texel-for-texel
+ * (region backup/restore). `uSrcBaseOffset`/`uDstBaseRow` scope the copy to a hosted region's atlas rows (default 0).
+ */
+export const GaussianSplattingWorkBufferShCopyFragmentShaderGLSL = `precision highp float;
+precision highp int;
+precision highp usampler2D;
+
+uniform sampler2D uMapTex;
+uniform usampler2D uSrcSh;
+uniform int uDstWidth;
+uniform int uSrcWidth;
+uniform int uUseMap;
+uniform int uSrcBaseOffset;
+uniform int uDstBaseRow;
+
+layout(location = 0) out uvec4 outSh;
+
+void main() {
+    ivec2 p = ivec2(gl_FragCoord.xy);
+    int srcIdx;
+    if (uUseMap == 1) {
+        float m = texelFetch(uMapTex, p, 0).r;
+        if (m < 0.0) {
+            discard;
+        }
+        srcIdx = uSrcBaseOffset + int(m + 0.5);
+    } else {
+        srcIdx = (p.y - uDstBaseRow) * uDstWidth + p.x;
+    }
+    ivec2 s = ivec2(srcIdx - (srcIdx / uSrcWidth) * uSrcWidth, srcIdx / uSrcWidth);
+    outSh = texelFetch(uSrcSh, s, 0);
+}
+`;
+
+/**
+ * Integer SH relayout/backup copy fragment shader (WGSL/WebGPU) — same copy as the GLSL variant. The integer output
+ * (`vec4<u32>` fragData) requires the WGSL processor's integer-fragData support.
+ */
+export const GaussianSplattingWorkBufferShCopyFragmentShaderWGSL = `
+var uMapTexSampler : sampler;
+var uMapTex : texture_2d<f32>;
+// Integer source sampled via textureLoad only — NO paired sampler (a sampler on a Uint texture fails WebGPU
+// validation: "None of the supported sample types (Uint)"). Mirrors the draw shader's shTexture0 declaration.
+var uSrcSh : texture_2d<u32>;
+
+uniform uDstWidth : i32;
+uniform uSrcWidth : i32;
+uniform uUseMap : i32;
+uniform uSrcBaseOffset : i32;
+uniform uDstBaseRow : i32;
+
+@fragment
+fn main(input : FragmentInputs) -> FragmentOutputs {
+    let p : vec2<i32> = vec2<i32>(i32(fragmentInputs.position.x), i32(fragmentInputs.position.y));
+    var srcIdx : i32;
+    if (uniforms.uUseMap == 1) {
+        let m : f32 = textureLoad(uMapTex, p, 0).r;
+        if (m < 0.0) {
+            discard;
+        }
+        srcIdx = uniforms.uSrcBaseOffset + i32(m + 0.5);
+    } else {
+        srcIdx = (p.y - uniforms.uDstBaseRow) * uniforms.uDstWidth + p.x;
+    }
+    let s : vec2<i32> = vec2<i32>(srcIdx - (srcIdx / uniforms.uSrcWidth) * uniforms.uSrcWidth, srcIdx / uniforms.uSrcWidth);
+    // Wrap in an explicit vec4<u32> so the WGSL processor emits an integer fragData location (its detection keys
+    // off a literal vec4<u32>/vec4u in the assignment; a bare textureLoad(...) would default to vec4<f32>).
+    fragmentOutputs.fragData0 = vec4<u32>(textureLoad(uSrcSh, s, 0));
 }
 `;
 
