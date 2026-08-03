@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/serializers-closure",
-    "version": "9.18.1",
+    "version": "9.19.0",
     "description": "Closure Compiler compatible build of @babylonjs/serializers",
     "main": "index.js",
     "module": "index.js",

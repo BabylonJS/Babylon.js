@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/gui-closure",
-    "version": "9.18.1",
+    "version": "9.19.0",
     "description": "Closure Compiler compatible build of @babylonjs/gui",
     "main": "index.js",
     "module": "index.js",

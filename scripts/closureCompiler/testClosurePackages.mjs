@@ -13,9 +13,11 @@ const nodeModulesRoot = path.join(moduleRoot, "node_modules");
 const entryName = `closurePackageTest-${process.pid}.mjs`;
 const entryPath = path.join(moduleRoot, entryName);
 const entryPoint = path.relative(moduleRoot, entryPath);
+const typeEntryPath = path.join(moduleRoot, "closurePackageTypes.mts");
 const outputPath = path.join(tempDirectory, "compiled.mjs");
 const flagFilePath = path.join(tempDirectory, "compiler.flags");
 const compilerPackage = "google-closure-compiler@20240317.0.0";
+const typeScriptPath = path.join(repoRoot, "node_modules/typescript/bin/tsc");
 
 const fixture = `
 import "@babylonjs/core-closure/index.js";
@@ -66,6 +68,16 @@ if (
 ) {
     throw new Error("Babylon.js external environment schema failed after Closure Compiler property renaming.");
 }
+`;
+
+const typeFixture = `
+import { Engine } from "@babylonjs/core-closure";
+import { ThinEngine } from "@babylonjs/core-closure/Engines/thinEngine.js";
+import { AdvancedDynamicTexture } from "@babylonjs/gui-closure";
+import { GLTFFileLoader } from "@babylonjs/loaders-closure";
+import { GLTF2Export } from "@babylonjs/serializers-closure";
+
+export type ClosurePackageExports = [Engine, ThinEngine, AdvancedDynamicTexture, GLTFFileLoader, typeof GLTF2Export];
 `;
 
 function resolveImport(fromFile, specifier) {
@@ -164,6 +176,20 @@ try {
         fs.symlinkSync(path.join(sourcePackageRoot, `${packageName}-closure`), path.join(scopeDirectory, `${packageName}-closure`), "dir");
     }
     fs.writeFileSync(entryPath, fixture);
+    fs.writeFileSync(typeEntryPath, typeFixture);
+    run(process.execPath, [
+        typeScriptPath,
+        "--ignoreConfig",
+        "--noEmit",
+        "--skipLibCheck",
+        "--module",
+        "NodeNext",
+        "--moduleResolution",
+        "NodeNext",
+        "--target",
+        "ES2021",
+        typeEntryPath,
+    ]);
     const inputs = [...new Set([...collectDependencies(entryPath), ...collectPackageJavaScriptFiles()])];
     const compilerFlags = [
         "--compilation_level=ADVANCED",
@@ -186,7 +212,7 @@ try {
     }
     run(process.execPath, [outputPath]);
 
-    process.stdout.write(`Closure Compiler compiled and executed ${inputs.length} modules from all four Closure packages.\n`);
+    process.stdout.write(`Closure Compiler validated ${inputs.length} inputs from all four Closure packages and executed the compiled bundle.\n`);
 } finally {
     fs.rmSync(entryPath, { force: true });
     fs.rmSync(tempDirectory, { recursive: true, force: true });

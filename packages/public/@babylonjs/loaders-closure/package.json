@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/loaders-closure",
-    "version": "9.18.1",
+    "version": "9.19.0",
     "description": "Closure Compiler compatible build of @babylonjs/loaders",
     "main": "index.js",
     "module": "index.js",
