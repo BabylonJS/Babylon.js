@@ -25,7 +25,11 @@ export default defineConfig(baseConfig, {
         },
     ],
     webServer: {
-        command: "npm run serve -w @tools/babylon-server -- --host 127.0.0.1",
+        // Serve only the UMD bundles (skip the declaration build): the conformance tests load the
+        // prebuilt babylon.js UMD from the CDN server and never request the served `.d.ts` files, so
+        // the declaration build is unnecessary here and would otherwise fail the server startup in a
+        // fresh CI checkout where not every workspace's dist declarations are prebuilt.
+        command: "npm run serve:umd-only -w @tools/babylon-server -- --host 127.0.0.1",
         url: "http://127.0.0.1:1337/empty.html",
         reuseExistingServer: process.env.KHR_REUSE_BABYLON_SERVER === "1",
         timeout: 600000,
