@@ -259,6 +259,164 @@ fn main(input : FragmentInputs) -> FragmentOutputs {
 `;
 
 /**
+ * Shader name for the SOG rotation/scale decode pass (bakes the three half-float rotation/scale textures voxel-IBL
+ * shadowing consumes).
+ */
+export const GaussianSplattingWorkBufferRotationDecodeShaderName = "gsSogRotDecodeToWorkBuffer";
+
+/**
+ * Rotation/scale decode fragment shader (GLSL/WebGL2). Reconstructs each splat's rotation matrix `R` and scale from
+ * one SOG file (the same `R`/`splatScale` the core decode forms to build the covariance) and writes the three
+ * half-float textures the voxel-IBL path samples as `rotationsATexture`/`rotationsBTexture`/`rotationScaleTexture`
+ * (see `computeVoxelSplatWorldPos` in ShadersInclude/gaussianSplatting.fx). Layout matches the CPU `_makeSplat`:
+ *   rotA      = (R col0.xyz, R col1.x)
+ *   rotB      = (R col1.yz, R col2.xy)
+ *   rotScale  = (R col2.z, 2*scale.x, 2*scale.y, 2*scale.z)   // 2*scale === the CPU path's ScalingToRef(scale*2)
+ * so the voxel shader reconstructs exactly this `R` and scale, giving the streamed splats the same ellipsoid the
+ * draw path renders. Addressed by the same global-linear-index over `uDestWidth`/`uOffset`/`uCount`/`uSrcWidth`.
+ */
+export const GaussianSplattingWorkBufferRotationDecodeFragmentShaderGLSL = `precision highp float;
+precision highp int;
+
+uniform sampler2D sogScalesTex;
+uniform sampler2D sogQuatsTex;
+uniform sampler2D sogCodebookTex;
+
+uniform vec3 sogScalesMin;
+uniform vec3 sogScalesMax;
+uniform int uVersion;
+uniform int uOffset;
+uniform int uCount;
+uniform int uDestWidth;
+uniform int uSrcWidth;
+
+layout(location = 0) out vec4 glFragData[3];
+
+void main() {
+    ivec2 p = ivec2(gl_FragCoord.xy);
+    int global = p.y * uDestWidth + p.x;
+    if (global < uOffset || global >= uOffset + uCount) {
+        discard;
+    }
+    int k = global - uOffset;
+    ivec2 src = ivec2(k - (k / uSrcWidth) * uSrcWidth, k / uSrcWidth);
+
+    vec3 sRaw = texelFetch(sogScalesTex, src, 0).xyz;
+    vec4 qRaw = texelFetch(sogQuatsTex, src, 0);
+
+    vec3 splatScale;
+    if (uVersion == 2) {
+        vec3 sIdx = floor(sRaw * 255.0 + 0.5);
+        splatScale.x = exp(texelFetch(sogCodebookTex, ivec2(int(sIdx.x), 0), 0).r);
+        splatScale.y = exp(texelFetch(sogCodebookTex, ivec2(int(sIdx.y), 0), 0).r);
+        splatScale.z = exp(texelFetch(sogCodebookTex, ivec2(int(sIdx.z), 0), 0).r);
+    } else {
+        splatScale = exp(mix(sogScalesMin, sogScalesMax, sRaw));
+    }
+
+    const float invSqrt2 = 0.70710678118;
+    vec3 qabc = (qRaw.xyz - vec3(0.5)) * 2.0 * invSqrt2;
+    int qMode = int(qRaw.w * 255.0 + 0.5) - 252;
+    float qd = sqrt(max(0.0, 1.0 - dot(qabc, qabc)));
+    vec4 quat;
+    if (qMode == 0) {
+        quat = vec4(qd, qabc.x, qabc.y, qabc.z);
+    } else if (qMode == 1) {
+        quat = vec4(qabc.x, qd, qabc.y, qabc.z);
+    } else if (qMode == 2) {
+        quat = vec4(qabc.x, qabc.y, qd, qabc.z);
+    } else {
+        quat = vec4(qabc.x, qabc.y, qabc.z, qd);
+    }
+
+    float qw = quat.x, qx = quat.y, qy = quat.z, qz = quat.w;
+    mat3 R = mat3(
+        1.0 - 2.0 * (qy * qy + qz * qz), 2.0 * (qx * qy + qw * qz), 2.0 * (qx * qz - qw * qy),
+        2.0 * (qx * qy - qw * qz), 1.0 - 2.0 * (qx * qx + qz * qz), 2.0 * (qy * qz + qw * qx),
+        2.0 * (qx * qz + qw * qy), 2.0 * (qy * qz - qw * qx), 1.0 - 2.0 * (qx * qx + qy * qy)
+    );
+
+    glFragData[0] = vec4(R[0], R[1].x);
+    glFragData[1] = vec4(R[1].y, R[1].z, R[2].x, R[2].y);
+    glFragData[2] = vec4(R[2].z, 2.0 * splatScale.x, 2.0 * splatScale.y, 2.0 * splatScale.z);
+}
+`;
+
+/**
+ * Rotation/scale decode fragment shader (WGSL/WebGPU) — same decode as the GLSL variant, writing 3 half-float MRT
+ * attachments.
+ */
+export const GaussianSplattingWorkBufferRotationDecodeFragmentShaderWGSL = `
+var sogScalesTexSampler : sampler;
+var sogScalesTex : texture_2d<f32>;
+var sogQuatsTexSampler : sampler;
+var sogQuatsTex : texture_2d<f32>;
+var sogCodebookTexSampler : sampler;
+var sogCodebookTex : texture_2d<f32>;
+
+uniform sogScalesMin : vec3<f32>;
+uniform sogScalesMax : vec3<f32>;
+uniform uVersion : i32;
+uniform uOffset : i32;
+uniform uCount : i32;
+uniform uDestWidth : i32;
+uniform uSrcWidth : i32;
+
+@fragment
+fn main(input : FragmentInputs) -> FragmentOutputs {
+    let p : vec2<i32> = vec2<i32>(i32(fragmentInputs.position.x), i32(fragmentInputs.position.y));
+    let global : i32 = p.y * uniforms.uDestWidth + p.x;
+    if (global < uniforms.uOffset || global >= uniforms.uOffset + uniforms.uCount) {
+        discard;
+    }
+    let k : i32 = global - uniforms.uOffset;
+    let src : vec2<i32> = vec2<i32>(k - (k / uniforms.uSrcWidth) * uniforms.uSrcWidth, k / uniforms.uSrcWidth);
+
+    let sRaw : vec3<f32> = textureLoad(sogScalesTex, src, 0).xyz;
+    let qRaw : vec4<f32> = textureLoad(sogQuatsTex, src, 0);
+
+    var splatScale : vec3<f32>;
+    if (uniforms.uVersion == 2) {
+        let sIdx : vec3<f32> = floor(sRaw * 255.0 + 0.5);
+        splatScale.x = exp(textureLoad(sogCodebookTex, vec2<i32>(i32(sIdx.x), 0), 0).r);
+        splatScale.y = exp(textureLoad(sogCodebookTex, vec2<i32>(i32(sIdx.y), 0), 0).r);
+        splatScale.z = exp(textureLoad(sogCodebookTex, vec2<i32>(i32(sIdx.z), 0), 0).r);
+    } else {
+        splatScale = exp(mix(uniforms.sogScalesMin, uniforms.sogScalesMax, sRaw));
+    }
+
+    let invSqrt2 : f32 = 0.70710678118;
+    let qabc : vec3<f32> = (qRaw.xyz - vec3<f32>(0.5)) * 2.0 * invSqrt2;
+    let qMode : i32 = i32(qRaw.w * 255.0 + 0.5) - 252;
+    let qd : f32 = sqrt(max(0.0, 1.0 - dot(qabc, qabc)));
+    var quat : vec4<f32>;
+    if (qMode == 0) {
+        quat = vec4<f32>(qd, qabc.x, qabc.y, qabc.z);
+    } else if (qMode == 1) {
+        quat = vec4<f32>(qabc.x, qd, qabc.y, qabc.z);
+    } else if (qMode == 2) {
+        quat = vec4<f32>(qabc.x, qabc.y, qd, qabc.z);
+    } else {
+        quat = vec4<f32>(qabc.x, qabc.y, qabc.z, qd);
+    }
+
+    let qw : f32 = quat.x;
+    let qx : f32 = quat.y;
+    let qy : f32 = quat.z;
+    let qz : f32 = quat.w;
+    let R : mat3x3<f32> = mat3x3<f32>(
+        1.0 - 2.0 * (qy * qy + qz * qz), 2.0 * (qx * qy + qw * qz), 2.0 * (qx * qz - qw * qy),
+        2.0 * (qx * qy - qw * qz), 1.0 - 2.0 * (qx * qx + qz * qz), 2.0 * (qy * qz + qw * qx),
+        2.0 * (qx * qz + qw * qy), 2.0 * (qy * qz - qw * qx), 1.0 - 2.0 * (qx * qx + qy * qy)
+    );
+
+    fragmentOutputs.fragData0 = vec4<f32>(R[0], R[1].x);
+    fragmentOutputs.fragData1 = vec4<f32>(R[1].y, R[1].z, R[2].x, R[2].y);
+    fragmentOutputs.fragData2 = vec4<f32>(R[2].z, 2.0 * splatScale.x, 2.0 * splatScale.y, 2.0 * splatScale.z);
+}
+`;
+
+/**
  * Shader name for the SOG higher-order SH decode pass (bakes one packed-u32 SH texture per pass).
  */
 export const GaussianSplattingWorkBufferShDecodeShaderName = "gsSogShDecodeToWorkBuffer";
@@ -534,6 +692,90 @@ fn main(input : FragmentInputs) -> FragmentOutputs {
     // Wrap in an explicit vec4<u32> so the WGSL processor emits an integer fragData location (its detection keys
     // off a literal vec4<u32>/vec4u in the assignment; a bare textureLoad(...) would default to vec4<f32>).
     fragmentOutputs.fragData0 = vec4<u32>(textureLoad(uSrcSh, s, 0));
+}
+`;
+
+/**
+ * Shader name for the rotation/scale relayout/backup copy pass. Same index/map/base math as the four-out float
+ * relayout shader, but moves the THREE half-float rotation/scale textures in one pass (their own separate atlas).
+ */
+export const GaussianSplattingWorkBufferRotCopyShaderName = "gsWorkBufferRotCopy";
+
+/**
+ * Rotation/scale relayout/backup copy fragment shader (GLSL/WebGL2). Copies the three half-float rotation/scale
+ * textures from a source layout to a destination layout, one output texel per draw. Identical to the four-out
+ * float relayout shader but with three attachments (the rotation atlas has no fourth texture).
+ */
+export const GaussianSplattingWorkBufferRotCopyFragmentShaderGLSL = `precision highp float;
+precision highp int;
+
+uniform sampler2D uMapTex;
+uniform sampler2D uSrc0;
+uniform sampler2D uSrc1;
+uniform sampler2D uSrc2;
+uniform int uDstWidth;
+uniform int uSrcWidth;
+uniform int uUseMap;
+uniform int uSrcBaseOffset;
+uniform int uDstBaseRow;
+
+layout(location = 0) out vec4 glFragData[3];
+
+void main() {
+    ivec2 p = ivec2(gl_FragCoord.xy);
+    int srcIdx;
+    if (uUseMap == 1) {
+        float m = texelFetch(uMapTex, p, 0).r;
+        if (m < 0.0) {
+            discard;
+        }
+        srcIdx = uSrcBaseOffset + int(m + 0.5);
+    } else {
+        srcIdx = (p.y - uDstBaseRow) * uDstWidth + p.x;
+    }
+    ivec2 s = ivec2(srcIdx - (srcIdx / uSrcWidth) * uSrcWidth, srcIdx / uSrcWidth);
+    glFragData[0] = texelFetch(uSrc0, s, 0);
+    glFragData[1] = texelFetch(uSrc1, s, 0);
+    glFragData[2] = texelFetch(uSrc2, s, 0);
+}
+`;
+
+/**
+ * Rotation/scale relayout/backup copy fragment shader (WGSL/WebGPU) — same copy as the GLSL variant, 3 attachments.
+ */
+export const GaussianSplattingWorkBufferRotCopyFragmentShaderWGSL = `
+var uMapTexSampler : sampler;
+var uMapTex : texture_2d<f32>;
+var uSrc0Sampler : sampler;
+var uSrc0 : texture_2d<f32>;
+var uSrc1Sampler : sampler;
+var uSrc1 : texture_2d<f32>;
+var uSrc2Sampler : sampler;
+var uSrc2 : texture_2d<f32>;
+
+uniform uDstWidth : i32;
+uniform uSrcWidth : i32;
+uniform uUseMap : i32;
+uniform uSrcBaseOffset : i32;
+uniform uDstBaseRow : i32;
+
+@fragment
+fn main(input : FragmentInputs) -> FragmentOutputs {
+    let p : vec2<i32> = vec2<i32>(i32(fragmentInputs.position.x), i32(fragmentInputs.position.y));
+    var srcIdx : i32;
+    if (uniforms.uUseMap == 1) {
+        let m : f32 = textureLoad(uMapTex, p, 0).r;
+        if (m < 0.0) {
+            discard;
+        }
+        srcIdx = uniforms.uSrcBaseOffset + i32(m + 0.5);
+    } else {
+        srcIdx = (p.y - uniforms.uDstBaseRow) * uniforms.uDstWidth + p.x;
+    }
+    let s : vec2<i32> = vec2<i32>(srcIdx - (srcIdx / uniforms.uSrcWidth) * uniforms.uSrcWidth, srcIdx / uniforms.uSrcWidth);
+    fragmentOutputs.fragData0 = textureLoad(uSrc0, s, 0);
+    fragmentOutputs.fragData1 = textureLoad(uSrc1, s, 0);
+    fragmentOutputs.fragData2 = textureLoad(uSrc2, s, 0);
 }
 `;
 

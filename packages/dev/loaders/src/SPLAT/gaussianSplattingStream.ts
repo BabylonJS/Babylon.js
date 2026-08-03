@@ -162,6 +162,13 @@ export interface IGaussianSplattingStreamOptions {
      * files (lower-band files neutral-fill). No effect when the files carry no `shN`. Defaults to `false`.
      */
     decodeSh?: boolean;
+    /**
+     * When true, each splat's rotation matrix + scale are GPU-decoded into half-float rotation/scale textures so the
+     * streamed splats participate in voxel-based IBL shadowing (matching the non-stream path). Standalone: the work
+     * buffer owns the rotation textures. Hosted: the compound's rotation textures become a shared render-target atlas
+     * the stream decodes into. Defaults to `false`.
+     */
+    needsRotationScale?: boolean;
 }
 
 // tan(22.5deg): reference half-FOV for a 45-degree vertical FOV, used for FOV compensation (matches PlayCanvas).
@@ -269,6 +276,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     private _decodeSh = false;
     private _streamShDegree = 0;
     private _shTextureCount = 0;
+    // Rotation/scale for voxel-IBL shadows (Phase 4). Enabled via options.needsRotationScale.
+    private _needsRotationScale = false;
     // True once GPU position readback has been validated against a CPU decode (see _probeReadbackAsync). While
     // false, positions are decoded on the CPU from the means images; once validated, every SOG image uses the
     // fast direct upload and positions are read back from the work buffer (non-blocking).
@@ -388,6 +397,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         this._streamOptions = options;
         this._hostCompound = options.hostCompound ?? null;
         this._decodeSh = options.decodeSh ?? false;
+        this._needsRotationScale = options.needsRotationScale ?? false;
 
         // LOD heuristic parameters: take the provided values, otherwise keep the PlayCanvas-aligned defaults.
         const maxLod = Math.max(0, metadata.lodLevels - 1);
@@ -1073,10 +1083,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             const sogWorld = Matrix.Compose(new Vector3(1, -1, 1), Quaternion.RotationYawPitchRoll(0, -Math.PI / 2, 0), Vector3.ZeroReadOnly);
             // Reserve with SH so the compound converts its SH textures to shared render-targetable integer MRTs and
             // sets its SH degree; the hosted work buffer bakes into those shared targets at the region base offset.
-            const host = this._hostCompound.reserveStreamingPart(capacity, sogWorld, this.name + "_part", this._shTextureCount, this._streamShDegree);
+            const host = this._hostCompound.reserveStreamingPart(capacity, sogWorld, this.name + "_part", this._shTextureCount, this._streamShDegree, this._needsRotationScale);
             this._host = host;
             this._positionBase = host.base;
             const shExternal = this._shTextureCount > 0 && host.shMrtAtlas ? { textureCount: this._shTextureCount, externalMrts: host.shMrtAtlas } : undefined;
+            const rotExternal = this._needsRotationScale && host.rotMrtAtlas ? { externalMrt: host.rotMrtAtlas } : undefined;
             this._workBuffer = new GaussianSplattingWorkBuffer(
                 this._scene,
                 capacity,
@@ -1085,7 +1096,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                     width: host.atlasWidth,
                     baseOffset: host.base,
                 },
-                shExternal
+                shExternal,
+                rotExternal
             );
             this._readbackCandidate = this._workBuffer.supportsAsyncCentersReadback;
             // Write decoded centers directly into the compound's shared position buffer (offset by the region base).
@@ -1110,6 +1122,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 // Rebind the baked SH targets too (the compound recreated its shared SH atlas on the grow/compaction);
                 // restoreRegion() below writes the backed-up SH into these new targets.
                 wb.rebindShAtlas(host.shMrtAtlas);
+                // Same for the rotation/scale atlas (voxel-IBL); restoreRegion() writes the backed-up rotation into it.
+                wb.rebindRotAtlas(host.rotMrtAtlas);
                 // Pick up a (possibly) new base offset: a plain grow keeps `host.base`, but a COMPACTION relocates
                 // this region to a smaller atlas at a new base. Update the decode/render/readback base and the CPU
                 // position base BEFORE restoring, so the region's texels and worker positions land at the new base.
@@ -1131,14 +1145,17 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             // Bake higher-order SH when requested and present: the work buffer owns `_shTextureCount` integer SH
             // targets and the draw path lights the decoded splats with them (SH degree = max across files).
             const sh = this._shTextureCount > 0 ? { textureCount: this._shTextureCount } : undefined;
-            this._workBuffer = new GaussianSplattingWorkBuffer(this._scene, capacity, undefined, sh);
+            // Decode rotation/scale into an owned 3-attachment half-float target when voxel-IBL shadows are requested.
+            const rot = this._needsRotationScale ? {} : undefined;
+            this._workBuffer = new GaussianSplattingWorkBuffer(this._scene, capacity, undefined, sh, rot);
             // GPU readback is only enabled after it is validated against a CPU decode on the first file (see
             // _probeReadbackAsync); until then positions are decoded on the CPU so there is always a correct result.
             this._readbackCandidate = this._workBuffer.supportsAsyncCentersReadback;
             const splatPositions = new Float32Array(capacity * 4);
             const textures = this._workBuffer.textures;
             const shTextures = sh ? this._workBuffer.shTextures : undefined;
-            this._setExternalWorkBuffer(textures[0], textures[1], textures[2], textures[3], splatPositions, capacity, shTextures, this._streamShDegree);
+            const rotTextures = rot ? this._workBuffer.rotationTextures : undefined;
+            this._setExternalWorkBuffer(textures[0], textures[1], textures[2], textures[3], splatPositions, capacity, shTextures, this._streamShDegree, rotTextures);
             // Nothing is active until at least one resource has been decoded.
             this.setSplatIndexRanges([]);
             this.setEnabled(true);

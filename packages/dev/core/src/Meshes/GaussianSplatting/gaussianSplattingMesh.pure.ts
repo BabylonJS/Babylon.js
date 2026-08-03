@@ -123,6 +123,11 @@ export interface IGaussianSplattingStreamingPart {
      * SH texture) a streaming engine bakes SH into, or null when SH decode was not requested for this part.
      */
     readonly shMrtAtlas: Nullable<MultiRenderTarget[]>;
+    /**
+     * The compound's shared rotation/scale render-target atlas (one 3-attachment half-float MRT) a streaming engine
+     * decodes rotation/scale into for voxel-IBL shadows, or null when rotation decode was not requested for this part.
+     */
+    readonly rotMrtAtlas: Nullable<MultiRenderTarget>;
     /** Width (in texels) of the atlas, used to address decode/readback over the wide layout. */
     readonly atlasWidth: number;
     /** Whether the compound's shared depth sort is settled (a streaming engine polls this to detect readiness). */
@@ -201,6 +206,9 @@ interface IStreamingPartState {
     shTextureCount: number;
     /** SH degree of this streaming part's baked SH (0 = no SH). Feeds the compound's max-degree recompute. */
     shDegree: number;
+    /** Whether this streaming part decodes rotation/scale into the shared rotation atlas (for voxel-IBL shadows).
+     * Used to recompute the compound's rotation-atlas state from the SURVIVING parts when a part is removed. */
+    needsRotationScale: boolean;
 }
 
 /**
@@ -1404,6 +1412,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     private _refreshStreamingShState(): void {
         let count = 0;
         let degree = 0;
+        let needsRot = false;
         for (const state of this._streamingStates) {
             if (this._tombstonedPartIndices.has(state.partIndex)) {
                 continue;
@@ -1414,10 +1423,16 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             if (state.shDegree > degree) {
                 degree = state.shDegree;
             }
+            if (state.needsRotationScale) {
+                needsRot = true;
+            }
         }
         this._shMrtAtlasTextureCount = count;
         this._useShMrtAtlas = count > 0;
         this._streamingShDegree = degree;
+        // Render-backed rotation atlas is active iff a live streaming part decodes rotation/scale. (`_needsRotationScaleTextures`
+        // is left as-is — removing a stream doesn't disable IBL for surviving static parts, which keep CPU RawTextures.)
+        this._useRotMrtAtlas = needsRot;
     }
 
     private _tombstonePart(index: number): void {
@@ -1470,9 +1485,15 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this._centersTexture = null;
             this._colorsTexture = null;
         }
-        this._rotationsATexture?.dispose();
-        this._rotationsBTexture?.dispose();
-        this._rotationScaleTexture?.dispose();
+        if (this._rotMrtAtlas) {
+            // The three rotation textures are attachments of this MRT — dispose the MRT, not each attachment.
+            this._rotMrtAtlas.dispose();
+            this._rotMrtAtlas = null;
+        } else {
+            this._rotationsATexture?.dispose();
+            this._rotationsBTexture?.dispose();
+            this._rotationScaleTexture?.dispose();
+        }
         this._rotationsATexture = null;
         this._rotationsBTexture = null;
         this._rotationScaleTexture = null;
@@ -1807,6 +1828,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      *   atlas the streaming engine bakes into (`ceil(coeffs*3/16)` for the stream's max SH degree); 0 = no SH
      * @param shDegree SH degree of the streamed content (drives the compound's `SH_DEGREE`); ignored when
      *   `shTextureCount` is 0. The compound keeps the MAX SH degree across its parts.
+     * @param needsRotationScale when true, converts the compound's rotation/scale textures to a shared render-target
+     *   half-float atlas the streaming engine decodes into, so the streamed splats participate in voxel-IBL shadows.
      * @returns a handle used to populate and control the reserved region
      */
     public reserveStreamingPart(
@@ -1814,7 +1837,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         worldMatrix: Matrix = Matrix.Identity(),
         name: string = this.name + "_streamingPart",
         shTextureCount: number = 0,
-        shDegree: number = 0
+        shDegree: number = 0,
+        needsRotationScale: boolean = false
     ): IGaussianSplattingStreamingPart {
         if (!(capacity > 0)) {
             throw new Error("reserveStreamingPart: capacity must be a positive integer");
@@ -1837,6 +1861,14 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             // recomputed from the surviving states on removal — so it shrinks correctly. The _addPartsInternal
             // rebuild below folds it into _shDegree/_maxShDegree.
             this._streamingShDegree = Math.max(this._streamingShDegree, shDegree);
+        }
+
+        // Rotation/scale: convert the rotation textures to a render-targetable half-float atlas so the stream can
+        // decode rotation/scale into its region for voxel-IBL shadows. `_needsRotationScaleTextures` makes _makeSplat
+        // fill static parts' rotation data (CPU-uploaded into the shared atlas by the rebuild) too.
+        if (needsRotationScale) {
+            this._useRotMrtAtlas = true;
+            this._needsRotationScaleTextures = true;
         }
 
         // Row-align the region so a later GPU relayout (defrag under a memory budget) can be scoped to whole
@@ -1888,6 +1920,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             localRanges: null,
             shTextureCount: shTextureCount > 0 && shDegree > 0 ? shTextureCount : 0,
             shDegree: shTextureCount > 0 && shDegree > 0 ? shDegree : 0,
+            needsRotationScale,
         };
         this._streamingStates.push(state);
         capacity = alignedCapacity;
@@ -1932,6 +1965,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             },
             get shMrtAtlas() {
                 return compound._shMrtAtlas;
+            },
+            get rotMrtAtlas() {
+                return compound._rotMrtAtlas;
             },
             get atlasWidth() {
                 return compound._getTextureSize(compound._vertexCount).x;

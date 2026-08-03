@@ -540,6 +540,12 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _rotationsATexture: Nullable<BaseTexture> = null;
     protected _rotationsBTexture: Nullable<BaseTexture> = null;
     protected _rotationScaleTexture: Nullable<BaseTexture> = null;
+    // Rotation/scale atlas (Phase 4). When a streaming part needs voxel-IBL rotation/scale, the three rotation
+    // textures become the attachments of this render-targetable half-float MRT so the streaming engine GPU-decodes
+    // rotation/scale into the reserved region while static parts still CPU-upload into it. Null in the normal path
+    // (rotation stays plain RawTextures created per-splat by `_makeSplat`).
+    protected _rotMrtAtlas: Nullable<MultiRenderTarget> = null;
+    protected _useRotMrtAtlas = false;
     private _rotationDataA: Nullable<Uint16Array> = null;
     private _rotationDataB: Nullable<Uint16Array> = null;
     private _rotationScaleData: Nullable<Uint16Array> = null;
@@ -835,6 +841,9 @@ export class GaussianSplattingMeshBase extends Mesh {
      *   When provided, the draw path lights the decoded splats with view-dependent SH (the non-SOG `shTexture0..N`
      *   path). `shDegree` sets both the max and active SH degree.
      * @param shDegree SH degree of the baked SH textures (0 = none). Ignored when `shTextures` is empty/omitted.
+     * @param rotationTextures optional decoded rotation/scale textures ([rotA, rotB, rotScale]) produced by the work
+     *   buffer's rotation decode. When provided, they drive the voxel-IBL rotation/scale samplers so the streamed
+     *   splats participate in voxel-based IBL shadowing.
      */
     protected _setExternalWorkBuffer(
         centers: BaseTexture,
@@ -844,7 +853,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         splatPositions: Float32Array,
         vertexCount: number,
         shTextures?: Nullable<BaseTexture[]>,
-        shDegree: number = 0
+        shDegree: number = 0,
+        rotationTextures?: Nullable<BaseTexture[]>
     ): void {
         this._covariancesATexture = covariancesA;
         this._covariancesBTexture = covariancesB;
@@ -856,6 +866,14 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._shTextures = shTextures;
             this._maxShDegree = shDegree;
             this._shDegree = shDegree;
+        }
+        // Point the voxel-IBL rotation/scale samplers at the work buffer's decoded rotation textures ([rotA, rotB,
+        // rotScale]) so a standalone stream can cast/receive voxel-IBL shadows.
+        if (rotationTextures && rotationTextures.length >= 3) {
+            this._rotationsATexture = rotationTextures[0];
+            this._rotationsBTexture = rotationTextures[1];
+            this._rotationScaleTexture = rotationTextures[2];
+            this._needsRotationScaleTextures = true;
         }
         this._activeSplatRanges = null;
         this._activeSplatRangeKey = "";
@@ -2355,9 +2373,15 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
         this._shTextures = null;
 
-        this._rotationsATexture?.dispose();
-        this._rotationsBTexture?.dispose();
-        this._rotationScaleTexture?.dispose();
+        if (this._rotMrtAtlas) {
+            // The three rotation textures are attachments of this MRT — dispose the MRT, not each attachment.
+            this._rotMrtAtlas.dispose();
+            this._rotMrtAtlas = null;
+        } else {
+            this._rotationsATexture?.dispose();
+            this._rotationsBTexture?.dispose();
+            this._rotationScaleTexture?.dispose();
+        }
         this._sogParams?.codebookTexture?.dispose();
         this._rotationsATexture = null;
         this._rotationsBTexture = null;
@@ -2720,6 +2744,52 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._shTextures = shTextures;
     }
 
+    /**
+     * Creates the shared rotation/scale atlas: one 3-attachment half-float render target ([rotA, rotB, rotScale])
+     * sized to the whole atlas, so a streaming engine can GPU-decode rotation/scale into the reserved region and
+     * static parts CPU-upload into the same attachments. `_rotationsATexture`/`_rotationsBTexture`/
+     * `_rotationScaleTexture` (the voxel-IBL samplers) become the three attachments. No-op without a real GPU
+     * backend (mirrors {@link _createMrtAtlas}).
+     * @param textureSize atlas dimensions (width, height)
+     */
+    protected _createRotMrtAtlas(textureSize: Vector2): void {
+        const updateEngine = this._getTextureDataUpdateEngine();
+        if (!updateEngine._gl && !updateEngine.isWebGPU) {
+            return;
+        }
+        const rotType = this.getEngine().getCaps().textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
+        const name = this.name + "_gsRotAtlas";
+        const mrt = new MultiRenderTarget(
+            name,
+            { width: textureSize.x, height: textureSize.y },
+            3,
+            this._scene,
+            {
+                types: [rotType, rotType, rotType],
+                formats: [Constants.TEXTUREFORMAT_RGBA, Constants.TEXTUREFORMAT_RGBA, Constants.TEXTUREFORMAT_RGBA],
+                samplingModes: [Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURE_NEAREST_SAMPLINGMODE],
+                generateDepthBuffer: false,
+                generateDepthTexture: false,
+                generateMipMaps: false,
+            },
+            [name + "A", name + "B", name + "Scale"]
+        );
+        mrt.clearColor = new Color4(0, 0, 0, 0);
+        mrt.renderList = [];
+        // Accumulate: each rotation decode writes only its region; the rest stays whatever was there.
+        mrt.onClearObservable.add(() => {});
+        for (const attachment of mrt.textures) {
+            attachment.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+            attachment.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
+        }
+        // Allocate on the GPU before any CPU sub-upload (WebGPU writeTexture needs the resource to exist).
+        mrt.render();
+        this._rotMrtAtlas = mrt;
+        this._rotationsATexture = mrt.textures[0];
+        this._rotationsBTexture = mrt.textures[1];
+        this._rotationScaleTexture = mrt.textures[2];
+    }
+
     // NB: partIndices is assumed to be padded to a round texture size
     protected _updateTextures(covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array, sh?: Uint8Array[]): void {
         const textureSize = this._getTextureSize(this._vertexCount);
@@ -2745,7 +2815,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         // First streaming-part reservation must convert the existing RawTexture atlas to the MRT-backed atlas,
         // which requires the full (re)build branch even when the texture height is unchanged. Same for the SH atlas:
         // a streaming SH part must convert the SH textures to render-targetable integer MRTs.
-        const needsMrtConversion = (this._useMrtAtlas && !this._mrtAtlas) || (this._useShMrtAtlas && !this._shMrtAtlas);
+        const needsMrtConversion = (this._useMrtAtlas && !this._mrtAtlas) || (this._useShMrtAtlas && !this._shMrtAtlas) || (this._useRotMrtAtlas && !this._rotMrtAtlas);
 
         if (!firstTime && !textureSizeChanged && !needsMrtConversion) {
             this._setDelayedTextureUpdate(covA, covB, colorArray, sh);
@@ -2818,7 +2888,14 @@ export class GaussianSplattingMeshBase extends Mesh {
             // new taller region out of bounds. Nulling them makes _updateSubTextures skip rotation; the block
             // further down recreates them fully populated. (Only the MRT branch sub-uploads before that recreate;
             // the non-MRT branch builds every texture with data directly, so this is harmless there.)
-            if (this._rotationsATexture) {
+            if (this._rotMrtAtlas) {
+                // The three rotation textures are attachments of this MRT — dispose the MRT, not each attachment.
+                this._rotMrtAtlas.dispose();
+                this._rotMrtAtlas = null;
+                this._rotationsATexture = null;
+                this._rotationsBTexture = null;
+                this._rotationScaleTexture = null;
+            } else if (this._rotationsATexture) {
                 this._rotationsATexture.dispose();
                 this._rotationsBTexture?.dispose();
                 this._rotationScaleTexture?.dispose();
@@ -2849,6 +2926,12 @@ export class GaussianSplattingMeshBase extends Mesh {
                 // Same for the higher-order SH atlas (integer render targets), when a streaming part needs baked SH.
                 if (this._useShMrtAtlas) {
                     this._createShMrtAtlas(textureSize);
+                }
+                // Same for the rotation/scale atlas (half-float render target), when a streaming part needs voxel-IBL
+                // rotation/scale. Created BEFORE the _updateSubTextures below so static parts' CPU rotation data lands
+                // in the shared attachments (the streamed region is restored/decoded into it afterwards).
+                if (this._useRotMrtAtlas) {
+                    this._createRotMrtAtlas(textureSize);
                 }
                 if (this._mrtAtlas) {
                     this._updateSubTextures(this._splatPositions!, covA, covB, colorArray, 0, textureSize.y);
@@ -2899,7 +2982,9 @@ export class GaussianSplattingMeshBase extends Mesh {
                 }
             }
 
-            if (this._needsRotationScaleTextures) {
+            // Render-backed rotation (_useRotMrtAtlas) was already created + CPU-uploaded above (via _updateSubTextures,
+            // before the streaming restore); only the plain RawTexture rotation path is handled here.
+            if (this._needsRotationScaleTextures && !this._useRotMrtAtlas) {
                 const rotDataA = this._rotationDataA ?? new Uint16Array(covA.length);
                 const rotDataB = this._rotationDataB ?? new Uint16Array(covA.length);
                 const rotScaleData = this._rotationScaleData ?? new Uint16Array(covA.length);

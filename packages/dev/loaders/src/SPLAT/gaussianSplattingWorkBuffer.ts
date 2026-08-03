@@ -25,6 +25,12 @@ import {
     GaussianSplattingWorkBufferShCopyShaderName,
     GaussianSplattingWorkBufferShCopyFragmentShaderGLSL,
     GaussianSplattingWorkBufferShCopyFragmentShaderWGSL,
+    GaussianSplattingWorkBufferRotationDecodeShaderName,
+    GaussianSplattingWorkBufferRotationDecodeFragmentShaderGLSL,
+    GaussianSplattingWorkBufferRotationDecodeFragmentShaderWGSL,
+    GaussianSplattingWorkBufferRotCopyShaderName,
+    GaussianSplattingWorkBufferRotCopyFragmentShaderGLSL,
+    GaussianSplattingWorkBufferRotCopyFragmentShaderWGSL,
 } from "./gaussianSplattingWorkBufferShaders";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 
@@ -84,6 +90,20 @@ export class GaussianSplattingWorkBuffer {
     // so the baked SH survives the compound recreating its SH atlas on a grow/compaction (parallel to _backupMrt).
     private _backupShMrts: Nullable<MultiRenderTarget[]> = null;
 
+    // Rotation/scale (Phase 4). One 3-attachment half-float render target (rotA / rotB / rotScale) holding the
+    // per-splat rotation matrix + scale that voxel-based IBL shadowing consumes. Null when rotation decode is off.
+    private _rotMrt: Nullable<MultiRenderTarget> = null;
+    // True when this work buffer owns (and disposes) its rotation target (standalone). False when it is the hosting
+    // compound's shared rotation atlas (hosted) — borrowed, rebound alongside the core atlas, never disposed here.
+    private _ownsRotMrt = false;
+    // The rotation/scale decode material, created only when rotation is requested. Reused across files.
+    private _rotMaterial: Nullable<ShaderMaterial> = null;
+    // Rotation/scale relayout/backup copy material (3-out float copy), created lazily alongside the float copy.
+    private _rotCopyMaterial: Nullable<ShaderMaterial> = null;
+    // Transient region-sized backup of the rotation textures, held between backupRegion() and restoreRegion() so the
+    // decoded rotation/scale survives the compound recreating its rotation atlas on a grow/compaction.
+    private _backupRotMrt: Nullable<MultiRenderTarget> = null;
+
     /**
      * True when the engine supports the non-blocking GPU readback used by {@link readCentersRangeAsync}:
      * WebGL2 (PBO + fence) or WebGPU (copyTextureToBuffer + mapAsync). When false (e.g. WebGL1), callers must
@@ -121,6 +141,15 @@ export class GaussianSplattingWorkBuffer {
     }
 
     /**
+     * The decoded rotation/scale textures ([rotationsA, rotationsB, rotationScale], half-float), consumed by the
+     * voxel-IBL path as `rotationsATexture`/`rotationsBTexture`/`rotationScaleTexture`. Empty when rotation decode
+     * is not enabled.
+     */
+    public get rotationTextures(): Texture[] {
+        return this._rotMrt ? this._rotMrt.textures : [];
+    }
+
+    /**
      * Creates a work buffer sized to hold `capacity` splats.
      *
      * Standalone (default): the work buffer creates and owns a square MRT sized `ceil(sqrt(capacity))`, with
@@ -136,12 +165,17 @@ export class GaussianSplattingWorkBuffer {
      * @param sh optional higher-order SH decode configuration (Phase 6). `textureCount = ceil(coeffs*3/16)` for the
      *   MAX SH degree across the streamed files. Standalone: the work buffer creates that many owned single-attachment
      *   integer render targets. Hosted: `externalMrts` are the compound's shared SH atlas targets (borrowed).
+     * @param rotationScale optional rotation/scale decode configuration (Phase 4, for voxel-IBL shadows). When
+     *   present the work buffer decodes each splat's rotation matrix + scale into a 3-attachment half-float target.
+     *   Standalone: the work buffer creates and owns that target. Hosted: `externalMrt` is the compound's shared
+     *   rotation atlas (borrowed).
      */
     constructor(
         scene: Scene,
         capacity: number,
         externalAtlas?: { mrt: MultiRenderTarget; width: number; baseOffset: number },
-        sh?: { textureCount: number; externalMrts?: MultiRenderTarget[] }
+        sh?: { textureCount: number; externalMrts?: MultiRenderTarget[] },
+        rotationScale?: { externalMrt?: MultiRenderTarget }
     ) {
         this._scene = scene;
         this._shaderLanguage = scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
@@ -173,6 +207,19 @@ export class GaussianSplattingWorkBuffer {
                 this._ownsShMrts = true;
             }
             this._shMaterial = this._createShMaterial();
+        }
+
+        // Rotation/scale: one 3-attachment half-float target. Standalone owns a square target sized like the core
+        // atlas; hosted borrows the compound's wide shared rotation atlas.
+        if (rotationScale) {
+            if (rotationScale.externalMrt) {
+                this._rotMrt = rotationScale.externalMrt;
+                this._ownsRotMrt = false;
+            } else {
+                this._rotMrt = this._createRotMrt("gsWorkBufferRot", true);
+                this._ownsRotMrt = true;
+            }
+            this._rotMaterial = this._createRotMaterial();
         }
 
         // One persistent decode material + fullscreen-triangle quad, reused (with per-file uniforms)
@@ -207,6 +254,17 @@ export class GaussianSplattingWorkBuffer {
     public rebindShAtlas(shMrts: Nullable<MultiRenderTarget[]>): void {
         if (!this._ownsShMrts && shMrts && this._shMrts.length) {
             this._shMrts = shMrts.slice(0, this._shMrts.length);
+        }
+    }
+
+    /**
+     * Rebinds a hosted work buffer to the compound's NEW shared rotation atlas (after the compound recreated it on a
+     * grow/compaction). No-op when rotation isn't in use or the work buffer owns its rotation target (standalone).
+     * @param rotMrt the compound's new shared rotation atlas
+     */
+    public rebindRotAtlas(rotMrt: Nullable<MultiRenderTarget>): void {
+        if (!this._ownsRotMrt && rotMrt && this._rotMrt) {
+            this._rotMrt = rotMrt;
         }
     }
 
@@ -251,6 +309,13 @@ export class GaussianSplattingWorkBuffer {
                 this._renderShCopyPass(this._backupShMrts[k], this._shMrts[k].textures[0], this._mrt.textures[0], 0, width, width, 0, -baseRow);
             }
         }
+        // Same for the rotation/scale textures (one 3-out float copy pass).
+        if (this._rotMrt && this._rotCopyMaterial) {
+            if (!this._backupRotMrt) {
+                this._backupRotMrt = this._createRotMrt("gsRotAtlasBackup", false, width, regionRows);
+            }
+            this._renderRotCopyPass(this._backupRotMrt, this._rotMrt.textures, this._mrt.textures[0], 0, width, width, 0, -baseRow);
+        }
         this._quad.material = this._material;
     }
 
@@ -278,6 +343,10 @@ export class GaussianSplattingWorkBuffer {
                     this._renderShCopyPass(this._shMrts[k], this._backupShMrts[k].textures[0], this._mrt.textures[0], 0, width, width, 0, baseRow);
                 }
             }
+            // Restore the rotation/scale textures the same way (3-out float copy, scissored to the region's rows).
+            if (this._backupRotMrt && this._rotMrt && this._rotCopyMaterial) {
+                this._renderRotCopyPass(this._rotMrt, this._backupRotMrt.textures, this._mrt.textures[0], 0, width, width, 0, baseRow);
+            }
         } finally {
             engine.disableScissor();
             this._quad.material = this._material;
@@ -290,6 +359,8 @@ export class GaussianSplattingWorkBuffer {
             }
             this._backupShMrts = null;
         }
+        this._backupRotMrt?.dispose();
+        this._backupRotMrt = null;
     }
 
     /**
@@ -370,6 +441,41 @@ export class GaussianSplattingWorkBuffer {
     }
 
     /**
+     * Creates a 3-attachment half-float MRT ([rotA, rotB, rotScale]) holding the per-splat rotation matrix + scale
+     * consumed by voxel-IBL shadowing. RGBA half-float when the engine can render to it (matching the covariance
+     * precision), else full float. 3 attachments = 24 B/sample, within WebGPU's per-sample budget (its own pass).
+     * @param name MRT and attachment base name
+     * @param disableClear when true, clearing is suppressed so decodes accumulate (the decode buffer)
+     * @param width texture width (defaults to the work-buffer size; the region row width for a scoped relayout)
+     * @param height texture height (defaults to the work-buffer size; the region row count for a scoped relayout)
+     * @returns the created MRT
+     */
+    private _createRotMrt(name: string, disableClear: boolean, width: number = this._textureSize, height: number = this._textureSize): MultiRenderTarget {
+        const rotType = this._scene.getEngine()._caps.textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
+        const mrt = new MultiRenderTarget(
+            name,
+            { width, height },
+            3,
+            this._scene,
+            {
+                types: [rotType, rotType, rotType],
+                formats: [Constants.TEXTUREFORMAT_RGBA, Constants.TEXTUREFORMAT_RGBA, Constants.TEXTUREFORMAT_RGBA],
+                samplingModes: [Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURE_NEAREST_SAMPLINGMODE],
+                generateDepthBuffer: false,
+                generateDepthTexture: false,
+                generateMipMaps: false,
+            },
+            [`${name}A`, `${name}B`, `${name}Scale`]
+        );
+        mrt.clearColor = new Color4(0, 0, 0, 0);
+        mrt.renderList = [];
+        if (disableClear) {
+            mrt.onClearObservable.add(() => {});
+        }
+        return mrt;
+    }
+
+    /**
      * Decodes one SOG file into the work buffer at the given splat offset (accumulating; previously
      * decoded files are preserved). Resolves once the GPU decode has been issued. The caller may
      * dispose the source pack textures after this resolves.
@@ -387,6 +493,10 @@ export class GaussianSplattingWorkBuffer {
         if (decodeSh) {
             this._applyShPack(pack, offset);
         }
+        const decodeRot = this._rotMaterial !== null && this._rotMrt !== null;
+        if (decodeRot) {
+            this._applyRotPack(pack, offset);
+        }
         // Render the decode pass at the start of a frame (the safe point for custom render targets),
         // once the shader is compiled — never re-entrantly from a promise/observable continuation.
         await new Promise<void>((resolve) => {
@@ -395,7 +505,7 @@ export class GaussianSplattingWorkBuffer {
                     resolve();
                     return;
                 }
-                if (!this._material.isReady(this._quad) || (decodeSh && !this._shMaterial!.isReady(this._quad))) {
+                if (!this._material.isReady(this._quad) || (decodeSh && !this._shMaterial!.isReady(this._quad)) || (decodeRot && !this._rotMaterial!.isReady(this._quad))) {
                     this._scene.onBeforeRenderObservable.addOnce(attempt);
                     return;
                 }
@@ -412,6 +522,13 @@ export class GaussianSplattingWorkBuffer {
                         this._shMrts[k].renderList = [this._quad];
                         this._shMrts[k].render();
                     }
+                    this._quad.material = this._material;
+                }
+                // Bake this file's rotation/scale into the 3-attachment half-float rotation target (one pass).
+                if (decodeRot) {
+                    this._quad.material = this._rotMaterial!;
+                    this._rotMrt!.renderList = [this._quad];
+                    this._rotMrt!.render();
                     this._quad.material = this._material;
                 }
                 resolve();
@@ -436,6 +553,10 @@ export class GaussianSplattingWorkBuffer {
         if (this._shMrts.length && !this._shCopyMaterial) {
             this._shCopyMaterial = this._createShCopyMaterial();
         }
+        // Same for the rotation/scale 3-out float copy shader when rotation is in use.
+        if (this._rotMrt && !this._rotCopyMaterial) {
+            this._rotCopyMaterial = this._createRotCopyMaterial();
+        }
         // Trigger effect creation/compilation (isReady creates+compiles the effect even when it then reports the
         // material "not ready" because a bound sampler is stale), then gate on the EFFECT's compilation only — NOT
         // `material.isReady(mesh)`, which also fails on a stale/disposed texture binding. The copy passes bind fresh
@@ -447,7 +568,8 @@ export class GaussianSplattingWorkBuffer {
         // fresh textures each call anyway, so keeping valid bindings here makes `isReady` reflect only compilation.
         this._bindCopyMaterialsToAtlas();
         const shReady = this._shMrts.length === 0 || (this._shCopyMaterial !== null && this._shCopyMaterial.isReady(this._quad));
-        return this._copyMaterial.isReady(this._quad) && shReady;
+        const rotReady = !this._rotMrt || (this._rotCopyMaterial !== null && this._rotCopyMaterial.isReady(this._quad));
+        return this._copyMaterial.isReady(this._quad) && shReady && rotReady;
     }
 
     /**
@@ -466,6 +588,13 @@ export class GaussianSplattingWorkBuffer {
         if (this._shCopyMaterial && this._shMrts.length) {
             this._shCopyMaterial.setTexture("uMapTex", t[0]);
             this._shCopyMaterial.setTexture("uSrcSh", this._shMrts[0].textures[0]);
+        }
+        if (this._rotCopyMaterial && this._rotMrt) {
+            const r = this._rotMrt.textures;
+            this._rotCopyMaterial.setTexture("uMapTex", t[0]);
+            this._rotCopyMaterial.setTexture("uSrc0", r[0]);
+            this._rotCopyMaterial.setTexture("uSrc1", r[1]);
+            this._rotCopyMaterial.setTexture("uSrc2", r[2]);
         }
     }
 
@@ -531,6 +660,16 @@ export class GaussianSplattingWorkBuffer {
                     }
                 }
             }
+            // Same ping-pong for the rotation/scale textures (3-out float copy).
+            if (this._rotMrt && this._rotCopyMaterial) {
+                const rotTemp = this._createRotMrt("gsRotRelayoutTemp", false);
+                try {
+                    this._renderRotCopyPass(rotTemp, this._rotMrt.textures, mapTexture, 1);
+                    this._renderRotCopyPass(this._rotMrt, rotTemp.textures, mapTexture, 0);
+                } finally {
+                    rotTemp.dispose();
+                }
+            }
             this._quad.material = this._material;
             return;
         }
@@ -544,12 +683,17 @@ export class GaussianSplattingWorkBuffer {
         const temp = this._createMrt("gsRelayoutTemp", false, width, regionRows);
         // One region-sized integer temp per baked SH texture (same ping-pong, integer format).
         const shTemps = this._shMrts.length && this._shCopyMaterial ? this._shMrts.map((_, k) => this._createShMrt(`gsShRelayoutTemp${k}`, false, width, regionRows)) : [];
+        // One region-sized rotation temp (3-attachment float) when rotation is in use.
+        const rotTemp = this._rotMrt && this._rotCopyMaterial ? this._createRotMrt("gsRotRelayoutTemp", false, width, regionRows) : null;
         try {
             // Pass 1: atlas region -> temp via map. The map is region-local; uSrcBaseOffset shifts each source
             // index to its GLOBAL atlas texel (uSrcWidth = atlas width). Temp is exactly the band, so no scissor.
             this._renderRelayoutPass(temp, this._mrt.textures, mapTexture, 1, /*dstWidth*/ width, /*srcWidth*/ width, /*srcBaseOffset*/ this._baseOffset, /*dstBaseRow*/ 0);
             for (let k = 0; k < shTemps.length; k++) {
                 this._renderShCopyPass(shTemps[k], this._shMrts[k].textures[0], mapTexture, 1, width, width, this._baseOffset, 0);
+            }
+            if (rotTemp) {
+                this._renderRotCopyPass(rotTemp, this._rotMrt!.textures, mapTexture, 1, width, width, this._baseOffset, 0);
             }
             // Pass 2: temp -> atlas region, identity within the band. uDstBaseRow maps the atlas destination row
             // back into the region-local temp; the scissor confines writes to the band so static parts are safe.
@@ -559,6 +703,9 @@ export class GaussianSplattingWorkBuffer {
                 for (let k = 0; k < shTemps.length; k++) {
                     this._renderShCopyPass(this._shMrts[k], shTemps[k].textures[0], mapTexture, 0, width, width, 0, baseRow);
                 }
+                if (rotTemp) {
+                    this._renderRotCopyPass(this._rotMrt!, rotTemp.textures, mapTexture, 0, width, width, 0, baseRow);
+                }
             } finally {
                 engine.disableScissor();
             }
@@ -567,6 +714,7 @@ export class GaussianSplattingWorkBuffer {
             for (const t of shTemps) {
                 t.dispose();
             }
+            rotTemp?.dispose();
             this._quad.material = this._material;
         }
     }
@@ -686,6 +834,64 @@ export class GaussianSplattingWorkBuffer {
     }
 
     /**
+     * Renders one rotation/scale copy pass (the three half-float rotation textures) into the target. Same
+     * index/map/base math as {@link _renderRelayoutPass} but with three attachments.
+     * @param target destination 3-attachment MRT
+     * @param sources the three source rotation textures ([rotA, rotB, rotScale])
+     * @param mapTexture the R32F destination-to-source index map (sampled only when `useMap` is 1)
+     * @param useMap 1 to read source indices from the map (gaps discarded), 0 for an identity copy
+     * @param dstWidth destination width used to linearize the destination texel
+     * @param srcWidth source width used to convert a linear source index to a texel
+     * @param srcBaseOffset added to each mapped source index (region-local map -> global atlas texel)
+     * @param dstBaseRow subtracted from the destination row for an identity copy of a region-local temp
+     */
+    private _renderRotCopyPass(
+        target: MultiRenderTarget,
+        sources: Texture[],
+        mapTexture: BaseTexture,
+        useMap: number,
+        dstWidth: number = this._textureSize,
+        srcWidth: number = this._textureSize,
+        srcBaseOffset: number = 0,
+        dstBaseRow: number = 0
+    ): void {
+        const material = this._rotCopyMaterial!;
+        material.setTexture("uMapTex", mapTexture);
+        material.setTexture("uSrc0", sources[0]);
+        material.setTexture("uSrc1", sources[1]);
+        material.setTexture("uSrc2", sources[2]);
+        material.setInt("uDstWidth", dstWidth);
+        material.setInt("uSrcWidth", srcWidth);
+        material.setInt("uUseMap", useMap);
+        material.setInt("uSrcBaseOffset", srcBaseOffset);
+        material.setInt("uDstBaseRow", dstBaseRow);
+        this._quad.material = material;
+        target.renderList = [this._quad];
+        target.render();
+    }
+
+    private _createRotCopyMaterial(): ShaderMaterial {
+        const isWGSL = this._shaderLanguage === ShaderLanguage.WGSL;
+        const material = new ShaderMaterial(
+            GaussianSplattingWorkBufferRotCopyShaderName,
+            this._scene,
+            {
+                vertexSource: isWGSL ? GaussianSplattingWorkBufferVertexShaderWGSL : GaussianSplattingWorkBufferVertexShaderGLSL,
+                fragmentSource: isWGSL ? GaussianSplattingWorkBufferRotCopyFragmentShaderWGSL : GaussianSplattingWorkBufferRotCopyFragmentShaderGLSL,
+            },
+            {
+                attributes: ["position"],
+                uniforms: ["uDstWidth", "uSrcWidth", "uUseMap", "uSrcBaseOffset", "uDstBaseRow"],
+                samplers: ["uMapTex", "uSrc0", "uSrc1", "uSrc2"],
+                shaderLanguage: this._shaderLanguage,
+            }
+        );
+        material.backFaceCulling = false;
+        material.disableDepthWrite = true;
+        return material;
+    }
+
+    /**
      * Asynchronously reads back the decoded splat centers (stride-4 xyzw, w=1) for a contiguous splat range
      * from the work buffer's centers texture, using a non-blocking GPU readback (WebGL2 PBO + fence, or WebGPU
      * copyTextureToBuffer + mapAsync) so it never stalls the frame the way a CPU image decode does. The centers
@@ -781,8 +987,10 @@ export class GaussianSplattingWorkBuffer {
         this._quad.dispose();
         this._material.dispose(true, false);
         this._shMaterial?.dispose(true, false);
+        this._rotMaterial?.dispose(true, false);
         this._copyMaterial?.dispose(true, false);
         this._shCopyMaterial?.dispose(true, false);
+        this._rotCopyMaterial?.dispose(true, false);
         this._relayoutMapTexture?.dispose();
         this._backupMrt?.dispose();
         this._backupMrt = null;
@@ -792,6 +1000,8 @@ export class GaussianSplattingWorkBuffer {
             }
             this._backupShMrts = null;
         }
+        this._backupRotMrt?.dispose();
+        this._backupRotMrt = null;
         // Only dispose the MRT when we own it; an external atlas belongs to the hosting compound mesh.
         if (this._ownsMrt) {
             this._mrt.dispose();
@@ -803,6 +1013,11 @@ export class GaussianSplattingWorkBuffer {
             }
         }
         this._shMrts = [];
+        // Same ownership rule for the rotation target.
+        if (this._ownsRotMrt) {
+            this._rotMrt?.dispose();
+        }
+        this._rotMrt = null;
     }
 
     private _createQuad(): Mesh {
@@ -910,5 +1125,44 @@ export class GaussianSplattingWorkBuffer {
         material.setInt("uSrcWidth", (labels as Texture).getSize().width);
         // Higher-order coefficient count for THIS file (bands=3 -> 15). 0 when the file has no SH -> full neutral fill.
         material.setInt("uCoeffs", hasSh ? pack.shCoeffCount : 0);
+    }
+
+    private _createRotMaterial(): ShaderMaterial {
+        const isWGSL = this._shaderLanguage === ShaderLanguage.WGSL;
+        const material = new ShaderMaterial(
+            GaussianSplattingWorkBufferRotationDecodeShaderName,
+            this._scene,
+            {
+                vertexSource: isWGSL ? GaussianSplattingWorkBufferVertexShaderWGSL : GaussianSplattingWorkBufferVertexShaderGLSL,
+                fragmentSource: isWGSL ? GaussianSplattingWorkBufferRotationDecodeFragmentShaderWGSL : GaussianSplattingWorkBufferRotationDecodeFragmentShaderGLSL,
+            },
+            {
+                attributes: ["position"],
+                uniforms: ["sogScalesMin", "sogScalesMax", "uVersion", "uOffset", "uCount", "uDestWidth", "uSrcWidth"],
+                samplers: ["sogScalesTex", "sogQuatsTex", "sogCodebookTex"],
+                shaderLanguage: this._shaderLanguage,
+            }
+        );
+        material.backFaceCulling = false;
+        material.disableDepthWrite = true;
+        return material;
+    }
+
+    private _applyRotPack(pack: ISogTexturePack, offset: number): void {
+        const material = this._rotMaterial!;
+        const srcWidth = (pack.scalesTexture as Texture).getSize().width;
+        material.setTexture("sogScalesTex", pack.scalesTexture);
+        material.setTexture("sogQuatsTex", pack.quatsTexture);
+        // Codebook only used for v2; bind a harmless placeholder otherwise so the sampler is always set.
+        material.setTexture("sogCodebookTex", pack.codebookTexture ?? pack.scalesTexture);
+        const sMin = pack.scalesMin ?? [0, 0, 0];
+        const sMax = pack.scalesMax ?? [0, 0, 0];
+        material.setVector3("sogScalesMin", new Vector3(sMin[0], sMin[1], sMin[2]));
+        material.setVector3("sogScalesMax", new Vector3(sMax[0], sMax[1], sMax[2]));
+        material.setInt("uVersion", pack.version);
+        material.setInt("uOffset", this._baseOffset + offset);
+        material.setInt("uCount", pack.splatCount);
+        material.setInt("uDestWidth", this._textureSize);
+        material.setInt("uSrcWidth", srcWidth);
     }
 }
