@@ -51,6 +51,12 @@ function rewritePackageSpecifier(specifier) {
         if (specifier === sourcePackage || specifier.startsWith(`${sourcePackage}/`)) {
             return `${closurePackage}${specifier.slice(sourcePackage.length)}`;
         }
+        if (specifier === closurePackage || specifier.startsWith(`${closurePackage}/`)) {
+            return specifier;
+        }
+    }
+    if (specifier.startsWith("@babylonjs/")) {
+        throw new Error(`Unsupported Babylon.js dependency in Closure package: ${specifier}`);
     }
     return specifier;
 }
@@ -59,14 +65,20 @@ function getExpectedManifest(packageName) {
     const sourceManifest = JSON.parse(fs.readFileSync(path.join(getSourceDirectory(packageName), "package.json"), "utf8"));
     const rewriteDependencies = (dependencies) =>
         dependencies && Object.fromEntries(Object.entries(dependencies).map(([dependency, version]) => [packageAliases.get(dependency) ?? dependency, version]));
+    const sideEffects =
+        sourceManifest.sideEffects === undefined
+            ? undefined
+            : sourceManifest.sideEffects === true
+              ? true
+              : [...new Set([...(sourceManifest.sideEffects === false ? [] : sourceManifest.sideEffects), externFileName])];
 
     return {
         name: `@babylonjs/${packageName}-closure`,
         version: sourceManifest.version,
         description: `Closure Compiler compatible build of @babylonjs/${packageName}`,
-        main: "index.js",
-        module: "index.js",
-        types: "index.d.ts",
+        main: sourceManifest.main,
+        module: sourceManifest.module,
+        types: sourceManifest.types,
         files: ["**/*.js", "**/*.d.ts", "**/*.d.mts", "**/*.wasm", "**/*.license", "readme.md", "license.md", "NOTICE.md"],
         scripts: {
             prepublishOnly: `node ../../../../scripts/closureCompiler/generateClosurePackages.mjs --check --package ${packageName}`,
@@ -76,9 +88,9 @@ function getExpectedManifest(packageName) {
         peerDependenciesMeta: sourceManifest.peerDependenciesMeta,
         keywords: [...(sourceManifest.keywords ?? []), "closure-compiler"],
         license: sourceManifest.license,
-        esnext: "index.js",
-        type: "module",
-        sideEffects: sourceManifest.sideEffects === true ? true : [...new Set([...(sourceManifest.sideEffects ?? []), externFileName])],
+        esnext: sourceManifest.esnext,
+        type: sourceManifest.type,
+        sideEffects,
         homepage: sourceManifest.homepage,
         repository: sourceManifest.repository,
         bugs: sourceManifest.bugs,
@@ -438,6 +450,7 @@ function rewriteRuntimeGlobals(files) {
 }
 
 function verifyPackage(packageName) {
+    const sourceDirectory = getSourceDirectory(packageName);
     const targetDirectory = getTargetDirectory(packageName);
     const manifestPath = path.join(targetDirectory, "package.json");
     const expectedManifest = removeUndefinedProperties(getExpectedManifest(packageName));
@@ -447,6 +460,13 @@ function verifyPackage(packageName) {
     }
     if (!fs.existsSync(path.join(targetDirectory, "index.js")) || !fs.existsSync(path.join(targetDirectory, "index.d.ts"))) {
         throw new Error(`${actualManifest.name} has not been generated. Run npm run build:closure.`);
+    }
+    for (const metadataFile of ["license.md", "NOTICE.md"]) {
+        const sourceFile = path.join(sourceDirectory, metadataFile);
+        const targetFile = path.join(targetDirectory, metadataFile);
+        if (fs.existsSync(sourceFile) && (!fs.existsSync(targetFile) || fs.readFileSync(targetFile, "utf8") !== fs.readFileSync(sourceFile, "utf8"))) {
+            throw new Error(`${actualManifest.name} has a stale ${metadataFile}. Run npm run build:closure.`);
+        }
     }
 
     const externFilePath = path.join(targetDirectory, externFileName);
