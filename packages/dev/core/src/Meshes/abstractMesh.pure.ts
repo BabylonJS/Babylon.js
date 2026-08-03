@@ -2436,9 +2436,11 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         }
 
         // SubMeshes
-        if (this.getClassName() !== "InstancedMesh" || this.getClassName() !== "InstancedLinesMesh") {
-            this.releaseSubMeshes(true);
-        }
+        // Defer the effect release to the next frame so that a mesh recreated in the same tick with the same
+        // (or a cloned) material can reuse the still-cached compiled effect instead of triggering a recompile
+        // (which would skip a frame and cause a visible flash). During scene teardown we release immediately,
+        // since there may be no further frame to run the deferred disposal.
+        this.releaseSubMeshes(scene._isDisposing);
 
         // Query
         const engine = scene.getEngine();

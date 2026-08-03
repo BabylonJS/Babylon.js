@@ -1,33 +1,31 @@
-const MAX_SPRITE_ATLAS_SIZE = 8192;
-
 /**
  * Controls whether a Lottie feature uses the current spec-oriented behavior or Babylon.js 8.x-compatible behavior.
+ * @deprecated The vector renderer implements the spec behavior only. Accepted for backward
+ * compatibility but has no effect.
  */
 export type LottieCompatibilityMode = "spec" | "babylon8";
 
 /**
  * Compatibility options for known behavior differences between Babylon.js Lottie player versions.
+ * @deprecated The vector renderer implements the spec behavior only. Accepted for backward
+ * compatibility but has no effect.
  */
 export type LottieCompatibilityOptions = {
     /**
      * Controls text layer positioning compatibility.
-     * "spec" uses the corrected Lottie text placement introduced in Babylon.js 9.x.
-     * "babylon8" preserves Babylon.js 8.x text layer placement for animations that were authored around that behavior.
-     * In "babylon8" mode, layers parented to a text layer also follow Babylon.js 8.x semantics and inherit the text
-     * sprite's alignment/baseline offsets rather than the text layer's anchor point.
-     * Default is "spec".
+     * @deprecated Accepted for backward compatibility but has no effect.
      */
     textLayerPlacement?: LottieCompatibilityMode;
     /**
      * Controls solid layer rendering compatibility.
-     * "spec" renders Lottie solid layers (`ty: 1`). "babylon8" treats solid layers as unsupported, matching Babylon.js 8.x.
-     * Default is "spec".
+     * @deprecated Accepted for backward compatibility but has no effect.
      */
     solidLayerRendering?: LottieCompatibilityMode;
 };
 
 /**
  * Fully resolved compatibility options used internally by the Lottie animation player.
+ * @deprecated Accepted for backward compatibility but has no effect.
  */
 export type ResolvedLottieCompatibilityOptions = {
     /** Resolved text layer positioning compatibility. */
@@ -46,50 +44,53 @@ export type AnimationConfiguration = {
     loopAnimation: boolean;
     /**
      * Width of the sprite atlas texture.
-     * Set to 0 for auto-detection based on GPU capabilities (default).
-     * Will use the minimum between GPU max texture size and 8192.
+     * @deprecated The renderer draws vectors directly and no longer builds a sprite atlas. This
+     * option is accepted for backward compatibility but has no effect.
      */
     spriteAtlasWidth: number;
     /**
      * Height of the sprite atlas texture.
-     * Set to 0 for auto-detection based on GPU capabilities (default).
-     * Will use the minimum between GPU max texture size and 8192.
+     * @deprecated The renderer draws vectors directly and no longer builds a sprite atlas. This
+     * option is accepted for backward compatibility but has no effect.
      */
     spriteAtlasHeight: number;
     /**
      * Gap size around sprites in the atlas.
-     * Default is 5.
+     * @deprecated The renderer draws vectors directly and no longer builds a sprite atlas. This
+     * option is accepted for backward compatibility but has no effect.
      */
     gapSize: number;
     /**
      * Maximum number of sprites the renderer can handle at once.
-     * Default is 64.
+     * @deprecated The renderer draws vectors directly and no longer batches sprites. This option is
+     * accepted for backward compatibility but has no effect.
      */
     spritesCapacity: number;
     /**
      * Background color for the animation canvas.
-     * Default is white with full opacity.
+     * Default is opaque black. Use an alpha of 0 for a transparent canvas.
      */
     backgroundColor: { r: number; g: number; b: number; a: number };
     /**
      * Minimum scale factor to prevent too small sprites.
-     * Default is 5.
+     * @deprecated The renderer draws vectors directly and no longer rasterizes sprites. This option
+     * is accepted for backward compatibility but has no effect.
      */
     scaleMultiplier: number;
     /**
      * Scale factor for the rendering.
-     * Set to 0 for auto-detection based on atlas size (default).
-     * Uses 4x supersampling for 8K atlas, 2x for smaller atlases.
+     * Set to 0 to follow the system devicePixelRatio (default).
      */
     devicePixelRatio: number;
     /**
      * Number of steps to sample cubic bezier easing functions for animations.
-     * Default is 4.
+     * @deprecated Keyframe easing is now solved to a fixed tolerance rather than a step count. This
+     * option is accepted for backward compatibility but has no effect.
      */
     easingSteps: number;
     /**
      * Whether to support device lost events for WebGL contexts.
-     * Default is false.
+     * Default is true.
      */
     supportDeviceLost: boolean;
     /**
@@ -100,12 +101,13 @@ export type AnimationConfiguration = {
     stopAtFrame?: number;
     /**
      * When true, the parser logs unsupported lottie features to the console after parsing.
-     * Useful for diagnosing why a given animation does not render as expected.
-     * Default is false.
+     * @deprecated The vector renderer has no parse diagnostics. Accepted for backward compatibility
+     * but has no effect.
      */
     debug?: boolean;
     /**
      * Compatibility options for known behavior differences between Babylon.js Lottie player versions.
+     * @deprecated Accepted for backward compatibility but has no effect.
      */
     compatibility?: LottieCompatibilityOptions;
 };
@@ -140,13 +142,12 @@ export const DefaultConfiguration = {
 
 /**
  * Creates the final animation configuration by merging the provided partial configuration with the default configuration.
- * Computes optimal atlas size and devicePixelRatio based on GPU capabilities when not explicitly provided.
  * @param newConfig The configuration passed by the client.
- * @param maxTextureSize The maximum texture size supported by the GPU.
+ * @param _maxTextureSize The maximum texture size supported by the GPU. Unused; kept for signature stability.
  * @param mainThreadDevicePixelRatio The devicePixelRatio from the main thread (used in worker scenarios where window is not available).
  * @returns The final animation configuration.
  */
-export function UpdateConfiguration(newConfig: Partial<AnimationConfiguration>, maxTextureSize: number, mainThreadDevicePixelRatio?: number): ResolvedAnimationConfiguration {
+export function UpdateConfiguration(newConfig: Partial<AnimationConfiguration>, _maxTextureSize: number, mainThreadDevicePixelRatio?: number): ResolvedAnimationConfiguration {
     const config = {
         ...DefaultConfiguration,
         ...newConfig,
@@ -156,19 +157,10 @@ export function UpdateConfiguration(newConfig: Partial<AnimationConfiguration>, 
         },
     };
 
-    // If atlas dimensions are 0 (auto-detect), calculate optimal values based on GPU capabilities
-    const optimalAtlasSize = Math.min(maxTextureSize, MAX_SPRITE_ATLAS_SIZE);
-    if (config.spriteAtlasHeight === 0 || config.spriteAtlasWidth === 0) {
-        config.spriteAtlasWidth = optimalAtlasSize;
-        config.spriteAtlasHeight = optimalAtlasSize;
-    }
-
-    // If devicePixelRatio is 0 (auto-detect), set it based on atlas size and system DPR
+    // If devicePixelRatio is 0 (auto-detect), follow the system DPR. The vector renderer relies on
+    // MSAA for edge coverage rather than supersampling, so it needs no extra scale factor.
     if (config.devicePixelRatio === 0) {
-        // Get the system devicePixelRatio - prefer passed value (for workers), fallback to window
-        const systemDpr = mainThreadDevicePixelRatio ?? (typeof window !== "undefined" ? window.devicePixelRatio : 1);
-        // 8K atlas can afford higher supersampling (4x), smaller atlas uses 2x
-        config.devicePixelRatio = optimalAtlasSize >= MAX_SPRITE_ATLAS_SIZE ? Math.max(systemDpr, 4) : Math.max(systemDpr, 2);
+        config.devicePixelRatio = mainThreadDevicePixelRatio ?? (typeof window !== "undefined" ? window.devicePixelRatio : 1);
     }
 
     return config;

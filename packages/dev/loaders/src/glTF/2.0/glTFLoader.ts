@@ -1,5 +1,6 @@
 export * from "./glTFLoader.pure";
 
+import "core/Meshes/instancedMesh";
 import { RegisterGLTF2Loader } from "./glTFLoader.pure";
 import { RegisterGLTFFileLoader } from "../glTFFileLoader.pure";
 

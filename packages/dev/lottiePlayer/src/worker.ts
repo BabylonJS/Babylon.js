@@ -1,7 +1,7 @@
 /* eslint-disable require-atomic-updates */
 // Keep only type-only imports at module scope so nothing with side-effects runs in the worker at load time
 import { type Nullable } from "core/types";
-import { type RawLottieAnimation } from "./parsing/rawTypes";
+import { type ILottieFile as RawLottieAnimation } from "./animation/lottieRaw";
 import { type AnimationController } from "./rendering/animationController";
 import {
     type Message,
@@ -32,7 +32,7 @@ onmessage = async function (evt) {
             let errorString = undefined;
             try {
                 // Load modules and store their exports
-                const parserModule = await import("./parsing/parser");
+                const parserModule = await import("./animation/loadAnimation");
                 const controllerModule = await import("./rendering/animationController");
 
                 // Store the actual exports we'll need
@@ -64,7 +64,7 @@ onmessage = async function (evt) {
 
             // Use pre-warmed parser if available, otherwise load it
             if (GetRawAnimationDataAsync === null) {
-                const parserModule = await import("./parsing/parser");
+                const parserModule = await import("./animation/loadAnimation");
                 // We are ok having a race condition here, as both should resolve to the same function
                 GetRawAnimationDataAsync = parserModule.GetRawAnimationDataAsync;
             }
@@ -108,11 +108,10 @@ onmessage = async function (evt) {
                 return;
             }
 
-            const controller = new AnimationControllerClass(
+            const controller = await AnimationControllerClass.CreateAsync(
                 payload.canvas,
                 RawAnimation,
                 payload.canvasScale,
-                payload.atlasScale,
                 payload.variables ?? new Map<string, string>(),
                 payload.configuration ?? {},
                 payload.mainThreadDevicePixelRatio,

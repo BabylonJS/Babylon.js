@@ -67,8 +67,7 @@ interface EXT_disjoint_timer_query {
 
 interface WebGLProgram {
     __SPECTOR_rebuildProgram?:
-        | ((vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) => void)
-        | null;
+        ((vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) => void) | null;
 }
 
 interface WebGLUniformLocation {

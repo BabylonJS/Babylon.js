@@ -150,9 +150,4 @@ export const enum NodeRenderGraphConnectionPointDirection {
  * Defines the type of a connection point value
  */
 export type NodeRenderGraphBlockConnectionPointValueType =
-    | FrameGraphTextureHandle
-    | Camera
-    | FrameGraphObjectList
-    | IShadowLight
-    | FrameGraphShadowGeneratorTask
-    | FrameGraphObjectRendererTask;
+    FrameGraphTextureHandle | Camera | FrameGraphObjectList | IShadowLight | FrameGraphShadowGeneratorTask | FrameGraphObjectRendererTask;

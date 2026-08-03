@@ -10,17 +10,7 @@ import { type PropertyChangedEvent } from "shared-ui-components/propertyChangedE
 import { Measure } from "gui/2D/measure";
 
 export type DimensionProperties =
-    | "width"
-    | "left"
-    | "height"
-    | "top"
-    | "paddingLeft"
-    | "paddingRight"
-    | "paddingTop"
-    | "paddingBottom"
-    | "fontSize"
-    | "linkOffsetX"
-    | "linkOffsetY";
+    "width" | "left" | "height" | "top" | "paddingLeft" | "paddingRight" | "paddingTop" | "paddingBottom" | "fontSize" | "linkOffsetX" | "linkOffsetY";
 
 export class Rect {
     public top: number;
