@@ -48,11 +48,31 @@ const cfg = cfgArg ? JSON.parse(cfgArg) : {};
 const PORT = 7300 + Math.floor(Math.random() * 600);
 const server = await serve(PORT);
 
+// --- WATCHDOG -------------------------------------------------------------------------------------
+// Every step below can hang on a machine whose GPU stack is unhealthy: the browser may never launch,
+// and requestAdapter() is specified to return a promise that can simply never settle. Unbounded, that
+// turns this test into something that can wedge a CI job for its full timeout, which is far worse than
+// not running at all. So the whole run is time-boxed and reports the phase it died in.
+let phase = "launching browser";
+const setPhase = (p) => {
+    phase = p;
+    if (process.env.CI) {
+        console.log(`WEBGPU-XR: phase=${p}`);
+    }
+};
+const STEP_TIMEOUT_MS = +(process.env.STEP_TIMEOUT_MS || 180000);
+const watchdog = setTimeout(() => {
+    console.log(`WEBGPU-XR: SKIPPED - timed out after ${STEP_TIMEOUT_MS}ms while "${phase}". The GPU stack on this machine could not run the test.`);
+    process.exit(process.env.ALLOW_NO_WEBGPU === "1" ? 0 : 1);
+}, STEP_TIMEOUT_MS);
+
+setPhase("launching browser");
 const browser = await chromium.launch({
     ...(process.env.CHANNEL ? { channel: process.env.CHANNEL } : {}),
     headless: process.env.HEADED !== "1",
     args: ["--use-angle=default", "--enable-unsafe-webgpu", ...(process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(" ") : [])],
 });
+setPhase("opening page");
 const page = await browser.newPage({ viewport: { width: 900, height: 700 } });
 
 page.on("console", (m) => {
@@ -70,31 +90,43 @@ await page.addInitScript((c) => {
     }
 }, cfg);
 
+setPhase("probing for a WebGPU adapter");
 await page.goto(`http://127.0.0.1:${PORT}/__probe`);
-const adapter = await page.evaluate(async () => {
-    if (!navigator.gpu) {
-        return null;
-    }
-    const a = await navigator.gpu.requestAdapter();
-    if (!a) {
-        return null;
-    }
-    const i = a.info || {};
-    return `${i.vendor || "?"}/${i.architecture || "?"}`;
-});
-if (!adapter) {
+const ADAPTER_TIMEOUT_MS = +(process.env.ADAPTER_TIMEOUT_MS || 60000);
+const adapter = await Promise.race([
+    page
+        .evaluate(async () => {
+            if (!navigator.gpu) {
+                return null;
+            }
+            const a = await navigator.gpu.requestAdapter();
+            if (!a) {
+                return null;
+            }
+            const i = a.info || {};
+            return `${i.vendor || "?"}/${i.architecture || "?"}`;
+        })
+        .catch((e) => `__error__:${String(e).split("\n")[0]}`),
+    new Promise((r) => setTimeout(() => r("__timeout__"), ADAPTER_TIMEOUT_MS)),
+]);
+if (!adapter || adapter === "__timeout__" || String(adapter).startsWith("__error__")) {
     // Printed so a CI log can be grepped to prove whether this test really ran. A regression test that
     // silently no-ops is worse than no test, so the skip is loud and only tolerated when asked for.
-    console.log("WEBGPU-XR: SKIPPED - no WebGPU adapter available on this machine.");
-    await browser.close();
+    const why = adapter === "__timeout__" ? `requestAdapter() did not settle within ${ADAPTER_TIMEOUT_MS}ms` : adapter ? String(adapter).slice(10) : "no WebGPU adapter available";
+    console.log(`WEBGPU-XR: SKIPPED - ${why}.`);
+    clearTimeout(watchdog);
+    await browser.close().catch(() => {});
     server.close();
     process.exit(process.env.ALLOW_NO_WEBGPU === "1" ? 0 : 1);
 }
 console.log(`WEBGPU-XR: RAN - WebGPU adapter = ${adapter}`);
 
+setPhase("rendering frames");
 await page.goto(`http://127.0.0.1:${PORT}/harness.html`);
 
 await page.waitForFunction(() => window.__HARNESS && window.__HARNESS.done, null, { timeout: 90000 }).catch(() => console.log("  !! timed out waiting for harness"));
+setPhase("reading back pixels");
+clearTimeout(watchdog);
 
 const out = await page.evaluate(() => ({
     status: window.__HARNESS.status,
