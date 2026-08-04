@@ -1451,7 +1451,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         if (!isWebGPU) {
-            // In WebGPU, those functions are part of pbrDirectLightingFunctions
+            // WebGL keeps clustered lighting in a separate include.
+            // WebGPU nests a per-light specialized include inside pbrDirectLightingFunctions
+            // so storage buffers are not passed as ptr function parameters.
             state._emitFunctionFromInclude("pbrClusteredLightingFunctions", comments);
         }
 
