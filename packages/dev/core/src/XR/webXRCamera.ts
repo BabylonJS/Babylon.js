@@ -345,7 +345,7 @@ export class WebXRCamera extends FreeCamera {
                     needsHalfZConversion = true;
                 }
                 if (needsHalfZConversion) {
-                    currentRig._projectionMatrix.convertProjectionToHalfZRangeInPlace();
+                    currentRig._projectionMatrix._convertProjectionToHalfZRangeInPlace();
                 }
             }
 

@@ -7324,7 +7324,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @internal
      * @returns the current updated matrix
      */
-    public convertProjectionToHalfZRangeInPlace(): this {
+    public _convertProjectionToHalfZRangeInPlace(): this {
         this.multiplyToRef(mtxConvertNDCToHalfZRange, this);
         return this;
     }

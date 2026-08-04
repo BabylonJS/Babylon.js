@@ -265,17 +265,17 @@ describe("WebXRCamera", () => {
                 expect(Number.isNaN(result.m[k])).toBe(false);
             }
             // Guard forces conversion; result equals the raw matrix with the half-Z conversion applied.
-            const expected = Matrix.FromArray(raw).convertProjectionToHalfZRangeInPlace();
+            const expected = Matrix.FromArray(raw)._convertProjectionToHalfZRangeInPlace();
             for (let k = 0; k < 16; k++) {
                 expect(result.m[k]).toBeCloseTo(expected.m[k], 6);
             }
         });
 
-        it("convertProjectionToHalfZRangeInPlace matches the engine's own half-Z builder", () => {
+        it("_convertProjectionToHalfZRangeInPlace matches the engine's own half-Z builder", () => {
             // The @internal converter must reproduce exactly what PerspectiveFovRHToRef bakes in when halfZRange is set.
             const converted = new Matrix();
             Matrix.PerspectiveFovRHToRef(1.2, 1.5, 0.2, 500, converted, true, false); // [-1, 1]
-            converted.convertProjectionToHalfZRangeInPlace();
+            converted._convertProjectionToHalfZRangeInPlace();
 
             const reference = new Matrix();
             Matrix.PerspectiveFovRHToRef(1.2, 1.5, 0.2, 500, reference, true, true); // [0, 1]

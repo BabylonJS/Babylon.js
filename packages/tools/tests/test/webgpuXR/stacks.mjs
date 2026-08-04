@@ -10,8 +10,9 @@ const PORT = 8899;
 const ROOT = new URL("./public/", import.meta.url).pathname;
 const MIME = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json" };
 const srv = createServer((req, res) => {
+    // Constrain every request to ROOT: `join` alone happily resolves "/../secrets" outside the harness.
     const p = join(ROOT, decodeURIComponent(req.url.split("?")[0]));
-    if (!existsSync(p)) {
+    if (!p.startsWith(ROOT) || !existsSync(p)) {
         res.writeHead(404);
         res.end();
         return;

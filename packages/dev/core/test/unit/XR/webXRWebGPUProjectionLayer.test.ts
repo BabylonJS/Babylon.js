@@ -4,6 +4,7 @@
 
 import { Constants } from "core/Engines/constants";
 import { NullEngine } from "core/Engines/nullEngine";
+import { WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRenderTargetWrapper";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { Vector3 } from "core/Maths/math.vector";
@@ -117,10 +118,11 @@ describe("WebXRWebGPUProjectionLayer", () => {
             expect(rtt).not.toBeNull();
             expect((rtt!.renderTarget as any)._disableEngineYFlip).toBe(true);
 
-            // A plain render target created directly by the engine must not carry the flag.
-            const plainRtt = scene.getEngine().createRenderTargetTexture(256, { generateDepthBuffer: true, generateStencilBuffer: false });
-            expect((plainRtt as any)._disableEngineYFlip).toBeFalsy();
-            plainRtt.dispose();
+            // Negative control. This asserts against a real WebGPURenderTargetWrapper rather than
+            // engine.createRenderTargetTexture(): under NullEngine that returns a base RenderTargetWrapper, which
+            // never declares the flag at all, so the assertion would pass vacuously against `undefined`.
+            const plainWrapper = new WebGPURenderTargetWrapper(false, false, 256, engine as any);
+            expect(plainWrapper._disableEngineYFlip).toBe(false);
         });
 
         it("repoints the wrapped textures instead of rebuilding when the size is unchanged", () => {
