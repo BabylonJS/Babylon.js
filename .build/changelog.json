@@ -1,6 +1,156 @@
 {
-    "fromTag": "9.18.2",
+    "fromTag": "9.19.0",
     "changelog": {
+        "9.19.1": [
+            {
+                "pr": "18761",
+                "title": "Fix clustered lighting WGSL validation on Firefox WebGPU",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\nFirefox WebGPU (Naga) rejects clustered lighting WGSL because `computeClusteredLighting` took a `ptr<storage, array<u32>>` parameter. That needs the optional `unrestricted_pointer_parameters` extension, which Chrome Tint implements but Firefox/Naga does not. Babylon never requested the extension by name — Chrome just accepted the pattern.\n\n## Fix\nSpecialize per light index (`computeClusteredLighting{X}`) and read `tileMaskBuffer{X}` at module scope so no storage pointer is passed as a user-function parameter. Nested `#include…[0..maxSimultaneousLights]` keeps Standard/PBR/NME paths working. WebGL/GLSL is unchanged.\n\n## Tests\nUnit regression that expands WGSL includes and asserts no `ptr<storage` function params / no `&tileMaskBuffer`.\n\n## Forum\nhttps://forum.babylonjs.com/t/clustered-lighting-wgsl-fails-validation-on-firefox-webgpu-ptr-storage-function-parameter-requires-unrestricted-pointer-parameters-which-naga-doesnt-implement/63887\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.pure.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/clusteredLightingCompute.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightsFragmentFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrClusteredLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/test/unit/Lights/Clustered/clusteredLightingWgslPointers.test.ts",
+                    "scripts/treeshaking/side-effects-manifest/core/ShadersWGSL.json"
+                ],
+                "tags": [
+                    "bug",
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "18760",
+                "title": "chore(deps): npm audit fix — resolve ip-address and postcss advisories",
+                "description": "## Summary\n\nRuns `npm audit fix` to clear the security advisories that can be resolved today. **Lockfile-only change** — root `package.json` is untouched.\n\n`npm audit`: **6 vulnerabilities (2 moderate, 4 high) → 4 (1 moderate, 3 high)**.\n\n## Resolved\n\n| Package | Severity | Advisory | Fix |\n|---|---|---|---|\n| `ip-address` | high ×3 | [GHSA-mwp4-54f8-5fhr](https://github.com/advisories/GHSA-mwp4-54f8-5fhr), [GHSA-4xrf-jv44-h6hh](https://github.com/advisories/GHSA-4xrf-jv44-h6hh), [GHSA-22jq-vg5j-6vgg](https://github.com/advisories/GHSA-22jq-vg5j-6vgg) — SSRF / trust-boundary bypass | 10.2.0 → 10.3.1 |\n| `postcss` | moderate | [GHSA-fxqj-rqcc-2cmp](https://github.com/advisories/GHSA-fxqj-rqcc-2cmp) — arbitrary `.map` read via `sourceMappingURL` | 8.5.22 → 8.5.24 |\n\n## Not resolved — blocked by our 7-day release-age policy\n\nThe remaining four findings all require versions published within the last 7 days, which `.npmrc`'s `min-release-age=7` (added in #18683) intentionally holds back:\n\n| Package | Needs | Published | Unblocks |\n|---|---|---|---|\n| `brace-expansion` (pinned by `nx`) | 5.0.9 | 2026-07-30 | 2026-08-06 |\n| `fast-uri` (via `ajv`) | 3.1.5 | 2026-07-31 | 2026-08-07 |\n| `hono` (via `@modelcontextprotocol/sdk`) | 4.12.34 | 2026-08-03 | 2026-08-10 |\n\nThese should clear with a follow-up `npm audit fix` once the window elapses. `nx` pins `brace-expansion` exactly, so it will additionally need an `overrides` entry (`nx: { \"brace-expansion\": \"^5.0.9\" }`).\n\n### Note on `nx`\n\nPlain `npm audit fix` wants to **downgrade `nx` 22.7.8 → 22.6.5** to escape the pinned vulnerable `brace-expansion@5.0.8`. That trade is not worth it — 22.6.5 is itself affected by [GHSA-g2r8-wvmj-jf5w](https://github.com/advisories/GHSA-g2r8-wvmj-jf5w) (`nx graph` permissive CORS), so the vulnerability count is unchanged while the build orchestrator regresses. This PR deliberately keeps `nx` at 22.7.8.\n\n## Diff noise\n\nThe lockfile also drops ~51 `\"peer\": true` metadata flags. This is not caused by this change — a plain `npm install` on `master` reproduces it, and the flag count has oscillated in lockfile history (1 → 41 → 1 → 49). This restores it to the state the automated \"Version update\" commits produce.\n\n## Validation\n\n- `npm install` is idempotent against the committed lockfile\n- `npm run format:check` passes",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18759",
+                "title": "chore(deps): pin @adobe/spz to exact 0.2.0 in @dev/loaders",
+                "description": "## What\n\nPins the `@adobe/spz` devDependency in `@dev/loaders` from `^0.2.0` to an exact `0.2.0`.\n\n## Why\n\n`@adobe/spz` is a **type-only, dev-only** dependency. `packages/dev/loaders/src/SPLAT/spz.ts` imports it purely for types:\n\n```ts\nimport { type GaussianCloud, type SpzModule, type SpzExtensionSafeOrbitCameraAdobe } from \"@adobe/spz\";\n```\n\nNothing from the npm package is bundled or shipped — at runtime the WASM module is fetched dynamically from a CDN via `_LoadScriptModuleAsync`, and `generateDeclaration.ts` already collapses `@adobe` types to `any` in the published `.d.ts` bundles.\n\nUnder `^0.2.0` the resolved version silently floated to `0.2.2`. Pinning makes the type surface deterministic.\n\n## Is 0.2.0 sufficient?\n\nYes. Diffing the published `dist/spz.d.ts` across versions:\n\n| Range | Type changes |\n| --- | --- |\n| 0.2.0 → 0.2.1 | none (byte-identical) |\n| 0.2.1 → 0.2.2 | adds `SpzExtensionCoordinateSystemAdobe`, `SPZ_ADOBE_coordinate_system`, and 8 new `CoordinateSystem` enum members |\n\nThe loaders package uses none of the 0.2.2 additions. Everything it touches — `SpzModule.loadSpzFromBuffer`, `CoordinateSystem.RUB`, `GaussianCloud`, and the `SpzExtensionSafeOrbitCameraAdobe` fields — is present and unchanged in 0.2.0.\n\n## Note on the runtime version\n\nThe default `spzLibraryUrl` in `splatFileLoader.pure.ts` still points at `unpkg.com/@adobe/spz@0.2.2/dist/spz.js`, and is intentionally left alone. 0.2.2 is what users actually download and it carries the functional additions (SH4 / extension support) the loader depends on; 0.2.0's `spz.js` is 299 KB vs 851 KB. Since the 0.2.0 type surface is a strict subset of 0.2.2, compiling against 0.2.0 while running 0.2.2 is sound.\n\n## Testing\n\n- `npm ci` succeeds → lockfile is in sync with the manifest, `@adobe/spz@0.2.0` installs.\n- Standalone `tsc --noEmit --strict` over the full `@adobe/spz` API surface used by the SPLAT loader passes against the 0.2.0 typings.\n- `prettier --check` clean on both changed files.\n\nThe lockfile was hand-edited rather than regenerated: locally available npm versions rewrite ~50 unrelated `\"peer\": true` entries, which would have buried the real change in noise.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/loaders/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18757",
+                "title": "chore(deps): npm audit fix — resolve all security advisories (0 vulnerabilities)",
+                "description": "## Summary\nRuns `npm audit fix` to resolve **all** current npm audit findings. `npm audit` now reports **0 vulnerabilities** (was 4: 2 high, 2 moderate).\n\nLockfile-only change — root `package.json` is untouched.\n\n## Findings resolved\n| Package | Severity | Advisory | Fix |\n|---|---|---|---|\n| `brace-expansion` | high | GHSA-3jxr-9vmj-r5cp, GHSA-mh99-v99m-4gvg (DoS) | 1.1.16 → 1.1.18, 5.0.6 → 5.0.9 |\n| `@hono/node-server` (via `@modelcontextprotocol/sdk`) | moderate | GHSA-frvp-7c67-39w9 (path traversal) | 1.19.14 → 2.0.12 |\n| `@modelcontextprotocol/sdk` | (dep bump) | — | 1.29.0 → 1.30.0 |\n| `nx` (transitive brace-expansion) | high | — | brace-expansion bumped |\n\nNo breaking-change bumps were forced (`npm audit fix` without `--force`).\n\n## Reproduce\n```\nnpm install\nnpm audit        # before: 4 vulnerabilities\nnpm audit fix\nnpm audit        # after: found 0 vulnerabilities\n```\n\n## Verification\n- [x] `npm audit` → 0 vulnerabilities\n- [x] `npm install` succeeds and produces a stable lockfile\n- [ ] CI green\n\n_Generated by the morning-dev-briefing skill._",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18756",
+                "title": "fix(physics): correct inverse inertia tensor rows in PhysicsCharacterController",
+                "description": "## Problem\n\nFixes #18736.\n\n`PhysicsCharacterController._getInverseInertiaWorld()` built the inverse-inertia tensor incorrectly: all three inertia components were written to **row 0** of the working matrix.\n\n```ts\nconst it = TmpVectors.Matrix[1];\nit.setRowFromFloats(0, mp.inertia.x * ...); // row 0\nit.setRowFromFloats(0, mp.inertia.y * ...); // should be row 1\nit.setRowFromFloats(0, mp.inertia.z * ...); // should be row 2\n```\n\nBecause `it` is the shared scratch matrix `TmpVectors.Matrix[1]`, rows 1 and 2 retained stale values left by whatever unrelated code last used that temp. This made the impulse the character applies to dynamic bodies depend on prior matrix math — e.g. loading a skinned glTF model (which processes inverse-bind matrices) changed the leftover temp contents, causing the reporter's character to sometimes fail to push a box, or to launch it across the scene.\n\n## Fix\n\nWrite each inertia component to its correct row (0, 1, 2). This matches the workaround verified by the issue reporter across every tested model.\n\nThe result is consumed only via `Vector3.TransformNormalToRef` (upper-left 3×3), and `invOrientation` is a pure rotation with a zero translation column, so no stale temp data can leak into the result once rows 0–2 are correct.\n\n## Testing\n\nMinimal one-line-per-row index correction; no behavioral change other than fixing the tensor construction.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/characterController.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18748",
+                "title": "Prevent touch hover events from exhausting pointer slots",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\nFixes touch pointer slots being permanently consumed by hover-only `pointermove` events, as reported on Meta Quest Browser.\n\nUnknown touch pointers are now connected from a move only while a contact button is active. This preserves move-before-down recovery for active touch and pen input while preventing `buttons === 0` hover events from blocking later pointer input.\n\nAdds regression coverage for hover-only touch moves and active move-before-down input.\n\nForum report: https://forum.babylonjs.com/t/63867\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.webDeviceInputSystem.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18755",
+                "title": "Fix one-frame render flash when recreating a mesh in the same tick",
+                "description": "## Problem\n\nReported on the forum: [Objects are not rendered the frame they are created](https://forum.babylonjs.com/t/objects-are-not-rendered-the-frame-they-are-created/63878).\n\nWhen a mesh is recreated in the same tick using the common pattern:\n\n```js\nconst s2 = MeshBuilder.CreateSphere(\"sphere2\", {...}, scene);\ns2.material = mat;      // material assignment is lazy — the effect isn't referenced yet\nsphere.dispose();       // drops the shared effect's refcount to 0 → evicts the cached GL program\nsphere = s2;\n```\n\nthe recreated mesh is skipped for one frame, producing a visible flash.\n\n## Root cause\n\nSince the `DrawWrapper` weak-ref change (v7.35.2), `DrawWrapper.dispose()` disposes the ref-counted compiled `Effect`. Effects are cached in `engine._compiledEffects` keyed by shader source + defines. Because assigning a material is lazy (the effect isn't referenced until the next `isReadyForSubMesh`), disposing the old mesh drops the shared effect's refcount to 0 and evicts the cached GL program **before** the new mesh claims it.\n\nThe next frame has to build a *fresh* effect. With synchronous shader compilation that effect is ready the same frame (no flash), but under **async/parallel shader compilation** (or a cloned material, whose `_shadersLoaded` resets to `false`) it isn't ready that frame — so the submesh is skipped and the mesh flashes.\n\nA deferred-dispose safeguard was already added in #15910 for material swaps (`resetDrawCache`), giving user code a chance to reuse the effect on the next frame. But `AbstractMesh.dispose()` called `releaseSubMeshes(true)` (**immediate**), which bypassed that safeguard.\n\n## Fix\n\n- `AbstractMesh.dispose()` now defers the effect release (`immediate = false`) so a mesh recreated in the same tick can reuse the still-cached compiled effect, consistent with the existing deferred material-swap path.\n- To avoid leaking effects during teardown (where no future frame runs the deferred disposal), a new internal `Scene._isDisposing` flag is set at the start of `Scene.dispose()`, and mesh disposal releases **immediately** while the scene is being torn down. Engine disposal already force-frees all effects via `releaseEffects()` before disposing its scenes, so the deferred path is a safe no-op there too.\n\nNet diff is 13 lines across 2 files.\n\n## Validation\n\n- Headless draw-call harness (swiftshader) measuring drawn frames across the recreate, on a local build of `@babylonjs/core`:\n  - Before: `missedFrames = 1` (flash) for parallel-compile and cloned-material cases.\n  - After: `missedFrames = 0` for all four combinations (parallel on/off × reuse/clone).\n- Scene-dispose leak check: `engine._compiledEffects` goes 1 → 0 on `scene.dispose()` (effects still freed immediately during teardown — no leak).\n- `npm run test:unit`: 4306 passed, 0 failures.\n- Formatting, lint (0 errors), and `build:source` all clean.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.pure.ts",
+                    "packages/dev/core/src/scene.pure.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18752",
+                "title": "Fix: Gaussian Splatting sort padding reuses real splat data, causing splats stuck in front of the model",
+                "description": "The depth-sort worker draws splats in fixed batches of 16 per GPU instance, so whenever the active splat count isn't a multiple of 16, the sorted draw-order buffer pads out the remainder. That padding was hardcoded to splat index `0` — not a reserved/invisible slot, just the first real splat of whatever data was loaded. Padding with it draws that real splat an extra ~15 times at the very end of the back-to-front draw order, i.e. always on top, regardless of camera. Any asset whose active splat count isn't a multiple of 16 hits this.\r\n\r\n### Fix\r\n\r\n- Send the sort worker the real (unpadded) `vertexCount` alongside `positions` (one call site, `_instantiateWorker`, was missing it).\r\n- `_getTextureSize` now guarantees the splat atlas always has at least one provably-zeroed slot past `vertexCount`, even when a mesh's splat count exactly fills the texture.\r\n- The sort worker pads with that genuinely-empty `vertexCount` index instead of `0`, in both the counting-sort and legacy comparison-sort paths.\r\n\r\n### When it triggers\r\n\r\nAny Gaussian Splatting mesh whose active splat count (full load, or after range filtering/culling) isn't a multiple of 16 — a handful of splats appear permanently stuck in front of the model, independent of viewing angle.",
+                "author": {
+                    "name": "raymondyfei",
+                    "url": "https://github.com/raymondyfei"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingSortWorker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18754",
+                "title": "Fix native tests artifact name conflict on job rerun",
+                "description": "## Problem\n\nCI on the `NativeTests` job fails with:\n\n```\n##[error]Artifact native-rendered-pictures already exists for build 57242.\n```\n\n`PublishPipelineArtifact@1` publishes artifacts scoped to the whole build/run and has no overwrite option (unlike the older `PublishBuildArtifacts@1`). If the `NativeTests` job is rerun within the same build (e.g. via \"Rerun failed jobs\" in the Azure DevOps UI, or an automatic retry), the second attempt tries to publish `native-rendered-pictures` / `native-error-pictures` again under the same build ID and Azure DevOps rejects it because those artifact names already exist.\n\nThis is an Azure DevOps platform limitation, not something configurable from project settings — it has to be handled in the pipeline YAML.\n\n## Fix\n\nScope both artifact names by `$(System.JobAttempt)`, which increments each time the job is rerun within the same build. This mirrors an existing pattern already used elsewhere in this pipeline for BrowserStack local identifiers (`es6vis-$(Build.BuildId)-$(System.JobAttempt)`).\n\n- `native-rendered-pictures` → `native-rendered-pictures-$(System.JobAttempt)`\n- `native-error-pictures` → `native-error-pictures-$(System.JobAttempt)`\n\nNo downstream job consumes these artifacts by their fixed name, so this rename is safe.\n\n## Testing\n\nThis is a CI pipeline YAML change; validated by reading the pipeline definition and confirming the artifact naming pattern used elsewhere in the same file (`$(System.JobAttempt)`). No app code changed, so no unit/build/lint validation applies.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18750",
+                "title": "Allow disabling Havok floating origin world regions",
+                "description": "Hey there, \r\n\r\nI have been toying with havok world regions recently, and learned there is no perfect solution for physics handling in large scale worlds.\r\n\r\nWorld regions have edge cases around world migrations (2 bodies close in space should interact but are in fact in 2 separate worlds like in [this PG](https://playground.babylonjs.com/#0HYLMQ#1)), origin rebasing only works when physics happen close to the camera and double precision has a performance and memory hit (although I saw Jolt only uses f64 for positions to limit the penalty to ~10% https://github.com/jrouwe/JoltPhysics/issues/94#issuecomment-1324347464).\r\n\r\nSo my point is Babylon should let havok users make their own large world implementation if they want to.\r\n\r\nHence this small PR adds a config flag to disable havok world regions even when floating origin is enabled.\r\n\r\nLet me know how you feel about it!",
+                "author": {
+                    "name": "BarthPaleologue",
+                    "url": "https://github.com/BarthPaleologue"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/test/unit/Physics/havokPlugin.test.ts"
+                ],
+                "tags": []
+            }
+        ],
         "9.19.0": [
             {
                 "pr": "18751",
