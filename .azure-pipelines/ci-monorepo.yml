@@ -650,15 +650,16 @@ jobs:
           # where it gave up.
           - script: npm run test:webgpu-xr
             displayName: "run WebGPU-XR regression harness"
-            # MEASUREMENT RUN: budget deliberately long and the step non-gating, to establish what a
-            # CPU-rasterising agent actually costs. Tightened once the real number is known.
             continueOnError: true
-            timeoutInMinutes: 18
+            timeoutInMinutes: 6
             env:
-                CHROME_ARGS: "--use-angle=swiftshader --enable-features=Vulkan"
+                # --disable-dev-shm-usage: the agent's /dev/shm is small, and SwiftShader exhausting it
+                # crashed the renderer right after the first frame (measured: first frame at +132ms,
+                # then "Target crashed"). Without it Chrome cannot survive a WebGPU workload here.
+                CHROME_ARGS: "--use-angle=swiftshader --enable-features=Vulkan --disable-dev-shm-usage"
                 ALLOW_NO_WEBGPU: "1"
-                STEP_TIMEOUT_MS: "900000"
-                HARNESS_WAIT_MS: "840000"
+                STEP_TIMEOUT_MS: "240000"
+                HARNESS_WAIT_MS: "180000"
                 FRAME_BUDGET: "6"
                 CI: "true"
 

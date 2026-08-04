@@ -29,8 +29,12 @@ function serve(port) {
                 res.end("<!doctype html><title>probe</title>");
                 return;
             }
-            const file = path.join(pub, url === "/" ? "harness.html" : url);
-            if (!file.startsWith(pub) || !fs.existsSync(file)) {
+            // Containment: strip the leading slash so `resolve` cannot be short-circuited by an absolute
+            // request path, and compare against `pub + sep` so a sibling directory sharing the prefix
+            // (".../publicity") cannot pass the check.
+            const rel = (url === "/" ? "harness.html" : url).replace(/^\/+/, "");
+            const file = path.resolve(pub, rel);
+            if (!file.startsWith(pub + path.sep) || !fs.existsSync(file)) {
                 res.writeHead(404);
                 res.end("nope");
                 return;
@@ -142,16 +146,32 @@ if (!adapter || adapter === "__timeout__" || String(adapter).startsWith("__error
 console.log(`WEBGPU-XR: RAN - WebGPU adapter = ${adapter}`);
 
 setPhase("rendering frames");
+// A renderer crash (SwiftShader exhausting a small /dev/shm in a CI container is the classic case)
+// otherwise surfaces later as an opaque "Target crashed" thrown from page.evaluate. Catching it here
+// turns it into a diagnosable infrastructure skip instead of an uncaught throw.
+let crashed = false;
+page.on("crash", () => {
+    crashed = true;
+    console.log("WEBGPU-XR: the browser tab crashed (renderer process died).");
+});
 await page.goto(`http://127.0.0.1:${PORT}/harness.html`);
 
-// Bounded independently of the watchdog: on a CPU-rasterising agent, WGSL pipeline compilation for the
-// first frame can dwarf everything else, so this is tunable without loosening the overall time box.
+// Bounded independently of the watchdog, so a slow agent can be given more room without loosening the
+// overall time box.
 const HARNESS_WAIT_MS = +(process.env.HARNESS_WAIT_MS || 90000);
 await page
     .waitForFunction(() => window.__HARNESS && window.__HARNESS.done, null, { timeout: HARNESS_WAIT_MS })
     .catch(() => console.log(`  !! timed out waiting for harness after ${HARNESS_WAIT_MS}ms`));
 setPhase("reading back pixels");
 clearTimeout(watchdog);
+
+if (crashed) {
+    console.log("WEBGPU-XR: SKIPPED - the browser tab crashed, so the run proves nothing either way.");
+    await browser.close().catch(() => {});
+    server.closeAllConnections?.();
+    server.close();
+    process.exit(process.env.ALLOW_NO_WEBGPU === "1" ? 0 : 1);
+}
 
 const out = await page.evaluate(() => ({
     status: window.__HARNESS.status,

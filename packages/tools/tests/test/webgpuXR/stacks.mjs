@@ -4,14 +4,25 @@
 import { chromium } from "playwright";
 import { createServer } from "http";
 import { readFileSync, existsSync } from "fs";
-import { extname, join } from "path";
+import { extname, resolve } from "path";
 
 const PORT = 8899;
 const ROOT = new URL("./public/", import.meta.url).pathname;
 const MIME = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json" };
 const srv = createServer((req, res) => {
-    // Constrain every request to ROOT: `join` alone happily resolves "/../secrets" outside the harness.
-    const p = join(ROOT, decodeURIComponent(req.url.split("?")[0]));
+    // decodeURIComponent throws URIError on a malformed escape ("/%ZZ"), and an exception thrown here
+    // takes the whole server down, so it is caught rather than allowed to become an uncaught throw.
+    let requested;
+    try {
+        requested = decodeURIComponent((req.url || "/").split("?")[0]);
+    } catch {
+        res.writeHead(400);
+        res.end();
+        return;
+    }
+    // Constrain every request to ROOT: resolving alone happily escapes the harness via "/../secrets".
+    // The leading slash is stripped first, because `resolve` treats an absolute segment as a new root.
+    const p = resolve(ROOT, requested.replace(/^\/+/, "") || "harness.html");
     if (!p.startsWith(ROOT) || !existsSync(p)) {
         res.writeHead(404);
         res.end();
