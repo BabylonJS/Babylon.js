@@ -159,7 +159,9 @@ export interface IGaussianSplattingStreamOptions {
      * When true, higher-order spherical-harmonics carried by the SOG files (`shN`) are GPU-decoded into baked
      * packed-u32 SH textures so the streamed splats render with view-dependent lighting (matching the non-stream
      * `.spz`/`.sog` path) instead of flat DC-only color. The SH degree is the max `shN.bands` across the streamed
-     * files (lower-band files neutral-fill). No effect when the files carry no `shN`. Defaults to `false`.
+     * files (lower-band files neutral-fill). No effect when the files carry no `shN`. Defaults to `true`, matching
+     * the non-stream path's always-decode-if-present behavior; set to `false` to force flat DC-only color even
+     * when the data carries `shN` (e.g. to save the decode cost/texture memory).
      */
     decodeSh?: boolean;
     /**
@@ -396,7 +398,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         this._rootUrl = rootUrl;
         this._streamOptions = options;
         this._hostCompound = options.hostCompound ?? null;
-        this._decodeSh = options.decodeSh ?? false;
+        this._decodeSh = options.decodeSh ?? true;
         this._needsRotationScale = options.needsRotationScale ?? false;
 
         // LOD heuristic parameters: take the provided values, otherwise keep the PlayCanvas-aligned defaults.
@@ -496,6 +498,22 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     public override getClassName(): string {
         return "GaussianSplattingStream";
+    }
+
+    /**
+     * When `_hostCompound` is set (i.e. this stream was created via {@link AddGaussianSplattingStreamPart}
+     * to drive a reserved region of another compound mesh, rather than rendering itself), this instance is
+     * disabled and never drawn — so it never runs its own depth-sort worker and the base class's readiness
+     * check (which waits for one) would never pass. Report ready unconditionally in that case; the host
+     * compound is the one actually rendering, and its own `isReady()` already covers real sort completion.
+     * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
+     * @returns true when ready
+     */
+    public override isReady(completeCheck = false): boolean {
+        if (this._hostCompound) {
+            return true;
+        }
+        return super.isReady(completeCheck);
     }
 
     /**
