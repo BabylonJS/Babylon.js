@@ -59,10 +59,6 @@ packages/tools/smartFiltersEditor/www/index.html
 .sonda/
 docs/tree-shaking/
 
-# WebGPU-XR device telemetry captures (dev-only)
-.xrtrace/
-packages/tools/babylonServer/public/xrbuild/
-
 # WebGPU-XR local harness: generated core bundle and run artifacts
 packages/tools/tests/test/webgpuXR/public/babylon.harness.js
 packages/tools/tests/test/webgpuXR/last-run.json

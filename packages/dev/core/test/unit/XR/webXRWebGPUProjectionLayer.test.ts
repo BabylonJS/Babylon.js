@@ -4,7 +4,9 @@
 
 import { Constants } from "core/Engines/constants";
 import { NullEngine } from "core/Engines/nullEngine";
+import { FreeCamera } from "core/Cameras/freeCamera";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import { Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
 import { Scene } from "core/scene";
 import { CreateDefaultXRGPUProjectionLayerInit, WebXRWebGPUProjectionLayerWrapper } from "core/XR/features/Layers/WebXRWebGPUProjectionLayer";
@@ -261,22 +263,40 @@ describe("WebXRWebGPUProjectionLayer", () => {
             expect(clearSpy).toHaveBeenLastCalledWith(scene.clearColor, true, true, true);
         });
 
-        it("the per-eye clear observer does not re-clear color when another scene resets _cleared mid-frame", () => {
+        it("the per-eye clear observer does not re-clear color when a second scene renders through the same rig cameras", () => {
             // Regression: UtilityLayerRenderer renders a second Scene through the same XR rig cameras within one
-            // XR frame, and every Scene.render resets RenderTargetTexture._cleared for those cameras' targets
-            // (Scene._checkCameraRenderTarget). A _cleared-based guard is therefore defeated and the eye is
-            // re-cleared AFTER it was drawn, wiping the geometry while the clear color keeps presenting.
+            // XR frame. Every Scene.render calls Scene._checkCameraRenderTarget, which resets
+            // RenderTargetTexture._cleared for those cameras' targets, so a _cleared-based guard is defeated and
+            // the eye is re-cleared AFTER it was drawn - wiping the geometry while the clear color keeps
+            // presenting. This drives the real Scene code path rather than simulating the reset.
             const provider = createProvider(createSubImage(512, 512));
-            const rtt = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);
+            const rtt = provider.getRenderTargetTextureForView({ eye: "left" } as XRView)!;
+
+            // Wire the target up the way webXRCamera does: the eye is a rig camera of the XR camera.
+            const xrCamera = new FreeCamera("xr", Vector3.Zero(), scene);
+            const eyeCamera = new FreeCamera("eye", Vector3.Zero(), scene);
+            eyeCamera.isRigCamera = true;
+            eyeCamera.outputRenderTarget = rtt;
+            xrCamera.rigCameras.push(eyeCamera);
 
             const clearSpy = vi.spyOn(engine, "clear");
-            rtt!.onClearObservable.notifyObservers(engine);
+
+            // The owning scene's pass over this eye: color is cleared, then the geometry is drawn.
+            (scene as any)._checkCameraRenderTarget(xrCamera);
+            (scene as any)._clearFrameBuffer(eyeCamera);
             expect(clearSpy).toHaveBeenLastCalledWith(scene.clearColor, true, true, true);
 
-            // Simulate the second scene's per-frame reset, then its clear notification in the SAME engine frame.
-            rtt!._cleared = false;
-            rtt!.onClearObservable.notifyObservers(engine);
+            // UtilityLayerRenderer's second scene, same engine frame, same rig cameras.
+            const utilityScene = new Scene(engine);
+            utilityScene.autoClear = false;
+            (utilityScene as any)._checkCameraRenderTarget(xrCamera);
+            expect(rtt._cleared).toBe(false); // the _cleared guard really is defeated by the second render
+
+            (utilityScene as any)._clearFrameBuffer(eyeCamera);
+            // Color must NOT be cleared again: that is what wiped the frame on device.
             expect(clearSpy).toHaveBeenLastCalledWith(scene.clearColor, false, true, true);
+
+            utilityScene.dispose();
         });
 
         it("disposes the previous per-eye render target on a size change without leaking registry entries", () => {

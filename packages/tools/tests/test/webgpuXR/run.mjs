@@ -109,9 +109,11 @@ if (out.xrtraceDigest) {
 }
 console.log("\n=== VERDICT ===");
 console.log(`frames captured: ${verdict.length}`);
+const missing = { e0: [], e1: [] };
 for (const k of ["e0", "e1"]) {
     const withGeo = verdict.filter((v) => v[k] > 0).length;
     const firstBad = verdict.findIndex((v) => v[k] <= 0);
+    missing[k] = verdict.filter((v) => v[k] <= 0).map((v) => v.frame);
     console.log(`${k}: frames WITH geometry = ${withGeo}/${verdict.length}; first frame WITHOUT geometry = ${firstBad}`);
     if (firstBad > 0 && firstBad < verdict.length) {
         console.log(`  *** ${k} REPRODUCED: rendered ${firstBad} frame(s), then geometry stopped ***`);
@@ -151,3 +153,32 @@ fs.writeFileSync(path.join(here, "last-run.json"), JSON.stringify(out, null, 2))
 
 await browser.close();
 server.close();
+
+// --- ASSERTION ------------------------------------------------------------------------------------
+// This runner is a test, not a viewer: it exits non-zero when the oracle says geometry is missing.
+// EXPECT_REPRO=1 inverts it, for negative controls (`forceLayer0`, or re-running with a fix reverted)
+// where the run is only meaningful if it DOES fail.
+const failures = [];
+if (out.error) failures.push(`page error: ${out.error}`);
+if (out.gpuErrors.length) failures.push(`GPU errors: ${JSON.stringify(out.gpuErrors.slice(0, 3))}`);
+if (!verdict.length) failures.push("no frames captured - the oracle never ran, so this run proves nothing");
+for (const k of ["e0", "e1"]) {
+    if (missing[k].length) {
+        failures.push(`${k}: ${missing[k].length}/${verdict.length} frame(s) without geometry (frames ${missing[k].slice(0, 8).join(",")})`);
+    }
+}
+
+const expectRepro = process.env.EXPECT_REPRO === "1";
+if (expectRepro) {
+    if (failures.length) {
+        console.log(`\nEXPECTED FAILURE observed (EXPECT_REPRO=1):\n  ${failures.join("\n  ")}`);
+        process.exit(0);
+    }
+    console.log("\nFAIL: EXPECT_REPRO=1 but every frame rendered geometry on both eyes - the control did not fire.");
+    process.exit(1);
+}
+if (failures.length) {
+    console.log(`\nFAIL:\n  ${failures.join("\n  ")}`);
+    process.exit(1);
+}
+console.log(`\nPASS: geometry present on both eyes for all ${verdict.length} frames.`);

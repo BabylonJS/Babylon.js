@@ -21,7 +21,7 @@ node packages/tools/tests/test/webgpuXR/run.mjs       # run in real Chrome, read
 
 ```bash
 node run.mjs '{"frameBudget":20,"deviceTelemetry":true}'
-node run.mjs '{"frameBudget":8,"forceLayer0":true}'    # negative control: eye 1 must FAIL
+EXPECT_REPRO=1 node run.mjs '{"frameBudget":8,"forceLayer0":true}'  # negative control: must go RED
 node sweep.mjs                                          # the fidelity sweep across mock variants
 node stacks.mjs                                         # name the call site of any zero-draw render pass
 ```
@@ -30,12 +30,25 @@ Requires a real Chrome install (`channel: "chrome"`); Playwright's bundled Chrom
 
 ## What it asserts
 
-Per frame, per eye, it copies the sub-image band back to the CPU and classifies every pixel as
-**geometry** / **clear colour** / **void**, then reports `OK` / `OVERWRITE` / `NODRAW` ranked by submit
-order from the command trace. A run that renders and then stops rendering is reported as
-`REPRODUCED: rendered N frame(s), then geometry stopped`.
+`run.mjs` is a test, not a viewer: **it exits non-zero when geometry is missing.** Per frame, per eye, it
+copies the sub-image band back to the CPU and classifies every pixel as **geometry** / **clear colour** /
+**void**, then reports `OK` / `OVERWRITE` / `NODRAW` ranked by submit order from the command trace. Any
+frame without geometry on either eye, any uncaptured GPU error, and "no frames captured" all fail the run.
 
-Keep a negative control in the loop (`forceLayer0`) so a green result is known to mean something.
+A plain `node run.mjs` — no knobs — is the regression test for the WebGPU-XR clear-clobber bug: controllers
+connect at frame 1, which builds `UtilityLayerRenderer`'s second `Scene`, which is the bug's trigger.
+Verified in all four quadrants:
+
+| tree               | invocation                    | expected                                                 |
+| ------------------ | ----------------------------- | -------------------------------------------------------- |
+| fixed              | `node run.mjs`                | exit 0, geometry on both eyes every frame                |
+| clear fix reverted | `node run.mjs`                | **exit 1**, 1/N frames — the device signature            |
+| clear fix reverted | `EXPECT_REPRO=1 node run.mjs` | exit 0 (the control fired)                               |
+| fixed              | `EXPECT_REPRO=1 node run.mjs` | **exit 1** (a control that cannot fire is not a control) |
+
+`EXPECT_REPRO=1` inverts the assertion, for negative controls (`forceLayer0`) and for confirming a
+suspected bug still reproduces before you fix it. Keep a negative control in the loop so a green result is
+known to mean something.
 
 ## Fidelity rules — the reason this harness works
 
