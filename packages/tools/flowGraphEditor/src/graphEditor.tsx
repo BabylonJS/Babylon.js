@@ -556,6 +556,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         globalState.onClearUndoStack.clear();
         globalState.cancelPendingValidation();
+        globalState.restoreLiveGraph();
 
         this._helpObserver?.remove();
         this._helpObserver = null;

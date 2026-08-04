@@ -292,9 +292,6 @@ export const ControlRegistry: Record<string, IControlTypeInfo> = {
             thickness: { description: "Border thickness", type: "number", defaultValue: 1 },
             autoStretchHeight: { description: "Auto-resize height to fit content", type: "boolean", defaultValue: true },
             maxHeight: { description: "Maximum height constraint", type: "string" },
-            textHorizontalAlignment: { description: "0=LEFT, 1=RIGHT, 2=CENTER", type: "number", defaultValue: 0 },
-            textVerticalAlignment: { description: "0=TOP, 1=BOTTOM, 2=CENTER", type: "number", defaultValue: 0 },
-            lineSpacing: { description: "Extra line spacing", type: "string" },
         },
     },
 
@@ -438,7 +435,7 @@ export const ControlRegistry: Record<string, IControlTypeInfo> = {
             thumbWidth: { description: "Thumb width (e.g. '20px')", type: "string" },
             background: { description: "Track background color", type: "string", defaultValue: "black" },
             borderColor: { description: "Track border color", type: "string", defaultValue: "white" },
-            thumbColor: { description: "Thumb color", type: "string" },
+            color: { description: "Thumb color", type: "string" },
             invertScrollDirection: { description: "Invert scroll direction", type: "boolean", defaultValue: false },
         },
     },

@@ -1012,6 +1012,18 @@ declare namespace BABYLON.GLTF2 {
     }
 
     /**
+     * Interfaces from the KHR_gaussian_splatting extension
+     */
+
+    /** @internal */
+    interface IKHRGaussianSplatting {
+        kernel: string;
+        colorSpace: string;
+        projection?: string;
+        sortingMethod?: string;
+    }
+
+    /**
      * Interfaces from the EXT_lights_ies extension
      */
 

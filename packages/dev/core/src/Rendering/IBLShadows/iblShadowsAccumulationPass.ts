@@ -28,10 +28,33 @@ export class _IblShadowsAccumulationPass {
     /** Enable the debug view for this pass */
     public debugEnabled: boolean = false;
 
+    private _enabled: boolean = true;
+
     /**
      * Is the effect enabled
      */
-    public enabled: boolean = true;
+    public get enabled(): boolean {
+        return this._enabled;
+    }
+
+    public set enabled(value: boolean) {
+        this._enabled = value;
+        // _render() already gates on `enabled` for _outputTexture, but _oldAccumulationCopy and
+        // _oldPositionCopy have refreshRate = 1 and are rendered by Babylon's generic per-frame
+        // ProceduralTexture refresh loop, entirely independent of `enabled` / `_render()`. Without
+        // disabling them directly here, they keep rendering (and paying a real per-frame texture-view
+        // creation cost) every frame forever, even when the whole pass — and the rest of the IBL
+        // shadows pipeline — has been toggled off (e.g. no shadow casters or receivers in the scene).
+        if (this._outputTexture) {
+            this._outputTexture.isEnabled = value;
+        }
+        if (this._oldAccumulationCopy) {
+            this._oldAccumulationCopy.isEnabled = value;
+        }
+        if (this._oldPositionCopy) {
+            this._oldPositionCopy.isEnabled = value;
+        }
+    }
 
     /**
      * Returns the output texture of the pass.

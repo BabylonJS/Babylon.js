@@ -640,7 +640,15 @@ async function LoadSmartAssetSceneFileAsync(manager: SmartAssetManager, key: str
 function TrackSmartAssetContainerObjects(manager: SmartAssetManager, key: string, container: AssetContainer): void {
     const internal = GetSmartAssetInternals(manager);
 
-    for (const collection of [container.meshes, container.materials, container.textures, container.animationGroups, container.lights, container.cameras]) {
+    for (const collection of [
+        container.meshes,
+        container.transformNodes,
+        container.materials,
+        container.textures,
+        container.animationGroups,
+        container.lights,
+        container.cameras,
+    ]) {
         for (const obj of collection) {
             internal.objectToKeyMap.set(obj, key);
         }

@@ -20,7 +20,7 @@ import { type ICreateCapsuleOptions, CreateCapsule } from "../Meshes/Builders/ca
 import { Logger } from "../Misc/logger";
 import { type PhysicsBody } from "../Physics/v2/physicsBody";
 import { VertexData } from "../Meshes/mesh.vertexData";
-import { MeshBuilder } from "../Meshes/meshBuilder";
+import { MeshBuilder } from "../Meshes/meshBuilder.pure";
 import { type PhysicsConstraint } from "../Physics/v2/physicsConstraint";
 import { AxesViewer } from "./axesViewer";
 import { TransformNode } from "../Meshes/transformNode.pure";
@@ -163,7 +163,7 @@ export class PhysicsViewer {
      */
     protected _updateDebugMeshesV2(): void {
         const plugin = this._physicsEnginePlugin as IPhysicsEnginePluginV2;
-        for (let i = 0; i < this._numBodies; ) {
+        for (let i = 0; i < this._numBodies;) {
             const body = this._bodies[i];
             if (body && body.isDisposed && this.hideBody(body)) {
                 continue;
@@ -177,7 +177,7 @@ export class PhysicsViewer {
     }
 
     protected _updateInertiaMeshes(): void {
-        for (let i = 0; i < this._numInertiaBodies; ) {
+        for (let i = 0; i < this._numInertiaBodies;) {
             const body = this._inertiaBodies[i];
             if (body && body.isDisposed && this.hideInertia(body)) {
                 continue;

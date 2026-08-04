@@ -56,6 +56,19 @@ interface ISogPackInternal {
     positions: Float32Array;
 }
 
+/**
+ * Safe-orbit camera limits embedded in a Gaussian Splatting file's metadata (Adobe safe-orbit
+ * extension). Exposed on the loaded mesh via {@link GaussianSplattingMeshBase.safeOrbitCameraLimits}
+ * so consumers can read/apply the limits independently of the scene's active camera — the loader's
+ * automatic application only affects an active ArcRotateCamera at load time.
+ */
+export interface ISafeOrbitCameraLimits {
+    /** Minimum safe orbit radius (distance from the camera to its target), if the file specifies one. */
+    radiusMin?: number;
+    /** Safe elevation range as `[minElevation, maxElevation]` in radians, if the file specifies one. */
+    elevationMinMax?: [number, number];
+}
+
 const IsNative = typeof _native !== "undefined";
 const Native = IsNative ? _native : null;
 interface IDelayedTextureUpdate {
@@ -484,6 +497,14 @@ export class GaussianSplattingMeshBase extends Mesh {
      * Off by default; intended for performance investigation only.
      */
     public static LogSortPerformance = false;
+
+    /**
+     * Safe-orbit camera limits parsed from the source file's metadata, or `null` when the file
+     * carries none. The loader also auto-applies these to an active ArcRotateCamera at load time
+     * (unless `disableAutoCameraLimits` is set); this field exposes the raw values so they can be
+     * applied or tracked regardless of the active camera type. See {@link ISafeOrbitCameraLimits}.
+     */
+    public safeOrbitCameraLimits: Nullable<ISafeOrbitCameraLimits> = null;
 
     /** @internal */
     public _vertexCount = 0;
@@ -1391,7 +1412,11 @@ export class GaussianSplattingMeshBase extends Mesh {
             return a.frameIdLastUpdate - b.frameIdLastUpdate;
         });
 
-        const hasSortFunction = this._worker || Native?.sortSplats || this._disableDepthSort;
+        // The native sort writes into _splatPositions/_splatIndex: both must be allocated (they still are
+        // null before any splat data has been committed) or the native binding throws on the conversion.
+        const hasNativeSort = !!Native?.sortSplats && !!this._splatPositions && !!this._splatIndex;
+        // When depth sort is disabled, no sort function must run: fall through to the no-sort path below.
+        const hasSortFunction = !this._disableDepthSort && (this._worker || hasNativeSort);
         if ((forced || outdated) && hasSortFunction && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
             const worldMatrix = this.computeWorldMatrix(true);
             // view infos sorted by least recent updated frame id
@@ -1444,14 +1469,16 @@ export class GaussianSplattingMeshBase extends Mesh {
                 }
             });
         } else if (this._disableDepthSort) {
-            activeViewInfos.forEach((cameraViewInfos) => {
-                if (!cameraViewInfos.splatIndexBufferSet) {
-                    cameraViewInfos.mesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
-                    cameraViewInfos.splatIndexBufferSet = true;
-                }
-            });
+            if (this._splatIndex) {
+                activeViewInfos.forEach((cameraViewInfos) => {
+                    if (!cameraViewInfos.splatIndexBufferSet) {
+                        cameraViewInfos.mesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
+                        cameraViewInfos.splatIndexBufferSet = true;
+                    }
+                });
+                this._readyToDisplay = true;
+            }
             this._canPostToWorker = true;
-            this._readyToDisplay = true;
         }
     }
     /**
@@ -2597,6 +2624,19 @@ export class GaussianSplattingMeshBase extends Mesh {
 
             this._postToWorker(true);
         } else {
+            // Full rebuild: the texture size changed (or this is a size-changing reload), so the existing
+            // GPU textures cannot be reused. Dispose them before recreating to avoid leaking the old ones.
+            this._covariancesATexture?.dispose();
+            this._covariancesBTexture?.dispose();
+            this._centersTexture?.dispose();
+            this._colorsTexture?.dispose();
+            if (this._shTextures) {
+                for (const shTexture of this._shTextures) {
+                    shTexture.dispose();
+                }
+                this._shTextures = null;
+            }
+
             this._textureSize = textureSize;
             this._covariancesATexture = createTextureFromDataF16(covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             this._covariancesBTexture = createTextureFromDataF16(
@@ -2941,8 +2981,10 @@ export class GaussianSplattingMeshBase extends Mesh {
                     splatIndex[index++] = sourceIndex;
                 }
             }
+            // Pad with `vertexCount` itself, not 0: splat 0 is real data, not a reserved empty slot, and
+            // range filtering can leave it fully visible — see gaussianSplattingSortWorker.ts.
             for (; index < paddedVertexCount; index++) {
-                splatIndex[index] = 0;
+                splatIndex[index] = vertexCount;
             }
         } else {
             for (let i = 0; i < paddedVertexCount; i++) {
@@ -3054,10 +3096,12 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (!this._vertexCount) {
             return;
         }
+        // The identity index buffer must exist even when no sort worker is needed: every render path
+        // (including the Native one) reads it, and a null buffer breaks the Native bindings.
+        this._updateSplatIndexBuffer(this._vertexCount);
         if (this._disableDepthSort) {
             return;
         }
-        this._updateSplatIndexBuffer(this._vertexCount);
 
         // no worker in native
         if (IsNative) {
@@ -3079,8 +3123,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         );
 
         const positions = Float32Array.from(this._splatPositions!);
+        const vertexCount = this._vertexCount;
 
-        this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions }, [positions.buffer]);
+        this._worker.postMessage({ command: GaussianSplattingSortWorkerCommand.POSITIONS, positions, vertexCount }, [positions.buffer]);
         // The main thread owns the active interval set: send it explicitly (covering all indices when
         // no LOD filter is active) rather than letting the worker assume the full source set.
         this._postIntervalsToWorker();
@@ -3181,8 +3226,24 @@ export class GaussianSplattingMeshBase extends Mesh {
             while (width * height < length) {
                 height *= 2;
             }
+            // See the WebGL2/WebGPU branch below for why this guarantees an extra row when `length`
+            // exactly fills every row. A power-of-2 height has to double to add any slack at all.
+            // Usually this is a no-op since it is rare that the asset exactly contains a power-of-2
+            // number of splats.
+            if (length > 0 && width * height === length) {
+                height *= 2;
+            }
         } else {
             height = Math.ceil(length / width);
+            // When `length` exactly fills every row, force one extra (fully zeroed) row so the atlas
+            // always has at least one genuinely-empty splat slot past the real data, at index `length`.
+            // The sort worker (gaussianSplattingSortWorker.ts) relies on that slot always existing to
+            // safely pad the 16-aligned draw order — without it, the only "spare" index would be the
+            // last real splat, which range-filtering (setSplatIndexRanges/opacity/size culling) can
+            // leave fully visible and opaque, reproducing the same "stuck in front" bug on that splat.
+            if (length > 0 && height * width === length) {
+                height += 1;
+            }
         }
 
         if (height > width) {

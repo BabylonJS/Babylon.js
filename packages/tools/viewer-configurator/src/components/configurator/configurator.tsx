@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { type IDisposable, type Nullable, type Observable } from "core/index";
-import { type HotSpot, type ShadowQuality, type ToneMapping, type Viewer, type ViewerDetails, type ViewerElement, type ViewerOptions } from "viewer/index";
+import { type HotSpot, type ShadowQuality, type ToneMapping, type Viewer, type ViewerDetails, type ViewerElement, type ViewerOptions } from "viewer/full/index";
 import { type DragEndEvent, closestCenter, DndContext, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -32,7 +32,7 @@ import { SyncedSliderInput } from "shared-ui-components/fluent/primitives/synced
 import { TextInput } from "shared-ui-components/fluent/primitives/textInput";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 
-import { DefaultViewerOptions, type SSAOOptions } from "viewer/viewer";
+import { DefaultViewerOptions, type SSAOOptions } from "viewer/full/viewer";
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";

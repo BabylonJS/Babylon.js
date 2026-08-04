@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { GetDirectStoreFromMetadata } from "../Misc/decorators.functions";
+import { SerializedFieldType } from "../Misc/decorators.serializationUtilities";
 import { type Nullable } from "../types";
 import { type ImageProcessingConfiguration } from "./imageProcessingConfiguration";
 import { type Observer } from "../Misc/observable";
@@ -29,7 +30,7 @@ export function ImageProcessingMixin<Tbase extends ImageProcessingMixinConstruct
             }
             const store = GetDirectStoreFromMetadata(ctor[Symbol.metadata]);
             if (!store["_imageProcessingConfiguration"]) {
-                store["_imageProcessingConfiguration"] = { type: 9, sourceName: undefined };
+                store["_imageProcessingConfiguration"] = { type: SerializedFieldType.IMAGE_PROCESSING, sourceName: undefined };
             }
         }
         /**

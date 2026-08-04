@@ -126,10 +126,7 @@ export type KeyboardInputMapEntry<TInteraction extends string = string> = {
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export type InputMapEntry<TInteraction extends string = string> =
-    | PointerInputMapEntry<TInteraction>
-    | WheelInputMapEntry<TInteraction>
-    | TouchInputMapEntry<TInteraction>
-    | KeyboardInputMapEntry<TInteraction>;
+    PointerInputMapEntry<TInteraction> | WheelInputMapEntry<TInteraction> | TouchInputMapEntry<TInteraction> | KeyboardInputMapEntry<TInteraction>;
 
 /**
  * Flat conditions object passed to resolveInteraction().

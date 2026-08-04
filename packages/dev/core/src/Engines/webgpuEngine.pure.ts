@@ -601,7 +601,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._compatibilityMode = mode;
     }
 
-    /** @internal */
+    /**
+     * Gets the number of samples used by the current render target
+     * @returns the current sample count, or 1 when multisampling is disabled
+     */
     public get currentSampleCount(): number {
         return this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount;
     }
@@ -4020,7 +4023,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public override dispose(): void {
         this._isDisposed = true;
-        this.hideLoadingUI();
+        this.hideLoadingUI?.();
         this._timestampQuery.dispose();
         this._mainTexture?.destroy();
         this._depthTexture?.destroy();

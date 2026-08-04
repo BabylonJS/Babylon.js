@@ -10,7 +10,7 @@ import {
     type PreWarmMessage,
     type WorkerLoadedMessagePayload,
 } from "./messageTypes";
-import { type RawLottieAnimation } from "./parsing/rawTypes";
+import { type ILottieFile as RawLottieAnimation } from "./animation/lottieRaw";
 import { CalculateScaleFactors, type ScaleFactors } from "./rendering/calculateScaleFactor";
 // Keep this local alias named "Worker" so Webpack/Rspack statically detect the worker entry.
 // Their parsers match the NewExpression callee against a fixed identifier list ("Worker",
@@ -39,7 +39,7 @@ export class Player {
     private _canvas: Nullable<HTMLCanvasElement> = null;
     private _animationWidth: number = 0;
     private _animationHeight: number = 0;
-    private _scaleFactors: ScaleFactors = { canvasScale: 1, atlasScale: 1 };
+    private _scaleFactors: ScaleFactors = { canvasScale: 1 };
     private _resizeObserver: Nullable<ResizeObserver> = null;
     private _resizeDebounceHandle: number | null = null;
     private _resizeDebounceMs: number = 1000 / 60; // Debounce resize updates to approximately 60 FPS
@@ -57,8 +57,8 @@ export class Player {
     }
 
     /**
-     * Pre-warms the worker by loading necessary code ahead of time.
-     * This promise resolves when the worker has loaded all the code required to play an animation.
+     * Pre-warms the worker and base renderer code. Animation-specific text or image renderer chunks
+     * load later, after the animation data is known.
      * @returns A Promise that resolves to this Player instance when the worker is ready
      * @throws Error if the player is already playing or disposed
      */
@@ -234,7 +234,6 @@ export class Player {
             payload: {
                 canvas: offscreen,
                 canvasScale: this._scaleFactors.canvasScale,
-                atlasScale: this._scaleFactors.atlasScale,
                 variables: this._input.variables,
                 configuration: this._input.configuration,
                 animationData: IsRawLottieAnimation(animationData) ? animationData : undefined,

@@ -13,7 +13,7 @@ import { Light } from "../../Lights/light";
 import { type MaterialDefines } from "../../Materials/materialDefines";
 import { type Effect, type IEffectCreationOptions } from "../../Materials/effect";
 import { Texture } from "../../Materials/Textures/texture.pure";
-import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
+import { RegisterRenderTargetTexture, RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
 
 import { PostProcess } from "../../PostProcesses/postProcess.pure";
 import { BlurPostProcess } from "../../PostProcesses/blurPostProcess.pure";
@@ -1003,6 +1003,12 @@ export class ShadowGenerator implements IShadowGenerator {
 
         RegisterShadowGeneratorSceneComponent(ShadowGenerator);
         ShadowGenerator._SceneComponentInitialization(this._scene);
+
+        // PCF and PCSS filtering bind a comparison sampler through Effect.setDepthStencilTexture,
+        // which is only installed by the render target texture registration. This module imports
+        // renderTargetTexture.pure (side-effect free), so pull the registration in here to guarantee
+        // the sampler is available (otherwise WebGPU bind-group assembly fails for filtered shadows).
+        RegisterRenderTargetTexture();
 
         // Texture type fallback from float to int if not supported.
         const caps = this._scene.getEngine().getCaps();

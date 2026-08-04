@@ -22,10 +22,24 @@ export class _IblShadowsSpatialBlurPass {
     private _worldScale: number = 1.0;
     private _blurParameters: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
 
+    private _enabled: boolean = true;
+
     /**
      * Is the effect enabled
      */
-    public enabled: boolean = true;
+    public get enabled(): boolean {
+        return this._enabled;
+    }
+
+    public set enabled(value: boolean) {
+        this._enabled = value;
+        // _render() already gates on `enabled`, but also disable the underlying ProceduralTexture
+        // directly so it can't be rendered through any other path (e.g. Babylon's generic
+        // per-frame ProceduralTexture refresh loop) while the pass is toggled off.
+        if (this._outputTexture) {
+            this._outputTexture.isEnabled = value;
+        }
+    }
 
     /**
      * Returns the output texture of the pass.

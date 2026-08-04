@@ -17,7 +17,9 @@ const convertPathsToAliases = () => {
     for (const key in paths) {
         // Convert glob patterns to regex-compatible aliases
         const aliasKey = key.replace("/*", "");
-        const aliasValue = path.resolve(__dirname, "packages", paths[key][0].replace("/*", ""));
+        // tsconfig `paths` values are repo-root-relative (e.g. "./packages/dev/core/src/*"),
+        // so resolve them against __dirname directly rather than prepending "packages".
+        const aliasValue = path.resolve(__dirname, paths[key][0].replace("/*", ""));
         aliases[aliasKey] = aliasValue;
     }
     return aliases;

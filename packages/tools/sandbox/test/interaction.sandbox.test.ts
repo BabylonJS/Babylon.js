@@ -53,7 +53,7 @@ test("Sandbox exposes the render canvas and main controls without page errors", 
 
     await expect(page.locator("#renderCanvas")).toBeVisible();
     await expect(page.locator("#droptext")).toBeVisible();
-    await expect(page.getByTitle("Open your scene from your hard drive (.babylon, .gltf, .glb, .fbx, .obj)")).toBeVisible();
+    await expect(page.getByTitle("Open your scene from your hard drive (.babylon, .babylonproj, .gltf, .glb, .fbx, .obj)")).toBeVisible();
     expect(pageErrors).toHaveLength(0);
 });
 

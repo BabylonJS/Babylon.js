@@ -258,9 +258,9 @@ var color: vec4f =  vec4f(finalDiffuse + finalSpecular, alpha);
 // Apply image processing if relevant. As this applies in linear space,
 // We first move from gamma to linear.
 #ifdef IMAGEPROCESSINGPOSTPROCESS
-	color = vec4f(toLinearSpace(color.rgb), color.a);
+	color = vec4f(toLinearSpaceVec3(color.rgb), color.a);
 #elif defined(IMAGEPROCESSING)
-    color = vec4f(toLinearSpace(color.rgb), color.a);
+    color = vec4f(toLinearSpaceVec3(color.rgb), color.a);
     color = applyImageProcessing(color);
 #endif
 

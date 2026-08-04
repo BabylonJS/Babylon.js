@@ -571,46 +571,6 @@ const BodyPartsDefinition: { [key in BodyPart]: WebXRBodyJoint[] } = {
 export type XRBodyMeshRigMapping = { [jointName in WebXRBodyJoint]?: string };
 
 // ────────────────────────────────────────────────────────────────────────────
-// XRBody / XRBodySpace WebXR API type declarations
-// These types are not yet part of the standard TypeScript lib, so we declare them
-// locally. They mirror the interfaces defined in the WebXR Body Tracking spec.
-// ────────────────────────────────────────────────────────────────────────────
-
-/**
- * Represents the XRBodySpace native interface as defined by the spec.
- * An XRBodySpace is an XRSpace that additionally exposes a jointName.
- * @see https://immersive-web.github.io/body-tracking/#xrjointspace-interface
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-interface XRBodySpace extends XRSpace {
-    readonly jointName: string;
-}
-
-/**
- * Represents the native XRBody interface as defined by the spec.
- * An XRBody is an iterable map of XRBodyJoint → XRBodySpace.
- * @see https://immersive-web.github.io/body-tracking/#xrbody-interface
- */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-interface XRBody {
-    readonly size: number;
-    get(key: string): XRBodySpace | undefined;
-    forEach(callbackfn: (value: XRBodySpace, key: string, map: XRBody) => void): void;
-    [Symbol.iterator](): IterableIterator<[string, XRBodySpace]>;
-    entries(): IterableIterator<[string, XRBodySpace]>;
-    keys(): IterableIterator<string>;
-    values(): IterableIterator<XRBodySpace>;
-}
-
-// Augment the XRFrame interface so TypeScript knows about the `body` property.
-declare global {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    interface XRFrame {
-        body?: XRBody;
-    }
-}
-
-// ────────────────────────────────────────────────────────────────────────────
 // Configuration
 // ────────────────────────────────────────────────────────────────────────────
 

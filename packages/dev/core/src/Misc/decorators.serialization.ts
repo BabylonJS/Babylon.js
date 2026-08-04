@@ -8,9 +8,10 @@ import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { type IAnimatable } from "../Animations/animatable.interface";
 import { Tags } from "./tags";
 import { Color3, Color4 } from "../Maths/math.color.pure";
-import { Matrix, Quaternion, Vector2, Vector3 } from "../Maths/math.vector.pure";
+import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector.pure";
 import { type Camera } from "../Cameras/camera";
 import { GetMergedStore } from "./decorators.functions";
+import { SerializedFieldType } from "./decorators.serializationUtilities";
 
 /** @internal */
 export interface ICopySourceOptions {
@@ -42,17 +43,17 @@ const CopySource = function <T>(creationFunction: () => T, source: T, instanciat
 
         if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
             switch (propertyType) {
-                case 0: // Value
-                case 6: // Mesh reference
-                case 9: // Image processing configuration reference
-                case 11: // Camera reference
+                case SerializedFieldType.VALUE:
+                case SerializedFieldType.MESH:
+                case SerializedFieldType.IMAGE_PROCESSING:
+                case SerializedFieldType.CAMERA:
                     if (typeof sourceProperty.slice === "function") {
                         (<any>destination)[property] = sourceProperty.slice();
                     } else {
                         (<any>destination)[property] = sourceProperty;
                     }
                     break;
-                case 1: // Texture
+                case SerializedFieldType.TEXTURE:
                     if (options.cloneTexturesOnlyOnce && textureMap[sourceProperty.uniqueId]) {
                         (<any>destination)[property] = textureMap[sourceProperty.uniqueId];
                     } else {
@@ -60,14 +61,15 @@ const CopySource = function <T>(creationFunction: () => T, source: T, instanciat
                         textureMap[sourceProperty.uniqueId] = (<any>destination)[property];
                     }
                     break;
-                case 2: // Color3
-                case 3: // FresnelParameters
-                case 4: // Vector2
-                case 5: // Vector3
-                case 7: // Color Curves
-                case 8: // Color 4
-                case 10: // Quaternion
-                case 12: // Matrix
+                case SerializedFieldType.COLOR3:
+                case SerializedFieldType.FRESNEL_PARAMETERS:
+                case SerializedFieldType.VECTOR2:
+                case SerializedFieldType.VECTOR3:
+                case SerializedFieldType.COLOR_CURVES:
+                case SerializedFieldType.COLOR4:
+                case SerializedFieldType.QUATERNION:
+                case SerializedFieldType.MATRIX:
+                case SerializedFieldType.VECTOR4:
                     (<any>destination)[property] = instanciate ? sourceProperty : sourceProperty.clone();
                     break;
             }
@@ -157,48 +159,51 @@ export class SerializationHelper {
 
             if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
                 switch (propertyType) {
-                    case 0: // Value
+                    case SerializedFieldType.VALUE:
                         if (Array.isArray(sourceProperty)) {
                             serializationObject[targetPropertyName] = sourceProperty.slice();
                         } else {
                             serializationObject[targetPropertyName] = sourceProperty;
                         }
                         break;
-                    case 1: // Texture
+                    case SerializedFieldType.TEXTURE:
                         serializationObject[targetPropertyName] = sourceProperty.serialize();
                         break;
-                    case 2: // Color3
+                    case SerializedFieldType.COLOR3:
                         serializationObject[targetPropertyName] = sourceProperty.asArray();
                         break;
-                    case 3: // FresnelParameters
+                    case SerializedFieldType.FRESNEL_PARAMETERS:
                         serializationObject[targetPropertyName] = sourceProperty.serialize();
                         break;
-                    case 4: // Vector2
+                    case SerializedFieldType.VECTOR2:
                         serializationObject[targetPropertyName] = sourceProperty.asArray();
                         break;
-                    case 5: // Vector3
+                    case SerializedFieldType.VECTOR3:
                         serializationObject[targetPropertyName] = sourceProperty.asArray();
                         break;
-                    case 6: // Mesh reference
+                    case SerializedFieldType.MESH:
                         serializationObject[targetPropertyName] = sourceProperty.id;
                         break;
-                    case 7: // Color Curves
+                    case SerializedFieldType.COLOR_CURVES:
                         serializationObject[targetPropertyName] = sourceProperty.serialize();
                         break;
-                    case 8: // Color 4
+                    case SerializedFieldType.COLOR4:
                         serializationObject[targetPropertyName] = (<Color4>sourceProperty).asArray();
                         break;
-                    case 9: // Image Processing
+                    case SerializedFieldType.IMAGE_PROCESSING:
                         serializationObject[targetPropertyName] = (<ImageProcessingConfiguration>sourceProperty).serialize();
                         break;
-                    case 10: // Quaternion
+                    case SerializedFieldType.QUATERNION:
                         serializationObject[targetPropertyName] = (<Quaternion>sourceProperty).asArray();
                         break;
-                    case 11: // Camera reference
+                    case SerializedFieldType.CAMERA:
                         serializationObject[targetPropertyName] = (<Camera>sourceProperty).id;
                         break;
-                    case 12: // Matrix
+                    case SerializedFieldType.MATRIX:
                         serializationObject[targetPropertyName] = (<Matrix>sourceProperty).asArray();
+                        break;
+                    case SerializedFieldType.VECTOR4:
+                        serializationObject[targetPropertyName] = (<Vector4>sourceProperty).asArray();
                         break;
                 }
             }
@@ -230,50 +235,53 @@ export class SerializationHelper {
             if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
                 const dest = destination;
                 switch (propertyType) {
-                    case 0: // Value
+                    case SerializedFieldType.VALUE:
                         dest[property] = sourceProperty;
                         break;
-                    case 1: // Texture
+                    case SerializedFieldType.TEXTURE:
                         if (scene) {
                             dest[property] = SerializationHelper._TextureParser(sourceProperty, scene, rootUrl);
                         }
                         break;
-                    case 2: // Color3
+                    case SerializedFieldType.COLOR3:
                         dest[property] = Color3.FromArray(sourceProperty);
                         break;
-                    case 3: // FresnelParameters
+                    case SerializedFieldType.FRESNEL_PARAMETERS:
                         dest[property] = SerializationHelper._FresnelParametersParser(sourceProperty);
                         break;
-                    case 4: // Vector2
+                    case SerializedFieldType.VECTOR2:
                         dest[property] = Vector2.FromArray(sourceProperty);
                         break;
-                    case 5: // Vector3
+                    case SerializedFieldType.VECTOR3:
                         dest[property] = Vector3.FromArray(sourceProperty);
                         break;
-                    case 6: // Mesh reference
+                    case SerializedFieldType.MESH:
                         if (scene) {
                             dest[property] = scene.getLastMeshById(sourceProperty);
                         }
                         break;
-                    case 7: // Color Curves
+                    case SerializedFieldType.COLOR_CURVES:
                         dest[property] = SerializationHelper._ColorCurvesParser(sourceProperty);
                         break;
-                    case 8: // Color 4
+                    case SerializedFieldType.COLOR4:
                         dest[property] = Color4.FromArray(sourceProperty);
                         break;
-                    case 9: // Image Processing
+                    case SerializedFieldType.IMAGE_PROCESSING:
                         dest[property] = SerializationHelper._ImageProcessingConfigurationParser(sourceProperty);
                         break;
-                    case 10: // Quaternion
+                    case SerializedFieldType.QUATERNION:
                         dest[property] = Quaternion.FromArray(sourceProperty);
                         break;
-                    case 11: // Camera reference
+                    case SerializedFieldType.CAMERA:
                         if (scene) {
                             dest[property] = scene.getCameraById(sourceProperty);
                         }
                         break;
-                    case 12: // Matrix
+                    case SerializedFieldType.MATRIX:
                         dest[property] = Matrix.FromArray(sourceProperty);
+                        break;
+                    case SerializedFieldType.VECTOR4:
+                        dest[property] = Vector4.FromArray(sourceProperty);
                         break;
                 }
             }

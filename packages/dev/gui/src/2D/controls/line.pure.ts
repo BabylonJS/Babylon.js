@@ -156,12 +156,12 @@ export class Line extends Control {
 
     /** @internal */
     public get _effectiveX2(): number {
-        return (this._connectedControl ? this._connectedControl.centerX : 0) + this._x2.getValue(this._host);
+        return (this._connectedControl ? this._connectedControl.centerX - this._cachedParentMeasure.left : 0) + this._x2.getValue(this._host);
     }
 
     /** @internal */
     public get _effectiveY2(): number {
-        return (this._connectedControl ? this._connectedControl.centerY : 0) + this._y2.getValue(this._host);
+        return (this._connectedControl ? this._connectedControl.centerY - this._cachedParentMeasure.top : 0) + this._y2.getValue(this._host);
     }
 
     /**
@@ -210,6 +210,10 @@ export class Line extends Control {
         // Width / Height
         this._currentMeasure.width = Math.abs(this._x1.getValue(this._host) - this._effectiveX2) + this._lineWidth;
         this._currentMeasure.height = Math.abs(this._y1.getValue(this._host) - this._effectiveY2) + this._lineWidth;
+    }
+
+    protected override _preMeasure(parentMeasure: Measure): void {
+        this._cachedParentMeasure.copyFrom(parentMeasure);
     }
 
     public override _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {

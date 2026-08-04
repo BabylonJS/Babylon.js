@@ -101,7 +101,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     #define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
+    #define DEPTHPREPASS_SKIP_EARLY_RETURN
     #include<depthPrePass>
+
+#ifndef DEPTHPREPASS
 
     #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
 
@@ -388,5 +391,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #include<pbrDebug>
 
     #define CUSTOM_FRAGMENT_MAIN_END
+
+#endif
 
 }

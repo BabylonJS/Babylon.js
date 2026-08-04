@@ -1125,7 +1125,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         category: "Converter",
         description: "Splits vectors into components and/or assembles components into vectors.",
         inputs: [
-            { name: "xyzw", type: "Vector4", isOptional: true },
+            { name: "xyzw ", type: "Vector4", isOptional: true },
             { name: "xyz ", type: "Vector3", isOptional: true },
             { name: "xy ", type: "Vector2", isOptional: true },
             { name: "zw ", type: "Vector2", isOptional: true },

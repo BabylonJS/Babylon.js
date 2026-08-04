@@ -615,114 +615,16 @@ const plugin: IPlugin = {
                 };
             },
         },
-        "no-downlevel-iteration": {
-            meta: {
-                type: "problem",
-                docs: {
-                    description: "Disallow for...of loops and spread syntax on non-array iterables that break in the UMD build (ES5 target) without --downlevelIteration",
-                },
-                messages: {
-                    forOfNonArray:
-                        'for...of over a non-array iterable ({{typeName}}) will not work in the UMD build (ES5 target) without --downlevelIteration. Convert to an array first, e.g. "for (const x of Array.from(iterable))".',
-                    spreadNonArray:
-                        'Spreading a non-array iterable ({{typeName}}) will not work in the UMD build (ES5 target) without --downlevelIteration. Convert to an array first, e.g. "[...Array.from(iterable)]".',
-                },
-            },
-            create(context: eslint.Rule.RuleContext) {
-                // Access type-checker from typescript-eslint parser services
-                const parserServices = (context.sourceCode as any).parserServices;
-                if (!parserServices?.esTreeNodeToTSNodeMap || !parserServices?.program) {
-                    return {};
-                }
-
-                const checker: ts.TypeChecker = parserServices.program.getTypeChecker();
-
-                function isSafeForDownlevelIteration(type: ts.Type): boolean {
-                    // any/unknown - can't determine, assume safe
-                    if (type.getFlags() & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) {
-                        return true;
-                    }
-
-                    // String types - downlevel for-of uses index access which works (surrogate pairs aside)
-                    if (type.getFlags() & ts.TypeFlags.StringLike) {
-                        return true;
-                    }
-
-                    // Array types (Array<T>, T[], ReadonlyArray<T>)
-                    if (checker.isArrayType(type)) {
-                        return true;
-                    }
-
-                    // Tuple types ([T, U, ...])
-                    if (checker.isTupleType(type)) {
-                        return true;
-                    }
-
-                    // Union types - all members must be safe
-                    if (type.isUnion()) {
-                        return type.types.every((t) => isSafeForDownlevelIteration(t));
-                    }
-
-                    // Intersection types - if any member is safe, the whole type is safe
-                    if (type.isIntersection()) {
-                        return type.types.some((t) => isSafeForDownlevelIteration(t));
-                    }
-
-                    // Types with numeric index signature + length (covers TypedArrays, NodeList, HTMLCollection, arguments)
-                    // The downlevel for-of emit uses .length and [i] which works for these
-                    const numberIndexType = type.getNumberIndexType();
-                    if (numberIndexType && type.getProperty("length")) {
-                        return true;
-                    }
-
-                    return false;
-                }
-
-                function checkExpression(esTreeNode: ESTree.Expression, messageId: string) {
-                    try {
-                        const tsNode = parserServices.esTreeNodeToTSNodeMap.get(esTreeNode);
-                        if (!tsNode) {
-                            return;
-                        }
-
-                        const type = checker.getTypeAtLocation(tsNode);
-                        if (!isSafeForDownlevelIteration(type)) {
-                            context.report({
-                                node: esTreeNode,
-                                messageId,
-                                data: {
-                                    typeName: checker.typeToString(type),
-                                },
-                            });
-                        }
-                    } catch {
-                        // If type checking fails for any reason, don't report
-                    }
-                }
-
-                return {
-                    ForOfStatement(node: ESTree.ForOfStatement & eslint.Rule.NodeParentExtension) {
-                        checkExpression(node.right, "forOfNonArray");
-                    },
-                    SpreadElement(node: ESTree.SpreadElement & eslint.Rule.NodeParentExtension) {
-                        const parent = (node as any).parent;
-                        if (parent?.type === "ArrayExpression" || parent?.type === "CallExpression" || parent?.type === "NewExpression") {
-                            checkExpression(node.argument, "spreadNonArray");
-                        }
-                    },
-                };
-            },
-        },
         "no-super-in-accessor": {
             meta: {
                 type: "problem",
                 docs: {
                     description:
-                        "Disallow super.<member> property access inside a get/set accessor. The UMD build is compiled with TypeScript at `target: ES5`, and ES5 downleveling of `super` access inside a (decorated) accessor mis-compiles to `undefined`, even though it works in native-ESM dev. Same ES5-target UMD hazard family as `no-downlevel-iteration`. Use a private backing field instead.",
+                        "Disallow super.<member> property access inside a get/set accessor. Babylon Native downlevels the UMD bundle to ES5, where TypeScript can mis-compile `super` access inside a decorated accessor to `undefined`. Use a private backing field instead.",
                 },
                 messages: {
                     superInAccessor:
-                        "super.{{member}} inside a get/set accessor mis-compiles to `undefined` in the UMD build (ES5 target downleveling of `super` inside a decorated accessor), even though it works in dev/ESM. Use a private backing field instead (see TargetCamera._targetInertia).",
+                        "super.{{member}} inside a get/set accessor can mis-compile to `undefined` when the UMD bundle is downleveled to ES5 for Babylon Native, even though it works in dev/ESM. Use a private backing field instead (see TargetCamera._targetInertia).",
                 },
             },
             create(context: eslint.Rule.RuleContext) {

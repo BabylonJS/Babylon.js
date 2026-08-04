@@ -139,7 +139,7 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
                             this.props.globalState.currentScene?.getEngine().clearInternalTexturesCache();
                             this.props.globalState.filesInput.loadFiles(evt);
                         }}
-                        label="Open your scene from your hard drive (.babylon, .gltf, .glb, .fbx, .obj)"
+                        label="Open your scene from your hard drive (.babylon, .babylonproj, .gltf, .glb, .fbx, .obj)"
                     />
                     <DropUpButton
                         globalState={this.props.globalState}

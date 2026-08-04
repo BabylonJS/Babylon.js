@@ -1,14 +1,15 @@
 /** This file must only contain pure code and pure imports */
 
 import { Logger } from "../../Misc/logger";
-import { Camera } from "../../Cameras/camera.pure";
+import { Camera, RegisterCamera } from "../../Cameras/camera.pure";
 import { Mesh } from "../../Meshes/mesh.pure";
 import { Geometry } from "../../Meshes/geometry";
 import { TransformNode } from "../../Meshes/transformNode.pure";
 import { Material } from "../../Materials/material.pure";
 import { MultiMaterial } from "../../Materials/multiMaterial.pure";
-import { CubeTexture, CubeTextureCreateFromPrefilteredData, CubeTextureParse } from "../../Materials/Textures/cubeTexture.pure";
+import { CubeTexture, CubeTextureCreateFromPrefilteredData, CubeTextureParse, RegisterCubeTexture } from "../../Materials/Textures/cubeTexture.pure";
 import { HDRCubeTexture } from "../../Materials/Textures/hdrCubeTexture.pure";
+import { RegisterTexture } from "../../Materials/Textures/texture.pure";
 import { AnimationGroupParse } from "../../Animations/animationGroup.pure";
 import { Light } from "../../Lights/light";
 import { SceneLoaderFlags } from "../sceneLoaderFlags";
@@ -803,6 +804,22 @@ export function RegisterBabylonFileLoader(): void {
     }
     _Registered = true;
 
+    // The loader parses cameras through the Camera.Parse static, which is only
+    // installed by the render-time camera registration. Because this module imports
+    // camera.pure (side-effect free), pull the registration in here so a tree-shaken
+    // build that only imports the .babylon loader can still parse cameras. Without
+    // this, Camera.Parse throws mid-load and the scene ends up with no active camera.
+    RegisterCamera();
+
+    // The loader parses textures through SerializationHelper._TextureParser and cube
+    // textures through Texture._CubeTextureParser. These hooks are installed by the
+    // texture / cube texture registrations. Because this module imports the pure
+    // texture modules (side-effect free), pull the registrations in here so material
+    // textures (diffuse, reflection, etc.) actually load. Without this, materials
+    // parse but their textures are silently dropped (meshes render untextured).
+    RegisterTexture();
+    RegisterCubeTexture();
+
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const ParseMaterialByPredicate = (predicate: (parsedMaterial: any) => boolean, parsedData: any, scene: Scene, rootUrl: string) => {
         if (!parsedData.materials) {
@@ -1335,6 +1352,13 @@ export function RegisterBabylonFileLoader(): void {
 
                 if (parsedData.activeCameraID !== undefined && parsedData.activeCameraID !== null) {
                     scene.setActiveCameraById(parsedData.activeCameraID);
+                }
+
+                // If no active camera has been resolved (e.g. the serialized activeCameraID
+                // does not match any loaded camera) but the scene does contain cameras,
+                // fall back to the first one so the scene can still be rendered.
+                if (!scene.activeCamera && scene.cameras.length > 0) {
+                    scene.activeCamera = scene.cameras[0];
                 }
 
                 // Finish

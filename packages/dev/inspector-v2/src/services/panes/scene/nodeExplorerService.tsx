@@ -33,6 +33,7 @@ import { Observable } from "core/Misc/observable";
 import { Node } from "core/node";
 import { MeshIcon } from "shared-ui-components/fluent/icons";
 import { EditNodeGeometry, GetNodeGeometry } from "../../../misc/nodeGeometryEditor";
+import { RecordEntityPropertyOverride } from "../../overrideCapture";
 import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 
 import "core/Rendering/boundingBoxRenderer";
@@ -185,11 +186,31 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                     if (draggedNode.parent === targetNode) {
                         return;
                     }
+                    const nodeScene = draggedNode.getScene();
+                    const oldParent = draggedNode.parent;
                     // Use setParent for TransformNodes to preserve world transform
                     if (draggedNode instanceof TransformNode) {
+                        // setParent recomputes local position/rotation/scaling to
+                        // preserve the world transform, so capture those alongside
+                        // the parent change to round-trip the reparent on reload.
+                        const oldPosition = draggedNode.position.clone();
+                        const oldRotation = draggedNode.rotation.clone();
+                        const oldRotationQuaternion = draggedNode.rotationQuaternion ? draggedNode.rotationQuaternion.clone() : null;
+                        const oldScaling = draggedNode.scaling.clone();
+
                         draggedNode.setParent(targetNode);
+
+                        RecordEntityPropertyOverride(nodeScene, draggedNode, "parent", targetNode, oldParent);
+                        RecordEntityPropertyOverride(nodeScene, draggedNode, "position", draggedNode.position, oldPosition);
+                        if (draggedNode.rotationQuaternion) {
+                            RecordEntityPropertyOverride(nodeScene, draggedNode, "rotationQuaternion", draggedNode.rotationQuaternion, oldRotationQuaternion);
+                        } else {
+                            RecordEntityPropertyOverride(nodeScene, draggedNode, "rotation", draggedNode.rotation, oldRotation);
+                        }
+                        RecordEntityPropertyOverride(nodeScene, draggedNode, "scaling", draggedNode.scaling, oldScaling);
                     } else {
                         draggedNode.parent = targetNode;
+                        RecordEntityPropertyOverride(nodeScene, draggedNode, "parent", targetNode, oldParent);
                     }
                 },
             },
@@ -244,7 +265,9 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                         return !mesh.isVisible;
                     },
                     set isEnabled(enabled: boolean) {
+                        const oldValue = mesh.isVisible;
                         mesh.isVisible = !enabled;
+                        RecordEntityPropertyOverride(mesh.getScene(), mesh, "isVisible", mesh.isVisible, oldValue);
                     },
                     onChange: onChangeObservable,
                     dispose: () => {
@@ -263,9 +286,18 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             getCommand: (camera) => {
                 const scene = camera.getScene();
                 const onChangeObservable = new Observable<void>();
-                const activeCameraChangedObserver = scene.onActiveCameraChanged.add(() => {
-                    onChangeObservable.notifyObservers();
-                });
+
+                // Render target rendering transiently reassigns scene.activeCamera (potentially every frame), so defer
+                // the check to a microtask (letting mid-frame swaps settle) and only notify on real active-state changes.
+                let lastIsActive = getActiveCamera() === camera;
+                const notifyIfActiveStateChanged = () => {
+                    const isActive = getActiveCamera() === camera;
+                    if (isActive !== lastIsActive) {
+                        lastIsActive = isActive;
+                        onChangeObservable.notifyObservers();
+                    }
+                };
+                const activeCameraChangedObserver = scene.onActiveCameraChanged.add(() => queueMicrotask(notifyIfActiveStateChanged));
 
                 return {
                     type: "toggle",
@@ -296,7 +328,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                                     if (updated) {
                                         activeCamera?.detachControl();
                                         camera.attachControl(true);
-                                        onChangeObservable.notifyObservers();
+                                        notifyIfActiveStateChanged();
                                     }
                                 })(scene.frameGraph);
                             } else {

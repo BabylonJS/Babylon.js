@@ -59,9 +59,9 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - script: npm install
             displayName: "NPM install"
@@ -126,9 +126,9 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - script: npm install
             displayName: "NPM install"
@@ -197,9 +197,9 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - script: npm install
             displayName: "NPM install"
@@ -265,9 +265,9 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - script: npm install
             displayName: "NPM install"
@@ -332,9 +332,9 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - task: JavaToolInstaller@0
             displayName: "Use Java 21"
@@ -425,9 +425,9 @@ jobs:
             fetchTags: false
 
           - task: UseNode@1
-            displayName: "Use Node 22.x"
+            displayName: "Use Node 24.x"
             inputs:
-                version: "22.x"
+                version: "24.x"
 
           - script: npm install
             displayName: "NPM install"

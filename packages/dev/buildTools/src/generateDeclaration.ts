@@ -181,7 +181,7 @@ function GetModuleDeclaration(
         // TODO - make a list of dependencies that are accepted by each package
         if (!devPackageName) {
             if (externalName) {
-                if (externalName === "@fortawesome" || externalName === "@fluentui" || externalName === "@recast-navigation") {
+                if (externalName === "@fortawesome" || externalName === "@fluentui" || externalName === "@recast-navigation" || externalName === "@adobe") {
                     // Replace type references with "any", but skip declaration sites (e.g. "export type ThemeMode")
                     // to avoid producing invalid syntax like "export type any = ...".
                     const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");
@@ -433,7 +433,7 @@ function GetPackageDeclaration(
             // TODO - make a list of dependencies that are accepted by each package
             if (!localDevPackageMap) {
                 if (externalName) {
-                    if (externalName === "@fortawesome" || externalName === "@fluentui" || externalName === "@recast-navigation") {
+                    if (externalName === "@fortawesome" || externalName === "@fluentui" || externalName === "@recast-navigation" || externalName === "@adobe") {
                         // Replace type references with "any", but skip declaration sites (e.g. "export type ThemeMode")
                         // to avoid producing invalid syntax like "export type any = ...".
                         const matchRegex = new RegExp(`([ <])(${alias})([^\\w])`, "g");

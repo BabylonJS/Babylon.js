@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { ErrorCodes, RuntimeError } from "core/Misc/error";
+import { Logger } from "core/Misc/logger";
 import { Constants } from "../constants";
 import { type INative } from "./nativeInterfaces";
 import { VertexBuffer } from "core/Buffers/buffer.pure";
@@ -299,6 +300,18 @@ export function getNativeStencilDepthPass(opPass: number): number {
     }
 }
 
+const _warnedUnsupportedAlphaModes = new Set<number>();
+
+// Some alpha modes were introduced alongside newer Babylon Native features. When running against an older
+// native binary the corresponding _native.Engine constant is undefined; warn once and use a supported fallback.
+function _getFallbackAlphaMode(mode: number, unsupportedName: string, fallback = _native.Engine.ALPHA_ONEONE, fallbackName = "ALPHA_ONEONE"): number {
+    if (!_warnedUnsupportedAlphaModes.has(mode)) {
+        _warnedUnsupportedAlphaModes.add(mode);
+        Logger.Warn(`Alpha mode ${unsupportedName} is not supported by this version of Babylon Native; falling back to ${fallbackName}.`);
+    }
+    return fallback;
+}
+
 export function getNativeAlphaMode(mode: number): number {
     switch (mode) {
         case Constants.ALPHA_DISABLE:
@@ -315,6 +328,10 @@ export function getNativeAlphaMode(mode: number): number {
             return _native.Engine.ALPHA_MAXIMIZED;
         case Constants.ALPHA_ONEONE:
             return _native.Engine.ALPHA_ONEONE;
+        case Constants.ALPHA_ONEONE_ONEONE:
+            return _native.Engine.ALPHA_ONEONE_ONEONE ?? _getFallbackAlphaMode(mode, "ALPHA_ONEONE_ONEONE");
+        case Constants.ALPHA_LAYER_ACCUMULATE:
+            return _native.Engine.ALPHA_LAYER_ACCUMULATE ?? _getFallbackAlphaMode(mode, "ALPHA_LAYER_ACCUMULATE");
         case Constants.ALPHA_PREMULTIPLIED:
             return _native.Engine.ALPHA_PREMULTIPLIED;
         case Constants.ALPHA_PREMULTIPLIED_PORTERDUFF:
@@ -323,6 +340,8 @@ export function getNativeAlphaMode(mode: number): number {
             return _native.Engine.ALPHA_INTERPOLATE;
         case Constants.ALPHA_SCREENMODE:
             return _native.Engine.ALPHA_SCREENMODE;
+        case Constants.ALPHA_REPLACE_COLOR:
+            return _native.Engine.ALPHA_REPLACE_COLOR ?? _getFallbackAlphaMode(mode, "ALPHA_REPLACE_COLOR", _native.Engine.ALPHA_COMBINE, "ALPHA_COMBINE");
         default:
             throw new Error(`Unsupported alpha mode: ${mode}.`);
     }
