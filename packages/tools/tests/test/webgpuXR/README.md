@@ -8,7 +8,7 @@ It exists because WebGPU XR bugs are otherwise only reproducible inside a headse
 costs a device trip and yields a single bit of information. This harness turns that into a sub-minute local
 loop with an objective oracle.
 
-Not wired into CI. Run it by hand while working on the WebGPU XR path.
+Wired into CI (see [CI](#ci)), and worth running by hand while working on the WebGPU XR path.
 
 ## Running
 
@@ -34,7 +34,7 @@ node stacks.mjs                                         # name the call site of 
 
 Environment: `CHANNEL=chrome` to use an installed Chrome instead of Playwright's bundled Chromium,
 `HEADED=1` to watch it, `CHROME_ARGS=...` to pass browser flags, `TRACE=0,1` to dump the render-pass
-table for those frames.
+table for those frames, `FRAME_BUDGET=n` to cap the frame count (CI uses 6).
 
 ### Browser requirements
 
@@ -50,17 +50,30 @@ the same signature as the headset (1/60).
 ## CI
 
 Wired into the **Interaction tests** job in `.azure-pipelines/ci-monorepo.yml`, which already runs
-agent-local with `npx playwright install`. It adds roughly 4 seconds.
+agent-local with `npx playwright install`. The agent's adapter is `google/swiftshader`.
 
-If the agent exposes no WebGPU adapter at all the run **skips instead of failing**, so an agent-image
-change cannot block every PR — but the skip is loud and greppable, because a regression test that
-silently no-ops is worse than no test:
+CI runs with `FRAME_BUDGET=6`. The regression appears on frame 1, so six frames is ample: with the
+Phase-3 clear fix reverted, the harness reports 5/6 frames without geometry on **both** eyes. The
+budget is small because on a CPU-rasterising agent the per-frame cost is real, while the bug is not
+subtle enough to need a long run.
+
+If the agent exposes no WebGPU adapter at all, or the run exceeds `STEP_TIMEOUT_MS`, it **skips
+instead of failing**, so an agent-image change cannot block every PR — but the skip is loud and
+greppable, because a regression test that silently no-ops is worse than no test:
 
 - `WEBGPU-XR: RAN - WebGPU adapter = <vendor>/<arch>` — it really executed
-- `WEBGPU-XR: SKIPPED - no WebGPU adapter available on this machine.`
+- `WEBGPU-XR: SKIPPED - <reason>` — it did not, and why
+- `WEBGPU-XR: phase=<phase> (+<ms>)` — where the time went, so a slow agent is diagnosable from the log
+
+Because those two outcomes are distinguishable, the step is allowed to **gate**: infrastructure
+trouble skips, and only a genuine geometry regression fails the job.
 
 The skip is only tolerated when `ALLOW_NO_WEBGPU=1` (set in the pipeline). Locally, missing WebGPU is
 a hard failure, so you cannot fool yourself into thinking you ran it.
+
+Every step is time-boxed. `requestAdapter()` is specified to return a promise that may never settle,
+and unbounded it once wedged a CI job for 15 minutes; it is now raced against `ADAPTER_TIMEOUT_MS`,
+inside a whole-run watchdog that reports the phase it died in.
 
 ## What it asserts
 
