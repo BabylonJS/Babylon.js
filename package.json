@@ -94,6 +94,7 @@
         "test:memory-leaks:packages": "npm run test:packages -w @tools/memory-leak-tests",
         "test:performance": "playwright test -c ./playwright.config.ts --project=performance",
         "test:interactions": "playwright test -c ./playwright.config.ts --project=interaction",
+        "test:webgpu-xr": "cd packages/tools/tests/test/webgpuXR && node build.mjs && node run.mjs",
         "test:audioV2": "playwright test --project=audioV2",
         "test:graphTools": "playwright test -c ./playwright.config.ts --project=graphTools",
         "test:escheck": "nx run-many --outputStyle=static --target=test:escheck --parallel --maxParallel=6 --exclude=@babylonjs/root",

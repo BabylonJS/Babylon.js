@@ -638,6 +638,17 @@ jobs:
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 CI: "true"
 
+          # WebGPU-XR render regression (the Phase-3 per-eye clear bug). Runs headless on the bundled
+          # Chromium already installed above, falling back to the SwiftShader software adapter since
+          # the agent has no GPU. ~3s. Skips (rather than fails) only if the agent exposes no WebGPU
+          # adapter at all; grep the log for "WEBGPU-XR: RAN" / "WEBGPU-XR: SKIPPED" to tell which.
+          - script: npm run test:webgpu-xr
+            displayName: "run WebGPU-XR regression harness"
+            env:
+                CHROME_ARGS: "--use-angle=swiftshader --enable-features=Vulkan"
+                ALLOW_NO_WEBGPU: "1"
+                CI: "true"
+
           - script: |
                 curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/interactionplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete test results"

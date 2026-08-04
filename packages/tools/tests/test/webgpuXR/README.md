@@ -13,8 +13,14 @@ Not wired into CI. Run it by hand while working on the WebGPU XR path.
 ## Running
 
 ```bash
+npm run test:webgpu-xr                                # build + run + assert (what CI runs)
+```
+
+or directly:
+
+```bash
 node packages/tools/tests/test/webgpuXR/build.mjs     # bundle core straight from src/
-node packages/tools/tests/test/webgpuXR/run.mjs       # run in real Chrome, read back pixels, judge
+node packages/tools/tests/test/webgpuXR/run.mjs       # run headless, read back pixels, judge
 ```
 
 `run.mjs` takes an optional JSON config, e.g.:
@@ -26,7 +32,35 @@ node sweep.mjs                                          # the fidelity sweep acr
 node stacks.mjs                                         # name the call site of any zero-draw render pass
 ```
 
-Requires a real Chrome install (`channel: "chrome"`); Playwright's bundled Chromium has no `navigator.gpu`.
+Environment: `CHANNEL=chrome` to use an installed Chrome instead of Playwright's bundled Chromium,
+`HEADED=1` to watch it, `CHROME_ARGS=...` to pass browser flags, `TRACE=0,1` to dump the render-pass
+table for those frames.
+
+### Browser requirements
+
+Playwright's **bundled Chromium is sufficient** — no Chrome channel install needed. It exposes
+WebGPU on a `localhost` page; a probe against `about:blank` reports no `navigator.gpu` because that
+is an opaque origin, which is an easy way to conclude wrongly that bundled Chromium cannot do WebGPU.
+
+No GPU is required either: with `CHROME_ARGS="--use-angle=swiftshader --enable-features=Vulkan"` the
+run uses the SwiftShader software adapter, which is what a CI agent gets. Verified on SwiftShader:
+the suite passes 40/40 frames on both eyes, and with the Phase-3 clear fix reverted it fails 39/40 —
+the same signature as the headset (1/60).
+
+## CI
+
+Wired into the **Interaction tests** job in `.azure-pipelines/ci-monorepo.yml`, which already runs
+agent-local with `npx playwright install`. It adds roughly 4 seconds.
+
+If the agent exposes no WebGPU adapter at all the run **skips instead of failing**, so an agent-image
+change cannot block every PR — but the skip is loud and greppable, because a regression test that
+silently no-ops is worse than no test:
+
+- `WEBGPU-XR: RAN - WebGPU adapter = <vendor>/<arch>` — it really executed
+- `WEBGPU-XR: SKIPPED - no WebGPU adapter available on this machine.`
+
+The skip is only tolerated when `ALLOW_NO_WEBGPU=1` (set in the pipeline). Locally, missing WebGPU is
+a hard failure, so you cannot fool yourself into thinking you ran it.
 
 ## What it asserts
 

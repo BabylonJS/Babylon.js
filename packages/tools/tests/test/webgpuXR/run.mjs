@@ -1,7 +1,13 @@
 // Playwright runner for the local WebGPU-XR repro harness.
-// Serves ./public over http (WebGPU needs a secure-ish context; localhost qualifies),
-// launches real Chrome (Playwright's bundled Chromium has no WebGPU), and prints the
-// per-frame / per-eye pixel oracle.
+// Serves ./public over http (WebGPU needs a secure context; localhost qualifies), launches a
+// WebGPU-capable Chromium, and prints the per-frame / per-eye pixel oracle.
+//
+// Browser selection: defaults to Playwright's bundled Chromium, which does expose WebGPU on a
+// localhost page. (about:blank is an opaque origin and reports no navigator.gpu, which is an easy
+// way to conclude wrongly that bundled Chromium cannot do WebGPU at all.) Set CHANNEL=chrome to use
+// an installed Chrome instead. On a GPU-less machine such as a CI agent, pass
+// CHROME_ARGS="--use-angle=swiftshader --enable-features=Vulkan" to fall back to the SwiftShader
+// software adapter.
 import { chromium } from "playwright";
 import * as http from "node:http";
 import * as fs from "node:fs";
@@ -17,6 +23,12 @@ function serve(port) {
     return new Promise((resolve) => {
         const server = http.createServer((req, res) => {
             const url = (req.url || "/").split("?")[0];
+            // Minimal same-origin page used to probe WebGPU availability without booting the harness.
+            if (url === "/__probe") {
+                res.writeHead(200, { "content-type": "text/html" });
+                res.end("<!doctype html><title>probe</title>");
+                return;
+            }
             const file = path.join(pub, url === "/" ? "harness.html" : url);
             if (!file.startsWith(pub) || !fs.existsSync(file)) {
                 res.writeHead(404);
@@ -37,7 +49,7 @@ const PORT = 7300 + Math.floor(Math.random() * 600);
 const server = await serve(PORT);
 
 const browser = await chromium.launch({
-    channel: "chrome",
+    ...(process.env.CHANNEL ? { channel: process.env.CHANNEL } : {}),
     headless: process.env.HEADED !== "1",
     args: ["--use-angle=default", "--enable-unsafe-webgpu", ...(process.env.CHROME_ARGS ? process.env.CHROME_ARGS.split(" ") : [])],
 });
@@ -57,6 +69,28 @@ await page.addInitScript((c) => {
         window.__GPUTRACE_STACKS = true;
     }
 }, cfg);
+
+await page.goto(`http://127.0.0.1:${PORT}/__probe`);
+const adapter = await page.evaluate(async () => {
+    if (!navigator.gpu) {
+        return null;
+    }
+    const a = await navigator.gpu.requestAdapter();
+    if (!a) {
+        return null;
+    }
+    const i = a.info || {};
+    return `${i.vendor || "?"}/${i.architecture || "?"}`;
+});
+if (!adapter) {
+    // Printed so a CI log can be grepped to prove whether this test really ran. A regression test that
+    // silently no-ops is worse than no test, so the skip is loud and only tolerated when asked for.
+    console.log("WEBGPU-XR: SKIPPED - no WebGPU adapter available on this machine.");
+    await browser.close();
+    server.close();
+    process.exit(process.env.ALLOW_NO_WEBGPU === "1" ? 0 : 1);
+}
+console.log(`WEBGPU-XR: RAN - WebGPU adapter = ${adapter}`);
 
 await page.goto(`http://127.0.0.1:${PORT}/harness.html`);
 
