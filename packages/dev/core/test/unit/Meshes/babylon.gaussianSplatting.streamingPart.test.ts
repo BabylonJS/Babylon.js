@@ -68,6 +68,15 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         return compound;
     };
 
+    // A compound holding a static part (part 0) followed by a reserved streaming part (part 1). With the defaults
+    // the static part occupies atlas splats [0, 16) and the streaming region [16, 64) (atlas width 16).
+    const createStaticPlusStream = (staticCount = 16, streamCount = 48) => {
+        const compound = createCompound();
+        compound.addPart(createSource(staticCount));
+        const handle = compound.reserveStreamingPart(streamCount);
+        return { compound, handle };
+    };
+
     it("reserves an empty region on an empty compound with correct (row-aligned) bookkeeping", () => {
         const compound = createCompound();
         // Requested 30; the region is row-aligned up to a multiple of the atlas width (16 here) => 32.
@@ -130,9 +139,7 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
     });
 
     it("builds the global interval union: static part full + streaming part active ranges", () => {
-        const compound = createCompound();
-        compound.addPart(createSource(16)); // part 0 => [0, 16)
-        const handle = compound.reserveStreamingPart(48); // part 1 => [16, 64)
+        const { compound, handle } = createStaticPlusStream();
 
         // With no override the whole atlas renders.
         expect(compound.renderedSplatCount).toBe(64);
@@ -148,9 +155,7 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
     });
 
     it("coalesces a static part adjacent to the streaming part into a single contiguous range", () => {
-        const compound = createCompound();
-        compound.addPart(createSource(16)); // part 0 => [0, 16)
-        const handle = compound.reserveStreamingPart(48); // part 1 => [16, 64)
+        const { compound, handle } = createStaticPlusStream();
 
         // Stream renders its first 16 splats: global [16, 32) — directly adjacent to the static part [0,16).
         handle.setActiveRanges([{ offset: 0, count: 16 }]);
@@ -162,9 +167,7 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
     });
 
     it("clears the filter (renders all) when the streaming part's ranges are set back to null", () => {
-        const compound = createCompound();
-        compound.addPart(createSource(16)); // part 0 => [0, 16)
-        const handle = compound.reserveStreamingPart(48); // part 1 => [16, 64)
+        const { compound, handle } = createStaticPlusStream();
 
         handle.setActiveRanges([{ offset: 0, count: 5 }]);
         expect(compound.renderedSplatCount).toBe(21);
@@ -176,9 +179,7 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
     });
 
     it("tombstones (does not compact) a part removed while a streaming part is reserved", () => {
-        const compound = createCompound();
-        compound.addPart(createSource(16)); // static part 0 => [0, 16)
-        const handle = compound.reserveStreamingPart(48); // streaming part 1 => [16, 64)
+        const { compound, handle } = createStaticPlusStream();
         handle.setActiveRanges([{ offset: 0, count: 16 }]); // stream renders its first 16 splats
 
         const vertexCountBefore = (compound as any)._vertexCount;
@@ -198,9 +199,7 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
     });
 
     it("keeps the streamed splats when its own part is removed via tombstone (union excludes it)", () => {
-        const compound = createCompound();
-        compound.addPart(createSource(16)); // static part 0 => [0, 16)
-        const handle = compound.reserveStreamingPart(48); // streaming part 1 => [16, 64)
+        const { compound, handle } = createStaticPlusStream();
         handle.setActiveRanges([{ offset: 0, count: 16 }]);
         expect(compound.renderedSplatCount).toBe(32); // static 16 + streamed 16
 
@@ -219,9 +218,7 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
     });
 
     it("compactAtlas is a no-op when nothing is tombstoned", () => {
-        const compound = createCompound();
-        compound.addPart(createSource(16));
-        const handle = compound.reserveStreamingPart(16);
+        const { compound, handle } = createStaticPlusStream(16, 16);
         const vcBefore = (compound as any)._vertexCount;
         const baseBefore = handle.base;
 
@@ -233,9 +230,7 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
     });
 
     it("compactAtlas reclaims a tombstoned static part and relocates the surviving stream to the front", () => {
-        const compound = createCompound();
-        compound.addPart(createSource(16)); // static part 0 => [0, 16)
-        const handle = compound.reserveStreamingPart(16); // streaming part 1 => base 16 (row-aligned at width 16)
+        const { compound, handle } = createStaticPlusStream(16, 16); // static [0,16) + stream base 16 (row-aligned)
         handle.setActiveRanges([{ offset: 0, count: 5 }]); // stream renders local [0,5) => global [16,21)
         expect(handle.base).toBe(16);
         const vcBefore = (compound as any)._vertexCount; // 32
