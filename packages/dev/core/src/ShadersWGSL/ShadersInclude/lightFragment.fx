@@ -12,9 +12,8 @@
         #if defined(PBR) && defined(CLUSTLIGHT{X})
         {
             let sliceIndex = min(getClusteredSliceIndex(light{X}.vSliceData, fragmentInputs.vViewDepth), CLUSTLIGHT_SLICES - 1);
-            info = computeClusteredLighting(
+            info = computeClusteredLighting{X}(
                 lightDataTexture{X},
-                &tileMaskBuffer{X},
                 light{X}.vLightData,
                 vec2u(light{X}.vSliceRanges[sliceIndex].xy),
                 viewDirectionW,
@@ -261,7 +260,7 @@
             #elif defined(CLUSTLIGHT{X})
             {
                 let sliceIndex = min(getClusteredSliceIndex(light{X}.vSliceData, fragmentInputs.vViewDepth), CLUSTLIGHT_SLICES - 1);
-                info = computeClusteredLighting(lightDataTexture{X}, &tileMaskBuffer{X}, viewDirectionW, normalW, light{X}.vLightData, vec2u(light{X}.vSliceRanges[sliceIndex].xy), glossiness);
+                info = computeClusteredLighting{X}(lightDataTexture{X}, viewDirectionW, normalW, light{X}.vLightData, vec2u(light{X}.vSliceRanges[sliceIndex].xy), glossiness);
             }
             #endif
         #endif
