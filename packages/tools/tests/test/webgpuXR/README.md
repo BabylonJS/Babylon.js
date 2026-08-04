@@ -8,12 +8,12 @@ It exists because WebGPU XR bugs are otherwise only reproducible inside a headse
 costs a device trip and yields a single bit of information. This harness turns that into a sub-minute local
 loop with an objective oracle.
 
-Wired into CI (see [CI](#ci)), and worth running by hand while working on the WebGPU XR path.
+**Not currently run in CI** — see [CI](#ci). Run it by hand while working on the WebGPU XR path.
 
 ## Running
 
 ```bash
-npm run test:webgpu-xr                                # build + run + assert (what CI runs)
+npm run test:webgpu-xr                                # build + run + assert
 ```
 
 or directly:
@@ -49,31 +49,32 @@ the same signature as the headset (1/60).
 
 ## CI
 
-Wired into the **Interaction tests** job in `.azure-pipelines/ci-monorepo.yml`, which already runs
-agent-local with `npx playwright install`. The agent's adapter is `google/swiftshader`.
+**This harness is not wired into CI today.** Wiring it into the agent-local _Interaction tests_ job was
+attempted and reverted; the work is tracked in
+[#18765](https://github.com/BabylonJS/Babylon.js/issues/18765).
 
-CI runs with `FRAME_BUDGET=6`. The regression appears on frame 1, so six frames is ample: with the
-Phase-3 clear fix reverted, the harness reports 5/6 frames without geometry on **both** eyes. The
-budget is small because on a CPU-rasterising agent the per-frame cost is real, while the bug is not
-subtle enough to need a long run.
+The blocker is not WebGPU availability. On the ADO Linux agent the adapter comes up
+(`google/swiftshader`), the engine initialises, and the first frame renders in ~120ms — and then the
+**renderer process crashes**. Trimming the frame budget, extending the timeout to 15 minutes, and
+`--disable-dev-shm-usage` all failed to help, because the failure is a crash rather than a timeout.
 
-If the agent exposes no WebGPU adapter at all, or the run exceeds `STEP_TIMEOUT_MS`, it **skips
-instead of failing**, so an agent-image change cannot block every PR — but the skip is loud and
-greppable, because a regression test that silently no-ops is worse than no test:
+So the honest status is: **it reproduces the regression reliably when run by hand, and it does not
+guard the branch automatically.**
+
+Everything needed to wire it up later is already in place, and the runner is built to be diagnosable
+from a CI log rather than requiring a local repro:
 
 - `WEBGPU-XR: RAN - WebGPU adapter = <vendor>/<arch>` — it really executed
 - `WEBGPU-XR: SKIPPED - <reason>` — it did not, and why
-- `WEBGPU-XR: phase=<phase> (+<ms>)` — where the time went, so a slow agent is diagnosable from the log
+- `WEBGPU-XR: phase=<phase> (+<ms>)` — where the time went
+- a tab crash is reported explicitly instead of surfacing as an opaque `Target crashed`
 
-Because those two outcomes are distinguishable, the step is allowed to **gate**: infrastructure
-trouble skips, and only a genuine geometry regression fails the job.
+Knobs: `FRAME_BUDGET`, `STEP_TIMEOUT_MS`, `HARNESS_WAIT_MS`, `ADAPTER_TIMEOUT_MS`, `ALLOW_NO_WEBGPU`.
+Every stage is time-boxed: `requestAdapter()` is specified to return a promise that may never settle,
+and unbounded it once wedged a CI job for 15 minutes.
 
-The skip is only tolerated when `ALLOW_NO_WEBGPU=1` (set in the pipeline). Locally, missing WebGPU is
-a hard failure, so you cannot fool yourself into thinking you ran it.
-
-Every step is time-boxed. `requestAdapter()` is specified to return a promise that may never settle,
-and unbounded it once wedged a CI job for 15 minutes; it is now raced against `ADAPTER_TIMEOUT_MS`,
-inside a whole-run watchdog that reports the phase it died in.
+Locally, missing WebGPU is a hard failure (`ALLOW_NO_WEBGPU` unset), so the harness cannot silently
+no-op on a dev machine and report a meaningless green.
 
 ## What it asserts
 
