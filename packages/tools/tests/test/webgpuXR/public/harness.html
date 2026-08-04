@@ -31,9 +31,13 @@
             (async function () {
                 "use strict";
                 const OUT = (window.__HARNESS = { status: "starting", log: [], gpuErrors: [], done: false });
+                const T0 = Date.now();
                 const say = (m) => {
-                    OUT.log.push(m);
-                    console.log("[harness]", m);
+                    // The elapsed stamp matters on CPU-rasterised CI agents, where a single stage
+                    // (WGSL pipeline compilation, typically) can dominate the whole run.
+                    const s = "+" + (Date.now() - T0) + "ms " + m;
+                    OUT.log.push(s);
+                    console.log("[harness]", s);
                 };
 
                 window.addEventListener("error", (e) => OUT.log.push("window error: " + e.message));
@@ -81,7 +85,15 @@
                         box.rotation.y += 0.02;
                     });
 
-                    engine.runRenderLoop(() => scene.render());
+                    say("scene built, starting render loop");
+                    let firstFrameDone = false;
+                    engine.runRenderLoop(() => {
+                        scene.render();
+                        if (!firstFrameDone) {
+                            firstFrameDone = true;
+                            say("first frame rendered (WGSL pipeline compilation done)");
+                        }
+                    });
 
                     // Warm up outside XR so shader compilation is not a confound.
                     await new Promise((r) => setTimeout(r, 500));

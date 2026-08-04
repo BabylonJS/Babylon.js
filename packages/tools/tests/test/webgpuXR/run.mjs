@@ -68,8 +68,20 @@ const setPhase = (p) => {
     }
 };
 const STEP_TIMEOUT_MS = +(process.env.STEP_TIMEOUT_MS || 180000);
-const watchdog = setTimeout(() => {
+const watchdog = setTimeout(async () => {
     console.log(`WEBGPU-XR: SKIPPED - timed out after ${STEP_TIMEOUT_MS}ms while "${phase}". The GPU stack on this machine could not run the test.`);
+    // Without the page's own milestone log, a timeout says only "it was slow" and not which stage was
+    // slow, which is the only thing that makes the next attempt cheaper.
+    try {
+        const log = await Promise.race([globalThis.__page?.evaluate(() => (window.__HARNESS && window.__HARNESS.log) || []), new Promise((r) => setTimeout(() => r(null), 5000))]);
+        if (log && log.length) {
+            console.log(`WEBGPU-XR: last page milestones:\n  ${log.slice(-8).join("\n  ")}`);
+        } else {
+            console.log("WEBGPU-XR: the page reported no milestones (its main thread never yielded).");
+        }
+    } catch {
+        console.log("WEBGPU-XR: could not read page milestones.");
+    }
     process.exit(process.env.ALLOW_NO_WEBGPU === "1" ? 0 : 1);
 }, STEP_TIMEOUT_MS);
 
@@ -81,6 +93,7 @@ const browser = await chromium.launch({
 });
 setPhase("opening page");
 const page = await browser.newPage({ viewport: { width: 900, height: 700 } });
+globalThis.__page = page;
 
 page.on("console", (m) => {
     const t = m.text();
@@ -131,7 +144,12 @@ console.log(`WEBGPU-XR: RAN - WebGPU adapter = ${adapter}`);
 setPhase("rendering frames");
 await page.goto(`http://127.0.0.1:${PORT}/harness.html`);
 
-await page.waitForFunction(() => window.__HARNESS && window.__HARNESS.done, null, { timeout: 90000 }).catch(() => console.log("  !! timed out waiting for harness"));
+// Bounded independently of the watchdog: on a CPU-rasterising agent, WGSL pipeline compilation for the
+// first frame can dwarf everything else, so this is tunable without loosening the overall time box.
+const HARNESS_WAIT_MS = +(process.env.HARNESS_WAIT_MS || 90000);
+await page
+    .waitForFunction(() => window.__HARNESS && window.__HARNESS.done, null, { timeout: HARNESS_WAIT_MS })
+    .catch(() => console.log(`  !! timed out waiting for harness after ${HARNESS_WAIT_MS}ms`));
 setPhase("reading back pixels");
 clearTimeout(watchdog);
 

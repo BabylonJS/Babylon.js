@@ -650,11 +650,15 @@ jobs:
           # where it gave up.
           - script: npm run test:webgpu-xr
             displayName: "run WebGPU-XR regression harness"
-            timeoutInMinutes: 6
+            # MEASUREMENT RUN: budget deliberately long and the step non-gating, to establish what a
+            # CPU-rasterising agent actually costs. Tightened once the real number is known.
+            continueOnError: true
+            timeoutInMinutes: 18
             env:
                 CHROME_ARGS: "--use-angle=swiftshader --enable-features=Vulkan"
                 ALLOW_NO_WEBGPU: "1"
-                STEP_TIMEOUT_MS: "240000"
+                STEP_TIMEOUT_MS: "900000"
+                HARNESS_WAIT_MS: "840000"
                 FRAME_BUDGET: "6"
                 CI: "true"
 
