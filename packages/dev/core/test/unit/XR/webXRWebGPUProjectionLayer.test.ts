@@ -244,15 +244,37 @@ describe("WebXRWebGPUProjectionLayer", () => {
             expect(clearSpy).not.toHaveBeenCalled();
         });
 
-        it("the per-eye clear observer clears color only once per frame (guarded by _cleared)", () => {
+        it("the per-eye clear observer clears color only once per engine frame", () => {
             const provider = createProvider(createSubImage(512, 512));
             const rtt = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);
 
             const clearSpy = vi.spyOn(engine, "clear");
-            // First notification in the frame: color is cleared (RTT starts uncleared).
+            // First notification in the frame: color is cleared.
             rtt!.onClearObservable.notifyObservers(engine);
             expect(clearSpy).toHaveBeenLastCalledWith(scene.clearColor, true, true, true);
-            // Second notification in the same frame (no per-frame reset): color clear is skipped, depth+stencil still cleared.
+            // Second notification in the same engine frame: color clear is skipped, depth+stencil still cleared.
+            rtt!.onClearObservable.notifyObservers(engine);
+            expect(clearSpy).toHaveBeenLastCalledWith(scene.clearColor, false, true, true);
+            // Next engine frame: color is cleared again.
+            engine.endFrame();
+            rtt!.onClearObservable.notifyObservers(engine);
+            expect(clearSpy).toHaveBeenLastCalledWith(scene.clearColor, true, true, true);
+        });
+
+        it("the per-eye clear observer does not re-clear color when another scene resets _cleared mid-frame", () => {
+            // Regression: UtilityLayerRenderer renders a second Scene through the same XR rig cameras within one
+            // XR frame, and every Scene.render resets RenderTargetTexture._cleared for those cameras' targets
+            // (Scene._checkCameraRenderTarget). A _cleared-based guard is therefore defeated and the eye is
+            // re-cleared AFTER it was drawn, wiping the geometry while the clear color keeps presenting.
+            const provider = createProvider(createSubImage(512, 512));
+            const rtt = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);
+
+            const clearSpy = vi.spyOn(engine, "clear");
+            rtt!.onClearObservable.notifyObservers(engine);
+            expect(clearSpy).toHaveBeenLastCalledWith(scene.clearColor, true, true, true);
+
+            // Simulate the second scene's per-frame reset, then its clear notification in the SAME engine frame.
+            rtt!._cleared = false;
             rtt!.onClearObservable.notifyObservers(engine);
             expect(clearSpy).toHaveBeenLastCalledWith(scene.clearColor, false, true, true);
         });
