@@ -98,7 +98,8 @@
             proto[name] = function () {
                 const sub = orig.apply(this, arguments);
                 try {
-                    const eye = (arguments[1] && arguments[1].eye) || (arguments[2] && arguments[2]) || "?";
+                    // getViewSubImage(layer, view) carries the eye on the XRView; getSubImage(layer, frame, eye) passes it directly.
+                    const eye = (arguments[1] && arguments[1].eye) || arguments[2] || "?";
                     const vd = sub.getViewDescriptor ? sub.getViewDescriptor() : null;
                     if (window.__GPUTRACE) {
                         window.__GPUTRACE.watch(sub.colorTexture, "color#" + texId(sub.colorTexture));

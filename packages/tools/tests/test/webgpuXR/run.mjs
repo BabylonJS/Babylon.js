@@ -129,7 +129,6 @@ if (process.env.TRACE) {
         console.log(`--- frame ${f.frame} ---`);
         for (const e of f.events) {
             if (e.kind === "renderPass") {
-                const c = e.colors.map((c) => `${c.target ? c.target.tex + "[L" + c.baseArrayLayerFix + "]" : "?"}`).join(",");
                 for (const col of e.colors) {
                     console.log(
                         `  PASS enc#${e.enc} ${e.label || ""} color=${col.target ? col.target.tex + " L" + col.target.baseArrayLayer + " dim=" + col.target.dimension : "-"} load=${col.loadOp} clear=${JSON.stringify(col.clearValue)} store=${col.storeOp}` +
