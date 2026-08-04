@@ -44,6 +44,12 @@ function serve(port) {
 
 const cfgArg = process.argv.slice(2).join(" ").trim();
 const cfg = cfgArg ? JSON.parse(cfgArg) : {};
+// SwiftShader rasterises on the CPU, so a CI agent is orders of magnitude slower than a desktop GPU
+// (40 frames: ~3s locally, >180s on an ADO agent). The regression shows up on frame 1, so CI only
+// needs a handful of frames to catch it.
+if (process.env.FRAME_BUDGET && cfg.frameBudget === undefined) {
+    cfg.frameBudget = +process.env.FRAME_BUDGET;
+}
 
 const PORT = 7300 + Math.floor(Math.random() * 600);
 const server = await serve(PORT);
@@ -54,10 +60,11 @@ const server = await serve(PORT);
 // turns this test into something that can wedge a CI job for its full timeout, which is far worse than
 // not running at all. So the whole run is time-boxed and reports the phase it died in.
 let phase = "launching browser";
+const t0 = Date.now();
 const setPhase = (p) => {
     phase = p;
     if (process.env.CI) {
-        console.log(`WEBGPU-XR: phase=${p}`);
+        console.log(`WEBGPU-XR: phase=${p} (+${Date.now() - t0}ms)`);
     }
 };
 const STEP_TIMEOUT_MS = +(process.env.STEP_TIMEOUT_MS || 180000);
@@ -217,6 +224,9 @@ if (process.env.TRACE) {
 fs.writeFileSync(path.join(here, "last-run.json"), JSON.stringify(out, null, 2));
 
 await browser.close();
+// `server.close()` only stops new connections; keep-alive sockets from the page keep the handle open,
+// which left the process lingering ~60s after the verdict was already known. Kill them explicitly.
+server.closeAllConnections?.();
 server.close();
 
 // --- ASSERTION ------------------------------------------------------------------------------------
@@ -247,3 +257,4 @@ if (failures.length) {
     process.exit(1);
 }
 console.log(`\nPASS: geometry present on both eyes for all ${verdict.length} frames.`);
+process.exit(0);
