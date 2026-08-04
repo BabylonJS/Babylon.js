@@ -508,27 +508,39 @@ export class GaussianSplattingWorkBuffer {
                     this._scene.onBeforeRenderObservable.addOnce(attempt);
                     return;
                 }
-                this._quad.material = this._material;
-                this._mrt.renderList = [this._quad];
-                this._mrt.render();
-                // Bake this file's higher-order SH: one pass per packed-u32 SH texture (uShTextureIndex selects the
-                // 16 SH scalars written this pass), each into its own single-attachment integer target at the region
-                // offset. Files with fewer coefficients neutral-fill (128) their higher bands in-shader.
-                if (decodeSh) {
-                    for (let k = 0; k < this._shMrts.length; k++) {
-                        this._shMaterial!.setInt("uShTextureIndex", k);
-                        this._quad.material = this._shMaterial!;
-                        this._shMrts[k].renderList = [this._quad];
-                        this._shMrts[k].render();
+                // Scissor every pass to just this file's atlas rows so the fullscreen triangle only shades the region
+                // it writes, not the whole (wide) atlas. Correct because the shaders already discard outside the exact
+                // splat range, and the row band is a superset of it.
+                const width = this._textureSize;
+                const globalOffset = this._baseOffset + offset;
+                const firstRow = Math.floor(globalOffset / width);
+                const rowCount = Math.max(1, Math.ceil((globalOffset + pack.splatCount) / width) - firstRow);
+                const engine = this._scene.getEngine();
+                engine.enableScissor(0, firstRow, width, rowCount);
+                try {
+                    this._quad.material = this._material;
+                    this._mrt.renderList = [this._quad];
+                    this._mrt.render();
+                    // Bake this file's higher-order SH: one pass per packed-u32 SH texture (uShTextureIndex selects the
+                    // 16 SH scalars written this pass). Files with fewer coefficients neutral-fill (128) higher bands.
+                    if (decodeSh) {
+                        for (let k = 0; k < this._shMrts.length; k++) {
+                            this._shMaterial!.setInt("uShTextureIndex", k);
+                            this._quad.material = this._shMaterial!;
+                            this._shMrts[k].renderList = [this._quad];
+                            this._shMrts[k].render();
+                        }
+                        this._quad.material = this._material;
                     }
-                    this._quad.material = this._material;
-                }
-                // Bake this file's rotation/scale into the 3-attachment half-float rotation target (one pass).
-                if (decodeRot) {
-                    this._quad.material = this._rotMaterial!;
-                    this._rotMrt!.renderList = [this._quad];
-                    this._rotMrt!.render();
-                    this._quad.material = this._material;
+                    // Bake this file's rotation/scale into the 3-attachment half-float rotation target (one pass).
+                    if (decodeRot) {
+                        this._quad.material = this._rotMaterial!;
+                        this._rotMrt!.renderList = [this._quad];
+                        this._rotMrt!.render();
+                        this._quad.material = this._material;
+                    }
+                } finally {
+                    engine.disableScissor();
                 }
                 resolve();
             };
