@@ -2812,10 +2812,21 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         const firstTime = this._covariancesATexture === null;
         const textureSizeChanged = this._textureSize.y != textureSize.y;
+        // The render-backed SH atlas must have one attachment per SH texture the material samples, i.e. sized to the
+        // compound's MERGED SH degree (`sh` spans static + streaming), not just the streaming parts' requested count —
+        // otherwise a lower-degree stream mixed with a higher-degree static part (or a later higher-degree stream)
+        // leaves the atlas undersized. `sh` is always present when a streaming SH part is live (its degree makes it so).
+        if (this._useShMrtAtlas && sh) {
+            this._shMrtAtlasTextureCount = sh.length;
+        }
         // First streaming-part reservation must convert the existing RawTexture atlas to the MRT-backed atlas,
         // which requires the full (re)build branch even when the texture height is unchanged. Same for the SH atlas:
-        // a streaming SH part must convert the SH textures to render-targetable integer MRTs.
-        const needsMrtConversion = (this._useMrtAtlas && !this._mrtAtlas) || (this._useShMrtAtlas && !this._shMrtAtlas) || (this._useRotMrtAtlas && !this._rotMrtAtlas);
+        // a streaming SH part must convert the SH textures to render-targetable integer MRTs (and recreate them when
+        // the required attachment count changes).
+        const needsMrtConversion =
+            (this._useMrtAtlas && !this._mrtAtlas) ||
+            (this._useShMrtAtlas && (!this._shMrtAtlas || this._shMrtAtlas.length !== this._shMrtAtlasTextureCount)) ||
+            (this._useRotMrtAtlas && !this._rotMrtAtlas);
 
         if (!firstTime && !textureSizeChanged && !needsMrtConversion) {
             this._setDelayedTextureUpdate(covA, covB, colorArray, sh);
@@ -3096,7 +3107,21 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param max optional running max accumulator for the written centers
      */
     protected _writeStreamingSplats(globalOffset: number, count: number, splatsData: ArrayBuffer | ArrayBufferView, min?: Vector3, max?: Vector3): void {
-        if (count <= 0 || !this._splatPositions || !this._covariancesATexture) {
+        if (!this._splatPositions) {
+            return;
+        }
+        // Validate the range against the atlas and the input length (independent of GPU state): an out-of-range
+        // offset/count would write over another part's texels or allocate a huge transient (the CPU arrays are
+        // atlas-indexed up to `end`); a short input would read past its end.
+        const capacity = this._splatPositions.length / 4;
+        const uBuffer = GaussianSplattingMeshBase._GetSplatDataBytes(splatsData);
+        if (!Number.isInteger(globalOffset) || !Number.isInteger(count) || globalOffset < 0 || count < 0 || globalOffset + count > capacity) {
+            throw new Error(`_writeStreamingSplats: range [${globalOffset}, ${globalOffset + count}) is outside the atlas bounds [0, ${capacity})`);
+        }
+        if (uBuffer.length < count * 32) {
+            throw new Error(`_writeStreamingSplats: splatsData has ${uBuffer.length} bytes, need ${count * 32} for ${count} splats (stride 32)`);
+        }
+        if (count === 0 || !this._covariancesATexture) {
             return;
         }
         const textureSize = this._getTextureSize(this._vertexCount);
@@ -3105,7 +3130,6 @@ export class GaussianSplattingMeshBase extends Mesh {
         const end = globalOffset + count;
 
         const fBuffer = GaussianSplattingMeshBase._GetSplatDataFloats(splatsData);
-        const uBuffer = GaussianSplattingMeshBase._GetSplatDataBytes(splatsData);
 
         // _makeSplat indexes covA/covB/color by the destination (global) splat index and writes _splatPositions
         // at that same index, so the transient CPU arrays must be atlas-indexed up to `end`. Only the written

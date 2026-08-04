@@ -338,7 +338,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
         const corner = new Vector3();
         for (const proxy of this._partProxies) {
-            if (!proxy) {
+            // Skip removed parts: a tombstoned proxy is kept (for compaction) but renders nothing, so it must not
+            // inflate the compound's bounds (and thus its frustum culling) until its rows are actually reclaimed.
+            if (!proxy || this._tombstonedPartIndices.has(proxy.partIndex)) {
                 continue;
             }
             // Proxies have no geometry — getHierarchyBoundingVectors returns sentinels. Use boundingBox directly.
@@ -1971,6 +1973,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 compound.setPartSplatRanges(state.partIndex, globalRanges);
             },
             writeSplats: (localOffset, count, splatsData) => {
+                // Keep the write inside this part's region so it can never touch another part's atlas texels.
+                if (!Number.isInteger(localOffset) || !Number.isInteger(count) || localOffset < 0 || count < 0 || localOffset + count > state.capacity) {
+                    throw new Error(`writeSplats: range [${localOffset}, ${localOffset + count}) is outside the reserved region [0, ${state.capacity})`);
+                }
                 compound._writeStreamingSplats(state.base + localOffset, count, splatsData, boundsMin, boundsMax);
                 applyBounds();
             },

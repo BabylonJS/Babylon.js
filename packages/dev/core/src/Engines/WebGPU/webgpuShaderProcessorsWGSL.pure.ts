@@ -430,12 +430,43 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         let fragmentOutputs = "struct FragmentOutputs {\n";
 
         // A fragData location is float (vec4<f32>) unless the shader writes an integer vector to it — a shader
-        // that assigns vec4<u32>/vec4u(...) or vec4<i32>/vec4i(...) is rendering into an integer color target
-        // (e.g. RGBA_INTEGER u32), whose WGSL output type must match. Defaults to vec4<f32> (backward compatible).
+        // rendering into an integer color target (e.g. RGBA_INTEGER u32) must declare a matching integer output.
+        // Detect the integer type from the assignment's right-hand side: an inline vec4<u32>/vec4<i32> constructor,
+        // or a plain identifier whose declaration is an integer vec4. Defaults to vec4<f32> (backward compatible).
+        const detectIntVec = (expr: string): Nullable<string> => {
+            if (/^\s*(vec4<u32>|vec4u\s*\()/.test(expr)) {
+                return "vec4<u32>";
+            }
+            if (/^\s*(vec4<i32>|vec4i\s*\()/.test(expr)) {
+                return "vec4<i32>";
+            }
+            return null;
+        };
         const fragDataOutputType = (index: number): string => {
-            const m = fragmentCode.match(new RegExp(`fragmentOutputs\\.fragData${index}\\s*=\\s*(vec4<u32>|vec4u\\(|vec4<i32>|vec4i\\()`));
-            if (m) {
-                return m[1] === "vec4<u32>" || m[1] === "vec4u(" ? "vec4<u32>" : "vec4<i32>";
+            const assign = fragmentCode.match(new RegExp(`fragmentOutputs\\.fragData${index}\\s*=\\s*([^;]+);`));
+            if (!assign) {
+                return "vec4<f32>";
+            }
+            const rhs = assign[1].trim();
+            const direct = detectIntVec(rhs);
+            if (direct) {
+                return direct;
+            }
+            // Bare identifier RHS (e.g. `fragData0 = computedUintColor;`): resolve its declared type from a
+            // `var/let NAME : vec4<u32>` typed declaration or a `var/let NAME = vec4<u32>(...)` initialized one.
+            const id = rhs.match(/^([A-Za-z_]\w*)$/);
+            if (id) {
+                const typed = fragmentCode.match(new RegExp(`(?:var|let)\\s+${id[1]}\\s*:\\s*(vec4<u32>|vec4<i32>)`));
+                if (typed) {
+                    return typed[1];
+                }
+                const inited = fragmentCode.match(new RegExp(`(?:var|let)\\s+${id[1]}\\s*=\\s*([^;]+);`));
+                if (inited) {
+                    const t = detectIntVec(inited[1].trim());
+                    if (t) {
+                        return t;
+                    }
+                }
             }
             return "vec4<f32>";
         };

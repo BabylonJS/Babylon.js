@@ -1088,9 +1088,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             this._positionBase = host.base;
             const shExternal = this._shTextureCount > 0 && host.shMrtAtlas ? { textureCount: this._shTextureCount, externalMrts: host.shMrtAtlas } : undefined;
             const rotExternal = this._needsRotationScale && host.rotMrtAtlas ? { externalMrt: host.rotMrtAtlas } : undefined;
+            // Use the region's ROW-ALIGNED capacity (host.capacity), not the raw stream capacity: backup/restore/
+            // relayout scope to whole atlas rows, so an unaligned capacity would drop the region's partial final row.
             this._workBuffer = new GaussianSplattingWorkBuffer(
                 this._scene,
-                capacity,
+                host.capacity,
                 {
                     mrt: host.mrtAtlas!,
                     width: host.atlasWidth,
@@ -1154,6 +1156,15 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             this.setEnabled(true);
         }
 
+        // Hosted only: compile the region's backup/restore copy shaders BEFORE decoding any data, so a later
+        // grow/compaction (which synchronously backs this region up) can never race shader compilation and lose it.
+        if (this._host && this._workBuffer) {
+            await this._waitForCanBackupAsync(this._workBuffer);
+            if (this._disposed) {
+                return;
+            }
+        }
+
         // Step 3: decode the environment, then every node's coarsest LOD as the permanent base layer.
         if (this._environmentRange && this._environmentFiles) {
             await this._decodeEnvironmentAsync();
@@ -1185,6 +1196,21 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
         // Hosted: the reserved part now exists with a decoded base layer and real bounds — release awaiters.
         this._resolvePartReady();
+    }
+
+    /**
+     * Resolves once the work buffer's backup/restore copy shaders are compiled (so {@link GaussianSplattingWorkBuffer.backupRegion}
+     * can preserve the region across an atlas rebuild), or after a frame cap if compilation stalls.
+     * @param wb the hosted work buffer to wait on
+     */
+    private async _waitForCanBackupAsync(wb: GaussianSplattingWorkBuffer): Promise<void> {
+        for (let frame = 0; frame < 600 && !this._disposed; frame++) {
+            if (wb.canBackup) {
+                return;
+            }
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise<void>((resolve) => this._scene.onBeforeRenderObservable.addOnce(() => resolve()));
+        }
     }
 
     /**
@@ -1958,9 +1984,26 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (!data.shN) {
             return { degree: 0, coeffs: 0 };
         }
-        const coeffs = data.shN.bands ? (data.shN.bands + 1) ** 2 - 1 : Array.isArray(data.shN.shape) ? data.shN.shape[1] / 3 : 0;
-        const degree = data.shN.bands ?? Math.round(Math.sqrt(coeffs + 1) - 1);
-        return { degree, coeffs };
+        // Derive the SH degree from remote (untrusted) metadata, then validate/clamp it: the degree drives the SH
+        // render-target count and decode-pass count, so a bogus (huge / non-finite / negative) `bands` or `shape`
+        // must not be able to demand unbounded allocation. The draw path supports shTexture0..4, i.e. degree <= 4.
+        const maxDegree = 4;
+        let degree = 0;
+        const bands = data.shN.bands;
+        if (typeof bands === "number" && Number.isFinite(bands) && bands > 0) {
+            degree = Math.floor(bands);
+        } else if (Array.isArray(data.shN.shape) && Number.isFinite(data.shN.shape[1]) && data.shN.shape[1] > 0) {
+            const shapeCoeffs = Math.floor(data.shN.shape[1] / 3);
+            degree = shapeCoeffs > 0 ? Math.round(Math.sqrt(shapeCoeffs + 1) - 1) : 0;
+        }
+        if (!(degree > 0)) {
+            return { degree: 0, coeffs: 0 };
+        }
+        if (degree > maxDegree) {
+            Logger.Warn(`GaussianSplattingStream: SH degree ${degree} exceeds the maximum supported (${maxDegree}); clamping.`);
+            degree = maxDegree;
+        }
+        return { degree, coeffs: (degree + 1) ** 2 - 1 };
     }
 
     /**
@@ -2152,6 +2195,16 @@ export async function AddGaussianSplattingStreamPartAsync(
             stream.dispose();
         }
     });
-    stream.onDisposeObservable.add(() => compound.onPartRemovedObservable.remove(removeObserver));
+    // Disposing the compound directly (without removePart) must also tear the controller down — otherwise it keeps
+    // downloading and decoding into the compound's now-disposed borrowed atlas textures.
+    const disposeObserver = compound.onDisposeObservable.add(() => {
+        if (!stream.isDisposed()) {
+            stream.dispose();
+        }
+    });
+    stream.onDisposeObservable.add(() => {
+        compound.onPartRemovedObservable.remove(removeObserver);
+        compound.onDisposeObservable.remove(disposeObserver);
+    });
     return proxy;
 }

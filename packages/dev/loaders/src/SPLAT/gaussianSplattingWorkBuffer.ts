@@ -1,3 +1,4 @@
+import { Logger } from "core/Misc/logger";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -282,12 +283,27 @@ export class GaussianSplattingWorkBuffer {
     }
 
     /**
+     * True once the backup/restore/relayout copy shaders are compiled, so {@link backupRegion} can preserve the
+     * region across an atlas rebuild. Callers that decode into a hosted region should await this before writing
+     * data, so a later grow/compaction can never race shader compilation and drop the region.
+     */
+    public get canBackup(): boolean {
+        return this._disposed || this._ownsMrt ? false : this.isRelayoutReady();
+    }
+
+    /**
      * Copies this hosted region's four decoded textures out of the shared atlas into an internal backup MRT so
      * they survive the compound recreating the atlas on a grow. Call immediately before the atlas is recreated,
-     * then {@link rebindAtlas} + {@link restoreRegion} after. No-op if the copy shader isn't ready yet.
+     * then {@link rebindAtlas} + {@link restoreRegion} after.
      */
     public backupRegion(): void {
-        if (this._disposed || this._ownsMrt || !this.isRelayoutReady()) {
+        if (this._disposed || this._ownsMrt) {
+            return;
+        }
+        if (!this.isRelayoutReady()) {
+            // The copy shaders should be compiled well before any grow (callers warm them before decoding), so this
+            // path means a grow raced compilation; warn rather than silently drop the region's GPU data on the restore.
+            Logger.Warn("GaussianSplattingWorkBuffer: backup skipped because the copy shaders are not ready; streamed region data may be lost on the atlas rebuild.");
             return;
         }
         const width = this._textureSize;

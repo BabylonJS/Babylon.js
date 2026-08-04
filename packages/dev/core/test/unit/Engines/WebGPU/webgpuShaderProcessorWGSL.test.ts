@@ -229,5 +229,31 @@ describe("WebGPUShaderProcessorWGSL", () => {
             expect(fragmentCode).toContain("@location(0) fragData0 : vec4<i32>");
             expect(fragmentCode).toContain("@location(1) fragData1 : vec4<u32>");
         });
+
+        it("emits vec4<u32> when the fragData RHS is an identifier with a typed integer declaration", () => {
+            const frag =
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  var computedUintColor : vec4<u32> = vec4<u32>(1u);\n" +
+                "  fragmentOutputs.fragData0 = computedUintColor;\n" +
+                "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<u32>");
+        });
+
+        it("emits vec4<u32> when the fragData RHS is an identifier initialized from a uint constructor", () => {
+            const frag =
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  let packed = vec4<u32>(1u, 2u, 3u, 4u);\n" +
+                "  fragmentOutputs.fragData0 = packed;\n" +
+                "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<u32>");
+        });
+
+        it("still defaults to vec4<f32> for a float identifier RHS", () => {
+            const frag = "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" + "  let color = vec4<f32>(0.5);\n" + "  fragmentOutputs.fragData0 = color;\n" + "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<f32>");
+        });
     });
 });
