@@ -38,7 +38,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
  * A unified, GPU-decoded Gaussian Splatting work buffer.
  *
  * Holds a square MRT texture set (centers / covA / covB / colors) sized to a fixed splat capacity
- * (PlayCanvas-style: `ceil(sqrt(capacity))`). Each streamed SOG file is decoded directly on the GPU
+ * (`ceil(sqrt(capacity))`). Each streamed SOG file is decoded directly on the GPU
  * (no CPU readback) into its allocated pixel range. The decoded textures are consumed unchanged by the
  * standard (non-SOG) Gaussian Splatting draw path.
  *
@@ -75,9 +75,9 @@ export class GaussianSplattingWorkBuffer {
     // Reused WebGL framebuffer for the async centers readback (created lazily, freed in dispose).
     private _readFbo: Nullable<WebGLFramebuffer> = null;
 
-    // Higher-order spherical-harmonics (Phase 6). Each SH texture is its OWN single-attachment integer render
-    // target (RGBA_INTEGER/UNSIGNED_INTEGER, 16 SH scalar-bytes packed per texel) so a decode/relayout pass writes
-    // exactly one attachment — keeping within WebGPU's per-sample color-attachment byte budget. Empty when SH is off.
+    // Higher-order spherical-harmonics. Each SH texture is its own single-attachment integer render target
+    // (RGBA_INTEGER/UNSIGNED_INTEGER, 16 SH scalar-bytes per texel) so a decode/relayout pass writes exactly one
+    // attachment, keeping within WebGPU's per-sample color-attachment byte budget. Empty when SH is off.
     private _shMrts: MultiRenderTarget[] = [];
     // True when this work buffer owns (and disposes) its SH render targets (standalone). False when they are the
     // hosting compound's shared SH atlas (hosted) — borrowed, not disposed. Rebound alongside the core atlas.
@@ -90,8 +90,8 @@ export class GaussianSplattingWorkBuffer {
     // so the baked SH survives the compound recreating its SH atlas on a grow/compaction (parallel to _backupMrt).
     private _backupShMrts: Nullable<MultiRenderTarget[]> = null;
 
-    // Rotation/scale (Phase 4). One 3-attachment half-float render target (rotA / rotB / rotScale) holding the
-    // per-splat rotation matrix + scale that voxel-based IBL shadowing consumes. Null when rotation decode is off.
+    // Rotation/scale. One 3-attachment half-float render target (rotA / rotB / rotScale) holding the per-splat
+    // rotation matrix + scale that voxel-based IBL shadowing consumes. Null when rotation decode is off.
     private _rotMrt: Nullable<MultiRenderTarget> = null;
     // True when this work buffer owns (and disposes) its rotation target (standalone). False when it is the hosting
     // compound's shared rotation atlas (hosted) — borrowed, rebound alongside the core atlas, never disposed here.
@@ -162,13 +162,12 @@ export class GaussianSplattingWorkBuffer {
      * @param scene hosting scene
      * @param capacity total number of splats the work buffer must address
      * @param externalAtlas optional external atlas to decode into instead of creating an owned square MRT
-     * @param sh optional higher-order SH decode configuration (Phase 6). `textureCount = ceil(coeffs*3/16)` for the
-     *   MAX SH degree across the streamed files. Standalone: the work buffer creates that many owned single-attachment
+     * @param sh optional higher-order SH decode configuration. `textureCount = ceil(coeffs*3/16)` for the max SH
+     *   degree across the streamed files. Standalone: the work buffer creates that many owned single-attachment
      *   integer render targets. Hosted: `externalMrts` are the compound's shared SH atlas targets (borrowed).
-     * @param rotationScale optional rotation/scale decode configuration (Phase 4, for voxel-IBL shadows). When
-     *   present the work buffer decodes each splat's rotation matrix + scale into a 3-attachment half-float target.
-     *   Standalone: the work buffer creates and owns that target. Hosted: `externalMrt` is the compound's shared
-     *   rotation atlas (borrowed).
+     * @param rotationScale optional rotation/scale decode configuration (for voxel-IBL shadows). When present the
+     *   work buffer decodes each splat's rotation matrix + scale into a 3-attachment half-float target. Standalone:
+     *   the work buffer creates and owns that target. Hosted: `externalMrt` is the compound's shared rotation atlas.
      */
     constructor(
         scene: Scene,
@@ -557,15 +556,9 @@ export class GaussianSplattingWorkBuffer {
         if (this._rotMrt && !this._rotCopyMaterial) {
             this._rotCopyMaterial = this._createRotCopyMaterial();
         }
-        // Trigger effect creation/compilation (isReady creates+compiles the effect even when it then reports the
-        // material "not ready" because a bound sampler is stale), then gate on the EFFECT's compilation only — NOT
-        // `material.isReady(mesh)`, which also fails on a stale/disposed texture binding. The copy passes bind fresh
-        // textures every call, so a leftover binding from a previous backup (whose temp MRT was freed) is irrelevant;
-        // gating on it would wrongly skip the backup and lose the region's data (all texels rebuilt as zeros).
-        // Point the copy materials at VALID atlas textures before the readiness check: a previous restore/relayout
-        // binds its temporary/backup MRTs as sources and then frees them, leaving the material with disposed sampler
-        // bindings that make `isReady` report "not ready" even though the shader is compiled. The copy passes bind
-        // fresh textures each call anyway, so keeping valid bindings here makes `isReady` reflect only compilation.
+        // `isReady` reports "not ready" when a bound sampler points at a disposed texture (a previous backup/relayout
+        // binds its temp MRTs as sources, then frees them). The copy passes bind fresh textures every call, so re-point
+        // the materials at the live atlas textures first; the check then reflects only whether the shader compiled.
         this._bindCopyMaterialsToAtlas();
         const shReady = this._shMrts.length === 0 || (this._shCopyMaterial !== null && this._shCopyMaterial.isReady(this._quad));
         const rotReady = !this._rotMrt || (this._rotCopyMaterial !== null && this._rotCopyMaterial.isReady(this._quad));

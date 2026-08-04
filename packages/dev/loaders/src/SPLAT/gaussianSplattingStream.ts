@@ -271,12 +271,12 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     // GPU work buffer holding all decoded splats; created once the total capacity is known.
     private _workBuffer: Nullable<GaussianSplattingWorkBuffer> = null;
-    // Higher-order SH (Phase 6). Enabled via options.decodeSh; the degree/texture-count are the MAX across the
+    // Higher-order SH. Enabled via options.decodeSh; the degree/texture-count are the MAX across the
     // streamed files (learned in the meta pre-pass). 0 degree = no SH baking (files carry no shN or option is off).
     private _decodeSh = false;
     private _streamShDegree = 0;
     private _shTextureCount = 0;
-    // Rotation/scale for voxel-IBL shadows (Phase 4). Enabled via options.needsRotationScale.
+    // Rotation/scale for voxel-IBL shadows. Enabled via options.needsRotationScale.
     private _needsRotationScale = false;
     // True once GPU position readback has been validated against a CPU decode (see _probeReadbackAsync). While
     // false, positions are decoded on the CPU from the means images; once validated, every SOG image uses the
@@ -1032,14 +1032,14 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
      * base layer, then installs the per-frame loop that streams finer LODs on demand.
      */
     private async _streamAllAsync(): Promise<void> {
-        // Phase 1: learn splat counts for the environment and every referenced LOD file (cheap meta only).
+        // Step 1: learn splat counts for the environment and every referenced LOD file (cheap meta only).
         const fileIds = this._collectAllFileIds();
         const envCount = await this._gatherCountsAsync(fileIds);
         if (this._disposed) {
             return;
         }
 
-        // Phase 2: learn the full dataset size (padding + environment + every LOD file). The work buffer is
+        // Step 2: learn the full dataset size (padding + environment + every LOD file). The work buffer is
         // sized to this unless a smaller budget enables eviction-based streaming.
         // Index 0 is reserved as a never-decoded padding splat: the sort worker and index buffer pad unused
         // slots with index 0, and leaving that slot zeroed (center.w = 0 => zero covariance, alpha 0) makes
@@ -1107,11 +1107,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             // stream): back it up before the old atlas is disposed, then rebind + restore into the new atlas.
             const wb = this._workBuffer;
             this._unsubBeforeRebuild = host.onBeforeAtlasRebuild(() => {
-                // GPU: back the region's atlas texels up (restored below). CPU: snapshot this region's shared
-                // `_splatPositions` — the grow reallocates that array and rebuilds it from CPU part sources, and
-                // this streamed region has no CPU source, so its sort-worker positions would otherwise be zeroed
-                // (the streamed splats would sort/render at the origin — "a mess"). `this._splatPositions` here is
-                // still the pre-grow array (the stream holds its own reference), so it carries the real positions.
+                // Back up the region's atlas texels, and snapshot its CPU positions: the grow reallocates the shared
+                // `_splatPositions` and rebuilds it from CPU part sources, but this region has none, so its positions
+                // would be lost. `this._splatPositions` is still the pre-grow array and holds the real positions.
                 wb.backupRegion();
                 this._positionSnapshot = this._splatPositions ? this._splatPositions.slice(this._positionBase * 4, (this._positionBase + this._vertexCount) * 4) : null;
             });
@@ -1119,20 +1117,15 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 if (host.mrtAtlas) {
                     wb.rebindAtlas(host.mrtAtlas);
                 }
-                // Rebind the baked SH targets too (the compound recreated its shared SH atlas on the grow/compaction);
-                // restoreRegion() below writes the backed-up SH into these new targets.
+                // Rebind to the recreated shared SH and rotation atlases; restoreRegion() writes the backups into them.
                 wb.rebindShAtlas(host.shMrtAtlas);
-                // Same for the rotation/scale atlas (voxel-IBL); restoreRegion() writes the backed-up rotation into it.
                 wb.rebindRotAtlas(host.rotMrtAtlas);
-                // Pick up a (possibly) new base offset: a plain grow keeps `host.base`, but a COMPACTION relocates
-                // this region to a smaller atlas at a new base. Update the decode/render/readback base and the CPU
-                // position base BEFORE restoring, so the region's texels and worker positions land at the new base.
+                // A plain grow keeps `host.base`; a compaction relocates the region to a new base. Update the base
+                // before restoring so the region's texels and positions land there.
                 this._positionBase = host.base;
                 wb.setBaseOffset(host.base);
                 wb.restoreRegion();
-                // Re-cache the reallocated shared array (future decodes write through this reference) and restore
-                // the region's CPU positions into it at the (possibly relocated) base, so the full `_splatPositions`
-                // re-post that follows this rebuild hands the sort worker the streamed splats' real positions.
+                // Re-cache the reallocated shared array and restore the region's CPU positions at the (new) base.
                 this._splatPositions = host.splatPositions;
                 if (this._positionSnapshot && this._splatPositions) {
                     this._splatPositions.set(this._positionSnapshot, this._positionBase * 4);
@@ -1161,7 +1154,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             this.setEnabled(true);
         }
 
-        // Phase 3: decode the environment, then every node's coarsest LOD as the permanent base layer.
+        // Step 3: decode the environment, then every node's coarsest LOD as the permanent base layer.
         if (this._environmentRange && this._environmentFiles) {
             await this._decodeEnvironmentAsync();
         }
@@ -1185,7 +1178,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (this._disposed) {
             return;
         }
-        // Phase 4: hand off to the per-frame LOD streaming loop.
+        // Step 4: hand off to the per-frame LOD streaming loop.
         this._baseLayerReady = true;
         if (!this._lodObserver) {
             this._lodObserver = this._scene.onBeforeRenderObservable.add(() => this._onLodFrame());

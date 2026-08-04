@@ -259,21 +259,17 @@ fn main(input : FragmentInputs) -> FragmentOutputs {
 `;
 
 /**
- * Shader name for the SOG rotation/scale decode pass (bakes the three half-float rotation/scale textures voxel-IBL
- * shadowing consumes).
+ * Shader name for the rotation/scale decode pass (the three half-float textures voxel-IBL shadowing consumes).
  */
 export const GaussianSplattingWorkBufferRotationDecodeShaderName = "gsSogRotDecodeToWorkBuffer";
 
 /**
- * Rotation/scale decode fragment shader (GLSL/WebGL2). Reconstructs each splat's rotation matrix `R` and scale from
- * one SOG file (the same `R`/`splatScale` the core decode forms to build the covariance) and writes the three
- * half-float textures the voxel-IBL path samples as `rotationsATexture`/`rotationsBTexture`/`rotationScaleTexture`
- * (see `computeVoxelSplatWorldPos` in ShadersInclude/gaussianSplatting.fx). Layout matches the CPU `_makeSplat`:
- *   rotA      = (R col0.xyz, R col1.x)
- *   rotB      = (R col1.yz, R col2.xy)
- *   rotScale  = (R col2.z, 2*scale.x, 2*scale.y, 2*scale.z)   // 2*scale === the CPU path's ScalingToRef(scale*2)
- * so the voxel shader reconstructs exactly this `R` and scale, giving the streamed splats the same ellipsoid the
- * draw path renders. Addressed by the same global-linear-index over `uDestWidth`/`uOffset`/`uCount`/`uSrcWidth`.
+ * Rotation/scale decode fragment shader (GLSL/WebGL2). Reconstructs each splat's rotation matrix R and scale and
+ * writes the three half-float textures the voxel shader samples (rotationsATexture/B/Scale). The layout lets the
+ * voxel shader reconstruct the same R and scale, so streamed splats get the same ellipsoid the draw path renders:
+ *   rotA     = (R col0.xyz, R col1.x)
+ *   rotB     = (R col1.yz, R col2.xy)
+ *   rotScale = (R col2.z, 2*scale.x, 2*scale.y, 2*scale.z)
  */
 export const GaussianSplattingWorkBufferRotationDecodeFragmentShaderGLSL = `precision highp float;
 precision highp int;
@@ -422,13 +418,11 @@ fn main(input : FragmentInputs) -> FragmentOutputs {
 export const GaussianSplattingWorkBufferShDecodeShaderName = "gsSogShDecodeToWorkBuffer";
 
 /**
- * SH decode fragment shader (GLSL/WebGL2). Decodes one SOG file's higher-order spherical-harmonics into ONE
- * baked, packed-u32 SH texture (attachment) at the region offset, matching the layout the standard draw path's
- * `computeSHWeighted`/`decompose` expects (16 SH scalar-bytes per RGBA-u32 texel, little-endian; one texel per
- * splat). Run once per SH texture (`uShTextureIndex` selects the 16 scalars packed this pass), so the output is
- * a single integer attachment (keeps within WebGPU's per-sample color-attachment byte budget). Replicates the
- * `USE_SOG computeSH` dequant (16-bit label -> centroid atlas -> v2 codebook / v1 lerp); coefficients this file
- * lacks are written neutral (128 == 0 after `decompose`), so a lower-band file mixes with higher-band ones.
+ * SH decode fragment shader (GLSL/WebGL2). Decodes one SOG file's higher-order spherical-harmonics into one
+ * packed-u32 SH texture at the region offset, in the layout the draw path's `computeSHWeighted`/`decompose`
+ * expects (16 SH scalar-bytes per RGBA-u32 texel, little-endian; one texel per splat). Run once per SH texture
+ * (`uShTextureIndex` selects the 16 scalars written this pass). Coefficients this file lacks are written neutral
+ * (128 == 0 after `decompose`), so a lower-band file mixes correctly with higher-band ones.
  */
 export const GaussianSplattingWorkBufferShDecodeFragmentShaderGLSL = `precision highp float;
 precision highp int;

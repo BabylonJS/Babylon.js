@@ -258,12 +258,12 @@ export class GaussianSplattingBlockAllocator {
      * @returns true if a full defrag was performed (all existing blocks have new offsets and must be re-rendered)
      */
     public updateAllocation(toFree: GaussianSplattingMemBlock[], toAllocate: Array<number | GaussianSplattingMemBlock>): boolean {
-        // Phase 1: free old blocks.
+        // Step 1: free old blocks.
         for (let i = 0; i < toFree.length; i++) {
             this.free(toFree[i]);
         }
 
-        // Phase 2: try to allocate all new blocks.
+        // Step 2: try to allocate all new blocks.
         for (let i = 0; i < toAllocate.length; i++) {
             const size = toAllocate[i] as number;
             const block = this.allocate(size);
@@ -480,7 +480,7 @@ export class GaussianSplattingBlockAllocator {
         const phase1Moves = Math.ceil(maxMoves / 2);
         const phase2Moves = maxMoves - phase1Moves;
 
-        // Phase 1: relocate the last allocated block to the first fitting gap (maximizes tail free space).
+        // Step 1: relocate the last allocated block to the first fitting gap (maximizes tail free space).
         for (let i = 0; i < phase1Moves; i++) {
             let lastAlloc = this._tailAll;
             while (lastAlloc && lastAlloc._free) {
@@ -499,7 +499,7 @@ export class GaussianSplattingBlockAllocator {
             result.add(lastAlloc);
         }
 
-        // Phase 2: slide allocated blocks left into adjacent free gaps (cleans up interior fragmentation).
+        // Step 2: slide allocated blocks left into adjacent free gaps (cleans up interior fragmentation).
         let block = this._headAll;
         for (let i = 0; i < phase2Moves && block;) {
             const next = block._next;

@@ -526,11 +526,11 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _colorsTexture: Nullable<BaseTexture> = null;
     // When a streaming part is reserved, the four core data textures (centers, covA, covB, colors) are backed
     // by this MRT's attachments instead of standalone RawTextures, so a streaming engine can GPU-decode into
-    // the reserved region while static parts still CPU-upload into it (see Gate 0). Null in the normal
+    // the reserved region while static parts still CPU-upload into it. Null in the normal
     // (non-streaming) path, which keeps using RawTextures unchanged.
     protected _mrtAtlas: Nullable<MultiRenderTarget> = null;
     protected _useMrtAtlas = false;
-    // Higher-order SH atlas (Phase 6). When a streaming part needs baked SH, `_shTextures` become the single
+    // Higher-order SH atlas. When a streaming part needs baked SH, `_shTextures` become the single
     // attachments of these render-targetable integer MRTs (one per packed-u32 SH texture) so the streaming engine
     // GPU-decodes SH into the reserved region while static SH parts still CPU-upload into them. Null in the normal
     // path (SH stays plain RawTextures). One MRT per attachment keeps within WebGPU's per-sample byte budget.
@@ -540,7 +540,7 @@ export class GaussianSplattingMeshBase extends Mesh {
     protected _rotationsATexture: Nullable<BaseTexture> = null;
     protected _rotationsBTexture: Nullable<BaseTexture> = null;
     protected _rotationScaleTexture: Nullable<BaseTexture> = null;
-    // Rotation/scale atlas (Phase 4). When a streaming part needs voxel-IBL rotation/scale, the three rotation
+    // Rotation/scale atlas. When a streaming part needs voxel-IBL rotation/scale, the three rotation
     // textures become the attachments of this render-targetable half-float MRT so the streaming engine GPU-decodes
     // rotation/scale into the reserved region while static parts still CPU-upload into it. Null in the normal path
     // (rotation stays plain RawTextures created per-splat by `_makeSplat`).
@@ -2882,12 +2882,9 @@ export class GaussianSplattingMeshBase extends Mesh {
                 this._centersTexture?.dispose();
                 this._colorsTexture?.dispose();
             }
-            // Dispose+null the rotation/scale textures here (they are recreated at the new size below). This must
-            // happen BEFORE the MRT-branch _updateSubTextures(0, textureSize.y) call: that helper also writes the
-            // rotation textures, and if they still existed at the OLD (smaller) height the upload would copy the
-            // new taller region out of bounds. Nulling them makes _updateSubTextures skip rotation; the block
-            // further down recreates them fully populated. (Only the MRT branch sub-uploads before that recreate;
-            // the non-MRT branch builds every texture with data directly, so this is harmless there.)
+            // Dispose+null the rotation/scale textures before the MRT-branch _updateSubTextures below: that helper
+            // also writes the rotation textures, so leaving them at the old (smaller) height would upload the taller
+            // region out of bounds. Nulling them makes it skip rotation; the block further down recreates them.
             if (this._rotMrtAtlas) {
                 // The three rotation textures are attachments of this MRT — dispose the MRT, not each attachment.
                 this._rotMrtAtlas.dispose();
@@ -2927,9 +2924,8 @@ export class GaussianSplattingMeshBase extends Mesh {
                 if (this._useShMrtAtlas) {
                     this._createShMrtAtlas(textureSize);
                 }
-                // Same for the rotation/scale atlas (half-float render target), when a streaming part needs voxel-IBL
-                // rotation/scale. Created BEFORE the _updateSubTextures below so static parts' CPU rotation data lands
-                // in the shared attachments (the streamed region is restored/decoded into it afterwards).
+                // Same for the rotation/scale atlas (half-float), created before the _updateSubTextures below so
+                // static parts' CPU rotation data lands in the shared attachments (streamed rows are decoded after).
                 if (this._useRotMrtAtlas) {
                     this._createRotMrtAtlas(textureSize);
                 }

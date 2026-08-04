@@ -250,10 +250,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     private _partSplatRanges: Nullable<IGaussianSplattingSplatRange[]>[] = [];
 
     /**
-     * True once a streaming part has been reserved. A streamed region's data lives only on the GPU (no retained
-     * CPU source), so a later atlas rebuild — triggered by adding/removing another part — would regenerate it as
-     * zeros and lose the decoded splats. Until the rebuild is made streaming-aware (preserving GPU-authoritative
-     * regions) and multiple streaming parts are supported, we forbid structural changes after the first reserve.
+     * True once a streaming part has been reserved. A streamed region's data lives only on the GPU (no retained CPU
+     * source), so atlas rebuilds and part add/remove take the streaming-aware paths that back up and restore each
+     * region rather than regenerating it from a CPU source.
      * @internal
      */
     protected _hasStreamingPart = false;
@@ -262,10 +261,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     private _streamingStates: IStreamingPartState[] = [];
 
     /**
-     * Max SH degree contributed by the currently-live (non-tombstoned) streaming parts. Recomputed from the
-     * surviving states by {@link _refreshStreamingShState} whenever parts change, so removing the last SH stream
-     * turns the shared render-target SH atlas off (rather than leaving a stale degree behind that would keep
-     * SH_DEGREE high while nothing refills the SH texels — leaving them at raw 0, which decodes to -1, not neutral).
+     * Max SH degree contributed by the live (non-tombstoned) streaming parts. Recomputed by
+     * {@link _refreshStreamingShState} whenever parts change, so removing the last SH stream turns the shared SH
+     * atlas off instead of leaving SH_DEGREE high over texels nothing refills.
      */
     private _streamingShDegree = 0;
 
@@ -951,27 +949,18 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const covB = new Uint16Array(covBSItemSize * textureLength);
         const colorArray = new Uint8Array(textureLength * 4);
 
-        // Determine merged SH degree.
-        // hasSH is true when the merged result will carry SH:
-        //   - Existing compound already has SH (_shDegree>0): preserve it even if new parts
-        //     have no SH — their texel region is pre-filled with 128 (neutral) by AllocateShBuffers.
-        //   - At least one new part carries SH: enable SH for the whole compound; existing
-        //     parts that had no SH also get neutral fill.
-        // Deliberately excludes the case where the existing compound has no SH and no new part
-        // has SH either (shDegreeNew stays 0, no SH textures allocated).
-        // A render-backed streaming SH atlas (a hosted stream that bakes SH) carries SH that no CPU part source
-        // represents — its degree lives in `_streamingShDegree` (recomputed from the LIVE streaming parts, so it
-        // shrinks when a SH stream is removed). Fold it in so `_shDegree` (which drives the draw's SH_DEGREE define)
-        // is preserved across a grow/compaction that reset `_shDegree` to 0 — but drops to 0 when no SH stream survives.
+        // Merged SH degree. The compound carries SH if any existing or new part has it, or a hosted stream bakes it.
+        // Parts without SH get neutral (128) fill. `_streamingShDegree` is the degree of the live SH streams (recomputed
+        // from surviving parts, so it shrinks when one is removed); folding it in keeps `_shDegree` correct across a
+        // rebuild (which resets it) and drops it to 0 when no SH stream survives.
         const streamingShDegree = this._streamingShDegree;
         const staticHasSH = this._shDegree > 0 || others.some((o) => o._shData !== null);
         const hasSH = staticHasSH || streamingShDegree > 0;
         const shDegreeNew = hasSH ? Math.max(this._shDegree, streamingShDegree, ...others.map((o) => o._shDegree)) : 0;
         let sh: Uint8Array[] | undefined = undefined;
-        // Allocate a neutral (128 == 0 after decode) CPU SH base whenever the SH atlas is active — INCLUDING a
-        // stream-driven atlas. It is uploaded over the WHOLE atlas before any SH stream restores its own region, so
-        // non-SH regions (a non-SH streaming part like a plain LOD scene, or padding) read neutral instead of raw 0
-        // (which decodes to -1). SH streams' regions are overwritten by their restore/decode afterwards.
+        // Allocate the neutral (128 == 0 after decode) CPU SH base whenever the atlas carries SH, and upload it over
+        // the whole atlas before any SH stream restores its region, so non-SH regions read neutral instead of raw 0
+        // (which decodes to -1).
         if (hasSH && shDegreeNew > 0) {
             // Each SH texture holds one texel per splat; each texel is _GaussianSplattingBytesPerShTexel
             // bytes with one byte per scalar, so it carries that many scalars. Degree d has
@@ -1872,7 +1861,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
 
         // Row-align the region so a later GPU relayout (defrag under a memory budget) can be scoped to whole
-        // atlas rows via scissor without ever touching a preceding part that shares a row (see Phase 3 / S3).
+        // atlas rows via scissor without ever touching a preceding part that shares a row.
         //   - Front alignment: start the usable region on the next row boundary. This only consumes the
         //     preceding parts' already-allocated last-row tail padding, so it costs no extra memory.
         //   - Capacity alignment: pad the region up to a whole number of rows so its end is a row boundary too
