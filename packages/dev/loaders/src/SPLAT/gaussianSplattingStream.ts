@@ -490,6 +490,17 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             // consumers still observe the rejection through their own await.
             // eslint-disable-next-line github/no-then
             this._partReadyPromise.catch(() => {});
+            // Bind to the host's disposal FROM CONSTRUCTION (not just from reservation): the metadata pre-pass in
+            // _streamAllAsync runs before the region is reserved, so a compound disposed during that download would
+            // otherwise be missed and the controller would reserve into a disposed host. dispose() -> _disposed, so
+            // _streamAllAsync's post-download check bails before reserving.
+            const disposeObserver = this._hostCompound.onDisposeObservable.add(() => {
+                if (!this._disposed) {
+                    this._partReleasedByHost = true;
+                    this.dispose();
+                }
+            });
+            this._hostUnsubDispose = () => this._hostCompound!.onDisposeObservable.remove(disposeObserver);
         }
 
         this._collectLodEntries(metadata.tree);
@@ -498,15 +509,27 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             this.debugDisplay = true;
         }
 
-        // Kick off streaming without blocking the caller or the render loop. In hosted mode settle the
-        // part-ready deferred: _streamAllAsync resolves it once the base layer has decoded; a resolve-without-
-        // ready (empty stream / disposed) or a throw rejects it here (both are no-ops once already settled).
+        // Kick off streaming without blocking the caller or the render loop. In hosted mode settle the part-ready
+        // deferred: _streamAllAsync resolves it once the base layer has decoded. If it finishes WITHOUT the part ever
+        // becoming ready (empty stream) or throws, dispose the controller so a hosted stream doesn't leave its work
+        // buffer and reserved region allocated — the synchronous AddGaussianSplattingStreamPart never awaits, so it
+        // can't clean up itself. `_partReadySettled` distinguishes a genuine success (leave it running) from a
+        // finished-but-never-ready result (dispose).
         // eslint-disable-next-line github/no-then
         void this._streamAllAsync().then(
-            () => this._rejectPartReady("GaussianSplattingStream: stream produced no splats."),
+            () => {
+                const becameReady = this._partReadySettled;
+                this._rejectPartReady("GaussianSplattingStream: stream produced no splats.");
+                if (!becameReady && this._hostCompound && !this._disposed) {
+                    this.dispose();
+                }
+            },
             (e) => {
                 Logger.Error("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
                 this._rejectPartReady("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
+                if (this._hostCompound && !this._disposed) {
+                    this.dispose();
+                }
             }
         );
     }
@@ -1135,20 +1158,15 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             // disposing the compound — even while still downloading/decoding — disposes this stream so it stops writing
             // into the compound's borrowed textures. `_partReleasedByHost` stops dispose() from removing the part again.
             const compound = this._hostCompound;
+            // The remove observer needs the assigned part index, so it is registered here (at reservation); the
+            // compound-disposal observer was already registered at construction (see the ctor) to cover the pre-pass.
             const removeObserver = compound.onPartRemovedObservable.add((removedIndex) => {
                 if (!this._disposed && this._host && removedIndex === this._host.partIndex) {
                     this._partReleasedByHost = true;
                     this.dispose();
                 }
             });
-            const disposeObserver = compound.onDisposeObservable.add(() => {
-                if (!this._disposed) {
-                    this._partReleasedByHost = true;
-                    this.dispose();
-                }
-            });
             this._hostUnsubRemove = () => compound.onPartRemovedObservable.remove(removeObserver);
-            this._hostUnsubDispose = () => compound.onDisposeObservable.remove(disposeObserver);
             const shExternal = this._shTextureCount > 0 && host.shMrtAtlas ? { textureCount: this._shTextureCount, externalMrts: host.shMrtAtlas } : undefined;
             const rotExternal = this._needsRotationScale && host.rotMrtAtlas ? { externalMrt: host.rotMrtAtlas } : undefined;
             // Use the region's ROW-ALIGNED capacity (host.capacity), not the raw stream capacity: backup/restore/
@@ -1290,8 +1308,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     private _resolveResidentBudget(): void {
         let budget = this._maxResidentSplats;
         if (this._memoryBudgetMb > 0) {
-            // Per resident splat: core 84 B, + 16 B per packed-u32 SH texture, + 24 B (3 half-float RGBA) for rotation.
-            const bytesPerSplat = BytesPerResidentSplat + this._shTextureCount * 16 + (this._needsRotationScale ? 24 : 0);
+            // Per resident splat: core 84 B, + 16 B per packed-u32 SH texture, + the 3 RGBA rotation textures. The
+            // work buffer uses half-float rotation textures (8 B each = 24 B) when the engine can render to them,
+            // else full float (16 B each = 48 B) — match that so fallback devices aren't under-budgeted.
+            const rotBytes = this._scene.getEngine().getCaps().textureHalfFloatRender ? 24 : 48;
+            const bytesPerSplat = BytesPerResidentSplat + this._shTextureCount * 16 + (this._needsRotationScale ? rotBytes : 0);
             const fromMB = Math.floor((this._memoryBudgetMb * 1024 * 1024) / bytesPerSplat);
             budget = budget > 0 ? Math.min(budget, fromMB) : fromMB;
         }
@@ -2246,6 +2267,10 @@ export function AddGaussianSplattingStreamPart(
  *
  * Resolves after the reserved region exists and its base layer has decoded (so the proxy's bounds are real),
  * and rejects if streaming fails before that (the partially-constructed stream is disposed on rejection).
+ *
+ * NOTE: the base-layer decode runs on the GPU inside the scene's render loop, so this promise only resolves once
+ * the scene is rendering. Do not `await` it before the render loop has started (it would never resolve) — start
+ * rendering (e.g. `engine.runRenderLoop`) first, or `await` it concurrently with the first frames.
  * @param compound the compound mesh to add the streamed part to
  * @param name name for the streaming controller / part
  * @param metadata parsed `lod-meta.json`

@@ -132,12 +132,15 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         }
     });
 
-    it("throws on a non-positive or non-finite capacity", () => {
+    it("throws on a non-positive, non-integer, or non-finite capacity", () => {
         const compound = createCompound();
         expect(() => compound.reserveStreamingPart(0)).toThrow();
         expect(() => compound.reserveStreamingPart(-5)).toThrow();
         expect(() => compound.reserveStreamingPart(Infinity)).toThrow();
         expect(() => compound.reserveStreamingPart(NaN)).toThrow();
+        // 0.5 must NOT be accepted-then-floored to a 0-capacity region.
+        expect(() => compound.reserveStreamingPart(0.5)).toThrow();
+        expect(() => compound.reserveStreamingPart(3.5)).toThrow();
     });
 
     it("builds the global interval union: static part full + streaming part active ranges", () => {
@@ -282,6 +285,41 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         compound.compactAtlas();
         expect(compound.partCount).toBe(0);
         expect((compound as any)._hasStreamingPart).toBe(false);
+    });
+
+    it("clears all streaming/atlas capability flags when compaction empties the compound", () => {
+        const compound = createCompound();
+        // A SH + rotation streaming part turns on the render-target atlases and SH degree.
+        const handle = compound.reserveStreamingPart(16, undefined, "stream", /*shTextureCount*/ 3, /*shDegree*/ 3, /*needsRotationScale*/ true);
+        expect((compound as any)._useShMrtAtlas).toBe(true);
+        expect((compound as any)._useRotMrtAtlas).toBe(true);
+        expect((compound as any)._useMrtAtlas).toBe(true);
+
+        compound.removePart(handle.partIndex);
+        compound.compactAtlas(); // empties the compound
+
+        // A reused empty compound must not carry stale streaming/SH/rotation config into plain content.
+        expect((compound as any)._useShMrtAtlas).toBe(false);
+        expect((compound as any)._shMrtAtlasTextureCount).toBe(0);
+        expect((compound as any)._streamingShDegree).toBe(0);
+        expect((compound as any)._useRotMrtAtlas).toBe(false);
+        expect((compound as any)._useMrtAtlas).toBe(false);
+        expect((compound as any)._useRGBACovariants).toBe(false);
+    });
+
+    it("invalidates a removed part's streaming handle (cannot mutate a surviving part that reused its index)", () => {
+        const compound = createCompound();
+        const removedHandle = compound.reserveStreamingPart(16); // part 0
+        const survivor = compound.reserveStreamingPart(16); // part 1
+        compound.removePart(removedHandle.partIndex); // tombstone part 0
+        compound.compactAtlas(); // survivor relocates to part 0 / base 0
+
+        // The removed handle must reject every mutating call rather than affect the survivor now at its old index.
+        expect(() => removedHandle.setActiveRanges([{ offset: 0, count: 4 }])).toThrow();
+        expect(() => removedHandle.postPositionsRange(0, 4)).toThrow();
+        expect(() => removedHandle.writeSplats(0, 4, createMultiSplatData(4))).toThrow();
+        // The surviving handle still works.
+        expect(() => survivor.setActiveRanges([{ offset: 0, count: 4 }])).not.toThrow();
     });
 
     it("reports finite world-space hierarchy bounds for a part proxy (geometry-less; bounds via setBoundingInfo)", () => {

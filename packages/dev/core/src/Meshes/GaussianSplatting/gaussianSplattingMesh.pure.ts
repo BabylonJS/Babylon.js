@@ -209,6 +209,10 @@ interface IStreamingPartState {
     /** Whether this streaming part decodes rotation/scale into the shared rotation atlas (for voxel-IBL shadows).
      * Used to recompute the compound's rotation-atlas state from the SURVIVING parts when a part is removed. */
     needsRotationScale: boolean;
+    /** Set once the part is removed (tombstoned). The handle returned by {@link GaussianSplattingMesh.reserveStreamingPart}
+     * checks this so a caller that retained a removed handle can't mutate a surviving part that later inherited this
+     * region's part index/base. */
+    removed: boolean;
 }
 
 /**
@@ -1436,6 +1440,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             proxy.visibility = 0;
         }
         this._partVisibility[index] = 0;
+        // Invalidate this region's streaming handle so a caller that retained it can't later mutate a surviving part
+        // that inherits this index/base after compaction.
+        const removedState = this._streamingStates.find((s) => s.partIndex === index);
+        if (removedState) {
+            removedState.removed = true;
+        }
         // Empty (non-null) override = "this part contributes no splats"; keeps the union filter engaged so the
         // idle region is never rendered, even after another part's addition rebuilds the atlas.
         this._partSplatRanges[index] = [];
@@ -1604,10 +1614,16 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._resetForRebuild();
 
         if (specs.length === 0) {
-            // Everything was tombstoned — nothing to rebuild.
+            // Everything was tombstoned — nothing to rebuild. Clear the streaming/atlas capability flags so that
+            // reusing this now-empty compound for plain (non-streaming) content doesn't recreate render-target
+            // atlases or restore a stale SH/rotation configuration. _refreshStreamingShState turns off SH/rotation
+            // from the (empty) live states; the render-backed core atlas + RGBA covariants reset here.
             this._streamingStates.length = 0;
             this._hasStreamingPart = false;
             this._tombstonedPartIndices.clear();
+            this._refreshStreamingShState();
+            this._useMrtAtlas = false;
+            this._useRGBACovariants = false;
             this.setEnabled(false);
             this.onPartCountChangedObservable.notifyObservers(0);
             return;
@@ -1831,10 +1847,17 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         shDegree: number = 0,
         needsRotationScale: boolean = false
     ): IGaussianSplattingStreamingPart {
-        if (!Number.isFinite(capacity) || capacity <= 0) {
-            throw new Error("reserveStreamingPart: capacity must be a positive finite integer");
+        // Require a positive integer (reject e.g. 0.5, which would floor to a 0-capacity region), and cap at the
+        // largest atlas the backend can allocate (a square texture at the max width) so an absurd value can't drive
+        // an out-of-memory typed-array / MRT allocation.
+        if (!Number.isSafeInteger(capacity) || capacity < 1) {
+            throw new Error("reserveStreamingPart: capacity must be a positive integer");
         }
-        capacity = Math.floor(capacity);
+        const maxTextureSize = this._scene.getEngine().getCaps().maxTextureSize;
+        const maxCapacity = maxTextureSize * maxTextureSize;
+        if (capacity > maxCapacity) {
+            throw new Error(`reserveStreamingPart: capacity ${capacity} exceeds the maximum atlas capacity ${maxCapacity}`);
+        }
 
         // Back the atlas with a render-targetable MRT so a streaming engine can GPU-decode into the reserved
         // region. Must be set before _addPartsInternal so the (forced) full rebuild builds MRT attachments and
@@ -1912,6 +1935,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             shTextureCount: shTextureCount > 0 && shDegree > 0 ? shTextureCount : 0,
             shDegree: shTextureCount > 0 && shDegree > 0 ? shDegree : 0,
             needsRotationScale,
+            removed: false,
         };
         this._streamingStates.push(state);
         capacity = alignedCapacity;
@@ -1924,6 +1948,13 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             if (boundsMin.x <= boundsMax.x) {
                 proxy.setBoundingInfo(new BoundingInfo(boundsMin.clone(), boundsMax.clone()));
                 compound._updateBoundingInfoFromProxies();
+            }
+        };
+        // Rejects any mutating call after the part was removed, so a retained stale handle can't touch a surviving
+        // part that inherited this region's (now-reused) part index/base.
+        const assertLive = (method: string) => {
+            if (state.removed) {
+                throw new Error(`${method}: this streaming part has been removed`);
             }
         };
         // Enforces the documented local part boundary [0, capacity) so a handle call can never address another
@@ -1974,6 +2005,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 return compound._isDepthSortSettled;
             },
             setActiveRanges: (localRanges) => {
+                assertLive("setActiveRanges");
                 // Keep every range inside this part's region so it can never activate another part's splats.
                 if (localRanges) {
                     for (const r of localRanges) {
@@ -1986,21 +2018,25 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 compound.setPartSplatRanges(state.partIndex, globalRanges);
             },
             writeSplats: (localOffset, count, splatsData) => {
+                assertLive("writeSplats");
                 // Keep the write inside this part's region so it can never touch another part's atlas texels.
                 assertLocalRange("writeSplats", localOffset, count);
                 compound._writeStreamingSplats(state.base + localOffset, count, splatsData, boundsMin, boundsMax);
                 applyBounds();
             },
             postPositionsRange: (localOffset, count) => {
+                assertLive("postPositionsRange");
                 assertLocalRange("postPositionsRange", localOffset, count);
                 compound._postWorkerPositionsRange(state.base + localOffset, count);
             },
             expandBounds: (min, max) => {
+                assertLive("expandBounds");
                 boundsMin.minimizeInPlace(min);
                 boundsMax.maximizeInPlace(max);
                 applyBounds();
             },
             notifyDataChanged: () => {
+                assertLive("notifyDataChanged");
                 compound._notifyWorkerNewData();
             },
             onBeforeAtlasRebuild: (callback) => {
