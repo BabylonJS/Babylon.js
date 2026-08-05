@@ -1,6 +1,371 @@
 {
-    "fromTag": "9.18.0",
+    "fromTag": "9.19.0",
     "changelog": {
+        "9.19.1": [
+            {
+                "pr": "18761",
+                "title": "Fix clustered lighting WGSL validation on Firefox WebGPU",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\nFirefox WebGPU (Naga) rejects clustered lighting WGSL because `computeClusteredLighting` took a `ptr<storage, array<u32>>` parameter. That needs the optional `unrestricted_pointer_parameters` extension, which Chrome Tint implements but Firefox/Naga does not. Babylon never requested the extension by name — Chrome just accepted the pattern.\n\n## Fix\nSpecialize per light index (`computeClusteredLighting{X}`) and read `tileMaskBuffer{X}` at module scope so no storage pointer is passed as a user-function parameter. Nested `#include…[0..maxSimultaneousLights]` keeps Standard/PBR/NME paths working. WebGL/GLSL is unchanged.\n\n## Tests\nUnit regression that expands WGSL includes and asserts no `ptr<storage` function params / no `&tileMaskBuffer`.\n\n## Forum\nhttps://forum.babylonjs.com/t/clustered-lighting-wgsl-fails-validation-on-firefox-webgpu-ptr-storage-function-parameter-requires-unrestricted-pointer-parameters-which-naga-doesnt-implement/63887\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.pure.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/clusteredLightingCompute.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightsFragmentFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrClusteredLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/test/unit/Lights/Clustered/clusteredLightingWgslPointers.test.ts",
+                    "scripts/treeshaking/side-effects-manifest/core/ShadersWGSL.json"
+                ],
+                "tags": [
+                    "bug",
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "18760",
+                "title": "chore(deps): npm audit fix — resolve ip-address and postcss advisories",
+                "description": "## Summary\n\nRuns `npm audit fix` to clear the security advisories that can be resolved today. **Lockfile-only change** — root `package.json` is untouched.\n\n`npm audit`: **6 vulnerabilities (2 moderate, 4 high) → 4 (1 moderate, 3 high)**.\n\n## Resolved\n\n| Package | Severity | Advisory | Fix |\n|---|---|---|---|\n| `ip-address` | high ×3 | [GHSA-mwp4-54f8-5fhr](https://github.com/advisories/GHSA-mwp4-54f8-5fhr), [GHSA-4xrf-jv44-h6hh](https://github.com/advisories/GHSA-4xrf-jv44-h6hh), [GHSA-22jq-vg5j-6vgg](https://github.com/advisories/GHSA-22jq-vg5j-6vgg) — SSRF / trust-boundary bypass | 10.2.0 → 10.3.1 |\n| `postcss` | moderate | [GHSA-fxqj-rqcc-2cmp](https://github.com/advisories/GHSA-fxqj-rqcc-2cmp) — arbitrary `.map` read via `sourceMappingURL` | 8.5.22 → 8.5.24 |\n\n## Not resolved — blocked by our 7-day release-age policy\n\nThe remaining four findings all require versions published within the last 7 days, which `.npmrc`'s `min-release-age=7` (added in #18683) intentionally holds back:\n\n| Package | Needs | Published | Unblocks |\n|---|---|---|---|\n| `brace-expansion` (pinned by `nx`) | 5.0.9 | 2026-07-30 | 2026-08-06 |\n| `fast-uri` (via `ajv`) | 3.1.5 | 2026-07-31 | 2026-08-07 |\n| `hono` (via `@modelcontextprotocol/sdk`) | 4.12.34 | 2026-08-03 | 2026-08-10 |\n\nThese should clear with a follow-up `npm audit fix` once the window elapses. `nx` pins `brace-expansion` exactly, so it will additionally need an `overrides` entry (`nx: { \"brace-expansion\": \"^5.0.9\" }`).\n\n### Note on `nx`\n\nPlain `npm audit fix` wants to **downgrade `nx` 22.7.8 → 22.6.5** to escape the pinned vulnerable `brace-expansion@5.0.8`. That trade is not worth it — 22.6.5 is itself affected by [GHSA-g2r8-wvmj-jf5w](https://github.com/advisories/GHSA-g2r8-wvmj-jf5w) (`nx graph` permissive CORS), so the vulnerability count is unchanged while the build orchestrator regresses. This PR deliberately keeps `nx` at 22.7.8.\n\n## Diff noise\n\nThe lockfile also drops ~51 `\"peer\": true` metadata flags. This is not caused by this change — a plain `npm install` on `master` reproduces it, and the flag count has oscillated in lockfile history (1 → 41 → 1 → 49). This restores it to the state the automated \"Version update\" commits produce.\n\n## Validation\n\n- `npm install` is idempotent against the committed lockfile\n- `npm run format:check` passes",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18759",
+                "title": "chore(deps): pin @adobe/spz to exact 0.2.0 in @dev/loaders",
+                "description": "## What\n\nPins the `@adobe/spz` devDependency in `@dev/loaders` from `^0.2.0` to an exact `0.2.0`.\n\n## Why\n\n`@adobe/spz` is a **type-only, dev-only** dependency. `packages/dev/loaders/src/SPLAT/spz.ts` imports it purely for types:\n\n```ts\nimport { type GaussianCloud, type SpzModule, type SpzExtensionSafeOrbitCameraAdobe } from \"@adobe/spz\";\n```\n\nNothing from the npm package is bundled or shipped — at runtime the WASM module is fetched dynamically from a CDN via `_LoadScriptModuleAsync`, and `generateDeclaration.ts` already collapses `@adobe` types to `any` in the published `.d.ts` bundles.\n\nUnder `^0.2.0` the resolved version silently floated to `0.2.2`. Pinning makes the type surface deterministic.\n\n## Is 0.2.0 sufficient?\n\nYes. Diffing the published `dist/spz.d.ts` across versions:\n\n| Range | Type changes |\n| --- | --- |\n| 0.2.0 → 0.2.1 | none (byte-identical) |\n| 0.2.1 → 0.2.2 | adds `SpzExtensionCoordinateSystemAdobe`, `SPZ_ADOBE_coordinate_system`, and 8 new `CoordinateSystem` enum members |\n\nThe loaders package uses none of the 0.2.2 additions. Everything it touches — `SpzModule.loadSpzFromBuffer`, `CoordinateSystem.RUB`, `GaussianCloud`, and the `SpzExtensionSafeOrbitCameraAdobe` fields — is present and unchanged in 0.2.0.\n\n## Note on the runtime version\n\nThe default `spzLibraryUrl` in `splatFileLoader.pure.ts` still points at `unpkg.com/@adobe/spz@0.2.2/dist/spz.js`, and is intentionally left alone. 0.2.2 is what users actually download and it carries the functional additions (SH4 / extension support) the loader depends on; 0.2.0's `spz.js` is 299 KB vs 851 KB. Since the 0.2.0 type surface is a strict subset of 0.2.2, compiling against 0.2.0 while running 0.2.2 is sound.\n\n## Testing\n\n- `npm ci` succeeds → lockfile is in sync with the manifest, `@adobe/spz@0.2.0` installs.\n- Standalone `tsc --noEmit --strict` over the full `@adobe/spz` API surface used by the SPLAT loader passes against the 0.2.0 typings.\n- `prettier --check` clean on both changed files.\n\nThe lockfile was hand-edited rather than regenerated: locally available npm versions rewrite ~50 unrelated `\"peer\": true` entries, which would have buried the real change in noise.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/loaders/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18757",
+                "title": "chore(deps): npm audit fix — resolve all security advisories (0 vulnerabilities)",
+                "description": "## Summary\nRuns `npm audit fix` to resolve **all** current npm audit findings. `npm audit` now reports **0 vulnerabilities** (was 4: 2 high, 2 moderate).\n\nLockfile-only change — root `package.json` is untouched.\n\n## Findings resolved\n| Package | Severity | Advisory | Fix |\n|---|---|---|---|\n| `brace-expansion` | high | GHSA-3jxr-9vmj-r5cp, GHSA-mh99-v99m-4gvg (DoS) | 1.1.16 → 1.1.18, 5.0.6 → 5.0.9 |\n| `@hono/node-server` (via `@modelcontextprotocol/sdk`) | moderate | GHSA-frvp-7c67-39w9 (path traversal) | 1.19.14 → 2.0.12 |\n| `@modelcontextprotocol/sdk` | (dep bump) | — | 1.29.0 → 1.30.0 |\n| `nx` (transitive brace-expansion) | high | — | brace-expansion bumped |\n\nNo breaking-change bumps were forced (`npm audit fix` without `--force`).\n\n## Reproduce\n```\nnpm install\nnpm audit        # before: 4 vulnerabilities\nnpm audit fix\nnpm audit        # after: found 0 vulnerabilities\n```\n\n## Verification\n- [x] `npm audit` → 0 vulnerabilities\n- [x] `npm install` succeeds and produces a stable lockfile\n- [ ] CI green\n\n_Generated by the morning-dev-briefing skill._",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18756",
+                "title": "fix(physics): correct inverse inertia tensor rows in PhysicsCharacterController",
+                "description": "## Problem\n\nFixes #18736.\n\n`PhysicsCharacterController._getInverseInertiaWorld()` built the inverse-inertia tensor incorrectly: all three inertia components were written to **row 0** of the working matrix.\n\n```ts\nconst it = TmpVectors.Matrix[1];\nit.setRowFromFloats(0, mp.inertia.x * ...); // row 0\nit.setRowFromFloats(0, mp.inertia.y * ...); // should be row 1\nit.setRowFromFloats(0, mp.inertia.z * ...); // should be row 2\n```\n\nBecause `it` is the shared scratch matrix `TmpVectors.Matrix[1]`, rows 1 and 2 retained stale values left by whatever unrelated code last used that temp. This made the impulse the character applies to dynamic bodies depend on prior matrix math — e.g. loading a skinned glTF model (which processes inverse-bind matrices) changed the leftover temp contents, causing the reporter's character to sometimes fail to push a box, or to launch it across the scene.\n\n## Fix\n\nWrite each inertia component to its correct row (0, 1, 2). This matches the workaround verified by the issue reporter across every tested model.\n\nThe result is consumed only via `Vector3.TransformNormalToRef` (upper-left 3×3), and `invOrientation` is a pure rotation with a zero translation column, so no stale temp data can leak into the result once rows 0–2 are correct.\n\n## Testing\n\nMinimal one-line-per-row index correction; no behavioral change other than fixing the tensor construction.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/characterController.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18748",
+                "title": "Prevent touch hover events from exhausting pointer slots",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\nFixes touch pointer slots being permanently consumed by hover-only `pointermove` events, as reported on Meta Quest Browser.\n\nUnknown touch pointers are now connected from a move only while a contact button is active. This preserves move-before-down recovery for active touch and pen input while preventing `buttons === 0` hover events from blocking later pointer input.\n\nAdds regression coverage for hover-only touch moves and active move-before-down input.\n\nForum report: https://forum.babylonjs.com/t/63867\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.webDeviceInputSystem.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18755",
+                "title": "Fix one-frame render flash when recreating a mesh in the same tick",
+                "description": "## Problem\n\nReported on the forum: [Objects are not rendered the frame they are created](https://forum.babylonjs.com/t/objects-are-not-rendered-the-frame-they-are-created/63878).\n\nWhen a mesh is recreated in the same tick using the common pattern:\n\n```js\nconst s2 = MeshBuilder.CreateSphere(\"sphere2\", {...}, scene);\ns2.material = mat;      // material assignment is lazy — the effect isn't referenced yet\nsphere.dispose();       // drops the shared effect's refcount to 0 → evicts the cached GL program\nsphere = s2;\n```\n\nthe recreated mesh is skipped for one frame, producing a visible flash.\n\n## Root cause\n\nSince the `DrawWrapper` weak-ref change (v7.35.2), `DrawWrapper.dispose()` disposes the ref-counted compiled `Effect`. Effects are cached in `engine._compiledEffects` keyed by shader source + defines. Because assigning a material is lazy (the effect isn't referenced until the next `isReadyForSubMesh`), disposing the old mesh drops the shared effect's refcount to 0 and evicts the cached GL program **before** the new mesh claims it.\n\nThe next frame has to build a *fresh* effect. With synchronous shader compilation that effect is ready the same frame (no flash), but under **async/parallel shader compilation** (or a cloned material, whose `_shadersLoaded` resets to `false`) it isn't ready that frame — so the submesh is skipped and the mesh flashes.\n\nA deferred-dispose safeguard was already added in #15910 for material swaps (`resetDrawCache`), giving user code a chance to reuse the effect on the next frame. But `AbstractMesh.dispose()` called `releaseSubMeshes(true)` (**immediate**), which bypassed that safeguard.\n\n## Fix\n\n- `AbstractMesh.dispose()` now defers the effect release (`immediate = false`) so a mesh recreated in the same tick can reuse the still-cached compiled effect, consistent with the existing deferred material-swap path.\n- To avoid leaking effects during teardown (where no future frame runs the deferred disposal), a new internal `Scene._isDisposing` flag is set at the start of `Scene.dispose()`, and mesh disposal releases **immediately** while the scene is being torn down. Engine disposal already force-frees all effects via `releaseEffects()` before disposing its scenes, so the deferred path is a safe no-op there too.\n\nNet diff is 13 lines across 2 files.\n\n## Validation\n\n- Headless draw-call harness (swiftshader) measuring drawn frames across the recreate, on a local build of `@babylonjs/core`:\n  - Before: `missedFrames = 1` (flash) for parallel-compile and cloned-material cases.\n  - After: `missedFrames = 0` for all four combinations (parallel on/off × reuse/clone).\n- Scene-dispose leak check: `engine._compiledEffects` goes 1 → 0 on `scene.dispose()` (effects still freed immediately during teardown — no leak).\n- `npm run test:unit`: 4306 passed, 0 failures.\n- Formatting, lint (0 errors), and `build:source` all clean.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.pure.ts",
+                    "packages/dev/core/src/scene.pure.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18752",
+                "title": "Fix: Gaussian Splatting sort padding reuses real splat data, causing splats stuck in front of the model",
+                "description": "The depth-sort worker draws splats in fixed batches of 16 per GPU instance, so whenever the active splat count isn't a multiple of 16, the sorted draw-order buffer pads out the remainder. That padding was hardcoded to splat index `0` — not a reserved/invisible slot, just the first real splat of whatever data was loaded. Padding with it draws that real splat an extra ~15 times at the very end of the back-to-front draw order, i.e. always on top, regardless of camera. Any asset whose active splat count isn't a multiple of 16 hits this.\r\n\r\n### Fix\r\n\r\n- Send the sort worker the real (unpadded) `vertexCount` alongside `positions` (one call site, `_instantiateWorker`, was missing it).\r\n- `_getTextureSize` now guarantees the splat atlas always has at least one provably-zeroed slot past `vertexCount`, even when a mesh's splat count exactly fills the texture.\r\n- The sort worker pads with that genuinely-empty `vertexCount` index instead of `0`, in both the counting-sort and legacy comparison-sort paths.\r\n\r\n### When it triggers\r\n\r\nAny Gaussian Splatting mesh whose active splat count (full load, or after range filtering/culling) isn't a multiple of 16 — a handful of splats appear permanently stuck in front of the model, independent of viewing angle.",
+                "author": {
+                    "name": "raymondyfei",
+                    "url": "https://github.com/raymondyfei"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingSortWorker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18754",
+                "title": "Fix native tests artifact name conflict on job rerun",
+                "description": "## Problem\n\nCI on the `NativeTests` job fails with:\n\n```\n##[error]Artifact native-rendered-pictures already exists for build 57242.\n```\n\n`PublishPipelineArtifact@1` publishes artifacts scoped to the whole build/run and has no overwrite option (unlike the older `PublishBuildArtifacts@1`). If the `NativeTests` job is rerun within the same build (e.g. via \"Rerun failed jobs\" in the Azure DevOps UI, or an automatic retry), the second attempt tries to publish `native-rendered-pictures` / `native-error-pictures` again under the same build ID and Azure DevOps rejects it because those artifact names already exist.\n\nThis is an Azure DevOps platform limitation, not something configurable from project settings — it has to be handled in the pipeline YAML.\n\n## Fix\n\nScope both artifact names by `$(System.JobAttempt)`, which increments each time the job is rerun within the same build. This mirrors an existing pattern already used elsewhere in this pipeline for BrowserStack local identifiers (`es6vis-$(Build.BuildId)-$(System.JobAttempt)`).\n\n- `native-rendered-pictures` → `native-rendered-pictures-$(System.JobAttempt)`\n- `native-error-pictures` → `native-error-pictures-$(System.JobAttempt)`\n\nNo downstream job consumes these artifacts by their fixed name, so this rename is safe.\n\n## Testing\n\nThis is a CI pipeline YAML change; validated by reading the pipeline definition and confirming the artifact naming pattern used elsewhere in the same file (`$(System.JobAttempt)`). No app code changed, so no unit/build/lint validation applies.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18750",
+                "title": "Allow disabling Havok floating origin world regions",
+                "description": "Hey there, \r\n\r\nI have been toying with havok world regions recently, and learned there is no perfect solution for physics handling in large scale worlds.\r\n\r\nWorld regions have edge cases around world migrations (2 bodies close in space should interact but are in fact in 2 separate worlds like in [this PG](https://playground.babylonjs.com/#0HYLMQ#1)), origin rebasing only works when physics happen close to the camera and double precision has a performance and memory hit (although I saw Jolt only uses f64 for positions to limit the penalty to ~10% https://github.com/jrouwe/JoltPhysics/issues/94#issuecomment-1324347464).\r\n\r\nSo my point is Babylon should let havok users make their own large world implementation if they want to.\r\n\r\nHence this small PR adds a config flag to disable havok world regions even when floating origin is enabled.\r\n\r\nLet me know how you feel about it!",
+                "author": {
+                    "name": "BarthPaleologue",
+                    "url": "https://github.com/BarthPaleologue"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/test/unit/Physics/havokPlugin.test.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "9.19.0": [
+            {
+                "pr": "18751",
+                "title": "Restore transitive side-effect registrations",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nRestores three transitive side-effect registrations that were lost during the `*.pure.ts` split while keeping pure entrypoints side-effect-free:\n\n- Importing `Meshes/meshBuilder` once again registers the legacy `Mesh.CreateSphere`, `Mesh.CreateBox`, and related static builder APIs.\n- Importing the glTF 2.0 loader registers `InstancedMesh`, allowing glTF assets that reuse a mesh across nodes to load correctly.\n- Importing `WebGPUEngine` once again registers the built-in WGSL shader include chunks used by custom `ShaderMaterial` shaders.\n\nThe implementation follows the wrapper-owned side-effect pattern used by #18717. `MeshBuilder` now has a side-effect-free `meshBuilder.pure.ts` implementation and a compatibility wrapper that imports builder registration modules. No side effects were added to pure modules.\n\nThe intentional `scene.defaultMaterial` / `StandardMaterial` tree-shaking contract is unchanged.\n\n## Tests\n\n- Added regression coverage for legacy `Mesh.CreateSphere`.\n- Added glTF coverage for repeated mesh nodes producing an `InstancedMesh`.\n- Added coverage for WGSL scene, mesh, and instance include registration.\n- Tree-shaking guards and side-effect manifest synchronization pass.\n- Tree-shaking bundle-size smoke tests pass.\n- Formatting, lint, source build, and targeted unit tests pass.\n- The complete unit suite passes with a 15-second test timeout; under the default 5-second timeout, existing dynamic-import tests can intermittently time out under concurrent load.\n\n## Related\n\n- #18717\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/skeleton.functions.ts",
+                    "packages/dev/core/src/Debug/physicsViewer.pure.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Meshes/Builders/pure.ts",
+                    "packages/dev/core/src/Meshes/Builders/tiledBoxBuilder.pure.ts",
+                    "packages/dev/core/src/Meshes/Builders/tiledBoxBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/tiledPlaneBuilder.pure.ts",
+                    "packages/dev/core/src/Meshes/Builders/tiledPlaneBuilder.ts",
+                    "packages/dev/core/src/Meshes/meshBuilder.pure.ts",
+                    "packages/dev/core/src/Meshes/meshBuilder.ts",
+                    "packages/dev/core/src/Meshes/pure.ts",
+                    "packages/dev/core/test/unit/Engines/webgpuEngine.shaderIncludes.test.ts",
+                    "packages/dev/core/test/unit/Meshes/meshBuilder.sideEffects.test.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/test/unit/glTF/gltf2SceneLoaderRegistration.test.ts",
+                    "packages/public/@babylonjs/core/package.json",
+                    "scripts/treeshaking/side-effects-manifest/core/Meshes.json",
+                    "scripts/treeshaking/side-effects-manifest/loaders/glTF.json"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            }
+        ],
+        "9.18.2": [
+            {
+                "pr": "18743",
+                "title": "Replace the Lottie player's sprite atlas with a stencil-then-cover vector renderer",
+                "description": "Replaces the Lottie player's sprite-atlas renderer with a WebGL2 stencil-then-cover vector renderer.\r\n\r\nThe old pipeline rasterized every shape and text block to a Canvas2D texture atlas at load time, then drew them as sprites through core's `SpriteRenderer`. The new pipeline keeps paths as vectors and draws them directly on the GPU:\r\n\r\n1. A **stencil** pass writes each compound path's nonzero winding number.\r\n2. A **cover** pass paints the bounding quad where the stencil is non-zero, evaluating solid colors and gradients in the fragment shader.\r\n\r\nRendering still runs on a `ThinEngine`, either on the main thread (`LocalPlayer`) or in a worker on an `OffscreenCanvas` (`Player`).\r\n\r\n## Why\r\n\r\n- **Resolution independence.** Artwork is no longer baked to a fixed-resolution atlas, so it stays crisp at any scale and there is no atlas-size ceiling.\r\n- **Smaller bundle.** The main-thread player drops from **373,317 to 225,075 bytes raw** and **94,585 to 60,087 bytes gzipped** (**-39.7% / -36.5%**), measured with the same esbuild and gzip settings before and after.\r\n- **Less rendering infrastructure.** Stencil-then-cover does not need `SpriteRenderer`; it uses `Effect`, vertex buffers, and stencil state already available in `ThinEngine`.\r\n- **Faster startup.** No atlas packing or rasterization pass is required before the first frame.\r\n\r\n## What it renders\r\n\r\n- Shapes and solid layers\r\n- Solid, linear-gradient, and radial-gradient fills\r\n- Solid and gradient strokes, including dash patterns\r\n- Text and image layers\r\n- Animated (morphing) paths\r\n- Add-mode layer masks\r\n- Alpha track mattes between vector shape/solid layers\r\n\r\nCore's two-sided stencil support means nonzero winding needs one draw instead of the cull-twice emulation this technique often requires.\r\n\r\n## Automatic Renderer Loading\r\n\r\nThe public API remains `Player` and `LocalPlayer`; users do not choose a profile. After parsing the animation, the player selects renderer chunks automatically:\r\n\r\n- The vector fill/stroke renderer is always part of the base player.\r\n- The text renderer loads only when text layers are present (**1.66 KB gzip**).\r\n- The image renderer and FileTools load only when image layers are present (**4.82 KB gzip** together).\r\n\r\nPre-warming `Player` loads the worker and base renderer. Animation-specific text or image chunks load after the animation JSON is known.\r\n\r\n## Behavior changes worth knowing about\n\r\n- **Default rendering resolution.** With `devicePixelRatio: 0`, the old renderer supersampled 2x to 4x to keep atlas sprites crisp. The vector renderer uses MSAA instead and now follows the system device pixel ratio. This creates a smaller backing store and lowers memory use. Pass an explicit `devicePixelRatio` to override it.\r\n- **Keyframe easing.** Cubic-bezier easing is solved to a fixed tolerance instead of a fixed step count, so mid-animation frames can differ by a fraction of a pixel.\r\n- **Deprecated but still accepted:** `spriteAtlasWidth`, `spriteAtlasHeight`, `gapSize`, `spritesCapacity`, `scaleMultiplier`, `easingSteps`, `debug`, and `compatibility`. These options are now inert so existing code keeps compiling.\r\n- `Player`, `LocalPlayer`, `AnimationInput`, and the public `RawLottieAnimation` type name remain available.\r\n\r\n## Testing\r\n\r\n- **83 Lottie visual tests pass.** Only 3 of 31 reference images changed; the other 28 matched the sprite renderer within the existing tolerance.\r\n  - `lottie-animated-dash-frame0`: the old output drew square dash ends despite the file declaring `lc: 2` (round), and bent dashes at corners. Dash caps now honor the declared line cap.\r\n  - `lottie-gradient-stroke-frame0`: the radial dashed stroke distributes its dashes slightly differently.\r\n  - `lottie-text-paragraph-box-wrap`: same text and wrap points, with a roughly 1 px sub-pixel glyph-rasterization shift.\r\n  - The Multi-Page Atlas test and its reference image were removed because atlas paging no longer exists.\r\n- **66 unit tests pass**, including coverage for parsing, property sampling, matrices, path flattening, stroke geometry, malformed keyframes, invalid frame rates, invalid loop ranges, and allocation-free reuse paths.\r\n- Manually validated in the dev host across approximately 50 production animations on both the main-thread and worker paths.\r\n- Review fixes remove per-frame allocations for frame state, matrices, sampled contours, transformed-point scratch, dash spans, and draw records.\r\n\r\n## Unsupported features\r\n\r\nSubtract, intersect, and inverted masks; luma, inverted, and cross-renderer track mattes; and per-character text animators remain unsupported.\r\n",
+                "author": {
+                    "name": "VicenteCartas",
+                    "url": "https://github.com/VicenteCartas"
+                },
+                "files": [
+                    "packages/dev/lottiePlayer/src/animation/geometry.ts",
+                    "packages/dev/lottiePlayer/src/animation/loadAnimation.ts",
+                    "packages/dev/lottiePlayer/src/animation/lottieRaw.ts",
+                    "packages/dev/lottiePlayer/src/animation/matrix2D.ts",
+                    "packages/dev/lottiePlayer/src/animation/parse.ts",
+                    "packages/dev/lottiePlayer/src/animation/sample.ts",
+                    "packages/dev/lottiePlayer/src/animationConfiguration.ts",
+                    "packages/dev/lottiePlayer/src/index.ts",
+                    "packages/dev/lottiePlayer/src/localPlayer.ts",
+                    "packages/dev/lottiePlayer/src/maths/bezier.ts",
+                    "packages/dev/lottiePlayer/src/maths/boundingBox.ts",
+                    "packages/dev/lottiePlayer/src/maths/matrix.ts",
+                    "packages/dev/lottiePlayer/src/messageTypes.ts",
+                    "packages/dev/lottiePlayer/src/nodes/controlNode.ts",
+                    "packages/dev/lottiePlayer/src/nodes/node.ts",
+                    "packages/dev/lottiePlayer/src/nodes/spriteNode.ts",
+                    "packages/dev/lottiePlayer/src/parsing/parsedTypes.ts",
+                    "packages/dev/lottiePlayer/src/parsing/parser.ts",
+                    "packages/dev/lottiePlayer/src/parsing/rawPropertyHelpers.ts",
+                    "packages/dev/lottiePlayer/src/parsing/rawTypes.ts",
+                    "packages/dev/lottiePlayer/src/parsing/spritePacker.ts",
+                    "packages/dev/lottiePlayer/src/parsing/textLayout.ts",
+                    "packages/dev/lottiePlayer/src/player.ts",
+                    "packages/dev/lottiePlayer/src/player/playerCore.ts",
+                    "packages/dev/lottiePlayer/src/player/playerFactory.ts",
+                    "packages/dev/lottiePlayer/src/rendering/animationController.ts",
+                    "packages/dev/lottiePlayer/src/rendering/calculateScaleFactor.ts",
+                    "packages/dev/lottiePlayer/src/rendering/renderingManager.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/fillRenderer.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/imageRenderer.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/layerRenderer.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/strokeGeometry.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/textRenderer.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/texturedQuad.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/vectorFrame.ts",
+                    "packages/dev/lottiePlayer/src/types.ts",
+                    "packages/dev/lottiePlayer/src/worker.ts",
+                    "packages/dev/lottiePlayer/test/unit/animationController.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/boundingBox.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/lottieTextLayout.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/node.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/parse.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/parser.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/rawPropertyHelpers.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/renderingManager.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/sample.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/vectorGeometry.test.ts",
+                    "packages/public/@babylonjs/lottiePlayer/readme.md",
+                    "packages/tools/devHost/readme.md",
+                    "packages/tools/devHost/src/lottie/main.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lottie-animated-dash-frame0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lottie-gradient-stroke-frame0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lottie-multiPageAtlas.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lottie-text-paragraph-box-wrap.png",
+                    "packages/tools/tests/test/visualization/config.lottie.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18744",
+                "title": "build: update dependencies and clear npm audit findings",
+                "description": "## What\n\nRefreshes all in-range dependency versions across the workspaces and addresses the outstanding `npm audit` advisories.\n\n**`npm audit`: 23 findings (1 low, 5 moderate, 17 high) → 11 (2 moderate, 9 high).**\n\n## Security fixes\n\n| Package | Change | Clears |\n|---|---|---|\n| `sharp` | `^0.33.0` → `^0.35.0` in `@dev/inspector-v2` | GHSA-f88m-g3jw-g9cj (libvips CVEs) |\n| `dompurify` | override `3.4.0` → `3.4.12` | 9 DOMPurify advisories + the `monaco-editor` advisory |\n| `axios` | `1.16.0` → `1.18.1` via a new `nx`-scoped override | 10 axios advisories (`nx` pins axios to an exact version, so an override is the only route) |\n\n`fast-uri`, `hono`, `immutable`, `js-yaml`, `linkify-it`, `postcss`, `svgo`, `body-parser` and `@eslint/eslintrc` picked up patched versions through `npm audit fix`.\n\n## Dependency refresh\n\n~205 packages moved to their latest in-range versions, notably: `eslint` 10.7.0, `typescript-eslint` 8.65.0, `prettier` 3.9.6, `webpack` 5.108.4, `rollup` 4.62.2, `sass` 1.101.3, `typescript` 6.0.3, `nx` 22.7.7, FluentUI 9.74.4, `typedoc` 0.28.20, `vitest`/`vite`, `memlab` 2.0.4.\n\n`react` / `react-dom` / `@types/react*` were deliberately excluded: the permissive peer ranges in `@babylonjs/inspector-v2` make npm resolve React 19, which hard-fails `ERESOLVE` against the `^18.2.0` pins in the other 25 workspaces.\n\n## Fallout handled\n\n- **prettier 3.9** changed union-type formatting, so `npm run format:fix` reflowed 24 source files. No behavioral changes.\n- **webpack 5.108** no longer pulls in `terser-webpack-plugin` transitively (it switched to `minimizer-webpack-plugin`). `treeShakingSideEffects.test.ts` does `require(\"terser-webpack-plugin\")` directly, so it is now declared explicitly in `@tools/tests`.\n\n## Remaining 11 findings\n\nAll 11 trace back to two root packages, and **both fixes are blocked by this repo's own `min-release-age=7` supply-chain policy** in `.npmrc`:\n\n| Root cause | Cascades to | Fixed in | Published | Eligible |\n|---|---|---|---|---|\n| `brace-expansion` | `minimatch`, `@eslint/eslintrc`, `eslint-plugin-{github,import,jsx-a11y}`, `nx`, `serve`, `serve-handler` | 5.0.8 | 2026-07-23 | 2026-07-30 |\n| `@modelcontextprotocol/sdk` | `@hono/node-server` | 1.30.0 | 2026-07-27 | 2026-08-03 |\n\nConfirmed blocked:\n\n```\nnpm error notarget No matching version found for brace-expansion@^5.0.8\n  with a date before 7/22/2026, 10:55:19 AM.\n```\n\nBoth should be picked up by a follow-up `npm audit fix` once the cooldown window passes.\n\n## Not included\n\nOut-of-range major bumps were intentionally left alone: React 19, `@types/react` 19, Playwright 1.62, `monaco-editor` 0.56, `chokidar` 5, `jsdom` 29, Babel 8, `uuid` 14, `es-check` 9, `cross-env` 10, `@rollup/plugin-*` majors, FontAwesome 7, `react-dnd` 16, `sonda` 0.14, `rollup-plugin-visualizer` 7, TypeScript 7, `nx` 23.\n\n## Validation\n\nAll run locally with npm 11.18.0 (the version `engines` requires — npm 10 silently ignores `min-release-age`):\n\n- `npm run build:source` ✅\n- `npm run format:check` ✅\n- `npm run lint:check` ✅ (incl. all 16 tree-shaking checks + side-effects sync)\n- `npm run test:unit` ✅ 273 files, 4321 tests passed",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/core/src/Animations/animatable.core.ts",
+                    "packages/dev/core/src/Cameras/inputMapper.ts",
+                    "packages/dev/core/src/Debug/physicsViewer.pure.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Types/nodeRenderGraphTypes.ts",
+                    "packages/dev/core/src/LibDeclarations/webgl2.d.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/ambientOcclusionBlock.pure.ts",
+                    "packages/dev/core/src/Meshes/Builders/textBuilder.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/bevelBlock.pure.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline.pure.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline.pure.ts",
+                    "packages/dev/core/src/PostProcesses/thinSSAO2PostProcess.ts",
+                    "packages/dev/core/src/types.ts",
+                    "packages/dev/inspector-v2/package.json",
+                    "packages/dev/inspector-v2/src/components/properties/boundProperty.tsx",
+                    "packages/dev/loaders/src/FBX/interpreter/connections.ts",
+                    "packages/dev/loaders/src/SPLAT/gaussianSplattingBlockAllocator.ts",
+                    "packages/dev/serializers/src/3MF/core/model/3mf.builder.ts",
+                    "packages/dev/sharedUiComponents/src/modularTool/modularTool.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/smartFilters/src/connection/connectionPointType.ts",
+                    "packages/tools/guiEditor/src/diagram/coordinateHelper.tsx",
+                    "packages/tools/playground/package.json",
+                    "packages/tools/snippetLoader/src/types.ts",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/viewer/src/full/viewerFactory.ts",
+                    "packages/tools/viewer/src/viewerElementBase.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18747",
+                "title": "Fix pure engine disposal without loading screen registration",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\n- Make `Engine.dispose()` and `WebGPUEngine.dispose()` tolerate pure builds that intentionally omit loading-screen registration.\n- Make `RegisterLoadingScreen()` also register the `AbstractEngine` loading-screen APIs, so the legacy loading-screen deep import remains self-contained.\n- Add regression tests for both disposal paths and composed registration.\n\n## Motivation\n\nPure WebGPU consumers could hit `TypeError: this.hideLoadingUI is not a function` during engine disposal after the generated fallback stubs were removed. Importing the loading-screen entrypoint also registered only the default factory, not the engine APIs that expose it.\n\nRelated forum report: https://forum.babylonjs.com/t/this-hideloadingui-is-not-a-function/63863\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.pure.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/src/Loading/loadingScreen.pure.ts",
+                    "packages/dev/core/test/unit/Engines/engine.loadingScreen.test.ts",
+                    "packages/dev/core/test/unit/Loading/loadingScreen.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18745",
+                "title": "fix(AudioV2): spatialize MediaStream/WebRTC sound sources out of the box",
+                "description": "## Problem\n\nSpatial audio appears broken for remote WebRTC streams (forum report: [AudioEngineV2 upgrade questions](https://forum.babylonjs.com/t/audioenginev2-upgrade-questions/63740)).\n\nThe root cause is a browser (notably Chromium) behavior, **not** a Babylon bug: a `MediaStreamAudioSourceNode` created from a remote `RTCPeerConnection` stream only delivers audio samples while the underlying `MediaStream` is *also* being pulled by an `HTMLMediaElement`. When the stream is fed straight into the Web Audio graph (via `CreateSoundSourceAsync`) with no media element, the source node emits pure silence — so the `PannerNode` has nothing to spatialize.\n\nI verified this with an isolated diagnostic that routes several sources through the **same** `PannerNode(HRTF)` and measures the L/R balance while panning hard left/right:\n\n| Source | Result |\n|---|---|\n| Pure oscillator `AudioNode` | spatial ✅ |\n| Local `MediaStream`, no sink | silent ❌ |\n| Remote WebRTC, no sink | silent ❌ |\n| Remote WebRTC + muted `<audio>` sink | spatial ✅ (identical swing to the oscillator) |\n\nThe same panner spatializes a pure oscillator **and** the WebRTC stream once a muted `HTMLMediaElement` keeps the stream pulled. So the fix is to attach that element automatically.\n\n## Fix\n\n`CreateSoundSourceAsync` now attaches a hidden, **muted** `HTMLAudioElement` (`srcObject = stream`) whenever the wrapped node is a `MediaStreamAudioSourceNode`, keeping the stream flowing so it can be heard and spatialized. The element is released on `dispose()`.\n\n- New `mediaStreamSinkEnabled` option on `ISoundSourceOptions` (default `true`). Set it to `false` if you already route the same `MediaStream` through your own media element, to avoid a redundant one.\n- The microphone path (`createMicrophoneSoundSourceAsync`) opts out, preserving its existing behavior exactly.\n\nThe element is muted, so it never adds a second, non-spatial playback of the stream.\n\n## Backwards compatibility\n\nAdditive and non-breaking: the new option is optional and defaults to the new behavior, which fixes currently-silent remote streams and is a harmless muted no-op for cases that already worked. Callers who previously added a manual muted `<audio>` workaround can drop it (or pass `mediaStreamSinkEnabled: false`).\n\n## Tests\n\nAdded `packages/tools/tests/test/audioV2/soundSource.mediaStreamSink.test.ts` (Playwright, AudioV2 project) using a synthetic oscillator-backed `MediaStream` — **no microphone / `getUserMedia`**:\n\n1. A `MediaStreamAudioSourceNode` source attaches a hidden **muted** element whose `srcObject` is the stream.\n2. `mediaStreamSinkEnabled: false` attaches nothing.\n3. A non-`MediaStream` source attaches nothing.\n4. `dispose()` releases the element (no leak).\n\n**Validation:** all 4 pass on Chrome (headed + headless) and Firefox (CI default); all 78 existing `SoundSource` tests still pass; core `tsc`, ESLint, and Prettier are clean.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSoundSource.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioSoundSource.ts",
+                    "packages/tools/tests/test/audioV2/soundSource.mediaStreamSink.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18749",
+                "title": "Fix GitHub release creation for version tags",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\n- Resolve the published package version and its exact tagged commit before creating the release.\n- Pass the version as an explicit GitHub release tag instead of searching the moving `master` branch for an associated tag.\n- Reuse the package version variable for snapshot deployment.\n\n## Motivation\n\nThe `9.18.1` publish run skipped GitHub release creation because `master` advanced after the version tag was pushed. `GitHubRelease@1` searched the newer `master` commit for a tag and emitted: `Release will not be created as the tags for the target commit do not match with the given tag pattern`.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".azure-pipelines/cd-publish.yml"
+                ],
+                "tags": [
+                    "bug",
+                    "build",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "18742",
+                "title": "Fix .babylonproj transform node duplication",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\n## Summary\r\n- track transform nodes loaded through Smart Asset Manager\r\n- prevent asset-owned transform nodes from being serialized into `.babylonproj` local scene data\r\n- add regression coverage for transform-node ownership tracking\r\n\r\n## Motivation\r\nExporting and re-importing a `.babylonproj` duplicated transform nodes from GLB assets at the scene root because those nodes were incorrectly treated as user-created local objects. Meshes were already tracked correctly and were not duplicated.\r\n\r\n## Testing\r\n- focused Smart Asset Manager and project file unit tests\r\n",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/core/src/SmartAssets/smartAssetManager.pure.ts",
+                    "packages/dev/core/test/unit/SmartAssets/smartAssetManager.test.ts",
+                    "packages/dev/sharedUiComponents/test/unit/overrideManager.test.ts",
+                    "packages/dev/sharedUiComponents/test/unit/projectFile.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
         "9.18.1": [
             {
                 "pr": "18740",

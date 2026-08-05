@@ -7,6 +7,7 @@ import { Scene } from "core/scene";
 import { WebXRSessionManager } from "core/XR/webXRSessionManager";
 import { WebXRAbstractFeature } from "core/XR/features/WebXRAbstractFeature";
 import { type IWebXRFeature } from "core/XR/webXRFeaturesManager";
+import { Logger } from "core/Misc/logger";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 
 /**
@@ -18,6 +19,10 @@ class TestFeature extends WebXRAbstractFeature {
 
     constructor(sessionManager: WebXRSessionManager) {
         super(sessionManager);
+    }
+
+    public disableForRuntimeCapability(warning: string): false {
+        return this._disableAutoAttach(warning);
     }
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
@@ -123,6 +128,22 @@ describe("WebXRAbstractFeature", () => {
 
             expect(feature.onXRFrameCalled).toBe(true);
             expect(feature.lastFrame).toBe(mockFrame);
+        });
+
+        it("can intentionally disable attachment before observers or notifications are registered", () => {
+            const warning = "A required runtime capability is unavailable.";
+            const warnSpy = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            const attachObserver = vi.fn();
+            feature.onFeatureAttachObservable.add(attachObserver);
+
+            expect(feature.disableForRuntimeCapability(warning)).toBe(false);
+
+            expect(warnSpy).toHaveBeenCalledExactlyOnceWith(warning);
+            expect(feature.disableAutoAttach).toBe(true);
+            expect(feature.attached).toBe(false);
+            expect(sessionManager.onXRFrameObservable.hasObservers()).toBe(false);
+            expect(attachObserver).not.toHaveBeenCalled();
+            warnSpy.mockRestore();
         });
     });
 

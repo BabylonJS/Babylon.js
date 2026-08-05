@@ -1051,17 +1051,19 @@ export abstract class ViewerElementBase<ViewerClass extends IViewer = IViewer, O
                 toolbarControls.push(html`
                     <div class="animation-timeline">
                         <button aria-label="${this.isAnimationPlaying ? "Pause" : "Play"}" @click="${this.toggleAnimation}">
-                            ${!this.isAnimationPlaying
-                                ? html`
-                                      <svg viewBox="0 0 24 24">
-                                          <path d="${playFilledIcon}" fill="currentColor"></path>
-                                      </svg>
-                                  `
-                                : html`
-                                      <svg viewBox="0 0 24 24">
-                                          <path d="${pauseFilledIcon}" fill="currentColor"></path>
-                                      </svg>
-                                  `}
+                            ${
+                                !this.isAnimationPlaying
+                                    ? html`
+                                          <svg viewBox="0 0 24 24">
+                                              <path d="${playFilledIcon}" fill="currentColor"></path>
+                                          </svg>
+                                      `
+                                    : html`
+                                          <svg viewBox="0 0 24 24">
+                                              <path d="${pauseFilledIcon}" fill="currentColor"></path>
+                                          </svg>
+                                      `
+                            }
                         </button>
                         <input
                             ${ref(this._onAnimationSliderChanged)}
@@ -1080,11 +1082,13 @@ export abstract class ViewerElementBase<ViewerClass extends IViewer = IViewer, O
                     <select aria-label="Select Animation Speed" @change="${this._onAnimationSpeedChanged}">
                         ${allowedAnimationSpeeds.map((speed) => html`<option value="${speed}" .selected="${this.animationSpeed === speed}">${speed}x</option> `)}
                     </select>
-                    ${this.animations.length > 1
-                        ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
-                              ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation === index}">${name}</option>`)}
-                          </select>`
-                        : ""}
+                    ${
+                        this.animations.length > 1
+                            ? html`<select aria-label="Select Animation" @change="${this._onSelectedAnimationChanged}">
+                                  ${this.animations.map((name, index) => html`<option value="${index}" .selected="${this.selectedAnimation === index}">${name}</option>`)}
+                              </select>`
+                            : ""
+                    }
                 `);
             }
 
@@ -1148,15 +1152,17 @@ export abstract class ViewerElementBase<ViewerClass extends IViewer = IViewer, O
      * @returns The template result for the reload button.
      */
     protected _renderReloadButton(): TemplateResult {
-        return html`${this._isFaulted
-            ? html`
-                  <button aria-label="Reload" part="reload-button" class="reload-button" @click="${this.reload}">
-                      <svg viewBox="0 0 24 24">
-                          <path d="${arrowClockwiseFilledIcon}" fill="currentColor"></path>
-                      </svg>
-                  </button>
-              `
-            : ""}`;
+        return html`${
+            this._isFaulted
+                ? html`
+                      <button aria-label="Reload" part="reload-button" class="reload-button" @click="${this.reload}">
+                          <svg viewBox="0 0 24 24">
+                              <path d="${arrowClockwiseFilledIcon}" fill="currentColor"></path>
+                          </svg>
+                      </button>
+                  `
+                : ""
+        }`;
     }
 
     /**

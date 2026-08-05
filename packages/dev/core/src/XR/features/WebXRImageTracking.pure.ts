@@ -7,7 +7,6 @@ import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { Matrix } from "../../Maths/math.vector.pure";
 import { type Nullable } from "../../types";
 import { Logger } from "../../Misc/logger";
-import { type Engine } from "../../Engines/engine.pure";
 
 /**
  * Options interface for the background remover plugin
@@ -179,7 +178,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
         }
         const promises = this.options.images.map(async (image) => {
             if (typeof image.src === "string") {
-                return await (this._xrSessionManager.scene.getEngine() as Engine)._createImageBitmapFromSource(image.src);
+                return await this._xrSessionManager.scene.getEngine()._createImageBitmapFromSource(image.src);
             } else {
                 return image.src;
             }

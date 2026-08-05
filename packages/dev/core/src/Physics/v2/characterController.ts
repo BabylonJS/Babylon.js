@@ -1887,9 +1887,9 @@ export class PhysicsCharacterController {
         const ir = invOrientation.getRowToRef(0, TmpVectors.Vector4[0]);
         it.setRowFromFloats(0, mp.inertia.x * ir.x, mp.inertia.x * ir.y, mp.inertia.x * ir.z, 0);
         invOrientation.getRowToRef(1, ir);
-        it.setRowFromFloats(0, mp.inertia.y * ir.x, mp.inertia.y * ir.y, mp.inertia.y * ir.z, 0);
+        it.setRowFromFloats(1, mp.inertia.y * ir.x, mp.inertia.y * ir.y, mp.inertia.y * ir.z, 0);
         invOrientation.getRowToRef(2, ir);
-        it.setRowFromFloats(0, mp.inertia.z * ir.x, mp.inertia.z * ir.y, mp.inertia.z * ir.z, 0);
+        it.setRowFromFloats(2, mp.inertia.z * ir.x, mp.inertia.z * ir.y, mp.inertia.z * ir.z, 0);
         invOrientation.multiplyToRef(it, this._tmpMatrix);
         return this._tmpMatrix;
     }

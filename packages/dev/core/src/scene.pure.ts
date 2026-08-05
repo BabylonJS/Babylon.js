@@ -1760,6 +1760,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /** @internal */
     public _pendingData = [] as any[];
     private _isDisposed = false;
+    /**
+     * @internal
+     * Set to true once scene disposal has begun (it stays true afterwards). Used so that resources released during
+     * teardown (e.g. mesh effects) are freed immediately instead of being deferred to the next frame, which may never
+     * happen once rendering stops.
+     */
+    public _isDisposing = false;
     private _isReadyChecks: { isReady(): boolean }[] = [];
 
     /**
@@ -5736,6 +5743,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (this.isDisposed) {
             return;
         }
+
+        this._isDisposing = true;
 
         this.beforeRender = null;
         this.afterRender = null;

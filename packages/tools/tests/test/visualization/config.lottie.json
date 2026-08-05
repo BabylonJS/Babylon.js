@@ -416,18 +416,6 @@
             "readySelector": "#lottie-ready"
         },
         {
-            "title": "Lottie - Multi-Page Atlas (Main Thread, URL)",
-            "devHostQsps": "exp=lottie&file=multiPageAtlas.json&useWorker=false&useUrl=true&frame=1",
-            "referenceImage": "lottie-multiPageAtlas.png",
-            "readySelector": "#lottie-ready"
-        },
-        {
-            "title": "Lottie - Multi-Page Atlas (Web Worker, URL)",
-            "devHostQsps": "exp=lottie&file=multiPageAtlas.json&useWorker=true&useUrl=true&frame=1",
-            "referenceImage": "lottie-multiPageAtlas.png",
-            "readySelector": "#lottie-ready"
-        },
-        {
             "title": "Lottie - Text Single Line Anchor (Main Thread, URL)",
             "devHostQsps": "exp=lottie&file=textSingleLineAnchor.json&useWorker=false&useUrl=true",
             "referenceImage": "lottie-text-single-line-anchor.png",

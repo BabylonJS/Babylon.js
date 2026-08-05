@@ -155,7 +155,7 @@ function CreateShapePath(
     if (glyph.o) {
         const outline = glyph.o.split(" ");
 
-        for (let i = 0, l = outline.length; i < l; ) {
+        for (let i = 0, l = outline.length; i < l;) {
             const action = outline[i++];
 
             switch (action) {

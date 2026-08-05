@@ -61,6 +61,7 @@ function createPlugin(worldRegions: TestWorldRegion[], initialBodyCounts: Readon
         _bodies: new Map(),
         _fixedTimeStep: 1 / 60,
         _floatingOriginWorldRadius: 100_000,
+        _disableWorldRegions: false,
         _useDeltaForWorldStep: false,
     }) as HavokPlugin;
 
@@ -73,6 +74,28 @@ function createBody(worldRegion: TestWorldRegion): PhysicsBody {
         _pluginDataInstances: [],
     } as unknown as PhysicsBody;
 }
+
+describe("HavokPlugin world region configuration", () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it("uses the default world when floating origin world regions are disabled", () => {
+        const defaultWorld = 1n;
+        const hknp = {
+            HP_QueryCollector_Create: vi.fn(() => [0, 2n]),
+            HP_World_Create: vi.fn(() => [0, defaultWorld]),
+            HP_World_SetGravity: vi.fn(),
+        };
+        const plugin = new HavokPlugin(true, hknp, { disableWorldRegions: true });
+        vi.spyOn(FloatingOriginCurrentScene, "getScene").mockReturnValue({ floatingOriginMode: true } as Scene);
+
+        plugin.setGravity(new Vector3(0, -9.81, 0), new Vector3(200_000, 0, 0));
+
+        expect(hknp.HP_World_Create).toHaveBeenCalledOnce();
+        expect(hknp.HP_World_SetGravity).toHaveBeenCalledExactlyOnceWith(defaultWorld, [0, -9.81, 0]);
+    });
+});
 
 describe("HavokPlugin world region lifecycle", () => {
     afterEach(() => {

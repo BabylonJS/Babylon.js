@@ -1,5 +1,71 @@
 # Changelog
 
+## 9.19.1
+
+### Core
+
+- Fix clustered lighting WGSL validation on Firefox WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18761](https://github.com/BabylonJS/Babylon.js/pull/18761))
+- fix(physics): correct inverse inertia tensor rows in PhysicsCharacterController - by [RaananW](https://github.com/RaananW) ([#18756](https://github.com/BabylonJS/Babylon.js/pull/18756))
+- Prevent touch hover events from exhausting pointer slots - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18748](https://github.com/BabylonJS/Babylon.js/pull/18748))
+- Fix one-frame render flash when recreating a mesh in the same tick - by [RaananW](https://github.com/RaananW) ([#18755](https://github.com/BabylonJS/Babylon.js/pull/18755))
+- Fix: Gaussian Splatting sort padding reuses real splat data, causing splats stuck in front of the model - by [raymondyfei](https://github.com/raymondyfei) ([#18752](https://github.com/BabylonJS/Babylon.js/pull/18752))
+- Allow disabling Havok floating origin world regions - by [BarthPaleologue](https://github.com/BarthPaleologue) ([#18750](https://github.com/BabylonJS/Babylon.js/pull/18750))
+
+### Loaders
+
+- chore(deps): pin @adobe/spz to exact 0.2.0 in @dev/loaders - by [RaananW](https://github.com/RaananW) ([#18759](https://github.com/BabylonJS/Babylon.js/pull/18759))
+
+## 9.19.0
+
+### Core
+
+- Restore transitive side-effect registrations - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18751](https://github.com/BabylonJS/Babylon.js/pull/18751))
+
+### Loaders
+
+- Restore transitive side-effect registrations - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18751](https://github.com/BabylonJS/Babylon.js/pull/18751))
+
+## 9.18.2
+
+### Core
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+- Fix pure engine disposal without loading screen registration - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18747](https://github.com/BabylonJS/Babylon.js/pull/18747))
+- fix(AudioV2): spatialize MediaStream/WebRTC sound sources out of the box - by [RaananW](https://github.com/RaananW) ([#18745](https://github.com/BabylonJS/Babylon.js/pull/18745))
+- Fix .babylonproj transform node duplication - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#18742](https://github.com/BabylonJS/Babylon.js/pull/18742))
+
+### GUI
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
+### Inspector
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
+### Loaders
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
+### Lottie Player
+
+- Replace the Lottie player's sprite atlas with a stencil-then-cover vector renderer - by [VicenteCartas](https://github.com/VicenteCartas) ([#18743](https://github.com/BabylonJS/Babylon.js/pull/18743))
+
+### Playground
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
+### Serializers
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
+### Smart Filters
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
+### Viewer
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
 ## 9.18.1
 
 ### Addons

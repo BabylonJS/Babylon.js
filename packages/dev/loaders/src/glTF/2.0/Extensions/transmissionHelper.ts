@@ -400,6 +400,10 @@ export class TransmissionHelper {
         );
         this._opaqueRenderTarget.ignoreCameraViewport = true;
         this._opaqueRenderTarget.renderList = this._opaqueMeshesCache;
+        // The opaque cache holds every opaque mesh of the scene, regardless of the camera currently rendering.
+        // Providing a renderList normally disables the layerMask check, which would make meshes hidden from the
+        // active camera show up in the refraction texture, so force the check back on.
+        this._opaqueRenderTarget.forceLayerMaskCheck = true;
         this._opaqueRenderTarget.clearColor = this._options.clearColor?.clone() ?? this._scene.clearColor.clone();
         this._opaqueRenderTarget.clearColor.a = 0.0;
         this._opaqueRenderTarget.gammaSpace = false;
