@@ -7,6 +7,7 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { ImportMeshAsync } from "core/Loading";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import type { ObjectRenderer } from "core/Rendering/objectRenderer";
 import { Vector3 } from "core/Maths/math.vector";
 import "loaders/glTF";
 
@@ -234,17 +235,21 @@ describe("KHR_materials_transmission – MergeMeshes with MultiMaterial", () => 
         expect(opaqueMesh).toBeDefined();
 
         const camera = scene.activeCamera!;
-        const objectRenderer = (opaqueRenderTarget as any)._objectRenderer;
+        const objectRenderer = (opaqueRenderTarget as any)._objectRenderer as ObjectRenderer;
+        const getRenderedMeshes = () => {
+            const activeMeshes = objectRenderer.getActiveMeshes();
+            return activeMeshes.data.slice(0, activeMeshes.length);
+        };
 
         // With matching masks, the opaque mesh is rendered into the refraction texture.
         camera.layerMask = 0x1;
         opaqueMesh.layerMask = 0x1;
         opaqueRenderTarget.render();
-        expect(objectRenderer._activeMeshes.data.slice(0, objectRenderer._activeMeshes.length)).toContain(opaqueMesh);
+        expect(getRenderedMeshes()).toContain(opaqueMesh);
 
         // With disjoint masks, it must not leak into the refraction texture.
         camera.layerMask = 0x2;
         opaqueRenderTarget.render();
-        expect(objectRenderer._activeMeshes.data.slice(0, objectRenderer._activeMeshes.length)).not.toContain(opaqueMesh);
+        expect(getRenderedMeshes()).not.toContain(opaqueMesh);
     });
 });
