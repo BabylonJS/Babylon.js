@@ -143,6 +143,35 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         expect(() => compound.reserveStreamingPart(3.5)).toThrow();
     });
 
+    it("validates the resulting atlas size, not just the input capacity", () => {
+        // maxTextureSize is 16 => maxCapacity 256. A capacity that exactly fills the atlas leaves no room for the
+        // always-reserved trailing empty sentinel slot, so it must be rejected (would otherwise be silently clamped).
+        expect(() => createCompound().reserveStreamingPart(256)).toThrow();
+        expect(() => createCompound().reserveStreamingPart(255)).toThrow(); // rounds up to 256 => same overflow
+        // 240 (=15 rows) leaves index 240 for the sentinel within the 256-texel atlas — fits.
+        expect(() => createCompound().reserveStreamingPart(240)).not.toThrow();
+        // Existing splats + a second region must be validated against the TOTAL, not each region's capacity alone.
+        const compound = createCompound();
+        compound.reserveStreamingPart(128); // ok on its own
+        expect(() => compound.reserveStreamingPart(128)).toThrow(); // 128 + 128 fills the atlas => no sentinel room
+    });
+
+    it("validates the SH sizing parameters", () => {
+        // shDegree 3 => coeffs 15 => ceil(15*3/16) = 3 SH textures. This exact pairing is accepted.
+        expect(() => createCompound().reserveStreamingPart(16, undefined, "s", 3, 3)).not.toThrow();
+        // Degree out of the supported [0, 4] range, or non-integer.
+        expect(() => createCompound().reserveStreamingPart(16, undefined, "s", 6, 5)).toThrow();
+        expect(() => createCompound().reserveStreamingPart(16, undefined, "s", 3, 2.5)).toThrow();
+        // Non-integer / negative / non-finite texture count.
+        expect(() => createCompound().reserveStreamingPart(16, undefined, "s", -1, 3)).toThrow();
+        expect(() => createCompound().reserveStreamingPart(16, undefined, "s", Infinity, 3)).toThrow();
+        // One positive, the other zero — SH must be all-or-nothing.
+        expect(() => createCompound().reserveStreamingPart(16, undefined, "s", 0, 3)).toThrow();
+        expect(() => createCompound().reserveStreamingPart(16, undefined, "s", 3, 0)).toThrow();
+        // Texture count that doesn't match the degree's implied layout.
+        expect(() => createCompound().reserveStreamingPart(16, undefined, "s", 2, 3)).toThrow();
+    });
+
     it("builds the global interval union: static part full + streaming part active ranges", () => {
         const { compound, handle } = createStaticPlusStream();
 
@@ -304,7 +333,10 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         expect((compound as any)._streamingShDegree).toBe(0);
         expect((compound as any)._useRotMrtAtlas).toBe(false);
         expect((compound as any)._useMrtAtlas).toBe(false);
-        expect((compound as any)._useRGBACovariants).toBe(false);
+        // _useRGBACovariants resets to the engine-derived default — RGBA on WebGL 1 (which can't render the RG
+        // half-float path), RG otherwise — so a reused compound keeps a supported covariance format.
+        const engine = compound.getScene().getEngine();
+        expect((compound as any)._useRGBACovariants).toBe(!engine.isWebGPU && engine.version === 1.0);
     });
 
     it("invalidates a removed part's streaming handle (cannot mutate a surviving part that reused its index)", () => {

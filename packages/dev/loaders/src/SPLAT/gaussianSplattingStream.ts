@@ -773,9 +773,13 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         this._hostUnsubRemove = null;
         this._hostUnsubDispose = null;
         // If this stream disposes on its own (e.g. a load failure after reservation) rather than because the host
-        // removed its part, release the reserved region so it isn't left orphaned in the compound.
+        // removed its part, release the reserved region. removePart only tombstones a streaming region (leaving its
+        // rows allocated for a later compaction), so also compact to actually reclaim them — a failed reservation
+        // never became a working part. Skipped when the host removed the part (it owns that reclamation policy).
         if (this._host && this._hostCompound && !this._partReleasedByHost && !this._hostCompound.isDisposed()) {
-            this._hostCompound.removePart(this._host.partIndex);
+            const compound = this._hostCompound;
+            compound.removePart(this._host.partIndex);
+            compound.compactAtlas();
         }
         this._host = null;
         if (this._lodObserver) {

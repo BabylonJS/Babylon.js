@@ -1623,7 +1623,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this._tombstonedPartIndices.clear();
             this._refreshStreamingShState();
             this._useMrtAtlas = false;
-            this._useRGBACovariants = false;
+            // Restore the engine-derived default rather than a hardcoded `false`: WebGL 1 (no WebGPU) cannot render
+            // the RG half-float covariance-B path and requires RGBA, so a reused compound must keep that default.
+            this._useRGBACovariants = !this.getEngine().isWebGPU && this.getEngine().version === 1.0;
             this.setEnabled(false);
             this.onPartCountChangedObservable.notifyObservers(0);
             return;
@@ -1853,10 +1855,52 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (!Number.isSafeInteger(capacity) || capacity < 1) {
             throw new Error("reserveStreamingPart: capacity must be a positive integer");
         }
+
+        // Validate the SH sizing parameters — they drive the SH_DEGREE define and the SH texture allocation, so a
+        // fractional/negative/huge value would give an invalid layout or an unbounded allocation. The draw path
+        // supports degree 0..4 (shTexture0..4); SH is all-or-nothing; the texture count must match the degree.
+        const maxSupportedShDegree = 4;
+        if (!Number.isSafeInteger(shDegree) || shDegree < 0 || shDegree > maxSupportedShDegree) {
+            throw new Error(`reserveStreamingPart: shDegree must be an integer in [0, ${maxSupportedShDegree}]`);
+        }
+        if (!Number.isSafeInteger(shTextureCount) || shTextureCount < 0) {
+            throw new Error("reserveStreamingPart: shTextureCount must be a non-negative integer");
+        }
+        if (shDegree > 0 !== shTextureCount > 0) {
+            throw new Error("reserveStreamingPart: shDegree and shTextureCount must both be positive (SH) or both zero (no SH)");
+        }
+        if (shDegree > 0) {
+            const expectedShTextureCount = Math.ceil((((shDegree + 1) * (shDegree + 1) - 1) * 3) / _GaussianSplattingBytesPerShTexel);
+            if (shTextureCount !== expectedShTextureCount) {
+                throw new Error(`reserveStreamingPart: shTextureCount ${shTextureCount} does not match shDegree ${shDegree} (expected ${expectedShTextureCount})`);
+            }
+        }
+
         const maxTextureSize = this._scene.getEngine().getCaps().maxTextureSize;
         const maxCapacity = maxTextureSize * maxTextureSize;
-        if (capacity > maxCapacity) {
-            throw new Error(`reserveStreamingPart: capacity ${capacity} exceeds the maximum atlas capacity ${maxCapacity}`);
+
+        // Row-align the region so a later GPU relayout (defrag under a memory budget) can be scoped to whole
+        // atlas rows via scissor without ever touching a preceding part that shares a row.
+        //   - Front alignment: start the usable region on the next row boundary. This only consumes the
+        //     preceding parts' already-allocated last-row tail padding, so it costs no extra memory.
+        //   - Capacity alignment: pad the region up to a whole number of rows so its end is a row boundary too
+        //     (needed when another part follows, e.g. multiple streaming parts).
+        const atlasWidth = this._getTextureSize(1).x;
+        const startOffset = this._vertexCount; // first atlas index the reserved part occupies
+        const alignedBase = Math.ceil(startOffset / atlasWidth) * atlasWidth;
+        const frontPad = alignedBase - startOffset; // invisible padding that fills the preceding row
+        const alignedCapacity = Math.ceil(capacity / atlasWidth) * atlasWidth;
+        const regionSplats = frontPad + alignedCapacity;
+
+        // Validate the RESULTING atlas, not just `capacity`: existing splats, row-alignment padding, and the trailing
+        // empty sentinel slot (`+ 1`, see _getTextureSize) all count against the device's square-texture limit.
+        // _getTextureSize would silently clamp and drop the sentinel past the limit, so reject here — before any
+        // state is mutated below, so a rejected reservation leaves the compound intact.
+        const projectedSplats = startOffset + regionSplats;
+        if (projectedSplats + 1 > maxCapacity) {
+            throw new Error(
+                `reserveStreamingPart: capacity ${capacity} would grow the atlas to ${projectedSplats} splats (plus a sentinel), exceeding the maximum atlas capacity ${maxCapacity}`
+            );
         }
 
         // Back the atlas with a render-targetable MRT so a streaming engine can GPU-decode into the reserved
@@ -1884,19 +1928,6 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this._useRotMrtAtlas = true;
             this._needsRotationScaleTextures = true;
         }
-
-        // Row-align the region so a later GPU relayout (defrag under a memory budget) can be scoped to whole
-        // atlas rows via scissor without ever touching a preceding part that shares a row.
-        //   - Front alignment: start the usable region on the next row boundary. This only consumes the
-        //     preceding parts' already-allocated last-row tail padding, so it costs no extra memory.
-        //   - Capacity alignment: pad the region up to a whole number of rows so its end is a row boundary too
-        //     (needed when another part follows, e.g. multiple streaming parts).
-        const atlasWidth = this._getTextureSize(1).x;
-        const startOffset = this._vertexCount; // first atlas index the reserved part occupies
-        const alignedBase = Math.ceil(startOffset / atlasWidth) * atlasWidth;
-        const frontPad = alignedBase - startOffset; // invisible padding that fills the preceding row
-        const alignedCapacity = Math.ceil(capacity / atlasWidth) * atlasWidth;
-        const regionSplats = frontPad + alignedCapacity;
 
         // Running local-space bounds of the region's written centers; grown as splats are populated.
         const boundsMin = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
