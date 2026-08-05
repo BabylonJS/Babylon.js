@@ -58,7 +58,3 @@ packages/tools/smartFiltersEditor/www/index.html
 # Sonda bundle analysis reports
 .sonda/
 docs/tree-shaking/
-
-# WebGPU-XR local harness: generated core bundle and run artifacts
-packages/tools/tests/test/webgpuXR/public/babylon.harness.js
-packages/tools/tests/test/webgpuXR/last-run.json
