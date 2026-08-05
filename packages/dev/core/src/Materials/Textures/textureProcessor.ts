@@ -217,6 +217,16 @@ function _LerpConstants(a: Color4, b: Color4, t: Color4): Color4 {
     return new Color4(a.r + (b.r - a.r) * t.r, a.g + (b.g - a.g) * t.g, a.b + (b.b - a.b) * t.b, a.a + (b.a - a.a) * t.a);
 }
 
+/** @internal */
+function _MultiScatterToSingleScatterAlbedoConstant(multiScatter: Color4): Color4 {
+    const convert = (value: number) => {
+        const rhoMs = Math.min(Math.max(value, 0), 1);
+        const s = 4.09712 + 4.20863 * rhoMs - Math.sqrt(9.59217 + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
+        return 1 - s * s;
+    };
+    return new Color4(convert(multiScatter.r), convert(multiScatter.g), convert(multiScatter.b), multiScatter.a);
+}
+
 /**
  * @internal
  * Determine the output texture size from a list of operands, using the largest input texture.
@@ -1025,6 +1035,41 @@ export async function ExtractChannelAsync(
         return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(swizzled, outputChannelMask) : swizzled };
     }
     return await MultiplyTexturesAsync(name, { ...input, channel }, CreateFactorOperand(new Color4(1, 1, 1, 1)), scene, outputColorSpace, outputChannelMask);
+}
+
+/**
+ * Convert a multi-scatter albedo operand to single-scatter albedo using the OpenPBR/KHR
+ * approximation. RGB is clamped to `[0, 1]` before conversion and alpha is preserved.
+ *
+ * If the operand is constant, the conversion is performed on the CPU. Otherwise it is baked
+ * into a linear procedural texture. Input color-space conversion, channel selection, factors,
+ * UV transforms, metadata propagation, and intermediate disposal follow the other unary texture
+ * processor operations.
+ *
+ * @param name - Name for the resulting procedural texture (used only when a GPU pass is needed)
+ * @param input - Multi-scatter albedo operand to convert
+ * @param scene - Scene to create the texture in (used only when a GPU pass is needed)
+ * @returns An operand containing the converted single-scatter albedo
+ */
+export async function MultiScatterToSingleScatterAlbedoAsync(name: string, input: ITextureProcessOperand, scene: Scene): Promise<ITextureProcessOperand> {
+    if (!input.texture) {
+        return { texture: null, factor: _MultiScatterToSingleScatterAlbedoConstant(_EvalConstant(input)) };
+    }
+
+    const defines = [..._BuildOperandDefines(input, "A", false), "OP_MULTI_SCATTER_TO_SINGLE_SCATTER"];
+    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([input]), scene);
+    _SetOperandUniforms(pt, input, "textureA", "factorA", false);
+    try {
+        await _RenderAsync(pt);
+    } catch (error) {
+        input.dispose?.();
+        throw error;
+    }
+
+    input.dispose?.();
+
+    _CopyTextureMetadata(input.texture, pt, true);
+    return { texture: pt, dispose: () => pt.dispose() };
 }
 
 /**

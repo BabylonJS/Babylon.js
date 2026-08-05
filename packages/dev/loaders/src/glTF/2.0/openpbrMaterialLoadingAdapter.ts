@@ -9,7 +9,6 @@ import {
     MultiplyTexturesAsync,
     LerpTexturesAsync,
     CreateTextureWithFactorOperand,
-    CreateFactorOperand,
     TextureChannel,
     TextureColorSpace,
     InvertTextureAsync,
@@ -17,6 +16,7 @@ import {
     ChannelMask,
     ExtractMaxChannelAsync,
     ThinWalledScatterWeightsAsync,
+    MultiScatterToSingleScatterAlbedoAsync,
 } from "core/Materials/Textures/textureProcessor";
 
 /**
@@ -756,6 +756,18 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         return this._material.transmissionScatterTexture;
     }
 
+    private _volumetricMultiScatterFactor: Nullable<Color3> = null;
+
+    /** @internal */
+    public set volumetricMultiScatterFactor(value: Nullable<Color3>) {
+        this._volumetricMultiScatterFactor = value;
+    }
+
+    /** @internal */
+    public get volumetricMultiScatterFactor(): Nullable<Color3> {
+        return this._volumetricMultiScatterFactor;
+    }
+
     private _volumetricScatterStrengthTexture: Nullable<BaseTexture> = null;
 
     public set volumetricScatterStrengthTexture(value: Nullable<BaseTexture>) {
@@ -1317,25 +1329,48 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             }
         }
 
-        // Volumetric scatter: scatterStrengthTexture was staged in _volumetricScatterStrengthTexture by
-        // KHR_materials_scatter. Multiply it with transmissionScatterTexture (multiscatter color) to get
-        // the combined scatter modulation texture. The scalar transmissionScatter already encodes the
-        // extinction-weighted KM conversion of the factor values; the texture provides per-texel modulation.
-        if (!this.geometryThinWalled && this._volumetricScatterStrengthTexture !== null) {
+        // KHR_materials_scatter supplies multi-scatter albedo, while OpenPBR 1.1 expects the
+        // scattering coefficient multiplied by transmission depth. Bake the nonlinear conversion
+        // to single-scatter albedo into the texture, then keep extinctionCoefficient * depth in the
+        // material factor so their product has the representation expected by OpenPBR.
+        if (!this.geometryThinWalled && this._volumetricMultiScatterFactor !== null) {
             const colorTex = this.transmissionScatterTexture;
             const strengthTex = this._volumetricScatterStrengthTexture;
-            const colorOp = colorTex
-                ? { texture: colorTex }
-                : CreateFactorOperand(new Color4(this.transmissionScatter.r, this.transmissionScatter.g, this.transmissionScatter.b, 1.0));
-            const combined = await MultiplyTexturesAsync(`scatter (${this._material.name})`, colorOp, { texture: strengthTex }, this._material.getScene());
+            const multiScatterFactor = this._volumetricMultiScatterFactor;
+            const combinedMultiScatter = await MultiplyTexturesAsync(
+                `multi-scatter (${this._material.name})`,
+                CreateTextureWithFactorOperand(
+                    colorTex,
+                    new Color4(multiScatterFactor.r, multiScatterFactor.g, multiScatterFactor.b, 1.0),
+                    TextureChannel.RGBA,
+                    TextureColorSpace.SRGB
+                ),
+                CreateTextureWithFactorOperand(strengthTex, new Color4(1.0, 1.0, 1.0, 1.0), TextureChannel.A),
+                this._material.getScene()
+            );
+            const singleScatter = await MultiScatterToSingleScatterAlbedoAsync(`single-scatter (${this._material.name})`, combinedMultiScatter, this._material.getScene());
             if (loader._disposed) {
-                combined.dispose?.();
+                singleScatter.dispose?.();
+                colorTex?.dispose();
+                strengthTex?.dispose();
                 return;
             }
             colorTex?.dispose();
-            strengthTex.dispose();
+            strengthTex?.dispose();
+            this._volumetricMultiScatterFactor = null;
             this._volumetricScatterStrengthTexture = null;
-            this.transmissionScatterTexture = combined.texture;
+
+            const extinctionTimesDepth = new Color3(-Math.log(this.transmissionColor.r), -Math.log(this.transmissionColor.g), -Math.log(this.transmissionColor.b));
+            if (singleScatter.texture) {
+                this.transmissionScatter = extinctionTimesDepth;
+                this.transmissionScatterTexture = singleScatter.texture;
+            } else if (singleScatter.factor) {
+                this.transmissionScatter.set(
+                    extinctionTimesDepth.r * singleScatter.factor.r,
+                    extinctionTimesDepth.g * singleScatter.factor.g,
+                    extinctionTimesDepth.b * singleScatter.factor.b
+                );
+            }
         }
 
         // If the material is volumetric, we may need to create a coat layer to handle the surface tint.

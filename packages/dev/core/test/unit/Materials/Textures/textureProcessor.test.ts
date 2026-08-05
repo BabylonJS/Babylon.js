@@ -22,6 +22,7 @@ import {
     InvertTextureAsync,
     ExtractMaxChannelAsync,
     ExtractChannelAsync,
+    MultiScatterToSingleScatterAlbedoAsync,
     CreateFactorOperand,
     ChannelMask,
     TextureChannel,
@@ -364,6 +365,24 @@ describe("TextureProcessor", () => {
             expect(r.factor?.a).toBeCloseTo(0.9);
         });
 
+        it("MultiScatterToSingleScatterAlbedo: converts RGB and preserves alpha", async () => {
+            const r = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(new Color4(0, 0.5, 1, 0.75)), scene);
+
+            expect(r.texture).toBeNull();
+            expect(r.factor?.r).toBeCloseTo(0, 4);
+            expect(r.factor?.g).toBeCloseTo(0.9117088547, 5);
+            expect(r.factor?.b).toBeCloseTo(1, 5);
+            expect(r.factor?.a).toBeCloseTo(0.75);
+        });
+
+        it("MultiScatterToSingleScatterAlbedo: clamps RGB before conversion", async () => {
+            const r = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(new Color4(-1, 2, 0, 1)), scene);
+
+            expect(r.factor?.r).toBeCloseTo(0, 4);
+            expect(r.factor?.g).toBeCloseTo(1, 5);
+            expect(r.factor?.b).toBeCloseTo(0, 4);
+        });
+
         describe("outputChannelMask", () => {
             it("ChannelMask.RGBA passes all channels unchanged", async () => {
                 const r = await MultiplyTexturesAsync(
@@ -591,6 +610,13 @@ describe("TextureProcessor", () => {
             await ExtractMaxChannelAsync("t", { texture: tex }, scene, true);
 
             expect(_capturedPTs[0].getDefines()).toContain("CHANNEL_MAX_INCLUDE_ALPHA");
+        });
+
+        it("MultiScatterToSingleScatterAlbedoAsync emits its conversion define", async () => {
+            const tex = makeFakeTexture();
+            await MultiScatterToSingleScatterAlbedoAsync("t", { texture: tex }, scene);
+
+            expect(_capturedPTs[0].getDefines()).toContain("OP_MULTI_SCATTER_TO_SINGLE_SCATTER");
         });
 
         it("auto-disposes intermediate texture when result is consumed as operand", async () => {

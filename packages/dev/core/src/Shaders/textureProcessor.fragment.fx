@@ -24,6 +24,7 @@
 //   INVERT_B               - invert the blue channel (used with OP_INVERT)
 //   INVERT_A               - invert the alpha channel (used with OP_INVERT)
 //   OP_CHANNEL_MAX         - unary: broadcast max(r,g,b[,a]) of operand A to all output channels
+//   OP_MULTI_SCATTER_TO_SINGLE_SCATTER - unary: convert multi-scatter albedo A.rgb to single-scatter albedo
 //   CHANNEL_MAX_INCLUDE_ALPHA - include alpha in the max computation and broadcast to all four channels
 //   LERP_T_TEXTURE         - t operand has a texture
 //   LERP_T_FACTOR          - t operand has a constant vec4 factor (combined with texture when both are set)
@@ -130,7 +131,11 @@ void main() {
     #endif
 
     // Apply operation
-    #ifdef OP_CHANNEL_MAX
+    #ifdef OP_MULTI_SCATTER_TO_SINGLE_SCATTER
+    vec3 rhoMs = clamp(a.rgb, vec3(0.0), vec3(1.0));
+    vec3 s = vec3(4.09712) + 4.20863 * rhoMs - sqrt(vec3(9.59217) + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
+    vec4 result = vec4(vec3(1.0) - s * s, a.a);
+    #elif defined(OP_CHANNEL_MAX)
     float _cmax = max(max(a.r, a.g), a.b);
     #ifdef CHANNEL_MAX_INCLUDE_ALPHA
     _cmax = max(_cmax, a.a);

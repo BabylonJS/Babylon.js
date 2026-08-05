@@ -94,7 +94,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
 
     // Apply operation
-    #ifdef OP_CHANNEL_MAX
+    #ifdef OP_MULTI_SCATTER_TO_SINGLE_SCATTER
+    let rhoMs: vec3f = clamp(a.rgb, vec3f(0.0), vec3f(1.0));
+    let s: vec3f = vec3f(4.09712) + 4.20863 * rhoMs - sqrt(vec3f(9.59217) + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
+    var result: vec4f = vec4f(vec3f(1.0) - s * s, a.a);
+    #elif defined(OP_CHANNEL_MAX)
     var _cmax: f32 = max(max(a.r, a.g), a.b);
     #ifdef CHANNEL_MAX_INCLUDE_ALPHA
     _cmax = max(_cmax, a.a);

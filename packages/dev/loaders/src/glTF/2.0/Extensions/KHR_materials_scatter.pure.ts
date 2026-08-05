@@ -97,10 +97,13 @@ export class KHR_materials_scatter implements IGLTFLoaderExtension {
             adapter.subsurfaceColor = multiscatterColor;
             adapter.subsurfaceScatterAnisotropy = scatterAnisotropy;
         } else {
+            const effectiveMultiScatter = multiscatterColor.scale(scatterStrength);
+            adapter.volumetricMultiScatterFactor = effectiveMultiScatter;
+
             const extinctionCoefficient = new Vector3(-Math.log(adapter.transmissionColor.r), -Math.log(adapter.transmissionColor.g), -Math.log(adapter.transmissionColor.b));
             extinctionCoefficient.scaleInPlace(1 / Math.max(adapter.transmissionDepth, 0.000001));
 
-            const singleScatterAlbedo = multiScatterToSingleScatterAlbedo(multiscatterColor.scale(scatterStrength));
+            const singleScatterAlbedo = multiScatterToSingleScatterAlbedo(effectiveMultiScatter);
             const scatteringCoefficient = extinctionCoefficient.multiply(singleScatterAlbedo);
 
             // The scattering coefficient in OpenPBR is defined as per unit distance, so we need to scale it back up by the depth.
