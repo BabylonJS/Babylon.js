@@ -22,23 +22,18 @@ export const enum WebXRGraphicsBindingType {
  * Abstraction over the native WebXR graphics binding used to interact with the XR compositor.
  * @internal
  */
-export interface IWebXRGraphicsBinding<BindingType extends WebXRGraphicsBindingType, Binding> {
+export interface IWebXRGraphicsBinding {
     /**
      * The kind of native binding that is wrapped.
      */
-    readonly bindingType: BindingType;
-
-    /**
-     * The wrapped native graphics binding.
-     */
-    readonly binding: Binding;
+    readonly bindingType: WebXRGraphicsBindingType;
 }
 
 /**
  * WebGL implementation of {@link IWebXRGraphicsBinding}, wrapping an `XRWebGLBinding`.
  * @internal
  */
-export class WebXRWebGLGraphicsBinding implements IWebXRGraphicsBinding<WebXRGraphicsBindingType.WebGL, XRWebGLBinding> {
+export class WebXRWebGLGraphicsBinding implements IWebXRGraphicsBinding {
     /**
      * The kind of native binding that is wrapped.
      */
@@ -87,7 +82,7 @@ export class WebXRWebGLGraphicsBinding implements IWebXRGraphicsBinding<WebXRGra
  * descriptor) and a `GPUDevice` obtained from an `xrCompatible` adapter, otherwise its constructor throws.
  * @internal
  */
-export class WebXRWebGPUGraphicsBinding implements IWebXRGraphicsBinding<WebXRGraphicsBindingType.WebGPU, XRGPUBinding> {
+export class WebXRWebGPUGraphicsBinding implements IWebXRGraphicsBinding {
     /**
      * The kind of native binding that is wrapped.
      */
