@@ -6,6 +6,7 @@ import { MultiMaterial } from "core/Materials/multiMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { ImportMeshAsync } from "core/Loading";
 import { FreeCamera } from "core/Cameras/freeCamera";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Vector3 } from "core/Maths/math.vector";
 import "loaders/glTF";
 
@@ -212,5 +213,38 @@ describe("KHR_materials_transmission – MergeMeshes with MultiMaterial", () => 
         expect(helper._translucentMaterialIndices.has(merged)).toBe(false);
         expect(helper._opaqueOnlySubMeshes.has(merged)).toBe(false);
         expect(helper._opaqueMeshesCache).not.toContain(merged);
+    });
+
+    it("should exclude meshes filtered out by the camera layerMask from the opaque render target", async () => {
+        const gltf = buildTransmissionGltf();
+        await ImportMeshAsync(`data:${gltf}`, scene);
+
+        // Wait for SetImmediate in _addMesh to execute
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        const helper = getTransmissionHelper(scene);
+        const opaqueRenderTarget = helper.getOpaqueTarget() as RenderTargetTexture;
+        expect(opaqueRenderTarget).toBeTruthy();
+
+        // The opaque cache is camera agnostic, so the layerMask check must stay enabled
+        // even though a renderList is provided.
+        expect(opaqueRenderTarget.forceLayerMaskCheck).toBe(true);
+
+        const opaqueMesh = helper._opaqueMeshesCache[0] as Mesh;
+        expect(opaqueMesh).toBeDefined();
+
+        const camera = scene.activeCamera!;
+        const objectRenderer = (opaqueRenderTarget as any)._objectRenderer;
+
+        // With matching masks, the opaque mesh is rendered into the refraction texture.
+        camera.layerMask = 0x1;
+        opaqueMesh.layerMask = 0x1;
+        opaqueRenderTarget.render();
+        expect(objectRenderer._activeMeshes.data.slice(0, objectRenderer._activeMeshes.length)).toContain(opaqueMesh);
+
+        // With disjoint masks, it must not leak into the refraction texture.
+        camera.layerMask = 0x2;
+        opaqueRenderTarget.render();
+        expect(objectRenderer._activeMeshes.data.slice(0, objectRenderer._activeMeshes.length)).not.toContain(opaqueMesh);
     });
 });
