@@ -145,6 +145,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var result: vec4f = mix(a, b, t);
     #elif defined(OP_MAX)
     var result: vec4f = max(a, b);
+    #elif defined(OP_DIVIDE)
+    var result: vec4f = a / max(b, vec4f(0.00001));
     #else
     var result: vec4f = a * b;
     #endif

@@ -301,6 +301,13 @@ export interface IMaterialLoadingAdapter {
     transmissionScatterTexture: Nullable<BaseTexture>;
 
     /**
+     * Staging: scatter strength texture for volumetric mode (non-thin-walled).
+     * Set by KHR_materials_scatter when scatterStrengthTexture is present; combined with
+     * transmissionScatterTexture in finalizeAsync and then cleared.
+     */
+    volumetricScatterStrengthTexture: Nullable<BaseTexture>;
+
+    /**
      * Sets the scattering anisotropy (-1 to 1)
      */
     transmissionScatterAnisotropy: number;

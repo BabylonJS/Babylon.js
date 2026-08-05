@@ -17,6 +17,7 @@
 //   OPERAND_B_MATRIX       - operand B texture has a UV transform to bake; uses textureBMatrix uniform
 //   OP_LERP                - use mix(a, b, t) instead of a * b
 //   OP_MAX                 - use max(a, b) instead of a * b
+//   OP_DIVIDE              - component-wise safe division: result = a / max(b, 0.00001)
 //   OP_INVERT              - unary: invert selected channels of operand A (operand B is ignored)
 //   INVERT_R               - invert the red channel (used with OP_INVERT)
 //   INVERT_G               - invert the green channel (used with OP_INVERT)
@@ -180,6 +181,8 @@ void main() {
     vec4 result = mix(a, b, t);
     #elif defined(OP_MAX)
     vec4 result = max(a, b);
+    #elif defined(OP_DIVIDE)
+    vec4 result = a / max(b, vec4(0.00001));
     #else
     vec4 result = a * b;
     #endif

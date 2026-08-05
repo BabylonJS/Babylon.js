@@ -796,8 +796,8 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Sets the transmission scatter coefficient.
-     * @param value The scatter coefficient as a Color3
+     * Sets the transmission scatter coefficient, scaled by transmissionDepth.
+     * @param value The scatter coefficient * transmissionDepth as a Color3
      */
     public set transmissionScatter(value: Color3) {
         // TODO convert from scatter coefficient to diffusion distance
@@ -805,8 +805,8 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Sets the transmission scatter coefficient.
-     * @returns The scatter coefficient as a Color3
+     * Gets the transmission scatter coefficient, scaled by transmissionDepth.
+     * @returns The scatter coefficient * transmissionDepth as a Color3
      */
     public get transmissionScatter(): Color3 {
         // TODO convert from diffusion distance to scatter coefficient
@@ -814,6 +814,8 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     public set transmissionScatterTexture(value: Nullable<BaseTexture>) {}
+
+    public set volumetricScatterStrengthTexture(value: Nullable<BaseTexture>) {}
 
     /**
      * Sets the transmission scattering anisotropy.
