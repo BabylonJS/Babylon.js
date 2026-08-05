@@ -11,6 +11,17 @@ export class WebGPURenderTargetWrapper extends RenderTargetWrapper {
     public _defaultAttachments: number[];
 
     /**
+     * When true, the engine skips its render-target Y-flip when drawing into this target: it binds the
+     * non-inverting internals UBO (yFactor = +1) and keeps the main-framebuffer front-face winding, exactly
+     * as if rendering to the canvas. This is set for XR projection-layer targets, whose textures are handed
+     * directly to the XR compositor (top-left origin, presented as-is, never re-sampled by Babylon) and must
+     * therefore be rendered upright. Defaults to false so every other render target keeps the standard flip
+     * that keeps a later-sampled RTT consistent with the WebGL texture-space convention.
+     * @internal
+     */
+    public _disableEngineYFlip = false;
+
+    /**
      * Gets the GPU time spent rendering this render target in the last frame (in nanoseconds).
      * You have to enable the "timestamp-query" extension in the engine constructor options and set engine.enableGPUTimingMeasurements = true.
      */

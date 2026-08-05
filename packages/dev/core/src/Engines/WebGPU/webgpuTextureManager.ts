@@ -1243,7 +1243,7 @@ export class WebGPUTextureManager {
 
     public updateCubeTextures(
         imageBitmaps: ImageBitmap[] | Uint8Array[],
-        gpuTexture: GPUTexture,
+        texture: GPUTexture | InternalTexture,
         width: number,
         height: number,
         format: GPUTextureFormat,
@@ -1257,10 +1257,11 @@ export class WebGPUTextureManager {
         for (let f = 0; f < faces.length; ++f) {
             const imageBitmap = imageBitmaps[faces[f]];
 
-            this.updateTexture(imageBitmap, gpuTexture, width, height, 1, format, f, 0, invertY, premultiplyAlpha, offsetX, offsetY);
+            // Prefer InternalTexture when available: updateTexture needs it to run invertY/premultiplyAlpha
+            // GPU post-processing on raw (Uint8Array) uploads. Passing only a GPUTexture throws in that path.
+            this.updateTexture(imageBitmap, texture, width, height, 1, format, f, 0, invertY, premultiplyAlpha, offsetX, offsetY);
         }
     }
-
     // TODO WEBGPU handle data source not being in the same format than the destination texture?
     public updateTexture(
         imageBitmap: ImageBitmap | Uint8Array | ImageData | HTMLImageElement | HTMLVideoElement | VideoFrame | HTMLCanvasElement | OffscreenCanvas,
