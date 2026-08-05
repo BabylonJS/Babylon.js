@@ -2649,7 +2649,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._useRGBACovariants = true;
         const engine = this.getEngine();
         // No real GPU (NullEngine): skip MRT allocation. The reservation's part/index/range logic still runs;
-        // texture population requires a real backend (verified via the runtime spike / viewer).
+        // texture population requires a real (WebGL2/WebGPU) backend.
         const updateEngine = this._getTextureDataUpdateEngine();
         if (!updateEngine._gl && !updateEngine.isWebGPU) {
             return;
@@ -3042,9 +3042,18 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (this._covariancesATexture === null) {
             return false;
         }
-        // Switching to the MRT-backed atlas (first streaming-part reservation) requires a full rebuild so the
-        // four data textures are recreated as MRT attachments; the incremental sub-upload path cannot convert them.
+        // Switching to (or resizing) a render-backed atlas requires a full rebuild so the affected textures are
+        // recreated as MRT attachments — the incremental sub-upload path cannot convert them. These must mirror the
+        // `needsMrtConversion` checks in _updateTextures: if they disagree, an incremental data prep (which fills only
+        // the new splats) would be paired with a full-rebuild upload (which uploads the whole array), zeroing the
+        // existing parts. Covers the first streaming reservation, a later part that introduces/grows SH, and rotation.
         if (this._useMrtAtlas && !this._mrtAtlas) {
+            return false;
+        }
+        if (this._useShMrtAtlas && (!this._shMrtAtlas || this._shMrtAtlas.length !== this._shMrtAtlasTextureCount)) {
+            return false;
+        }
+        if (this._useRotMrtAtlas && !this._rotMrtAtlas) {
             return false;
         }
         // Can only do an incremental GPU update if texture height doesn't need to grow
@@ -3134,7 +3143,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         // _makeSplat indexes covA/covB/color by the destination (global) splat index and writes _splatPositions
         // at that same index, so the transient CPU arrays must be atlas-indexed up to `end`. Only the written
         // region is filled and only its texels are uploaded, so untouched atlas texels (other parts) are safe.
-        // NOTE: this transient allocation scales with `end`; the Phase-2 GPU decode path avoids it entirely.
+        // NOTE: this transient allocation scales with `end`; the GPU decode path (the work buffer) avoids it entirely.
         const covA = new Uint16Array(end * 4);
         const covB = new Uint16Array(end * covBSItemSize);
         const colorArray = new Uint8Array(end * 4);

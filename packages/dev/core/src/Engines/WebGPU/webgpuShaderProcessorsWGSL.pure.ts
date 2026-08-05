@@ -433,6 +433,11 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         // rendering into an integer color target (e.g. RGBA_INTEGER u32) must declare a matching integer output.
         // Detect the integer type from the assignment's right-hand side: an inline vec4<u32>/vec4<i32> constructor,
         // or a plain identifier whose declaration is an integer vec4. Defaults to vec4<f32> (backward compatible).
+        // LIMITATION: this is a lightweight regex scan, not a type checker. Any other RHS shape — a function call, a
+        // `select(...)`, or a conditional expression that yields an integer vec4 — is NOT recognized and defaults to
+        // vec4<f32>; that surfaces later as a WGSL "cannot assign vec4<u32> to vec4<f32>" compile error rather than
+        // here. Shaders that render to integer targets should assign an inline vec4<u32>/vec4<i32> (constructor or a
+        // directly-typed local) so the output type is detected. Extend the patterns below if new forms are needed.
         const detectIntVec = (expr: string): Nullable<string> => {
             if (/^\s*(vec4<u32>|vec4u\s*\()/.test(expr)) {
                 return "vec4<u32>";

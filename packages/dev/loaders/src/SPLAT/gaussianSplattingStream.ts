@@ -133,7 +133,8 @@ export interface IGaussianSplattingStreamOptions {
      * GPU memory budget (in megabytes) for resident splats. When set (and smaller than the full dataset),
      * LOD files are streamed through a fixed-size work buffer and unreferenced files are evicted to stay
      * within budget, allowing datasets larger than a single full-dataset buffer. Converted to a splat count
-     * at ~84 bytes/splat. Combined with {@link maxResidentSplats} by taking the smaller of the two.
+     * using the per-splat cost (core data plus any baked SH and rotation/scale textures). Combined with
+     * {@link maxResidentSplats} by taking the smaller of the two.
      */
     memoryBudgetMb?: number;
     /**
@@ -179,8 +180,8 @@ const RefTanHalfFov = Math.tan((22.5 * Math.PI) / 180);
 // Sentinel "file" ids for the residency controller's pinned (never-evicted) allocations.
 const PaddingFileId = -2;
 const EnvironmentFileId = -1;
-// Approximate bytes per resident splat used to convert a memory budget (MB) to a splat budget: the four
-// work-buffer textures cost 16+16+16+4 = 52 bytes on the GPU, plus ~32 bytes of CPU position/sort data.
+// Core bytes per resident splat: the four work-buffer textures cost 16+16+16+4 = 52 bytes on the GPU, plus ~32
+// bytes of CPU position/sort data. `_resolveResidentBudget` adds the SH and rotation/scale texture cost on top.
 const BytesPerResidentSplat = 84;
 
 // Scratch objects reused by the per-frame optimal-LOD evaluation (avoids per-call allocations).
@@ -273,9 +274,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     // GPU work buffer holding all decoded splats; created once the total capacity is known.
     private _workBuffer: Nullable<GaussianSplattingWorkBuffer> = null;
-    // Higher-order SH. Enabled via options.decodeSh; the degree/texture-count are the MAX across the
+    // Higher-order SH. Set from options.decodeSh in the constructor; the degree/texture-count are the MAX across the
     // streamed files (learned in the meta pre-pass). 0 degree = no SH baking (files carry no shN or option is off).
-    private _decodeSh = false;
+    private _decodeSh!: boolean;
     private _streamShDegree = 0;
     private _shTextureCount = 0;
     // Rotation/scale for voxel-IBL shadows. Enabled via options.needsRotationScale.
@@ -309,6 +310,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     // Eviction streaming config: enabled only when a budget smaller than the full dataset is configured.
     private _evictionEnabled = false;
     private _residentBudget = 0;
+    // Raw budget options; the final `_residentBudget` is resolved from these once the SH/rotation byte cost is known
+    // (after the metadata pre-pass), so the memory budget accounts for the extra baked SH and rotation textures.
+    private _maxResidentSplats = 0;
+    private _memoryBudgetMb = 0;
     private _evictionCooldownFrames = 100;
     // Serializes the allocate -> decode -> readback critical section so a defrag relayout (which runs inside it)
     // never overlaps another file's decode writing the work buffer, which would corrupt the moved data.
@@ -359,6 +364,13 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     // Unsubscribe functions for the host's atlas-rebuild hooks (backup/restore the region across a grow).
     private _unsubBeforeRebuild: Nullable<() => void> = null;
     private _unsubAfterRebuild: Nullable<() => void> = null;
+    // Unsubscribe functions binding this controller's lifetime to its host compound: removing the part or disposing
+    // the compound disposes this stream, even mid-load. Registered at reservation so the window is never open.
+    private _hostUnsubRemove: Nullable<() => void> = null;
+    private _hostUnsubDispose: Nullable<() => void> = null;
+    // True once the host has released this stream's part (removePart, or the compound is being disposed), so dispose()
+    // must NOT call back into the compound to remove the part again.
+    private _partReleasedByHost = false;
     // CPU snapshot of this region's shared `_splatPositions` taken before an atlas grow and restored after it —
     // the grow rebuilds `_splatPositions` from CPU part sources, and a streamed region has none, so without this
     // its sort-worker positions would be zeroed (the streamed splats would collapse to the origin).
@@ -443,16 +455,14 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (options.evictionCooldownFrames !== undefined) {
             this._evictionCooldownFrames = Math.max(0, Math.floor(options.evictionCooldownFrames));
         }
-        // Resolve the resident-splat budget from the splat-count and/or memory-size options (smaller wins).
-        let budget = 0;
+        // Capture the raw budget options; `_residentBudget` is resolved in _streamAllAsync once the SH/rotation
+        // per-splat cost is known (a memory budget must count the extra baked SH and rotation textures, not just core).
         if (options.maxResidentSplats !== undefined && options.maxResidentSplats > 0) {
-            budget = Math.floor(options.maxResidentSplats);
+            this._maxResidentSplats = Math.floor(options.maxResidentSplats);
         }
         if (options.memoryBudgetMb !== undefined && options.memoryBudgetMb > 0) {
-            const fromMB = Math.floor((options.memoryBudgetMb * 1024 * 1024) / BytesPerResidentSplat);
-            budget = budget > 0 ? Math.min(budget, fromMB) : fromMB;
+            this._memoryBudgetMb = options.memoryBudgetMb;
         }
-        this._residentBudget = budget;
 
         this._downloadManager = new GaussianSplattingDownloadManager({
             maxConcurrent: options.maxConcurrentDownloads,
@@ -475,6 +485,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 this._partReadyResolve = resolve;
                 this._partReadyReject = reject;
             });
+            // Attach a no-op rejection handler so a caller that never awaits whenPartReadyAsync() (e.g. the synchronous
+            // AddGaussianSplattingStreamPart) does not produce an unhandled promise rejection on failure; real
+            // consumers still observe the rejection through their own await.
+            // eslint-disable-next-line github/no-then
+            this._partReadyPromise.catch(() => {});
         }
 
         this._collectLodEntries(metadata.tree);
@@ -730,6 +745,16 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         this._unsubAfterRebuild?.();
         this._unsubBeforeRebuild = null;
         this._unsubAfterRebuild = null;
+        this._hostUnsubRemove?.();
+        this._hostUnsubDispose?.();
+        this._hostUnsubRemove = null;
+        this._hostUnsubDispose = null;
+        // If this stream disposes on its own (e.g. a load failure after reservation) rather than because the host
+        // removed its part, release the reserved region so it isn't left orphaned in the compound.
+        if (this._host && this._hostCompound && !this._partReleasedByHost && !this._hostCompound.isDisposed()) {
+            this._hostCompound.removePart(this._host.partIndex);
+        }
+        this._host = null;
         if (this._lodObserver) {
             this._scene.onBeforeRenderObservable.remove(this._lodObserver);
             this._lodObserver = null;
@@ -1050,12 +1075,14 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
      * base layer, then installs the per-frame loop that streams finer LODs on demand.
      */
     private async _streamAllAsync(): Promise<void> {
-        // Step 1: learn splat counts for the environment and every referenced LOD file (cheap meta only).
+        // Step 1: learn splat counts for the environment and every referenced LOD file (cheap meta only). This also
+        // resolves the max SH degree, so the resident-splat budget can now be sized with the SH/rotation byte cost.
         const fileIds = this._collectAllFileIds();
         const envCount = await this._gatherCountsAsync(fileIds);
         if (this._disposed) {
             return;
         }
+        this._resolveResidentBudget();
 
         // Step 2: learn the full dataset size (padding + environment + every LOD file). The work buffer is
         // sized to this unless a smaller budget enables eviction-based streaming.
@@ -1104,6 +1131,24 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             const host = this._hostCompound.reserveStreamingPart(capacity, sogWorld, this.name + "_part", this._shTextureCount, this._streamShDegree, this._needsRotationScale);
             this._host = host;
             this._positionBase = host.base;
+            // Bind this controller's lifetime to its part FROM RESERVATION (not after readiness): removing the part or
+            // disposing the compound — even while still downloading/decoding — disposes this stream so it stops writing
+            // into the compound's borrowed textures. `_partReleasedByHost` stops dispose() from removing the part again.
+            const compound = this._hostCompound;
+            const removeObserver = compound.onPartRemovedObservable.add((removedIndex) => {
+                if (!this._disposed && this._host && removedIndex === this._host.partIndex) {
+                    this._partReleasedByHost = true;
+                    this.dispose();
+                }
+            });
+            const disposeObserver = compound.onDisposeObservable.add(() => {
+                if (!this._disposed) {
+                    this._partReleasedByHost = true;
+                    this.dispose();
+                }
+            });
+            this._hostUnsubRemove = () => compound.onPartRemovedObservable.remove(removeObserver);
+            this._hostUnsubDispose = () => compound.onDisposeObservable.remove(disposeObserver);
             const shExternal = this._shTextureCount > 0 && host.shMrtAtlas ? { textureCount: this._shTextureCount, externalMrts: host.shMrtAtlas } : undefined;
             const rotExternal = this._needsRotationScale && host.rotMrtAtlas ? { externalMrt: host.rotMrtAtlas } : undefined;
             // Use the region's ROW-ALIGNED capacity (host.capacity), not the raw stream capacity: backup/restore/
@@ -1229,6 +1274,28 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             // eslint-disable-next-line no-await-in-loop
             await new Promise<void>((resolve) => this._scene.onBeforeRenderObservable.addOnce(() => resolve()));
         }
+        // Timed out (or disposed): proceed rather than block decoding forever. If the copy shaders are still not
+        // ready, a subsequent atlas rebuild's backupRegion() warns and the region's data is not preserved.
+        if (!this._disposed && !wb.canBackup) {
+            Logger.Warn("GaussianSplattingStream: backup/restore copy shaders did not compile in time; a grow/compaction before they are ready may drop streamed data.");
+        }
+    }
+
+    /**
+     * Resolves the resident-splat budget from the raw options, sizing a memory (MB) budget with the actual per-splat
+     * GPU+CPU cost — core data plus the baked SH textures and rotation/scale textures when enabled — so SH/rotation
+     * assets don't silently consume up to double the configured budget. Requires the SH degree (from the metadata
+     * pre-pass) to be known. The smaller of the splat-count and memory budgets wins.
+     */
+    private _resolveResidentBudget(): void {
+        let budget = this._maxResidentSplats;
+        if (this._memoryBudgetMb > 0) {
+            // Per resident splat: core 84 B, + 16 B per packed-u32 SH texture, + 24 B (3 half-float RGBA) for rotation.
+            const bytesPerSplat = BytesPerResidentSplat + this._shTextureCount * 16 + (this._needsRotationScale ? 24 : 0);
+            const fromMB = Math.floor((this._memoryBudgetMb * 1024 * 1024) / bytesPerSplat);
+            budget = budget > 0 ? Math.min(budget, fromMB) : fromMB;
+        }
+        this._residentBudget = budget;
     }
 
     /**
@@ -1696,13 +1763,15 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
         // CPU positions: compaction only ever moves a block to a lower offset, so copying in place in ascending
         // new-offset order is safe (a block's source is never overwritten by an earlier move). This avoids a
-        // full capacity*4 scratch buffer.
+        // full capacity*4 scratch buffer. Block offsets are region-local; in hosted mode `_splatPositions` is the
+        // compound-wide buffer, so shift both source and destination by the region base (`_positionBase`, 0 standalone).
         const positions = this._splatPositions;
+        const base = this._positionBase;
         resident.sort((a, b) => a.offset - b.offset);
         for (const block of resident) {
             const oldOffset = oldOffsets.get(block.file)!;
             if (oldOffset !== block.offset) {
-                positions.copyWithin(block.offset * 4, oldOffset * 4, (oldOffset + block.count) * 4);
+                positions.copyWithin((base + block.offset) * 4, (base + oldOffset) * 4, (base + oldOffset + block.count) * 4);
             }
         }
 
@@ -2204,25 +2273,8 @@ export async function AddGaussianSplattingStreamPartAsync(
         stream.dispose();
         throw new Error("GaussianSplattingStream: streaming part was not reserved.");
     }
-    // Bind the controller's lifetime to the part it drives: removing the part (compound.removePart tombstones it
-    // and fires onPartRemovedObservable) tears down the stream — stops the LOD loop, frees the work buffer, and
-    // drops the atlas-rebuild subscriptions. Tombstoning does not dispose the proxy, so we key off the compound's
-    // removal signal rather than the proxy's disposal. The observer is removed when the stream disposes.
-    const removeObserver = compound.onPartRemovedObservable.add((removedIndex) => {
-        if (removedIndex === proxy.partIndex && !stream.isDisposed()) {
-            stream.dispose();
-        }
-    });
-    // Disposing the compound directly (without removePart) must also tear the controller down — otherwise it keeps
-    // downloading and decoding into the compound's now-disposed borrowed atlas textures.
-    const disposeObserver = compound.onDisposeObservable.add(() => {
-        if (!stream.isDisposed()) {
-            stream.dispose();
-        }
-    });
-    stream.onDisposeObservable.add(() => {
-        compound.onPartRemovedObservable.remove(removeObserver);
-        compound.onDisposeObservable.remove(disposeObserver);
-    });
+    // The controller already binds its own lifetime to the part (removePart / compound disposal dispose the stream,
+    // and stream disposal releases the reserved part) — wired at reservation inside the stream, so it also covers the
+    // download/decode window before this promise resolves. Nothing to register here.
     return proxy;
 }

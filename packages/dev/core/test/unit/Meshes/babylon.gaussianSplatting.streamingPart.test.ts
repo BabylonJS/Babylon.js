@@ -132,10 +132,12 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         }
     });
 
-    it("throws on a non-positive capacity", () => {
+    it("throws on a non-positive or non-finite capacity", () => {
         const compound = createCompound();
         expect(() => compound.reserveStreamingPart(0)).toThrow();
         expect(() => compound.reserveStreamingPart(-5)).toThrow();
+        expect(() => compound.reserveStreamingPart(Infinity)).toThrow();
+        expect(() => compound.reserveStreamingPart(NaN)).toThrow();
     });
 
     it("builds the global interval union: static part full + streaming part active ranges", () => {
@@ -315,6 +317,20 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         expect(() => handle.writeSplats(0, 8, createMultiSplatData(2))).toThrow();
         // A valid in-region write does not throw.
         expect(() => handle.writeSplats(0, 4, data)).not.toThrow();
+    });
+
+    it("rejects setActiveRanges / postPositionsRange local ranges outside the reserved region", () => {
+        const compound = createCompound();
+        const handle = compound.reserveStreamingPart(30); // aligned capacity 32 at width 16
+        // A local range extending past the region's capacity would activate/patch another part's splats.
+        expect(() => handle.setActiveRanges([{ offset: 0, count: handle.capacity + 1 }])).toThrow();
+        expect(() => handle.setActiveRanges([{ offset: -1, count: 4 }])).toThrow();
+        expect(() => handle.postPositionsRange(handle.capacity - 2, 4)).toThrow();
+        expect(() => handle.postPositionsRange(-1, 4)).toThrow();
+        // In-region ranges (including the full region and clearing) are accepted.
+        expect(() => handle.setActiveRanges([{ offset: 0, count: handle.capacity }])).not.toThrow();
+        expect(() => handle.setActiveRanges(null)).not.toThrow();
+        expect(() => handle.postPositionsRange(0, handle.capacity)).not.toThrow();
     });
 
     it("excludes a tombstoned part from the compound's bounds", () => {

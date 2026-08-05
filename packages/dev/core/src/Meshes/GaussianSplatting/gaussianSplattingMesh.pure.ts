@@ -1385,16 +1385,6 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Tombstones a part of a streaming compound: excludes it from the render union permanently and hides its
-     * proxy, leaving its atlas rows idle. Used instead of the compacting {@link removePart} rebuild whenever a
-     * streaming part is reserved — a streamed region has no retained CPU source and decodes at a FIXED base
-     * offset, so the rebuild can neither reconstruct it nor shift any part without desynchronizing the streaming
-     * engine. Every other part keeps its exact offset (no shift), so resident streams keep decoding at their base.
-     * The empty `[]` override survives future add-driven rebuilds, so the region stays invisible even though its
-     * texels get rebuilt; memory is only reclaimed by disposing/recreating the whole compound.
-     * @param index the part index to tombstone
-     */
-    /**
      * Recomputes the shared SH-atlas state ({@link _useShMrtAtlas}, {@link _shMrtAtlasTextureCount},
      * {@link _streamingShDegree}) from the currently-live (non-tombstoned) streaming parts. Call before an atlas
      * rebuild that follows a removal so a stale SH degree/count from a removed part can't keep the SH atlas active
@@ -1426,8 +1416,18 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._useRotMrtAtlas = needsRot;
     }
 
+    /**
+     * Tombstones a part of a streaming compound: excludes it from the render union permanently and hides its
+     * proxy, leaving its atlas rows idle. Used instead of the compacting {@link removePart} rebuild whenever a
+     * streaming part is reserved — a streamed region has no retained CPU source and decodes at a FIXED base
+     * offset, so the rebuild can neither reconstruct it nor shift any part without desynchronizing the streaming
+     * engine. Every other part keeps its exact offset (no shift), so resident streams keep decoding at their base.
+     * The empty `[]` override survives future add-driven rebuilds, so the region stays invisible even though its
+     * texels get rebuilt; memory is only reclaimed by disposing/recreating the whole compound.
+     * @param index the part index to tombstone
+     */
     private _tombstonePart(index: number): void {
-        // Fire before mutation so the stream driving this part (subscribed via AddGaussianSplattingStreamPartAsync)
+        // Fire before mutation so the stream driving this part (which subscribes to this observable at reservation)
         // can dispose itself: stop its LOD loop, free its work buffer, and drop its atlas-rebuild hooks.
         this.onPartRemovedObservable.notifyObservers(index);
         const proxy = this._partProxies[index];
@@ -1831,8 +1831,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         shDegree: number = 0,
         needsRotationScale: boolean = false
     ): IGaussianSplattingStreamingPart {
-        if (!(capacity > 0)) {
-            throw new Error("reserveStreamingPart: capacity must be a positive integer");
+        if (!Number.isFinite(capacity) || capacity <= 0) {
+            throw new Error("reserveStreamingPart: capacity must be a positive finite integer");
         }
         capacity = Math.floor(capacity);
 
@@ -1926,6 +1926,13 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 compound._updateBoundingInfoFromProxies();
             }
         };
+        // Enforces the documented local part boundary [0, capacity) so a handle call can never address another
+        // part's atlas region (the region base is added to these local coordinates before use).
+        const assertLocalRange = (method: string, offset: number, count: number) => {
+            if (!Number.isInteger(offset) || !Number.isInteger(count) || offset < 0 || count < 0 || offset + count > state.capacity) {
+                throw new Error(`${method}: local range [${offset}, ${offset + count}) is outside the reserved region [0, ${state.capacity})`);
+            }
+        };
 
         const handle: IGaussianSplattingStreamingPart = {
             proxy,
@@ -1967,6 +1974,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 return compound._isDepthSortSettled;
             },
             setActiveRanges: (localRanges) => {
+                // Keep every range inside this part's region so it can never activate another part's splats.
+                if (localRanges) {
+                    for (const r of localRanges) {
+                        assertLocalRange("setActiveRanges", r.offset, r.count);
+                    }
+                }
                 // Remember the LOCAL ranges so compactAtlas can re-post them at the region's new base.
                 state.localRanges = localRanges ? localRanges.map((r) => ({ offset: r.offset, count: r.count })) : null;
                 const globalRanges = localRanges ? localRanges.map((r) => ({ offset: state.base + r.offset, count: r.count })) : null;
@@ -1974,13 +1987,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             },
             writeSplats: (localOffset, count, splatsData) => {
                 // Keep the write inside this part's region so it can never touch another part's atlas texels.
-                if (!Number.isInteger(localOffset) || !Number.isInteger(count) || localOffset < 0 || count < 0 || localOffset + count > state.capacity) {
-                    throw new Error(`writeSplats: range [${localOffset}, ${localOffset + count}) is outside the reserved region [0, ${state.capacity})`);
-                }
+                assertLocalRange("writeSplats", localOffset, count);
                 compound._writeStreamingSplats(state.base + localOffset, count, splatsData, boundsMin, boundsMax);
                 applyBounds();
             },
             postPositionsRange: (localOffset, count) => {
+                assertLocalRange("postPositionsRange", localOffset, count);
                 compound._postWorkerPositionsRange(state.base + localOffset, count);
             },
             expandBounds: (min, max) => {
