@@ -307,6 +307,24 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         expect(compound.shDegree).toBe(0);
     });
 
+    it("drops stale per-part range overrides on compaction so a later-added part isn't constrained by them", () => {
+        // static part 0 [0,16), stream part 1 base 16; give the stream an active-range override (non-null entry at index 1).
+        const { compound, handle } = createStaticPlusStream(16, 16);
+        handle.setActiveRanges([{ offset: 0, count: 8 }]);
+        expect(compound.renderedSplatCount).toBe(24); // static 16 (full) + stream 8 (active)
+
+        compound.removePart(0); // tombstone the static part
+        compound.compactAtlas(); // stream relocates to index 0; the old index-1 override must not linger
+        expect(compound.partCount).toBe(1);
+        expect(compound.renderedSplatCount).toBe(8);
+        expect(((compound as any)._partSplatRanges as unknown[]).length).toBeLessThanOrEqual(compound.partCount);
+
+        // A newly added part takes index 1 and must render its FULL extent — not inherit the stale index-1 override.
+        compound.addPart(createSource(16));
+        expect(compound.partCount).toBe(2);
+        expect(compound.renderedSplatCount).toBe(24); // stream 8 + new static 16 (full)
+    });
+
     it("compactAtlas that removes the only (streaming) part empties the compound", () => {
         const compound = createCompound();
         const handle = compound.reserveStreamingPart(16); // streaming part 0

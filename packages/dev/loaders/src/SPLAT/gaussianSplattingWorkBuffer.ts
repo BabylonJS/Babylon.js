@@ -292,6 +292,33 @@ export class GaussianSplattingWorkBuffer {
     }
 
     /**
+     * Deterministically compiles the backup/restore/relayout copy shaders (the ones {@link canBackup} reports on),
+     * so a later grow/compaction can preserve this hosted region. Awaits the engine's own compilation via
+     * {@link Material.forceCompilationAsync}, which resolves once each shader is ready and rejects on a compile
+     * error. No-op for an owned MRT.
+     * @returns a promise that resolves once every copy shader in use has compiled
+     */
+    public async ensureBackupReadyAsync(): Promise<void> {
+        if (this._disposed || this._ownsMrt) {
+            return;
+        }
+        // Create the copy materials up front (mirrors isRelayoutReady's lazy creation), then wait for each.
+        if (!this._copyMaterial) {
+            this._copyMaterial = this._createCopyMaterial();
+        }
+        if (this._shMrts.length && !this._shCopyMaterial) {
+            this._shCopyMaterial = this._createShCopyMaterial();
+        }
+        if (this._rotMrt && !this._rotCopyMaterial) {
+            this._rotCopyMaterial = this._createRotCopyMaterial();
+        }
+        this._bindCopyMaterialsToAtlas();
+        const materials = [this._copyMaterial, this._shMrts.length ? this._shCopyMaterial : null, this._rotMrt ? this._rotCopyMaterial : null];
+        const present = materials.filter((material): material is ShaderMaterial => material !== null);
+        await Promise.all(present.map(async (material) => await material.forceCompilationAsync(this._quad)));
+    }
+
+    /**
      * Copies this hosted region's four decoded textures out of the shared atlas into an internal backup MRT so
      * they survive the compound recreating the atlas on a grow. Call immediately before the atlas is recreated,
      * then {@link rebindAtlas} + {@link restoreRegion} after.

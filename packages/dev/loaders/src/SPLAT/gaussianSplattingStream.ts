@@ -521,14 +521,14 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 const becameReady = this._partReadySettled;
                 this._rejectPartReady("GaussianSplattingStream: stream produced no splats.");
                 if (!becameReady && this._hostCompound && !this._disposed) {
-                    this.dispose();
+                    this._disposeAndReclaim();
                 }
             },
             (e) => {
                 Logger.Error("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
                 this._rejectPartReady("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
                 if (this._hostCompound && !this._disposed) {
-                    this.dispose();
+                    this._disposeAndReclaim();
                 }
             }
         );
@@ -762,6 +762,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     public override dispose(doNotRecurse?: boolean): void {
+        if (this._disposed) {
+            // Idempotent: a failed load disposes from its own _streamAllAsync handler, and the awaiter's catch may
+            // dispose again — don't re-fire cleanup/observables (and super.dispose) a second time.
+            return;
+        }
         this._disposed = true;
         this._rejectPartReady("GaussianSplattingStream: disposed before the part was ready.");
         this._unsubBeforeRebuild?.();
@@ -772,14 +777,12 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         this._hostUnsubDispose?.();
         this._hostUnsubRemove = null;
         this._hostUnsubDispose = null;
-        // If this stream disposes on its own (e.g. a load failure after reservation) rather than because the host
-        // removed its part, release the reserved region. removePart only tombstones a streaming region (leaving its
-        // rows allocated for a later compaction), so also compact to actually reclaim them — a failed reservation
-        // never became a working part. Skipped when the host removed the part (it owns that reclamation policy).
+        // If this stream disposes on its own rather than because the host removed its part, release the reserved
+        // region (tombstone). Reclaiming the rows is a separate compaction — cheap disposal here so tearing down N
+        // parts doesn't trigger N atlas rebuilds; the caller/host reclaims when appropriate (a failed load compacts
+        // once, see the _streamAllAsync handler). Skipped when the host removed the part (it owns that policy).
         if (this._host && this._hostCompound && !this._partReleasedByHost && !this._hostCompound.isDisposed()) {
-            const compound = this._hostCompound;
-            compound.removePart(this._host.partIndex);
-            compound.compactAtlas();
+            this._hostCompound.removePart(this._host.partIndex);
         }
         this._host = null;
         if (this._lodObserver) {
@@ -793,6 +796,20 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         this._workBuffer?.dispose();
         this._workBuffer = null;
         super.dispose(doNotRecurse);
+    }
+
+    /**
+     * Disposes this stream (which tombstones its region) and then compacts the host once to actually reclaim the
+     * reserved rows. Used on a definitive load failure / empty result — a discrete, one-off reclaim, versus a bare
+     * {@link dispose} that only tombstones so tearing down several parts doesn't rebuild the atlas repeatedly.
+     */
+    private _disposeAndReclaim(): void {
+        const compound = this._hostCompound;
+        const hadPart = !!this._host && !this._partReleasedByHost;
+        this.dispose();
+        if (hadPart && compound && !compound.isDisposed()) {
+            compound.compactAtlas();
+        }
     }
 
     /**
@@ -1284,22 +1301,18 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * Resolves once the work buffer's backup/restore copy shaders are compiled (so {@link GaussianSplattingWorkBuffer.backupRegion}
-     * can preserve the region across an atlas rebuild), or after a frame cap if compilation stalls.
+     * Waits until the work buffer's backup/restore copy shaders are compiled, so a later grow/compaction can
+     * preserve this hosted region (see {@link GaussianSplattingWorkBuffer.backupRegion}). A compile error is
+     * logged and treated as best-effort (a later grow/compaction may then drop the region's data).
      * @param wb the hosted work buffer to wait on
      */
     private async _waitForCanBackupAsync(wb: GaussianSplattingWorkBuffer): Promise<void> {
-        for (let frame = 0; frame < 600 && !this._disposed; frame++) {
-            if (wb.canBackup) {
-                return;
+        try {
+            await wb.ensureBackupReadyAsync();
+        } catch (e) {
+            if (!this._disposed) {
+                Logger.Warn("GaussianSplattingStream: backup/restore copy shaders failed to compile (" + (e as Error)?.message + "); a grow/compaction may drop streamed data.");
             }
-            // eslint-disable-next-line no-await-in-loop
-            await new Promise<void>((resolve) => this._scene.onBeforeRenderObservable.addOnce(() => resolve()));
-        }
-        // Timed out (or disposed): proceed rather than block decoding forever. If the copy shaders are still not
-        // ready, a subsequent atlas rebuild's backupRegion() warns and the region's data is not preserved.
-        if (!this._disposed && !wb.canBackup) {
-            Logger.Warn("GaussianSplattingStream: backup/restore copy shaders did not compile in time; a grow/compaction before they are ready may drop streamed data.");
         }
     }
 

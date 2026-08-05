@@ -1528,6 +1528,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._shData = null;
         this._shDegree = 0;
         this._partProxies = [];
+        // Drop per-part range overrides too: a rebuild reassigns part indices from 0, so a leftover entry at a
+        // now-unused high index would otherwise be inherited by a later-added part (rendering it wrong/nothing).
+        // The rebuild re-sets the surviving parts' entries.
+        this._partSplatRanges = [];
     }
 
     /**

@@ -158,7 +158,8 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
                     // Compound (rig) meshes give each splat its own world transform via its part: depth uses the
                     // splat's part coefficients. Single meshes use the one global world matrix. Both produce
                     // depths in the same camera-forward space, so all active splats sort together correctly.
-                    const compound = !!(partMatrices && partMatrices.length > 0 && partIndices);
+                    // Require a non-empty partIndices: an empty one (length 0) would make partLen-1 index -1 below.
+                    const compound = !!(partMatrices && partMatrices.length > 0 && partIndices && partIndices.length > 0);
                     let depthCoeffs: number[][] = [];
                     let partLen = 0;
                     let a = 0;
@@ -320,7 +321,7 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
                     }
 
                     let inconsistentSnapshot = false;
-                    if (partMatrices && partMatrices.length > 0 && partIndices) {
+                    if (partMatrices && partMatrices.length > 0 && partIndices && partIndices.length > 0) {
                         // Precompute depth coefficients for each rig node.
                         const depthCoeffs = partMatrices.map((m) => computeDepthCoeffs(m));
                         const length = partIndices.length;
