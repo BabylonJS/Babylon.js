@@ -235,7 +235,7 @@ export function RegisterEnginesWebGPUExtensionsEngineRawTexture(): void {
             data.push(new Uint8Array(faceData.buffer, faceData.byteOffset, faceData.byteLength));
         }
 
-        this._textureHelper.updateCubeTextures(data, gpuTextureWrapper.underlyingResource!, texture.width, texture.height, gpuTextureWrapper.format, invertY, false, 0, 0);
+        this._textureHelper.updateCubeTextures(data, texture, texture.width, texture.height, gpuTextureWrapper.format, invertY, false, 0, 0);
         if (texture.generateMipMaps) {
             this._generateMipmaps(texture, this._uploadEncoder);
         }
@@ -295,7 +295,7 @@ export function RegisterEnginesWebGPUExtensionsEngineRawTexture(): void {
                         }
                         allFaces.push(new Uint8Array(mipFaceData.buffer, mipFaceData.byteOffset, mipFaceData.byteLength));
                     }
-                    this._textureHelper.updateCubeTextures(allFaces, gpuTextureWrapper.underlyingResource!, mipSize, mipSize, gpuTextureWrapper.format, invertY, false, 0, 0);
+                    this._textureHelper.updateCubeTextures(allFaces, texture, mipSize, mipSize, gpuTextureWrapper.format, invertY, false, 0, 0);
                 }
             } else {
                 this.updateRawCubeTexture(texture, faceDataArrays, format, type, invertY);
