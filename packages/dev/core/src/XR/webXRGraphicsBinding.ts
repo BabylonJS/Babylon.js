@@ -19,11 +19,7 @@ export const enum WebXRGraphicsBindingType {
 }
 
 /**
- * Abstraction over the WebXR graphics binding used to interact with the XR compositor
- * (XRWebGLBinding today, an XRGPUBinding-based binding for a future WebGPU backend).
- *
- * This is introduced as a seam so the XR features can be migrated off the concrete
- * `XRWebGLBinding` in a later phase without changing behavior today.
+ * Abstraction over the native WebXR graphics binding used to interact with the XR compositor.
  * @internal
  */
 export interface IWebXRGraphicsBinding {
@@ -53,7 +49,13 @@ export class WebXRWebGLGraphicsBinding implements IWebXRGraphicsBinding {
      * @param session the XR session the binding is created for
      * @param context the WebGL rendering context to bind to
      */
-    constructor(session: XRSession, context: WebGLRenderingContext | WebGL2RenderingContext) {
+    constructor(
+        session: XRSession,
+        /**
+         * The WebGL rendering context used by the native binding.
+         */
+        public readonly context: WebGLRenderingContext | WebGL2RenderingContext
+    ) {
         this.binding = new XRWebGLBinding(session, context);
     }
 
@@ -76,10 +78,8 @@ export class WebXRWebGLGraphicsBinding implements IWebXRGraphicsBinding {
 /**
  * WebGPU implementation of {@link IWebXRGraphicsBinding}, wrapping an `XRGPUBinding`.
  *
- * This is introduced as part of the WebGPU-for-WebXR plumbing and is not consumed yet:
- * the per-frame layer/sub-image operations are wired up by later phases. The `XRGPUBinding`
- * requires a WebGPU-compatible XR session (created with the `webgpu` feature descriptor) and a
- * `GPUDevice` obtained from an `xrCompatible` adapter, otherwise its constructor throws.
+ * The `XRGPUBinding` requires a WebGPU-compatible XR session (created with the `webgpu` feature
+ * descriptor) and a `GPUDevice` obtained from an `xrCompatible` adapter, otherwise its constructor throws.
  * @internal
  */
 export class WebXRWebGPUGraphicsBinding implements IWebXRGraphicsBinding {
@@ -117,3 +117,9 @@ export class WebXRWebGPUGraphicsBinding implements IWebXRGraphicsBinding {
         return new WebXRWebGPUGraphicsBinding(session, device);
     }
 }
+
+/**
+ * The graphics bindings supported by the WebXR session manager.
+ * @internal
+ */
+export type WebXRGraphicsBinding = WebXRWebGLGraphicsBinding | WebXRWebGPUGraphicsBinding;

@@ -1,6 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
-import { type Engine } from "../../Engines/engine.pure";
+import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector.pure";
 import { type TransformNode } from "../../Meshes/transformNode.pure";
 import { Logger } from "../../Misc/logger";
@@ -280,7 +280,7 @@ class WalkingTracker {
 }
 
 class Walker {
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _detector = new FirstStepDetector();
     private _walker: Nullable<WalkingTracker> = null;
     private _movement = new Vector2();
@@ -293,7 +293,7 @@ class Walker {
 
     public movementThisFrame: Vector3 = Vector3.Zero();
 
-    constructor(engine: Engine) {
+    constructor(engine: AbstractEngine) {
         this._engine = engine;
         this._detector.onFirstStepDetected.add((event) => {
             if (!this._walker) {
@@ -433,7 +433,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
             return false;
         }
 
-        this._walker = new Walker(this._sessionManager.scene.getEngine() as Engine);
+        this._walker = new Walker(this._sessionManager.scene.getEngine());
         return true;
     }
 
