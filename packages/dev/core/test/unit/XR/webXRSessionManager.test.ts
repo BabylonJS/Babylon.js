@@ -5,7 +5,7 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { WebXRSessionManager } from "core/XR/webXRSessionManager";
-import { WebXRWebGLGraphicsBinding, WebXRWebGPUGraphicsBinding } from "core/XR/webXRGraphicsBinding";
+import { WebXRGraphicsBindingType, WebXRWebGLGraphicsBinding, WebXRWebGPUGraphicsBinding } from "core/XR/webXRGraphicsBinding";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 
 describe("WebXRSessionManager", () => {
@@ -283,18 +283,32 @@ describe("WebXRSessionManager", () => {
             });
 
             it("returns a WebGL binding for a non-WebGPU engine", () => {
+                const nativeBinding = {};
+                (globalThis as any).XRWebGLBinding.mockImplementation(function () {
+                    return nativeBinding;
+                });
                 (engine as any)._gl = {};
                 expect(engine.isWebGPU).toBe(false);
 
-                expect(sessionManager._getGraphicsBinding()).toBeInstanceOf(WebXRWebGLGraphicsBinding);
+                const binding = sessionManager._getGraphicsBinding();
+                expect(binding).toBeInstanceOf(WebXRWebGLGraphicsBinding);
+                expect(binding.bindingType).toBe(WebXRGraphicsBindingType.WebGL);
+                expect(binding.binding).toBe(nativeBinding);
             });
 
             it("returns a WebGPU binding for a WebGPU engine", () => {
+                const nativeBinding = {};
+                (globalThis as any).XRGPUBinding.mockImplementation(function () {
+                    return nativeBinding;
+                });
                 (engine as any)._isWebGPU = true;
                 (engine as any)._device = {};
                 expect(engine.isWebGPU).toBe(true);
 
-                expect(sessionManager._getGraphicsBinding()).toBeInstanceOf(WebXRWebGPUGraphicsBinding);
+                const binding = sessionManager._getGraphicsBinding();
+                expect(binding).toBeInstanceOf(WebXRWebGPUGraphicsBinding);
+                expect(binding.bindingType).toBe(WebXRGraphicsBindingType.WebGPU);
+                expect(binding.binding).toBe(nativeBinding);
             });
 
             it("caches the binding across calls", () => {
@@ -304,6 +318,7 @@ describe("WebXRSessionManager", () => {
                 const second = sessionManager._getGraphicsBinding();
 
                 expect(second).toBe(first);
+                expect((globalThis as any).XRWebGLBinding).toHaveBeenCalledTimes(1);
             });
         });
     });

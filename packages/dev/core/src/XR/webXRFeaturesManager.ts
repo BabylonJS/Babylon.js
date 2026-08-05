@@ -460,8 +460,14 @@ export class WebXRFeaturesManager implements IDisposable {
     public attachFeature(featureName: string) {
         const feature = this._features[featureName];
         if (feature && feature.enabled && !feature.featureImplementation.attached) {
+            const disableAutoAttachBeforeAttach = feature.featureImplementation.disableAutoAttach;
+            feature.featureImplementation.disableAutoAttach = false;
             const attached = feature.featureImplementation.attach();
-            if (!attached) {
+            const intentionallyDisabledDuringAttach = feature.featureImplementation.disableAutoAttach;
+            if (!intentionallyDisabledDuringAttach) {
+                feature.featureImplementation.disableAutoAttach = disableAutoAttachBeforeAttach;
+            }
+            if (!attached && !intentionallyDisabledDuringAttach) {
                 Tools.Warn(`Feature ${featureName} failed to attach`);
             }
         }
