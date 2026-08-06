@@ -16,7 +16,7 @@ import { ShaderMaterial } from "../../Materials/shaderMaterial.pure";
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { type Material } from "../../Materials/material.pure";
 import { type Observer } from "../../Misc/observable.pure";
-import { type ThinEngine } from "../../Engines/thinEngine.pure";
+import { WebXRGraphicsBindingType } from "../webXRGraphicsBinding";
 
 /**
  * Used for Space Warp render process
@@ -278,7 +278,6 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
      * The space warp provider
      */
     public spaceWarpRTTProvider: Nullable<WebXRSpaceWarpRenderTargetTextureProvider>;
-    private _glContext: WebGLRenderingContext | WebGL2RenderingContext;
     private _xrWebGLBinding: XRWebGLBinding;
     private _renderTargetTexture: Nullable<RenderTargetTexture>;
     private _onAfterRenderObserver: Nullable<Observer<Scene>> = null;
@@ -300,13 +299,21 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
      * @returns true if successful.
      */
     public override attach(): boolean {
+        if (this._xrSessionManager.scene.getEngine().isWebGPU) {
+            return this._disableAutoAttach(
+                "WebXR Space Warp is unavailable with WebGPU XR because this runtime does not expose usable motion-vector/depth sub-images; the feature was disabled."
+            );
+        }
+
         if (!super.attach()) {
             return false;
         }
 
-        const engine = this._xrSessionManager.scene.getEngine();
-        this._glContext = (engine as ThinEngine)._gl;
-        this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
+        const graphicsBinding = this._xrSessionManager._getGraphicsBinding();
+        if (graphicsBinding.bindingType !== WebXRGraphicsBindingType.WebGL) {
+            throw new Error("Expected a WebGL graphics binding for WebXR Space Warp.");
+        }
+        this._xrWebGLBinding = graphicsBinding.binding;
 
         this.spaceWarpRTTProvider = new WebXRSpaceWarpRenderTargetTextureProvider(this._xrSessionManager.scene, this._xrSessionManager, this._xrWebGLBinding);
 
