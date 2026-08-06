@@ -719,6 +719,10 @@ jobs:
             displayName: "run KHR_interactivity conformance tests"
             env:
                 CI: "true"
+                # Force Chrome. The shared Playwright config defaults to Firefox on CI, but the
+                # integration project only passes the `--use-angle=default` WebGL flag on the Chrome
+                # branch, so Firefox runs the conformance suite with no working WebGL context.
+                BROWSER: "Chrome"
                 KHR_ASSETS_CACHE_DIR: $(KHR_ASSETS_CACHE)
 
           - task: PublishTestResults@2

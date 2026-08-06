@@ -2,7 +2,7 @@
 
 import { type IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
-import { RichTypeAny, RichTypeBoolean, RichTypeFlowGraphInteger, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes.pure";
+import { RichTypeBoolean, RichTypeFlowGraphInteger, RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
 import { RegisterClass } from "core/Misc/typeStore";
@@ -45,18 +45,10 @@ export class FlowGraphIntToBoolean extends FlowGraphUnaryOperationBlock<FlowGrap
 
 /**
  * A block that converts an integer to a float.
- *
- * Conversion from an integer to a float. The FlowGraph runtime represents ``int`` as
- * ``FlowGraphInteger`` (a wrapper carrying ``.value``). Accept both shapes —
- * a plain JavaScript ``number`` and a ``FlowGraphInteger`` — so accessors that
- * return a raw integer (e.g. the ``/nodes/{}/children.length`` pointer/get
- * accessor in ``objectModelMapping.ts``) interoperate with downstream graph
- * blocks without producing ``undefined`` (which then poisons math chains
- * with NaN).
  */
-export class FlowGraphIntToFloat extends FlowGraphUnaryOperationBlock<FlowGraphInteger | number, number> {
+export class FlowGraphIntToFloat extends FlowGraphUnaryOperationBlock<FlowGraphInteger, number> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeAny, RichTypeNumber, (a) => (typeof a === "number" ? a : a?.value), FlowGraphBlockNames.IntToFloat, config);
+        super(RichTypeFlowGraphInteger, RichTypeNumber, (a) => a.value, FlowGraphBlockNames.IntToFloat, config);
     }
 }
 

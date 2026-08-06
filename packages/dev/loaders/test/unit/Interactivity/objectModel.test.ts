@@ -352,7 +352,9 @@ describe("glTF interactivity Object Model", () => {
             [{ signature: "float" }]
         );
 
-        expect(log.mock.calls.map((call) => call[0])).toEqual([true, 0]);
+        const calls = log.mock.calls.map((call) => call[0]);
+        expect(calls[0]).toBe(true);
+        expect(calls[1].value).toBe(0);
     });
 
     it("should read morph-target length, validity, and static weight values from a node mesh", async () => {
@@ -397,7 +399,7 @@ describe("glTF interactivity Object Model", () => {
         };
 
         expect(await getOutput("/nodes/0/weights.length", "isValid")).toBe(true);
-        expect(await getOutput("/nodes/0/weights.length", "value")).toBe(2);
+        expect((await getOutput("/nodes/0/weights.length", "value")).value).toBe(2);
         expect(await getOutput("/nodes/0/weights/0", "isValid")).toBe(true);
         expect(await getOutput("/nodes/0/weights/0", "value")).toBeCloseTo(0.1);
     });
@@ -439,7 +441,7 @@ describe("glTF interactivity Object Model", () => {
             return log.mock.calls[log.mock.calls.length - 1][0];
         };
 
-        expect(await getOutput("/nodes/0/weights.length", "value")).toBe(2);
+        expect((await getOutput("/nodes/0/weights.length", "value")).value).toBe(2);
         expect(await getOutput("/nodes/0/weights/0", "isValid")).toBe(true);
         expect(await getOutput("/nodes/0/weights/0", "value")).toBe(0.5);
     });

@@ -209,7 +209,7 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
         // fourth column, the scale from the lengths of the first three columns of the upper-left 3x3, and the
         // rotation from that 3x3 once normalized.
         const translation = new Vector3(m[12], m[13], m[14]);
-        let scaleX = Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+        const scaleX = Math.sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
         const scaleY = Math.sqrt(m[4] * m[4] + m[5] * m[5] + m[6] * m[6]);
         const scaleZ = Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
 
@@ -246,37 +246,21 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
             return;
         }
 
-        // Negate the first scale component for a left-handed matrix so the rotation stays right-handed, mirroring
-        // the normalized first column.
-        if (determinant < 0) {
-            scaleX = -scaleX;
-        }
-        const invScaleX = 1 / scaleX;
-        const invScaleY = 1 / scaleY;
-        const invScaleZ = 1 / scaleZ;
-        const rotationMatrix = Matrix.FromValues(
-            m[0] * invScaleX,
-            m[1] * invScaleX,
-            m[2] * invScaleX,
-            0,
-            m[4] * invScaleY,
-            m[5] * invScaleY,
-            m[6] * invScaleY,
-            0,
-            m[8] * invScaleZ,
-            m[9] * invScaleZ,
-            m[10] * invScaleZ,
-            0,
-            0,
-            0,
-            0,
-            1
-        );
+        // The remaining matrix is well-formed, so the actual translation/rotation/scale extraction is delegated
+        // to the shared Matrix.decompose. That keeps the rotation and the handedness-sign convention identical to
+        // the rest of Babylon (a left-handed matrix negates the same scale component everywhere). The fourth row is
+        // reset to (0, 0, 0, 1) first because this operation ignores it, whereas Matrix.decompose's internal
+        // determinant would otherwise let a non-standard fourth row flip the handedness.
+        const normalized = Matrix.FromValues(m[0], m[1], m[2], 0, m[4], m[5], m[6], 0, m[8], m[9], m[10], 0, m[12], m[13], m[14], 1);
+        const outScaling = new Vector3();
+        const outRotation = new Quaternion();
+        const outPosition = new Vector3();
+        normalized.decompose(outScaling, outRotation, outPosition);
 
         this.isValid.setValue(true, context);
-        this.position.setValue(translation, context);
-        this.rotationQuaternion.setValue(Quaternion.FromRotationMatrix(rotationMatrix), context);
-        this.scaling.setValue(new Vector3(scaleX, scaleY, scaleZ), context);
+        this.position.setValue(outPosition, context);
+        this.rotationQuaternion.setValue(outRotation, context);
+        this.scaling.setValue(outScaling, context);
     }
 
     public override getClassName(): string {

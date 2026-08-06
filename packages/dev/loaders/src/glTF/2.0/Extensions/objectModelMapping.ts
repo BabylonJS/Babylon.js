@@ -26,6 +26,8 @@ import { SpotLight } from "core/Lights/spotLight.pure";
 import { type IEXTLightsImageBased_LightImageBased } from "babylonjs-gltf2interface";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type IInterpolationPropertyInfo, type IObjectAccessor } from "core/FlowGraph/typeDefinitions";
+import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
+import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { type AnimationGroup } from "core/Animations/animationGroup";
 import { type Mesh } from "core/Meshes/mesh";
@@ -50,7 +52,7 @@ export interface IGLTFObjectModelTree {
     extensions: IGLTFObjectModelTreeExtensionsObject;
     /** Accessor tree for `/animations`. */
     animations: {
-        length: IObjectAccessor<IAnimation[], AnimationGroup[], number>;
+        length: IObjectAccessor<IAnimation[], AnimationGroup[], FlowGraphInteger>;
         __array__: {};
     };
     /** Accessor tree for `/meshes`. */
@@ -68,7 +70,7 @@ export interface IGLTFObjectModelTree {
  */
 export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, BabylonTargetType = TransformNode> {
     /** Number of nodes in the array. */
-    length: IObjectAccessor<GLTFTargetType[], BabylonTargetType[], number>;
+    length: IObjectAccessor<GLTFTargetType[], BabylonTargetType[], FlowGraphInteger>;
     __array__: {
         __target__: boolean;
         translation: IObjectAccessor<GLTFTargetType, BabylonTargetType, Vector3>;
@@ -81,13 +83,13 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
         skin: IObjectAccessor<GLTFTargetType, any, string | undefined>;
         parent: IObjectAccessor<GLTFTargetType, any, string | undefined>;
         children: {
-            length: IObjectAccessor<number[], any, number>;
+            length: IObjectAccessor<number[], any, FlowGraphInteger>;
             __array__: { __target__: boolean } & IObjectAccessor<any, any, string>;
         };
         weights: {
             /** When true, the path converter skips objectTree traversal for this property, keeping the parent target. */
             __passThroughTarget__?: boolean;
-            length: IObjectAccessor<GLTFTargetType, BabylonTargetType, number>;
+            length: IObjectAccessor<GLTFTargetType, BabylonTargetType, FlowGraphInteger>;
             // The per-element target alternates between TransformNode (when the index is
             // out of range or no morph host is reachable) and MorphTarget (when it is),
             // so we widen the BabylonTargetType to `any` here.
@@ -111,7 +113,7 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
  */
 export interface IGLTFObjectModelTreeCamerasObject {
     /** Number of cameras in the array. */
-    length: IObjectAccessor<ICamera[], any, number>;
+    length: IObjectAccessor<ICamera[], any, FlowGraphInteger>;
     __array__: {
         __target__: boolean;
         orthographic: {
@@ -135,7 +137,7 @@ export interface IGLTFObjectModelTreeCamerasObject {
  */
 export interface IGLTFObjectModelTreeMaterialsObject {
     /** Number of materials in the array. */
-    length: IObjectAccessor<IMaterial[], PBRMaterial[], number>;
+    length: IObjectAccessor<IMaterial[], PBRMaterial[], FlowGraphInteger>;
     __array__: {
         __target__: boolean;
         doubleSided: IObjectAccessor<IMaterial, PBRMaterial, boolean>;
@@ -305,18 +307,18 @@ interface ITextureDefinition {
  */
 export interface IGLTFObjectModelTreeMeshesObject {
     /** Number of meshes in the array. */
-    length: IObjectAccessor<IMesh[], (Mesh | undefined)[], number>;
+    length: IObjectAccessor<IMesh[], (Mesh | undefined)[], FlowGraphInteger>;
     __array__: {
         __target__: boolean;
         primitives: {
-            length: IObjectAccessor<IMeshPrimitive[], any, number>;
+            length: IObjectAccessor<IMeshPrimitive[], any, FlowGraphInteger>;
             __array__: {
                 __target__: boolean;
                 material: IObjectAccessor<any, any, string | undefined>;
             };
         };
         weights: {
-            length: IObjectAccessor<number[], any, number>;
+            length: IObjectAccessor<number[], any, FlowGraphInteger>;
             __array__: { __target__: boolean } & IObjectAccessor<any, any, number>;
         };
     };
@@ -328,11 +330,11 @@ export interface IGLTFObjectModelTreeMeshesObject {
  */
 export interface IGLTFObjectModelTreeScenesObject {
     /** Number of scenes in the array. */
-    length: IObjectAccessor<IScene[], any, number>;
+    length: IObjectAccessor<IScene[], any, FlowGraphInteger>;
     __array__: {
         __target__: boolean;
         nodes: {
-            length: IObjectAccessor<number[], any, number>;
+            length: IObjectAccessor<number[], any, FlowGraphInteger>;
             __array__: { __target__: boolean } & IObjectAccessor<any, any, string>;
         };
     };
@@ -344,11 +346,11 @@ export interface IGLTFObjectModelTreeScenesObject {
  */
 export interface IGLTFObjectModelTreeSkinsObject {
     /** Number of skins in the array. */
-    length: IObjectAccessor<ISkin[], any, number>;
+    length: IObjectAccessor<ISkin[], any, FlowGraphInteger>;
     __array__: {
         __target__: boolean;
         joints: {
-            length: IObjectAccessor<number[], any, number>;
+            length: IObjectAccessor<number[], any, FlowGraphInteger>;
             __array__: { __target__: boolean } & IObjectAccessor<any, any, string>;
         };
         skeleton: IObjectAccessor<ISkin, any, string | undefined>;
@@ -364,7 +366,7 @@ export interface IGLTFObjectModelTreeExtensionsObject {
     /** Accessor tree for `/extensions/KHR_lights_punctual`. */
     KHR_lights_punctual: {
         lights: {
-            length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
+            length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], FlowGraphInteger>;
             __array__: {
                 __target__: boolean;
                 color: IObjectAccessor<IKHRLightsPunctual_Light, Light, Color3>;
@@ -380,7 +382,7 @@ export interface IGLTFObjectModelTreeExtensionsObject {
     /** Accessor tree for `/extensions/EXT_lights_area`. */
     EXT_lights_area: {
         lights: {
-            length: IObjectAccessor<IEXTLightsArea_Light[], Light[], number>;
+            length: IObjectAccessor<IEXTLightsArea_Light[], Light[], FlowGraphInteger>;
             __array__: {
                 __target__: boolean;
                 color: IObjectAccessor<IEXTLightsArea_Light, Light, Color3>;
@@ -395,7 +397,7 @@ export interface IGLTFObjectModelTreeExtensionsObject {
     /** Accessor tree for `/extensions/EXT_lights_ies`. */
     EXT_lights_ies: {
         lights: {
-            length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
+            length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], FlowGraphInteger>;
         };
     };
     /** Accessor tree for `/extensions/EXT_lights_image_based`. */
@@ -406,18 +408,42 @@ export interface IGLTFObjectModelTreeExtensionsObject {
                 intensity: IObjectAccessor<IEXTLightsImageBased_LightImageBased, BaseTexture, number>;
                 rotation: IObjectAccessor<IEXTLightsImageBased_LightImageBased, BaseTexture, Quaternion>;
             };
-            length: IObjectAccessor<IEXTLightsImageBased_LightImageBased[], BaseTexture[], number>;
+            length: IObjectAccessor<IEXTLightsImageBased_LightImageBased[], BaseTexture[], FlowGraphInteger>;
         };
     };
 }
 
-const nodesTree: IGLTFObjectModelTreeNodesObject = {
-    length: {
-        type: "number",
-        get: (nodes: INode[]) => nodes.length,
-        getTarget: (nodes: INode[]) => nodes.map((node) => node._babylonTransformNode!),
+/**
+ * Builds an accessor for an array `length` pointer (e.g. `/nodes.length`, `/meshes/{}/primitives.length`).
+ *
+ * The KHR object model types these `length` values as `int`, so the accessor reports the count as a
+ * {@link FlowGraphInteger} (type {@link FlowGraphTypes.Integer}). Keeping the representation an integer
+ * at the source lets integer-typed consumers such as `FlowGraphIntToFloat` accept the precise
+ * `RichTypeFlowGraphInteger` instead of a widened `RichTypeAny`.
+ * @param getLength returns the raw count for the addressed array; may be `undefined` when the array is not addressable
+ * @param getTarget returns the Babylon object(s) backing the array
+ * @returns an object accessor whose value is the count as a {@link FlowGraphInteger}
+ */
+function _CreateLengthAccessor<GLTFTargetType, BabylonTargetType>(
+    getLength: (target: GLTFTargetType) => number | undefined,
+    getTarget: (target: GLTFTargetType) => BabylonTargetType
+): IObjectAccessor<GLTFTargetType, BabylonTargetType, FlowGraphInteger> {
+    return {
+        type: FlowGraphTypes.Integer,
+        get: (target: GLTFTargetType) => {
+            const length = getLength(target);
+            return length === undefined ? undefined : FlowGraphInteger.FromValue(length);
+        },
+        getTarget,
         getPropertyName: [() => "length"],
-    },
+    };
+}
+
+const nodesTree: IGLTFObjectModelTreeNodesObject = {
+    length: _CreateLengthAccessor(
+        (nodes: INode[]) => nodes.length,
+        (nodes: INode[]) => nodes.map((node) => node._babylonTransformNode!)
+    ),
     __array__: {
         __target__: true,
         translation: {
@@ -445,15 +471,13 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             // Skip glTF objectTree traversal — weights may be undefined on the glTF node
             // but accessible via the Babylon MorphTargetManager on the INode's meshes
             __passThroughTarget__: true,
-            length: {
-                type: "number",
-                get: (node: INode) => {
+            length: _CreateLengthAccessor(
+                (node: INode) => {
                     const found = _findNodeMorphTargets(node);
                     return found ? found.mtm.numTargets : node?.mesh !== undefined ? 0 : undefined;
                 },
-                getTarget: (node: INode) => node?._babylonTransformNode,
-                getPropertyName: [() => "length"],
-            },
+                (node: INode) => node?._babylonTransformNode!
+            ),
             __array__: {
                 __target__: true,
                 type: "number",
@@ -564,12 +588,10 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
             isReadOnly: true,
         },
         children: {
-            length: {
-                type: "number",
-                get: (children: number[]) => children?.length ?? 0,
-                getTarget: (children: number[]) => children ?? [],
-                getPropertyName: [() => "length"],
-            },
+            length: _CreateLengthAccessor(
+                (children: number[]) => children?.length ?? 0,
+                (children: number[]) => children ?? []
+            ),
             __array__: {
                 __target__: true,
                 type: "string",
@@ -632,12 +654,10 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
 };
 
 const animationsTree = {
-    length: {
-        type: "number",
-        get: (animations: IAnimation[]) => animations.length,
-        getTarget: (animations: IAnimation[]) => animations.map((animation) => animation._babylonAnimationGroup!),
-        getPropertyName: [() => "length"],
-    },
+    length: _CreateLengthAccessor(
+        (animations: IAnimation[]) => animations.length,
+        (animations: IAnimation[]) => animations.map((animation) => animation._babylonAnimationGroup!)
+    ),
     __array__: {
         // Indexed access to the animation, surfaced as a JSON Pointer ref string so blocks like
         // ``animation/start`` can consume it directly. Uses the animation's own ``index`` property
@@ -652,21 +672,17 @@ const animationsTree = {
 };
 
 const meshesTree: IGLTFObjectModelTreeMeshesObject = {
-    length: {
-        type: "number",
-        get: (meshes: IMesh[]) => meshes.length,
-        getTarget: (meshes: IMesh[]) => meshes.map((mesh) => mesh.primitives[0]._instanceData?.babylonSourceMesh),
-        getPropertyName: [() => "length"],
-    },
+    length: _CreateLengthAccessor(
+        (meshes: IMesh[]) => meshes.length,
+        (meshes: IMesh[]) => meshes.map((mesh) => mesh.primitives[0]._instanceData?.babylonSourceMesh)
+    ),
     __array__: {
         __target__: true,
         primitives: {
-            length: {
-                type: "number",
-                get: (primitives: IMeshPrimitive[]) => primitives?.length ?? 0,
-                getTarget: (primitives: IMeshPrimitive[]) => primitives ?? [],
-                getPropertyName: [() => "length"],
-            },
+            length: _CreateLengthAccessor(
+                (primitives: IMeshPrimitive[]) => primitives?.length ?? 0,
+                (primitives: IMeshPrimitive[]) => primitives ?? []
+            ),
             __array__: {
                 __target__: true,
                 material: {
@@ -679,12 +695,10 @@ const meshesTree: IGLTFObjectModelTreeMeshesObject = {
             },
         },
         weights: {
-            length: {
-                type: "number",
-                get: (weights: number[]) => weights?.length ?? 0,
-                getTarget: (weights: number[]) => weights ?? [],
-                getPropertyName: [() => "length"],
-            },
+            length: _CreateLengthAccessor(
+                (weights: number[]) => weights?.length ?? 0,
+                (weights: number[]) => weights ?? []
+            ),
             __array__: {
                 __target__: true,
                 type: "number",
@@ -697,12 +711,10 @@ const meshesTree: IGLTFObjectModelTreeMeshesObject = {
 };
 
 const camerasTree: IGLTFObjectModelTreeCamerasObject = {
-    length: {
-        type: "number",
-        get: (cameras: ICamera[]) => cameras.length,
-        getTarget: (cameras: ICamera[]) => cameras.map((camera) => camera._babylonCamera!),
-        getPropertyName: [() => "length"],
-    },
+    length: _CreateLengthAccessor(
+        (cameras: ICamera[]) => cameras.length,
+        (cameras: ICamera[]) => cameras.map((camera) => camera._babylonCamera!)
+    ),
     __array__: {
         __target__: true,
         orthographic: {
@@ -801,12 +813,10 @@ const camerasTree: IGLTFObjectModelTreeCamerasObject = {
 };
 
 const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
-    length: {
-        type: "number",
-        get: (materials: IMaterial[]) => materials.length,
-        getTarget: (materials: IMaterial[]) => materials.map((material) => material._data?.[Constants.MATERIAL_TriangleFillMode]?.babylonMaterial as PBRMaterial),
-        getPropertyName: [() => "length"],
-    },
+    length: _CreateLengthAccessor(
+        (materials: IMaterial[]) => materials.length,
+        (materials: IMaterial[]) => materials.map((material) => material._data?.[Constants.MATERIAL_TriangleFillMode]?.babylonMaterial as PBRMaterial)
+    ),
     __array__: {
         __target__: true,
         doubleSided: {
@@ -1192,12 +1202,10 @@ const materialsTree: IGLTFObjectModelTreeMaterialsObject = {
 const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
     KHR_lights_punctual: {
         lights: {
-            length: {
-                type: "number",
-                get: (lights: IKHRLightsPunctual_Light[]) => lights.length,
-                getTarget: (lights: IKHRLightsPunctual_Light[]) => lights.map((light) => light._babylonLight!),
-                getPropertyName: [(_lights: IKHRLightsPunctual_Light[]) => "length"],
-            },
+            length: _CreateLengthAccessor(
+                (lights: IKHRLightsPunctual_Light[]) => lights.length,
+                (lights: IKHRLightsPunctual_Light[]) => lights.map((light) => light._babylonLight!)
+            ),
             __array__: {
                 __target__: true,
                 color: {
@@ -1242,12 +1250,10 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
     },
     EXT_lights_area: {
         lights: {
-            length: {
-                type: "number",
-                get: (lights: IEXTLightsArea_Light[]) => lights.length,
-                getTarget: (lights: IEXTLightsArea_Light[]) => lights.map((light) => light._babylonLight!),
-                getPropertyName: [(_lights: IEXTLightsArea_Light[]) => "length"],
-            },
+            length: _CreateLengthAccessor(
+                (lights: IEXTLightsArea_Light[]) => lights.length,
+                (lights: IEXTLightsArea_Light[]) => lights.map((light) => light._babylonLight!)
+            ),
             __array__: {
                 __target__: true,
                 color: {
@@ -1286,22 +1292,18 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
     },
     EXT_lights_ies: {
         lights: {
-            length: {
-                type: "number",
-                get: (lights: IKHRLightsPunctual_Light[]) => lights.length,
-                getTarget: (lights: IKHRLightsPunctual_Light[]) => lights.map((light) => light._babylonLight!),
-                getPropertyName: [(_lights: IKHRLightsPunctual_Light[]) => "length"],
-            },
+            length: _CreateLengthAccessor(
+                (lights: IKHRLightsPunctual_Light[]) => lights.length,
+                (lights: IKHRLightsPunctual_Light[]) => lights.map((light) => light._babylonLight!)
+            ),
         },
     },
     EXT_lights_image_based: {
         lights: {
-            length: {
-                type: "number",
-                get: (lights) => lights.length,
-                getTarget: (lights) => lights.map((light) => light._babylonTexture!),
-                getPropertyName: [(_lights) => "length"],
-            },
+            length: _CreateLengthAccessor(
+                (lights: IEXTLightsImageBased_LightImageBased[]) => lights.length,
+                (lights: IEXTLightsImageBased_LightImageBased[]) => lights.map((light) => light._babylonTexture!)
+            ),
             __array__: {
                 __target__: true,
                 intensity: {
@@ -1635,21 +1637,17 @@ function GenerateTextureMap(textureType: keyof PBRMaterial, textureInObject?: st
 }
 
 const scenesTree: IGLTFObjectModelTreeScenesObject = {
-    length: {
-        type: "number",
-        get: (scenes: IScene[]) => scenes.length,
-        getTarget: (scenes: IScene[]) => scenes,
-        getPropertyName: [() => "length"],
-    },
+    length: _CreateLengthAccessor(
+        (scenes: IScene[]) => scenes.length,
+        (scenes: IScene[]) => scenes
+    ),
     __array__: {
         __target__: true,
         nodes: {
-            length: {
-                type: "number",
-                get: (nodes: number[]) => nodes?.length ?? 0,
-                getTarget: (nodes: number[]) => nodes ?? [],
-                getPropertyName: [() => "length"],
-            },
+            length: _CreateLengthAccessor(
+                (nodes: number[]) => nodes?.length ?? 0,
+                (nodes: number[]) => nodes ?? []
+            ),
             __array__: {
                 __target__: true,
                 type: "string",
@@ -1664,21 +1662,17 @@ const scenesTree: IGLTFObjectModelTreeScenesObject = {
 };
 
 const skinsTree: IGLTFObjectModelTreeSkinsObject = {
-    length: {
-        type: "number",
-        get: (skins: ISkin[]) => skins.length,
-        getTarget: (skins: ISkin[]) => skins.map((skin) => skin._data?.babylonSkeleton),
-        getPropertyName: [() => "length"],
-    },
+    length: _CreateLengthAccessor(
+        (skins: ISkin[]) => skins.length,
+        (skins: ISkin[]) => skins.map((skin) => skin._data?.babylonSkeleton)
+    ),
     __array__: {
         __target__: true,
         joints: {
-            length: {
-                type: "number",
-                get: (joints: number[]) => joints?.length ?? 0,
-                getTarget: (joints: number[]) => joints ?? [],
-                getPropertyName: [() => "length"],
-            },
+            length: _CreateLengthAccessor(
+                (joints: number[]) => joints?.length ?? 0,
+                (joints: number[]) => joints ?? []
+            ),
             __array__: {
                 __target__: true,
                 type: "string",
