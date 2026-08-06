@@ -474,14 +474,14 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             // only do this for the selected pointer
             const controllerData = this._controllers[id];
             const handData = controllerData.xrController?.inputSource.hand;
-            // If near interaction is not enabled/available for this controller, return early
+            // If near interaction is not enabled/available for this controller, skip it
             if (
                 (!this._options.enableNearInteractionOnAllControllers && id !== this._attachedController) ||
                 !controllerData.xrController ||
                 (!handData && (!this._options.nearInteractionControllerMode || !controllerData.xrController.inputSource.gamepad))
             ) {
                 controllerData.pick = null;
-                return;
+                continue;
             }
             controllerData.hoverInteraction = false;
             controllerData.nearInteraction = false;
@@ -514,7 +514,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     this._processTouchPoint(id, controllerPose.position, controllerPose.rotationQuaternion!);
                 }
             } else {
-                return;
+                continue;
             }
 
             const accuratePickInfo = (originalScenePick: Nullable<PickingInfo>, utilityScenePick: Nullable<PickingInfo>): Nullable<PickingInfo> => {

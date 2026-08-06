@@ -1,6 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
 import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector.pure";
+import { Color4 } from "../../../Maths/math.color.pure";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
@@ -104,7 +105,7 @@ export class ParticleNLerpBlock extends NodeParticleBlock {
                     const result = new Vector4(func(gradient, left.r, right.r), func(gradient, left.g, right.g), func(gradient, left.b, right.b), func(gradient, left.a, right.a));
                     result.normalize();
 
-                    return result;
+                    return new Color4(result.x, result.y, result.z, result.w);
                 }
             }
 
