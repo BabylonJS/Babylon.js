@@ -594,8 +594,26 @@ export class Tools {
         return await Tools.LoadScriptAsync(scriptUrl);
     }
 
-    private static _LoadScriptNative(scriptUrl: string, onSuccess?: () => void, onError?: (message?: string, exception?: any) => void) {
+    private static _LoadScriptNative(
+        scriptUrl: string,
+        onSuccess?: () => void,
+        onError?: (message?: string, exception?: any) => void,
+        _scriptId?: string,
+        useModule = false
+    ) {
         if (_native) {
+            if (useModule) {
+                // When useModule is set, scriptUrl is not a url at all: it is ES module
+                // source code that the web implementation injects into a
+                // <script type="module"> element (see _LoadScriptWeb). Babylon Native has
+                // no DOM and no ES module loader, so there is nothing to inject it into.
+                // Without this guard the module source was handed to Tools.LoadFile as if
+                // it were a url, producing errors such as
+                // "Unable to open URL 'import createSpzModule from '...';'" that gave no
+                // hint about the real problem.
+                onError?.("Loading a script as an ES module is not supported in Babylon Native");
+                return;
+            }
             Tools.LoadFile(
                 scriptUrl,
                 (data) => {
