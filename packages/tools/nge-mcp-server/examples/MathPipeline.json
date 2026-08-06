@@ -60,8 +60,8 @@
       "name": "decompose",
       "inputs": [
         {
-          "name": "xyzw",
-          "displayName": "xyzw"
+          "name": "xyzw ",
+          "displayName": "xyzw "
         },
         {
           "name": "xyz ",

@@ -8,11 +8,11 @@
         "strictPropertyInitialization": false,
         "types": ["node"],
         "module": "ES2020",
-        "target": "es2021", // esnext has an issue with class generation and our decoders. TODO - avoid using decorators until in standard
+        "target": "es2021",
+        "useDefineForClassFields": false,
         "declaration": true,
         "sourceMap": true,
         "inlineSources": true,
-        "experimentalDecorators": true,
         "noImplicitOverride": true,
         "noImplicitReturns": true,
         "noUnusedLocals": true,
@@ -32,7 +32,8 @@
             "es2022.error",
             "es2022.array",
             "es2021.string",
-            "es2022.string"
+            "es2022.string",
+            "esnext.decorators"
         ],
         "paths": {
             "core/*": ["./packages/dev/core/dist/*"],

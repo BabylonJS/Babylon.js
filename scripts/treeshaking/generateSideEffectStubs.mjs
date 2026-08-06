@@ -14,7 +14,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from "fs";
-import { resolve, dirname, relative, posix } from "path";
+import { resolve, dirname, relative, posix, join } from "path";
 import { globSync } from "glob";
 import { execFileSync } from "child_process";
 import { getPackageConfig, resolvePackageFromArgv } from "./packageConfig.mjs";
@@ -35,10 +35,82 @@ const REGION_START = "// #region GENERATED_SIDE_EFFECT_STUBS — do not edit, re
 const REGION_END = "// #endregion GENERATED_SIDE_EFFECT_STUBS";
 const PRETTIER_PRINT_WIDTH = 180;
 
+// Classes that are part of the always-loaded engine hierarchy. These base
+// classes are pulled into every build that creates an engine, so any stub
+// attached to them can never be tree-shaken and inflates even the most minimal
+// (thin-engine-only) bundle. We deliberately skip generating side-effect stubs
+// for them: the small loss of a friendly "requires a side-effect import"
+// warning on these specific augmented methods is worth keeping the core engine
+// footprint minimal. Callers of an unimported augmented method on these classes
+// still get a standard "x is not a function" TypeError.
+//
+// The thin-engine closure below (STUB_EXCLUDED_FILES) already covers the WebGL
+// thin engine (AbstractEngine, ThinEngine). This list additionally covers the
+// heavier engine variants (Engine, WebGPU, Native) whose classes are not part
+// of the minimal thin-engine closure but are still always-loaded once you use
+// that engine — keeping their augmented-method stubs out of every build too.
+const STUB_EXCLUDED_CLASSES = new Set(["AbstractEngine", "ThinEngine", "Engine", "WebGPUEngine", "ThinWebGPUEngine", "NativeEngine", "ThinNativeEngine"]);
+
+/**
+ * Absolute paths of files that make up the thin-engine import closure.
+ *
+ * Every file pulled in by `new ThinEngine(canvas)` (see
+ * packages/tools/tests/src/thinEngineOnly.ts) is loaded in even the most
+ * minimal engine build, so a module-load stub (`X.prototype.m ??= ...`) placed
+ * in one of them can never be tree-shaken and permanently inflates the thin
+ * engine. The authoritative list lives in `thin-engine-modules.json` (derived
+ * from the real production bundle) rather than being recomputed here: a
+ * source-only esbuild pass tree-shakes differently from the shipped build
+ * (constants inlining, injected `/*#__PURE__*\/` annotations) and would
+ * under-count the true closure. Populated by `loadThinEngineClosure()` below;
+ * only meaningful for the core package.
+ * @type {Set<string>}
+ */
+let STUB_EXCLUDED_FILES;
+
+/**
+ * Load the authoritative thin-engine closure from `thin-engine-modules.json` and
+ * resolve each module to an absolute source path. Only relevant for `core` (the
+ * thin engine lives there and never imports the other packages). Every listed
+ * module must exist so a rename can never silently drop a file out of the
+ * exclusion set (which would let a stub creep back into the thin engine).
+ * @returns {Set<string>} absolute file paths in the thin-engine closure
+ */
+function loadThinEngineClosure() {
+    if (PACKAGE !== "core") {
+        return new Set();
+    }
+    const coreSrc = join(REPO_ROOT, "packages", "dev", "core", "src");
+    const listPath = join(REPO_ROOT, "scripts", "treeshaking", "thin-engine-modules.json");
+    const { modules } = JSON.parse(readFileSync(listPath, "utf8"));
+    const files = new Set();
+    const missing = [];
+    for (const rel of modules) {
+        const abs = join(coreSrc, rel);
+        if (!existsSync(abs)) {
+            missing.push(rel);
+            continue;
+        }
+        files.add(abs);
+    }
+    if (missing.length > 0) {
+        throw new Error(
+            `Stale thin-engine exclusion list: ${missing.length} module(s) in thin-engine-modules.json no longer exist ` +
+                `(${missing.join(", ")}). Update scripts/treeshaking/thin-engine-modules.json after the rename/removal.`
+        );
+    }
+    return files;
+}
+
 // ── Step 1: Find all .types.ts files ────────────────────────────────────────
 
 const typesFiles = globSync("**/*.types.ts", { cwd: ROOT, absolute: true }).sort();
 if (VERBOSE) console.log(`Found ${typesFiles.length} .types.ts files`);
+
+// Load the thin-engine closure up front so stubs are never emitted into any
+// always-loaded thin-engine file (see STUB_EXCLUDED_FILES).
+STUB_EXCLUDED_FILES = loadThinEngineClosure();
+if (VERBOSE) console.log(`Thin-engine closure: ${STUB_EXCLUDED_FILES.size} files excluded from stub generation`);
 
 // ── Step 2: Parse declare module blocks ─────────────────────────────────────
 
@@ -267,6 +339,18 @@ for (const typesFile of typesFiles) {
             continue;
         }
 
+        // Always-loaded files are excluded from stub generation so their stubs
+        // don't inflate minimal bundles. A file is excluded when it is part of
+        // the thin-engine closure (STUB_EXCLUDED_FILES) or when the augmented
+        // class is a known always-loaded engine variant (STUB_EXCLUDED_CLASSES).
+        // We still register the target file below so any previously generated
+        // region gets stripped, but we emit no members.
+        const classExcluded = STUB_EXCLUDED_CLASSES.has(block.interfaceName) || STUB_EXCLUDED_FILES.has(targetFile);
+        if (classExcluded && VERBOSE) {
+            const reason = STUB_EXCLUDED_FILES.has(targetFile) ? "in thin-engine closure" : "always-loaded engine class";
+            console.log(`  SKIP: ${block.interfaceName} (${reason}) — excluded from stub generation`);
+        }
+
         if (!stubsByFile.has(targetFile)) {
             stubsByFile.set(targetFile, new Map());
         }
@@ -275,6 +359,10 @@ for (const typesFile of typesFiles) {
             classMap.set(block.interfaceName, { methods: new Map(), properties: new Map() });
         }
         const stubs = classMap.get(block.interfaceName);
+
+        if (classExcluded) {
+            continue;
+        }
 
         for (const member of block.members) {
             if (member.isInternal) {
@@ -399,6 +487,7 @@ for (const [targetFile, classMap] of stubsByFile) {
 
     // Read target file first so we can detect its line endings
     let content = readFileSync(targetFile, "utf-8");
+    const originalContent = content;
     const eol = content.includes("\r\n") ? "\r\n" : "\n";
 
     // Strip existing stub region before searching for imports (so we don't match
@@ -411,6 +500,11 @@ for (const [targetFile, classMap] of stubsByFile) {
         if (content[endSkip] === "\r") endSkip++;
         if (content[endSkip] === "\n") endSkip++;
         contentWithoutRegion = content.slice(0, regionStartIdx) + content.slice(endSkip);
+        // Removing a region that was appended at EOF leaves the blank separator
+        // line that preceded it, producing a trailing blank line. Collapse any
+        // trailing whitespace down to a single end-of-line so the result stays
+        // prettier-clean (and `--check` matches a fresh regeneration).
+        contentWithoutRegion = contentWithoutRegion.replace(/\s*$/, eol);
     }
 
     // Determine which devTools symbols this file's stubs need
@@ -430,15 +524,27 @@ for (const [targetFile, classMap] of stubsByFile) {
     let stubImportLine = "";
 
     if (existingImportMatch) {
-        // Merge: parse existing symbols and add missing ones
+        // Merge: parse existing symbols, drop any generator-managed symbols that
+        // are no longer needed (e.g. when a class becomes excluded or loses all
+        // its stubs), then add the currently-needed ones. This keeps the external
+        // devTools import free of dangling unused symbols so `--check` stays
+        // stable and lint doesn't flag orphaned imports.
+        const managedSymbols = new Set(["_MissingSideEffect", "_MissingSideEffectProperty"]);
         const existingSymbols = existingImportMatch[1]
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean);
-        const allSymbols = [...new Set([...existingSymbols, ...neededSymbols])];
-        const newImport = `import { ${allSymbols.join(", ")} } from "${relPath}";`;
-        // Replace in the original content (not contentWithoutRegion)
-        content = content.replace(existingImportMatch[0], newImport);
+        const keptSymbols = existingSymbols.filter((s) => !managedSymbols.has(s) || neededSymbols.includes(s));
+        const allSymbols = [...new Set([...keptSymbols, ...neededSymbols])];
+        // If nothing remains, drop the import line entirely; otherwise rewrite it.
+        const newImport = allSymbols.length > 0 ? `import { ${allSymbols.join(", ")} } from "${relPath}";` : "";
+        const replacement = newImport || "";
+        if (newImport !== existingImportMatch[0]) {
+            content = content.replace(existingImportMatch[0], replacement);
+            // Keep contentWithoutRegion in sync so the stale-removal path below
+            // writes the cleaned import rather than the original merged one.
+            contentWithoutRegion = contentWithoutRegion.replace(existingImportMatch[0], replacement);
+        }
     } else {
         // No existing import — add import line inside the stub block
         stubImportLine = `import { ${neededSymbols.join(", ")} } from "${relPath}";`;
@@ -472,7 +578,7 @@ for (const [targetFile, classMap] of stubsByFile) {
     lines.push(REGION_END);
 
     if (fileStubCount === 0) {
-        if (contentWithoutRegion !== content) {
+        if (contentWithoutRegion !== originalContent) {
             if (DRY_RUN) {
                 console.log(`[DRY RUN] Would remove stale stubs from ${relative(ROOT, targetFile)}`);
             } else if (CHECK) {

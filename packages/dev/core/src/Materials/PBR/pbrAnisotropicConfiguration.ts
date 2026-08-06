@@ -38,7 +38,7 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public isEnabled = false;
+    public accessor isEnabled = false;
 
     /**
      * Defines the anisotropy strength (between 0 and 1) it defaults to 1.
@@ -77,7 +77,7 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public texture: Nullable<BaseTexture> = null;
+    public accessor texture: Nullable<BaseTexture> = null;
 
     private _legacy = false;
     /**
@@ -85,7 +85,7 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
-    public legacy: boolean = false;
+    public accessor legacy: boolean = false;
 
     /** @internal */
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;

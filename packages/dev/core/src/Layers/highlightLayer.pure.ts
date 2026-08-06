@@ -41,7 +41,7 @@ interface IBlurPostProcess extends PostProcess {
  * It enforces keeping the most luminous color in the color channel.
  */
 class GlowBlurPostProcess extends PostProcess {
-    protected override _effectWrapper: ThinGlowBlurPostProcess;
+    declare protected _effectWrapper: ThinGlowBlurPostProcess;
 
     constructor(
         name: string,
@@ -210,7 +210,7 @@ export class HighlightLayer extends EffectLayer {
     @serialize("options")
     private _options: Required<IHighlightLayerOptions>;
 
-    protected override readonly _thinEffectLayer: ThinHighlightLayer;
+    declare protected readonly _thinEffectLayer: ThinHighlightLayer;
     private _downSamplePostprocess: PassPostProcess;
     private _horizontalBlurPostprocess: IBlurPostProcess;
     private _verticalBlurPostprocess: IBlurPostProcess;

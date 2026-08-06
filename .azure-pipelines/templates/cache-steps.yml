@@ -28,6 +28,13 @@ parameters:
       default: false
 
 steps:
+    # Reclaim disk space first. On Microsoft-hosted Linux agents the OS disk can
+    # already be >95% full before any cache is written (unused preinstalled
+    # toolchains + full-history checkout), which makes the Cache@2 tar writes
+    # below fail with "No space left on device". Freeing space up front is what
+    # keeps the caches and build outputs from overflowing `/`.
+    - template: free-disk-space.yml
+
     - task: Cache@2
       displayName: "Cache npm packages"
       inputs:

@@ -19,7 +19,7 @@ import { type IPropertyComponentProps } from "shared-ui-components/nodeGraphSyst
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
-import { type IEditablePropertyListOption, type IPropertyDescriptionForEdition, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { type IEditablePropertyListOption, type IPropertyDescriptionForEdition, PropertyTypeForEdition, GetEditableProperties } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
 import { EDITABLE_INPUTS } from "./editableInputsRegistry";
 import { CONSTRUCTOR_CONFIG, FLOW_GRAPH_TYPE_OPTIONS } from "./constructorConfigRegistry";
@@ -186,24 +186,13 @@ export function RenderDataConnectionsSection(props: IPropertyComponentProps): JS
  */
 export function RenderGenericPropStoreSections(props: IPropertyComponentProps): JSX.Element[] {
     const block = props.nodeData.data as FlowGraphBlock;
-    const propStore = (block as any)._propStore as IPropertyDescriptionForEdition[] | undefined;
-    if (!propStore) {
+    const propStore = GetEditableProperties(block);
+    if (!propStore.length) {
         return [];
-    }
-    // Match the class-walk filter inside GenericPropertyTabComponent so we only
-    // collect groups that will actually render at least one entry.
-    const classes: string[] = [];
-    let proto = Object.getPrototypeOf(block);
-    while (proto && proto.getClassName) {
-        classes.push(proto.getClassName());
-        proto = Object.getPrototypeOf(proto);
     }
     const groupOrder: string[] = [];
     const seen = new Set<string>();
     for (const entry of propStore) {
-        if (classes.indexOf(entry.className) === -1) {
-            continue;
-        }
         if (!seen.has(entry.groupName)) {
             seen.add(entry.groupName);
             groupOrder.push(entry.groupName);
@@ -558,29 +547,17 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
 
     override render() {
         const block = this.props.nodeData.data as FlowGraphBlock,
-            propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
+            propStore: IPropertyDescriptionForEdition[] = GetEditableProperties(block);
 
-        if (!propStore) {
+        if (!propStore.length) {
             return <></>;
         }
 
         const componentList: { [groupName: string]: JSX.Element[] } = {},
             groups: string[] = [];
 
-        const classes: string[] = [];
-
-        let proto = Object.getPrototypeOf(block);
-        while (proto && proto.getClassName) {
-            classes.push(proto.getClassName());
-            proto = Object.getPrototypeOf(proto);
-        }
-
-        for (const { propertyName, displayName, type, groupName, options, className } of propStore) {
+        for (const { propertyName, displayName, type, groupName, options } of propStore) {
             let components = componentList[groupName];
-
-            if (classes.indexOf(className) === -1) {
-                continue;
-            }
 
             if (!components) {
                 components = [];

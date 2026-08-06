@@ -119,6 +119,45 @@ function getDefaultValue(typeName: string): unknown {
     return DEFAULT_VALUES[typeName] ?? undefined;
 }
 
+/**
+ * Maps config key names to the data input name they feed, for blocks whose engine
+ * constructor wires a config value onto a differently-named data input.
+ * Mirrors the `registerDataInput(<inputName>, ..., config.<configKey>)` calls in the
+ * engine block constructors so config values reach the correct input default.
+ * Example: MeshPickEvent does `registerDataInput("asset", ..., config.targetMesh)`,
+ * and SetProperty does `registerDataInput("object", ..., config.target)`.
+ */
+const CONFIG_TO_INPUT_DEFAULT_ALIASES: Record<string, string> = {
+    targetMesh: "asset",
+    target: "object",
+};
+
+/**
+ * Propagates config values onto matching data input defaults so the engine (and the
+ * editor) use them instead of the type-level default. A config key matches a data input
+ * either by exact name or via {@link CONFIG_TO_INPUT_DEFAULT_ALIASES}. An exact-name match
+ * always wins over an alias so a block that legitimately shares the name is unaffected.
+ * @param config - The block configuration, or undefined.
+ * @param dataInputs - The serialized data input connections to update in place.
+ */
+function propagateConfigToInputDefaults(config: Record<string, unknown> | undefined, dataInputs: ISerializedConnection[]): void {
+    if (!config) {
+        return;
+    }
+    for (const di of dataInputs) {
+        if (Object.prototype.hasOwnProperty.call(config, di.name) && config[di.name] !== undefined) {
+            di.defaultValue = config[di.name];
+            continue;
+        }
+        for (const configKey of Object.keys(CONFIG_TO_INPUT_DEFAULT_ALIASES)) {
+            if (CONFIG_TO_INPUT_DEFAULT_ALIASES[configKey] === di.name && Object.prototype.hasOwnProperty.call(config, configKey) && config[configKey] !== undefined) {
+                di.defaultValue = config[configKey];
+                break;
+            }
+        }
+    }
+}
+
 // ─── UUID helper ──────────────────────────────────────────────────────────
 
 let _idCounter = 0;
@@ -331,16 +370,11 @@ export class FlowGraphManager {
         }));
 
         // Gap 34 fix: Propagate config values to matching data input defaults.
-        // When a config key name matches a data input name (e.g. config.duration for SetDelay),
-        // set the instance-level defaultValue on the data input so the engine uses it
-        // instead of the type-level default (e.g. 0 for number).
-        if (config) {
-            for (const di of dataInputs) {
-                if (di.name in config && config[di.name] !== undefined) {
-                    di.defaultValue = config[di.name];
-                }
-            }
-        }
+        // When a config key maps to a data input (by exact name, e.g. config.duration for
+        // SetDelay, or via an engine alias like config.targetMesh -> "asset" for
+        // MeshPickEvent), set the instance-level defaultValue on the data input so the engine
+        // uses it instead of the type-level default (e.g. 0 for number).
+        propagateConfigToInputDefaults(config, dataInputs);
 
         // Normalize common config key aliases to canonical names
         this._normalizeConfigAliases(config, typeInfo);
@@ -447,7 +481,17 @@ export class FlowGraphManager {
 
         // Normalize aliases before merging (Gap 35 fix)
         this._normalizeConfigAliases(config, block.typeInfo);
-        Object.assign(block.serialized.config, config);
+        // Merge explicitly and skip reserved names so a malicious/malformed config (e.g. an MCP
+        // client sending "__proto__") cannot pollute the target object's prototype via Object.assign.
+        for (const key of Object.keys(config)) {
+            if (key === "__proto__" || key === "constructor" || key === "prototype") {
+                continue;
+            }
+            block.serialized.config[key] = config[key];
+        }
+        // Propagate the merged config onto matching data input defaults so later config
+        // edits reach the input the engine/editor reads (e.g. targetMesh -> "asset").
+        propagateConfigToInputDefaults(block.serialized.config, block.serialized.dataInputs);
         return "OK";
     }
 
@@ -824,7 +868,8 @@ export class FlowGraphManager {
                 if (!di.optional && di.connectedPointIds.length === 0) {
                     // Check if there's a default in config that might satisfy this
                     const configKeys = Object.keys(block.serialized.config);
-                    const hasConfigDefault = configKeys.some((k) => k.toLowerCase() === di.name.toLowerCase() || k.toLowerCase().includes(di.name.toLowerCase()));
+                    const hasConfigDefault =
+                        di.defaultValue !== undefined || configKeys.some((k) => k.toLowerCase() === di.name.toLowerCase() || k.toLowerCase().includes(di.name.toLowerCase()));
                     if (!hasConfigDefault) {
                         issues.push(`WARNING: [${block.id}] ${block.displayName} — data input "${di.name}" is not connected and has no config default.`);
                     }

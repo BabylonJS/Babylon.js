@@ -348,6 +348,14 @@ export type ViewerBaseOptions = Partial<{
     source: string;
 
     /**
+     * The file extension to use for determining the loader plugin for the default source model (e.g. ".glb", ".obj").
+     * @remarks
+     * If not set, the extension is inferred from the source URL when possible. This is needed for sources whose
+     * extension cannot be inferred from the URL (e.g. data URLs or extension-less URLs).
+     */
+    pluginExtension: string;
+
+    /**
      * The default environment to load into the viewer for lighting (IBL).
      */
     environmentLighting: string;
@@ -469,6 +477,23 @@ export const DefaultViewerBaseOptions = {
     useRightHandedSystem: false,
     useOpenPBR: false,
 } as const satisfies ViewerBaseOptions;
+
+/**
+ * @internal
+ * Orbit angle (radians) applied to the arc-rotate camera on every automatic reframe (model load
+ * and animation switch). Shared by the full Viewer and ViewerLite so both frame to the same default
+ * viewpoint. Exported from `viewerBase` for internal sharing only — intentionally not re-exported
+ * from the package index, so it is not part of the public API.
+ */
+export const FramingCameraAlpha = Math.PI / 2;
+
+/**
+ * @internal
+ * Elevation angle (radians) applied to the arc-rotate camera on every automatic reframe. Shared by
+ * the full Viewer and ViewerLite. Exported from `viewerBase` for internal sharing only —
+ * intentionally not re-exported from the package index, so it is not part of the public API.
+ */
+export const FramingCameraBeta = Math.PI / 2.4;
 
 /**
  * The subset of the Viewer API that ViewerElementBase depends on.

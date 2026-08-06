@@ -833,7 +833,40 @@ export class Atmosphere implements IDisposable {
             return null;
         });
 
+        // Eagerly start loading the atmosphere material-plugin shader includes now, before any atmosphere-enabled
+        // material exists, so that dynamically created meshes are far more likely to render in their creation frame.
+        // Errors are swallowed here (best-effort): the plugin's isReadyForSubMesh owns retry and logging.
+        void this._eagerlyPreloadMaterialPluginShaderIncludesAsync();
+
         scene.addIsReadyCheck(this);
+    }
+
+    /**
+     * Fire-and-forget wrapper around {@link preloadMaterialPluginShaderIncludesAsync} used during construction.
+     * Swallows failures so a rejected preload does not surface as an unhandled promise rejection; the plugin's
+     * `isReadyForSubMesh` already retries and logs on failure.
+     * @returns A promise that always resolves.
+     */
+    private async _eagerlyPreloadMaterialPluginShaderIncludesAsync(): Promise<void> {
+        try {
+            await this.preloadMaterialPluginShaderIncludesAsync();
+        } catch {
+            // Intentionally ignored; readiness is re-attempted (with logging/backoff) from isReadyForSubMesh.
+        }
+    }
+
+    /**
+     * Preloads the shader includes used by the atmosphere PBR material plugin so that atmosphere-enabled
+     * materials can render in their creation frame with no delay. The plugin registers these includes lazily
+     * (to keep the module tree-shakeable), so without a preload the very first atmosphere material may skip a
+     * frame while they load. Await this before creating meshes that must render immediately. Safe to call
+     * multiple times.
+     * @returns A promise that resolves once the includes are registered.
+     */
+    public async preloadMaterialPluginShaderIncludesAsync(): Promise<void> {
+        const engine = this.scene.getEngine();
+        const shaderLanguage = engine.isWebGPU && !EffectWrapper.ForceGLSL ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
+        await AtmospherePBRMaterialPlugin.PreloadShaderIncludesAsync(shaderLanguage);
     }
 
     /**

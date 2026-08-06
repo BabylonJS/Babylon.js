@@ -1,5 +1,6 @@
 /** Pure barrel — re-exports only side-effect-free modules */
 /* eslint-disable import/export */
+export * from "./engine.alphaToCoverage.pure";
 export * from "./engine.alpha.pure";
 export * from "./engine.debugging.pure";
 export * from "./engine.query.pure";
@@ -19,3 +20,4 @@ export * from "./engine.dynamicBuffer.pure";
 export * from "./engine.readTexture.pure";
 export * from "./engine.computeShader.pure";
 export * from "./engine.textureSelector.pure";
+export * from "./engine.texture2DArrayImageSource.pure";

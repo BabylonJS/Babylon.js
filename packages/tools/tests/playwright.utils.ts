@@ -85,6 +85,12 @@ export function getBabylonServerTestsList() {
             use: getUseDefinition("Viewer"),
         },
         {
+            name: "viewer-lite",
+            testMatch: "packages/tools/viewer/test/viewer.lite.test.ts",
+            // Babylon Lite is WebGPU-only, so this project needs real Chrome with WebGPU (like the "webgpu" project).
+            use: getUseDefinition("Viewer", "Chrome", false, true),
+        },
+        {
             name: "webxr",
             testMatch: "**/*.webxr.test.ts",
             use: getUseDefinition("WebXR"),

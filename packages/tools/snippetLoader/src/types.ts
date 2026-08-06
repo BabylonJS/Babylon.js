@@ -15,17 +15,7 @@
  * - `"unknown"` — The payload could not be matched to a known type
  */
 export type SnippetContentType =
-    | "playground"
-    | "nodeMaterial"
-    | "nodeGeometry"
-    | "nodeRenderGraph"
-    | "nodeParticle"
-    | "gui"
-    | "animation"
-    | "particleSystem"
-    | "spriteManager"
-    | "shaderMaterial"
-    | "unknown";
+    "playground" | "nodeMaterial" | "nodeGeometry" | "nodeRenderGraph" | "nodeParticle" | "gui" | "animation" | "particleSystem" | "spriteManager" | "shaderMaterial" | "unknown";
 
 /**
  * The module format used for transpiled JavaScript output.

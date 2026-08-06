@@ -466,7 +466,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllDefinesAsDirty")
-    public mode: MeshDebugMode;
+    public accessor mode: MeshDebugMode;
 
     private _multiply: boolean;
     /**
@@ -475,7 +475,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllDefinesAsDirty")
-    public multiply: boolean;
+    public accessor multiply: boolean;
 
     /**
      * Diffuse color used to shade the mesh.

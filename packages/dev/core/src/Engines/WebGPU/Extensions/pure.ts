@@ -1,4 +1,5 @@
 /** Pure barrel — re-exports only side-effect-free modules */
+export * from "./engine.alphaToCoverage.pure";
 export * from "./engine.alpha.pure";
 export * from "./engine.computeShader.pure";
 export * from "./engine.cubeTexture.pure";
@@ -12,3 +13,4 @@ export * from "./engine.renderTarget.pure";
 export * from "./engine.renderTargetCube.pure";
 export * from "./engine.renderTargetTexture.pure";
 export * from "./engine.videoTexture.pure";
+export * from "./engine.texture2DArrayImageSource.pure";

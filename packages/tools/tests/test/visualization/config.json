@@ -2,6 +2,12 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting GLTF",
+            "playgroundId": "#WSAFDA#0",
+            "referenceImage": "gsplat-splat-gltf.png",
+            "dependsOn": ["GaussianSplatting", "glTF"]
+        },
+        {
             "title": "Gaussian Splatting LOD",
             "playgroundId": "#418POI#12",
             "renderCount": 15,
@@ -326,6 +332,13 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Alpha-to-coverage transparent overlap",
+            "playgroundId": "#M4GBLK#0",
+            "referenceImage": "alpha-to-coverage-transparent-overlap.png",
+            "dependsOn": ["Engine", "Materials", "Meshes", "Shaders"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "MSDF Screen projected",
             "playgroundId": "#6RLCWP#48",
             "referenceImage": "msdf-projected.png",
@@ -500,6 +513,24 @@
             "playgroundId": "#7A66KI#1",
             "referenceImage": "needDepthPrePass.png",
             "dependsOn": ["Materials"]
+        },
+        {
+            "title": "needDepthPrePass material plugin variants",
+            "playgroundId": "#IOPV79#0",
+            "renderCount": 2,
+            "errorRatio": 0.1,
+            "referenceImage": "needDepthPrePassMaterialPluginVariants.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "PBR", "Shaders"]
+        },
+        {
+            "title": "needDepthPrePass extended material families",
+            "playgroundId": "#FKEO7V#1",
+            "renderCount": 60,
+            "errorRatio": 0.1,
+            "referenceImage": "needDepthPrePassExtendedMaterialFamilies.png",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Shaders"]
         },
         {
             "title": "Decal map PP",
@@ -3854,6 +3885,12 @@
         {
             "title": "OpenPBR IBL Specular IOR vs Coat Weight",
             "playgroundId": "#GRQHVV#182",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"]
+        },
+        {
+            "title": "OpenPBR IBL Specular Weight vs Coat Weight",
+            "playgroundId": "#GRQHVV#328",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Lights", "PBR", "Textures"]
         },

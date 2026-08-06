@@ -203,4 +203,131 @@ describe("Flow Graph MCP Server – Example Flow Graphs", () => {
         const dir = path.resolve(__dirname, "..", "..", "examples");
         fs.writeFileSync(path.join(dir, "SequentialSetup.flowgraph.json"), json, "utf-8");
     });
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  DEFAULT-SCENE DEMOS
+    //  These target the meshes created by the Flow Graph Editor's built-in
+    //  default scene (box, sphere, cylinder, ground). Load them straight after
+    //  the editor opens — click the named mesh to see them run, no assets needed.
+    //
+    //  Every Get/Set Property block gets its "object" input WIRED from the
+    //  MeshPickEvent's "pickedMesh" output, so the graph acts on the actual
+    //  clicked mesh (a bare config reference leaves the object input empty and
+    //  the block does nothing).
+    // ══════════════════════════════════════════════════════════════════════
+
+    // ── Default Scene 1: Click the box to make it hop up ─────────────────
+    // MeshPick(box) → GetProperty(pickedMesh, position.y) + 1 → SetProperty(pickedMesh, position.y)
+
+    it("Default Scene – Click Box To Jump", () => {
+        const mgr = new FlowGraphManager();
+        mgr.createGraph("DefaultScene_ClickBoxJump");
+
+        const pickId = getBlockId(mgr.addBlock("DefaultScene_ClickBoxJump", "MeshPickEvent", "onPickBox", { targetMesh: { className: "Mesh", name: "box" } }));
+        const getPosId = getBlockId(mgr.addBlock("DefaultScene_ClickBoxJump", "GetProperty", "getBoxPositionY", { propertyName: "position.y" }));
+        const stepId = getBlockId(mgr.addBlock("DefaultScene_ClickBoxJump", "Constant", "jumpStep", { value: 1 }));
+        const addId = getBlockId(mgr.addBlock("DefaultScene_ClickBoxJump", "Add", "add"));
+        const setPosId = getBlockId(mgr.addBlock("DefaultScene_ClickBoxJump", "SetProperty", "setBoxPositionY", { propertyName: "position.y" }));
+
+        // Signal: on each click, raise the box
+        ok(mgr.connectSignal("DefaultScene_ClickBoxJump", pickId, "done", setPosId, "in"));
+        // Data: wire the clicked mesh into both property blocks
+        ok(mgr.connectData("DefaultScene_ClickBoxJump", pickId, "pickedMesh", getPosId, "object"));
+        ok(mgr.connectData("DefaultScene_ClickBoxJump", pickId, "pickedMesh", setPosId, "object"));
+        // Data: current Y + 1 → new Y
+        ok(mgr.connectData("DefaultScene_ClickBoxJump", getPosId, "value", addId, "a"));
+        ok(mgr.connectData("DefaultScene_ClickBoxJump", stepId, "output", addId, "b"));
+        ok(mgr.connectData("DefaultScene_ClickBoxJump", addId, "value", setPosId, "value"));
+
+        const json = mgr.exportJSON("DefaultScene_ClickBoxJump")!;
+        validateCoordinator(json);
+        expect(mgr.validateGraph("DefaultScene_ClickBoxJump").every((i) => !i.startsWith("ERROR"))).toBe(true);
+
+        const fs = require("fs");
+        const path = require("path");
+        const dir = path.resolve(__dirname, "..", "..", "examples");
+        fs.writeFileSync(path.join(dir, "DefaultScene_ClickBoxJump.flowgraph.json"), json, "utf-8");
+    });
+
+    // ── Default Scene 2: Click the cylinder to toggle its visibility ─────
+    // MeshPick(cylinder) → FlipFlop → onOn: visibility 0 / onOff: visibility 1
+
+    it("Default Scene – Click Cylinder To Toggle", () => {
+        const mgr = new FlowGraphManager();
+        mgr.createGraph("DefaultScene_ClickCylinderToggle");
+
+        const pickId = getBlockId(
+            mgr.addBlock("DefaultScene_ClickCylinderToggle", "MeshPickEvent", "onPickCylinder", {
+                targetMesh: { className: "Mesh", name: "cylinder" },
+            })
+        );
+        const flipId = getBlockId(mgr.addBlock("DefaultScene_ClickCylinderToggle", "FlipFlop", "toggle"));
+        const hiddenId = getBlockId(mgr.addBlock("DefaultScene_ClickCylinderToggle", "Constant", "hidden", { value: 0 }));
+        const shownId = getBlockId(mgr.addBlock("DefaultScene_ClickCylinderToggle", "Constant", "shown", { value: 1 }));
+        const hideId = getBlockId(mgr.addBlock("DefaultScene_ClickCylinderToggle", "SetProperty", "hideCylinder", { propertyName: "visibility" }));
+        const showId = getBlockId(mgr.addBlock("DefaultScene_ClickCylinderToggle", "SetProperty", "showCylinder", { propertyName: "visibility" }));
+
+        // Signal: each click flips between onOn (hide) and onOff (show)
+        ok(mgr.connectSignal("DefaultScene_ClickCylinderToggle", pickId, "done", flipId, "in"));
+        ok(mgr.connectSignal("DefaultScene_ClickCylinderToggle", flipId, "onOn", hideId, "in"));
+        ok(mgr.connectSignal("DefaultScene_ClickCylinderToggle", flipId, "onOff", showId, "in"));
+        // Data: wire the clicked mesh into both setters
+        ok(mgr.connectData("DefaultScene_ClickCylinderToggle", pickId, "pickedMesh", hideId, "object"));
+        ok(mgr.connectData("DefaultScene_ClickCylinderToggle", pickId, "pickedMesh", showId, "object"));
+        // Data: constants drive the visibility value
+        ok(mgr.connectData("DefaultScene_ClickCylinderToggle", hiddenId, "output", hideId, "value"));
+        ok(mgr.connectData("DefaultScene_ClickCylinderToggle", shownId, "output", showId, "value"));
+
+        const json = mgr.exportJSON("DefaultScene_ClickCylinderToggle")!;
+        validateCoordinator(json);
+        expect(mgr.validateGraph("DefaultScene_ClickCylinderToggle").every((i) => !i.startsWith("ERROR"))).toBe(true);
+
+        const fs = require("fs");
+        const path = require("path");
+        const dir = path.resolve(__dirname, "..", "..", "examples");
+        fs.writeFileSync(path.join(dir, "DefaultScene_ClickCylinderToggle.flowgraph.json"), json, "utf-8");
+    });
+
+    // ── Default Scene 3: Click the sphere to toggle its color ────────────
+    // MeshPick(sphere) → GetProperty(pickedMesh, material) → FlipFlop →
+    //   onOn: SetProperty(material, diffuseColor = red) / onOff: (= green)
+    // Shows property traversal (mesh → material → color) plus a FlipFlop toggle.
+
+    it("Default Scene – Click Sphere To Change Color", () => {
+        const mgr = new FlowGraphManager();
+        mgr.createGraph("DefaultScene_ClickSphereColor");
+
+        const pickId = getBlockId(
+            mgr.addBlock("DefaultScene_ClickSphereColor", "MeshPickEvent", "onPickSphere", {
+                targetMesh: { className: "Mesh", name: "sphere" },
+            })
+        );
+        const getMatId = getBlockId(mgr.addBlock("DefaultScene_ClickSphereColor", "GetProperty", "getMaterial", { propertyName: "material" }));
+        const flipId = getBlockId(mgr.addBlock("DefaultScene_ClickSphereColor", "FlipFlop", "toggle"));
+        const redId = getBlockId(mgr.addBlock("DefaultScene_ClickSphereColor", "Constant", "red", { value: { value: [1, 0.25, 0.2], className: "Color3" } }));
+        const greenId = getBlockId(mgr.addBlock("DefaultScene_ClickSphereColor", "Constant", "green", { value: { value: [0.2, 0.8, 0.35], className: "Color3" } }));
+        const setRedId = getBlockId(mgr.addBlock("DefaultScene_ClickSphereColor", "SetProperty", "setRed", { propertyName: "diffuseColor" }));
+        const setGreenId = getBlockId(mgr.addBlock("DefaultScene_ClickSphereColor", "SetProperty", "setGreen", { propertyName: "diffuseColor" }));
+
+        // Signal: each click flips between the two colors
+        ok(mgr.connectSignal("DefaultScene_ClickSphereColor", pickId, "done", flipId, "in"));
+        ok(mgr.connectSignal("DefaultScene_ClickSphereColor", flipId, "onOn", setRedId, "in"));
+        ok(mgr.connectSignal("DefaultScene_ClickSphereColor", flipId, "onOff", setGreenId, "in"));
+        // Data: clicked mesh → GetProperty(material); material → both setters' object input
+        ok(mgr.connectData("DefaultScene_ClickSphereColor", pickId, "pickedMesh", getMatId, "object"));
+        ok(mgr.connectData("DefaultScene_ClickSphereColor", getMatId, "value", setRedId, "object"));
+        ok(mgr.connectData("DefaultScene_ClickSphereColor", getMatId, "value", setGreenId, "object"));
+        // Data: color constants → setter values
+        ok(mgr.connectData("DefaultScene_ClickSphereColor", redId, "output", setRedId, "value"));
+        ok(mgr.connectData("DefaultScene_ClickSphereColor", greenId, "output", setGreenId, "value"));
+
+        const json = mgr.exportJSON("DefaultScene_ClickSphereColor")!;
+        validateCoordinator(json);
+        expect(mgr.validateGraph("DefaultScene_ClickSphereColor").every((i) => !i.startsWith("ERROR"))).toBe(true);
+
+        const fs = require("fs");
+        const path = require("path");
+        const dir = path.resolve(__dirname, "..", "..", "examples");
+        fs.writeFileSync(path.join(dir, "DefaultScene_ClickSphereColor.flowgraph.json"), json, "utf-8");
+    });
 });

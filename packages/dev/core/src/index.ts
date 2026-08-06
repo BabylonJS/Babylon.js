@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
+import "./Misc/symbolMetadataPolyfill";
 export * from "./Actions/index";
 export * from "./Animations/index";
 export * from "./assetContainer";

@@ -8,7 +8,7 @@ import { Constants } from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture.pure";
-import { type ThinEngine } from "../../Engines";
+import { WebXRGraphicsBindingType } from "../webXRGraphicsBinding";
 
 /**
  * Options for raw camera access
@@ -88,12 +88,22 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
     }
 
     public override attach(force?: boolean): boolean {
+        if (this._xrSessionManager.scene.getEngine().isWebGPU) {
+            return this._disableAutoAttach(
+                "WebXR Raw Camera Access is unavailable with WebGPU XR because camera images are exposed only by XRWebGLBinding; the feature was disabled."
+            );
+        }
+
         if (!super.attach(force)) {
             return false;
         }
 
-        this._glContext = (this._xrSessionManager.scene.getEngine() as ThinEngine)._gl;
-        this._glBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
+        const graphicsBinding = this._xrSessionManager._getGraphicsBinding();
+        if (graphicsBinding.bindingType !== WebXRGraphicsBindingType.WebGL) {
+            throw new Error("Expected a WebGL graphics binding for WebXR Raw Camera Access.");
+        }
+        this._glContext = graphicsBinding.context;
+        this._glBinding = graphicsBinding.binding;
 
         return true;
     }

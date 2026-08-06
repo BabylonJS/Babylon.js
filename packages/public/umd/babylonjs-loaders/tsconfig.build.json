@@ -3,8 +3,7 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "target": "ES5",
-        "ignoreDeprecations": "6.0",
+        "target": "es2015",
         "rootDir": "../../../",
         "declaration": false,
         "importHelpers": true,

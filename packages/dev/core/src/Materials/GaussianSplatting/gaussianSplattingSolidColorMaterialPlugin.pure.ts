@@ -6,7 +6,7 @@ import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
 import { type SubMesh } from "../../Meshes/subMesh.pure";
 import { type UniformBuffer } from "../uniformBuffer";
 import { type MaterialDefines } from "../materialDefines";
-import { serialize, expandToProperty } from "../../Misc/decorators";
+import { serialize } from "../../Misc/decorators";
 import { type Color3 } from "../../Maths/math.color.pure";
 import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { ShaderLanguage } from "../shaderLanguage";
@@ -29,8 +29,17 @@ export class GaussianSplattingSolidColorMaterialPlugin extends MaterialPluginBas
      * Toggled via a shader uniform so no recompilation is required.
      */
     @serialize()
-    @expandToProperty("_onIsEnabledChanged")
-    public isEnabled = true;
+    public get isEnabled(): boolean {
+        return this._isEnabled;
+    }
+
+    public set isEnabled(value: boolean) {
+        if (this._isEnabled === value) {
+            return;
+        }
+        this._isEnabled = value;
+        this._onIsEnabledChanged();
+    }
 
     /** @internal */
     public _onIsEnabledChanged(): void {

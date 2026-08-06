@@ -1,0 +1,44 @@
+# =============================================================================
+# Template: Reclaim disk space on Microsoft-hosted Linux agents
+#
+# The ubuntu-latest image ships with ~40 GB of preinstalled toolchains that a
+# JS/TS monorepo never uses (Android SDK, .NET, GHC/Haskell, CodeQL, Swift,
+# prebuilt Docker images, ...). Combined with a full-history checkout
+# (fetchDepth: 0) and the restored npm/Nx/Playwright caches, the OS disk (`/`)
+# can hit >95% usage BEFORE the build even starts. The first step that needs to
+# write a large file then dies with "No space left on device" — most visibly
+# the Cache@2 tasks, which fail while writing their tar archive.
+#
+# Deleting the unused toolchains up front frees ~25-40 GB and makes the caches
+# and build outputs fit. Every removal is best-effort (|| true) so a changed
+# image layout can never fail the job. Node itself
+# (/opt/hostedtoolcache/node, installed by UseNode@1) is deliberately kept.
+#
+# Include this immediately BEFORE the cache/restore + npm install steps.
+# =============================================================================
+
+steps:
+    - bash: |
+          set -uo pipefail
+          echo "Disk usage before cleanup:"
+          df -h /
+          # Largest, safe-to-remove preinstalled toolchains for a JS monorepo.
+          # `sudo -n` never prompts for a password: Microsoft-hosted agents have
+          # passwordless sudo, and non-standard/self-hosted agents fail fast
+          # instead of hanging (the `|| true` keeps the step best-effort).
+          sudo -n rm -rf /usr/local/lib/android || true          # ~9 GB  Android SDK/NDK
+          sudo -n rm -rf /usr/share/dotnet || true               # ~3 GB  .NET SDK
+          sudo -n rm -rf /opt/ghc /usr/local/.ghcup || true      # ~5 GB  Haskell
+          sudo -n rm -rf /opt/hostedtoolcache/CodeQL || true     # ~5 GB  CodeQL bundles
+          sudo -n rm -rf /usr/local/share/boost || true          # ~1 GB  Boost
+          sudo -n rm -rf /usr/share/swift || true                # ~2 GB  Swift
+          sudo -n rm -rf /usr/local/share/powershell || true     # ~1 GB  PowerShell
+          sudo -n rm -rf /usr/local/graalvm || true              #        GraalVM
+          # Prebuilt Docker images shipped on the image (~10-15 GB).
+          sudo -n docker image prune --all --force || true
+          sudo -n apt-get clean || true
+          echo "Disk usage after cleanup:"
+          df -h /
+      displayName: "Free up disk space"
+      continueOnError: true
+      condition: eq(variables['Agent.OS'], 'Linux')

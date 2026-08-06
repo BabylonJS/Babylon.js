@@ -1,4 +1,5 @@
 import { type Observable } from "core/Misc/observable.js";
+import { MetadataSymbol } from "core/Misc/decorators.functions.js";
 
 /**
  * Enum defining the type of properties that can be edited in the property pages in the node editor
@@ -78,6 +79,10 @@ export interface IPropertyDescriptionForEdition {
     className: string;
 }
 
+/** @internal */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const __bjsSmartFilterPropStoreKey = "__bjs_sf_prop_store__";
+
 /**
  * Decorator that flags a property in a node block as being editable
  * @param displayName - the display name of the property
@@ -92,12 +97,26 @@ export function EditableInPropertyPage(
     groupName: string = "PROPERTIES",
     options?: IEditablePropertyOption
 ) {
-    return (target: any, propertyKey: string) => {
-        let propStore: IPropertyDescriptionForEdition[] = target._propStore;
-        if (!propStore) {
-            propStore = [];
-            target._propStore = propStore;
+    return (_value: unknown, context: { name: string | symbol; metadata: DecoratorMetadataObject }) => {
+        const meta = context.metadata as DecoratorMetadataObject | undefined;
+        if (!meta) {
+            // `context.metadata` is `void 0` when `Symbol.metadata` was not installed before this class
+            // was evaluated. Importing `MetadataSymbol` from core runs the polyfill at module load (before
+            // this class body), so this should never happen; referencing it here also keeps that
+            // module-load polyfill anchored against bundler tree-shaking.
+            throw new Error(
+                `EditableInPropertyPage: decorator metadata is unavailable; the Symbol.metadata (${String(MetadataSymbol)}) polyfill must run before decorated classes are evaluated.`
+            );
         }
+        let propStore: IPropertyDescriptionForEdition[];
+        if (Object.prototype.hasOwnProperty.call(meta, __bjsSmartFilterPropStoreKey)) {
+            propStore = meta[__bjsSmartFilterPropStoreKey] as IPropertyDescriptionForEdition[];
+        } else {
+            propStore = [];
+            meta[__bjsSmartFilterPropStoreKey] = propStore;
+        }
+
+        const propertyKey = String(context.name);
 
         const propToAdd: IPropertyDescriptionForEdition = {
             propertyName: propertyKey,
@@ -105,16 +124,41 @@ export function EditableInPropertyPage(
             type: propertyType,
             groupName: groupName,
             options: options ?? {},
-            className: target.constructor.name,
+            className: "",
         };
 
         // If the property already exists, overwrite it, otherwise add it
         // Note: It may have been redefined since the application started
-        const existingIndex = propStore.findIndex((p) => p.propertyName === propertyKey && p.className === target.constructor.name && options?.blockType === p.options?.blockType);
+        const existingIndex = propStore.findIndex((p) => p.propertyName === propertyKey && options?.blockType === p.options?.blockType);
         if (existingIndex !== -1) {
             propStore[existingIndex] = propToAdd;
         } else {
             propStore.push(propToAdd);
         }
     };
+}
+
+/**
+ * Gets the editable properties for a given target using TC39 decorator metadata.
+ * Walks the metadata prototype chain to include properties from parent classes.
+ * @param target - the target object (instance or constructor)
+ * @returns array of property descriptions
+ */
+export function GetSmartFilterEditableProperties(target: any): IPropertyDescriptionForEdition[] {
+    const ctor = typeof target === "function" ? target : target?.constructor;
+    const metadata: DecoratorMetadataObject | undefined = ctor?.[MetadataSymbol];
+    if (!metadata) {
+        return [];
+    }
+
+    const result: IPropertyDescriptionForEdition[] = [];
+    let currentMeta: any = metadata;
+    while (currentMeta) {
+        if (Object.prototype.hasOwnProperty.call(currentMeta, __bjsSmartFilterPropStoreKey)) {
+            const store = currentMeta[__bjsSmartFilterPropStoreKey] as IPropertyDescriptionForEdition[];
+            result.push(...store);
+        }
+        currentMeta = Object.getPrototypeOf(currentMeta);
+    }
+    return result;
 }

@@ -15,7 +15,7 @@ import { type WebRequest } from "../../Misc/webRequest";
 import { type LoadFileError } from "../../Misc/fileTools";
 import { type IOfflineProvider } from "../../Offline/IOfflineProvider";
 import { type IFileRequest } from "../../Misc/fileRequest";
-import { LoadFile } from "../../Misc/fileTools.pure";
+import { _WarnImport } from "../../Misc/devTools";
 import { _GetGlobalDefines } from "../abstractEngine.functions";
 import { type AbstractEngine } from "../abstractEngine";
 
@@ -499,7 +499,7 @@ export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions
         } else {
             const includeShaderUrl = options.shadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
-            LoadFile(includeShaderUrl, (fileContent) => {
+            _FunctionContainer.loadFile(includeShaderUrl, (fileContent) => {
                 options.includesShadersStore[includeFile] = fileContent as string;
                 ProcessIncludes(parts.join(""), options, callback);
             });
@@ -522,12 +522,14 @@ export function ProcessIncludes(sourceCode: string, options: _IProcessingOptions
  * @internal
  */
 export const _FunctionContainer = {
-    loadFile: LoadFile as (
+    loadFile: (
         url: string,
         onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
         onProgress?: (ev: ProgressEvent) => void,
         offlineProvider?: IOfflineProvider,
         useArrayBuffer?: boolean,
         onError?: (request?: WebRequest, exception?: LoadFileError) => void
-    ) => IFileRequest,
+    ): IFileRequest => {
+        throw _WarnImport("FileTools");
+    },
 };

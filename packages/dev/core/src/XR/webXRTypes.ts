@@ -42,24 +42,27 @@ export const enum WebXRTrackingState {
 }
 
 /**
- * Abstraction of the XR render target
+ * Abstraction of the XR render target.
+ * The type parameters default to the WebGL context/layer types, so `WebXRRenderTarget`
+ * used without type arguments keeps the exact same shape as before. A non-WebGL backend
+ * (e.g. a future WebGPU/XRGPUBinding target) can specialize the context and layer types.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export interface WebXRRenderTarget extends IDisposable {
+export interface WebXRRenderTarget<TContext = WebGLRenderingContext, TLayer extends XRLayer = XRWebGLLayer> extends IDisposable {
     /**
      * xrpresent context of the canvas which can be used to display/mirror xr content
      */
-    canvasContext: WebGLRenderingContext;
+    canvasContext: TContext;
 
     /**
      * xr layer for the canvas
      */
-    xrLayer: Nullable<XRWebGLLayer>;
+    xrLayer: Nullable<TLayer>;
 
     /**
-     * Initializes a XRWebGLLayer to be used as the session's baseLayer.
+     * Initializes an XR layer to be used as the session's baseLayer.
      * @param xrSession xr session
      * @returns a promise that will resolve once the XR Layer has been created
      */
-    initializeXRLayerAsync(xrSession: XRSession): Promise<XRWebGLLayer>;
+    initializeXRLayerAsync(xrSession: XRSession): Promise<TLayer>;
 }

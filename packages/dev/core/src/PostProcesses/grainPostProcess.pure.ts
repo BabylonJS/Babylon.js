@@ -49,7 +49,7 @@ export class GrainPostProcess extends PostProcess {
         return "GrainPostProcess";
     }
 
-    protected override _effectWrapper: ThinGrainPostProcess;
+    declare protected _effectWrapper: ThinGrainPostProcess;
 
     /**
      * Creates a new instance of @see GrainPostProcess

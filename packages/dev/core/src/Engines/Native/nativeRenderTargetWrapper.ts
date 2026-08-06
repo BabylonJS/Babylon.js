@@ -1,4 +1,5 @@
 import { type Nullable } from "../../types";
+import { type InternalTexture } from "../../Materials/Textures/internalTexture";
 import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { type NativeFramebuffer } from "./nativeInterfaces";
@@ -55,6 +56,19 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: ThinNativeEngine) {
         super(isMulti, isCube, size, engine);
         this._engine = engine;
+    }
+
+    public override setTexture(texture: InternalTexture, index: number = 0, disposePrevious: boolean = true): void {
+        const previous = this.textures?.[index];
+        super.setTexture(texture, index, disposePrevious);
+
+        // bgfx binds a fixed attachment set when a framebuffer is created and cannot re-point an individual
+        // attachment the way GL's framebufferTexture2D can. When a multi render target attachment is swapped
+        // after creation (e.g. the OIT depth-peeling renderer replaces every attachment via
+        // MultiRenderTarget.setInternalTexture), recreate the whole framebuffer from the new attachment set.
+        if (this.isMulti && this.textures?.[index] !== previous) {
+            this._engine._createMultiRenderTargetFramebuffer(this);
+        }
     }
 
     public override dispose(disposeOnlyFramebuffers = false): void {

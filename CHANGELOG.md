@@ -1,5 +1,334 @@
 # Changelog
 
+## 9.20.0
+
+### Core
+
+- Reuse graphics bindings and disable raw camera access - by [RaananW](https://github.com/RaananW) ([#18773](https://github.com/BabylonJS/Babylon.js/pull/18773))
+- Fix the per-eye clear wiping drawn frames, plus upright rendering and half-Z NDC - by [RaananW](https://github.com/RaananW) ([#18688](https://github.com/BabylonJS/Babylon.js/pull/18688))
+- Fix RawCubeTexture invertY crash on WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18767](https://github.com/BabylonJS/Babylon.js/pull/18767))
+
+### Loaders
+
+- Fix: respect camera layerMask in the transmission opaque texture - by [RaananW](https://github.com/RaananW) ([#18766](https://github.com/BabylonJS/Babylon.js/pull/18766))
+
+## 9.19.1
+
+### Core
+
+- Fix clustered lighting WGSL validation on Firefox WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18761](https://github.com/BabylonJS/Babylon.js/pull/18761))
+- fix(physics): correct inverse inertia tensor rows in PhysicsCharacterController - by [RaananW](https://github.com/RaananW) ([#18756](https://github.com/BabylonJS/Babylon.js/pull/18756))
+- Prevent touch hover events from exhausting pointer slots - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18748](https://github.com/BabylonJS/Babylon.js/pull/18748))
+- Fix one-frame render flash when recreating a mesh in the same tick - by [RaananW](https://github.com/RaananW) ([#18755](https://github.com/BabylonJS/Babylon.js/pull/18755))
+- Fix: Gaussian Splatting sort padding reuses real splat data, causing splats stuck in front of the model - by [raymondyfei](https://github.com/raymondyfei) ([#18752](https://github.com/BabylonJS/Babylon.js/pull/18752))
+- Allow disabling Havok floating origin world regions - by [BarthPaleologue](https://github.com/BarthPaleologue) ([#18750](https://github.com/BabylonJS/Babylon.js/pull/18750))
+
+### Loaders
+
+- chore(deps): pin @adobe/spz to exact 0.2.0 in @dev/loaders - by [RaananW](https://github.com/RaananW) ([#18759](https://github.com/BabylonJS/Babylon.js/pull/18759))
+
+## 9.19.0
+
+### Core
+
+- Restore transitive side-effect registrations - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18751](https://github.com/BabylonJS/Babylon.js/pull/18751))
+
+### Loaders
+
+- Restore transitive side-effect registrations - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18751](https://github.com/BabylonJS/Babylon.js/pull/18751))
+
+## 9.18.2
+
+### Core
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+- Fix pure engine disposal without loading screen registration - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18747](https://github.com/BabylonJS/Babylon.js/pull/18747))
+- fix(AudioV2): spatialize MediaStream/WebRTC sound sources out of the box - by [RaananW](https://github.com/RaananW) ([#18745](https://github.com/BabylonJS/Babylon.js/pull/18745))
+- Fix .babylonproj transform node duplication - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#18742](https://github.com/BabylonJS/Babylon.js/pull/18742))
+
+### GUI
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
+### Inspector
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
+### Loaders
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
+### Lottie Player
+
+- Replace the Lottie player's sprite atlas with a stencil-then-cover vector renderer - by [VicenteCartas](https://github.com/VicenteCartas) ([#18743](https://github.com/BabylonJS/Babylon.js/pull/18743))
+
+### Playground
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
+### Serializers
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
+### Smart Filters
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
+### Viewer
+
+- build: update dependencies and clear npm audit findings - by [RaananW](https://github.com/RaananW) ([#18744](https://github.com/BabylonJS/Babylon.js/pull/18744))
+
+## 9.18.1
+
+### Addons
+
+- Move alpha-to-coverage support to engine extensions - by [VicenteCartas](https://github.com/VicenteCartas) ([#18725](https://github.com/BabylonJS/Babylon.js/pull/18725))
+
+### Core
+
+- Support array and uncompressed textures in the KTX2 decoder - [_New Feature_] by [ryantrem](https://github.com/ryantrem) ([#18740](https://github.com/BabylonJS/Babylon.js/pull/18740))
+- OpenPBR: Ensures relative IOR goes to one as the specular_weight goes to zero - by [MiiBond](https://github.com/MiiBond) ([#18739](https://github.com/BabylonJS/Babylon.js/pull/18739))
+- Fix GS with nosort+native - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18741](https://github.com/BabylonJS/Babylon.js/pull/18741))
+- Move alpha-to-coverage support to engine extensions - by [VicenteCartas](https://github.com/VicenteCartas) ([#18725](https://github.com/BabylonJS/Babylon.js/pull/18725))
+- Add onEffectiveEnabledStateChangedObservable to node class - by [AmoebaChant](https://github.com/AmoebaChant) ([#18726](https://github.com/BabylonJS/Babylon.js/pull/18726))
+- fix: scene can be nil in rgbd post process - by [jmheretik](https://github.com/jmheretik) ([#18724](https://github.com/BabylonJS/Babylon.js/pull/18724))
+
+### Loaders
+
+- Fix EXT_lights_ies profile texture naming - by [matthargett](https://github.com/matthargett) ([#18737](https://github.com/BabylonJS/Babylon.js/pull/18737))
+
+### Viewer
+
+- Add animated shadows to Viewer Lite - by [ryantrem](https://github.com/ryantrem) ([#18731](https://github.com/BabylonJS/Babylon.js/pull/18731))
+
+## 9.18.0
+
+### Core
+
+- Fix PerfCounter min/max initialization - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#18721](https://github.com/BabylonJS/Babylon.js/pull/18721))
+- Fix GS Texture leak with resize - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18720](https://github.com/BabylonJS/Babylon.js/pull/18720))
+- Check XRGPUBinding before native fallback - by [matthargett](https://github.com/matthargett) ([#18711](https://github.com/BabylonJS/Babylon.js/pull/18711))
+
+### Sandbox
+
+- fix(sandbox): apply persisted glTF loader options on page load - by [MiiBond](https://github.com/MiiBond) ([#18702](https://github.com/BabylonJS/Babylon.js/pull/18702))
+
+## 9.17.1
+
+### Core
+
+- feat(materials): add 2D array texture creation and image-source population - by [ryantrem](https://github.com/ryantrem) ([#18706](https://github.com/BabylonJS/Babylon.js/pull/18706))
+- fix(build): resolve TS2304 in bundled .module.d.ts for XRBody and SPZ types - by [RaananW](https://github.com/RaananW) ([#18714](https://github.com/BabylonJS/Babylon.js/pull/18714))
+- Fix .pure.ts transitive side-effect regressions (SceneLoader, depth-stencil, WGSL depth shaders) - by [RaananW](https://github.com/RaananW) ([#18717](https://github.com/BabylonJS/Babylon.js/pull/18717))
+- Fix NodeMaterial overlighting under HDR from default image-processing config - by [RaananW](https://github.com/RaananW) ([#18704](https://github.com/BabylonJS/Babylon.js/pull/18704))
+- Physics Controller shape options - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18716](https://github.com/BabylonJS/Babylon.js/pull/18716))
+- Coerce native dynamic texture dimensions before allocation - by [matthargett](https://github.com/matthargett) ([#18709](https://github.com/BabylonJS/Babylon.js/pull/18709))
+- Fix: GaussianSplattingStream misclassified as an ordinary mesh, causing severe rendering slowdowns - by [raymondyfei](https://github.com/raymondyfei) ([#18707](https://github.com/BabylonJS/Babylon.js/pull/18707))
+- Fix: IBL shadow procedural textures keep rendering every frame after being toggled off - by [raymondyfei](https://github.com/raymondyfei) ([#18708](https://github.com/BabylonJS/Babylon.js/pull/18708))
+- Fix world region crash - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18705](https://github.com/BabylonJS/Babylon.js/pull/18705))
+- Fix physics plugin not releasing empty Havok world regions - by [BarthPaleologue](https://github.com/BarthPaleologue) ([#18699](https://github.com/BabylonJS/Babylon.js/pull/18699))
+- feat(flowGraph): edit live scenes from the Flow Graph Editor + Inspector - by [RaananW](https://github.com/RaananW) ([#18695](https://github.com/BabylonJS/Babylon.js/pull/18695))
+
+### GUI
+
+- Fix Line.connectedControl with adaptive scaling - [_Bug Fix_] by [AmoebaChant](https://github.com/AmoebaChant) ([#18703](https://github.com/BabylonJS/Babylon.js/pull/18703))
+
+### Inspector
+
+- fix(inspector): correct malformed gif.worker.js CDN URL - by [RaananW](https://github.com/RaananW) ([#18712](https://github.com/BabylonJS/Babylon.js/pull/18712))
+- fix(inspector-v2): don't flood scene explorer with per-frame active camera notifications - by [marns](https://github.com/marns) ([#18700](https://github.com/BabylonJS/Babylon.js/pull/18700))
+- feat(flowGraph): edit live scenes from the Flow Graph Editor + Inspector - by [RaananW](https://github.com/RaananW) ([#18695](https://github.com/BabylonJS/Babylon.js/pull/18695))
+
+### Loaders
+
+- Preserve FBX skeletal animations through GLB round trips - [_Bug Fix_] by [alexchuber](https://github.com/alexchuber) ([#18715](https://github.com/BabylonJS/Babylon.js/pull/18715))
+- Fix: GaussianSplattingStream misclassified as an ordinary mesh, causing severe rendering slowdowns - by [raymondyfei](https://github.com/raymondyfei) ([#18707](https://github.com/BabylonJS/Babylon.js/pull/18707))
+
+### Viewer
+
+- Fix: GaussianSplattingStream misclassified as an ordinary mesh, causing severe rendering slowdowns - by [raymondyfei](https://github.com/raymondyfei) ([#18707](https://github.com/BabylonJS/Babylon.js/pull/18707))
+
+## 9.17.0
+
+### Addons
+
+- Preserve antialiased edges when writing depth - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18696](https://github.com/BabylonJS/Babylon.js/pull/18696))
+
+### Core
+
+- Preserve antialiased edges when writing depth - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18696](https://github.com/BabylonJS/Babylon.js/pull/18696))
+- refactor(splats): Expose safe-orbit camera limits on Gaussian Splatting meshes - by [raymondyfei](https://github.com/raymondyfei) ([#18685](https://github.com/BabylonJS/Babylon.js/pull/18685))
+
+### GUI
+
+- fix(gui): InputText paste replaces highlighted selection - by [RaananW](https://github.com/RaananW) ([#18694](https://github.com/BabylonJS/Babylon.js/pull/18694))
+
+### Inspector
+
+- Inspector v2: Allow FBX files in Project Authoring asset add/swap - by [PatrickRyanMS](https://github.com/PatrickRyanMS) ([#18698](https://github.com/BabylonJS/Babylon.js/pull/18698))
+
+### Loaders
+
+- refactor(splats): Expose safe-orbit camera limits on Gaussian Splatting meshes - by [raymondyfei](https://github.com/raymondyfei) ([#18685](https://github.com/BabylonJS/Babylon.js/pull/18685))
+- fix(loaders): retry deferred GaussianSplattingStream LOD switch after cooldown expires - by [raymondyfei](https://github.com/raymondyfei) ([#18693](https://github.com/BabylonJS/Babylon.js/pull/18693))
+
+## 9.16.2
+
+### Addons
+
+- Add writeToDepthBuffer option to MSDF TextRenderer - by [VicenteCartas](https://github.com/VicenteCartas) ([#18691](https://github.com/BabylonJS/Babylon.js/pull/18691))
+
+### Core
+
+- Prepare codebase for TypeScript 7 - by [RaananW](https://github.com/RaananW) ([#18689](https://github.com/BabylonJS/Babylon.js/pull/18689))
+- Serialization adjustments - by [kv-bh](https://github.com/kv-bh) ([#18690](https://github.com/BabylonJS/Babylon.js/pull/18690))
+- Update material plugin regex replacement implementation - by [kv-bh](https://github.com/kv-bh) ([#18680](https://github.com/BabylonJS/Babylon.js/pull/18680))
+- fix(AudioV2): fix seek-after-resume offset and propagate live loop changes - by [RaananW](https://github.com/RaananW) ([#18678](https://github.com/BabylonJS/Babylon.js/pull/18678))
+
+### Inspector
+
+- fix(inspector-v2): capture more .babylonproj overrides - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#18668](https://github.com/BabylonJS/Babylon.js/pull/18668))
+
+### Loaders
+
+- fix(loaders): auto-register SceneLoader plugin when importing glTF/2.0 - by [RaananW](https://github.com/RaananW) ([#18679](https://github.com/BabylonJS/Babylon.js/pull/18679))
+
+### Materials
+
+- Fix WGSL water shader using undefined toLinearSpace on vec3 - by [RaananW](https://github.com/RaananW) ([#18682](https://github.com/BabylonJS/Babylon.js/pull/18682))
+
+### Sandbox
+
+- fix(sandbox): play correct animation when the animation list is filtered - by [RaananW](https://github.com/RaananW) ([#18687](https://github.com/BabylonJS/Babylon.js/pull/18687))
+
+### Serializers
+
+- Add materialName parameter to OBJExport.MTL - by [FrankNesling](https://github.com/FrankNesling) ([#18686](https://github.com/BabylonJS/Babylon.js/pull/18686))
+
+### Viewer
+
+- Add @babylonjs/lite-based Viewer variant (@babylonjs/viewer/lite) - by [ryantrem](https://github.com/ryantrem) ([#18692](https://github.com/BabylonJS/Babylon.js/pull/18692))
+
+## 9.16.1
+
+### Core
+
+- fix(core): register createDepthStencilTexture side effect for WebGPU engine - by [RaananW](https://github.com/RaananW) ([#18677](https://github.com/BabylonJS/Babylon.js/pull/18677))
+- MultiRenderTarget, reverse-Z clear, applyStates, OIT alpha modes - by [bkaradzic-microsoft](https://github.com/bkaradzic-microsoft) ([#18568](https://github.com/BabylonJS/Babylon.js/pull/18568))
+
+## 9.16.0
+
+### Addons
+
+- fix(addons): render atmosphere PBR materials in their creation frame - by [RaananW](https://github.com/RaananW) ([#18670](https://github.com/BabylonJS/Babylon.js/pull/18670))
+
+### Core
+
+- Add an `emitRateControl` setter to `GPUParticleSystem` - by [VicenteCartas](https://github.com/VicenteCartas) ([#18674](https://github.com/BabylonJS/Babylon.js/pull/18674))
+- Preserve particle texture settings when serializing by reference - by [VicenteCartas](https://github.com/VicenteCartas) ([#18673](https://github.com/BabylonJS/Babylon.js/pull/18673))
+- Fix ParticleSystem.clone() / GPUParticleSystem.clone() changing the particle texture - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#18672](https://github.com/BabylonJS/Babylon.js/pull/18672))
+- fix: restore side-effect registrations dropped by the 9.15 pure/non-pure split - by [RaananW](https://github.com/RaananW) ([#18671](https://github.com/BabylonJS/Babylon.js/pull/18671))
+- fix(AudioV2): propagate live loopStart/loopEnd changes to playing static sounds - by [RaananW](https://github.com/RaananW) ([#18669](https://github.com/BabylonJS/Babylon.js/pull/18669))
+- WebGPU projection layer + render target provider - by [RaananW](https://github.com/RaananW) ([#18655](https://github.com/BabylonJS/Babylon.js/pull/18655))
+- fix(AudioV2): resume looping static sound from correct position with loopStart/loopEnd - by [RaananW](https://github.com/RaananW) ([#18661](https://github.com/BabylonJS/Babylon.js/pull/18661))
+- Fix lighting volume WGSL depth texture binding - by [matthargett](https://github.com/matthargett) ([#18658](https://github.com/BabylonJS/Babylon.js/pull/18658))
+- TC39 migration: flip experimentalDecorators to Stage 3 decorators (atomic) - by [RaananW](https://github.com/RaananW) ([#18647](https://github.com/BabylonJS/Babylon.js/pull/18647))
+- fix(core): shrink thin-engine bundle (remove fileTools force-link + thin-closure stubs) - by [RaananW](https://github.com/RaananW) ([#18656](https://github.com/BabylonJS/Babylon.js/pull/18656))
+- WebGPU-compatible XR session + XRGPUBinding plumbing - by [RaananW](https://github.com/RaananW) ([#18650](https://github.com/BabylonJS/Babylon.js/pull/18650))
+- WebGPU-XR Phase 0: decouple WebXR from WebGL with API-agnostic seams - by [RaananW](https://github.com/RaananW) ([#18645](https://github.com/BabylonJS/Babylon.js/pull/18645))
+
+### GUI
+
+- TC39 migration: flip experimentalDecorators to Stage 3 decorators (atomic) - by [RaananW](https://github.com/RaananW) ([#18647](https://github.com/BabylonJS/Babylon.js/pull/18647))
+
+### Inspector
+
+- Add support for loading .babylonproj files in Sandbox - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18666](https://github.com/BabylonJS/Babylon.js/pull/18666))
+- feat(inspector): expose PBR metallic texture channel mapping (glTF ORM) - by [ryantrem](https://github.com/ryantrem) ([#18667](https://github.com/BabylonJS/Babylon.js/pull/18667))
+
+### Loaders
+
+- KHR_gaussian_splatting gltf extension - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18659](https://github.com/BabylonJS/Babylon.js/pull/18659))
+
+### Materials
+
+- TC39 migration: flip experimentalDecorators to Stage 3 decorators (atomic) - by [RaananW](https://github.com/RaananW) ([#18647](https://github.com/BabylonJS/Babylon.js/pull/18647))
+
+### Node Editor
+
+- TC39 migration: flip experimentalDecorators to Stage 3 decorators (atomic) - by [RaananW](https://github.com/RaananW) ([#18647](https://github.com/BabylonJS/Babylon.js/pull/18647))
+
+### Node Geometry Editor
+
+- TC39 migration: flip experimentalDecorators to Stage 3 decorators (atomic) - by [RaananW](https://github.com/RaananW) ([#18647](https://github.com/BabylonJS/Babylon.js/pull/18647))
+
+### Node Particle Editor
+
+- TC39 migration: flip experimentalDecorators to Stage 3 decorators (atomic) - by [RaananW](https://github.com/RaananW) ([#18647](https://github.com/BabylonJS/Babylon.js/pull/18647))
+
+### Node Render Graph Editor
+
+- TC39 migration: flip experimentalDecorators to Stage 3 decorators (atomic) - by [RaananW](https://github.com/RaananW) ([#18647](https://github.com/BabylonJS/Babylon.js/pull/18647))
+
+### Playground
+
+- TC39 migration: flip experimentalDecorators to Stage 3 decorators (atomic) - by [RaananW](https://github.com/RaananW) ([#18647](https://github.com/BabylonJS/Babylon.js/pull/18647))
+
+### Sandbox
+
+- Add support for loading .babylonproj files in Sandbox - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#18666](https://github.com/BabylonJS/Babylon.js/pull/18666))
+
+### Serializers
+
+- TC39 migration: flip experimentalDecorators to Stage 3 decorators (atomic) - by [RaananW](https://github.com/RaananW) ([#18647](https://github.com/BabylonJS/Babylon.js/pull/18647))
+
+### Smart Filters
+
+- TC39 migration: flip experimentalDecorators to Stage 3 decorators (atomic) - by [RaananW](https://github.com/RaananW) ([#18647](https://github.com/BabylonJS/Babylon.js/pull/18647))
+
+### Viewer
+
+- TC39 migration: flip experimentalDecorators to Stage 3 decorators (atomic) - by [RaananW](https://github.com/RaananW) ([#18647](https://github.com/BabylonJS/Babylon.js/pull/18647))
+- Viewer: Treat OpenPBRMaterial as PBR for light setup - by [MiiBond](https://github.com/MiiBond) ([#18622](https://github.com/BabylonJS/Babylon.js/pull/18622))
+- Upgrade Vite to 8.1.3 (Rolldown) for faster tool builds - by [RaananW](https://github.com/RaananW) ([#18649](https://github.com/BabylonJS/Babylon.js/pull/18649))
+
+## 9.15.0
+
+### Addons
+
+- Keep pure barrels side-effect-free in gui, loaders, and atmosphere addon - by [RaananW](https://github.com/RaananW) ([#18625](https://github.com/BabylonJS/Babylon.js/pull/18625))
+
+### Core
+
+- TC39 prep: Symbol.metadata-based serialization decorator store (no behavior change) - by [RaananW](https://github.com/RaananW) ([#18631](https://github.com/BabylonJS/Babylon.js/pull/18631))
+- Normalize diagonal keyboard movement for Free, Fly, and ArcRotate cameras - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#18634](https://github.com/BabylonJS/Babylon.js/pull/18634))
+- fix(core): restore CubeTexture static crash in EnvironmentHelper (pure barrel) - by [RaananW](https://github.com/RaananW) ([#18629](https://github.com/BabylonJS/Babylon.js/pull/18629))
+- Fix WGSL exact sRGB conversions failing on WebGPU - by [RaananW](https://github.com/RaananW) ([#18628](https://github.com/BabylonJS/Babylon.js/pull/18628))
+- fix(core): register PostProcess side-effects for tree-shaken SSAO2 - by [ryantrem](https://github.com/ryantrem) ([#18624](https://github.com/BabylonJS/Babylon.js/pull/18624))
+- Fix unregistered image processing parser breaking material clone in tree-shaken builds - by [RaananW](https://github.com/RaananW) ([#18623](https://github.com/BabylonJS/Babylon.js/pull/18623))
+- OpenPBR Fuzz Fixes - by [MiiBond](https://github.com/MiiBond) ([#18617](https://github.com/BabylonJS/Babylon.js/pull/18617))
+- fix(core): register hard side-effect dependencies at construction time for pure barrel - by [RaananW](https://github.com/RaananW) ([#18620](https://github.com/BabylonJS/Babylon.js/pull/18620))
+- Geospatial camera: configurable double-tap fly-to, primary-pointer guard, and normalized keyboard pan - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#18616](https://github.com/BabylonJS/Babylon.js/pull/18616))
+- fix: four pure-import / tree-shaking regressions (clearQuad 404, clustered lighting, snapshot helper, glTF worker materials) - by [RaananW](https://github.com/RaananW) ([#18618](https://github.com/BabylonJS/Babylon.js/pull/18618))
+
+### GUI
+
+- Keep pure barrels side-effect-free in gui, loaders, and atmosphere addon - by [RaananW](https://github.com/RaananW) ([#18625](https://github.com/BabylonJS/Babylon.js/pull/18625))
+- Remove side-effect import closure baseline mechanism - by [RaananW](https://github.com/RaananW) ([#18619](https://github.com/BabylonJS/Babylon.js/pull/18619))
+
+### Loaders
+
+- Keep pure barrels side-effect-free in gui, loaders, and atmosphere addon - by [RaananW](https://github.com/RaananW) ([#18625](https://github.com/BabylonJS/Babylon.js/pull/18625))
+- fix: four pure-import / tree-shaking regressions (clearQuad 404, clustered lighting, snapshot helper, glTF worker materials) - by [RaananW](https://github.com/RaananW) ([#18618](https://github.com/BabylonJS/Babylon.js/pull/18618))
+
+### Sandbox
+
+- fix(sandbox): load glTF extensions, animation side-effects, and inspector in dev - by [RaananW](https://github.com/RaananW) ([#18627](https://github.com/BabylonJS/Babylon.js/pull/18627))
+
+### Viewer
+
+- fix(core): register PostProcess side-effects for tree-shaken SSAO2 - by [ryantrem](https://github.com/ryantrem) ([#18624](https://github.com/BabylonJS/Babylon.js/pull/18624))
+
 ## 9.14.0
 
 ### Core

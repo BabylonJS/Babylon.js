@@ -85,18 +85,7 @@ type BevelTopology = {
 };
 
 type BevelAttributeName =
-    | "tangents"
-    | "uvs"
-    | "uvs2"
-    | "uvs3"
-    | "uvs4"
-    | "uvs5"
-    | "uvs6"
-    | "colors"
-    | "matricesIndices"
-    | "matricesWeights"
-    | "matricesIndicesExtra"
-    | "matricesWeightsExtra";
+    "tangents" | "uvs" | "uvs2" | "uvs3" | "uvs4" | "uvs5" | "uvs6" | "colors" | "matricesIndices" | "matricesWeights" | "matricesIndicesExtra" | "matricesWeightsExtra";
 
 type BevelAttributeDescriptor = {
     name: BevelAttributeName;

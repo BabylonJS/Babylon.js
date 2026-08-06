@@ -40,6 +40,16 @@ export function MakeGlobalStateService(options: IFlowGraphEditorOptions, hostEle
             const scene = options.hostScene ?? options.flowGraph.scene;
             const globalState = new GlobalState(scene);
 
+            // Only treat this as a live host scene when the launcher explicitly opted in
+            // (FlowGraph.edit()/Inspector). The standalone editor also passes a hostScene — a
+            // throwaway scene that merely owns the coordinator — but wants its own editable preview
+            // scene, so it must not enter host mode. Set this before assigning the coordinator or
+            // flowGraph below: those run the graph-activation path (`set flowGraph`), which checks
+            // hostScene to avoid stopping a running application.
+            if (options.attachToLiveScene) {
+                globalState.hostScene = options.hostScene ?? options.flowGraph.scene;
+            }
+
             // If the flow graph belongs to a coordinator, use it for multi-graph support.
             // Otherwise the flowGraph setter will handle single-graph mode.
             const existingCoordinator = options.flowGraph.coordinator;
@@ -55,7 +65,6 @@ export function MakeGlobalStateService(options: IFlowGraphEditorOptions, hostEle
 
             globalState.hostElement = hostElement;
             globalState.hostDocument = hostElement.ownerDocument!;
-            globalState.hostScene = options.hostScene;
             globalState.customSave = options.customSave;
             globalState.hostWindow = hostElement.ownerDocument.defaultView!;
             globalState.stateManager.hostDocument = globalState.hostDocument;

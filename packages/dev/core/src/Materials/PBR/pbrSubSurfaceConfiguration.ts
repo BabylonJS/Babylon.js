@@ -83,7 +83,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     public static DEFAULT_LEGACY_TRANSLUCENCY = false;
 
-    protected override _material: PBRBaseMaterial;
+    declare protected _material: PBRBaseMaterial;
 
     private _isRefractionEnabled = false;
     /**
@@ -91,7 +91,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public isRefractionEnabled = false;
+    public accessor isRefractionEnabled = false;
 
     private _isTranslucencyEnabled = false;
     /**
@@ -99,7 +99,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public isTranslucencyEnabled = false;
+    public accessor isTranslucencyEnabled = false;
 
     private _isDispersionEnabled = false;
     /**
@@ -107,7 +107,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public isDispersionEnabled = false;
+    public accessor isDispersionEnabled = false;
 
     private _isScatteringEnabled = false;
     /**
@@ -115,7 +115,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markScenePrePassDirty")
-    public isScatteringEnabled = false;
+    public accessor isScatteringEnabled = false;
 
     @serialize()
     private _scatteringDiffusionProfileIndex = 0;
@@ -166,7 +166,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useAlbedoToTintRefraction: boolean = false;
+    public accessor useAlbedoToTintRefraction: boolean = false;
 
     private _useAlbedoToTintTranslucency = false;
     /**
@@ -174,7 +174,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useAlbedoToTintTranslucency: boolean = false;
+    public accessor useAlbedoToTintTranslucency: boolean = false;
 
     private _thicknessTexture: Nullable<BaseTexture> = null;
     /**
@@ -186,7 +186,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public thicknessTexture: Nullable<BaseTexture> = null;
+    public accessor thicknessTexture: Nullable<BaseTexture> = null;
 
     private _refractionTexture: Nullable<BaseTexture> = null;
     /**
@@ -194,7 +194,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public refractionTexture: Nullable<BaseTexture> = null;
+    public accessor refractionTexture: Nullable<BaseTexture> = null;
 
     /** @internal */
     public _indexOfRefraction = 1.5;
@@ -208,7 +208,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public indexOfRefraction = 1.5;
+    public accessor indexOfRefraction = 1.5;
 
     @serialize()
     private _volumeIndexOfRefraction = -1.0;
@@ -220,7 +220,6 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      * This ONLY impacts refraction. If not provided or given a non-valid value,
      * the volume will use the same IOR as the surface.
      */
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public get volumeIndexOfRefraction(): number {
         if (this._volumeIndexOfRefraction >= 1.0) {
             return this._volumeIndexOfRefraction;
@@ -228,11 +227,12 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return this._indexOfRefraction;
     }
     public set volumeIndexOfRefraction(value: number) {
-        if (value >= 1.0) {
-            this._volumeIndexOfRefraction = value;
-        } else {
-            this._volumeIndexOfRefraction = -1.0;
+        const volumeIndexOfRefraction = value >= 1.0 ? value : -1.0;
+        if (this._volumeIndexOfRefraction === volumeIndexOfRefraction) {
+            return;
         }
+        this._volumeIndexOfRefraction = volumeIndexOfRefraction;
+        this._markAllSubMeshesAsTexturesDirty();
     }
 
     private _invertRefractionY = false;
@@ -241,7 +241,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public invertRefractionY = false;
+    public accessor invertRefractionY = false;
 
     /** @internal */
     public _linkRefractionWithTransparency = false;
@@ -251,7 +251,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public linkRefractionWithTransparency = false;
+    public accessor linkRefractionWithTransparency = false;
 
     /**
      * Defines the minimum thickness stored in the thickness map.
@@ -308,7 +308,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useMaskFromThicknessTexture: boolean = false;
+    public accessor useMaskFromThicknessTexture: boolean = false;
 
     private _refractionIntensityTexture: Nullable<BaseTexture> = null;
     /**
@@ -317,7 +317,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public refractionIntensityTexture: Nullable<BaseTexture> = null;
+    public accessor refractionIntensityTexture: Nullable<BaseTexture> = null;
 
     private _translucencyIntensityTexture: Nullable<BaseTexture> = null;
     /**
@@ -326,7 +326,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public translucencyIntensityTexture: Nullable<BaseTexture> = null;
+    public accessor translucencyIntensityTexture: Nullable<BaseTexture> = null;
 
     /**
      * Defines the translucency tint of the material.
@@ -343,7 +343,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public translucencyColorTexture: Nullable<BaseTexture> = null;
+    public accessor translucencyColorTexture: Nullable<BaseTexture> = null;
 
     private _useGltfStyleTextures = true;
     /**
@@ -354,7 +354,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useGltfStyleTextures: boolean = true;
+    public accessor useGltfStyleTextures: boolean = true;
 
     /**
      * This property only exists for backward compatibility reasons.

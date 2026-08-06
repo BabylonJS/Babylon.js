@@ -42,6 +42,8 @@ export const GaussianSplattingSortWorkerCommand = {
  */
 export const GaussianSplattingSortWorker = function (self: Worker) {
     let positions: Float32Array;
+    // Real (unpadded) splat count backing `positions` — see emptySplatIndex below for why this matters.
+    let vertexCount = 0;
     let depthMix: BigInt64Array;
     let partIndices: Uint8Array;
     let partMatrices: Float32Array[];
@@ -61,6 +63,7 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
         const command = e.data.command;
         if (command === "positions") {
             positions = e.data.positions;
+            vertexCount = e.data.vertexCount;
         } else if (command === "positionsUpdate") {
             // Patch only the changed sub-range in place, avoiding a full re-copy/transfer of the entire
             // (potentially hundreds-of-MB) position buffer on every streamed LOD decode.
@@ -107,6 +110,11 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
             // but fall back to "all source splats" if a sort somehow arrives before it.
             const activeIntervals = intervals;
             const totalSplats = positions.length / 4;
+            // Index to use when 16-aligning the sorted output needs extra filler entries. Real data never
+            // lives at or past `vertexCount` — with or without range filtering — and `_getTextureSize`
+            // (gaussianSplattingMeshBase.pure.ts) always reserves at least one empty slot there, even when
+            // `vertexCount` would otherwise exactly fill every texture row.
+            const emptySplatIndex = vertexCount;
             let renderSplatCount = totalSplats;
             if (activeIntervals) {
                 renderSplatCount = 0;
@@ -260,9 +268,13 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
                         outIndices[2 * dest] = sortSourceIndices[k];
                     }
 
-                    // Pad the remainder up to the 16-multiple with the reserved (invisible) splat index 0.
+                    // Pad the remainder up to the 16-multiple with a guaranteed-empty index (see
+                    // emptySplatIndex above) — NOT splat index 0, which is just the first real splat of
+                    // whatever source data was loaded. Padding with a real, opaque splat draws it an extra
+                    // 15 times at the very end of the (back-to-front) draw order — i.e. always on top,
+                    // regardless of camera.
                     for (let dest = renderSplatCount; dest < vertexCountPadded; dest++) {
-                        outIndices[2 * dest] = 0;
+                        outIndices[2 * dest] = emptySplatIndex;
                     }
                 } else {
                     // ===== Legacy comparison sort: pack (index, ~depthBits) into each 64-bit lane and sort it =====
@@ -279,9 +291,10 @@ export const GaussianSplattingSortWorker = function (self: Worker) {
                                 indices[2 * writeIndex++] = sourceIndex;
                             }
                         }
-                        // Pad up to a multiple of 16 with the reserved (invisible) splat index 0.
+                        // Pad up to a multiple of 16. Splat index 0 isn't guaranteed invisible (see the
+                        // counting-sort branch above) — use the same guaranteed-empty index instead.
                         for (; writeIndex < vertexCountPadded; writeIndex++) {
-                            indices[2 * writeIndex] = 0;
+                            indices[2 * writeIndex] = emptySplatIndex;
                         }
                     } else {
                         for (let j = 0; j < vertexCountPadded; j++) {

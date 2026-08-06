@@ -426,16 +426,14 @@ export class MaterialPluginManager {
                             regexFlags += "g";
                         }
 
-                        const sourceCode = code;
                         const rx = new RegExp(pointName, regexFlags);
-                        let match = rx.exec(sourceCode);
+                        let match = rx.exec(code);
                         while (match !== null) {
-                            let newCode = injectedCode;
-                            for (let i = 0; i < match.length; ++i) {
-                                newCode = newCode.replace("$" + i, match[i]);
-                            }
-                            code = code.replace(match[0], newCode);
-                            match = rx.exec(sourceCode);
+                            const { index } = match;
+                            const newCode = ReplaceRegExpSubstitutions(injectedCode, match);
+                            code = code.substring(0, index) + newCode + code.substring(index + match[0].length);
+                            rx.lastIndex = index + newCode.length;
+                            match = rx.exec(code);
                         }
                     } else {
                         const fullPointName = "#define " + pointName;
@@ -525,4 +523,17 @@ export function UnregisterAllMaterialPlugins(): void {
     Inited = false;
     Material.OnEventObservable.remove(MaterialObserver);
     MaterialObserver = null;
+}
+
+/**
+ * Replace regex substitution patterns (e.g. $1, $2, etc.)
+ * @param value The replacement string
+ * @param match The regex match array
+ * @returns Value having $X substitutions replaced with the equivalent `match[X]`
+ */
+function ReplaceRegExpSubstitutions(value: string, match: ReadonlyArray<string>): string {
+    return value.replace(/\$(\d+)/g, (group0: string, group1: string): string => {
+        const index = Number(group1);
+        return index < match.length ? match[index] : "";
+    });
 }

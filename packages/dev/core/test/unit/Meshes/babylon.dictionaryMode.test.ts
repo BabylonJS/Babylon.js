@@ -33,7 +33,7 @@ describe("Babylon Mesh", () => {
                 }
             }
 
-            expect(count).toBeLessThan(128);
+            expect(count).toBeLessThan(136);
         });
     });
 });

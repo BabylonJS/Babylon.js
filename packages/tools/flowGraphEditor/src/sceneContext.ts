@@ -58,6 +58,12 @@ export class SceneContext {
     /** The scene this context was built from */
     public readonly scene: Scene;
 
+    /**
+     * Whether this context owns the lifecycle of its scene/engine.
+     * `false` when wrapping a live host scene the editor must not dispose.
+     */
+    public readonly ownsScene: boolean;
+
     /** The engine the preview scene runs on */
     public get engine() {
         return this.scene.getEngine();
@@ -107,9 +113,12 @@ export class SceneContext {
     /**
      * Creates a new SceneContext.
      * @param scene - the scene to catalogue
+     * @param ownsScene - whether the context owns the scene/engine lifecycle (default true).
+     * Pass `false` when wrapping a live host scene the editor must not dispose.
      */
-    constructor(scene: Scene) {
+    constructor(scene: Scene, ownsScene: boolean = true) {
         this.scene = scene;
+        this.ownsScene = ownsScene;
         this._catalogScene();
         this._subscribeToSceneChanges();
     }

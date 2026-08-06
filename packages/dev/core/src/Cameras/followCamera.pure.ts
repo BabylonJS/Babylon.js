@@ -96,12 +96,12 @@ export class FollowCamera extends TargetCamera {
      * Define the target of the camera.
      */
     @serializeAsMeshReference("lockedTargetId")
-    public override lockedTarget: Nullable<AbstractMesh>;
+    public override lockedTarget: Nullable<AbstractMesh> = null;
 
     /**
      * Defines the input associated with the camera.
      */
-    public override inputs: FollowCameraInputsManager;
+    declare public inputs: FollowCameraInputsManager;
 
     /**
      * Instantiates the follow camera.

@@ -471,7 +471,10 @@ function transpileExternalTsPlugin() {
                     jsx: isTsx ? ts.JsxEmit.ReactJSX : ts.JsxEmit.Preserve,
                     esModuleInterop: true,
                     allowSyntheticDefaultImports: true,
-                    experimentalDecorators: true,
+                    // The codebase uses TC39 Stage 3 decorators (experimentalDecorators is off),
+                    // so leave experimentalDecorators unset here and keep assignment (not define)
+                    // class-field semantics so decorated fields match the rest of the build.
+                    useDefineForClassFields: false,
                     sourceMap: true,
                     inlineSources: true,
                 },
@@ -505,7 +508,9 @@ function esbuildTranspilePlugin(opts = {}) {
                 format: "esm",
                 tsconfigRaw: {
                     compilerOptions: {
-                        experimentalDecorators: true,
+                        // TC39 Stage 3 decorators (experimentalDecorators is off across the codebase);
+                        // esbuild lowers them natively. useDefineForClassFields:false keeps assignment
+                        // (not define) class-field semantics so decorated fields behave as in the main build.
                         useDefineForClassFields: false,
                     },
                 },

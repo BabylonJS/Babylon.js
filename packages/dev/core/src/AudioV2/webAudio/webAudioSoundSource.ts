@@ -15,6 +15,9 @@ export class _WebAudioSoundSource extends AbstractSoundSource {
     protected _subGraph: _WebAudioBusAndSoundSubGraph;
     protected _webAudioNode: Nullable<AudioNode> = null;
 
+    private _mediaStreamAudioElement: Nullable<HTMLAudioElement> = null;
+    private _stopMediaStreamTracksOnDispose = false;
+
     /** @internal */
     public _audioContext: AudioContext | OfflineAudioContext;
 
@@ -28,7 +31,47 @@ export class _WebAudioSoundSource extends AbstractSoundSource {
         this._audioContext = this.engine._audioContext;
         this._webAudioNode = webAudioNode;
 
+        this._stopMediaStreamTracksOnDispose = options.stopMediaStreamTracksOnDispose === true;
+
+        if (options.mediaStreamSinkEnabled !== false && webAudioNode instanceof MediaStreamAudioSourceNode) {
+            this._attachMediaStreamSink(webAudioNode.mediaStream);
+        }
+
         this._subGraph = new _WebAudioSoundSource._SubGraph(this);
+    }
+
+    /**
+     * Keeps a `MediaStream`-backed source audible by attaching the stream to a hidden, muted audio element.
+     *
+     * Some browsers (notably Chromium) only deliver samples from a `MediaStreamAudioSourceNode` while its `MediaStream`
+     * is also being pulled by an `HTMLMediaElement`; without this, a remote WebRTC stream routed through Web Audio is
+     * silent and cannot be spatialized. The element is muted so it does not add a second, non-spatial playback.
+     * @param mediaStream - the `MediaStream` backing this sound source
+     */
+    private _attachMediaStreamSink(mediaStream: MediaStream): void {
+        if (typeof Audio === "undefined") {
+            return;
+        }
+
+        const mediaElement = new Audio();
+        mediaElement.muted = true;
+        mediaElement.srcObject = mediaStream;
+        this._mediaStreamAudioElement = mediaElement;
+
+        void this._startMediaStreamSinkAsync(mediaElement);
+    }
+
+    /**
+     * Starts best-effort playback of the muted keep-alive media element.
+     * @param mediaElement - the muted media element pulling the source `MediaStream`
+     */
+    private async _startMediaStreamSinkAsync(mediaElement: HTMLAudioElement): Promise<void> {
+        try {
+            // Muted media is allowed to autoplay without a user gesture.
+            await mediaElement.play();
+        } catch {
+            // A rejected play() only means this browser-specific keep-alive is unavailable, which is non-fatal.
+        }
     }
 
     /** @internal */
@@ -68,8 +111,14 @@ export class _WebAudioSoundSource extends AbstractSoundSource {
     public override dispose(): void {
         super.dispose();
 
+        if (this._mediaStreamAudioElement) {
+            this._mediaStreamAudioElement.pause();
+            this._mediaStreamAudioElement.srcObject = null;
+            this._mediaStreamAudioElement = null;
+        }
+
         if (this._webAudioNode) {
-            if (this._webAudioNode instanceof MediaStreamAudioSourceNode) {
+            if (this._stopMediaStreamTracksOnDispose && this._webAudioNode instanceof MediaStreamAudioSourceNode) {
                 for (const track of this._webAudioNode.mediaStream.getTracks()) {
                     track.stop();
                 }

@@ -107,6 +107,11 @@ export abstract class AbstractSound extends AbstractSoundSource {
 
     public set loop(value: boolean) {
         this._options.loop = value;
+
+        const it = this._instances.values();
+        for (let instance = it.next(); !instance.done; instance = it.next()) {
+            instance.value.loop = value;
+        }
     }
 
     /**

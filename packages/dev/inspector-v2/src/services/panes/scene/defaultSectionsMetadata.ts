@@ -11,6 +11,7 @@ export const enum DefaultSectionsOrder {
     AnimationGroups = 1000,
     GUIs = 1100,
     FrameGraphs = 1200,
+    FlowGraphs = 1250,
     Atmosphere = 1300,
     Sounds = 1400,
     AudioV2 = 1500,
@@ -31,5 +32,6 @@ export const enum DefaultCommandsOrder {
     EditParticleSystem = 1100,
     EditNodeGeometry = 1100,
     EditNodeRenderGraph = 1100,
+    EditFlowGraph = 1100,
     Dispose = 10000,
 }

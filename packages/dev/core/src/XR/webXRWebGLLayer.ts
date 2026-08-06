@@ -3,7 +3,7 @@ import { type Viewport } from "../Maths/math.viewport";
 import { type Scene } from "../scene";
 import { type Nullable } from "../types";
 import { WebXRLayerWrapper } from "./webXRLayerWrapper";
-import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
+import { WebXRWebGLRenderTargetTextureProvider } from "./webXRWebGLRenderTargetTextureProvider";
 
 /**
  * Wraps xr webgl layers.
@@ -29,7 +29,7 @@ export class WebXRWebGLLayerWrapper extends WebXRLayerWrapper {
  * Provides render target textures and other important rendering information for a given XRWebGLLayer.
  * @internal
  */
-export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
+export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRWebGLRenderTargetTextureProvider {
     // The dimensions will always be defined in this class.
     protected override _framebufferDimensions: { framebufferWidth: number; framebufferHeight: number };
     private _rtt: Nullable<RenderTargetTexture>;

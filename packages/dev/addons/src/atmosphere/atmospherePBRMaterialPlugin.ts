@@ -11,6 +11,7 @@ import { Logger } from "core/Misc/logger";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3FromFloatsToRef, Vector3ScaleToRef } from "core/Maths/math.vector.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderStore } from "core/Engines/shaderStore";
 
 class AtmospherePBRMaterialDefines extends MaterialDefines {
     public USE_CUSTOM_REFLECTION = false;
@@ -48,16 +49,96 @@ const PluginName = "AtmospherePBRMaterialPlugin";
 const PluginPriority = 600;
 const OriginOffsetKm = { x: 0, y: 0, z: 0 };
 
+// How long to wait before retrying a failed shader-include load, so we don't hammer the loader every frame.
+const ShaderIncludesRetryDelayMs = 5000;
+
+// The shader-include names this plugin injects via getCustomCode, per shader language. Used both to load
+// (register) them and to synchronously detect when they are already present in the ShaderStore.
+const GlslShaderIncludeNames = ["atmosphereFunctions", "atmosphereUboDeclaration", "atmosphereFragmentDeclaration"];
+const WgslShaderIncludeNames = ["atmosphereFunctions", "atmosphereUboDeclaration"];
+
+type ShaderIncludesLoadState = {
+    loaded: boolean;
+    loadPromise: Nullable<Promise<void>>;
+    nextRetryTime: number;
+};
+
+// Load state is tracked per shader language at module scope (not per plugin instance) so that once the
+// includes are registered, every subsequent atmosphere material becomes ready without re-incurring a load.
+const GlslShaderIncludesLoadState: ShaderIncludesLoadState = { loaded: false, loadPromise: null, nextRetryTime: 0 };
+const WgslShaderIncludesLoadState: ShaderIncludesLoadState = { loaded: false, loadPromise: null, nextRetryTime: 0 };
+
+function GetShaderIncludesLoadState(shaderLanguage: ShaderLanguage): ShaderIncludesLoadState {
+    return shaderLanguage === ShaderLanguage.WGSL ? WgslShaderIncludesLoadState : GlslShaderIncludesLoadState;
+}
+
+/**
+ * Synchronously checks whether the atmosphere shader includes for the given language are already
+ * registered in the ShaderStore (e.g. from a previously created material or an explicit preload).
+ * @param shaderLanguage - The shader language whose includes to check.
+ * @returns True when every required include is present.
+ */
+function AreShaderIncludesRegistered(shaderLanguage: ShaderLanguage): boolean {
+    const store = ShaderStore.GetIncludesShadersStore(shaderLanguage);
+    const names = shaderLanguage === ShaderLanguage.WGSL ? WgslShaderIncludeNames : GlslShaderIncludeNames;
+    for (const name of names) {
+        if (store[name] === undefined) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * Dynamically imports (and thereby registers into the ShaderStore) the atmosphere shader includes for the
+ * given language. Loading via dynamic import keeps this module free of top-level shader side effects so it
+ * can be tree-shaken.
+ * @param shaderLanguage - The shader language whose includes to import.
+ * @returns A promise that resolves once the includes are registered.
+ */
+async function ImportShaderIncludesAsync(shaderLanguage: ShaderLanguage): Promise<void> {
+    if (shaderLanguage === ShaderLanguage.WGSL) {
+        await Promise.all([import("./ShadersWGSL/ShadersInclude/atmosphereFunctions"), import("./ShadersWGSL/ShadersInclude/atmosphereUboDeclaration")]);
+    } else {
+        await Promise.all([
+            import("./Shaders/ShadersInclude/atmosphereFunctions"),
+            import("./Shaders/ShadersInclude/atmosphereUboDeclaration"),
+            import("./Shaders/ShadersInclude/atmosphereFragmentDeclaration"),
+        ]);
+    }
+}
+
+/**
+ * Loads and registers the atmosphere shader includes for the given language. Registration from a previously
+ * created material (or a prior call) is detected synchronously via the ShaderStore. The in-flight promise and
+ * loaded flag are shared per language so concurrent callers coalesce onto a single load. Rejects (and clears
+ * the shared promise so a retry is possible) on failure.
+ * @param shaderLanguage - The shader language whose includes to load.
+ * @returns A promise that resolves once the includes are registered.
+ */
+async function LoadShaderIncludesAsync(shaderLanguage: ShaderLanguage): Promise<void> {
+    const state = GetShaderIncludesLoadState(shaderLanguage);
+    if (state.loaded || AreShaderIncludesRegistered(shaderLanguage)) {
+        state.loaded = true;
+        return;
+    }
+    if (!state.loadPromise) {
+        state.loadPromise = ImportShaderIncludesAsync(shaderLanguage);
+    }
+    try {
+        await state.loadPromise;
+        state.loaded = true;
+    } catch (error) {
+        // Clear the in-flight promise so a later attempt can retry the load, then rethrow for awaiters.
+        state.loadPromise = null;
+        throw error;
+    }
+}
+
 /**
  * Adds shading logic to a PBRMaterial that provides radiance, diffuse sky irradiance, and aerial perspective from the atmosphere.
  */
 export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
-    private static readonly _ShaderIncludesRetryDelayMs = 5000;
-
-    private _shaderIncludesLoaded = false;
-    private _shaderIncludesLoadPromise: Nullable<Promise<void>> = null;
-    private _shaderIncludesNextRetryTime = 0;
-
     /**
      * Constructs the {@link AtmospherePBRMaterialPlugin}.
      * @param material - The material to apply the plugin to.
@@ -96,6 +177,12 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
 
         // This calls `getCode` so we need to do this after having initialized the class fields.
         this._pluginManager._addPlugin(this);
+
+        // Kick off loading the shader includes as early as possible (as soon as the material exists) so a
+        // freshly created atmosphere material can become ready with minimal frame delay. This is best-effort;
+        // readiness is still gated in isReadyForSubMesh, and callers needing a strict zero-frame-delay
+        // guarantee can await AtmospherePBRMaterialPlugin.PreloadShaderIncludesAsync (or Material.forceCompilationAsync).
+        this._ensureShaderIncludesLoaded();
     }
 
     /**
@@ -131,10 +218,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
         // registered into the ShaderStore lazily so this module stays free of top-level side effects.
         // Gate readiness until they are loaded, otherwise the host material's effect would fail to
         // resolve `#include<atmosphereFunctions>` and friends at compile time.
-        if (!this._shaderIncludesLoaded) {
-            if (!this._shaderIncludesLoadPromise && Date.now() >= this._shaderIncludesNextRetryTime) {
-                this._shaderIncludesLoadPromise = this._loadShaderIncludesAsync();
-            }
+        if (!this._ensureShaderIncludesLoaded()) {
             return false;
         }
 
@@ -155,35 +239,61 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
     }
 
     /**
-     * Lazily loads (and thereby registers into the ShaderStore) the shader includes referenced by
-     * this plugin's injected custom code. Loading the correct variant for the host material's shader
-     * language keeps this module free of top-level shader side effects so it can be tree-shaken.
+     * Ensures the shader includes for this material's shader language are registered, kicking off a lazy
+     * load if needed. Registration from a previously created material (or an explicit preload) is detected
+     * synchronously via the ShaderStore, so only the very first atmosphere material can incur a load delay.
+     * @returns True when the includes are registered and the plugin can proceed.
      */
-    private async _loadShaderIncludesAsync(): Promise<void> {
+    private _ensureShaderIncludesLoaded(): boolean {
+        const shaderLanguage = this._material.shaderLanguage;
+        const state = GetShaderIncludesLoadState(shaderLanguage);
+
+        if (state.loaded || AreShaderIncludesRegistered(shaderLanguage)) {
+            state.loaded = true;
+            return true;
+        }
+
+        // Not yet registered: start (or wait to retry) the load. Backoff/logging live in the fire-and-forget helper.
+        if (!state.loadPromise && Date.now() >= state.nextRetryTime) {
+            void this._tryLoadShaderIncludesAsync(shaderLanguage, state);
+        }
+
+        return false;
+    }
+
+    /**
+     * Fire-and-forget load of the shader includes used from isReadyForSubMesh. Backs off after a failure and
+     * logs so a missing registration doesn't silently stall rendering forever; a retry still recovers from
+     * transient failures such as a dropped network request.
+     * @param shaderLanguage - The shader language whose includes to load.
+     * @param state - The shared load state for that language.
+     */
+    private async _tryLoadShaderIncludesAsync(shaderLanguage: ShaderLanguage, state: ShaderIncludesLoadState): Promise<void> {
         try {
-            if (this._material.shaderLanguage === ShaderLanguage.WGSL) {
-                await Promise.all([import("./ShadersWGSL/ShadersInclude/atmosphereFunctions"), import("./ShadersWGSL/ShadersInclude/atmosphereUboDeclaration")]);
-            } else {
-                await Promise.all([
-                    import("./Shaders/ShadersInclude/atmosphereFunctions"),
-                    import("./Shaders/ShadersInclude/atmosphereUboDeclaration"),
-                    import("./Shaders/ShadersInclude/atmosphereFragmentDeclaration"),
-                ]);
-            }
-            this._shaderIncludesLoaded = true;
+            await LoadShaderIncludesAsync(shaderLanguage);
         } catch (error) {
-            // Surface the failure (a missing shader-include registration would otherwise silently stall
-            // rendering forever) and back off before retrying so we don't hammer the loader every frame.
-            // A retry still allows recovery from transient failures such as a dropped network request.
             Logger.Error(
                 `AtmospherePBRMaterialPlugin: Failed to load atmosphere shader includes; the atmosphere material will not render until they load. Retrying in ${
-                    AtmospherePBRMaterialPlugin._ShaderIncludesRetryDelayMs / 1000
+                    ShaderIncludesRetryDelayMs / 1000
                 }s. ${error}`
             );
-            this._shaderIncludesNextRetryTime = Date.now() + AtmospherePBRMaterialPlugin._ShaderIncludesRetryDelayMs;
-            // Clear the in-flight promise so a later readiness check can retry the load.
-            this._shaderIncludesLoadPromise = null;
+            state.nextRetryTime = Date.now() + ShaderIncludesRetryDelayMs;
         }
+    }
+
+    /**
+     * Preloads (and registers into the ShaderStore) the atmosphere shader includes for the given shader
+     * language, ahead of creating any atmosphere-enabled material. Await this before creating meshes when
+     * they must render in their creation frame with zero delay. Safe to call multiple times; concurrent
+     * calls coalesce onto a single load.
+     *
+     * As an alternative, `Material.forceCompilationAsync(mesh)` (or `Scene.whenReadyAsync`) also awaits the
+     * includes, because readiness is gated through `isReadyForSubMesh`.
+     * @param shaderLanguage - The shader language to preload includes for (defaults to GLSL). Pass `ShaderLanguage.WGSL` for WebGPU.
+     * @returns A promise that resolves once the includes are registered.
+     */
+    public static async PreloadShaderIncludesAsync(shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL): Promise<void> {
+        await LoadShaderIncludesAsync(shaderLanguage);
     }
 
     /**

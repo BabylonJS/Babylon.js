@@ -139,6 +139,11 @@ export abstract class StaticSound extends AbstractSound {
 
     public set loopStart(value: number) {
         this._options.loopStart = value;
+
+        const it = this._instances.values();
+        for (let instance = it.next(); !instance.done; instance = it.next()) {
+            instance.value.loopStart = value;
+        }
     }
 
     /**
@@ -151,6 +156,11 @@ export abstract class StaticSound extends AbstractSound {
 
     public set loopEnd(value: number) {
         this._options.loopEnd = value;
+
+        const it = this._instances.values();
+        for (let instance = it.next(); !instance.done; instance = it.next()) {
+            instance.value.loopEnd = value;
+        }
     }
 
     /**

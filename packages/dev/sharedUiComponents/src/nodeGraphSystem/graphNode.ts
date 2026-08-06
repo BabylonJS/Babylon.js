@@ -14,7 +14,13 @@ import { type INodeData } from "./interfaces/nodeData";
 import { type IPortData } from "./interfaces/portData";
 import * as localStyles from "./graphNode.module.scss";
 import * as commonStyles from "./common.module.scss";
-import { type IEditablePropertyListOption, type IEditablePropertyOption, type IPropertyDescriptionForEdition, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import {
+    type IEditablePropertyListOption,
+    type IEditablePropertyOption,
+    type IPropertyDescriptionForEdition,
+    GetEditableProperties,
+    PropertyTypeForEdition,
+} from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "./automaticProperties";
 import dropdownArrowIcon from "../imgs/dropdownArrowIcon_white.svg";
 import { BuildFloatUI } from "./tools";
@@ -940,20 +946,12 @@ export class GraphNode {
         }
 
         // Options
-        const propStore: IPropertyDescriptionForEdition[] = this.content.data._propStore;
-        if (propStore) {
+        const propStore: IPropertyDescriptionForEdition[] = GetEditableProperties(this.content.data);
+        if (propStore.length) {
             const source = this.content.data;
 
-            const classes: string[] = [];
-
-            let proto = Object.getPrototypeOf(source);
-            while (proto && proto.getClassName) {
-                classes.push(proto.getClassName());
-                proto = Object.getPrototypeOf(proto);
-            }
-
-            for (const { propertyName, displayName, type, options, className } of propStore) {
-                if (!options || !options.embedded || classes.indexOf(className) === -1) {
+            for (const { propertyName, displayName, type, options } of propStore) {
+                if (!options || !options.embedded) {
                     continue;
                 }
 

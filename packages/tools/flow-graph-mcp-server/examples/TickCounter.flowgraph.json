@@ -9,7 +9,7 @@
           "dataInputs": [],
           "dataOutputs": [
             {
-              "uniqueId": "fg-00000007",
+              "uniqueId": "fg-00000006",
               "name": "timeSinceStart",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -20,7 +20,7 @@
               }
             },
             {
-              "uniqueId": "fg-00000008",
+              "uniqueId": "fg-00000007",
               "name": "deltaTime",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -31,31 +31,24 @@
               }
             }
           ],
-          "signalInputs": [
-            {
-              "uniqueId": "fg-00000003",
-              "name": "in",
-              "_connectionType": 0,
-              "connectedPointIds": []
-            }
-          ],
+          "signalInputs": [],
           "signalOutputs": [
             {
-              "uniqueId": "fg-00000004",
+              "uniqueId": "fg-00000003",
               "name": "out",
               "_connectionType": 1,
               "connectedPointIds": []
             },
             {
-              "uniqueId": "fg-00000005",
+              "uniqueId": "fg-00000004",
               "name": "done",
               "_connectionType": 1,
               "connectedPointIds": [
-                "fg-00000013"
+                "fg-00000012"
               ]
             },
             {
-              "uniqueId": "fg-00000006",
+              "uniqueId": "fg-00000005",
               "name": "error",
               "_connectionType": 1,
               "connectedPointIds": []
@@ -70,11 +63,11 @@
           "config": {
             "variable": "counter"
           },
-          "uniqueId": "fg-00000009",
+          "uniqueId": "fg-00000008",
           "dataInputs": [],
           "dataOutputs": [
             {
-              "uniqueId": "fg-0000000a",
+              "uniqueId": "fg-00000009",
               "name": "value",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -96,11 +89,11 @@
             "value": 1,
             "type": "number"
           },
-          "uniqueId": "fg-0000000b",
+          "uniqueId": "fg-0000000a",
           "dataInputs": [],
           "dataOutputs": [
             {
-              "uniqueId": "fg-0000000c",
+              "uniqueId": "fg-0000000b",
               "name": "output",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -119,14 +112,14 @@
         {
           "className": "FlowGraphAddBlock",
           "config": {},
-          "uniqueId": "fg-0000000d",
+          "uniqueId": "fg-0000000c",
           "dataInputs": [
             {
-              "uniqueId": "fg-0000000e",
+              "uniqueId": "fg-0000000d",
               "name": "a",
               "_connectionType": 0,
               "connectedPointIds": [
-                "fg-0000000a"
+                "fg-00000009"
               ],
               "className": "FlowGraphDataConnection",
               "richType": {
@@ -135,11 +128,11 @@
               "optional": false
             },
             {
-              "uniqueId": "fg-0000000f",
+              "uniqueId": "fg-0000000e",
               "name": "b",
               "_connectionType": 0,
               "connectedPointIds": [
-                "fg-0000000c"
+                "fg-0000000b"
               ],
               "className": "FlowGraphDataConnection",
               "richType": {
@@ -150,7 +143,7 @@
           ],
           "dataOutputs": [
             {
-              "uniqueId": "fg-00000010",
+              "uniqueId": "fg-0000000f",
               "name": "value",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -160,7 +153,7 @@
               }
             },
             {
-              "uniqueId": "fg-00000011",
+              "uniqueId": "fg-00000010",
               "name": "isValid",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -182,14 +175,14 @@
           "config": {
             "variable": "counter"
           },
-          "uniqueId": "fg-00000012",
+          "uniqueId": "fg-00000011",
           "dataInputs": [
             {
-              "uniqueId": "fg-00000016",
+              "uniqueId": "fg-00000015",
               "name": "value",
               "_connectionType": 0,
               "connectedPointIds": [
-                "fg-00000010"
+                "fg-0000000f"
               ],
               "className": "FlowGraphDataConnection",
               "richType": {
@@ -201,7 +194,7 @@
           "dataOutputs": [],
           "signalInputs": [
             {
-              "uniqueId": "fg-00000013",
+              "uniqueId": "fg-00000012",
               "name": "in",
               "_connectionType": 0,
               "connectedPointIds": []
@@ -209,15 +202,15 @@
           ],
           "signalOutputs": [
             {
-              "uniqueId": "fg-00000014",
+              "uniqueId": "fg-00000013",
               "name": "out",
               "_connectionType": 1,
               "connectedPointIds": [
-                "fg-00000018"
+                "fg-00000017"
               ]
             },
             {
-              "uniqueId": "fg-00000015",
+              "uniqueId": "fg-00000014",
               "name": "error",
               "_connectionType": 1,
               "connectedPointIds": []
@@ -230,14 +223,14 @@
         {
           "className": "FlowGraphConsoleLogBlock",
           "config": {},
-          "uniqueId": "fg-00000017",
+          "uniqueId": "fg-00000016",
           "dataInputs": [
             {
-              "uniqueId": "fg-0000001b",
+              "uniqueId": "fg-0000001a",
               "name": "message",
               "_connectionType": 0,
               "connectedPointIds": [
-                "fg-00000010"
+                "fg-0000000f"
               ],
               "className": "FlowGraphDataConnection",
               "richType": {
@@ -246,7 +239,7 @@
               "optional": false
             },
             {
-              "uniqueId": "fg-0000001c",
+              "uniqueId": "fg-0000001b",
               "name": "logType",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -260,7 +253,7 @@
           "dataOutputs": [],
           "signalInputs": [
             {
-              "uniqueId": "fg-00000018",
+              "uniqueId": "fg-00000017",
               "name": "in",
               "_connectionType": 0,
               "connectedPointIds": []
@@ -268,13 +261,13 @@
           ],
           "signalOutputs": [
             {
-              "uniqueId": "fg-00000019",
+              "uniqueId": "fg-00000018",
               "name": "out",
               "_connectionType": 1,
               "connectedPointIds": []
             },
             {
-              "uniqueId": "fg-0000001a",
+              "uniqueId": "fg-00000019",
               "name": "error",
               "_connectionType": 1,
               "connectedPointIds": []

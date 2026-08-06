@@ -154,6 +154,16 @@ export interface WebGPUEngineOptions extends AbstractEngineOptions, GPURequestAd
     forceFallbackAdapter?: boolean;
 
     /**
+     * When set to true, requests a GPU adapter that is compatible with the user agent's XR device,
+     * as required to create a WebGPU-compatible WebXR session (see the WebXR/WebGPU binding spec).
+     * This mirrors the WebGL `xrCompatible` context attribute and must be set when the engine is
+     * created (adapter-request time): WebGPU has no post-hoc "make XR compatible" step, so it cannot
+     * be toggled on later. Leave unset/false for the default non-XR path.
+     * Default: false
+     */
+    xrCompatible?: boolean;
+
+    /**
      * Defines the device descriptor used to create a device once we have retrieved an appropriate adapter
      */
     deviceDescriptor?: GPUDeviceDescriptor;
@@ -591,7 +601,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._compatibilityMode = mode;
     }
 
-    /** @internal */
+    /**
+     * Gets the number of samples used by the current render target
+     * @returns the current sample count, or 1 when multisampling is disabled
+     */
     public get currentSampleCount(): number {
         return this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount;
     }
@@ -2575,6 +2588,13 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public wrapWebGPUTexture(texture: GPUTexture): InternalTexture {
         const hardwareTexture = new WebGPUHardwareTexture(this, texture);
+        // Report the real format of the wrapped texture. The hardware texture otherwise keeps its
+        // default (RGBA8Unorm); the render-pass color attachment view + pipeline color target are
+        // built from hardwareTexture.format (see _setColorFormat / bindFramebuffer), so an external
+        // texture created with any other format (e.g. bgra8unorm or an *-srgb variant, as returned by
+        // XRGPUBinding.getPreferredColorFormat()) would otherwise get a mismatched view and fail to render.
+        hardwareTexture.format = texture.format;
+        hardwareTexture.originalFormat = texture.format;
         const internalTexture = new InternalTexture(this, InternalTextureSource.External, true);
         internalTexture._hardwareTexture = hardwareTexture;
         internalTexture.baseWidth = texture.width;
@@ -3696,7 +3716,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this.setZOffsetUnits(zOffsetUnits);
 
         // Front face
-        const frontFace = reverseSide ? (this._currentRenderTarget ? 1 : 2) : this._currentRenderTarget ? 2 : 1;
+        // Render targets are drawn Y-flipped (see the InternalsUBO yFactor in _draw), so their triangle
+        // winding is reversed here to compensate and keep the same faces visible. XR projection-layer targets
+        // opt out of that flip (_disableEngineYFlip) because the compositor presents them directly, so they
+        // keep the main-framebuffer winding.
+        const invertYRenderTarget = !!this._currentRenderTarget && !(this._currentRenderTarget as WebGPURenderTargetWrapper)._disableEngineYFlip;
+        const frontFace = reverseSide ? (invertYRenderTarget ? 1 : 2) : invertYRenderTarget ? 2 : 1;
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;
         }
@@ -3730,7 +3755,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
-        this.bindUniformBufferBase(this._currentRenderTarget ? this._ubInvertY : this._ubDontInvertY, 0, WebGPUShaderProcessor.InternalsUBOName);
+        // Render targets are rendered Y-flipped (yFactor = -1) so a later-sampled RTT matches the WebGL
+        // texture-space convention. XR projection-layer targets (_disableEngineYFlip) are presented directly by
+        // the compositor and must be rendered upright, so they use the non-inverting UBO like the canvas.
+        const invertYRenderTarget = !!this._currentRenderTarget && !(this._currentRenderTarget as WebGPURenderTargetWrapper)._disableEngineYFlip;
+        this.bindUniformBufferBase(invertYRenderTarget ? this._ubInvertY : this._ubDontInvertY, 0, WebGPUShaderProcessor.InternalsUBOName);
 
         this._currentDrawContext.setVertexPulling(
             this._currentMaterialContext.useVertexPulling,
@@ -3994,7 +4023,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public override dispose(): void {
         this._isDisposed = true;
-        this.hideLoadingUI();
+        this.hideLoadingUI?.();
         this._timestampQuery.dispose();
         this._mainTexture?.destroy();
         this._depthTexture?.destroy();

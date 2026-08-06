@@ -24,12 +24,7 @@ export enum ConnectionPointType {
  * A union of all supported connection point types
  */
 export type AllConnectionPointTypes =
-    | ConnectionPointType.Float
-    | ConnectionPointType.Texture
-    | ConnectionPointType.Color3
-    | ConnectionPointType.Color4
-    | ConnectionPointType.Boolean
-    | ConnectionPointType.Vector2;
+    ConnectionPointType.Float | ConnectionPointType.Texture | ConnectionPointType.Color3 | ConnectionPointType.Color4 | ConnectionPointType.Boolean | ConnectionPointType.Vector2;
 
 /**
  * Retrieves the type of the value from the Connection point type.

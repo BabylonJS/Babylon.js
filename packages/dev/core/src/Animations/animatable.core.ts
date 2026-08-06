@@ -650,7 +650,7 @@ function ProcessLateAnimationBindingsForQuaternions(
         // https://gamedev.stackexchange.com/questions/62354/method-for-interpolation-between-3-quaternions
 
         let cumulativeAmount = 0;
-        for (let index = 0; index < quaternions.length; ) {
+        for (let index = 0; index < quaternions.length;) {
             if (!index) {
                 Quaternion.SlerpToRef(quaternions[index], quaternions[index + 1], weights[index + 1] / (weights[index] + weights[index + 1]), refQuaternion);
                 cumulativeQuaternion = refQuaternion;

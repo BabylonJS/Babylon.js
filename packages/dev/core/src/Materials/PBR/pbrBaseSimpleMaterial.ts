@@ -17,77 +17,77 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public maxSimultaneousLights = 4;
+    public accessor maxSimultaneousLights = 4;
 
     /**
      * If sets to true, disables all the lights affecting the material.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public disableLighting = false;
+    public accessor disableLighting = false;
 
     /**
      * Environment Texture used in the material (this is use for both reflection and environment lighting).
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_reflectionTexture")
-    public environmentTexture: Nullable<BaseTexture>;
+    public accessor environmentTexture: Nullable<BaseTexture>;
 
     /**
      * If sets to true, x component of normal map value will invert (x = 1.0 - x).
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public invertNormalMapX = false;
+    public accessor invertNormalMapX = false;
 
     /**
      * If sets to true, y component of normal map value will invert (y = 1.0 - y).
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public invertNormalMapY = false;
+    public accessor invertNormalMapY = false;
 
     /**
      * Normal map used in the model.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_bumpTexture")
-    public normalTexture: Nullable<BaseTexture>;
+    public accessor normalTexture: Nullable<BaseTexture>;
 
     /**
      * Emissivie color used to self-illuminate the model.
      */
     @serializeAsColor3("emissive")
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public emissiveColor = new Color3(0, 0, 0);
+    public accessor emissiveColor = new Color3(0, 0, 0);
 
     /**
      * Emissivie texture used to self-illuminate the model.
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public emissiveTexture: Nullable<BaseTexture>;
+    public accessor emissiveTexture: Nullable<BaseTexture>;
 
     /**
      * Occlusion Channel Strength.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_ambientTextureStrength")
-    public occlusionStrength: number = 1.0;
+    public accessor occlusionStrength: number = 1.0;
 
     /**
      * Occlusion Texture of the material (adding extra occlusion effects).
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_ambientTexture")
-    public occlusionTexture: Nullable<BaseTexture>;
+    public accessor occlusionTexture: Nullable<BaseTexture>;
 
     /**
      * Defines the alpha limits in alpha test mode.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_alphaCutOff")
-    public alphaCutOff: number;
+    public accessor alphaCutOff: number;
 
     /**
      * Gets the current double sided mode.
@@ -113,14 +113,14 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
      */
     @serializeAsTexture()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
-    public lightmapTexture: Nullable<BaseTexture>;
+    public accessor lightmapTexture: Nullable<BaseTexture>;
 
     /**
      * If true, the light map contains occlusion information instead of lighting info.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useLightmapAsShadowmap = false;
+    public accessor useLightmapAsShadowmap = false;
 
     /**
      * Instantiates a new PBRMaterial instance.

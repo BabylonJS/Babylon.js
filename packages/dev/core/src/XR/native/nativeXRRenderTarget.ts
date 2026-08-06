@@ -2,7 +2,8 @@ import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetT
 import { type Viewport } from "../../Maths/math.viewport";
 import { type Nullable } from "../../types";
 import { WebXRLayerWrapper } from "../webXRLayerWrapper";
-import { WebXRLayerRenderTargetTextureProvider } from "../webXRRenderTargetTextureProvider";
+import { type WebXRLayerRenderTargetTextureProvider } from "../webXRRenderTargetTextureProvider";
+import { WebXRWebGLRenderTargetTextureProvider } from "../webXRWebGLRenderTargetTextureProvider";
 import { type WebXRSessionManager } from "../webXRSessionManager";
 import { type WebXRRenderTarget } from "../webXRTypes";
 
@@ -26,7 +27,7 @@ export class NativeXRLayerWrapper extends WebXRLayerWrapper {
  * Provides render target textures for layers created by Babylon Native.
  * @internal
  */
-export class NativeXRLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
+export class NativeXRLayerRenderTargetTextureProvider extends WebXRWebGLRenderTargetTextureProvider {
     private _nativeRTTProvider: WebXRLayerRenderTargetTextureProvider;
     private _nativeLayer: XRWebGLLayer;
 

@@ -313,9 +313,39 @@ interface XRFrame {
      * @param referenceSpace
      */
     getViewerPose(referenceSpace: XRReferenceSpace): XRViewerPose | undefined;
+
+    /**
+     * The tracked body for this frame, when the body tracking feature is enabled.
+     * ref: https://immersive-web.github.io/body-tracking/#xrframe-interface
+     */
+    body?: XRBody;
 }
 
 declare abstract class XRFrame implements XRFrame {}
+
+/**
+ * Represents the XRBodySpace native interface as defined by the spec.
+ * An XRBodySpace is an XRSpace that additionally exposes a jointName.
+ * ref: https://immersive-web.github.io/body-tracking/#xrjointspace-interface
+ */
+interface XRBodySpace extends XRSpace {
+    readonly jointName: string;
+}
+
+/**
+ * Represents the native XRBody interface as defined by the spec.
+ * An XRBody is an iterable map of XRBodyJoint to XRBodySpace.
+ * ref: https://immersive-web.github.io/body-tracking/#xrbody-interface
+ */
+interface XRBody {
+    readonly size: number;
+    get(key: string): XRBodySpace | undefined;
+    forEach(callbackfn: (value: XRBodySpace, key: string, map: XRBody) => void): void;
+    [Symbol.iterator](): IterableIterator<[string, XRBodySpace]>;
+    entries(): IterableIterator<[string, XRBodySpace]>;
+    keys(): IterableIterator<string>;
+    values(): IterableIterator<XRBodySpace>;
+}
 
 /**
  * Type of XR events available

@@ -54,6 +54,12 @@ export function registerBuiltInGLTFExtensions() {
         return new KHR_draco_mesh_compression(loader);
     });
 
+    unregisterGLTFExtension("KHR_gaussian_splatting");
+    registerGLTFExtension("KHR_gaussian_splatting", true, async (loader) => {
+        const { KHR_gaussian_splatting } = await import("./KHR_gaussian_splatting");
+        return new KHR_gaussian_splatting(loader);
+    });
+
     unregisterGLTFExtension("KHR_interactivity");
     registerGLTFExtension("KHR_interactivity", true, async (loader) => {
         const { KHR_interactivity } = await import("./KHR_interactivity");

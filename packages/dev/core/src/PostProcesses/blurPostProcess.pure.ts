@@ -68,7 +68,7 @@ export class BlurPostProcess extends PostProcess {
         return "BlurPostProcess";
     }
 
-    protected override _effectWrapper: ThinBlurPostProcess;
+    declare protected _effectWrapper: ThinBlurPostProcess;
 
     /**
      * Creates a new instance BlurPostProcess
