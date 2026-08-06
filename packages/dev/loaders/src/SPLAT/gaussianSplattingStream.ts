@@ -1301,18 +1301,23 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * Waits until the work buffer's backup/restore copy shaders are compiled, so a later grow/compaction can
-     * preserve this hosted region (see {@link GaussianSplattingWorkBuffer.backupRegion}). A compile error is
-     * logged and treated as best-effort (a later grow/compaction may then drop the region's data).
+     * Waits (up to a frame cap) until the work buffer's backup/restore copy shaders are compiled, so a later
+     * grow/compaction can preserve this hosted region (see {@link GaussianSplattingWorkBuffer.backupRegion}).
+     * Polls per rendered frame: shader readiness here depends on the render loop (and the shared atlas can be
+     * rebuilt concurrently), so this stays synchronized with the render-driven decode and always makes progress.
+     * On timeout it proceeds best-effort — a subsequent grow/compaction then warns rather than blocking decode.
      * @param wb the hosted work buffer to wait on
      */
     private async _waitForCanBackupAsync(wb: GaussianSplattingWorkBuffer): Promise<void> {
-        try {
-            await wb.ensureBackupReadyAsync();
-        } catch (e) {
-            if (!this._disposed) {
-                Logger.Warn("GaussianSplattingStream: backup/restore copy shaders failed to compile (" + (e as Error)?.message + "); a grow/compaction may drop streamed data.");
+        for (let frame = 0; frame < 600 && !this._disposed; frame++) {
+            if (wb.canBackup) {
+                return;
             }
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise<void>((resolve) => this._scene.onBeforeRenderObservable.addOnce(() => resolve()));
+        }
+        if (!this._disposed && !wb.canBackup) {
+            Logger.Warn("GaussianSplattingStream: backup/restore copy shaders did not compile in time; a grow/compaction before they are ready may drop streamed data.");
         }
     }
 

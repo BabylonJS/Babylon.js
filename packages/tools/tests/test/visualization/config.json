@@ -17,7 +17,7 @@
         },
         {
             "title": "Gaussian Splatting LOD COMPOUND",
-            "playgroundId": "#418POI#25",
+            "playgroundId": "#418POI#21",
             "renderCount": 15,
             "referenceImage": "gsplat-lod-compound.png",
             "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader", "Textures"],
