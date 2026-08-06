@@ -17,6 +17,10 @@ import { SphericalHarmonics, SphericalPolynomial } from "../../Maths/sphericalPo
 import { LightConstants } from "../../Lights/lightConstants";
 import { HDRFiltering } from "core/Materials/Textures/Filtering/hdrFiltering";
 import { type ThinEngine } from "core/Engines";
+import { WebXRGraphicsBindingType, type WebXRWebGLGraphicsBinding } from "../webXRGraphicsBinding";
+
+const WebGPUReflectionWarning =
+    "WebXR Light Estimation reflection cube maps are unavailable with WebGPU XR because they are exposed only by XRWebGLBinding; light direction, intensity, and spherical harmonics remain enabled.";
 
 /**
  * Options for Light Estimation feature
@@ -99,11 +103,11 @@ export interface IWebXRLightEstimation {
  * @since 5.0.0
  */
 export class WebXRLightEstimation extends WebXRAbstractFeature {
-    private _canvasContext: Nullable<WebGLRenderingContext | WebGL2RenderingContext> = null;
     private _reflectionCubeMap: Nullable<BaseTexture> = null;
     private _xrLightEstimate: Nullable<XRLightEstimate> = null;
     private _xrLightProbe: Nullable<XRLightProbe> = null;
-    private _xrWebGLBinding: Nullable<XRWebGLBinding> = null;
+    private _reflectionCubeMapEnabled = false;
+    private _webGPUReflectionWarningEmitted = false;
     private _lightDirection: Vector3 = Vector3.Up().negateInPlace();
     private _lightColor: Color3 = Color3.White();
     private _intensity: number = 1;
@@ -203,19 +207,12 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
         return this._xrLightEstimate;
     }
 
-    private _getCanvasContext(): WebGLRenderingContext | WebGL2RenderingContext {
-        if (this._canvasContext === null) {
-            this._canvasContext = (this._xrSessionManager.scene.getEngine() as ThinEngine)._gl;
+    private _getXRWebGLBinding(): WebXRWebGLGraphicsBinding {
+        const graphicsBinding = this._xrSessionManager._getGraphicsBinding();
+        if (graphicsBinding.bindingType !== WebXRGraphicsBindingType.WebGL) {
+            throw new Error("Expected a WebGL graphics binding for WebXR Light Estimation reflections.");
         }
-        return this._canvasContext;
-    }
-
-    private _getXRGLBinding(): XRWebGLBinding {
-        if (this._xrWebGLBinding === null) {
-            const context = this._getCanvasContext();
-            this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, context);
-        }
-        return this._xrWebGLBinding;
+        return graphicsBinding;
     }
 
     /**
@@ -233,7 +230,8 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
             }
             this._cubeMapPollTime = now;
         }
-        const lp = this._getXRGLBinding().getReflectionCubeMap(this._xrLightProbe);
+        const graphicsBinding = this._getXRWebGLBinding();
+        const lp = graphicsBinding.binding.getReflectionCubeMap(this._xrLightProbe);
         if (lp && this._reflectionCubeMap) {
             if (!this._reflectionCubeMap._texture) {
                 const internalTexture = new InternalTexture(this._xrSessionManager.scene.getEngine(), InternalTextureSource.Unknown);
@@ -248,7 +246,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
                 internalTexture.height = this._reflectionCubeMapTextureSize;
                 internalTexture._cachedWrapU = Constants.TEXTURE_WRAP_ADDRESSMODE;
                 internalTexture._cachedWrapV = Constants.TEXTURE_WRAP_ADDRESSMODE;
-                internalTexture._hardwareTexture = new WebGLHardwareTexture(lp, this._getCanvasContext() as WebGLRenderingContext);
+                internalTexture._hardwareTexture = new WebGLHardwareTexture(lp, graphicsBinding.context);
                 this._reflectionCubeMap._texture = internalTexture;
             } else {
                 this._reflectionCubeMap._texture._hardwareTexture?.set(lp);
@@ -282,6 +280,13 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
             return false;
         }
 
+        const isWebGPU = this._xrSessionManager.scene.getEngine().isWebGPU;
+        this._reflectionCubeMapEnabled = !this.options.disableCubeMapReflection && !isWebGPU;
+        if (!this.options.disableCubeMapReflection && isWebGPU && !this._webGPUReflectionWarningEmitted) {
+            Logger.Warn(WebGPUReflectionWarning);
+            this._webGPUReflectionWarningEmitted = true;
+        }
+
         const reflectionFormat = this.options.reflectionFormat ?? (this._xrSessionManager.session.preferredReflectionFormat || "srgba8");
         this.options.reflectionFormat = reflectionFormat;
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -292,7 +297,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
             // eslint-disable-next-line github/no-then
             .then((xrLightProbe: XRLightProbe) => {
                 this._xrLightProbe = xrLightProbe;
-                if (!this.options.disableCubeMapReflection) {
+                if (this._reflectionCubeMapEnabled) {
                     if (!this._reflectionCubeMap) {
                         this._reflectionCubeMap = new BaseTexture(this._xrSessionManager.scene);
                         this._reflectionCubeMap._isCube = true;
@@ -317,15 +322,12 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
     public override detach(): boolean {
         const detached = super.detach();
 
-        if (this._xrLightProbe !== null && !this.options.disableCubeMapReflection) {
+        if (this._xrLightProbe !== null && this._reflectionCubeMapEnabled) {
             this._xrLightProbe.removeEventListener("reflectionchange", this._updateReflectionCubeMap);
             this._xrLightProbe = null;
         }
 
-        this._canvasContext = null;
         this._xrLightEstimate = null;
-        // When the session ends (on detach) we must clear our XRWebGLBinging instance, which references the ended session.
-        this._xrWebGLBinding = null;
 
         return detached;
     }
