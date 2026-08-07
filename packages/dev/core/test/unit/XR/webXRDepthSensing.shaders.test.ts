@@ -4,6 +4,8 @@
 
 import { createHash } from "node:crypto";
 import { NullEngine } from "core/Engines/nullEngine";
+import { WebGPUShaderProcessingContext } from "core/Engines/WebGPU/webgpuShaderProcessingContext";
+import { WebGPUShaderProcessorWGSL } from "core/Engines/WebGPU/webgpuShaderProcessorsWGSL";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { StandardMaterial } from "core/Materials/standardMaterial";
@@ -78,17 +80,18 @@ describe("WebXRDepthSensing material shaders", () => {
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain(
             "(fragmentInputs.position.xy * uniforms.ds_invScreenSize - uniforms.ds_shaderViewport.xy) / uniforms.ds_shaderViewport.zw"
         );
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("vec2f(ds_baseUvBottomLeft.x, 1.0 - ds_baseUvBottomLeft.y)");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("uniforms.ds_uvTransform * vec4f");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("uniforms.ds_uvTransformRight * vec4f");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("textureSample(ds_depthSampler, ds_depthSamplerSampler, ds_depthUv, i32(ds_viewIndexSet))");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("textureSample(ds_depthSampler, ds_depthSamplerSampler, ds_depthUv)");
-        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("textureSample(ds_depthSamplerRight, ds_depthSamplerRightSampler, ds_depthUv)");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("textureSampleLevel(ds_depthSampler, ds_depthSamplerSampler, ds_depthUv, 0.0)");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("textureSampleLevel(ds_depthSamplerRight, ds_depthSamplerRightSampler, ds_depthUv, 0.0)");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("ds_cameraDepth = ds_cameraDepth * ds_rawValueToMetersSet;");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("scene.view * vec4f(fragmentInputs.vPositionW, 1.0)");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("uniforms.ds_viewRight * vec4f(fragmentInputs.vPositionW, 1.0)");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("let ds_assetDepth: f32 = (ds_viewPosition.z * uniforms.ds_viewDepthSign) / uniforms.ds_worldScale;");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("if (ds_depthAvailable > 0.5 && ds_cameraDepth < ds_assetDepth)");
-        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).not.toContain("1.0 - ds_baseUv.y");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("discard;");
         expect(fragment.CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR).toContain("let ds_depthTolerancePerM: f32 = 0.005;");
         expect(fragment.CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR).toContain("color *= (1.0 - ds_occlusion);");
@@ -115,12 +118,31 @@ describe("WebXRDepthSensing material shaders", () => {
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).not.toContain("fragmentInputs.position.z;");
     });
 
-    it("keeps top-left WebGPU fragment coordinates aligned with unflipped CPU depth uploads", () => {
+    it("compensates for Babylon's assembled fragment-coordinate flip to address top-left CPU depth rows", () => {
         const plugin = createPlugin(ShaderLanguage.WGSL);
         const fragment = plugin.getCustomCode("fragment", ShaderLanguage.WGSL)!;
+        const uvCode = fragment.CUSTOM_FRAGMENT_MAIN_BEGIN.match(
+            /let ds_baseUvBottomLeft:[\s\S]+?let ds_baseUv: vec2f = vec2f\(ds_baseUvBottomLeft\.x, 1\.0 - ds_baseUvBottomLeft\.y\);/
+        )?.[0];
+        expect(uvCode).toBeDefined();
 
-        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("uniforms.ds_uvTransform * vec4f(ds_baseUv, 0.0, 1.0)");
-        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).not.toContain("1.0 - ds_baseUv.y");
+        const processor = new WebGPUShaderProcessorWGSL();
+        processor.pureMode = false;
+        processor.initializeShaders(new WebGPUShaderProcessingContext(ShaderLanguage.WGSL, true));
+        const processed = processor.finalizeShaders(
+            `@vertex fn main(input: VertexInputs) -> FragmentInputs {
+                vertexOutputs.position = vec4f(0.0);
+            }`,
+            `@fragment fn main(input: FragmentInputs) -> FragmentOutputs {
+                ${uvCode}
+                fragmentOutputs.color = vec4f(ds_baseUv, 0.0, 1.0);
+            }`
+        ).fragmentCode;
+
+        const processorFlip = "fragmentInputs.position.y = internals.textureOutputHeight_ - fragmentInputs.position.y;";
+        const depthRowCorrection = "let ds_baseUv: vec2f = vec2f(ds_baseUvBottomLeft.x, 1.0 - ds_baseUvBottomLeft.y);";
+        expect(processed).toContain(processorFlip);
+        expect(processed.indexOf(processorFlip)).toBeLessThan(processed.indexOf(depthRowCorrection));
     });
 
     it("preserves the GLSL injection strings byte for byte", () => {
