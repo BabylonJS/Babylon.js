@@ -1,4 +1,5 @@
 import { type IWebXRFeature } from "../webXRFeaturesManager";
+import { _MarkWebXRFeatureWithSpecificDisableWarning } from "../webXRFeatureWarningRegistry";
 import { type Observer, type EventState, Observable } from "../../Misc/observable";
 import { type Nullable } from "../../types";
 import { type WebXRSessionManager } from "../webXRSessionManager";
@@ -11,6 +12,7 @@ import { Logger } from "core/Misc/logger";
  */
 export abstract class WebXRAbstractFeature implements IWebXRFeature {
     private _attached: boolean = false;
+    private _disableAutoAttachWarningEmitted: boolean = false;
     private _removeOnDetach: {
         observer: Nullable<Observer<any>>;
         observable: Observable<any>;
@@ -154,7 +156,11 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      * @returns false so feature attach implementations can return the result directly
      */
     protected _disableAutoAttach(warning: string): false {
-        Logger.Warn(warning);
+        if (!this._disableAutoAttachWarningEmitted) {
+            Logger.Warn(warning);
+            this._disableAutoAttachWarningEmitted = true;
+        }
+        _MarkWebXRFeatureWithSpecificDisableWarning(this);
         this.disableAutoAttach = true;
         return false;
     }

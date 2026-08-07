@@ -3,9 +3,12 @@ import { type WebGPUEngine } from "../Engines/webgpuEngine";
 import { type WebGPURenderTargetWrapper } from "../Engines/WebGPU/webgpuRenderTargetWrapper";
 import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
+import { Color4 } from "../Maths/math.color.pure";
 import { type Nullable } from "../types";
 import { WebXRLayerRenderTargetTexture } from "./webXRLayerRenderTargetTexture";
+import { type WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
+import { type WebXRSessionManager } from "./webXRSessionManager";
 
 /**
  * Maps a WebGPU depth/stencil {@link GPUTextureFormat} to the matching Babylon `TEXTUREFORMAT_*` constant.
@@ -44,6 +47,15 @@ function GetBabylonDepthFormat(format: GPUTextureFormat): number {
  * @internal
  */
 export abstract class WebXRWebGPURenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
+    private readonly _transparentClearColor = new Color4(0, 0, 0, 0);
+
+    constructor(
+        protected readonly _xrSessionManager: WebXRSessionManager,
+        layerWrapper: WebXRLayerWrapper
+    ) {
+        super(_xrSessionManager.scene, layerWrapper);
+    }
+
     private get _webgpuEngine(): WebGPUEngine {
         return this._engine as WebGPUEngine;
     }
@@ -131,6 +143,11 @@ export abstract class WebXRWebGPURenderTargetTextureProvider extends WebXRLayerR
      * only advances in `endFrame`, once per XR frame, so unlike `_cleared` it cannot be reset by another
      * scene rendering the same camera.
      *
+     * In immersive AR, color is cleared to transparent when `WebXRExperienceHelper` disables
+     * `Scene.autoClear`. WebGL XR framebuffers are cleared to transparent by the user agent, but WebGPU render
+     * passes require the application to request that clear explicitly. Skipping it leaves pixels from prior
+     * frames in passthrough regions, producing trails behind moving objects.
+     *
      * Depth and stencil are still cleared on every notification, matching the previous behavior and the
      * expectations of overlay scenes that draw on top of the main scene.
      * @param renderTargetTexture the per-eye render target to clear each frame
@@ -143,13 +160,16 @@ export abstract class WebXRWebGPURenderTargetTextureProvider extends WebXRLayerR
                 return;
             }
             const scene = renderTargetTexture.getScene();
+            const isImmersiveAR = this._xrSessionManager.sessionMode === "immersive-ar";
             // When autoClear is disabled the scene does not clear render targets; match that so this observer
-            // does not force a clear the user opted out of.
-            if (scene && !scene.autoClear) {
+            // does not force a clear the user opted out of. Immersive AR is the exception: the experience
+            // helper disables autoClear because WebGL XR is cleared by the user agent, while WebGPU is not.
+            if (scene && !scene.autoClear && !isImmersiveAR) {
                 return;
             }
             const clearColor = engine.frameId !== lastColorClearedFrameId;
-            engine.clear(renderTargetTexture.clearColor ?? scene?.clearColor ?? null, clearColor, true, true);
+            const color = isImmersiveAR && scene && !scene.autoClear ? this._transparentClearColor : (renderTargetTexture.clearColor ?? scene?.clearColor ?? null);
+            engine.clear(color, clearColor, true, true);
             if (clearColor) {
                 lastColorClearedFrameId = engine.frameId;
             }

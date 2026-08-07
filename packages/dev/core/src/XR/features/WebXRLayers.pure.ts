@@ -8,14 +8,20 @@ import { WebXRWebGLLayerWrapper } from "../webXRWebGLLayer";
 import { WebXRProjectionLayerWrapper, DefaultXRProjectionLayerInit } from "./Layers/WebXRProjectionLayer";
 import { WebXRCompositionLayerRenderTargetTextureProvider, WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
 import { WebXRWebGPUProjectionLayerWrapper, CreateDefaultXRGPUProjectionLayerInit } from "./Layers/WebXRWebGPUProjectionLayer";
+import { WebXRWebGPUCompositionLayerRenderTargetTextureProvider, WebXRWebGPUCompositionLayerWrapper } from "./Layers/WebXRWebGPUCompositionLayer";
 import { WebXRGraphicsBindingType } from "../webXRGraphicsBinding";
 import { type ThinTexture } from "../../Materials/Textures/thinTexture";
 import { type DynamicTexture } from "../../Materials/Textures/dynamicTexture.pure";
 import { Color4 } from "../../Maths/math.color.pure";
 import { type LensFlareSystem } from "../../LensFlares/lensFlareSystem";
-import { type ThinEngine } from "../../Engines";
+import { Logger } from "../../Misc/logger";
+import { type Nullable } from "../../types";
 
 const DefaultXRWebGLLayerInit: XRWebGLLayerInit = {};
+const WebGPUQuadLayerCreateWarning =
+    "WebGPU XR quad layers are unavailable because XRGPUBinding.createQuadLayer is not supported; the requested quad layer was skipped and projection rendering remains active.";
+const WebGPUQuadLayerSubImageWarning =
+    "WebGPU XR quad layers are unavailable because XRGPUBinding.getSubImage is not supported; the requested quad layer was skipped and projection rendering remains active.";
 
 /**
  * Configuration options of the layers feature
@@ -60,7 +66,8 @@ export class WebXRLayers extends WebXRAbstractFeature {
     private _projectionLayerInitialized = false;
 
     private _compositionLayerTextureMapping: WeakMap<XRCompositionLayer, ThinTexture> = new WeakMap();
-    private _layerToRTTProviderMapping: WeakMap<XRCompositionLayer, WebXRCompositionLayerRenderTargetTextureProvider> = new WeakMap();
+    private _layerToRTTProviderMapping: WeakMap<XRCompositionLayer, WebXRCompositionLayerRenderTargetTextureProvider | WebXRWebGPUCompositionLayerRenderTargetTextureProvider> =
+        new WeakMap();
 
     constructor(
         _xrSessionManager: WebXRSessionManager,
@@ -95,8 +102,12 @@ export class WebXRLayers extends WebXRAbstractFeature {
             this._isMultiviewEnabled = false;
             this._createWebGPUProjectionLayer();
         } else {
-            this._glContext = (engine as ThinEngine)._gl;
-            this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
+            const binding = this._xrSessionManager._getGraphicsBinding();
+            if (binding.bindingType !== WebXRGraphicsBindingType.WebGL) {
+                throw new Error("Expected a WebGL graphics binding for a WebGL engine.");
+            }
+            this._glContext = binding.context;
+            this._xrWebGLBinding = binding.binding;
 
             const projectionLayerInit = { ...DefaultXRProjectionLayerInit, ...this._options.projectionLayerInit };
             this._isMultiviewEnabled = this._options.preferMultiviewOnInit && engine.getCaps().multiview;
@@ -188,9 +199,9 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * Note about making it private - this function will be exposed once I decide on a proper API to support all of the XR layers' options
      * @param options an object providing configuration options for the new XRQuadLayer.
      * @param babylonTexture the texture to display in the layer
-     * @returns the quad layer
+     * @returns the quad layer, or null when the WebGPU binding lacks quad-layer support
      */
-    private _createQuadLayer(options: { params: Partial<XRQuadLayerInit> } = { params: {} }, babylonTexture?: ThinTexture): WebXRCompositionLayerWrapper {
+    private _createQuadLayer(options: { params: Partial<XRQuadLayerInit> } = { params: {} }, babylonTexture?: ThinTexture): Nullable<WebXRCompositionLayerWrapper> {
         this._extendXRLayerInit(options.params, false);
         const width = (this._existingLayers[0].layer as XRProjectionLayer).textureWidth;
         const height = (this._existingLayers[0].layer as XRProjectionLayer).textureHeight;
@@ -202,24 +213,76 @@ export class WebXRLayers extends WebXRAbstractFeature {
             ...options.params,
         };
         this._validateLayerInit(populatedParams, false);
-        const quadLayer = this._xrWebGLBinding.createQuadLayer(populatedParams);
+        let quadLayer: XRQuadLayer;
+        let wrapper: WebXRCompositionLayerWrapper;
+
+        if (this._isWebGPU) {
+            const binding = this._xrGPUBinding!;
+            if (typeof binding.createQuadLayer !== "function") {
+                Logger.Warn(WebGPUQuadLayerCreateWarning);
+                return null;
+            }
+            if (typeof binding.getSubImage !== "function") {
+                Logger.Warn(WebGPUQuadLayerSubImageWarning);
+                return null;
+            }
+
+            const gpuParams: XRGPUQuadLayerInit = {
+                colorFormat: binding.getPreferredColorFormat(),
+                // GPUTextureUsage.RENDER_ATTACHMENT (0x10) is requested explicitly. The usage of a
+                // compositor-owned sub-image texture is not a valid source for layer creation flags.
+                textureUsage: 0x10,
+                space: populatedParams.space,
+                viewPixelWidth: populatedParams.viewPixelWidth,
+                viewPixelHeight: populatedParams.viewPixelHeight,
+            };
+            if (populatedParams.layout !== undefined) {
+                gpuParams.layout = populatedParams.layout;
+            }
+            if (populatedParams.mipLevels !== undefined) {
+                gpuParams.mipLevels = populatedParams.mipLevels;
+            }
+            if (populatedParams.isStatic !== undefined) {
+                gpuParams.isStatic = populatedParams.isStatic;
+            }
+            if (populatedParams.transform !== undefined) {
+                gpuParams.transform = populatedParams.transform;
+            }
+            if (populatedParams.width !== undefined) {
+                gpuParams.width = populatedParams.width;
+            }
+            if (populatedParams.height !== undefined) {
+                gpuParams.height = populatedParams.height;
+            }
+            quadLayer = binding.createQuadLayer(gpuParams);
+            wrapper = new WebXRWebGPUCompositionLayerWrapper(
+                () => quadLayer.width,
+                () => quadLayer.height,
+                quadLayer,
+                "XRQuadLayer",
+                false,
+                (sessionManager) => new WebXRWebGPUCompositionLayerRenderTargetTextureProvider(sessionManager, binding, wrapper)
+            );
+        } else {
+            quadLayer = this._xrWebGLBinding.createQuadLayer(populatedParams);
+            wrapper = new WebXRCompositionLayerWrapper(
+                () => quadLayer.width,
+                () => quadLayer.height,
+                quadLayer,
+                "XRQuadLayer",
+                false,
+                (sessionManager) => new WebXRCompositionLayerRenderTargetTextureProvider(sessionManager, this._xrWebGLBinding, wrapper)
+            );
+        }
 
         quadLayer.width = this._isMultiviewEnabled ? 1 : 2;
         quadLayer.height = 1;
-        // this wrapper is not really needed, but it's here for consistency
-        const wrapper: WebXRCompositionLayerWrapper = new WebXRCompositionLayerWrapper(
-            () => quadLayer.width,
-            () => quadLayer.height,
-            quadLayer,
-            "XRQuadLayer",
-            false,
-            (sessionManager) => new WebXRCompositionLayerRenderTargetTextureProvider(sessionManager, this._xrWebGLBinding, wrapper)
-        );
 
         if (babylonTexture) {
             this._compositionLayerTextureMapping.set(quadLayer, babylonTexture);
         }
-        const rtt = wrapper.createRenderTargetTextureProvider(this._xrSessionManager) as WebXRCompositionLayerRenderTargetTextureProvider;
+        const rtt = wrapper.createRenderTargetTextureProvider(this._xrSessionManager) as
+            WebXRCompositionLayerRenderTargetTextureProvider | WebXRWebGPUCompositionLayerRenderTargetTextureProvider;
         this._layerToRTTProviderMapping.set(quadLayer, rtt);
         this.addXRSessionLayer(wrapper);
         return wrapper;
@@ -231,9 +294,12 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * Note that no interaction will be available with the ADT when using this method
      * @param texture the texture to display in the layer
      * @param options optional parameters for the layer
-     * @returns a composition layer containing the texture
+     * @returns a composition layer containing the texture, or null when WebGPU quad layers are unavailable
      */
-    public addFullscreenAdvancedDynamicTexture(texture: DynamicTexture, options: { distanceFromHeadset: number } = { distanceFromHeadset: 1.5 }): WebXRCompositionLayerWrapper {
+    public addFullscreenAdvancedDynamicTexture(
+        texture: DynamicTexture,
+        options: { distanceFromHeadset: number } = { distanceFromHeadset: 1.5 }
+    ): Nullable<WebXRCompositionLayerWrapper> {
         const wrapper = this._createQuadLayer(
             {
                 params: {
@@ -244,6 +310,9 @@ export class WebXRLayers extends WebXRAbstractFeature {
             },
             texture
         );
+        if (!wrapper) {
+            return null;
+        }
 
         const layer = wrapper.layer as XRQuadLayer;
         const distance = Math.max(0.1, options.distanceFromHeadset);
@@ -289,9 +358,9 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * Note - this will remove the lens flare system from the scene and add it to the XR scene.
      * This feature is experimental and might change in the future.
      * @param flareSystem the flare system to add
-     * @returns a composition layer containing the flare system
+     * @returns a composition layer containing the flare system, or null when WebGPU quad layers are unavailable
      */
-    protected _addLensFlareSystem(flareSystem: LensFlareSystem): WebXRCompositionLayerWrapper {
+    protected _addLensFlareSystem(flareSystem: LensFlareSystem): Nullable<WebXRCompositionLayerWrapper> {
         const wrapper = this._createQuadLayer({
             params: {
                 space: this._xrSessionManager.viewerReferenceSpace,
@@ -299,6 +368,9 @@ export class WebXRLayers extends WebXRAbstractFeature {
                 layout: "mono",
             },
         });
+        if (!wrapper) {
+            return null;
+        }
 
         const layer = wrapper.layer as XRQuadLayer;
         layer.width = 2;

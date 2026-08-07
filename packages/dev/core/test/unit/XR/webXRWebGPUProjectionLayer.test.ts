@@ -7,6 +7,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRenderTargetWrapper";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import { Color4 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
 import { Scene } from "core/scene";
@@ -50,14 +51,14 @@ describe("WebXRWebGPUProjectionLayer", () => {
         let wrapSpy: ReturnType<typeof vi.fn>;
         let updateSpy: ReturnType<typeof vi.fn>;
 
-        function createProvider(subImage: any) {
+        function createProvider(subImage: any, sessionMode: "immersive-vr" | "immersive-ar" = "immersive-vr") {
             const binding: any = {
                 getViewSubImage: vi.fn(() => subImage),
                 getSubImage: vi.fn(() => subImage),
             };
             const layer: any = { textureWidth: 512, textureHeight: 512 };
             const wrapper = new WebXRWebGPUProjectionLayerWrapper(layer, false, binding, "depth24plus-stencil8");
-            const sessionManager = { scene } as unknown as WebXRSessionManager;
+            const sessionManager = { scene, sessionMode } as unknown as WebXRSessionManager;
             return wrapper.createRenderTargetTextureProvider(sessionManager);
         }
 
@@ -246,6 +247,17 @@ describe("WebXRWebGPUProjectionLayer", () => {
             rtt!.onClearObservable.notifyObservers(engine);
 
             expect(clearSpy).not.toHaveBeenCalled();
+        });
+
+        it("clears immersive AR projection textures to transparent when scene.autoClear is disabled", () => {
+            const provider = createProvider(createSubImage(512, 512), "immersive-ar");
+            const rtt = provider.getRenderTargetTextureForView({ eye: "left" } as XRView);
+            scene.autoClear = false;
+
+            const clearSpy = vi.spyOn(engine, "clear");
+            rtt!.onClearObservable.notifyObservers(engine);
+
+            expect(clearSpy).toHaveBeenCalledWith(new Color4(0, 0, 0, 0), true, true, true);
         });
 
         it("the per-eye clear observer clears color only once per engine frame", () => {

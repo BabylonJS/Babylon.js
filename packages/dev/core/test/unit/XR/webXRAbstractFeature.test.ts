@@ -143,6 +143,9 @@ describe("WebXRAbstractFeature", () => {
             expect(feature.attached).toBe(false);
             expect(sessionManager.onXRFrameObservable.hasObservers()).toBe(false);
             expect(attachObserver).not.toHaveBeenCalled();
+
+            expect(feature.disableForRuntimeCapability(warning)).toBe(false);
+            expect(warnSpy).toHaveBeenCalledTimes(1);
             warnSpy.mockRestore();
         });
     });
