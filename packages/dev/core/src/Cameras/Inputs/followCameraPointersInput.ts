@@ -115,6 +115,12 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
      */
     public warningEnable: boolean = true;
 
+    /**
+     * Called on pointer POINTERMOVE event if only a single touch is active.
+     * @param pointA The current position of the pointer
+     * @param offsetX The offsetX of the pointer when the event occurred
+     * @param offsetY The offsetY of the pointer when the event occurred
+     */
     public override onTouch(pointA: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
         this._warning();
 
@@ -137,6 +143,15 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
         }
     }
 
+    /**
+     * Called on pointer POINTERMOVE event if multiple touches are active.
+     * @param pointA First point in the pair
+     * @param pointB Second point in the pair
+     * @param previousPinchSquaredDistance Sqr Distance between the points the last time this event was fired (by this input)
+     * @param pinchSquaredDistance Sqr Distance between the points this time
+     * @param previousMultiTouchPanPosition Previous center point between the points
+     * @param multiTouchPanPosition Current center point between the points
+     */
     public override onMultiTouch(
         pointA: Nullable<PointerTouch>,
         pointB: Nullable<PointerTouch>,
@@ -192,7 +207,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
         const warn =
             "It probably only makes sense to control ONE camera " + "property with each pointer axis. Set 'warningEnable = false' " + "if you are sure. Currently enabled: ";
 
-        if (+this.axisXControlRotation + +this.axisXControlHeight + +this.axisXControlRadius <= 1) {
+        if (+this.axisXControlRotation + +this.axisXControlHeight + +this.axisXControlRadius > 1) {
             Logger.Warn(
                 warn +
                     "axisXControlRotation: " +
@@ -203,7 +218,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
                     this.axisXControlRadius
             );
         }
-        if (+this.axisYControlRotation + +this.axisYControlHeight + +this.axisYControlRadius <= 1) {
+        if (+this.axisYControlRotation + +this.axisYControlHeight + +this.axisYControlRadius > 1) {
             Logger.Warn(
                 warn +
                     "axisYControlRotation: " +
@@ -214,7 +229,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
                     this.axisYControlRadius
             );
         }
-        if (+this.axisPinchControlRotation + +this.axisPinchControlHeight + +this.axisPinchControlRadius <= 1) {
+        if (+this.axisPinchControlRotation + +this.axisPinchControlHeight + +this.axisPinchControlRadius > 1) {
             Logger.Warn(
                 warn +
                     "axisPinchControlRotation: " +

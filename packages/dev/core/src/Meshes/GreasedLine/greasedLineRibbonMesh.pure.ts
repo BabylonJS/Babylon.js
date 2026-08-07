@@ -340,7 +340,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
 
         for (let i = 0, c = 0; i < pathArrayCopy[0].length; i++) {
             const widthLower = this._uSegmentLengths[i][0] / 2;
-            const widthUpper = this._uSegmentLengths[i][pathArrayLength - 1] / 2;
+            const widthUpper = this._uSegmentLengths[i][pathArrayLength - 2] / 2;
             this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * widthLower);
             for (let pi = 0; pi < pathArrayLength - 2; pi++) {
                 this._ribbonWidths.push(0);
@@ -521,8 +521,8 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         }
 
         const positionsLength = pathArray[0].length;
-        this._uSegmentLengths = new Array(positionsLength).fill([]);
-        this._uTotalLengths = new Array(positionsLength).fill([]);
+        this._uSegmentLengths = Array.from({ length: positionsLength }, () => []);
+        this._uTotalLengths = new Array(positionsLength);
         const uLength = new Vector3();
         for (let i = 0; i < positionsLength; i++) {
             length = 0;

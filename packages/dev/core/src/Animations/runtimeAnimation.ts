@@ -652,6 +652,10 @@ export class RuntimeAnimation {
                         case Animation.ANIMATIONTYPE_COLOR3:
                             this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
                             break;
+                        // Color4
+                        case Animation.ANIMATIONTYPE_COLOR4:
+                            this._offsetsCache[keyOffset] = toValue.subtract(fromValue);
+                            break;
                         default:
                             break;
                     }

@@ -64,7 +64,7 @@ export class BoundingInfoHelper {
      * If called multiple times, the second, third, etc calls will perform a union of the bounding boxes calculated in the previous calls
      */
     public batchProcess(): void {
-        if (this._platform === null) {
+        if (!this._platform) {
             Logger.Warn("Helper is not initialized. Skipping batch.");
             return;
         }

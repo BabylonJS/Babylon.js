@@ -1235,7 +1235,7 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         if (!this._targetHost) {
-            if (this.panningDistanceLimit) {
+            if (this.panningDistanceLimit !== null) {
                 this._transformedDirection.addInPlace(this._target);
                 const distanceSquared = Vector3.DistanceSquared(this._transformedDirection, this.panningOriginTarget);
                 if (distanceSquared <= this.panningDistanceLimit * this.panningDistanceLimit) {
