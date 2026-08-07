@@ -409,9 +409,9 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
     });
 
     it("_makeSplat writes transients at dstArrayIndex but positions at the global dstIndex", () => {
-        // Decoupling these two indices is what lets a streaming write allocate count-sized transients (instead of
-        // atlas-sized) while still addressing the atlas-sized _splatPositions. White-box because the streaming
-        // upload path that uses it needs sub-texture uploads NullEngine can't do (see beforeEach).
+        // Decoupling the two indices lets a streaming write use count-sized transients while still addressing the
+        // atlas-sized _splatPositions. White-box: the upload path that uses it needs sub-texture uploads NullEngine
+        // can't do (see beforeEach).
         const compound = createCompound() as any;
         compound._splatPositions = new Float32Array(4 * 40); // atlas capacity 40 splats
         const covA = new Uint16Array(4 * 2); // count-sized transient (2 splats), 0-based
@@ -427,8 +427,8 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         // Position lands at the global dstIndex 37.
         expect(compound._splatPositions[4 * 37 + 0]).toBe(3);
         expect(compound._splatPositions[4 * 37 + 2]).toBe(3);
-        // Color/covA land at dstArrayIndex 1 in the count-sized transient. Pre-fix these used dstIndex (37), an
-        // out-of-bounds write on the 2-splat transient that a typed array silently drops — leaving slot 1 zeroed.
+        // Color/covA land at dstArrayIndex 1. Indexing by dstIndex (37) would be out of bounds on the 2-splat
+        // transient — a typed array silently drops the write, leaving slot 1 zeroed.
         expect(colorArray[1 * 4 + 0]).toBe(255);
         expect(covA[1 * 4 + 0]).not.toBe(0);
         expect(colorArray[0]).toBe(0); // slot 0 (a different splat) untouched
@@ -470,15 +470,14 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         handle.expandBounds(new Vector3(1000, 1000, 1000), new Vector3(1020, 1020, 1020));
         expect(compound.getBoundingInfo().boundingBox.maximumWorld.x).toBeGreaterThan(500);
 
-        // Tombstone the static part, then reclaim. _addPartsInternal rebuilds bounds from the stream's ZERO-box
-        // placeholder source, so compaction must recompute from the restored proxy afterward — otherwise the stream
-        // (now the only part) collapses to a degenerate box and isInFrustum can cull the whole mesh.
+        // Tombstone the static part, then reclaim. Compaction rebuilds bounds from the stream's zero-box placeholder,
+        // so it must recompute from the restored proxy afterward or the stream collapses to a degenerate box.
         compound.removePart(0);
         compound.compactAtlas();
         expect(compound.partCount).toBe(1);
         expect(handle.base).toBe(0);
-        // Assert the CACHED bounds directly: getBoundingInfo() would lazily recompute and mask the bug, but a
-        // static-transform compound never flags bounds dirty, so isInFrustum reads exactly this stale cache.
+        // Assert the cached bounds directly: getBoundingInfo() would lazily recompute and mask the bug, but a
+        // static-transform compound never flags bounds dirty, so isInFrustum reads this stale cache.
         expect((compound as any)._cachedBoundingMax.x).toBeGreaterThan(500);
     });
 
@@ -494,10 +493,9 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
     });
 
     it("SH reuse guard compares against the required (merged) SH count, not the stale cached field", () => {
-        // White-box: the real incremental reserve->addPart path (where a higher-degree part must grow the SH atlas)
-        // needs sub-texture uploads, which NullEngine can't do — so drive the guard directly. It must reject reuse
-        // when the update REQUIRES more SH textures than the committed atlas, even though _shMrtAtlasTextureCount is
-        // stale (it is only refreshed inside _updateTextures, which the incremental path never runs).
+        // White-box: the real incremental reserve->addPart path needs sub-texture uploads NullEngine can't do, so
+        // drive the guard directly. It must reject reuse when the update requires more SH textures than the committed
+        // atlas, even though _shMrtAtlasTextureCount is stale (refreshed only in _updateTextures).
         const noopDisposable = { dispose: () => {} }; // afterEach disposes the compound, so mocks need dispose()
         const compound = createCompound() as any;
         compound._useShMrtAtlas = true;
@@ -509,9 +507,8 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         compound._cachedBoundingMax = new Vector3();
         compound._textureSize = new Vector2(16, 1);
 
-        // A degree-3 add requires 3 SH textures: reuse must be rejected (atlas length 1 != required 3), so the
-        // caller takes the full-rebuild path and grows the atlas — the pre-fix guard read the stale field (1 == 1)
-        // and wrongly reused.
+        // A degree-3 add requires 3 SH textures: reuse must be rejected (atlas length 1 != required 3). The pre-fix
+        // guard read the stale field (1 == 1) and wrongly reused.
         expect(compound._canReuseCachedData(1, 1, 3)).toBe(false);
         // Same required count as the committed atlas: reuse is allowed.
         expect(compound._canReuseCachedData(1, 1, 1)).toBe(true);

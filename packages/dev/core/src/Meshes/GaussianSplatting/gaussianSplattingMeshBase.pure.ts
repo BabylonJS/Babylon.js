@@ -2366,9 +2366,8 @@ export class GaussianSplattingMeshBase extends Mesh {
             for (const mrt of this._shMrtAtlas) {
                 mrt.dispose();
             }
-            // Defence in depth: free any _shTextures entries BEYOND the MRT-backed set. The reuse guard should keep
-            // the atlas correctly sized, but if a mismatch ever appends plain RawTextures past the attachments, they
-            // are not MRT-owned and would otherwise leak (this branch skips the `else if` that frees them).
+            // Defence in depth: free any _shTextures entries beyond the MRT-backed set (not MRT-owned, so the loop
+            // above misses them). The reuse guard keeps the atlas sized correctly, so this is normally a no-op.
             if (this._shTextures) {
                 for (let k = this._shMrtAtlas.length; k < this._shTextures.length; k++) {
                     this._shTextures[k].dispose();
@@ -2497,9 +2496,8 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param maximum - accumulated bounding maximum (updated in-place)
      * @param flipY - whether to negate the Y position
      * @param srcIndex - source splat index (defaults to dstIndex when omitted)
-     * @param dstArrayIndex - index into the covA/covB/colorArray transients (defaults to dstIndex). Decoupled from
-     * dstIndex so a caller writing a small region into a large atlas (e.g. a streaming write) can pass count-sized
-     * transients indexed from 0, while dstIndex still addresses the atlas-sized _splatPositions / rotation arrays.
+     * @param dstArrayIndex - index into the covA/covB/colorArray transients (defaults to dstIndex). Lets a streaming
+     * write pass count-sized transients indexed from 0 while dstIndex still addresses the atlas-sized _splatPositions.
      */
     protected _makeSplat(
         dstIndex: number,
@@ -2542,8 +2540,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         Matrix.ScalingToRef(fBuffer[8 * srcIndex + 3 + 0] * 2, fBuffer[8 * srcIndex + 3 + 1] * 2, fBuffer[8 * srcIndex + 3 + 2] * 2, matrixScale);
 
         if (this._needsRotationScaleTextures) {
-            // Sized to the atlas (matching _splatPositions), NOT covA — these persistent arrays are indexed by the
-            // global dstIndex, so a count-sized covA transient (streaming write) must not shrink them.
+            // Sized to the atlas (_splatPositions), not covA: these persistent arrays are indexed by the global
+            // dstIndex, so a count-sized covA transient must not shrink them.
             const rotLength = this._splatPositions!.length;
             if (!this._rotationDataA || this._rotationDataA.length < rotLength) {
                 this._rotationDataA = new Uint16Array(rotLength);
@@ -3071,9 +3069,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (this._useMrtAtlas && !this._mrtAtlas) {
             return false;
         }
-        // Compare against the count THIS update requires, not the cached `_shMrtAtlasTextureCount`: that field is only
-        // refreshed inside _updateTextures (which the incremental path never runs), so reading it here would let a
-        // higher-degree addPart pass the guard on a stale count and skip growing the SH atlas.
+        // Compare against the count this update requires, not `_shMrtAtlasTextureCount` — that field is refreshed
+        // only in _updateTextures (skipped on the incremental path), so a higher-degree addPart would pass the guard
+        // on a stale count and never grow the SH atlas.
         if (this._useShMrtAtlas && (!this._shMrtAtlas || this._shMrtAtlas.length !== requiredShTextureCount)) {
             return false;
         }
@@ -3164,9 +3162,8 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         const fBuffer = GaussianSplattingMeshBase._GetSplatDataFloats(splatsData);
 
-        // Transients are sized to `count` (this write), NOT `end`, and indexed from 0 via _makeSplat's dstArrayIndex:
-        // sizing by the region's atlas position would allocate/zero tens of MB for a small write near a large atlas's
-        // tail. dstIndex (globalOffset + i) still addresses the atlas-sized _splatPositions / rotation arrays.
+        // Transients are sized to `count`, not `end` (globalOffset + count): sizing by atlas position would allocate
+        // tens of MB for a small write near a large atlas's tail. dstIndex still addresses the atlas _splatPositions.
         const covA = new Uint16Array(count * 4);
         const covB = new Uint16Array(count * covBSItemSize);
         const colorArray = new Uint8Array(count * 4);
@@ -3191,8 +3188,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             const runEnd = Math.min(end, (row + 1) * width);
             const col = gi - row * width;
             const runLen = runEnd - gi;
-            // covA/covB/colorArray are count-sized and 0-based, so rebase by (gi - globalOffset); positions is the
-            // atlas-sized _splatPositions, so it stays indexed by the global gi.
+            // covA/covB/colorArray are count-sized (0-based), so rebase by globalOffset; positions stays global.
             const li = gi - globalOffset;
             this._updateTextureFromDataRect(this._covariancesATexture!, new Uint16Array(covA.buffer, li * 4 * 2, runLen * 4), col, row, runLen, 1);
             this._updateTextureFromDataRect(this._covariancesBTexture!, new Uint16Array(covB.buffer, li * covBSItemSize * 2, runLen * covBSItemSize), col, row, runLen, 1);

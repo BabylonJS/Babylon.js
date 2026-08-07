@@ -257,8 +257,7 @@ describe("WebGPUShaderProcessorWGSL", () => {
         });
 
         it("ignores a commented-out integer fragData write above the real float write", () => {
-            // The scan must strip comments: a stale `// ... = vec4<u32>(...)` sitting above a real float write must
-            // not flip the output to integer (which would be a WGSL compile error on a shader that builds today).
+            // A stale commented-out `= vec4<u32>(...)` above a real float write must not flip the output to integer.
             const frag =
                 "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
                 "  // fragmentOutputs.fragData0 = vec4<u32>(1u);\n" +
@@ -267,14 +266,12 @@ describe("WebGPUShaderProcessorWGSL", () => {
                 "}\n";
             const { fragmentCode } = processor.finalizeShaders(vtx, frag);
             expect(fragmentCode).toContain("@location(0) fragData0 : vec4<f32>");
-            // The retained comments still contain the literal "vec4<u32>", so assert on the emitted struct
-            // declaration specifically rather than the whole shader text.
+            // The retained comment still contains "vec4<u32>", so assert on the emitted struct declaration.
             expect(fragmentCode).not.toContain("fragData0 : vec4<u32>");
         });
 
         it("does not let a same-named integer local in a helper function flip a float fragData output", () => {
-            // The declaration lookup must be scoped to main: an integer `color` local in an unrelated helper must
-            // not resolve the type of main's float `color` RHS.
+            // An integer `color` local in a helper must not resolve the type of main's float `color` RHS.
             const frag =
                 "fn helper() -> vec4<u32> {\n  var color : vec4<u32> = vec4<u32>(1u);\n  return color;\n}\n" +
                 "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +

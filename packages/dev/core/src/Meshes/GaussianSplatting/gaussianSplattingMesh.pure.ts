@@ -1690,11 +1690,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this._hasStreamingPart = this._streamingStates.length > 0;
             this._tombstonedPartIndices.clear();
 
-            // Recompute bounds from the restored (correctly-bounded) proxies: _addPartsInternal above computed them
-            // from the zero-box placeholders it built, so without this the compound bounds would collapse and
-            // isInFrustum could cull the whole (possibly stream-only) mesh. Mirrors the recompute in _tombstonePart.
-            // Must run AFTER the tombstone set is cleared — a survivor can reuse a still-tombstoned index and would
-            // otherwise be skipped by the recompute's tombstone filter.
+            // Recompute bounds from the restored proxies (_addPartsInternal above used the zero-box placeholders),
+            // else a static-transform compound keeps stale bounds and isInFrustum can cull it. Must run after the
+            // tombstone set is cleared so a survivor reusing a tombstoned index isn't skipped by the filter.
             this._updateBoundingInfoFromProxies();
 
             this._rebuilding = false;

@@ -438,12 +438,10 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         // vec4<f32>; that surfaces later as a WGSL "cannot assign vec4<u32> to vec4<f32>" compile error rather than
         // here. Shaders that render to integer targets should assign an inline vec4<u32>/vec4<i32> (constructor or a
         // directly-typed local) so the output type is detected. Extend the patterns below if new forms are needed.
-        // The inference scans a comment-stripped copy and scopes the RHS-identifier declaration lookup to `fn main`'s
-        // body, so a commented-out write or a same-named integer local in a helper function can't force an integer
-        // output onto a shader that actually renders float — a false positive that would break a working shader.
+        // Scan a comment-stripped copy so a commented-out integer write can't flip a real float output.
         const scanCode = fragmentCode.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\/\/[^\n]*/g, " ");
-        // fragData writes live in `fn main`; declarations reachable at a write are in main and textually precede it
-        // (WGSL requires a local be declared before use in its own scope).
+        // fragData writes are in `fn main`; scope the RHS-identifier declaration lookup there so a same-named integer
+        // local in a helper function can't win.
         const mainBodyStart = Math.max(0, scanCode.indexOf("fn main"));
         const detectIntVec = (expr: string): Nullable<string> => {
             if (/^\s*(vec4<u32>|vec4u\s*\()/.test(expr)) {
@@ -464,9 +462,8 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             if (direct) {
                 return direct;
             }
-            // Bare identifier RHS (e.g. `fragData0 = computedUintColor;`): resolve its declared type from a
-            // `var/let NAME : vec4<u32>` typed declaration or a `var/let NAME = vec4<u32>(...)` initialized one,
-            // searched only within main up to this write so a helper's same-named local (a different scope) can't win.
+            // Bare identifier RHS (e.g. `fragData0 = computedUintColor;`): resolve its type from a `var/let NAME :
+            // vec4<u32>` or `var/let NAME = vec4<u32>(...)` declaration, searched only in main up to this write.
             const id = rhs.match(/^([A-Za-z_]\w*)$/);
             if (id) {
                 const declScope = scanCode.slice(mainBodyStart, assign.index ?? scanCode.length);

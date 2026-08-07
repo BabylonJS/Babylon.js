@@ -528,10 +528,8 @@ export class GaussianSplattingWorkBuffer {
                 // it writes, not the whole (wide) atlas. Correct because the shaders already discard outside the exact
                 // splat range, and the row band is a superset of it.
                 const width = this._textureSize;
-                // Bind the atlas offset HERE, at render time, from the LIVE _baseOffset — never in _apply*Pack at call
-                // time. compactAtlas() can relocate this region (onAfterAtlasRebuild -> setBaseOffset) during the defer
-                // window; binding here keeps uOffset and the scissor below sharing one value, so a moved region writes
-                // its new rows instead of silently missing every fragment's range test.
+                // Bind uOffset at render time from the live _baseOffset so it shares one value with the scissor below:
+                // compactAtlas() can relocate this region (via setBaseOffset) during the defer window.
                 const globalOffset = this._baseOffset + offset;
                 this._material.setInt("uOffset", globalOffset);
                 if (decodeSh) {
@@ -1109,7 +1107,7 @@ export class GaussianSplattingWorkBuffer {
         material.setVector4("sogSh0Max", new Vector4(c0Max[0], c0Max[1], c0Max[2], c0Max[3]));
 
         material.setInt("uVersion", pack.version);
-        // NOTE: uOffset is bound at render time in decodeAsync (from the live _baseOffset), not here.
+        // uOffset is bound at render time in decodeAsync (from the live _baseOffset).
         material.setInt("uCount", pack.splatCount);
         material.setInt("uDestWidth", this._textureSize);
         material.setInt("uSrcWidth", srcWidth);
@@ -1150,7 +1148,7 @@ export class GaussianSplattingWorkBuffer {
         material.setFloat("sogShnMin", pack.shnMin ?? 0);
         material.setFloat("sogShnMax", pack.shnMax ?? 0);
         material.setInt("uVersion", pack.version);
-        // NOTE: uOffset is bound at render time in decodeAsync (from the live _baseOffset), not here.
+        // uOffset is bound at render time in decodeAsync (from the live _baseOffset).
         material.setInt("uCount", pack.splatCount);
         material.setInt("uDestWidth", this._textureSize);
         material.setInt("uSrcWidth", (labels as Texture).getSize().width);
@@ -1191,7 +1189,7 @@ export class GaussianSplattingWorkBuffer {
         material.setVector3("sogScalesMin", new Vector3(sMin[0], sMin[1], sMin[2]));
         material.setVector3("sogScalesMax", new Vector3(sMax[0], sMax[1], sMax[2]));
         material.setInt("uVersion", pack.version);
-        // NOTE: uOffset is bound at render time in decodeAsync (from the live _baseOffset), not here.
+        // uOffset is bound at render time in decodeAsync (from the live _baseOffset).
         material.setInt("uCount", pack.splatCount);
         material.setInt("uDestWidth", this._textureSize);
         material.setInt("uSrcWidth", srcWidth);
