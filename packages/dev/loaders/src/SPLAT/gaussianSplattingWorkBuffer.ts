@@ -501,16 +501,16 @@ export class GaussianSplattingWorkBuffer {
         if (this._disposed) {
             return;
         }
-        this._applyPack(pack, offset);
+        this._applyPack(pack);
         // When SH is enabled, bake EVERY file's region — even a file with no higher-order SH (a coarse LOD may drop
         // it): those get uCoeffs=0 so the whole region neutral-fills (128), keeping mixed-degree files consistent.
         const decodeSh = this._shMaterial !== null && this._shMrts.length > 0;
         if (decodeSh) {
-            this._applyShPack(pack, offset);
+            this._applyShPack(pack);
         }
         const decodeRot = this._rotMaterial !== null && this._rotMrt !== null;
         if (decodeRot) {
-            this._applyRotPack(pack, offset);
+            this._applyRotPack(pack);
         }
         // Render the decode pass at the start of a frame (the safe point for custom render targets),
         // once the shader is compiled — never re-entrantly from a promise/observable continuation.
@@ -528,7 +528,18 @@ export class GaussianSplattingWorkBuffer {
                 // it writes, not the whole (wide) atlas. Correct because the shaders already discard outside the exact
                 // splat range, and the row band is a superset of it.
                 const width = this._textureSize;
+                // Bind the atlas offset HERE, at render time, from the LIVE _baseOffset — never in _apply*Pack at call
+                // time. compactAtlas() can relocate this region (onAfterAtlasRebuild -> setBaseOffset) during the defer
+                // window; binding here keeps uOffset and the scissor below sharing one value, so a moved region writes
+                // its new rows instead of silently missing every fragment's range test.
                 const globalOffset = this._baseOffset + offset;
+                this._material.setInt("uOffset", globalOffset);
+                if (decodeSh) {
+                    this._shMaterial!.setInt("uOffset", globalOffset);
+                }
+                if (decodeRot) {
+                    this._rotMaterial!.setInt("uOffset", globalOffset);
+                }
                 const firstRow = Math.floor(globalOffset / width);
                 const rowCount = Math.max(1, Math.ceil((globalOffset + pack.splatCount) / width) - firstRow);
                 const engine = this._scene.getEngine();
@@ -1074,7 +1085,7 @@ export class GaussianSplattingWorkBuffer {
         return material;
     }
 
-    private _applyPack(pack: ISogTexturePack, offset: number): void {
+    private _applyPack(pack: ISogTexturePack): void {
         const material = this._material;
         const srcWidth = (pack.meansTextureL as Texture).getSize().width;
 
@@ -1098,8 +1109,7 @@ export class GaussianSplattingWorkBuffer {
         material.setVector4("sogSh0Max", new Vector4(c0Max[0], c0Max[1], c0Max[2], c0Max[3]));
 
         material.setInt("uVersion", pack.version);
-        // Place the file at its region-local offset shifted by the atlas base (0 for a standalone work buffer).
-        material.setInt("uOffset", this._baseOffset + offset);
+        // NOTE: uOffset is bound at render time in decodeAsync (from the live _baseOffset), not here.
         material.setInt("uCount", pack.splatCount);
         material.setInt("uDestWidth", this._textureSize);
         material.setInt("uSrcWidth", srcWidth);
@@ -1126,7 +1136,7 @@ export class GaussianSplattingWorkBuffer {
         return material;
     }
 
-    private _applyShPack(pack: ISogTexturePack, offset: number): void {
+    private _applyShPack(pack: ISogTexturePack): void {
         const material = this._shMaterial!;
         // A file may carry no higher-order SH (coarse LOD): fall back to sh0Texture as a harmless placeholder for the
         // label/centroid samplers and set uCoeffs=0 so the shader neutral-fills every coefficient (128 -> 0 lighting).
@@ -1140,7 +1150,7 @@ export class GaussianSplattingWorkBuffer {
         material.setFloat("sogShnMin", pack.shnMin ?? 0);
         material.setFloat("sogShnMax", pack.shnMax ?? 0);
         material.setInt("uVersion", pack.version);
-        material.setInt("uOffset", this._baseOffset + offset);
+        // NOTE: uOffset is bound at render time in decodeAsync (from the live _baseOffset), not here.
         material.setInt("uCount", pack.splatCount);
         material.setInt("uDestWidth", this._textureSize);
         material.setInt("uSrcWidth", (labels as Texture).getSize().width);
@@ -1169,7 +1179,7 @@ export class GaussianSplattingWorkBuffer {
         return material;
     }
 
-    private _applyRotPack(pack: ISogTexturePack, offset: number): void {
+    private _applyRotPack(pack: ISogTexturePack): void {
         const material = this._rotMaterial!;
         const srcWidth = (pack.scalesTexture as Texture).getSize().width;
         material.setTexture("sogScalesTex", pack.scalesTexture);
@@ -1181,7 +1191,7 @@ export class GaussianSplattingWorkBuffer {
         material.setVector3("sogScalesMin", new Vector3(sMin[0], sMin[1], sMin[2]));
         material.setVector3("sogScalesMax", new Vector3(sMax[0], sMax[1], sMax[2]));
         material.setInt("uVersion", pack.version);
-        material.setInt("uOffset", this._baseOffset + offset);
+        // NOTE: uOffset is bound at render time in decodeAsync (from the live _baseOffset), not here.
         material.setInt("uCount", pack.splatCount);
         material.setInt("uDestWidth", this._textureSize);
         material.setInt("uSrcWidth", srcWidth);
