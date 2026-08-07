@@ -3,7 +3,6 @@ import { type IKHRInteractivity } from "babylonjs-gltf2interface";
 import { type GLTFLoader } from "../glTFLoader.pure";
 import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
-import { FlowGraphForLoopBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphForLoopBlock.pure";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { registerGLTFExtension, unregisterGLTFExtension, registeredGLTFExtensions } from "../glTFLoaderExtensionRegistry";
 import { type GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
@@ -26,11 +25,6 @@ import { type IPathToObjectConverter } from "core/ObjectModel/objectModelInterfa
 import { Logger } from "core/Misc/logger";
 
 const NAME = "KHR_interactivity";
-
-// Runaway-loop guard the interactivity loader opts into (see onReady). The default FlowGraphForLoopBlock
-// cap is intentionally conservative; interactivity assets need enough headroom for large finite loops
-// such as the math/random Monte Carlo 10k conformance asset.
-const InteractivityMaxLoopIterations = 100000;
 
 /**
  * Loader extension for KHR_interactivity
@@ -118,14 +112,6 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         if (!interactivityDefinition) {
             // This can technically throw, but it's not a critical error
             return;
-        }
-
-        // KHR_interactivity assets may legitimately run large finite loops (e.g. the math/random Monte
-        // Carlo conformance asset iterates 10k times), which is well above FlowGraphForLoopBlock's
-        // conservative default runaway-guard. Rather than raise that core default for every FlowGraph
-        // consumer, the interactivity loader opts its own graphs into a higher cap here.
-        if (FlowGraphForLoopBlock.MaxLoopIterations < InteractivityMaxLoopIterations) {
-            FlowGraphForLoopBlock.MaxLoopIterations = InteractivityMaxLoopIterations;
         }
 
         // The specification requires an invalid behavior graph to be rejected. Parse each graph into its

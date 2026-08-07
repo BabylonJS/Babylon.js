@@ -685,11 +685,13 @@ jobs:
       dependsOn:
           - FormatLint
       condition: succeeded()
-      # Non-blocking for now: the suite runs 174 browser tests on a single worker and is not yet fast
-      # or stable enough to gate every PR. continueOnError reports failures as "succeeded with issues"
-      # instead of failing the pipeline; the timeout is bounded well under the old 60 min so a hang no
-      # longer burns a full hour. Promote back to a required, blocking gate once it is demonstrably
-      # green and fast (e.g. parallelized).
+      # Sharded across parallel agents so the full 174-asset suite completes well within the timeout,
+      # instead of running ~60 min on a single worker and being reported as a masked timeout. Each shard
+      # runs an independent slice via Playwright --shard, so this is independent of any one agent's core
+      # count. Kept non-blocking (continueOnError) for now so an intermittent asset does not block merges;
+      # promote to a required gate once it has a track record of completing green.
+      strategy:
+          parallel: 4
       continueOnError: true
       timeoutInMinutes: 30
       steps:
@@ -749,8 +751,8 @@ jobs:
             condition: ne(variables['KHR_AFFECTED'], 'false')
             retryCountOnTaskFailure: 1
 
-          - script: node ./scripts/runKHRInteractivityAssetTests.mjs
-            displayName: "run KHR_interactivity conformance tests"
+          - script: node ./scripts/runKHRInteractivityAssetTests.mjs --shard=$(System.JobPositionInPhase)/$(System.TotalJobsInPhase)
+            displayName: "run KHR_interactivity conformance tests (shard $(System.JobPositionInPhase)/$(System.TotalJobsInPhase))"
             condition: ne(variables['KHR_AFFECTED'], 'false')
             env:
                 CI: "true"
@@ -766,7 +768,10 @@ jobs:
             inputs:
                 testResultsFormat: JUnit
                 testResultsFiles: "./khr-interactivity-junit.xml"
-                testRunTitle: "KHR_interactivity conformance"
+                testRunTitle: "KHR_interactivity conformance (shard $(System.JobPositionInPhase)/$(System.TotalJobsInPhase))"
+                # Each parallel shard writes the same file name in its own agent workspace; publishing
+                # under a shard-specific run title keeps the four result sets from overwriting each other.
+                mergeTestResults: true
 
           - task: PublishPipelineArtifact@1
             displayName: "Publish conformance report"
@@ -774,7 +779,7 @@ jobs:
             continueOnError: true
             inputs:
                 targetPath: "khr-interactivity-report"
-                artifact: "khr-interactivity-report"
+                artifact: "khr-interactivity-report-shard-$(System.JobPositionInPhase)"
 
     # ============================================================================
     # VISUALIZATION TESTS - WEBGL 2

@@ -27,16 +27,24 @@ export interface IFlowGraphForLoopBlockConfiguration extends IFlowGraphBlockConf
      * This is the default behavior in glTF interactivity
      */
     incrementIndexWhenLoopDone?: boolean;
+
+    /**
+     * Overrides {@link FlowGraphForLoopBlock.MaxLoopIterations} for this block only.
+     * Lets a single graph opt into a higher (or lower) runaway-loop guard without changing the
+     * process-wide default that every other FlowGraph relies on.
+     */
+    maxLoopIterations?: number;
 }
 /**
  * Block that executes an action in a loop.
  */
 export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
-     * The maximum number of iterations allowed for the loop.
-     * If the loop exceeds this number, it will stop. This number is configurable to avoid infinite loops.
-     * A graph that legitimately needs more iterations can raise this static itself rather than relying on
-     * a higher default that would let a runaway loop freeze the tab before the guard trips.
+     * The default maximum number of iterations allowed for the loop, used as a safety net against
+     * runaway loops. Kept conservative so a runaway loop is caught before it can freeze the tab.
+     * A single graph that legitimately needs more iterations should set the per-block
+     * {@link IFlowGraphForLoopBlockConfiguration.maxLoopIterations} rather than raising this
+     * process-wide default that every other FlowGraph relies on.
      */
     public static MaxLoopIterations = 1000;
     /**
@@ -87,6 +95,8 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
         const index = getNumericValue(this.startIndex.getValue(context));
         const step = this.step.getValue(context);
         let endIndex = getNumericValue(this.endIndex.getValue(context));
+        // Per-block override of the runaway-loop guard, falling back to the process-wide default.
+        const maxIterations = (this.config as IFlowGraphForLoopBlockConfiguration | undefined)?.maxLoopIterations ?? FlowGraphForLoopBlock.MaxLoopIterations;
         let iterations = 0;
         for (let i = index; i < endIndex; i += step) {
             this.index.setValue(new FlowGraphInteger(i), context);
@@ -94,7 +104,7 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
             endIndex = getNumericValue(this.endIndex.getValue(context));
             // Safety net against runaway loops. The cap counts iterations (not the index value) so it
             // behaves correctly regardless of startIndex/step.
-            if (++iterations >= FlowGraphForLoopBlock.MaxLoopIterations) {
+            if (++iterations >= maxIterations) {
                 break;
             }
         }

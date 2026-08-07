@@ -7,6 +7,12 @@ import { type InteractivityEvent, type InteractivityGraphToFlowGraphParser } fro
 import { type IGLTF } from "../../glTFLoaderInterfaces";
 import { FlowGraphTypes, getAnimationTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
 
+// Per-block runaway-loop guard for KHR_interactivity for-loops. Interactivity assets may run large
+// finite loops (e.g. the math/random Monte Carlo conformance asset iterates 10k times), so this is
+// set well above the FlowGraphForLoopBlock process-wide default. Applied per for-loop block via the
+// flow/for extraProcessor rather than by mutating the shared static.
+const InteractivityForLoopMaxIterations = 100000;
+
 interface IGLTFToFlowGraphMappingObject {
     /**
      * The name of the property in the FlowGraph block.
@@ -1151,6 +1157,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             const serializedObject = serializedObjects[0];
             serializedObject.config ||= {};
             serializedObject.config.incrementIndexWhenLoopDone = true;
+            // KHR_interactivity assets may run large finite loops (e.g. the math/random Monte Carlo
+            // conformance asset iterates 10k times), well above the block's conservative default guard.
+            // Raise the cap for interactivity for-loops only, per block, instead of mutating the
+            // process-wide FlowGraphForLoopBlock.MaxLoopIterations that every other FlowGraph relies on.
+            serializedObject.config.maxLoopIterations = InteractivityForLoopMaxIterations;
             return serializedObjects;
         },
     },

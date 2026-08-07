@@ -120,6 +120,34 @@ describe("Flow Graph Execution Nodes", () => {
         expect(Logger.Log).toHaveBeenNthCalledWith(4, "done");
     });
 
+    it("ForLoop per-block maxLoopIterations overrides the default without mutating the static", () => {
+        const defaultCap = FlowGraphForLoopBlock.MaxLoopIterations;
+
+        // A block-level cap of 3 must stop the loop after 3 iterations even though the range asks for 10,
+        // and it must not change the process-wide default that every other FlowGraph relies on.
+        const forLoop = new FlowGraphForLoopBlock({ maxLoopIterations: 3 });
+        const sceneReady = new FlowGraphSceneReadyEventBlock();
+        flowGraph.addEventBlock(sceneReady);
+        sceneReady.done.connectTo(forLoop.in);
+        forLoop.startIndex.setValue(0, flowGraphContext);
+        forLoop.endIndex.setValue(10, flowGraphContext);
+        forLoop.step.setValue(1, flowGraphContext);
+
+        const loop = new FlowGraphConsoleLogBlock();
+        forLoop.executionFlow.connectTo(loop.in);
+        forLoop.index.connectTo(loop.message);
+
+        flowGraph.start();
+
+        // 3 body executions (indices 0, 1, 2) then the loop breaks on the cap.
+        expect(Logger.Log).toHaveBeenCalledTimes(3);
+        expect(Logger.Log).toHaveBeenNthCalledWith(1, { value: 0 });
+        expect(Logger.Log).toHaveBeenNthCalledWith(2, { value: 1 });
+        expect(Logger.Log).toHaveBeenNthCalledWith(3, { value: 2 });
+        // The shared static default is untouched.
+        expect(FlowGraphForLoopBlock.MaxLoopIterations).toBe(defaultCap);
+    });
+
     it("MultiGate Block", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
