@@ -1,4 +1,5 @@
 import { type IWebXRFeature } from "../webXRFeaturesManager";
+import { _MarkWebXRFeatureWithSpecificDisableWarning } from "../webXRFeatureWarningRegistry";
 import { type Observer, type EventState, Observable } from "../../Misc/observable";
 import { type Nullable } from "../../types";
 import { type WebXRSessionManager } from "../webXRSessionManager";
@@ -156,6 +157,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
             Logger.Warn(warning);
             this._disableAutoAttachWarningEmitted = true;
         }
+        _MarkWebXRFeatureWithSpecificDisableWarning(this);
         this.disableAutoAttach = true;
         return false;
     }

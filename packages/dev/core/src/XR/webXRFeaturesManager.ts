@@ -23,6 +23,7 @@ import { type IWebXRPlaneDetectorOptions, type WebXRPlaneDetector } from "./feat
 import { type IWebXRRawCameraAccessOptions, type WebXRRawCameraAccess } from "./features/WebXRRawCameraAccess";
 import { type WebXRSpaceWarp } from "./features/WebXRSpaceWarp";
 import { type IWebXRWalkingLocomotionOptions, type WebXRWalkingLocomotion } from "./features/WebXRWalkingLocomotion";
+import { _ConsumeWebXRFeatureSpecificDisableWarning } from "./webXRFeatureWarningRegistry";
 import { type WebXRSessionManager } from "./webXRSessionManager";
 
 /**
@@ -583,9 +584,9 @@ export class WebXRFeaturesManager implements IDisposable {
                 throw new Error(`Dependant features missing. Make sure the following features are enabled - ${constructed.dependsOn.join(", ")}`);
             }
         }
-        const disableAutoAttachBeforeCompatibility = constructed.disableAutoAttach;
+        _ConsumeWebXRFeatureSpecificDisableWarning(constructed);
         const isCompatible = constructed.isCompatible();
-        const intentionallyDisabledDuringCompatibility = !disableAutoAttachBeforeCompatibility && constructed.disableAutoAttach;
+        const emittedSpecificDisableWarning = _ConsumeWebXRFeatureSpecificDisableWarning(constructed);
         if (isCompatible) {
             this._features[name] = {
                 featureImplementation: constructed,
@@ -610,7 +611,7 @@ export class WebXRFeaturesManager implements IDisposable {
             if (required) {
                 throw new Error("required feature not compatible");
             } else {
-                if (!intentionallyDisabledDuringCompatibility) {
+                if (!emittedSpecificDisableWarning) {
                     Tools.Warn(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
                 }
                 return constructed as ResolveWebXRFeature<T>;
