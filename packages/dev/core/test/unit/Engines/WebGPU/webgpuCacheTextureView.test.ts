@@ -72,4 +72,24 @@ describe("WebGPUCacheTextureView", () => {
         expect(textureA.createView).toHaveBeenCalledTimes(1);
         expect(textureB.createView).toHaveBeenCalledTimes(1);
     });
+
+    it("should create a new view when only usage differs", () => {
+        const texture = createMockTexture();
+
+        const view1 = cache.getView(texture, createDescriptor({ usage: 0x10 }));
+        const view2 = cache.getView(texture, createDescriptor({ usage: 0x20 }));
+
+        expect(view2).not.toBe(view1);
+        expect(texture.createView).toHaveBeenCalledTimes(2);
+    });
+
+    it("should create a new view when only swizzle differs", () => {
+        const texture = createMockTexture();
+
+        const view1 = cache.getView(texture, createDescriptor({ swizzle: "rgba" }));
+        const view2 = cache.getView(texture, createDescriptor({ swizzle: "bgra" }));
+
+        expect(view2).not.toBe(view1);
+        expect(texture.createView).toHaveBeenCalledTimes(2);
+    });
 });

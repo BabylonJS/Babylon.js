@@ -29,6 +29,6 @@ export class WebGPUCacheTextureView {
     }
 
     private static _GetKey(descriptor: GPUTextureViewDescriptor): string {
-        return `${descriptor.format}_${descriptor.dimension}_${descriptor.baseMipLevel}_${descriptor.mipLevelCount}_${descriptor.baseArrayLayer}_${descriptor.arrayLayerCount}_${descriptor.aspect}`;
+        return `${descriptor.format}_${descriptor.dimension}_${descriptor.baseMipLevel}_${descriptor.mipLevelCount}_${descriptor.baseArrayLayer}_${descriptor.arrayLayerCount}_${descriptor.aspect}_${descriptor.usage}_${descriptor.swizzle}`;
     }
 }
