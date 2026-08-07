@@ -489,6 +489,62 @@ describe("WebXRDepthSensing", () => {
         expect(xrWebGLBinding).toHaveBeenCalledTimes(1);
     });
 
+    it("releases WebGL GPU depth wrappers without deleting runtime-owned textures across reattach", () => {
+        let runtimeTexture = {} as WebGLTexture;
+        const matrix = Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+        const getDepthInformation = vi.fn(
+            () =>
+                ({
+                    height: 2,
+                    normDepthBufferFromNormView: { matrix },
+                    rawValueToMeters: 1,
+                    texture: runtimeTexture,
+                    textureType: "texture",
+                    width: 2,
+                }) as unknown as XRWebGLDepthInformation
+        );
+        const nativeBinding = { getDepthInformation };
+        (globalThis as any).XRWebGLBinding = vi.fn().mockImplementation(function () {
+            return nativeBinding;
+        });
+        const deleteTexture = vi.fn();
+        (engine as any)._gl = { deleteTexture } as unknown as WebGLRenderingContext;
+        vi.spyOn(engine, "_releaseTexture").mockImplementation((texture) => {
+            texture._hardwareTexture?.release();
+        });
+        (sessionManager as any).session = {
+            depthDataFormat: "float32",
+            depthUsage: "gpu-optimized",
+            enabledFeatures: ["depth-sensing"],
+        } as XRSession;
+        sessionManager.referenceSpace = {} as XRReferenceSpace;
+        const view = {} as XRView;
+        const frame = {
+            getViewerPose: vi.fn(() => ({ views: [view] })),
+        } as unknown as XRFrame;
+        vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+
+        feature = new WebXRDepthSensing(sessionManager, {
+            dataFormatPreference: ["float"],
+            usagePreference: ["gpu"],
+        });
+        expect(feature.attach()).toBe(true);
+        sessionManager.onXRFrameObservable.notifyObservers(frame);
+        const firstWrapper = feature.latestDepthImageTexture;
+        expect(firstWrapper).not.toBeNull();
+        expect(deleteTexture.mock.calls.some(([texture]) => texture === runtimeTexture)).toBe(false);
+        deleteTexture.mockClear();
+        expect(feature.detach()).toBe(true);
+        expect(deleteTexture.mock.calls.some(([texture]) => texture === runtimeTexture)).toBe(false);
+
+        runtimeTexture = {} as WebGLTexture;
+        expect(feature.attach()).toBe(true);
+        sessionManager.onXRFrameObservable.notifyObservers(frame);
+        expect(feature.latestDepthImageTexture).not.toBe(firstWrapper);
+        expect(feature.detach()).toBe(true);
+        expect(deleteTexture.mock.calls.some(([texture]) => texture === runtimeTexture)).toBe(false);
+    });
+
     it("binds WebGL CPU depth without updating WGSL-only uniforms or the right-eye sampler", () => {
         const nativeBinding = { getDepthInformation: vi.fn(() => null) };
         (globalThis as any).XRWebGLBinding = vi.fn().mockImplementation(function () {

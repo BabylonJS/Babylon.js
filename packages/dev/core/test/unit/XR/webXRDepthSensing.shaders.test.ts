@@ -91,7 +91,9 @@ describe("WebXRDepthSensing material shaders", () => {
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("scene.view * vec4f(fragmentInputs.vPositionW, 1.0)");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("uniforms.ds_viewRight * vec4f(fragmentInputs.vPositionW, 1.0)");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("let ds_assetDepth: f32 = (ds_viewPosition.z * uniforms.ds_viewDepthSign) / uniforms.ds_worldScale;");
-        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("if (ds_depthAvailable > 0.5 && ds_cameraDepth < ds_assetDepth)");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain(
+            "if (ds_depthAvailable > 0.5 && ds_cameraDepth > 0.0 && ds_cameraDepth < ds_assetDepth)"
+        );
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("discard;");
         expect(fragment.CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR).toContain("let ds_depthTolerancePerM: f32 = 0.005;");
         expect(fragment.CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR).toContain("color *= (1.0 - ds_occlusion);");
@@ -116,6 +118,16 @@ describe("WebXRDepthSensing material shaders", () => {
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("uniforms.ds_viewDepthSign");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).not.toContain("1.0 / fragmentInputs.position.w");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).not.toContain("fragmentInputs.position.z;");
+    });
+
+    it("treats zero-valued CPU depth as unavailable in both WGSL occlusion modes", () => {
+        const plugin = createPlugin(ShaderLanguage.WGSL);
+        const fragment = plugin.getCustomCode("fragment", ShaderLanguage.WGSL)!;
+
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain(
+            "if (ds_depthAvailable > 0.5 && ds_cameraDepth > 0.0 && ds_cameraDepth < ds_assetDepth)"
+        );
+        expect(fragment.CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR).toContain("if (ds_depthAvailable > 0.5 && ds_cameraDepth > 0.0)");
     });
 
     it("compensates for Babylon's assembled fragment-coordinate flip to address top-left CPU depth rows", () => {

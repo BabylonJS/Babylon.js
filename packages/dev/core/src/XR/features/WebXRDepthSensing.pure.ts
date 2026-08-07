@@ -343,7 +343,7 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
     #endif
     let ds_assetDepth: f32 = (ds_viewPosition.z * uniforms.ds_viewDepthSign) / uniforms.ds_worldScale;
     #ifdef DEPTH_SENSING_DISCARD
-    if (ds_depthAvailable > 0.5 && ds_cameraDepth < ds_assetDepth) {
+    if (ds_depthAvailable > 0.5 && ds_cameraDepth > 0.0 && ds_cameraDepth < ds_assetDepth) {
         discard;
     }
     #endif
@@ -352,7 +352,7 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
                       CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
 #ifdef DEPTH_SENSING
     #ifndef DEPTH_SENSING_DISCARD
-        if (ds_depthAvailable > 0.5) {
+        if (ds_depthAvailable > 0.5 && ds_cameraDepth > 0.0) {
             let ds_depthTolerancePerM: f32 = 0.005;
             let ds_occlusion: f32 = clamp(1.0 - 0.5 * (ds_cameraDepth - ds_assetDepth) / (ds_depthTolerancePerM * ds_assetDepth) +
                 0.5, 0.0, 1.0);
@@ -463,6 +463,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     private _cachedDepthBuffer: Nullable<ArrayBuffer> = null;
     private _cachedWebGLTexture: Nullable<WebGLTexture> = null;
     private _cachedDepthImageTexture: Nullable<RawTexture> = null;
+    private _cachedDepthImageTextureWrapsExternalTexture = false;
     private _cpuDepthViewStates: IWebXRCPUDepthViewState[] = [];
     private _disableAutoAttachBeforeWebGPUGPUDepth = false;
     private _disabledForWebGPUGPUDepth = false;
@@ -701,9 +702,13 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         }
         this._cpuDepthViewStates.length = 0;
         if (!cachedTextureDisposed) {
+            if (this._cachedDepthImageTextureWrapsExternalTexture && this._cachedDepthImageTexture?._texture) {
+                this._cachedDepthImageTexture._texture._hardwareTexture = null;
+            }
             this._cachedDepthImageTexture?.dispose();
         }
         this._cachedDepthImageTexture = null;
+        this._cachedDepthImageTextureWrapsExternalTexture = false;
         for (const plugin of ManagedMaterialPlugins) {
             plugin.isEnabled = false;
         }
@@ -822,6 +827,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                 Constants.TEXTURETYPE_FLOAT
             );
         }
+        this._cachedDepthImageTextureWrapsExternalTexture = false;
         this._cachedDepthImageTexture = viewState.texture;
 
         let float32Array: Float32Array | null = null;
@@ -945,9 +951,11 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                 Texture.NEAREST_SAMPLINGMODE,
                 dataFormat === "float" ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE
             );
+            this._cachedDepthImageTexture._texture?.dispose();
         }
 
         this._cachedDepthImageTexture._texture = internalTexture;
+        this._cachedDepthImageTextureWrapsExternalTexture = true;
         DepthTexture = this._cachedDepthImageTexture;
         this._xrSessionManager.scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
