@@ -62,7 +62,9 @@ describe("WebXRDepthSensing material shaders", () => {
             "ds_depthAvailableLeft",
             "ds_depthAvailableRight",
             "ds_worldScale",
+            "ds_viewDepthSign",
             "ds_uvTransformRight",
+            "ds_viewRight",
         ]);
         expect(vertex.CUSTOM_VERTEX_DEFINITIONS).toContain("varying ds_viewIndexMultiview: f32;");
         expect(vertex.CUSTOM_VERTEX_MAIN_BEGIN).toContain("vertexOutputs.ds_viewIndexMultiview = f32(gl_ViewID_OVR);");
@@ -82,7 +84,9 @@ describe("WebXRDepthSensing material shaders", () => {
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("textureSample(ds_depthSampler, ds_depthSamplerSampler, ds_depthUv)");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("textureSample(ds_depthSamplerRight, ds_depthSamplerRightSampler, ds_depthUv)");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("ds_cameraDepth = ds_cameraDepth * ds_rawValueToMetersSet;");
-        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("let ds_assetDepth: f32 = (1.0 / fragmentInputs.position.w) / uniforms.ds_worldScale;");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("scene.view * vec4f(fragmentInputs.vPositionW, 1.0)");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("uniforms.ds_viewRight * vec4f(fragmentInputs.vPositionW, 1.0)");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("let ds_assetDepth: f32 = (ds_viewPosition.z * uniforms.ds_viewDepthSign) / uniforms.ds_worldScale;");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("if (ds_depthAvailable > 0.5 && ds_cameraDepth < ds_assetDepth)");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).not.toContain("1.0 - ds_baseUv.y");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("discard;");
@@ -90,7 +94,7 @@ describe("WebXRDepthSensing material shaders", () => {
         expect(fragment.CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR).toContain("color *= (1.0 - ds_occlusion);");
     });
 
-    it("compares meter depth against positive linear view depth instead of nonlinear device depth", () => {
+    it("compares meter depth against handedness-correct linear view-space depth instead of nonlinear device depth", () => {
         const plugin = createPlugin(ShaderLanguage.WGSL);
         const fragment = plugin.getCustomCode("fragment", ShaderLanguage.WGSL)!;
         const near = 0.1;
@@ -99,11 +103,15 @@ describe("WebXRDepthSensing material shaders", () => {
         const environmentDepthMeters = 1;
         const clipZ = (far / (far - near)) * viewDepthMeters - (near * far) / (far - near);
         const deviceDepth = clipZ / viewDepthMeters;
-        const fragmentPositionW = 1 / viewDepthMeters;
+        const leftHandedViewZ = viewDepthMeters;
+        const rightHandedViewZ = -viewDepthMeters;
 
         expect(environmentDepthMeters < deviceDepth).toBe(false);
-        expect(environmentDepthMeters < 1 / fragmentPositionW).toBe(true);
-        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("1.0 / fragmentInputs.position.w");
+        expect(environmentDepthMeters < leftHandedViewZ).toBe(true);
+        expect(environmentDepthMeters < -rightHandedViewZ).toBe(true);
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("fragmentInputs.vPositionW");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("uniforms.ds_viewDepthSign");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).not.toContain("1.0 / fragmentInputs.position.w");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).not.toContain("fragmentInputs.position.z;");
     });
 

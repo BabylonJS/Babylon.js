@@ -7,6 +7,7 @@ import { type Camera } from "core/Cameras/camera";
 import { type MaterialPluginBase } from "core/Materials/materialPluginBase";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
+import { Matrix } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 import { WebXRDepthSensing } from "core/XR/features/WebXRDepthSensing";
@@ -65,21 +66,25 @@ describe("WebXRDepthSensing", () => {
             getRenderHeight: () => 4,
             getRenderWidth: () => 8,
         };
+        const leftViewMatrix = Matrix.Translation(-0.03, 0, 0);
+        const rightViewMatrix = Matrix.Translation(0.03, 0, 0);
         const rigParent = { rigCameras: [] as Camera[] };
         const leftCamera = {
+            getViewMatrix: () => leftViewMatrix,
             outputRenderTarget,
             rigParent,
             rigCameras: [],
             viewport: { height: 1, width: 0.5, x: 0, y: 0 },
         } as unknown as Camera;
         const rightCamera = {
+            getViewMatrix: () => rightViewMatrix,
             outputRenderTarget,
             rigParent,
             rigCameras: [],
             viewport: { height: 1, width: 0.5, x: 0.5, y: 0 },
         } as unknown as Camera;
         rigParent.rigCameras.push(leftCamera, rightCamera);
-        return { leftCamera, outputRenderTarget, rightCamera, rigParent };
+        return { leftCamera, leftViewMatrix, outputRenderTarget, rightCamera, rightViewMatrix, rigParent };
     }
 
     function createUniformBufferRecorder() {
@@ -175,7 +180,7 @@ describe("WebXRDepthSensing", () => {
         const rightMatrix = Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.625, 0, 0, 1]);
         const leftDepth = createDepthInformation(Float32Array.from([1, 1, 1, 1]), 1, leftMatrix);
         const rightDepth = createDepthInformation(Float32Array.from([3, 3, 3, 3]), 2, rightMatrix);
-        const { leftCamera, outputRenderTarget, rightCamera, rigParent } = createRigCameras();
+        const { leftCamera, outputRenderTarget, rightCamera, rightViewMatrix, rigParent } = createRigCameras();
 
         feature = new WebXRDepthSensing(sessionManager, {
             dataFormatPreference: ["float"],
@@ -219,7 +224,15 @@ describe("WebXRDepthSensing", () => {
         expect(multiviewBinding.floats.get("ds_rawValueToMetersRight")).toBe(2);
         expect(multiviewBinding.floats.get("ds_depthAvailableLeft")).toBe(1);
         expect(multiviewBinding.floats.get("ds_depthAvailableRight")).toBe(1);
+        expect(multiviewBinding.floats.get("ds_viewDepthSign")).toBe(1);
         expect(multiviewBinding.matrices.get("ds_uvTransformRight")).toEqual(Array.from(rightMatrix));
+        expect(multiviewBinding.matrices.get("ds_viewRight")).toEqual(Array.from(rightViewMatrix.asArray()));
+
+        scene.useRightHandedSystem = true;
+        const rightHandedBinding = createUniformBufferRecorder();
+        plugin.bindForSubMesh(rightHandedBinding.uniformBuffer);
+        expect(rightHandedBinding.floats.get("ds_viewDepthSign")).toBe(-1);
+        scene.useRightHandedSystem = false;
 
         const markMaterialsDirtySpy = vi.spyOn(scene, "markAllMaterialsAsDirty");
         sessionManager.onXRFrameObservable.notifyObservers({
