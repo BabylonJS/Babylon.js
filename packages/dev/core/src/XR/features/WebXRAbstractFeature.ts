@@ -28,6 +28,9 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      */
     public disableAutoAttach: boolean = false;
 
+    /** @internal */
+    public _autoAttachPolicyBeforeAttach?: boolean;
+
     protected _xrNativeFeatureName: string = "";
 
     /**
