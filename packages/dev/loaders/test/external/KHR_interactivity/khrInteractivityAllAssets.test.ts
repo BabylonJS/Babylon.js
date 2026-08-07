@@ -42,6 +42,17 @@ const ShowcaseRoot = path.join(AssetRepository, "Models");
 const InterGlbSegment = `${path.sep}InterGlb${path.sep}`;
 let _routeId = 0;
 
+// The shared empty.html bootstrap loads ~14 Babylon UMD bundles, but the KHR_interactivity
+// conformance tests only exercise core (engine/scene/FlowGraph/SceneLoader) and the glTF loaders.
+// The decorative libraries below (materials, procedural textures, post-processes, serializers,
+// accessibility, the inspector, and every editor) are never used by a behavior-graph asset, so we
+// stub their script requests out with an empty body. This keeps a single unrelated library's UMD
+// build health (e.g. a broken fast-mode materials bundle in CI) from throwing at page-load time and
+// failing every conformance test, and it trims page startup. Core, loaders, gui, addons, earcut and
+// the physics engines are intentionally NOT blocked because assets may rely on them.
+const BlockedLibraryScriptPattern =
+    /\/(?:materialsLibrary|proceduralTexturesLibrary|postProcessesLibrary|serializers|accessibility|inspector|nodeEditor|nodeGeometryEditor|nodeRenderGraphEditor|guiEditor)\/|sourcemapped-stacktrace/;
+
 const ContentTypes: Record<string, string> = {
     ".bin": "application/octet-stream",
     ".glb": "model/gltf-binary",
@@ -167,6 +178,12 @@ async function _routeAsset(page: Page, filePath: string): Promise<IRoutedAsset> 
 }
 
 async function _preparePage(page: Page): Promise<void> {
+    // Register before navigating so the stub applies to the initial script loads. Serving an empty
+    // body (rather than aborting) avoids a failed-request console error while still preventing the
+    // unneeded library from evaluating.
+    await page.route(BlockedLibraryScriptPattern, async (route) => {
+        await route.fulfill({ status: 200, contentType: "application/javascript", body: "" });
+    });
     await page.goto(`${getGlobalConfig().baseUrl}/empty.html`, { waitUntil: "load", timeout: 0 });
     await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
     await page.waitForFunction(() => window.BABYLON);
