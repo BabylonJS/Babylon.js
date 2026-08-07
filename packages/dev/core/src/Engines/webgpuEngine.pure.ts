@@ -38,6 +38,7 @@ import { type DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
+import { WebGPUCacheTextureView } from "./WebGPU/webgpuCacheTextureView";
 import { WebGPUClearQuad } from "./WebGPU/webgpuClearQuad.pure";
 import { type IStencilState } from "../States/IStencilState";
 import { WebGPURenderItemBlendColor, WebGPURenderItemScissor, WebGPURenderItemStencilRef, WebGPURenderItemViewport, WebGPUBundleList } from "./WebGPU/webgpuBundleList";
@@ -328,6 +329,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /** @internal */
     public _cacheSampler: WebGPUCacheSampler;
     private _cacheBindGroups: WebGPUCacheBindGroups;
+    private _cacheTextureViews: WebGPUCacheTextureView;
     private _emptyVertexBuffer: VertexBuffer;
     /** @internal */
     public _mrtAttachments: number[];
@@ -829,6 +831,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     this._textureHelper = new WebGPUTextureManager(this, this._device, this._bufferManager, this._deviceEnabledExtensions);
                     this._cacheSampler = new WebGPUCacheSampler(this._device);
                     this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
+                    this._cacheTextureViews = new WebGPUCacheTextureView();
                     this._timestampQuery = new WebGPUTimestampQuery(this, this._device, this._bufferManager);
                     this._occlusionQuery = (this._device as any).createQuerySet ? new WebGPUOcclusionQuery(this, this._device, this._bufferManager) : (undefined as any);
                     this._bundleList = new WebGPUBundleList(this._device);
@@ -3222,12 +3225,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         if (useMSAA) {
             const gpuMSAATexture = gpuDepthStencilWrapper?.getMSAATexture(sampleCount);
 
-            depthStencilView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
+            depthStencilView = gpuMSAATexture ? this._cacheTextureViews.getView(gpuMSAATexture, this._rttRenderPassWrapper.depthAttachmentViewDescriptor!) : undefined;
             format = gpuMSAATexture?.format;
         }
 
         if (!depthStencilView && gpuDepthStencilTexture) {
-            depthStencilView = gpuDepthStencilTexture.createView(this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
+            depthStencilView = this._cacheTextureViews.getView(gpuDepthStencilTexture, this._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
         }
 
         if (!format && gpuDepthStencilWrapper) {
@@ -3284,8 +3287,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     };
                     const isRtInteger = mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
 
-                    const colorTextureView = gpuMRTTexture.createView(viewDescriptor);
-                    const colorMSAATextureView = gpuMSAATexture?.createView(msaaViewDescriptor);
+                    const colorTextureView = this._cacheTextureViews.getView(gpuMRTTexture, viewDescriptor);
+                    const colorMSAATextureView = gpuMSAATexture ? this._cacheTextureViews.getView(gpuMSAATexture, msaaViewDescriptor) : undefined;
 
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
@@ -3315,8 +3318,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 }
 
                 const gpuMSAATexture = useMSAA ? gpuWrapper.getMSAATexture(sampleCount, layerIndex) : undefined;
-                const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
-                const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+                const colorTextureView = this._cacheTextureViews.getView(gpuTexture, this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+                const colorMSAATextureView = gpuMSAATexture
+                    ? this._cacheTextureViews.getView(gpuMSAATexture, this._rttRenderPassWrapper.colorAttachmentViewDescriptor!)
+                    : undefined;
                 const isRtInteger = internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
 
                 colorAttachments.push({
