@@ -102,9 +102,7 @@ type ReactContextEntry = {
 };
 
 type ReactContextAction =
-    | { type: "add"; entry: ReactContextEntry }
-    | { type: "remove"; provider: Context<any>["Provider"] }
-    | { type: "update"; provider: Context<any>["Provider"]; value: unknown };
+    { type: "add"; entry: ReactContextEntry } | { type: "remove"; provider: Context<any>["Provider"] } | { type: "update"; provider: Context<any>["Provider"]; value: unknown };
 
 type DialogQueueAction = { type: "enqueue"; options: DialogOptions } | { type: "dequeue" };
 

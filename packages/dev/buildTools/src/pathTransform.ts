@@ -13,17 +13,27 @@ import {
 
 const AddJS = (to: string, forceAppend?: boolean | string): string => (forceAppend && !to.endsWith(".js") ? to + (forceAppend === true ? ".js" : forceAppend) : to);
 
-// This function was adjusted for generated/src process
-const GetPathForComputed = (computedPath: string, sourceFilename: string) => {
-    let p = computedPath;
-    const generatedIndex = sourceFilename.indexOf("src");
-    const srcIndex = sourceFilename.indexOf("src");
-    if (generatedIndex !== -1) {
-        p = sourceFilename.substring(0, generatedIndex) + "src/" + p;
-    } else if (srcIndex !== -1) {
-        p = p.substring(0, srcIndex) + "src/" + p;
+// This function was adjusted for generated/src process.
+/**
+ * Anchors a package-relative computed path at the source file's own "src" directory.
+ *
+ * The "src" must be matched as a whole path segment, not as a raw substring: otherwise
+ * an ancestor directory whose name merely contains "src" (for example a checkout located
+ * under ".../babylonjs-src/...") is picked as the anchor, producing a path that escapes
+ * the package and breaks the emitted import.
+ * @param computedPath the package-relative path (e.g. "./fluent/hoc/x")
+ * @param sourceFilename the file currently being transformed
+ * @returns the computed path anchored at the real "src" segment, or unchanged when there is none
+ */
+export const GetPathForComputed = (computedPath: string, sourceFilename: string) => {
+    // Normalize to posix separators so the segment match works on Windows too.
+    const normalized = sourceFilename.split(path.sep).join(path.posix.sep);
+    // Use the last real "/src/" segment (the package source root closest to the file).
+    const srcSegment = normalized.lastIndexOf("/src/");
+    if (srcSegment === -1) {
+        return computedPath;
     }
-    return p;
+    return normalized.substring(0, srcSegment) + "/src/" + computedPath;
 };
 const GetRelativePath = (computedPath: string, sourceFilename: string) => {
     let p = path.relative(path.dirname(sourceFilename), computedPath).split(path.sep).join(path.posix.sep);

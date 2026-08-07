@@ -8,7 +8,7 @@ import { type Scene, ScenePerformancePriority } from "core/scene.pure";
 import { type WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext";
 import { type WebGPUShaderProcessor } from "core/Engines/WebGPU/webgpuShaderProcessor";
 import { type WebGPUPipelineContext } from "core/Engines/WebGPU/webgpuPipelineContext";
-import { type GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { type GaussianSplattingMesh, IsGaussianSplattingClassName } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
 import { type DrawWrapper } from "core/Materials/drawWrapper";
 import { type Camera } from "core/Cameras/camera.pure";
 import { type SpriteManager } from "core/Sprites/spriteManager";
@@ -124,7 +124,7 @@ export class SnapshotRenderingHelper {
                     mesh.transferToEffect(mesh.computeWorldMatrix(true));
                 }
 
-                if (mesh.getClassName() === "GaussianSplattingMesh") {
+                if (IsGaussianSplattingClassName(mesh.getClassName())) {
                     (mesh as GaussianSplattingMesh)._postToWorker();
                 }
 

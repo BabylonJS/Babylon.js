@@ -20,6 +20,7 @@ import { type Material } from "../material.pure";
 import { FloorPOT, NearestPOT } from "../../Misc/tools.functions";
 
 import { type AbstractEngine } from "../../Engines/abstractEngine.pure";
+import { RegisterAbstractEngineTexture } from "../../Engines/AbstractEngine/abstractEngine.texture.pure";
 import { type IParticleSystem } from "core/Particles/IParticleSystem";
 import { Logger } from "../../Misc/logger";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
@@ -1412,6 +1413,13 @@ export function RegisterRenderTargetTexture(): void {
         return;
     }
     _Registered = true;
+
+    // Depth-stencil render targets (shadow maps, RTT depth, etc.) call
+    // AbstractEngine.createDepthStencilTexture, which is only installed by the
+    // abstractEngine.texture registration. This module imports the pure engine
+    // (side-effect free), so pull the registration in here to guarantee the method
+    // exists whenever a render target texture is used.
+    RegisterAbstractEngineTexture();
 
     /**
      * Sets a depth stencil texture from a render target on the engine to be used in the shader.

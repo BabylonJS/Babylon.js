@@ -437,6 +437,11 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             // In the event that we're getting pointermove events from touch inputs that we aren't tracking,
             // look for an available slot and retroactively connect it.
             if (deviceType === DeviceType.Touch && deviceSlot === -1) {
+                // Ignore hover-only touch pointers, which may never receive a pointerup event.
+                if (evt.buttons === 0) {
+                    return;
+                }
+
                 const idx = this._activeTouchIds.indexOf(-1);
 
                 if (idx >= 0) {

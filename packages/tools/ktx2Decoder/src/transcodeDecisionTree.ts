@@ -74,6 +74,13 @@ const DecisionTree: KTX2.IDecisionTree = {
         },
     },
 
+    // Uncompressed source data is already in the engine's expected layout, so there is nothing to decide.
+    RGBA32: {
+        transcodeFormat: KTX2.TranscodeTarget.RGBA32,
+        engineFormat: KTX2.EngineFormat.RGBA8Format,
+        roundToMultiple4: false,
+    },
+
     UASTC: {
         option: "forceRGBA",
         yes: {
@@ -214,7 +221,18 @@ export class TranscodeDecisionTree {
     }
 
     public parseTree(tree: KTX2.IDecisionTree): boolean {
-        const node = this._textureFormat === KTX2.SourceTextureFormat.UASTC4x4 ? tree.UASTC : tree.ETC1S;
+        let node: KTX2.INode | KTX2.ILeaf | undefined;
+        switch (this._textureFormat) {
+            case KTX2.SourceTextureFormat.UASTC4x4:
+                node = tree.UASTC;
+                break;
+            case KTX2.SourceTextureFormat.RGBA32:
+                node = tree.RGBA32;
+                break;
+            default:
+                node = tree.ETC1S;
+                break;
+        }
         if (node) {
             this._parseNode(node);
         }

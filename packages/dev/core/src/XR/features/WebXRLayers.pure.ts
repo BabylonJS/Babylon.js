@@ -8,7 +8,7 @@ import { WebXRWebGLLayerWrapper } from "../webXRWebGLLayer";
 import { WebXRProjectionLayerWrapper, DefaultXRProjectionLayerInit } from "./Layers/WebXRProjectionLayer";
 import { WebXRCompositionLayerRenderTargetTextureProvider, WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
 import { WebXRWebGPUProjectionLayerWrapper, CreateDefaultXRGPUProjectionLayerInit } from "./Layers/WebXRWebGPUProjectionLayer";
-import { WebXRGraphicsBindingType, type WebXRWebGPUGraphicsBinding } from "../webXRGraphicsBinding";
+import { WebXRGraphicsBindingType } from "../webXRGraphicsBinding";
 import { type ThinTexture } from "../../Materials/Textures/thinTexture";
 import { type DynamicTexture } from "../../Materials/Textures/dynamicTexture.pure";
 import { Color4 } from "../../Maths/math.color.pure";
@@ -90,7 +90,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
             if (binding.bindingType !== WebXRGraphicsBindingType.WebGPU) {
                 throw new Error("Expected a WebGPU graphics binding for a WebGPU engine.");
             }
-            this._xrGPUBinding = (binding as WebXRWebGPUGraphicsBinding).binding;
+            this._xrGPUBinding = binding.binding;
             // Multiview is not yet supported on the WebGPU XR path; force single-view (two sub-images).
             this._isMultiviewEnabled = false;
             this._createWebGPUProjectionLayer();
@@ -368,12 +368,12 @@ export class WebXRLayers extends WebXRAbstractFeature {
     }
 
     public override isCompatible(): boolean {
-        // TODO (rgerd): Add native support.
-        if (this._xrSessionManager.isNative) {
-            return false;
-        }
         if (this._xrSessionManager.scene.getEngine().isWebGPU) {
             return typeof XRGPUBinding !== "undefined" && !!XRGPUBinding.prototype.createProjectionLayer;
+        }
+        // Native WebGL continues to use NativeXRRenderTarget instead of WebXR Layers.
+        if (this._xrSessionManager.isNative) {
+            return false;
         }
         return typeof XRWebGLBinding !== "undefined" && !!XRWebGLBinding.prototype.createProjectionLayer;
     }

@@ -1,6 +1,972 @@
 {
-    "fromTag": "9.16.2",
+    "fromTag": "9.19.1",
     "changelog": {
+        "9.20.0": [
+            {
+                "pr": "18773",
+                "title": "Reuse graphics bindings and disable raw camera access",
+                "description": "Closes #18768\n\nRelated to parent #18636 and epic #18635.\n\n## Summary\n- Turn the cached XR graphics-binding seam into a discriminated WebGL/WebGPU union that exposes the wrapped native binding and safely narrows at call sites.\n- Add an intentional runtime-disable path for XR features: the feature emits its specific warning, sets `disableAutoAttach`, and returns before observers or attach notifications are registered; the manager suppresses its generic attach-failed warning only when attachment intentionally sets that flag.\n- Reuse the cached WebGL binding/context in Raw Camera Access and disable Raw Camera Access on WebGPU XR with exactly one specific warning and no native binding, camera-image, frame-observer, or texture work.\n- Remove unnecessary concrete `Engine` casts from Image Tracking and Walking Locomotion.\n\n## WebGL no-op guarantees\n- Raw Camera still calls `super.attach()` first on WebGL, uses the same `XRWebGLBinding.getCameraImage` path, and creates the same `WebGLHardwareTexture`/Babylon texture metadata; only binding construction is deduplicated through the session cache.\n- The WebGPU guard is isolated before attachment. Existing WebGL layer, texture, and native camera behavior is unchanged.\n- The cached binding remains session-scoped and is cleared on session end as before.\n\n## Warning lifecycle\nAn intentional runtime capability failure emits the feature-specific warning and sets `disableAutoAttach`. `WebXRFeaturesManager.attachFeature` opens a fresh transition for each explicit attempt, restores preexisting auto-attach state after ordinary failures/successes, and suppresses the generic warning only when the attach implementation intentionally disables itself. Ordinary attach failures still emit `Feature <name> failed to attach`.\n\n## Tests\n- Focused XR selection: 4 files, 100 tests passed (binding/session manager, abstract feature lifecycle, feature manager lifecycle, Raw Camera positive/negative controls).\n- Full XR unit suite: 17 files, 294 tests passed.\n- `npx tsc -b packages/dev/core/tsconfig.build.json` passed.\n- `npm --prefix packages/dev/core run lint:check` passed with 0 errors.\n- Targeted Prettier check passed.\n- `npm run check:treeshaking` passed all 16 checks.\n- `npm run check:side-effects-sync` passed for core/gui/loaders/serializers.\n- `npm run build:source && npm run test:treeshaking` passed all core and serializer bundle smoke tests.\n\n## Remaining XR WebGL coupling audit\nThe centralized `new XRWebGLBinding` in `webXRGraphicsBinding.ts` is intentional. Remaining feature-owned direct bindings are deliberately deferred:\n- Layers (`WebXRLayers.pure.ts`) — #18769\n- Light Estimation (`WebXRLightEstimation.pure.ts`) — #18770\n- Depth Sensing (`WebXRDepthSensing.pure.ts`) — #18771\n- Space Warp (`WebXRSpaceWarp.pure.ts`) — #18772\n\nThe exhaustive `_gl` and `Engine`/`ThinEngine` cast audit found only the centralized graphics-binding/WebGL render-target backend seams plus those four deferred features. Remaining WebGL object types are confined to the WebGL layer/render-target/native compatibility infrastructure, Raw Camera's intentionally WebGL-only texture path, and the four deferred features above.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRAbstractFeature.ts",
+                    "packages/dev/core/src/XR/features/WebXRImageTracking.pure.ts",
+                    "packages/dev/core/src/XR/features/WebXRLayers.pure.ts",
+                    "packages/dev/core/src/XR/features/WebXRRawCameraAccess.pure.ts",
+                    "packages/dev/core/src/XR/features/WebXRWalkingLocomotion.pure.ts",
+                    "packages/dev/core/src/XR/webXRFeaturesManager.ts",
+                    "packages/dev/core/src/XR/webXRGraphicsBinding.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts",
+                    "packages/dev/core/test/unit/XR/webXRAbstractFeature.test.ts",
+                    "packages/dev/core/test/unit/XR/webXRFeaturesManagerExtended.test.ts",
+                    "packages/dev/core/test/unit/XR/webXRRawCameraAccess.test.ts",
+                    "packages/dev/core/test/unit/XR/webXRSessionManager.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18688",
+                "title": "Fix the per-eye clear wiping drawn frames, plus upright rendering and half-Z NDC",
+                "description": "## Symptom\n\nIn an immersive **WebGPU** XR session on a Quest 3, the scene rendered for one frame and then permanently disappeared. The per-eye clear colour kept presenting, the frame counter kept climbing, and there were **no WebGPU validation errors**. WebGL2 XR was fine on the same device.\n\n## Root cause — our own Phase-2 per-eye clear observer\n\nThe bug was introduced by the Phase-2 fix for the black right eye. `webXRWebGPURenderTargetTextureProvider` attaches an `onClearObservable` handler to each per-eye render target that calls `engine.clear(...)`. On WebGPU, `engine.clear()` with no pass open **opens a new render pass with `loadOp=clear`**.\n\nTwo things then combine:\n\n**1. Our observer read the wrong scene's `autoClear`.** Vanilla `scene.pure.ts:4988` decides whether to clear based on **the scene doing the rendering**. Our observer read `getScene()` — the scene that *owns* the render target. `UtilityLayerRenderer` sets `autoClear = false` (`utilityLayerRenderer.ts:344`) precisely so that it will not clear when it renders through someone else's camera. Vanilla honours that; our observer did not.\n\n**2. `scene.pure.ts:4985` short-circuits before the right-eye guard.** The `onClearObservable.hasObservers()` branch returns before the `!camera.isRightCamera` check at `:4987`, which is why **both** eyes were wiped rather than just one.\n\n**3. The `_cleared` guard was defeated by a second `Scene`.** `UtilityLayerRenderer` renders a second scene on `onAfterRenderCameraObservable` (`:347-352`). Every `Scene.render` calls `_checkCameraRenderTarget` (`scene.pure.ts:5346-5358`), which resets `rtt._cleared = false`. So the second scene's render re-armed the guard and re-cleared targets that had already been drawn.\n\nThe fix keys the colour clear on `AbstractEngine.frameId` instead. `frameId` increments only in `endFrame` (`abstractEngine.pure.ts:960`), so it is genuinely once per presented frame and cannot be reset by another scene rendering within the same XR frame. Depth/stencil still clear on every notification, which is what per-eye rendering needs.\n\n`lastColorClearedFrameId` is closure-scoped per render target — a shared counter would have broken the second eye.\n\n## Evidence\n\nDevice render-pass trace on the XR projection-layer texture, one encoder / one submit per frame:\n\n| Pass | Before | After |\n|---|---|---|\n| L0 | `loadOp=clear` draws=8 | `loadOp=clear` draws=9 |\n| L1 | `loadOp=clear` draws=9 | `loadOp=clear` draws=9 |\n| L1 | `loadOp=load` draws=0 | `loadOp=load` draws=0 |\n| L0 | **`loadOp=CLEAR` draws=0** ← wipes left | `loadOp=load` draws=0 |\n| L1 | **`loadOp=CLEAR` draws=0** ← wipes right | `loadOp=load` draws=0 |\n\nFrames with geometry on both live layers, by pixel readback: **1/60 → 60/60**. `gpuErrors=0`, 130 frames. The `clear → load` flip was a written prediction *before* the confirming device run, and matched exactly.\n\n## WebGL2 is unaffected by construction\n\n`onClearObservable` is attached in exactly one place — `webXRWebGPURenderTargetTextureProvider.ts:109` — and no XR render-target provider outside the WebGPU one touches it. The WebGL2 path is untouched, and its side-by-side single-framebuffer layout never had this failure mode.\n\n## Also in this PR (both pre-existing Phase-3 deliverables)\n\n- **Y-flip** (43a4d0c): XR render targets are not flipped, so `_disableEngineYFlip` is set for the XR path — the scene was rendering upside down.\n- **Half-Z NDC** (292e86f): WebGPU's depth range is `[0,1]`, not `[-1,1]`. The XR projection matrices from the UA are OpenGL-convention, so they are converted in place.\n\n## Tests\n\nUnit coverage is in `packages/dev/core/test/unit/XR/webXRWebGPUProjectionLayer.test.ts` and `webXRCamera.test.ts`, and it guards this regression directly rather than incidentally: a test builds the exact arrangement that caused the bug — a `UtilityLayerRenderer`-style second `Scene` rendering into the same XR render target within one engine frame — and asserts the second notification does **not** re-clear colour. It also asserts its own premise, so it cannot pass by accident if the setup stops reproducing the conditions.\n\nReverting the `frameId` guard turns those tests red (2 failures, verified), so the guard is not decoration.\n\n**The end-to-end harness that originally found this bug is deliberately not in this PR.** It is a headless-Chromium mock `XRGPUBinding`/`XRSession`/`XRFrame`/`XRProjectionLayer` that drives the real Babylon XR path and judges each frame by pixel readback — separate infrastructure with its own review surface, and no reviewer should have to assess it to approve a 5-file engine fix. It is preserved on `raananw-webgpu-xr-harness` and will be proposed on its own once this lands.\n\n## Follow-ups (not in this PR)\n\n- Fold the per-eye clear into the render target's pass descriptor instead of issuing a standalone `engine.clear()`. That would remove the two remaining `loadOp=load` draws=0 passes per frame — wasted work on a Quest — but it touches non-XR paths in `webgpuEngine.pure.ts`, so it is out of scope for a bugfix.\n- Consider whether `UtilityLayerRenderer` should skip binding an XR eye it is not going to draw into.\n- Delete the structure-B blit present path rather than repair it, now that the real cause is fixed; carrying a second present mechanism is not worth it.\n- Land the end-to-end WebGPU-XR harness as its own PR, from `raananw-webgpu-xr-harness`. Running it in CI is blocked on a renderer-process crash on the ADO Linux agent (WebGPU itself is available there) — measurement trail in #18765.\n- Standing rule worth writing down: **never derive a texture usage from a queried usage.** The blit path computed `real.usage | COPY_SRC`; on device `real.usage` is the stub `0`, producing `TEXTURE_BINDING` with no `RENDER_ATTACHMENT`, which invalidated every encoder. Use explicit constants.\n\nEpic: #18635\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/src/Maths/math.vector.pure.ts",
+                    "packages/dev/core/src/XR/webXRCamera.ts",
+                    "packages/dev/core/src/XR/webXRWebGPURenderTargetTextureProvider.ts",
+                    "packages/dev/core/test/unit/XR/webXRCamera.test.ts",
+                    "packages/dev/core/test/unit/XR/webXRWebGPUProjectionLayer.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18766",
+                "title": "Fix: respect camera layerMask in the transmission opaque texture",
+                "description": "Fixes [PBR materials with refraction have issues with layer masks](https://forum.babylonjs.com/t/pbr-materials-with-refraction-have-issues-with-layer-masks/63894).\n\n## Problem\n\nWhen using multiple cameras with different `layerMask` values, meshes that are excluded from the rendering camera still show up in the refraction of transmissive (`KHR_materials_transmission`) meshes.\n\nRepro: https://playground.babylonjs.com/#WBUEI8#22 — the textured plane is on `layerMask2` and the refractive cube on `layerMask1`, yet the plane appears \"inside\" the cube.\n\n## Root cause\n\n`TransmissionHelper` creates the `opaqueSceneTexture` render target with `renderList = _opaqueMeshesCache`, which holds every opaque mesh of the scene regardless of camera.\n\nIn `ObjectRenderer._prepareRenderingManager`, providing a `renderList` disables the layerMask check:\n\n```ts\ncheckLayerMask = !this.renderList || this.forceLayerMaskCheck;\n```\n\nSo the RTT rendered everything in the cache, ignoring the active camera's `layerMask`.\n\n## Fix\n\nEnable `forceLayerMaskCheck` on the opaque render target. The opaque cache is camera-agnostic while the RTT is rendered once per active camera, so the mask check has to stay on for the texture to match what that camera actually sees.\n\nThis is a no-op for the common single-camera case, since the default mesh and camera layer masks are both `0x0FFFFFFF`.\n\n## Tests\n\nAdded a regression test in `KHR_materials_transmission.test.ts` that renders the opaque RTT with matching and then disjoint layer masks and asserts the opaque mesh is included/excluded accordingly. Verified it fails without the fix and passes with it.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/transmissionHelper.ts",
+                    "packages/dev/loaders/test/unit/glTF/KHR_materials_transmission.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18767",
+                "title": "Fix RawCubeTexture invertY crash on WebGPU",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\nFixes a WebGPU crash when creating/updating a `RawCubeTexture` with `invertY: true`.\n\n## Root cause\nOn WebGPU, Y-flip is done after upload via a GPU post-process (`invertYPreMultiplyAlpha`). That path requires an `InternalTexture` (to create a hardware texture wrapper).\n\n`updateRawCubeTexture` was passing the raw `GPUTexture` (`texture._hardwareTexture.underlyingResource`) into `updateCubeTextures` / `updateTexture`. When `invertY` was true, the engine threw:\n\n> Invalid texture! Babylons internal engine is still not fully compatible with native GPU objects\n\nWebGL was unaffected because it can flip at upload time via `UNPACK_FLIP_Y_WEBGL`. The raw 2D WebGPU path already passed `InternalTexture`; only the cube path was wrong.\n\n## Fix\n- Pass the `InternalTexture` into `updateCubeTextures` from `updateRawCubeTexture` and `createCubeTexture`\n- Widen `updateCubeTextures` to accept `GPUTexture | InternalTexture` (same pattern as `updateTexture`)\n\n## Forum\nhttps://forum.babylonjs.com/t/setting-invert-y-when-creating-a-rawcubetexture-in-webgpu-crashes/63895\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.cubeTexture.pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.rawTexture.pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/rawCubeTextureInvertY.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
+        "9.19.1": [
+            {
+                "pr": "18761",
+                "title": "Fix clustered lighting WGSL validation on Firefox WebGPU",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\nFirefox WebGPU (Naga) rejects clustered lighting WGSL because `computeClusteredLighting` took a `ptr<storage, array<u32>>` parameter. That needs the optional `unrestricted_pointer_parameters` extension, which Chrome Tint implements but Firefox/Naga does not. Babylon never requested the extension by name — Chrome just accepted the pattern.\n\n## Fix\nSpecialize per light index (`computeClusteredLighting{X}`) and read `tileMaskBuffer{X}` at module scope so no storage pointer is passed as a user-function parameter. Nested `#include…[0..maxSimultaneousLights]` keeps Standard/PBR/NME paths working. WebGL/GLSL is unchanged.\n\n## Tests\nUnit regression that expands WGSL includes and asserts no `ptr<storage` function params / no `&tileMaskBuffer`.\n\n## Forum\nhttps://forum.babylonjs.com/t/clustered-lighting-wgsl-fails-validation-on-firefox-webgpu-ptr-storage-function-parameter-requires-unrestricted-pointer-parameters-which-naga-doesnt-implement/63887\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.pure.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/clusteredLightingCompute.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightsFragmentFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrClusteredLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/test/unit/Lights/Clustered/clusteredLightingWgslPointers.test.ts",
+                    "scripts/treeshaking/side-effects-manifest/core/ShadersWGSL.json"
+                ],
+                "tags": [
+                    "bug",
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "18760",
+                "title": "chore(deps): npm audit fix — resolve ip-address and postcss advisories",
+                "description": "## Summary\n\nRuns `npm audit fix` to clear the security advisories that can be resolved today. **Lockfile-only change** — root `package.json` is untouched.\n\n`npm audit`: **6 vulnerabilities (2 moderate, 4 high) → 4 (1 moderate, 3 high)**.\n\n## Resolved\n\n| Package | Severity | Advisory | Fix |\n|---|---|---|---|\n| `ip-address` | high ×3 | [GHSA-mwp4-54f8-5fhr](https://github.com/advisories/GHSA-mwp4-54f8-5fhr), [GHSA-4xrf-jv44-h6hh](https://github.com/advisories/GHSA-4xrf-jv44-h6hh), [GHSA-22jq-vg5j-6vgg](https://github.com/advisories/GHSA-22jq-vg5j-6vgg) — SSRF / trust-boundary bypass | 10.2.0 → 10.3.1 |\n| `postcss` | moderate | [GHSA-fxqj-rqcc-2cmp](https://github.com/advisories/GHSA-fxqj-rqcc-2cmp) — arbitrary `.map` read via `sourceMappingURL` | 8.5.22 → 8.5.24 |\n\n## Not resolved — blocked by our 7-day release-age policy\n\nThe remaining four findings all require versions published within the last 7 days, which `.npmrc`'s `min-release-age=7` (added in #18683) intentionally holds back:\n\n| Package | Needs | Published | Unblocks |\n|---|---|---|---|\n| `brace-expansion` (pinned by `nx`) | 5.0.9 | 2026-07-30 | 2026-08-06 |\n| `fast-uri` (via `ajv`) | 3.1.5 | 2026-07-31 | 2026-08-07 |\n| `hono` (via `@modelcontextprotocol/sdk`) | 4.12.34 | 2026-08-03 | 2026-08-10 |\n\nThese should clear with a follow-up `npm audit fix` once the window elapses. `nx` pins `brace-expansion` exactly, so it will additionally need an `overrides` entry (`nx: { \"brace-expansion\": \"^5.0.9\" }`).\n\n### Note on `nx`\n\nPlain `npm audit fix` wants to **downgrade `nx` 22.7.8 → 22.6.5** to escape the pinned vulnerable `brace-expansion@5.0.8`. That trade is not worth it — 22.6.5 is itself affected by [GHSA-g2r8-wvmj-jf5w](https://github.com/advisories/GHSA-g2r8-wvmj-jf5w) (`nx graph` permissive CORS), so the vulnerability count is unchanged while the build orchestrator regresses. This PR deliberately keeps `nx` at 22.7.8.\n\n## Diff noise\n\nThe lockfile also drops ~51 `\"peer\": true` metadata flags. This is not caused by this change — a plain `npm install` on `master` reproduces it, and the flag count has oscillated in lockfile history (1 → 41 → 1 → 49). This restores it to the state the automated \"Version update\" commits produce.\n\n## Validation\n\n- `npm install` is idempotent against the committed lockfile\n- `npm run format:check` passes",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18759",
+                "title": "chore(deps): pin @adobe/spz to exact 0.2.0 in @dev/loaders",
+                "description": "## What\n\nPins the `@adobe/spz` devDependency in `@dev/loaders` from `^0.2.0` to an exact `0.2.0`.\n\n## Why\n\n`@adobe/spz` is a **type-only, dev-only** dependency. `packages/dev/loaders/src/SPLAT/spz.ts` imports it purely for types:\n\n```ts\nimport { type GaussianCloud, type SpzModule, type SpzExtensionSafeOrbitCameraAdobe } from \"@adobe/spz\";\n```\n\nNothing from the npm package is bundled or shipped — at runtime the WASM module is fetched dynamically from a CDN via `_LoadScriptModuleAsync`, and `generateDeclaration.ts` already collapses `@adobe` types to `any` in the published `.d.ts` bundles.\n\nUnder `^0.2.0` the resolved version silently floated to `0.2.2`. Pinning makes the type surface deterministic.\n\n## Is 0.2.0 sufficient?\n\nYes. Diffing the published `dist/spz.d.ts` across versions:\n\n| Range | Type changes |\n| --- | --- |\n| 0.2.0 → 0.2.1 | none (byte-identical) |\n| 0.2.1 → 0.2.2 | adds `SpzExtensionCoordinateSystemAdobe`, `SPZ_ADOBE_coordinate_system`, and 8 new `CoordinateSystem` enum members |\n\nThe loaders package uses none of the 0.2.2 additions. Everything it touches — `SpzModule.loadSpzFromBuffer`, `CoordinateSystem.RUB`, `GaussianCloud`, and the `SpzExtensionSafeOrbitCameraAdobe` fields — is present and unchanged in 0.2.0.\n\n## Note on the runtime version\n\nThe default `spzLibraryUrl` in `splatFileLoader.pure.ts` still points at `unpkg.com/@adobe/spz@0.2.2/dist/spz.js`, and is intentionally left alone. 0.2.2 is what users actually download and it carries the functional additions (SH4 / extension support) the loader depends on; 0.2.0's `spz.js` is 299 KB vs 851 KB. Since the 0.2.0 type surface is a strict subset of 0.2.2, compiling against 0.2.0 while running 0.2.2 is sound.\n\n## Testing\n\n- `npm ci` succeeds → lockfile is in sync with the manifest, `@adobe/spz@0.2.0` installs.\n- Standalone `tsc --noEmit --strict` over the full `@adobe/spz` API surface used by the SPLAT loader passes against the 0.2.0 typings.\n- `prettier --check` clean on both changed files.\n\nThe lockfile was hand-edited rather than regenerated: locally available npm versions rewrite ~50 unrelated `\"peer\": true` entries, which would have buried the real change in noise.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/loaders/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18757",
+                "title": "chore(deps): npm audit fix — resolve all security advisories (0 vulnerabilities)",
+                "description": "## Summary\nRuns `npm audit fix` to resolve **all** current npm audit findings. `npm audit` now reports **0 vulnerabilities** (was 4: 2 high, 2 moderate).\n\nLockfile-only change — root `package.json` is untouched.\n\n## Findings resolved\n| Package | Severity | Advisory | Fix |\n|---|---|---|---|\n| `brace-expansion` | high | GHSA-3jxr-9vmj-r5cp, GHSA-mh99-v99m-4gvg (DoS) | 1.1.16 → 1.1.18, 5.0.6 → 5.0.9 |\n| `@hono/node-server` (via `@modelcontextprotocol/sdk`) | moderate | GHSA-frvp-7c67-39w9 (path traversal) | 1.19.14 → 2.0.12 |\n| `@modelcontextprotocol/sdk` | (dep bump) | — | 1.29.0 → 1.30.0 |\n| `nx` (transitive brace-expansion) | high | — | brace-expansion bumped |\n\nNo breaking-change bumps were forced (`npm audit fix` without `--force`).\n\n## Reproduce\n```\nnpm install\nnpm audit        # before: 4 vulnerabilities\nnpm audit fix\nnpm audit        # after: found 0 vulnerabilities\n```\n\n## Verification\n- [x] `npm audit` → 0 vulnerabilities\n- [x] `npm install` succeeds and produces a stable lockfile\n- [ ] CI green\n\n_Generated by the morning-dev-briefing skill._",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18756",
+                "title": "fix(physics): correct inverse inertia tensor rows in PhysicsCharacterController",
+                "description": "## Problem\n\nFixes #18736.\n\n`PhysicsCharacterController._getInverseInertiaWorld()` built the inverse-inertia tensor incorrectly: all three inertia components were written to **row 0** of the working matrix.\n\n```ts\nconst it = TmpVectors.Matrix[1];\nit.setRowFromFloats(0, mp.inertia.x * ...); // row 0\nit.setRowFromFloats(0, mp.inertia.y * ...); // should be row 1\nit.setRowFromFloats(0, mp.inertia.z * ...); // should be row 2\n```\n\nBecause `it` is the shared scratch matrix `TmpVectors.Matrix[1]`, rows 1 and 2 retained stale values left by whatever unrelated code last used that temp. This made the impulse the character applies to dynamic bodies depend on prior matrix math — e.g. loading a skinned glTF model (which processes inverse-bind matrices) changed the leftover temp contents, causing the reporter's character to sometimes fail to push a box, or to launch it across the scene.\n\n## Fix\n\nWrite each inertia component to its correct row (0, 1, 2). This matches the workaround verified by the issue reporter across every tested model.\n\nThe result is consumed only via `Vector3.TransformNormalToRef` (upper-left 3×3), and `invOrientation` is a pure rotation with a zero translation column, so no stale temp data can leak into the result once rows 0–2 are correct.\n\n## Testing\n\nMinimal one-line-per-row index correction; no behavioral change other than fixing the tensor construction.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/characterController.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18748",
+                "title": "Prevent touch hover events from exhausting pointer slots",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\nFixes touch pointer slots being permanently consumed by hover-only `pointermove` events, as reported on Meta Quest Browser.\n\nUnknown touch pointers are now connected from a move only while a contact button is active. This preserves move-before-down recovery for active touch and pen input while preventing `buttons === 0` hover events from blocking later pointer input.\n\nAdds regression coverage for hover-only touch moves and active move-before-down input.\n\nForum report: https://forum.babylonjs.com/t/63867\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.webDeviceInputSystem.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18755",
+                "title": "Fix one-frame render flash when recreating a mesh in the same tick",
+                "description": "## Problem\n\nReported on the forum: [Objects are not rendered the frame they are created](https://forum.babylonjs.com/t/objects-are-not-rendered-the-frame-they-are-created/63878).\n\nWhen a mesh is recreated in the same tick using the common pattern:\n\n```js\nconst s2 = MeshBuilder.CreateSphere(\"sphere2\", {...}, scene);\ns2.material = mat;      // material assignment is lazy — the effect isn't referenced yet\nsphere.dispose();       // drops the shared effect's refcount to 0 → evicts the cached GL program\nsphere = s2;\n```\n\nthe recreated mesh is skipped for one frame, producing a visible flash.\n\n## Root cause\n\nSince the `DrawWrapper` weak-ref change (v7.35.2), `DrawWrapper.dispose()` disposes the ref-counted compiled `Effect`. Effects are cached in `engine._compiledEffects` keyed by shader source + defines. Because assigning a material is lazy (the effect isn't referenced until the next `isReadyForSubMesh`), disposing the old mesh drops the shared effect's refcount to 0 and evicts the cached GL program **before** the new mesh claims it.\n\nThe next frame has to build a *fresh* effect. With synchronous shader compilation that effect is ready the same frame (no flash), but under **async/parallel shader compilation** (or a cloned material, whose `_shadersLoaded` resets to `false`) it isn't ready that frame — so the submesh is skipped and the mesh flashes.\n\nA deferred-dispose safeguard was already added in #15910 for material swaps (`resetDrawCache`), giving user code a chance to reuse the effect on the next frame. But `AbstractMesh.dispose()` called `releaseSubMeshes(true)` (**immediate**), which bypassed that safeguard.\n\n## Fix\n\n- `AbstractMesh.dispose()` now defers the effect release (`immediate = false`) so a mesh recreated in the same tick can reuse the still-cached compiled effect, consistent with the existing deferred material-swap path.\n- To avoid leaking effects during teardown (where no future frame runs the deferred disposal), a new internal `Scene._isDisposing` flag is set at the start of `Scene.dispose()`, and mesh disposal releases **immediately** while the scene is being torn down. Engine disposal already force-frees all effects via `releaseEffects()` before disposing its scenes, so the deferred path is a safe no-op there too.\n\nNet diff is 13 lines across 2 files.\n\n## Validation\n\n- Headless draw-call harness (swiftshader) measuring drawn frames across the recreate, on a local build of `@babylonjs/core`:\n  - Before: `missedFrames = 1` (flash) for parallel-compile and cloned-material cases.\n  - After: `missedFrames = 0` for all four combinations (parallel on/off × reuse/clone).\n- Scene-dispose leak check: `engine._compiledEffects` goes 1 → 0 on `scene.dispose()` (effects still freed immediately during teardown — no leak).\n- `npm run test:unit`: 4306 passed, 0 failures.\n- Formatting, lint (0 errors), and `build:source` all clean.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.pure.ts",
+                    "packages/dev/core/src/scene.pure.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18752",
+                "title": "Fix: Gaussian Splatting sort padding reuses real splat data, causing splats stuck in front of the model",
+                "description": "The depth-sort worker draws splats in fixed batches of 16 per GPU instance, so whenever the active splat count isn't a multiple of 16, the sorted draw-order buffer pads out the remainder. That padding was hardcoded to splat index `0` — not a reserved/invisible slot, just the first real splat of whatever data was loaded. Padding with it draws that real splat an extra ~15 times at the very end of the back-to-front draw order, i.e. always on top, regardless of camera. Any asset whose active splat count isn't a multiple of 16 hits this.\r\n\r\n### Fix\r\n\r\n- Send the sort worker the real (unpadded) `vertexCount` alongside `positions` (one call site, `_instantiateWorker`, was missing it).\r\n- `_getTextureSize` now guarantees the splat atlas always has at least one provably-zeroed slot past `vertexCount`, even when a mesh's splat count exactly fills the texture.\r\n- The sort worker pads with that genuinely-empty `vertexCount` index instead of `0`, in both the counting-sort and legacy comparison-sort paths.\r\n\r\n### When it triggers\r\n\r\nAny Gaussian Splatting mesh whose active splat count (full load, or after range filtering/culling) isn't a multiple of 16 — a handful of splats appear permanently stuck in front of the model, independent of viewing angle.",
+                "author": {
+                    "name": "raymondyfei",
+                    "url": "https://github.com/raymondyfei"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingSortWorker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18754",
+                "title": "Fix native tests artifact name conflict on job rerun",
+                "description": "## Problem\n\nCI on the `NativeTests` job fails with:\n\n```\n##[error]Artifact native-rendered-pictures already exists for build 57242.\n```\n\n`PublishPipelineArtifact@1` publishes artifacts scoped to the whole build/run and has no overwrite option (unlike the older `PublishBuildArtifacts@1`). If the `NativeTests` job is rerun within the same build (e.g. via \"Rerun failed jobs\" in the Azure DevOps UI, or an automatic retry), the second attempt tries to publish `native-rendered-pictures` / `native-error-pictures` again under the same build ID and Azure DevOps rejects it because those artifact names already exist.\n\nThis is an Azure DevOps platform limitation, not something configurable from project settings — it has to be handled in the pipeline YAML.\n\n## Fix\n\nScope both artifact names by `$(System.JobAttempt)`, which increments each time the job is rerun within the same build. This mirrors an existing pattern already used elsewhere in this pipeline for BrowserStack local identifiers (`es6vis-$(Build.BuildId)-$(System.JobAttempt)`).\n\n- `native-rendered-pictures` → `native-rendered-pictures-$(System.JobAttempt)`\n- `native-error-pictures` → `native-error-pictures-$(System.JobAttempt)`\n\nNo downstream job consumes these artifacts by their fixed name, so this rename is safe.\n\n## Testing\n\nThis is a CI pipeline YAML change; validated by reading the pipeline definition and confirming the artifact naming pattern used elsewhere in the same file (`$(System.JobAttempt)`). No app code changed, so no unit/build/lint validation applies.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18750",
+                "title": "Allow disabling Havok floating origin world regions",
+                "description": "Hey there, \r\n\r\nI have been toying with havok world regions recently, and learned there is no perfect solution for physics handling in large scale worlds.\r\n\r\nWorld regions have edge cases around world migrations (2 bodies close in space should interact but are in fact in 2 separate worlds like in [this PG](https://playground.babylonjs.com/#0HYLMQ#1)), origin rebasing only works when physics happen close to the camera and double precision has a performance and memory hit (although I saw Jolt only uses f64 for positions to limit the penalty to ~10% https://github.com/jrouwe/JoltPhysics/issues/94#issuecomment-1324347464).\r\n\r\nSo my point is Babylon should let havok users make their own large world implementation if they want to.\r\n\r\nHence this small PR adds a config flag to disable havok world regions even when floating origin is enabled.\r\n\r\nLet me know how you feel about it!",
+                "author": {
+                    "name": "BarthPaleologue",
+                    "url": "https://github.com/BarthPaleologue"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/test/unit/Physics/havokPlugin.test.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "9.19.0": [
+            {
+                "pr": "18751",
+                "title": "Restore transitive side-effect registrations",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nRestores three transitive side-effect registrations that were lost during the `*.pure.ts` split while keeping pure entrypoints side-effect-free:\n\n- Importing `Meshes/meshBuilder` once again registers the legacy `Mesh.CreateSphere`, `Mesh.CreateBox`, and related static builder APIs.\n- Importing the glTF 2.0 loader registers `InstancedMesh`, allowing glTF assets that reuse a mesh across nodes to load correctly.\n- Importing `WebGPUEngine` once again registers the built-in WGSL shader include chunks used by custom `ShaderMaterial` shaders.\n\nThe implementation follows the wrapper-owned side-effect pattern used by #18717. `MeshBuilder` now has a side-effect-free `meshBuilder.pure.ts` implementation and a compatibility wrapper that imports builder registration modules. No side effects were added to pure modules.\n\nThe intentional `scene.defaultMaterial` / `StandardMaterial` tree-shaking contract is unchanged.\n\n## Tests\n\n- Added regression coverage for legacy `Mesh.CreateSphere`.\n- Added glTF coverage for repeated mesh nodes producing an `InstancedMesh`.\n- Added coverage for WGSL scene, mesh, and instance include registration.\n- Tree-shaking guards and side-effect manifest synchronization pass.\n- Tree-shaking bundle-size smoke tests pass.\n- Formatting, lint, source build, and targeted unit tests pass.\n- The complete unit suite passes with a 15-second test timeout; under the default 5-second timeout, existing dynamic-import tests can intermittently time out under concurrent load.\n\n## Related\n\n- #18717\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/skeleton.functions.ts",
+                    "packages/dev/core/src/Debug/physicsViewer.pure.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Meshes/Builders/pure.ts",
+                    "packages/dev/core/src/Meshes/Builders/tiledBoxBuilder.pure.ts",
+                    "packages/dev/core/src/Meshes/Builders/tiledBoxBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/tiledPlaneBuilder.pure.ts",
+                    "packages/dev/core/src/Meshes/Builders/tiledPlaneBuilder.ts",
+                    "packages/dev/core/src/Meshes/meshBuilder.pure.ts",
+                    "packages/dev/core/src/Meshes/meshBuilder.ts",
+                    "packages/dev/core/src/Meshes/pure.ts",
+                    "packages/dev/core/test/unit/Engines/webgpuEngine.shaderIncludes.test.ts",
+                    "packages/dev/core/test/unit/Meshes/meshBuilder.sideEffects.test.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/test/unit/glTF/gltf2SceneLoaderRegistration.test.ts",
+                    "packages/public/@babylonjs/core/package.json",
+                    "scripts/treeshaking/side-effects-manifest/core/Meshes.json",
+                    "scripts/treeshaking/side-effects-manifest/loaders/glTF.json"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            }
+        ],
+        "9.18.2": [
+            {
+                "pr": "18743",
+                "title": "Replace the Lottie player's sprite atlas with a stencil-then-cover vector renderer",
+                "description": "Replaces the Lottie player's sprite-atlas renderer with a WebGL2 stencil-then-cover vector renderer.\r\n\r\nThe old pipeline rasterized every shape and text block to a Canvas2D texture atlas at load time, then drew them as sprites through core's `SpriteRenderer`. The new pipeline keeps paths as vectors and draws them directly on the GPU:\r\n\r\n1. A **stencil** pass writes each compound path's nonzero winding number.\r\n2. A **cover** pass paints the bounding quad where the stencil is non-zero, evaluating solid colors and gradients in the fragment shader.\r\n\r\nRendering still runs on a `ThinEngine`, either on the main thread (`LocalPlayer`) or in a worker on an `OffscreenCanvas` (`Player`).\r\n\r\n## Why\r\n\r\n- **Resolution independence.** Artwork is no longer baked to a fixed-resolution atlas, so it stays crisp at any scale and there is no atlas-size ceiling.\r\n- **Smaller bundle.** The main-thread player drops from **373,317 to 225,075 bytes raw** and **94,585 to 60,087 bytes gzipped** (**-39.7% / -36.5%**), measured with the same esbuild and gzip settings before and after.\r\n- **Less rendering infrastructure.** Stencil-then-cover does not need `SpriteRenderer`; it uses `Effect`, vertex buffers, and stencil state already available in `ThinEngine`.\r\n- **Faster startup.** No atlas packing or rasterization pass is required before the first frame.\r\n\r\n## What it renders\r\n\r\n- Shapes and solid layers\r\n- Solid, linear-gradient, and radial-gradient fills\r\n- Solid and gradient strokes, including dash patterns\r\n- Text and image layers\r\n- Animated (morphing) paths\r\n- Add-mode layer masks\r\n- Alpha track mattes between vector shape/solid layers\r\n\r\nCore's two-sided stencil support means nonzero winding needs one draw instead of the cull-twice emulation this technique often requires.\r\n\r\n## Automatic Renderer Loading\r\n\r\nThe public API remains `Player` and `LocalPlayer`; users do not choose a profile. After parsing the animation, the player selects renderer chunks automatically:\r\n\r\n- The vector fill/stroke renderer is always part of the base player.\r\n- The text renderer loads only when text layers are present (**1.66 KB gzip**).\r\n- The image renderer and FileTools load only when image layers are present (**4.82 KB gzip** together).\r\n\r\nPre-warming `Player` loads the worker and base renderer. Animation-specific text or image chunks load after the animation JSON is known.\r\n\r\n## Behavior changes worth knowing about\n\r\n- **Default rendering resolution.** With `devicePixelRatio: 0`, the old renderer supersampled 2x to 4x to keep atlas sprites crisp. The vector renderer uses MSAA instead and now follows the system device pixel ratio. This creates a smaller backing store and lowers memory use. Pass an explicit `devicePixelRatio` to override it.\r\n- **Keyframe easing.** Cubic-bezier easing is solved to a fixed tolerance instead of a fixed step count, so mid-animation frames can differ by a fraction of a pixel.\r\n- **Deprecated but still accepted:** `spriteAtlasWidth`, `spriteAtlasHeight`, `gapSize`, `spritesCapacity`, `scaleMultiplier`, `easingSteps`, `debug`, and `compatibility`. These options are now inert so existing code keeps compiling.\r\n- `Player`, `LocalPlayer`, `AnimationInput`, and the public `RawLottieAnimation` type name remain available.\r\n\r\n## Testing\r\n\r\n- **83 Lottie visual tests pass.** Only 3 of 31 reference images changed; the other 28 matched the sprite renderer within the existing tolerance.\r\n  - `lottie-animated-dash-frame0`: the old output drew square dash ends despite the file declaring `lc: 2` (round), and bent dashes at corners. Dash caps now honor the declared line cap.\r\n  - `lottie-gradient-stroke-frame0`: the radial dashed stroke distributes its dashes slightly differently.\r\n  - `lottie-text-paragraph-box-wrap`: same text and wrap points, with a roughly 1 px sub-pixel glyph-rasterization shift.\r\n  - The Multi-Page Atlas test and its reference image were removed because atlas paging no longer exists.\r\n- **66 unit tests pass**, including coverage for parsing, property sampling, matrices, path flattening, stroke geometry, malformed keyframes, invalid frame rates, invalid loop ranges, and allocation-free reuse paths.\r\n- Manually validated in the dev host across approximately 50 production animations on both the main-thread and worker paths.\r\n- Review fixes remove per-frame allocations for frame state, matrices, sampled contours, transformed-point scratch, dash spans, and draw records.\r\n\r\n## Unsupported features\r\n\r\nSubtract, intersect, and inverted masks; luma, inverted, and cross-renderer track mattes; and per-character text animators remain unsupported.\r\n",
+                "author": {
+                    "name": "VicenteCartas",
+                    "url": "https://github.com/VicenteCartas"
+                },
+                "files": [
+                    "packages/dev/lottiePlayer/src/animation/geometry.ts",
+                    "packages/dev/lottiePlayer/src/animation/loadAnimation.ts",
+                    "packages/dev/lottiePlayer/src/animation/lottieRaw.ts",
+                    "packages/dev/lottiePlayer/src/animation/matrix2D.ts",
+                    "packages/dev/lottiePlayer/src/animation/parse.ts",
+                    "packages/dev/lottiePlayer/src/animation/sample.ts",
+                    "packages/dev/lottiePlayer/src/animationConfiguration.ts",
+                    "packages/dev/lottiePlayer/src/index.ts",
+                    "packages/dev/lottiePlayer/src/localPlayer.ts",
+                    "packages/dev/lottiePlayer/src/maths/bezier.ts",
+                    "packages/dev/lottiePlayer/src/maths/boundingBox.ts",
+                    "packages/dev/lottiePlayer/src/maths/matrix.ts",
+                    "packages/dev/lottiePlayer/src/messageTypes.ts",
+                    "packages/dev/lottiePlayer/src/nodes/controlNode.ts",
+                    "packages/dev/lottiePlayer/src/nodes/node.ts",
+                    "packages/dev/lottiePlayer/src/nodes/spriteNode.ts",
+                    "packages/dev/lottiePlayer/src/parsing/parsedTypes.ts",
+                    "packages/dev/lottiePlayer/src/parsing/parser.ts",
+                    "packages/dev/lottiePlayer/src/parsing/rawPropertyHelpers.ts",
+                    "packages/dev/lottiePlayer/src/parsing/rawTypes.ts",
+                    "packages/dev/lottiePlayer/src/parsing/spritePacker.ts",
+                    "packages/dev/lottiePlayer/src/parsing/textLayout.ts",
+                    "packages/dev/lottiePlayer/src/player.ts",
+                    "packages/dev/lottiePlayer/src/player/playerCore.ts",
+                    "packages/dev/lottiePlayer/src/player/playerFactory.ts",
+                    "packages/dev/lottiePlayer/src/rendering/animationController.ts",
+                    "packages/dev/lottiePlayer/src/rendering/calculateScaleFactor.ts",
+                    "packages/dev/lottiePlayer/src/rendering/renderingManager.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/fillRenderer.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/imageRenderer.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/layerRenderer.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/strokeGeometry.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/textRenderer.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/texturedQuad.ts",
+                    "packages/dev/lottiePlayer/src/rendering/vector/vectorFrame.ts",
+                    "packages/dev/lottiePlayer/src/types.ts",
+                    "packages/dev/lottiePlayer/src/worker.ts",
+                    "packages/dev/lottiePlayer/test/unit/animationController.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/boundingBox.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/lottieTextLayout.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/node.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/parse.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/parser.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/rawPropertyHelpers.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/renderingManager.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/sample.test.ts",
+                    "packages/dev/lottiePlayer/test/unit/vectorGeometry.test.ts",
+                    "packages/public/@babylonjs/lottiePlayer/readme.md",
+                    "packages/tools/devHost/readme.md",
+                    "packages/tools/devHost/src/lottie/main.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lottie-animated-dash-frame0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lottie-gradient-stroke-frame0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lottie-multiPageAtlas.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lottie-text-paragraph-box-wrap.png",
+                    "packages/tools/tests/test/visualization/config.lottie.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18744",
+                "title": "build: update dependencies and clear npm audit findings",
+                "description": "## What\n\nRefreshes all in-range dependency versions across the workspaces and addresses the outstanding `npm audit` advisories.\n\n**`npm audit`: 23 findings (1 low, 5 moderate, 17 high) → 11 (2 moderate, 9 high).**\n\n## Security fixes\n\n| Package | Change | Clears |\n|---|---|---|\n| `sharp` | `^0.33.0` → `^0.35.0` in `@dev/inspector-v2` | GHSA-f88m-g3jw-g9cj (libvips CVEs) |\n| `dompurify` | override `3.4.0` → `3.4.12` | 9 DOMPurify advisories + the `monaco-editor` advisory |\n| `axios` | `1.16.0` → `1.18.1` via a new `nx`-scoped override | 10 axios advisories (`nx` pins axios to an exact version, so an override is the only route) |\n\n`fast-uri`, `hono`, `immutable`, `js-yaml`, `linkify-it`, `postcss`, `svgo`, `body-parser` and `@eslint/eslintrc` picked up patched versions through `npm audit fix`.\n\n## Dependency refresh\n\n~205 packages moved to their latest in-range versions, notably: `eslint` 10.7.0, `typescript-eslint` 8.65.0, `prettier` 3.9.6, `webpack` 5.108.4, `rollup` 4.62.2, `sass` 1.101.3, `typescript` 6.0.3, `nx` 22.7.7, FluentUI 9.74.4, `typedoc` 0.28.20, `vitest`/`vite`, `memlab` 2.0.4.\n\n`react` / `react-dom` / `@types/react*` were deliberately excluded: the permissive peer ranges in `@babylonjs/inspector-v2` make npm resolve React 19, which hard-fails `ERESOLVE` against the `^18.2.0` pins in the other 25 workspaces.\n\n## Fallout handled\n\n- **prettier 3.9** changed union-type formatting, so `npm run format:fix` reflowed 24 source files. No behavioral changes.\n- **webpack 5.108** no longer pulls in `terser-webpack-plugin` transitively (it switched to `minimizer-webpack-plugin`). `treeShakingSideEffects.test.ts` does `require(\"terser-webpack-plugin\")` directly, so it is now declared explicitly in `@tools/tests`.\n\n## Remaining 11 findings\n\nAll 11 trace back to two root packages, and **both fixes are blocked by this repo's own `min-release-age=7` supply-chain policy** in `.npmrc`:\n\n| Root cause | Cascades to | Fixed in | Published | Eligible |\n|---|---|---|---|---|\n| `brace-expansion` | `minimatch`, `@eslint/eslintrc`, `eslint-plugin-{github,import,jsx-a11y}`, `nx`, `serve`, `serve-handler` | 5.0.8 | 2026-07-23 | 2026-07-30 |\n| `@modelcontextprotocol/sdk` | `@hono/node-server` | 1.30.0 | 2026-07-27 | 2026-08-03 |\n\nConfirmed blocked:\n\n```\nnpm error notarget No matching version found for brace-expansion@^5.0.8\n  with a date before 7/22/2026, 10:55:19 AM.\n```\n\nBoth should be picked up by a follow-up `npm audit fix` once the cooldown window passes.\n\n## Not included\n\nOut-of-range major bumps were intentionally left alone: React 19, `@types/react` 19, Playwright 1.62, `monaco-editor` 0.56, `chokidar` 5, `jsdom` 29, Babel 8, `uuid` 14, `es-check` 9, `cross-env` 10, `@rollup/plugin-*` majors, FontAwesome 7, `react-dnd` 16, `sonda` 0.14, `rollup-plugin-visualizer` 7, TypeScript 7, `nx` 23.\n\n## Validation\n\nAll run locally with npm 11.18.0 (the version `engines` requires — npm 10 silently ignores `min-release-age`):\n\n- `npm run build:source` ✅\n- `npm run format:check` ✅\n- `npm run lint:check` ✅ (incl. all 16 tree-shaking checks + side-effects sync)\n- `npm run test:unit` ✅ 273 files, 4321 tests passed",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/core/src/Animations/animatable.core.ts",
+                    "packages/dev/core/src/Cameras/inputMapper.ts",
+                    "packages/dev/core/src/Debug/physicsViewer.pure.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Types/nodeRenderGraphTypes.ts",
+                    "packages/dev/core/src/LibDeclarations/webgl2.d.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/ambientOcclusionBlock.pure.ts",
+                    "packages/dev/core/src/Meshes/Builders/textBuilder.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/bevelBlock.pure.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline.pure.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline.pure.ts",
+                    "packages/dev/core/src/PostProcesses/thinSSAO2PostProcess.ts",
+                    "packages/dev/core/src/types.ts",
+                    "packages/dev/inspector-v2/package.json",
+                    "packages/dev/inspector-v2/src/components/properties/boundProperty.tsx",
+                    "packages/dev/loaders/src/FBX/interpreter/connections.ts",
+                    "packages/dev/loaders/src/SPLAT/gaussianSplattingBlockAllocator.ts",
+                    "packages/dev/serializers/src/3MF/core/model/3mf.builder.ts",
+                    "packages/dev/sharedUiComponents/src/modularTool/modularTool.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/dev/smartFilters/src/connection/connectionPointType.ts",
+                    "packages/tools/guiEditor/src/diagram/coordinateHelper.tsx",
+                    "packages/tools/playground/package.json",
+                    "packages/tools/snippetLoader/src/types.ts",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/viewer/src/full/viewerFactory.ts",
+                    "packages/tools/viewer/src/viewerElementBase.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18747",
+                "title": "Fix pure engine disposal without loading screen registration",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\n- Make `Engine.dispose()` and `WebGPUEngine.dispose()` tolerate pure builds that intentionally omit loading-screen registration.\n- Make `RegisterLoadingScreen()` also register the `AbstractEngine` loading-screen APIs, so the legacy loading-screen deep import remains self-contained.\n- Add regression tests for both disposal paths and composed registration.\n\n## Motivation\n\nPure WebGPU consumers could hit `TypeError: this.hideLoadingUI is not a function` during engine disposal after the generated fallback stubs were removed. Importing the loading-screen entrypoint also registered only the default factory, not the engine APIs that expose it.\n\nRelated forum report: https://forum.babylonjs.com/t/this-hideloadingui-is-not-a-function/63863\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.pure.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/src/Loading/loadingScreen.pure.ts",
+                    "packages/dev/core/test/unit/Engines/engine.loadingScreen.test.ts",
+                    "packages/dev/core/test/unit/Loading/loadingScreen.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18745",
+                "title": "fix(AudioV2): spatialize MediaStream/WebRTC sound sources out of the box",
+                "description": "## Problem\n\nSpatial audio appears broken for remote WebRTC streams (forum report: [AudioEngineV2 upgrade questions](https://forum.babylonjs.com/t/audioenginev2-upgrade-questions/63740)).\n\nThe root cause is a browser (notably Chromium) behavior, **not** a Babylon bug: a `MediaStreamAudioSourceNode` created from a remote `RTCPeerConnection` stream only delivers audio samples while the underlying `MediaStream` is *also* being pulled by an `HTMLMediaElement`. When the stream is fed straight into the Web Audio graph (via `CreateSoundSourceAsync`) with no media element, the source node emits pure silence — so the `PannerNode` has nothing to spatialize.\n\nI verified this with an isolated diagnostic that routes several sources through the **same** `PannerNode(HRTF)` and measures the L/R balance while panning hard left/right:\n\n| Source | Result |\n|---|---|\n| Pure oscillator `AudioNode` | spatial ✅ |\n| Local `MediaStream`, no sink | silent ❌ |\n| Remote WebRTC, no sink | silent ❌ |\n| Remote WebRTC + muted `<audio>` sink | spatial ✅ (identical swing to the oscillator) |\n\nThe same panner spatializes a pure oscillator **and** the WebRTC stream once a muted `HTMLMediaElement` keeps the stream pulled. So the fix is to attach that element automatically.\n\n## Fix\n\n`CreateSoundSourceAsync` now attaches a hidden, **muted** `HTMLAudioElement` (`srcObject = stream`) whenever the wrapped node is a `MediaStreamAudioSourceNode`, keeping the stream flowing so it can be heard and spatialized. The element is released on `dispose()`.\n\n- New `mediaStreamSinkEnabled` option on `ISoundSourceOptions` (default `true`). Set it to `false` if you already route the same `MediaStream` through your own media element, to avoid a redundant one.\n- The microphone path (`createMicrophoneSoundSourceAsync`) opts out, preserving its existing behavior exactly.\n\nThe element is muted, so it never adds a second, non-spatial playback of the stream.\n\n## Backwards compatibility\n\nAdditive and non-breaking: the new option is optional and defaults to the new behavior, which fixes currently-silent remote streams and is a harmless muted no-op for cases that already worked. Callers who previously added a manual muted `<audio>` workaround can drop it (or pass `mediaStreamSinkEnabled: false`).\n\n## Tests\n\nAdded `packages/tools/tests/test/audioV2/soundSource.mediaStreamSink.test.ts` (Playwright, AudioV2 project) using a synthetic oscillator-backed `MediaStream` — **no microphone / `getUserMedia`**:\n\n1. A `MediaStreamAudioSourceNode` source attaches a hidden **muted** element whose `srcObject` is the stream.\n2. `mediaStreamSinkEnabled: false` attaches nothing.\n3. A non-`MediaStream` source attaches nothing.\n4. `dispose()` releases the element (no leak).\n\n**Validation:** all 4 pass on Chrome (headed + headless) and Firefox (CI default); all 78 existing `SoundSource` tests still pass; core `tsc`, ESLint, and Prettier are clean.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/AudioV2/abstractAudio/abstractSoundSource.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioEngine.ts",
+                    "packages/dev/core/src/AudioV2/webAudio/webAudioSoundSource.ts",
+                    "packages/tools/tests/test/audioV2/soundSource.mediaStreamSink.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18749",
+                "title": "Fix GitHub release creation for version tags",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\n- Resolve the published package version and its exact tagged commit before creating the release.\n- Pass the version as an explicit GitHub release tag instead of searching the moving `master` branch for an associated tag.\n- Reuse the package version variable for snapshot deployment.\n\n## Motivation\n\nThe `9.18.1` publish run skipped GitHub release creation because `master` advanced after the version tag was pushed. `GitHubRelease@1` searched the newer `master` commit for a tag and emitted: `Release will not be created as the tags for the target commit do not match with the given tag pattern`.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".azure-pipelines/cd-publish.yml"
+                ],
+                "tags": [
+                    "bug",
+                    "build",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "18742",
+                "title": "Fix .babylonproj transform node duplication",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\n## Summary\r\n- track transform nodes loaded through Smart Asset Manager\r\n- prevent asset-owned transform nodes from being serialized into `.babylonproj` local scene data\r\n- add regression coverage for transform-node ownership tracking\r\n\r\n## Motivation\r\nExporting and re-importing a `.babylonproj` duplicated transform nodes from GLB assets at the scene root because those nodes were incorrectly treated as user-created local objects. Meshes were already tracked correctly and were not duplicated.\r\n\r\n## Testing\r\n- focused Smart Asset Manager and project file unit tests\r\n",
+                "author": {
+                    "name": "georginahalpern",
+                    "url": "https://github.com/georginahalpern"
+                },
+                "files": [
+                    "packages/dev/core/src/SmartAssets/smartAssetManager.pure.ts",
+                    "packages/dev/core/test/unit/SmartAssets/smartAssetManager.test.ts",
+                    "packages/dev/sharedUiComponents/test/unit/overrideManager.test.ts",
+                    "packages/dev/sharedUiComponents/test/unit/projectFile.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
+        "9.18.1": [
+            {
+                "pr": "18740",
+                "title": "Support array and uncompressed textures in the KTX2 decoder",
+                "description": "Fixes two independent gaps in the KTX2 pipeline, both surfaced by a forum request to load a multi-layer `.ktx2` file as a 2D texture array: https://forum.babylonjs.com/t/populate-2d-texture-array-from-image-asset/35140\r\n\r\n### 1. Array textures were rejected\r\n\r\n`KTX2FileReader.parse()` threw `\"Array textures are not currently supported\"` for any file with `layerCount > 1`, so nothing downstream could ever see a multi-layer KTX2.\r\n\r\n- Removed the throw. `pixelDepth > 0` (3D) and `faceCount > 1` (cubemap) still throw.\r\n- `_decodeDataAsync` now wraps the face loop in an outer layer loop, and every `IMipmap` is tagged with its `layerIndex`. BasisLZ image-descriptor indexing accounts for the layer stride (`firstImageDescIndex + layerIndex * numImagesInLevel + imageIndex`).\r\n- `IDecodedData` gained `layerCount`.\r\n\r\n### 2. Uncompressed KTX2 files could never be loaded at all\r\n\r\nThis one is orthogonal to arrays and was found by actually running the reporter's file. `KTX2FileReader.textureFormat` was:\r\n\r\n```ts\r\nreturn this._dfdBlock.colorModel === DFDModel.UASTC ? SourceTextureFormat.UASTC4x4 : SourceTextureFormat.ETC1S;\r\n```\r\n\r\nso **any** file whose DFD color model is `RGBSDA` (1, i.e. plain uncompressed RGBA) was misread as ETC1S and handed to a Basis transcoder that then failed. Array or not, no uncompressed `.ktx2` worked.\r\n\r\n- Added `SourceTextureFormat.RGBA32` and made `textureFormat` a real 3-way switch on `colorModel`.\r\n- Added `UncompressedRGBA32Transcoder`, a passthrough transcoder, plus a decision-tree leaf for it.\r\n- Added a `vkFormat` allowlist so unsupported uncompressed formats fail with a clear message instead of producing garbage. Currently `R8G8B8A8_UNORM` (37) and `R8G8B8A8_SRGB` (43).\r\n- Generalized the per-level byte-length math to use the DFD texel block dimension rather than assuming 4x4 blocks, since uncompressed formats are 1x1.\r\n- `hasAlpha` now inspects the DFD samples for an alpha channel in the RGBA32 case.\r\n\r\n### 3. Core-side consumer\r\n\r\n- Extracted `KhronosTextureContainer2._decodeAsync` out of `_uploadAsync`, so callers that want decoded pixel data (rather than an `InternalTexture` upload) don't have to duplicate the worker/non-worker plumbing. `_uploadAsync` is now a thin wrapper over it.\r\n- `_createTexture` throws early if handed array data, since the `InternalTexture` texture-loader path can't represent it.\r\n- Added `CreateTexture2DArrayFromKTX2Async(scene, urlOrData, options?)` to `rawTexture2DArray.functions.ts`, alongside the existing `CreateTexture2DArrayFromImageUrlsAsync`.\r\n\r\n### Tests\r\n\r\n- New `ktx2Decoder.test.ts` synthesizes a valid uncompressed KTX2 container byte-by-byte in memory (no fixture files) and asserts header/DFD parsing, layer splitting, and the passthrough transcode.\r\n- 8 new cases covering `CreateTexture2DArrayFromKTX2Async`.\r\n- Full `Materials` unit suite green (232), `Materials/Textures` 117/117.\r\n\r\n## Breaking change\r\n\r\n`IDecodedData.layerCount` and `IMipmap.layerIndex` are **required**, not optional. This is source-breaking for anyone implementing `IKTX2Decoder` outside the repo. Making them optional would push a `?? 1` / `?? 0` onto every consumer and let a decoder silently omit layer information, which is exactly the failure mode this PR exists to remove.\r\n\r\n## Other behavior changes worth flagging\r\n\r\n- The non-worker decode path now forwards `options` to `decoder.decode(data, caps, options)`; previously it only passed `(data, caps)`, so `IKTX2DecoderOptions` were silently dropped when no worker pool was in use.\r\n- When `_createTexture` throws on the worker path, the promise now rejects with the raw error rather than `{ message: err }`.\r\n\r\n## Known limitations\r\n\r\n- **`CreateTexture2DArrayFromKTX2Async` decodes to RGBA.** It passes `forceRGBA: true`, because the engine has no `compressedTexImage3D` path for `TEXTURE_2D_ARRAY`. Compressed array files therefore load correctly but lose their VRAM advantage. Adding native compressed array upload is a follow-up; the decoder side is now ready for it.\r\n- **Only mip level 0 is uploaded**, and the engine regenerates the rest. `MakeUpdateRawTextureFunction` in `engine.rawTexture.pure.ts` has no `mipLevel` parameter and always calls `texImage3D(target, 0, ...)`, so `RawTexture2DArray.updateMipLevel()`'s 7th argument is ignored on WebGL (WebGPU does honor it). For MSDF-style content with an authored mip chain this is a real difference; it's documented in the function's JSDoc. Fixing the WebGL path is out of scope here.\r\n- The compressed (UASTC / ETC1S) **array** path follows the spec's image ordering and typechecks, but I could not find or generate a compressed array `.ktx2` to verify it at runtime. The uncompressed array path is verified end-to-end against the reporter's actual file.\r\n\r\n## Validation\r\n\r\nThe reporter's file (`material-icons-msdf-array.ktx2`, 256x256, 5 layers, 9 mip levels, `vkFormat=37`, `supercompressionScheme=0`) now decodes to 45 mipmaps with distinct per-layer contents. I also ran it through a locally-built bundle of this decoder in Babylon Lite, which uploads layers directly via WebGPU `writeTexture` without `forceRGBA`, and confirmed all 5 layers render correctly with an empty WebGPU validation error scope.\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/ktx2decoderTypes.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture2DArray.functions.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/ktx2Decoder.test.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/rawTexture2DArray.functions.test.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/index.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/uncompressedRGBA32Transcoder.ts",
+                    "packages/tools/ktx2Decoder/src/ktx2Decoder.ts",
+                    "packages/tools/ktx2Decoder/src/ktx2FileReader.ts",
+                    "packages/tools/ktx2Decoder/src/transcodeDecisionTree.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "18739",
+                "title": "OpenPBR: Ensures relative IOR goes to one as the specular_weight goes to zero",
+                "description": "Relative IOR of base layer should move to match outer layer as weight goes to zero. This fixes the same problem found recently in the Adobe open source OpenPBR BSDF:\r\n\r\nhttps://github.com/adobe/openpbr-bsdf/pull/29\r\n\r\nI also added a visual test for base specular with coat. The base specular (roughness 0.5) shouldn't be visible when `specular_weight` goes to 0.0 with a coat.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/openpbrDielectricReflectance.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/openpbrDielectricReflectance.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/OpenPBR-IBL-Specular-Weight-vs-Coat-Weight.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18741",
+                "title": "Fix GS with nosort+native",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.nativeDisableDepthSort.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "Gaussian Splatting"
+                ]
+            },
+            {
+                "pr": "18737",
+                "title": "Fix EXT_lights_ies profile texture naming",
+                "description": "## Summary\n\n- Name the IES profile texture from the `SpotLight` created by the extension.\n- Add a loader regression test that runs without a browser `name` global.\n\nThe previous free `name` reference compiled because DOM typings declare `window.name`, but throws in non-browser runtimes.\n\n## Validation\n\n- New test fails on the previous implementation with `name is not defined`.\n- `npx vitest run packages/dev/loaders/test/unit/glTF/EXT_lights_ies.test.ts`",
+                "author": {
+                    "name": "matthargett",
+                    "url": "https://github.com/matthargett"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_lights_ies.pure.ts",
+                    "packages/dev/loaders/test/unit/glTF/EXT_lights_ies.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18731",
+                "title": "Add animated shadows to Viewer Lite",
+                "description": "## Why\n\nViewer Lite could not render a correctly fitted, animated shadow for deforming glTF models such as the UFO sample. This updates the Viewer to use the deformation-aware shadow support published in `@babylonjs/lite` 1.14.0 while keeping optional morph and skeleton support out of static-model loads.\n\n## What changed\n\n- Configure the Lite Viewer shadow task and receiver ground so arbitrary glTF models receive soft directional shadows with bounds that follow animation.\n- Detect morph-target and skeletal casters after loading, then lazily load one combined Viewer shadow module that enables only the required Lite opt-ins.\n- Defer initial Lite scene registration when the initial model casts shadows so the required frame-graph builders are available before the first render.\n- Reorganize Viewer sources into matching `src/full` and `src/lite` layouts, keeping shared bases at the source root.\n- Emit the full public library under `lib/full` and update package exports, build inputs, tests, and Viewer Configurator deep imports accordingly.\n- Add focused Lite shadow development pages, scale fixtures, and Vite configuration for faster Viewer startup and optional local `@babylonjs/lite` development.\n\nThe underlying deformation-aware shadow APIs were added in Babylon-Lite PR https://github.com/BabylonJS/Babylon-Lite/pull/433.\n\n## Validation\n\n- Clean Viewer public library and distribution builds.\n- Full and Lite Viewer smoke tests.\n- Isolated browser loads of `lib/full`, `lib/lite`, full `dist`, and Lite `dist`; each rendered 30 frames without page or console errors.\n- Viewer TypeScript compilation and Viewer Configurator build.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/public/@babylonjs/viewer/package.json",
+                    "packages/public/@babylonjs/viewer/rollup.config.dist.esm.mjs",
+                    "packages/public/@babylonjs/viewer/rollup.config.lib.mjs",
+                    "packages/public/@babylonjs/viewer/serve.brotli-max.mjs",
+                    "packages/public/@babylonjs/viewer/test/apps/web/index.html",
+                    "packages/public/@babylonjs/viewer/tsconfig.build.lib.json",
+                    "packages/tools/viewer-configurator/src/components/babylonViewer/viewer.tsx",
+                    "packages/tools/viewer-configurator/src/components/configurator/configurator.tsx",
+                    "packages/tools/viewer-configurator/src/modelLoader.ts",
+                    "packages/tools/viewer-configurator/src/viewerService.tsx",
+                    "packages/tools/viewer/package.json",
+                    "packages/tools/viewer/rollup.config.common.mjs",
+                    "packages/tools/viewer/src/full/Shaders/envShadowGround.fragment.fx",
+                    "packages/tools/viewer/src/full/Shaders/envShadowGround.vertex.fx",
+                    "packages/tools/viewer/src/full/ShadersWGSL/envShadowGround.fragment.fx",
+                    "packages/tools/viewer/src/full/ShadersWGSL/envShadowGround.vertex.fx",
+                    "packages/tools/viewer/src/full/index.ts",
+                    "packages/tools/viewer/src/full/viewer.ts",
+                    "packages/tools/viewer/src/full/viewerElement.ts",
+                    "packages/tools/viewer/src/full/viewerFactory.ts",
+                    "packages/tools/viewer/src/lite/defaultBRDF.ts",
+                    "packages/tools/viewer/src/lite/index.ts",
+                    "packages/tools/viewer/src/lite/viewer.ts",
+                    "packages/tools/viewer/src/lite/viewerElement.ts",
+                    "packages/tools/viewer/src/lite/viewerShadows.ts",
+                    "packages/tools/viewer/test/apps/web/analyze.html",
+                    "packages/tools/viewer/test/apps/web/coverage.html",
+                    "packages/tools/viewer/test/apps/web/index.html",
+                    "packages/tools/viewer/test/apps/web/test.html",
+                    "packages/tools/viewer/test/viewer.lite.test.ts",
+                    "packages/tools/viewer/test/viewer.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18725",
+                "title": "Move alpha-to-coverage support to engine extensions",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\n## Summary\r\n\r\nThis is a follow-up to #18696 and #18718 that moves the niche alpha-to-coverage implementation out of the default engine state and hot paths and into opt-in WebGL and WebGPU engine extensions.\r\n\r\nLegacy root and UMD imports continue to register the extensions automatically. Pure consumers can explicitly register only the backend they need, and `TextRenderer` registers its active backend before use.\r\n\r\n## Changes\r\n\r\n- Add standard `.pure.ts`, `.types.ts`, and side-effect wrapper modules for WebGL and WebGPU alpha-to-coverage support.\r\n- Remove alpha-to-coverage state and sample tracking from `AbstractEngine`, WebGL `ThinEngine`, `AlphaState`, and `NullEngine`.\r\n- Activate WebGPU pipeline descriptor support only when the WebGPU extension is registered.\r\n- Keep the MSDF render path straight-line while restoring the previous alpha-to-coverage state after drawing.\r\n- Preserve the single-sample fallback and use alpha-to-coverage only for multisampled, depth-writing text.\r\n- Add focused WebGL extension tests, update WebGPU pipeline tests, and synchronize pure barrels and side-effect metadata.\r\n- Add a screenshot-based visual regression test for transparent red/green overlap rendered through an explicit 4× MSAA target.\r\n\r\n## Testing\r\n\r\n### Playgrounds\r\n\r\n- [Analytic non-text alpha-to-coverage edge comparison](https://playground.babylonjs.com/#SOKCBN#1)\r\n- [50% front alpha over an opaque rear shape](https://playground.babylonjs.com/#R1CZ40) — A2C off keeps the solid front color; A2C on resolves the red and green samples to olive/yellow across the overlap.\r\n- [MSDF text depth-writing comparison](https://playground.babylonjs.com/#6RLCWP#104)\r\n\r\nAll three Playgrounds were validated with WebGL2 and WebGPU at 4× MSAA.\r\n\r\n### Automated validation\r\n\r\n- `npm run build:dev`\r\n- `npm run format:check`\r\n- `npm run lint:check`\r\n- Focused A2C, WebGPU pipeline, alpha state, and NullEngine unit tests: 24 passed, 1 expected failure\r\n- All 16 tree-shaking structure checks and side-effect synchronization checks\r\n- `Alpha-to-coverage transparent overlap` visual test passes on WebGL2 and WebGPU using [dedicated snippet #M4GBLK#0](https://playground.babylonjs.com/#M4GBLK#0)\r\n- Negative control without multisampled A2C differs by 88,887 pixels (38% of the screenshot), confirming strong regression sensitivity\r\n\r\nNo behavior change is expected for existing MSDF text usage. Alpha-to-coverage remains active only when depth writing and multisampling are both enabled.\r\n\r\n## Screenshots\r\n\r\n<img width=\"574\" height=\"755\" alt=\"image\" src=\"https://github.com/user-attachments/assets/34564f0d-fe25-4998-ad36-18c82d6c2902\" />\r\n<img width=\"567\" height=\"704\" alt=\"image\" src=\"https://github.com/user-attachments/assets/f32dfd18-c340-4f66-abbb-e50830087e5f\" />\r\n",
+                "author": {
+                    "name": "VicenteCartas",
+                    "url": "https://github.com/VicenteCartas"
+                },
+                "files": [
+                    "packages/dev/addons/src/msdfText/textRenderer.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.alphaToCoverage.pure.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.alphaToCoverage.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.alphaToCoverage.types.ts",
+                    "packages/dev/core/src/Engines/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/Extensions/pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.alphaToCoverage.pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.alphaToCoverage.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.alphaToCoverage.types.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.pure.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.pure.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/States/alphaCullingState.ts",
+                    "packages/dev/core/test/unit/Engines/Extensions/engine.alphaToCoverage.sideEffects.test.ts",
+                    "packages/dev/core/test/unit/Engines/Extensions/engine.alphaToCoverage.test.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuCacheRenderPipeline.test.ts",
+                    "packages/dev/core/test/unit/Engines/nullEngine.test.ts",
+                    "packages/dev/core/test/unit/States/alphaCullingState.test.ts",
+                    "packages/public/@babylonjs/core/package.json",
+                    "packages/tools/tests/test/visualization/ReferenceImages/alpha-to-coverage-transparent-overlap.png",
+                    "packages/tools/tests/test/visualization/config.json",
+                    "scripts/treeshaking/side-effects-manifest/core/Engines.json"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "18726",
+                "title": "Add onEffectiveEnabledStateChangedObservable to node class",
+                "description": "The existing onEnabledStateChangedObservable only notifies when the local enabled value changes, but if the effective value changes (due to a parent become disabled), it doesn't notify. The new onEffectiveEnabledStateChangedObservable will in both cases.  It is lazy loaded to reduce extra work for those not using it.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/node.ts",
+                    "packages/dev/core/test/unit/babylon.nodeEnabledState.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18724",
+                "title": "fix: scene can be nil in rgbd post process",
+                "description": "Compiler is right in this case: when scene or engine is quickly destroyed before the effects are initialized the `texture.getScene()` actually can be already undefined.\r\n\r\nHappens in our app when the user quickly navigates back from a component with the babylon scene (component is destroyed and engine disposed before fully intialized).\r\n\r\n\r\n\r\n<img width=\"637\" height=\"316\" alt=\"image\" src=\"https://github.com/user-attachments/assets/d0151ebc-4688-4437-86a4-3ef88a61de83\" />\r\n",
+                "author": {
+                    "name": "jmheretik",
+                    "url": "https://github.com/jmheretik"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/rgbdTextureTools.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "9.18.0": [
+            {
+                "pr": "18721",
+                "title": "Fix PerfCounter min/max initialization",
+                "description": "## Summary\n- initialize `PerfCounter.min` and `max` from the first valid recorded value instead of the constructor's zero defaults\n- preserve valid zero-valued frames while excluding constructor and disabled-frame placeholders from extrema\n- add unit coverage for positive, negative, disabled, and WebGPU-style deferred results\n\n## Context\n- Forum report: https://forum.babylonjs.com/t/perfcounter-min-value-not-working-as-expected/63841\n- Reproduction: https://playground.babylonjs.com/#5KMIIP#0\n\n## Validation\n- Prettier formatting check\n- ESLint on the changed source file\n- Local test execution intentionally omitted; CI will run the test suite",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/perfCounter.ts",
+                    "packages/dev/core/test/unit/Misc/perfCounter.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18720",
+                "title": "Fix GS Texture leak with resize",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.updateDataLeak.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "Gaussian Splatting"
+                ]
+            },
+            {
+                "pr": "18702",
+                "title": "fix(sandbox): apply persisted glTF loader options on page load",
+                "description": "The inspector's GLTFLoaderOptionsService subscribes to OnPluginActivatedObservable only when the inspector is first opened (lazy init). Settings like useOpenPBR that are saved to localStorage are therefore not applied on the initial page load before the inspector has been opened.\r\n\r\nFix: in the sandbox's own OnPluginActivatedObservable handler, read the persisted options from DataStorage (key: Babylon/Inspector/glTFLoaderOptions, the same key written by the inspector's SettingsStore) and apply them to the loader directly. This ensures options like useOpenPBR take effect on every file load regardless of whether the inspector has been opened in the current session.\r\n\r\nAlso adds a null guard around scene.debugLayer.show() in the texture preview path, since debugLayer may be undefined when the inspector bundle is not loaded.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18711",
+                "title": "Check XRGPUBinding before native fallback",
+                "description": "## Background\n\nBroader WebGPU runtime testing showed that `WebXRLayers.isCompatible()` rejects every native session before checking the active engine and `XRGPUBinding` capabilities. A standards-compatible WebGPU runtime can therefore expose `XRGPUBinding.createProjectionLayer` and still be prevented from selecting the existing WebGPU projection-layer path.\n\n## Change\n\n- Check WebGPU and `XRGPUBinding.createProjectionLayer` before the native WebGL fallback.\n- Keep native WebGL sessions on the existing `NativeXRRenderTarget` path.\n- Preserve browser WebGPU and WebGL behavior.\n- Make no public API changes.\n\n## Tests\n\nAdds five explicit compatibility cases:\n\n- native WebGPU with projection-layer support\n- native WebGPU without `XRGPUBinding`\n- native WebGL with `XRWebGLBinding`\n- browser WebGPU with projection-layer support\n- browser WebGL with projection-layer support\n\nLocal validation:\n\n- focused fixture: 5/5 tests passed\n- XR unit suite: 280/280 tests passed across 16 files\n- exact-file ESLint and Prettier checks passed\n- production core TypeScript build passed\n\n## Relation to #18688\n\ncc @RaananW. This is intentionally separate from #18688: this PR makes the WebGPU layer provider reachable when the runtime advertises the required capability, while #18688 addresses projection/NDC and upright rendering after that layer path is active. The changes do not overlap files.",
+                "author": {
+                    "name": "matthargett",
+                    "url": "https://github.com/matthargett"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRLayers.pure.ts",
+                    "packages/dev/core/test/unit/XR/webXRLayers.test.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "9.17.1": [
+            {
+                "pr": "18706",
+                "title": "feat(materials): add 2D array texture creation and image-source population",
+                "description": "## Summary\n\nAdds a tree-shakable, opt-in image-source path for **2D array textures** in `@babylonjs/core` — the counterpart to `RawTexture2DArray.update` (which only accepts raw bytes). It lets you populate array layers directly from decoded image sources (`ImageBitmap`, canvas, video, image element) and from image URLs, without the \"draw to an offscreen canvas and read back raw bytes\" workaround.\n\nThis mirrors the feature just added on the Babylon Lite side (BabylonJS/Babylon-Lite#422).\n\nForum context:\n- https://forum.babylonjs.com/t/populate-2d-texture-array-from-image-asset/35140\n- https://forum.babylonjs.com/t/texturearray-in-balyonlite/63784\n\n## What's added\n\nNew free functions in `Materials/Textures/rawTexture2DArray.functions.ts`:\n\n- `UploadImageToTexture2DArrayLayer(texture, source, layer, options?)` — upload one decoded image source into a single array layer.\n- `LoadImageToTexture2DArrayLayer(texture, url, layer, options?)` — fetch + decode a URL into a layer.\n- `CreateTexture2DArrayFromImageUrls(scene, urls, options?)` — build a full array from image URLs. `urls` is a non-empty tuple `readonly [string, ...string[]]`, so at-least-one-layer is enforced at compile time with zero runtime cost.\n\nThese are backed by a new `updateTextureArrayLayerFromImageSource` engine extension.\n\n## Tree-shaking / opt-in side effects\n\nThe engine extension is registered per-backend as an **opt-in side effect**, so the full `Engine` build does not pay for it by default. Register the matching module for your backend before use:\n\n- WebGL2: `import \"core/Engines/Extensions/engine.texture2DArrayImageSource\";`\n- WebGPU: `import \"core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource\";`\n\nThe helper functions themselves are free functions with no module-level side effects.\n\n## Memory-safety note\n\n`CreateTexture2DArrayFromImageUrls` uses `Promise.allSettled` (not `Promise.all`): if any layer's fetch/decode rejects, every already-decoded `ImageBitmap` is closed before the error is rethrown, so a partial failure never leaks GPU-backed bitmaps. (This was the review feedback on the Lite PR, applied here too.)\n\n## Testing\n\n- Adds `test/unit/Materials/Textures/rawTexture2DArray.functions.test.ts` (upload, URL load, dimension validation, compile-time non-empty tuple guard, and the partial-failure cleanup path).\n- 11 unit tests pass locally.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.texture2DArrayImageSource.pure.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.texture2DArrayImageSource.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.texture2DArrayImageSource.types.ts",
+                    "packages/dev/core/src/Engines/Extensions/pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource.pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/pure.ts",
+                    "packages/dev/core/src/Materials/Textures/index.ts",
+                    "packages/dev/core/src/Materials/Textures/pure.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture2DArray.functions.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/rawTexture2DArray.functions.test.ts",
+                    "packages/public/@babylonjs/core/package.json",
+                    "scripts/treeshaking/side-effects-manifest/core/Engines.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18714",
+                "title": "fix(build): resolve TS2304 in bundled .module.d.ts for XRBody and SPZ types",
+                "description": "## Problem\n\nConsumers compiling against the bundled UMD declaration files hit `Cannot find name` errors (reported in [forum thread 63826](https://forum.babylonjs.com/t/compile-errors-after-switch-to-ts6-0-3-babylon-version/63826)):\n\n```\nbabylonjs-loaders/babylonjs.loaders.module.d.ts: TS2304: Cannot find name 'SpzModule'.\nbabylonjs-loaders/babylonjs.loaders.module.d.ts: TS2304: Cannot find name 'GaussianCloud'.\nbabylonjs/babylon.module.d.ts: TS2552: Cannot find name 'XRBody'. Did you mean 'Body'?\n```\n\nThe runtime code is fine — the flattened `.module.d.ts` bundles leaked type names that aren't in scope. This surfaced after the TS 6 upgrade (#18202), which removed `ts-patch` and reworked the declaration pipeline; the string-based bundler doesn't handle two constructs that the previous toolchain did.\n\n## Root causes & fixes\n\n**1. `XRBody` / `XRBodySpace` (core bundle)**\nThese interfaces were declared *module-local* in `WebXRBodyTracking.pure.ts` and referenced from a `declare global` `XRFrame.body` augmentation. When the bundler hoists the global augmentation to global scope, the module-local types don't come along, leaving `body?: XRBody` dangling.\n\n→ Moved `XRBody` / `XRBodySpace` (and `XRFrame.body`) into the ambient `LibDeclarations/webxr.d.ts`, which is appended verbatim at global scope alongside the other WebXR types (`XRFrame`, `XRSpace`, …). Removed the now-redundant local declarations from `WebXRBodyTracking.pure.ts`.\n\n**2. `SpzModule` / `GaussianCloud` (loaders bundle)**\nThese types come from the external `@adobe/spz` package and appear in exported signatures. The declaration bundler strips external imports but left the references dangling.\n\n→ Added `@adobe` to the external-type allowlist in `generateDeclaration.ts` so the references collapse to `any`, matching the existing handling for `@fortawesome` / `@fluentui` / `@recast-navigation`.\n\n## Verification\n\n- `tsc -b ./tsconfig.devpackages.json` — clean.\n- Regenerated `core.d.ts` / `loaders.d.ts`: `XRBody`, `XRBodySpace`, `XRFrame.body` now sit at global scope; loaders emit `Promise<any>` / `cloud: any`.\n- `tsc --noEmit` on both generated bundles: **0 `TS2304` errors** (down from the 5 reported).\n- Prettier clean, ESLint 0 errors.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/XR/features/WebXRBodyTracking.pure.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18717",
+                "title": "Fix .pure.ts transitive side-effect regressions (SceneLoader, depth-stencil, WGSL depth shaders)",
+                "description": "## Problem\n\nThe progressive `*.pure.ts` tree-shaking split (≈9.8→9.16) is legitimate, but it dropped several **transitive side-effect registrations** that used to happen automatically. Importing a high-level entry point (a loader/renderer) is no longer sufficient to use the feature — consumers had to manually add low-level side-effect imports. That is a regression in those entry points' public contract.\n\n**Fix pattern (unchanged tree-shaking guarantees):** each public feature entry module imports/registers its *own* required side-effects, following the existing `.pure` convention. **No global side-effects are added to core's barrel**, so unrelated imports stay side-effect-free. All new tests import **only the public entry point** — no manual side-effect imports — and each was verified to fail without the fix and pass with it.\n\n## Buckets fixed\n\n### A — `.babylon` / SceneLoader parsers (regression) ✅\nTwo gaps, both fixed:\n1. **Parsers threw mid-load** (camera/light/material) because concrete built-in classes only self-register through their own `.ts` wrappers. Name-based type resolution and the `UniversalCamera`/`StandardMaterial` fallbacks failed.\n2. **Sponza rendered untextured / flat-orange.** `RegisterTexture()` installs `SerializationHelper._TextureParser = Texture.Parse`; only `texture.ts` calls it. The loader imports `texture.pure` (side-effect-free), so material-texture deserialization silently dropped every texture. Importing `standardMaterial` did *not* fix it — confirming the gap was the texture parser hook.\n\n**Fix:**\n- `babylonFileLoader.pure.ts` → `RegisterBabylonFileLoader()` now calls `RegisterTexture()` and `RegisterCubeTexture()` (the loader's own parser hooks).\n- `babylonFileLoader.ts` wrapper imports the standard built-in cameras/lights/materials (`universalCamera`, `arcRotateCamera`, `hemisphericLight`, `pointLight`, `directionalLight`, `spotLight`, `standardMaterial`, `pbrMaterial`, `backgroundMaterial`, `multiMaterial`). Consumers who want a fully tree-shaken loader can still import `babylonFileLoader.pure` and register only what they use.\n\n### B — `createDepthStencilTexture` (regression) ✅\n`AbstractEngine.prototype.createDepthStencilTexture` is installed by `RegisterAbstractEngineTexture()`; RTT/shadow/fluid pure files called the method without triggering that registration.\n\n**Fix:** `RegisterRenderTargetTexture()` and `RegisterFluidRenderer()` now chain `RegisterAbstractEngineTexture()`. ShadowGenerator / CascadedShadowGenerator are covered transitively (their ctor calls `RegisterRenderTargetTexture()` before using `createDepthStencilTexture`).\n\n> Note: `engine.ts` / `webgpuEngine.ts` already `import \"./AbstractEngine/abstractEngine.texture\"`, so full engine builds never saw the failure — only minimal/tree-shaken engine builds that bypass `engine.ts`. The fix restores the correct \"feature owns its side-effect\" contract regardless.\n\n### C — DepthRenderer WGSL shaders 404 under WebGPU (regression) ✅\n`depthRenderer.ts` statically imported only the **GLSL** depth shaders; the WGSL path relied on racy dynamic imports, producing black depth under WebGPU.\n\n**Fix:** the wrapper now statically imports both GLSL and WGSL `depth.vertex` / `depth.fragment` (mirroring the `effectRenderer.ts` pattern).\n\n## Determinations — NOT `.pure` regressions ⚠️\n\n### D — custom WGSL ShaderMaterial + thin-instance renders blank → **intentional / inherent, no code change**\nThe instance-attribute path is fully intact and language-agnostic (`shaderMaterial.pure.ts`: `PushAttributesForInstances` + `INSTANCES`/`THIN_INSTANCES` defines). There is **no dropped registration**. A *custom* WGSL `ShaderMaterial` must declare `world0..world3` in its vertex input struct (or use `#include<instancesDeclaration>` + `#include<instancesVertex>`) — the same requirement GLSL custom shaders always had. This is an inherent property of custom shaders, not a regression.\n\n**Migration note for users:** custom WGSL shaders used with (thin) instances must declare the instance world-matrix attributes themselves, or include the `instancesDeclaration` / `instancesVertex` helpers.\n\n### E — Havok `PhysicsCharacterController` scene hangs → **Havok 1.3.13 exposes a pre-existing solver bug, not `.pure`**\n`characterController.ts` `_simplexSolverExamineActivePlanes` case 4: the \"search a plane to drop\" loop can leave `numSupportPlanes = 4` and `continue` forever (hang); the adjacent 3D-combination `if/else-if` chain has four identical conditions (dead code, `no-dupe-else-if` suppressed). This is physics-solver logic requiring a Havok repro and physics testing — **out of scope for the `.pure` work** and intentionally not fixed speculatively here. Flagged for a separate PR.\n\n## Tests\n- `babylonFileLoader.sideEffects.test.ts` (A) — imports only the loader wrapper; asserts `UniversalCamera`/`PointLight`/`StandardMaterial` parse and `diffuseTexture` is created.\n- `createDepthStencilTexture.registration.test.ts` (B) — imports the pure `AbstractEngine` + `renderTargetTexture`; asserts `createDepthStencilTexture` is installed.\n- `depthRenderer.shaders.test.ts` (C) — imports `core/Rendering/depthRenderer`; asserts both GLSL and WGSL depth shaders are in the ShaderStore.\n\nEach test was verified red-without-fix / green-with-fix.\n\n## Validation\n- 3 new tests pass; broader Loading/Rendering/Engines suites: 145 pass + 1 expected fail, no regressions.\n- `prettier` clean; ESLint 0 errors (`no-side-effect-imports-in-pure` does not fire — `.pure` files only import other `.pure` registrations).\n- Tree-shaking: **all 16 checks pass**; side-effects manifest regenerated (`Loading.json` gains `bare-import`) and `sideEffects` in sync.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.pure.ts",
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.pure.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderer.pure.ts",
+                    "packages/dev/core/test/unit/Engines/createDepthStencilTexture.registration.test.ts",
+                    "packages/dev/core/test/unit/Loading/babylonFileLoader.sideEffects.test.ts",
+                    "packages/dev/core/test/unit/Rendering/depthRenderer.shaders.test.ts",
+                    "scripts/treeshaking/side-effects-manifest/core/Loading.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18704",
+                "title": "Fix NodeMaterial overlighting under HDR from default image-processing config",
+                "description": "## Context\r\n\r\nReported on the forum: [Regression between 8.55.3 and 8.55.4 – shader is overlighted](https://forum.babylonjs.com/t/regression-between-8-55-3-and-8-55-4-shader-is-overlighted/63802) \r\n\r\nA NodeMaterial water shader renders **overlighted** starting from 8.55.4, but only when the `DefaultRenderingPipeline` HDR flag is enabled.\r\n\r\n## Root cause\r\n\r\nThe regression comes from #18126, which fixed `serializeAsImageProcessingConfiguration` so that `_imageProcessingConfiguration` is actually serialized/deserialized. NodeMaterial uses `ImageProcessingMixin`, so from 8.55.4 it restores its **own** image-processing configuration from the snippet.\r\n\r\nThe catch: existing Node Material snippets persisted a configuration that only holds **default** values (the author never intentionally customized image processing — it just got persisted once serialization started working). On parse, the material is now detached onto a **private** configuration instead of sharing the scene's.\r\n\r\nThe HDR `DefaultRenderingPipeline` sets `applyByPostProcess = true` on the **scene** image-processing configuration only. A material with its own detached config keeps `applyByPostProcess = false`, so image processing (gamma/tone mapping) is applied **in the material shader** and then **again** by the full-screen `ImageProcessingPostProcess` → double encoding → overlighted, washed-out output. Without the HDR flag there is no second pass, which is exactly why the HDR flag is the trigger.\r\n\r\n## Fix\r\n\r\nDuring parse, if the serialized image-processing configuration only holds default values, keep the **scene** configuration (do not detach). Only a genuinely customized configuration is honored as a detached private config, so the rare, code-driven per-material image-processing feature still works.\r\n\r\nThis handles both parse paths:\r\n- the direct `parseSerializedObject` path, and\r\n- the `NodeMaterial.Parse` path, which first runs `SerializationHelper.Parse` (already deserializing the config into a detached instance) and then `parseSerializedObject` — the actual path used when loading snippets, and the one that had to be covered explicitly.\r\n\r\nThe observer-lifecycle handling added in #18435 is preserved.\r\n\r\n## Workaround (for users on affected versions)\r\n\r\n```js\r\nmat.imageProcessingConfiguration = scene.imageProcessingConfiguration;\r\n```\r\n\r\n## Tests\r\n\r\nAdded unit tests in `babylon.nodeMaterials.parse.test.ts` covering both parse paths:\r\n- a serialized **default** config resolves to the scene configuration (regression guard — fails without this fix),\r\n- a genuinely **customized** config (e.g. `exposure = 2`) is honored as a detached private config.\r\n\r\nExisting image-processing observer-leak tests still pass.\r\n\r\n> [!NOTE]\r\n> No visualization test is included in this PR — the fix is guarded deterministically by the unit tests above. Happy to add a Playwright HDR reference test if reviewers would like one.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.pure.ts",
+                    "packages/dev/core/test/unit/Materials/Node/babylon.nodeMaterials.parse.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18716",
+                "title": "Physics Controller shape options",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/characterController.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18715",
+                "title": "Preserve FBX skeletal animations through GLB round trips",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\nAfter loading an FBX, exporting it to GLB, and loading it again, skeletal animations could disappear. The FBX loader created bones but did not connect them to the scene nodes that the glTF exporter needs.\n\n## Changes\n- Connect imported FBX bones to their matching scene nodes while preserving scale compensation.\n- Export bone animations through those nodes and avoid duplicate animation channels.\n- Add FBX loader tests that directly verify linked bone nodes, animation targets, and shared-node deduplication after import.\n\n## Validation\n- `npm run format:check`\n- `npm run lint:check`\n- `npx vitest run --project=unit packages/dev/loaders/test/unit/FBX`",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/loaders/src/FBX/fbxFileLoader.pure.ts",
+                    "packages/dev/loaders/test/unit/FBX/skeletalAnimation.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "18713",
+                "title": "Fix ES6 build failure when checkout path contains \"src\"",
+                "description": "## Problem\n\nThe ES6 build (`build-tools -c transform-paths`, run after `tsc`) rewrites path-alias imports such as `shared-ui-components/fluent/hoc/fluentToolWrapper` into real relative paths for the emitted output. That rewrite could produce a broken relative import — one that escapes the package — causing the build to fail, but only for some checkout locations.\n\nThe failure is deterministic and reproducible: cloning the repo into a directory whose path contains a segment ending in `src` (e.g. `.../babylonjs-src/...`) fails every time, while an otherwise-identical checkout in a path without `src` builds fine.\n\n## Root cause\n\nIn `packages/dev/buildTools/src/pathTransform.ts`, `GetPathForComputed` anchored the rewritten import at the source file's own `src` directory using a raw substring search:\n\n```js\nconst generatedIndex = sourceFilename.indexOf(\"src\");\n```\n\n`indexOf(\"src\")` matches the **first** occurrence of the substring `src` anywhere in the absolute path. When an ancestor directory name merely contains `src` (for example a checkout under `.../babylonjs-src/...`), it matches inside that ancestor name instead of the package's real `.../src/` segment. It then builds an absolute path from the wrong boundary, and the subsequent relative-path calculation emits an import that points outside the package — breaking module resolution.\n\nSo the emitted output depended on where the repository happened to sit on disk, which is a bug: the transform should be location-independent.\n\n## Fix\n\nMatch `src` as a whole path segment (`/src/`) rather than a raw substring, so ancestor directory names that merely contain `src` are ignored. This also removes a dead, buggy duplicate branch (the old `else` operated on the wrong variable and was unreachable).\n\n```js\nconst normalized = sourceFilename.split(path.sep).join(path.posix.sep);\nconst srcSegment = normalized.lastIndexOf(\"/src/\");\nif (srcSegment === -1) return computedPath;\nreturn normalized.substring(0, srcSegment) + \"/src/\" + computedPath;\n```\n\nWith this change the emitted import is identical regardless of the checkout location, while genuine `src`-anchored source files still resolve correctly. Separators are normalized to posix so the segment match also works on Windows.\n\n## Testing\n\n- Added `packages/tools/tests/test/unit/pathTransform.test.ts` — a regression test that pins the segment-anchoring behavior and asserts the output is independent of checkout depth/location (4 tests, all pass).\n- `@dev/build-tools` compiles cleanly; the edited region is lint- and format-clean.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/pathTransform.ts",
+                    "packages/tools/tests/test/unit/pathTransform.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18712",
+                "title": "fix(inspector): correct malformed gif.worker.js CDN URL",
+                "description": "## Problem\n\nOpening the **Tools** tab in the Inspector (e.g. in the Playground) throws:\n\n```\nLoadFileError: Error status: 400 - Unable to load\nhttps://cdn.jsdelivr.net/gh//terikon/gif.js.optimized@0.1.6/dist/gif.worker.js\n```\n\nReported on the forum: https://forum.babylonjs.com/t/error-loading-inspector-tools-in-the-babylon-js-playground/63822\n\n## Root cause\n\nThe GIF capture worker URL had a **double slash** after `gh` (`gh//terikon`). jsDelivr's GitHub endpoint rejects the empty path segment with HTTP 400, so the Tools tab throws as soon as it's opened.\n\nVerified:\n- `gh//terikon/...` → **400**\n- `gh/terikon/...` → **200** ✅\n\n## Fix\n\nRemoved the extra slash in both the new and legacy inspectors:\n- `packages/dev/inspector-v2/src/components/tools/capture/gifCaptureTool.tsx`\n- `packages/dev/inspector/src/components/actionTabs/tabs/toolsTabComponent.tsx`",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/tools/capture/gifCaptureTool.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/toolsTabComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18709",
+                "title": "Coerce native dynamic texture dimensions before allocation",
+                "description": "## Summary\n\n- coerce NativeEngine dynamic texture dimensions to integers before allocating the initial RGBA buffer\n- add a focused regression test for fractional canvas dimensions\n\nHolographicSlate requests a 3379.2 x 102.4 title texture. The previous code allocated from the fractional product, then NativeEngine truncated each dimension independently, leaving the buffer 5,488 bytes larger than the declared texture. Browser canvas dimensions are integer-valued, so coercing once before allocation keeps both sides consistent.\n\n## Validation\n\n- `npx vitest run packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts`\n- `npx prettier --check packages/dev/core/src/Engines/thinNativeEngine.pure.ts packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts`\n- `npx eslint --quiet packages/dev/core/src/Engines/thinNativeEngine.pure.ts packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts`\n- BabylonNative GUI Slate on Metal/bgfx proceeds through rendering and screenshot comparison instead of throwing the raw-texture size error",
+                "author": {
+                    "name": "matthargett",
+                    "url": "https://github.com/matthargett"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/thinNativeEngine.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18707",
+                "title": "Fix: GaussianSplattingStream misclassified as an ordinary mesh, causing severe rendering slowdowns",
+                "description": "`GaussianSplattingStream` overrides `getClassName()` to return `\"GaussianSplattingStream\"` rather than `\"GaussianSplattingMesh\"`, so it stays distinguishable from its base class. But several rendering systems in core detect Gaussian Splatting meshes via the literal check `getClassName() === \"GaussianSplattingMesh\"` — needed because these meshes store a splat index in `position.z` instead of world-space Z, which a generic pass will misread as real geometry. Since the check didn't recognize `\"GaussianSplattingStream\"`, streamed splat meshes slipped through every one of these guards and got treated like ordinary meshes.\r\n\r\nWorst offender: the **Geometry Buffer Renderer** rendered every streamed splat mesh into its G-buffer every frame with the generic shader on garbage vertex data — an extra, expensive draw call, active whenever a `GeometryBufferRenderer` exists in the scene (IBL shadows, SSAO, SSR, motion blur). Depth pre-pass, GPU picking, IBL voxelization, the GS node material block, and snapshot rendering had the same blind spot. Root-caused via a PIX capture on Windows/D3D12 showing this extra draw running every frame, even with a static camera.\r\n\r\n### Fix\r\n\r\nThis PR added a shared helper `IsGaussianSplattingClassName(className)` (`gaussianSplattingMesh.pure.ts`), used at all 9 affected call sites: geometry buffer renderer, depth renderer (2), GPU picker (4), IBL voxel renderer (5), IBL shadow pipeline (5), GS node material block, snapshot rendering helper, and the Viewer package's own independent copy of the same check (`tools/viewer/src/viewer.ts`, gating auto-SSAO).\r\n\r\n### When it triggers\r\n\r\nAny scene with a `GaussianSplattingStream` mesh + an active `GeometryBufferRenderer`.\r\n\r\n### Impact\r\n\r\n| Platform | Before | After |\r\n|---|---|---|\r\n| Windows / WebGPU / D3D12 | ~1.3 FPS | more than 60 FPS (capped by VSync) |\r\n| Mac / WebGPU / Metal | ~30 FPS | ~80 FPS |\r\n\r\n### Additional\r\n\r\nIn addition, we change the format of the covariance textures to FP16 to align with the non-stream Gsplat rendering path, which is already proved sufficient in the non-stream path, and saves video memory footprint.",
+                "author": {
+                    "name": "raymondyfei",
+                    "url": "https://github.com/raymondyfei"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock.pure.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.pure.ts",
+                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.pure.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.pure.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.pure.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.pure.ts",
+                    "packages/dev/loaders/src/SPLAT/gaussianSplattingWorkBuffer.ts",
+                    "packages/tools/viewer/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18708",
+                "title": "Fix: IBL shadow procedural textures keep rendering every frame after being toggled off",
+                "description": "`IblShadowsRenderPipeline` disables its three passes (voxel tracing, spatial blur, accumulation) via each pass's `enabled` flag when shadows have no visible effect (no eligible caster/receiver). But each pass's `_outputTexture` (and, for accumulation, its two history copies) is a `ProceduralTexture` registered with the scene's generic per-frame procedural-texture refresh loop, which is entirely independent of the pass's own `enabled` flag. So even while a pass is toggled off, its texture(s) kept re-rendering every frame, including the associated texture-view creation cost, for as long as the pipeline existed.\r\n\r\n### Fix\r\n\r\nTurned `enabled` into a getter/setter on each of the three passes (`iblShadowsAccumulationPass.ts`, `iblShadowsSpatialBlurPass.ts`, `iblShadowsVoxelTracingPass.ts`). The setter now also sets `isEnabled` directly on the underlying `ProceduralTexture`(s), so the scene's generic refresh loop skips them while the pass is toggled off, rather than relying solely on each pass's own `_render()` gate.\r\n\r\n### When it triggers\r\n\r\nAny scene where the IBL shadows pipeline exists but is currently toggled off (no eligible shadow caster/receiver), the wasted per-frame texture rendering ran for the lifetime of the pipeline.\r\n",
+                "author": {
+                    "name": "raymondyfei",
+                    "url": "https://github.com/raymondyfei"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsAccumulationPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsSpatialBlurPass.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelTracingPass.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18705",
+                "title": "Fix world region crash",
+                "description": "https://forum.babylonjs.com/t/havok-crash-in-raycast-worldregion-floatingorigin/63815",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/test/unit/Physics/havokPlugin.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18703",
+                "title": "Fix Line.connectedControl with adaptive scaling",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\nFixes `GUI.Line.connectedControl` when a fullscreen `AdvancedDynamicTexture` adapts to the engine hardware scaling level.\r\n\r\nForum report: https://forum.babylonjs.com/t/63804  \r\nDeterministic repro: https://playground.babylonjs.com/#NX7KQL#0\r\n\r\nThe connected control center is expressed in global GUI layout coordinates, while the line endpoint is drawn relative to the line parent. Adaptive scaling gives the root container a nonzero layout origin, causing that origin to be applied twice. The fix converts the connected center to parent-local coordinates and makes the current parent measurement available before the line's first measurement pass.\r\n\r\nAdds regression coverage for both coordinate conversion and first-layout behavior.\r\n",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/line.pure.ts",
+                    "packages/dev/gui/test/unit/line.test.ts",
+                    "packages/dev/gui/test/unit/lineLayout.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18700",
+                "title": "fix(inspector-v2): don't flood scene explorer with per-frame active camera notifications",
+                "description": "### Issue\n\nWith Inspector V2 open, any scene where `scene.activeCamera` is transiently reassigned during rendering — e.g. a `RenderTargetTexture` with its own `activeCamera` and `REFRESHRATE_RENDER_ONEVERYFRAME` — floods the browser console with periodic React warnings:\n\n```\nMaximum update depth exceeded. This can happen when a component calls setState inside useEffect...\n```\n\n### Cause\n\nThe scene explorer's camera entity command (\"Activate and Attach Controls\") notifies its `onChange` observable unconditionally on every `scene.onActiveCameraChanged`. Render target rendering swaps `scene.activeCamera` to the RTT camera and back each frame, so the observable fires (at least) twice per frame, and each notification setStates in the scene explorer's aside `useEffect` — a per-frame React update loop even though nothing user-visible changed.\n\n### Fix\n\nDefer the active-state check to a microtask so synchronous mid-frame swaps have settled by the time it runs, and only notify when the camera's effective active state (`getActiveCamera() === camera`) actually changed. Transient RTT swaps settle back to the same camera within the same task, so they no longer produce any notifications; genuine camera activations still notify (now at most once per change).\n\nThe frame graph activation path now goes through the same guarded notify so the cached state can't go stale.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+                "author": {
+                    "name": "marns",
+                    "url": "https://github.com/marns"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/services/panes/scene/nodeExplorerService.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18699",
+                "title": "Fix physics plugin not releasing empty Havok world regions",
+                "description": "Hey there,\r\n\r\nI noticed that havok world region count tends to grow quite a lot, and found some gaps in region removal.\r\n\r\nSo this PR adds a dedicated helper to accumulate and flush regions to be removed.\r\n\r\nLet me know what you think!\r\n\r\n\r\nDisclaimer: the patch was written by Codex, but I reviewed it myself.",
+                "author": {
+                    "name": "BarthPaleologue",
+                    "url": "https://github.com/BarthPaleologue"
+                },
+                "files": [
+                    "eslint.config.mjs",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/test/unit/Physics/havokPlugin.test.ts",
+                    "packages/tools/eslintBabylonPlugin/src/index.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18695",
+                "title": "feat(flowGraph): edit live scenes from the Flow Graph Editor + Inspector",
+                "description": "## Motivation\n\nThe Flow Graph Editor requires a working scene for context, but today it only operates on a Playground/snippet scene it mints itself. That makes it impractical to inspect or tweak a flow graph that belongs to a real, running application. This PR connects a **live host `Scene`** to the editor and surfaces flow graphs in **inspector-v2** so developers can open and edit the graphs their app is actually running.\n\n## What's included\n\n### Core (`packages/dev/core/src/FlowGraph`)\n- `FlowGraph.edit(config?)` + static `FlowGraph.EditorURL`, mirroring the proven `nodeGeometry.ts` launch pattern, so a developer can do `myFlowGraph.edit()` to open the editor bound to their own graph/scene.\n- `FlowGraphCoordinator.OnFlowGraphAddedObservable` / `OnFlowGraphRemovedObservable` so the inspector's flow-graph list can live-refresh as graphs are created/removed/disposed. Covered by new unit tests (8/8 pass).\n\n### Editor — attach to a host scene (`packages/tools/flowGraphEditor`)\n- `SceneContext` gains a readonly `ownsScene` flag. When the editor is launched with a `hostScene`, the preview pane **attaches to that scene** instead of creating its own Engine+Scene, and never disposes the borrowed scene.\n- `sceneSource` union widened with `\"host\"`; host mode shows an informational banner instead of a 3D viewport (a foreign scene bound to the app's own engine/canvas cannot be re-rendered on the editor's engine).\n\n### Inspector-v2 (`packages/dev/inspector-v2`)\n- New **\"Flow Graphs\"** scene-explorer section listing every graph across the scene's coordinators, with an **\"Edit Graph\"** command.\n- New properties section (predicate: `instanceof FlowGraph`) with an \"Edit Graph\" button.\n- Both open the editor bound to the live scene via `flowGraph.edit({ flowGraphEditorConfig: { hostScene: flowGraph.scene } })`.\n\n## Host-safety fixes (from a second review pass)\n\nThe editor was designed around owning its scene/engine, so a few paths would have mutated the live application when pointed at a host graph. All are now guarded:\n\n1. **Engine timing** — `_applyEngineTimeScale` patches `engine.getDeltaTime` / `customAnimationFrameRequester` with no restore path. It now early-returns in host mode, so the Speed control can never break the live app's render loop.\n2. **Stopping the live graph** — `set flowGraph` no longer calls `flowGraph.stop()` on a host graph (either the incoming graph or a swapped-out one), so opening/closing the editor doesn't halt a running application's graph. `hostScene` is now assigned before the coordinator/graph load path runs so the guard sees it.\n3. **`createContext` wrapper leak** — the editor wraps the graph's `createContext`; it's now restored on editor teardown (`restoreLiveGraph()`), so the wrapper never outlives the editor and re-injects editor snapshot data into contexts the app creates later.\n\n## Known caveats\n- **Host preview is an info banner, not a live 3D viewport** — a scene bound to the app's engine/canvas can't be re-rendered on the editor's own engine.\n- **Editing a live graph is the user's call** — the editor no longer stops it, but authoring on a running graph is inherently live.\n- **`Edit` lazy-loads the editor UMD** from `FlowGraph.EditorURL` (CDN), so it needs network at runtime — same model as the node editors.\n\n## Validation\n- `flowGraphEditor` + dev packages typecheck clean.\n- ESLint + Prettier clean on all changed files.\n- 8/8 `flowGraphCoordinator` unit tests pass (3 new for the observables).\n- Tree-shaking manifest regeneration (precommit) produced **no net diff** — the core additions mirror `nodeGeometry.ts` and don't perturb side-effect classification.\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphCoordinator.test.ts",
+                    "packages/dev/inspector-v2/src/components/properties/flowGraph/flowGraphProperties.tsx",
+                    "packages/dev/inspector-v2/src/inspector.tsx",
+                    "packages/dev/inspector-v2/src/misc/flowGraphEditor.ts",
+                    "packages/dev/inspector-v2/src/services/panes/properties/flowGraphPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/scene/defaultSectionsMetadata.ts",
+                    "packages/dev/inspector-v2/src/services/panes/scene/flowGraphExplorerService.tsx",
+                    "packages/tools/flowGraphEditor/src/components/preview/scenePreviewComponent.tsx",
+                    "packages/tools/flowGraphEditor/src/flowGraphEditor.ts",
+                    "packages/tools/flowGraphEditor/src/globalState.ts",
+                    "packages/tools/flowGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/flowGraphEditor/src/sceneContext.ts",
+                    "packages/tools/flowGraphEditor/src/services/globalStateService.ts"
+                ],
+                "tags": []
+            }
+        ],
         "9.17.0": [
             {
                 "pr": "18696",

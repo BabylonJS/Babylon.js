@@ -19,6 +19,7 @@ import { LiteTranscoder_UASTC_RGBA_SRGB } from "./Transcoders/liteTranscoder_UAS
 import { LiteTranscoder_UASTC_R8_UNORM } from "./Transcoders/liteTranscoder_UASTC_R8_UNORM";
 import { LiteTranscoder_UASTC_RG8_UNORM } from "./Transcoders/liteTranscoder_UASTC_RG8_UNORM";
 import { MSCTranscoder } from "./Transcoders/mscTranscoder";
+import { UncompressedRGBA32Transcoder } from "./Transcoders/uncompressedRGBA32Transcoder";
 import { ZSTDDecoder } from "./zstddec";
 import { TranscodeDecisionTree } from "./transcodeDecisionTree";
 
@@ -89,15 +90,25 @@ export class KTX2Decoder {
 
         const mipmaps: Array<KTX2.IMipmap> = [];
         const dataPromises: Array<Promise<Uint8Array | null>> = [];
+        const layerCount = Math.max(kfr.header.layerCount, 1);
         const decodedData: KTX2.IDecodedData = {
             width: 0,
             height: 0,
             transcodedFormat: engineFormat,
             mipmaps,
+            layerCount,
             isInGammaSpace: kfr.isInGammaSpace,
             hasAlpha: kfr.hasAlpha,
             transcoderName: transcoder.getName(),
         };
+
+        // The image descriptors are only read when the file carries supercompression global data, so a file that
+        // declares BasisLZ without any would otherwise fail deep in the loop below with an opaque type error.
+        const imageDescs = kfr.supercompressionGlobalData.imageDescs;
+
+        if (kfr.header.supercompressionScheme === SupercompressionScheme.BasisLZ && !imageDescs) {
+            throw new Error("Invalid KTX2 file: BasisLZ supercompression is declared but the file has no supercompression global data.");
+        }
 
         let firstImageDescIndex = 0;
 
@@ -110,18 +121,26 @@ export class KTX2Decoder {
             const levelHeight = Math.floor(height / (1 << level)) || 1;
 
             const numImagesInLevel = kfr.header.faceCount; // note that cubemap are not supported yet (see KTX2FileReader), so faceCount == 1
-            const levelImageByteLength = ((levelWidth + 3) >> 2) * ((levelHeight + 3) >> 2) * kfr.dfdBlock.bytesPlane[0];
+            // The texel block dimension is 4x4 for the block-compressed source formats and 1x1 for the uncompressed ones,
+            // so this covers both without special casing.
+            const blockWidth = kfr.dfdBlock.texelBlockDimension.x;
+            const blockHeight = kfr.dfdBlock.texelBlockDimension.y;
+            const levelImageByteLength = Math.ceil(levelWidth / blockWidth) * Math.ceil(levelHeight / blockHeight) * kfr.dfdBlock.bytesPlane[0];
 
             const levelUncompressedByteLength = kfr.levels[level].uncompressedByteLength;
 
-            let levelDataBuffer: ArrayBufferLike | ArrayBufferView = kfr.data.buffer;
+            let levelDataBuffer: ArrayBufferLike = kfr.data.buffer;
 
             let levelDataOffset = kfr.levels[level].byteOffset + kfr.data.byteOffset;
             let imageOffsetInLevel = 0;
 
             if (kfr.header.supercompressionScheme === SupercompressionScheme.ZStandard) {
-                levelDataBuffer = this._zstdDecoder.decode(new Uint8Array(levelDataBuffer, levelDataOffset, kfr.levels[level].byteLength), levelUncompressedByteLength);
-                levelDataOffset = 0;
+                // The decompressed level is a view that does not necessarily start at the beginning of its backing
+                // buffer, so keep the buffer and its offset separately. Passing the view itself to the Uint8Array
+                // constructor below would silently copy the whole level and ignore the offset/length arguments.
+                const decompressedLevel = this._zstdDecoder.decode(new Uint8Array(levelDataBuffer, levelDataOffset, kfr.levels[level].byteLength), levelUncompressedByteLength);
+                levelDataBuffer = decompressedLevel.buffer;
+                levelDataOffset = decompressedLevel.byteOffset;
             }
 
             if (level === 0) {
@@ -129,47 +148,53 @@ export class KTX2Decoder {
                 decodedData.height = roundToMultiple4 ? (levelHeight + 3) & ~3 : levelHeight;
             }
 
-            for (let imageIndex = 0; imageIndex < numImagesInLevel; imageIndex++) {
-                let encodedData: Uint8Array;
-                let imageDesc: IKTX2_ImageDesc | null = null;
+            // Within a level, images are stored layer-major: for each layer, for each face, for each z-slice.
+            // Iterating in that same order keeps both the BasisLZ image descriptor index and the sequential
+            // byte offset used by the other supercompression schemes in step with the file layout.
+            for (let layerIndex = 0; layerIndex < layerCount; layerIndex++) {
+                for (let imageIndex = 0; imageIndex < numImagesInLevel; imageIndex++) {
+                    let encodedData: Uint8Array;
+                    let imageDesc: IKTX2_ImageDesc | null = null;
 
-                if (kfr.header.supercompressionScheme === SupercompressionScheme.BasisLZ) {
-                    imageDesc = kfr.supercompressionGlobalData.imageDescs![firstImageDescIndex + imageIndex];
+                    if (kfr.header.supercompressionScheme === SupercompressionScheme.BasisLZ) {
+                        imageDesc = imageDescs![firstImageDescIndex + layerIndex * numImagesInLevel + imageIndex];
 
-                    encodedData = new Uint8Array(
-                        levelDataBuffer as ArrayBuffer,
-                        levelDataOffset + imageDesc.rgbSliceByteOffset,
-                        imageDesc.rgbSliceByteLength + imageDesc.alphaSliceByteLength
-                    );
-                } else {
-                    encodedData = new Uint8Array(levelDataBuffer as ArrayBuffer, levelDataOffset + imageOffsetInLevel, levelImageByteLength);
+                        encodedData = new Uint8Array(
+                            levelDataBuffer,
+                            levelDataOffset + imageDesc.rgbSliceByteOffset,
+                            imageDesc.rgbSliceByteLength + imageDesc.alphaSliceByteLength
+                        );
+                    } else {
+                        encodedData = new Uint8Array(levelDataBuffer, levelDataOffset + imageOffsetInLevel, levelImageByteLength);
 
-                    imageOffsetInLevel += levelImageByteLength;
+                        imageOffsetInLevel += levelImageByteLength;
+                    }
+
+                    const mipmap: KTX2.IMipmap = {
+                        data: null,
+                        width: levelWidth,
+                        height: levelHeight,
+                        layerIndex,
+                    };
+
+                    const transcodedData = transcoder
+                        .transcode(srcTexFormat, transcodeFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, kfr, imageDesc, encodedData)
+                        // eslint-disable-next-line github/no-then
+                        .then((data) => {
+                            mipmap.data = data;
+                            return data;
+                        })
+                        // eslint-disable-next-line github/no-then
+                        .catch((reason) => {
+                            decodedData.errors = decodedData.errors ?? "";
+                            decodedData.errors += reason + "\n" + reason.stack + "\n";
+                            return null;
+                        });
+
+                    dataPromises.push(transcodedData);
+
+                    mipmaps.push(mipmap);
                 }
-
-                const mipmap: KTX2.IMipmap = {
-                    data: null,
-                    width: levelWidth,
-                    height: levelHeight,
-                };
-
-                const transcodedData = transcoder
-                    .transcode(srcTexFormat, transcodeFormat, level, levelWidth, levelHeight, levelUncompressedByteLength, kfr, imageDesc, encodedData)
-                    // eslint-disable-next-line github/no-then
-                    .then((data) => {
-                        mipmap.data = data;
-                        return data;
-                    })
-                    // eslint-disable-next-line github/no-then
-                    .catch((reason) => {
-                        decodedData.errors = decodedData.errors ?? "";
-                        decodedData.errors += reason + "\n" + reason.stack + "\n";
-                        return null;
-                    });
-
-                dataPromises.push(transcodedData);
-
-                mipmaps.push(mipmap);
             }
         }
 
@@ -179,6 +204,7 @@ export class KTX2Decoder {
 }
 
 // Put in the order you want the transcoders to be used in priority
+TranscoderManager.RegisterTranscoder(UncompressedRGBA32Transcoder);
 TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_ASTC);
 TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_BC7);
 TranscoderManager.RegisterTranscoder(LiteTranscoder_UASTC_RGBA_UNORM);

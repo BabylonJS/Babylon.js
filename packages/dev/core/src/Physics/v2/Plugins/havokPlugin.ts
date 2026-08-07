@@ -332,6 +332,12 @@ export interface HavokPluginParameters {
      */
     maxQueryCollectorHits?: number;
     /**
+     * Whether to disable Havok world regions when floating origin mode is enabled.
+     * Set this when the application manages physics precision through its own rebasing system.
+     * Default is false.
+     */
+    disableWorldRegions?: boolean;
+    /**
      * Radius of each floating origin world region.
      * Bodies within this radius of a world region's origin will use that world.
      * Bodies created outside existing regions will create a new region.
@@ -403,6 +409,18 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Bodies within this radius of a world region's origin will use that world.
      */
     private _floatingOriginWorldRadius: number = 100000;
+    /**
+     * Whether Havok world regions are disabled.
+     */
+    private _disableWorldRegions: boolean = false;
+
+    /**
+     * Whether floating origin world regions are enabled for the current scene.
+     * @returns true when the scene uses floating origin mode and world regions are not disabled
+     */
+    private _areFloatingOriginWorldRegionsEnabled(): boolean {
+        return !this._disableWorldRegions && !!FloatingOriginCurrentScene.getScene()?.floatingOriginMode;
+    }
 
     /**
      * Finds an existing world region that contains the given world position,
@@ -417,8 +435,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     private _getOrCreateWorldRegion(worldPosition: Vector3): PhysicsWorldRegion {
         // Check if floating origin mode is enabled
-        const scene = FloatingOriginCurrentScene.getScene();
-        if (!scene?.floatingOriginMode) {
+        if (!this._areFloatingOriginWorldRegionsEnabled()) {
             // When floating origin mode is disabled, use the default world region
             return this._worldRegions[0];
         }
@@ -533,8 +550,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @returns null if no existing region contains it (does NOT create a new one).
      */
     private _findExistingRegion(worldPosition: Vector3): PhysicsWorldRegion | null {
-        const scene = FloatingOriginCurrentScene.getScene();
-        if (!scene?.floatingOriginMode) {
+        if (!this._areFloatingOriginWorldRegionsEnabled()) {
             return this._worldRegions[0];
         }
 
@@ -612,6 +628,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
         this._queryCollector = this._hknp.HP_QueryCollector_Create(1)[1];
         this.setMaxQueryCollectorHits(parameters.maxQueryCollectorHits ?? 1);
+        this._disableWorldRegions = parameters.disableWorldRegions ?? false;
         this._floatingOriginWorldRadius = parameters.floatingOriginWorldRadius ?? 100000;
     }
     /**
@@ -727,7 +744,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         // Re-region bodies that have moved outside their current world region
         // BEFORE pre-step and stepping, so the body participates in the correct
         // world's step and its body buffer transform is valid when sync reads it.
-        if (this._worldRegions.length > 1 || FloatingOriginCurrentScene.getScene()?.floatingOriginMode) {
+        if (this._areFloatingOriginWorldRegionsEnabled()) {
             for (const physicsBody of physicsBodies) {
                 if (physicsBody._pluginDataInstances.length > 0) {
                     for (const instance of physicsBody._pluginDataInstances) {
@@ -1587,7 +1604,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 // the transform node) immediately land in the correct region with
                 // correct local coordinates, avoiding a one-frame precision glitch.
                 const pluginData = body._pluginData;
-                if (pluginData.worldRegion && (this._worldRegions.length > 1 || FloatingOriginCurrentScene.getScene()?.floatingOriginMode)) {
+                if (pluginData.worldRegion && this._areFloatingOriginWorldRegionsEnabled()) {
                     // Get world position of the node
                     const worldPos = TmpVectors.Vector3[3];
                     if (node.parent) {
@@ -2599,6 +2616,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             raycastResult.reset(from, to);
         }
 
+        // If there are no world regions (e.g. after dispose(), which releases every world and clears the array),
+        // there is nothing valid to cast against. Bail out with an empty (no-hit) result rather than dereferencing
+        // an undefined region or using a stale worldRegion from ignoreBody that points at an already-released world.
+        if (this._worldRegions.length === 0) {
+            return;
+        }
+
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query?.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
         const offset = worldRegion.floatingOrigin;
@@ -2663,6 +2687,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         result.reset();
 
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+        if (this._worldRegions.length === 0) {
+            return;
+        }
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
         const offset = worldRegion.floatingOrigin;
@@ -2690,6 +2717,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         hitShapeResult.reset();
         const shapeId = query.shape._pluginData;
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+        if (this._worldRegions.length === 0) {
+            return;
+        }
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
         const offset = worldRegion.floatingOrigin;
@@ -2721,6 +2751,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
         const shapeId = query.shape._pluginData;
         const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+        if (this._worldRegions.length === 0) {
+            return;
+        }
         // Use the ignored body's world region if available, otherwise use default region
         const worldRegion = query.ignoreBody?._pluginData?.worldRegion ?? this._worldRegions[0];
         const offset = worldRegion.floatingOrigin;

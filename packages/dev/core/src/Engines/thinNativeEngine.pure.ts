@@ -1731,10 +1731,10 @@ export class ThinNativeEngine extends ThinEngine {
     }
 
     public override createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
-        // it's not possible to create 0x0 texture sized. Many bgfx methods assume texture size is at least 1x1(best case).
-        // Worst case is getting a crash/assert.
-        width = Math.max(width, 1);
-        height = Math.max(height, 1);
+        // Canvas dimensions are integral in browsers. Coerce before allocating so the native dimensions and byte length agree.
+        // Keep at least 1x1 because many bgfx methods assume a non-zero texture size.
+        width = Math.max(Math.floor(width), 1);
+        height = Math.max(Math.floor(height), 1);
         return this.createRawTexture(new Uint8Array(width * height * 4), width, height, Constants.TEXTUREFORMAT_RGBA, false, false, samplingMode);
     }
 

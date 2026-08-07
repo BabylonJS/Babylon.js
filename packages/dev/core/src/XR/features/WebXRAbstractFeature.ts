@@ -146,6 +146,17 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     }
 
     /**
+     * Disables future automatic attachment when a runtime capability required by the feature is unavailable.
+     * @param warning the specific warning explaining why the feature was disabled
+     * @returns false so feature attach implementations can return the result directly
+     */
+    protected _disableAutoAttach(warning: string): false {
+        Logger.Warn(warning);
+        this.disableAutoAttach = true;
+        return false;
+    }
+
+    /**
      * This is used to register callbacks that will automatically be removed when detach is called.
      * @param observable the observable to which the observer will be attached
      * @param callback the callback to register

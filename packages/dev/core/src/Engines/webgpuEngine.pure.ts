@@ -605,7 +605,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * Gets the number of samples used by the current render target
      * @returns the current sample count, or 1 when multisampling is disabled
      */
-    public override get currentSampleCount(): number {
+    public get currentSampleCount(): number {
         return this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount;
     }
 
@@ -1378,7 +1378,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
             this._alphaState.reset();
             this._resetAlphaMode();
-            this._cacheRenderPipeline.setAlphaToCoverage(this._alphaState.alphaToCoverage);
             this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
             this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState._alphaBlend, this._alphaState._numTargetEnabled);
 
@@ -1405,15 +1404,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public override getColorWrite(): boolean {
         return this._colorWriteLocal;
-    }
-
-    /**
-     * Enable or disable alpha-to-coverage
-     * @param enable defines the state to set
-     */
-    public override setAlphaToCoverage(enable: boolean): void {
-        super.setAlphaToCoverage(enable);
-        this._cacheRenderPipeline.setAlphaToCoverage(enable);
     }
 
     //------------------------------------------------------------------------------
@@ -3726,7 +3716,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this.setZOffsetUnits(zOffsetUnits);
 
         // Front face
-        const frontFace = reverseSide ? (this._currentRenderTarget ? 1 : 2) : this._currentRenderTarget ? 2 : 1;
+        // Render targets are drawn Y-flipped (see the InternalsUBO yFactor in _draw), so their triangle
+        // winding is reversed here to compensate and keep the same faces visible. XR projection-layer targets
+        // opt out of that flip (_disableEngineYFlip) because the compositor presents them directly, so they
+        // keep the main-framebuffer winding.
+        const invertYRenderTarget = !!this._currentRenderTarget && !(this._currentRenderTarget as WebGPURenderTargetWrapper)._disableEngineYFlip;
+        const frontFace = reverseSide ? (invertYRenderTarget ? 1 : 2) : invertYRenderTarget ? 2 : 1;
         if (this._depthCullingState.frontFace !== frontFace || force) {
             this._depthCullingState.frontFace = frontFace;
         }
@@ -3760,7 +3755,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         const webgpuPipelineContext = this._currentEffect!._pipelineContext as WebGPUPipelineContext;
 
-        this.bindUniformBufferBase(this._currentRenderTarget ? this._ubInvertY : this._ubDontInvertY, 0, WebGPUShaderProcessor.InternalsUBOName);
+        // Render targets are rendered Y-flipped (yFactor = -1) so a later-sampled RTT matches the WebGL
+        // texture-space convention. XR projection-layer targets (_disableEngineYFlip) are presented directly by
+        // the compositor and must be rendered upright, so they use the non-inverting UBO like the canvas.
+        const invertYRenderTarget = !!this._currentRenderTarget && !(this._currentRenderTarget as WebGPURenderTargetWrapper)._disableEngineYFlip;
+        this.bindUniformBufferBase(invertYRenderTarget ? this._ubInvertY : this._ubDontInvertY, 0, WebGPUShaderProcessor.InternalsUBOName);
 
         this._currentDrawContext.setVertexPulling(
             this._currentMaterialContext.useVertexPulling,
@@ -4024,7 +4023,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public override dispose(): void {
         this._isDisposed = true;
-        this.hideLoadingUI();
+        this.hideLoadingUI?.();
         this._timestampQuery.dispose();
         this._mainTexture?.destroy();
         this._depthTexture?.destroy();

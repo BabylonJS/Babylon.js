@@ -92,7 +92,7 @@ export function RegisterEnginesWebGPUExtensionsEngineCubeTexture(): void {
 
                 const gpuTextureWrapper = this._textureHelper.createGPUTextureForInternalTexture(texture, width, height);
 
-                this._textureHelper.updateCubeTextures(imageBitmaps, gpuTextureWrapper.underlyingResource!, width, height, gpuTextureWrapper.format, false, false, 0, 0);
+                this._textureHelper.updateCubeTextures(imageBitmaps, texture, width, height, gpuTextureWrapper.format, false, false, 0, 0);
 
                 if (!noMipmap) {
                     this._generateMipmaps(texture, this._uploadEncoder);

@@ -96,20 +96,25 @@ export class GaussianSplattingWorkBuffer {
     }
 
     /**
-     * Creates a 4-attachment MRT (centers F32 / covA F32 / covB F32 / colors U8) sized to the work buffer.
+     * Creates a 4-attachment MRT (centers F32 / covA / covB / colors U8) sized to the work buffer. covA/covB
+     * use HALF_FLOAT when the engine can render to it, matching the precision the non-streamed
+     * GaussianSplattingMesh path already uses for these same two textures (see
+     * `gaussianSplattingMeshBase.pure.ts`'s `createTextureFromDataF16` covA/covB textures); centers stays F32
+     * and colors stays U8 in both paths.
      * @param name MRT and attachment base name
      * @param disableClear when true, clearing is suppressed so renders accumulate (the decode buffer); when
      *   false the MRT clears to zero on each render (the temporary relayout buffer, so gaps stay zeroed)
      * @returns the created MRT
      */
     private _createMrt(name: string, disableClear: boolean): MultiRenderTarget {
+        const covType = this._scene.getEngine()._caps.textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
         const mrt = new MultiRenderTarget(
             name,
             { width: this._textureSize, height: this._textureSize },
             4,
             this._scene,
             {
-                types: [Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_FLOAT, Constants.TEXTURETYPE_UNSIGNED_BYTE],
+                types: [Constants.TEXTURETYPE_FLOAT, covType, covType, Constants.TEXTURETYPE_UNSIGNED_BYTE],
                 samplingModes: [
                     Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                     Constants.TEXTURE_NEAREST_SAMPLINGMODE,

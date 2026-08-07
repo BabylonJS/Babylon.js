@@ -1,6 +1,6 @@
 import { test, expect, Page } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
-import { ViewerElement } from "viewer/viewerElement";
+import { ViewerElement } from "viewer/full/viewerElement";
 
 // if running in the CI we need to use the babylon snapshot when loading the tools
 const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : "";

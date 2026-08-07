@@ -10,7 +10,7 @@ const devPackageMap = {
 };
 
 const commonConfig = {
-    input: "../../../tools/viewer/src/index.ts",
+    input: "../../../tools/viewer/src/full/index.ts",
     external: (id) => /^@babylonjs\/(core|loaders|materials)(\/|$)/.test(id),
 };
 
@@ -22,7 +22,7 @@ const liteCommonConfig = {
 const jsConfig = {
     ...commonConfig,
     output: {
-        dir: "lib",
+        dir: "lib/full",
         sourcemap: true,
         format: "es",
         exports: "named",
@@ -38,7 +38,7 @@ const jsConfig = {
 const dtsConfig = {
     ...commonConfig,
     output: {
-        file: "lib/index.d.ts",
+        file: "lib/full/index.d.ts",
         format: "es",
         paths: appendJsToExternalPaths,
     },

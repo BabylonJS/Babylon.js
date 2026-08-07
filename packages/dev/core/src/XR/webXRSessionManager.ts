@@ -10,7 +10,7 @@ import { type Viewport } from "../Maths/math.viewport";
 import { type WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { NativeXRLayerWrapper, NativeXRRenderTarget } from "./native/nativeXRRenderTarget";
 import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
-import { type IWebXRGraphicsBinding, WebXRWebGLGraphicsBinding, WebXRWebGPUGraphicsBinding } from "./webXRGraphicsBinding";
+import { type WebXRGraphicsBinding, WebXRWebGLGraphicsBinding, WebXRWebGPUGraphicsBinding } from "./webXRGraphicsBinding";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 
 /**
@@ -22,7 +22,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     private _referenceSpace: XRReferenceSpace;
     private _baseLayerWrapper: Nullable<WebXRLayerWrapper>;
     private _baseLayerRTTProvider: Nullable<WebXRLayerRenderTargetTextureProvider>;
-    private _graphicsBinding: Nullable<IWebXRGraphicsBinding> = null;
+    private _graphicsBinding: Nullable<WebXRGraphicsBinding> = null;
     private _xrNavigator: any;
     private _sessionMode: XRSessionMode;
     private _onEngineDisposedObserver: Nullable<Observer<AbstractEngine>>;
@@ -225,13 +225,11 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
 
     /**
      * Obtains the XR graphics binding for the current session, creating it lazily.
-     * This is the API-agnostic seam a future non-WebGL backend uses to provide its own binding
-     * (XRWebGLBinding vs a future XRGPUBinding); the XR features are migrated onto it in a later
-     * phase, so it is not consumed yet.
+     * This is the API-agnostic seam used by WebGL and WebGPU XR features to share a binding.
      * @returns the XR graphics binding for the current session
      * @internal
      */
-    public _getGraphicsBinding(): IWebXRGraphicsBinding {
+    public _getGraphicsBinding(): WebXRGraphicsBinding {
         if (!this._engine) {
             throw new Error("Cannot create the XR graphics binding: the engine has been disposed.");
         }

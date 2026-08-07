@@ -89,7 +89,7 @@
         "glTF/2.0/Extensions/MSFT_minecraftMesh.types.ts": ["declare-module"],
         "glTF/2.0/Extensions/MSFT_sRGBFactors.ts": ["top-level-call"],
         "glTF/2.0/Extensions/MSFT_sRGBFactors.types.ts": ["declare-module"],
-        "glTF/2.0/glTFLoader.ts": ["top-level-call"],
+        "glTF/2.0/glTFLoader.ts": ["bare-import", "top-level-call"],
         "glTF/2.0/glTFLoaderAnimation.ts": ["top-level-call"],
         "glTF/glTFFileLoader.ts": ["top-level-call"],
         "glTF/glTFFileLoader.types.ts": ["declare-module"]
