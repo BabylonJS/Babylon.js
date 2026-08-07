@@ -694,6 +694,10 @@ jobs:
       timeoutInMinutes: 30
       steps:
           - template: templates/checkout-with-tag-override.yml
+            parameters:
+                # Full history so the affected-files gate below can resolve the merge-base against
+                # origin/master (same reason the Build job checks out with fetchDepth 0).
+                fetchDepth: 0
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -701,6 +705,28 @@ jobs:
             retryCountOnTaskFailure: 1
             inputs:
                 version: "24.x"
+
+          # Gate: skip the (slow, single-worker) suite on PRs that don't touch anything it exercises,
+          # so it does not run on every Babylon.js build. Computed inline from the diff rather than from
+          # the Build job's AFFECTED_TAGS output, so this job need not wait on Build (~14 min). Scheduled
+          # and publish (BuildCompletion) runs always run the full suite. Fails open (runs) on git error.
+          - bash: |
+                set -uo pipefail
+                if [ "$(Build.Reason)" = "Schedule" ] || [ "$(Build.Reason)" = "BuildCompletion" ]; then
+                    echo "Scheduled/publish run — running conformance regardless of the diff."
+                    echo "##vso[task.setvariable variable=KHR_AFFECTED]true"
+                    exit 0
+                fi
+                git fetch origin master:refs/remotes/origin/master || true
+                AFFECTED=$(node scripts/computeKHRInteractivityAffected.mjs)
+                echo "KHR_interactivity conformance affected: $AFFECTED"
+                echo "##vso[task.setvariable variable=KHR_AFFECTED]$AFFECTED"
+            displayName: "Compute whether KHR_interactivity is affected"
+            continueOnError: true
+
+          - bash: echo "No KHR_interactivity-affecting files changed — skipping conformance suite."
+            displayName: "Skip — not affected"
+            condition: eq(variables['KHR_AFFECTED'], 'false')
 
           - template: templates/cache-steps.yml
             parameters:
@@ -711,6 +737,7 @@ jobs:
           # bumped revision automatically misses the cache instead of serving stale assets.
           - task: Cache@2
             displayName: "Cache KHR_interactivity assets"
+            condition: ne(variables['KHR_AFFECTED'], 'false')
             inputs:
                 key: 'khrassets | "$(Agent.OS)" | scripts/khr-interactivity-assets.json'
                 path: $(KHR_ASSETS_CACHE)
@@ -719,10 +746,12 @@ jobs:
                 npm install
                 npx playwright install --with-deps chromium
             displayName: "npm install && playwright install"
+            condition: ne(variables['KHR_AFFECTED'], 'false')
             retryCountOnTaskFailure: 1
 
           - script: node ./scripts/runKHRInteractivityAssetTests.mjs
             displayName: "run KHR_interactivity conformance tests"
+            condition: ne(variables['KHR_AFFECTED'], 'false')
             env:
                 CI: "true"
                 # Force Chrome. The shared Playwright config defaults to Firefox on CI, but the
@@ -733,7 +762,7 @@ jobs:
 
           - task: PublishTestResults@2
             displayName: "Publish KHR_interactivity conformance results"
-            condition: succeededOrFailed()
+            condition: and(succeededOrFailed(), ne(variables['KHR_AFFECTED'], 'false'))
             inputs:
                 testResultsFormat: JUnit
                 testResultsFiles: "./khr-interactivity-junit.xml"
@@ -741,7 +770,7 @@ jobs:
 
           - task: PublishPipelineArtifact@1
             displayName: "Publish conformance report"
-            condition: failed()
+            condition: and(failed(), ne(variables['KHR_AFFECTED'], 'false'))
             continueOnError: true
             inputs:
                 targetPath: "khr-interactivity-report"
