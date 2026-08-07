@@ -134,12 +134,21 @@ export class FlowGraphCombineVector4Block extends FlowGraphMathCombineBlock<Vect
  * @deprecated The matrix combine blocks now default to column-major input, matching Babylon's
  * {@link Matrix} storage and the glTF/KHR_interactivity convention. This interface is retained so the
  * `inputIsColumnMajor` option keeps being honoured; set it to `false` to feed row-major input.
+ *
+ * BREAKING: the meaning of `inputIsColumnMajor` is inverted from previous releases, not just its
+ * default. Previously `inputIsColumnMajor: true` took the transposing path and the default (unset)
+ * treated input as row-major. Now the default (unset) is column-major, `inputIsColumnMajor: false`
+ * takes the transposing path, and `inputIsColumnMajor: true` is the straight (non-transposing) path.
+ * The unset behaviour is unchanged for graphs that never set the flag, but anyone who explicitly set
+ * `true` or `false` before now gets the opposite transform and should drop the flag (or flip it).
  */
 export interface IFlowGraphCombineMatrixBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
-     * Whether the input is in column-major order. Defaults to `true`.
-     * @deprecated Provide column-major input (the default). Set to `false` only to keep feeding legacy
-     * row-major input, which is transposed into the matrix's column-major storage.
+     * Whether the input is already in column-major order. Defaults to `true`.
+     * @deprecated Provide column-major input (the default) and omit this flag. Set to `false` only to
+     * keep feeding legacy row-major input, which is transposed into the matrix's column-major storage.
+     * Note the inverted meaning versus previous releases (see the interface deprecation note): a former
+     * `inputIsColumnMajor: true` no longer transposes, and a former `false` now does.
      */
     inputIsColumnMajor?: boolean;
 }

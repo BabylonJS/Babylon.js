@@ -9,9 +9,11 @@ import { FlowGraphTypes, getAnimationTypeByFlowGraphType } from "core/FlowGraph/
 
 // Per-block runaway-loop guard for KHR_interactivity for-loops. Interactivity assets may run large
 // finite loops (e.g. the math/random Monte Carlo conformance asset iterates 10k times), so this is
-// set well above the FlowGraphForLoopBlock process-wide default. Applied per for-loop block via the
-// flow/for extraProcessor rather than by mutating the shared static.
-const InteractivityForLoopMaxIterations = 100000;
+// set above the FlowGraphForLoopBlock process-wide default while staying low enough that the guard is
+// still meaningful — every iteration runs a full synchronous sub-graph, so a much larger value (and
+// especially nested loops) could lock the main thread before the guard trips. Applied per for-loop
+// block via the flow/for extraProcessor rather than by mutating the shared static.
+const InteractivityForLoopMaxIterations = 20000;
 
 interface IGLTFToFlowGraphMappingObject {
     /**

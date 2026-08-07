@@ -9,6 +9,7 @@ import { type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { type FlowGraphNumber, getNumericValue } from "core/FlowGraph/utils";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger.pure";
+import { Logger } from "core/Misc/logger";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -98,6 +99,7 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
         // Per-block override of the runaway-loop guard, falling back to the process-wide default.
         const maxIterations = (this.config as IFlowGraphForLoopBlockConfiguration | undefined)?.maxLoopIterations ?? FlowGraphForLoopBlock.MaxLoopIterations;
         let iterations = 0;
+        let truncated = false;
         for (let i = index; i < endIndex; i += step) {
             this.index.setValue(new FlowGraphInteger(i), context);
             this.executionFlow._activateSignal(context);
@@ -105,8 +107,17 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
             // Safety net against runaway loops. The cap counts iterations (not the index value) so it
             // behaves correctly regardless of startIndex/step.
             if (++iterations >= maxIterations) {
+                truncated = true;
                 break;
             }
+        }
+
+        if (truncated) {
+            // The loop hit its safety cap before its range completed, so the outputs below are for a
+            // truncated run, not a natural finish. Warn so a genuinely runaway asset is diagnosable
+            // rather than silently producing wrong numbers (the completed signal still fires, and
+            // incrementIndexWhenLoopDone will not land on endIndex).
+            Logger.Warn(`FlowGraphForLoopBlock: loop stopped after reaching the ${maxIterations}-iteration safety cap before its range completed.`);
         }
 
         if (this.config?.incrementIndexWhenLoopDone) {

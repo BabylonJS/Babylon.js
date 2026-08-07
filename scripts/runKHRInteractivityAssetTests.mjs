@@ -150,11 +150,15 @@ async function main() {
     await ensureAssets();
     const playwright = path.join(RootDirectory, "node_modules", "playwright", "cli.js");
     console.log(`Running pinned KHR_interactivity browser tests from ${AssetDirectory}`);
+    // When CDN_BASE_URL already points at a remote snapshot (the CI path — the suite consumes the
+    // Build job's deployed snapshot instead of building Babylon in-agent), leave it untouched and do
+    // not stand up a local server. Otherwise default to the local babylon-server on port 1337.
+    const existingCdnBaseUrl = process.env.CDN_BASE_URL ?? "";
+    const useLocalServer = existingCdnBaseUrl === "" || existingCdnBaseUrl.includes("127.0.0.1") || existingCdnBaseUrl.includes("localhost");
     await run(process.execPath, [playwright, "test", "--config=playwright.khr-interactivity.config.ts", ...process.argv.slice(2)], {
         env: {
             ...process.env,
-            CDN_BASE_URL: "http://127.0.0.1:1337",
-            CDN_PORT: "1337",
+            ...(useLocalServer ? { CDN_BASE_URL: "http://127.0.0.1:1337", CDN_PORT: "1337" } : {}),
             KHR_ASSETS_REPO: AssetDirectory,
         },
     });

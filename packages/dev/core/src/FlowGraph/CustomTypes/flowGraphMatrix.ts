@@ -2,6 +2,14 @@ import { Vector3, Vector2 } from "core/Maths/math.vector.pure";
 
 /**
  * Interface representing a generic flow graph matrix.
+ *
+ * BREAKING (since the KHR_interactivity work): {@link FlowGraphMatrix2D} and {@link FlowGraphMatrix3D}
+ * now store their elements in column-major order, matching core {@link Matrix} and the
+ * glTF/KHR_interactivity convention. Previous releases stored them row-major. This changes the result
+ * of building a matrix from a flat array (`fromArray`/`set`), of `transformVector`/`transformVectorToRef`,
+ * and of `multiply`/`multiplyToRef` (which now computes `this * other` rather than `other * this`).
+ * There is no compile error — graphs that relied on the old ordering or operand order get silently
+ * different numbers, so any code constructing these from raw arrays should be re-checked.
  */
 export interface IFlowGraphMatrix<VectorType> {
     /**
@@ -160,7 +168,10 @@ export interface IFlowGraphMatrix<VectorType> {
 // Note - the matrix classes are basically column-major, and work similarly to Babylon.js' Matrix class.
 
 /**
- * A 2x2 matrix.
+ * A 2x2 matrix, stored in column-major order.
+ *
+ * BREAKING: this class was row-major in earlier releases — see {@link IFlowGraphMatrix} for the full
+ * behaviour change (flat-array construction, transform, and multiply operand order).
  */
 export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
     /**
@@ -311,7 +322,10 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
 }
 
 /**
- * A 3x3 matrix.
+ * A 3x3 matrix, stored in column-major order.
+ *
+ * BREAKING: this class was row-major in earlier releases — see {@link IFlowGraphMatrix} for the full
+ * behaviour change (flat-array construction, transform, and multiply operand order).
  */
 export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
     /**
