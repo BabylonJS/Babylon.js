@@ -249,11 +249,13 @@ export class Viewer extends ViewerBase implements IViewer {
         super();
         this._deviceLostRecovery = enableDeviceLostSceneRecovery(_engine, {
             onRecoveryFailed: (error) => {
-                const recoveryError = error instanceof Error ? error : new Error("Babylon Lite device recovery failed.", { cause: error });
+                const recoveryError = error instanceof Error ? error : new Error(`Babylon Lite device recovery failed: ${String(error)}`, { cause: error });
                 if (this._options?.onFaulted) {
                     this._options.onFaulted(recoveryError);
                 } else {
-                    Logger.Error(recoveryError.message);
+                    // Prefer the stack: an unhandled recovery failure is only diagnosable from where it was
+                    // thrown, and the message alone gives no indication of which rebuild step failed.
+                    Logger.Error(recoveryError.stack ?? recoveryError.message);
                 }
             },
         });
@@ -1836,6 +1838,11 @@ export class Viewer extends ViewerBase implements IViewer {
             return;
         }
 
+        // Disable device-lost recovery before any teardown below: everything that follows frees GPU
+        // resources (picker, model, scene, engine), and a loss arriving mid-teardown would otherwise
+        // kick off a rebuild against resources that are in the process of being destroyed.
+        this._deviceLostRecovery.disable();
+
         // Detach camera controls
         this._detachControl?.();
         this._detachControl = null;
@@ -1860,7 +1867,6 @@ export class Viewer extends ViewerBase implements IViewer {
         this._unloadCurrentModel();
 
         // Stop and dispose engine/scene
-        this._deviceLostRecovery.disable();
         stopEngine(this._engine);
         unregisterScene(this._scene);
         disposeScene(this._scene);
