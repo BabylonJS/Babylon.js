@@ -23,6 +23,7 @@ import { type IWebXRPlaneDetectorOptions, type WebXRPlaneDetector } from "./feat
 import { type IWebXRRawCameraAccessOptions, type WebXRRawCameraAccess } from "./features/WebXRRawCameraAccess";
 import { type WebXRSpaceWarp } from "./features/WebXRSpaceWarp";
 import { type IWebXRWalkingLocomotionOptions, type WebXRWalkingLocomotion } from "./features/WebXRWalkingLocomotion";
+import { _ConsumeWebXRFeatureSpecificDisableWarning } from "./webXRFeatureWarningRegistry";
 import { type WebXRSessionManager } from "./webXRSessionManager";
 
 /**
@@ -37,6 +38,11 @@ export interface IWebXRFeature extends IDisposable {
      * Should auto-attach be disabled?
      */
     disableAutoAttach: boolean;
+    /**
+     * The auto-attach policy in effect before the features manager starts a manual attachment.
+     * @internal
+     */
+    _autoAttachPolicyBeforeAttach?: boolean;
 
     /**
      * Attach the feature to the session
@@ -461,8 +467,14 @@ export class WebXRFeaturesManager implements IDisposable {
         const feature = this._features[featureName];
         if (feature && feature.enabled && !feature.featureImplementation.attached) {
             const disableAutoAttachBeforeAttach = feature.featureImplementation.disableAutoAttach;
+            feature.featureImplementation._autoAttachPolicyBeforeAttach = disableAutoAttachBeforeAttach;
             feature.featureImplementation.disableAutoAttach = false;
-            const attached = feature.featureImplementation.attach();
+            let attached: boolean;
+            try {
+                attached = feature.featureImplementation.attach();
+            } finally {
+                delete feature.featureImplementation._autoAttachPolicyBeforeAttach;
+            }
             const intentionallyDisabledDuringAttach = feature.featureImplementation.disableAutoAttach;
             if (!intentionallyDisabledDuringAttach) {
                 feature.featureImplementation.disableAutoAttach = disableAutoAttachBeforeAttach;
@@ -583,7 +595,10 @@ export class WebXRFeaturesManager implements IDisposable {
                 throw new Error(`Dependant features missing. Make sure the following features are enabled - ${constructed.dependsOn.join(", ")}`);
             }
         }
-        if (constructed.isCompatible()) {
+        _ConsumeWebXRFeatureSpecificDisableWarning(constructed);
+        const isCompatible = constructed.isCompatible();
+        const emittedSpecificDisableWarning = _ConsumeWebXRFeatureSpecificDisableWarning(constructed);
+        if (isCompatible) {
             this._features[name] = {
                 featureImplementation: constructed,
                 enabled: true,
@@ -607,7 +622,9 @@ export class WebXRFeaturesManager implements IDisposable {
             if (required) {
                 throw new Error("required feature not compatible");
             } else {
-                Tools.Warn(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
+                if (!emittedSpecificDisableWarning) {
+                    Tools.Warn(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
+                }
                 return constructed as ResolveWebXRFeature<T>;
             }
         }

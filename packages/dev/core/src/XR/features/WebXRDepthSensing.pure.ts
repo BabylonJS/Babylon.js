@@ -24,6 +24,7 @@ import { type Camera } from "core/Cameras/camera.pure";
 import { Matrix } from "core/Maths/math.vector.pure";
 import { type Engine } from "core/Engines/engine.pure";
 import { RegisterClass } from "../../Misc/typeStore";
+import { WebXRGraphicsBindingType } from "../webXRGraphicsBinding";
 
 export type WebXRDepthUsage = "cpu" | "gpu";
 export type WebXRDepthDataFormat = "ushort" | "float" | "luminance-alpha";
@@ -89,14 +90,33 @@ class DepthSensingMaterialDefines extends MaterialDefines {
 
 let IsPluginEnabled = false;
 let DepthTexture: Nullable<RawTexture> = null;
+let DepthTextureRight: Nullable<RawTexture> = null;
 let AlphaLuminanceTexture = false;
 const ScreenSize = { width: 512, height: 512 };
 const ShaderViewport = { x: 0, y: 0, width: 1, height: 1 };
 let GlobalRawValueToMeters = 1;
+let GlobalRawValueToMetersRight = 1;
+let GlobalDepthAvailableLeft = 0;
+let GlobalDepthAvailableRight = 0;
+let GlobalWorldScale = 1;
 let ViewIndex = 0;
 let EnableDiscard = true;
 const UvTransform = /*#__PURE__*/ Matrix.Identity();
+const UvTransformRight = /*#__PURE__*/ Matrix.Identity();
+const RightView = /*#__PURE__*/ Matrix.Identity();
 const ManagedMaterialPlugins: WebXRDepthSensingMaterialPlugin[] = [];
+const WebGPUGPUDepthWarning =
+    "WebXR Depth Sensing is unavailable with WebGPU XR when the session negotiates gpu-optimized depth because XRGPUBinding has no environment-depth equivalent; request cpu-optimized depth to use the feature.";
+
+interface IWebXRCPUDepthViewState {
+    available: boolean;
+    height: number;
+    rawValueToMeters: number;
+    texture: Nullable<RawTexture>;
+    uvTransform: Matrix;
+    visualizationDepthBuffer: Nullable<Float32Array>;
+    width: number;
+}
 
 /**
  * @internal
@@ -137,11 +157,10 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
     public override isCompatible(shaderLanguage: ShaderLanguage): boolean {
         switch (shaderLanguage) {
             case ShaderLanguage.GLSL:
+            case ShaderLanguage.WGSL:
                 return true;
             default:
-                // no webgpu for webxr yet, however - if this is not true the plugin fails to load.
-                // webxr is currently only supported on webgl, and the plugin is disabled per default.
-                return true;
+                return false;
         }
     }
 
@@ -163,40 +182,67 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
         defines.DEPTH_SENSING_DISCARD = EnableDiscard;
     }
 
-    public override getUniforms() {
+    public override getUniforms(shaderLanguage = ShaderLanguage.GLSL) {
+        const ubo = [
+            { name: "ds_invScreenSize", size: 2, type: "vec2" },
+            { name: "ds_rawValueToMeters", size: 1, type: "float" },
+            { name: "ds_viewIndex", size: 1, type: "float" },
+            { name: "ds_shaderViewport", size: 4, type: "vec4" },
+            { name: "ds_uvTransform", size: 16, type: "mat4" },
+        ];
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            ubo.push(
+                { name: "ds_rawValueToMetersRight", size: 1, type: "float" },
+                { name: "ds_depthAvailableLeft", size: 1, type: "float" },
+                { name: "ds_depthAvailableRight", size: 1, type: "float" },
+                { name: "ds_worldScale", size: 1, type: "float" },
+                { name: "ds_viewDepthSign", size: 1, type: "float" },
+                { name: "ds_uvTransformRight", size: 16, type: "mat4" },
+                { name: "ds_viewRight", size: 16, type: "mat4" }
+            );
+        }
         return {
             // first, define the UBO with the correct type and size.
-            ubo: [
-                { name: "ds_invScreenSize", size: 2, type: "vec2" },
-                { name: "ds_rawValueToMeters", size: 1, type: "float" },
-                { name: "ds_viewIndex", size: 1, type: "float" },
-                { name: "ds_shaderViewport", size: 4, type: "vec4" },
-                { name: "ds_uvTransform", size: 16, type: "mat4" },
-            ],
+            ubo,
             // now, on the fragment shader, add the uniform itself in case uniform buffers are not supported by the engine
-            fragment: `#ifdef DEPTH_SENSING
+            fragment:
+                shaderLanguage === ShaderLanguage.GLSL
+                    ? `#ifdef DEPTH_SENSING
                 uniform vec2 ds_invScreenSize;
                 uniform float ds_rawValueToMeters;
                 uniform float ds_viewIndex;
                 uniform vec4 ds_shaderViewport;
                 uniform mat4 ds_uvTransform;
                 #endif
-                `,
+                `
+                    : "",
         };
     }
 
     public override getSamplers(samplers: string[]): void {
         samplers.push("ds_depthSampler");
+        samplers.push("ds_depthSamplerRight");
     }
 
     public override bindForSubMesh(uniformBuffer: UniformBuffer) {
         if (IsPluginEnabled && DepthTexture) {
+            const isWGSL = this._material.shaderLanguage === ShaderLanguage.WGSL;
             uniformBuffer.updateFloat2("ds_invScreenSize", 1 / ScreenSize.width, 1 / ScreenSize.height);
             uniformBuffer.updateFloat("ds_rawValueToMeters", GlobalRawValueToMeters);
             uniformBuffer.updateFloat("ds_viewIndex", ViewIndex);
             uniformBuffer.updateFloat4("ds_shaderViewport", ShaderViewport.x, ShaderViewport.y, ShaderViewport.width, ShaderViewport.height);
             uniformBuffer.setTexture("ds_depthSampler", DepthTexture);
             uniformBuffer.updateMatrix("ds_uvTransform", UvTransform);
+            if (isWGSL) {
+                uniformBuffer.updateFloat("ds_rawValueToMetersRight", GlobalRawValueToMetersRight);
+                uniformBuffer.updateFloat("ds_depthAvailableLeft", GlobalDepthAvailableLeft);
+                uniformBuffer.updateFloat("ds_depthAvailableRight", GlobalDepthAvailableRight);
+                uniformBuffer.updateFloat("ds_worldScale", GlobalWorldScale);
+                uniformBuffer.updateFloat("ds_viewDepthSign", this._material.getScene().useRightHandedSystem ? -1 : 1);
+                uniformBuffer.setTexture("ds_depthSamplerRight", DepthTextureRight);
+                uniformBuffer.updateMatrix("ds_uvTransformRight", UvTransformRight);
+                uniformBuffer.updateMatrix("ds_viewRight", RightView);
+            }
         }
     }
 
@@ -204,7 +250,121 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
         return "DepthSensingMaterialPlugin";
     }
 
-    public override getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
+    public override getCustomCode(shaderType: string, shaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            return shaderType === "vertex"
+                ? {
+                      CUSTOM_VERTEX_MAIN_BEGIN: `
+                #ifdef DEPTH_SENSING
+                #ifdef MULTIVIEW
+                    vertexOutputs.ds_viewIndexMultiview = f32(gl_ViewID_OVR);
+                #endif
+                #endif
+                `,
+                      CUSTOM_VERTEX_DEFINITIONS: `
+                #ifdef DEPTH_SENSING
+                #ifdef MULTIVIEW
+                    varying ds_viewIndexMultiview: f32;
+                #endif
+                #endif
+                `,
+                  }
+                : {
+                      CUSTOM_FRAGMENT_DEFINITIONS: `
+                    #ifdef DEPTH_SENSING
+                        #ifdef DEPTH_SENSING_TEXTURE_ARRAY
+                            var ds_depthSampler: texture_2d_array<f32>;
+                        #else
+                            var ds_depthSampler: texture_2d<f32>;
+                        #endif
+                        var ds_depthSamplerSampler: sampler;
+                        #if defined(MULTIVIEW) && !defined(DEPTH_SENSING_TEXTURE_ARRAY)
+                            var ds_depthSamplerRight: texture_2d<f32>;
+                            var ds_depthSamplerRightSampler: sampler;
+                        #endif
+                        #ifdef MULTIVIEW
+                            varying ds_viewIndexMultiview: f32;
+                        #endif
+                    #endif
+                  `,
+                      CUSTOM_FRAGMENT_MAIN_BEGIN: `
+#ifdef DEPTH_SENSING
+    #ifdef MULTIVIEW
+        let ds_viewIndexSet: f32 = fragmentInputs.ds_viewIndexMultiview;
+        let ds_compensation: vec2f = vec2f(0.0, 0.0);
+    #else
+        let ds_viewIndexSet: f32 = uniforms.ds_viewIndex;
+        let ds_compensation: vec2f = vec2f(ds_viewIndexSet, 0.0);
+    #endif
+    let ds_baseUvBottomLeft: vec2f = (fragmentInputs.position.xy * uniforms.ds_invScreenSize - uniforms.ds_shaderViewport.xy) / uniforms.ds_shaderViewport.zw;
+    let ds_baseUv: vec2f = vec2f(ds_baseUvBottomLeft.x, 1.0 - ds_baseUvBottomLeft.y);
+    var ds_depthSample: vec4f = vec4f(0.0);
+    var ds_rawValueToMetersSet: f32 = uniforms.ds_rawValueToMeters;
+    #if defined(MULTIVIEW) && !defined(DEPTH_SENSING_TEXTURE_ARRAY)
+        var ds_depthAvailable: f32 = uniforms.ds_depthAvailableLeft;
+        if (ds_viewIndexSet < 0.5) {
+            if (ds_depthAvailable > 0.5) {
+                let ds_depthUv: vec2f = (uniforms.ds_uvTransform * vec4f(ds_baseUv, 0.0, 1.0)).xy;
+                ds_depthSample = textureSampleLevel(ds_depthSampler, ds_depthSamplerSampler, ds_depthUv, 0.0);
+            }
+        } else {
+            ds_depthAvailable = uniforms.ds_depthAvailableRight;
+            if (ds_depthAvailable > 0.5) {
+                let ds_depthUv: vec2f = (uniforms.ds_uvTransformRight * vec4f(ds_baseUv, 0.0, 1.0)).xy;
+                ds_depthSample = textureSampleLevel(ds_depthSamplerRight, ds_depthSamplerRightSampler, ds_depthUv, 0.0);
+            }
+            ds_rawValueToMetersSet = uniforms.ds_rawValueToMetersRight;
+        }
+    #else
+        let ds_depthAvailable: f32 = 1.0;
+        #ifdef DEPTH_SENSING_TEXTURE_ARRAY
+            let ds_uv: vec2f = ds_baseUv - ds_compensation;
+            let ds_depthUv: vec2f = (uniforms.ds_uvTransform * vec4f(ds_uv, 0.0, 1.0)).xy;
+            ds_depthSample = textureSample(ds_depthSampler, ds_depthSamplerSampler, ds_depthUv, i32(ds_viewIndexSet));
+        #else
+            let ds_depthUv: vec2f = (uniforms.ds_uvTransform * vec4f(ds_baseUv, 0.0, 1.0)).xy;
+            ds_depthSample = textureSample(ds_depthSampler, ds_depthSamplerSampler, ds_depthUv);
+        #endif
+    #endif
+    var ds_cameraDepth: f32;
+    #ifdef DEPTH_SENSING_TEXTURE_AL
+        let ds_alphaLuminance: vec2f = ds_depthSample.ra;
+        ds_cameraDepth = dot(ds_alphaLuminance, vec2f(255.0, 256.0 * 255.0));
+    #else
+        ds_cameraDepth = ds_depthSample.r;
+    #endif
+
+    ds_cameraDepth = ds_cameraDepth * ds_rawValueToMetersSet;
+
+    var ds_viewPosition: vec4f = scene.view * vec4f(fragmentInputs.vPositionW, 1.0);
+    #ifdef MULTIVIEW
+        if (ds_viewIndexSet >= 0.5) {
+            ds_viewPosition = uniforms.ds_viewRight * vec4f(fragmentInputs.vPositionW, 1.0);
+        }
+    #endif
+    let ds_assetDepth: f32 = (ds_viewPosition.z * uniforms.ds_viewDepthSign) / uniforms.ds_worldScale;
+    #ifdef DEPTH_SENSING_DISCARD
+    if (ds_depthAvailable > 0.5 && ds_cameraDepth > 0.0 && ds_cameraDepth < ds_assetDepth) {
+        discard;
+    }
+    #endif
+#endif
+                  `,
+                      CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
+#ifdef DEPTH_SENSING
+    #ifndef DEPTH_SENSING_DISCARD
+        if (ds_depthAvailable > 0.5 && ds_cameraDepth > 0.0) {
+            let ds_depthTolerancePerM: f32 = 0.005;
+            let ds_occlusion: f32 = clamp(1.0 - 0.5 * (ds_cameraDepth - ds_assetDepth) / (ds_depthTolerancePerM * ds_assetDepth) +
+                0.5, 0.0, 1.0);
+            ${this._varColorName} *= (1.0 - ds_occlusion);
+        }
+    #endif
+#endif
+                  `,
+                  };
+        }
+
         return shaderType === "vertex"
             ? {
                   CUSTOM_VERTEX_MAIN_BEGIN: `
@@ -304,7 +464,12 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     private _cachedDepthBuffer: Nullable<ArrayBuffer> = null;
     private _cachedWebGLTexture: Nullable<WebGLTexture> = null;
     private _cachedDepthImageTexture: Nullable<RawTexture> = null;
+    private _cachedDepthImageTextureWrapsExternalTexture = false;
+    private _cpuDepthViewStates: IWebXRCPUDepthViewState[] = [];
+    private _disableAutoAttachBeforeWebGPUGPUDepth = false;
+    private _disabledForWebGPUGPUDepth = false;
     private _onCameraObserver: Nullable<Observer<Camera>> = null;
+    private _onSessionEndedObserver: Nullable<Observer<any>> = null;
 
     /**
      * Width of depth data. If depth data is not exist, returns null.
@@ -427,10 +592,18 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         this.xrNativeFeatureName = "depth-sensing";
 
         // https://immersive-web.github.io/depth-sensing/
-        Logger.Warn("depth-sensing is an experimental and unstable feature.");
+        if (!this._xrSessionManager.scene.getEngine().isWebGPU) {
+            Logger.Warn("depth-sensing is an experimental and unstable feature.");
+        }
         EnableDiscard = !options.useToleranceFactorForDepthSensing;
 
         RegisterMaterialPlugin("WebXRDepthSensingMaterialPlugin", (material) => new WebXRDepthSensingMaterialPlugin(material));
+        this._onSessionEndedObserver = this._xrSessionManager.onXRSessionEnded.add(() => {
+            if (this._disabledForWebGPUGPUDepth) {
+                this._disabledForWebGPUGPUDepth = false;
+                this.disableAutoAttach = this._disableAutoAttachBeforeWebGPUGPUDepth;
+            }
+        });
     }
 
     /**
@@ -440,16 +613,35 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * @returns true if successful.
      */
     public override attach(force?: boolean): boolean {
+        const engine = this._xrSessionManager.scene.getEngine();
+        const depthUsage = this._xrSessionManager.session.depthUsage;
+        const depthDataFormat = this._xrSessionManager.session.depthDataFormat;
+
+        if (engine.isWebGPU && depthUsage === "gpu-optimized") {
+            if (this._disabledForWebGPUGPUDepth) {
+                this.disableAutoAttach = true;
+                return false;
+            }
+            this._disableAutoAttachBeforeWebGPUGPUDepth = this._autoAttachPolicyBeforeAttach ?? this.disableAutoAttach;
+            this._disabledForWebGPUGPUDepth = true;
+            return this._disableAutoAttach(WebGPUGPUDepthWarning);
+        }
+
+        if (depthUsage == null || depthDataFormat == null) {
+            return false;
+        }
+
         if (!super.attach(force)) {
             return false;
         }
 
-        const isBothDepthUsageAndFormatNull = this._xrSessionManager.session.depthDataFormat == null || this._xrSessionManager.session.depthUsage == null;
-        if (isBothDepthUsageAndFormatNull) {
-            return false;
+        if (!engine.isWebGPU) {
+            const graphicsBinding = this._xrSessionManager._getGraphicsBinding();
+            if (graphicsBinding.bindingType !== WebXRGraphicsBindingType.WebGL) {
+                throw new Error("Expected a WebGL graphics binding for WebXR Depth Sensing.");
+            }
+            this._glBinding = graphicsBinding.binding;
         }
-
-        this._glBinding = new XRWebGLBinding(this._xrSessionManager.session, (this._xrSessionManager.scene.getEngine() as ThinEngine)._gl);
 
         IsPluginEnabled = !this.options.disableDepthSensingOnMaterials;
         if (IsPluginEnabled) {
@@ -463,17 +655,28 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                 // make sure this is a webxr camera
                 if (camera.outputRenderTarget) {
                     const viewport = camera.rigCameras.length > 0 ? camera.rigCameras[0].viewport : camera.viewport;
-                    ScreenSize.width = camera.outputRenderTarget.getRenderWidth() / (camera.rigParent ? camera.rigParent.rigCameras.length || 1 : 1);
+                    ScreenSize.width = camera.outputRenderTarget.getRenderWidth() / (!engine.isWebGPU && camera.rigParent ? camera.rigParent.rigCameras.length || 1 : 1);
                     ScreenSize.height = camera.outputRenderTarget.getRenderHeight();
                     ShaderViewport.x = viewport.x;
                     ShaderViewport.y = viewport.y;
                     ShaderViewport.width = viewport.width;
                     ShaderViewport.height = viewport.height;
+                    GlobalWorldScale = this._xrSessionManager.worldScalingFactor;
 
                     // find the viewIndex
                     if (camera.rigParent) {
-                        // should use the viewIndexes array!
-                        ViewIndex = camera.isLeftCamera ? 0 : 1;
+                        const viewIndex = camera.rigParent.rigCameras.indexOf(camera);
+                        ViewIndex = viewIndex === -1 ? 0 : viewIndex;
+                        if (engine.isWebGPU && this.depthUsage === "cpu") {
+                            this._bindCPUDepthView(ViewIndex, false);
+                        }
+                    } else if (camera._renderingMultiview && engine.isWebGPU && this.depthUsage === "cpu") {
+                        ViewIndex = 0;
+                        const rightCamera = camera.rigCameras[1];
+                        if (rightCamera) {
+                            RightView.copyFrom(rightCamera.getViewMatrix());
+                        }
+                        this._bindCPUDepthView(0, true);
                     }
                 }
             });
@@ -485,13 +688,34 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     public override detach() {
         IsPluginEnabled = false;
         DepthTexture = null;
+        DepthTextureRight = null;
         this._cachedWebGLTexture = null;
         this._cachedDepthBuffer = null;
+        this._width = null;
+        this._height = null;
+        this._rawValueToMeters = null;
+        this._textureType = null;
+        this._normDepthBufferFromNormView = null;
+        let cachedTextureDisposed = false;
+        for (const viewState of this._cpuDepthViewStates) {
+            viewState.texture?.dispose();
+            cachedTextureDisposed ||= viewState.texture === this._cachedDepthImageTexture;
+        }
+        this._cpuDepthViewStates.length = 0;
+        if (!cachedTextureDisposed) {
+            if (this._cachedDepthImageTextureWrapsExternalTexture && this._cachedDepthImageTexture?._texture) {
+                this._cachedDepthImageTexture._texture._hardwareTexture = null;
+            }
+            this._cachedDepthImageTexture?.dispose();
+        }
+        this._cachedDepthImageTexture = null;
+        this._cachedDepthImageTextureWrapsExternalTexture = false;
         for (const plugin of ManagedMaterialPlugins) {
             plugin.isEnabled = false;
         }
         if (this._onCameraObserver) {
             this._xrSessionManager.scene.onBeforeCameraRenderObservable.remove(this._onCameraObserver);
+            this._onCameraObserver = null;
         }
         return super.detach();
     }
@@ -500,9 +724,12 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * Dispose this feature and all of the resources attached
      */
     public override dispose(): void {
+        if (this._onSessionEndedObserver) {
+            this._xrSessionManager.onXRSessionEnded.remove(this._onSessionEndedObserver);
+            this._onSessionEndedObserver = null;
+        }
         super.dispose();
         UnregisterMaterialPlugin("WebXRDepthSensingMaterialPlugin");
-        this._cachedDepthImageTexture?.dispose();
         this.onGetDepthInMetersAvailable.clear();
         // cleanup
         if (this._onCameraObserver) {
@@ -516,14 +743,24 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
         const referenceSPace = this._xrSessionManager.referenceSpace;
+        const depthUsage = this.depthUsage;
+        if (depthUsage === "cpu") {
+            for (const viewState of this._cpuDepthViewStates) {
+                viewState.available = false;
+            }
+        }
         const pose = _xrFrame.getViewerPose(referenceSPace);
         if (pose == null) {
+            if (depthUsage === "cpu") {
+                this._clearCPUDepthBinding();
+            }
             return;
         }
-        for (const view of pose.views) {
-            switch (this.depthUsage) {
+        for (let viewIndex = 0; viewIndex < pose.views.length; viewIndex++) {
+            const view = pose.views[viewIndex];
+            switch (depthUsage) {
                 case "cpu":
-                    this._updateDepthInformationAndTextureCPUDepthUsage(_xrFrame, view, this.depthDataFormat);
+                    this._updateDepthInformationAndTextureCPUDepthUsage(_xrFrame, view, viewIndex, this.depthDataFormat);
                     break;
                 case "gpu":
                     if (!this._glBinding) {
@@ -537,29 +774,51 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                     break;
             }
         }
+        if (depthUsage === "cpu" && !this._cpuDepthViewStates.some((viewState) => viewState.available)) {
+            this._clearCPUDepthBinding();
+        }
     }
 
-    private _updateDepthInformationAndTextureCPUDepthUsage(frame: XRFrame, view: XRView, dataFormat: WebXRDepthDataFormat): void {
+    private _updateDepthInformationAndTextureCPUDepthUsage(frame: XRFrame, view: XRView, viewIndex: number, dataFormat: WebXRDepthDataFormat): void {
         const depthInfo = frame.getDepthInformation(view);
-        if (depthInfo === null) {
+        if (depthInfo == null) {
             return;
         }
 
         const { data, width, height, rawValueToMeters, getDepthInMeters, normDepthBufferFromNormView } = depthInfo as XRCPUDepthInformation;
+        let viewState = this._cpuDepthViewStates[viewIndex];
+        if (!viewState) {
+            viewState = {
+                available: true,
+                height,
+                rawValueToMeters,
+                texture: null,
+                uvTransform: Matrix.Identity(),
+                visualizationDepthBuffer: null,
+                width,
+            };
+            this._cpuDepthViewStates[viewIndex] = viewState;
+        }
 
+        const textureSizeChanged = viewState.width !== width || viewState.height !== height;
         this._width = width;
         this._height = height;
         this._rawValueToMeters = rawValueToMeters;
+        this._normDepthBufferFromNormView = normDepthBufferFromNormView;
         this._cachedDepthBuffer = data;
-        GlobalRawValueToMeters = rawValueToMeters;
         AlphaLuminanceTexture = dataFormat === "luminance-alpha";
-        UvTransform.fromArray(normDepthBufferFromNormView.matrix);
+        viewState.height = height;
+        viewState.available = true;
+        viewState.rawValueToMeters = rawValueToMeters;
+        viewState.uvTransform.fromArray(normDepthBufferFromNormView.matrix);
+        viewState.width = width;
 
         // to avoid Illegal Invocation error, bind `this`
         this.onGetDepthInMetersAvailable.notifyObservers(getDepthInMeters.bind(depthInfo));
 
-        if (!this._cachedDepthImageTexture) {
-            this._cachedDepthImageTexture = RawTexture.CreateRTexture(
+        if (!viewState.texture || textureSizeChanged) {
+            viewState.texture?.dispose();
+            viewState.texture = RawTexture.CreateRTexture(
                 null,
                 width,
                 height,
@@ -569,28 +828,101 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                 Texture.NEAREST_SAMPLINGMODE,
                 Constants.TEXTURETYPE_FLOAT
             );
-            DepthTexture = this._cachedDepthImageTexture;
         }
+        this._cachedDepthImageTextureWrapsExternalTexture = false;
+        this._cachedDepthImageTexture = viewState.texture;
 
-        let float32Array: Float32Array | null = null;
+        let depthValues: Float32Array | Uint16Array | null = null;
         switch (dataFormat) {
             case "ushort":
             case "luminance-alpha":
-                float32Array = Float32Array.from(new Uint16Array(data));
-
+                depthValues = new Uint16Array(data);
                 break;
             case "float":
-                float32Array = new Float32Array(data);
+                depthValues = new Float32Array(data);
                 break;
-
             default:
                 break;
         }
-        if (float32Array) {
+        if (depthValues) {
+            let uploadData: Float32Array;
             if (this.options.prepareTextureForVisualization) {
-                float32Array = float32Array.map((val) => val * rawValueToMeters);
+                if (!viewState.visualizationDepthBuffer || viewState.visualizationDepthBuffer.length !== depthValues.length) {
+                    viewState.visualizationDepthBuffer = new Float32Array(depthValues.length);
+                }
+                uploadData = viewState.visualizationDepthBuffer;
+                for (let index = 0; index < depthValues.length; index++) {
+                    uploadData[index] = depthValues[index] * rawValueToMeters;
+                }
+            } else {
+                uploadData = depthValues instanceof Float32Array ? depthValues : Float32Array.from(depthValues);
             }
-            this._cachedDepthImageTexture.update(float32Array);
+            viewState.texture.update(uploadData);
+        }
+
+        if (!this._xrSessionManager.scene.getEngine().isWebGPU) {
+            const hadDepthTexture = !!DepthTexture;
+            DepthTexture = viewState.texture;
+            DepthTextureRight = null;
+            GlobalDepthAvailableLeft = 1;
+            GlobalDepthAvailableRight = 0;
+            GlobalRawValueToMeters = viewState.rawValueToMeters;
+            UvTransform.copyFrom(viewState.uvTransform);
+            if (!hadDepthTexture) {
+                this._xrSessionManager.scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            }
+        }
+    }
+
+    private _clearCPUDepthBinding(): void {
+        if (DepthTexture) {
+            DepthTexture = null;
+            DepthTextureRight = null;
+            this._xrSessionManager.scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+        }
+    }
+
+    private _bindCPUDepthView(viewIndex: number, multiview: boolean): void {
+        const leftViewState = this._cpuDepthViewStates[0];
+        const rightViewState = multiview ? this._cpuDepthViewStates[1] : null;
+        const viewState = multiview
+            ? leftViewState?.available && leftViewState.texture
+                ? leftViewState
+                : rightViewState?.available && rightViewState.texture
+                  ? rightViewState
+                  : null
+            : this._cpuDepthViewStates[viewIndex];
+        if (!viewState?.available || !viewState.texture) {
+            this._clearCPUDepthBinding();
+            return;
+        }
+
+        const hadDepthTexture = !!DepthTexture;
+        if (multiview && leftViewState?.available && leftViewState.texture) {
+            GlobalDepthAvailableLeft = 1;
+            DepthTexture = leftViewState.texture;
+            GlobalRawValueToMeters = leftViewState.rawValueToMeters;
+            UvTransform.copyFrom(leftViewState.uvTransform);
+        } else {
+            GlobalDepthAvailableLeft = multiview ? 0 : 1;
+            DepthTexture = viewState.texture;
+            GlobalRawValueToMeters = viewState.rawValueToMeters;
+            UvTransform.copyFrom(viewState.uvTransform);
+        }
+        if (multiview && rightViewState?.available && rightViewState.texture) {
+            GlobalDepthAvailableRight = 1;
+            DepthTextureRight = rightViewState.texture;
+            GlobalRawValueToMetersRight = rightViewState.rawValueToMeters;
+            UvTransformRight.copyFrom(rightViewState.uvTransform);
+        } else {
+            GlobalDepthAvailableRight = 0;
+            DepthTextureRight = viewState.texture;
+            GlobalRawValueToMetersRight = viewState.rawValueToMeters;
+            UvTransformRight.copyFrom(viewState.uvTransform);
+        }
+
+        if (!hadDepthTexture) {
+            this._xrSessionManager.scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
         }
     }
 
@@ -628,9 +960,11 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                 Texture.NEAREST_SAMPLINGMODE,
                 dataFormat === "float" ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE
             );
+            this._cachedDepthImageTexture._texture?.dispose();
         }
 
         this._cachedDepthImageTexture._texture = internalTexture;
+        this._cachedDepthImageTextureWrapsExternalTexture = true;
         DepthTexture = this._cachedDepthImageTexture;
         this._xrSessionManager.scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }

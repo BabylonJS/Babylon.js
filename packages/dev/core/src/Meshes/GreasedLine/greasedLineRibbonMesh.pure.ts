@@ -387,7 +387,11 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
                 throw "In GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FACE_TO 'GreasedLineMeshOptions.ribbonOptions.directions' must be a Vector3.";
             }
 
-            TmpVectors.Vector3[1] = ribbonInfo.directions instanceof Vector3 ? ribbonInfo.directions : GreasedLineRibbonMesh.DIRECTION_XZ;
+            // Copy into the scratch vector instead of rebinding the slot. Assigning would make
+            // TmpVectors.Vector3[1] alias either the caller's vector or one of the DIRECTION_*
+            // constants (which are themselves Vector3.UpReadOnly / LeftReadOnly / ...), so the next
+            // write to that shared scratch slot anywhere in the engine would silently corrupt them.
+            TmpVectors.Vector3[1].copyFrom(ribbonInfo.directions instanceof Vector3 ? ribbonInfo.directions : GreasedLineRibbonMesh.DIRECTION_XZ);
             for (let i = 0; i < pointVectors.length - (directionPlane ? 0 : 1); i++) {
                 const p1 = pointVectors[i];
                 const p2 = pointVectors[i + 1];
