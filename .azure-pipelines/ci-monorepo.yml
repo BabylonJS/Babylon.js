@@ -677,9 +677,8 @@ jobs:
     # KHR_INTERACTIVITY CONFORMANCE
     # Depends on: Build, FormatLint
     # Runs the pinned Khronos conformance corpus against the deployed snapshot (the same artifact the
-    # other browser suites test), so nothing is built inside the test agent. Sharded across parallel
-    # agents. Gated at the job level on the Build job's affected-tags output so unaffected PRs never
-    # provision agents.
+    # other browser suites test), so nothing is built inside the test agent. Gated at the job level on
+    # the Build job's affected-tags output so unaffected PRs never provision an agent.
     # ============================================================================
     - job: KHRInteractivityConformance
       displayName: "KHR_interactivity conformance"
@@ -687,9 +686,9 @@ jobs:
           - Build
           - FormatLint
       # Only run when a FlowGraph or glTF change (or a run-all "ALL" change) is detected by the Build
-      # job's ComputeVisTags step. Evaluated before agents are provisioned, so an unrelated PR neither
-      # queues the parallel agents nor clones the repo. An unset value (e.g. ComputeVisTags failure)
-      # evaluates false and skips — safe because the suite is non-blocking and informational.
+      # job's ComputeVisTags step. Evaluated before the agent is provisioned, so an unrelated PR neither
+      # queues the job nor clones the repo. An unset value (e.g. ComputeVisTags failure) evaluates false
+      # and skips — safe because the suite is non-blocking and informational.
       condition: >-
           and(
             succeeded(),
@@ -699,13 +698,11 @@ jobs:
               contains(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'glTF')
             )
           )
-      # Sharded across parallel agents so the full ~174-asset suite completes well within the timeout.
-      # Each shard runs an independent slice via Playwright --shard. Because the build is no longer done
-      # in-agent (the snapshot is consumed remotely), the shards are cheap and no longer fight for memory.
+      # A single run: consuming the deployed snapshot (rather than building Babylon in-agent) makes the
+      # full ~174-asset suite fast enough to finish well within the timeout on one agent, and avoids the
+      # redundant per-shard npm/playwright install overhead that sharding otherwise added.
       # Kept non-blocking (continueOnError) for now so an intermittent asset does not block merges;
       # promote to a required gate once it has a track record of completing green.
-      strategy:
-          parallel: 4
       continueOnError: true
       timeoutInMinutes: 30
       steps:
@@ -737,8 +734,8 @@ jobs:
             displayName: "npm install && playwright install"
             retryCountOnTaskFailure: 1
 
-          - script: node ./scripts/runKHRInteractivityAssetTests.mjs --shard=$(System.JobPositionInPhase)/$(System.TotalJobsInPhase)
-            displayName: "run KHR_interactivity conformance tests (shard $(System.JobPositionInPhase)/$(System.TotalJobsInPhase))"
+          - script: node ./scripts/runKHRInteractivityAssetTests.mjs
+            displayName: "run KHR_interactivity conformance tests"
             env:
                 CI: "true"
                 # Force Chrome. The shared Playwright config defaults to Firefox on CI, but the
@@ -757,10 +754,7 @@ jobs:
             inputs:
                 testResultsFormat: JUnit
                 testResultsFiles: "./khr-interactivity-junit.xml"
-                testRunTitle: "KHR_interactivity conformance (shard $(System.JobPositionInPhase)/$(System.TotalJobsInPhase))"
-                # Each parallel shard writes the same file name in its own agent workspace; publishing
-                # under a shard-specific run title keeps the four result sets from overwriting each other.
-                mergeTestResults: true
+                testRunTitle: "KHR_interactivity conformance"
 
           - task: PublishPipelineArtifact@1
             displayName: "Publish conformance report"
@@ -768,7 +762,7 @@ jobs:
             continueOnError: true
             inputs:
                 targetPath: "khr-interactivity-report"
-                artifact: "khr-interactivity-report-shard-$(System.JobPositionInPhase)"
+                artifact: "khr-interactivity-report"
 
     # ============================================================================
     # VISUALIZATION TESTS - WEBGL 2
