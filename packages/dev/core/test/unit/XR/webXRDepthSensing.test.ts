@@ -3,6 +3,10 @@
  */
 
 import { NullEngine } from "core/Engines/nullEngine";
+import { type Camera } from "core/Cameras/camera";
+import { type MaterialPluginBase } from "core/Materials/materialPluginBase";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 import { WebXRDepthSensing } from "core/XR/features/WebXRDepthSensing";
@@ -45,6 +49,53 @@ describe("WebXRDepthSensing", () => {
         engine.dispose();
     });
 
+    function createDepthInformation(values: Float32Array, rawValueToMeters: number, matrix: Float32Array): XRCPUDepthInformation {
+        return {
+            data: values.buffer,
+            getDepthInMeters: vi.fn(),
+            height: 2,
+            normDepthBufferFromNormView: { matrix } as unknown as XRRigidTransform,
+            rawValueToMeters,
+            width: 2,
+        } as unknown as XRCPUDepthInformation;
+    }
+
+    function createRigCameras() {
+        const outputRenderTarget = {
+            getRenderHeight: () => 4,
+            getRenderWidth: () => 8,
+        };
+        const rigParent = { rigCameras: [] as Camera[] };
+        const leftCamera = {
+            outputRenderTarget,
+            rigParent,
+            rigCameras: [],
+            viewport: { height: 1, width: 0.5, x: 0, y: 0 },
+        } as unknown as Camera;
+        const rightCamera = {
+            outputRenderTarget,
+            rigParent,
+            rigCameras: [],
+            viewport: { height: 1, width: 0.5, x: 0.5, y: 0 },
+        } as unknown as Camera;
+        rigParent.rigCameras.push(leftCamera, rightCamera);
+        return { leftCamera, outputRenderTarget, rightCamera, rigParent };
+    }
+
+    function createUniformBufferRecorder() {
+        const matrices = new Map<string, number[]>();
+        const textures = new Map<string, unknown>();
+        const floats = new Map<string, number>();
+        const uniformBuffer = {
+            setTexture: vi.fn((name: string, texture: unknown) => textures.set(name, texture)),
+            updateFloat: vi.fn((name: string, value: number) => floats.set(name, value)),
+            updateFloat2: vi.fn(),
+            updateFloat4: vi.fn(),
+            updateMatrix: vi.fn((name: string, matrix: { asArray: () => number[] }) => matrices.set(name, Array.from(matrix.asArray()))),
+        } as unknown as UniformBuffer;
+        return { floats, matrices, textures, uniformBuffer };
+    }
+
     it("updates CPU depth buffers, metadata, and the depth texture on WebGPU without a graphics binding", () => {
         const xrWebGLBinding = vi.fn();
         const xrGPUBinding = vi.fn();
@@ -85,12 +136,14 @@ describe("WebXRDepthSensing", () => {
         feature.onGetDepthInMetersAvailable.add((reader) => {
             depthReader = reader;
         });
+        const { leftCamera } = createRigCameras();
 
         expect(feature.attach()).toBe(true);
         sessionManager.onXRFrameObservable.notifyObservers({
             getDepthInformation: vi.fn(() => depthInformation),
             getViewerPose: vi.fn(() => ({ views: [view] })),
         } as unknown as XRFrame);
+        scene.onBeforeCameraRenderObservable.notifyObservers(leftCamera);
 
         expect(xrWebGLBinding).not.toHaveBeenCalled();
         expect(xrGPUBinding).not.toHaveBeenCalled();
@@ -107,7 +160,116 @@ describe("WebXRDepthSensing", () => {
         expect(getDepthInMeters).toHaveBeenCalledExactlyOnceWith(1, 1);
     });
 
-    it("disables once for WebGPU GPU depth without bindings, wrapping, or observers", () => {
+    it("binds distinct CPU depth buffers and transforms for each WebGPU XR view", () => {
+        (engine as any)._isWebGPU = true;
+        (engine as any)._device = {};
+        (sessionManager as any).session = {
+            depthDataFormat: "float32",
+            depthUsage: "cpu-optimized",
+            enabledFeatures: ["depth-sensing"],
+        } as XRSession;
+        sessionManager.referenceSpace = {} as XRReferenceSpace;
+        const leftView = {} as XRView;
+        const rightView = {} as XRView;
+        const leftMatrix = Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.125, 0, 0, 1]);
+        const rightMatrix = Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.625, 0, 0, 1]);
+        const leftDepth = createDepthInformation(Float32Array.from([1, 1, 1, 1]), 1, leftMatrix);
+        const rightDepth = createDepthInformation(Float32Array.from([3, 3, 3, 3]), 2, rightMatrix);
+        const { leftCamera, outputRenderTarget, rightCamera, rigParent } = createRigCameras();
+
+        feature = new WebXRDepthSensing(sessionManager, {
+            dataFormatPreference: ["float"],
+            usagePreference: ["cpu"],
+        });
+        const material = new StandardMaterial("stereo-depth", scene);
+        const plugin = material.pluginManager?.getPlugin("DepthSensing") as MaterialPluginBase;
+        expect(feature.attach()).toBe(true);
+        sessionManager.onXRFrameObservable.notifyObservers({
+            getDepthInformation: vi.fn((view) => (view === leftView ? leftDepth : rightDepth)),
+            getViewerPose: vi.fn(() => ({ views: [leftView, rightView] })),
+        } as unknown as XRFrame);
+
+        const leftBinding = createUniformBufferRecorder();
+        scene.onBeforeCameraRenderObservable.notifyObservers(leftCamera);
+        plugin.bindForSubMesh(leftBinding.uniformBuffer);
+        const leftTexture = leftBinding.textures.get("ds_depthSampler");
+        expect(leftTexture).toBeTruthy();
+        expect(leftBinding.floats.get("ds_rawValueToMeters")).toBe(1);
+        expect(leftBinding.matrices.get("ds_uvTransform")).toEqual(Array.from(leftMatrix));
+
+        const rightBinding = createUniformBufferRecorder();
+        scene.onBeforeCameraRenderObservable.notifyObservers(rightCamera);
+        plugin.bindForSubMesh(rightBinding.uniformBuffer);
+        const rightTexture = rightBinding.textures.get("ds_depthSampler");
+        expect(rightTexture).toBeTruthy();
+        expect(rightTexture).not.toBe(leftTexture);
+        expect(rightBinding.floats.get("ds_rawValueToMeters")).toBe(2);
+        expect(rightBinding.matrices.get("ds_uvTransform")).toEqual(Array.from(rightMatrix));
+
+        const multiviewCamera = {
+            _renderingMultiview: true,
+            outputRenderTarget,
+            rigCameras: rigParent.rigCameras,
+        } as unknown as Camera;
+        const multiviewBinding = createUniformBufferRecorder();
+        scene.onBeforeCameraRenderObservable.notifyObservers(multiviewCamera);
+        plugin.bindForSubMesh(multiviewBinding.uniformBuffer);
+        expect(multiviewBinding.textures.get("ds_depthSampler")).toBe(leftTexture);
+        expect(multiviewBinding.textures.get("ds_depthSamplerRight")).toBe(rightTexture);
+        expect(multiviewBinding.floats.get("ds_rawValueToMetersRight")).toBe(2);
+        expect(multiviewBinding.floats.get("ds_depthAvailableLeft")).toBe(1);
+        expect(multiviewBinding.floats.get("ds_depthAvailableRight")).toBe(1);
+        expect(multiviewBinding.matrices.get("ds_uvTransformRight")).toEqual(Array.from(rightMatrix));
+
+        const markMaterialsDirtySpy = vi.spyOn(scene, "markAllMaterialsAsDirty");
+        sessionManager.onXRFrameObservable.notifyObservers({
+            getDepthInformation: vi.fn((view) => (view === leftView ? leftDepth : null)),
+            getViewerPose: vi.fn(() => ({ views: [leftView, rightView] })),
+        } as unknown as XRFrame);
+        const partialMultiviewBinding = createUniformBufferRecorder();
+        scene.onBeforeCameraRenderObservable.notifyObservers(multiviewCamera);
+        plugin.bindForSubMesh(partialMultiviewBinding.uniformBuffer);
+        const partialMultiviewDefines = {} as Record<string, boolean>;
+        plugin.prepareDefines(partialMultiviewDefines);
+        expect(partialMultiviewDefines.DEPTH_SENSING).toBe(true);
+        expect(partialMultiviewBinding.textures.get("ds_depthSamplerRight")).toBe(leftTexture);
+        expect(partialMultiviewBinding.floats.get("ds_depthAvailableLeft")).toBe(1);
+        expect(partialMultiviewBinding.floats.get("ds_depthAvailableRight")).toBe(0);
+
+        scene.onBeforeCameraRenderObservable.notifyObservers(rightCamera);
+        const unavailableDefines = {} as Record<string, boolean>;
+        plugin.prepareDefines(unavailableDefines);
+        expect(unavailableDefines.DEPTH_SENSING).toBe(false);
+
+        markMaterialsDirtySpy.mockClear();
+        sessionManager.onXRFrameObservable.notifyObservers({
+            getDepthInformation: vi.fn((view) => (view === rightView ? rightDepth : null)),
+            getViewerPose: vi.fn(() => ({ views: [leftView, rightView] })),
+        } as unknown as XRFrame);
+        const rightOnlyMultiviewBinding = createUniformBufferRecorder();
+        scene.onBeforeCameraRenderObservable.notifyObservers(multiviewCamera);
+        plugin.bindForSubMesh(rightOnlyMultiviewBinding.uniformBuffer);
+        expect(rightOnlyMultiviewBinding.textures.get("ds_depthSampler")).toBe(rightTexture);
+        expect(rightOnlyMultiviewBinding.textures.get("ds_depthSamplerRight")).toBe(rightTexture);
+        expect(rightOnlyMultiviewBinding.floats.get("ds_depthAvailableLeft")).toBe(0);
+        expect(rightOnlyMultiviewBinding.floats.get("ds_depthAvailableRight")).toBe(1);
+        expect(markMaterialsDirtySpy).toHaveBeenCalledTimes(1);
+
+        markMaterialsDirtySpy.mockClear();
+        sessionManager.onXRFrameObservable.notifyObservers({
+            getDepthInformation: vi.fn((view) => (view === leftView ? leftDepth : rightDepth)),
+            getViewerPose: vi.fn(() => ({ views: [leftView, rightView] })),
+        } as unknown as XRFrame);
+        scene.onBeforeCameraRenderObservable.notifyObservers(rightCamera);
+        const restoredDefines = {} as Record<string, boolean>;
+        plugin.prepareDefines(restoredDefines);
+        expect(restoredDefines.DEPTH_SENSING).toBe(true);
+        expect(markMaterialsDirtySpy).not.toHaveBeenCalled();
+
+        material.dispose();
+    });
+
+    it("disables once for WebGPU GPU depth and can attach a later CPU-depth session", () => {
         const xrWebGLBinding = vi.fn();
         const xrGPUBinding = vi.fn();
         (globalThis as any).XRWebGLBinding = xrWebGLBinding;
@@ -146,8 +308,92 @@ describe("WebXRDepthSensing", () => {
         } as unknown as XRFrame);
         expect(warnSpy).toHaveBeenCalledTimes(1);
 
+        sessionManager.onXRSessionEnded.notifyObservers(null);
+        expect(feature.disableAutoAttach).toBe(false);
+        (sessionManager as any).session = {
+            depthDataFormat: "float32",
+            depthUsage: "cpu-optimized",
+            enabledFeatures: ["depth-sensing"],
+        } as XRSession;
+        sessionManager.referenceSpace = {} as XRReferenceSpace;
+        sessionManager.onXRSessionInit.notifyObservers(sessionManager.session);
+        expect(feature.attached).toBe(true);
+        expect(warnSpy).toHaveBeenCalledTimes(1);
+
         featuresManager.dispose();
         feature = undefined;
+    });
+
+    it("preserves a caller-disabled auto-attach policy after WebGPU GPU-depth fallback", () => {
+        (engine as any)._isWebGPU = true;
+        (engine as any)._device = {};
+        (sessionManager as any).session = {
+            depthDataFormat: "float32",
+            depthUsage: "gpu-optimized",
+            enabledFeatures: ["depth-sensing"],
+        } as XRSession;
+        vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+
+        feature = new WebXRDepthSensing(sessionManager, {
+            dataFormatPreference: ["float"],
+            usagePreference: ["gpu", "cpu"],
+        });
+        feature.disableAutoAttach = true;
+
+        expect(feature.attach()).toBe(false);
+        sessionManager.onXRSessionEnded.notifyObservers(null);
+        expect(feature.disableAutoAttach).toBe(true);
+    });
+
+    it("recreates and restores the CPU depth texture after detach and reattach", () => {
+        (engine as any)._isWebGPU = true;
+        (engine as any)._device = {};
+        (sessionManager as any).session = {
+            depthDataFormat: "float32",
+            depthUsage: "cpu-optimized",
+            enabledFeatures: ["depth-sensing"],
+        } as XRSession;
+        sessionManager.referenceSpace = {} as XRReferenceSpace;
+        const view = {} as XRView;
+        const matrix = Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+        const depthInformation = createDepthInformation(Float32Array.from([1, 1, 1, 1]), 1, matrix);
+        const { leftCamera } = createRigCameras();
+        const frame = {
+            getDepthInformation: vi.fn(() => depthInformation),
+            getViewerPose: vi.fn(() => ({ views: [view] })),
+        } as unknown as XRFrame;
+        const markMaterialsDirtySpy = vi.spyOn(scene, "markAllMaterialsAsDirty");
+
+        feature = new WebXRDepthSensing(sessionManager, {
+            dataFormatPreference: ["float"],
+            usagePreference: ["cpu"],
+        });
+        const material = new StandardMaterial("reattach-depth", scene);
+        const plugin = material.pluginManager?.getPlugin("DepthSensing") as MaterialPluginBase;
+        expect(feature.attach()).toBe(true);
+        sessionManager.onXRFrameObservable.notifyObservers(frame);
+        const firstTexture = feature.latestDepthImageTexture;
+        scene.onBeforeCameraRenderObservable.notifyObservers(leftCamera);
+        const firstDefines = {} as Record<string, boolean>;
+        plugin.prepareDefines(firstDefines);
+        expect(firstDefines.DEPTH_SENSING).toBe(true);
+
+        expect(feature.detach()).toBe(true);
+        expect(feature.latestDepthImageTexture).toBeNull();
+        const detachedDefines = {} as Record<string, boolean>;
+        plugin.prepareDefines(detachedDefines);
+        expect(detachedDefines.DEPTH_SENSING).toBe(false);
+
+        expect(feature.attach()).toBe(true);
+        sessionManager.onXRFrameObservable.notifyObservers(frame);
+        scene.onBeforeCameraRenderObservable.notifyObservers(leftCamera);
+        const reattachedDefines = {} as Record<string, boolean>;
+        plugin.prepareDefines(reattachedDefines);
+        expect(reattachedDefines.DEPTH_SENSING).toBe(true);
+        expect(feature.latestDepthImageTexture).not.toBe(firstTexture);
+        expect(markMaterialsDirtySpy).toHaveBeenCalledTimes(2);
+
+        material.dispose();
     });
 
     it("reuses the cached WebGL binding for WebGL GPU depth", () => {

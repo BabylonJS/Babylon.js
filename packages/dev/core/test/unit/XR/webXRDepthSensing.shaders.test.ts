@@ -52,21 +52,67 @@ describe("WebXRDepthSensing material shaders", () => {
 
         expect(plugin.isCompatible(ShaderLanguage.WGSL)).toBe(true);
         expect(uniforms.fragment).toBe("");
-        expect(uniforms.ubo?.map(({ name }) => name)).toEqual(["ds_invScreenSize", "ds_rawValueToMeters", "ds_viewIndex", "ds_shaderViewport", "ds_uvTransform"]);
+        expect(uniforms.ubo?.map(({ name }) => name)).toEqual([
+            "ds_invScreenSize",
+            "ds_rawValueToMeters",
+            "ds_viewIndex",
+            "ds_shaderViewport",
+            "ds_uvTransform",
+            "ds_rawValueToMetersRight",
+            "ds_depthAvailableLeft",
+            "ds_depthAvailableRight",
+            "ds_worldScale",
+            "ds_uvTransformRight",
+        ]);
         expect(vertex.CUSTOM_VERTEX_DEFINITIONS).toContain("varying ds_viewIndexMultiview: f32;");
         expect(vertex.CUSTOM_VERTEX_MAIN_BEGIN).toContain("vertexOutputs.ds_viewIndexMultiview = f32(gl_ViewID_OVR);");
         expect(fragment.CUSTOM_FRAGMENT_DEFINITIONS).toContain("var ds_depthSampler: texture_2d<f32>;");
         expect(fragment.CUSTOM_FRAGMENT_DEFINITIONS).toContain("var ds_depthSampler: texture_2d_array<f32>;");
         expect(fragment.CUSTOM_FRAGMENT_DEFINITIONS).toContain("var ds_depthSamplerSampler: sampler;");
-        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("fragmentInputs.position.xy * uniforms.ds_invScreenSize");
+        expect(fragment.CUSTOM_FRAGMENT_DEFINITIONS).toContain("var ds_depthSamplerRight: texture_2d<f32>;");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("var ds_depthAvailable: f32 = uniforms.ds_depthAvailableLeft;");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("ds_depthAvailable = uniforms.ds_depthAvailableRight;");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("if (ds_depthAvailable > 0.5)");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain(
+            "(fragmentInputs.position.xy * uniforms.ds_invScreenSize - uniforms.ds_shaderViewport.xy) / uniforms.ds_shaderViewport.zw"
+        );
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("uniforms.ds_uvTransform * vec4f");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("uniforms.ds_uvTransformRight * vec4f");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("textureSample(ds_depthSampler, ds_depthSamplerSampler, ds_depthUv, i32(ds_viewIndexSet))");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("textureSample(ds_depthSampler, ds_depthSamplerSampler, ds_depthUv)");
-        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("ds_cameraDepth = ds_cameraDepth * uniforms.ds_rawValueToMeters;");
-        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("let ds_assetDepth: f32 = fragmentInputs.position.z;");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("textureSample(ds_depthSamplerRight, ds_depthSamplerRightSampler, ds_depthUv)");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("ds_cameraDepth = ds_cameraDepth * ds_rawValueToMetersSet;");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("let ds_assetDepth: f32 = (1.0 / fragmentInputs.position.w) / uniforms.ds_worldScale;");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("if (ds_depthAvailable > 0.5 && ds_cameraDepth < ds_assetDepth)");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).not.toContain("1.0 - ds_baseUv.y");
         expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("discard;");
         expect(fragment.CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR).toContain("let ds_depthTolerancePerM: f32 = 0.005;");
         expect(fragment.CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR).toContain("color *= (1.0 - ds_occlusion);");
+    });
+
+    it("compares meter depth against positive linear view depth instead of nonlinear device depth", () => {
+        const plugin = createPlugin(ShaderLanguage.WGSL);
+        const fragment = plugin.getCustomCode("fragment", ShaderLanguage.WGSL)!;
+        const near = 0.1;
+        const far = 10;
+        const viewDepthMeters = 2;
+        const environmentDepthMeters = 1;
+        const clipZ = (far / (far - near)) * viewDepthMeters - (near * far) / (far - near);
+        const deviceDepth = clipZ / viewDepthMeters;
+        const fragmentPositionW = 1 / viewDepthMeters;
+
+        expect(environmentDepthMeters < deviceDepth).toBe(false);
+        expect(environmentDepthMeters < 1 / fragmentPositionW).toBe(true);
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("1.0 / fragmentInputs.position.w");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).not.toContain("fragmentInputs.position.z;");
+    });
+
+    it("keeps top-left WebGPU fragment coordinates aligned with unflipped CPU depth uploads", () => {
+        const plugin = createPlugin(ShaderLanguage.WGSL);
+        const fragment = plugin.getCustomCode("fragment", ShaderLanguage.WGSL)!;
+
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("uniforms.ds_uvTransform * vec4f(ds_baseUv, 0.0, 1.0)");
+        expect(fragment.CUSTOM_FRAGMENT_MAIN_BEGIN).not.toContain("1.0 - ds_baseUv.y");
     });
 
     it("preserves the GLSL injection strings byte for byte", () => {
