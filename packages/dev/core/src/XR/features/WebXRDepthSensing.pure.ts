@@ -114,6 +114,7 @@ interface IWebXRCPUDepthViewState {
     rawValueToMeters: number;
     texture: Nullable<RawTexture>;
     uvTransform: Matrix;
+    visualizationDepthBuffer: Nullable<Float32Array>;
     width: number;
 }
 
@@ -793,6 +794,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
                 rawValueToMeters,
                 texture: null,
                 uvTransform: Matrix.Identity(),
+                visualizationDepthBuffer: null,
                 width,
             };
             this._cpuDepthViewStates[viewIndex] = viewState;
@@ -830,25 +832,32 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         this._cachedDepthImageTextureWrapsExternalTexture = false;
         this._cachedDepthImageTexture = viewState.texture;
 
-        let float32Array: Float32Array | null = null;
+        let depthValues: Float32Array | Uint16Array | null = null;
         switch (dataFormat) {
             case "ushort":
             case "luminance-alpha":
-                float32Array = Float32Array.from(new Uint16Array(data));
-
+                depthValues = new Uint16Array(data);
                 break;
             case "float":
-                float32Array = new Float32Array(data);
+                depthValues = new Float32Array(data);
                 break;
-
             default:
                 break;
         }
-        if (float32Array) {
+        if (depthValues) {
+            let uploadData: Float32Array;
             if (this.options.prepareTextureForVisualization) {
-                float32Array = float32Array.map((val) => val * rawValueToMeters);
+                if (!viewState.visualizationDepthBuffer || viewState.visualizationDepthBuffer.length !== depthValues.length) {
+                    viewState.visualizationDepthBuffer = new Float32Array(depthValues.length);
+                }
+                uploadData = viewState.visualizationDepthBuffer;
+                for (let index = 0; index < depthValues.length; index++) {
+                    uploadData[index] = depthValues[index] * rawValueToMeters;
+                }
+            } else {
+                uploadData = depthValues instanceof Float32Array ? depthValues : Float32Array.from(depthValues);
             }
-            viewState.texture.update(float32Array);
+            viewState.texture.update(uploadData);
         }
 
         if (!this._xrSessionManager.scene.getEngine().isWebGPU) {

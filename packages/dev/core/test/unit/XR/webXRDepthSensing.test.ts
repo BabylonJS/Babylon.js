@@ -165,6 +165,49 @@ describe("WebXRDepthSensing", () => {
         expect(getDepthInMeters).toHaveBeenCalledExactlyOnceWith(1, 1);
     });
 
+    it("reuses the per-view visualization buffer across CPU depth frames", () => {
+        (engine as any)._isWebGPU = true;
+        (engine as any)._device = {};
+        (sessionManager as any).session = {
+            depthDataFormat: "float32",
+            depthUsage: "cpu-optimized",
+            enabledFeatures: ["depth-sensing"],
+        } as XRSession;
+        sessionManager.referenceSpace = {} as XRReferenceSpace;
+
+        const matrix = Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+        const firstDepthValues = Float32Array.from([1, 2, 3, 4]);
+        const secondDepthValues = Float32Array.from([4, 3, 2, 1]);
+        const getDepthInformation = vi
+            .fn()
+            .mockReturnValueOnce(createDepthInformation(firstDepthValues, 0.5, matrix))
+            .mockReturnValueOnce(createDepthInformation(secondDepthValues, 2, matrix));
+        const view = {} as XRView;
+        const frame = {
+            getDepthInformation,
+            getViewerPose: vi.fn(() => ({ views: [view] })),
+        } as unknown as XRFrame;
+        const updateRawTextureSpy = vi.spyOn(engine, "updateRawTexture");
+
+        feature = new WebXRDepthSensing(sessionManager, {
+            dataFormatPreference: ["float"],
+            prepareTextureForVisualization: true,
+            usagePreference: ["cpu"],
+        });
+
+        expect(feature.attach()).toBe(true);
+        sessionManager.onXRFrameObservable.notifyObservers(frame);
+        const firstUpload = updateRawTextureSpy.mock.calls[0][1] as Float32Array;
+        const firstUploadSnapshot = firstUpload.slice();
+        sessionManager.onXRFrameObservable.notifyObservers(frame);
+        const secondUpload = updateRawTextureSpy.mock.calls[1][1] as Float32Array;
+
+        expect(firstUpload).not.toBe(firstDepthValues);
+        expect(firstUpload).toBe(secondUpload);
+        expect(firstUploadSnapshot).toEqual(Float32Array.from([0.5, 1, 1.5, 2]));
+        expect(secondUpload).toEqual(Float32Array.from([8, 6, 4, 2]));
+    });
+
     it("binds distinct CPU depth buffers and transforms for each WebGPU XR view", () => {
         (engine as any)._isWebGPU = true;
         (engine as any)._device = {};
