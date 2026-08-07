@@ -75,6 +75,9 @@ variables:
       value: $(Pipeline.Workspace)/.nxcache
     - name: PLAYWRIGHT_BROWSERS_PATH
       value: $(Pipeline.Workspace)/.playwright
+    # Cache location for the pinned Khronos KHR_interactivity conformance assets.
+    - name: KHR_ASSETS_CACHE
+      value: $(Pipeline.Workspace)/.khr-interactivity-assets
 
 pool:
     vmImage: ubuntu-latest
@@ -669,6 +672,97 @@ jobs:
             inputs:
                 testResultsFormat: JUnit
                 testResultsFiles: "./packages/tools/tests/junit.xml"
+
+    # ============================================================================
+    # KHR_INTERACTIVITY CONFORMANCE
+    # Depends on: Build, FormatLint
+    # Runs the pinned Khronos conformance corpus against the deployed snapshot (the same artifact the
+    # other browser suites test), so nothing is built inside the test agent. Gated at the job level on
+    # the Build job's affected-tags output so unaffected PRs never provision an agent.
+    # ============================================================================
+    - job: KHRInteractivityConformance
+      displayName: "KHR_interactivity conformance"
+      dependsOn:
+          - Build
+          - FormatLint
+      # Only run when a FlowGraph or glTF change (or a run-all "ALL" change) is detected by the Build
+      # job's ComputeVisTags step. Evaluated before the agent is provisioned, so an unrelated PR neither
+      # queues the job nor clones the repo. An unset value (e.g. ComputeVisTags failure) evaluates false
+      # and skips — safe because the suite is non-blocking and informational.
+      condition: >-
+          and(
+            succeeded(),
+            or(
+              eq(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'ALL'),
+              contains(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'FlowGraph'),
+              contains(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'glTF')
+            )
+          )
+      # A single run: consuming the deployed snapshot (rather than building Babylon in-agent) makes the
+      # full ~174-asset suite fast enough to finish well within the timeout on one agent, and avoids the
+      # redundant per-shard npm/playwright install overhead that sharding otherwise added.
+      # Kept non-blocking (continueOnError) for now so an intermittent asset does not block merges;
+      # promote to a required gate once it has a track record of completing green.
+      continueOnError: true
+      timeoutInMinutes: 30
+      steps:
+          - template: templates/checkout-with-tag-override.yml
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "24.x"
+
+          - template: templates/cache-steps.yml
+            parameters:
+                playwright: true
+
+          # The conformance assets are a large, rarely changing binary corpus, so cache them on
+          # the pinned revision. The key comes from the same file the fetch script reads, so a
+          # bumped revision automatically misses the cache instead of serving stale assets.
+          - task: Cache@2
+            displayName: "Cache KHR_interactivity assets"
+            inputs:
+                key: 'khrassets | "$(Agent.OS)" | scripts/khr-interactivity-assets.json'
+                path: $(KHR_ASSETS_CACHE)
+
+          - script: |
+                npm install
+                npx playwright install --with-deps chromium
+            displayName: "npm install && playwright install"
+            retryCountOnTaskFailure: 1
+
+          - script: node ./scripts/runKHRInteractivityAssetTests.mjs
+            displayName: "run KHR_interactivity conformance tests"
+            env:
+                CI: "true"
+                # Force Chrome. The shared Playwright config defaults to Firefox on CI, but the
+                # integration project only passes the `--use-angle=default` WebGL flag on the Chrome
+                # branch, so Firefox runs the conformance suite with no working WebGL context.
+                BROWSER: "Chrome"
+                # Consume the Build job's deployed snapshot (empty.html + the properly built UMD bundles)
+                # instead of building Babylon in-agent. This is what the other browser suites do and is
+                # what keeps the agent from running out of memory.
+                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                KHR_ASSETS_CACHE_DIR: $(KHR_ASSETS_CACHE)
+
+          - task: PublishTestResults@2
+            displayName: "Publish KHR_interactivity conformance results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./khr-interactivity-junit.xml"
+                testRunTitle: "KHR_interactivity conformance"
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish conformance report"
+            condition: failed()
+            continueOnError: true
+            inputs:
+                targetPath: "khr-interactivity-report"
+                artifact: "khr-interactivity-report"
 
     # ============================================================================
     # VISUALIZATION TESTS - WEBGL 2

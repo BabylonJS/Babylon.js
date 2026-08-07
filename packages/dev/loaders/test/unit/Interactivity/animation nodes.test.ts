@@ -169,6 +169,120 @@ describe("Interactivity/animation nodes", () => {
         expect(stopSpy).not.toHaveBeenCalled();
     });
 
+    // Regression (WhackAMole): when endTime is supplied by a connection (here the read-only `maxTime`
+    // animation pointer) rather than a literal, the parse-time seconds→frames dataTransformer cannot
+    // run. The parser must insert a runtime multiply so the connected KHR time (seconds) is still
+    // converted to Babylon frames. Without it the animation plays a tiny fraction of its range.
+    test("animation/start converts a connected endTime (maxTime pointer) from seconds to frames", async () => {
+        const ag = new AnimationGroup("test");
+        ag.to = 600; // 600 frames == 10 seconds at 60 fps; maxTime therefore reads 10 (seconds)
+        const startSpy = vi.spyOn(ag, "start");
+        const gltf = {
+            animations: [
+                {}, // index 0 unused
+                { _babylonAnimationGroup: ag },
+            ],
+        };
+
+        await generateSimpleNodeGraph(
+            gltf,
+            [{ op: "animation/start" }, { op: "pointer/get" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        animation: { value: [1], type: 0 },
+                        // endTime is fed by the pointer/get output rather than a literal.
+                        endTime: { node: 1, socket: "value" },
+                    },
+                },
+                {
+                    declaration: 1,
+                    configuration: {
+                        pointer: { value: ["/animations/1/extensions/KHR_interactivity/maxTime"] },
+                        type: { value: [1] }, // float
+                    },
+                },
+            ],
+            [{ signature: "int" }, { signature: "float" }]
+        );
+
+        expect(startSpy).toHaveBeenCalledTimes(1);
+        // to === 600 frames proves the connected 10s maxTime was scaled by the 60 fps factor.
+        expect(startSpy).toHaveBeenCalledWith(false, 1, 0, 600);
+    });
+
+    // animation/start input validation (KHR spec: err flow when speed/time inputs are invalid)
+
+    test.each([
+        ["speed 0", { speed: { value: [0], type: 1 } }],
+        ["speed -1", { speed: { value: [-1], type: 1 } }],
+        ["speed NaN", { speed: { value: [NaN], type: 1 } }],
+        ["speed +Infinity", { speed: { value: [Infinity], type: 1 } }],
+        ["endTime NaN", { endTime: { value: [NaN], type: 1 } }],
+        ["startTime NaN", { startTime: { value: [NaN], type: 1 } }],
+        ["startTime +Infinity", { startTime: { value: [Infinity], type: 1 } }],
+    ])("animation/start does not start the animation for invalid input: %s", async (_name, extraValues) => {
+        const ag = new AnimationGroup("test");
+        ag.to = 10;
+        const startSpy = vi.spyOn(ag, "start");
+        const gltf = {
+            animations: [{}, { _babylonAnimationGroup: ag }],
+        };
+
+        await generateSimpleNodeGraph(
+            gltf,
+            [{ op: "animation/start" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        animation: { value: [1], type: 0 },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        endTime: { value: [2], type: 1 },
+                        ...(extraValues as any),
+                    },
+                },
+            ],
+            [{ signature: "int" }, { signature: "float" }]
+        );
+
+        expect(startSpy).not.toHaveBeenCalled();
+    });
+
+    test("animation/start allows an infinite endTime (plays/loops, does not error)", async () => {
+        const ag = new AnimationGroup("test");
+        ag.to = 10;
+        const startSpy = vi.spyOn(ag, "start");
+        const gltf = {
+            animations: [{}, { _babylonAnimationGroup: ag }],
+        };
+
+        await generateSimpleNodeGraph(
+            gltf,
+            [{ op: "animation/start" }],
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        animation: { value: [1], type: 0 },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        // Per the KHR spec only a NaN or infinite START time errors; an infinite END time is valid
+                        // and means "play to the natural end / loop".
+                        endTime: { value: [Infinity], type: 1 },
+                    },
+                },
+            ],
+            [{ signature: "int" }, { signature: "float" }]
+        );
+
+        // The animation must still start (with loop = true because the end time is infinite).
+        expect(startSpy).toHaveBeenCalledTimes(1);
+        expect(startSpy).toHaveBeenCalledWith(true, 1, 0, expect.anything());
+    });
+
     // animation/stop
 
     test("animation/stop after a delay", async () => {
@@ -240,6 +354,9 @@ describe("Interactivity/animation nodes", () => {
 
         expect(startSpy).toHaveBeenCalled();
         expect(stopSpy).toHaveBeenCalledTimes(1);
+        // The animation must be stopped while skipping the animation-end observable, so that stopping does not
+        // activate the originating animation/start operation's `done` flow (KHR_interactivity spec).
+        expect(stopSpy).toHaveBeenCalledWith(true);
     });
 
     // animation/stopAt

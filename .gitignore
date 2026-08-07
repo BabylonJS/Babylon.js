@@ -33,6 +33,8 @@ packages/tools/playground/public/temp
 #playwright
 test-results
 playwright-report
+khr-interactivity-report
+khr-interactivity-junit.xml
 playwright/.cache/
 .playwright
 .playwright-cli

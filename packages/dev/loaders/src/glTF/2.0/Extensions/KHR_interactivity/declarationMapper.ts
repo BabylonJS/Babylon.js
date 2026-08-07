@@ -7,6 +7,14 @@ import { type InteractivityEvent, type InteractivityGraphToFlowGraphParser } fro
 import { type IGLTF } from "../../glTFLoaderInterfaces";
 import { FlowGraphTypes, getAnimationTypeByFlowGraphType } from "core/FlowGraph/flowGraphRichTypes";
 
+// Per-block runaway-loop guard for KHR_interactivity for-loops. Interactivity assets may run large
+// finite loops (e.g. the math/random Monte Carlo conformance asset iterates 10k times), so this is
+// set above the FlowGraphForLoopBlock process-wide default while staying low enough that the guard is
+// still meaningful — every iteration runs a full synchronous sub-graph, so a much larger value (and
+// especially nested loops) could lock the main thread before the guard trips. Applied per for-loop
+// block via the flow/for extraProcessor rather than by mutating the shared static.
+const InteractivityForLoopMaxIterations = 20000;
+
 interface IGLTFToFlowGraphMappingObject {
     /**
      * The name of the property in the FlowGraph block.
@@ -57,8 +65,24 @@ interface IGLTFToFlowGraphMappingObject {
      * Used in configuration values. If defined, this will be the default value, if no value is provided.
      */
     defaultValue?: any;
+
+    /**
+     * When the input value comes from a connection (an upstream node output) rather than a literal,
+     * the parse-time {@link dataTransformer} cannot run. If this is `true`, the importer inserts a
+     * runtime multiply block that scales the connected value by the animation target fps, converting
+     * a KHR animation time (seconds) into Babylon animation frames. Literal values keep using the
+     * {@link dataTransformer}. Used by `animation/start` / `animation/stopAt` time inputs, which may
+     * be fed by a `pointer/get` (e.g. the read-only `maxTime` animation pointer).
+     */
+    convertConnectedTimeToFrames?: boolean;
 }
 
+/**
+ * Description of how a KHR_interactivity declaration (op such as
+ * `pointer/get`, `event/onSelect`, `math/add`) maps to one or more
+ * FlowGraph blocks. Used by {@link InteractivityGraphToFlowGraphParser}
+ * to translate the source glTF graph into the serialized FlowGraph form.
+ */
 export interface IGLTFToFlowGraphMapping {
     /**
      * The type of the FlowGraph block(s).
@@ -252,6 +276,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "event/onStart": {
         blocks: [FlowGraphBlockNames.SceneReadyEvent],
         outputs: {
+            values: {
+                // KHR_interactivity `ref event` output (the event reference).
+                event: { name: "event" },
+            },
             flows: {
                 out: { name: "done" },
             },
@@ -263,6 +291,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         outputs: {
             values: {
                 timeSinceLastTick: { name: "deltaTime", gltfType: "number" /*, dataTransformer: (time: number) => time / 1000*/ },
+                // KHR_interactivity `ref event` output (the event reference).
+                event: { name: "event" },
             },
             flows: {
                 out: { name: "done" },
@@ -293,6 +323,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "event/receive": {
         blocks: [FlowGraphBlockNames.ReceiveCustomEvent],
         outputs: {
+            values: {
+                // KHR_interactivity `ref event` output (the event reference).
+                event: { name: "event" },
+            },
             flows: {
                 out: { name: "done" },
             },
@@ -338,8 +372,26 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             return serializedObjects;
         },
     },
+    "event/stopPropagation": {
+        blocks: [FlowGraphBlockNames.StopEventPropagation],
+        inputs: {
+            values: {
+                event: { name: "event" },
+                stopImmediate: { name: "stopImmediate" },
+            },
+            flows: {
+                in: { name: "in" },
+            },
+        },
+        outputs: {
+            flows: {
+                out: { name: "out" },
+            },
+        },
+    },
     "math/E": getSimpleInputMapping(FlowGraphBlockNames.E),
     "math/Pi": getSimpleInputMapping(FlowGraphBlockNames.PI),
+    "math/Tau": getSimpleInputMapping(FlowGraphBlockNames.Tau),
     "math/Inf": getSimpleInputMapping(FlowGraphBlockNames.Inf),
     "math/NaN": getSimpleInputMapping(FlowGraphBlockNames.NaN),
     "math/abs": getSimpleInputMapping(FlowGraphBlockNames.Abs),
@@ -408,7 +460,57 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/clamp": getSimpleInputMapping(FlowGraphBlockNames.Clamp, ["a", "b", "c"]),
     "math/saturate": getSimpleInputMapping(FlowGraphBlockNames.Saturate),
     "math/mix": getSimpleInputMapping(FlowGraphBlockNames.MathInterpolation, ["a", "b", "c"]),
+    // Smooth-step (Hermite interpolation): edges a/b and value c.
+    "math/smoothStep": getSimpleInputMapping(FlowGraphBlockNames.SmoothStep, ["a", "b", "c"]),
+    // Linear sRGB <-> OkLCh (Oklab polar form). Scalar r/g/b inputs map to l/c/h
+    // outputs (hue in radians) and vice-versa.
+    "math/rgbToOkLCh": {
+        blocks: [FlowGraphBlockNames.RGBToOkLCh],
+        inputs: {
+            values: {
+                r: { name: "r", gltfType: "number" },
+                g: { name: "g", gltfType: "number" },
+                b: { name: "b", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                l: { name: "l" },
+                c: { name: "c" },
+                h: { name: "h" },
+            },
+        },
+    },
+    "math/rgbFromOkLCh": {
+        blocks: [FlowGraphBlockNames.RGBFromOkLCh],
+        inputs: {
+            values: {
+                l: { name: "l", gltfType: "number" },
+                c: { name: "c", gltfType: "number" },
+                h: { name: "h", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                r: { name: "r" },
+                g: { name: "g" },
+                b: { name: "b" },
+            },
+        },
+    },
+    // Quaternion spherical-linear interpolation. Inputs are two unit
+    // quaternions and an unclamped float coefficient.
+    "math/quatSlerp": getSimpleInputMapping(FlowGraphBlockNames.MathSlerp, ["a", "b", "c"]),
+    // Vector spherical-linear interpolation (float2/float3). Inputs are two
+    // vectors and an unclamped float coefficient.
+    "math/slerp": getSimpleInputMapping(FlowGraphBlockNames.VectorSlerp, ["a", "b", "c"]),
     "math/eq": getSimpleInputMapping(FlowGraphBlockNames.Equality, ["a", "b"]),
+    // Reference equality. The spec defines `ref/eq` as: true if both refs are
+    // null, true if both refer to the same object (regardless of whether it
+    // exists), false otherwise. FlowGraphEqualityBlock falls through to a
+    // strict `===` comparison for non-vector/matrix/numeric types, which
+    // already produces the spec-defined behaviour for Babylon object refs.
+    "ref/eq": getSimpleInputMapping(FlowGraphBlockNames.Equality, ["a", "b"]),
     "math/lt": getSimpleInputMapping(FlowGraphBlockNames.LessThan, ["a", "b"]),
     "math/le": getSimpleInputMapping(FlowGraphBlockNames.LessThanOrEqual, ["a", "b"]),
     "math/gt": getSimpleInputMapping(FlowGraphBlockNames.GreaterThan, ["a", "b"]),
@@ -642,6 +744,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 scale: { name: "scaling" },
             },
         },
+        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
+            // KHR_interactivity step 4 of the matDecompose algorithm requires a non-decomposable matrix to still
+            // report the extracted translation and the raw column lengths, instead of the type defaults the
+            // FlowGraph block emits by default. The block has no `isValid` output in glTF, so the caller can only
+            // observe those values.
+            serializedObjects[0].config ||= {};
+            serializedObjects[0].config.keepDegenerateComponents = true;
+            return serializedObjects;
+        },
     },
     "math/quatConjugate": getSimpleInputMapping(FlowGraphBlockNames.Conjugate, ["a"]),
     "math/quatMul": {
@@ -680,6 +791,40 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "math/quatToAxisAngle": getSimpleInputMapping(FlowGraphBlockNames.AxisAngleFromQuaternion, ["a"]),
     "math/quatFromDirections": getSimpleInputMapping(FlowGraphBlockNames.QuaternionFromDirections, ["a", "b"]),
+    "math/quatFromUpForward": {
+        blocks: [FlowGraphBlockNames.QuaternionFromUpForward],
+        inputs: {
+            values: {
+                up: { name: "a", gltfType: "float3" },
+                forward: { name: "b", gltfType: "float3" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+    },
+    // Tait–Bryan intrinsic Euler angles (x/y/z, in radians) to a rotation quaternion. The rotation
+    // order is selected by the `order` configuration string (default `yxz`).
+    "math/quatFromAngles": {
+        blocks: [FlowGraphBlockNames.QuaternionFromAngles],
+        configuration: {
+            order: { name: "order", defaultValue: ["yxz"] },
+        },
+        inputs: {
+            values: {
+                x: { name: "a", gltfType: "number" },
+                y: { name: "b", gltfType: "number" },
+                z: { name: "c", gltfType: "number" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
+    },
     "math/combine2x2": {
         blocks: [FlowGraphBlockNames.CombineMatrix2D],
         inputs: {
@@ -694,12 +839,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 value: { name: "value" },
             },
-        },
-        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
-            // configure it to work the way glTF specifies
-            serializedObjects[0].config ||= {};
-            serializedObjects[0].config.inputIsColumnMajor = true;
-            return serializedObjects;
         },
     },
     "math/extract2x2": {
@@ -737,12 +876,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 value: { name: "value" },
             },
-        },
-        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
-            // configure it to work the way glTF specifies
-            serializedObjects[0].config ||= {};
-            serializedObjects[0].config.inputIsColumnMajor = true;
-            return serializedObjects;
         },
     },
     "math/extract3x3": {
@@ -792,12 +925,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 value: { name: "value" },
             },
-        },
-        extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
-            // configure it to work the way glTF specifies
-            serializedObjects[0].config ||= {};
-            serializedObjects[0].config.inputIsColumnMajor = true;
-            return serializedObjects;
         },
     },
     "math/extract4x4": {
@@ -1032,6 +1159,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             const serializedObject = serializedObjects[0];
             serializedObject.config ||= {};
             serializedObject.config.incrementIndexWhenLoopDone = true;
+            // KHR_interactivity assets may run large finite loops (e.g. the math/random Monte Carlo
+            // conformance asset iterates 10k times), well above the block's conservative default guard.
+            // Raise the cap for interactivity for-loops only, per block, instead of mutating the
+            // process-wide FlowGraphForLoopBlock.MaxLoopIterations that every other FlowGraph relies on.
+            serializedObject.config.maxLoopIterations = InteractivityForLoopMaxIterations;
             return serializedObjects;
         },
     },
@@ -1104,10 +1236,22 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             flows: {
                 err: { name: "error" },
             },
+            values: {
+                // New spec renames this output to `lastDelay` (ref). Internally we still produce a
+                // FlowGraphInteger; the index is unique per delay so it acts as the opaque handle.
+                lastDelay: { name: "lastDelayIndex" },
+            },
         },
     },
     "flow/cancelDelay": {
         blocks: [FlowGraphBlockNames.CancelDelay],
+        inputs: {
+            values: {
+                // New spec renames this input to `delay` (ref). The underlying block reads an int
+                // from `delayIndex`; when a ref-string flows in we coerce it via the path converter.
+                delay: { name: "delayIndex" },
+            },
+        },
     },
     "variable/get": {
         blocks: [FlowGraphBlockNames.GetVariable],
@@ -1256,6 +1400,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "pointer/get": {
         blocks: [FlowGraphBlockNames.GetProperty, FlowGraphBlockNames.JsonPointerParser],
+        validation: ValidateJsonPointerTemplate,
         configuration: {
             pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
         },
@@ -1300,6 +1445,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "pointer/set": {
         blocks: [FlowGraphBlockNames.SetProperty, FlowGraphBlockNames.JsonPointerParser],
+        validation: ValidateJsonPointerTemplate,
         configuration: {
             pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
         },
@@ -1352,6 +1498,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "pointer/interpolate": {
         // interpolate, parse the pointer and play the animation generated. 3 blocks!
         blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.BezierCurveEasing],
+        validation: ValidateJsonPointerTemplate,
         configuration: {
             pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
         },
@@ -1447,8 +1594,18 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
                 speed: { name: "speed", gltfType: "number" },
-                startTime: { name: "from", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps] },
-                endTime: { name: "to", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps] },
+                startTime: {
+                    name: "from",
+                    gltfType: "number",
+                    convertConnectedTimeToFrames: true,
+                    dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps],
+                },
+                endTime: {
+                    name: "to",
+                    gltfType: "number",
+                    convertConnectedTimeToFrames: true,
+                    dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps],
+                },
             },
         },
         outputs: {
@@ -1522,7 +1679,12 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         inputs: {
             values: {
                 animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
-                stopTime: { name: "stopAtFrame", gltfType: "number", dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps] },
+                stopTime: {
+                    name: "stopAtFrame",
+                    gltfType: "number",
+                    convertConnectedTimeToFrames: true,
+                    dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps],
+                },
             },
         },
         outputs: {
@@ -1660,6 +1822,76 @@ function ValidateTypes(gltfBlock: IKHRInteractivity_Node): { valid: boolean; err
             return { valid: false, error: "All inputs must be of the same type" };
         }
     }
+    return { valid: true };
+}
+
+/**
+ * Returns whether a literal path segment has an odd number of consecutive occurrences of any bracket character.
+ * Brackets used literally inside a path segment must be doubled, so an odd run means the segment is malformed.
+ * @param segment the literal path segment
+ * @returns true when the segment contains an odd run of brackets
+ */
+function HasOddBracketRun(segment: string): boolean {
+    for (let index = 0; index < segment.length; index++) {
+        const character = segment[index];
+        if ("[]{}".indexOf(character) === -1) {
+            continue;
+        }
+        let runLength = 1;
+        while (segment[index + runLength] === character) {
+            runLength++;
+        }
+        if (runLength % 2 !== 0) {
+            return true;
+        }
+        index += runLength - 1;
+    }
+    return false;
+}
+
+/**
+ * Validates the `pointer` configuration value of a `pointer/*` operation, following the JSON Pointer Template
+ * Parsing steps of the KHR_interactivity specification. A template parameter must span an entire path segment, so
+ * a template such as `/materials/{materialRef}pbrMetallicRoughness/...` is a syntax error, and the specification
+ * requires the whole behavior graph to be rejected.
+ * @param gltfBlock the glTF interactivity node
+ * @returns the validation result
+ */
+function ValidateJsonPointerTemplate(gltfBlock: IKHRInteractivity_Node): { valid: boolean; error?: string } {
+    const pointer = gltfBlock.configuration?.pointer?.value?.[0];
+    if (typeof pointer !== "string") {
+        return { valid: false, error: "A pointer operation requires a string `pointer` configuration value" };
+    }
+    // A JSON Pointer (RFC 6901) is either empty or a sequence of `/`-prefixed reference tokens.
+    if (pointer.length !== 0 && pointer[0] !== "/") {
+        return { valid: false, error: `The JSON Pointer Template "${pointer}" is not a syntactically valid JSON Pointer` };
+    }
+
+    const invalid = (reason: string) => ({ valid: false, error: `The JSON Pointer Template "${pointer}" is invalid: ${reason}` });
+    const socketIds = new Set<string>();
+    for (const segment of pointer.split("/")) {
+        const isIntegerParameter = segment[0] === "[" && segment[1] !== "[";
+        const isReferenceParameter = segment[0] === "{" && segment[1] !== "{";
+        if (!isIntegerParameter && !isReferenceParameter) {
+            if (HasOddBracketRun(segment)) {
+                return invalid(`the path segment "${segment}" contains an odd number of consecutive brackets`);
+            }
+            continue;
+        }
+
+        const closingBracket = isIntegerParameter ? "]" : "}";
+        const body = segment.substring(1, segment.length - 1);
+        if (segment.length < 3 || segment[segment.length - 1] !== closingBracket || /[[{]/.test(body) || /[\]}]/.test(body)) {
+            return invalid(`the template parameter path segment "${segment}" is malformed`);
+        }
+
+        const socketId = body.replace(/~1/g, "/").replace(/~0/g, "~");
+        if (socketIds.has(socketId)) {
+            return invalid(`the template parameter "${socketId}" is used more than once`);
+        }
+        socketIds.add(socketId);
+    }
+
     return { valid: true };
 }
 
@@ -1833,7 +2065,7 @@ export function getAllSupportedNativeNodeTypes(): string[] {
    - Effective JSON Pointer Generation (`pointer/set`) [FlowGraphBlockNames.SetProperty, FlowGraphBlockNames.JsonPointerParser]
    - Pointer Get (`pointer/get`) [FlowGraphBlockNames.GetProperty, FlowGraphBlockNames.JsonPointerParser]
    - Pointer Set (`pointer/set`) [FlowGraphBlockNames.SetProperty, FlowGraphBlockNames.JsonPointerParser]
-   - Pointer Interpolate (`pointer/interpolate`) [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.Easing]
+   - Pointer Interpolate (`pointer/interpolate`) [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.BezierCurveEasing]
 
 ### Animation Control Nodes
 1. **Animation Play** (`animation/start`) FlowGraphBlockNames.PlayAnimation

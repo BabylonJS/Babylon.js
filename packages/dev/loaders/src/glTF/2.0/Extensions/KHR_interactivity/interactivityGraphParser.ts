@@ -4,13 +4,25 @@ import { type IGLTFToFlowGraphMapping, getMappingForDeclaration, getMappingForFu
 import { Logger } from "core/Misc/logger";
 import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphConnection, type ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc/guid";
-import { type FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
+import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 
+/**
+ * Description of a KHR_interactivity custom event, as parsed from the
+ * glTF `events` array. Used by the importer to register the event with the
+ * FlowGraph send/receive event blocks.
+ */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface InteractivityEvent {
+    /** Identifier of the event, used to match send and receive blocks. */
     eventId: string;
+    /**
+     * Optional payload schema for the event. Each entry describes one
+     * value carried by the event: an `id` (the FlowGraph data socket name),
+     * a `type` (glTF interactivity type name) and an optional default
+     * `value`. `eventData` (the boolean) is currently unused.
+     */
     eventData?: {
         eventData: boolean;
         id: string;
@@ -20,7 +32,7 @@ export interface InteractivityEvent {
 }
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const gltfTypeToBabylonType: {
-    [key: string]: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" };
+    [key: string]: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" | "string" };
 } = {
     float: { length: 1, flowGraphType: FlowGraphTypes.Number, elementType: "number" },
     bool: { length: 1, flowGraphType: FlowGraphTypes.Boolean, elementType: "boolean" },
@@ -31,19 +43,38 @@ export const gltfTypeToBabylonType: {
     float2x2: { length: 4, flowGraphType: FlowGraphTypes.Matrix2D, elementType: "number" },
     float3x3: { length: 9, flowGraphType: FlowGraphTypes.Matrix3D, elementType: "number" },
     int: { length: 1, flowGraphType: FlowGraphTypes.Integer, elementType: "number" },
+    // KHR_interactivity opaque reference type. Represented as a JSON Pointer string
+    // (e.g. "/nodes/17/") that addresses a glTF object. The empty string is the
+    // canonical "null reference" sentinel used by the parser.
+    ref: { length: 1, flowGraphType: FlowGraphTypes.String, elementType: "string" },
 };
 
+/**
+ * Parses a KHR_interactivity graph definition (the raw glTF JSON object) into
+ * the serialized FlowGraph form consumed by {@link ParseFlowGraphAsync}.
+ *
+ * The class walks the interactivity types, declarations, variables, events
+ * and nodes in order and emits an {@link ISerializedFlowGraph} via
+ * {@link serializeToFlowGraph}.
+ */
 export class InteractivityGraphToFlowGraphParser {
     /**
      * Note - the graph should be rejected if the same type is defined twice.
      * We currently don't validate that.
      */
-    private _types: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" }[] = [];
+    private _types: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" | "string" }[] = [];
     private _mappings: { flowGraphMapping: IGLTFToFlowGraphMapping; fullOperationName: string }[] = [];
     private _staticVariables: { type: FlowGraphTypes; value: any[] }[] = [];
     private _events: InteractivityEvent[] = [];
     private _internalEventsCounter: number = 0;
     private _nodes: { blocks: ISerializedFlowGraphBlock[]; fullOperationName: string }[] = [];
+    /**
+     * Extra blocks the parser inserts between existing nodes (e.g. the seconds→frames multiply for
+     * connected animation-time inputs). Kept separate from any node's `blocks` array so per-node
+     * post-processing that indexes into that array (such as the animation extraProcessors targeting
+     * the last block) is not disturbed, then concatenated into the serialized graph.
+     */
+    private _insertedBlocks: ISerializedFlowGraphBlock[] = [];
 
     constructor(
         private _interactivityGraph: IKHRInteractivity_Graph,
@@ -131,6 +162,10 @@ export class InteractivityGraphToFlowGraphParser {
                     break;
                 case FlowGraphTypes.Number:
                     value.push(NaN);
+                    break;
+                case FlowGraphTypes.String:
+                    // Default for a `ref`-typed value is the null reference, encoded as the empty string.
+                    value.push("" as any);
                     break;
                 case FlowGraphTypes.Vector2:
                     value.push(NaN, NaN);
@@ -295,6 +330,17 @@ export class InteractivityGraphToFlowGraphParser {
                 Logger.Error(["No mapping found for node", gltfNode]);
                 throw new Error("Error parsing node connections");
             }
+            // KHR_interactivity spec section 3.2.4 "Unsupported Operations":
+            // nodes referring to unsupported operations are demoted to no-ops.
+            // Activations of their input flow sockets are ignored, their output
+            // flow sockets are never activated, and their output value sockets
+            // return constant type-default values. They have no backing
+            // FlowGraph blocks (blocks.length === 0), so there is nothing to
+            // wire for this node — skip all of its connections.
+            if (flowGraphBlocks.blocks.length === 0) {
+                Logger.Warn(`Skipping connections for no-op node #${i} (unsupported operation: ${flowGraphBlocks.fullOperationName})`);
+                continue;
+            }
             const flowsFromGLTF = gltfNode.flows || {};
             const flowsKeys = Object.keys(flowsFromGLTF).sort(); // sorting as some operations require sorted keys
             // connect the flows
@@ -302,10 +348,6 @@ export class InteractivityGraphToFlowGraphParser {
                 const flow = flowsFromGLTF[flowKey];
                 const flowMapping = outputMapper.flowGraphMapping.outputs?.flows?.[flowKey];
                 const socketOutName = flowMapping?.name || flowKey;
-                // create a serialized socket
-                const socketOut = this._createNewSocketConnection(socketOutName, true);
-                const block = (flowMapping && flowMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === flowMapping.toBlock)) || flowGraphBlocks.blocks[0];
-                block.signalOutputs.push(socketOut);
                 // get the input node of this block
                 const inputNodeId = flow.node;
                 const nodeIn = this._nodes[inputNodeId];
@@ -313,6 +355,17 @@ export class InteractivityGraphToFlowGraphParser {
                     Logger.Error(["No node found for input node id", inputNodeId]);
                     throw new Error("Error parsing node connections");
                 }
+                // Spec 3.2.4: input flow activations on no-op nodes are ignored,
+                // so a flow connection into a no-op target is itself a no-op.
+                // Drop it instead of crashing on the missing target block.
+                if (nodeIn.blocks.length === 0) {
+                    Logger.Warn(`Dropping flow connection from node #${i} "${flowKey}" to no-op node #${inputNodeId} (unsupported operation: ${nodeIn.fullOperationName})`);
+                    continue;
+                }
+                // create a serialized socket
+                const socketOut = this._createNewSocketConnection(socketOutName, true);
+                const block = (flowMapping && flowMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === flowMapping.toBlock)) || flowGraphBlocks.blocks[0];
+                block.signalOutputs.push(socketOut);
                 // get the mapper for the input node - in case it mapped to multiple blocks
                 const inputMapper = getMappingForFullOperationName(nodeIn.fullOperationName);
                 if (!inputMapper) {
@@ -362,6 +415,10 @@ export class InteractivityGraphToFlowGraphParser {
                 const socketIn = this._createNewSocketConnection(socketInName);
                 const block = (valueMapping && valueMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === valueMapping.toBlock)) || flowGraphBlocks.blocks[0];
                 block.dataInputs.push(socketIn);
+                // Captured before the connected branch below shadows `valueMapping`. When set and the
+                // value is supplied by a connection, the seconds→frames `dataTransformer` cannot run
+                // (it is parse-time only), so the raw connected value is scaled by a runtime multiply.
+                const convertConnectedTimeToFrames = !!valueMapping?.convertConnectedTimeToFrames;
                 if ((value as IKHRInteractivity_Variable).value !== undefined) {
                     const convertedValue = this._parseVariable(value as IKHRInteractivity_Variable, valueMapping && valueMapping.dataTransformer);
                     context._connectionValues[socketIn.uniqueId] = convertedValue;
@@ -372,6 +429,16 @@ export class InteractivityGraphToFlowGraphParser {
                     if (!nodeOut) {
                         Logger.Error(["No node found for output socket reference", value]);
                         throw new Error("Error parsing node connections");
+                    }
+                    // Spec 3.2.4: output value sockets of no-op nodes return
+                    // constant type-default values. Leave the consumer's
+                    // dataInput unconnected (no connectedPointIds) so the
+                    // FlowGraph runtime falls back to the RichType default.
+                    if (nodeOut.blocks.length === 0) {
+                        Logger.Warn(
+                            `Dropping value connection from no-op node #${nodeOutId} (unsupported operation: ${nodeOut.fullOperationName}) into node #${i} "${valueKey}"; consumer will use type-default value`
+                        );
+                        continue;
                     }
                     const outputMapper = getMappingForFullOperationName(nodeOut.fullOperationName);
                     if (!outputMapper) {
@@ -399,8 +466,12 @@ export class InteractivityGraphToFlowGraphParser {
                         outBlock.dataOutputs.push(socketOut);
                     }
                     // connect the sockets
-                    socketIn.connectedPointIds.push(socketOut.uniqueId);
-                    socketOut.connectedPointIds.push(socketIn.uniqueId);
+                    if (convertConnectedTimeToFrames) {
+                        this._connectWithSecondsToFramesConversion(context, socketOut, socketIn);
+                    } else {
+                        socketIn.connectedPointIds.push(socketOut.uniqueId);
+                        socketOut.connectedPointIds.push(socketIn.uniqueId);
+                    }
                 } else {
                     Logger.Error(["Invalid value for value connection", value]);
                     throw new Error("Error parsing node connections");
@@ -445,6 +516,42 @@ export class InteractivityGraphToFlowGraphParser {
         };
     }
 
+    /**
+     * Wires an upstream data output into a downstream data input through a runtime multiply block that
+     * scales the value by the animation target fps. This converts a KHR animation time (seconds),
+     * delivered by a connection (e.g. a `pointer/get` on the `maxTime` animation pointer), into the
+     * Babylon animation frames expected by the play/stop-animation blocks. Literal times are already
+     * converted at parse time by the input's `dataTransformer`, so this is only used for connections.
+     * @param context the serialized flow graph context that stores literal socket values
+     * @param upstreamOutput the data output socket providing the time value (in seconds)
+     * @param downstreamInput the data input socket that expects the time in frames
+     */
+    private _connectWithSecondsToFramesConversion(
+        context: ISerializedFlowGraphContext,
+        upstreamOutput: ISerializedFlowGraphConnection,
+        downstreamInput: ISerializedFlowGraphConnection
+    ): void {
+        const multiplyBlock = this._getEmptyBlock(FlowGraphBlockNames.Multiply, FlowGraphBlockNames.Multiply);
+        // Scalar (float) multiply; matches how the `math/mul` mapping configures the block.
+        multiplyBlock.config = { type: FlowGraphTypes.Number };
+        const inputA = this._createNewSocketConnection("a");
+        const inputB = this._createNewSocketConnection("b");
+        const output = this._createNewSocketConnection("value", true);
+        multiplyBlock.dataInputs.push(inputA, inputB);
+        multiplyBlock.dataOutputs.push(output);
+        // The second factor is the constant animation target fps.
+        context._connectionValues[inputB.uniqueId] = { type: FlowGraphTypes.Number, value: [this._animationTargetFps] };
+        // upstream time output -> multiply.a
+        inputA.connectedPointIds.push(upstreamOutput.uniqueId);
+        upstreamOutput.connectedPointIds.push(inputA.uniqueId);
+        // multiply.value (frames) -> downstream time input
+        downstreamInput.connectedPointIds.push(output.uniqueId);
+        output.connectedPointIds.push(downstreamInput.uniqueId);
+        // Register the inserted block separately so serializeToFlowGraph picks it up without
+        // appending to any node's block list (which would break per-node extraProcessors).
+        this._insertedBlocks.push(multiplyBlock);
+    }
+
     private _connectFlowGraphNodes(input: string, output: string, serializedInput: ISerializedFlowGraphBlock, serializedOutput: ISerializedFlowGraphBlock, isVariable?: boolean) {
         const inputArray = isVariable ? serializedInput.dataInputs : serializedInput.signalInputs;
         const outputArray = isVariable ? serializedOutput.dataOutputs : serializedOutput.signalOutputs;
@@ -462,10 +569,22 @@ export class InteractivityGraphToFlowGraphParser {
         outputConnection.connectedPointIds.push(inputConnection.uniqueId);
     }
 
+    /**
+     * Returns the deterministic FlowGraph user-variable name used for the
+     * static variable at the given declaration index.
+     * @param index zero-based index into the interactivity graph's `variables` array.
+     * @returns the FlowGraph variable name (e.g. `staticVariable_3`).
+     */
     public getVariableName(index: number) {
         return "staticVariable_" + index;
     }
 
+    /**
+     * Serializes the parsed interactivity graph into the {@link ISerializedFlowGraph}
+     * payload consumed by `ParseFlowGraphAsync`. Performs node-connection wiring
+     * and seeds the execution context with the graph's static variables.
+     * @returns the serialized FlowGraph for the parsed KHR_interactivity graph.
+     */
     public serializeToFlowGraph(): ISerializedFlowGraph {
         const context: ISerializedFlowGraphContext = {
             uniqueId: RandomGUID(),
@@ -478,7 +597,7 @@ export class InteractivityGraphToFlowGraphParser {
             context._userVariables[this.getVariableName(i)] = variable;
         }
 
-        const allBlocks = this._nodes.reduce((acc, val) => acc.concat(val.blocks), [] as ISerializedFlowGraphBlock[]);
+        const allBlocks = this._nodes.reduce((acc, val) => acc.concat(val.blocks), [] as ISerializedFlowGraphBlock[]).concat(this._insertedBlocks);
 
         return {
             rightHanded: true,

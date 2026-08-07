@@ -9,6 +9,8 @@ import {
     FlowGraphAddBlock,
     FlowGraphRandomBlock,
     FlowGraphConstantBlock,
+    FlowGraphRGBToOkLChBlock,
+    FlowGraphRGBFromOkLChBlock,
 } from "core/FlowGraph";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
@@ -59,6 +61,52 @@ describe("Flow Graph Data Nodes", () => {
 
         expect(Logger.Log).toHaveBeenCalledWith(42);
         expect(Logger.Log).toHaveBeenCalledWith(43);
+    });
+
+    it("RGB <-> OkLCh conversion blocks", () => {
+        const toOkLCh = new FlowGraphRGBToOkLChBlock();
+
+        // Pure (linear) sRGB red -> OkLCh, hue in radians (KHR_interactivity listed values).
+        toOkLCh.r.setValue(1, flowGraphContext);
+        toOkLCh.g.setValue(0, flowGraphContext);
+        toOkLCh.b.setValue(0, flowGraphContext);
+        expect(toOkLCh.l.getValue(flowGraphContext)).toBeCloseTo(0.628, 2);
+        expect(toOkLCh.c.getValue(flowGraphContext)).toBeCloseTo(0.2577, 2);
+        expect(toOkLCh.h.getValue(flowGraphContext)).toBeCloseTo(0.5082, 2);
+
+        // Black -> L=0, C=0.
+        toOkLCh.r.setValue(0, flowGraphContext);
+        toOkLCh.g.setValue(0, flowGraphContext);
+        toOkLCh.b.setValue(0, flowGraphContext);
+        expect(toOkLCh.l.getValue(flowGraphContext)).toBeCloseTo(0, 5);
+        expect(toOkLCh.c.getValue(flowGraphContext)).toBeCloseTo(0, 5);
+
+        // White -> L=1, C=0.
+        toOkLCh.r.setValue(1, flowGraphContext);
+        toOkLCh.g.setValue(1, flowGraphContext);
+        toOkLCh.b.setValue(1, flowGraphContext);
+        expect(toOkLCh.l.getValue(flowGraphContext)).toBeCloseTo(1, 5);
+        expect(toOkLCh.c.getValue(flowGraphContext)).toBeCloseTo(0, 5);
+
+        // Inverse: OkLCh of red -> back to (1, 0, 0).
+        const fromOkLCh = new FlowGraphRGBFromOkLChBlock();
+        fromOkLCh.l.setValue(0.628, flowGraphContext);
+        fromOkLCh.c.setValue(0.2577, flowGraphContext);
+        fromOkLCh.h.setValue(0.5082, flowGraphContext);
+        expect(fromOkLCh.r.getValue(flowGraphContext)).toBeCloseTo(1, 2);
+        expect(fromOkLCh.g.getValue(flowGraphContext)).toBeCloseTo(0, 2);
+        expect(fromOkLCh.b.getValue(flowGraphContext)).toBeCloseTo(0, 2);
+
+        // Round-trip rgb(0.8, 0.3, 0.5) -> OkLCh -> rgb.
+        toOkLCh.r.setValue(0.8, flowGraphContext);
+        toOkLCh.g.setValue(0.3, flowGraphContext);
+        toOkLCh.b.setValue(0.5, flowGraphContext);
+        fromOkLCh.l.setValue(toOkLCh.l.getValue(flowGraphContext), flowGraphContext);
+        fromOkLCh.c.setValue(toOkLCh.c.getValue(flowGraphContext), flowGraphContext);
+        fromOkLCh.h.setValue(toOkLCh.h.getValue(flowGraphContext), flowGraphContext);
+        expect(fromOkLCh.r.getValue(flowGraphContext)).toBeCloseTo(0.8, 4);
+        expect(fromOkLCh.g.getValue(flowGraphContext)).toBeCloseTo(0.3, 4);
+        expect(fromOkLCh.b.getValue(flowGraphContext)).toBeCloseTo(0.5, 4);
     });
 
     it("Values are cached for the same execution id", () => {

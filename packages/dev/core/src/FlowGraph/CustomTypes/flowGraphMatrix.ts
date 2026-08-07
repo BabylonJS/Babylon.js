@@ -2,10 +2,18 @@ import { Vector3, Vector2 } from "core/Maths/math.vector.pure";
 
 /**
  * Interface representing a generic flow graph matrix.
+ *
+ * BREAKING (since the KHR_interactivity work): {@link FlowGraphMatrix2D} and {@link FlowGraphMatrix3D}
+ * now store their elements in column-major order, matching core {@link Matrix} and the
+ * glTF/KHR_interactivity convention. Previous releases stored them row-major. This changes the result
+ * of building a matrix from a flat array (`fromArray`/`set`), of `transformVector`/`transformVectorToRef`,
+ * and of `multiply`/`multiplyToRef` (which now computes `this * other` rather than `other * this`).
+ * There is no compile error — graphs that relied on the old ordering or operand order get silently
+ * different numbers, so any code constructing these from raw arrays should be re-checked.
  */
 export interface IFlowGraphMatrix<VectorType> {
     /**
-     * The matrix elements stored in a row-major order.
+     * The matrix elements stored in column-major order.
      */
     m: number[];
 
@@ -160,7 +168,10 @@ export interface IFlowGraphMatrix<VectorType> {
 // Note - the matrix classes are basically column-major, and work similarly to Babylon.js' Matrix class.
 
 /**
- * A 2x2 matrix.
+ * A 2x2 matrix, stored in column-major order.
+ *
+ * BREAKING: this class was row-major in earlier releases — see {@link IFlowGraphMatrix} for the full
+ * behaviour change (flat-array construction, transform, and multiply operand order).
  */
 export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
     /**
@@ -181,8 +192,8 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
     }
 
     public transformVectorToRef(v: Vector2, result: Vector2): Vector2 {
-        result.x = v.x * this._m[0] + v.y * this._m[1];
-        result.y = v.x * this._m[2] + v.y * this._m[3];
+        result.x = v.x * this._m[0] + v.y * this._m[2];
+        result.y = v.x * this._m[1] + v.y * this._m[3];
         return result;
     }
 
@@ -208,11 +219,11 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
         const otherMatrix = other._m;
         const thisMatrix = this._m;
         const r = result._m;
-        // other * this
-        r[0] = otherMatrix[0] * thisMatrix[0] + otherMatrix[1] * thisMatrix[2];
-        r[1] = otherMatrix[0] * thisMatrix[1] + otherMatrix[1] * thisMatrix[3];
-        r[2] = otherMatrix[2] * thisMatrix[0] + otherMatrix[3] * thisMatrix[2];
-        r[3] = otherMatrix[2] * thisMatrix[1] + otherMatrix[3] * thisMatrix[3];
+        // this * other, column-major (matches core Matrix and the glTF/KHR_interactivity convention)
+        r[0] = thisMatrix[0] * otherMatrix[0] + thisMatrix[1] * otherMatrix[2];
+        r[1] = thisMatrix[0] * otherMatrix[1] + thisMatrix[1] * otherMatrix[3];
+        r[2] = thisMatrix[2] * otherMatrix[0] + thisMatrix[3] * otherMatrix[2];
+        r[3] = thisMatrix[2] * otherMatrix[1] + thisMatrix[3] * otherMatrix[3];
 
         return result;
     }
@@ -311,7 +322,10 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
 }
 
 /**
- * A 3x3 matrix.
+ * A 3x3 matrix, stored in column-major order.
+ *
+ * BREAKING: this class was row-major in earlier releases — see {@link IFlowGraphMatrix} for the full
+ * behaviour change (flat-array construction, transform, and multiply operand order).
  */
 export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
     /**
@@ -333,9 +347,9 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
 
     public transformVectorToRef(v: Vector3, result: Vector3): Vector3 {
         const m = this._m;
-        result.x = v.x * m[0] + v.y * m[1] + v.z * m[2];
-        result.y = v.x * m[3] + v.y * m[4] + v.z * m[5];
-        result.z = v.x * m[6] + v.y * m[7] + v.z * m[8];
+        result.x = v.x * m[0] + v.y * m[3] + v.z * m[6];
+        result.y = v.x * m[1] + v.y * m[4] + v.z * m[7];
+        result.z = v.x * m[2] + v.y * m[5] + v.z * m[8];
         return result;
     }
 
@@ -344,17 +358,17 @@ export class FlowGraphMatrix3D implements IFlowGraphMatrix<Vector3> {
         const thisMatrix = this._m;
         const r = result.m;
 
-        r[0] = otherMatrix[0] * thisMatrix[0] + otherMatrix[1] * thisMatrix[3] + otherMatrix[2] * thisMatrix[6];
-        r[1] = otherMatrix[0] * thisMatrix[1] + otherMatrix[1] * thisMatrix[4] + otherMatrix[2] * thisMatrix[7];
-        r[2] = otherMatrix[0] * thisMatrix[2] + otherMatrix[1] * thisMatrix[5] + otherMatrix[2] * thisMatrix[8];
+        r[0] = thisMatrix[0] * otherMatrix[0] + thisMatrix[1] * otherMatrix[3] + thisMatrix[2] * otherMatrix[6];
+        r[1] = thisMatrix[0] * otherMatrix[1] + thisMatrix[1] * otherMatrix[4] + thisMatrix[2] * otherMatrix[7];
+        r[2] = thisMatrix[0] * otherMatrix[2] + thisMatrix[1] * otherMatrix[5] + thisMatrix[2] * otherMatrix[8];
 
-        r[3] = otherMatrix[3] * thisMatrix[0] + otherMatrix[4] * thisMatrix[3] + otherMatrix[5] * thisMatrix[6];
-        r[4] = otherMatrix[3] * thisMatrix[1] + otherMatrix[4] * thisMatrix[4] + otherMatrix[5] * thisMatrix[7];
-        r[5] = otherMatrix[3] * thisMatrix[2] + otherMatrix[4] * thisMatrix[5] + otherMatrix[5] * thisMatrix[8];
+        r[3] = thisMatrix[3] * otherMatrix[0] + thisMatrix[4] * otherMatrix[3] + thisMatrix[5] * otherMatrix[6];
+        r[4] = thisMatrix[3] * otherMatrix[1] + thisMatrix[4] * otherMatrix[4] + thisMatrix[5] * otherMatrix[7];
+        r[5] = thisMatrix[3] * otherMatrix[2] + thisMatrix[4] * otherMatrix[5] + thisMatrix[5] * otherMatrix[8];
 
-        r[6] = otherMatrix[6] * thisMatrix[0] + otherMatrix[7] * thisMatrix[3] + otherMatrix[8] * thisMatrix[6];
-        r[7] = otherMatrix[6] * thisMatrix[1] + otherMatrix[7] * thisMatrix[4] + otherMatrix[8] * thisMatrix[7];
-        r[8] = otherMatrix[6] * thisMatrix[2] + otherMatrix[7] * thisMatrix[5] + otherMatrix[8] * thisMatrix[8];
+        r[6] = thisMatrix[6] * otherMatrix[0] + thisMatrix[7] * otherMatrix[3] + thisMatrix[8] * otherMatrix[6];
+        r[7] = thisMatrix[6] * otherMatrix[1] + thisMatrix[7] * otherMatrix[4] + thisMatrix[8] * otherMatrix[7];
+        r[8] = thisMatrix[6] * otherMatrix[2] + thisMatrix[7] * otherMatrix[5] + thisMatrix[8] * otherMatrix[8];
 
         return result;
     }
