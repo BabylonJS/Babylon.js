@@ -438,6 +438,13 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         // vec4<f32>; that surfaces later as a WGSL "cannot assign vec4<u32> to vec4<f32>" compile error rather than
         // here. Shaders that render to integer targets should assign an inline vec4<u32>/vec4<i32> (constructor or a
         // directly-typed local) so the output type is detected. Extend the patterns below if new forms are needed.
+        // The inference scans a comment-stripped copy and scopes the RHS-identifier declaration lookup to `fn main`'s
+        // body, so a commented-out write or a same-named integer local in a helper function can't force an integer
+        // output onto a shader that actually renders float — a false positive that would break a working shader.
+        const scanCode = fragmentCode.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\/\/[^\n]*/g, " ");
+        // fragData writes live in `fn main`; declarations reachable at a write are in main and textually precede it
+        // (WGSL requires a local be declared before use in its own scope).
+        const mainBodyStart = Math.max(0, scanCode.indexOf("fn main"));
         const detectIntVec = (expr: string): Nullable<string> => {
             if (/^\s*(vec4<u32>|vec4u\s*\()/.test(expr)) {
                 return "vec4<u32>";
@@ -448,7 +455,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             return null;
         };
         const fragDataOutputType = (index: number): string => {
-            const assign = fragmentCode.match(new RegExp(`fragmentOutputs\\.fragData${index}\\s*=\\s*([^;]+);`));
+            const assign = scanCode.match(new RegExp(`fragmentOutputs\\.fragData${index}\\s*=\\s*([^;]+);`));
             if (!assign) {
                 return "vec4<f32>";
             }
@@ -458,14 +465,16 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
                 return direct;
             }
             // Bare identifier RHS (e.g. `fragData0 = computedUintColor;`): resolve its declared type from a
-            // `var/let NAME : vec4<u32>` typed declaration or a `var/let NAME = vec4<u32>(...)` initialized one.
+            // `var/let NAME : vec4<u32>` typed declaration or a `var/let NAME = vec4<u32>(...)` initialized one,
+            // searched only within main up to this write so a helper's same-named local (a different scope) can't win.
             const id = rhs.match(/^([A-Za-z_]\w*)$/);
             if (id) {
-                const typed = fragmentCode.match(new RegExp(`(?:var|let)\\s+${id[1]}\\s*:\\s*(vec4<u32>|vec4<i32>)`));
+                const declScope = scanCode.slice(mainBodyStart, assign.index ?? scanCode.length);
+                const typed = declScope.match(new RegExp(`(?:var|let)\\s+${id[1]}\\s*:\\s*(vec4<u32>|vec4<i32>)`));
                 if (typed) {
                     return typed[1];
                 }
-                const inited = fragmentCode.match(new RegExp(`(?:var|let)\\s+${id[1]}\\s*=\\s*([^;]+);`));
+                const inited = declScope.match(new RegExp(`(?:var|let)\\s+${id[1]}\\s*=\\s*([^;]+);`));
                 if (inited) {
                     const t = detectIntVec(inited[1].trim());
                     if (t) {
@@ -478,14 +487,14 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         // Adding fragData output locations
         const regexRoot = "fragmentOutputs\\.fragData";
-        let match = fragmentCode.match(new RegExp(regexRoot + "0", "g"));
+        let match = scanCode.match(new RegExp(regexRoot + "0", "g"));
         let indexLocation = 0;
 
         if (match) {
             fragmentOutputs += ` @location(${indexLocation}) fragData0 : ${fragDataOutputType(0)},\n`;
             indexLocation++;
             for (let index = 1; index < 8; index++) {
-                match = fragmentCode.match(new RegExp(regexRoot + index, "g"));
+                match = scanCode.match(new RegExp(regexRoot + index, "g"));
                 if (match) {
                     fragmentOutputs += ` @location(${indexLocation}) fragData${indexLocation} : ${fragDataOutputType(index)},\n`;
                     indexLocation++;
