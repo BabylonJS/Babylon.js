@@ -49,12 +49,12 @@ export class WebXRWebGPUCompositionLayerRenderTargetTextureProvider extends WebX
     public onRenderTargetTextureCreatedObservable = new Observable<{ texture: RenderTargetTexture; eye?: XREye }>();
 
     constructor(
-        protected readonly _xrSessionManager: WebXRSessionManager,
+        _xrSessionManager: WebXRSessionManager,
         protected readonly _xrGPUBinding: XRGPUBinding,
         public override readonly layerWrapper: WebXRWebGPUCompositionLayerWrapper,
         protected readonly _depthStencilFormat?: GPUTextureFormat
     ) {
-        super(_xrSessionManager.scene, layerWrapper);
+        super(_xrSessionManager, layerWrapper);
         this._compositionLayer = layerWrapper.layer;
     }
 
