@@ -227,11 +227,34 @@ describe("WebXRFeaturesManager – extended", () => {
             const name = uniqueFeatureName() as any;
             const mockFeature = createMockFeature({ isCompatible: vi.fn(() => false) });
             WebXRFeaturesManager.AddWebXRFeature(name, createMockFeatureConstructor(mockFeature), 1, true);
+            const warnSpy = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
 
             const result = featuresManager.enableFeature(name, 1, undefined, true, false);
             expect(result).toBeDefined();
             // It should NOT be in the enabled features list since it's incompatible
             expect(featuresManager.getEnabledFeatures()).not.toContain(name);
+            expect(warnSpy).toHaveBeenCalledExactlyOnceWith(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
+            warnSpy.mockRestore();
+        });
+
+        it("does not duplicate the warning from an intentionally disabled incompatible optional feature", () => {
+            const name = uniqueFeatureName() as any;
+            const warning = "The feature was disabled because a runtime capability is unavailable.";
+            const mockFeature = createMockFeature();
+            mockFeature.isCompatible = vi.fn(() => {
+                Logger.Warn(warning);
+                mockFeature.disableAutoAttach = true;
+                return false;
+            });
+            WebXRFeaturesManager.AddWebXRFeature(name, createMockFeatureConstructor(mockFeature), 1, true);
+            const warnSpy = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+
+            const result = featuresManager.enableFeature(name, 1, undefined, true, false);
+
+            expect(result).toBe(mockFeature);
+            expect(featuresManager.getEnabledFeatures()).not.toContain(name);
+            expect(warnSpy).toHaveBeenCalledExactlyOnceWith(warning);
+            warnSpy.mockRestore();
         });
 
         it("sets disableAutoAttach when attachIfPossible is false", () => {

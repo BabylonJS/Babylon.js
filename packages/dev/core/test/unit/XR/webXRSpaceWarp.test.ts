@@ -11,6 +11,7 @@ import { Viewport } from "core/Maths/math.viewport";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 import { XRSpaceWarpRenderTarget, WebXRSpaceWarp, WebXRSpaceWarpRenderTargetTextureProvider } from "core/XR/features/WebXRSpaceWarp";
+import { WebXRLayers } from "core/XR/features/WebXRLayers";
 import { WebXRFeaturesManager } from "core/XR/webXRFeaturesManager";
 import { WebXRSessionManager } from "core/XR/webXRSessionManager";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -104,10 +105,83 @@ describe("WebXRSpaceWarp", () => {
         expect(frameObserverSpy).not.toHaveBeenCalled();
         expect(afterRenderObserverSpy).not.toHaveBeenCalled();
         expect(feature.spaceWarpRTTProvider).toBeUndefined();
+        expect(scene.needsPreviousWorldMatrices).toBe(false);
 
         sessionManager.onXRSessionInit.notifyObservers(sessionManager.session);
         expect(warnSpy).toHaveBeenCalledTimes(1);
 
+        featuresManager.dispose();
+    });
+
+    it("disables before WebGPU session creation without requesting native Space Warp or disturbing projection layers", async () => {
+        const projectionLayer = {};
+        const getPreferredColorFormat = vi.fn(() => "rgba8unorm");
+        const createProjectionLayer = vi.fn(() => projectionLayer);
+        const xrGPUBinding = vi.fn().mockImplementation(function () {
+            return {
+                getPreferredColorFormat,
+                createProjectionLayer,
+            };
+        });
+        xrGPUBinding.prototype.createProjectionLayer = createProjectionLayer;
+        (globalThis as unknown as { XRGPUBinding: unknown }).XRGPUBinding = xrGPUBinding;
+        (engine as unknown as { _isWebGPU: boolean })._isWebGPU = true;
+        (engine as unknown as { _device: GPUDevice })._device = {} as GPUDevice;
+        const featuresManager = new WebXRFeaturesManager(sessionManager);
+        const layers = featuresManager.enableFeature(WebXRLayers.Name, 1, { preferMultiviewOnInit: false }, true, false);
+        const getGraphicsBindingSpy = vi.spyOn(sessionManager, "_getGraphicsBinding");
+        const createMultiviewRenderTargetTextureSpy = vi.spyOn(engine, "createMultiviewRenderTargetTexture");
+        const bindSpaceWarpFramebufferSpy = vi.spyOn(engine, "bindSpaceWarpFramebuffer");
+        const frameObserverSpy = vi.spyOn(sessionManager.onXRFrameObservable, "add");
+        const afterRenderObserverSpy = vi.spyOn(scene.onAfterRenderObservable, "add");
+        const warnSpy = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+
+        const feature = featuresManager.enableFeature(WebXRSpaceWarp.Name, 1, undefined, true, false);
+        const sessionInit = await featuresManager._extendXRSessionInitObject({ optionalFeatures: ["local-floor"] });
+
+        expect(feature.attached).toBe(false);
+        expect(feature.disableAutoAttach).toBe(true);
+        expect(featuresManager.getEnabledFeature(WebXRSpaceWarp.Name)).toBeUndefined();
+        expect(sessionInit.optionalFeatures).toEqual(["local-floor", "layers"]);
+        expect(sessionInit.requiredFeatures).toBeUndefined();
+        expect(warnSpy).toHaveBeenCalledExactlyOnceWith(WebGPUWarning);
+        expect(getGraphicsBindingSpy).not.toHaveBeenCalled();
+        expect(createMultiviewRenderTargetTextureSpy).not.toHaveBeenCalled();
+        expect(bindSpaceWarpFramebufferSpy).not.toHaveBeenCalled();
+        expect(frameObserverSpy).not.toHaveBeenCalled();
+        expect(afterRenderObserverSpy).not.toHaveBeenCalled();
+        expect(scene.needsPreviousWorldMatrices).toBe(false);
+        expect(feature.spaceWarpRTTProvider).toBeUndefined();
+
+        expect(feature.attach()).toBe(false);
+        expect(warnSpy).toHaveBeenCalledTimes(1);
+        expect(getGraphicsBindingSpy).not.toHaveBeenCalled();
+        expect(frameObserverSpy).not.toHaveBeenCalled();
+        expect(afterRenderObserverSpy).not.toHaveBeenCalled();
+
+        const updateRenderState = vi.fn();
+        sessionManager.session = {
+            enabledFeatures: ["layers"],
+            renderState: {},
+            updateRenderState,
+        } as unknown as XRSession;
+        sessionManager.inXRSession = true;
+        sessionManager.onXRSessionInit.notifyObservers(sessionManager.session);
+
+        expect(layers.attached).toBe(true);
+        expect(sessionManager._getBaseLayerWrapper()?.layerType).toBe("XRProjectionLayer");
+        expect(getGraphicsBindingSpy).toHaveBeenCalledTimes(1);
+        expect(xrGPUBinding).toHaveBeenCalledExactlyOnceWith(sessionManager.session, {});
+        expect(getPreferredColorFormat).toHaveBeenCalledTimes(1);
+        expect(createProjectionLayer).toHaveBeenCalledTimes(1);
+        expect(updateRenderState).toHaveBeenCalledTimes(1);
+        expect(feature.attached).toBe(false);
+        expect(feature.disableAutoAttach).toBe(true);
+        expect(feature.spaceWarpRTTProvider).toBeUndefined();
+        expect(warnSpy).toHaveBeenCalledTimes(1);
+        expect(scene.needsPreviousWorldMatrices).toBe(false);
+
+        sessionManager.inXRSession = false;
         featuresManager.dispose();
     });
 
@@ -136,6 +210,7 @@ describe("WebXRSpaceWarp", () => {
         ).toBe(nativeBinding);
         expect(sessionManager.onXRFrameObservable.hasObservers()).toBe(true);
         expect(scene.onAfterRenderObservable.hasObservers()).toBe(true);
+        expect(scene.needsPreviousWorldMatrices).toBe(true);
 
         expect(feature.detach()).toBe(true);
         expect(sessionManager.onXRFrameObservable.hasObservers()).toBe(false);

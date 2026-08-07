@@ -18,6 +18,9 @@ import { type Material } from "../../Materials/material.pure";
 import { type Observer } from "../../Misc/observable.pure";
 import { WebXRGraphicsBindingType } from "../webXRGraphicsBinding";
 
+const _WebGPUUnavailableWarning =
+    "WebXR Space Warp is unavailable with WebGPU XR because this runtime does not expose usable motion-vector/depth sub-images; the feature was disabled.";
+
 /**
  * Used for Space Warp render process
  */
@@ -289,7 +292,6 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
     constructor(_xrSessionManager: WebXRSessionManager) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "space-warp";
-        this._xrSessionManager.scene.needsPreviousWorldMatrices = true;
     }
 
     /**
@@ -300,14 +302,13 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
      */
     public override attach(): boolean {
         if (this._xrSessionManager.scene.getEngine().isWebGPU) {
-            return this._disableAutoAttach(
-                "WebXR Space Warp is unavailable with WebGPU XR because this runtime does not expose usable motion-vector/depth sub-images; the feature was disabled."
-            );
+            return this._disableAutoAttach(_WebGPUUnavailableWarning);
         }
 
         if (!super.attach()) {
             return false;
         }
+        this._xrSessionManager.scene.needsPreviousWorldMatrices = true;
 
         const graphicsBinding = this._xrSessionManager._getGraphicsBinding();
         if (graphicsBinding.bindingType !== WebXRGraphicsBindingType.WebGL) {
@@ -336,6 +337,9 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
     public override dependsOn: string[] = [WebXRFeatureName.LAYERS];
 
     public override isCompatible(): boolean {
+        if (this._xrSessionManager.scene.getEngine().isWebGPU) {
+            return this._disableAutoAttach(_WebGPUUnavailableWarning);
+        }
         return this._xrSessionManager.scene.getEngine().getCaps().colorBufferHalfFloat || false;
     }
 

@@ -607,7 +607,9 @@ export class WebXRFeaturesManager implements IDisposable {
             if (required) {
                 throw new Error("required feature not compatible");
             } else {
-                Tools.Warn(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
+                if (!constructed.disableAutoAttach) {
+                    Tools.Warn(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
+                }
                 return constructed as ResolveWebXRFeature<T>;
             }
         }
