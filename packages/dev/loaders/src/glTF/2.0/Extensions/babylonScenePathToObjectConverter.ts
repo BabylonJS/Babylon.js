@@ -152,6 +152,11 @@ export class BabylonScenePathToObjectConverter implements IPathToObjectConverter
             throw new Error(`BabylonScenePathToObjectConverter: path "${path}" is missing an instance id.`);
         }
 
+        // parseInt would accept "12abc" as 12; require an all-digits id so a malformed path fails
+        // loudly instead of binding to the wrong instance.
+        if (!/^\d+$/.test(parts[1])) {
+            throw new Error(`BabylonScenePathToObjectConverter: invalid uniqueId "${parts[1]}" in path "${path}".`);
+        }
         const uniqueId = parseInt(parts[1], 10);
         if (!Number.isFinite(uniqueId) || uniqueId < 0) {
             throw new Error(`BabylonScenePathToObjectConverter: invalid uniqueId "${parts[1]}" in path "${path}".`);

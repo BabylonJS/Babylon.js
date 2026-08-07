@@ -57,8 +57,10 @@ export class FlowGraphPathConverterComponent {
                 templateSet.add(name);
                 // Use RichTypeAny so the same socket can receive either an integer (legacy /
                 // [name] style) or a string ref (post-ref-update {name} style); the value's
-                // runtime type drives the substitution behaviour in getAccessor.
-                const conn = ownerBlock.registerDataInput(name, RichTypeAny, undefined);
+                // runtime type drives the substitution behaviour in getAccessor. Default to
+                // FlowGraphInteger(0) — not undefined — so an unconnected index input still
+                // resolves to index 0 (the natural default) instead of throwing at path resolution.
+                const conn = ownerBlock.registerDataInput(name, RichTypeAny, new FlowGraphInteger(0));
                 this.templatedInputs.push(conn);
                 this.templateInfos.push({ name, style, connection: conn });
                 match = regex.exec(path);

@@ -688,6 +688,11 @@ function Interpolate(a: number, b: number, c: number) {
  * @returns the smooth-step interpolation coefficient
  */
 function SmoothStep(a: number, b: number, c: number) {
+    // Degenerate edges: with a === b the transition is instantaneous, so return a step rather than
+    // dividing by zero (which would yield NaN and poison downstream math).
+    if (a === b) {
+        return c < a ? 0 : 1;
+    }
     const t = Saturate((c - Math.min(a, b)) / Math.abs(b - a));
     return t * t * (3 - 2 * t);
 }

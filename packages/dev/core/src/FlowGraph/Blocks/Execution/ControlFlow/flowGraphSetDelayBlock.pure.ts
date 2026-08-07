@@ -134,8 +134,11 @@ export class FlowGraphSetDelayBlock extends FlowGraphAsyncExecutionBlock {
         const globalTimers = context._getGlobalContextVariable("pendingDelays", [] as AdvancedTimer[]);
         // there should NEVER be the same index in the global and local timers, unless they are equal
         for (let i = 0; i < timers.length; i++) {
+            // A hole in this block's local timers array (an index owned by a different delay block) or an
+            // index whose delay is no longer active must be skipped. Only `continue` here — never
+            // `delete globalTimers[i]`, because for a hole index `i` the global slot belongs to another
+            // block and deleting it would silently drop that block's still-pending delay.
             if (!timers[i] || !IsDelayActive(context, i)) {
-                delete globalTimers[i];
                 continue;
             }
             const timer = timers[i];

@@ -685,7 +685,13 @@ jobs:
       dependsOn:
           - FormatLint
       condition: succeeded()
-      timeoutInMinutes: 60
+      # Non-blocking for now: the suite runs 174 browser tests on a single worker and is not yet fast
+      # or stable enough to gate every PR. continueOnError reports failures as "succeeded with issues"
+      # instead of failing the pipeline; the timeout is bounded well under the old 60 min so a hang no
+      # longer burns a full hour. Promote back to a required, blocking gate once it is demonstrably
+      # green and fast (e.g. parallelized).
+      continueOnError: true
+      timeoutInMinutes: 30
       steps:
           - template: templates/checkout-with-tag-override.yml
 

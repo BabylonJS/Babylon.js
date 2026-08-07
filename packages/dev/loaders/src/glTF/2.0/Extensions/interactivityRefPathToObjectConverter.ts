@@ -54,8 +54,10 @@ export class InteractivityRefPathToObjectConverter implements IPathToObjectConve
             };
         }
 
-        // Delay reference: the substituted segment is the integer delay index.
-        const index = parseInt(normalized.substring(DelayReferencePrefix.length), 10);
+        // Delay reference: the substituted segment is the integer delay index. parseInt is too lenient
+        // (it would accept "1abc" as 1), so require an all-digits segment before converting.
+        const rawIndex = normalized.substring(DelayReferencePrefix.length);
+        const index = /^\d+$/.test(rawIndex) ? parseInt(rawIndex, 10) : NaN;
         return {
             object: RefValidityTarget,
             info: {

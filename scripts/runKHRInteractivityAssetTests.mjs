@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import { spawn } from "node:child_process";
-import { once } from "node:events";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 import { mkdir, rename, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +16,39 @@ const CacheRoot = process.env.KHR_ASSETS_CACHE_DIR
     : path.join(RootDirectory, "node_modules", ".cache", "khr-interactivity-assets");
 const AssetDirectory = path.join(CacheRoot, RepositoryRevision);
 
+// The currently-running child process and the in-progress staging directory, tracked so the signal
+// handlers below can tear both down. CI sends SIGTERM/SIGINT on cancel or timeout; without this the
+// script would die leaving orphaned children holding the dev-server port and stale `.tmp-*` dirs.
+let ActiveChild = null;
+let StagingDirectory = null;
+
+function cleanup() {
+    if (ActiveChild) {
+        try {
+            ActiveChild.kill("SIGTERM");
+        } catch {
+            // The child may already be gone; nothing to do.
+        }
+        ActiveChild = null;
+    }
+    if (StagingDirectory) {
+        try {
+            rmSync(StagingDirectory, { recursive: true, force: true });
+        } catch {
+            // Best-effort cleanup during shutdown.
+        }
+        StagingDirectory = null;
+    }
+}
+
+for (const signal of ["SIGTERM", "SIGINT"]) {
+    process.on(signal, () => {
+        cleanup();
+        // Re-raise with the default disposition so the exit code reflects the signal.
+        process.exit(signal === "SIGINT" ? 130 : 143);
+    });
+}
+
 async function run(command, args, options = {}) {
     const child = spawn(command, args, {
         cwd: RootDirectory,
@@ -24,6 +56,7 @@ async function run(command, args, options = {}) {
         stdio: "inherit",
         ...options,
     });
+    ActiveChild = child;
     await new Promise((resolve, reject) => {
         child.once("error", reject);
         child.once("exit", (exitCode, signal) => {
@@ -33,6 +66,10 @@ async function run(command, args, options = {}) {
                 reject(new Error(`${command} ${args.join(" ")} failed (${signal ?? `exit ${exitCode}`}).`));
             }
         });
+    }).finally(() => {
+        if (ActiveChild === child) {
+            ActiveChild = null;
+        }
     });
 }
 
@@ -42,6 +79,7 @@ async function capture(command, args) {
         env: process.env,
         stdio: ["ignore", "pipe", "inherit"],
     });
+    ActiveChild = child;
     let stdout = "";
     child.stdout.setEncoding("utf8");
     child.stdout.on("data", (chunk) => {
@@ -56,6 +94,10 @@ async function capture(command, args) {
                 reject(new Error(`${command} ${args.join(" ")} failed with exit ${exitCode}.`));
             }
         });
+    }).finally(() => {
+        if (ActiveChild === child) {
+            ActiveChild = null;
+        }
     });
     return stdout.trim();
 }
@@ -80,6 +122,9 @@ async function ensureAssets() {
     const temporaryDirectory = `${AssetDirectory}.tmp-${process.pid}`;
     await rm(temporaryDirectory, { recursive: true, force: true });
     await mkdir(temporaryDirectory, { recursive: true });
+    // Track the staging dir so the signal handlers can remove it, and use try/finally so it is also
+    // cleaned up on the failure path (a failed fetch/checkout must not leave a stale `.tmp-*` behind).
+    StagingDirectory = temporaryDirectory;
     try {
         await run("git", ["-C", temporaryDirectory, "init"]);
         await run("git", ["-C", temporaryDirectory, "remote", "add", "origin", RepositoryUrl]);
@@ -95,6 +140,8 @@ async function ensureAssets() {
     } catch (error) {
         await rm(temporaryDirectory, { recursive: true, force: true });
         throw error;
+    } finally {
+        StagingDirectory = null;
     }
     console.log(`Fetched KHR_interactivity assets ${RepositoryRevision} to ${AssetDirectory}`);
 }

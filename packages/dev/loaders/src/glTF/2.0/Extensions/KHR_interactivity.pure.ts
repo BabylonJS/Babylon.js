@@ -3,6 +3,7 @@ import { type IKHRInteractivity } from "babylonjs-gltf2interface";
 import { type GLTFLoader } from "../glTFLoader.pure";
 import { type IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { FlowGraphForLoopBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphForLoopBlock.pure";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { registerGLTFExtension, unregisterGLTFExtension, registeredGLTFExtensions } from "../glTFLoaderExtensionRegistry";
 import { type GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
@@ -25,6 +26,11 @@ import { type IPathToObjectConverter } from "core/ObjectModel/objectModelInterfa
 import { Logger } from "core/Misc/logger";
 
 const NAME = "KHR_interactivity";
+
+// Runaway-loop guard the interactivity loader opts into (see onReady). The default FlowGraphForLoopBlock
+// cap is intentionally conservative; interactivity assets need enough headroom for large finite loops
+// such as the math/random Monte Carlo 10k conformance asset.
+const InteractivityMaxLoopIterations = 100000;
 
 /**
  * Loader extension for KHR_interactivity
@@ -114,22 +120,35 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             return;
         }
 
-        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
-        coordinator.dispatchEventsSynchronously = false; // glTF interactivity dispatches events asynchronously
-        // The specification requires an invalid behavior graph to be rejected. Reject each graph individually and
-        // keep loading the rest of the asset instead of failing the whole scene load.
+        // KHR_interactivity assets may legitimately run large finite loops (e.g. the math/random Monte
+        // Carlo conformance asset iterates 10k times), which is well above FlowGraphForLoopBlock's
+        // conservative default runaway-guard. Rather than raise that core default for every FlowGraph
+        // consumer, the interactivity loader opts its own graphs into a higher cap here.
+        if (FlowGraphForLoopBlock.MaxLoopIterations < InteractivityMaxLoopIterations) {
+            FlowGraphForLoopBlock.MaxLoopIterations = InteractivityMaxLoopIterations;
+        }
+
+        // The specification requires an invalid behavior graph to be rejected. Parse each graph into its
+        // own coordinator so a graph that throws part-way can be disposed without leaving a half-built graph
+        // registered — a shared coordinator's start() would otherwise run that partial graph. A scene
+        // supports many coordinators, and glTF behavior graphs are independent of one another.
         await Promise.all(
             interactivityDefinition.graphs.map(async (graph, index) => {
+                const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+                coordinator.dispatchEventsSynchronously = false; // glTF interactivity dispatches events asynchronously
                 try {
                     const parser = new InteractivityGraphToFlowGraphParser(graph, this._loader.gltf, this._loader.parent.targetFps);
                     await ParseFlowGraphAsync(parser.serializeToFlowGraph(), { coordinator, pathConverter: this._pathConverter });
+                    // Only start graphs that parsed cleanly; keep loading the rest of the asset either way.
+                    coordinator.start();
                 } catch (error) {
                     Logger.Error(`KHR_interactivity: rejecting behavior graph #${index}: ${(error as Error)?.message ?? error}`);
+                    // Dispose the coordinator (and the partially-built graph it holds) so nothing from the
+                    // rejected graph stays registered or running.
+                    coordinator.dispose();
                 }
             })
         );
-
-        coordinator.start();
     }
 }
 

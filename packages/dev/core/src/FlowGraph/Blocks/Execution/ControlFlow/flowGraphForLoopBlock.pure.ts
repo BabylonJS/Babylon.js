@@ -35,8 +35,10 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
     /**
      * The maximum number of iterations allowed for the loop.
      * If the loop exceeds this number, it will stop. This number is configurable to avoid infinite loops.
+     * A graph that legitimately needs more iterations can raise this static itself rather than relying on
+     * a higher default that would let a runaway loop freeze the tab before the guard trips.
      */
-    public static MaxLoopIterations = 100000;
+    public static MaxLoopIterations = 1000;
     /**
      * Input connection: The start index of the loop.
      */

@@ -1,5 +1,6 @@
 /** This file must only contain pure code and pure imports */
 
+import { type Nullable } from "core/types";
 import { type IFlowGraphBlockConfiguration, FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
@@ -201,6 +202,22 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
     }
 
     public override _updateOutputs(context: FlowGraphContext) {
+        // _updateOutputs runs on every read of any of this block's four outputs. Cache the decomposition
+        // per executionId (matching FlowGraphMatrixComposeBlock below) so reading all four outputs in one
+        // frame does the work once instead of four times.
+        const cachedExecutionId = context._getExecutionVariable(this, "executionId", -1);
+        const cachedPosition = context._getExecutionVariable<Nullable<Vector3>>(this, "cachedPosition", null);
+        const cachedRotation = context._getExecutionVariable<Nullable<Quaternion>>(this, "cachedRotation", null);
+        const cachedScaling = context._getExecutionVariable<Nullable<Vector3>>(this, "cachedScaling", null);
+        const cachedIsValid = context._getExecutionVariable<Nullable<boolean>>(this, "cachedIsValid", null);
+        if (cachedExecutionId === context.executionId && cachedPosition && cachedRotation && cachedScaling && cachedIsValid !== null) {
+            this.isValid.setValue(cachedIsValid, context);
+            this.position.setValue(cachedPosition, context);
+            this.rotationQuaternion.setValue(cachedRotation, context);
+            this.scaling.setValue(cachedScaling, context);
+            return;
+        }
+
         const matrix = this.input.getValue(context);
         const m = matrix.m;
         const keepDegenerateComponents = !!(this.config as IFlowGraphMatrixDecomposeBlockConfiguration | undefined)?.keepDegenerateComponents;
@@ -215,52 +232,55 @@ export class FlowGraphMatrixDecomposeBlock extends FlowGraphBlock {
 
         // The matrix cannot be decomposed: the rotation is undefined, so report an identity rotation and either the
         // components that were extracted from the matrix or the type defaults.
-        const setDegenerateOutputs = (keepComponents: boolean) => {
-            this.isValid.setValue(false, context);
-            this.rotationQuaternion.setValue(Quaternion.Identity(), context);
-            this.position.setValue(keepComponents ? translation : Vector3.Zero(), context);
-            this.scaling.setValue(keepComponents ? new Vector3(scaleX, scaleY, scaleZ) : Vector3.One(), context);
-        };
+        const degenerateOutputs = (keepComponents: boolean) => ({
+            isValid: false,
+            rotationQuaternion: Quaternion.Identity(),
+            position: keepComponents ? translation : Vector3.Zero(),
+            scaling: keepComponents ? new Vector3(scaleX, scaleY, scaleZ) : Vector3.One(),
+        });
+
+        let result: { isValid: boolean; position: Vector3; rotationQuaternion: Quaternion; scaling: Vector3 };
 
         const areScalesFinite = Number.isFinite(scaleX) && Number.isFinite(scaleY) && Number.isFinite(scaleZ);
         const isTranslationFinite = Number.isFinite(m[12]) && Number.isFinite(m[13]) && Number.isFinite(m[14]);
         if (!areScalesFinite || (!keepDegenerateComponents && !isTranslationFinite)) {
-            setDegenerateOutputs(keepDegenerateComponents);
-            return;
-        }
-
-        if (scaleX === 0 || scaleY === 0 || scaleZ === 0) {
+            result = degenerateOutputs(keepDegenerateComponents);
+        } else if (scaleX === 0 || scaleY === 0 || scaleZ === 0) {
             // A zero scale component leaves the rotation undefined, but the translation and the (degenerate) scale
             // are still well-defined, so they are reported as-is.
-            setDegenerateOutputs(true);
-            return;
+            result = degenerateOutputs(true);
+        } else {
+            // The determinant of the upper-left 3x3 (the fourth row is ignored) gives the handedness; dividing by the
+            // product of the scales yields the determinant of the normalized 3x3, which is (close to) zero only when the
+            // columns are linearly dependent — a degenerate matrix that cannot represent a rotation.
+            const determinant = m[0] * (m[5] * m[10] - m[6] * m[9]) - m[4] * (m[1] * m[10] - m[2] * m[9]) + m[8] * (m[1] * m[6] - m[2] * m[5]);
+            const normalizedDeterminant = determinant / (scaleX * scaleY * scaleZ);
+            if (Math.abs(normalizedDeterminant) < MatrixDecomposeDegenerateEpsilon) {
+                result = degenerateOutputs(keepDegenerateComponents);
+            } else {
+                // The remaining matrix is well-formed, so the actual translation/rotation/scale extraction is delegated
+                // to the shared Matrix.decompose. That keeps the rotation and the handedness-sign convention identical to
+                // the rest of Babylon (a left-handed matrix negates the same scale component everywhere). The fourth row is
+                // reset to (0, 0, 0, 1) first because this operation ignores it, whereas Matrix.decompose's internal
+                // determinant would otherwise let a non-standard fourth row flip the handedness.
+                const normalized = Matrix.FromValues(m[0], m[1], m[2], 0, m[4], m[5], m[6], 0, m[8], m[9], m[10], 0, m[12], m[13], m[14], 1);
+                const outScaling = new Vector3();
+                const outRotation = new Quaternion();
+                const outPosition = new Vector3();
+                normalized.decompose(outScaling, outRotation, outPosition);
+                result = { isValid: true, position: outPosition, rotationQuaternion: outRotation, scaling: outScaling };
+            }
         }
 
-        // The determinant of the upper-left 3x3 (the fourth row is ignored) gives the handedness; dividing by the
-        // product of the scales yields the determinant of the normalized 3x3, which is (close to) zero only when the
-        // columns are linearly dependent — a degenerate matrix that cannot represent a rotation.
-        const determinant = m[0] * (m[5] * m[10] - m[6] * m[9]) - m[4] * (m[1] * m[10] - m[2] * m[9]) + m[8] * (m[1] * m[6] - m[2] * m[5]);
-        const normalizedDeterminant = determinant / (scaleX * scaleY * scaleZ);
-        if (Math.abs(normalizedDeterminant) < MatrixDecomposeDegenerateEpsilon) {
-            setDegenerateOutputs(keepDegenerateComponents);
-            return;
-        }
-
-        // The remaining matrix is well-formed, so the actual translation/rotation/scale extraction is delegated
-        // to the shared Matrix.decompose. That keeps the rotation and the handedness-sign convention identical to
-        // the rest of Babylon (a left-handed matrix negates the same scale component everywhere). The fourth row is
-        // reset to (0, 0, 0, 1) first because this operation ignores it, whereas Matrix.decompose's internal
-        // determinant would otherwise let a non-standard fourth row flip the handedness.
-        const normalized = Matrix.FromValues(m[0], m[1], m[2], 0, m[4], m[5], m[6], 0, m[8], m[9], m[10], 0, m[12], m[13], m[14], 1);
-        const outScaling = new Vector3();
-        const outRotation = new Quaternion();
-        const outPosition = new Vector3();
-        normalized.decompose(outScaling, outRotation, outPosition);
-
-        this.isValid.setValue(true, context);
-        this.position.setValue(outPosition, context);
-        this.rotationQuaternion.setValue(outRotation, context);
-        this.scaling.setValue(outScaling, context);
+        this.isValid.setValue(result.isValid, context);
+        this.position.setValue(result.position, context);
+        this.rotationQuaternion.setValue(result.rotationQuaternion, context);
+        this.scaling.setValue(result.scaling, context);
+        context._setExecutionVariable(this, "cachedIsValid", result.isValid);
+        context._setExecutionVariable(this, "cachedPosition", result.position);
+        context._setExecutionVariable(this, "cachedRotation", result.rotationQuaternion);
+        context._setExecutionVariable(this, "cachedScaling", result.scaling);
+        context._setExecutionVariable(this, "executionId", context.executionId);
     }
 
     public override getClassName(): string {

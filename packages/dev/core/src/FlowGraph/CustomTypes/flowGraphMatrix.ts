@@ -208,7 +208,7 @@ export class FlowGraphMatrix2D implements IFlowGraphMatrix<Vector2> {
         const otherMatrix = other._m;
         const thisMatrix = this._m;
         const r = result._m;
-        // other * this
+        // this * other, column-major (matches core Matrix and the glTF/KHR_interactivity convention)
         r[0] = thisMatrix[0] * otherMatrix[0] + thisMatrix[1] * otherMatrix[2];
         r[1] = thisMatrix[0] * otherMatrix[1] + thisMatrix[1] * otherMatrix[3];
         r[2] = thisMatrix[2] * otherMatrix[0] + thisMatrix[3] * otherMatrix[2];
