@@ -257,6 +257,20 @@ describe("WebXRFeaturesManager – extended", () => {
             warnSpy.mockRestore();
         });
 
+        it("warns generically when an incompatible optional feature was already marked disableAutoAttach", () => {
+            const name = uniqueFeatureName() as any;
+            const mockFeature = createMockFeature({ disableAutoAttach: true, isCompatible: vi.fn(() => false) });
+            WebXRFeaturesManager.AddWebXRFeature(name, createMockFeatureConstructor(mockFeature), 1, true);
+            const warnSpy = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+
+            const result = featuresManager.enableFeature(name, 1, undefined, true, false);
+
+            expect(result).toBe(mockFeature);
+            expect(featuresManager.getEnabledFeatures()).not.toContain(name);
+            expect(warnSpy).toHaveBeenCalledExactlyOnceWith(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
+            warnSpy.mockRestore();
+        });
+
         it("sets disableAutoAttach when attachIfPossible is false", () => {
             const name = uniqueFeatureName() as any;
             const mockFeature = createMockFeature();

@@ -583,7 +583,10 @@ export class WebXRFeaturesManager implements IDisposable {
                 throw new Error(`Dependant features missing. Make sure the following features are enabled - ${constructed.dependsOn.join(", ")}`);
             }
         }
-        if (constructed.isCompatible()) {
+        const disableAutoAttachBeforeCompatibility = constructed.disableAutoAttach;
+        const isCompatible = constructed.isCompatible();
+        const intentionallyDisabledDuringCompatibility = !disableAutoAttachBeforeCompatibility && constructed.disableAutoAttach;
+        if (isCompatible) {
             this._features[name] = {
                 featureImplementation: constructed,
                 enabled: true,
@@ -607,7 +610,7 @@ export class WebXRFeaturesManager implements IDisposable {
             if (required) {
                 throw new Error("required feature not compatible");
             } else {
-                if (!constructed.disableAutoAttach) {
+                if (!intentionallyDisabledDuringCompatibility) {
                     Tools.Warn(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
                 }
                 return constructed as ResolveWebXRFeature<T>;
