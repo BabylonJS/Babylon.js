@@ -408,6 +408,32 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         expect(() => handle.writeSplats(0, 4, data)).not.toThrow();
     });
 
+    it("_makeSplat writes transients at dstArrayIndex but positions at the global dstIndex", () => {
+        // Decoupling these two indices is what lets a streaming write allocate count-sized transients (instead of
+        // atlas-sized) while still addressing the atlas-sized _splatPositions. White-box because the streaming
+        // upload path that uses it needs sub-texture uploads NullEngine can't do (see beforeEach).
+        const compound = createCompound() as any;
+        compound._splatPositions = new Float32Array(4 * 40); // atlas capacity 40 splats
+        const covA = new Uint16Array(4 * 2); // count-sized transient (2 splats), 0-based
+        const covB = new Uint16Array(2 * 2);
+        const colorArray = new Uint8Array(4 * 2);
+        const data = createMultiSplatData(4); // source splat 3 => position (3,3,3), color bytes 255
+        const fBuffer = new Float32Array(data);
+        const uBuffer = new Uint8Array(data);
+
+        // Source splat 3 -> atlas (dst) index 37, transient slot 1.
+        compound._makeSplat(37, fBuffer, uBuffer, covA, covB, colorArray, new Vector3(), new Vector3(), false, 3, 1);
+
+        // Position lands at the global dstIndex 37.
+        expect(compound._splatPositions[4 * 37 + 0]).toBe(3);
+        expect(compound._splatPositions[4 * 37 + 2]).toBe(3);
+        // Color/covA land at dstArrayIndex 1 in the count-sized transient. Pre-fix these used dstIndex (37), an
+        // out-of-bounds write on the 2-splat transient that a typed array silently drops — leaving slot 1 zeroed.
+        expect(colorArray[1 * 4 + 0]).toBe(255);
+        expect(covA[1 * 4 + 0]).not.toBe(0);
+        expect(colorArray[0]).toBe(0); // slot 0 (a different splat) untouched
+    });
+
     it("rejects setActiveRanges / postPositionsRange local ranges outside the reserved region", () => {
         const compound = createCompound();
         const handle = compound.reserveStreamingPart(30); // aligned capacity 32 at width 16

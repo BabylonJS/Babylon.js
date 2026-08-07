@@ -2497,6 +2497,9 @@ export class GaussianSplattingMeshBase extends Mesh {
      * @param maximum - accumulated bounding maximum (updated in-place)
      * @param flipY - whether to negate the Y position
      * @param srcIndex - source splat index (defaults to dstIndex when omitted)
+     * @param dstArrayIndex - index into the covA/covB/colorArray transients (defaults to dstIndex). Decoupled from
+     * dstIndex so a caller writing a small region into a large atlas (e.g. a streaming write) can pass count-sized
+     * transients indexed from 0, while dstIndex still addresses the atlas-sized _splatPositions / rotation arrays.
      */
     protected _makeSplat(
         dstIndex: number,
@@ -2508,7 +2511,8 @@ export class GaussianSplattingMeshBase extends Mesh {
         minimum: Vector3,
         maximum: Vector3,
         flipY: boolean,
-        srcIndex: number = dstIndex
+        srcIndex: number = dstIndex,
+        dstArrayIndex: number = dstIndex
     ): void {
         const matrixRotation = TmpVectors.Matrix[0];
         const matrixScale = TmpVectors.Matrix[1];
@@ -2538,10 +2542,13 @@ export class GaussianSplattingMeshBase extends Mesh {
         Matrix.ScalingToRef(fBuffer[8 * srcIndex + 3 + 0] * 2, fBuffer[8 * srcIndex + 3 + 1] * 2, fBuffer[8 * srcIndex + 3 + 2] * 2, matrixScale);
 
         if (this._needsRotationScaleTextures) {
-            if (!this._rotationDataA || this._rotationDataA.length < covA.length) {
-                this._rotationDataA = new Uint16Array(covA.length);
-                this._rotationDataB = new Uint16Array(covA.length);
-                this._rotationScaleData = new Uint16Array(covA.length);
+            // Sized to the atlas (matching _splatPositions), NOT covA — these persistent arrays are indexed by the
+            // global dstIndex, so a count-sized covA transient (streaming write) must not shrink them.
+            const rotLength = this._splatPositions!.length;
+            if (!this._rotationDataA || this._rotationDataA.length < rotLength) {
+                this._rotationDataA = new Uint16Array(rotLength);
+                this._rotationDataB = new Uint16Array(rotLength);
+                this._rotationScaleData = new Uint16Array(rotLength);
             }
             const rotDataA = this._rotationDataA;
             const rotDataB = this._rotationDataB!;
@@ -2581,12 +2588,12 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._splatPositions![4 * dstIndex + 3] = factor;
         const transform = factor;
 
-        covA[dstIndex * 4 + 0] = ToHalfFloat(covariances[0] / transform);
-        covA[dstIndex * 4 + 1] = ToHalfFloat(covariances[1] / transform);
-        covA[dstIndex * 4 + 2] = ToHalfFloat(covariances[2] / transform);
-        covA[dstIndex * 4 + 3] = ToHalfFloat(covariances[3] / transform);
-        covB[dstIndex * covBSItemSize + 0] = ToHalfFloat(covariances[4] / transform);
-        covB[dstIndex * covBSItemSize + 1] = ToHalfFloat(covariances[5] / transform);
+        covA[dstArrayIndex * 4 + 0] = ToHalfFloat(covariances[0] / transform);
+        covA[dstArrayIndex * 4 + 1] = ToHalfFloat(covariances[1] / transform);
+        covA[dstArrayIndex * 4 + 2] = ToHalfFloat(covariances[2] / transform);
+        covA[dstArrayIndex * 4 + 3] = ToHalfFloat(covariances[3] / transform);
+        covB[dstArrayIndex * covBSItemSize + 0] = ToHalfFloat(covariances[4] / transform);
+        covB[dstArrayIndex * covBSItemSize + 1] = ToHalfFloat(covariances[5] / transform);
 
         const c0 = covariances[0];
         const c1 = covariances[1];
@@ -2604,10 +2611,10 @@ export class GaussianSplattingMeshBase extends Mesh {
         }
 
         // colors
-        colorArray[dstIndex * 4 + 0] = uBuffer[32 * srcIndex + 24 + 0];
-        colorArray[dstIndex * 4 + 1] = uBuffer[32 * srcIndex + 24 + 1];
-        colorArray[dstIndex * 4 + 2] = uBuffer[32 * srcIndex + 24 + 2];
-        colorArray[dstIndex * 4 + 3] = uBuffer[32 * srcIndex + 24 + 3];
+        colorArray[dstArrayIndex * 4 + 0] = uBuffer[32 * srcIndex + 24 + 0];
+        colorArray[dstArrayIndex * 4 + 1] = uBuffer[32 * srcIndex + 24 + 1];
+        colorArray[dstArrayIndex * 4 + 2] = uBuffer[32 * srcIndex + 24 + 2];
+        colorArray[dstArrayIndex * 4 + 3] = uBuffer[32 * srcIndex + 24 + 3];
     }
 
     protected _onUpdateTextures(_textureSize: Vector2) {}
@@ -3157,17 +3164,16 @@ export class GaussianSplattingMeshBase extends Mesh {
 
         const fBuffer = GaussianSplattingMeshBase._GetSplatDataFloats(splatsData);
 
-        // _makeSplat indexes covA/covB/color by the destination (global) splat index and writes _splatPositions
-        // at that same index, so the transient CPU arrays must be atlas-indexed up to `end`. Only the written
-        // region is filled and only its texels are uploaded, so untouched atlas texels (other parts) are safe.
-        // NOTE: this transient allocation scales with `end`; the GPU decode path (the work buffer) avoids it entirely.
-        const covA = new Uint16Array(end * 4);
-        const covB = new Uint16Array(end * covBSItemSize);
-        const colorArray = new Uint8Array(end * 4);
+        // Transients are sized to `count` (this write), NOT `end`, and indexed from 0 via _makeSplat's dstArrayIndex:
+        // sizing by the region's atlas position would allocate/zero tens of MB for a small write near a large atlas's
+        // tail. dstIndex (globalOffset + i) still addresses the atlas-sized _splatPositions / rotation arrays.
+        const covA = new Uint16Array(count * 4);
+        const covB = new Uint16Array(count * covBSItemSize);
+        const colorArray = new Uint8Array(count * 4);
         const localMin = min ?? new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         const localMax = max ?? new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
         for (let i = 0; i < count; i++) {
-            this._makeSplat(globalOffset + i, fBuffer, uBuffer, covA, covB, colorArray, localMin, localMax, this._flipY, i);
+            this._makeSplat(globalOffset + i, fBuffer, uBuffer, covA, covB, colorArray, localMin, localMax, this._flipY, i, i);
         }
 
         // Retain the written bytes so future full rebuilds / picking see the region's real data.
@@ -3185,10 +3191,13 @@ export class GaussianSplattingMeshBase extends Mesh {
             const runEnd = Math.min(end, (row + 1) * width);
             const col = gi - row * width;
             const runLen = runEnd - gi;
-            this._updateTextureFromDataRect(this._covariancesATexture!, new Uint16Array(covA.buffer, gi * 4 * 2, runLen * 4), col, row, runLen, 1);
-            this._updateTextureFromDataRect(this._covariancesBTexture!, new Uint16Array(covB.buffer, gi * covBSItemSize * 2, runLen * covBSItemSize), col, row, runLen, 1);
+            // covA/covB/colorArray are count-sized and 0-based, so rebase by (gi - globalOffset); positions is the
+            // atlas-sized _splatPositions, so it stays indexed by the global gi.
+            const li = gi - globalOffset;
+            this._updateTextureFromDataRect(this._covariancesATexture!, new Uint16Array(covA.buffer, li * 4 * 2, runLen * 4), col, row, runLen, 1);
+            this._updateTextureFromDataRect(this._covariancesBTexture!, new Uint16Array(covB.buffer, li * covBSItemSize * 2, runLen * covBSItemSize), col, row, runLen, 1);
             this._updateTextureFromDataRect(this._centersTexture!, new Float32Array(positions.buffer, gi * 4 * 4, runLen * 4), col, row, runLen, 1);
-            this._updateTextureFromDataRect(this._colorsTexture!, new Uint8Array(colorArray.buffer, gi * 4, runLen * 4), col, row, runLen, 1);
+            this._updateTextureFromDataRect(this._colorsTexture!, new Uint8Array(colorArray.buffer, li * 4, runLen * 4), col, row, runLen, 1);
             gi = runEnd;
         }
 
