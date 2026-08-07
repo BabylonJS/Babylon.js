@@ -23,6 +23,7 @@ import { type IWebXRPlaneDetectorOptions, type WebXRPlaneDetector } from "./feat
 import { type IWebXRRawCameraAccessOptions, type WebXRRawCameraAccess } from "./features/WebXRRawCameraAccess";
 import { type WebXRSpaceWarp } from "./features/WebXRSpaceWarp";
 import { type IWebXRWalkingLocomotionOptions, type WebXRWalkingLocomotion } from "./features/WebXRWalkingLocomotion";
+import { _ConsumeWebXRFeatureSpecificDisableWarning } from "./webXRFeatureWarningRegistry";
 import { type WebXRSessionManager } from "./webXRSessionManager";
 
 /**
@@ -583,7 +584,10 @@ export class WebXRFeaturesManager implements IDisposable {
                 throw new Error(`Dependant features missing. Make sure the following features are enabled - ${constructed.dependsOn.join(", ")}`);
             }
         }
-        if (constructed.isCompatible()) {
+        _ConsumeWebXRFeatureSpecificDisableWarning(constructed);
+        const isCompatible = constructed.isCompatible();
+        const emittedSpecificDisableWarning = _ConsumeWebXRFeatureSpecificDisableWarning(constructed);
+        if (isCompatible) {
             this._features[name] = {
                 featureImplementation: constructed,
                 enabled: true,
@@ -607,7 +611,9 @@ export class WebXRFeaturesManager implements IDisposable {
             if (required) {
                 throw new Error("required feature not compatible");
             } else {
-                Tools.Warn(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
+                if (!emittedSpecificDisableWarning) {
+                    Tools.Warn(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
+                }
                 return constructed as ResolveWebXRFeature<T>;
             }
         }
