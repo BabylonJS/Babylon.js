@@ -3,6 +3,7 @@ import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh";
 import { Scene } from "core/scene";
+import { Vector3 } from "core/Maths/math.vector";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 // Builds `count` splats (32 bytes each) with distinct positions so vertexCount is deterministic.
@@ -435,6 +436,24 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         compound.removePart(far.partIndex); // tombstone the far part
         const withoutFar = compound.getBoundingInfo().boundingBox.maximumWorld.x;
         expect(withoutFar).toBeLessThan(500); // the removed distant part no longer inflates the bounds
+    });
+
+    it("recomputes compound bounds from the surviving stream after compaction (not the zero-box placeholder)", () => {
+        const { compound, handle } = createStaticPlusStream(16, 16); // static [0,16) near origin + stream base 16
+        // Give the streaming region real, far-away world bounds (as a decode would via writeSplats/expandBounds).
+        handle.expandBounds(new Vector3(1000, 1000, 1000), new Vector3(1020, 1020, 1020));
+        expect(compound.getBoundingInfo().boundingBox.maximumWorld.x).toBeGreaterThan(500);
+
+        // Tombstone the static part, then reclaim. _addPartsInternal rebuilds bounds from the stream's ZERO-box
+        // placeholder source, so compaction must recompute from the restored proxy afterward — otherwise the stream
+        // (now the only part) collapses to a degenerate box and isInFrustum can cull the whole mesh.
+        compound.removePart(0);
+        compound.compactAtlas();
+        expect(compound.partCount).toBe(1);
+        expect(handle.base).toBe(0);
+        // Assert the CACHED bounds directly: getBoundingInfo() would lazily recompute and mask the bug, but a
+        // static-transform compound never flags bounds dirty, so isInFrustum reads exactly this stale cache.
+        expect((compound as any)._cachedBoundingMax.x).toBeGreaterThan(500);
     });
 
     it("sizes the render-backed SH atlas to the merged (max) SH degree across parts", () => {

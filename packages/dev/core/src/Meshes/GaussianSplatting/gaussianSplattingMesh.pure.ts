@@ -1690,6 +1690,13 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this._hasStreamingPart = this._streamingStates.length > 0;
             this._tombstonedPartIndices.clear();
 
+            // Recompute bounds from the restored (correctly-bounded) proxies: _addPartsInternal above computed them
+            // from the zero-box placeholders it built, so without this the compound bounds would collapse and
+            // isInFrustum could cull the whole (possibly stream-only) mesh. Mirrors the recompute in _tombstonePart.
+            // Must run AFTER the tombstone set is cleared — a survivor can reuse a still-tombstoned index and would
+            // otherwise be skipped by the recompute's tombstone filter.
+            this._updateBoundingInfoFromProxies();
+
             this._rebuilding = false;
             this._canPostToWorker = true;
             // The streaming regions' CPU positions were restored into _splatPositions by the onAfter hook (after
