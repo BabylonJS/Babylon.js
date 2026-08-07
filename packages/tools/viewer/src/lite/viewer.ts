@@ -20,6 +20,7 @@ import {
     disposeMeshGpu,
     disposePicker,
     disposeScene,
+    enableDeviceLostSceneRecovery,
     getCameraPosition,
     getContainerMeshes,
     computeDeformedPositionToRef,
@@ -53,6 +54,7 @@ import {
     type ArcRotateCamera,
     type AssetContainer,
     type DirectionalLight as LiteDirectionalLight,
+    type DeviceLostRecoveryHandle,
     type EngineContext,
     type GpuPicker,
     type ImageProcessingUpdate,
@@ -162,6 +164,7 @@ export class Viewer extends ViewerBase implements IViewer {
 
     private readonly _scene: SceneContext;
     private readonly _camera: ArcRotateCamera;
+    private readonly _deviceLostRecovery: DeviceLostRecoveryHandle;
     private _detachControl: (() => void) | null = null;
     private _renderLoopRunning = false;
 
@@ -244,6 +247,16 @@ export class Viewer extends ViewerBase implements IViewer {
         protected readonly _options?: ViewerOptions
     ) {
         super();
+        this._deviceLostRecovery = enableDeviceLostSceneRecovery(_engine, {
+            onRecoveryFailed: (error) => {
+                const recoveryError = error instanceof Error ? error : new Error("Babylon Lite device recovery failed.", { cause: error });
+                if (this._options?.onFaulted) {
+                    this._options.onFaulted(recoveryError);
+                } else {
+                    Logger.Error(recoveryError.message);
+                }
+            },
+        });
         this._shadowQuality = this._options?.shadowConfig?.quality ?? DefaultViewerOptions.shadowConfig.quality;
         this._environmentIntensity = this._options?.environmentConfig?.intensity ?? DefaultViewerOptions.environmentConfig.intensity;
         this._environmentBlur = this._options?.environmentConfig?.blur ?? DefaultViewerOptions.environmentConfig.blur;
@@ -1847,6 +1860,7 @@ export class Viewer extends ViewerBase implements IViewer {
         this._unloadCurrentModel();
 
         // Stop and dispose engine/scene
+        this._deviceLostRecovery.disable();
         stopEngine(this._engine);
         unregisterScene(this._scene);
         disposeScene(this._scene);

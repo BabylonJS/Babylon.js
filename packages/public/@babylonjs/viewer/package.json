@@ -46,7 +46,7 @@
     },
     "peerDependencies": {
         "@babylonjs/core": "^9.0.0",
-        "@babylonjs/lite": "^1.14.0",
+        "@babylonjs/lite": "^1.18.0",
         "@babylonjs/loaders": "^9.0.0"
     },
     "peerDependenciesMeta": {
@@ -56,7 +56,7 @@
     },
     "devDependencies": {
         "@babylonjs/core": "9.19.1",
-        "@babylonjs/lite": "^1.14.0",
+        "@babylonjs/lite": "^1.18.0",
         "@babylonjs/loaders": "9.19.1",
         "@dev/build-tools": "^1.0.0",
         "@rollup/plugin-alias": "^5.1.0",
