@@ -3,7 +3,7 @@ import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh";
 import { Scene } from "core/scene";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 // Builds `count` splats (32 bytes each) with distinct positions so vertexCount is deterministic.
@@ -465,5 +465,29 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         compound.reserveStreamingPart(16, undefined, "s3", /*shTextureCount*/ 3, /*shDegree*/ 3);
         expect((compound as any)._shMrtAtlasTextureCount).toBe(3);
         expect(compound.shDegree).toBe(3);
+    });
+
+    it("SH reuse guard compares against the required (merged) SH count, not the stale cached field", () => {
+        // White-box: the real incremental reserve->addPart path (where a higher-degree part must grow the SH atlas)
+        // needs sub-texture uploads, which NullEngine can't do — so drive the guard directly. It must reject reuse
+        // when the update REQUIRES more SH textures than the committed atlas, even though _shMrtAtlasTextureCount is
+        // stale (it is only refreshed inside _updateTextures, which the incremental path never runs).
+        const noopDisposable = { dispose: () => {} }; // afterEach disposes the compound, so mocks need dispose()
+        const compound = createCompound() as any;
+        compound._useShMrtAtlas = true;
+        compound._shMrtAtlas = [noopDisposable]; // a committed degree-1 atlas: 1 texture
+        compound._shMrtAtlasTextureCount = 1; // stale field agrees with the atlas length (== 1)
+        compound._covariancesATexture = noopDisposable;
+        compound._splatPositions = new Float32Array(4);
+        compound._cachedBoundingMin = new Vector3();
+        compound._cachedBoundingMax = new Vector3();
+        compound._textureSize = new Vector2(16, 1);
+
+        // A degree-3 add requires 3 SH textures: reuse must be rejected (atlas length 1 != required 3), so the
+        // caller takes the full-rebuild path and grows the atlas — the pre-fix guard read the stale field (1 == 1)
+        // and wrongly reused.
+        expect(compound._canReuseCachedData(1, 1, 3)).toBe(false);
+        // Same required count as the committed atlas: reuse is allowed.
+        expect(compound._canReuseCachedData(1, 1, 1)).toBe(true);
     });
 });

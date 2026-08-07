@@ -2361,9 +2361,18 @@ export class GaussianSplattingMeshBase extends Mesh {
             this._colorsTexture?.dispose();
         }
         if (this._shMrtAtlas) {
-            // SH attachments belong to these MRTs — dispose the MRTs, not each attachment.
+            // SH attachments belong to these MRTs — dispose the MRTs, not each attachment (which is _shTextures[k]
+            // for k < _shMrtAtlas.length).
             for (const mrt of this._shMrtAtlas) {
                 mrt.dispose();
+            }
+            // Defence in depth: free any _shTextures entries BEYOND the MRT-backed set. The reuse guard should keep
+            // the atlas correctly sized, but if a mismatch ever appends plain RawTextures past the attachments, they
+            // are not MRT-owned and would otherwise leak (this branch skips the `else if` that frees them).
+            if (this._shTextures) {
+                for (let k = this._shMrtAtlas.length; k < this._shTextures.length; k++) {
+                    this._shTextures[k].dispose();
+                }
             }
             this._shMrtAtlas = null;
         } else if (this._shTextures) {
@@ -2917,6 +2926,10 @@ export class GaussianSplattingMeshBase extends Mesh {
                     for (const mrt of this._shMrtAtlas) {
                         mrt.dispose();
                     }
+                    // Defence in depth: free any _shTextures entries beyond the MRT-backed set (see dispose()).
+                    for (let k = this._shMrtAtlas.length; k < this._shTextures.length; k++) {
+                        this._shTextures[k].dispose();
+                    }
                     this._shMrtAtlas = null;
                 } else {
                     for (const shTexture of this._shTextures) {
@@ -3030,9 +3043,10 @@ export class GaussianSplattingMeshBase extends Mesh {
      * Requires that the GPU textures already exist and the texture height won't change.
      * @param previousVertexCount - The number of splats previously committed to GPU
      * @param vertexCount - The new total number of splats
+     * @param requiredShTextureCount - SH texture count this update requires (the merged `sh.length`), 0 when no SH
      * @returns true when only the new splat region needs to be uploaded
      */
-    protected _canReuseCachedData(previousVertexCount: number, vertexCount: number): boolean {
+    protected _canReuseCachedData(previousVertexCount: number, vertexCount: number, requiredShTextureCount: number = 0): boolean {
         if (previousVertexCount <= 0 || previousVertexCount > vertexCount) {
             return false;
         }
@@ -3050,7 +3064,10 @@ export class GaussianSplattingMeshBase extends Mesh {
         if (this._useMrtAtlas && !this._mrtAtlas) {
             return false;
         }
-        if (this._useShMrtAtlas && (!this._shMrtAtlas || this._shMrtAtlas.length !== this._shMrtAtlasTextureCount)) {
+        // Compare against the count THIS update requires, not the cached `_shMrtAtlasTextureCount`: that field is only
+        // refreshed inside _updateTextures (which the incremental path never runs), so reading it here would let a
+        // higher-degree addPart pass the guard on a stale count and skip growing the SH atlas.
+        if (this._useShMrtAtlas && (!this._shMrtAtlas || this._shMrtAtlas.length !== requiredShTextureCount)) {
             return false;
         }
         if (this._useRotMrtAtlas && !this._rotMrtAtlas) {
@@ -3239,7 +3256,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         // Incremental path: only upload the rows that contain new splats, leaving the already-committed
         // GPU region untouched. Falls through to the full-rebuild path when textures don't exist yet
         // or the texture height needs to grow.
-        const incremental = this._canReuseCachedData(previousVertexCount, vertexCount);
+        const incremental = this._canReuseCachedData(previousVertexCount, vertexCount, sh?.length ?? 0);
 
         if (!incremental) {
             this._splatSizeMin = Infinity;

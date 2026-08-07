@@ -976,7 +976,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
 
         // --- Incremental path: can we reuse the already-committed GPU region? ---
-        const incremental = this._canReuseCachedData(splatCountA, totalCount);
+        const incremental = this._canReuseCachedData(splatCountA, totalCount, sh?.length ?? 0);
         const firstNewLine = incremental ? Math.floor(splatCountA / textureSize.x) : 0;
 
         const minimum = incremental ? this._cachedBoundingMin!.clone() : new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
