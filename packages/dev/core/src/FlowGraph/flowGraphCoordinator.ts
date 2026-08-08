@@ -1,10 +1,11 @@
-import { type Observer, type IReadonlyObservable, Observable } from "core/Misc/observable";
+import { type EventState, type IReadonlyObservable, type Observer, Observable } from "core/Misc/observable";
 import { type Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
 import { type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import { type IObjectAccessor } from "./typeDefinitions";
 import { type IAssetContainer } from "core/IAssetContainer";
 import { Logger } from "core/Misc/logger";
+import { type IFlowGraphHostResolver, GetDefaultEventReferenceKey, GetDefaultEventReference } from "./flowGraphHostResolver";
 
 /**
  * Parameters used to create a flow graph engine.
@@ -14,6 +15,11 @@ export interface IFlowGraphCoordinatorConfiguration {
      * The scene that the flow graph engine belongs to.
      */
     scene: Scene;
+    /**
+     * Optional resolver letting the environment hosting the graphs decide how runtime entities are
+     * represented as opaque reference values. When omitted, a neutral built-in representation is used.
+     */
+    hostResolver?: IFlowGraphHostResolver;
 }
 
 /**
@@ -95,6 +101,16 @@ export class FlowGraphCoordinator {
     private _onBeforeRenderObserver: Observer<Scene>;
     private _executeOnNextFrame: { id: string; data?: any; uniqueId: number }[] = [];
     private _eventUniqueId: number = 0;
+
+    /**
+     * Stack of custom-event dispatches currently in progress. Each entry pairs the
+     * dispatched event id with the Observable's EventState so that
+     * `event/stopPropagation` can stop the remaining handlers of an in-flight
+     * dispatch. A stack (rather than a single value) tolerates re-entrant
+     * dispatching, e.g. an event handler synchronously sending another event.
+     * @internal
+     */
+    public _eventDispatchStack: { eventId: string; state: EventState }[] = [];
 
     public constructor(
         /**
@@ -254,5 +270,71 @@ export class FlowGraphCoordinator {
         if (observable) {
             observable.notifyObservers(data);
         }
+    }
+
+    /**
+     * @internal
+     * Marks the beginning of a custom-event dispatch. Called by event receiver
+     * blocks from within their Observable callback so that the dispatch's
+     * EventState becomes reachable by `event/stopPropagation` while the receiver
+     * flow executes synchronously.
+     * @param eventId the id of the event being dispatched
+     * @param state the Observable EventState for this dispatch
+     */
+    public _beginEventDispatch(eventId: string, state: EventState): void {
+        this._eventDispatchStack.push({ eventId, state });
+    }
+
+    /**
+     * @internal
+     * Marks the end of the most recent custom-event dispatch started with
+     * {@link _beginEventDispatch}.
+     */
+    public _endEventDispatch(): void {
+        this._eventDispatchStack.pop();
+    }
+
+    /**
+     * Stops the propagation of an in-flight custom event, preventing any event
+     * handler nodes that have not been activated yet from running for the current
+     * dispatch.
+     *
+     * The `event` argument is the opaque event reference produced by an event block on its `event`
+     * output. If it does not reference an event that is currently being dispatched, this is a no-op.
+     *
+     * Babylon custom events have no scene-graph propagation layer, so there are
+     * no transitive activations to cancel when `stopImmediate` is false. When it
+     * is true, the remaining handlers in the Observable dispatch are skipped.
+     * @param event the event reference to stop propagation for
+     * @param stopImmediate whether to also stop remaining immediate handlers
+     */
+    public stopEventPropagation(event: string, stopImmediate: boolean): void {
+        if (typeof event !== "string" || !stopImmediate) {
+            return;
+        }
+        const decode = this.config.hostResolver?.decodeEventReference ?? GetDefaultEventReferenceKey;
+        const eventId = decode(event);
+        if (eventId === undefined) {
+            return;
+        }
+        // Find the most recent matching in-flight dispatch and skip its remaining observers.
+        for (let i = this._eventDispatchStack.length - 1; i >= 0; i--) {
+            if (this._eventDispatchStack[i].eventId === eventId) {
+                this._eventDispatchStack[i].state.skipNextObservers = true;
+                return;
+            }
+        }
+    }
+
+    /**
+     * @internal
+     * Encodes an event source key as the opaque reference exposed on an event block's `event`
+     * output, delegating to the host resolver when one is configured.
+     * @param key the event source key
+     * @returns the event reference
+     */
+    public _getEventReference(key: string): string {
+        const encode = this.config.hostResolver?.encodeEventReference;
+        return encode ? encode(key) : GetDefaultEventReference(key);
     }
 }

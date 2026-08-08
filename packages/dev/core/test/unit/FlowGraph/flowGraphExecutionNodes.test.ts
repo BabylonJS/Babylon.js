@@ -18,6 +18,7 @@ import {
 } from "core/FlowGraph";
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+import { IsDelayActive } from "core/FlowGraph/flowGraphDelayRegistry";
 import { Vector3 } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
@@ -117,6 +118,34 @@ describe("Flow Graph Execution Nodes", () => {
         expect(Logger.Log).toHaveBeenNthCalledWith(2, { value: 3 });
         expect(Logger.Log).toHaveBeenNthCalledWith(3, { value: 5 });
         expect(Logger.Log).toHaveBeenNthCalledWith(4, "done");
+    });
+
+    it("ForLoop per-block maxLoopIterations overrides the default without mutating the static", () => {
+        const defaultCap = FlowGraphForLoopBlock.MaxLoopIterations;
+
+        // A block-level cap of 3 must stop the loop after 3 iterations even though the range asks for 10,
+        // and it must not change the process-wide default that every other FlowGraph relies on.
+        const forLoop = new FlowGraphForLoopBlock({ maxLoopIterations: 3 });
+        const sceneReady = new FlowGraphSceneReadyEventBlock();
+        flowGraph.addEventBlock(sceneReady);
+        sceneReady.done.connectTo(forLoop.in);
+        forLoop.startIndex.setValue(0, flowGraphContext);
+        forLoop.endIndex.setValue(10, flowGraphContext);
+        forLoop.step.setValue(1, flowGraphContext);
+
+        const loop = new FlowGraphConsoleLogBlock();
+        forLoop.executionFlow.connectTo(loop.in);
+        forLoop.index.connectTo(loop.message);
+
+        flowGraph.start();
+
+        // 3 body executions (indices 0, 1, 2) then the loop breaks on the cap.
+        expect(Logger.Log).toHaveBeenCalledTimes(3);
+        expect(Logger.Log).toHaveBeenNthCalledWith(1, { value: 0 });
+        expect(Logger.Log).toHaveBeenNthCalledWith(2, { value: 1 });
+        expect(Logger.Log).toHaveBeenNthCalledWith(3, { value: 2 });
+        // The shared static default is untouched.
+        expect(FlowGraphForLoopBlock.MaxLoopIterations).toBe(defaultCap);
     });
 
     it("MultiGate Block", () => {
@@ -234,6 +263,33 @@ describe("Flow Graph Execution Nodes", () => {
         scene.render();
 
         expect(Logger.Log).not.toHaveBeenCalledWith("done");
+    });
+
+    it("keeps global delay identities stable when delays are cancelled and fired", () => {
+        const delay = new FlowGraphSetDelayBlock();
+        delay.duration.setValue(0, flowGraphContext);
+
+        delay._preparePendingTasks(flowGraphContext);
+        delay._preparePendingTasks(flowGraphContext);
+        delay._preparePendingTasks(flowGraphContext);
+
+        expect(IsDelayActive(flowGraphContext, 0)).toBe(true);
+        expect(IsDelayActive(flowGraphContext, 1)).toBe(true);
+        expect(IsDelayActive(flowGraphContext, 2)).toBe(true);
+
+        const cancel = new FlowGraphCancelDelayBlock();
+        cancel.delayIndex.setValue(new FlowGraphInteger(1), flowGraphContext);
+        cancel._execute(flowGraphContext, cancel.in);
+
+        scene.render();
+
+        expect(IsDelayActive(flowGraphContext, 0)).toBe(false);
+        expect(IsDelayActive(flowGraphContext, 1)).toBe(false);
+        expect(IsDelayActive(flowGraphContext, 2)).toBe(false);
+        const pendingDelays = flowGraphContext._getGlobalContextVariable("pendingDelays", []);
+        expect(pendingDelays[0]).toBeUndefined();
+        expect(pendingDelays[1]).toBeUndefined();
+        expect(pendingDelays[2]).toBeUndefined();
     });
 
     it("Flip Flop Block", () => {

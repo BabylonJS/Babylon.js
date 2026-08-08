@@ -83,6 +83,10 @@ export function RegisterKHR_node_hoverability(): void {
         outputs: {
             values: {
                 hoverNodeIndex: { name: "index", toBlock: FlowGraphBlockNames.IndexOf },
+                // `hoveredNode` is the new ref-typed output from the Opaque-Reference
+                // spec update — the picked Babylon mesh itself, available directly
+                // from FlowGraphPointerOverEventBlock.meshUnderPointer (no IndexOf).
+                hoveredNode: { name: "meshUnderPointer", toBlock: FlowGraphBlockNames.PointerOverEvent },
                 controllerIndex: { name: "pointerId" },
             },
             flows: {
@@ -150,6 +154,8 @@ export function RegisterKHR_node_hoverability(): void {
         outputs: {
             values: {
                 hoverNodeIndex: { name: "index", toBlock: FlowGraphBlockNames.IndexOf },
+                // Ref-typed output: the mesh that the pointer just left.
+                hoveredNode: { name: "meshOutOfPointer", toBlock: FlowGraphBlockNames.PointerOutEvent },
                 controllerIndex: { name: "pointerId" },
             },
             flows: {

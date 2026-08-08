@@ -311,6 +311,38 @@ export class FlowGraphContext {
         return this._configuration.scene;
     }
 
+    /**
+     * Encodes an event source key as the opaque reference exposed by event blocks on their `event`
+     * output. Delegates to the {@link IFlowGraphHostResolver} configured on the coordinator, so the
+     * reference format is owned by the environment hosting the graph.
+     * @param key the event source key (e.g. `"sceneReady"`, `"sceneTick"`, or a custom event id)
+     * @returns the event reference
+     */
+    public getEventReference(key: string): string {
+        return this._configuration.coordinator._getEventReference(key);
+    }
+
+    /**
+     * Decodes the array index denoted by a reference. Returns `undefined` when no host resolver is
+     * configured or the host does not recognise the value as an indexed reference.
+     * @param reference the reference to decode
+     * @returns the index the reference denotes, or `undefined` when it does not denote one
+     */
+    public decodeIndexReference(reference: string): number | undefined {
+        return this._configuration.coordinator.config.hostResolver?.decodeIndexReference?.(reference);
+    }
+
+    /**
+     * Maps a runtime object to the reference the host addresses it by. Returns `undefined` when no
+     * host resolver is configured or the host cannot address the object.
+     * @param object the runtime object to address
+     * @param hint optional disambiguation hint telling the host which kind of reference is wanted
+     * @returns the reference for the object, or `undefined` when it cannot be addressed
+     */
+    public getObjectReference(object: object, hint?: string): string | undefined {
+        return this._configuration.coordinator.config.hostResolver?.getObjectReference?.(object, hint);
+    }
+
     private _getUniqueIdPrefixedName(obj: FlowGraphBlock, name: string): string {
         return `${obj.uniqueId}_${name}`;
     }

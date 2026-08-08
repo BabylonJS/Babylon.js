@@ -38,6 +38,11 @@ export interface IWebXRFeature extends IDisposable {
      * Should auto-attach be disabled?
      */
     disableAutoAttach: boolean;
+    /**
+     * The auto-attach policy in effect before the features manager starts a manual attachment.
+     * @internal
+     */
+    _autoAttachPolicyBeforeAttach?: boolean;
 
     /**
      * Attach the feature to the session
@@ -462,8 +467,14 @@ export class WebXRFeaturesManager implements IDisposable {
         const feature = this._features[featureName];
         if (feature && feature.enabled && !feature.featureImplementation.attached) {
             const disableAutoAttachBeforeAttach = feature.featureImplementation.disableAutoAttach;
+            feature.featureImplementation._autoAttachPolicyBeforeAttach = disableAutoAttachBeforeAttach;
             feature.featureImplementation.disableAutoAttach = false;
-            const attached = feature.featureImplementation.attach();
+            let attached: boolean;
+            try {
+                attached = feature.featureImplementation.attach();
+            } finally {
+                delete feature.featureImplementation._autoAttachPolicyBeforeAttach;
+            }
             const intentionallyDisabledDuringAttach = feature.featureImplementation.disableAutoAttach;
             if (!intentionallyDisabledDuringAttach) {
                 feature.featureImplementation.disableAutoAttach = disableAutoAttachBeforeAttach;

@@ -2,11 +2,14 @@
 
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes.pure";
+import { RichTypeNumber, RichTypeString } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import { RegisterClass } from "../../../Misc/typeStore";
+
+/** Event source key used to build this block's event reference. */
+const EventKey = "sceneTick";
 
 /**
  * Payload for the scene tick event.
@@ -36,12 +39,24 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
      */
     public readonly deltaTime: FlowGraphDataConnection<number>;
 
+    /**
+     * Output: the opaque reference identifying this event source.
+     * All instances of this block share the same reference, so comparing the `event` output of two
+     * of them for equality succeeds. The reference format is owned by the host environment.
+     */
+    public readonly eventRef: FlowGraphDataConnection<string>;
+
     public override readonly type: FlowGraphEventType = FlowGraphEventType.SceneBeforeRender;
 
     constructor() {
         super();
         this.timeSinceStart = this.registerDataOutput("timeSinceStart", RichTypeNumber);
         this.deltaTime = this.registerDataOutput("deltaTime", RichTypeNumber);
+        this.eventRef = this.registerDataOutput("event", RichTypeString);
+    }
+
+    public override _updateOutputs(context: FlowGraphContext): void {
+        this.eventRef.setValue(context.getEventReference(EventKey), context);
     }
 
     /**
@@ -57,6 +72,7 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     public override _executeEvent(context: FlowGraphContext, payload: IFlowGraphOnTickEventPayload): boolean {
         this.timeSinceStart.setValue(payload.timeSinceStart, context);
         this.deltaTime.setValue(payload.deltaTime, context);
+        this.eventRef.setValue(context.getEventReference(EventKey), context);
         this._execute(context);
         return true;
     }
