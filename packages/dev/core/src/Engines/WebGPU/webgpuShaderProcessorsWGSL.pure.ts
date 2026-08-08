@@ -429,18 +429,72 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         let fragmentOutputs = "struct FragmentOutputs {\n";
 
+        // A fragData location is float (vec4<f32>) unless the shader writes an integer vector to it — a shader
+        // rendering into an integer color target (e.g. RGBA_INTEGER u32) must declare a matching integer output.
+        // Detect the integer type from the assignment's right-hand side: an inline vec4<u32>/vec4<i32> constructor,
+        // or a plain identifier whose declaration is an integer vec4. Defaults to vec4<f32> (backward compatible).
+        // LIMITATION: this is a lightweight regex scan, not a type checker. Any other RHS shape — a function call, a
+        // `select(...)`, or a conditional expression that yields an integer vec4 — is NOT recognized and defaults to
+        // vec4<f32>; that surfaces later as a WGSL "cannot assign vec4<u32> to vec4<f32>" compile error rather than
+        // here. Shaders that render to integer targets should assign an inline vec4<u32>/vec4<i32> (constructor or a
+        // directly-typed local) so the output type is detected. Extend the patterns below if new forms are needed.
+        // Scan a comment-stripped copy so a commented-out integer write can't flip a real float output.
+        const scanCode = fragmentCode.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\/\/[^\n]*/g, " ");
+        // fragData writes are in `fn main`; scope the RHS-identifier declaration lookup there so a same-named integer
+        // local in a helper function can't win. Match the entry point exactly (not a substring, which `fn mainHelper`
+        // would satisfy); a no-match (-1) bails to the vec4<f32> default rather than scanning the whole source.
+        const mainBodyStart = scanCode.search(/\bfn\s+main\s*\(/);
+        const detectIntVec = (expr: string): Nullable<string> => {
+            if (/^\s*(vec4<u32>|vec4u\s*\()/.test(expr)) {
+                return "vec4<u32>";
+            }
+            if (/^\s*(vec4<i32>|vec4i\s*\()/.test(expr)) {
+                return "vec4<i32>";
+            }
+            return null;
+        };
+        const fragDataOutputType = (index: number): string => {
+            const assign = scanCode.match(new RegExp(`fragmentOutputs\\.fragData${index}\\s*=\\s*([^;]+);`));
+            if (!assign) {
+                return "vec4<f32>";
+            }
+            const rhs = assign[1].trim();
+            const direct = detectIntVec(rhs);
+            if (direct) {
+                return direct;
+            }
+            // Bare identifier RHS (e.g. `fragData0 = computedUintColor;`): resolve its type from a `var/let NAME :
+            // vec4<u32>` or `var/let NAME = vec4<u32>(...)` declaration, searched only in main up to this write.
+            const id = rhs.match(/^([A-Za-z_]\w*)$/);
+            if (id && mainBodyStart >= 0) {
+                const declScope = scanCode.slice(mainBodyStart, assign.index ?? scanCode.length);
+                const typed = declScope.match(new RegExp(`(?:var|let)\\s+${id[1]}\\s*:\\s*(vec4<u32>|vec4<i32>)`));
+                if (typed) {
+                    return typed[1];
+                }
+                const inited = declScope.match(new RegExp(`(?:var|let)\\s+${id[1]}\\s*=\\s*([^;]+);`));
+                if (inited) {
+                    const t = detectIntVec(inited[1].trim());
+                    if (t) {
+                        return t;
+                    }
+                }
+            }
+            return "vec4<f32>";
+        };
+
         // Adding fragData output locations
         const regexRoot = "fragmentOutputs\\.fragData";
-        let match = fragmentCode.match(new RegExp(regexRoot + "0", "g"));
+        let match = scanCode.match(new RegExp(regexRoot + "0", "g"));
         let indexLocation = 0;
 
         if (match) {
-            fragmentOutputs += ` @location(${indexLocation}) fragData0 : vec4<f32>,\n`;
+            fragmentOutputs += ` @location(${indexLocation}) fragData0 : ${fragDataOutputType(0)},\n`;
             indexLocation++;
             for (let index = 1; index < 8; index++) {
-                match = fragmentCode.match(new RegExp(regexRoot + index, "g"));
+                match = scanCode.match(new RegExp(regexRoot + index, "g"));
                 if (match) {
-                    fragmentOutputs += ` @location(${indexLocation}) fragData${indexLocation} : vec4<f32>,\n`;
+                    fragmentOutputs += ` @location(${indexLocation}) fragData${indexLocation} : ${fragDataOutputType(index)},\n`;
                     indexLocation++;
                 }
             }
