@@ -441,8 +441,9 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         // Scan a comment-stripped copy so a commented-out integer write can't flip a real float output.
         const scanCode = fragmentCode.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\/\/[^\n]*/g, " ");
         // fragData writes are in `fn main`; scope the RHS-identifier declaration lookup there so a same-named integer
-        // local in a helper function can't win.
-        const mainBodyStart = Math.max(0, scanCode.indexOf("fn main"));
+        // local in a helper function can't win. Match the entry point exactly (not a substring, which `fn mainHelper`
+        // would satisfy); a no-match (-1) bails to the vec4<f32> default rather than scanning the whole source.
+        const mainBodyStart = scanCode.search(/\bfn\s+main\s*\(/);
         const detectIntVec = (expr: string): Nullable<string> => {
             if (/^\s*(vec4<u32>|vec4u\s*\()/.test(expr)) {
                 return "vec4<u32>";
@@ -465,7 +466,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             // Bare identifier RHS (e.g. `fragData0 = computedUintColor;`): resolve its type from a `var/let NAME :
             // vec4<u32>` or `var/let NAME = vec4<u32>(...)` declaration, searched only in main up to this write.
             const id = rhs.match(/^([A-Za-z_]\w*)$/);
-            if (id) {
+            if (id && mainBodyStart >= 0) {
                 const declScope = scanCode.slice(mainBodyStart, assign.index ?? scanCode.length);
                 const typed = declScope.match(new RegExp(`(?:var|let)\\s+${id[1]}\\s*:\\s*(vec4<u32>|vec4<i32>)`));
                 if (typed) {

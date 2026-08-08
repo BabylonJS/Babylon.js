@@ -281,5 +281,29 @@ describe("WebGPUShaderProcessorWGSL", () => {
             const { fragmentCode } = processor.finalizeShaders(vtx, frag);
             expect(fragmentCode).toContain("@location(0) fragData0 : vec4<f32>");
         });
+
+        it("scopes to the exact entry point, not a `main`-prefixed helper declared before it", () => {
+            // `fn mainHelper` must not be mistaken for the entry point (a substring boundary would start the scope at
+            // index 0, swallowing the helper's integer `color` and flipping main's float output).
+            const frag =
+                "fn mainHelper() -> vec4<u32> {\n  var color : vec4<u32> = vec4<u32>(1u);\n  return color;\n}\n" +
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  let color = vec4<f32>(0.5);\n" +
+                "  fragmentOutputs.fragData0 = color;\n" +
+                "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<f32>");
+        });
+
+        it("does not let an integer local in a helper declared after main flip a float fragData output", () => {
+            const frag =
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  let color = vec4<f32>(0.5);\n" +
+                "  fragmentOutputs.fragData0 = color;\n" +
+                "}\n" +
+                "fn helper() -> vec4<u32> {\n  var color : vec4<u32> = vec4<u32>(1u);\n  return color;\n}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<f32>");
+        });
     });
 });
