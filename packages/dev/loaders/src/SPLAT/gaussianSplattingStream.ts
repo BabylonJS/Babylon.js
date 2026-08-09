@@ -1,10 +1,11 @@
-import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { GaussianSplattingMesh, type IGaussianSplattingStreamingPart } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { type GaussianSplattingPartProxyMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingPartProxyMesh";
 import { type IGaussianSplattingSplatRange } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
 import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
-import { Vector3, Matrix } from "core/Maths/math.vector";
+import { Vector3, Matrix, Quaternion } from "core/Maths/math.vector";
 import { Color4 } from "core/Maths/math.color";
 import { Frustum } from "core/Maths/math.frustum";
 import { Plane } from "core/Maths/math.plane";
@@ -132,7 +133,8 @@ export interface IGaussianSplattingStreamOptions {
      * GPU memory budget (in megabytes) for resident splats. When set (and smaller than the full dataset),
      * LOD files are streamed through a fixed-size work buffer and unreferenced files are evicted to stay
      * within budget, allowing datasets larger than a single full-dataset buffer. Converted to a splat count
-     * at ~84 bytes/splat. Combined with {@link maxResidentSplats} by taking the smaller of the two.
+     * using the per-splat cost (core data plus any baked SH and rotation/scale textures). Combined with
+     * {@link maxResidentSplats} by taking the smaller of the two.
      */
     memoryBudgetMb?: number;
     /**
@@ -146,6 +148,30 @@ export interface IGaussianSplattingStreamOptions {
      * return to it avoids a re-download. Only used when a budget enables eviction. PlayCanvas default `100`.
      */
     evictionCooldownFrames?: number;
+    /**
+     * When set, the stream does not render itself; instead it reserves a region of this compound mesh and
+     * decodes/sorts into it, so its splats are depth-sorted and drawn in ONE pass together with the compound's
+     * other (static) parts. Used by {@link AddGaussianSplattingStreamPart}. The stream mesh becomes a hidden
+     * controller; the SOG up-axis orientation is applied to the reserved part's proxy transform.
+     * @internal
+     */
+    hostCompound?: GaussianSplattingMesh;
+    /**
+     * When true, higher-order spherical-harmonics carried by the SOG files (`shN`) are GPU-decoded into baked
+     * packed-u32 SH textures so the streamed splats render with view-dependent lighting (matching the non-stream
+     * `.spz`/`.sog` path) instead of flat DC-only color. The SH degree is the max `shN.bands` across the streamed
+     * files (lower-band files neutral-fill). No effect when the files carry no `shN`. Defaults to `true`, matching
+     * the non-stream path's always-decode-if-present behavior; set to `false` to force flat DC-only color even
+     * when the data carries `shN` (e.g. to save the decode cost/texture memory).
+     */
+    decodeSh?: boolean;
+    /**
+     * When true, each splat's rotation matrix + scale are GPU-decoded into half-float rotation/scale textures so the
+     * streamed splats participate in voxel-based IBL shadowing (matching the non-stream path). Standalone: the work
+     * buffer owns the rotation textures. Hosted: the compound's rotation textures become a shared render-target atlas
+     * the stream decodes into. Defaults to `false`.
+     */
+    needsRotationScale?: boolean;
 }
 
 // tan(22.5deg): reference half-FOV for a 45-degree vertical FOV, used for FOV compensation (matches PlayCanvas).
@@ -154,8 +180,8 @@ const RefTanHalfFov = Math.tan((22.5 * Math.PI) / 180);
 // Sentinel "file" ids for the residency controller's pinned (never-evicted) allocations.
 const PaddingFileId = -2;
 const EnvironmentFileId = -1;
-// Approximate bytes per resident splat used to convert a memory budget (MB) to a splat budget: the four
-// work-buffer textures cost 16+16+16+4 = 52 bytes on the GPU, plus ~32 bytes of CPU position/sort data.
+// Core bytes per resident splat: the four work-buffer textures cost 16+16+16+4 = 52 bytes on the GPU, plus ~32
+// bytes of CPU position/sort data. `_resolveResidentBudget` adds the SH and rotation/scale texture cost on top.
 const BytesPerResidentSplat = 84;
 
 // Scratch objects reused by the per-frame optimal-LOD evaluation (avoids per-call allocations).
@@ -248,6 +274,13 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     // GPU work buffer holding all decoded splats; created once the total capacity is known.
     private _workBuffer: Nullable<GaussianSplattingWorkBuffer> = null;
+    // Higher-order SH. Set from options.decodeSh in the constructor; the degree/texture-count are the MAX across the
+    // streamed files (learned in the meta pre-pass). 0 degree = no SH baking (files carry no shN or option is off).
+    private _decodeSh!: boolean;
+    private _streamShDegree = 0;
+    private _shTextureCount = 0;
+    // Rotation/scale for voxel-IBL shadows. Enabled via options.needsRotationScale.
+    private _needsRotationScale = false;
     // True once GPU position readback has been validated against a CPU decode (see _probeReadbackAsync). While
     // false, positions are decoded on the CPU from the means images; once validated, every SOG image uses the
     // fast direct upload and positions are read back from the work buffer (non-blocking).
@@ -277,6 +310,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     // Eviction streaming config: enabled only when a budget smaller than the full dataset is configured.
     private _evictionEnabled = false;
     private _residentBudget = 0;
+    // Raw budget options; the final `_residentBudget` is resolved from these once the SH/rotation byte cost is known
+    // (after the metadata pre-pass), so the memory budget accounts for the extra baked SH and rotation textures.
+    private _maxResidentSplats = 0;
+    private _memoryBudgetMb = 0;
     private _evictionCooldownFrames = 100;
     // Serializes the allocate -> decode -> readback critical section so a defrag relayout (which runs inside it)
     // never overlaps another file's decode writing the work buffer, which would corrupt the moved data.
@@ -318,6 +355,34 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
     private _disposed = false;
 
+    // Hosted mode: when set, the stream decodes/sorts into a reserved region of a compound mesh instead of
+    // rendering itself. `_host` is the reserved-part handle (resolved once the total capacity is known),
+    // `_positionBase` is the region's first splat index in the compound's shared position buffer.
+    private readonly _hostCompound: Nullable<GaussianSplattingMesh> = null;
+    private _host: Nullable<IGaussianSplattingStreamingPart> = null;
+    private _positionBase = 0;
+    // Unsubscribe functions for the host's atlas-rebuild hooks (backup/restore the region across a grow).
+    private _unsubBeforeRebuild: Nullable<() => void> = null;
+    private _unsubAfterRebuild: Nullable<() => void> = null;
+    // Unsubscribe functions binding this controller's lifetime to its host compound: removing the part or disposing
+    // the compound disposes this stream, even mid-load. Registered at reservation so the window is never open.
+    private _hostUnsubRemove: Nullable<() => void> = null;
+    private _hostUnsubDispose: Nullable<() => void> = null;
+    // True once the host has released this stream's part (removePart, or the compound is being disposed), so dispose()
+    // must NOT call back into the compound to remove the part again.
+    private _partReleasedByHost = false;
+    // CPU snapshot of this region's shared `_splatPositions` taken before an atlas grow and restored after it —
+    // the grow rebuilds `_splatPositions` from CPU part sources, and a streamed region has none, so without this
+    // its sort-worker positions would be zeroed (the streamed splats would collapse to the origin).
+    private _positionSnapshot: Nullable<Float32Array> = null;
+    // Hosted mode: resolves once the reserved part exists AND its base layer has decoded (proxy bounds are
+    // real); rejects if streaming fails/disposes before that. Lets AddGaussianSplattingStreamPartAsync hand
+    // back a ready part proxy, replacing the standalone waitForEnabled/waitForStreamedBounds handshake.
+    private _partReadyPromise: Nullable<Promise<void>> = null;
+    private _partReadyResolve: Nullable<() => void> = null;
+    private _partReadyReject: Nullable<(reason: Error) => void> = null;
+    private _partReadySettled = false;
+
     /**
      * Returns true when the parsed JSON looks like a PlayCanvas-style `lod-meta.json` payload.
      * @param data parsed JSON
@@ -344,6 +409,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         this._metadata = metadata;
         this._rootUrl = rootUrl;
         this._streamOptions = options;
+        this._hostCompound = options.hostCompound ?? null;
+        this._decodeSh = options.decodeSh ?? true;
+        this._needsRotationScale = options.needsRotationScale ?? false;
 
         // LOD heuristic parameters: take the provided values, otherwise keep the PlayCanvas-aligned defaults.
         const maxLod = Math.max(0, metadata.lodLevels - 1);
@@ -387,26 +455,53 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (options.evictionCooldownFrames !== undefined) {
             this._evictionCooldownFrames = Math.max(0, Math.floor(options.evictionCooldownFrames));
         }
-        // Resolve the resident-splat budget from the splat-count and/or memory-size options (smaller wins).
-        let budget = 0;
+        // Capture the raw budget options; `_residentBudget` is resolved in _streamAllAsync once the SH/rotation
+        // per-splat cost is known (a memory budget must count the extra baked SH and rotation textures, not just core).
         if (options.maxResidentSplats !== undefined && options.maxResidentSplats > 0) {
-            budget = Math.floor(options.maxResidentSplats);
+            this._maxResidentSplats = Math.floor(options.maxResidentSplats);
         }
         if (options.memoryBudgetMb !== undefined && options.memoryBudgetMb > 0) {
-            const fromMB = Math.floor((options.memoryBudgetMb * 1024 * 1024) / BytesPerResidentSplat);
-            budget = budget > 0 ? Math.min(budget, fromMB) : fromMB;
+            this._memoryBudgetMb = options.memoryBudgetMb;
         }
-        this._residentBudget = budget;
 
         this._downloadManager = new GaussianSplattingDownloadManager({
             maxConcurrent: options.maxConcurrentDownloads,
             maxRetries: options.maxDownloadRetries,
         });
 
-        // PlayCanvas SOG data is authored with a flipped Y; match the standard SOG loader.
-        this.scaling.y *= -1;
-        // PlayCanvas SOG LOD scenes are authored Z-up; rotate into Babylon's Y-up convention.
-        this.rotation.x = -Math.PI / 2;
+        // PlayCanvas SOG data is authored with a flipped Y and Z-up. Standalone: bake the orientation into this
+        // mesh's transform. Hosted: this mesh does not render — the orientation is applied to the reserved part's
+        // proxy transform instead (see _streamAllAsync), so it composes with the compound's per-part world matrix.
+        if (!this._hostCompound) {
+            this.scaling.y *= -1;
+            this.rotation.x = -Math.PI / 2;
+        } else {
+            // Hidden controller: never rendered/picked/serialized; the compound renders the streamed splats.
+            this.setEnabled(false);
+            this.isPickable = false;
+            this.doNotSerialize = true;
+            // Created before _streamAllAsync is kicked off (below) so there is no resolve-before-await race.
+            this._partReadyPromise = new Promise<void>((resolve, reject) => {
+                this._partReadyResolve = resolve;
+                this._partReadyReject = reject;
+            });
+            // Attach a no-op rejection handler so a caller that never awaits whenPartReadyAsync() (e.g. the synchronous
+            // AddGaussianSplattingStreamPart) does not produce an unhandled promise rejection on failure; real
+            // consumers still observe the rejection through their own await.
+            // eslint-disable-next-line github/no-then
+            this._partReadyPromise.catch(() => {});
+            // Bind to the host's disposal FROM CONSTRUCTION (not just from reservation): the metadata pre-pass in
+            // _streamAllAsync runs before the region is reserved, so a compound disposed during that download would
+            // otherwise be missed and the controller would reserve into a disposed host. dispose() -> _disposed, so
+            // _streamAllAsync's post-download check bails before reserving.
+            const disposeObserver = this._hostCompound.onDisposeObservable.add(() => {
+                if (!this._disposed) {
+                    this._partReleasedByHost = true;
+                    this.dispose();
+                }
+            });
+            this._hostUnsubDispose = () => this._hostCompound!.onDisposeObservable.remove(disposeObserver);
+        }
 
         this._collectLodEntries(metadata.tree);
 
@@ -414,15 +509,88 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             this.debugDisplay = true;
         }
 
-        // Kick off streaming without blocking the caller or the render loop.
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-        this._streamAllAsync().catch((e) => {
-            Logger.Error("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
-        });
+        // Kick off streaming without blocking the caller or the render loop. In hosted mode settle the part-ready
+        // deferred: _streamAllAsync resolves it once the base layer has decoded. If it finishes WITHOUT the part ever
+        // becoming ready (empty stream) or throws, dispose the controller so a hosted stream doesn't leave its work
+        // buffer and reserved region allocated — the synchronous AddGaussianSplattingStreamPart never awaits, so it
+        // can't clean up itself. `_partReadySettled` distinguishes a genuine success (leave it running) from a
+        // finished-but-never-ready result (dispose).
+        // eslint-disable-next-line github/no-then
+        void this._streamAllAsync().then(
+            () => {
+                const becameReady = this._partReadySettled;
+                this._rejectPartReady("GaussianSplattingStream: stream produced no splats.");
+                if (!becameReady && this._hostCompound && !this._disposed) {
+                    this._disposeAndReclaim();
+                }
+            },
+            (e) => {
+                Logger.Error("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
+                this._rejectPartReady("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
+                if (this._hostCompound && !this._disposed) {
+                    this._disposeAndReclaim();
+                }
+            }
+        );
     }
 
     public override getClassName(): string {
         return "GaussianSplattingStream";
+    }
+
+    /**
+     * When `_hostCompound` is set (i.e. this stream was created via {@link AddGaussianSplattingStreamPart}
+     * to drive a reserved region of another compound mesh, rather than rendering itself), this instance is
+     * disabled and never drawn — so it never runs its own depth-sort worker and the base class's readiness
+     * check (which waits for one) would never pass. Report ready unconditionally in that case; the host
+     * compound is the one actually rendering, and its own `isReady()` already covers real sort completion.
+     * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
+     * @returns true when ready
+     */
+    public override isReady(completeCheck = false): boolean {
+        if (this._hostCompound) {
+            return true;
+        }
+        return super.isReady(completeCheck);
+    }
+
+    /**
+     * Hosted mode only: the compound part proxy this stream drives (world transform + visibility of the
+     * reserved region), or null before the part has been reserved (or when running standalone).
+     */
+    public get streamingPartProxy(): Nullable<GaussianSplattingPartProxyMesh> {
+        return this._host?.proxy ?? null;
+    }
+
+    /**
+     * Hosted mode only: resolves once the reserved part exists and its base layer has decoded (so the proxy's
+     * bounds are real and the part is ready to be placed/framed), or rejects if streaming fails/disposes first.
+     * Resolves immediately for a standalone stream. Used by {@link AddGaussianSplattingStreamPartAsync}.
+     * @returns a promise that settles when the hosted part is ready to use
+     */
+    public async whenPartReadyAsync(): Promise<void> {
+        await (this._partReadyPromise ?? Promise.resolve());
+    }
+
+    /** Resolves the part-ready deferred (hosted mode); no-op if already settled or standalone. */
+    private _resolvePartReady(): void {
+        if (this._partReadySettled) {
+            return;
+        }
+        this._partReadySettled = true;
+        this._partReadyResolve?.();
+    }
+
+    /**
+     * Rejects the part-ready deferred (hosted mode); no-op if already settled or standalone.
+     * @param message failure reason surfaced to the awaiter
+     */
+    private _rejectPartReady(message: string): void {
+        if (this._partReadySettled) {
+            return;
+        }
+        this._partReadySettled = true;
+        this._partReadyReject?.(new Error(message));
     }
 
     /**
@@ -451,7 +619,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         const scene = this._scene;
         let stable = 0;
         const isSettled = (): boolean => {
-            if (this._isLoadingIdle() && this._isDepthSortSettled) {
+            if (this._isLoadingIdle() && this._sinkIsDepthSortSettled) {
                 return ++stable >= required;
             }
             stable = 0;
@@ -594,7 +762,29 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     public override dispose(doNotRecurse?: boolean): void {
+        if (this._disposed) {
+            // Idempotent: a failed load disposes from its own _streamAllAsync handler, and the awaiter's catch may
+            // dispose again — don't re-fire cleanup/observables (and super.dispose) a second time.
+            return;
+        }
         this._disposed = true;
+        this._rejectPartReady("GaussianSplattingStream: disposed before the part was ready.");
+        this._unsubBeforeRebuild?.();
+        this._unsubAfterRebuild?.();
+        this._unsubBeforeRebuild = null;
+        this._unsubAfterRebuild = null;
+        this._hostUnsubRemove?.();
+        this._hostUnsubDispose?.();
+        this._hostUnsubRemove = null;
+        this._hostUnsubDispose = null;
+        // If this stream disposes on its own rather than because the host removed its part, release the reserved
+        // region (tombstone). Reclaiming the rows is a separate compaction — cheap disposal here so tearing down N
+        // parts doesn't trigger N atlas rebuilds; the caller/host reclaims when appropriate (a failed load compacts
+        // once, see the _streamAllAsync handler). Skipped when the host removed the part (it owns that policy).
+        if (this._host && this._hostCompound && !this._partReleasedByHost && !this._hostCompound.isDisposed()) {
+            this._hostCompound.removePart(this._host.partIndex);
+        }
+        this._host = null;
         if (this._lodObserver) {
             this._scene.onBeforeRenderObservable.remove(this._lodObserver);
             this._lodObserver = null;
@@ -606,6 +796,37 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         this._workBuffer?.dispose();
         this._workBuffer = null;
         super.dispose(doNotRecurse);
+    }
+
+    /**
+     * Disposes this stream (which tombstones its region) and then compacts the host once to actually reclaim the
+     * reserved rows. Used on a definitive load failure / empty result — a discrete, one-off reclaim, versus a bare
+     * {@link dispose} that only tombstones so tearing down several parts doesn't rebuild the atlas repeatedly.
+     */
+    private _disposeAndReclaim(): void {
+        const compound = this._hostCompound;
+        const hadPart = !!this._host && !this._partReleasedByHost;
+        this.dispose();
+        if (hadPart && compound && !compound.isDisposed()) {
+            compound.compactAtlas();
+        }
+    }
+
+    /**
+     * The world matrix that actually places this stream's splats, used to map the camera into the space the
+     * node bounds live in (for LOD distance) and to build per-node world AABBs (for frustum culling). Standalone:
+     * this controller mesh carries the transform. Hosted: this controller is a hidden, unplaced node — the splats
+     * are placed by the reserved part's proxy (SOG up-axis basis composed with the host's placement), so LOD and
+     * culling MUST use the proxy's world matrix or they compute distances/frustum tests in the wrong space
+     * (producing wrong per-chunk LODs, i.e. holes, whenever the host applies a non-identity transform).
+     * @param force when true, forces a full world-matrix recompute (else uses the renderId/sync fast-path)
+     * @returns the effective world matrix for LOD/culling
+     */
+    private _getEffectiveWorldMatrix(force: boolean): Matrix {
+        if (this._host) {
+            return this._host.proxy.computeWorldMatrix(force);
+        }
+        return this.computeWorldMatrix(force);
     }
 
     /**
@@ -636,7 +857,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         const fovScale = Math.min(tanHalfV, tanHalfH) / RefTanHalfFov;
 
         // Transform the camera into the mesh's local space (where the node bounds live).
-        this.computeWorldMatrix(false).invertToRef(TmpInvWorld);
+        this._getEffectiveWorldMatrix(false).invertToRef(TmpInvWorld);
         const localCamera = Vector3.TransformCoordinatesToRef(camera.globalPosition, TmpInvWorld, TmpLocalCamera);
         const px = localCamera.x;
         const py = localCamera.y;
@@ -898,14 +1119,16 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
      * base layer, then installs the per-frame loop that streams finer LODs on demand.
      */
     private async _streamAllAsync(): Promise<void> {
-        // Phase 1: learn splat counts for the environment and every referenced LOD file (cheap meta only).
+        // Step 1: learn splat counts for the environment and every referenced LOD file (cheap meta only). This also
+        // resolves the max SH degree, so the resident-splat budget can now be sized with the SH/rotation byte cost.
         const fileIds = this._collectAllFileIds();
         const envCount = await this._gatherCountsAsync(fileIds);
         if (this._disposed) {
             return;
         }
+        this._resolveResidentBudget();
 
-        // Phase 2: learn the full dataset size (padding + environment + every LOD file). The work buffer is
+        // Step 2: learn the full dataset size (padding + environment + every LOD file). The work buffer is
         // sized to this unless a smaller budget enables eviction-based streaming.
         // Index 0 is reserved as a never-decoded padding splat: the sort worker and index buffer pad unused
         // slots with index 0, and leaving that slot zeroed (center.w = 0 => zero covariance, alpha 0) makes
@@ -941,18 +1164,110 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             }
         }
 
-        this._workBuffer = new GaussianSplattingWorkBuffer(this._scene, capacity);
-        // GPU readback is only enabled after it is validated against a CPU decode on the first file (see
-        // _probeReadbackAsync); until then positions are decoded on the CPU so there is always a correct result.
-        this._readbackCandidate = this._workBuffer.supportsAsyncCentersReadback;
-        const splatPositions = new Float32Array(capacity * 4);
-        const textures = this._workBuffer.textures;
-        this._setExternalWorkBuffer(textures[0], textures[1], textures[2], textures[3], splatPositions, capacity);
-        // Nothing is active until at least one resource has been decoded.
-        this.setSplatIndexRanges([]);
-        this.setEnabled(true);
+        if (this._hostCompound) {
+            // Hosted: reserve a region of the compound sized to the work buffer, orient the part's proxy for the
+            // SOG up-axis, and decode straight into the compound's shared atlas so the streamed splats sort/draw
+            // in one pass with the compound's other parts. The compound owns the worker/render; this mesh stays
+            // a hidden controller.
+            const sogWorld = Matrix.Compose(new Vector3(1, -1, 1), Quaternion.RotationYawPitchRoll(0, -Math.PI / 2, 0), Vector3.ZeroReadOnly);
+            // Reserve with SH so the compound converts its SH textures to shared render-targetable integer MRTs and
+            // sets its SH degree; the hosted work buffer bakes into those shared targets at the region base offset.
+            const host = this._hostCompound.reserveStreamingPart(capacity, sogWorld, this.name + "_part", this._shTextureCount, this._streamShDegree, this._needsRotationScale);
+            this._host = host;
+            this._positionBase = host.base;
+            // Bind this controller's lifetime to its part FROM RESERVATION (not after readiness): removing the part or
+            // disposing the compound — even while still downloading/decoding — disposes this stream so it stops writing
+            // into the compound's borrowed textures. `_partReleasedByHost` stops dispose() from removing the part again.
+            const compound = this._hostCompound;
+            // The remove observer needs the assigned part index, so it is registered here (at reservation); the
+            // compound-disposal observer was already registered at construction (see the ctor) to cover the pre-pass.
+            const removeObserver = compound.onPartRemovedObservable.add((removedIndex) => {
+                if (!this._disposed && this._host && removedIndex === this._host.partIndex) {
+                    this._partReleasedByHost = true;
+                    this.dispose();
+                }
+            });
+            this._hostUnsubRemove = () => compound.onPartRemovedObservable.remove(removeObserver);
+            const shExternal = this._shTextureCount > 0 && host.shMrtAtlas ? { textureCount: this._shTextureCount, externalMrts: host.shMrtAtlas } : undefined;
+            const rotExternal = this._needsRotationScale && host.rotMrtAtlas ? { externalMrt: host.rotMrtAtlas } : undefined;
+            // Use the region's ROW-ALIGNED capacity (host.capacity), not the raw stream capacity: backup/restore/
+            // relayout scope to whole atlas rows, so an unaligned capacity would drop the region's partial final row.
+            this._workBuffer = new GaussianSplattingWorkBuffer(
+                this._scene,
+                host.capacity,
+                {
+                    mrt: host.mrtAtlas!,
+                    width: host.atlasWidth,
+                    baseOffset: host.base,
+                },
+                shExternal,
+                rotExternal
+            );
+            this._readbackCandidate = this._workBuffer.supportsAsyncCentersReadback;
+            // Write decoded centers directly into the compound's shared position buffer (offset by the region base).
+            this._splatPositions = host.splatPositions;
+            this._vertexCount = capacity;
+            // Preserve this region's GPU-only data when the compound grows its atlas (adding a part / another
+            // stream): back it up before the old atlas is disposed, then rebind + restore into the new atlas.
+            const wb = this._workBuffer;
+            this._unsubBeforeRebuild = host.onBeforeAtlasRebuild(() => {
+                // Back up the region's atlas texels, and snapshot its CPU positions: the grow reallocates the shared
+                // `_splatPositions` and rebuilds it from CPU part sources, but this region has none, so its positions
+                // would be lost. `this._splatPositions` is still the pre-grow array and holds the real positions.
+                wb.backupRegion();
+                this._positionSnapshot = this._splatPositions ? this._splatPositions.slice(this._positionBase * 4, (this._positionBase + this._vertexCount) * 4) : null;
+            });
+            this._unsubAfterRebuild = host.onAfterAtlasRebuild(() => {
+                if (host.mrtAtlas) {
+                    wb.rebindAtlas(host.mrtAtlas);
+                }
+                // Rebind to the recreated shared SH and rotation atlases; restoreRegion() writes the backups into them.
+                wb.rebindShAtlas(host.shMrtAtlas);
+                wb.rebindRotAtlas(host.rotMrtAtlas);
+                // A plain grow keeps `host.base`; a compaction relocates the region to a new base. Update the base
+                // before restoring so the region's texels and positions land there.
+                this._positionBase = host.base;
+                wb.setBaseOffset(host.base);
+                wb.restoreRegion();
+                // Re-cache the reallocated shared array and restore the region's CPU positions at the (new) base.
+                this._splatPositions = host.splatPositions;
+                if (this._positionSnapshot && this._splatPositions) {
+                    this._splatPositions.set(this._positionSnapshot, this._positionBase * 4);
+                    this._positionSnapshot = null;
+                }
+            });
+            // Nothing active until a resource is decoded (as a range on the reserved part).
+            host.setActiveRanges([]);
+        } else {
+            // Bake higher-order SH when requested and present: the work buffer owns `_shTextureCount` integer SH
+            // targets and the draw path lights the decoded splats with them (SH degree = max across files).
+            const sh = this._shTextureCount > 0 ? { textureCount: this._shTextureCount } : undefined;
+            // Decode rotation/scale into an owned 3-attachment half-float target when voxel-IBL shadows are requested.
+            const rot = this._needsRotationScale ? {} : undefined;
+            this._workBuffer = new GaussianSplattingWorkBuffer(this._scene, capacity, undefined, sh, rot);
+            // GPU readback is only enabled after it is validated against a CPU decode on the first file (see
+            // _probeReadbackAsync); until then positions are decoded on the CPU so there is always a correct result.
+            this._readbackCandidate = this._workBuffer.supportsAsyncCentersReadback;
+            const splatPositions = new Float32Array(capacity * 4);
+            const textures = this._workBuffer.textures;
+            const shTextures = sh ? this._workBuffer.shTextures : undefined;
+            const rotTextures = rot ? this._workBuffer.rotationTextures : undefined;
+            this._setExternalWorkBuffer(textures[0], textures[1], textures[2], textures[3], splatPositions, capacity, shTextures, this._streamShDegree, rotTextures);
+            // Nothing is active until at least one resource has been decoded.
+            this.setSplatIndexRanges([]);
+            this.setEnabled(true);
+        }
 
-        // Phase 3: decode the environment, then every node's coarsest LOD as the permanent base layer.
+        // Hosted only: compile the region's backup/restore copy shaders BEFORE decoding any data, so a later
+        // grow/compaction (which synchronously backs this region up) can never race shader compilation and lose it.
+        if (this._host && this._workBuffer) {
+            await this._waitForCanBackupAsync(this._workBuffer);
+            if (this._disposed) {
+                return;
+            }
+        }
+
+        // Step 3: decode the environment, then every node's coarsest LOD as the permanent base layer.
         if (this._environmentRange && this._environmentFiles) {
             await this._decodeEnvironmentAsync();
         }
@@ -976,11 +1291,54 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (this._disposed) {
             return;
         }
-        // Phase 4: hand off to the per-frame LOD streaming loop.
+        // Step 4: hand off to the per-frame LOD streaming loop.
         this._baseLayerReady = true;
         if (!this._lodObserver) {
             this._lodObserver = this._scene.onBeforeRenderObservable.add(() => this._onLodFrame());
         }
+        // Hosted: the reserved part now exists with a decoded base layer and real bounds — release awaiters.
+        this._resolvePartReady();
+    }
+
+    /**
+     * Waits (up to a frame cap) until the work buffer's backup/restore copy shaders are compiled, so a later
+     * grow/compaction can preserve this hosted region (see {@link GaussianSplattingWorkBuffer.backupRegion}).
+     * Polls per rendered frame: shader readiness here depends on the render loop (and the shared atlas can be
+     * rebuilt concurrently), so this stays synchronized with the render-driven decode and always makes progress.
+     * On timeout it proceeds best-effort — a subsequent grow/compaction then warns rather than blocking decode.
+     * @param wb the hosted work buffer to wait on
+     */
+    private async _waitForCanBackupAsync(wb: GaussianSplattingWorkBuffer): Promise<void> {
+        for (let frame = 0; frame < 600 && !this._disposed; frame++) {
+            if (wb.canBackup) {
+                return;
+            }
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise<void>((resolve) => this._scene.onBeforeRenderObservable.addOnce(() => resolve()));
+        }
+        if (!this._disposed && !wb.canBackup) {
+            Logger.Warn("GaussianSplattingStream: backup/restore copy shaders did not compile in time; a grow/compaction before they are ready may drop streamed data.");
+        }
+    }
+
+    /**
+     * Resolves the resident-splat budget from the raw options, sizing a memory (MB) budget with the actual per-splat
+     * GPU+CPU cost — core data plus the baked SH textures and rotation/scale textures when enabled — so SH/rotation
+     * assets don't silently consume up to double the configured budget. Requires the SH degree (from the metadata
+     * pre-pass) to be known. The smaller of the splat-count and memory budgets wins.
+     */
+    private _resolveResidentBudget(): void {
+        let budget = this._maxResidentSplats;
+        if (this._memoryBudgetMb > 0) {
+            // Per resident splat: core 84 B, + 16 B per packed-u32 SH texture, + the 3 RGBA rotation textures. The
+            // work buffer uses half-float rotation textures (8 B each = 24 B) when the engine can render to them,
+            // else full float (16 B each = 48 B) — match that so fallback devices aren't under-budgeted.
+            const rotBytes = this._scene.getEngine().getCaps().textureHalfFloatRender ? 24 : 48;
+            const bytesPerSplat = BytesPerResidentSplat + this._shTextureCount * 16 + (this._needsRotationScale ? rotBytes : 0);
+            const fromMB = Math.floor((this._memoryBudgetMb * 1024 * 1024) / bytesPerSplat);
+            budget = budget > 0 ? Math.min(budget, fromMB) : fromMB;
+        }
+        this._residentBudget = budget;
     }
 
     /**
@@ -1008,6 +1366,19 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
      */
     private async _gatherCountsAsync(fileIds: number[]): Promise<number> {
         let envCount = 0;
+        // Track the max SH degree/coeffs across every streamed file (+ environment): the baked SH atlas is sized
+        // for the max once, up front, so no mid-stream resize — lower-degree files neutral-fill their higher bands.
+        let maxShDegree = 0;
+        let maxCoeffs = 0;
+        const foldSh = (data: SOGRootData) => {
+            const info = GaussianSplattingStream._GetShInfo(data);
+            if (info.degree > maxShDegree) {
+                maxShDegree = info.degree;
+            }
+            if (info.coeffs > maxCoeffs) {
+                maxCoeffs = info.coeffs;
+            }
+        };
         if (this._metadata.environment) {
             try {
                 const url = this._rootUrl + this._metadata.environment;
@@ -1017,6 +1388,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 if (metaBytes) {
                     const meta = JSON.parse(new TextDecoder().decode(metaBytes)) as SOGRootData;
                     envCount = GaussianSplattingStream._GetSplatCount(meta);
+                    foldSh(meta);
                     this._environmentFiles = files;
                 }
             } catch (e: any) {
@@ -1044,6 +1416,18 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 }
             })
         );
+
+        // Fold in every file's SH (done after the parallel fetch so _fileMeta is fully populated).
+        for (const { sogData } of this._fileMeta.values()) {
+            foldSh(sogData);
+        }
+
+        // Resolve the stream's baked-SH configuration: enabled only when requested AND the data carries shN.
+        if (this._decodeSh && maxShDegree > 0 && maxCoeffs > 0) {
+            this._streamShDegree = maxShDegree;
+            // Packed-u32 SH textures: 16 SH scalar-bytes per texel, 3 channels per coefficient (matches ParseSogDatas).
+            this._shTextureCount = Math.ceil((maxCoeffs * 3) / 16);
+        }
 
         return envCount;
     }
@@ -1088,10 +1472,52 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
      * @param count number of splats in the range
      */
     private _applyPositions(positions: Float32Array, base: number, count: number): void {
-        this._splatPositions!.set(positions, base * 4);
+        // In hosted mode _splatPositions is the compound's shared buffer; the region starts at _positionBase.
+        this._splatPositions!.set(positions, (this._positionBase + base) * 4);
         this._updateBounds(positions, count);
         // Incrementally patch only this range in the sort worker (avoids the full position-buffer re-copy).
-        this._postWorkerPositionsRange(base, count);
+        this._sinkPostPositionsRange(base, count);
+    }
+
+    // ---- Sink routing: standalone drives this mesh; hosted drives the compound's reserved-part handle. ----
+
+    /**
+     * Sets the active source ranges (local to the stream's buffer) on the render sink.
+     * @param localRanges active ranges in the stream's local index space
+     */
+    private _sinkSetActiveRanges(localRanges: readonly IGaussianSplattingSplatRange[]): void {
+        if (this._host) {
+            this._host.setActiveRanges(localRanges);
+        } else {
+            this.setSplatIndexRanges(localRanges);
+        }
+    }
+
+    /**
+     * Patches a decoded position range (local offset) into the render sink's sort worker.
+     * @param base first splat index of the range, local to the stream's buffer
+     * @param count number of splats in the range
+     */
+    private _sinkPostPositionsRange(base: number, count: number): void {
+        if (this._host) {
+            this._host.postPositionsRange(base, count);
+        } else {
+            this._postWorkerPositionsRange(base, count);
+        }
+    }
+
+    /** Re-posts the full position/part set to the render sink's worker (after a relayout moved the region). */
+    private _sinkNotifyDataChanged(): void {
+        if (this._host) {
+            this._host.notifyDataChanged();
+        } else {
+            this._notifyWorkerNewData();
+        }
+    }
+
+    /** Whether the render sink's depth sort is settled. */
+    private get _sinkIsDepthSortSettled(): boolean {
+        return this._host ? this._host.isDepthSortSettled : this._isDepthSortSettled;
     }
 
     /**
@@ -1380,13 +1806,15 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
 
         // CPU positions: compaction only ever moves a block to a lower offset, so copying in place in ascending
         // new-offset order is safe (a block's source is never overwritten by an earlier move). This avoids a
-        // full capacity*4 scratch buffer.
+        // full capacity*4 scratch buffer. Block offsets are region-local; in hosted mode `_splatPositions` is the
+        // compound-wide buffer, so shift both source and destination by the region base (`_positionBase`, 0 standalone).
         const positions = this._splatPositions;
+        const base = this._positionBase;
         resident.sort((a, b) => a.offset - b.offset);
         for (const block of resident) {
             const oldOffset = oldOffsets.get(block.file)!;
             if (oldOffset !== block.offset) {
-                positions.copyWithin(block.offset * 4, oldOffset * 4, (oldOffset + block.count) * 4);
+                positions.copyWithin((base + block.offset) * 4, (base + oldOffset) * 4, (base + oldOffset + block.count) * 4);
             }
         }
 
@@ -1397,7 +1825,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
                 this._environmentRange.offset = envOffset;
             }
         }
-        this._notifyWorkerNewData();
+        this._sinkNotifyDataChanged();
         this._refreshActiveRanges();
     }
 
@@ -1652,7 +2080,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         // World-space frustum planes from the current view-projection, tested against each node's world AABB.
         // force=false uses the renderId/sync fast-path (still recomputes when the transform actually changed),
         // avoiding a full world-matrix recompute every frame for the per-node frustum test.
-        const world = this.computeWorldMatrix(false);
+        const world = this._getEffectiveWorldMatrix(false);
         camera.getViewMatrix().multiplyToRef(camera.getProjectionMatrix(), this._cullViewProj);
         Frustum.GetPlanesToRef(this._cullViewProj, this._frustumPlanes);
 
@@ -1674,6 +2102,38 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
      */
     private static _GetSplatCount(data: SOGRootData): number {
         return data.count ?? (Array.isArray(data.means.shape) ? data.means.shape[0] : 0);
+    }
+
+    /**
+     * Reads a SOG file's higher-order SH degree and coefficient count from its metadata, mirroring
+     * {@link ParseSogDatas}'s `coeffs`/`shDegree` derivation. Returns zeros when the file carries no `shN`.
+     * @param data parsed SOG root metadata
+     * @returns the SH degree and higher-order coefficient count (excludes the DC/SH0 term)
+     */
+    private static _GetShInfo(data: SOGRootData): { degree: number; coeffs: number } {
+        if (!data.shN) {
+            return { degree: 0, coeffs: 0 };
+        }
+        // Derive the SH degree from remote (untrusted) metadata, then validate/clamp it: the degree drives the SH
+        // render-target count and decode-pass count, so a bogus (huge / non-finite / negative) `bands` or `shape`
+        // must not be able to demand unbounded allocation. The draw path supports shTexture0..4, i.e. degree <= 4.
+        const maxDegree = 4;
+        let degree = 0;
+        const bands = data.shN.bands;
+        if (typeof bands === "number" && Number.isFinite(bands) && bands > 0) {
+            degree = Math.floor(bands);
+        } else if (Array.isArray(data.shN.shape) && Number.isFinite(data.shN.shape[1]) && data.shN.shape[1] > 0) {
+            const shapeCoeffs = Math.floor(data.shN.shape[1] / 3);
+            degree = shapeCoeffs > 0 ? Math.round(Math.sqrt(shapeCoeffs + 1) - 1) : 0;
+        }
+        if (!(degree > 0)) {
+            return { degree: 0, coeffs: 0 };
+        }
+        if (degree > maxDegree) {
+            Logger.Warn(`GaussianSplattingStream: SH degree ${degree} exceeds the maximum supported (${maxDegree}); clamping.`);
+            degree = maxDegree;
+        }
+        return { degree, coeffs: (degree + 1) ** 2 - 1 };
     }
 
     /**
@@ -1707,7 +2167,12 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             min.minimizeInPlaceFromFloats(x, y, z);
             max.maximizeInPlaceFromFloats(x, y, z);
         }
-        this.setBoundingInfo(new BoundingInfo(min, max));
+        // Hosted: grow the reserved part's (and compound's) bounds. Standalone: set this mesh's bounds.
+        if (this._host) {
+            this._host.expandBounds(min, max);
+        } else {
+            this.setBoundingInfo(new BoundingInfo(min, max));
+        }
     }
 
     /**
@@ -1736,7 +2201,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             ranges.push({ offset: base + entry.offset, count: entry.count });
         }
 
-        this.setSplatIndexRanges(GaussianSplattingStream._CoalesceRanges(ranges));
+        // Ranges are local to the stream's buffer; the sink (compound handle) offsets them by the region base.
+        this._sinkSetActiveRanges(GaussianSplattingStream._CoalesceRanges(ranges));
     }
 
     /**
@@ -1785,4 +2251,77 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
         return files;
     }
+}
+
+/**
+ * Adds a PlayCanvas-style SOG LOD stream as a part of a compound Gaussian Splatting mesh, so the streamed
+ * splats are depth-sorted and rendered in ONE pass together with the compound's other (static) parts.
+ *
+ * The returned mesh is a hidden controller: it streams SOG LOD files, GPU-decodes them into a reserved region
+ * of the compound's shared atlas, and drives which of its splats are active (LOD) — the compound owns the sort
+ * and the single instanced draw. The SOG up-axis orientation is applied to the reserved part's proxy transform;
+ * move/hide the part via the proxy (`streamController` exposes it once streaming has started).
+ * @param compound the compound mesh to add the streamed part to
+ * @param name name for the streaming controller / part
+ * @param metadata parsed `lod-meta.json`
+ * @param rootUrl base URL the metadata's relative paths resolve against
+ * @param options streaming options
+ * @returns the streaming controller mesh (hidden; drives the reserved compound part)
+ * @experimental
+ */
+export function AddGaussianSplattingStreamPart(
+    compound: GaussianSplattingMesh,
+    name: string,
+    metadata: ISOGLODMetadata,
+    rootUrl: string,
+    options: IGaussianSplattingStreamOptions = {}
+): GaussianSplattingStream {
+    return new GaussianSplattingStream(name, metadata, rootUrl, compound.getScene(), { ...options, hostCompound: compound });
+}
+
+/**
+ * Adds a PlayCanvas-style SOG LOD stream as a part of a compound Gaussian Splatting mesh and resolves once the
+ * part is ready to use, returning its {@link GaussianSplattingPartProxyMesh} — the same handle
+ * `GaussianSplattingCompoundMesh.addPart` returns for a static part. This lets a host application treat a
+ * streamed splat exactly like any other compound part (place/frame/gizmo via the proxy, remove via
+ * `compound.removePart(proxy.partIndex)`); the streaming controller lives behind the proxy and is disposed
+ * automatically when the part is removed.
+ *
+ * Resolves after the reserved region exists and its base layer has decoded (so the proxy's bounds are real),
+ * and rejects if streaming fails before that (the partially-constructed stream is disposed on rejection).
+ *
+ * NOTE: the base-layer decode runs on the GPU inside the scene's render loop, so this promise only resolves once
+ * the scene is rendering. Do not `await` it before the render loop has started (it would never resolve) — start
+ * rendering (e.g. `engine.runRenderLoop`) first, or `await` it concurrently with the first frames.
+ * @param compound the compound mesh to add the streamed part to
+ * @param name name for the streaming controller / part
+ * @param metadata parsed `lod-meta.json`
+ * @param rootUrl base URL the metadata's relative paths resolve against
+ * @param options streaming options
+ * @returns the part proxy driving the streamed region, ready to place/frame
+ * @experimental
+ */
+export async function AddGaussianSplattingStreamPartAsync(
+    compound: GaussianSplattingMesh,
+    name: string,
+    metadata: ISOGLODMetadata,
+    rootUrl: string,
+    options: IGaussianSplattingStreamOptions = {}
+): Promise<GaussianSplattingPartProxyMesh> {
+    const stream = new GaussianSplattingStream(name, metadata, rootUrl, compound.getScene(), { ...options, hostCompound: compound });
+    try {
+        await stream.whenPartReadyAsync();
+    } catch (e) {
+        stream.dispose();
+        throw e;
+    }
+    const proxy = stream.streamingPartProxy;
+    if (!proxy) {
+        stream.dispose();
+        throw new Error("GaussianSplattingStream: streaming part was not reserved.");
+    }
+    // The controller already binds its own lifetime to the part (removePart / compound disposal dispose the stream,
+    // and stream disposal releases the reserved part) — wired at reservation inside the stream, so it also covers the
+    // download/decode window before this promise resolves. Nothing to register here.
+    return proxy;
 }

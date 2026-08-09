@@ -2,6 +2,7 @@
 
 import { type Nullable } from "core/types";
 import { type Scene } from "core/scene.pure";
+import { type AbstractMesh } from "../abstractMesh.pure";
 import { Mesh } from "../mesh.pure";
 import { BoundingInfo } from "../../Culling/boundingInfo";
 import { type GaussianSplattingMesh } from "./gaussianSplattingMesh.pure";
@@ -127,6 +128,34 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
      */
     public override getClassName(): string {
         return "GaussianSplattingPartProxyMesh";
+    }
+
+    /**
+     * Returns the world-space bounding vectors spanning this part (and any descendants).
+     *
+     * A part proxy carries real bounds (set via {@link setBoundingInfo}) but owns NO geometry — the compound
+     * holds the splats. The base {@link Node.getHierarchyBoundingVectors} only folds in a mesh's own bounds
+     * when it has a `subMeshes` array (a geometry-less mesh's is `undefined`) and skips zero-vertex descendants,
+     * so for a bare proxy it returns a degenerate ±MAX_VALUE box. Callers that treat the proxy as a normal mesh
+     * (camera framing, grounding, picking) would then derive NaN / astronomically large offsets. This override
+     * folds the proxy's own world-space box into whatever the base returns for descendants.
+     * @param includeDescendants include bounding vectors from descendant meshes
+     * @param predicate optional filter applied to each descendant mesh
+     * @returns the world-space min/max spanning this part (and any descendants)
+     */
+    public override getHierarchyBoundingVectors(
+        includeDescendants: boolean = true,
+        predicate: Nullable<(abstractMesh: AbstractMesh) => boolean> = null
+    ): { min: Vector3; max: Vector3 } {
+        // Base recomputes this proxy's world matrix but skips its (geometry-less) own bounds.
+        const result = super.getHierarchyBoundingVectors(includeDescendants, predicate);
+        // Refresh the world-space corners against the just-computed world matrix, then extend the result:
+        // CheckExtends turns the base's ±MAX_VALUE sentinel seed into this part's real box.
+        const info = this.getBoundingInfo();
+        info.update(this.getWorldMatrix());
+        Vector3.CheckExtends(info.boundingBox.minimumWorld, result.min, result.max);
+        Vector3.CheckExtends(info.boundingBox.maximumWorld, result.min, result.max);
+        return result;
     }
 
     /**

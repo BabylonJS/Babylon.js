@@ -197,4 +197,113 @@ describe("WebGPUShaderProcessorWGSL", () => {
             expect(shadowsVertex).toContain("vertexOutputs.vPositionFromCamera{X} = uniforms.view * worldPos;");
         });
     });
+
+    describe("integer fragData outputs (render-to-integer-texture)", () => {
+        const vtx = "@vertex\nfn main(input : VertexInputs) -> FragmentInputs {\n  vertexOutputs.position = vec4<f32>(0.0);\n}\n";
+
+        it("defaults a fragData location to vec4<f32> (backward compatible)", () => {
+            const frag = "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n  fragmentOutputs.fragData0 = vec4<f32>(1.0);\n}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<f32>");
+            expect(fragmentCode).not.toContain("vec4<u32>");
+        });
+
+        it("emits vec4<u32> for a fragData location assigned a uint vector (RGBA_INTEGER target)", () => {
+            const frag =
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  fragmentOutputs.fragData0 = vec4<u32>(1u, 2u, 3u, 4u);\n" +
+                "  fragmentOutputs.fragData1 = vec4<f32>(0.5);\n" +
+                "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<u32>");
+            expect(fragmentCode).toContain("@location(1) fragData1 : vec4<f32>");
+        });
+
+        it("emits vec4<i32> for a vec4i(...) assignment and vec4<u32> for vec4u(...)", () => {
+            const frag =
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  fragmentOutputs.fragData0 = vec4i(1);\n" +
+                "  fragmentOutputs.fragData1 = vec4u(2u);\n" +
+                "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<i32>");
+            expect(fragmentCode).toContain("@location(1) fragData1 : vec4<u32>");
+        });
+
+        it("emits vec4<u32> when the fragData RHS is an identifier with a typed integer declaration", () => {
+            const frag =
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  var computedUintColor : vec4<u32> = vec4<u32>(1u);\n" +
+                "  fragmentOutputs.fragData0 = computedUintColor;\n" +
+                "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<u32>");
+        });
+
+        it("emits vec4<u32> when the fragData RHS is an identifier initialized from a uint constructor", () => {
+            const frag =
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  let packed = vec4<u32>(1u, 2u, 3u, 4u);\n" +
+                "  fragmentOutputs.fragData0 = packed;\n" +
+                "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<u32>");
+        });
+
+        it("still defaults to vec4<f32> for a float identifier RHS", () => {
+            const frag = "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" + "  let color = vec4<f32>(0.5);\n" + "  fragmentOutputs.fragData0 = color;\n" + "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<f32>");
+        });
+
+        it("ignores a commented-out integer fragData write above the real float write", () => {
+            // A stale commented-out `= vec4<u32>(...)` above a real float write must not flip the output to integer.
+            const frag =
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  // fragmentOutputs.fragData0 = vec4<u32>(1u);\n" +
+                "  /* fragmentOutputs.fragData0 = vec4<u32>(2u); */\n" +
+                "  fragmentOutputs.fragData0 = vec4<f32>(1.0);\n" +
+                "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<f32>");
+            // The retained comment still contains "vec4<u32>", so assert on the emitted struct declaration.
+            expect(fragmentCode).not.toContain("fragData0 : vec4<u32>");
+        });
+
+        it("does not let a same-named integer local in a helper function flip a float fragData output", () => {
+            // An integer `color` local in a helper must not resolve the type of main's float `color` RHS.
+            const frag =
+                "fn helper() -> vec4<u32> {\n  var color : vec4<u32> = vec4<u32>(1u);\n  return color;\n}\n" +
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  let color = vec4<f32>(0.5);\n" +
+                "  fragmentOutputs.fragData0 = color;\n" +
+                "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<f32>");
+        });
+
+        it("scopes to the exact entry point, not a `main`-prefixed helper declared before it", () => {
+            // `fn mainHelper` must not be mistaken for the entry point (a substring boundary would start the scope at
+            // index 0, swallowing the helper's integer `color` and flipping main's float output).
+            const frag =
+                "fn mainHelper() -> vec4<u32> {\n  var color : vec4<u32> = vec4<u32>(1u);\n  return color;\n}\n" +
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  let color = vec4<f32>(0.5);\n" +
+                "  fragmentOutputs.fragData0 = color;\n" +
+                "}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<f32>");
+        });
+
+        it("does not let an integer local in a helper declared after main flip a float fragData output", () => {
+            const frag =
+                "@fragment\nfn main(input : FragmentInputs) -> FragmentOutputs {\n" +
+                "  let color = vec4<f32>(0.5);\n" +
+                "  fragmentOutputs.fragData0 = color;\n" +
+                "}\n" +
+                "fn helper() -> vec4<u32> {\n  var color : vec4<u32> = vec4<u32>(1u);\n  return color;\n}\n";
+            const { fragmentCode } = processor.finalizeShaders(vtx, frag);
+            expect(fragmentCode).toContain("@location(0) fragData0 : vec4<f32>");
+        });
+    });
 });

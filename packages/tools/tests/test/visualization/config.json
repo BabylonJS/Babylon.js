@@ -16,6 +16,14 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Gaussian Splatting LOD COMPOUND",
+            "playgroundId": "#418POI#21",
+            "renderCount": 15,
+            "referenceImage": "gsplat-lod-compound.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "MSAA RTT samples=4 (magnified)",
             "playgroundId": "#DY1H5P#0",
             "referenceImage": "msaa-rtt-samples4-magnified.png",
@@ -211,6 +219,14 @@
             "playgroundId": "#DAID4Q#2",
             "renderCount": 15,
             "referenceImage": "gsplat-ibl-shadows.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting LOD SH and IBL Shadows",
+            "playgroundId": "#DAID4Q#11",
+            "renderCount": 15,
+            "referenceImage": "gsplat-lod-sh-ibl-shadows.png",
             "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
             "excludeFromPerformance": true
         },
