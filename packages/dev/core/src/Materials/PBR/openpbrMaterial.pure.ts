@@ -2197,6 +2197,48 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public override clone(name: string, cloneTexturesOnlyOnce: boolean = true, rootUrl = ""): OpenPBRMaterial {
         const clone = SerializationHelper.Clone(() => new OpenPBRMaterial(name, this.getScene()), this, { cloneTexturesOnlyOnce });
 
+        for (const key in this._propertyList) {
+            const value: PropertyType = this._propertyList[key].value;
+            clone._propertyList[key].value = typeof value === "number" ? value : value.clone();
+        }
+
+        const textureClones = cloneTexturesOnlyOnce ? new Map<number, Nullable<BaseTexture>>() : null;
+        const cloneTexture = (texture: Nullable<BaseTexture>): Nullable<BaseTexture> => {
+            if (texture === null || texture.isRenderTarget) {
+                return texture;
+            }
+
+            let clonedTexture = textureClones?.get(texture.uniqueId);
+            if (clonedTexture === undefined) {
+                clonedTexture = texture.clone();
+                textureClones?.set(texture.uniqueId, clonedTexture);
+            }
+            return clonedTexture;
+        };
+
+        for (const key in this._samplersList) {
+            clone._samplersList[key].value = cloneTexture(this._samplersList[key].value);
+        }
+        clone.backgroundRefractionTexture = cloneTexture(this.backgroundRefractionTexture);
+        clone.sssIrradianceTexture = this.sssIrradianceTexture;
+        clone.sssDepthTexture = this.sssDepthTexture;
+
+        // Preserve the channel layout of textures assigned by the glTF loader.
+        clone._useSpecularWeightFromAlpha = this._useSpecularWeightFromAlpha;
+        clone._useSpecularWeightFromSpecularColorTexture = this._useSpecularWeightFromSpecularColorTexture;
+        clone._useSpecularRoughnessAnisotropyFromTangentTexture = this._useSpecularRoughnessAnisotropyFromTangentTexture;
+        clone._useCoatRoughnessAnisotropyFromTangentTexture = this._useCoatRoughnessAnisotropyFromTangentTexture;
+        clone._useCoatRoughnessFromGreenChannel = this._useCoatRoughnessFromGreenChannel;
+        clone._useGltfStyleAnisotropy = this._useGltfStyleAnisotropy;
+        clone._useFuzzRoughnessFromTextureAlpha = this._useFuzzRoughnessFromTextureAlpha;
+        clone._useSubsurfaceWeightFromTextureAlpha = this._useSubsurfaceWeightFromTextureAlpha;
+        clone._useAlphaFromBaseColorTexture = this._useAlphaFromBaseColorTexture;
+        clone._useAmbientOcclusionFromMetallicTextureRed = this._useAmbientOcclusionFromMetallicTextureRed;
+        clone._useRoughnessFromMetallicTextureGreen = this._useRoughnessFromMetallicTextureGreen;
+        clone._useMetallicFromMetallicTextureBlue = this._useMetallicFromMetallicTextureBlue;
+        clone._useThinFilmThicknessFromTextureGreen = this._useThinFilmThicknessFromTextureGreen;
+        clone._useGeometryThicknessFromGreenChannel = this._useGeometryThicknessFromGreenChannel;
+
         clone.id = name;
         clone.name = name;
 
