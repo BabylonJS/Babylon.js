@@ -17,6 +17,7 @@ const DFD_TRANSFER_LINEAR = 1;
  * @param levelCount number of mip levels
  * @param vkFormat the vkFormat value to write in the header
  * @param supercompressionScheme the supercompression scheme to declare in the header (the level data is left uncompressed)
+ * @param bytesPlane0 the bytesPlane[0] value to write in the DFD (use 0 to simulate supercompressed formats such as UASTC+Zstd)
  * @returns the raw KTX2 bytes
  */
 function createUncompressedKtx2(width: number, layerCount: number, levelCount: number, vkFormat = VK_FORMAT_R8G8B8A8_UNORM, supercompressionScheme = 0): Uint8Array {
