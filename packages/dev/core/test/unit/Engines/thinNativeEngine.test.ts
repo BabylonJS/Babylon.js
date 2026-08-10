@@ -13,6 +13,19 @@ type TestThinNativeEngine = {
     _queueNewFrame: (callback: () => void, requester?: NativeFrameRequester) => number;
 };
 
+// Structurally typed so the test does not have to import the full Scene module.
+type TestScene = {
+    render: () => void;
+};
+
+type TestCommandScopeEngine = {
+    _commandBufferEncoder: {
+        beginCommandScope: () => void;
+        endCommandScope: () => void;
+    };
+    _wrapSceneRenderWithCommandScope: (scene: TestScene) => void;
+};
+
 describe("ThinNativeEngine", () => {
     describe("dynamic textures", () => {
         it("coerces fractional canvas dimensions before allocating native texture data", () => {
@@ -52,6 +65,88 @@ describe("ThinNativeEngine", () => {
             expect(requestId).toBe(23);
             expect(requestedCallback).toBe(renderFunction);
             expect(nativeRequestUsed).toBe(false);
+        });
+    });
+
+    describe("command scope", () => {
+        const createEngineWithScope = (onSubmit?: () => void) => {
+            const engine = Object.create(ThinNativeEngine.prototype) as TestCommandScopeEngine;
+            let active = false;
+
+            engine._commandBufferEncoder = {
+                beginCommandScope: () => {
+                    if (active) {
+                        throw new Error("Command scope already active.");
+                    }
+                    active = true;
+                },
+                endCommandScope: () => {
+                    if (!active) {
+                        throw new Error("Command scope is not active.");
+                    }
+                    active = false;
+                    onSubmit?.();
+                },
+            };
+
+            return engine;
+        };
+
+        it("closes the command scope when the scene render throws, so later frames still work", () => {
+            const engine = createEngineWithScope();
+            const renderError = new Error("render failed");
+            let shouldThrow = true;
+            let renderCount = 0;
+
+            const scene = {
+                render: () => {
+                    renderCount++;
+                    if (shouldThrow) {
+                        throw renderError;
+                    }
+                },
+            };
+
+            engine._wrapSceneRenderWithCommandScope(scene);
+
+            // The original error must still reach the caller.
+            expect(() => scene.render()).toThrow(renderError);
+
+            // Without closing the scope, this second render would fail with
+            // "Command scope already active." instead of running.
+            shouldThrow = false;
+            expect(() => scene.render()).not.toThrow();
+            expect(renderCount).toBe(2);
+        });
+
+        it("does not let a failure closing the scope mask the render error", () => {
+            const engine = createEngineWithScope(() => {
+                throw new Error("submit failed");
+            });
+            const renderError = new Error("render failed");
+
+            const scene = {
+                render: () => {
+                    throw renderError;
+                },
+            };
+
+            engine._wrapSceneRenderWithCommandScope(scene);
+
+            expect(() => scene.render()).toThrow(renderError);
+        });
+
+        it("propagates errors from closing the scope when the render succeeds", () => {
+            const submitError = new Error("submit failed");
+            const engine = createEngineWithScope(() => {
+                throw submitError;
+            });
+
+            const scene = { render: () => {} };
+
+            engine._wrapSceneRenderWithCommandScope(scene);
+
+            expect(() => scene.render()).toThrow(submitError);
         });
     });
 });

@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Nullable, type IndicesArray, type DataArray, type FloatArray, type DeepImmutable, type int } from "../types";
 
+import { type Scene } from "../scene.pure";
 import { type VertexBuffer } from "../Buffers/buffer.pure";
 import { RegisterBufferAlign } from "../Buffers/buffer.align.pure";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
@@ -464,20 +465,36 @@ export class ThinNativeEngine extends ThinEngine {
         this._shaderProcessor = new NativeShaderProcessor();
 
         this.onNewSceneAddedObservable.add((scene) => {
-            const originalRender = scene.render;
-            scene.render = (...args: Parameters<typeof originalRender>) => {
-                this._commandBufferEncoder.beginCommandScope();
-                try {
-                    originalRender.apply(scene, args);
-                } finally {
-                    // Must run even if the render throws. Otherwise the scope stays
-                    // open forever and every later frame fails with "Command scope
-                    // already active.", so a single recoverable error permanently
-                    // breaks the engine instead of affecting just that frame.
-                    this._commandBufferEncoder.endCommandScope();
-                }
-            };
+            this._wrapSceneRenderWithCommandScope(scene);
         });
+    }
+
+    /**
+     * Brackets a scene's render with a command scope, so the commands it encodes are submitted together.
+     * @param scene the scene whose render should be wrapped
+     */
+    private _wrapSceneRenderWithCommandScope(scene: Scene): void {
+        const originalRender = scene.render;
+        scene.render = (...args: Parameters<typeof originalRender>) => {
+            this._commandBufferEncoder.beginCommandScope();
+            try {
+                originalRender.apply(scene, args);
+            } catch (renderException) {
+                // The scope must be closed even when the render throws. Otherwise it stays
+                // open forever and every later frame fails with "Command scope already
+                // active.", so one recoverable error permanently breaks the engine instead
+                // of affecting just this frame.
+                try {
+                    this._commandBufferEncoder.endCommandScope();
+                } catch (endException) {
+                    // Never let this replace the root cause; report it separately instead.
+                    Logger.Error(`Failed to end the command scope while unwinding a render error: ${endException}`);
+                }
+                throw renderException;
+            }
+
+            this._commandBufferEncoder.endCommandScope();
+        };
     }
 
     public override setHardwareScalingLevel(level: number): void {
