@@ -17,4 +17,13 @@ describe("SortAndRefreshParticleGradients", () => {
         expect(gradients.map((gradient) => gradient.gradient)).toEqual([0.2, 0.5, 0.8]);
         expect(refreshOrder).toEqual([[0.2, 0.5, 0.8]]);
     });
+
+    it.each([[null], [[]]])("refreshes the particle system when gradients are %j", (gradients) => {
+        const forceRefreshGradients = vi.fn();
+        const system = { forceRefreshGradients } as unknown as IParticleSystem;
+
+        SortAndRefreshParticleGradients(system, gradients);
+
+        expect(forceRefreshGradients).toHaveBeenCalledOnce();
+    });
 });
