@@ -77,6 +77,8 @@ const stencilOpToIndex: { [name: number]: number } = {
 };
 
 const colorStates = [0, 0, 0, 0];
+// VertexBuffer.hashCode uses at most bit 23 for WebGPU's maximum 2048-byte stride.
+const vertexBufferLayoutContinuation = 1 << 26;
 
 /** @internal */
 export abstract class WebGPUCacheRenderPipeline {
@@ -147,7 +149,8 @@ export abstract class WebGPUCacheRenderPipeline {
     constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
         this._device = device;
         this._useTextureStage = true; // we force usage because we must handle depth textures with "float" filtering, which can't be fixed by a caps (like "textureFloatLinearFiltering" can for float textures)
-        this._states = new Array(30); // pre-allocate enough room so that no new allocation will take place afterwards
+        // Each attribute can add a format state and a non-zero descriptor offset state.
+        this._states = new Array(StatePosition.VertexState + 2 * (device.limits.maxVertexAttributes || 16));
         this._statesLength = 0;
         this._stateDirtyLowestIndex = 0;
         this._emptyVertexBuffer = emptyVertexBuffer;
@@ -918,16 +921,24 @@ export abstract class WebGPUCacheRenderPipeline {
                     (offset + formatSize <= this._kMaxVertexBufferStride && byteStride === 0) || (byteStride !== 0 && offset + formatSize <= byteStride);
             }
 
-            if (!(currentGPUBuffer && currentGPUBuffer === buffer && vertexBuffer._validOffsetRange)) {
+            const canMergeWithCurrentBuffer = WebGPUCacheRenderPipeline._CanMergeVertexBuffer(currentGPUBuffer, buffer, vertexBuffer);
+            if (!canMergeWithCurrentBuffer) {
                 // we can't combine the previous vertexBuffer with the current one
                 this.vertexBuffers[numVertexBuffers++] = vertexBuffer;
                 currentGPUBuffer = vertexBuffer._validOffsetRange ? buffer : null;
             }
 
-            const vid = vertexBuffer.hashCode + (location << 7);
+            const vid = vertexBuffer.hashCode + (location << 7) + (canMergeWithCurrentBuffer ? vertexBufferLayoutContinuation : 0);
+            const descriptorOffset = vertexBuffer._validOffsetRange ? vertexBuffer.effectiveByteOffset : 0;
 
             this._isDirty = this._isDirty || this._states[newNumStates] !== vid;
             this._states[newNumStates++] = vid;
+            if (descriptorOffset !== 0) {
+                // Offset states are negative so they cannot collide with vertex format states.
+                const offsetState = -descriptorOffset;
+                this._isDirty = this._isDirty || this._states[newNumStates] !== offsetState;
+                this._states[newNumStates++] = offsetState;
+            }
         }
 
         this.vertexBuffers.length = numVertexBuffers;
@@ -1044,7 +1055,7 @@ export abstract class WebGPUCacheRenderPipeline {
             // We reuse the same GPUVertexBufferLayout for all attributes that use the same underlying GPU buffer (and for attributes that follow each other in the attributes array)
             let offset = vertexBuffer.effectiveByteOffset;
             const invalidOffsetRange = !vertexBuffer._validOffsetRange;
-            if (!(currentGPUBuffer && currentGPUAttributes && currentGPUBuffer === buffer) || invalidOffsetRange) {
+            if (!WebGPUCacheRenderPipeline._CanMergeVertexBuffer(currentGPUBuffer, buffer, vertexBuffer)) {
                 const vertexBufferDescriptor: GPUVertexBufferLayout = {
                     arrayStride: vertexBuffer.effectiveByteStride,
                     stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.VertexStepMode.Instance : WebGPUConstants.VertexStepMode.Vertex,
@@ -1059,7 +1070,7 @@ export abstract class WebGPUCacheRenderPipeline {
                 }
             }
 
-            currentGPUAttributes.push({
+            currentGPUAttributes!.push({
                 shaderLocation: location,
                 offset,
                 format: WebGPUCacheRenderPipeline._GetVertexInputDescriptorFormat(vertexBuffer),
@@ -1069,6 +1080,10 @@ export abstract class WebGPUCacheRenderPipeline {
         }
 
         return descriptors;
+    }
+
+    private static _CanMergeVertexBuffer(currentGPUBuffer: unknown, buffer: unknown, vertexBuffer: VertexBuffer): boolean {
+        return !!currentGPUBuffer && currentGPUBuffer === buffer && vertexBuffer._validOffsetRange;
     }
 
     private _buildRenderPipelineDescriptor(effect: Effect, topology: GPUPrimitiveTopology, sampleCount: number): GPURenderPipelineDescriptor {
