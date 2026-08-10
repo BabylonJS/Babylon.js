@@ -467,8 +467,15 @@ export class ThinNativeEngine extends ThinEngine {
             const originalRender = scene.render;
             scene.render = (...args: Parameters<typeof originalRender>) => {
                 this._commandBufferEncoder.beginCommandScope();
-                originalRender.apply(scene, args);
-                this._commandBufferEncoder.endCommandScope();
+                try {
+                    originalRender.apply(scene, args);
+                } finally {
+                    // Must run even if the render throws. Otherwise the scope stays
+                    // open forever and every later frame fails with "Command scope
+                    // already active.", so a single recoverable error permanently
+                    // breaks the engine instead of affecting just that frame.
+                    this._commandBufferEncoder.endCommandScope();
+                }
             };
         });
     }
