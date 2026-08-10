@@ -14,6 +14,7 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { useObservableArray } from "../../../hooks/useObservableArray";
+import { SortAndRefreshParticleGradients } from "./particleGradientUtils";
 
 const useStyles = makeStyles({
     subsection: {
@@ -112,7 +113,7 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                             system.forceRefreshGradients();
                         }}
                         onChange={(_gradient: ColorGradient) => {
-                            system.forceRefreshGradients();
+                            SortAndRefreshParticleGradients(system, system.getColorGradients());
                         }}
                     />
                 </>
@@ -152,7 +153,7 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                                     system.forceRefreshGradients();
                                 }}
                                 onChange={() => {
-                                    system.forceRefreshGradients();
+                                    SortAndRefreshParticleGradients(system, system.getRampGradients());
                                 }}
                             />
                         </>
@@ -187,7 +188,7 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                                     system.forceRefreshGradients();
                                 }}
                                 onChange={(_gradient: FactorGradient) => {
-                                    system.forceRefreshGradients();
+                                    SortAndRefreshParticleGradients(system, system.getColorRemapGradients());
                                 }}
                             />
                         </>
@@ -222,7 +223,7 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                                     system.forceRefreshGradients();
                                 }}
                                 onChange={(_gradient: FactorGradient) => {
-                                    system.forceRefreshGradients();
+                                    SortAndRefreshParticleGradients(system, system.getAlphaRemapGradients());
                                 }}
                             />
                         </>
