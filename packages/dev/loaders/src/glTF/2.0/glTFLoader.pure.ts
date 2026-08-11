@@ -456,7 +456,6 @@ export class GLTFLoader implements IGLTFLoader {
         return await Promise.resolve()
             .then(async () => {
                 this._rootUrl = rootUrl;
-                // Must be unique per load or two files' synthesized image urls collide in the texture cache.
                 this._uniqueRootUrl = !rootUrl.startsWith("file:") && fileName ? rootUrl : `${rootUrl}${RandomGUID()}/`;
                 this._fileName = fileName;
                 this._allMaterialsDirtyRequired = false;
