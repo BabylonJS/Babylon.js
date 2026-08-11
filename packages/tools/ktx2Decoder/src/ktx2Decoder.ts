@@ -121,13 +121,16 @@ export class KTX2Decoder {
             const levelHeight = Math.floor(height / (1 << level)) || 1;
 
             const numImagesInLevel = kfr.header.faceCount; // note that cubemap are not supported yet (see KTX2FileReader), so faceCount == 1
-            // The texel block dimension is 4x4 for the block-compressed source formats and 1x1 for the uncompressed ones,
-            // so this covers both without special casing.
+            const levelUncompressedByteLength = kfr.levels[level].uncompressedByteLength;
+
+            // bytesPlane[0] is 0 for supercompressed formats (e.g. UASTC + Zstd); fall back to uncompressedByteLength.
             const blockWidth = kfr.dfdBlock.texelBlockDimension.x;
             const blockHeight = kfr.dfdBlock.texelBlockDimension.y;
-            const levelImageByteLength = Math.ceil(levelWidth / blockWidth) * Math.ceil(levelHeight / blockHeight) * kfr.dfdBlock.bytesPlane[0];
-
-            const levelUncompressedByteLength = kfr.levels[level].uncompressedByteLength;
+            const bytesPerBlock = kfr.dfdBlock.bytesPlane[0];
+            const levelImageByteLength =
+                bytesPerBlock > 0
+                    ? Math.ceil(levelWidth / blockWidth) * Math.ceil(levelHeight / blockHeight) * bytesPerBlock
+                    : Math.floor(levelUncompressedByteLength / (layerCount * numImagesInLevel));
 
             let levelDataBuffer: ArrayBufferLike = kfr.data.buffer;
 
