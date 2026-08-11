@@ -1,20 +1,23 @@
 import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
-import { NullEngine } from "core/Engines";
+import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { Vector3 } from "core/Maths/math.vector";
-import { LoadAssetContainerAsync } from "core/Loading";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { Texture } from "core/Materials/Textures/texture";
-import "loaders/glTF";
+import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
+import { type PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { type Texture } from "core/Materials/Textures/texture";
+import "loaders/glTF/2.0/glTFLoader";
 
 /**
  * Builds a minimal glTF with one triangle and one base color texture whose image is
- * embedded in a bufferView. `imageFill` distinguishes the two documents' image bytes.
+ * embedded in a bufferView.
  *
  * The image must be embedded (bufferView or base64 uri) rather than an external uri:
  * the loader only synthesizes an image url — the thing that collides — when there is no
  * plain uri to use as the id.
+ * @param imageFill byte value filling the image, so the two documents differ
+ * @param imageByteLength length of the image data, used to tell the two apart
+ * @returns the glTF JSON as a string
  */
 function buildGltfWithEmbeddedTexture(imageFill: number, imageByteLength: number): string {
     const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
@@ -56,6 +59,10 @@ function buildGltfWithEmbeddedTexture(imageFill: number, imageByteLength: number
     return JSON.stringify(gltf);
 }
 
+/**
+ * @param material the material to read the base color texture from
+ * @returns the base color texture
+ */
 function getBaseColorTexture(material: PBRMaterial): Texture {
     return material.albedoTexture as Texture;
 }
