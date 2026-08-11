@@ -68,6 +68,7 @@ import { type IGLTFLoader, type IGLTFLoaderData, GLTFFileLoader, GLTFLoaderState
 import { type IDataBuffer } from "core/Misc/dataReader";
 import { DecodeBase64UrlToBinary, GetMimeType, IsBase64DataUrl, LoadFileError } from "core/Misc/fileTools.pure";
 import { Logger } from "core/Misc/logger";
+import { RandomGUID } from "core/Misc/guid";
 import { type Light } from "core/Lights/light";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import { type AssetContainer } from "core/assetContainer";
@@ -455,7 +456,12 @@ export class GLTFLoader implements IGLTFLoader {
         return await Promise.resolve()
             .then(async () => {
                 this._rootUrl = rootUrl;
-                this._uniqueRootUrl = !rootUrl.startsWith("file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
+                // The unique root url is what makes a synthesized image url identify this
+                // load rather than merely the moment it happened. A millisecond timestamp
+                // does not: two files loaded in the same millisecond produce the same image
+                // urls, and the texture cache -- which matches on url alone -- then hands
+                // the second file the first file's texture, silently and with no warning.
+                this._uniqueRootUrl = !rootUrl.startsWith("file:") && fileName ? rootUrl : `${rootUrl}${RandomGUID()}/`;
                 this._fileName = fileName;
                 this._allMaterialsDirtyRequired = false;
 

@@ -4,6 +4,7 @@ import { Scene } from "core/scene";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { Vector3 } from "core/Maths/math.vector";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
+import { GLTFFileLoader, type IGLTFLoaderData } from "loaders/glTF/glTFFileLoader.pure";
 import { type PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { type Texture } from "core/Materials/Textures/texture";
 import "loaders/glTF/2.0/glTFLoader";
@@ -127,5 +128,32 @@ describe("glTF loading from data: urls", () => {
         // diverge for some unrelated reason.
         expect(bufferA?.byteLength).toBe(64);
         expect(bufferB?.byteLength).toBe(128);
+    });
+
+    it("does not share embedded textures between two file: loads of the same file name", async () => {
+        vi.spyOn(Date, "now").mockReturnValue(1700000000000);
+
+        // Drives the plugin directly because this is the drag-and-drop / Inspector shape:
+        // a file: root url with a real file name, which SceneLoader only produces from a
+        // File object and that needs a FileReader the node test environment lacks.
+        //
+        // A file: root url always takes the synthesized-url branch whatever the file name,
+        // since the same name can be dropped repeatedly with different content -- so two
+        // loads in one millisecond collide even though each has a perfectly good name.
+        const loadOnce = async (imageFill: number, imageByteLength: number) => {
+            const loader = new GLTFFileLoader();
+            const json = buildGltfWithEmbeddedTexture(imageFill, imageByteLength);
+            const data = (await loader.directLoad(scene, json)) as IGLTFLoaderData;
+            return await loader.loadAssetContainerAsync(scene, data, "file:", undefined, "model.gltf");
+        };
+
+        const containerA = await loadOnce(0xaa, 64);
+        const containerB = await loadOnce(0xbb, 128);
+
+        const textureA = getBaseColorTexture(containerA.materials[0] as PBRMaterial);
+        const textureB = getBaseColorTexture(containerB.materials[0] as PBRMaterial);
+
+        expect(textureA.url).not.toBe(textureB.url);
+        expect(textureB.getInternalTexture()).not.toBe(textureA.getInternalTexture());
     });
 });

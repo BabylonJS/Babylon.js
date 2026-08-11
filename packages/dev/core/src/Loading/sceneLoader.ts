@@ -865,12 +865,7 @@ function GetFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileI
         rawData = sceneSource;
     } else if (sceneSource.startsWith("data:")) {
         url = sceneSource;
-        // A data: url carries no file name, and an empty name leaves the glTF loader with
-        // nothing to distinguish this document from another one loaded in the same
-        // millisecond -- it then synthesizes identical urls for their embedded images and
-        // the texture cache hands the second file the first file's texture. Give it a
-        // unique name for the same reason the ArrayBufferView case above does.
-        name = RandomGUID();
+        name = "";
     } else if (rootUrl) {
         const filename = sceneSource;
         if (filename.substring(0, 1) === "/") {
