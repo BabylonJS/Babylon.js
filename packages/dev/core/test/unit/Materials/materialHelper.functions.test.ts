@@ -5,6 +5,7 @@ import {
     PrepareDefinesForLights,
     GetSupportedSimultaneousLights,
     BindLights,
+    AreLightsTexturesReady,
 } from "core/Materials/materialHelper.functions";
 import { Logger } from "core/Misc/logger";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
@@ -171,11 +172,23 @@ describe("maxSimultaneousLights clamping against the per-stage uniform buffer li
         const warn = spyOnWarn();
         const scene = makeScene(webGpuLimit);
         PrepareDefinesForLights(scene, makeMesh(10), makeDefines(), true, 10);
-        PrepareDefinesForLights(scene, makeMesh(10), makeDefines(), true, 10); // same engine and request -> deduped
+        PrepareDefinesForLights(scene, makeMesh(10), makeDefines(), true, 10); // same engine and light count -> deduped
         expect(warn).toHaveBeenCalledTimes(1);
         const message = String(warn.mock.calls[0][0]);
         expect(message).toContain("maxSimultaneousLights");
         expect(message).toContain(String(supportedForWebGpu));
+        warn.mockRestore();
+    });
+
+    it("reports the buffer cost of the lights in use, not of maxSimultaneousLights", () => {
+        const warn = spyOnWarn();
+        // A very high cap on a mesh with 10 lights costs 10 + 3 buffers, not 64 + 3.
+        PrepareDefinesForLights(makeScene(webGpuLimit), makeMesh(10), makeDefines(), true, 64);
+        expect(warn).toHaveBeenCalledTimes(1);
+        const message = String(warn.mock.calls[0][0]);
+        expect(message).toContain("the 10 lights affecting this mesh");
+        expect(message).toContain("13 uniform buffers");
+        expect(message).not.toContain("67 uniform buffers");
         warn.mockRestore();
     });
 
@@ -205,5 +218,18 @@ describe("maxSimultaneousLights clamping against the per-stage uniform buffer li
         }
         BindLights(makeScene(webGpuLimit), mesh, {} as any, { SPECULARTERM: false }, 10);
         expect(bound).toHaveLength(supportedForWebGpu);
+    });
+
+    it("does not gate readiness on a light the shader will never use", () => {
+        const mesh = makeMesh(10);
+        // Only the light that the clamp drops is not ready: the material should still report ready.
+        for (const light of mesh.lightSources) {
+            light.areLightTexturesReady = () => true;
+        }
+        mesh.lightSources[9].areLightTexturesReady = () => false;
+        expect(AreLightsTexturesReady(makeScene(webGpuLimit), mesh, 10)).toBe(true);
+        // A light that is actually used still gates readiness.
+        mesh.lightSources[0].areLightTexturesReady = () => false;
+        expect(AreLightsTexturesReady(makeScene(webGpuLimit), mesh, 10)).toBe(false);
     });
 });

@@ -507,7 +507,7 @@ export function BindLight(light: Light, lightIndex: number, scene: Scene, effect
  */
 const _NonLightVertexUniformBufferCount = 3;
 
-/** Requested maxSimultaneousLights value already warned about, per engine, so the warning is emitted once. */
+/** Light counts already warned about, per engine, so the warning is emitted once. */
 const _LightBudgetWarnedEngines = new WeakMap<AbstractEngine, Set<number>>();
 
 /**
@@ -527,7 +527,8 @@ export function GetSupportedSimultaneousLights(scene: Scene, maxSimultaneousLigh
     const maxUniformBuffersPerShaderStage = scene.getEngine().getCaps().maxUniformBuffersPerShaderStage;
 
     // Engines that do not report the limit (WebGL, native) do not enforce it: leave the count untouched.
-    if (!maxUniformBuffersPerShaderStage) {
+    // Tested against null rather than for truthiness so that a limit of 0, however unlikely, still clamps.
+    if (maxUniformBuffersPerShaderStage == null) {
         return maxSimultaneousLights;
     }
 
@@ -538,23 +539,26 @@ export function GetSupportedSimultaneousLights(scene: Scene, maxSimultaneousLigh
     return Math.min(maxSimultaneousLights, supported);
 }
 
-function WarnAboutClampedLights(engine: AbstractEngine, requested: number, supported: number): void {
+function WarnAboutClampedLights(engine: AbstractEngine, requested: number, supported: number, lightsInUse: number): void {
     let warned = _LightBudgetWarnedEngines.get(engine);
     if (!warned) {
         warned = new Set<number>();
         _LightBudgetWarnedEngines.set(engine, warned);
     }
-    if (warned.has(requested)) {
+    if (warned.has(lightsInUse)) {
         return;
     }
-    warned.add(requested);
+    warned.add(lightsInUse);
 
+    // Report the lights actually affecting the mesh, not maxSimultaneousLights: the per-light uniform buffers
+    // are declared per light in use, so a very high cap on a mesh with fewer lights would overstate the cost.
     Logger.Warn(
         `maxSimultaneousLights is ${requested} but this engine supports at most ${supported} simultaneous lights. ` +
-            `Each light declares its own uniform buffer in the vertex shader, so ${requested} lights plus the scene, mesh and material ` +
-            `buffers would need ${requested + _NonLightVertexUniformBufferCount} uniform buffers, over the device limit of ` +
-            `${engine.getCaps().maxUniformBuffersPerShaderStage} per shader stage. The light count has been clamped to ${supported}, ` +
-            `so the extra lights will not contribute to the render. Set maxSimultaneousLights to ${supported} or less to silence this warning.`
+            `Each light declares its own uniform buffer in the vertex shader, so the ${lightsInUse} lights affecting this mesh plus ` +
+            `the scene, mesh and material buffers would need ${lightsInUse + _NonLightVertexUniformBufferCount} uniform buffers, over ` +
+            `the device limit of ${engine.getCaps().maxUniformBuffersPerShaderStage} per shader stage. The light count has been clamped ` +
+            `to ${supported}, so the extra lights will not contribute to the render. Set maxSimultaneousLights to ${supported} or less ` +
+            `to silence this warning.`
     );
 }
 
@@ -734,7 +738,9 @@ export function AreLightsTexturesReady(scene: Scene, mesh: AbstractMesh, maxSimu
         return true;
     }
     const lights = mesh.lightSources;
-    const count = Math.min(lights.length, maxSimultaneousLights);
+    // Mirror the clamp PrepareDefinesForLights applies, so readiness is not gated on a light the shader
+    // will never use.
+    const count = Math.min(lights.length, GetSupportedSimultaneousLights(scene, maxSimultaneousLights));
     for (let i = 0; i < count; i++) {
         if (!lights[i].areLightTexturesReady()) {
             return false;
@@ -776,7 +782,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
         // Only worth telling the user about the clamp when lights are actually being dropped because of it:
         // the per-light uniform buffers are declared per light in use, not per maxSimultaneousLights.
         if (mesh.lightSources.length > maxSimultaneousLights && maxSimultaneousLights < requestedSimultaneousLights) {
-            WarnAboutClampedLights(scene.getEngine(), requestedSimultaneousLights, maxSimultaneousLights);
+            WarnAboutClampedLights(scene.getEngine(), requestedSimultaneousLights, maxSimultaneousLights, Math.min(mesh.lightSources.length, requestedSimultaneousLights));
         }
 
         for (const light of mesh.lightSources) {
