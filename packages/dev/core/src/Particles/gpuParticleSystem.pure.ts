@@ -592,16 +592,42 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         return false;
     }
 
-    /** Force the system to rebuild all gradients that need to be resync */
+    /**
+     * Force the system to rebuild all gradients that need to be resync.
+     *
+     * This is the live-edit entry point both Inspectors call from their gradient onChange handlers, so a
+     * value-only edit must preserve the running simulation: every family whose lookup texture can be re-baked
+     * in place is updated without touching the particle buffers. Only a STRUCTURAL change — a family that has
+     * no texture to re-bake yet, one that was emptied, or a color2 row-layout flip — rebuilds the pool.
+     *
+     * An ABSENT family is not a structural change: it has nothing to resync, and counting it as one would
+     * reset the pool on every call (the destruction this method exists to avoid).
+     */
     public forceRefreshGradients() {
-        this._refreshColorGradient();
-        this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture");
-        this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture");
-        this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture");
-        this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture");
-        this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture");
+        let structural = false;
 
-        this.reset();
+        if (this._colorGradients && !this._refreshColorGradient()) {
+            structural = true;
+        }
+        if (this._sizeGradients && !this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture")) {
+            structural = true;
+        }
+        if (this._angularSpeedGradients && !this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture")) {
+            structural = true;
+        }
+        if (this._velocityGradients && !this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture")) {
+            structural = true;
+        }
+        if (this._limitVelocityGradients && !this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture")) {
+            structural = true;
+        }
+        if (this._dragGradients && !this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture")) {
+            structural = true;
+        }
+
+        if (structural) {
+            this.reset();
+        }
     }
 
     /**

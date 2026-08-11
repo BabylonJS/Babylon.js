@@ -274,4 +274,104 @@ describe("GPUParticleSystem gradient edits re-bake the lookup texture in place",
             ps.dispose();
         });
     });
+
+    describe("forceRefreshGradients (the Inspector live-edit path)", () => {
+        it("preserves the particle pool when an in-place value edit is followed by forceRefreshGradients", () => {
+            const ps = createSystem();
+
+            ps.addSizeGradient(0, 1);
+            ps.addSizeGradient(1, 3);
+            ps.addColorGradient(0, new Color4(1, 0, 0, 1));
+            ps.addColorGradient(1, new Color4(0, 1, 0, 1));
+
+            ps._recreateUpdateEffect();
+            const sizeTexture = (ps as any)._sizeGradientsTexture;
+            const colorTexture = (ps as any)._colorGradientsTexture;
+
+            const releaseBuffers = vi.spyOn(ps as any, "_releaseBuffers");
+            const reset = vi.spyOn(ps, "reset");
+            const sizeUpdate = vi.spyOn(sizeTexture, "update");
+            const colorUpdate = vi.spyOn(colorTexture, "update");
+
+            // Exactly what both Inspectors do: mutate the gradient objects, then ask for a resync.
+            ps.getSizeGradients()![1].factor1 = 5;
+            ps.getColorGradients()![1].color1 = new Color4(0, 0, 1, 1);
+            ps.forceRefreshGradients();
+
+            expect(releaseBuffers).not.toHaveBeenCalled();
+            expect(reset).not.toHaveBeenCalled();
+            // Both families re-baked in place — same texture identity, new pixels
+            expect(sizeUpdate).toHaveBeenCalledTimes(1);
+            expect(colorUpdate).toHaveBeenCalledTimes(1);
+            expect((ps as any)._sizeGradientsTexture).toBe(sizeTexture);
+            expect((ps as any)._colorGradientsTexture).toBe(colorTexture);
+
+            // The edited values reached the texture
+            const sizeData = sizeUpdate.mock.calls[0][0] as Float32Array;
+            const width = (ps as any)._rawTextureWidth;
+            expect(sizeData[(width - 1) * 2]).toBeCloseTo(1 + ((5 - 1) * (width - 1)) / width);
+
+            ps.dispose();
+        });
+
+        it("does not reset for the families that are simply absent", () => {
+            const ps = createSystem();
+
+            // Only one family exists; the other five are null and have nothing to resync. Counting an absent
+            // family as a structural change would reset the pool on every call.
+            ps.addSizeGradient(0, 1);
+            ps.addSizeGradient(1, 3);
+            ps._recreateUpdateEffect();
+
+            const releaseBuffers = vi.spyOn(ps as any, "_releaseBuffers");
+            const reset = vi.spyOn(ps, "reset");
+
+            ps.forceRefreshGradients();
+
+            expect(releaseBuffers).not.toHaveBeenCalled();
+            expect(reset).not.toHaveBeenCalled();
+
+            ps.dispose();
+        });
+
+        it("resets when a family has no texture to re-bake yet (first bake is structural)", () => {
+            const ps = createSystem();
+
+            // No _recreateUpdateEffect(): the lookup texture has never been created.
+            ps.addSizeGradient(0, 1);
+            ps.addSizeGradient(1, 3);
+
+            const reset = vi.spyOn(ps, "reset");
+
+            ps.forceRefreshGradients();
+
+            expect(reset).toHaveBeenCalled();
+
+            ps.dispose();
+        });
+
+        it("resets when an edit flips the color2 row layout", () => {
+            const ps = createSystem();
+
+            ps.addColorGradient(0, new Color4(1, 0, 0, 1));
+            ps.addColorGradient(1, new Color4(0, 1, 0, 1));
+
+            ps._recreateUpdateEffect();
+            expect((ps as any)._colorGradientsTexture.getSize().height).toBe(1);
+
+            const reset = vi.spyOn(ps, "reset");
+
+            // Adding a color2 in place is a layout change, not a value edit — the texture cannot be re-baked.
+            ps.getColorGradients()![1].color2 = new Color4(0, 0, 1, 1);
+            ps.forceRefreshGradients();
+
+            expect(reset).toHaveBeenCalled();
+            expect((ps as any)._colorGradientsTexture).toBeNull();
+
+            ps._recreateUpdateEffect();
+            expect((ps as any)._colorGradientsTexture.getSize().height).toBe(2);
+
+            ps.dispose();
+        });
+    });
 });
