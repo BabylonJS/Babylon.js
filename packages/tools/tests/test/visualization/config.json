@@ -1757,7 +1757,7 @@
         },
         {
             "title": "FSR1 render pipeline",
-            "playgroundId": "#RWRLBA#0",
+            "playgroundId": "#JV4PZC#0",
             "referenceImage": "fsr1.png",
             "dependsOn": ["PostProcesses", "Textures", "Materials"]
         },
