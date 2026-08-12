@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { WebSocketServer } from "ws";
+import { type RawData, type WebSocket, WebSocketServer } from "ws";
 import { readFileSync } from "fs";
 import { createServer } from "https";
 import { resolve } from "path";
@@ -31,7 +31,9 @@ class Server {
 
             this._checkClients();
 
-            this._server.on("message", (message: string) => {
+            client.on("message", (data: RawData) => {
+                // ws delivers a Buffer/ArrayBuffer, so convert to text before inspecting or relaying it.
+                const message = data.toString();
                 console.log(`Received message from client ${client._id}: ${message.substring(0, 64)}`);
 
                 if (!client._other) {
@@ -43,7 +45,7 @@ class Server {
                 client._other.send(message);
             });
 
-            this._server.on("close", (code: any, reason: any) => {
+            client.on("close", (code: number, reason: Buffer) => {
                 console.log(`Client ${client._id} disconnected: ${code} ${reason}`);
                 if (client._other) {
                     delete client._other._other;
