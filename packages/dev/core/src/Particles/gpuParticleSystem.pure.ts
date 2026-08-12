@@ -601,33 +601,67 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * no texture to re-bake yet, one that was emptied, or a color2 row-layout flip — rebuilds the pool.
      *
      * An ABSENT family is not a structural change: it has nothing to resync, and counting it as one would
-     * reset the pool on every call (the destruction this method exists to avoid).
+     * reset the pool on every call (the destruction this method exists to avoid). Absence has two spellings —
+     * see _gradientFamilyNeedsResync.
      */
     public forceRefreshGradients() {
         let structural = false;
 
-        if (this._colorGradients && !this._refreshColorGradient()) {
+        if (this._gradientFamilyNeedsResync(this._colorGradients, "_colorGradientsTexture") && !this._refreshColorGradient()) {
             structural = true;
         }
-        if (this._sizeGradients && !this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture")) {
+        if (this._gradientFamilyNeedsResync(this._sizeGradients, "_sizeGradientsTexture") && !this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture")) {
             structural = true;
         }
-        if (this._angularSpeedGradients && !this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture")) {
+        if (
+            this._gradientFamilyNeedsResync(this._angularSpeedGradients, "_angularSpeedGradientsTexture") &&
+            !this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture")
+        ) {
             structural = true;
         }
-        if (this._velocityGradients && !this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture")) {
+        if (
+            this._gradientFamilyNeedsResync(this._velocityGradients, "_velocityGradientsTexture") &&
+            !this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture")
+        ) {
             structural = true;
         }
-        if (this._limitVelocityGradients && !this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture")) {
+        if (
+            this._gradientFamilyNeedsResync(this._limitVelocityGradients, "_limitVelocityGradientsTexture") &&
+            !this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture")
+        ) {
             structural = true;
         }
-        if (this._dragGradients && !this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture")) {
+        if (this._gradientFamilyNeedsResync(this._dragGradients, "_dragGradientsTexture") && !this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture")) {
             structural = true;
         }
 
         if (structural) {
             this.reset();
         }
+    }
+
+    /**
+     * Whether a gradient family still has anything for a resync pass to do.
+     *
+     * Absence has TWO spellings: a family that was never initialized is `null`, but one that has been emptied
+     * stays `[]`. Only the first is falsy, so a bare truthiness test reads an emptied family as unfinished
+     * business on every later call — its refresh finds nothing to re-bake, reports "structural", and
+     * forceRefreshGradients resets the live pool forever after, which is precisely the destruction it exists
+     * to prevent.
+     *
+     * Entries always mean work (re-bake in place, or build when there is no texture yet). An EMPTY family is
+     * work only while it still owns a texture: that is the just-emptied transition, whose stale texture must
+     * be disposed. `[]` with no texture is settled absence — nothing left to resync.
+     * @param gradients the gradient family to test, or null when it was never initialized
+     * @param textureName the name of the lookup texture property backing that family
+     * @returns true when the family still has work for a resync pass, false when its absence is settled
+     */
+    private _gradientFamilyNeedsResync(gradients: Nullable<IValueGradient[]>, textureName: string): boolean {
+        if (!gradients) {
+            return false;
+        }
+
+        return gradients.length > 0 || !!(<any>this)[textureName];
     }
 
     /**

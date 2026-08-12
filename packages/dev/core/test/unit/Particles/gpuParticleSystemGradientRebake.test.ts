@@ -373,5 +373,72 @@ describe("GPUParticleSystem gradient edits re-bake the lookup texture in place",
 
             ps.dispose();
         });
+
+        it("an ALREADY-EMPTIED family does not make later value edits structural", () => {
+            // Absence has two spellings: a family never initialized is null, but one that has been emptied
+            // stays []. A bare truthiness guard reads [] as unfinished business forever, so every subsequent
+            // forceRefreshGradients() reset the live pool — the destruction the method exists to prevent.
+            const ps = createSystem();
+
+            ps.addColorGradient(0, new Color4(1, 0, 0, 1));
+            ps.addSizeGradient(0, 1);
+            ps.addSizeGradient(1, 3);
+
+            ps._recreateUpdateEffect();
+            expect((ps as any)._colorGradientsTexture).toBeTruthy();
+            expect((ps as any)._sizeGradientsTexture).toBeTruthy();
+
+            // Remove the final color stop. The removal path owns this structural transition: the family is
+            // left as [] and its texture is disposed.
+            ps.removeColorGradient(0);
+            expect(ps.getColorGradients()).toEqual([]);
+            expect((ps as any)._colorGradientsTexture).toBeNull();
+
+            // Rebuild/reactivate after that structural change.
+            ps._recreateUpdateEffect();
+            const sizeTexture = (ps as any)._sizeGradientsTexture;
+            expect(sizeTexture).toBeTruthy();
+
+            const reset = vi.spyOn(ps, "reset");
+            const releaseBuffers = vi.spyOn(ps as any, "_releaseBuffers");
+
+            // A value-only edit on a DIFFERENT family. The settled-empty color family must be skipped.
+            ps.getSizeGradients()![1].factor1 = 7;
+            ps.forceRefreshGradients();
+
+            expect(reset).not.toHaveBeenCalled();
+            expect(releaseBuffers).not.toHaveBeenCalled();
+            // The pool survives: the size texture kept its identity and was re-baked in place.
+            expect((ps as any)._sizeGradientsTexture).toBe(sizeTexture);
+
+            // Still true on repeat calls — the empty family must never accumulate into a structural verdict.
+            ps.forceRefreshGradients();
+            expect(reset).not.toHaveBeenCalled();
+
+            ps.dispose();
+        });
+
+        it("a JUST-emptied family that still owns its texture is still structural", () => {
+            // The other side of the same guard: [] is only settled absence once the texture is gone. While the
+            // stale texture is still owned, the transition has real work left and must reset.
+            const ps = createSystem();
+
+            ps.addSizeGradient(0, 1);
+            ps._recreateUpdateEffect();
+            expect((ps as any)._sizeGradientsTexture).toBeTruthy();
+
+            // Empty the array WITHOUT going through removeSizeGradient(), so the texture is deliberately
+            // left behind — the state an interrupted/external edit can produce.
+            (ps as any)._sizeGradients.length = 0;
+
+            const reset = vi.spyOn(ps, "reset");
+
+            ps.forceRefreshGradients();
+
+            expect(reset).toHaveBeenCalled();
+            expect((ps as any)._sizeGradientsTexture).toBeNull();
+
+            ps.dispose();
+        });
     });
 });
