@@ -9,6 +9,20 @@ interface IWebSocketInfo extends WebSocket {
     _other?: IWebSocketInfo;
 }
 
+function ToMessageText(data: RawData): string {
+    // ws can deliver a single Buffer, an ArrayBuffer, or an array of Buffer fragments, depending on
+    // the binaryType and how the message was framed, so normalize all of them to text.
+    if (Array.isArray(data)) {
+        return Buffer.concat(data).toString();
+    }
+
+    if (Buffer.isBuffer(data)) {
+        return data.toString();
+    }
+
+    return Buffer.from(data).toString();
+}
+
 class Server {
     private _nextClientId = 0;
     private _server: WebSocketServer;
@@ -32,8 +46,7 @@ class Server {
             this._checkClients();
 
             client.on("message", (data: RawData) => {
-                // ws delivers a Buffer/ArrayBuffer, so convert to text before inspecting or relaying it.
-                const message = data.toString();
+                const message = ToMessageText(data);
                 console.log(`Received message from client ${client._id}: ${message.substring(0, 64)}`);
 
                 if (!client._other) {
