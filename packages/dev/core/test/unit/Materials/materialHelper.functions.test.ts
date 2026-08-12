@@ -98,10 +98,10 @@ describe("PrepareDefinesForBones uniform-budget warning", () => {
 });
 
 describe("maxSimultaneousLights clamping against the per-stage uniform buffer limit", () => {
-    // One uniform buffer per light in the vertex stage, plus the scene, mesh and material buffers, so a
-    // device reporting the WebGPU/D3D12 maximum of 12 supports 12 - 3 = 9 simultaneous lights.
+    // One uniform buffer per light in the vertex stage, plus the scene, mesh, material and leftover buffers,
+    // so a device reporting the WebGPU/D3D12 maximum of 12 supports 12 - 4 = 8 simultaneous lights.
     const webGpuLimit = 12;
-    const supportedForWebGpu = 9;
+    const supportedForWebGpu = 8;
 
     const makeScene = (maxUniformBuffersPerShaderStage?: number): Scene => {
         // A single engine instance per scene: the warning is deduped per engine, so handing out a fresh
@@ -182,13 +182,13 @@ describe("maxSimultaneousLights clamping against the per-stage uniform buffer li
 
     it("reports the buffer cost of the lights in use, not of maxSimultaneousLights", () => {
         const warn = spyOnWarn();
-        // A very high cap on a mesh with 10 lights costs 10 + 3 buffers, not 64 + 3.
+        // A very high cap on a mesh with 10 lights costs 10 + 4 buffers, not 64 + 4.
         PrepareDefinesForLights(makeScene(webGpuLimit), makeMesh(10), makeDefines(), true, 64);
         expect(warn).toHaveBeenCalledTimes(1);
         const message = String(warn.mock.calls[0][0]);
         expect(message).toContain("the 10 lights affecting this mesh");
-        expect(message).toContain("13 uniform buffers");
-        expect(message).not.toContain("67 uniform buffers");
+        expect(message).toContain("14 uniform buffers");
+        expect(message).not.toContain("68 uniform buffers");
         warn.mockRestore();
     });
 
@@ -210,26 +210,29 @@ describe("maxSimultaneousLights clamping against the per-stage uniform buffer li
         warn.mockRestore();
     });
 
-    it("binds no more lights than the defines declare", () => {
+    it("binds every light the material asked for, leaving the clamp to the defines", () => {
         const mesh = makeMesh(10);
         const bound: number[] = [];
         for (const light of mesh.lightSources) {
             light._bindLight = (index: number) => bound.push(index);
         }
         BindLights(makeScene(webGpuLimit), mesh, {} as any, { SPECULARTERM: false }, 10);
-        expect(bound).toHaveLength(supportedForWebGpu);
+        // Binding is deliberately left unclamped: only PrepareDefinesForLights knows the shader was built for
+        // fewer lights, and Effect.bindUniformBuffer ignores a Light{X} buffer the effect does not declare, so
+        // the extra binds are no-ops rather than errors. Keeping this hot path free of a capability lookup
+        // matters more than the handful of redundant buffer updates.
+        expect(bound).toHaveLength(10);
     });
 
-    it("does not gate readiness on a light the shader will never use", () => {
+    it("gates readiness on every light the material asked for", () => {
         const mesh = makeMesh(10);
-        // Only the light that the clamp drops is not ready: the material should still report ready.
         for (const light of mesh.lightSources) {
             light.areLightTexturesReady = () => true;
         }
+        // Same reasoning as BindLights: readiness stays unclamped so this hot path keeps its original cost.
         mesh.lightSources[9].areLightTexturesReady = () => false;
-        expect(AreLightsTexturesReady(makeScene(webGpuLimit), mesh, 10)).toBe(true);
-        // A light that is actually used still gates readiness.
-        mesh.lightSources[0].areLightTexturesReady = () => false;
         expect(AreLightsTexturesReady(makeScene(webGpuLimit), mesh, 10)).toBe(false);
+        mesh.lightSources[9].areLightTexturesReady = () => true;
+        expect(AreLightsTexturesReady(makeScene(webGpuLimit), mesh, 10)).toBe(true);
     });
 });

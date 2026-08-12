@@ -502,10 +502,17 @@ export function BindLight(light: Light, lightIndex: number, scene: Scene, effect
 }
 
 /**
- * Uniform buffers the vertex stage binds in addition to the per-light ones: Scene, Mesh and Material.
- * Used to work out how many lights still fit within the device's per-stage uniform buffer limit.
+ * Uniform buffers the vertex stage binds in addition to the per-light ones: Scene, Mesh, Material and
+ * LeftOver. Used to work out how many lights still fit within the device's per-stage uniform buffer limit.
+ *
+ * LeftOver is the buffer WebGPU's shader processor synthesises for uniforms declared outside of a uniform
+ * block; it is given both vertex and fragment visibility as soon as any such uniform exists in either stage,
+ * which is the case for virtually every material (per-light shadow matrices, logarithmicDepthConstant,
+ * vClipPlane and so on).
+ * It is counted unconditionally: reserving one buffer too many merely costs a light in the rare shader that
+ * has no leftover uniforms, whereas reserving one too few brings back the black screen this guards against.
  */
-const _NonLightVertexUniformBufferCount = 3;
+const _NonLightVertexUniformBufferCount = 4;
 
 /** Light counts already warned about, per engine, so the warning is emitted once. */
 const _LightBudgetWarnedEngines = new WeakMap<AbstractEngine, Set<number>>();
@@ -555,7 +562,7 @@ function WarnAboutClampedLights(engine: AbstractEngine, requested: number, suppo
     Logger.Warn(
         `maxSimultaneousLights is ${requested} but this engine supports at most ${supported} simultaneous lights. ` +
             `Each light declares its own uniform buffer in the vertex shader, so the ${lightsInUse} lights affecting this mesh plus ` +
-            `the scene, mesh and material buffers would need ${lightsInUse + _NonLightVertexUniformBufferCount} uniform buffers, over ` +
+            `the scene, mesh, material and leftover buffers would need ${lightsInUse + _NonLightVertexUniformBufferCount} uniform buffers, over ` +
             `the device limit of ${engine.getCaps().maxUniformBuffersPerShaderStage} per shader stage. The light count has been clamped ` +
             `to ${supported}, so the extra lights will not contribute to the render. Set maxSimultaneousLights to ${supported} or less ` +
             `to silence this warning.`
@@ -571,9 +578,7 @@ function WarnAboutClampedLights(engine: AbstractEngine, requested: number, suppo
  * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
  */
 export function BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4): void {
-    // Match the clamp PrepareDefinesForLights applied when it generated the defines, so we never bind more
-    // lights than the effect actually declares.
-    const len = Math.min(mesh.lightSources.length, GetSupportedSimultaneousLights(scene, maxSimultaneousLights));
+    const len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
     for (let i = 0; i < len; i++) {
         const light = mesh.lightSources[i];
@@ -738,9 +743,7 @@ export function AreLightsTexturesReady(scene: Scene, mesh: AbstractMesh, maxSimu
         return true;
     }
     const lights = mesh.lightSources;
-    // Mirror the clamp PrepareDefinesForLights applies, so readiness is not gated on a light the shader
-    // will never use.
-    const count = Math.min(lights.length, GetSupportedSimultaneousLights(scene, maxSimultaneousLights));
+    const count = Math.min(lights.length, maxSimultaneousLights);
     for (let i = 0; i < count; i++) {
         if (!lights[i].areLightTexturesReady()) {
             return false;
