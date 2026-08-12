@@ -1008,9 +1008,16 @@ jobs:
           # migration forces the core UMD bundle to an ES2015 target (the `accessor` keyword requires
           # it), so it must be downleveled to ES5 for BOTH the unit tests and the playground before
           # either is executed.
+          #
+          # The directory is passed rather than a single file. The step above refills every
+          # `babylon*` file in these directories from the CDN snapshot, so naming one file makes the
+          # downlevel an allowlist of one: a bundle added to the Native script set later is refilled
+          # from the snapshot but never downleveled, and fails at parse time on Chakra with nothing
+          # pointing at the cause. `downlevelNativeScripts.mjs` walks a directory and selects
+          # `babylon*.js` itself, which is the same set the refill loop uses.
           - script: |
-                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyUnitTests\RelWithDebInfo\Assets\babylon.max.js
-            displayName: "Downlevel core script for Native (unit tests)"
+                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyUnitTests\RelWithDebInfo\Assets
+            displayName: "Downlevel scripts for Native (unit tests)"
 
           - script: |
                 cd
@@ -1020,8 +1027,8 @@ jobs:
             retryCountOnTaskFailure: 3
 
           - script: |
-                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts\babylon.max.js
-            displayName: "Downlevel core script for Native (visualization)"
+                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts
+            displayName: "Downlevel scripts for Native (visualization)"
 
           - script: |
                 cd
