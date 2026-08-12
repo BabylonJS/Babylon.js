@@ -13,12 +13,16 @@ uniform sampler2D textureSampler;
 // mismatch. The value is unused here because the output pixel comes from gl_FragCoord.
 varying vec2 vUV;
 
-// The constant is written as a float by the CPU side (setFloat4), so it is
-// consumed directly here as a float (the WGSL version reinterprets uint->float, which nets the same value).
+// The constant is written as a float by the CPU side (setFloat4) and consumed directly as a
+// float here and in the WGSL version. Upstream FSR packs it as a uint and bitcasts; this port
+// does not, so no reinterpretation happens on either path.
 uniform vec4 con;
 
 vec3 FsrRcasLoadF(ivec2 p) {
-    return texelFetch(textureSampler, p, 0).rgb;
+    // texelFetch ignores sampler wrap state and is undefined out of bounds, so the 3x3
+    // neighborhood below has to clamp for itself at the render target edges. The upscale
+    // pass clamps its own emulated gather the same way.
+    return texelFetch(textureSampler, clamp(p, ivec2(0), textureSize(textureSampler, 0) - ivec2(1)), 0).rgb;
 }
 
 void main() {

@@ -57,7 +57,8 @@ export class ThinFSR1SharpenPostProcess extends EffectWrapper {
         // https://github.com/GPUOpen-Effects/FidelityFX-FSR/blob/a21ffb8f6c13233ba336352bdff293894c706575/ffx-fsr/ffx_fsr1.h#L662
         sharpness = Math.pow(2, -sharpness);
 
-        // Technically this is a uint in the shader but it's bitwise converted to a float anyway.
+        // Upstream FSR packs this as a uint and bitcasts it in the shader; this port declares it
+        // as a float on both the GLSL and WGSL sides, so it is sent as one.
         // Since we haven't added the half-float shader yet, we don't need the second constant, which would require JS half-float calculation
         effect.setFloat4("con", sharpness, 0, 0, 0);
     }

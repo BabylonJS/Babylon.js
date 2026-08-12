@@ -8,7 +8,7 @@ import { ThinFSR1UpscalePostProcess } from "../../thinFSR1UpscalePostProcess";
 import { ThinFSR1SharpenPostProcess } from "../../thinFSR1SharpenPostProcess";
 
 /**
- * FideltyFX Super Resolution (FSR) 1 render pipeline.
+ * FidelityFX Super Resolution (FSR) 1 render pipeline.
  * This can be used to render the scene at a lower resolution and upscale it.
  */
 export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
@@ -45,8 +45,8 @@ export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
     private _samples = 4;
     /**
      * MSAA sample count (default: 4).
-     * Disabling MSAA is not recommended since aliased edges will be exagerrated by the FSR pass.
-     * Always have atleast one AA solution enabled, wether that be MSAA with this setting or a post-process effect like FXAA or TAA.
+     * Disabling MSAA is not recommended since aliased edges will be exaggerated by the FSR pass.
+     * Always have at least one AA solution enabled, whether that be MSAA with this setting or a post-process effect like FXAA or TAA.
      */
     public get samples(): number {
         return this._samples;

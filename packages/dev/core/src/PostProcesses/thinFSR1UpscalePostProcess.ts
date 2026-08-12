@@ -73,7 +73,8 @@ export class ThinFSR1UpscalePostProcess extends EffectWrapper {
         const rcpOutputWidth = 1 / outputWidth;
         const rcpOutputHeight = 1 / outputHeight;
 
-        // Technically these are uints in the shader but they're bitwise converted to floats anyway
+        // Upstream FSR packs these as uints and bitcasts them in the shader; this port declares
+        // them as floats on both the GLSL and WGSL sides, so they are sent as floats.
         effect.setFloat4(
             "con0",
             viewportWidth * rcpOutputWidth,

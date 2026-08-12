@@ -1,4 +1,4 @@
-// FideltyFX FSR 1 converted to WGSL
+// FidelityFX FSR 1 converted to WGSL
 // https://github.com/GPUOpen-Effects/FidelityFX-FSR/blob/master/ffx-fsr/ffx_fsr1.h
 #include<ffxFunctions>
 
@@ -9,7 +9,9 @@ var textureSampler: texture_2d<f32>;
 uniform con: vec4f;
 
 fn FsrRcasLoadF(p: vec2i) -> vec4f {
-    return textureLoad(textureSampler, p, 0);
+    // Clamp for the same reason as the GLSL version: the 3x3 neighborhood below reaches one
+    // texel past the render target at its edges, and a raw load there is not the edge texel.
+    return textureLoad(textureSampler, clamp(p, vec2i(0), vec2i(textureDimensions(textureSampler, 0)) - vec2i(1)), 0);
 }
 
 fn FsrRcasF(
