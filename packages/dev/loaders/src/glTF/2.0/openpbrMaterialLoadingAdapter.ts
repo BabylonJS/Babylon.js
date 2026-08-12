@@ -1345,7 +1345,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                     TextureChannel.RGBA,
                     TextureColorSpace.SRGB
                 ),
-                CreateTextureWithFactorOperand(strengthTex, new Color4(1.0, 1.0, 1.0, 1.0), TextureChannel.A),
+                CreateTextureWithFactorOperand(strengthTex, this._volumetricMultiScatterFactor.toColor4(), TextureChannel.A),
                 this._material.getScene()
             );
             const singleScatter = await MultiScatterToSingleScatterAlbedoAsync(`single-scatter (${this._material.name})`, combinedMultiScatter, this._material.getScene());
@@ -1360,6 +1360,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             this._volumetricMultiScatterFactor = null;
             this._volumetricScatterStrengthTexture = null;
 
+            // OpenPBR transmission_scatter is scatterCoefficient * depth which is equivalent to extinctionCoefficient * ssAlbedo * depth.
             const extinctionTimesDepth = new Color3(-Math.log(this.transmissionColor.r), -Math.log(this.transmissionColor.g), -Math.log(this.transmissionColor.b));
             if (singleScatter.texture) {
                 this.transmissionScatter = extinctionTimesDepth;
