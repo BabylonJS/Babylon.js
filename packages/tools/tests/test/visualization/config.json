@@ -1797,6 +1797,12 @@
             "dependsOn": ["PostProcesses"]
         },
         {
+            "title": "FSR1 render pipeline",
+            "playgroundId": "#JV4PZC#0",
+            "referenceImage": "fsr1.png",
+            "dependsOn": ["PostProcesses", "Textures", "Materials"]
+        },
+        {
             "title": "Depth of field",
             "playgroundId": "#IDSQK2#86",
             "referenceImage": "depthOfField.png",
