@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/viewer",
-    "version": "9.20.1",
+    "version": "9.21.0",
     "type": "module",
     "main": "lib/full/index.js",
     "module": "lib/full/index.js",
@@ -55,9 +55,9 @@
         }
     },
     "devDependencies": {
-        "@babylonjs/core": "9.20.1",
+        "@babylonjs/core": "9.21.0",
         "@babylonjs/lite": "^1.18.0",
-        "@babylonjs/loaders": "9.20.1",
+        "@babylonjs/loaders": "9.21.0",
         "@dev/build-tools": "^1.0.0",
         "@rollup/plugin-alias": "^5.1.0",
         "@rollup/plugin-commonjs": "^26.0.1",

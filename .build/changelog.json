@@ -1,83 +1,7 @@
 {
-    "fromTag": "9.20.0",
+    "fromTag": "9.20.1",
     "changelog": {
-        "9.20.0": [
-            {
-                "pr": "18773",
-                "title": "Reuse graphics bindings and disable raw camera access",
-                "description": "Closes #18768\n\nRelated to parent #18636 and epic #18635.\n\n## Summary\n- Turn the cached XR graphics-binding seam into a discriminated WebGL/WebGPU union that exposes the wrapped native binding and safely narrows at call sites.\n- Add an intentional runtime-disable path for XR features: the feature emits its specific warning, sets `disableAutoAttach`, and returns before observers or attach notifications are registered; the manager suppresses its generic attach-failed warning only when attachment intentionally sets that flag.\n- Reuse the cached WebGL binding/context in Raw Camera Access and disable Raw Camera Access on WebGPU XR with exactly one specific warning and no native binding, camera-image, frame-observer, or texture work.\n- Remove unnecessary concrete `Engine` casts from Image Tracking and Walking Locomotion.\n\n## WebGL no-op guarantees\n- Raw Camera still calls `super.attach()` first on WebGL, uses the same `XRWebGLBinding.getCameraImage` path, and creates the same `WebGLHardwareTexture`/Babylon texture metadata; only binding construction is deduplicated through the session cache.\n- The WebGPU guard is isolated before attachment. Existing WebGL layer, texture, and native camera behavior is unchanged.\n- The cached binding remains session-scoped and is cleared on session end as before.\n\n## Warning lifecycle\nAn intentional runtime capability failure emits the feature-specific warning and sets `disableAutoAttach`. `WebXRFeaturesManager.attachFeature` opens a fresh transition for each explicit attempt, restores preexisting auto-attach state after ordinary failures/successes, and suppresses the generic warning only when the attach implementation intentionally disables itself. Ordinary attach failures still emit `Feature <name> failed to attach`.\n\n## Tests\n- Focused XR selection: 4 files, 100 tests passed (binding/session manager, abstract feature lifecycle, feature manager lifecycle, Raw Camera positive/negative controls).\n- Full XR unit suite: 17 files, 294 tests passed.\n- `npx tsc -b packages/dev/core/tsconfig.build.json` passed.\n- `npm --prefix packages/dev/core run lint:check` passed with 0 errors.\n- Targeted Prettier check passed.\n- `npm run check:treeshaking` passed all 16 checks.\n- `npm run check:side-effects-sync` passed for core/gui/loaders/serializers.\n- `npm run build:source && npm run test:treeshaking` passed all core and serializer bundle smoke tests.\n\n## Remaining XR WebGL coupling audit\nThe centralized `new XRWebGLBinding` in `webXRGraphicsBinding.ts` is intentional. Remaining feature-owned direct bindings are deliberately deferred:\n- Layers (`WebXRLayers.pure.ts`) — #18769\n- Light Estimation (`WebXRLightEstimation.pure.ts`) — #18770\n- Depth Sensing (`WebXRDepthSensing.pure.ts`) — #18771\n- Space Warp (`WebXRSpaceWarp.pure.ts`) — #18772\n\nThe exhaustive `_gl` and `Engine`/`ThinEngine` cast audit found only the centralized graphics-binding/WebGL render-target backend seams plus those four deferred features. Remaining WebGL object types are confined to the WebGL layer/render-target/native compatibility infrastructure, Raw Camera's intentionally WebGL-only texture path, and the four deferred features above.",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/core/src/XR/features/WebXRAbstractFeature.ts",
-                    "packages/dev/core/src/XR/features/WebXRImageTracking.pure.ts",
-                    "packages/dev/core/src/XR/features/WebXRLayers.pure.ts",
-                    "packages/dev/core/src/XR/features/WebXRRawCameraAccess.pure.ts",
-                    "packages/dev/core/src/XR/features/WebXRWalkingLocomotion.pure.ts",
-                    "packages/dev/core/src/XR/webXRFeaturesManager.ts",
-                    "packages/dev/core/src/XR/webXRGraphicsBinding.ts",
-                    "packages/dev/core/src/XR/webXRSessionManager.ts",
-                    "packages/dev/core/test/unit/XR/webXRAbstractFeature.test.ts",
-                    "packages/dev/core/test/unit/XR/webXRFeaturesManagerExtended.test.ts",
-                    "packages/dev/core/test/unit/XR/webXRRawCameraAccess.test.ts",
-                    "packages/dev/core/test/unit/XR/webXRSessionManager.test.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "18688",
-                "title": "Fix the per-eye clear wiping drawn frames, plus upright rendering and half-Z NDC",
-                "description": "## Symptom\n\nIn an immersive **WebGPU** XR session on a Quest 3, the scene rendered for one frame and then permanently disappeared. The per-eye clear colour kept presenting, the frame counter kept climbing, and there were **no WebGPU validation errors**. WebGL2 XR was fine on the same device.\n\n## Root cause — our own Phase-2 per-eye clear observer\n\nThe bug was introduced by the Phase-2 fix for the black right eye. `webXRWebGPURenderTargetTextureProvider` attaches an `onClearObservable` handler to each per-eye render target that calls `engine.clear(...)`. On WebGPU, `engine.clear()` with no pass open **opens a new render pass with `loadOp=clear`**.\n\nTwo things then combine:\n\n**1. Our observer read the wrong scene's `autoClear`.** Vanilla `scene.pure.ts:4988` decides whether to clear based on **the scene doing the rendering**. Our observer read `getScene()` — the scene that *owns* the render target. `UtilityLayerRenderer` sets `autoClear = false` (`utilityLayerRenderer.ts:344`) precisely so that it will not clear when it renders through someone else's camera. Vanilla honours that; our observer did not.\n\n**2. `scene.pure.ts:4985` short-circuits before the right-eye guard.** The `onClearObservable.hasObservers()` branch returns before the `!camera.isRightCamera` check at `:4987`, which is why **both** eyes were wiped rather than just one.\n\n**3. The `_cleared` guard was defeated by a second `Scene`.** `UtilityLayerRenderer` renders a second scene on `onAfterRenderCameraObservable` (`:347-352`). Every `Scene.render` calls `_checkCameraRenderTarget` (`scene.pure.ts:5346-5358`), which resets `rtt._cleared = false`. So the second scene's render re-armed the guard and re-cleared targets that had already been drawn.\n\nThe fix keys the colour clear on `AbstractEngine.frameId` instead. `frameId` increments only in `endFrame` (`abstractEngine.pure.ts:960`), so it is genuinely once per presented frame and cannot be reset by another scene rendering within the same XR frame. Depth/stencil still clear on every notification, which is what per-eye rendering needs.\n\n`lastColorClearedFrameId` is closure-scoped per render target — a shared counter would have broken the second eye.\n\n## Evidence\n\nDevice render-pass trace on the XR projection-layer texture, one encoder / one submit per frame:\n\n| Pass | Before | After |\n|---|---|---|\n| L0 | `loadOp=clear` draws=8 | `loadOp=clear` draws=9 |\n| L1 | `loadOp=clear` draws=9 | `loadOp=clear` draws=9 |\n| L1 | `loadOp=load` draws=0 | `loadOp=load` draws=0 |\n| L0 | **`loadOp=CLEAR` draws=0** ← wipes left | `loadOp=load` draws=0 |\n| L1 | **`loadOp=CLEAR` draws=0** ← wipes right | `loadOp=load` draws=0 |\n\nFrames with geometry on both live layers, by pixel readback: **1/60 → 60/60**. `gpuErrors=0`, 130 frames. The `clear → load` flip was a written prediction *before* the confirming device run, and matched exactly.\n\n## WebGL2 is unaffected by construction\n\n`onClearObservable` is attached in exactly one place — `webXRWebGPURenderTargetTextureProvider.ts:109` — and no XR render-target provider outside the WebGPU one touches it. The WebGL2 path is untouched, and its side-by-side single-framebuffer layout never had this failure mode.\n\n## Also in this PR (both pre-existing Phase-3 deliverables)\n\n- **Y-flip** (43a4d0c): XR render targets are not flipped, so `_disableEngineYFlip` is set for the XR path — the scene was rendering upside down.\n- **Half-Z NDC** (292e86f): WebGPU's depth range is `[0,1]`, not `[-1,1]`. The XR projection matrices from the UA are OpenGL-convention, so they are converted in place.\n\n## Tests\n\nUnit coverage is in `packages/dev/core/test/unit/XR/webXRWebGPUProjectionLayer.test.ts` and `webXRCamera.test.ts`, and it guards this regression directly rather than incidentally: a test builds the exact arrangement that caused the bug — a `UtilityLayerRenderer`-style second `Scene` rendering into the same XR render target within one engine frame — and asserts the second notification does **not** re-clear colour. It also asserts its own premise, so it cannot pass by accident if the setup stops reproducing the conditions.\n\nReverting the `frameId` guard turns those tests red (2 failures, verified), so the guard is not decoration.\n\n**The end-to-end harness that originally found this bug is deliberately not in this PR.** It is a headless-Chromium mock `XRGPUBinding`/`XRSession`/`XRFrame`/`XRProjectionLayer` that drives the real Babylon XR path and judges each frame by pixel readback — separate infrastructure with its own review surface, and no reviewer should have to assess it to approve a 5-file engine fix. It is preserved on `raananw-webgpu-xr-harness` and will be proposed on its own once this lands.\n\n## Follow-ups (not in this PR)\n\n- Fold the per-eye clear into the render target's pass descriptor instead of issuing a standalone `engine.clear()`. That would remove the two remaining `loadOp=load` draws=0 passes per frame — wasted work on a Quest — but it touches non-XR paths in `webgpuEngine.pure.ts`, so it is out of scope for a bugfix.\n- Consider whether `UtilityLayerRenderer` should skip binding an XR eye it is not going to draw into.\n- Delete the structure-B blit present path rather than repair it, now that the real cause is fixed; carrying a second present mechanism is not worth it.\n- Land the end-to-end WebGPU-XR harness as its own PR, from `raananw-webgpu-xr-harness`. Running it in CI is blocked on a renderer-process crash on the ADO Linux agent (WebGPU itself is available there) — measurement trail in #18765.\n- Standing rule worth writing down: **never derive a texture usage from a queried usage.** The blit path computed `real.usage | COPY_SRC`; on device `real.usage` is the stub `0`, producing `TEXTURE_BINDING` with no `RENDER_ATTACHMENT`, which invalidated every encoder. Use explicit constants.\n\nEpic: #18635\n",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/WebGPU/webgpuRenderTargetWrapper.ts",
-                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
-                    "packages/dev/core/src/Maths/math.vector.pure.ts",
-                    "packages/dev/core/src/XR/webXRCamera.ts",
-                    "packages/dev/core/src/XR/webXRWebGPURenderTargetTextureProvider.ts",
-                    "packages/dev/core/test/unit/XR/webXRCamera.test.ts",
-                    "packages/dev/core/test/unit/XR/webXRWebGPUProjectionLayer.test.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "18766",
-                "title": "Fix: respect camera layerMask in the transmission opaque texture",
-                "description": "Fixes [PBR materials with refraction have issues with layer masks](https://forum.babylonjs.com/t/pbr-materials-with-refraction-have-issues-with-layer-masks/63894).\n\n## Problem\n\nWhen using multiple cameras with different `layerMask` values, meshes that are excluded from the rendering camera still show up in the refraction of transmissive (`KHR_materials_transmission`) meshes.\n\nRepro: https://playground.babylonjs.com/#WBUEI8#22 — the textured plane is on `layerMask2` and the refractive cube on `layerMask1`, yet the plane appears \"inside\" the cube.\n\n## Root cause\n\n`TransmissionHelper` creates the `opaqueSceneTexture` render target with `renderList = _opaqueMeshesCache`, which holds every opaque mesh of the scene regardless of camera.\n\nIn `ObjectRenderer._prepareRenderingManager`, providing a `renderList` disables the layerMask check:\n\n```ts\ncheckLayerMask = !this.renderList || this.forceLayerMaskCheck;\n```\n\nSo the RTT rendered everything in the cache, ignoring the active camera's `layerMask`.\n\n## Fix\n\nEnable `forceLayerMaskCheck` on the opaque render target. The opaque cache is camera-agnostic while the RTT is rendered once per active camera, so the mask check has to stay on for the texture to match what that camera actually sees.\n\nThis is a no-op for the common single-camera case, since the default mesh and camera layer masks are both `0x0FFFFFFF`.\n\n## Tests\n\nAdded a regression test in `KHR_materials_transmission.test.ts` that renders the opaque RTT with matching and then disjoint layer masks and asserts the opaque mesh is included/excluded accordingly. Verified it fails without the fix and passes with it.\n",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/transmissionHelper.ts",
-                    "packages/dev/loaders/test/unit/glTF/KHR_materials_transmission.test.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "18767",
-                "title": "Fix RawCubeTexture invertY crash on WebGPU",
-                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\nFixes a WebGPU crash when creating/updating a `RawCubeTexture` with `invertY: true`.\n\n## Root cause\nOn WebGPU, Y-flip is done after upload via a GPU post-process (`invertYPreMultiplyAlpha`). That path requires an `InternalTexture` (to create a hardware texture wrapper).\n\n`updateRawCubeTexture` was passing the raw `GPUTexture` (`texture._hardwareTexture.underlyingResource`) into `updateCubeTextures` / `updateTexture`. When `invertY` was true, the engine threw:\n\n> Invalid texture! Babylons internal engine is still not fully compatible with native GPU objects\n\nWebGL was unaffected because it can flip at upload time via `UNPACK_FLIP_Y_WEBGL`. The raw 2D WebGPU path already passed `InternalTexture`; only the cube path was wrong.\n\n## Fix\n- Pass the `InternalTexture` into `updateCubeTextures` from `updateRawCubeTexture` and `createCubeTexture`\n- Widen `updateCubeTextures` to accept `GPUTexture | InternalTexture` (same pattern as `updateTexture`)\n\n## Forum\nhttps://forum.babylonjs.com/t/setting-invert-y-when-creating-a-rawcubetexture-in-webgpu-crashes/63895\r\n",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.cubeTexture.pure.ts",
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.rawTexture.pure.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
-                    "packages/dev/core/test/unit/Engines/WebGPU/rawCubeTextureInvertY.test.ts"
-                ],
-                "tags": [
-                    "bug"
-                ]
-            }
-        ],
+        "9.21.0": [],
         "9.20.1": [
             {
                 "pr": "18800",
@@ -468,6 +392,83 @@
                     "packages/dev/core/src/Misc/tools.pure.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "9.20.0": [
+            {
+                "pr": "18773",
+                "title": "Reuse graphics bindings and disable raw camera access",
+                "description": "Closes #18768\n\nRelated to parent #18636 and epic #18635.\n\n## Summary\n- Turn the cached XR graphics-binding seam into a discriminated WebGL/WebGPU union that exposes the wrapped native binding and safely narrows at call sites.\n- Add an intentional runtime-disable path for XR features: the feature emits its specific warning, sets `disableAutoAttach`, and returns before observers or attach notifications are registered; the manager suppresses its generic attach-failed warning only when attachment intentionally sets that flag.\n- Reuse the cached WebGL binding/context in Raw Camera Access and disable Raw Camera Access on WebGPU XR with exactly one specific warning and no native binding, camera-image, frame-observer, or texture work.\n- Remove unnecessary concrete `Engine` casts from Image Tracking and Walking Locomotion.\n\n## WebGL no-op guarantees\n- Raw Camera still calls `super.attach()` first on WebGL, uses the same `XRWebGLBinding.getCameraImage` path, and creates the same `WebGLHardwareTexture`/Babylon texture metadata; only binding construction is deduplicated through the session cache.\n- The WebGPU guard is isolated before attachment. Existing WebGL layer, texture, and native camera behavior is unchanged.\n- The cached binding remains session-scoped and is cleared on session end as before.\n\n## Warning lifecycle\nAn intentional runtime capability failure emits the feature-specific warning and sets `disableAutoAttach`. `WebXRFeaturesManager.attachFeature` opens a fresh transition for each explicit attempt, restores preexisting auto-attach state after ordinary failures/successes, and suppresses the generic warning only when the attach implementation intentionally disables itself. Ordinary attach failures still emit `Feature <name> failed to attach`.\n\n## Tests\n- Focused XR selection: 4 files, 100 tests passed (binding/session manager, abstract feature lifecycle, feature manager lifecycle, Raw Camera positive/negative controls).\n- Full XR unit suite: 17 files, 294 tests passed.\n- `npx tsc -b packages/dev/core/tsconfig.build.json` passed.\n- `npm --prefix packages/dev/core run lint:check` passed with 0 errors.\n- Targeted Prettier check passed.\n- `npm run check:treeshaking` passed all 16 checks.\n- `npm run check:side-effects-sync` passed for core/gui/loaders/serializers.\n- `npm run build:source && npm run test:treeshaking` passed all core and serializer bundle smoke tests.\n\n## Remaining XR WebGL coupling audit\nThe centralized `new XRWebGLBinding` in `webXRGraphicsBinding.ts` is intentional. Remaining feature-owned direct bindings are deliberately deferred:\n- Layers (`WebXRLayers.pure.ts`) — #18769\n- Light Estimation (`WebXRLightEstimation.pure.ts`) — #18770\n- Depth Sensing (`WebXRDepthSensing.pure.ts`) — #18771\n- Space Warp (`WebXRSpaceWarp.pure.ts`) — #18772\n\nThe exhaustive `_gl` and `Engine`/`ThinEngine` cast audit found only the centralized graphics-binding/WebGL render-target backend seams plus those four deferred features. Remaining WebGL object types are confined to the WebGL layer/render-target/native compatibility infrastructure, Raw Camera's intentionally WebGL-only texture path, and the four deferred features above.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRAbstractFeature.ts",
+                    "packages/dev/core/src/XR/features/WebXRImageTracking.pure.ts",
+                    "packages/dev/core/src/XR/features/WebXRLayers.pure.ts",
+                    "packages/dev/core/src/XR/features/WebXRRawCameraAccess.pure.ts",
+                    "packages/dev/core/src/XR/features/WebXRWalkingLocomotion.pure.ts",
+                    "packages/dev/core/src/XR/webXRFeaturesManager.ts",
+                    "packages/dev/core/src/XR/webXRGraphicsBinding.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts",
+                    "packages/dev/core/test/unit/XR/webXRAbstractFeature.test.ts",
+                    "packages/dev/core/test/unit/XR/webXRFeaturesManagerExtended.test.ts",
+                    "packages/dev/core/test/unit/XR/webXRRawCameraAccess.test.ts",
+                    "packages/dev/core/test/unit/XR/webXRSessionManager.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18688",
+                "title": "Fix the per-eye clear wiping drawn frames, plus upright rendering and half-Z NDC",
+                "description": "## Symptom\n\nIn an immersive **WebGPU** XR session on a Quest 3, the scene rendered for one frame and then permanently disappeared. The per-eye clear colour kept presenting, the frame counter kept climbing, and there were **no WebGPU validation errors**. WebGL2 XR was fine on the same device.\n\n## Root cause — our own Phase-2 per-eye clear observer\n\nThe bug was introduced by the Phase-2 fix for the black right eye. `webXRWebGPURenderTargetTextureProvider` attaches an `onClearObservable` handler to each per-eye render target that calls `engine.clear(...)`. On WebGPU, `engine.clear()` with no pass open **opens a new render pass with `loadOp=clear`**.\n\nTwo things then combine:\n\n**1. Our observer read the wrong scene's `autoClear`.** Vanilla `scene.pure.ts:4988` decides whether to clear based on **the scene doing the rendering**. Our observer read `getScene()` — the scene that *owns* the render target. `UtilityLayerRenderer` sets `autoClear = false` (`utilityLayerRenderer.ts:344`) precisely so that it will not clear when it renders through someone else's camera. Vanilla honours that; our observer did not.\n\n**2. `scene.pure.ts:4985` short-circuits before the right-eye guard.** The `onClearObservable.hasObservers()` branch returns before the `!camera.isRightCamera` check at `:4987`, which is why **both** eyes were wiped rather than just one.\n\n**3. The `_cleared` guard was defeated by a second `Scene`.** `UtilityLayerRenderer` renders a second scene on `onAfterRenderCameraObservable` (`:347-352`). Every `Scene.render` calls `_checkCameraRenderTarget` (`scene.pure.ts:5346-5358`), which resets `rtt._cleared = false`. So the second scene's render re-armed the guard and re-cleared targets that had already been drawn.\n\nThe fix keys the colour clear on `AbstractEngine.frameId` instead. `frameId` increments only in `endFrame` (`abstractEngine.pure.ts:960`), so it is genuinely once per presented frame and cannot be reset by another scene rendering within the same XR frame. Depth/stencil still clear on every notification, which is what per-eye rendering needs.\n\n`lastColorClearedFrameId` is closure-scoped per render target — a shared counter would have broken the second eye.\n\n## Evidence\n\nDevice render-pass trace on the XR projection-layer texture, one encoder / one submit per frame:\n\n| Pass | Before | After |\n|---|---|---|\n| L0 | `loadOp=clear` draws=8 | `loadOp=clear` draws=9 |\n| L1 | `loadOp=clear` draws=9 | `loadOp=clear` draws=9 |\n| L1 | `loadOp=load` draws=0 | `loadOp=load` draws=0 |\n| L0 | **`loadOp=CLEAR` draws=0** ← wipes left | `loadOp=load` draws=0 |\n| L1 | **`loadOp=CLEAR` draws=0** ← wipes right | `loadOp=load` draws=0 |\n\nFrames with geometry on both live layers, by pixel readback: **1/60 → 60/60**. `gpuErrors=0`, 130 frames. The `clear → load` flip was a written prediction *before* the confirming device run, and matched exactly.\n\n## WebGL2 is unaffected by construction\n\n`onClearObservable` is attached in exactly one place — `webXRWebGPURenderTargetTextureProvider.ts:109` — and no XR render-target provider outside the WebGPU one touches it. The WebGL2 path is untouched, and its side-by-side single-framebuffer layout never had this failure mode.\n\n## Also in this PR (both pre-existing Phase-3 deliverables)\n\n- **Y-flip** (43a4d0c): XR render targets are not flipped, so `_disableEngineYFlip` is set for the XR path — the scene was rendering upside down.\n- **Half-Z NDC** (292e86f): WebGPU's depth range is `[0,1]`, not `[-1,1]`. The XR projection matrices from the UA are OpenGL-convention, so they are converted in place.\n\n## Tests\n\nUnit coverage is in `packages/dev/core/test/unit/XR/webXRWebGPUProjectionLayer.test.ts` and `webXRCamera.test.ts`, and it guards this regression directly rather than incidentally: a test builds the exact arrangement that caused the bug — a `UtilityLayerRenderer`-style second `Scene` rendering into the same XR render target within one engine frame — and asserts the second notification does **not** re-clear colour. It also asserts its own premise, so it cannot pass by accident if the setup stops reproducing the conditions.\n\nReverting the `frameId` guard turns those tests red (2 failures, verified), so the guard is not decoration.\n\n**The end-to-end harness that originally found this bug is deliberately not in this PR.** It is a headless-Chromium mock `XRGPUBinding`/`XRSession`/`XRFrame`/`XRProjectionLayer` that drives the real Babylon XR path and judges each frame by pixel readback — separate infrastructure with its own review surface, and no reviewer should have to assess it to approve a 5-file engine fix. It is preserved on `raananw-webgpu-xr-harness` and will be proposed on its own once this lands.\n\n## Follow-ups (not in this PR)\n\n- Fold the per-eye clear into the render target's pass descriptor instead of issuing a standalone `engine.clear()`. That would remove the two remaining `loadOp=load` draws=0 passes per frame — wasted work on a Quest — but it touches non-XR paths in `webgpuEngine.pure.ts`, so it is out of scope for a bugfix.\n- Consider whether `UtilityLayerRenderer` should skip binding an XR eye it is not going to draw into.\n- Delete the structure-B blit present path rather than repair it, now that the real cause is fixed; carrying a second present mechanism is not worth it.\n- Land the end-to-end WebGPU-XR harness as its own PR, from `raananw-webgpu-xr-harness`. Running it in CI is blocked on a renderer-process crash on the ADO Linux agent (WebGPU itself is available there) — measurement trail in #18765.\n- Standing rule worth writing down: **never derive a texture usage from a queried usage.** The blit path computed `real.usage | COPY_SRC`; on device `real.usage` is the stub `0`, producing `TEXTURE_BINDING` with no `RENDER_ATTACHMENT`, which invalidated every encoder. Use explicit constants.\n\nEpic: #18635\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/src/Maths/math.vector.pure.ts",
+                    "packages/dev/core/src/XR/webXRCamera.ts",
+                    "packages/dev/core/src/XR/webXRWebGPURenderTargetTextureProvider.ts",
+                    "packages/dev/core/test/unit/XR/webXRCamera.test.ts",
+                    "packages/dev/core/test/unit/XR/webXRWebGPUProjectionLayer.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18766",
+                "title": "Fix: respect camera layerMask in the transmission opaque texture",
+                "description": "Fixes [PBR materials with refraction have issues with layer masks](https://forum.babylonjs.com/t/pbr-materials-with-refraction-have-issues-with-layer-masks/63894).\n\n## Problem\n\nWhen using multiple cameras with different `layerMask` values, meshes that are excluded from the rendering camera still show up in the refraction of transmissive (`KHR_materials_transmission`) meshes.\n\nRepro: https://playground.babylonjs.com/#WBUEI8#22 — the textured plane is on `layerMask2` and the refractive cube on `layerMask1`, yet the plane appears \"inside\" the cube.\n\n## Root cause\n\n`TransmissionHelper` creates the `opaqueSceneTexture` render target with `renderList = _opaqueMeshesCache`, which holds every opaque mesh of the scene regardless of camera.\n\nIn `ObjectRenderer._prepareRenderingManager`, providing a `renderList` disables the layerMask check:\n\n```ts\ncheckLayerMask = !this.renderList || this.forceLayerMaskCheck;\n```\n\nSo the RTT rendered everything in the cache, ignoring the active camera's `layerMask`.\n\n## Fix\n\nEnable `forceLayerMaskCheck` on the opaque render target. The opaque cache is camera-agnostic while the RTT is rendered once per active camera, so the mask check has to stay on for the texture to match what that camera actually sees.\n\nThis is a no-op for the common single-camera case, since the default mesh and camera layer masks are both `0x0FFFFFFF`.\n\n## Tests\n\nAdded a regression test in `KHR_materials_transmission.test.ts` that renders the opaque RTT with matching and then disjoint layer masks and asserts the opaque mesh is included/excluded accordingly. Verified it fails without the fix and passes with it.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/transmissionHelper.ts",
+                    "packages/dev/loaders/test/unit/glTF/KHR_materials_transmission.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18767",
+                "title": "Fix RawCubeTexture invertY crash on WebGPU",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\nFixes a WebGPU crash when creating/updating a `RawCubeTexture` with `invertY: true`.\n\n## Root cause\nOn WebGPU, Y-flip is done after upload via a GPU post-process (`invertYPreMultiplyAlpha`). That path requires an `InternalTexture` (to create a hardware texture wrapper).\n\n`updateRawCubeTexture` was passing the raw `GPUTexture` (`texture._hardwareTexture.underlyingResource`) into `updateCubeTextures` / `updateTexture`. When `invertY` was true, the engine threw:\n\n> Invalid texture! Babylons internal engine is still not fully compatible with native GPU objects\n\nWebGL was unaffected because it can flip at upload time via `UNPACK_FLIP_Y_WEBGL`. The raw 2D WebGPU path already passed `InternalTexture`; only the cube path was wrong.\n\n## Fix\n- Pass the `InternalTexture` into `updateCubeTextures` from `updateRawCubeTexture` and `createCubeTexture`\n- Widen `updateCubeTextures` to accept `GPUTexture | InternalTexture` (same pattern as `updateTexture`)\n\n## Forum\nhttps://forum.babylonjs.com/t/setting-invert-y-when-creating-a-rawcubetexture-in-webgpu-crashes/63895\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.cubeTexture.pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.rawTexture.pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/rawCubeTextureInvertY.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
             }
         ],
         "9.19.1": [
