@@ -6,7 +6,9 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial.pure";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Logger } from "core/Misc/logger";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
-import { Color3 } from "core/Maths/math.color.pure";
+import { Color3, Color4 } from "core/Maths/math.color.pure";
+import { type Nullable } from "core/types";
+import { LerpTexturesAsync, CreateTextureWithFactorOperand, CreateFactorOperand, TextureChannel } from "core/Materials/Textures/textureProcessor";
 
 const NAME = "KHR_materials_transmission";
 
@@ -28,12 +30,21 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
 
     private _wasUsed = false;
 
+    // Caches the lerp result per material (computed in postExportMaterialAdditionalTexturesAsync,
+    // consumed in postExportMaterialAsync). Texture is disposed in dispose().
+    private _transmissionOperands = new Map<Material, { factor: Nullable<Color4>; texture: Nullable<BaseTexture> }>();
+
     constructor(exporter: GLTFExporter) {
         this._exporter = exporter;
     }
 
     /** Dispose */
-    public dispose() {}
+    public dispose() {
+        for (const operand of this._transmissionOperands.values()) {
+            operand.texture?.dispose();
+        }
+        this._transmissionOperands.clear();
+    }
 
     /** @internal */
     public get wasUsed() {
@@ -58,14 +69,40 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
                 return additionalTextures;
             }
         } else if (babylonMaterial instanceof OpenPBRMaterial) {
-            if (babylonMaterial.transmissionWeight > 0 && babylonMaterial.transmissionWeightTexture) {
-                additionalTextures.push(babylonMaterial.transmissionWeightTexture);
+            if (this._isExtensionEnabled(babylonMaterial)) {
+                const subsurfaceWeight = babylonMaterial.subsurfaceWeight;
+                const transmissionWeight = babylonMaterial.transmissionWeight;
+                const subsurfaceChannel = babylonMaterial._useSubsurfaceWeightFromTextureAlpha ? TextureChannel.A : TextureChannel.R;
+
+                // OpenPBR can have surface transmission in either transmission_weight or subsurface_weight,
+                // and we need to combine them into a single transmission weight for glTF.
+                // The final transmission weight is computed as a linear interpolation of the two weights.
+                // lerp(subsurface_weight, 1, transmission_weight)
+                const sOp = CreateTextureWithFactorOperand(
+                    babylonMaterial.subsurfaceWeightTexture,
+                    new Color4(subsurfaceWeight, subsurfaceWeight, subsurfaceWeight, subsurfaceWeight),
+                    subsurfaceChannel
+                );
+                const tOp = CreateTextureWithFactorOperand(
+                    babylonMaterial.transmissionWeightTexture,
+                    new Color4(transmissionWeight, transmissionWeight, transmissionWeight, transmissionWeight),
+                    TextureChannel.R
+                );
+                const result = await LerpTexturesAsync(
+                    `transmission weight (${babylonMaterial.name})`,
+                    sOp,
+                    CreateFactorOperand(new Color4(1, 1, 1, 1)),
+                    tOp,
+                    babylonMaterial.getScene()
+                );
+                this._transmissionOperands.set(babylonMaterial, { factor: result.factor ?? null, texture: result.texture ?? null });
+
+                if (result.texture) {
+                    additionalTextures.push(result.texture);
+                }
                 if (babylonMaterial.transmissionColorTexture) {
                     additionalTextures.push(babylonMaterial.transmissionColorTexture);
                 }
-            }
-            if (babylonMaterial.subsurfaceWeight > 0 && babylonMaterial.subsurfaceWeightTexture) {
-                additionalTextures.push(babylonMaterial.subsurfaceWeightTexture);
             }
         }
 
@@ -124,24 +161,19 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
         } else if (babylonMaterial instanceof OpenPBRMaterial) {
             this._wasUsed = true;
 
-            const subsurfaceFractionOfDielectric = (1.0 - babylonMaterial.transmissionWeight) * babylonMaterial.subsurfaceWeight;
-            const transmissionFactor = subsurfaceFractionOfDielectric + babylonMaterial.transmissionWeight;
+            const operand = this._transmissionOperands.get(babylonMaterial);
+            const bakedTexture = operand?.texture ?? null;
+            const bakedFactor = operand?.factor ?? null;
 
             const transmissionInfo: IKHRMaterialsTransmission = {
-                transmissionFactor: transmissionFactor,
+                transmissionFactor: bakedTexture ? 1.0 : (bakedFactor?.r ?? 0.0),
             };
 
-            if (babylonMaterial.transmissionWeightTexture) {
+            if (bakedTexture) {
                 this._exporter._materialNeedsUVsSet.add(babylonMaterial);
-                const transmissionTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.transmissionWeightTexture);
+                const transmissionTexture = this._exporter._materialExporter.getTextureInfo(bakedTexture);
                 if (transmissionTexture) {
                     transmissionInfo.transmissionTexture = transmissionTexture;
-                }
-            } else if (babylonMaterial.subsurfaceWeightTexture) {
-                this._exporter._materialNeedsUVsSet.add(babylonMaterial);
-                const subsurfaceTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.subsurfaceWeightTexture);
-                if (subsurfaceTexture) {
-                    transmissionInfo.transmissionTexture = subsurfaceTexture;
                 }
             }
 
