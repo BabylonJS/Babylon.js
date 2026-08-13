@@ -1,7 +1,58 @@
 {
-    "fromTag": "9.20.1",
+    "fromTag": "9.21.0",
     "changelog": {
         "9.21.0": [],
+        "9.21.1": [
+            {
+                "pr": "18797",
+                "title": "Fix WebGPU rendering nothing when maxSimultaneousLights exceeds the uniform buffer budget",
+                "description": "## Problem\r\n\r\nOn WebGPU, a scene with more lights than the device's `maxUniformBuffersPerShaderStage` budget renders **nothing at all**. `lightVxUboDeclaration` declares one uniform buffer per light in the vertex stage, so past the limit every pipeline creation is rejected by the validator, leaving only a `CreateBindGroupLayout` error to go on. The limit is 12 both as the WebGPU spec default and as the maximum a D3D12 adapter reports, so it cannot be raised through `requiredLimits`.\r\n\r\nFixes #18796.\r\n\r\n## Fix\r\n\r\n`GetSupportedSimultaneousLights(scene, maxSimultaneousLights)` returns how many lights the engine can actually render, and is called from **`PrepareDefinesForLights` only** — the cold path that decides how many per-light uniform buffers the shader declares. The scene renders with fewer lights instead of not rendering at all, and a one-off `Logger.Warn` names the requested count, the supported count and the value to set to silence it.\r\n\r\nEngines that do not report the limit (WebGL, native) do not enforce it, so nothing is clamped there.\r\n\r\nThe vertex stage binds **4** non-light uniform buffers: `Scene`, `Mesh`, `Material` and `LeftOver`. `LeftOver` is synthesised for uniforms declared outside a uniform block and `_buildLeftOverUBO` gives it *both* vertex and fragment visibility, so it counts against the vertex budget; it exists for virtually every material (per-light shadow matrices, `logarithmicDepthConstant`, `vClipPlane`, `morphTargetCount`). On a 12-buffer device the supported count is therefore 12 − 4 = **8**. It is counted unconditionally on purpose: reserving one buffer too many costs a light in the rare shader with no leftover uniforms, whereas reserving one too few brings back the black screen.\r\n\r\n## Why the hot paths are left unclamped\r\n\r\n`BindLights` and `AreLightsTexturesReady` keep the raw `maxSimultaneousLights`, so neither pays for a `getCaps()` lookup per draw. `BindLights` may then bind more lights than the effect declares, which is a no-op:\r\n\r\n- `Effect.bindUniformBuffer` returns early when `_uniformBuffersNames` has no entry for the `Light{X}` name.\r\n- A light's uniform buffer field names carry no index (`vLightData`, not `vLightData0`), so binding at an undeclared index cannot corrupt its layout.\r\n- `setTexture` / `setMatrix` on undeclared names are already no-ops.\r\n\r\nThe cost is a few redundant buffer updates in scenes that are over budget.\r\n\r\n## Tests\r\n\r\n18 unit tests in `materialHelper.functions.test.ts` cover the clamp, the \"at least one light\" floor, the pass-through on engines that do not report the limit, the warning text and its per-engine dedup, and the deliberate lack of clamping in the two hot paths.\r\n",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engineCapabilities.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/test/unit/Materials/materialHelper.functions.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18723",
+                "title": "FSR 1 render pipeline (EASU + RCAS) with WebGL2 / Native support",
+                "description": "[Created by Copilot on behalf of @bghgary]\r\n\r\n## Context\r\n\r\nThis continues #16994 by @matanui159 (Jasmine Minter), which implemented AMD **FSR 1** (EASU upscale + RCAS sharpen) as fragment post-processes (a `PostProcessRenderPipeline`) in WGSL. That PR was **WebGPU-only** because the EASU pass uses `textureGather`, which Babylon's GLSL target doesn't expose — so it did not run on WebGL2 or Babylon Native.\r\n\r\nFull credit for the original FSR 1 pipeline and shaders goes to Jasmine; her commit is preserved as the first commit here and this PR builds directly on it.\r\n\r\n## Change\r\n\r\n- Adds **GLSL (`Shaders/`) variants** of the EASU / RCAS shaders and the `ffxFunctions` include, so the pipeline runs on **WebGL2 and Babylon Native** in addition to WebGPU. The EASU `textureGather` calls are rewritten as 4 explicit `texelFetch`es (in gather order) — the approach the original author suggested; RCAS uses plain texel loads and ports unchanged.\r\n- The thin post-processes select WGSL vs GLSL via `_gatherImports`, the same pattern as FXAA / TAA.\r\n- Switches the effects to **plain uniforms** (`con0..con3` / `con`) set from `onApplyObservable` instead of a uniform buffer, so they work on backends that disable uniform buffers (Babylon Native). Shaders are simplified accordingly (dropped the `uint`→`float` bit-casts and the UBO/struct declarations).\r\n- `isSupported` is `isWebGPU || engine.version >= 2` (WebGPU / WebGL2 / Native → true; WebGL1 → false).\r\n- Fixes an FSR shader crash on the D3D11 / Babylon Native swapchain.\r\n\r\n## Behavior\r\n\r\nPurely additive: a new opt-in `FSR1RenderingPipeline`. No existing behavior changes — WebGPU output is unchanged, and the WebGL2 + Native paths are newly enabled.\r\n\r\n## Validation\r\n\r\n- Shaders compile to SPIR-V via glslang (Native's toolchain) and validate as GLSL ES 3.00 (WebGL2).\r\n- Rendered a scene through the FSR 1 pipeline on Babylon Native's D3D11 backend — correct upscaled output, clean exit.\r\n- Visualization test `FSR1 render pipeline` runs a photographic source through the pipeline. It moves 12.21% of pixels against a naive upscale of the same half-resolution source, versus the harness's 1.1% gate.\r\n\r\n## Try it\r\n\r\n[FSR1 A/B toggle playground](https://playground.babylonjs.com/?snapshot=refs/pull/18723/merge#GB98SV#0) — cycles FSR1, a naive bilinear upscale of the same half-resolution source, and a native full-resolution render. Tap, space, or 1-3 to switch; drag to orbit and wheel to zoom in on the reconstruction.\r\n\r\nJudge FSR against the naive upscale rather than the native render: the pipeline renders at half resolution, so switching it off is always sharper and that is not a defect.\r\n\r\nCredit: @matanui159 (Jasmine Minter) for the original FSR 1 pipeline, #16994.\r\n",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "eslint.config.mjs",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/fsr1RenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/index.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/pure.ts",
+                    "packages/dev/core/src/PostProcesses/thinFSR1SharpenPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinFSR1UpscalePostProcess.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/ffxFunctions.fx",
+                    "packages/dev/core/src/Shaders/fsr1Sharpen.fragment.fx",
+                    "packages/dev/core/src/Shaders/fsr1Upscale.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/ffxFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/fsr1Sharpen.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/fsr1Upscale.fragment.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fsr1.png",
+                    "packages/tools/tests/test/visualization/config.json",
+                    "scripts/treeshaking/side-effects-manifest/core/Shaders.json",
+                    "scripts/treeshaking/side-effects-manifest/core/ShadersWGSL.json"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            }
+        ],
         "9.20.1": [
             {
                 "pr": "18800",
