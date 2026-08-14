@@ -1579,8 +1579,12 @@ export class NodeMaterial extends NodeMaterialBase {
         // ParticleTextureBlock loads shader includes asynchronously. Wait for the build to produce
         // shader code instead of registering an empty fragment shader that falls back to a URL.
         if (!this._buildWasSuccessful) {
-            this.onBuildObservable.addOnce(() => {
+            const buildObserver = this.onBuildObservable.addOnce(() => {
+                this.onBuildErrorObservable.remove(errorObserver);
                 this.createEffectForParticles(particleSystem, onCompiled, onError);
+            });
+            const errorObserver = this.onBuildErrorObservable.addOnce(() => {
+                this.onBuildObservable.remove(buildObserver);
             });
 
             if (!this._buildIsInProgress) {

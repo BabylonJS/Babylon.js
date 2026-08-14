@@ -151,6 +151,22 @@ describe("NodeMaterial effect creation with an asynchronous build", () => {
         registerSpy.mockRestore();
     });
 
+    it("removes the deferred particle observer when the build fails", async () => {
+        const material = new NodeMaterial("node", scene);
+        material.setToDefaultParticle();
+        const particleSystem = {} as IParticleSystem;
+        const buildSpy = vi.spyOn(material, "build").mockImplementation(() => {
+            material.onBuildErrorObservable.notifyObservers("build failed");
+        });
+
+        material.createEffectForParticles(particleSystem);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        expect(buildSpy).toHaveBeenCalledOnce();
+        expect(material.onBuildObservable.observers).toHaveLength(0);
+        expect(material.onBuildErrorObservable.observers).toHaveLength(0);
+    });
+
     it("registers the post process shaders with the material shader language (WGSL)", async () => {
         vi.spyOn(engine, "isWebGPU", "get").mockReturnValue(true);
         const material = new NodeMaterial("node", scene, { shaderLanguage: ShaderLanguage.WGSL });
