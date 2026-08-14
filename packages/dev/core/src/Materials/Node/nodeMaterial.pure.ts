@@ -1563,7 +1563,9 @@ export class NodeMaterial extends NodeMaterialBase {
     }
 
     /**
-     * Create the effect to be used as the custom effect for a particle system
+     * Create the effect to be used as the custom effect for a particle system.
+     * If the material has not been built successfully yet, the build is started when needed and the effect is only
+     * created once it completes, so the effect may not be set on the particle system when this method returns.
      * @param particleSystem Particle system to create the effect for
      * @param onCompiled defines a function to call when the effect creation is successful
      * @param onError defines a function to call when the effect creation has failed

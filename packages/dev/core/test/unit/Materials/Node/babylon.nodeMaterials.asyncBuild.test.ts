@@ -125,6 +125,32 @@ describe("NodeMaterial effect creation with an asynchronous build", () => {
         registerSpy.mockRestore();
     });
 
+    it("starts the build itself when creating a particle effect on a material that was never built", async () => {
+        const material = new NodeMaterial("node", scene);
+        material.setToDefaultParticle();
+
+        const registerSpy = vi.spyOn(Effect, "RegisterShader");
+        const particleEffect = { onBindObservable: { add: vi.fn() } } as unknown as Effect;
+        vi.spyOn(engine, "createEffectForParticles").mockReturnValue(particleEffect);
+        const setCustomEffect = vi.fn();
+        const particleSystem = {
+            fillDefines: vi.fn(),
+            setCustomEffect,
+        } as unknown as IParticleSystem;
+
+        material.createEffectForParticles(particleSystem);
+
+        expect(material.buildIsInProgress).toBe(true);
+        expect(registerSpy.mock.calls.filter(([, pixelShader]) => !pixelShader)).toHaveLength(0);
+
+        await waitForBuild(material);
+
+        // One custom effect per blend mode, created only once the build produced real shader code.
+        expect(setCustomEffect).toHaveBeenCalledTimes(2);
+
+        registerSpy.mockRestore();
+    });
+
     it("registers the post process shaders with the material shader language (WGSL)", async () => {
         vi.spyOn(engine, "isWebGPU", "get").mockReturnValue(true);
         const material = new NodeMaterial("node", scene, { shaderLanguage: ShaderLanguage.WGSL });
