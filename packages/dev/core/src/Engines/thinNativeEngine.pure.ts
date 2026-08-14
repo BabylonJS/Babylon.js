@@ -243,6 +243,8 @@ export class ThinNativeEngine extends ThinEngine {
     private _cachedCulling: boolean;
     private _cachedReverseSide: boolean;
     private _cachedCullBackFaces: boolean;
+    private _cachedZOffset: number;
+    private _cachedZOffsetUnits: number;
     private _depthWrite: boolean;
     // warning for non supported fill mode has already been displayed
     private _fillModeWarningDisplayed: boolean;
@@ -288,6 +290,8 @@ export class ThinNativeEngine extends ThinEngine {
         this._cachedCulling = true;
         this._cachedReverseSide = false;
         this._cachedCullBackFaces = true;
+        this._cachedZOffset = 0;
+        this._cachedZOffsetUnits = 0;
         this._depthWrite = true;
         // warning for non supported fill mode has already been displayed
         this._fillModeWarningDisplayed = false;
@@ -1029,12 +1033,15 @@ export class ThinNativeEngine extends ThinEngine {
         }
         this._cachedCullBackFaces = cullBack;
 
-        // Native uses an immediate command-buffer state model (no lazy _depthCullingState),
-        // so re-issue the full render state preserving the cached culling/zOffset/reverseSide.
+        // Native uses an immediate command-buffer state model (no lazy _depthCullingState), so
+        // re-issue the last COMMAND_SETSTATE payload with only the cull face changed. The zOffset
+        // values are the ones that command actually encoded rather than the live _zOffset fields,
+        // which setZOffset()/setZOffsetUnits() can update independently (and encode with the
+        // opposite sign under a reverse depth buffer).
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSTATE);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(this._cachedCulling ? 1 : 0);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(this._zOffset);
-        this._commandBufferEncoder.encodeCommandArgAsFloat32(this._zOffsetUnits);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(this._cachedZOffset);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(this._cachedZOffsetUnits);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(cullBack ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(this._cachedReverseSide ? 1 : 0);
         this._commandBufferEncoder.finishEncodingCommand();
@@ -1067,6 +1074,8 @@ export class ThinNativeEngine extends ThinEngine {
         this._cachedCulling = culling;
         this._cachedReverseSide = reverseSide;
         this._cachedCullBackFaces = this.cullBackFaces ?? cullBackFaces ?? true;
+        this._cachedZOffset = zOffset;
+        this._cachedZOffsetUnits = zOffsetUnits;
     }
 
     /**
