@@ -5,9 +5,9 @@ import { type FlowGraph } from "core/index";
  * @param flowGraph The flow graph to edit.
  */
 export async function EditFlowGraph(flowGraph: FlowGraph) {
-    // Unlike the other editors (GUI/NME/NGE/NRGE/NPE), the flow graph editor has no published
-    // npm package or UMD bundle, so it cannot be referenced through a dynamic import. Until one
-    // exists, it is launched through the core `edit()` entry point, which lazy-loads the editor
-    // from the CDN.
+    // Unlike the other editors (GUI/NME/NGE/NRGE/NPE), the flow graph editor has no published npm
+    // package, so it cannot be referenced through the standard dynamic import form. It is instead
+    // launched through the core `edit()` entry point, which lazy-loads the editor bundle from
+    // `FlowGraph.EditorURL`. Switch to a dynamic import once an editor package is published.
     await flowGraph.edit({ flowGraphEditorConfig: { hostScene: flowGraph.scene, attachToLiveScene: true } });
 }

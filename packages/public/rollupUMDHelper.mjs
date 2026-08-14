@@ -447,17 +447,22 @@ function rewriteDynamicExternalImportsPlugin(production = false) {
         `}\n`;
 
     const lazyLoadHelperName = "_BabylonUMDLoadEditorAsync";
+    // In-flight loads are cached by CDN path so that concurrent imports of the same editor share a single
+    // script injection instead of racing. The cache entry is cleared on failure so a later attempt can retry.
     const lazyLoadHelper =
         `function ${lazyLoadHelperName}(globalName,cdnPath){` +
         `var g=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined"?window:{};` +
         `if(typeof g[globalName]!=="undefined"){return Promise.resolve(g[globalName]);}` +
+        `var pending=${lazyLoadHelperName}._pending||(${lazyLoadHelperName}._pending={});` +
+        `if(pending[cdnPath]){return pending[cdnPath];}` +
         `var tools=g.BABYLON&&g.BABYLON.Tools;` +
         `if(!tools){return Promise.reject(new Error("Cannot load "+globalName+": the Babylon.js core UMD bundle must be loaded first."));}` +
         // eslint-disable-next-line github/no-then
-        `return tools.LoadBabylonScriptAsync(tools._DefaultCdnUrl+"/"+cdnPath).then(function(){` +
+        `pending[cdnPath]=tools.LoadBabylonScriptAsync(tools._DefaultCdnUrl+"/"+cdnPath).then(function(){` +
         `if(typeof g[globalName]==="undefined"){throw new Error("Loading "+cdnPath+" did not define the expected global "+globalName+".");}` +
         `return g[globalName];` +
-        `});` +
+        `}).catch(function(e){delete pending[cdnPath];throw e;});` +
+        `return pending[cdnPath];` +
         `}\n`;
 
     return {
