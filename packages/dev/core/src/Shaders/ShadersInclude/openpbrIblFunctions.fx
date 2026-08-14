@@ -248,12 +248,7 @@
                 bitangent.z *= -1.0;
                 normal.z *= -1.0;
             #endif
-            environmentRadiance =
-                vec4(radianceAnisotropic(alphaT, alphaB, reflectionSampler,
-                                     view, tangent,
-                                     bitangent, normal,
-                                     vReflectionFilteringInfo, noise.xy, isRefraction, ior),
-                 1.0);
+            environmentRadiance = vec4(radianceAnisotropic(alphaT, alphaB, reflectionSampler, view, tangent, bitangent, normal, vReflectionFilteringInfo, noise.xy, isRefraction, ior), 1.0);
         #else
             // We will sample multiple reflections using interpolated surface normals along
             // the tangent direction from -tangent to +tangent.
