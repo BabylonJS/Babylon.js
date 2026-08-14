@@ -314,6 +314,11 @@ function _getFallbackAlphaMode(mode: number, unsupportedName: string, fallback =
 
 export function getNativeAlphaMode(mode: number): number {
     switch (mode) {
+        // AbstractEngine initializes/resets _alphaMode to -1 as an "unset" sentinel (see
+        // abstractEngine.pure.ts). WebGL/WebGPU tolerate restoring that sentinel via setAlphaMode(-1)
+        // (e.g. OutlineRenderer._afterRenderingMesh saving/restoring getAlphaMode()); treat it as
+        // ALPHA_DISABLE here so the native path doesn't throw on the transient reset value.
+        case -1:
         case Constants.ALPHA_DISABLE:
             return _native.Engine.ALPHA_DISABLE;
         case Constants.ALPHA_ADD:
