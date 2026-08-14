@@ -5,13 +5,15 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
+import { type IParticleSystem } from "core/Particles/IParticleSystem";
+import "core/Particles/particleSystemComponent";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Some node material blocks (e.g. CurrentScreenBlock) load their shader code through an asynchronous
+// Some node material blocks (e.g. CurrentScreenBlock and ParticleTextureBlock) load their shader code through an asynchronous
 // dynamic import, so NodeMaterial.build() can finish after it returns. createPostProcess /
-// createProceduralTexture used to read the (still empty) compilation strings synchronously and register
+// createProceduralTexture / createEffectForParticles used to read the (still empty) compilation strings synchronously and register
 // empty shaders, which made the engine try to fetch the shaders from a URL and fail with a 404 - leaving
-// the NME preview blank in Post Process / Smart Filter / Procedural modes. These tests lock in that the
+// the NME preview blank in Post Process / Smart Filter / Procedural / Particle modes. These tests lock in that the
 // effect creation is deferred until the build has produced real (non-empty) shader code.
 describe("NodeMaterial effect creation with an asynchronous build", () => {
     let engine: NullEngine;
@@ -93,6 +95,34 @@ describe("NodeMaterial effect creation with an asynchronous build", () => {
 
         registerSpy.mockRestore();
         proceduralTexture?.dispose();
+    });
+
+    it("defers particle shader registration until the asynchronous build completes", async () => {
+        const material = new NodeMaterial("node", scene);
+        material.setToDefaultParticle();
+        material.build();
+
+        expect(material.buildIsInProgress).toBe(true);
+
+        const registerSpy = vi.spyOn(Effect, "RegisterShader");
+        const particleEffect = { onBindObservable: { add: vi.fn() } } as unknown as Effect;
+        vi.spyOn(engine, "createEffectForParticles").mockReturnValue(particleEffect);
+        const particleSystem = {
+            fillDefines: vi.fn(),
+            setCustomEffect: vi.fn(),
+        } as unknown as IParticleSystem;
+
+        material.createEffectForParticles(particleSystem);
+
+        const emptyShaderRegistrations = registerSpy.mock.calls.filter(([, pixelShader]) => !pixelShader);
+
+        await waitForBuild(material);
+
+        const registeredRealShader = registerSpy.mock.calls.some(([name, pixelShader]) => typeof name === "string" && name.startsWith("node") && !!pixelShader);
+        expect(emptyShaderRegistrations).toHaveLength(0);
+        expect(registeredRealShader).toBe(true);
+
+        registerSpy.mockRestore();
     });
 
     it("registers the post process shaders with the material shader language (WGSL)", async () => {

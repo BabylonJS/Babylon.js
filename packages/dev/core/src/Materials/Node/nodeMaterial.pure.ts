@@ -1574,6 +1574,20 @@ export class NodeMaterial extends NodeMaterialBase {
             return;
         }
 
+        // ParticleTextureBlock loads shader includes asynchronously. Wait for the build to produce
+        // shader code instead of registering an empty fragment shader that falls back to a URL.
+        if (!this._buildWasSuccessful) {
+            this.onBuildObservable.addOnce(() => {
+                this.createEffectForParticles(particleSystem, onCompiled, onError);
+            });
+
+            if (!this._buildIsInProgress) {
+                this.build();
+            }
+
+            return;
+        }
+
         this._createEffectForParticles(particleSystem, BaseParticleSystem.BLENDMODE_ONEONE, onCompiled, onError);
         this._createEffectForParticles(particleSystem, BaseParticleSystem.BLENDMODE_MULTIPLY, onCompiled, onError);
     }
