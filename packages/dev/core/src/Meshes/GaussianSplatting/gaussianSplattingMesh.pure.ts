@@ -2,6 +2,7 @@
 
 import { type Nullable } from "core/types";
 import { type Scene } from "core/scene.pure";
+import { type Observer } from "core/Misc/observable";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { type Vector2 } from "core/Maths/math.vector";
 import { type Effect } from "core/Materials/effect.pure";
@@ -86,6 +87,24 @@ function ParsePartIndices(compressed: Uint32Array | number[]): Uint8Array {
     }
 
     return partIndices;
+}
+
+/**
+ * A LOD engine (e.g. a streamed part) that participates in a compound's shared splat budget. The compound
+ * apportions {@link GaussianSplattingMesh.splatBudget} (net of static parts) across all registered participants
+ * by demand and pushes each its allocation. Defined here (core) so the compound never depends on the loader's
+ * streaming engine; the engine implements this and registers via
+ * {@link GaussianSplattingMesh.registerLodBudgetParticipant}.
+ */
+export interface IGaussianSplattingLodBudgetParticipant {
+    /** The number of splats this participant would render at full (distance-optimal) detail — its budget demand. */
+    getBudgetDemand(): number;
+    /**
+     * Sets the participant's apportioned share of the compound budget (in splats). `null` clears coordination so
+     * the participant reverts to its own budget; `0` keeps it coordinated at the coarsest level.
+     * @param splats the apportioned splat allocation, or null to release coordination
+     */
+    setBudgetAllocation(splats: Nullable<number>): void;
 }
 
 /**
@@ -265,6 +284,18 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     private _streamingStates: IStreamingPartState[] = [];
 
     /**
+     * Shared LOD splat budget for the whole compound (0 = disabled). When set, {@link _apportionBudget} divides it
+     * (net of static parts) across the registered {@link IGaussianSplattingLodBudgetParticipant}s each frame, so
+     * all hosted streams together stay within one cap. See {@link splatBudget}.
+     * Protected so {@link GaussianSplattingStream} can reuse it as its own per-stream budget.
+     */
+    protected _splatBudget = 0;
+    /** LOD engines sharing {@link _splatBudget} (e.g. hosted streamed parts). */
+    private _lodBudgetParticipants: IGaussianSplattingLodBudgetParticipant[] = [];
+    /** Per-frame budget apportionment observer, installed only while a budget and participants are both present. */
+    private _budgetObserver: Nullable<Observer<Scene>> = null;
+
+    /**
      * Max SH degree contributed by the live (non-tombstoned) streaming parts. Recomputed by
      * {@link _refreshStreamingShState} whenever parts change, so removing the last SH stream turns the shared SH
      * atlas off instead of leaving SH_DEGREE high over texels nothing refills.
@@ -438,6 +469,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * @param doNotRecurse Set to true to not recurse into each children
      */
     public override dispose(doNotRecurse?: boolean): void {
+        if (this._budgetObserver) {
+            this.getScene().onBeforeRenderObservable.remove(this._budgetObserver);
+            this._budgetObserver = null;
+        }
+        this._lodBudgetParticipants = [];
         for (const proxy of this._partProxies) {
             proxy.dispose();
         }
@@ -558,6 +594,140 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      */
     public get partCount(): number {
         return this._partMatrices.length;
+    }
+
+    /**
+     * Shared LOD splat budget for the whole compound: a cap on the total splats its budget-participating LOD
+     * engines (hosted streamed parts) render together, net of static parts. `0`/undefined disables it (each stream
+     * uses its own budget, or none). Setting it apportions the cap across all registered participants by demand and
+     * takes effect on the next frame. See {@link IGaussianSplattingLodBudgetParticipant}.
+     */
+    public get splatBudget(): number {
+        return this._splatBudget;
+    }
+
+    public set splatBudget(value: number) {
+        const budget = value > 0 ? Math.floor(value) : 0;
+        if (budget === this._splatBudget) {
+            return;
+        }
+        this._splatBudget = budget;
+        this._updateBudgetCoordination();
+    }
+
+    /**
+     * Registers a LOD engine to share this compound's {@link splatBudget}. The compound apportions the budget
+     * across all registered participants each frame. No-op if already registered.
+     * @param participant the LOD engine (e.g. a hosted streamed part)
+     */
+    public registerLodBudgetParticipant(participant: IGaussianSplattingLodBudgetParticipant): void {
+        if (this._lodBudgetParticipants.indexOf(participant) === -1) {
+            this._lodBudgetParticipants.push(participant);
+            this._updateBudgetCoordination();
+        }
+    }
+
+    /**
+     * Removes a previously registered budget participant and releases its coordinated allocation (it reverts to its
+     * own budget).
+     * @param participant the LOD engine to remove
+     */
+    public unregisterLodBudgetParticipant(participant: IGaussianSplattingLodBudgetParticipant): void {
+        const i = this._lodBudgetParticipants.indexOf(participant);
+        if (i !== -1) {
+            this._lodBudgetParticipants.splice(i, 1);
+            participant.setBudgetAllocation(null);
+            this._updateBudgetCoordination();
+        }
+    }
+
+    /**
+     * Total splats contributed by static (non-streaming) parts — the fixed floor subtracted from the budget before
+     * the streamable remainder is apportioned. Streaming regions are excluded (their rendered count is LOD-driven).
+     * @returns the static parts' splat count
+     */
+    private _staticSplatCount(): number {
+        let proxied = 0;
+        let sum = 0;
+        for (const proxy of this._partProxies) {
+            if (!proxy) {
+                continue;
+            }
+            proxied += proxy._vertexCount;
+            // Streaming regions are excluded (their rendered count is LOD-driven).
+            if (!this._streamingStates.some((s) => s.proxy === proxy)) {
+                sum += proxy._vertexCount;
+            }
+        }
+        // Legacy layout: the compound's own splat data is an implicit, unproxied part 0 (always static). Its count
+        // is the atlas total minus every proxied part — the same derivation used in _addPartsInternal.
+        if (!this._partProxies[0]) {
+            sum += Math.max(0, this._vertexCount - proxied);
+        }
+        return sum;
+    }
+
+    /**
+     * Installs or removes the per-frame apportionment observer so it runs only while a budget and at least one
+     * participant are both present. When coordination turns off, participants are released to their own budgets.
+     */
+    private _updateBudgetCoordination(): void {
+        const active = this._splatBudget > 0 && this._lodBudgetParticipants.length > 0;
+        if (active && !this._budgetObserver) {
+            // Runs before the streams' own onBeforeRender LOD frames (the compound is created before its streams),
+            // so each stream reads a fresh allocation the same frame; a one-frame lag is harmless regardless.
+            this._budgetObserver = this.getScene().onBeforeRenderObservable.add(() => this._apportionBudget());
+        } else if (!active && this._budgetObserver) {
+            this.getScene().onBeforeRenderObservable.remove(this._budgetObserver);
+            this._budgetObserver = null;
+            for (const participant of this._lodBudgetParticipants) {
+                participant.setBudgetAllocation(null);
+            }
+        }
+    }
+
+    /**
+     * Apportions {@link splatBudget} (net of {@link _staticSplatCount}) across the registered participants by demand
+     * via water-filling: each gets `min(demand, fairShare)` and any leftover is redistributed to the still-unmet
+     * ones. Pushes each participant its allocation.
+     */
+    private _apportionBudget(): void {
+        const participants = this._lodBudgetParticipants;
+        if (this._splatBudget <= 0 || participants.length === 0) {
+            return;
+        }
+        const streamable = Math.max(0, this._splatBudget - this._staticSplatCount());
+        const demands = participants.map((p) => Math.max(0, p.getBudgetDemand()));
+        const alloc = new Array<number>(participants.length).fill(0);
+        const settled = new Array<boolean>(participants.length).fill(false);
+        let remaining = streamable;
+        let activeCount = participants.length;
+        // Water-fill: repeatedly satisfy every participant whose demand is at or below the equal share, then split
+        // the remainder among the rest. Terminates in ≤ participants.length passes.
+        for (let pass = 0; pass < participants.length && activeCount > 0 && remaining > 0; pass++) {
+            const share = remaining / activeCount;
+            let progressed = false;
+            for (let i = 0; i < participants.length; i++) {
+                if (!settled[i] && demands[i] <= share) {
+                    alloc[i] = demands[i];
+                    remaining -= demands[i];
+                    settled[i] = true;
+                    activeCount--;
+                    progressed = true;
+                }
+            }
+            if (!progressed) {
+                for (let i = 0; i < participants.length; i++) {
+                    if (!settled[i]) {
+                        alloc[i] = share;
+                    }
+                }
+                break;
+            }
+        }
+        for (let i = 0; i < participants.length; i++) {
+            participants[i].setBudgetAllocation(Math.floor(alloc[i]));
+        }
     }
 
     /**

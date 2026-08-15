@@ -1,4 +1,4 @@
-import { GaussianSplattingMesh, type IGaussianSplattingStreamingPart } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
+import { GaussianSplattingMesh, type IGaussianSplattingStreamingPart, type IGaussianSplattingLodBudgetParticipant } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import { type GaussianSplattingPartProxyMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingPartProxyMesh";
 import { type IGaussianSplattingSplatRange } from "core/Meshes/GaussianSplatting/gaussianSplattingMeshBase";
 import { type Scene } from "core/scene";
@@ -44,6 +44,9 @@ interface ISOGLODNode {
     activeLod?: number;
     /** Distance-based ideal LOD level for this node, recomputed per frame. */
     optimalLod?: number;
+    /** Foveation-scaled projected screen size (pixels) of the node's AABB, used as the budget threshold priority.
+     * Only computed while the splat budget is enabled. */
+    pixelSize?: number;
     /** Available LOD levels for this leaf, sorted ascending (0 = finest). Set during the tree walk. */
     availableLevels?: number[];
     /** Coarsest available level (= max key), always streamed as the permanent base layer. */
@@ -149,6 +152,16 @@ export interface IGaussianSplattingStreamOptions {
      */
     evictionCooldownFrames?: number;
     /**
+     * Enables budget-driven LOD: caps the number of splats rendered at a target and, while enabled, applies
+     * cone foveation (full detail within ±45° of the view direction, ramping down off-axis and behind).
+     * A number is an explicit splat cap; `"auto"` picks a device-tiered default (desktop 2.5M / iOS 1.5M /
+     * other mobile 1M; XR shares the mobile tier). **Undefined (default) disables both the cap and the foveation** — LOD is pure
+     * distance, identical to prior behavior. Runtime-mutable via the {@link splatBudget} accessor. When this stream
+     * is hosted in a compound, the compound's {@link GaussianSplattingMesh.splatBudget} (if set) overrides this and
+     * apportions a shared budget across all its streams.
+     */
+    splatBudget?: number | "auto";
+    /**
      * When set, the stream does not render itself; instead it reserves a region of this compound mesh and
      * decodes/sorts into it, so its splats are depth-sorted and drawn in ONE pass together with the compound's
      * other (static) parts. Used by {@link AddGaussianSplattingStreamPart}. The stream mesh becomes a hidden
@@ -238,7 +251,7 @@ const GsLodDebugColors = [
  *
  * @experimental
  */
-export class GaussianSplattingStream extends GaussianSplattingMesh {
+export class GaussianSplattingStream extends GaussianSplattingMesh implements IGaussianSplattingLodBudgetParticipant {
     private readonly _metadata: ISOGLODMetadata;
     private readonly _rootUrl: string;
     private readonly _streamOptions: IGaussianSplattingStreamOptions;
@@ -258,6 +271,14 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     private _lodUpdateInterval = 4;
     private _lodUpdateDistance = 0.5;
     private _maxDetailLod = 0;
+
+    // Budget-driven LOD. The stream's own resolved cap lives in the inherited protected `_splatBudget`
+    // (0 = disabled; the option's "auto" is resolved to a device-tiered default in the constructor). `_lodPixelThreshold`
+    // is the converged pixel-size threshold that selects each node's level. `_hostBudgetAllocation` is
+    // the compound's apportioned slice when this stream is a coordinated budget participant (null = not coordinated,
+    // so the stream uses its own `_splatBudget`).
+    private _lodPixelThreshold = 1;
+    private _hostBudgetAllocation: Nullable<number> = null;
 
     // Frustum LOD bias: when enabled, nodes outside the camera frustum are rendered at their coarsest LOD.
     private _frustumCulling = true;
@@ -336,6 +357,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     // Throttling state for the per-frame LOD loop.
     private _framesSinceLodUpdate = 0;
     private readonly _lastLodCamPos = new Vector3(Infinity, Infinity, Infinity);
+    // World-space camera forward at the last LOD evaluation. Budget foveation concentrates detail around the view
+    // direction, so a stationary rotation (no translation, no frustum-membership change) must also trigger a re-eval.
+    private readonly _lastLodCamForward = new Vector3(0, 0, 0);
     // Forces the next LOD update to run regardless of the throttle (e.g. after a budget change).
     private _forceLodUpdate = false;
 
@@ -446,6 +470,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (options.maxDetailLod !== undefined) {
             this._maxDetailLod = Math.max(0, Math.floor(options.maxDetailLod));
         }
+        this._splatBudget = this._resolveSplatBudget(options.splatBudget);
         if (options.frustumCulling !== undefined) {
             this._frustumCulling = options.frustumCulling;
         }
@@ -698,6 +723,129 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
+     * This stream's own budget-driven LOD cap in splats (see {@link IGaussianSplattingStreamOptions.splatBudget}).
+     * `0` disables the budget and its bundled foveation (pure distance LOD). Setting it caps the rendered splat count
+     * and enables cone foveation, taking effect on the next frame. Overrides the inherited compound
+     * accessor to force an immediate LOD re-eval (the stream never hosts other budget participants). When this stream
+     * is hosted in a compound whose own budget is set, that shared budget overrides this value.
+     */
+    public override get splatBudget(): number {
+        return this._splatBudget;
+    }
+
+    public override set splatBudget(value: number) {
+        const budget = value > 0 ? Math.floor(value) : 0;
+        if (budget === this._splatBudget) {
+            return;
+        }
+        this._splatBudget = budget;
+        // Re-evaluate LODs on the next frame regardless of the movement throttle so the change is immediate.
+        this._forceLodUpdate = true;
+    }
+
+    /**
+     * Resolves the raw {@link splatBudget} option to a concrete cap: `undefined` ⇒ 0 (disabled), `"auto"` ⇒ a
+     * device-tiered default, a positive number ⇒ itself (floored).
+     * @param option the raw option value
+     * @returns the resolved splat cap (0 = disabled)
+     */
+    private _resolveSplatBudget(option: number | "auto" | undefined): number {
+        if (option === undefined) {
+            return 0;
+        }
+        if (option === "auto") {
+            return this._computeDefaultSplatBudget();
+        }
+        return option > 0 ? Math.floor(option) : 0;
+    }
+
+    /**
+     * Device-tiered default splat budget for {@link splatBudget} `"auto"`: desktop 2.5M, iOS 1.5M, other mobile
+     * (incl. Android/XR) 1M. XR is folded into the mobile tier (no reliable at-construction detection).
+     * @returns the default splat cap for this device
+     */
+    private _computeDefaultSplatBudget(): number {
+        const isMobile = !!this._scene.getEngine().hostInformation?.isMobile;
+        if (!isMobile) {
+            return 2_500_000;
+        }
+        if (typeof navigator !== "undefined" && navigator.userAgent && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            return 1_500_000;
+        }
+        return 1_000_000;
+    }
+
+    /**
+     * The splat budget this stream converges against this frame: the compound's apportioned allocation when hosted
+     * and coordinated, else this stream's own resolved budget. Clamped to the resident budget so the stream never
+     * targets more splats than can be kept resident. `0` means the budget is disabled.
+     * @returns the effective splat cap (0 = disabled)
+     */
+    private _effectiveSplatBudget(): number {
+        if (this._hostBudgetAllocation !== null) {
+            // Coordinated by the host: even a 0 allocation (static parts consumed the whole budget) keeps the budget
+            // path active so the stream converges to its coarsest level — it must never revert to unbounded LOD, or
+            // the compound total could exceed the cap.
+            const alloc = Math.max(1, this._hostBudgetAllocation);
+            return this._residentBudget > 0 ? Math.min(alloc, this._residentBudget) : alloc;
+        }
+        if (this._splatBudget <= 0) {
+            return 0;
+        }
+        return this._residentBudget > 0 ? Math.min(this._splatBudget, this._residentBudget) : this._splatBudget;
+    }
+
+    /**
+     * Whether budget-driven LOD (and its bundled foveation) is active this frame.
+     * @returns true when a positive effective budget is in force
+     */
+    private _splatBudgetEnabled(): boolean {
+        return this._effectiveSplatBudget() > 0;
+    }
+
+    /**
+     * {@link IGaussianSplattingLodBudgetParticipant}: the splats this stream would render at full (distance-optimal)
+     * detail — its demand on a host compound's shared budget. Computed from the current per-node distance-optimal
+     * levels (no pixel threshold/foveation), so it does not depend on the allocation it is helping to compute.
+     * @returns the full-detail rendered splat count (0 before the base layer is ready)
+     */
+    public getBudgetDemand(): number {
+        if (!this._baseLayerReady) {
+            return 0;
+        }
+        // Include the always-rendered environment as a fixed cost so the host allocates enough for it; the leaf
+        // convergence reserves the same amount (see _computeTargetLevels).
+        let sum = this._environmentSplatCount();
+        for (const node of this._leafNodes) {
+            const desired = node.optimalLod ?? node.baseLod!;
+            sum += this._countAtLevel(node, this._cappedLevelForNode(node, desired));
+        }
+        return sum;
+    }
+
+    /**
+     * {@link IGaussianSplattingLodBudgetParticipant}: sets the compound's apportioned share of the shared budget.
+     * `null` releases coordination (revert to this stream's own {@link splatBudget}); a number (incl. 0, meaning
+     * "coordinated at the coarsest level") drives the pixel-threshold convergence. Forces a next-frame LOD re-eval
+     * only when the allocation changes materially, so per-frame water-fill jitter does not defeat the throttle.
+     * @param splats the apportioned allocation, or null to release coordination
+     */
+    public setBudgetAllocation(splats: Nullable<number>): void {
+        if (splats === null) {
+            if (this._hostBudgetAllocation !== null) {
+                this._hostBudgetAllocation = null;
+                this._forceLodUpdate = true;
+            }
+            return;
+        }
+        const prev = this._hostBudgetAllocation;
+        this._hostBudgetAllocation = splats;
+        if (prev === null || Math.abs(splats - prev) > Math.max(1, prev) * 0.02) {
+            this._forceLodUpdate = true;
+        }
+    }
+
+    /**
      * Coarsest LOD level index in the scene (number of LOD levels minus one). Useful as the upper bound
      * for {@link maxDetailLod}.
      */
@@ -781,6 +929,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         // region (tombstone). Reclaiming the rows is a separate compaction — cheap disposal here so tearing down N
         // parts doesn't trigger N atlas rebuilds; the caller/host reclaims when appropriate (a failed load compacts
         // once, see the _streamAllAsync handler). Skipped when the host removed the part (it owns that policy).
+        if (this._hostCompound && !this._hostCompound.isDisposed()) {
+            this._hostCompound.unregisterLodBudgetParticipant(this);
+        }
         if (this._host && this._hostCompound && !this._partReleasedByHost && !this._hostCompound.isDisposed()) {
             this._hostCompound.removePart(this._host.partIndex);
         }
@@ -863,10 +1014,14 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         const py = localCamera.y;
         const pz = localCamera.z;
 
+        // The budget-driven path needs the view direction (for cone foveation) and the projected pixel size.
+        const budgetEnabled = this._splatBudgetEnabled();
+        const renderHeight = this._scene.getEngine().getRenderHeight() || 1;
+
         let fwx = 0;
         let fwy = 0;
         let fwz = 0;
-        if (behindPenalty > 1) {
+        if (behindPenalty > 1 || budgetEnabled) {
             camera.getDirectionToRef(LocalForwardAxis, TmpWorldForward);
             const localForward = Vector3.TransformNormalToRef(TmpWorldForward, TmpInvWorld, TmpLocalForward);
             localForward.normalize();
@@ -924,6 +1079,29 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             }
 
             node.optimalLod = optimalLod;
+
+            // Budget-driven LOD: projected pixel size of the node, scaled by cone foveation (both only when the
+            // budget is enabled). Larger on-screen / more central nodes get a bigger pixelSize and thus survive the
+            // budget cut with finer detail. Uses distance to the node center (not the closest AABB point).
+            if (budgetEnabled) {
+                const cx = (mn[0] + mx[0]) * 0.5;
+                const cy = (mn[1] + mx[1]) * 0.5;
+                const cz = (mn[2] + mx[2]) * 0.5;
+                const rdx = cx - px;
+                const rdy = cy - py;
+                const rdz = cz - pz;
+                const centerDist = Math.sqrt(rdx * rdx + rdy * rdy + rdz * rdz);
+                const hx = mx[0] - mn[0];
+                const hy = mx[1] - mn[1];
+                const hz = mx[2] - mn[2];
+                const radius = 0.5 * Math.sqrt(hx * hx + hy * hy + hz * hz);
+                // Projected pixel extent: worldRadius / distance * (renderHeight / (2·tanHalfV)) * 2, i.e. the
+                // node's diameter in pixels. Local radius/distance is world-uniform-scale-invariant.
+                let pixels = (radius * renderHeight) / (Math.max(centerDist, 1e-4) * tanHalfV);
+                const cosTheta = centerDist > 1e-4 ? (fwx * rdx + fwy * rdy + fwz * rdz) / centerDist : 1;
+                pixels *= GaussianSplattingStream._FoveationScaleFromCos(cosTheta);
+                node.pixelSize = pixels;
+            }
         }
     }
 
@@ -1090,11 +1268,16 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         }
 
         // Collect all levels that hold splats (PlayCanvas convention: level 0 is the finest, higher = coarser).
+        // Normalize each entry's count to a finite positive integer HERE (metadata is untrusted and only shallowly
+        // validated, so `count` may be a string): all downstream arithmetic — budget demand/convergence — then adds
+        // numbers instead of concatenating strings.
         const levels: number[] = [];
         for (const key of Object.keys(node.lods)) {
             const level = Number(key);
             const entry = node.lods[key];
-            if (Number.isFinite(level) && entry && entry.count > 0) {
+            const count = entry ? Math.floor(Number(entry.count)) : NaN;
+            if (Number.isFinite(level) && entry && Number.isFinite(count) && count > 0) {
+                entry.count = count;
                 levels.push(level);
             }
         }
@@ -1175,6 +1358,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
             const host = this._hostCompound.reserveStreamingPart(capacity, sogWorld, this.name + "_part", this._shTextureCount, this._streamShDegree, this._needsRotationScale);
             this._host = host;
             this._positionBase = host.base;
+            // Join the compound's shared splat budget (if any): the compound apportions its cap across all hosted
+            // streams. Harmless when the compound has no budget set (registration just tracks the participant).
+            this._hostCompound.registerLodBudgetParticipant(this);
             // Bind this controller's lifetime to its part FROM RESERVATION (not after readiness): removing the part or
             // disposing the compound — even while still downloading/decoding — disposes this stream so it stops writing
             // into the compound's borrowed textures. `_partReleasedByHost` stops dispose() from removing the part again.
@@ -1866,14 +2052,146 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * Computes each node's {@link ISOGLODNode.targetLevel}: the distance-based optimal level snapped to an
-     * available level, capped so no node renders finer (more detailed) than {@link maxDetailLod}.
+     * Computes each node's {@link ISOGLODNode.targetLevel}. With the splat budget disabled this is the
+     * distance-optimal level snapped to an available level (capped by {@link maxDetailLod}) — unchanged prior
+     * behavior. With the budget enabled it converges a global pixel-size threshold to the budget and coarsens each
+     * node from its distance-optimal ceiling by how far its (foveated) projected size falls below that threshold.
      */
     private _computeTargetLevels(): void {
-        for (const node of this._leafNodes) {
-            const desired = node.optimalLod ?? node.baseLod!;
-            node.targetLevel = this._cappedLevelForNode(node, desired);
+        const budget = this._effectiveSplatBudget();
+        if (budget <= 0) {
+            for (const node of this._leafNodes) {
+                const desired = node.optimalLod ?? node.baseLod!;
+                node.targetLevel = this._cappedLevelForNode(node, desired);
+            }
+            return;
         }
+        // The environment is always rendered on top of the leaves, so reserve it as a fixed cost: the leaves
+        // converge against the remainder, keeping the stream's total (env + leaves) within the budget.
+        const leafBudget = Math.max(0, budget - this._environmentSplatCount());
+        this._convergePixelThreshold(leafBudget);
+        const t = this._lodPixelThreshold;
+        for (const node of this._leafNodes) {
+            node.targetLevel = this._budgetedLevel(node, t);
+        }
+    }
+
+    /**
+     * Splat count of the always-rendered environment layer (0 when none), coerced to a finite non-negative integer.
+     * Counted as a fixed cost in both the budget demand and the leaf convergence so it is never over-drawn.
+     * @returns the environment's rendered splat count
+     */
+    private _environmentSplatCount(): number {
+        const count = this._environmentRange ? Math.floor(Number(this._environmentRange.count)) : 0;
+        return Number.isFinite(count) && count > 0 ? count : 0;
+    }
+
+    /**
+     * Cone-foveation detail scale for an angle from the view direction, from its cosine: full detail (1.0) within
+     * ±45°, ramping to 0.4 by ±60°, then to 0.2 by 180°.
+     * @param cosTheta cosine of the angle between the node direction and the view forward
+     * @returns detail scale in [0.2, 1.0]
+     */
+    private static _FoveationScaleFromCos(cosTheta: number): number {
+        const theta = (Math.acos(Math.min(1, Math.max(-1, cosTheta))) * 180) / Math.PI;
+        if (theta <= 45) {
+            return 1.0;
+        }
+        if (theta <= 60) {
+            return 1.0 + (0.4 - 1.0) * ((theta - 45) / 15);
+        }
+        return 0.4 + (0.2 - 0.4) * ((theta - 60) / 120);
+    }
+
+    /**
+     * The level a node renders at for a given pixel-size threshold `t`: its distance-optimal ceiling, coarsened by
+     * `round(log_mult(t / pixelSize))` geometric steps when its (foveated) projected size is below `t`. Snapped to
+     * an available level honoring {@link maxDetailLod}.
+     * @param node leaf node
+     * @param t pixel-size threshold (pixels)
+     * @returns the chosen available LOD level
+     */
+    private _budgetedLevel(node: ISOGLODNode, t: number): number {
+        const ceiling = node.optimalLod ?? node.baseLod!;
+        const ps = node.pixelSize ?? 0;
+        let steps = 0;
+        if (ps > 0 && t > ps) {
+            steps = Math.max(0, Math.round(Math.log(t / ps) / Math.log(this._lodMultiplier)));
+        }
+        return this._cappedLevelForNode(node, ceiling + steps);
+    }
+
+    /**
+     * Splat count of a node's file at a given (already snapped) available level.
+     * @param node leaf node
+     * @param level available LOD level
+     * @returns the level's splat count (0 if absent)
+     */
+    private _countAtLevel(node: ISOGLODNode, level: number): number {
+        const entry = node.lods![String(level)];
+        return entry ? entry.count : 0;
+    }
+
+    /**
+     * Sum of every leaf's rendered splat count at pixel-size threshold `t`.
+     * @param t pixel-size threshold (pixels)
+     * @returns total rendered splats
+     */
+    private _totalSplatsAtThreshold(t: number): number {
+        let sum = 0;
+        for (const node of this._leafNodes) {
+            sum += this._countAtLevel(node, this._budgetedLevel(node, t));
+        }
+        return sum;
+    }
+
+    /**
+     * Converges the global pixel-size threshold {@link _lodPixelThreshold} to the largest detail whose total rendered
+     * splats is still within `budget` (the pixel-scale cut, floored at the true sub-pixel limit of 1 px). The
+     * total is monotonically non-increasing in the threshold, so a bisection on `[floorT, ceilT]` — where `ceilT`
+     * coarsens every node to its coarsest available level — gives a GUARANTEED result at or under the cap. When even
+     * that coarsest state exceeds the budget (the budget is below the pinned minimum detail), the threshold is set to
+     * `ceilT` so every node renders at minimum detail — the best achievable; the cap is then unavoidable. O(leaves)
+     * per iteration; no decode.
+     * @param budget target maximum rendered splat count
+     */
+    private _convergePixelThreshold(budget: number): void {
+        const floorT = 1; // sub-pixel limit, in pixels
+        // At the finest allowed (threshold floor) we are already within budget: no coarsening needed.
+        if (this._totalSplatsAtThreshold(floorT) <= budget) {
+            this._lodPixelThreshold = floorT;
+            return;
+        }
+        // A threshold large enough to coarsen every node to its coarsest available level: a node coarsens by
+        // round(log_mult(t / pixelSize)) steps, so t >= maxPixelSize · mult^(lodLevels + 1) saturates them all.
+        let maxPixelSize = floorT;
+        for (const node of this._leafNodes) {
+            if (node.pixelSize && node.pixelSize > maxPixelSize) {
+                maxPixelSize = node.pixelSize;
+            }
+        }
+        // Cap the exponent (real LOD trees are shallow) so untrusted metadata can't push ceilT to Infinity, which
+        // would skip the bisection below and force every node to minimum detail.
+        const lodLevels = Math.min(32, Math.max(1, this._metadata.lodLevels));
+        const ceilT = maxPixelSize * Math.pow(this._lodMultiplier, lodLevels + 1);
+        if (this._totalSplatsAtThreshold(ceilT) > budget) {
+            // Even the coarsest level exceeds the budget (pinned base layers alone are over): render minimum detail.
+            this._lodPixelThreshold = ceilT;
+            return;
+        }
+        // Bisection: `hi` always satisfies the cap (starts at ceilT), `lo` never does, so the result is guaranteed
+        // within budget while keeping the finest detail the budget allows. Deterministic => temporally stable.
+        let lo = floorT;
+        let hi = ceilT;
+        for (let i = 0; i < 40 && hi - lo > 1e-3 * hi; i++) {
+            const mid = 0.5 * (lo + hi);
+            if (this._totalSplatsAtThreshold(mid) <= budget) {
+                hi = mid;
+            } else {
+                lo = mid;
+            }
+        }
+        this._lodPixelThreshold = hi;
     }
 
     /**
@@ -2037,17 +2355,34 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
         if (!runLodEval && ++this._framesSinceLodUpdate >= this._lodUpdateInterval) {
             const camera = this._scene.activeCamera;
             const threshold = this._lodUpdateDistance;
-            if (!camera || Vector3.DistanceSquared(camera.globalPosition, this._lastLodCamPos) >= threshold * threshold) {
-                if (camera) {
-                    this._lastLodCamPos.copyFrom(camera.globalPosition);
-                }
+            if (!camera) {
                 runLodEval = true;
+            } else {
+                const movedFar = Vector3.DistanceSquared(camera.globalPosition, this._lastLodCamPos) >= threshold * threshold;
+                // Foveation depends on the view direction, so a stationary rotation must re-eval too — but only when
+                // the budget (and thus foveation) is active; distance LOD alone is orientation-independent.
+                let rotated = false;
+                if (this._splatBudgetEnabled()) {
+                    camera.getDirectionToRef(LocalForwardAxis, TmpWorldForward);
+                    TmpWorldForward.normalize();
+                    rotated = Vector3.Dot(TmpWorldForward, this._lastLodCamForward) < 0.999;
+                }
+                if (movedFar || rotated) {
+                    this._lastLodCamPos.copyFrom(camera.globalPosition);
+                    runLodEval = true;
+                }
             }
         }
 
         if (runLodEval) {
             this._forceLodUpdate = false;
             this._framesSinceLodUpdate = 0;
+            // Remember the view direction this evaluation used so the next rotation is measured against it.
+            const camera = this._scene.activeCamera;
+            if (camera) {
+                camera.getDirectionToRef(LocalForwardAxis, TmpWorldForward);
+                this._lastLodCamForward.copyFrom(TmpWorldForward).normalize();
+            }
             this.evaluateOptimalLods(this._scene.activeCamera);
             this._computeTargetLevels();
             if (this._applyDesiredLods()) {
@@ -2096,12 +2431,15 @@ export class GaussianSplattingStream extends GaussianSplattingMesh {
     }
 
     /**
-     * Reads the splat count from SOG metadata.
+     * Reads the splat count from SOG metadata, coerced to a finite non-negative integer (metadata is untrusted, so
+     * `count` / `shape[0]` may be a string or malformed — a non-numeric value must not leak into count arithmetic).
      * @param data SOG metadata
-     * @returns the splat count
+     * @returns the splat count (0 when absent/invalid)
      */
     private static _GetSplatCount(data: SOGRootData): number {
-        return data.count ?? (Array.isArray(data.means.shape) ? data.means.shape[0] : 0);
+        const raw = data.count ?? (Array.isArray(data.means.shape) ? data.means.shape[0] : 0);
+        const count = Math.floor(Number(raw));
+        return Number.isFinite(count) && count > 0 ? count : 0;
     }
 
     /**
