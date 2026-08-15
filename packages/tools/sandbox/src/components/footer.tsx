@@ -1,5 +1,5 @@
 import * as React from "react";
-import { type GlobalState, type SandboxSceneLoadKind } from "../globalState";
+import { type GlobalState, type SandboxSceneLoadedInfo, type SandboxSceneLoadKind } from "../globalState";
 import { FooterButton } from "./footerButton";
 import { DropUpButton } from "./dropUpButton";
 import { EnvironmentTools } from "../tools/environmentTools";
@@ -34,7 +34,7 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
     private _cameras: Camera[] = [];
     private _sceneHadCameras = false;
     private _sceneLoadKind: SandboxSceneLoadKind = "scene";
-    private readonly _onSceneLoadedObserver: Nullable<Observer<{ scene: import("core/scene").Scene; filename: string; loadKind: SandboxSceneLoadKind }>>;
+    private readonly _onSceneLoadedObserver: Nullable<Observer<SandboxSceneLoadedInfo>>;
     private readonly _onCameraChangedObserver: Nullable<Observer<Camera>>;
     private readonly _onCameraPresetChangedObserver: Nullable<Observer<void>>;
 
@@ -103,7 +103,7 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
         }
 
         const preset = this.props.globalState.cameraPresetManager.presets[index - 1];
-        if (preset && this.props.globalState.currentSceneLoadKind === "scene") {
+        if (preset && this._sceneLoadKind === "scene") {
             const camera = this.props.globalState.cameraPresetManager.activatePreset(preset.id, scene);
             if (camera) {
                 this.props.globalState.onCameraChanged.notifyObservers(camera);

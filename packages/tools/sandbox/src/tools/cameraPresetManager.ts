@@ -175,7 +175,8 @@ function ParseBehaviorState(value: unknown): ICameraPresetBehaviorState | undefi
         behaviorState.framing = ParseFramingBehaviorState(value.framing);
     }
 
-    return Object.values(behaviorState).some((property) => property !== 1 && property !== undefined) ? behaviorState : undefined;
+    const hasBehaviorContent = Object.entries(behaviorState).some(([property, propertyValue]) => property !== "version" && propertyValue !== undefined);
+    return hasBehaviorContent ? behaviorState : undefined;
 }
 
 function CreateCameraPresetId(): string {
@@ -326,9 +327,7 @@ function ApplyBehaviorState(camera: Camera, behaviorState: ICameraPresetBehavior
 
     const bouncingBehavior = camera.getBehaviorByName("Bouncing") as BouncingBehavior | null;
     if (bouncingBehavior && behaviorState.bouncing) {
-        const { autoTransitionRange, ...bouncingProperties } = behaviorState.bouncing;
-        Object.assign(bouncingBehavior, bouncingProperties);
-        bouncingBehavior.autoTransitionRange = autoTransitionRange;
+        Object.assign(bouncingBehavior, behaviorState.bouncing);
     }
 
     const framingBehavior = camera.getBehaviorByName("Framing") as FramingBehavior | null;
@@ -355,7 +354,8 @@ export class CameraPresetManager {
 
     public constructor(
         private readonly _storage: ICameraPresetStorageBackend = DataStorageBackend,
-        private readonly _createId: () => string = CreateCameraPresetId
+        private readonly _createId: () => string = CreateCameraPresetId,
+        private readonly _onError?: (message: string, scene?: Scene) => void
     ) {
         try {
             this._state = ParseCameraPresetState(this._storage.read());
@@ -377,27 +377,36 @@ export class CameraPresetManager {
         return this._state.presets.find((preset) => preset.id === this._state.activePresetId);
     }
 
-    public saveCamera(camera: Camera, requestedName: string): ICameraPreset {
-        const name = GetUniqueCameraPresetName([DefaultCameraPresetOption, ...this._state.presets.map((preset) => preset.name)], requestedName);
-        let id = this._createId();
-        while (this._state.presets.some((preset) => preset.id === id)) {
-            id = this._createId();
+    public saveCamera(camera: Camera, requestedName: string): ICameraPreset | null {
+        try {
+            const name = GetUniqueCameraPresetName([DefaultCameraPresetOption, ...this._state.presets.map((preset) => preset.name)], requestedName);
+            let id = this._createId();
+            while (this._state.presets.some((preset) => preset.id === id)) {
+                id = this._createId();
+            }
+
+            const cameraData = JSON.parse(JSON.stringify(camera.serialize())) as Record<string, unknown>;
+            const preset: ICameraPreset = {
+                id,
+                name,
+                cameraType: camera.getClassName(),
+                cameraData,
+                behaviors: GetBehaviorState(camera),
+            };
+
+            return this._updateState(
+                {
+                    ...this._state,
+                    presets: [...this._state.presets, preset],
+                },
+                camera.getScene()
+            )
+                ? preset
+                : null;
+        } catch (error) {
+            this._reportError(`Unable to save Sandbox camera preset: ${error instanceof Error ? error.message : String(error)}`, camera.getScene());
+            return null;
         }
-
-        const cameraData = JSON.parse(JSON.stringify(camera.serialize())) as Record<string, unknown>;
-        const preset: ICameraPreset = {
-            id,
-            name,
-            cameraType: camera.getClassName(),
-            cameraData,
-            behaviors: GetBehaviorState(camera),
-        };
-
-        this._updateState({
-            ...this._state,
-            presets: [...this._state.presets, preset],
-        });
-        return preset;
     }
 
     public activatePreset(presetId: string, scene: Scene): Camera | null {
@@ -406,12 +415,25 @@ export class CameraPresetManager {
             return null;
         }
 
+        const previousState = this._state;
+        const nextState: ICameraPresetState = {
+            ...this._state,
+            activePresetId: preset.id,
+        };
+        if (preset.id !== this._state.activePresetId && !this._persistState(nextState, scene)) {
+            return null;
+        }
+
         const camera = this._applyPreset(preset, scene);
-        if (camera) {
-            this._updateState({
-                ...this._state,
-                activePresetId: preset.id,
-            });
+        if (!camera) {
+            if (preset.id !== previousState.activePresetId) {
+                this._restorePersistedState(previousState, scene);
+            }
+            return null;
+        }
+
+        if (preset.id !== previousState.activePresetId) {
+            this._commitState(nextState);
         }
         return camera;
     }
@@ -431,6 +453,19 @@ export class CameraPresetManager {
             return null;
         }
 
+        if (
+            this._state.activePresetId !== null &&
+            !this._updateState(
+                {
+                    ...this._state,
+                    activePresetId: null,
+                },
+                scene
+            )
+        ) {
+            return scene.activeCamera;
+        }
+
         const inputElement = scene.getEngine().getInputElement();
         if (inputElement && scene.activeCamera !== camera) {
             scene.activeCamera?.detachControl();
@@ -442,12 +477,6 @@ export class CameraPresetManager {
 
         this._sceneCameras.set(scene, camera);
         this.releasePresetCamera(scene);
-        if (this._state.activePresetId !== null) {
-            this._updateState({
-                ...this._state,
-                activePresetId: null,
-            });
-        }
         return camera;
     }
 
@@ -488,7 +517,7 @@ export class CameraPresetManager {
             camera = Camera.Parse(cameraData, scene);
             if (camera.getClassName() !== preset.cameraType) {
                 DisposeCameras(scene.cameras.filter((createdCamera) => !existingCameras.has(createdCamera)));
-                Logger.Warn(`Unable to apply Sandbox camera preset "${preset.name}": camera type "${preset.cameraType}" is not available.`);
+                this._reportError(`Unable to apply Sandbox camera preset "${preset.name}": camera type "${preset.cameraType}" is not available.`, scene);
                 return null;
             }
 
@@ -510,7 +539,7 @@ export class CameraPresetManager {
             if (inputElement && previousCameraDetached && previousCamera) {
                 previousCamera.attachControl();
             }
-            Logger.Warn(`Unable to apply Sandbox camera preset "${preset.name}": ${error instanceof Error ? error.message : String(error)}`);
+            this._reportError(`Unable to apply Sandbox camera preset "${preset.name}": ${error instanceof Error ? error.message : String(error)}`, scene);
             return null;
         }
 
@@ -531,13 +560,41 @@ export class CameraPresetManager {
         return camera;
     }
 
-    private _updateState(state: ICameraPresetState): void {
-        this._state = state;
+    private _updateState(state: ICameraPresetState, scene?: Scene): boolean {
+        if (!this._persistState(state, scene)) {
+            return false;
+        }
+
+        this._commitState(state);
+        return true;
+    }
+
+    private _persistState(state: ICameraPresetState, scene?: Scene): boolean {
         try {
             this._storage.write(state);
         } catch (error) {
-            Logger.Warn(`Unable to persist Sandbox camera presets: ${error instanceof Error ? error.message : String(error)}`);
+            this._reportError(`Unable to persist Sandbox camera presets: ${error instanceof Error ? error.message : String(error)}`, scene);
+            return false;
         }
+
+        return true;
+    }
+
+    private _restorePersistedState(state: ICameraPresetState, scene: Scene): void {
+        try {
+            this._storage.write(state);
+        } catch (error) {
+            this._reportError(`Unable to restore Sandbox camera preset preference: ${error instanceof Error ? error.message : String(error)}`, scene);
+        }
+    }
+
+    private _commitState(state: ICameraPresetState): void {
+        this._state = state;
         this.onChanged.notifyObservers();
+    }
+
+    private _reportError(message: string, scene?: Scene): void {
+        Logger.Warn(message);
+        this._onError?.(message, scene);
     }
 }

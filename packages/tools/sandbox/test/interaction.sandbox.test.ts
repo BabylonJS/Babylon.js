@@ -138,6 +138,8 @@ test("camera presets can be saved, selected, and restored", async ({ page }) => 
 
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
+    // This init script runs on every navigation, so the session flag limits the reset to the first one and lets
+    // presets saved later in the test survive the reloads that verify persistence.
     await page.addInitScript((storageKey) => {
         const initializedKey = `${storageKey}/testInitialized`;
         if (!sessionStorage.getItem(initializedKey)) {
@@ -166,11 +168,9 @@ test("camera presets can be saved, selected, and restored", async ({ page }) => 
     await embeddedCameraFooter.getByTitle("Select camera").click();
     await expect(embeddedCameraFooter.locator(".dropup-content-line")).toHaveText(["Camera", "default camera"]);
     await embeddedCameraFooter.getByTitle("default camera", { exact: true }).click();
-    const activeEmbeddedSceneCameraName = await page.evaluate(() => {
-        return (globalThis as typeof globalThis & { BABYLON: { EngineStore: { LastCreatedScene?: { activeCamera?: { name: string } } } } }).BABYLON.EngineStore.LastCreatedScene
-            ?.activeCamera?.name;
-    });
-    expect(activeEmbeddedSceneCameraName).toBe("default camera");
+    await embeddedCameraFooter.getByTitle("Select camera").click();
+    await expect(embeddedCameraFooter.getByTitle("default camera", { exact: true }).locator(":scope > div")).toHaveCSS("opacity", "1");
+    await embeddedCameraFooter.getByTitle("default camera", { exact: true }).click();
     await page.keyboard.press("Space");
     await expect(embeddedCameraFooter).toHaveCount(0);
     await page.keyboard.press("Space");
@@ -189,15 +189,14 @@ test("camera presets can be saved, selected, and restored", async ({ page }) => 
     const nodes = page.getByRole("treeitem", { name: "Nodes", exact: true });
     await nodes.focus();
     await nodes.press("ArrowRight");
+    await page.getByRole("treeitem", { name: /^default camera/ }).click();
     await page.evaluate(() => {
-        const runtime = globalThis as typeof globalThis & {
-            BABYLON: { EngineStore: { LastCreatedScene?: { activeCamera?: { inspectableCustomProperties?: unknown[] } } } };
-        };
-        const camera = runtime.BABYLON.EngineStore.LastCreatedScene?.activeCamera;
+        const camera = (globalThis as typeof globalThis & { debugNode?: { inspectableCustomProperties?: unknown[] } }).debugNode;
         if (camera) {
             camera.inspectableCustomProperties = [];
         }
     });
+    await page.getByRole("treeitem", { name: "hdrSkyBox", exact: true }).click();
     await page.getByRole("treeitem", { name: /^default camera/ }).click();
 
     const presetHeader = inspector.getByRole("button", { name: "Save Camera Preset", exact: true });
@@ -306,6 +305,45 @@ test("camera presets can be saved, selected, and restored", async ({ page }) => 
     await footer.getByTitle("Preset 1", { exact: true }).click();
     const reactivatedState = await page.evaluate((storageKey) => JSON.parse(localStorage.getItem(storageKey) ?? "null"), cameraPresetStorageKey);
     expect(reactivatedState.activePresetId).toBe(reactivatedState.presets[0].id);
+
+    await page.goto(embeddedCameraModelUrl + "&camera=0", { waitUntil: "load" });
+    await waitForSandboxReady(page);
+    await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await page.waitForLoadState("networkidle");
+    const cameraOverrideFooter = page.locator("#footer");
+    await cameraOverrideFooter.getByTitle("Select camera", { exact: true }).click();
+    await expect(cameraOverrideFooter.locator(".dropup-content-line")).toHaveText(["Camera"]);
+    await expect(cameraOverrideFooter.getByTitle("Camera", { exact: true }).locator(":scope > div")).toHaveCSS("opacity", "1");
+    await page.locator(".clickInterceptor").click();
+    const cameraOverrideState = await page.evaluate((storageKey) => JSON.parse(localStorage.getItem(storageKey) ?? "null"), cameraPresetStorageKey);
+    expect(cameraOverrideState.activePresetId).toBe(cameraOverrideState.presets[0].id);
+
+    await page.goto(boxModelUrl + "&cameraPosition=10,20,30", { waitUntil: "load" });
+    await waitForSandboxReady(page);
+    await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await page.waitForLoadState("networkidle");
+    if (!(await inspector.isVisible())) {
+        await page.getByTitle("Display inspector").click();
+    }
+    const cameraPositionOverrideNodes = page.getByRole("treeitem", { name: "Nodes", exact: true });
+    await cameraPositionOverrideNodes.focus();
+    await cameraPositionOverrideNodes.press("ArrowRight");
+    const cameraPositionOverride = page.getByRole("treeitem", { name: /^default camera/ });
+    await cameraPositionOverride.click();
+    await expect(cameraPositionOverride.getByRole("button", { name: "Activate and Attach Controls" })).toHaveAttribute("aria-pressed", "true");
+    const urlCameraPositionOverride = await page.evaluate(() => {
+        const activeCamera = (globalThis as typeof globalThis & { debugNode?: { name: string; position: { asArray(): number[] } } }).debugNode;
+        return { name: activeCamera?.name, position: activeCamera?.position.asArray() };
+    });
+    expect(urlCameraPositionOverride.name).toBe("default camera");
+    const position = urlCameraPositionOverride.position;
+    expect(position).toBeDefined();
+    const [positionX, positionY, positionZ] = position!;
+    expect(positionY / positionX).toBeCloseTo(2);
+    expect(positionZ / positionX).toBeCloseTo(3);
+    await expect(page.getByRole("treeitem", { name: /^Preset 1/ })).toHaveCount(0);
+    const cameraPositionOverrideState = await page.evaluate((storageKey) => JSON.parse(localStorage.getItem(storageKey) ?? "null"), cameraPresetStorageKey);
+    expect(cameraPositionOverrideState.activePresetId).toBe(cameraPositionOverrideState.presets[0].id);
 
     await page.goto(textureAssetUrl, { waitUntil: "load" });
     await waitForSandboxReady(page);

@@ -28,6 +28,12 @@ class MemoryCameraPresetStorage implements ICameraPresetStorageBackend {
     }
 }
 
+class FailingCameraPresetStorage extends MemoryCameraPresetStorage {
+    public override write(_state: ICameraPresetState): void {
+        throw new Error("Storage unavailable");
+    }
+}
+
 describe("camera preset naming", () => {
     it("uses the first available generic name for a blank name", () => {
         expect(GetUniqueCameraPresetName(["Preset 1", "preset 3"], "   ")).toBe("Preset 2");
@@ -38,9 +44,20 @@ describe("camera preset naming", () => {
         expect(GetUniqueCameraPresetName(names, " CITY ")).toBe("CITY 4");
         expect(GetUniqueCameraPresetName(names, "City 2")).toBe("City 4");
     });
+
+    it("restarts numbering when the requested suffix cannot be incremented safely", () => {
+        expect(GetUniqueCameraPresetName(["City 99999999999999999999"], "City 99999999999999999999")).toBe("City 2");
+    });
 });
 
 describe("camera preset storage", () => {
+    it("falls back to an empty state for payloads that are not a preset collection", () => {
+        const emptyState = { version: 1, activePresetId: null, presets: [] };
+        expect(ParseCameraPresetState(null)).toEqual(emptyState);
+        expect(ParseCameraPresetState("not a state")).toEqual(emptyState);
+        expect(ParseCameraPresetState({ version: 1, activePresetId: "orphan", presets: "not an array" })).toEqual(emptyState);
+    });
+
     it("rejects unsupported schemas, filters malformed presets, and normalizes conflicting names", () => {
         expect(ParseCameraPresetState({ version: 2, activePresetId: "old", presets: [] })).toEqual({ version: 1, activePresetId: null, presets: [] });
 
@@ -109,11 +126,52 @@ describe("camera preset Inspector predicate", () => {
 });
 
 describe("CameraPresetManager", () => {
-    it("leaves the scene camera unchanged when persisted camera data cannot be applied", () => {
+    it("keeps storage read failures warning-only during startup", () => {
+        const errors: string[] = [];
+        const manager = new CameraPresetManager(
+            {
+                read: () => {
+                    throw new Error("Unreadable storage");
+                },
+                write: () => {},
+            },
+            undefined,
+            (message) => errors.push(message)
+        );
+
+        expect(manager.presets).toEqual([]);
+        expect(manager.activePresetId).toBeNull();
+        expect(errors).toEqual([]);
+    });
+
+    it("does not commit a saved preset when persistence fails and reports the error once", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new ArcRotateCamera("camera", 0, 0, 1, Vector3.Zero(), scene);
+        const errors: string[] = [];
+        const manager = new CameraPresetManager(
+            new FailingCameraPresetStorage(),
+            () => "failed-preset",
+            (message) => errors.push(message)
+        );
+        let changeCount = 0;
+        manager.onChanged.add(() => changeCount++);
+
+        expect(manager.saveCamera(camera, "Failed preset")).toBeNull();
+        expect(manager.presets).toEqual([]);
+        expect(changeCount).toBe(0);
+        expect(errors).toEqual(["Unable to persist Sandbox camera presets: Storage unavailable"]);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("leaves the scene camera unchanged and reports once when persisted camera data cannot be applied", () => {
         const engine = new NullEngine();
         const scene = new Scene(engine);
         const defaultCamera = new ArcRotateCamera("default camera", 0, 0, 1, Vector3.Zero(), scene);
         scene.activeCamera = defaultCamera;
+        const errors: string[] = [];
 
         const storage = new MemoryCameraPresetStorage();
         storage.value = {
@@ -129,7 +187,7 @@ describe("CameraPresetManager", () => {
             ],
         };
 
-        const manager = new CameraPresetManager(storage);
+        const manager = new CameraPresetManager(storage, undefined, (message) => errors.push(message));
         const originalParse = Camera.Parse;
         Camera.Parse = (_cameraData, targetScene) => {
             new UniversalCamera("partial camera", Vector3.Zero(), targetScene);
@@ -144,6 +202,36 @@ describe("CameraPresetManager", () => {
         }
 
         expect(result).toBeNull();
+        expect(scene.activeCamera).toBe(defaultCamera);
+        expect(scene.cameras).toEqual([defaultCamera]);
+        expect(errors).toEqual(['Unable to apply Sandbox camera preset "Unavailable": Unable to parse camera']);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("discards the substituted camera when the saved camera type is not registered", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const defaultCamera = new ArcRotateCamera("default camera", 0, 0, 1, Vector3.Zero(), scene);
+        scene.activeCamera = defaultCamera;
+
+        const storage = new MemoryCameraPresetStorage();
+        storage.value = {
+            version: 1,
+            activePresetId: "unregistered",
+            presets: [
+                {
+                    id: "unregistered",
+                    name: "Unregistered",
+                    cameraType: "NotRegisteredCamera",
+                    cameraData: { type: "NotRegisteredCamera", name: "Unregistered", position: [1, 2, 3] },
+                },
+            ],
+        };
+
+        const manager = new CameraPresetManager(storage);
+        expect(manager.applyActivePreset(scene)).toBeNull();
         expect(scene.activeCamera).toBe(defaultCamera);
         expect(scene.cameras).toEqual([defaultCamera]);
 
@@ -162,7 +250,7 @@ describe("CameraPresetManager", () => {
 
         const storage = new MemoryCameraPresetStorage();
         const manager = new CameraPresetManager(storage, () => "universal");
-        const preset = manager.saveCamera(universalCamera, "Walkthrough");
+        const preset = manager.saveCamera(universalCamera, "Walkthrough")!;
         universalCamera.dispose();
 
         const appliedCamera = manager.activatePreset(preset.id, scene);
@@ -213,7 +301,7 @@ describe("CameraPresetManager", () => {
         const storage = new MemoryCameraPresetStorage();
         let id = 0;
         const manager = new CameraPresetManager(storage, () => `preset-${++id}`);
-        const firstPreset = manager.saveCamera(sourceCamera, "City");
+        const firstPreset = manager.saveCamera(sourceCamera, "City")!;
 
         sourceCamera.alpha = 2;
         sourceCamera.radius = 10;
@@ -256,7 +344,7 @@ describe("CameraPresetManager", () => {
         expect(manager.isPresetCamera(appliedCamera)).toBe(true);
         expect(manager.isPresetCamera(sourceCamera)).toBe(false);
 
-        const secondPreset = manager.saveCamera(appliedCamera, "City");
+        const secondPreset = manager.saveCamera(appliedCamera, "City")!;
         expect(secondPreset.name).toBe("City 2");
         const secondAppliedCamera = manager.activatePreset(secondPreset.id, scene);
         expect(scene.cameras).toHaveLength(2);
@@ -297,8 +385,8 @@ describe("CameraPresetManager", () => {
         const storage = new MemoryCameraPresetStorage();
         let id = 0;
         const manager = new CameraPresetManager(storage, () => `preset-${++id}`);
-        const preset = manager.saveCamera(defaultCamera, "Overview");
-        expect(manager.saveCamera(defaultCamera, "Default camera").name).toBe("Default camera 2");
+        const preset = manager.saveCamera(defaultCamera, "Overview")!;
+        expect(manager.saveCamera(defaultCamera, "Default camera")!.name).toBe("Default camera 2");
         const presetCamera = manager.activatePreset(preset.id, scene);
 
         expect(presetCamera).toBe(scene.activeCamera);

@@ -331,10 +331,12 @@ export class Sandbox extends React.Component<
                         break;
                     }
                     case "camera": {
+                        this._globalState.cameraPresetOverrideFromUrl = true;
                         this._camera = +value;
                         break;
                     }
                     case "cameraposition": {
+                        this._globalState.cameraPresetOverrideFromUrl = true;
                         this._globalState.cameraPosition = Vector3.FromArray(
                             value.split(",").map(function (component) {
                                 return +component;

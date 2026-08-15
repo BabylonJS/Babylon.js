@@ -5,6 +5,7 @@ import { MakeCameraPresetInspectorServiceDefinition } from "./tools/cameraPreset
 
 export type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 export type SandboxSceneLoadKind = "scene" | "texture";
+export type SandboxSceneLoadedInfo = { scene: Scene; filename: string; loadKind: SandboxSceneLoadKind };
 
 export class GlobalState {
     private _inspectorToken: Nullable<IDisposable> = null;
@@ -12,7 +13,7 @@ export class GlobalState {
     public currentScene: Scene;
     public currentSceneLoadKind: SandboxSceneLoadKind = "scene";
     public currentSceneHadCameras = false;
-    public onSceneLoaded = new Observable<{ scene: Scene; filename: string; loadKind: SandboxSceneLoadKind }>();
+    public onSceneLoaded = new Observable<SandboxSceneLoadedInfo>();
     public onCameraChanged = new Observable<Camera>();
     public onError = new Observable<{ scene?: Scene; message?: string }>();
     public onEnvironmentChanged = new Observable<string>();
@@ -23,12 +24,15 @@ export class GlobalState {
 
     public filesInput: FilesInput;
     public isDebugLayerEnabled = false;
-    public readonly cameraPresetManager = new CameraPresetManager();
+    public readonly cameraPresetManager = new CameraPresetManager(undefined, undefined, (message, scene) => {
+        this.onError.notifyObservers({ scene, message });
+    });
 
     public commerceMode = false;
 
     public assetUrl?: string;
     public autoRotate = false;
+    public cameraPresetOverrideFromUrl = false;
     public cameraPosition?: Vector3;
     public skybox = true;
     public toneMapping?: number;

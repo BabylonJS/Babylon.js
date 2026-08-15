@@ -1,5 +1,4 @@
 import { type Camera } from "core/Cameras/camera";
-import { Logger } from "core/Misc/logger";
 import { type FunctionComponent } from "react";
 import { type IPropertiesService, type ISelectionService, type WeaklyTypedServiceDefinition } from "inspector/index";
 import { type GlobalState, type InspectorV2Module } from "../globalState";
@@ -33,13 +32,7 @@ const CameraPresetEditor: FunctionComponent<ICameraPresetEditorProps> = (props) 
             <inspectorModule.ButtonLine
                 uniqueId="sandbox-save-camera-preset"
                 label="Save"
-                onClick={() => {
-                    try {
-                        globalState.cameraPresetManager.saveCamera(camera, CameraPresetNames.get(camera) ?? "");
-                    } catch (error) {
-                        Logger.Warn(`Unable to save Sandbox camera preset: ${error instanceof Error ? error.message : String(error)}`);
-                    }
-                }}
+                onClick={() => globalState.cameraPresetManager.saveCamera(camera, CameraPresetNames.get(camera) ?? "")}
             />
         </>
     );
@@ -55,6 +48,8 @@ export function MakeCameraPresetInspectorServiceDefinition(globalState: GlobalSt
                 order: CameraPresetSectionOrder,
             });
             let metadataSectionRegistration: ReturnType<IPropertiesService["addSection"]> | undefined;
+            // The Inspector never registers "Metadata", so it is an implicit section that sorts above every explicitly ordered one.
+            // Claim it while a camera is selected to keep the preset section above it, and release it so other entities keep their usual layout.
             const updateMetadataSectionRegistration = () => {
                 if (IsCamera(selectionService.selectedEntity)) {
                     metadataSectionRegistration ??= propertiesService.addSection({
