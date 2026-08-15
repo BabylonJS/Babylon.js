@@ -24,11 +24,11 @@ import { Sandbox } from "./sandbox";
 const HostElement = document.getElementById("host-element") as HTMLElement;
 
 if (import.meta.env.DEV) {
-    // Dev mode — register the Inspector v2 debug layer (production gets it from the CDN bundle),
-    // then show immediately. The inspector index attaches Scene.debugLayer as a side effect.
+    // Dev mode — register the Inspector v2 debug layer and global module (production gets both from the CDN bundle),
+    // then show immediately.
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
-        await import("inspector/index");
+        await import("inspector/legacy/legacy");
         Sandbox.Show(HostElement, { version: "dev", bundles: [] });
     })();
 } else {

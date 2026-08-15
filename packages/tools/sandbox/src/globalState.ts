@@ -1,13 +1,19 @@
-import { type FilesInput, type IDisposable, type Nullable, type Scene, type Vector3 } from "core/index";
+import { type Camera, type FilesInput, type IDisposable, type Nullable, type Scene, type Vector3 } from "core/index";
 import { Observable } from "core/Misc/observable";
+import { CameraPresetManager } from "./tools/cameraPresetManager";
+import { MakeCameraPresetInspectorServiceDefinition } from "./tools/cameraPresetInspectorService";
 
-type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
+export type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
+export type SandboxSceneLoadKind = "scene" | "texture";
 
 export class GlobalState {
     private _inspectorToken: Nullable<IDisposable> = null;
 
     public currentScene: Scene;
-    public onSceneLoaded = new Observable<{ scene: Scene; filename: string }>();
+    public currentSceneLoadKind: SandboxSceneLoadKind = "scene";
+    public currentSceneHadCameras = false;
+    public onSceneLoaded = new Observable<{ scene: Scene; filename: string; loadKind: SandboxSceneLoadKind }>();
+    public onCameraChanged = new Observable<Camera>();
     public onError = new Observable<{ scene?: Scene; message?: string }>();
     public onEnvironmentChanged = new Observable<string>();
     public onRequestClickInterceptor = new Observable<void>();
@@ -17,6 +23,7 @@ export class GlobalState {
 
     public filesInput: FilesInput;
     public isDebugLayerEnabled = false;
+    public readonly cameraPresetManager = new CameraPresetManager();
 
     public commerceMode = false;
 
@@ -43,7 +50,9 @@ export class GlobalState {
             if (this.currentScene) {
                 const inspectorV2Module: InspectorV2Module | undefined = (<any>globalThis).INSPECTOR;
                 if (inspectorV2Module?.ShowInspector) {
-                    this._inspectorToken = inspectorV2Module.ShowInspector(this.currentScene);
+                    this._inspectorToken = inspectorV2Module.ShowInspector(this.currentScene, {
+                        serviceDefinitions: [MakeCameraPresetInspectorServiceDefinition(this, inspectorV2Module)],
+                    });
                 } else {
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this.currentScene.debugLayer.show();

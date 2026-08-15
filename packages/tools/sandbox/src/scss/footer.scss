@@ -18,6 +18,10 @@
         grid-template-columns: 201px 1fr 350px;
     }
 
+    &.longest {
+        grid-template-columns: 201px 1fr 420px;
+    }
+
     .footerLeft {
         display: grid;
         grid-column: 1;
@@ -216,6 +220,10 @@
 
         &.longer {
             grid-template-columns: 0px 1fr 250px;
+        }
+
+        &.longest {
+            grid-template-columns: 0px 1fr 300px;
         }
 
         .dropup {

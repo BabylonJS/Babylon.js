@@ -148,6 +148,8 @@ export class Sandbox extends React.Component<
             this._updateDocumentTitle(info.filename);
 
             this._globalState.currentScene = info.scene;
+            this._globalState.currentSceneLoadKind = info.loadKind;
+            this._globalState.currentSceneHadCameras = info.scene.cameras.length > 0;
             if (
                 this._globalState.currentScene.meshes.length === 0 &&
                 this._globalState.currentScene.clearColor.r === 1 &&

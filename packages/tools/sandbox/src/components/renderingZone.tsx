@@ -8,7 +8,8 @@ import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Scene } from "core/scene";
-import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { type Camera } from "core/Cameras/camera";
 import { type FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { EnvironmentTools } from "../tools/environmentTools";
 import { Tools } from "core/Misc/tools";
@@ -53,6 +54,14 @@ function IsProjectAsset(extension: string): boolean {
     return extension.toLowerCase() === "babylonproj";
 }
 
+function AddMissingKeys(keys: number[], additionalKeys: readonly number[]): void {
+    for (const key of additionalKeys) {
+        if (!keys.includes(key)) {
+            keys.push(key);
+        }
+    }
+}
+
 interface IRenderingZoneProps {
     globalState: GlobalState;
     expanded: boolean;
@@ -68,6 +77,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     private _scene: Scene;
     private _canvas: HTMLCanvasElement;
     private _restoreInspector = false;
+    private readonly _texturePreviewScenes = new WeakSet<Scene>();
 
     public constructor(props: IRenderingZoneProps) {
         super(props);
@@ -210,30 +220,30 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         });
     }
 
-    prepareCamera() {
-        let camera = this._scene.activeCamera as ArcRotateCamera;
+    prepareCamera(): Camera {
+        let camera = this._scene.activeCamera;
         // Attach camera to canvas inputs
         if (!camera) {
             this._scene.createDefaultCamera(true);
 
-            camera = this._scene.activeCamera! as ArcRotateCamera;
+            const defaultCamera = this._scene.activeCamera! as ArcRotateCamera;
 
             if (this._currentPluginName === "gltf" || this._currentPluginName === "obj" || this._currentPluginName === "fbx") {
                 // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
                 // We do this same for obj as it matches other viewers, but obj does not specify a forward convention.
                 // The FBX loader applies the same right-handed-to-left-handed flip as glTF, so its assets share the +Z forward convention.
-                camera.alpha += Math.PI;
+                defaultCamera.alpha += Math.PI;
             }
 
             // Enable camera's behaviors
-            camera.useFramingBehavior = true;
+            defaultCamera.useFramingBehavior = true;
 
-            const framingBehavior = camera.getBehaviorByName("Framing") as FramingBehavior;
+            const framingBehavior = defaultCamera.getBehaviorByName("Framing") as FramingBehavior;
             framingBehavior.framingTime = 0;
             framingBehavior.elevationReturnTime = -1;
 
             if (this._scene.meshes.length) {
-                camera.lowerRadiusLimit = null;
+                defaultCamera.lowerRadiusLimit = null;
 
                 const worldExtends = this._scene.getWorldExtends(function (mesh) {
                     return mesh.isVisible && mesh.isEnabled();
@@ -242,20 +252,22 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             }
 
             if (this.props.globalState.autoRotate) {
-                camera.useAutoRotationBehavior = true;
+                defaultCamera.useAutoRotationBehavior = true;
             }
 
-            camera.pinchPrecision = 200 / camera.radius;
-            camera.upperRadiusLimit = 5 * camera.radius;
+            defaultCamera.pinchPrecision = 200 / defaultCamera.radius;
+            defaultCamera.upperRadiusLimit = 5 * defaultCamera.radius;
 
-            camera.wheelDeltaPercentage = 0.01;
-            camera.pinchDeltaPercentage = 0.01;
+            defaultCamera.wheelDeltaPercentage = 0.01;
+            defaultCamera.pinchDeltaPercentage = 0.01;
 
             if (this.props.globalState.cameraPosition) {
-                camera.lowerRadiusLimit = null;
-                camera.setPosition(this.props.globalState.cameraPosition);
-                camera.lowerRadiusLimit = camera.radius;
+                defaultCamera.lowerRadiusLimit = null;
+                defaultCamera.setPosition(this.props.globalState.cameraPosition);
+                defaultCamera.lowerRadiusLimit = defaultCamera.radius;
             }
+
+            camera = defaultCamera;
         }
 
         camera.attachControl();
@@ -274,13 +286,10 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             //    this._canvas.style.opacity = "1";
             const camera = this._scene.activeCamera! as ArcRotateCamera;
             if (camera.keysUp) {
-                camera.keysUp.push(90); // Z
-                camera.keysUp.push(87); // W
-                camera.keysDown.push(83); // S
-                camera.keysLeft.push(65); // A
-                camera.keysLeft.push(81); // Q
-                camera.keysRight.push(69); // E
-                camera.keysRight.push(68); // D
+                AddMissingKeys(camera.keysUp, [90, 87]); // Z, W
+                AddMissingKeys(camera.keysDown, [83]); // S
+                AddMissingKeys(camera.keysLeft, [65, 81]); // A, Q
+                AddMissingKeys(camera.keysRight, [69, 68]); // E, D
             }
         }
     }
@@ -314,6 +323,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     }
 
     onSceneLoaded(filename: string) {
+        const loadKind = this._texturePreviewScenes.has(this._scene) ? "texture" : "scene";
         this._scene.skipFrustumClipping = true;
 
         if (this.props.globalState.toneMapping !== undefined) {
@@ -324,7 +334,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             this._scene.imageProcessingConfiguration.toneMappingType = ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL;
         }
 
-        this.props.globalState.onSceneLoaded.notifyObservers({ scene: this._scene, filename: filename });
+        this.props.globalState.onSceneLoaded.notifyObservers({ scene: this._scene, filename: filename, loadKind });
 
         // The FBX loader creates animation groups but does not auto-play them the way the glTF loader does.
         // Treat FBX assets like glTF in the Sandbox by playing the first animation group (looped) on load.
@@ -332,7 +342,13 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             this._scene.animationGroups[0].start(true);
         }
 
-        const camera = this.prepareCamera();
+        this.prepareCamera();
+        if (loadKind === "scene") {
+            this.props.globalState.cameraPresetManager.applyActivePreset(this._scene);
+        }
+        if (this._scene.activeCamera) {
+            this.props.globalState.onCameraChanged.notifyObservers(this._scene.activeCamera);
+        }
         this.prepareLighting();
         this.handleErrors();
 
@@ -345,11 +361,14 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             this._engine.runRenderLoop(() => {
                 // NOTE: this logic to adjust camera parameters based on radius is copied in viewer.ts.
                 // Please keep them in sync.
-                // Adapt the camera sensibility based on the distance to the object
-                camera.panningSensibility = 5000 / camera.radius;
-                // Update the camera speed based on the camera's distance from the target.
-                // TODO: This makes mouse wheel zooming behave well, but makes mouse based rotation a bit worse.
-                camera.speed = camera.radius * 0.2;
+                const activeCamera = this._scene.activeCamera;
+                if (activeCamera instanceof ArcRotateCamera && activeCamera.radius > 0) {
+                    // Adapt the camera sensibility based on the distance to the object
+                    activeCamera.panningSensibility = 5000 / activeCamera.radius;
+                    // Update the camera speed based on the camera's distance from the target.
+                    // TODO: This makes mouse wheel zooming behave well, but makes mouse based rotation a bit worse.
+                    activeCamera.speed = activeCamera.radius * 0.2;
+                }
                 this._scene.render();
             });
         });
@@ -359,6 +378,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
     loadTextureAsset(url: string): Scene {
         const scene = new Scene(this._engine);
+        this._texturePreviewScenes.add(scene);
 
         const prevousUseOpenGLOrientationForUV = useOpenGLOrientationForUV;
         setOpenGLOrientationForUV(true);
