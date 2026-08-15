@@ -188,7 +188,7 @@ function CreateCameraPresetId(): string {
 }
 
 export function GetUniqueCameraPresetName(existingNames: readonly string[], requestedName: string): string {
-    const normalizedNames = new Set(existingNames.map((name) => name.trim().toLocaleLowerCase()));
+    const normalizedNames = new Set(existingNames.map((name) => name.trim().toLowerCase()));
     const trimmedName = requestedName.trim();
 
     if (!trimmedName) {
@@ -199,7 +199,7 @@ export function GetUniqueCameraPresetName(existingNames: readonly string[], requ
         return `Preset ${index}`;
     }
 
-    if (!normalizedNames.has(trimmedName.toLocaleLowerCase())) {
+    if (!normalizedNames.has(trimmedName.toLowerCase())) {
         return trimmedName;
     }
 
@@ -210,7 +210,7 @@ export function GetUniqueCameraPresetName(existingNames: readonly string[], requ
         suffix = 2;
     }
 
-    while (normalizedNames.has(`${baseName} ${suffix}`.toLocaleLowerCase())) {
+    while (normalizedNames.has(`${baseName} ${suffix}`.toLowerCase())) {
         suffix++;
     }
 
@@ -507,6 +507,7 @@ export class CameraPresetManager {
             id: `SandboxCameraPreset/${preset.id}`,
             name: preset.name,
         };
+        delete cameraData.uniqueId;
         delete cameraData.parentId;
         delete cameraData.parentInstanceIndex;
         delete cameraData.lockedTargetId;

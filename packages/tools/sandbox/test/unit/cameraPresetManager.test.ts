@@ -6,7 +6,9 @@ import { type BouncingBehavior } from "core/Behaviors/Cameras/bouncingBehavior";
 import { type FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Vector3 } from "core/Maths/math.vector";
+import { SerializationHelper } from "core/Misc/decorators.serialization";
 import { Scene } from "core/scene";
+import { describe, expect, it, vi } from "vitest";
 import {
     CameraPresetManager,
     GetUniqueCameraPresetName,
@@ -43,6 +45,16 @@ describe("camera preset naming", () => {
         const names = ["City", "City 2", "city 3"];
         expect(GetUniqueCameraPresetName(names, " CITY ")).toBe("CITY 4");
         expect(GetUniqueCameraPresetName(names, "City 2")).toBe("City 4");
+    });
+
+    it("normalizes names without locale-sensitive casing", () => {
+        const toLocaleLowerCase = vi.spyOn(String.prototype, "toLocaleLowerCase");
+        try {
+            expect(GetUniqueCameraPresetName(["CITY"], "city")).toBe("city 2");
+            expect(toLocaleLowerCase).not.toHaveBeenCalled();
+        } finally {
+            toLocaleLowerCase.mockRestore();
+        }
     });
 
     it("restarts numbering when the requested suffix cannot be incremented safely", () => {
@@ -260,6 +272,35 @@ describe("CameraPresetManager", () => {
         expect((appliedCamera as UniversalCamera).speed).toBe(7);
         expect((appliedCamera as UniversalCamera).keysUp).toEqual([73]);
         expect(scene.activeCamera).toBe(appliedCamera);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("assigns a fresh scene uniqueId when applying serialized camera data", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const sourceCamera = new ArcRotateCamera("source", 0, 1, 5, Vector3.Zero(), scene);
+        scene.activeCamera = sourceCamera;
+
+        const manager = new CameraPresetManager(new MemoryCameraPresetStorage(), () => "collision");
+        const preset = manager.saveCamera(sourceCamera, "Collision")!;
+        expect(preset.cameraData.uniqueId).toBe(sourceCamera.uniqueId);
+
+        const getUniqueId = vi.spyOn(scene, "getUniqueId");
+        const previousAllowLoadingUniqueId = SerializationHelper.AllowLoadingUniqueId;
+        let appliedCamera;
+        try {
+            SerializationHelper.AllowLoadingUniqueId = true;
+            appliedCamera = manager.activatePreset(preset.id, scene);
+        } finally {
+            SerializationHelper.AllowLoadingUniqueId = previousAllowLoadingUniqueId;
+        }
+
+        expect(appliedCamera).not.toBeNull();
+        expect(appliedCamera?.uniqueId).not.toBe(sourceCamera.uniqueId);
+        expect(getUniqueId.mock.results.map((result) => result.value)).toContain(appliedCamera?.uniqueId);
+        expect(new Set(scene.cameras.map((camera) => camera.uniqueId)).size).toBe(scene.cameras.length);
 
         scene.dispose();
         engine.dispose();

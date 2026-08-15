@@ -48,6 +48,20 @@ export class GlobalState {
 
     constructor(private readonly _versionInfo: { version: string; bundles: string[] }) {}
 
+    public consumeCameraPresetOverrideFromUrl(): boolean {
+        const overrideFromUrl = this.cameraPresetOverrideFromUrl;
+        this.cameraPresetOverrideFromUrl = false;
+        return overrideFromUrl;
+    }
+
+    public applyActiveCameraPresetForLoad(scene: Scene, loadKind: SandboxSceneLoadKind): Camera | null {
+        if (loadKind !== "scene" || this.consumeCameraPresetOverrideFromUrl()) {
+            return null;
+        }
+
+        return this.cameraPresetManager.applyActivePreset(scene);
+    }
+
     public showDebugLayer() {
         if (!this.isDebugLayerEnabled) {
             this.isDebugLayerEnabled = true;
