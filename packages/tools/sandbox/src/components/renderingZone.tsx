@@ -343,7 +343,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         }
 
         this.prepareCamera();
-        this.props.globalState.applyActiveCameraPresetForLoad(this._scene, loadKind);
+        this.props.globalState.applyCameraConfigurationForLoad(this._scene, loadKind);
         if (this._scene.activeCamera) {
             this.props.globalState.onCameraChanged.notifyObservers(this._scene.activeCamera);
         }

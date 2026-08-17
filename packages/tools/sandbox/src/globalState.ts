@@ -1,4 +1,5 @@
 import { type Camera, type FilesInput, type IDisposable, type Nullable, type Scene, type Vector3 } from "core/index";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Observable } from "core/Misc/observable";
 import { CameraPresetManager } from "./tools/cameraPresetManager";
 import { MakeCameraPresetInspectorServiceDefinition } from "./tools/cameraPresetInspectorService";
@@ -6,9 +7,12 @@ import { MakeCameraPresetInspectorServiceDefinition } from "./tools/cameraPreset
 export type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 export type SandboxSceneLoadKind = "scene" | "texture";
 export type SandboxSceneLoadedInfo = { scene: Scene; filename: string; loadKind: SandboxSceneLoadKind };
+export type SandboxCameraUrlNumericOverrides = { minZ: number; lowerRadiusLimit?: number } | { minZ?: number; lowerRadiusLimit: number };
 
 export class GlobalState {
     private _inspectorToken: Nullable<IDisposable> = null;
+    private _cameraUrlNumericOverrides: { minZ?: number; lowerRadiusLimit?: number } = {};
+    private _suppressCameraPresetForNextModelLoad = false;
 
     public currentScene: Scene;
     public currentSceneLoadKind: SandboxSceneLoadKind = "scene";
@@ -32,7 +36,6 @@ export class GlobalState {
 
     public assetUrl?: string;
     public autoRotate = false;
-    public cameraPresetOverrideFromUrl = false;
     public cameraPosition?: Vector3;
     public skybox = true;
     public toneMapping?: number;
@@ -48,18 +51,37 @@ export class GlobalState {
 
     constructor(private readonly _versionInfo: { version: string; bundles: string[] }) {}
 
-    public consumeCameraPresetOverrideFromUrl(): boolean {
-        const overrideFromUrl = this.cameraPresetOverrideFromUrl;
-        this.cameraPresetOverrideFromUrl = false;
-        return overrideFromUrl;
+    public setCameraUrlNumericOverrides(overrides: SandboxCameraUrlNumericOverrides): void {
+        this._cameraUrlNumericOverrides = { ...this._cameraUrlNumericOverrides, ...overrides };
     }
 
-    public applyActiveCameraPresetForLoad(scene: Scene, loadKind: SandboxSceneLoadKind): Camera | null {
-        if (loadKind !== "scene" || this.consumeCameraPresetOverrideFromUrl()) {
+    public suppressCameraPresetForNextModelLoad(): void {
+        this._suppressCameraPresetForNextModelLoad = true;
+    }
+
+    private _consumeCameraPresetSuppression(): boolean {
+        const suppressCameraPreset = this._suppressCameraPresetForNextModelLoad;
+        this._suppressCameraPresetForNextModelLoad = false;
+        return suppressCameraPreset;
+    }
+
+    public applyCameraConfigurationForLoad(scene: Scene, loadKind: SandboxSceneLoadKind): Camera | null {
+        if (loadKind !== "scene") {
             return null;
         }
 
-        return this.cameraPresetManager.applyActivePreset(scene);
+        const presetCamera = this._consumeCameraPresetSuppression() ? null : this.cameraPresetManager.applyActivePreset(scene);
+        const activeCamera = scene.activeCamera;
+        if (activeCamera) {
+            if (this._cameraUrlNumericOverrides.minZ !== undefined) {
+                activeCamera.minZ = this._cameraUrlNumericOverrides.minZ;
+            }
+            if (this._cameraUrlNumericOverrides.lowerRadiusLimit !== undefined && activeCamera instanceof ArcRotateCamera) {
+                activeCamera.lowerRadiusLimit = this._cameraUrlNumericOverrides.lowerRadiusLimit;
+            }
+        }
+
+        return presetCamera;
     }
 
     public showDebugLayer() {

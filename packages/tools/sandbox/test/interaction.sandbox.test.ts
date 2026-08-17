@@ -39,6 +39,11 @@ interface ISceneCameraState {
     cameraIds: string[];
 }
 
+interface ICameraNumericState {
+    minZ: number | undefined;
+    lowerRadiusLimit: number | null | undefined;
+}
+
 function createCameraPresetState(activePresetId: string | null): Record<string, unknown> {
     return {
         version: 1,
@@ -240,6 +245,26 @@ async function readSceneCameraState(page: Page): Promise<ISceneCameraState> {
             cameraNames: scene.cameras.map((camera) => camera.name),
             cameraIds: scene.cameras.map((camera) => camera.id),
         };
+    });
+}
+
+async function readActiveCameraNumericState(page: Page): Promise<ICameraNumericState> {
+    return page.evaluate(async () => {
+        type CameraState = { minZ?: number; lowerRadiusLimit?: number | null };
+        type SceneState = { activeCamera?: CameraState };
+        type EngineStoreState = { LastCreatedScene?: SceneState };
+        const globalEngineStore = (globalThis as typeof globalThis & { BABYLON?: { EngineStore?: EngineStoreState } }).BABYLON?.EngineStore;
+        const engineStoreModuleUrl = performance
+            .getEntriesByType("resource")
+            .map((entry) => entry.name)
+            .find((resourceUrl) => /\/Engines\/engineStore\.js(?:\?|$)/.test(resourceUrl));
+        const engineStoreModule = engineStoreModuleUrl ? ((await import(engineStoreModuleUrl)) as { EngineStore?: EngineStoreState }) : undefined;
+        const activeCamera = (globalEngineStore ?? engineStoreModule?.EngineStore)?.LastCreatedScene?.activeCamera;
+        if (!activeCamera) {
+            throw new Error("Expected the Sandbox active camera to be available");
+        }
+
+        return { minZ: activeCamera.minZ, lowerRadiusLimit: activeCamera.lowerRadiusLimit };
     });
 }
 
@@ -560,6 +585,77 @@ test.describe("camera presets", () => {
         expect(positionZ / positionX).toBeCloseTo(3);
         expect(urlCameraPositionOverride.cameraNames).toEqual(["default camera"]);
         expect(urlCameraPositionOverride.cameraIds).toEqual(["default camera"]);
+        expect((await readCameraPresetState(page)).activePresetId).toBe(cameraPresetId);
+        expect(pageErrors).toHaveLength(0);
+    });
+
+    test("numeric camera URL overrides persist when the stored preset applies after an asset reload", async ({ page }) => {
+        const pageErrors = trackPageErrors(page);
+        await seedCameraPresetStorage(page, cameraPresetId);
+
+        await loadSandboxAsset(page, boxModelUrl + "&cameraMinZ=0.01&cameraLowerRadiusLimit=0");
+
+        expect(await readSceneCameraState(page)).toMatchObject({
+            name: "default camera",
+            id: "default camera",
+            cameraNames: ["default camera"],
+            cameraIds: ["default camera"],
+        });
+        expect(await readActiveCameraNumericState(page)).toEqual({ minZ: 0.01, lowerRadiusLimit: 0 });
+        expect((await readCameraPresetState(page)).activePresetId).toBe(cameraPresetId);
+
+        await page.keyboard.press("r");
+        await expect.poll(async () => (await readSceneCameraState(page)).name).toBe("Overview");
+        expect(await readSceneCameraState(page)).toMatchObject({
+            name: "Overview",
+            id: `SandboxCameraPreset/${cameraPresetId}`,
+            cameraNames: ["default camera", "Overview"],
+            cameraIds: ["default camera", `SandboxCameraPreset/${cameraPresetId}`],
+        });
+        expect(await readActiveCameraNumericState(page)).toEqual({ minZ: 0.01, lowerRadiusLimit: 0 });
+        expect((await readCameraPresetState(page)).activePresetId).toBe(cameraPresetId);
+        expect(pageErrors).toHaveLength(0);
+    });
+
+    test("lower radius URL override wins over cameraPosition framing", async ({ page }) => {
+        const pageErrors = trackPageErrors(page);
+        await clearCameraPresetStorage(page);
+
+        await loadSandboxAsset(page, boxModelUrl + "&cameraPosition=10,20,30&cameraLowerRadiusLimit=0");
+
+        const cameraState = await readSceneCameraState(page);
+        const [positionX, positionY, positionZ] = cameraState.position!;
+        expect(positionY / positionX).toBeCloseTo(2);
+        expect(positionZ / positionX).toBeCloseTo(3);
+        expect((await readActiveCameraNumericState(page)).lowerRadiusLimit).toBe(0);
+        expect(pageErrors).toHaveLength(0);
+    });
+
+    test("invalid numeric camera URL values do not suppress the active preset", async ({ page }) => {
+        const pageErrors = trackPageErrors(page);
+        await seedCameraPresetStorage(page, cameraPresetId);
+
+        await loadSandboxAsset(page, boxModelUrl + "&cameraMinZ=0&cameraLowerRadiusLimit=-1");
+
+        expect(await readSceneCameraState(page)).toMatchObject({
+            name: "Overview",
+            id: `SandboxCameraPreset/${cameraPresetId}`,
+            cameraNames: ["default camera", "Overview"],
+            cameraIds: ["default camera", `SandboxCameraPreset/${cameraPresetId}`],
+        });
+        expect(await readActiveCameraNumericState(page)).toEqual({ minZ: 0.1, lowerRadiusLimit: null });
+        expect((await readCameraPresetState(page)).activePresetId).toBe(cameraPresetId);
+        expect(pageErrors).toHaveLength(0);
+    });
+
+    test("numeric camera URL overrides target the selected embedded camera", async ({ page }) => {
+        const pageErrors = trackPageErrors(page);
+        await seedCameraPresetStorage(page, cameraPresetId);
+
+        await loadSandboxAsset(page, embeddedCameraModelUrl + "&camera=0&cameraMinZ=0.02&cameraLowerRadiusLimit=0");
+
+        expect(await readSceneCameraState(page)).toMatchObject({ name: "Camera", cameraNames: ["Camera"], cameraIds: ["Camera"] });
+        expect(await readActiveCameraNumericState(page)).toEqual({ minZ: 0.02, lowerRadiusLimit: undefined });
         expect((await readCameraPresetState(page)).activePresetId).toBe(cameraPresetId);
         expect(pageErrors).toHaveLength(0);
     });

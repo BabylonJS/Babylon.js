@@ -7,6 +7,7 @@ import { Footer } from "./components/footer";
 import { WelcomeDialog } from "./components/welcomeDialog";
 import { LocalStorageHelper } from "./tools/localStorageHelper";
 import { EnvironmentTools } from "./tools/environmentTools";
+import { ParseCameraUrlValue } from "./tools/cameraUrlConfig";
 import { Vector3 } from "core/Maths/math.vector";
 import { Deferred } from "core/Misc/deferred";
 import { type Scene } from "core/scene";
@@ -331,12 +332,28 @@ export class Sandbox extends React.Component<
                         break;
                     }
                     case "camera": {
-                        this._globalState.cameraPresetOverrideFromUrl = true;
+                        this._globalState.suppressCameraPresetForNextModelLoad();
                         this._camera = +value;
                         break;
                     }
+                    case "cameraminz": {
+                        const minZ = ParseCameraUrlValue("cameraMinZ", value);
+                        if (minZ !== undefined) {
+                            this._globalState.setCameraUrlNumericOverrides({ minZ });
+                            this._globalState.suppressCameraPresetForNextModelLoad();
+                        }
+                        break;
+                    }
+                    case "cameralowerradiuslimit": {
+                        const lowerRadiusLimit = ParseCameraUrlValue("cameraLowerRadiusLimit", value);
+                        if (lowerRadiusLimit !== undefined) {
+                            this._globalState.setCameraUrlNumericOverrides({ lowerRadiusLimit });
+                            this._globalState.suppressCameraPresetForNextModelLoad();
+                        }
+                        break;
+                    }
                     case "cameraposition": {
-                        this._globalState.cameraPresetOverrideFromUrl = true;
+                        this._globalState.suppressCameraPresetForNextModelLoad();
                         this._globalState.cameraPosition = Vector3.FromArray(
                             value.split(",").map(function (component) {
                                 return +component;
