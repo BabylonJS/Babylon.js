@@ -134,11 +134,11 @@ export const umdGlobals = {
     "babylonjs-procedural-textures": "BABYLON",
     "babylonjs-inspector-legacy": "INSPECTOR",
     "babylonjs-inspector": "INSPECTOR",
-    "babylonjs-node-editor": "BABYLON.NodeEditor",
-    "babylonjs-node-geometry-editor": "BABYLON.NodeGeometryEditor",
-    "babylonjs-node-render-graph-editor": "BABYLON.NodeRenderGraphEditor",
-    "babylonjs-node-particle-editor": "BABYLON.NodeParticleEditor",
-    "babylonjs-gui-editor": "BABYLON.GuiEditor",
+    "babylonjs-node-editor": "NODEEDITOR",
+    "babylonjs-node-geometry-editor": "NODEGEOMETRYEDITOR",
+    "babylonjs-node-render-graph-editor": "NODERENDERGRAPHEDITOR",
+    "babylonjs-node-particle-editor": "NODEPARTICLEEDITOR",
+    "babylonjs-gui-editor": "GUIEDITOR",
     "babylonjs-accessibility": "BABYLON.Accessibility",
     "babylonjs-ktx2decoder": "KTX2DECODER",
     "babylonjs-shared-ui-components": "BABYLON.SharedUIComponents",
@@ -158,11 +158,11 @@ const es6Globals = {
     "@babylonjs/procedural-textures": "BABYLON",
     "@babylonjs/inspector-legacy": "INSPECTOR",
     "@babylonjs/inspector": "INSPECTOR",
-    "@babylonjs/node-editor": "BABYLON.NodeEditor",
-    "@babylonjs/node-geometry-editor": "BABYLON.NodeGeometryEditor",
-    "@babylonjs/node-render-graph-editor": "BABYLON.NodeRenderGraphEditor",
-    "@babylonjs/node-particle-editor": "BABYLON.NodeParticleEditor",
-    "@babylonjs/gui-editor": "BABYLON.GuiEditor",
+    "@babylonjs/node-editor": "NODEEDITOR",
+    "@babylonjs/node-geometry-editor": "NODEGEOMETRYEDITOR",
+    "@babylonjs/node-render-graph-editor": "NODERENDERGRAPHEDITOR",
+    "@babylonjs/node-particle-editor": "NODEPARTICLEEDITOR",
+    "@babylonjs/gui-editor": "GUIEDITOR",
     "@babylonjs/accessibility": "BABYLON.Accessibility",
     "@babylonjs/ktx2decoder": "KTX2DECODER",
     "@babylonjs/shared-ui-components": "BABYLON.SharedUIComponents",
@@ -191,6 +191,34 @@ const umdPackageMeta = {
     "babylonjs-addons": { baseFilename: "babylonjs.addons" },
     "babylonjs-smart-filters": { baseFilename: "babylonjs.smartFilters" },
 };
+
+/**
+ * Editor packages that the Babylon.js CDN hosts as standalone, self-contained scripts.
+ *
+ * A UMD/global build has no module loader, so a dynamic `import()` of one of these cannot be
+ * resolved the way an ES module bundler would. Instead of failing, such an import is rewritten to a
+ * helper that returns the browser global when the editor script is already present, and otherwise
+ * injects it from the CDN on demand. That keeps a single source form — `await import("node-editor/nodeEditor")` —
+ * working for ES module consumers (who get the editor bundled) and for UMD consumers (who get it from the CDN).
+ *
+ * The global name for these packages must be a bare identifier (not a dotted path such as
+ * `BABYLON.NodeEditor`) because the helper looks it up on the global object by name.
+ */
+const lazyLoadableEditorPackages = ["gui-editor", "node-editor", "node-geometry-editor", "node-render-graph-editor", "node-particle-editor"];
+
+/** Maps every module ID (UMD and public ES6) of a lazily loadable editor to its CDN-relative script path. */
+const lazyLoadableEditorCdnPaths = Object.fromEntries(
+    lazyLoadableEditorPackages.flatMap((devName) => {
+        const umdId = devNameToUMDId[devName];
+        // e.g. "babylon.nodeEditor" -> "nodeEditor/babylon.nodeEditor.js"
+        const baseFilename = umdPackageMeta[umdId].baseFilename;
+        const cdnPath = `${baseFilename.replace(/^babylon\./, "")}/${baseFilename}.js`;
+        return [
+            [umdId, cdnPath],
+            [devNameToES6Id[devName], cdnPath],
+        ];
+    })
+);
 
 // ---------------------------------------------------------------------------
 // Plugins
@@ -406,6 +434,10 @@ function stubOptionalPeerDepsPlugin() {
  * `es-check es6` gate rejects. Such calls are swapped for a helper that returns a
  * rejected promise; callers already guard with try/catch and fall back (e.g. by
  * accepting an explicitly-provided module).
+ *
+ * Editor packages listed in `lazyLoadableEditorCdnPaths` are the exception: they are hosted on the
+ * CDN as standalone scripts, so their dynamic imports become a helper that loads them on demand
+ * rather than requiring the consumer to have preloaded the corresponding global.
  */
 function rewriteDynamicExternalImportsPlugin(production = false) {
     const dynamicImportHelperName = "_BabylonUMDDynamicImportUnsupported";
@@ -414,10 +446,30 @@ function rewriteDynamicExternalImportsPlugin(production = false) {
         `return Promise.reject(new Error("Dynamic import of a module specifier is not supported in the UMD/global Babylon build; use the ES module build or provide the module explicitly."));` +
         `}\n`;
 
+    const lazyLoadHelperName = "_BabylonUMDLoadEditorAsync";
+    // In-flight loads are cached by CDN path so that concurrent imports of the same editor share a single
+    // script injection instead of racing. The cache entry is cleared on failure so a later attempt can retry.
+    const lazyLoadHelper =
+        `function ${lazyLoadHelperName}(globalName,cdnPath){` +
+        `var g=typeof globalThis!=="undefined"?globalThis:typeof window!=="undefined"?window:{};` +
+        `if(typeof g[globalName]!=="undefined"){return Promise.resolve(g[globalName]);}` +
+        `var pending=${lazyLoadHelperName}._pending||(${lazyLoadHelperName}._pending={});` +
+        `if(pending[cdnPath]){return pending[cdnPath];}` +
+        `var tools=g.BABYLON&&g.BABYLON.Tools;` +
+        `if(!tools){return Promise.reject(new Error("Cannot load "+globalName+": the Babylon.js core UMD bundle must be loaded first."));}` +
+        // eslint-disable-next-line github/no-then
+        `pending[cdnPath]=tools.LoadBabylonScriptAsync(tools._DefaultCdnUrl+"/"+cdnPath).then(function(){` +
+        `if(typeof g[globalName]==="undefined"){throw new Error("Loading "+cdnPath+" did not define the expected global "+globalName+".");}` +
+        `return g[globalName];` +
+        `}).catch(function(e){delete pending[cdnPath];throw e;});` +
+        `return pending[cdnPath];` +
+        `}\n`;
+
     return {
         name: "rewrite-dynamic-external-imports",
         renderChunk(code) {
             let result = code;
+            let usesLazyLoadHelper = false;
             result = result.replace(/require\((['"])@fortawesome\/fontawesome-svg-core\/package\.json\1\)/g, `({ version: ${JSON.stringify(fontAwesomeSvgCoreVersion)} })`);
             // Replace process.env.NODE_ENV so React (and other libs) don't
             // reference the Node.js `process` global in browsers.
@@ -425,10 +477,16 @@ function rewriteDynamicExternalImportsPlugin(production = false) {
             // about dead code elimination; use "production" in prod builds.
             const nodeEnv = production ? '"production"' : '"development"';
             result = result.replaceAll("process.env.NODE_ENV", nodeEnv);
-            for (const [umdId, globalVar] of Object.entries(umdGlobals)) {
-                // Match import("umdId") or import('umdId') — dynamic import of an external.
-                const re = new RegExp(`import\\((['"])${umdId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\1\\)`, "g");
-                result = result.replace(re, `Promise.resolve(${globalVar})`);
+            for (const [moduleId, globalVar] of [...Object.entries(umdGlobals), ...Object.entries(es6Globals)]) {
+                // Match import("moduleId") or import('moduleId') — dynamic import of an external.
+                const re = new RegExp(`import\\((['"])${moduleId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\1\\)`, "g");
+                const cdnPath = lazyLoadableEditorCdnPaths[moduleId];
+                const replacement = cdnPath ? `${lazyLoadHelperName}(${JSON.stringify(globalVar)},${JSON.stringify(cdnPath)})` : `Promise.resolve(${globalVar})`;
+                const rewritten = result.replace(re, replacement);
+                if (cdnPath && rewritten !== result) {
+                    usesLazyLoadHelper = true;
+                }
+                result = rewritten;
             }
             // Any dynamic import still present at this point has a variable specifier (string-literal
             // external imports were rewritten above; internal ones were inlined by Rollup). The UMD/global
@@ -436,6 +494,9 @@ function rewriteDynamicExternalImportsPlugin(production = false) {
             if (/(?<![.\w])import\s*\(/.test(result)) {
                 result = result.replace(/(?<![.\w])import\s*\(/g, `${dynamicImportHelperName}(`);
                 result = dynamicImportHelper + result;
+            }
+            if (usesLazyLoadHelper) {
+                result = lazyLoadHelper + result;
             }
             return result !== code ? { code: result, map: null } : null;
         },

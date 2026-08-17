@@ -1,6 +1,141 @@
 {
-    "fromTag": "9.20.1",
+    "fromTag": "9.21.1",
     "changelog": {
+        "9.21.2": [
+            {
+                "pr": "18801",
+                "title": "Normalize editor module resolution across all build configs",
+                "description": "## Problem\n\nOn [babylonjs.com/Demos/GUI](https://www.babylonjs.com/Demos/GUI/), opening Inspector v2 → **GUI** → `ui` → **Edit GUI** fails with `TypeError: ...Show is not a function`.\n\nInspector v2 launches the GUI editor and the four node-based editors via dynamic imports, but those specifiers resolved to a **different module shape in every build configuration**, so the canonical `const { XxxEditor } = await import(...)` form only worked in some of them.\n\n| Build | `await import(\"gui-editor/guiEditor\")` resolved to |\n| --- | --- |\n| monorepo dev / sandbox / viewer | `{ GUIEditor }` ✅ |\n| devHost | `{ GUIEditor }` ✅ |\n| published ES6 | `{ guiEditor: {...}, default: {...} }` ❌ |\n| UMD | the class itself ❌ |\n\n## Investigation turned up a second, worse bug\n\nThe UMD dynamic-import rewrite emitted `Promise.resolve(GLOBAL)`. That reads a browser global and **never fetches anything**, so any editor that had not already been script-tagged raised a synchronous `ReferenceError: GUIEDITOR is not defined`. Reproduced with a minimal UMD harness loading core + gui + inspector-v2 from the CDN.\n\n## Approach\n\nRather than adding a tolerant runtime resolver, this normalizes the configs so there is exactly **one correct way to reference an editor in source**:\n\n```ts\nconst { GUIEditor } = await import(\"gui-editor/guiEditor\");\n```\n\n...and every bundler/dev-server is configured so that form always works. `.build/changelog.json` entries 6785 and 10513 confirm this clean form was the original intent before it drifted.\n\n### Fix 1 — module shape\n\n- Added the missing `export *` to the public ES6 barrels for `gui-editor`, `node-editor`, `node-geometry-editor`, `node-render-graph-editor` (`node-particle-editor` already had it).\n- Retargeted `umdGlobals` / `es6Globals` / `babylonGlobals` at each editor's own UMD **namespace** global (`GUIEDITOR`, `NODEEDITOR`, ...) instead of at a class inside `BABYLON`.\n- Collapsed the whole specifier in Inspector v2's `devPackageMap`, longest-first.\n\n### Fix 2 — UMD lazy CDN load\n\n`rewriteDynamicExternalImportsPlugin` now emits a small ES5 helper that returns the global if already present, otherwise fetches the editor bundle through `Tools.LoadBabylonScriptAsync` (which applies `ScriptBaseUrl` / version prefixing / `ScriptPreprocessUrl`).\n\nThis produces the intended split: **the Inspector v2 UMD bundle pulls editor bundles from the CDN on demand, while the ES6 package bundles them.**\n\n### Fix 3 — `misc/*Editor.ts` helpers\n\nThe four node-editor helpers used the legacy `.edit()` entry point, which *always* fetched from the CDN and so could never be bundled. They now use the same dynamic-import form, preserving the exact option shape each core class previously supplied — including the easy-to-miss `NodeRenderGraph.CustomBlockDescriptions`. `nodeParticleEditor` additionally now passes `hostScene`, which `.edit()` never did.\n\n`flowGraphEditor.ts` intentionally stays on `.edit()`: there is no published flow graph editor package to import.\n\nAdded `misc/guiEditor.ts` so the GUI editor gets the same helper treatment as the others.\n\n## Not a breaking change\n\nThe globals maps are Rollup/Vite `output.globals` — they control how *our* bundles **read** an external, not what a package **publishes**. Each editor declares its published namespace explicitly in its own `rollup.config.umd.mjs`; `umdGlobals` is only a fallback. Verified in the built output that `BABYLON.GuiEditor` and `BABYLON.NodeEditor` are still defined, and the ES6 tails are purely additive.\n\n## Validation\n\n| Surface | Result |\n| --- | --- |\n| Monorepo dev (inspector-v2 :9001) | ✅ NME opened end-to-end |\n| Published ES6 packages | ✅ all 5 resolve `{ XxxEditor }` with `Show` |\n| Production UMD bundle | ✅ GUI editor + NME both lazy-fetched from `cdn.babylonjs.com/v9.21.0/...` and opened; `BABYLON.NodeEditor` still a function |\n| Playground | ✅ unaffected — inspector refs are type-only, runtime uses the `INSPECTOR` UMD global |\n| Sandbox (production) | ✅ unaffected — inspector import is behind `import.meta.env.DEV`, so prod uses the CDN UMD global |\n| Sandbox (dev) | ✅ all 5 editors + all 5 `misc/*` helpers resolve; NME and GUI editor both launched end-to-end |\n\nGates: `format:check` ✅ · `lint:check` (eslint + treeshaking 16/16 + side-effects 4/4) ✅ · `tsc -b` ✅ · inspector-v2 unit tests 80/80 ✅\n\n## Known follow-ups\n\n- Because the inspector no longer routes through `.edit()`, per-class `EditorURL` overrides (`NodeMaterial.EditorURL`, etc.) no longer affect the inspector path. Global `Tools.ScriptBaseUrl` still applies.\n- The `@babylonjs/*-editor` packages still ship a UMD bundle from their `module`/`esnext` fields rather than a real ESM tree, so downstream bundlers apply their own interop. A proper ESM build + `exports` map for all five editor packages would remove the last of this friction — out of scope here.\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/inspector-v2/package.json",
+                    "packages/dev/inspector-v2/src/components/properties/textures/advancedDynamicTextureProperties.tsx",
+                    "packages/dev/inspector-v2/src/misc/flowGraphEditor.ts",
+                    "packages/dev/inspector-v2/src/misc/guiEditor.ts",
+                    "packages/dev/inspector-v2/src/misc/nodeGeometryEditor.ts",
+                    "packages/dev/inspector-v2/src/misc/nodeMaterialEditor.ts",
+                    "packages/dev/inspector-v2/src/misc/nodeParticleEditor.ts",
+                    "packages/dev/inspector-v2/src/misc/nodeRenderGraphEditor.ts",
+                    "packages/dev/inspector-v2/src/services/panes/scene/guiExplorerService.tsx",
+                    "packages/public/@babylonjs/gui-editor/src/index.ts",
+                    "packages/public/@babylonjs/inspector-v2/package.json",
+                    "packages/public/@babylonjs/inspector-v2/rollup.config.lib.mjs",
+                    "packages/public/@babylonjs/node-editor/src/index.ts",
+                    "packages/public/@babylonjs/node-geometry-editor/src/index.ts",
+                    "packages/public/@babylonjs/node-render-graph-editor/src/index.ts",
+                    "packages/public/rollupUMDHelper.mjs",
+                    "packages/public/umd/test/unit/umdRollupCompatibility.test.ts",
+                    "packages/public/viteToolsHelper.mjs"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "18804",
+                "title": "Fix alpha-mode sentinel crash and report accurate caps and depth/stencil metadata",
+                "description": "Four small `NativeEngine` fixes. All are pure JavaScript and use only native commands that already exist in Babylon Native `master`, so no companion Babylon Native change is required.\r\n\r\n1. **Treat the unset alpha-mode sentinel (`-1`) as `ALPHA_DISABLE`.** `AbstractEngine` initialises and resets `_alphaMode` to `-1` as an \"unset\" sentinel, and WebGL/WebGPU tolerate it being restored through `setAlphaMode(-1)` — `OutlineRenderer._afterRenderingMesh` does exactly that when saving and restoring `getAlphaMode()`. The native path had no `case` for it and threw `Unsupported alpha mode: -1.`\r\n\r\n2. **`maxVertexUniformVectors: 256`, not the placeholder `16`.** `16` was actively harmful: `GetGaussianSplattingMaxPartCount` computes `floor(max(n - 40, 0) / 5)`, which at `16` clamps to **1 splat**, and it produced spurious bone-uniform-budget warnings. `256` is conservative — the GLES 3.0/3.1 mandated minimum, and Babylon Native compiles every shader at ESSL 310.\r\n\r\n3. **Report `colorBufferFloat`, `blendFloat` and `texelFetch`.** All hard-coded `false` but supported: the engine already reports `textureFloat` and `textureHalfFloatRender` and `NativeEngine.cpp` handles `RGBA32F` render targets, and `texelFetch` is core in ESSL 300+.\r\n\r\n4. **Populate depth/stencil texture metadata.** `_createDepthStencilTexture` never set the `InternalTexture` fields `ThinEngine._setupDepthStencilTexture` does; in particular `samples` stayed `0`, breaking the FrameGraph texture manager's MSAA sample-count validation. Now mirrors the full WebGL set, including 2D-array depth.\r\n\r\n**Testing** — fix 1 verified by a controlled A/B on the Babylon Native validation suite: the `Outline` test was the last failure in the enabled set, fails with `Unsupported alpha mode: -1` on the unpatched bundle and passes 2/2 with the fix, taking the full sweep from 301/302 to **302 ran / 302 passed / 0 failed**. `tsc --noEmit` and `eslint` baseline-equal; `vitest --project=unit` 17 failing vs **18 on `master`** — no regressions, one fewer failure.\r\n",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeHelpers.ts",
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18803",
+                "title": "Fix three IBL rendering bugs: AreaLights prefilter type, OpenPBR anisotropic inlining, black diffuse fallback",
+                "description": "Three small, independent rendering fixes found while bringing Babylon Native to parity with Babylon.js. None changes WebGL or WebGPU output.\r\n\r\n1. **`AreaLights` prefilter render target** — `areaLightsTextureTools.ts` passed a texture *format* where a texture *type* was expected.\r\n\r\n2. **OpenPBR anisotropic IBL: one-line `radianceAnisotropic` call.** Purely syntactic. Babylon's shader inliner (`#define inline`) mishandles multi-line call statements: it dropped the `environmentRadiance =` assignment target and emitted a bare `vec4(radianceAnisotropic_0, 1.0);`. On Babylon Native that is a fragment compile error, which sent `_prepareEffect`/`_processCompilationErrors` into an infinite retry loop and hung the scene. Collapsing the call matches the already-single-line `radiance()` call. Also drops `f` float suffixes (`0.5f` → `0.5`), which GLSL ES rejects — same values.\r\n\r\n3. **Black diffuse IBL without texture prefiltering.** When a cube texture requests `prefilterOnLoad`/`prefilterIrradianceOnLoad` but the engine reports `allowTexturePrefiltering = false` (Babylon Native, WebGL 1), no prefiltered irradiance or radiance is produced, the spherical polynomial stays empty, and diffuse IBL renders pure black. Falls back to CPU spherical harmonics. Gated on `!allowTexturePrefiltering`, which is `true` on WebGL 2 and WebGPU, so it is inert there by construction.\r\n\r\n**Testing** — `tsc --noEmit`, `eslint` and `vitest --project=unit` (4603 tests) all equal to the `master` baseline; visualization tests green on WebGL 2 and WebGPU.\r\n\r\n> **Note:** an earlier revision also capped HDR radiance prefiltering to source mip 0 for float cubes. That was a WebGL regression — it made the GGX convolution sample only the top mip and shifted 13 OpenPBR IBL reference images — and has been removed. See the comment below.\r\n",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/envCubeTexture.pure.ts",
+                    "packages/dev/core/src/Misc/areaLightsTextureTools.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/openpbrIblFunctions.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18802",
+                "title": "Fix particle node material async shader creation",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\n## Summary\r\n- Wait for asynchronous node material builds before creating particle effects.\r\n- Prevent empty particle fragment shaders from falling back to shader URL requests.\r\n- Remove deferred build observers when particle material builds fail.\r\n- Add regression coverage for in-progress, build-on-demand, and failed particle builds.\r\n\r\n## Motivation\r\nNME Particle mode can create its effects before `ParticleTextureBlock` finishes loading shader includes. This registers empty fragment sources, causing `/src/Shaders/*.fragment.fx` requests and a broken particle preview in production.\r\n\r\n## Testing\r\n- Async node material build tests: 7/7 passed\r\n- Materials unit tests: 253/253 passed\r\n- Particles unit tests: 202/202 passed\r\n- Core TypeScript build passed\r\n- Repository format and lint checks passed\r\n- Full unit run: 4,611 tests passed; remaining failures reproduce existing Windows path and unrelated timeout issues\r\n",
+                "author": {
+                    "name": "VicenteCartas",
+                    "url": "https://github.com/VicenteCartas"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.pure.ts",
+                    "packages/dev/core/test/unit/Materials/Node/babylon.nodeMaterials.asyncBuild.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles",
+                    "materials"
+                ]
+            }
+        ],
+        "9.21.1": [
+            {
+                "pr": "18797",
+                "title": "Fix WebGPU rendering nothing when maxSimultaneousLights exceeds the uniform buffer budget",
+                "description": "## Problem\r\n\r\nOn WebGPU, a scene with more lights than the device's `maxUniformBuffersPerShaderStage` budget renders **nothing at all**. `lightVxUboDeclaration` declares one uniform buffer per light in the vertex stage, so past the limit every pipeline creation is rejected by the validator, leaving only a `CreateBindGroupLayout` error to go on. The limit is 12 both as the WebGPU spec default and as the maximum a D3D12 adapter reports, so it cannot be raised through `requiredLimits`.\r\n\r\nFixes #18796.\r\n\r\n## Fix\r\n\r\n`GetSupportedSimultaneousLights(scene, maxSimultaneousLights)` returns how many lights the engine can actually render, and is called from **`PrepareDefinesForLights` only** — the cold path that decides how many per-light uniform buffers the shader declares. The scene renders with fewer lights instead of not rendering at all, and a one-off `Logger.Warn` names the requested count, the supported count and the value to set to silence it.\r\n\r\nEngines that do not report the limit (WebGL, native) do not enforce it, so nothing is clamped there.\r\n\r\nThe vertex stage binds **4** non-light uniform buffers: `Scene`, `Mesh`, `Material` and `LeftOver`. `LeftOver` is synthesised for uniforms declared outside a uniform block and `_buildLeftOverUBO` gives it *both* vertex and fragment visibility, so it counts against the vertex budget; it exists for virtually every material (per-light shadow matrices, `logarithmicDepthConstant`, `vClipPlane`, `morphTargetCount`). On a 12-buffer device the supported count is therefore 12 − 4 = **8**. It is counted unconditionally on purpose: reserving one buffer too many costs a light in the rare shader with no leftover uniforms, whereas reserving one too few brings back the black screen.\r\n\r\n## Why the hot paths are left unclamped\r\n\r\n`BindLights` and `AreLightsTexturesReady` keep the raw `maxSimultaneousLights`, so neither pays for a `getCaps()` lookup per draw. `BindLights` may then bind more lights than the effect declares, which is a no-op:\r\n\r\n- `Effect.bindUniformBuffer` returns early when `_uniformBuffersNames` has no entry for the `Light{X}` name.\r\n- A light's uniform buffer field names carry no index (`vLightData`, not `vLightData0`), so binding at an undeclared index cannot corrupt its layout.\r\n- `setTexture` / `setMatrix` on undeclared names are already no-ops.\r\n\r\nThe cost is a few redundant buffer updates in scenes that are over budget.\r\n\r\n## Tests\r\n\r\n18 unit tests in `materialHelper.functions.test.ts` cover the clamp, the \"at least one light\" floor, the pass-through on engines that do not report the limit, the warning text and its per-engine dedup, and the deliberate lack of clamping in the two hot paths.\r\n",
+                "author": {
+                    "name": "bkaradzic-microsoft",
+                    "url": "https://github.com/bkaradzic-microsoft"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engineCapabilities.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/test/unit/Materials/materialHelper.functions.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18723",
+                "title": "FSR 1 render pipeline (EASU + RCAS) with WebGL2 / Native support",
+                "description": "[Created by Copilot on behalf of @bghgary]\r\n\r\n## Context\r\n\r\nThis continues #16994 by @matanui159 (Jasmine Minter), which implemented AMD **FSR 1** (EASU upscale + RCAS sharpen) as fragment post-processes (a `PostProcessRenderPipeline`) in WGSL. That PR was **WebGPU-only** because the EASU pass uses `textureGather`, which Babylon's GLSL target doesn't expose — so it did not run on WebGL2 or Babylon Native.\r\n\r\nFull credit for the original FSR 1 pipeline and shaders goes to Jasmine; her commit is preserved as the first commit here and this PR builds directly on it.\r\n\r\n## Change\r\n\r\n- Adds **GLSL (`Shaders/`) variants** of the EASU / RCAS shaders and the `ffxFunctions` include, so the pipeline runs on **WebGL2 and Babylon Native** in addition to WebGPU. The EASU `textureGather` calls are rewritten as 4 explicit `texelFetch`es (in gather order) — the approach the original author suggested; RCAS uses plain texel loads and ports unchanged.\r\n- The thin post-processes select WGSL vs GLSL via `_gatherImports`, the same pattern as FXAA / TAA.\r\n- Switches the effects to **plain uniforms** (`con0..con3` / `con`) set from `onApplyObservable` instead of a uniform buffer, so they work on backends that disable uniform buffers (Babylon Native). Shaders are simplified accordingly (dropped the `uint`→`float` bit-casts and the UBO/struct declarations).\r\n- `isSupported` is `isWebGPU || engine.version >= 2` (WebGPU / WebGL2 / Native → true; WebGL1 → false).\r\n- Fixes an FSR shader crash on the D3D11 / Babylon Native swapchain.\r\n\r\n## Behavior\r\n\r\nPurely additive: a new opt-in `FSR1RenderingPipeline`. No existing behavior changes — WebGPU output is unchanged, and the WebGL2 + Native paths are newly enabled.\r\n\r\n## Validation\r\n\r\n- Shaders compile to SPIR-V via glslang (Native's toolchain) and validate as GLSL ES 3.00 (WebGL2).\r\n- Rendered a scene through the FSR 1 pipeline on Babylon Native's D3D11 backend — correct upscaled output, clean exit.\r\n- Visualization test `FSR1 render pipeline` runs a photographic source through the pipeline. It moves 12.21% of pixels against a naive upscale of the same half-resolution source, versus the harness's 1.1% gate.\r\n\r\n## Try it\r\n\r\n[FSR1 A/B toggle playground](https://playground.babylonjs.com/?snapshot=refs/pull/18723/merge#GB98SV#0) — cycles FSR1, a naive bilinear upscale of the same half-resolution source, and a native full-resolution render. Tap, space, or 1-3 to switch; drag to orbit and wheel to zoom in on the reconstruction.\r\n\r\nJudge FSR against the naive upscale rather than the native render: the pipeline renders at half resolution, so switching it off is always sharper and that is not a defect.\r\n\r\nCredit: @matanui159 (Jasmine Minter) for the original FSR 1 pipeline, #16994.\r\n",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "eslint.config.mjs",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/fsr1RenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/index.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/pure.ts",
+                    "packages/dev/core/src/PostProcesses/thinFSR1SharpenPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/thinFSR1UpscalePostProcess.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/ffxFunctions.fx",
+                    "packages/dev/core/src/Shaders/fsr1Sharpen.fragment.fx",
+                    "packages/dev/core/src/Shaders/fsr1Upscale.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/ffxFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/fsr1Sharpen.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/fsr1Upscale.fragment.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fsr1.png",
+                    "packages/tools/tests/test/visualization/config.json",
+                    "scripts/treeshaking/side-effects-manifest/core/Shaders.json",
+                    "scripts/treeshaking/side-effects-manifest/core/ShadersWGSL.json"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            }
+        ],
         "9.21.0": [],
         "9.20.1": [
             {

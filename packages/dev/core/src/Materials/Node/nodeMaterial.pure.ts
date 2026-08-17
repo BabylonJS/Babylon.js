@@ -1563,7 +1563,9 @@ export class NodeMaterial extends NodeMaterialBase {
     }
 
     /**
-     * Create the effect to be used as the custom effect for a particle system
+     * Create the effect to be used as the custom effect for a particle system.
+     * If the material has not been built successfully yet, the build is started when needed and the effect is only
+     * created once it completes, so the effect may not be set on the particle system when this method returns.
      * @param particleSystem Particle system to create the effect for
      * @param onCompiled defines a function to call when the effect creation is successful
      * @param onError defines a function to call when the effect creation has failed
@@ -1571,6 +1573,24 @@ export class NodeMaterial extends NodeMaterialBase {
     public createEffectForParticles(particleSystem: IParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
         if (this.mode !== NodeMaterialModes.Particle) {
             Logger.Log("Incompatible material mode");
+            return;
+        }
+
+        // ParticleTextureBlock loads shader includes asynchronously. Wait for the build to produce
+        // shader code instead of registering an empty fragment shader that falls back to a URL.
+        if (!this._buildWasSuccessful) {
+            const buildObserver = this.onBuildObservable.addOnce(() => {
+                this.onBuildErrorObservable.remove(errorObserver);
+                this.createEffectForParticles(particleSystem, onCompiled, onError);
+            });
+            const errorObserver = this.onBuildErrorObservable.addOnce(() => {
+                this.onBuildObservable.remove(buildObserver);
+            });
+
+            if (!this._buildIsInProgress) {
+                this.build();
+            }
+
             return;
         }
 

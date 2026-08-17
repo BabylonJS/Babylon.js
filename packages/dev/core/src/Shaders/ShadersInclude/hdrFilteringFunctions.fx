@@ -397,7 +397,7 @@
             // Compute effective dimension scaled by anisotropy for proper solid angle
             float effectiveDim = dim0 * sqrt(clampedAlphaT * clampedAlphaB);
             float omegaP = (4. * PI) / (6. * effectiveDim * effectiveDim);
-            const float noiseScale = clamp(log2(float(NUM_SAMPLES)) / 12.0f, 0.0f, 1.0f);
+            const float noiseScale = clamp(log2(float(NUM_SAMPLES)) / 12.0, 0.0, 1.0);
             float weight = 0.;
             
             #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
@@ -409,7 +409,7 @@
                 vec2 Xi = hammersley(i, NUM_SAMPLES);
                 
                 // Add noise to sample coordinates to break up sampling artifacts
-                Xi = fract(Xi + noiseInput * mix(0.5f, 0.015f, noiseScale)); // Wrap around to stay in [0,1] range
+                Xi = fract(Xi + noiseInput * mix(0.5, 0.015, noiseScale)); // Wrap around to stay in [0,1] range
 
                 // Generate anisotropic half vector using importance sampling
                 vec3 H_tangent = hemisphereImportanceSampleDggxAnisotropic(Xi, clampedAlphaT, clampedAlphaB);

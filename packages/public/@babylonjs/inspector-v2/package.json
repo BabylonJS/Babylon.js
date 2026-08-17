@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "9.21.0",
+    "version": "9.21.2",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "esnext": "lib/index.js",
@@ -38,6 +38,10 @@
         "@babylonjs/gui-editor": "^9.0.0",
         "@babylonjs/loaders": "^9.0.0",
         "@babylonjs/materials": "^9.0.0",
+        "@babylonjs/node-editor": "^9.0.0",
+        "@babylonjs/node-geometry-editor": "^9.0.0",
+        "@babylonjs/node-particle-editor": "^9.0.0",
+        "@babylonjs/node-render-graph-editor": "^9.0.0",
         "@babylonjs/serializers": "^9.0.0",
         "@fluentui-contrib/react-resize-handle": "^0.8.4",
         "@fluentui-contrib/react-virtualizer": "^1.0.0",

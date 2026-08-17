@@ -328,7 +328,7 @@ export class ThinNativeEngine extends ThinEngine {
             maxVaryingVectors: 16,
             maxDrawBuffers: 8,
             maxFragmentUniformVectors: 16,
-            maxVertexUniformVectors: 16,
+            maxVertexUniformVectors: 256,
             shaderFloatPrecision: 23, // TODO: is this correct?
             standardDerivatives: true,
             astc: null,
@@ -340,8 +340,8 @@ export class ThinNativeEngine extends ThinEngine {
             uintIndices: true,
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
-            colorBufferFloat: false,
-            blendFloat: false,
+            colorBufferFloat: true,
+            blendFloat: true,
             supportFloatTexturesResolve: false,
             rg11b10ufColorRenderable: false,
             textureFloat: true,
@@ -351,7 +351,7 @@ export class ThinNativeEngine extends ThinEngine {
             textureHalfFloatLinearFiltering: true,
             textureHalfFloatRender: true,
             textureLOD: true,
-            texelFetch: false,
+            texelFetch: true,
             drawBuffersExtension: true,
             depthTextureExtension: false,
             vertexArrayObject: true,
@@ -2192,6 +2192,26 @@ export class ThinNativeEngine extends ThinEngine {
 
         const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
+
+        // Populate the standard depth/stencil texture metadata, mirroring ThinEngine._setupDepthStencilTexture.
+        // In particular `samples` must be set so consumers such as the FrameGraph texture manager report the
+        // correct sample count; leaving it at the InternalTexture default (0) breaks FrameGraph MSAA
+        // depth/output sample-count validation. `is2DArray`/`depth` matter for the texture-array depth targets
+        // used by cascaded shadow maps.
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = width;
+        texture.height = height;
+        texture.is2DArray = layers > 0;
+        texture.depth = layers || depth;
+        texture.isReady = true;
+        texture.samples = samples;
+        texture.generateMipMaps = false;
+        texture.samplingMode = options.bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        texture._comparisonFunction = options.comparisonFunction ?? 0;
 
         const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, generateStencil, true, samples);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;

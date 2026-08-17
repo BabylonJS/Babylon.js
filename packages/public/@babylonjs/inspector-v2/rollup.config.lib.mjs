@@ -8,6 +8,10 @@ import { rewriteDevImports, appendJsToExternalPaths } from "../../rollupUtils.mj
 // Map dev package names to their public @babylonjs/ equivalents.
 // Must be ordered longest-first to prevent prefix collisions (e.g. gui vs gui-editor).
 const devPackageMap = {
+    "node-render-graph-editor/nodeRenderGraphEditor": "@babylonjs/node-render-graph-editor",
+    "node-geometry-editor/nodeGeometryEditor": "@babylonjs/node-geometry-editor",
+    "node-particle-editor/nodeParticleEditor": "@babylonjs/node-particle-editor",
+    "node-editor/nodeEditor": "@babylonjs/node-editor",
     "gui-editor/guiEditor": "@babylonjs/gui-editor",
     "shared-ui-components": null, // handled by alias plugin below
     serializers: "@babylonjs/serializers",
