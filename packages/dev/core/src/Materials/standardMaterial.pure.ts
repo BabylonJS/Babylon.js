@@ -59,12 +59,12 @@ import {
     AreLightsTexturesReady,
 } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { ShaderLanguage } from "./shaderLanguage";
 import { MaterialHelperGeometryRendering } from "./materialHelper.geometryrendering";
 import { UVDefinesMixin } from "./uv.defines";
 import { PrepassDefinesMixin } from "./prepass.defines";
 import { ImageProcessingMixin } from "./imageProcessing";
 import { RegisterClass } from "../Misc/typeStore";
+import { ShaderLoader } from "../Misc/shaderLoader";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -566,7 +566,11 @@ export class StandardMaterial extends StandardMaterialBase {
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
     public accessor applyDecalMapAfterDetailMap: boolean;
 
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/default.vertex"), import("../Shaders/default.fragment")],
+        webGPU: () => [import("../ShadersWGSL/default.vertex"), import("../ShadersWGSL/default.fragment")],
+    });
+
     private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
     /**
@@ -1268,16 +1272,7 @@ export class StandardMaterial extends StandardMaterialBase {
                     processCodeAfterIncludes: this._eventInfo.customCode,
                     multiTarget: defines.PREPASS,
                     shaderLanguage: this._shaderLanguage,
-                    extraInitializationsAsync: this._shadersLoaded
-                        ? undefined
-                        : async () => {
-                              if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                                  await Promise.all([import("../ShadersWGSL/default.vertex"), import("../ShadersWGSL/default.fragment")]);
-                              } else {
-                                  await Promise.all([import("../Shaders/default.vertex"), import("../Shaders/default.fragment")]);
-                              }
-                              this._shadersLoaded = true;
-                          },
+                    shaderLoader: StandardMaterial._ShaderLoader,
                 },
                 engine
             );

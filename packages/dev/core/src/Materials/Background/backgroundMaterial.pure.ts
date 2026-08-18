@@ -49,9 +49,9 @@ import {
     AreLightsTexturesReady,
 } from "../materialHelper.functions";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import { ShaderLanguage } from "../shaderLanguage";
 import { ImageProcessingMixin } from "../imageProcessing";
 import { RegisterClass } from "../../Misc/typeStore";
+import { ShaderLoader } from "../../Misc/shaderLoader";
 
 class BackgroundMaterialDefinesBase extends MaterialDefines {}
 
@@ -515,7 +515,10 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
     private _primaryShadowColor = Color3.Black();
     private _primaryHighlightColor = Color3.Black();
 
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../Shaders/background.vertex"), import("../../Shaders/background.fragment")],
+        webGPU: () => [import("../../ShadersWGSL/background.vertex"), import("../../ShadersWGSL/background.fragment")],
+    });
 
     /**
      * Instantiates a Background Material in the given scene
@@ -824,17 +827,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights },
                     shaderLanguage: this._shaderLanguage,
-                    extraInitializationsAsync: this._shadersLoaded
-                        ? undefined
-                        : async () => {
-                              if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                  await Promise.all([import("../../ShadersWGSL/background.vertex"), import("../../ShadersWGSL/background.fragment")]);
-                              } else {
-                                  await Promise.all([import("../../Shaders/background.vertex"), import("../../Shaders/background.fragment")]);
-                              }
-
-                              this._shadersLoaded = true;
-                          },
+                    shaderLoader: BackgroundMaterial._ShaderLoader,
                 },
                 engine
             );

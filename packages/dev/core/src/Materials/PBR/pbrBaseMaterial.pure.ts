@@ -68,11 +68,11 @@ import {
     PrepareUniformLayoutForIBL,
     AreLightsTexturesReady,
 } from "../materialHelper.functions";
-import { ShaderLanguage } from "../shaderLanguage";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 import { UVDefinesMixin } from "../uv.defines";
 import { PrepassDefinesMixin } from "../prepass.defines";
 import { ImageProcessingMixin } from "../imageProcessing";
+import { ShaderLoader } from "../../Misc/shaderLoader";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -823,7 +823,11 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
 
     private _debugMode = 0;
 
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../Shaders/pbr.vertex"), import("../../Shaders/pbr.fragment")],
+        webGPU: () => [import("../../ShadersWGSL/pbr.vertex"), import("../../ShadersWGSL/pbr.fragment")],
+    });
+
     private _breakShaderLoadedCheck = false;
     private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
@@ -1535,17 +1539,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                 processCodeAfterIncludes: this._eventInfo.customCode,
                 multiTarget: defines.PREPASS,
                 shaderLanguage: this._shaderLanguage,
-                extraInitializationsAsync: this._shadersLoaded
-                    ? undefined
-                    : async () => {
-                          if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                              await Promise.all([import("../../ShadersWGSL/pbr.vertex"), import("../../ShadersWGSL/pbr.fragment")]);
-                          } else {
-                              await Promise.all([import("../../Shaders/pbr.vertex"), import("../../Shaders/pbr.fragment")]);
-                          }
-
-                          this._shadersLoaded = true;
-                      },
+                shaderLoader: PBRBaseMaterial._ShaderLoader,
             },
             engine
         );

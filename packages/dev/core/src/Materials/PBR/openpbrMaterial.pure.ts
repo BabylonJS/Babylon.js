@@ -54,7 +54,6 @@ import { MaterialPluginEvent } from "../materialPluginEvent";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { type IMaterialCompilationOptions, type ICustomShaderNameResolveOptions } from "../../Materials/material.pure";
-import { ShaderLanguage } from "../shaderLanguage";
 import { MaterialFlags } from "../materialFlags";
 import { type SubMesh } from "../../Meshes/subMesh.pure";
 import { Logger } from "core/Misc/logger";
@@ -72,6 +71,7 @@ import { Tools } from "../../Misc/tools.pure";
 import { type UniformBuffer } from "../../Materials/uniformBuffer";
 import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer.pure";
 import { RegisterClass } from "../../Misc/typeStore";
+import { ShaderLoader } from "../../Misc/shaderLoader";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -1889,7 +1889,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
     private _debugMode = 0;
 
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../Shaders/openpbr.vertex"), import("../../Shaders/openpbr.fragment")],
+        webGPU: () => [import("../../ShadersWGSL/openpbr.vertex"), import("../../ShadersWGSL/openpbr.fragment")],
+    });
+
     private _breakShaderLoadedCheck = false;
     private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
@@ -3123,17 +3127,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 processCodeAfterIncludes: this._eventInfo.customCode,
                 multiTarget: defines.PREPASS,
                 shaderLanguage: this._shaderLanguage,
-                extraInitializationsAsync: this._shadersLoaded
-                    ? undefined
-                    : async () => {
-                          if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                              await Promise.all([import("../../ShadersWGSL/openpbr.vertex"), import("../../ShadersWGSL/openpbr.fragment")]);
-                          } else {
-                              await Promise.all([import("../../Shaders/openpbr.vertex"), import("../../Shaders/openpbr.fragment")]);
-                          }
-
-                          this._shadersLoaded = true;
-                      },
+                shaderLoader: OpenPBRMaterial._ShaderLoader,
             },
             engine
         );
