@@ -1,7 +1,8 @@
 import { type Camera } from "core/Cameras/camera";
 import { type FunctionComponent } from "react";
 import { type IPropertiesService, type ISelectionService, type WeaklyTypedServiceDefinition } from "inspector/index";
-import { type GlobalState, type InspectorV2Module } from "../globalState";
+import { type InspectorV2Module } from "../globalState";
+import { type CameraPresetManager } from "./cameraPresetManager";
 
 const CameraPresetNames = new WeakMap<Camera, string>();
 const CameraPresetSectionOrder = Number.MAX_VALUE / 2;
@@ -19,12 +20,12 @@ export function IsCamera(entity: unknown): entity is Camera {
 
 interface ICameraPresetEditorProps {
     camera: Camera;
-    globalState: GlobalState;
+    cameraPresetManager: CameraPresetManager;
     inspectorModule: InspectorV2Module;
 }
 
 const CameraPresetEditor: FunctionComponent<ICameraPresetEditorProps> = (props) => {
-    const { camera, globalState, inspectorModule } = props;
+    const { camera, cameraPresetManager, inspectorModule } = props;
 
     return (
         <>
@@ -32,13 +33,13 @@ const CameraPresetEditor: FunctionComponent<ICameraPresetEditorProps> = (props) 
             <inspectorModule.ButtonLine
                 uniqueId="sandbox-save-camera-preset"
                 label="Save"
-                onClick={() => globalState.cameraPresetManager.saveCamera(camera, CameraPresetNames.get(camera) ?? "")}
+                onClick={() => cameraPresetManager.saveCamera(camera, CameraPresetNames.get(camera) ?? "")}
             />
         </>
     );
 };
 
-export function MakeCameraPresetInspectorServiceDefinition(globalState: GlobalState, inspectorModule: InspectorV2Module): WeaklyTypedServiceDefinition {
+export function MakeCameraPresetInspectorServiceDefinition(cameraPresetManager: CameraPresetManager, inspectorModule: InspectorV2Module): WeaklyTypedServiceDefinition {
     return {
         friendlyName: "Sandbox Camera Preset Properties",
         consumes: [inspectorModule.PropertiesServiceIdentity, inspectorModule.SelectionServiceIdentity],
@@ -65,7 +66,7 @@ export function MakeCameraPresetInspectorServiceDefinition(globalState: GlobalSt
             updateMetadataSectionRegistration();
             const cameraPresetSection: FunctionComponent<{ context: Camera }> = (props) => {
                 const { context } = props;
-                return <CameraPresetEditor camera={context} globalState={globalState} inspectorModule={inspectorModule} />;
+                return <CameraPresetEditor camera={context} cameraPresetManager={cameraPresetManager} inspectorModule={inspectorModule} />;
             };
             const contentRegistration = propertiesService.addSectionContent({
                 key: "Sandbox Camera Preset Properties",

@@ -91,7 +91,7 @@ export class GlobalState {
                 const inspectorV2Module: InspectorV2Module | undefined = (<any>globalThis).INSPECTOR;
                 if (inspectorV2Module?.ShowInspector) {
                     this._inspectorToken = inspectorV2Module.ShowInspector(this.currentScene, {
-                        serviceDefinitions: [MakeCameraPresetInspectorServiceDefinition(this, inspectorV2Module)],
+                        serviceDefinitions: [MakeCameraPresetInspectorServiceDefinition(this.cameraPresetManager, inspectorV2Module)],
                     });
                 } else {
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
