@@ -130,6 +130,15 @@
                 width: 200px;
             }
 
+            &.dynamic-width {
+                right: 0;
+                left: auto;
+                width: max-content;
+                min-width: min(10em, calc(100vw - 16px));
+                max-width: min(24em, calc(100vw - 16px));
+                overflow-x: hidden;
+            }
+
             .dropup-content-line {
                 background-color: var(--button-hover-color);
                 overflow: hidden;
@@ -156,8 +165,13 @@
                     transition: all 0.3s ease;
                 }
 
-                div {
+                .dropup-content-line-text {
+                    width: 100%;
+                    min-width: 0;
                     overflow: hidden;
+                    text-align: center;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
             }
         }
@@ -229,6 +243,11 @@
         .dropup {
             .dropup-content {
                 width: 100px;
+
+                &.dynamic-width {
+                    position: fixed;
+                    right: 8px;
+                }
             }
         }
 

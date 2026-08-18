@@ -4,32 +4,40 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Vector3 } from "core/Maths/math.vector";
 import { Observable } from "core/Misc/observable";
 import { Scene } from "core/scene";
+import { DropUpButton } from "../../src/components/dropUpButton";
 import { Footer } from "../../src/components/footer";
 import { type GlobalState, type SandboxSceneLoadKind } from "../../src/globalState";
 
 interface IControlProps {
     children?: React.ReactNode;
+    className?: string;
+    dynamicWidth?: boolean;
     enabled?: boolean;
     label?: string;
     options?: string[];
+    title?: string;
 }
 
-function FindControl(node: React.ReactNode, label: string): React.ReactElement<IControlProps> | undefined {
+function FindElement(node: React.ReactNode, predicate: (props: IControlProps) => boolean): React.ReactElement<IControlProps> | undefined {
     if (!React.isValidElement<IControlProps>(node)) {
         return undefined;
     }
-    if (node.props.label === label) {
+    if (predicate(node.props)) {
         return node;
     }
 
     for (const child of React.Children.toArray(node.props.children)) {
-        const match = FindControl(child, label);
+        const match = FindElement(child, predicate);
         if (match) {
             return match;
         }
     }
 
     return undefined;
+}
+
+function FindControl(node: React.ReactNode, label: string): React.ReactElement<IControlProps> | undefined {
+    return FindElement(node, (props) => props.label === label);
 }
 
 describe("Sandbox Footer camera controls", () => {
@@ -65,7 +73,10 @@ describe("Sandbox Footer camera controls", () => {
 
         let renderedFooter = footer.render();
         expect(FindControl(renderedFooter, "Select camera")?.props).toMatchObject({ enabled: true, options: ["Embedded camera"] });
-        expect(FindControl(renderedFooter, "Select camera preset")?.props.enabled).toBe(true);
+        expect(FindControl(renderedFooter, "Select camera preset")?.props).toMatchObject({ enabled: true, dynamicWidth: true });
+        expect(FindControl(renderedFooter, "Select environment")?.props.dynamicWidth).toBeUndefined();
+        expect(FindControl(renderedFooter, "Select camera")?.props.dynamicWidth).toBeUndefined();
+        expect(FindControl(renderedFooter, "Select variant")?.props.dynamicWidth).toBeUndefined();
 
         const textureScene = new Scene(engine);
         onSceneLoaded.notifyObservers({ scene: textureScene, filename: "texture.png", loadKind: "texture" });
@@ -83,5 +94,28 @@ describe("Sandbox Footer camera controls", () => {
         embeddedCameraScene.dispose();
         textureScene.dispose();
         engine.dispose();
+    });
+
+    it("renders the dynamic-width selector class while preserving full option titles", () => {
+        const onClickInterceptorClicked = new Observable<void>();
+        const button = new DropUpButton({
+            globalState: {
+                onClickInterceptorClicked,
+                onRequestClickInterceptor: new Observable<void>(),
+            } as GlobalState,
+            enabled: true,
+            label: "Select camera preset",
+            options: ["A complete camera preset name"],
+            activeEntry: () => "",
+            onOptionPicked: vi.fn(),
+            dynamicWidth: true,
+        });
+        button.state = { isOpen: true, searchText: "" };
+
+        const renderedButton = button.render();
+        expect(FindElement(renderedButton, (props) => props.className?.includes("dropup-content") === true)?.props.className).toContain("dynamic-width");
+        expect(FindElement(renderedButton, (props) => props.title === "A complete camera preset name")).toBeDefined();
+
+        button.componentWillUnmount();
     });
 });

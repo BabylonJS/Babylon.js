@@ -235,6 +235,7 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
                         onOptionPicked={(option, index) => this.switchCameraPreset(index)}
                         enabled={hasCameraPresets}
                         searchPlaceholder="Search camera preset"
+                        dynamicWidth={true}
                     />
                     <DropUpButton
                         globalState={this.props.globalState}

@@ -1,17 +1,25 @@
+import { type Camera } from "core/Cameras/camera";
 import { Logger } from "core/Misc/logger";
+import { createElement, type ComponentProps, type FunctionComponent } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { type InspectorV2Module } from "../../src/globalState";
-import { type CameraPresetManager } from "../../src/tools/cameraPresetManager";
+import { CameraPresetNameMaxLength, type CameraPresetManager } from "../../src/tools/cameraPresetManager";
 import { TryMakeCameraPresetInspectorServiceDefinition } from "../../src/tools/cameraPresetInspectorService";
 
 type DisposableService = { dispose(): void };
+type TextInputPropertyLineProps = ComponentProps<InspectorV2Module["TextInputPropertyLine"]>;
 
-function CreateInspectorModule(): InspectorV2Module {
+interface ICameraPresetSectionDefinition {
+    content: Array<{ component: FunctionComponent<{ context: Camera }> }>;
+}
+
+function CreateInspectorModule(textInputPropertyLine: InspectorV2Module["TextInputPropertyLine"] = () => null): InspectorV2Module {
     return {
         ShowInspector: vi.fn(),
         PropertiesServiceIdentity: Symbol("PropertiesService"),
         SelectionServiceIdentity: Symbol("SelectionService"),
-        TextInputPropertyLine: () => null,
+        TextInputPropertyLine: textInputPropertyLine,
         ButtonLine: () => null,
     } as unknown as InspectorV2Module;
 }
@@ -38,6 +46,40 @@ describe("Sandbox camera preset Inspector compatibility", () => {
             friendlyName: "Sandbox Camera Preset Properties",
             consumes: [inspectorModule.PropertiesServiceIdentity, inspectorModule.SelectionServiceIdentity],
         });
+    });
+
+    it("forwards the preset name limit to the Inspector text input", () => {
+        const textInputPropertyLine = vi.fn((_props: TextInputPropertyLineProps) => null);
+        const inspectorModule = CreateInspectorModule(textInputPropertyLine);
+        const definition = TryMakeCameraPresetInspectorServiceDefinition({} as CameraPresetManager, inspectorModule);
+        if (!definition) {
+            throw new Error("Expected a compatible Inspector service definition");
+        }
+
+        let cameraPresetSection: FunctionComponent<{ context: Camera }> | undefined;
+        const factory = definition.factory as (propertiesService: unknown, selectionService: unknown) => DisposableService;
+        const instance = factory(
+            {
+                addSection: vi.fn(() => ({ dispose: vi.fn() })),
+                addSectionContent: vi.fn((sectionDefinition: ICameraPresetSectionDefinition) => {
+                    cameraPresetSection = sectionDefinition.content[0]?.component;
+                    return { dispose: vi.fn() };
+                }),
+            },
+            {
+                selectedEntity: null,
+                onSelectedEntityChanged: { add: vi.fn(() => ({ remove: vi.fn() })) },
+            }
+        );
+        if (!cameraPresetSection) {
+            throw new Error("Expected the camera preset Inspector section to be registered");
+        }
+
+        renderToStaticMarkup(createElement(cameraPresetSection, { context: {} as Camera }));
+
+        expect(textInputPropertyLine).toHaveBeenCalledOnce();
+        expect(textInputPropertyLine.mock.calls[0][0]).toMatchObject({ label: "Name", maxLength: CameraPresetNameMaxLength });
+        instance.dispose();
     });
 
     it.each(["ShowInspector", "PropertiesServiceIdentity", "SelectionServiceIdentity", "TextInputPropertyLine", "ButtonLine"] as const)(

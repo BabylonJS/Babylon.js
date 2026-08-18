@@ -1,9 +1,9 @@
 import { type Camera } from "core/Cameras/camera";
 import { Logger } from "core/Misc/logger";
-import { type FunctionComponent } from "react";
+import { createElement, type ComponentProps, type FunctionComponent } from "react";
 import { type IPropertiesService, type WeaklyTypedServiceDefinition } from "inspector/index";
 import { type InspectorV2Module } from "../globalState";
-import { type CameraPresetManager } from "./cameraPresetManager";
+import { CameraPresetNameMaxLength, type CameraPresetManager } from "./cameraPresetManager";
 
 const CameraPresetNames = new WeakMap<Camera, string>();
 const CameraPresetSectionOrder = Number.MAX_VALUE / 2;
@@ -96,12 +96,20 @@ interface ICameraPresetEditorProps {
     inspectorModule: InspectorV2Module;
 }
 
+type CameraPresetTextInputPropertyLineProps = ComponentProps<InspectorV2Module["TextInputPropertyLine"]> & { maxLength?: number };
+
 const CameraPresetEditor: FunctionComponent<ICameraPresetEditorProps> = (props) => {
     const { camera, cameraPresetManager, inspectorModule } = props;
+    const textInputPropertyLine = inspectorModule.TextInputPropertyLine as FunctionComponent<CameraPresetTextInputPropertyLineProps>;
 
     return (
         <>
-            <inspectorModule.TextInputPropertyLine label="Name" value={CameraPresetNames.get(camera) ?? ""} onChange={(value) => CameraPresetNames.set(camera, value)} />
+            {createElement(textInputPropertyLine, {
+                label: "Name",
+                value: CameraPresetNames.get(camera) ?? "",
+                maxLength: CameraPresetNameMaxLength,
+                onChange: (value) => CameraPresetNames.set(camera, value),
+            })}
             <inspectorModule.ButtonLine
                 uniqueId="sandbox-save-camera-preset"
                 label="Save"

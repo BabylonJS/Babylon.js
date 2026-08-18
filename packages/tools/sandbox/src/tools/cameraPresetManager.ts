@@ -10,6 +10,8 @@ import { ReadJsonFromDataStorage, WriteJsonToDataStorage } from "./dataStorageJs
 
 export const CameraPresetStorageKey = "Babylon/Sandbox/cameraPresets";
 export const DefaultCameraPresetOption = "Default camera";
+/** Maximum stored camera preset name length, sized for the Sandbox footer selector. */
+export const CameraPresetNameMaxLength = 48;
 
 const CameraPresetStorageVersion = 1;
 
@@ -187,11 +189,20 @@ function CreateCameraPresetId(): string {
     return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
-export function GetUniqueCameraPresetName(existingNames: readonly string[], requestedName: string): string {
-    const normalizedNames = new Set(existingNames.map((name) => name.trim().toLowerCase()));
-    const trimmedName = requestedName.trim();
+function NormalizeCameraPresetName(name: string): string {
+    return name.trim().slice(0, CameraPresetNameMaxLength).trimEnd();
+}
 
-    if (!trimmedName) {
+function FormatCameraPresetNameWithSuffix(baseName: string, suffix: number): string {
+    const suffixText = ` ${suffix}`;
+    return `${baseName.slice(0, CameraPresetNameMaxLength - suffixText.length).trimEnd()}${suffixText}`;
+}
+
+export function GetUniqueCameraPresetName(existingNames: readonly string[], requestedName: string): string {
+    const normalizedNames = new Set(existingNames.map((name) => NormalizeCameraPresetName(name).toLowerCase()));
+    const normalizedName = NormalizeCameraPresetName(requestedName);
+
+    if (!normalizedName) {
         let index = 1;
         while (normalizedNames.has(`preset ${index}`)) {
             index++;
@@ -199,22 +210,24 @@ export function GetUniqueCameraPresetName(existingNames: readonly string[], requ
         return `Preset ${index}`;
     }
 
-    if (!normalizedNames.has(trimmedName.toLowerCase())) {
-        return trimmedName;
+    if (!normalizedNames.has(normalizedName.toLowerCase())) {
+        return normalizedName;
     }
 
-    const suffixMatch = /^(.*)\s+(\d+)$/.exec(trimmedName);
-    const baseName = suffixMatch?.[1].trim() || trimmedName;
+    const suffixMatch = /^(.*)\s+(\d+)$/.exec(normalizedName);
+    const baseName = suffixMatch?.[1].trim() || normalizedName;
     let suffix = suffixMatch ? Number(suffixMatch[2]) + 1 : 2;
     if (!Number.isSafeInteger(suffix)) {
         suffix = 2;
     }
 
-    while (normalizedNames.has(`${baseName} ${suffix}`.toLowerCase())) {
+    let uniqueName = FormatCameraPresetNameWithSuffix(baseName, suffix);
+    while (normalizedNames.has(uniqueName.toLowerCase())) {
         suffix++;
+        uniqueName = FormatCameraPresetNameWithSuffix(baseName, suffix);
     }
 
-    return `${baseName} ${suffix}`;
+    return uniqueName;
 }
 
 export function ParseCameraPresetState(value: unknown): ICameraPresetState {

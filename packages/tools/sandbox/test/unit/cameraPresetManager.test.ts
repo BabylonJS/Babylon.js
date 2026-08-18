@@ -10,6 +10,7 @@ import { SerializationHelper } from "core/Misc/decorators.serialization";
 import { Scene } from "core/scene";
 import { describe, expect, it, vi } from "vitest";
 import {
+    CameraPresetNameMaxLength,
     CameraPresetManager,
     GetUniqueCameraPresetName,
     ParseCameraPresetState,
@@ -59,6 +60,14 @@ describe("camera preset naming", () => {
 
     it("restarts numbering when the requested suffix cannot be incremented safely", () => {
         expect(GetUniqueCameraPresetName(["City 99999999999999999999"], "City 99999999999999999999")).toBe("City 2");
+    });
+
+    it("keeps normalized names and duplicate suffixes within the preset name limit", () => {
+        const requestedName = "A".repeat(CameraPresetNameMaxLength + 10);
+        const normalizedName = "A".repeat(CameraPresetNameMaxLength);
+
+        expect(GetUniqueCameraPresetName([], requestedName)).toBe(normalizedName);
+        expect(GetUniqueCameraPresetName([normalizedName], requestedName)).toBe(`${"A".repeat(CameraPresetNameMaxLength - 2)} 2`);
     });
 });
 
@@ -128,6 +137,22 @@ describe("camera preset storage", () => {
         expect(state.activePresetId).toBe("reserved");
         expect(state.presets.map((preset) => preset.name)).toEqual(["Default camera 2"]);
     });
+
+    it("normalizes overlong persisted names and keeps collision suffixes within the limit", () => {
+        const requestedName = "L".repeat(CameraPresetNameMaxLength + 10);
+        const normalizedName = "L".repeat(CameraPresetNameMaxLength);
+        const state = ParseCameraPresetState({
+            version: 1,
+            activePresetId: null,
+            presets: [
+                { id: "first", name: requestedName, cameraType: "ArcRotateCamera", cameraData: { type: "ArcRotateCamera" } },
+                { id: "second", name: requestedName, cameraType: "ArcRotateCamera", cameraData: { type: "ArcRotateCamera" } },
+            ],
+        });
+
+        expect(state.presets.map((preset) => preset.name)).toEqual([normalizedName, `${"L".repeat(CameraPresetNameMaxLength - 2)} 2`]);
+        expect(state.presets.every((preset) => preset.name.length <= CameraPresetNameMaxLength)).toBe(true);
+    });
 });
 
 describe("camera preset Inspector predicate", () => {
@@ -173,6 +198,22 @@ describe("CameraPresetManager", () => {
         expect(manager.presets).toEqual([]);
         expect(changeCount).toBe(0);
         expect(errors).toEqual(["Unable to persist Sandbox camera presets: Storage unavailable"]);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("normalizes overlong names before saving and restoring presets", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const camera = new ArcRotateCamera("camera", 0, 0, 1, Vector3.Zero(), scene);
+        const storage = new MemoryCameraPresetStorage();
+        const manager = new CameraPresetManager(storage, () => "long-name");
+        const normalizedName = "S".repeat(CameraPresetNameMaxLength);
+
+        expect(manager.saveCamera(camera, `${normalizedName} extra`)?.name).toBe(normalizedName);
+        expect((storage.value as ICameraPresetState).presets[0].name).toBe(normalizedName);
+        expect(new CameraPresetManager(storage).presets[0].name).toBe(normalizedName);
 
         scene.dispose();
         engine.dispose();
