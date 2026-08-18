@@ -29,7 +29,7 @@ import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { LoadProjectFileAsync } from "shared-ui-components/projects/projectFile";
-import { DataStorage } from "core/Misc/dataStorage";
+import { ReadJsonRecordFromDataStorage } from "../tools/dataStorageJson";
 
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
@@ -504,7 +504,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 // registered when the inspector is first opened. This read ensures persisted
                 // settings are applied even on the initial page load before the inspector opens.
                 // Key format mirrors SettingsStore: Babylon/<namespace>/<settingKey>.
-                const inspectorLoaderOptions = DataStorage.ReadJson<Record<string, unknown>>("Babylon/Inspector/glTFLoaderOptions", {});
+                const inspectorLoaderOptions = ReadJsonRecordFromDataStorage("Babylon/Inspector/glTFLoaderOptions");
                 for (const [key, value] of Object.entries(inspectorLoaderOptions)) {
                     if (value !== null) {
                         (loader as unknown as Record<string, unknown>)[key] = value;

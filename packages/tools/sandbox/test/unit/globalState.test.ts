@@ -10,6 +10,28 @@ import { ParseCameraUrlValue, type CameraNumericUrlParameter } from "../../src/t
 
 afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+});
+
+describe("GlobalState Inspector compatibility", () => {
+    it("opens a partial Inspector module without the Sandbox contribution", () => {
+        const inspectorToken = { dispose: vi.fn() };
+        const showInspector = vi.fn(() => inspectorToken);
+        vi.stubGlobal("INSPECTOR", { ShowInspector: showInspector });
+        const globalState = new GlobalState({ version: "test", bundles: [] });
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        globalState.currentScene = scene;
+
+        globalState.showDebugLayer();
+
+        expect(showInspector).toHaveBeenCalledOnce();
+        expect(showInspector).toHaveBeenCalledWith(scene);
+
+        globalState.hideDebugLayer();
+        expect(inspectorToken.dispose).toHaveBeenCalledOnce();
+        engine.dispose();
+    });
 });
 
 describe("GlobalState camera preset URL override", () => {

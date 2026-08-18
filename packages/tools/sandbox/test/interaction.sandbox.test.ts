@@ -10,10 +10,12 @@ test.beforeAll(async () => {
 // if running in the CI we need to use the babylon snapshot when loading the tools
 const snapshot = process.env.SNAPSHOT ? "?snapshot=" + process.env.SNAPSHOT : "";
 const cdnPort = ":" + (process.env.CDN_PORT || 1337);
-const url = (process.env.SANDBOX_BASE_URL || getGlobalConfig().baseUrl.replace(cdnPort, process.env.SANDBOX_PORT || ":1339")) + snapshot;
+const sandboxBaseUrl = process.env.SANDBOX_BASE_URL || getGlobalConfig().baseUrl.replace(cdnPort, process.env.SANDBOX_PORT || ":1339");
+const url = sandboxBaseUrl + snapshot;
 const cameraPresetStorageKey = "Babylon/Sandbox/cameraPresets";
 const inspectorTeachingMomentStoragePrefix = "Babylon/Inspector/TeachingMoments/";
-const boxModelUrl = url + (snapshot ? "&" : "?") + "assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb";
+const boxAssetUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb";
+const boxModelUrl = url + (snapshot ? "&" : "?") + `assetUrl=${boxAssetUrl}`;
 const embeddedCameraModelUrl = url + (snapshot ? "&" : "?") + "assetUrl=https://assets.babylonjs.com/meshes/Box/Box_extras.gltf";
 const textureAssetUrl = url + (snapshot ? "&" : "?") + "assetUrl=https://assets.babylonjs.com/textures/grass.png";
 const cameraPresetId = "test-overview";
@@ -42,6 +44,12 @@ interface ISceneCameraState {
 interface ICameraNumericState {
     minZ: number | undefined;
     lowerRadiusLimit: number | null | undefined;
+}
+
+interface ISandboxRuntimeInfo {
+    engineVersion: string | undefined;
+    scriptBaseUrl: string | undefined;
+    isViteDevelopment: boolean;
 }
 
 function createCameraPresetState(activePresetId: string | null): Record<string, unknown> {
@@ -153,6 +161,13 @@ function getAssetFileName(targetUrl: string): string {
     return decodeURIComponent(new URL(assetUrl).pathname.split("/").pop()!);
 }
 
+function getVersionedBoxModelUrl(version: string): string {
+    const versionedUrl = new URL(sandboxBaseUrl);
+    versionedUrl.search = "";
+    versionedUrl.hash = "";
+    return `${versionedUrl.toString()}?version=${version}&assetUrl=${boxAssetUrl}`;
+}
+
 async function waitForLoadedAsset(page: Page, expectedFileName: string): Promise<void> {
     await waitForSandboxReady(page);
     const escapedFileName = expectedFileName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -170,6 +185,23 @@ async function reloadSandboxAsset(page: Page): Promise<void> {
     const expectedFileName = getAssetFileName(page.url());
     await page.reload({ waitUntil: "load" });
     await waitForLoadedAsset(page, expectedFileName);
+}
+
+async function readSandboxRuntimeInfo(page: Page): Promise<ISandboxRuntimeInfo> {
+    return page.evaluate(() => {
+        type BabylonRuntime = {
+            Engine?: { Version?: string };
+            Tools?: { ScriptBaseUrl?: string };
+        };
+        const babylon = (globalThis as typeof globalThis & { BABYLON?: BabylonRuntime }).BABYLON;
+        const isViteDevelopment = Array.from(document.scripts).some((script) => script.type === "module" && script.src !== "" && new URL(script.src).pathname === "/src/main.ts");
+
+        return {
+            engineVersion: babylon?.Engine?.Version,
+            scriptBaseUrl: babylon?.Tools?.ScriptBaseUrl,
+            isViteDevelopment,
+        };
+    });
 }
 
 async function openInspector(page: Page): Promise<Locator> {
@@ -678,4 +710,53 @@ test.describe("camera presets", () => {
         expect(await readSceneCameraState(page)).toMatchObject({ name: "Overview", id: `SandboxCameraPreset/${cameraPresetId}` });
         expect(pageErrors).toHaveLength(0);
     });
+});
+
+test.describe("historical Inspector camera preset compatibility", () => {
+    test.describe.configure({ timeout: 90000 });
+    test.use({ viewport: { width: 1280, height: 720 } });
+
+    for (const version of ["8.40.1", "8.51.0"]) {
+        test(`saves and activates a camera preset with runtime ${version}`, async ({ page }) => {
+            const pageErrors = trackPageErrors(page);
+            await clearCameraPresetStorage(page);
+            const versionedBoxModelUrl = getVersionedBoxModelUrl(version);
+
+            expect(new URL(versionedBoxModelUrl).searchParams.has("snapshot")).toBe(false);
+            await loadSandboxAsset(page, versionedBoxModelUrl);
+            const runtimeInfo = await readSandboxRuntimeInfo(page);
+            test.skip(
+                runtimeInfo.isViteDevelopment,
+                `Historical runtime ${version} requires the production Sandbox bootstrap; Vite development loaded local runtime ${runtimeInfo.engineVersion ?? "unknown"}.`
+            );
+            expect(runtimeInfo.engineVersion, "the production Sandbox bootstrap must load the requested Babylon.js runtime").toBe(version);
+            expect(runtimeInfo.scriptBaseUrl, "the requested runtime must configure its versioned script base URL").toBe(`https://cdn.babylonjs.com/v${version}`);
+
+            await page.getByTitle("Display inspector").click();
+            await expandInspectorNodes(page);
+            await page.getByRole("treeitem", { name: /^default camera/ }).click();
+
+            const presetHeader = page.getByRole("button", { name: "Save Camera Preset", exact: true });
+            await expect(presetHeader).toBeVisible();
+            const presetSection = presetHeader.locator("xpath=../..");
+            await presetSection.getByRole("button", { name: "Save", exact: true }).click();
+
+            const footer = page.locator("#footer");
+            const cameraPresetSelector = footer.getByTitle("Select camera preset");
+            await expect(cameraPresetSelector).toBeVisible();
+            const savedState = await readCameraPresetState(page);
+            expect(savedState.activePresetId).toBeNull();
+            expect(savedState.presets).toHaveLength(1);
+            expect(savedState.presets[0]).toMatchObject({ name: "Preset 1", cameraType: "ArcRotateCamera" });
+
+            await cameraPresetSelector.click({ force: true });
+            await footer.getByTitle("Preset 1", { exact: true }).click({ force: true });
+            expect((await readCameraPresetState(page)).activePresetId).toBe(savedState.presets[0].id);
+            expect(await readSceneCameraState(page)).toMatchObject({
+                name: "Preset 1",
+                id: `SandboxCameraPreset/${savedState.presets[0].id}`,
+            });
+            expect(pageErrors).toHaveLength(0);
+        });
+    }
 });

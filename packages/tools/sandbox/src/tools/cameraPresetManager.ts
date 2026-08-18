@@ -3,10 +3,10 @@ import { Camera } from "core/Cameras/camera";
 import { type AutoRotationBehavior } from "core/Behaviors/Cameras/autoRotationBehavior";
 import { type BouncingBehavior } from "core/Behaviors/Cameras/bouncingBehavior";
 import { type FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
-import { DataStorage } from "core/Misc/dataStorage";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { type Scene } from "core/scene";
+import { ReadJsonFromDataStorage, WriteJsonToDataStorage } from "./dataStorageJson";
 
 export const CameraPresetStorageKey = "Babylon/Sandbox/cameraPresets";
 export const DefaultCameraPresetOption = "Default camera";
@@ -76,8 +76,8 @@ const DefaultCameraPresetState: ICameraPresetState = {
 };
 
 const DataStorageBackend: ICameraPresetStorageBackend = {
-    read: () => DataStorage.ReadJson<unknown>(CameraPresetStorageKey, null),
-    write: (state) => DataStorage.WriteJson(CameraPresetStorageKey, state),
+    read: () => ReadJsonFromDataStorage<unknown>(CameraPresetStorageKey, null),
+    write: (state) => WriteJsonToDataStorage(CameraPresetStorageKey, state),
 };
 
 function IsRecord(value: unknown): value is Record<string, unknown> {

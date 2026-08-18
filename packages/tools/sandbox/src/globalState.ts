@@ -2,7 +2,7 @@ import { type Camera, type FilesInput, type IDisposable, type Nullable, type Sce
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Observable } from "core/Misc/observable";
 import { CameraPresetManager } from "./tools/cameraPresetManager";
-import { MakeCameraPresetInspectorServiceDefinition } from "./tools/cameraPresetInspectorService";
+import { TryMakeCameraPresetInspectorServiceDefinition } from "./tools/cameraPresetInspectorService";
 
 export type InspectorV2Module = typeof import("inspector/legacy/legacy") & typeof import("inspector/index");
 export type SandboxSceneLoadKind = "scene" | "texture";
@@ -88,11 +88,12 @@ export class GlobalState {
         if (!this.isDebugLayerEnabled) {
             this.isDebugLayerEnabled = true;
             if (this.currentScene) {
-                const inspectorV2Module: InspectorV2Module | undefined = (<any>globalThis).INSPECTOR;
-                if (inspectorV2Module?.ShowInspector) {
-                    this._inspectorToken = inspectorV2Module.ShowInspector(this.currentScene, {
-                        serviceDefinitions: [MakeCameraPresetInspectorServiceDefinition(this.cameraPresetManager, inspectorV2Module)],
-                    });
+                const inspectorV2Module = (globalThis as typeof globalThis & { INSPECTOR?: Partial<InspectorV2Module> }).INSPECTOR;
+                if (typeof inspectorV2Module?.ShowInspector === "function") {
+                    const cameraPresetServiceDefinition = TryMakeCameraPresetInspectorServiceDefinition(this.cameraPresetManager, inspectorV2Module);
+                    this._inspectorToken = cameraPresetServiceDefinition
+                        ? inspectorV2Module.ShowInspector(this.currentScene, { serviceDefinitions: [cameraPresetServiceDefinition] })
+                        : inspectorV2Module.ShowInspector(this.currentScene);
                 } else {
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this.currentScene.debugLayer.show();
