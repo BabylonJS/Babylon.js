@@ -9,22 +9,9 @@ import { GLTFLoader } from "../glTFLoader.pure";
 import { type IKHRMaterialsScatter } from "babylonjs-gltf2interface";
 import { Color3 } from "core/Maths/math.color.pure";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { Vector3 } from "core/Maths/math.vector.pure";
 import { Logger } from "core/Misc/logger";
 
 const NAME = "KHR_materials_scatter";
-
-function multiScatterToSingleScatterAlbedo(multiScatter: Color3): Vector3 {
-    const multiScatterAlbedo = new Vector3(multiScatter.r, multiScatter.g, multiScatter.b);
-    const s: Vector3 = new Vector3(4.09712, 4.09712, 4.09712);
-    s.addInPlace(new Vector3(4.20863, 4.20863, 4.20863).multiplyInPlace(multiScatterAlbedo));
-
-    const p: Vector3 = new Vector3(9.59217, 9.59217, 9.59217);
-    p.addInPlace(new Vector3(41.6808, 41.6808, 41.6808).multiplyInPlace(multiScatterAlbedo));
-    p.addInPlace(new Vector3(17.7126, 17.7126, 17.7126).multiplyInPlace(multiScatterAlbedo.multiply(multiScatterAlbedo)));
-    s.subtractInPlace(new Vector3(Math.sqrt(p.x), Math.sqrt(p.y), Math.sqrt(p.z)));
-    return new Vector3(1.0, 1.0, 1.0).subtract(s.multiply(s));
-}
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/2579)
@@ -79,13 +66,6 @@ export class KHR_materials_scatter implements IGLTFLoaderExtension {
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
     private _loadScatterPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsScatter): Promise<void> {
         const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
-        // Transmission should already be configured at this point.
-        // If volumetric, we can modify the existing transmission slab by adding scattering.
-        //      scatterColor = scatterStrength * scatterColor (requires texture multiply)
-        // If thin-walled, we need to use the subsurface slab in OpenPBR
-        //      subsurfaceWeight = scatterStrength * transmissionFactor (requires texture multiply)
-        //      transmissionWeight = transmissionFactor * (1 - scatterStrength) (requires texture multiply)
-        // adapter.configureScatter(); // If thin-walled, copy the transmission slab to the subsurface slab and modify the weights. If volumetric, add scattering to the existing transmission slab.
         const scatterStrength = extension.scatterStrengthFactor ?? 0;
         const multiscatterColor = extension.multiscatterColorFactor !== undefined ? Color3.FromArray(extension.multiscatterColorFactor) : Color3.White();
         const scatterAnisotropy = extension.scatterAnisotropy ?? 0;
@@ -97,19 +77,10 @@ export class KHR_materials_scatter implements IGLTFLoaderExtension {
             adapter.subsurfaceColor = multiscatterColor;
             adapter.subsurfaceScatterAnisotropy = scatterAnisotropy;
         } else {
-            const effectiveMultiScatter = multiscatterColor.scale(scatterStrength);
-            adapter.volumetricMultiScatterFactor = effectiveMultiScatter;
-
-            const extinctionCoefficient = new Vector3(-Math.log(adapter.transmissionColor.r), -Math.log(adapter.transmissionColor.g), -Math.log(adapter.transmissionColor.b));
-            extinctionCoefficient.scaleInPlace(1 / Math.max(adapter.transmissionDepth, 0.000001));
-
-            const singleScatterAlbedo = multiScatterToSingleScatterAlbedo(effectiveMultiScatter);
-            const scatteringCoefficient = extinctionCoefficient.multiply(singleScatterAlbedo);
-
-            // The scattering coefficient in OpenPBR is defined as per unit distance, so we need to scale it back up by the depth.
-            scatteringCoefficient.scaleInPlace(adapter.transmissionDepth);
-            adapter.transmissionScatter.set(scatteringCoefficient.x, scatteringCoefficient.y, scatteringCoefficient.z);
-
+            // Stage multiscatter color in transmissionScatter/Texture; finalizeAsync will convert to proper
+            // transmission_scatter once all textures are loaded.
+            adapter.transmissionScatter = multiscatterColor;
+            adapter.volumetricScatterStrengthFactor = scatterStrength;
             adapter.transmissionScatterAnisotropy = scatterAnisotropy;
         }
 

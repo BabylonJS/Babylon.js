@@ -23,6 +23,7 @@ import {
     ExtractMaxChannelAsync,
     ExtractChannelAsync,
     MultiScatterToSingleScatterAlbedoAsync,
+    SingleScatterToMultiScatterAlbedoAsync,
     CreateFactorOperand,
     ChannelMask,
     TextureChannel,
@@ -381,6 +382,34 @@ describe("TextureProcessor", () => {
             expect(r.factor?.r).toBeCloseTo(0, 4);
             expect(r.factor?.g).toBeCloseTo(1, 5);
             expect(r.factor?.b).toBeCloseTo(0, 4);
+        });
+
+        it("SingleScatterToMultiScatterAlbedo: converts RGB and preserves alpha", async () => {
+            const r = await SingleScatterToMultiScatterAlbedoAsync("t", CreateFactorOperand(new Color4(0, 0.9117088547, 1, 0.75)), scene);
+
+            expect(r.texture).toBeNull();
+            expect(r.factor?.r).toBeCloseTo(0, 5);
+            expect(r.factor?.g).toBeCloseTo(0.5, 4);
+            expect(r.factor?.b).toBeCloseTo(1, 5);
+            expect(r.factor?.a).toBeCloseTo(0.75);
+        });
+
+        it("SingleScatterToMultiScatterAlbedo: clamps RGB before conversion", async () => {
+            const r = await SingleScatterToMultiScatterAlbedoAsync("t", CreateFactorOperand(new Color4(-1, 2, 0, 1)), scene);
+
+            expect(r.factor?.r).toBeCloseTo(0, 5);
+            expect(r.factor?.g).toBeCloseTo(1, 5);
+            expect(r.factor?.b).toBeCloseTo(0, 5);
+        });
+
+        it("SingleScatterToMultiScatterAlbedo: is the inverse of MultiScatterToSingleScatterAlbedo", async () => {
+            const multi = new Color4(0.1, 0.42, 0.87, 1);
+            const single = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(multi), scene);
+            const roundTrip = await SingleScatterToMultiScatterAlbedoAsync("t", CreateFactorOperand(single.factor!), scene);
+
+            expect(roundTrip.factor?.r).toBeCloseTo(multi.r, 3);
+            expect(roundTrip.factor?.g).toBeCloseTo(multi.g, 3);
+            expect(roundTrip.factor?.b).toBeCloseTo(multi.b, 3);
         });
 
         describe("outputChannelMask", () => {

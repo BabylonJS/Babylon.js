@@ -816,7 +816,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     public set transmissionScatterTexture(value: Nullable<BaseTexture>) {}
 
     /** @internal */
-    public set volumetricMultiScatterFactor(value: Nullable<Color3>) {}
+    public set volumetricScatterStrengthFactor(value: Nullable<number>) {}
 
     public set volumetricScatterStrengthTexture(value: Nullable<BaseTexture>) {}
 

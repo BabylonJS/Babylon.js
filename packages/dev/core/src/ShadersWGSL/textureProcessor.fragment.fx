@@ -44,7 +44,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // Evaluate operand A
     #ifdef OPERAND_A_TEXTURE
     #ifdef OPERAND_A_MATRIX
-    var a: vec4f = textureSample(textureA, textureASampler, (uniforms.textureAMatrix * vec4f(uv, 0.0, 1.0)).xy);
+    var a: vec4f = textureSample(textureA, textureASampler, (uniforms.textureAMatrix * vec4f(uv, 1.0, 0.0)).xy);
     #else
     var a: vec4f = textureSample(textureA, textureASampler, uv);
     #endif
@@ -70,7 +70,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // Evaluate operand B
     #ifdef OPERAND_B_TEXTURE
     #ifdef OPERAND_B_MATRIX
-    var b: vec4f = textureSample(textureB, textureBSampler, (uniforms.textureBMatrix * vec4f(uv, 0.0, 1.0)).xy);
+    var b: vec4f = textureSample(textureB, textureBSampler, (uniforms.textureBMatrix * vec4f(uv, 1.0, 0.0)).xy);
     #else
     var b: vec4f = textureSample(textureB, textureBSampler, uv);
     #endif
@@ -98,6 +98,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     let rhoMs: vec3f = clamp(a.rgb, vec3f(0.0), vec3f(1.0));
     let s: vec3f = vec3f(4.09712) + 4.20863 * rhoMs - sqrt(vec3f(9.59217) + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
     var result: vec4f = vec4f(vec3f(1.0) - s * s, a.a);
+    #elif defined(OP_SINGLE_SCATTER_TO_MULTI_SCATTER)
+    let ssAlbedo: vec3f = clamp(a.rgb, vec3f(0.0), vec3f(1.0));
+    let sq: vec3f = sqrt(vec3f(1.0) - ssAlbedo);
+    var result: vec4f = vec4f((vec3f(1.0) - sq) * (vec3f(1.0) - 0.139 * sq) / (vec3f(1.0) + 1.17 * sq), a.a);
     #elif defined(OP_CHANNEL_MAX)
     var _cmax: f32 = max(max(a.r, a.g), a.b);
     #ifdef CHANNEL_MAX_INCLUDE_ALPHA
@@ -124,7 +128,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #elif defined(OP_LERP)
     #ifdef LERP_T_TEXTURE
     #ifdef LERP_T_MATRIX
-    var t: vec4f = textureSample(textureT, textureTSampler, (uniforms.textureTMatrix * vec4f(uv, 0.0, 1.0)).xy);
+    var t: vec4f = textureSample(textureT, textureTSampler, (uniforms.textureTMatrix * vec4f(uv, 1.0, 0.0)).xy);
     #else
     var t: vec4f = textureSample(textureT, textureTSampler, uv);
     #endif

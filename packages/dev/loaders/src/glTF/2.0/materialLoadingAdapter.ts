@@ -301,10 +301,10 @@ export interface IMaterialLoadingAdapter {
     transmissionScatterTexture: Nullable<BaseTexture>;
 
     /**
-     * Staging: the constant multi-scatter albedo multiplied by scatter strength for volumetric mode.
+     * Staging: the constant scatter strength for volumetric mode.
      * Set by KHR_materials_scatter and consumed by the OpenPBR adapter during finalization.
      */
-    volumetricMultiScatterFactor: Nullable<Color3>;
+    volumetricScatterStrengthFactor: Nullable<number>;
 
     /**
      * Staging: scatter strength texture for volumetric mode (non-thin-walled).

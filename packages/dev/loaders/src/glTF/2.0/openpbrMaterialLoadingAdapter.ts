@@ -756,16 +756,16 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         return this._material.transmissionScatterTexture;
     }
 
-    private _volumetricMultiScatterFactor: Nullable<Color3> = null;
+    private _volumetricScatterStrengthFactor: Nullable<number> = null;
 
     /** @internal */
-    public set volumetricMultiScatterFactor(value: Nullable<Color3>) {
-        this._volumetricMultiScatterFactor = value;
+    public set volumetricScatterStrengthFactor(value: Nullable<number>) {
+        this._volumetricScatterStrengthFactor = value;
     }
 
     /** @internal */
-    public get volumetricMultiScatterFactor(): Nullable<Color3> {
-        return this._volumetricMultiScatterFactor;
+    public get volumetricScatterStrengthFactor(): Nullable<number> {
+        return this._volumetricScatterStrengthFactor;
     }
 
     private _volumetricScatterStrengthTexture: Nullable<BaseTexture> = null;
@@ -1333,22 +1333,18 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         // scattering coefficient multiplied by transmission depth. Bake the nonlinear conversion
         // to single-scatter albedo into the texture, then keep extinctionCoefficient * depth in the
         // material factor so their product has the representation expected by OpenPBR.
-        if (!this.geometryThinWalled && this._volumetricMultiScatterFactor !== null) {
+        if (!this.geometryThinWalled && this._volumetricScatterStrengthFactor !== null) {
             const colorTex = this.transmissionScatterTexture;
+            const colorFactor = this.transmissionScatter;
             const strengthTex = this._volumetricScatterStrengthTexture;
-            const multiScatterFactor = this._volumetricMultiScatterFactor;
-            const combinedMultiScatter = await MultiplyTexturesAsync(
+            const scatterStrength = this._volumetricScatterStrengthFactor;
+            const scaledMultiScatter = await MultiplyTexturesAsync(
                 `multi-scatter (${this._material.name})`,
-                CreateTextureWithFactorOperand(
-                    colorTex,
-                    new Color4(multiScatterFactor.r, multiScatterFactor.g, multiScatterFactor.b, 1.0),
-                    TextureChannel.RGBA,
-                    TextureColorSpace.SRGB
-                ),
-                CreateTextureWithFactorOperand(strengthTex, this._volumetricMultiScatterFactor.toColor4(), TextureChannel.A),
+                CreateTextureWithFactorOperand(strengthTex, new Color4(scatterStrength, scatterStrength, scatterStrength, 1.0), TextureChannel.A),
+                CreateTextureWithFactorOperand(colorTex, colorFactor.toColor4(), TextureChannel.RGBA, TextureColorSpace.SRGB),
                 this._material.getScene()
             );
-            const singleScatter = await MultiScatterToSingleScatterAlbedoAsync(`single-scatter (${this._material.name})`, combinedMultiScatter, this._material.getScene());
+            const singleScatter = await MultiScatterToSingleScatterAlbedoAsync(`single-scatter (${this._material.name})`, scaledMultiScatter, this._material.getScene());
             if (loader._disposed) {
                 singleScatter.dispose?.();
                 colorTex?.dispose();
@@ -1357,7 +1353,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
             }
             colorTex?.dispose();
             strengthTex?.dispose();
-            this._volumetricMultiScatterFactor = null;
+            this._volumetricScatterStrengthFactor = null;
             this._volumetricScatterStrengthTexture = null;
 
             // OpenPBR transmission_scatter is scatterCoefficient * depth which is equivalent to extinctionCoefficient * ssAlbedo * depth.

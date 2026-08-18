@@ -227,6 +227,16 @@ function _MultiScatterToSingleScatterAlbedoConstant(multiScatter: Color4): Color
     return new Color4(convert(multiScatter.r), convert(multiScatter.g), convert(multiScatter.b), multiScatter.a);
 }
 
+/** @internal */
+function _SingleScatterToMultiScatterAlbedoConstant(singleScatter: Color4): Color4 {
+    const convert = (value: number) => {
+        const ssAlbedo = Math.min(Math.max(value, 0), 1);
+        const s = Math.sqrt(1 - ssAlbedo);
+        return ((1 - s) * (1 - 0.139 * s)) / (1 + 1.17 * s);
+    };
+    return new Color4(convert(singleScatter.r), convert(singleScatter.g), convert(singleScatter.b), singleScatter.a);
+}
+
 /**
  * @internal
  * Determine the output texture size from a list of operands, using the largest input texture.
@@ -794,7 +804,7 @@ export async function LerpTexturesAsync(
     b: ITextureProcessOperand,
     t: ITextureProcessOperand,
     scene: Scene,
-    outputColorSpace?: TextureColorSpace,
+    outputColorSpace: TextureColorSpace = TextureColorSpace.Linear,
     outputChannelMask?: ChannelMask
 ): Promise<ITextureProcessOperand> {
     if (!a.texture && !b.texture && !t.texture) {
@@ -822,7 +832,7 @@ export async function LerpTexturesAsync(
         ..._BuildLerpBlendDefines(t, bakeTransform),
         ...(outputChannelMask ? _BuildOutputChannelMaskDefines(outputChannelMask) : []),
     ];
-    if (outputColorSpace) {
+    if (outputColorSpace == TextureColorSpace.SRGB) {
         defines.push("OUTPUT_SRGB");
     }
     const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([a, b, t]), scene, outputColorSpace);
@@ -1057,6 +1067,42 @@ export async function MultiScatterToSingleScatterAlbedoAsync(name: string, input
     }
 
     const defines = [..._BuildOperandDefines(input, "A", false), "OP_MULTI_SCATTER_TO_SINGLE_SCATTER"];
+    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([input]), scene);
+    _SetOperandUniforms(pt, input, "textureA", "factorA", false);
+    try {
+        await _RenderAsync(pt);
+    } catch (error) {
+        input.dispose?.();
+        throw error;
+    }
+
+    input.dispose?.();
+
+    _CopyTextureMetadata(input.texture, pt, true);
+    return { texture: pt, dispose: () => pt.dispose() };
+}
+
+/**
+ * Convert a single-scatter albedo operand to multi-scatter albedo using the OpenPBR/KHR
+ * approximation. This is the inverse of {@link MultiScatterToSingleScatterAlbedoAsync}.
+ * RGB is clamped to `[0, 1]` before conversion and alpha is preserved.
+ *
+ * If the operand is constant, the conversion is performed on the CPU. Otherwise it is baked
+ * into a linear procedural texture. Input color-space conversion, channel selection, factors,
+ * UV transforms, metadata propagation, and intermediate disposal follow the other unary texture
+ * processor operations.
+ *
+ * @param name - Name for the resulting procedural texture (used only when a GPU pass is needed)
+ * @param input - Single-scatter albedo operand to convert
+ * @param scene - Scene to create the texture in (used only when a GPU pass is needed)
+ * @returns An operand containing the converted multi-scatter albedo
+ */
+export async function SingleScatterToMultiScatterAlbedoAsync(name: string, input: ITextureProcessOperand, scene: Scene): Promise<ITextureProcessOperand> {
+    if (!input.texture) {
+        return { texture: null, factor: _SingleScatterToMultiScatterAlbedoConstant(_EvalConstant(input)) };
+    }
+
+    const defines = [..._BuildOperandDefines(input, "A", false), "OP_SINGLE_SCATTER_TO_MULTI_SCATTER"];
     const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([input]), scene);
     _SetOperandUniforms(pt, input, "textureA", "factorA", false);
     try {
