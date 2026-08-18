@@ -225,7 +225,7 @@ async function closeInspector(page: Page): Promise<void> {
 }
 
 async function expandInspectorNodes(page: Page): Promise<void> {
-    const nodes = page.getByRole("treeitem", { name: "Nodes", exact: true });
+    const nodes = page.locator('[role="treeitem"]').filter({ hasText: /^Nodes$/ });
     await expect(nodes).toBeVisible();
     await nodes.focus();
     await nodes.press("ArrowRight");
