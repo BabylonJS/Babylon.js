@@ -1375,7 +1375,7 @@ export class ShaderMaterial extends PushMaterial {
         for (const propName of keys) {
             const propValue = this._options[propName];
             if (Array.isArray(propValue)) {
-                (<string[]>this._options[propName]) = propValue.slice(0);
+                (<unknown[]>this._options[propName]) = propValue.slice(0);
             }
         }
 
