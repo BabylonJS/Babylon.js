@@ -601,7 +601,6 @@ export class PostProcess {
                 indexParameters,
                 blockCompilation: true,
                 shaderLanguage,
-                extraInitializations: undefined,
             });
 
         this.name = name;
