@@ -4,7 +4,6 @@ import { Halton2DSequence } from "core/Maths/halton2DSequence";
 import { Vector2 } from "core/Maths/math.vector.pure";
 import { EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { TAAMaterialManager } from "./RenderPipeline/Pipelines/taaMaterialManager.pure";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**

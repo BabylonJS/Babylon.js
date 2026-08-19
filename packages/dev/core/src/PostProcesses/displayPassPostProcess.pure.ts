@@ -10,7 +10,6 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import { type Scene } from "../scene.pure";
 import { RegisterClass } from "../Misc/typeStore";
 
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**

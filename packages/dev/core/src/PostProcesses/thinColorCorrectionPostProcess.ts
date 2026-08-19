@@ -1,7 +1,6 @@
 import { type EffectWrapperCreationOptions, type Nullable, type Scene } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**

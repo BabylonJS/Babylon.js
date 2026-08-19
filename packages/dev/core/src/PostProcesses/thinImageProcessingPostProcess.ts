@@ -13,7 +13,6 @@ import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { type IImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration.pure";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**

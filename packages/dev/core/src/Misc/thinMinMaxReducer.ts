@@ -3,7 +3,6 @@ import { Observable } from "./observable";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "core/Engines/engineStore";
 import { Constants } from "../Engines/constants";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**

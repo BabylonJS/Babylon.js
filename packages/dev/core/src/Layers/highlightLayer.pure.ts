@@ -31,7 +31,6 @@ import { GetExponentOfTwo } from "../Misc/tools.functions";
 import { ThinGlowBlurPostProcess } from "./thinEffectLayer";
 import { type Nullable } from "../types";
 import { RegisterClass } from "../Misc/typeStore";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderLoader } from "core/Misc/shaderLoader";
 
 interface IBlurPostProcess extends PostProcess {

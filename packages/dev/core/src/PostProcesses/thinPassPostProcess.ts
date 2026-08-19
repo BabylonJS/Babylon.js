@@ -1,7 +1,6 @@
 import { type Nullable, type EffectWrapperCreationOptions, type AbstractEngine } from "core/index";
 import { EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**

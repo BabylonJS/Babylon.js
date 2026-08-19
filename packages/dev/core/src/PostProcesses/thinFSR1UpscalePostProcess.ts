@@ -3,7 +3,6 @@ import { type Effect } from "core/Materials/effect";
 import { EngineStore } from "core/Engines/engineStore";
 import { EffectWrapper, type EffectWrapperCreationOptions } from "core/Materials/effectRenderer.pure";
 import { type Nullable } from "core/types";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**

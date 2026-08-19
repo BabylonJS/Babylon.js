@@ -11,7 +11,6 @@ import { Vector3, Matrix } from "core/Maths/math.vector.pure";
 import { Constants } from "core/Engines/constants";
 import { ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
