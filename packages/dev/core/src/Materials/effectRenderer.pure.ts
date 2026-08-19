@@ -293,13 +293,13 @@ export interface EffectWrapperCreationOptions {
      */
     shaderLanguage?: ShaderLanguage;
     /**
-     * Defines additional code to call to prepare the shader code
-     */
-    extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void;
-    /**
      * Shader loaders used to load additional shader files before preparing the effect.
      */
     shaderLoaders?: ShaderLoader[];
+    /**
+     * Defines additional code to call to prepare the shader code
+     */
+    extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void;
     /**
      * Additional async code to run before preparing the effect
      */
