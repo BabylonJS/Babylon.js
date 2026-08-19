@@ -6,6 +6,8 @@ import { Texture } from "../Materials/Textures/texture.pure";
 import { PostProcess } from "./postProcess.pure";
 
 import { type Nullable } from "../types";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * VRDistortionCorrectionPostProcess used for mobile VR
@@ -56,12 +58,19 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
         });
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/vrDistortionCorrection.fragment")],
+        webGPU: () => [import("../ShadersWGSL/vrDistortionCorrection.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/vrDistortionCorrection.fragment"));
-        } else {
-            list.push(import("../Shaders/vrDistortionCorrection.fragment"));
+        }
+
+        const promise = VRDistortionCorrectionPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
 
         super._gatherImports(useWebGPU, list);

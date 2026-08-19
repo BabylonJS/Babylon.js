@@ -3,6 +3,7 @@ import { Constants } from "core/Engines/constants";
 import { EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Vector3, Matrix, Quaternion, TmpVectors } from "core/Maths/math.vector.pure";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 const Trs = Matrix.Compose(new Vector3(0.5, 0.5, 0.5), Quaternion.Identity(), new Vector3(0.5, 0.5, 0.5));
 const TrsWebGPU = Matrix.Compose(new Vector3(0.5, 0.5, 1), Quaternion.Identity(), new Vector3(0.5, 0.5, 0));
@@ -43,12 +44,19 @@ export class ThinSSRPostProcess extends EffectWrapper {
 
     public static readonly Samplers = ["textureSampler", "normalSampler", "reflectivitySampler", "depthSampler", "envCubeSampler", "backDepthSampler"];
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/screenSpaceReflection2.fragment")],
+        webGPU: () => [import("../ShadersWGSL/screenSpaceReflection2.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/screenSpaceReflection2.fragment"));
-        } else {
-            list.push(import("../Shaders/screenSpaceReflection2.fragment"));
+        }
+
+        const promise = ThinSSRPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
     }
 

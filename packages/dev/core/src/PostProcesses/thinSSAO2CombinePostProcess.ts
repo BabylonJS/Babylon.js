@@ -2,6 +2,8 @@ import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, 
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { TmpVectors } from "core/Maths/math.vector.pure";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * @internal
@@ -13,12 +15,19 @@ export class ThinSSAO2CombinePostProcess extends EffectWrapper {
 
     public static readonly Samplers = ["originalColor"];
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/ssaoCombine.fragment")],
+        webGPU: () => [import("../ShadersWGSL/ssaoCombine.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/ssaoCombine.fragment"));
-        } else {
-            list.push(import("../Shaders/ssaoCombine.fragment"));
+        }
+
+        const promise = ThinSSAO2CombinePostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
     }
 

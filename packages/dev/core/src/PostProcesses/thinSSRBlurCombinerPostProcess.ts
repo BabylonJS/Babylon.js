@@ -2,6 +2,8 @@ import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, 
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { TmpVectors } from "../Maths/math.vector.pure";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * @internal
@@ -22,12 +24,19 @@ export class ThinSSRBlurCombinerPostProcess extends EffectWrapper {
 
     public static readonly Samplers = ["textureSampler", "depthSampler", "normalSampler", "mainSampler", "reflectivitySampler"];
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/screenSpaceReflection2BlurCombiner.fragment")],
+        webGPU: () => [import("../ShadersWGSL/screenSpaceReflection2BlurCombiner.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/screenSpaceReflection2BlurCombiner.fragment"));
-        } else {
-            list.push(import("../Shaders/screenSpaceReflection2BlurCombiner.fragment"));
+        }
+
+        const promise = ThinSSRBlurCombinerPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
     }
 

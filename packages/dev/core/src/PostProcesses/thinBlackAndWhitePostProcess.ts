@@ -1,6 +1,8 @@
 import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Post process used to render in black and white
@@ -16,12 +18,19 @@ export class ThinBlackAndWhitePostProcess extends EffectWrapper {
      */
     public static readonly Uniforms = ["degree"];
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/blackAndWhite.fragment")],
+        webGPU: () => [import("../ShadersWGSL/blackAndWhite.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/blackAndWhite.fragment"));
-        } else {
-            list.push(import("../Shaders/blackAndWhite.fragment"));
+        }
+
+        const promise = ThinBlackAndWhitePostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
     }
 

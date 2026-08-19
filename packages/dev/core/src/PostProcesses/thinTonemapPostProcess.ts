@@ -1,6 +1,8 @@
 import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /** Defines operator used for tonemapping */
 export const enum TonemappingOperator {
@@ -40,12 +42,19 @@ export class ThinTonemapPostProcess extends EffectWrapper {
      */
     public static readonly Uniforms = ["_ExposureAdjustment"];
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/tonemap.fragment")],
+        webGPU: () => [import("../ShadersWGSL/tonemap.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/tonemap.fragment"));
-        } else {
-            list.push(import("../Shaders/tonemap.fragment"));
+        }
+
+        const promise = ThinTonemapPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
     }
 

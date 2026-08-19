@@ -1,6 +1,8 @@
 import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Post process used to render a grain effect
@@ -16,12 +18,19 @@ export class ThinGrainPostProcess extends EffectWrapper {
      */
     public static readonly Uniforms = ["intensity", "animatedSeed"];
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/grain.fragment")],
+        webGPU: () => [import("../ShadersWGSL/grain.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/grain.fragment"));
-        } else {
-            list.push(import("../Shaders/grain.fragment"));
+        }
+
+        const promise = ThinGrainPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
     }
 

@@ -61,12 +61,19 @@ export class ThinGlowBlurPostProcess extends EffectWrapper {
         });
     }
 
+    private static readonly _GlowBlurShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/glowBlurPostProcess.fragment")],
+        webGPU: () => [import("../ShadersWGSL/glowBlurPostProcess.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/glowBlurPostProcess.fragment"));
-        } else {
-            list.push(import("../Shaders/glowBlurPostProcess.fragment"));
+        }
+
+        const promise = ThinGlowBlurPostProcess._GlowBlurShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
 
         super._gatherImports(useWebGPU, list);

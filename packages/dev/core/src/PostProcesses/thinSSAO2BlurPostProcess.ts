@@ -1,6 +1,8 @@
 import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * @internal
@@ -12,12 +14,19 @@ export class ThinSSAO2BlurPostProcess extends EffectWrapper {
 
     public static readonly Samplers = ["textureSampler", "depthSampler"];
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/ssao2.fragment")],
+        webGPU: () => [import("../ShadersWGSL/ssao2.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/ssao2.fragment"));
-        } else {
-            list.push(import("../Shaders/ssao2.fragment"));
+        }
+
+        const promise = ThinSSAO2BlurPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
     }
 

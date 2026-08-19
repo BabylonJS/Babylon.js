@@ -3,6 +3,8 @@ import { Observable } from "./observable";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "core/Engines/engineStore";
 import { Constants } from "../Engines/constants";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * @internal
@@ -21,12 +23,19 @@ export class ThinMinMaxReducerPostProcess extends EffectWrapper {
 
     public static readonly Uniforms = ["texSize"];
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/minmaxRedux.fragment")],
+        webGPU: () => [import("../ShadersWGSL/minmaxRedux.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/minmaxRedux.fragment"));
-        } else {
-            list.push(import("../Shaders/minmaxRedux.fragment"));
+        }
+
+        const promise = ThinMinMaxReducerPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
     }
 

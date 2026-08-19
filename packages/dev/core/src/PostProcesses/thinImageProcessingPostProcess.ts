@@ -13,6 +13,8 @@ import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { type IImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration.pure";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Options used to create a ThinImageProcessingPostProcessOptions.
@@ -40,12 +42,19 @@ export class ThinImageProcessingPostProcess extends EffectWrapper {
      */
     public static readonly FragmentUrl = "imageProcessing";
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/imageProcessing.fragment")],
+        webGPU: () => [import("../ShadersWGSL/imageProcessing.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/imageProcessing.fragment"));
-        } else {
-            list.push(import("../Shaders/imageProcessing.fragment"));
+        }
+
+        const promise = ThinImageProcessingPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
     }
 

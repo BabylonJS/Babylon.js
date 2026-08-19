@@ -2,6 +2,8 @@ import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions }
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { type Camera } from "core/Cameras/camera";
 import { EngineStore } from "../Engines/engineStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Options used to create a ThinCircleOfConfusionPostProcess.
@@ -38,12 +40,19 @@ export class ThinCircleOfConfusionPostProcess extends EffectWrapper {
      */
     public static readonly DefinesDepthNotNormalized = "#define COC_DEPTH_NOT_NORMALIZED";
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/circleOfConfusion.fragment")],
+        webGPU: () => [import("../ShadersWGSL/circleOfConfusion.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/circleOfConfusion.fragment"));
-        } else {
-            list.push(import("../Shaders/circleOfConfusion.fragment"));
+        }
+
+        const promise = ThinCircleOfConfusionPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
     }
 

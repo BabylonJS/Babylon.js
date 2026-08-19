@@ -3,6 +3,8 @@ import { type Effect } from "core/Materials/effect";
 import { EngineStore } from "core/Engines/engineStore";
 import { EffectWrapper, type EffectWrapperCreationOptions } from "core/Materials/effectRenderer.pure";
 import { type Nullable } from "core/types";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Edge Adaptive Spatial Upsampling (EASU) post-process used by FSR 1
@@ -37,12 +39,19 @@ export class ThinFSR1UpscalePostProcess extends EffectWrapper {
         });
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/fsr1Upscale.fragment")],
+        webGPU: () => [import("../ShadersWGSL/fsr1Upscale.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean | undefined, list: Promise<any>[]): void {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/fsr1Upscale.fragment"));
-        } else {
-            list.push(import("../Shaders/fsr1Upscale.fragment"));
+        }
+
+        const promise = ThinFSR1UpscalePostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
     }
 
