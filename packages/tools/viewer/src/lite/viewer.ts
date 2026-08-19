@@ -43,7 +43,10 @@ import {
     resetVariant,
     selectVariant,
     rebuildScenePbrPipelines,
+    setEnvironmentBlur,
+    setEnvironmentRotation,
     setSceneImageProcessing,
+    setShadowOnly,
     setShadowTaskCasterMeshes,
     startEngine,
     stopEngine,
@@ -110,6 +113,7 @@ export const DefaultViewerOptions = DefaultViewerBaseOptions;
 const DefaultCameraAlpha = -Math.PI / 2;
 const DefaultCameraBeta = Math.PI / 2.5;
 const DefaultCameraRadius = 3;
+const DefaultShadowLightDirection: [number, number, number] = [0.12, -1, 0.05];
 
 // ── Helpers ──
 
@@ -671,14 +675,17 @@ export class Viewer extends ViewerBase implements IViewer {
     /** @internal Lite has no engine state for intensity. */
     protected override _applyEnvironmentIntensity(): void {}
 
-    /** @internal Lite has no engine state for blur. */
-    protected override _applyEnvironmentBlur(): void {}
+    /** @internal */
+    protected override _applyEnvironmentBlur(): void {
+        if (this._currentSkyboxUrl !== null) {
+            setEnvironmentBlur(this._scene, this._environmentBlur);
+        }
+    }
 
     /** @internal */
     protected override _applyEnvironmentRotation(): void {
-        if (this._scene.envRotationY !== undefined) {
-            this._scene.envRotationY = this._environmentRotation;
-        }
+        setEnvironmentRotation(this._scene, this._environmentRotation);
+        this._rotateShadowLightWithEnvironment();
     }
 
     /** @internal */
@@ -732,6 +739,11 @@ export class Viewer extends ViewerBase implements IViewer {
             const resolvedLightingUrl = effectiveLightingUrl === "auto" ? (await import("../defaultEnvironment")).default : effectiveLightingUrl;
             const ext = getExtension(resolvedLightingUrl, options.extension);
 
+            setEnvironmentRotation(this._scene, this._environmentRotation);
+            if (targetSkyboxUrl !== null) {
+                setEnvironmentBlur(this._scene, this._environmentBlur);
+            }
+
             // Lite's `loadHdrEnvironment` cannot suppress its skybox build. So:
             // - `lighting: true, skybox: false` with .hdr → would build an unwanted skybox. Throw.
             // - `lighting: true, skybox: true` (or skybox-only with same URL) → fine.
@@ -744,6 +756,7 @@ export class Viewer extends ViewerBase implements IViewer {
 
             if (ext === ".hdr") {
                 await loadHdrEnvironment(this._scene, resolvedLightingUrl, {
+                    useCubemapSkybox: true,
                     skipGround: true,
                     skyboxSize: 20,
                 });
@@ -766,10 +779,6 @@ export class Viewer extends ViewerBase implements IViewer {
                 if (updateSkybox) {
                     this._currentSkyboxUrl = targetSkyboxUrl;
                 }
-            }
-
-            if (this._environmentRotation !== 0) {
-                this._scene.envRotationY = this._environmentRotation;
             }
 
             // Lite's env loader unconditionally overwrites `scene.imageProcessing` (toneMappingEnabled,
@@ -996,17 +1005,18 @@ export class Viewer extends ViewerBase implements IViewer {
         // from the IBL's dominant direction, which for the typical diffuse studio environment is
         // close to overhead (e.g. ~(-0.12, -0.99, -0.01)); Lite has no IBL dominant-direction
         // analysis, so this near-overhead fixed direction approximates that soft, grounded look.
-        const lightDir: [number, number, number] = [0.12, -1, 0.05];
+        const lightDir: [number, number, number] = [...DefaultShadowLightDirection];
         const dirLen = Math.sqrt(lightDir[0] ** 2 + lightDir[1] ** 2 + lightDir[2] ** 2);
         const positionFactor = radius * 3;
         const light = createDirectionalLight(lightDir, 1);
         light.position.set(cx - (lightDir[0] / dirLen) * positionFactor, cy - (lightDir[1] / dirLen) * positionFactor, cz - (lightDir[2] / dirLen) * positionFactor);
         addToScene(this._scene, light);
         this._shadowLight = light;
+        this._rotateShadowLightWithEnvironment();
 
-        // Shadow ground disc. The `shadowOnly: true` flag enables Lite's shadow-only shader path,
-        // which mirrors BJS's `BackgroundMaterial.shadowOnly`: the surface is invisible everywhere
-        // except where shadow falls on it, where it appears in `shadowOnlyColor` (black here). The
+        // Shadow ground disc. `setShadowOnly` enables Lite's shadow-only shader path, which mirrors
+        // BJS's `BackgroundMaterial.shadowOnly`: the surface is invisible everywhere except where
+        // shadow falls on it, where it appears in the configured color (black here). The
         // ground needs `receiveShadows = true` so Lite compiles it on the multi-light path where the
         // per-light `shadowFactors` the shadow-only path reads are actually written. `createPbrMaterial`
         // installs its own 1×1 fallback base/ORM textures, so none need to be supplied here.
@@ -1020,23 +1030,23 @@ export class Viewer extends ViewerBase implements IViewer {
         ground.rotation.x = Math.PI / 2;
         ground.position.y = minY;
         ground.receiveShadows = true;
-        // Shadow-only is a tree-shakeable, opt-in PBR feature: setting `shadowOnly: true` is what
-        // pulls in the shadow-only shader fragment. Lite scans materials for the flag and lazily
-        // imports (and registers) the fragment only when it's actually used, so apps that never set
-        // it pay zero base-bundle cost. The flag also forces the alpha-blend path, so no separate
+        // Shadow-only is a tree-shakeable, opt-in PBR feature: importing and calling its enabler is
+        // what pulls in and registers the shader fragment. Apps that never import the enabler pay
+        // zero bundle cost. The feature also forces the alpha-blend path, so no separate
         // `alphaBlend: true` is needed for the disc to composite over the scene.
-        ground.material = createPbrMaterial({
-            shadowOnly: true,
-            shadowOnlyColor: [0, 0, 0],
+        const groundMaterial = createPbrMaterial({});
+        setShadowOnly(groundMaterial, {
+            color: [0, 0, 0],
             // Keep the shadow light and translucent so it reads as a soft, subtle grounding shadow
             // similar to the full Viewer (whose directional shadow darkness is only ~0.2–0.8),
             // rather than a heavy pitch-black blob. Paired with the large blurKernel below, this
             // gives a gentle penumbra instead of a hard silhouette.
-            shadowOnlyOpacity: 0.3,
+            opacity: 0.3,
             // Use the natural ESM falloff (falloff = 1) so the penumbra fades smoothly. Values > 1
             // collapse the gradient into a hard aliased edge.
-            shadowOnlyFalloff: 1,
+            falloff: 1,
         });
+        ground.material = groundMaterial;
         addToScene(this._scene, ground);
         this._shadowGround = ground;
 
@@ -1079,6 +1089,31 @@ export class Viewer extends ViewerBase implements IViewer {
         }
         setShadowTaskCasterMeshes(this._shadowGenerator, casterMeshes);
         light.shadowGenerator = this._shadowGenerator ?? undefined;
+    }
+
+    private _rotateShadowLightWithEnvironment(): void {
+        const light = this._shadowLight;
+        const bounds = this._computeModelBounds();
+        if (!light || !bounds) {
+            return;
+        }
+
+        const angle = -this._environmentRotation;
+        const cosine = Math.cos(angle);
+        const sine = Math.sin(angle);
+        const directionX = DefaultShadowLightDirection[0] * cosine + DefaultShadowLightDirection[2] * sine;
+        const directionY = DefaultShadowLightDirection[1];
+        const directionZ = -DefaultShadowLightDirection[0] * sine + DefaultShadowLightDirection[2] * cosine;
+        const directionLength = Math.sqrt(directionX ** 2 + directionY ** 2 + directionZ ** 2);
+        const positionFactor = bounds.radius * 3;
+        const [centerX, centerY, centerZ] = bounds.center;
+
+        light.direction.set(directionX, directionY, directionZ);
+        light.position.set(
+            centerX - (directionX / directionLength) * positionFactor,
+            centerY - (directionY / directionLength) * positionFactor,
+            centerZ - (directionZ / directionLength) * positionFactor
+        );
     }
 
     // ── Model Loading ──
@@ -1548,9 +1583,9 @@ export class Viewer extends ViewerBase implements IViewer {
         // `ArcRotateCamera.interpolateTo`. Omitted/NaN orbit components keep the camera's current value.
         const orbit = hotSpot.cameraOrbit;
         this._interpolateCameraTo({
-            alpha: orbit?.[0],
-            beta: orbit?.[1],
-            radius: orbit?.[2],
+            alpha: Number(orbit?.[0]),
+            beta: Number(orbit?.[1]),
+            radius: Number(orbit?.[2]),
             target: { x: result.worldPosition[0], y: result.worldPosition[1], z: result.worldPosition[2] },
         });
         return true;
@@ -1955,7 +1990,7 @@ export class Viewer extends ViewerBase implements IViewer {
     }
 
     private _updateAutoOrbit(deltaMs: number): void {
-        if (!this._autoOrbitEnabled) {
+        if (!this._autoOrbitEnabled || this._cameraInterpolationAbort) {
             this._autoOrbitIdleTime = 0;
             return;
         }
