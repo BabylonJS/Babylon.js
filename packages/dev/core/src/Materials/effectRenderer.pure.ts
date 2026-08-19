@@ -11,7 +11,7 @@ import { type DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "./drawWrapper";
 import { type IRenderTargetTexture, type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "./shaderLanguage";
-import { type ShaderLoader } from "../Misc/shaderLoader";
+import { ShaderLoader } from "../Misc/shaderLoader";
 
 // Prevents ES6 issue if not imported.
 
@@ -411,6 +411,11 @@ export class EffectWrapper {
 
     private _onContextRestoredObserver: Nullable<Observer<AbstractEngine>>;
 
+    private static readonly _PostprocessShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/postprocess.vertex")],
+        webGPU: () => [import("../ShadersWGSL/postprocess.vertex")],
+    });
+
     /**
      * Creates an effect to be rendered
      * @param creationOptions options to create the effect
@@ -502,10 +507,12 @@ export class EffectWrapper {
 
         const defines = Array.isArray(this.options.defines) ? this.options.defines.join("\n") : this.options.defines;
 
-        this._postConstructor(this.options.blockCompilation, defines, this.options.extraInitializations);
+        this._postConstructor(this.options.blockCompilation, defines, this.options.extraInitializations, undefined, this.options.shaderLoaders);
     }
 
-    protected _gatherImports(_useWebGPU = false, _list: Promise<any>[]) {}
+    protected _getShaderLoaders(): ShaderLoader[] {
+        return [];
+    }
 
     private _importPromises: Array<Promise<any>> = [];
 
@@ -514,26 +521,37 @@ export class EffectWrapper {
         blockCompilation: boolean,
         defines: Nullable<string> = null,
         extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void,
-        importPromises?: Array<Promise<any>>
+        importPromises?: Array<Promise<any>>,
+        shaderLoaders?: ShaderLoader[]
     ) {
         this._importPromises.length = 0;
+
+        const useWebGPU = this.options.engine.isWebGPU && !EffectWrapper.ForceGLSL && this._webGPUReady;
+        const shaderLanguage = useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
+        const shaderLoaders2 = this._getShaderLoaders();
+        if (shaderLoaders) {
+            shaderLoaders2.push(...shaderLoaders);
+        }
+        if (this.options.useShaderStore && this._shaderPath.vertex === "postprocess") {
+            shaderLoaders2.push(EffectWrapper._PostprocessShaderLoader);
+        }
+        for (const shaderLoader of shaderLoaders2) {
+            const promise = shaderLoader.load(shaderLanguage);
+            if (promise !== null) {
+                this._importPromises.push(promise);
+            }
+        }
 
         if (importPromises) {
             this._importPromises.push(...importPromises);
         }
 
-        const useWebGPU = this.options.engine.isWebGPU && !EffectWrapper.ForceGLSL;
-
-        this._gatherImports(useWebGPU, this._importPromises);
-        if (this.options.useShaderStore && this._shaderPath.vertex === "postprocess") {
-            this._importPromises.push(useWebGPU && this._webGPUReady ? import("../ShadersWGSL/postprocess.vertex") : import("../Shaders/postprocess.vertex"));
-        }
         if (extraInitializations !== undefined) {
             extraInitializations(useWebGPU, this._importPromises);
         }
 
-        if (useWebGPU && this._webGPUReady) {
-            this.options.shaderLanguage = ShaderLanguage.WGSL;
+        if (useWebGPU) {
+            this.options.shaderLanguage = shaderLanguage;
         }
 
         if (!blockCompilation) {

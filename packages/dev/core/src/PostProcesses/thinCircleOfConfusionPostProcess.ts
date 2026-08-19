@@ -45,15 +45,8 @@ export class ThinCircleOfConfusionPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/circleOfConfusion.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinCircleOfConfusionPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinCircleOfConfusionPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

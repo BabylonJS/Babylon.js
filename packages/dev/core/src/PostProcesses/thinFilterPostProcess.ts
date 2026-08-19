@@ -24,15 +24,8 @@ export class ThinFilterPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/filter.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinFilterPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinFilterPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

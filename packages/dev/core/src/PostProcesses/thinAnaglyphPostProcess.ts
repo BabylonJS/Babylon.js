@@ -23,15 +23,8 @@ export class ThinAnaglyphPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/anaglyph.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinAnaglyphPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinAnaglyphPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

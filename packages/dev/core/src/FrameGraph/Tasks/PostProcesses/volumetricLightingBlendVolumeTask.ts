@@ -35,17 +35,8 @@ class VolumetricLightingBlendVolumeThinPostProcess extends ThinPassPostProcess {
         webGPU: () => [import("../../../ShadersWGSL/pass.fragment"), import("../../../ShadersWGSL/volumetricLightingBlendVolume.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = VolumetricLightingBlendVolumeThinPostProcess._BlendVolumeShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
-
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [VolumetricLightingBlendVolumeThinPostProcess._BlendVolumeShaderLoader, ...super._getShaderLoaders()];
     }
 
     constructor(name: string, engine: Nullable<AbstractEngine> = null, enableExtinction = false, options?: EffectWrapperCreationOptions) {

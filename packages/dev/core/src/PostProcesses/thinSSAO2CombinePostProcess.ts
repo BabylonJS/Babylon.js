@@ -20,15 +20,8 @@ export class ThinSSAO2CombinePostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/ssaoCombine.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinSSAO2CombinePostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinSSAO2CombinePostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: EffectWrapperCreationOptions) {

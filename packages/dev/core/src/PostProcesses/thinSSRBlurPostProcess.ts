@@ -20,15 +20,8 @@ export class ThinSSRBlurPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/screenSpaceReflection2Blur.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinSSRBlurPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinSSRBlurPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     constructor(name: string, engine: Nullable<AbstractEngine> = null, direction?: Vector2, blurStrength?: number, options?: EffectWrapperCreationOptions) {

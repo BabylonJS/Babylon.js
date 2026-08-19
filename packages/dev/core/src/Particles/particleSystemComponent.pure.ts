@@ -103,6 +103,7 @@ export function RegisterParticleSystemComponent(): void {
             undefined,
             shaderLanguage,
             async () => {
+                // TODO
                 if (shaderLanguage === ShaderLanguage.GLSL) {
                     await import("../Shaders/particles.vertex");
                 } else {

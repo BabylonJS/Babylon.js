@@ -23,15 +23,8 @@ export class ThinGrainPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/grain.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinGrainPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinGrainPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

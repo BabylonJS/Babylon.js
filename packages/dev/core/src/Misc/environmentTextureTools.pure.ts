@@ -768,6 +768,7 @@ async function _UploadLevelsAsync(
     // Expand the texture if possible
     let shaderLanguage = ShaderLanguage.GLSL;
     if (expandTexture) {
+        // TODO
         if (engine.isWebGPU) {
             shaderLanguage = ShaderLanguage.WGSL;
             await import("../ShadersWGSL/rgbdDecode.fragment");

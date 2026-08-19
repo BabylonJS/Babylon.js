@@ -25,15 +25,8 @@ export class ThinColorCorrectionPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/colorCorrection.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinColorCorrectionPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinColorCorrectionPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

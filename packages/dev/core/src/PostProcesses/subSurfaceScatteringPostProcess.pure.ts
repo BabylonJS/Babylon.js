@@ -29,17 +29,8 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         webGPU: () => [import("../ShadersWGSL/imageProcessing.fragment"), import("../ShadersWGSL/subSurfaceScattering.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = SubSurfaceScatteringPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
-
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [SubSurfaceScatteringPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     constructor(

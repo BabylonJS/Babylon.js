@@ -28,15 +28,8 @@ export class ThinScreenSpaceCurvaturePostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/screenSpaceCurvature.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinScreenSpaceCurvaturePostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinScreenSpaceCurvaturePostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

@@ -48,27 +48,24 @@ describe("VolumetricLightScatteringPostProcess", () => {
         engine.dispose();
     });
 
-    for (const { name, isWebGPU, forceGLSL, expectedShaderLanguage, expectedUseWebGPU } of [
+    for (const { name, isWebGPU, forceGLSL, expectedShaderLanguage } of [
         {
             name: "WGSL on WebGPU",
             isWebGPU: true,
             forceGLSL: false,
             expectedShaderLanguage: ShaderLanguage.WGSL,
-            expectedUseWebGPU: true,
         },
         {
             name: "GLSL when ForceGLSL is enabled on WebGPU",
             isWebGPU: true,
             forceGLSL: true,
             expectedShaderLanguage: ShaderLanguage.GLSL,
-            expectedUseWebGPU: false,
         },
         {
             name: "GLSL on non-WebGPU engines",
             isWebGPU: false,
             forceGLSL: false,
             expectedShaderLanguage: ShaderLanguage.GLSL,
-            expectedUseWebGPU: false,
         },
     ] as const) {
         it(`uses the scene engine and selects ${name} when camera is null`, () => {
@@ -76,14 +73,12 @@ describe("VolumetricLightScatteringPostProcess", () => {
             PostProcess.ForceGLSL = forceGLSL;
 
             const createEffect = vi.spyOn(engine, "createEffect").mockReturnValue(createReadyEffect(engine));
-            const gatherImports = vi.spyOn(VolumetricLightScatteringPostProcess.prototype as any, "_gatherImports").mockImplementation((_useWebGPU, _list) => {});
 
             expect(() => {
                 postProcess = new VolumetricLightScatteringPostProcess("vls", 1, null, undefined, undefined, undefined, undefined, undefined, scene);
             }).not.toThrow();
 
             expect(postProcess!.getEngine()).toBe(engine);
-            expect(gatherImports).toHaveBeenCalledWith(expectedUseWebGPU, expect.any(Array));
 
             const postProcessEffectCall = createEffect.mock.calls.find(([shaderPath]) => {
                 return typeof shaderPath === "object" && shaderPath !== null && "fragment" in shaderPath && shaderPath.fragment === "volumetricLightScattering";

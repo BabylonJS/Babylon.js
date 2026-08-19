@@ -43,17 +43,8 @@ export class DisplayPassPostProcess extends PostProcess {
         webGPU: () => [import("../ShadersWGSL/displayPass.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = DisplayPassPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
-
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [DisplayPassPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

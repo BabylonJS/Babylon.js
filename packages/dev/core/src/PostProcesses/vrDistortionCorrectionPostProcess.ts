@@ -63,16 +63,7 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
         webGPU: () => [import("../ShadersWGSL/vrDistortionCorrection.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = VRDistortionCorrectionPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
-
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [VRDistortionCorrectionPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 }

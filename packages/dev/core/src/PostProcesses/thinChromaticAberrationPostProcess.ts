@@ -24,15 +24,8 @@ export class ThinChromaticAberrationPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/chromaticAberration.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinChromaticAberrationPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinChromaticAberrationPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

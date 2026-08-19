@@ -17,15 +17,8 @@ export class ThinDepthOfFieldMergePostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/depthOfFieldMerge.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinDepthOfFieldMergePostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinDepthOfFieldMergePostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: EffectWrapperCreationOptions) {

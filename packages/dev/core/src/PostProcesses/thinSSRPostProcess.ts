@@ -49,15 +49,8 @@ export class ThinSSRPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/screenSpaceReflection2.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinSSRPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinSSRPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     public isSSRSupported = true;

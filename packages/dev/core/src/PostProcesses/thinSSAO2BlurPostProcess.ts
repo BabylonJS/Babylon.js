@@ -19,15 +19,8 @@ export class ThinSSAO2BlurPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/ssao2.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinSSAO2BlurPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinSSAO2BlurPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     constructor(name: string, engine: Nullable<AbstractEngine> = null, isHorizontal: boolean, options?: EffectWrapperCreationOptions) {

@@ -556,6 +556,7 @@ export class PostProcess {
         let size: number | { width: number; height: number } = 1;
         let uniformBuffers: Nullable<string[]> = null;
         let effectWrapper: EffectWrapper | undefined;
+        let shaderLoaders: ShaderLoader[] | undefined;
         if (parameters && !Array.isArray(parameters)) {
             const options = parameters;
             parameters = options.uniforms ?? null;
@@ -574,6 +575,7 @@ export class PostProcess {
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
             extraInitializations = options.extraInitializations;
+            shaderLoaders = options.shaderLoaders;
             effectWrapper = options.effectWrapper;
         } else if (_size) {
             if (typeof _size === "number") {
@@ -645,12 +647,10 @@ export class PostProcess {
         if (!this._useExistingThinPostProcess) {
             this._webGPUReady = this._shaderLanguage === ShaderLanguage.WGSL;
 
-            const importPromises: Array<Promise<any>> = [];
-
-            this._gatherImports(this._engine.isWebGPU && !PostProcess.ForceGLSL, importPromises);
+            shaderLoaders = [...this._getShaderLoaders(), ...(shaderLoaders ?? [])];
 
             this._effectWrapper._webGPUReady = this._webGPUReady;
-            this._effectWrapper._postConstructor(blockCompilation, defines, extraInitializations, importPromises);
+            this._effectWrapper._postConstructor(blockCompilation, defines, extraInitializations, undefined, shaderLoaders);
         }
     }
 
@@ -659,12 +659,8 @@ export class PostProcess {
         webGPU: () => [import("../ShadersWGSL/postprocess.vertex")],
     });
 
-    protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {
-        // this._webGPUReady is used to detect when a postprocess is intended to be used with WebGPU
-        const promise = PostProcess._VertexShaderLoader.load(useWebGPU && this._webGPUReady ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected _getShaderLoaders(): ShaderLoader[] {
+        return [PostProcess._VertexShaderLoader];
     }
 
     /**

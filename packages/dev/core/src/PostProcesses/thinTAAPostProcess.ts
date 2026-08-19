@@ -32,15 +32,8 @@ export class ThinTAAPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/taa.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinTAAPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinTAAPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     private _samples = 8;

@@ -46,15 +46,8 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/ssao2.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinSSAO2PostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinSSAO2PostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     public camera: Nullable<Camera> = null;

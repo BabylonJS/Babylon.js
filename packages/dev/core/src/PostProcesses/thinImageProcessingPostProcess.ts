@@ -47,15 +47,8 @@ export class ThinImageProcessingPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/imageProcessing.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinImageProcessingPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinImageProcessingPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

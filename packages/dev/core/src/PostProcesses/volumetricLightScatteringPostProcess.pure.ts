@@ -202,17 +202,8 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         ],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = VolumetricLightScatteringPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
-
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [VolumetricLightScatteringPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

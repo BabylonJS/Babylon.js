@@ -47,16 +47,7 @@ export class HighlightsPostProcess extends PostProcess {
         webGPU: () => [import("../ShadersWGSL/highlights.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = HighlightsPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
-
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [HighlightsPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 }

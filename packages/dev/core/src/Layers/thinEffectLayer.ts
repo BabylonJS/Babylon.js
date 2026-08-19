@@ -66,17 +66,8 @@ export class ThinGlowBlurPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/glowBlurPostProcess.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinGlowBlurPostProcess._GlowBlurShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
-
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinGlowBlurPostProcess._GlowBlurShaderLoader, ...super._getShaderLoaders()];
     }
 
     public textureWidth: number = 0;

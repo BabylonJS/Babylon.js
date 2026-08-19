@@ -81,17 +81,8 @@ class GlowBlurPostProcess extends PostProcess {
         webGPU: () => [import("../ShadersWGSL/glowBlurPostProcess.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = GlowBlurPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
-
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [GlowBlurPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 }
 

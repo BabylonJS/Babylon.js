@@ -49,15 +49,8 @@ export class ThinConvolutionPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/convolution.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinConvolutionPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinConvolutionPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

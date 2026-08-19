@@ -44,15 +44,8 @@ export class ThinFSR1SharpenPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/fsr1Sharpen.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean | undefined, list: Promise<any>[]): void {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinFSR1SharpenPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinFSR1SharpenPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

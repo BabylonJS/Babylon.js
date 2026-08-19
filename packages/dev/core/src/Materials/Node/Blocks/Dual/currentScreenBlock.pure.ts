@@ -147,6 +147,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
 
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
+        // TODO
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
             await import("../../../../ShadersWGSL/ShadersInclude/helperFunctions");

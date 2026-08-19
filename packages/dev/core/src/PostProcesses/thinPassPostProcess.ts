@@ -18,17 +18,8 @@ export class ThinPassPostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/pass.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinPassPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
-
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinPassPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**
@@ -69,17 +60,8 @@ export class ThinPassCubePostProcess extends EffectWrapper {
         webGPU: () => [import("../ShadersWGSL/passCube.fragment")],
     });
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-        }
-
-        const promise = ThinPassCubePostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
-        if (promise !== null) {
-            list.push(promise);
-        }
-
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinPassCubePostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**
