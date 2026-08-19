@@ -281,7 +281,7 @@ export class IblCdfGenerator {
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             gammaSpace: false,
-            shaderLoader: IblCdfGenerator._CdfShaderLoader,
+            shaderLoaders: [IblCdfGenerator._CdfShaderLoader],
         };
         const icdfOptions: IProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
@@ -291,7 +291,7 @@ export class IblCdfGenerator {
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             gammaSpace: false,
-            shaderLoader: IblCdfGenerator._IcdfShaderLoader,
+            shaderLoaders: [IblCdfGenerator._IcdfShaderLoader],
         };
         this._cdfyPT = new ProceduralTexture("cdfyTexture", { width: size.width, height: size.height + 1 }, "iblCdfy", this._scene, cdfOptions, false, false);
         this._cdfyPT.autoClear = false;

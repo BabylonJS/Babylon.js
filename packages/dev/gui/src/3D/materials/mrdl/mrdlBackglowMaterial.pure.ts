@@ -258,7 +258,7 @@ export class MRDLBackglowMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
-                        shaderLoader: MRDLBackglowMaterial._ShaderLoader,
+                        shaderLoaders: [MRDLBackglowMaterial._ShaderLoader],
                     },
                     engine
                 ),

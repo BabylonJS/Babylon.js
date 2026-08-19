@@ -271,7 +271,7 @@ export class CellMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights - 1 },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: CellMaterial._ShaderLoader,
+                        shaderLoaders: [CellMaterial._ShaderLoader],
                     },
                     engine
                 ),

@@ -444,7 +444,7 @@ export class MRDLFrontplateMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
-                        shaderLoader: MRDLFrontplateMaterial._ShaderLoader,
+                        shaderLoaders: [MRDLFrontplateMaterial._ShaderLoader],
                     },
                     engine
                 ),

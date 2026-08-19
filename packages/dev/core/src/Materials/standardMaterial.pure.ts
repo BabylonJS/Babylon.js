@@ -1272,7 +1272,7 @@ export class StandardMaterial extends StandardMaterialBase {
                     processCodeAfterIncludes: this._eventInfo.customCode,
                     multiTarget: defines.PREPASS,
                     shaderLanguage: this._shaderLanguage,
-                    shaderLoader: StandardMaterial._ShaderLoader,
+                    shaderLoaders: [StandardMaterial._ShaderLoader],
                 },
                 engine
             );

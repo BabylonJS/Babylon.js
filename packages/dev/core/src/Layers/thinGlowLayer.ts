@@ -204,7 +204,7 @@ export class ThinGlowLayer extends ThinEffectLayer {
                 onCompiled: null,
                 onError: null,
                 shaderLanguage: this.shaderLanguage,
-                shaderLoader: ThinGlowLayer._MergeShaderLoader,
+                shaderLoaders: [ThinGlowLayer._MergeShaderLoader],
                 extraInitializationsAsync: this._shadersLoaded
                     ? undefined
                     : async () => {

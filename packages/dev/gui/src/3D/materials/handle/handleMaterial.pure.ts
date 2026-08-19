@@ -100,7 +100,7 @@ export class HandleMaterial extends ShaderMaterial {
             needAlphaBlending: false,
             needAlphaTesting: false,
             shaderLanguage,
-            shaderLoader: HandleMaterial._ShaderLoader,
+            shaderLoaders: [HandleMaterial._ShaderLoader],
         });
 
         this._updateInterpolationTarget();

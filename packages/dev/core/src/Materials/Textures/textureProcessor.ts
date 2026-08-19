@@ -488,7 +488,7 @@ function _CreateProcessorTexture(
         generateMipMaps: false,
         gammaSpace: outputColorSpace === TextureColorSpace.SRGB,
         shaderLanguage: scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-        shaderLoader: _TextureProcessorShaderLoader,
+        shaderLoaders: [_TextureProcessorShaderLoader],
         // Opt out of scene-managed rendering. _shouldRender() would re-render the texture
         // on the first scene frame regardless of refreshRate (because _currentRefreshId starts
         // at -1 and is only advanced by _shouldRender() itself, not by a direct render() call).

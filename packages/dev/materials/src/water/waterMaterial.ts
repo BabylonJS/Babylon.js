@@ -568,7 +568,7 @@ export class WaterMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: WaterMaterial._ShaderLoader,
+                        shaderLoaders: [WaterMaterial._ShaderLoader],
                     },
                     engine
                 ),

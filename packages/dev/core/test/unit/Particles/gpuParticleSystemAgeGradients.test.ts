@@ -185,7 +185,10 @@ describe("GPUParticleSystem WebGPU render shader", () => {
         expect(createEffect).toHaveBeenCalled();
         const options = createEffect.mock.calls[0][1] as any;
         expect(options.shaderLanguage).toBe(ShaderLanguage.WGSL);
-        expect(options.shaderLoader).toBeInstanceOf(ShaderLoader);
+        expect(Array.isArray(options.shaderLoaders)).toBe(true);
+        for (const shaderLoader of options.shaderLoaders) {
+            expect(shaderLoader).toBeInstanceOf(ShaderLoader);
+        }
 
         ps.dispose();
     });

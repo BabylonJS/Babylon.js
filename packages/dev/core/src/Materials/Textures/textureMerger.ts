@@ -182,7 +182,7 @@ export async function MergeTexturesAsync(name: string, config: ITextureMergeConf
         generateDepthBuffer: false,
         generateMipMaps: false,
         shaderLanguage: scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-        shaderLoader: _TextureMergerShaderLoader,
+        shaderLoaders: [_TextureMergerShaderLoader],
         skipSceneRegistration: true,
     };
     const proceduralTexture = new ProceduralTexture(name, outputSize, _ShaderName, scene, outputTextureOptions);

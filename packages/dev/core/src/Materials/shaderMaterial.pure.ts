@@ -113,7 +113,7 @@ export interface IShaderMaterialOptions {
     /**
      * Shader loader used to load additional shader files before preparing the effect.
      */
-    shaderLoader?: ShaderLoader;
+    shaderLoaders?: ShaderLoader[];
 
     /**
      * Defines additional code to call to prepare the shader code
@@ -963,7 +963,7 @@ export class ShaderMaterial extends PushMaterial {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
                     shaderLanguage: this._options.shaderLanguage,
-                    shaderLoader: this._options.shaderLoader,
+                    shaderLoaders: this._options.shaderLoaders,
                     extraInitializationsAsync: this._options.extraInitializationsAsync,
                 },
                 engine

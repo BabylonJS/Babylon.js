@@ -149,7 +149,7 @@ export abstract class FluidRenderingObject {
             samplerNames: [],
             defines,
             shaderLanguage: this._shaderLanguage,
-            shaderLoader: FluidRenderingObject._DepthShaderLoader,
+            shaderLoaders: [FluidRenderingObject._DepthShaderLoader],
         });
 
         uniformNames.push("particleAlpha");
@@ -163,7 +163,7 @@ export abstract class FluidRenderingObject {
             uniformNames,
             samplerNames: [],
             shaderLanguage: this._shaderLanguage,
-            shaderLoader: FluidRenderingObject._ThicknessShaderLoader,
+            shaderLoaders: [FluidRenderingObject._ThicknessShaderLoader],
         });
     }
 

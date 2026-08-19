@@ -412,7 +412,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                     indexParameters: {},
                     processCodeAfterIncludes: this._eventInfo.customCode,
                     shaderLanguage: this._shaderLanguage,
-                    shaderLoader: GaussianSplattingMaterial._ShaderLoader,
+                    shaderLoaders: [GaussianSplattingMaterial._ShaderLoader],
                 },
                 engine
             );
@@ -767,7 +767,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 shaderLanguage: shaderLanguage,
                 defines: defines,
                 needAlphaBlending: false,
-                shaderLoader: GaussianSplattingMaterial._VoxelShaderLoader,
+                shaderLoaders: [GaussianSplattingMaterial._VoxelShaderLoader],
             }
         );
         shaderMaterial.cullBackFaces = false;

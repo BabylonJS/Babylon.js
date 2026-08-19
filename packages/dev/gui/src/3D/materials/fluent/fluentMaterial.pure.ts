@@ -229,7 +229,7 @@ export class FluentMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: FluentMaterial._ShaderLoader,
+                        shaderLoaders: [FluentMaterial._ShaderLoader],
                     },
                     engine
                 ),

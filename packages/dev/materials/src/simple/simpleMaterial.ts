@@ -260,7 +260,7 @@ export class SimpleMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights - 1 },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: SimpleMaterial._ShaderLoader,
+                        shaderLoaders: [SimpleMaterial._ShaderLoader],
                     },
                     engine
                 ),

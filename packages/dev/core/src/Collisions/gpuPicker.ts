@@ -391,7 +391,7 @@ export class GPUPicker {
             defines: defines,
             useClipPlane: null,
             shaderLanguage: this._shaderLanguage,
-            shaderLoader: GPUPicker._ShaderLoader,
+            shaderLoaders: [GPUPicker._ShaderLoader],
         };
 
         const newMaterial = new ShaderMaterial("pickingShader", scene, "picking", options, false);

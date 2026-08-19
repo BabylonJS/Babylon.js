@@ -340,7 +340,7 @@ export class LavaMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: LavaMaterial._ShaderLoader,
+                        shaderLoaders: [LavaMaterial._ShaderLoader],
                     },
                     engine
                 ),

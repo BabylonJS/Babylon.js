@@ -1625,7 +1625,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                         samplers,
                         defines: join,
                         shaderLanguage,
-                        shaderLoader: GPUParticleSystem._ShaderLoader,
+                        shaderLoaders: [GPUParticleSystem._ShaderLoader],
                     },
                     this._engine
                 ),

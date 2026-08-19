@@ -133,9 +133,9 @@ export interface IEffectCreationOptions {
     existingPipelineContext?: IPipelineContext;
 
     /**
-     * Shader loader used to load additional shader files before preparing the effect.
+     * Shader loaders used to load additional shader files before preparing the effect.
      */
-    shaderLoader?: ShaderLoader;
+    shaderLoaders?: ShaderLoader[];
 
     /**
      * Additional async code to run before preparing the effect
@@ -346,7 +346,7 @@ export class Effect implements IDisposable {
         const pipelineName = this._key.replace(/\r/g, "").replace(/\n/g, "|");
         let cachedPipeline: IPipelineContext | undefined = undefined;
 
-        let shaderLoader: ShaderLoader | undefined;
+        let shaderLoaders: ShaderLoader[] | undefined;
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             const options = <IEffectCreationOptions>attributesNamesOrOptions;
             this._engine = <AbstractEngine>uniformsNamesOrEngine;
@@ -373,7 +373,7 @@ export class Effect implements IDisposable {
 
             this._processFinalCode = options.processFinalCode ?? null;
             this._processCodeAfterIncludes = options.processCodeAfterIncludes ?? undefined;
-            shaderLoader = options.shaderLoader;
+            shaderLoaders = options.shaderLoaders;
             extraInitializationsAsync = options.extraInitializationsAsync;
 
             cachedPipeline = options.existingPipelineContext;
@@ -403,7 +403,7 @@ export class Effect implements IDisposable {
         this.uniqueId = Effect._UniqueIdSeed++;
         if (!cachedPipeline) {
             // eslint-disable-next-line github/no-then
-            void this._processShaderCodeAsync(null, false, null, shaderLoader, extraInitializationsAsync).catch((error) => {
+            void this._processShaderCodeAsync(null, false, null, shaderLoaders, extraInitializationsAsync).catch((error) => {
                 const message = error?.message ?? String(error);
                 const asyncError = new Error(`Effect async shader preparation failed for "${String(this.name)}": ${message}`);
                 if (error && typeof error.stack === "string") {
@@ -436,11 +436,19 @@ export class Effect implements IDisposable {
         shaderProcessor: Nullable<IShaderProcessor> = null,
         keepExistingPipelineContext = false,
         shaderProcessingContext: Nullable<_IShaderProcessingContext> = null,
-        shaderLoader?: ShaderLoader,
+        shaderLoaders?: ShaderLoader[],
         extraInitializationsAsync?: () => Promise<void>
     ) {
-        if (shaderLoader && !shaderLoader.isLoaded(this._shaderLanguage)) {
-            await shaderLoader.loadAsync(this._shaderLanguage);
+        if (shaderLoaders) {
+            const promises: Promise<void>[] = [];
+            for (const shaderLoader of shaderLoaders) {
+                if (!shaderLoader.isLoaded(this._shaderLanguage)) {
+                    promises.push(shaderLoader.loadAsync(this._shaderLanguage));
+                }
+            }
+            if (promises.length > 0) {
+                await Promise.all(promises);
+            }
         }
         if (extraInitializationsAsync) {
             await extraInitializationsAsync();

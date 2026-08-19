@@ -1539,7 +1539,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                 processCodeAfterIncludes: this._eventInfo.customCode,
                 multiTarget: defines.PREPASS,
                 shaderLanguage: this._shaderLanguage,
-                shaderLoader: PBRBaseMaterial._ShaderLoader,
+                shaderLoaders: [PBRBaseMaterial._ShaderLoader],
             },
             engine
         );

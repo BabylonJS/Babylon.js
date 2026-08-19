@@ -320,7 +320,7 @@ export class _IblShadowsVoxelTracingPass {
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             generateDepthBuffer: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            shaderLoader: _IblShadowsVoxelTracingPass._ShaderLoader,
+            shaderLoaders: [_IblShadowsVoxelTracingPass._ShaderLoader],
         };
         this._outputTexture = new ProceduralTexture(
             "voxelTracingPass",

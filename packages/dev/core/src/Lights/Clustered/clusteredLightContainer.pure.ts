@@ -270,7 +270,7 @@ export class ClusteredLightContainer extends Light {
             storageBuffers: ["tileMaskBuffer"],
             defines,
             shaderLanguage: engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            shaderLoader: ClusteredLightContainer._ShaderLoader,
+            shaderLoaders: [ClusteredLightContainer._ShaderLoader],
         });
 
         // Additive blending is for merging masks on WebGL

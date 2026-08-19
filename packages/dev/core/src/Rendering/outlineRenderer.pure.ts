@@ -350,7 +350,7 @@ export class OutlineRenderer implements ISceneComponent {
                         onError: null,
                         indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: OutlineRenderer._ShaderLoader,
+                        shaderLoaders: [OutlineRenderer._ShaderLoader],
                     },
                     this.scene.getEngine()
                 ),

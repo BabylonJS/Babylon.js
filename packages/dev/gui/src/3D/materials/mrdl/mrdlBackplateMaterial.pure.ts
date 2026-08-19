@@ -371,7 +371,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
-                        shaderLoader: MRDLBackplateMaterial._ShaderLoader,
+                        shaderLoaders: [MRDLBackplateMaterial._ShaderLoader],
                     },
                     engine
                 ),

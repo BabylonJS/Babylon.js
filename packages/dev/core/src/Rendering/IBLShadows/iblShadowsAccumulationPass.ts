@@ -213,7 +213,7 @@ export class _IblShadowsAccumulationPass {
             generateDepthBuffer: false,
             generateMipMaps: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            shaderLoader: _IblShadowsAccumulationPass._AccumulationShaderLoader,
+            shaderLoaders: [_IblShadowsAccumulationPass._AccumulationShaderLoader],
         };
         this._outputTexture = new ProceduralTexture(
             "shadowAccumulationPass",
@@ -251,7 +251,7 @@ export class _IblShadowsAccumulationPass {
             generateDepthBuffer: false,
             generateMipMaps: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            shaderLoader: _IblShadowsAccumulationPass._PassShaderLoader,
+            shaderLoaders: [_IblShadowsAccumulationPass._PassShaderLoader],
         };
 
         this._oldAccumulationCopy = new ProceduralTexture(
@@ -277,7 +277,7 @@ export class _IblShadowsAccumulationPass {
             generateDepthBuffer: false,
             generateMipMaps: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            shaderLoader: _IblShadowsAccumulationPass._PassShaderLoader,
+            shaderLoaders: [_IblShadowsAccumulationPass._PassShaderLoader],
         };
 
         this._oldPositionCopy = new ProceduralTexture(

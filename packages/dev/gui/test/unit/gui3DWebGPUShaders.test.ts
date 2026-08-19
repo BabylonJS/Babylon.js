@@ -67,7 +67,10 @@ describe("GUI3D WebGPU shaders", () => {
 
         const options = createEffect.mock.calls[0][1] as any;
         expect(options.shaderLanguage).toBe(ShaderLanguage.WGSL);
-        expect(options.shaderLoader).toBeInstanceOf(ShaderLoader);
+        expect(Array.isArray(options.shaderLoaders)).toBe(true);
+        for (const shaderLoader of options.shaderLoaders) {
+            expect(shaderLoader).toBeInstanceOf(ShaderLoader);
+        }
     });
 
     it("uses WGSL when FluentBackplateMaterial creates an effect under WebGPU", () => {
@@ -84,7 +87,10 @@ describe("GUI3D WebGPU shaders", () => {
 
         const options = createEffect.mock.calls[0][1] as any;
         expect(options.shaderLanguage).toBe(ShaderLanguage.WGSL);
-        expect(options.shaderLoader).toBeInstanceOf(ShaderLoader);
+        expect(Array.isArray(options.shaderLoaders)).toBe(true);
+        for (const shaderLoader of options.shaderLoaders) {
+            expect(shaderLoader).toBeInstanceOf(ShaderLoader);
+        }
     });
 
     it("uses WGSL when FluentButtonMaterial creates an effect under WebGPU", () => {
@@ -100,7 +106,10 @@ describe("GUI3D WebGPU shaders", () => {
 
         const options = createEffect.mock.calls[0][1] as any;
         expect(options.shaderLanguage).toBe(ShaderLanguage.WGSL);
-        expect(options.shaderLoader).toBeInstanceOf(ShaderLoader);
+        expect(Array.isArray(options.shaderLoaders)).toBe(true);
+        for (const shaderLoader of options.shaderLoaders) {
+            expect(shaderLoader).toBeInstanceOf(ShaderLoader);
+        }
     });
 
     it("should not create the effect until the blob texture is ready", () => {
@@ -158,7 +167,11 @@ describe("GUI3D WebGPU shaders", () => {
         scene = new Scene(engine);
         const material = new HandleMaterial("handle", scene);
 
-        expect(material.options.shaderLanguage).toBe(ShaderLanguage.WGSL);
-        expect(material.options.shaderLoader).toBeInstanceOf(ShaderLoader);
+        const { options } = material;
+        expect(options.shaderLanguage).toBe(ShaderLanguage.WGSL);
+        expect(Array.isArray(options.shaderLoaders)).toBe(true);
+        for (const shaderLoader of options.shaderLoaders!) {
+            expect(shaderLoader).toBeInstanceOf(ShaderLoader);
+        }
     });
 });

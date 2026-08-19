@@ -306,7 +306,7 @@ export class NormalMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: NormalMaterial._ShaderLoader,
+                        shaderLoaders: [NormalMaterial._ShaderLoader],
                     },
                     engine
                 ),

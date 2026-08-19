@@ -192,7 +192,7 @@ export class HDRFiltering {
             defines,
             onCompiled: onCompiled,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            shaderLoader: HDRFiltering._ShaderLoader,
+            shaderLoaders: [HDRFiltering._ShaderLoader],
         });
 
         return effectWrapper;

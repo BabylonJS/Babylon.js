@@ -691,7 +691,7 @@ export class MRDLSliderBarMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
-                        shaderLoader: MRDLSliderBarMaterial._ShaderLoader,
+                        shaderLoaders: [MRDLSliderBarMaterial._ShaderLoader],
                     },
                     engine
                 ),

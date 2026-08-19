@@ -460,7 +460,7 @@ export class FluentButtonMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: FluentButtonMaterial._ShaderLoader,
+                        shaderLoaders: [FluentButtonMaterial._ShaderLoader],
                     },
                     engine
                 ),

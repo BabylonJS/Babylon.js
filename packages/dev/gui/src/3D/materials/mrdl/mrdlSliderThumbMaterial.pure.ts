@@ -692,7 +692,7 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
-                        shaderLoader: MRDLSliderThumbMaterial._ShaderLoader,
+                        shaderLoaders: [MRDLSliderThumbMaterial._ShaderLoader],
                     },
                     engine
                 ),

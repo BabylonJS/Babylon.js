@@ -380,7 +380,7 @@ export class MixMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: MixMaterial._ShaderLoader,
+                        shaderLoaders: [MixMaterial._ShaderLoader],
                     },
                     engine
                 ),

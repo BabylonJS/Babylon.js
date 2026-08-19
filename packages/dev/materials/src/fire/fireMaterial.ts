@@ -237,7 +237,7 @@ export class FireMaterial extends PushMaterial {
                         maxSimultaneousLights: 4,
                         transformFeedbackVaryings: null,
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: FireMaterial._ShaderLoader,
+                        shaderLoaders: [FireMaterial._ShaderLoader],
                     },
                     engine
                 ),

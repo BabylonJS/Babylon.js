@@ -128,9 +128,9 @@ export class DiffuseSkyIrradianceLut {
             samplers: ["transmittanceLut", "multiScatteringLut"],
             useShaderStore: true,
             shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            shaderLoader: DiffuseSkyIrradianceLut._ShaderLoader,
+            shaderLoaders: [DiffuseSkyIrradianceLut._ShaderLoader],
             extraInitializationsAsync: async () => {
-                // The shader modules are guaranteed to be loaded by this point, since the shaderLoader above is awaited first.
+                // The shader modules are guaranteed to be loaded by this point, since the shaderLoaders above are awaited first.
                 if (DiffuseSkyIrradianceLut._Patched) {
                     return;
                 }

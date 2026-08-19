@@ -275,7 +275,7 @@ export class ThinHighlightLayer extends ThinEffectLayer {
                 onCompiled: null,
                 onError: null,
                 shaderLanguage: this._shaderLanguage,
-                shaderLoader: ThinHighlightLayer._MergeShaderLoader,
+                shaderLoaders: [ThinHighlightLayer._MergeShaderLoader],
                 extraInitializationsAsync: this._shadersLoaded
                     ? undefined
                     : async () => {

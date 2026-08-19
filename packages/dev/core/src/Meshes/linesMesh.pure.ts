@@ -138,7 +138,7 @@ export class LinesMesh extends Mesh {
             }
 
             options.shaderLanguage = this._shaderLanguage;
-            options.shaderLoader = LinesMesh._ShaderLoader;
+            options.shaderLoaders = [LinesMesh._ShaderLoader];
 
             const material = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
             material.doNotSerialize = true;

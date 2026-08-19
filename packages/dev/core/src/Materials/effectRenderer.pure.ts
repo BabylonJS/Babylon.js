@@ -297,9 +297,9 @@ export interface EffectWrapperCreationOptions {
      */
     extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void;
     /**
-     * Shader loader used to load additional shader files before preparing the effect.
+     * Shader loaders used to load additional shader files before preparing the effect.
      */
-    shaderLoader?: ShaderLoader;
+    shaderLoaders?: ShaderLoader[];
     /**
      * Additional async code to run before preparing the effect
      */
@@ -437,7 +437,7 @@ export class EffectWrapper {
             onCompiled: creationOptions.onCompiled || (undefined as any),
             extraInitializations: creationOptions.extraInitializations || (undefined as any),
             extraInitializationsAsync: creationOptions.extraInitializationsAsync || (undefined as any),
-            shaderLoader: creationOptions.shaderLoader || (undefined as any),
+            shaderLoaders: creationOptions.shaderLoaders || (undefined as any),
             useAsPostProcess: creationOptions.useAsPostProcess ?? false,
             allowEmptySourceTexture: creationOptions.allowEmptySourceTexture ?? false,
         };
@@ -615,7 +615,7 @@ export class EffectWrapper {
                         ? (shaderType: string, code: string) => customShaderCodeProcessing.processFinalCode!(this.name, shaderType, code)
                         : null,
                     shaderLanguage: this.options.shaderLanguage,
-                    shaderLoader: this.options.shaderLoader,
+                    shaderLoaders: this.options.shaderLoaders,
                     extraInitializationsAsync,
                 },
                 this.options.engine

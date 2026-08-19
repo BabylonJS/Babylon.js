@@ -80,7 +80,7 @@ export class AreaLightTextureTools {
             samplerNames: ["textureSampler"],
             defines: [],
             shaderLanguage: this._shaderLanguage,
-            shaderLoader: AreaLightTextureTools._ShaderLoader,
+            shaderLoaders: [AreaLightTextureTools._ShaderLoader],
         });
 
         effectWrapper.onApplyObservable.add(() => {

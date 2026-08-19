@@ -827,7 +827,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights },
                     shaderLanguage: this._shaderLanguage,
-                    shaderLoader: BackgroundMaterial._ShaderLoader,
+                    shaderLoaders: [BackgroundMaterial._ShaderLoader],
                 },
                 engine
             );

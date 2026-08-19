@@ -230,7 +230,7 @@ export class _IblShadowsVoxelRenderer {
             uniformNames: ["layerNum"],
             samplerNames: ["textureSampler"],
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            shaderLoader: _IblShadowsVoxelRenderer._CopyTexture3DLayerToTextureShaderLoader,
+            shaderLoaders: [_IblShadowsVoxelRenderer._CopyTexture3DLayerToTextureShaderLoader],
         });
         this._copyMipEffectWrapper.onApplyObservable.add(() => {
             const effect = this._copyMipEffectWrapper.effect;
@@ -363,7 +363,7 @@ export class _IblShadowsVoxelRenderer {
             format: Constants.TEXTUREFORMAT_R,
             samplingMode: Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            shaderLoader: _IblShadowsVoxelRenderer._CombineVoxelGridsShaderLoader,
+            shaderLoaders: [_IblShadowsVoxelRenderer._CombineVoxelGridsShaderLoader],
         };
         if (this._engine.isWebGPU) {
             this._voxelGrid = new RenderTargetTexture("voxelGrid", size, this._scene, {
@@ -407,7 +407,7 @@ export class _IblShadowsVoxelRenderer {
             format: Constants.TEXTUREFORMAT_R,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            shaderLoader: _IblShadowsVoxelRenderer._GenerateVoxelMipShaderLoader,
+            shaderLoaders: [_IblShadowsVoxelRenderer._GenerateVoxelMipShaderLoader],
         };
         this._mipArray = new Array(Math.ceil(Math.log2(this._voxelResolution)));
         for (let mipIdx = 1; mipIdx <= this._mipArray.length; mipIdx++) {
@@ -503,7 +503,7 @@ export class _IblShadowsVoxelRenderer {
             uniforms: ["world", "viewMatrix", "invTransWorld", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
             defines: ["MAX_DRAW_BUFFERS " + this._maxDrawBuffers],
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            shaderLoader: _IblShadowsVoxelRenderer._VoxelGridShaderLoader,
+            shaderLoaders: [_IblShadowsVoxelRenderer._VoxelGridShaderLoader],
         });
 
         this._voxelMaterial.cullBackFaces = false;

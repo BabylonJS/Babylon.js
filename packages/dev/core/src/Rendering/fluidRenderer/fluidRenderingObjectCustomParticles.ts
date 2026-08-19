@@ -90,7 +90,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
             uniformNames,
             samplerNames: [],
             shaderLanguage: this._shaderLanguage,
-            shaderLoader: FluidRenderingObjectCustomParticles._ShaderLoader,
+            shaderLoaders: [FluidRenderingObjectCustomParticles._ShaderLoader],
         });
     }
 

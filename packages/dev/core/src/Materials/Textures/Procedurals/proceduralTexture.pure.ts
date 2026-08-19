@@ -43,7 +43,7 @@ export interface IProceduralTextureCreationOptions extends RenderTargetTextureOp
     /**
      * Shader loader used to load additional shader files before preparing the effect.
      */
-    shaderLoader?: ShaderLoader;
+    shaderLoaders?: ShaderLoader[];
     /**
      * Additional async code to run before preparing the effect
      */
@@ -427,9 +427,8 @@ export class ProceduralTexture extends Texture {
                     },
                     indexParameters: undefined,
                     shaderLanguage: this._shaderLanguage,
-                    shaderLoader: this._options.shaderLoader,
+                    shaderLoaders: [ProceduralTexture._ShaderLoader, ...(this._options.shaderLoaders ?? [])],
                     extraInitializationsAsync: async () => {
-                        await ProceduralTexture._ShaderLoader.loadAsync(this._shaderLanguage);
                         if (this._options.extraInitializationsAsync) {
                             await this._options.extraInitializationsAsync();
                         }

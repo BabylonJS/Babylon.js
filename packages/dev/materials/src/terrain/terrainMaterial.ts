@@ -340,7 +340,7 @@ export class TerrainMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: TerrainMaterial._ShaderLoader,
+                        shaderLoaders: [TerrainMaterial._ShaderLoader],
                     },
                     engine
                 ),

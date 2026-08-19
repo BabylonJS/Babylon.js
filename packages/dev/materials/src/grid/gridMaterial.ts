@@ -374,7 +374,7 @@ export class GridMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: GridMaterial._ShaderLoader,
+                        shaderLoaders: [GridMaterial._ShaderLoader],
                     },
                     scene.getEngine()
                 ),

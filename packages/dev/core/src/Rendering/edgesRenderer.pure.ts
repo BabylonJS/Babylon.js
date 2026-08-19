@@ -186,7 +186,7 @@ export class EdgesRenderer implements IEdgesRenderer {
                     uniforms: ["world", "viewProjection", "color", "width", "aspectRatio"],
                     uniformBuffers: ["Scene", "Mesh"],
                     shaderLanguage: shaderLanguage,
-                    shaderLoader: EdgesRenderer._ShaderLoader,
+                    shaderLoaders: [EdgesRenderer._ShaderLoader],
                 },
                 false
             );

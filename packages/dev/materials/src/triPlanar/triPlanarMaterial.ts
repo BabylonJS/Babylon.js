@@ -329,7 +329,7 @@ export class TriPlanarMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: TriPlanarMaterial._ShaderLoader,
+                        shaderLoaders: [TriPlanarMaterial._ShaderLoader],
                     },
                     engine
                 ),

@@ -253,7 +253,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 1 },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: ShadowOnlyMaterial._ShaderLoader,
+                        shaderLoaders: [ShadowOnlyMaterial._ShaderLoader],
                     },
                     engine
                 ),

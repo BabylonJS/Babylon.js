@@ -286,7 +286,7 @@ export class SkyMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: SkyMaterial._ShaderLoader,
+                        shaderLoaders: [SkyMaterial._ShaderLoader],
                     },
                     scene.getEngine()
                 ),

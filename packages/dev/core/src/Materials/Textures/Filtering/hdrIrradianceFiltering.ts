@@ -177,7 +177,7 @@ export class HDRIrradianceFiltering {
             defines,
             onCompiled: onCompiled,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            shaderLoader: HDRIrradianceFiltering._ShaderLoader,
+            shaderLoaders: [HDRIrradianceFiltering._ShaderLoader],
         });
 
         return effectWrapper;

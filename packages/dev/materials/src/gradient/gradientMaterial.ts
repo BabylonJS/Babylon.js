@@ -265,7 +265,7 @@ export class GradientMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: GradientMaterial._ShaderLoader,
+                        shaderLoaders: [GradientMaterial._ShaderLoader],
                     },
                     engine
                 ),

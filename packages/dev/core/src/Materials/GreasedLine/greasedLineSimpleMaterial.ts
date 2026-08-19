@@ -111,8 +111,8 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                 uniforms,
                 samplers: isWGSL ? [] : ["grlColors"],
                 defines,
-                shaderLoader: GreasedLineSimpleMaterial._ShaderLoader,
                 shaderLanguage: isWGSL ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+                shaderLoaders: [GreasedLineSimpleMaterial._ShaderLoader],
             }
         );
 

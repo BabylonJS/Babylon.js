@@ -301,7 +301,7 @@ export class ThinDepthPeelingRenderer {
             samplerNames: ["uBackColor"],
             uniformNames: [],
             shaderLanguage: this._shaderLanguage,
-            shaderLoader: ThinDepthPeelingRenderer._OitBackBlendShaderLoader,
+            shaderLoaders: [ThinDepthPeelingRenderer._OitBackBlendShaderLoader],
         });
         this._blendBackEffectWrapperPingPong = new EffectWrapper({
             fragmentShader: "oitBackBlend",
@@ -310,7 +310,7 @@ export class ThinDepthPeelingRenderer {
             samplerNames: ["uBackColor"],
             uniformNames: [],
             shaderLanguage: this._shaderLanguage,
-            shaderLoader: ThinDepthPeelingRenderer._OitBackBlendShaderLoader,
+            shaderLoaders: [ThinDepthPeelingRenderer._OitBackBlendShaderLoader],
         });
 
         this._finalEffectWrapper = new EffectWrapper({
@@ -320,7 +320,7 @@ export class ThinDepthPeelingRenderer {
             samplerNames: finalEffectSamplerNames,
             uniformNames: [],
             shaderLanguage: this._shaderLanguage,
-            shaderLoader: ThinDepthPeelingRenderer._OitFinalSimpleBlendShaderLoader,
+            shaderLoaders: [ThinDepthPeelingRenderer._OitFinalSimpleBlendShaderLoader],
         });
 
         this._effectRenderer = new EffectRenderer(this._engine);

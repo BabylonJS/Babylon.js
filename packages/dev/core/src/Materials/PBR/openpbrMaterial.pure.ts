@@ -3127,7 +3127,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 processCodeAfterIncludes: this._eventInfo.customCode,
                 multiTarget: defines.PREPASS,
                 shaderLanguage: this._shaderLanguage,
-                shaderLoader: OpenPBRMaterial._ShaderLoader,
+                shaderLoaders: [OpenPBRMaterial._ShaderLoader],
             },
             engine
         );

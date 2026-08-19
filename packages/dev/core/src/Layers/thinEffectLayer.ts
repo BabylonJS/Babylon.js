@@ -741,7 +741,7 @@ export class ThinEffectLayer {
                         onError: null,
                         indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: ThinEffectLayer._ShaderLoader,
+                        shaderLoaders: [ThinEffectLayer._ShaderLoader],
                         extraInitializationsAsync: this._shadersLoaded
                             ? undefined
                             : async () => {

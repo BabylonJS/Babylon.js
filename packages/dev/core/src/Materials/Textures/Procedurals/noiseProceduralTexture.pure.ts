@@ -9,11 +9,6 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { ShaderLanguage } from "../../../Materials/shaderLanguage";
 import { ShaderLoader } from "../../../Misc/shaderLoader";
 
-const _NoiseProceduralTextureShaderLoader = /*#__PURE__*/ new ShaderLoader({
-    webGL: () => [import("../../../Shaders/noise.fragment")],
-    webGPU: () => [import("../../../ShadersWGSL/noise.fragment")],
-});
-
 /**
  * Class used to generate noise procedural textures
  */
@@ -33,6 +28,11 @@ export class NoiseProceduralTexture extends ProceduralTexture {
     /** Gets or sets animation speed factor (default is 1) */
     public animationSpeedFactor = 1;
 
+    private static readonly _ShaderLoader2 = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../../Shaders/noise.fragment")],
+        webGPU: () => [import("../../../ShadersWGSL/noise.fragment")],
+    });
+
     /**
      * Creates a new NoiseProceduralTexture
      * @param name defines the name fo the texture
@@ -46,7 +46,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
         const creationOptions: IProceduralTextureCreationOptions = {
             fallbackTexture,
             shaderLanguage,
-            shaderLoader: _NoiseProceduralTextureShaderLoader,
+            shaderLoaders: [NoiseProceduralTexture._ShaderLoader2],
         };
 
         super(name, size, "noise", scene, creationOptions, generateMipMaps);

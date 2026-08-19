@@ -1606,7 +1606,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
                 uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
                 samplers: ["shadowTexture"],
                 shaderLanguage,
-                shaderLoader: Viewer._EnvShadowGroundShaderLoader,
+                shaderLoaders: [Viewer._EnvShadowGroundShaderLoader],
             };
 
             const groundMaterial = new ShaderMaterial("envShadowGroundMaterial", this._scene, "envShadowGround", options);

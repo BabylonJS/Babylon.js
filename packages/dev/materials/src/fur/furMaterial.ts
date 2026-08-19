@@ -358,7 +358,7 @@ export class FurMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights },
                         shaderLanguage: this._shaderLanguage,
-                        shaderLoader: FurMaterial._ShaderLoader,
+                        shaderLoaders: [FurMaterial._ShaderLoader],
                     },
                     engine
                 ),

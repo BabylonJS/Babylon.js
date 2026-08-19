@@ -154,7 +154,7 @@ export class _IblShadowsSpatialBlurPass {
             generateDepthBuffer: false,
             generateMipMaps: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            shaderLoader: _IblShadowsSpatialBlurPass._ShaderLoader,
+            shaderLoaders: [_IblShadowsSpatialBlurPass._ShaderLoader],
         };
         this._outputTexture = new ProceduralTexture(
             "spatialBlurPass",

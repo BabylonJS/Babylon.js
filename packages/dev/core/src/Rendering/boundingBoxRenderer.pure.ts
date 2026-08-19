@@ -249,7 +249,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
                 uniforms: ["world", "viewProjection", "viewProjectionR", "color"],
                 uniformBuffers: ["BoundingBoxRenderer"],
                 shaderLanguage: this._shaderLanguage,
-                shaderLoader: BoundingBoxRenderer._ShaderLoader,
+                shaderLoaders: [BoundingBoxRenderer._ShaderLoader],
             },
             false
         );
@@ -269,7 +269,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
                 uniforms: ["world", "viewProjection", "viewProjectionR", "color"],
                 uniformBuffers: ["BoundingBoxRenderer"],
                 shaderLanguage: this._shaderLanguage,
-                shaderLoader: BoundingBoxRenderer._ShaderLoader,
+                shaderLoaders: [BoundingBoxRenderer._ShaderLoader],
             },
             true
         );

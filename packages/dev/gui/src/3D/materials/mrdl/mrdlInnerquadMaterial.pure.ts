@@ -202,7 +202,7 @@ export class MRDLInnerquadMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
-                        shaderLoader: MRDLInnerquadMaterial._ShaderLoader,
+                        shaderLoaders: [MRDLInnerquadMaterial._ShaderLoader],
                     },
                     engine
                 ),
