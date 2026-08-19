@@ -11,6 +11,7 @@ import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { type Effect } from "../../../effect.pure";
 import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -71,14 +72,17 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions")],
+        webGPU: () => [import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions")],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
-        // TODO
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions");
-        } else {
-            await import("../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions");
+        const promise = AnisotropyBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

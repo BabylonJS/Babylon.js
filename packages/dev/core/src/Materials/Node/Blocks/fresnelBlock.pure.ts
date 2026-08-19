@@ -8,7 +8,8 @@ import { type NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnection
 import { InputBlock } from "./Input/inputBlock.pure";
 import { type NodeMaterial } from "../nodeMaterial.pure";
 import { ViewDirectionBlock } from "./viewDirectionBlock.pure";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { type ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
@@ -82,14 +83,17 @@ export class FresnelBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../../Shaders/ShadersInclude/fresnelFunction")],
+        webGPU: () => [import("../../../ShadersWGSL/ShadersInclude/fresnelFunction")],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
-        // TODO
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../ShadersWGSL/ShadersInclude/fresnelFunction");
-        } else {
-            await import("../../../Shaders/ShadersInclude/fresnelFunction");
+        const promise = FresnelBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

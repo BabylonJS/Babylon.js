@@ -7,6 +7,17 @@ import { type Texture } from "../Materials/Textures/texture";
 import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { type Scene } from "../scene";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
+
+const _RgbdDecodeShaderLoader = /*#__PURE__*/ new ShaderLoader({
+    webGL: () => [import("../Shaders/rgbdDecode.fragment")],
+    webGPU: () => [import("../ShadersWGSL/rgbdDecode.fragment")],
+});
+
+const _RgbdEncodeShaderLoader = /*#__PURE__*/ new ShaderLoader({
+    webGL: () => [import("../Shaders/rgbdEncode.fragment")],
+    webGPU: () => [import("../ShadersWGSL/rgbdEncode.fragment")],
+});
 
 /**
  * Class used to host RGBD texture specific utilities
@@ -47,14 +58,12 @@ export class RGBDTextureTools {
         }
 
         const expandRgbdTextureAsync = async () => {
-            const isWebGpu = engine.isWebGPU;
-            const shaderLanguage = isWebGpu ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
+            const shaderLanguage = engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
             internalTexture.isReady = false;
 
-            if (isWebGpu) {
-                await import("../ShadersWGSL/rgbdDecode.fragment");
-            } else {
-                await import("../Shaders/rgbdDecode.fragment");
+            const promise = _RgbdDecodeShaderLoader.load(shaderLanguage);
+            if (promise !== null) {
+                await promise;
             }
 
             // Expand the texture if possible
@@ -135,11 +144,11 @@ export class RGBDTextureTools {
     // Should have "Async" in the name but this is a breaking change.
     // eslint-disable-next-line no-restricted-syntax
     public static async EncodeTextureToRGBD(internalTexture: InternalTexture, scene: Scene, outputTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE): Promise<InternalTexture> {
-        if (!scene.getEngine().isWebGPU) {
-            await import("../Shaders/rgbdEncode.fragment");
-        } else {
-            await import("../ShadersWGSL/rgbdEncode.fragment");
+        const promise = _RgbdEncodeShaderLoader.load(scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            await promise;
         }
+
         return await ApplyPostProcess("rgbdEncode", internalTexture, scene, outputTextureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
     }
 }

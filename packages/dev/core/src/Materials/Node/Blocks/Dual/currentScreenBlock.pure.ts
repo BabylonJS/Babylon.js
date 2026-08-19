@@ -12,6 +12,7 @@ import { Texture } from "../../../Textures/texture.pure";
 import { type Scene } from "../../../../scene.pure";
 import { type InputBlock } from "../Input/inputBlock.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { Constants } from "core/Engines/constants";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
@@ -145,14 +146,17 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../../../Shaders/ShadersInclude/helperFunctions")],
+        webGPU: () => [import("../../../../ShadersWGSL/ShadersInclude/helperFunctions")],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
-        // TODO
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/helperFunctions");
-        } else {
-            await import("../../../../Shaders/ShadersInclude/helperFunctions");
+        const promise = CurrentScreenBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

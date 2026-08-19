@@ -8,6 +8,7 @@ import { Constants } from "../Engines/constants";
 import { type Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { type Observable } from "./observable";
 import { type Nullable } from "../types";
 import { Clamp } from "../Maths/math.scalar.functions";
@@ -257,6 +258,21 @@ export async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void>
     throw new Error(`Cannot determine readiness of texture ${texture.name}.`);
 }
 
+const _LodShaderLoader = /*#__PURE__*/ new ShaderLoader({
+    webGL: () => [import("../Shaders/lod.fragment")],
+    webGPU: () => [import("../ShadersWGSL/lod.fragment")],
+});
+
+const _LodCubeShaderLoader = /*#__PURE__*/ new ShaderLoader({
+    webGL: () => [import("../Shaders/lodCube.fragment")],
+    webGPU: () => [import("../ShadersWGSL/lodCube.fragment")],
+});
+
+const _Lod3DShaderLoader = /*#__PURE__*/ new ShaderLoader({
+    webGL: () => [import("../Shaders/lod3D.fragment")],
+    webGPU: () => [import("../ShadersWGSL/lod3D.fragment")],
+});
+
 /**
  * Gets the data of the specified texture by rendering it to an intermediate RGBA texture and retrieving the bytes from it.
  * This is convienent to get 8-bit RGBA values for a texture in a GPU compressed format, which cannot be read using readPixels.
@@ -268,22 +284,12 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
     const sourceInternalTexture = texture.getInternalTexture();
     const is3DTexture = texture.is3D || !!sourceInternalTexture?.is3D;
 
-    if (!engine.isWebGPU) {
-        if (is3DTexture) {
-            await import("../Shaders/lod3D.fragment");
-        } else if (texture.isCube) {
-            await import("../Shaders/lodCube.fragment");
-        } else {
-            await import("../Shaders/lod.fragment");
-        }
-    } else {
-        if (is3DTexture) {
-            await import("../ShadersWGSL/lod3D.fragment");
-        } else if (texture.isCube) {
-            await import("../ShadersWGSL/lodCube.fragment");
-        } else {
-            await import("../ShadersWGSL/lod.fragment");
-        }
+    const shaderLanguage = engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
+    const shaderLoader = is3DTexture ? _Lod3DShaderLoader : texture.isCube ? _LodCubeShaderLoader : _LodShaderLoader;
+
+    const promise = shaderLoader.load(shaderLanguage);
+    if (promise !== null) {
+        await promise;
     }
 
     let lodPostProcess: PostProcess;
@@ -293,14 +299,14 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
             uniforms: ["lod", "gamma", "slice"],
             samplingMode: Texture.NEAREST_NEAREST_MIPNEAREST,
             engine,
-            shaderLanguage: engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            shaderLanguage,
         });
     } else if (!texture.isCube) {
         lodPostProcess = new PostProcess("lod", "lod", {
             uniforms: ["lod", "gamma"],
             samplingMode: Texture.NEAREST_NEAREST_MIPNEAREST,
             engine,
-            shaderLanguage: engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            shaderLanguage,
         });
     } else {
         const faceDefines = ["#define POSITIVEX", "#define NEGATIVEX", "#define POSITIVEY", "#define NEGATIVEY", "#define POSITIVEZ", "#define NEGATIVEZ"];
@@ -309,7 +315,7 @@ async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: n
             samplingMode: Texture.NEAREST_NEAREST_MIPNEAREST,
             engine,
             defines: faceDefines[face],
-            shaderLanguage: engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            shaderLanguage,
         });
     }
 

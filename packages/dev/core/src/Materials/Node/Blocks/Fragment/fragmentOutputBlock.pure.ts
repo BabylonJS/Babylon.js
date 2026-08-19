@@ -12,6 +12,7 @@ import { type Effect } from "../../../effect.pure";
 import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { BindLogDepth } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -110,14 +111,17 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../../../Shaders/ShadersInclude/helperFunctions")],
+        webGPU: () => [import("../../../../ShadersWGSL/ShadersInclude/helperFunctions")],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
-        // TODO
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/helperFunctions");
-        } else {
-            await import("../../../../Shaders/ShadersInclude/helperFunctions");
+        const promise = FragmentOutputBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

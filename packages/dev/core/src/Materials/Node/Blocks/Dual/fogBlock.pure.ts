@@ -14,6 +14,7 @@ import { InputBlock } from "../Input/inputBlock.pure";
 
 import { GetFogState } from "core/Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -100,14 +101,17 @@ export class FogBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../../../Shaders/ShadersInclude/fogFragmentDeclaration")],
+        webGPU: () => [import("../../../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration")],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
-        // TODO
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration");
-        } else {
-            await import("../../../../Shaders/ShadersInclude/fogFragmentDeclaration");
+        const promise = FogBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

@@ -11,6 +11,7 @@ import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /** @internal */
 export class FluidRenderingTextures {
@@ -199,6 +200,16 @@ export class FluidRenderingTextures {
         this._texture.anisotropicFilteringLevel = 1;
     }
 
+    private static readonly _StandardBlurShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../Shaders/fluidRenderingStandardBlur.fragment")],
+        webGPU: () => [import("../../ShadersWGSL/fluidRenderingStandardBlur.fragment")],
+    });
+
+    private static readonly _BilateralBlurShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../Shaders/fluidRenderingBilateralBlur.fragment")],
+        webGPU: () => [import("../../ShadersWGSL/fluidRenderingBilateralBlur.fragment")],
+    });
+
     protected _createBlurPostProcesses(
         textureBlurSource: ThinTexture,
         textureType: number,
@@ -239,32 +250,18 @@ export class FluidRenderingTextures {
         texture.anisotropicFilteringLevel = 1;
 
         if (useStandardBlur) {
-            const kernelBlurXPostprocess = new PostProcess(
-                "BilateralBlurX",
-                "fluidRenderingStandardBlur",
-                ["filterSize", "blurDir"],
-                null,
-                1,
-                null,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            const kernelBlurXPostprocess = new PostProcess("BilateralBlurX", "fluidRenderingStandardBlur", {
+                uniforms: ["filterSize", "blurDir"],
+                size: 1,
+                camera: null,
+                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 engine,
-                true,
-                null,
+                reusable: true,
                 textureType,
-                undefined,
-                undefined,
-                undefined,
                 textureFormat,
-                this._shaderLanguage,
-                // Keeping this issue for further discussion - extraInitialization should return Promise<void>
-                async () => {
-                    if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                        await import("../../ShadersWGSL/fluidRenderingStandardBlur.fragment");
-                    } else {
-                        await import("../../Shaders/fluidRenderingStandardBlur.fragment");
-                    }
-                }
-            );
+                shaderLanguage: this._shaderLanguage,
+                shaderLoaders: [FluidRenderingTextures._StandardBlurShaderLoader],
+            });
             kernelBlurXPostprocess.samples = this._samples;
             kernelBlurXPostprocess.externalTextureSamplerBinding = true;
             kernelBlurXPostprocess.onApplyObservable.add((effect) => {
@@ -285,31 +282,18 @@ export class FluidRenderingTextures {
             });
             this._fixReusablePostProcess(kernelBlurXPostprocess);
 
-            const kernelBlurYPostprocess = new PostProcess(
-                "BilateralBlurY",
-                "fluidRenderingStandardBlur",
-                ["filterSize", "blurDir"],
-                null,
-                1,
-                null,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            const kernelBlurYPostprocess = new PostProcess("BilateralBlurY", "fluidRenderingStandardBlur", {
+                uniforms: ["filterSize", "blurDir"],
+                size: 1,
+                camera: null,
+                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 engine,
-                true,
-                null,
+                reusable: true,
                 textureType,
-                undefined,
-                undefined,
-                undefined,
                 textureFormat,
-                this._shaderLanguage,
-                async () => {
-                    if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                        await import("../../ShadersWGSL/fluidRenderingStandardBlur.fragment");
-                    } else {
-                        await import("../../Shaders/fluidRenderingStandardBlur.fragment");
-                    }
-                }
-            );
+                shaderLanguage: this._shaderLanguage,
+                shaderLoaders: [FluidRenderingTextures._StandardBlurShaderLoader],
+            });
             kernelBlurYPostprocess.samples = this._samples;
             kernelBlurYPostprocess.onApplyObservable.add((effect) => {
                 effect.setInt("filterSize", this.blurFilterSize);
@@ -336,31 +320,18 @@ export class FluidRenderingTextures {
         } else {
             const uniforms: string[] = ["maxFilterSize", "blurDir", "projectedParticleConstant", "depthThreshold"];
 
-            const kernelBlurXPostprocess = new PostProcess(
-                "BilateralBlurX",
-                "fluidRenderingBilateralBlur",
+            const kernelBlurXPostprocess = new PostProcess("BilateralBlurX", "fluidRenderingBilateralBlur", {
                 uniforms,
-                null,
-                1,
-                null,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                size: 1,
+                camera: null,
+                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 engine,
-                true,
-                null,
+                reusable: true,
                 textureType,
-                undefined,
-                undefined,
-                undefined,
                 textureFormat,
-                this._shaderLanguage,
-                async () => {
-                    if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                        await import("../../ShadersWGSL/fluidRenderingBilateralBlur.fragment");
-                    } else {
-                        await import("../../Shaders/fluidRenderingBilateralBlur.fragment");
-                    }
-                }
-            );
+                shaderLanguage: this._shaderLanguage,
+                shaderLoaders: [FluidRenderingTextures._BilateralBlurShaderLoader],
+            });
             kernelBlurXPostprocess.samples = this._samples;
             kernelBlurXPostprocess.externalTextureSamplerBinding = true;
             kernelBlurXPostprocess.onApplyObservable.add((effect) => {
@@ -383,31 +354,18 @@ export class FluidRenderingTextures {
             });
             this._fixReusablePostProcess(kernelBlurXPostprocess);
 
-            const kernelBlurYPostprocess = new PostProcess(
-                "BilateralBlurY",
-                "fluidRenderingBilateralBlur",
+            const kernelBlurYPostprocess = new PostProcess("BilateralBlurY", "fluidRenderingBilateralBlur", {
                 uniforms,
-                null,
-                1,
-                null,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                size: 1,
+                camera: null,
+                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 engine,
-                true,
-                null,
+                reusable: true,
                 textureType,
-                undefined,
-                undefined,
-                undefined,
                 textureFormat,
-                this._shaderLanguage,
-                async () => {
-                    if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                        await import("../../ShadersWGSL/fluidRenderingBilateralBlur.fragment");
-                    } else {
-                        await import("../../Shaders/fluidRenderingBilateralBlur.fragment");
-                    }
-                }
-            );
+                shaderLanguage: this._shaderLanguage,
+                shaderLoaders: [FluidRenderingTextures._BilateralBlurShaderLoader],
+            });
             kernelBlurYPostprocess.samples = this._samples;
             kernelBlurYPostprocess.onApplyObservable.add((effect) => {
                 effect.setInt("maxFilterSize", this.blurMaxFilterSize);

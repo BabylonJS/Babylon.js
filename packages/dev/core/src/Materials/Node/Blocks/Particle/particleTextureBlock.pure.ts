@@ -11,7 +11,8 @@ import { type BaseTexture } from "../../../Textures/baseTexture.pure";
 import { type Nullable } from "../../../../types";
 import { Texture } from "../../../Textures/texture.pure";
 import { type Scene } from "../../../../scene.pure";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { type ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -128,14 +129,17 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../../../Shaders/ShadersInclude/helperFunctions")],
+        webGPU: () => [import("../../../../ShadersWGSL/ShadersInclude/helperFunctions")],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
-        // TODO
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/helperFunctions");
-        } else {
-            await import("../../../../Shaders/ShadersInclude/helperFunctions");
+        const promise = ParticleTextureBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

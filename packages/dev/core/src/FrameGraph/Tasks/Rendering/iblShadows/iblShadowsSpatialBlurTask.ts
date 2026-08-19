@@ -3,6 +3,7 @@ import { Constants } from "core/Engines/constants";
 import { type FrameGraphIblShadowsVoxelizationTask } from "./iblShadowsVoxelizationTask";
 import { Vector4 } from "core/Maths/math.vector.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { ThinCustomPostProcess } from "core/PostProcesses/thinCustomPostProcess";
 import { FrameGraphTask } from "../../../frameGraphTask";
 
@@ -42,13 +43,14 @@ export class FrameGraphIblShadowsSpatialBlurTask extends FrameGraphTask {
         return "FrameGraphIblShadowsSpatialBlurTask";
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../../../Shaders/iblShadowSpatialBlur.fragment")],
+        webGPU: () => [import("../../../../ShadersWGSL/iblShadowSpatialBlur.fragment")],
+    });
+
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public override initAsync(): Promise<unknown> {
-        if (this._frameGraph.engine.isWebGPU) {
-            return import("../../../../ShadersWGSL/iblShadowSpatialBlur.fragment");
-        }
-
-        return import("../../../../Shaders/iblShadowSpatialBlur.fragment");
+        return FrameGraphIblShadowsSpatialBlurTask._ShaderLoader.load(this._frameGraph.engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL) ?? Promise.resolve();
     }
 
     public override isReady(): boolean {
