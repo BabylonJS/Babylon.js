@@ -1,23 +1,12 @@
-# Lottie Player (`@babylonjs/lottie-player`)
+# Lottie Player Migration
 
-The Lottie player package provides a runtime player for Lottie animations within Babylon.js.
+The experimental Babylon.js implementation of `@babylonjs/lottie-player` ended with the v9 line.
+Version 10 is a breaking, Lite-backed replacement owned by
+[BabylonJS/Babylon-Lite](https://github.com/BabylonJS/Babylon-Lite/tree/main/packages/babylon-lottie-player).
 
-**Implementation:** `packages/dev/lottiePlayer`
+Existing `^9` dependency ranges remain on the experimental implementation and do not silently
+upgrade. Consumers moving to v10 must explicitly install `@babylonjs/lottie-player@^10` and migrate
+to its worker-first API. There is no runtime compatibility wrapper.
 
-## Architecture Overview
-
-The package is structured like a small rendering engine, with a parsing layer that reads Lottie JSON, an internal node model that represents the animation structure, a math layer for transforms and interpolation, and a rendering layer that draws the result into the Babylon.js scene.
-
-## Major Subsystems
-
-### Parsing (`src/parsing/`)
-Lottie JSON parsing and conversion into the internal data model. Handles the Lottie animation format specification and translates it into the player's internal representation.
-
-### Nodes (`src/nodes/`)
-Internal animation node/data model. Represents the hierarchical structure of a Lottie animation (layers, shapes, transforms, effects) as a tree of typed nodes.
-
-### Maths (`src/maths/`)
-Geometry, interpolation, and timing helpers. Provides the mathematical operations needed for transform calculations, keyframe interpolation, and animation timing.
-
-### Rendering (`src/rendering/`)
-Animation playback and rendering pipeline. Traverses the node tree, evaluates animations at the current time, and renders the result using Babylon.js rendering primitives.
+The package has independent SemVer from `@babylonjs/core` and `@babylonjs/lite`, and uses
+`@babylonjs/lite-gl` as its runtime rendering dependency.

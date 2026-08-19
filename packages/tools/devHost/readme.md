@@ -1,6 +1,6 @@
 # Dev Host
 
-This devhost provides a fast inner loop for testing Babylon.js code in a small browser app. It is useful for ES6 experiences that contain their own engine, like lottie-player, and for focused validation apps when testing Babylon.js core changes.
+This devhost provides a fast inner loop for testing Babylon.js code in a small browser app and for focused validation apps when testing Babylon.js core changes.
 
 ## Running the dev host
 
@@ -15,20 +15,7 @@ Then open `http://localhost:1338`.
 
 ## Scenarios
 
-Currently this dev host supports two scenarios that you can access by adding the `exp` QSP to the URL.
-
-### exp=lottie
-
-This experience allows you to test the Babylon lottie-player. It supports the following params:
-
-- `file=string` Renders this file from the Babylon assets repo. For example, `file=triangles.json` uses `https://assets.babylonjs.com/lottie/triangles.json`. A path starting with `./` is served from the dev host's `public` folder instead.
-- `useWorker=boolean` Whether to use the webworker for rendering or not. Defaults to true if not used.
-- `useUrl=boolean` Whether to hand the player the file URL or a pre-parsed JSON object. Defaults to true.
-- `usePreWarm=boolean` Whether to pre-warm the worker before playing. Defaults to false.
-- `frame=number` Renders a single frame instead of playing (used by the visual tests).
-- `variables=string` Base64-encoded JSON object of text substitutions.
-
-To change lottie variables or more detailed configuration options, edit `src/lottie/main.ts` directly.
+Currently this dev host supports scenarios that you can access by adding the `exp` QSP to the URL.
 
 ### exp=testScene
 

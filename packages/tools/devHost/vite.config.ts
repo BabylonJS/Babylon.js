@@ -1,7 +1,7 @@
 import path from "path";
 import { readFile } from "fs";
 import { fileURLToPath } from "url";
-import { defineConfig, normalizePath, type Plugin, type UserConfig } from "vite";
+import { defineConfig, type Plugin, type UserConfig } from "vite";
 // @ts-ignore -- untyped JS helper
 import { commonDevViteConfiguration } from "../../public/viteToolsHelper.mjs";
 
@@ -44,10 +44,6 @@ function serveHavokWasmPlugin(): Plugin {
 
 const OptionalPeerDependencies = ["draco3dgltf", "ammo.js", "cannon", "oimo", "recast", "havok", "basis_transcoder"];
 const OptionalPeerDependencyPattern = OptionalPeerDependencies.map((p) => p.replace(".", "\\.")).join("|");
-const LottieWorkerEntry = path.resolve("../../dev/lottiePlayer/src/worker.ts");
-const LottiePlayerEntry = normalizePath(path.resolve("../../dev/lottiePlayer/src/player.ts"));
-const LottieWorkerDevUrl = "/__lottie-worker.js";
-const LottieWorkerUrlExpression = /new URL\(["']\.\/worker(?:\.[jt]s)?["'],\s*import\.meta\.url\)/g;
 
 function stubNamedOptionalPeerDependencyImport(bindings: string): string {
     return bindings
@@ -81,84 +77,6 @@ function stubOptionalPeerDependencyImports(code: string): string {
         .replace(starRe, (_m, ns: string) => `const ${ns} = {};`)
         .replace(defaultRe, (_m, def: string) => `const ${def} = undefined;`)
         .replace(sideEffectRe, "");
-}
-
-function lottieClassicWorkerPlugin(aliases: Record<string, string>): Plugin {
-    let bundlePromise: Promise<string> | undefined;
-    let command: "build" | "serve" = "serve";
-    let mode = "development";
-    let sourcemap: boolean | "inline" = "inline";
-
-    const bundleWorker = async (): Promise<string> => {
-        bundlePromise ??= import("esbuild")
-            .then(async ({ build }) => {
-                const result = await build({
-                    entryPoints: [LottieWorkerEntry],
-                    bundle: true,
-                    write: false,
-                    format: "iife",
-                    platform: "browser",
-                    target: "es2020",
-                    sourcemap,
-                    alias: aliases,
-                    define: {
-                        "process.env.NODE_ENV": JSON.stringify(mode),
-                    },
-                });
-                return result.outputFiles[0].text;
-            })
-            .catch((error: unknown) => {
-                bundlePromise = undefined;
-                throw error;
-            });
-
-        return bundlePromise;
-    };
-
-    return {
-        name: "lottie-classic-worker",
-        enforce: "pre",
-        configResolved(config) {
-            command = config.command;
-            mode = config.mode;
-            sourcemap = command === "serve" ? "inline" : config.build.sourcemap === "inline" ? "inline" : Boolean(config.build.sourcemap);
-        },
-        async transform(code, id) {
-            if (normalizePath(id.split("?")[0]) !== LottiePlayerEntry || !code.includes("./worker")) {
-                return null;
-            }
-
-            const workerUrl =
-                command === "serve"
-                    ? `new URL("${LottieWorkerDevUrl}", globalThis.location.href)`
-                    : `new URL(import.meta.ROLLUP_FILE_URL_${this.emitFile({ type: "asset", fileName: "assets/lottieWorker.js", source: await bundleWorker() })}, import.meta.url)`;
-            const transformedCode = code.replace(LottieWorkerUrlExpression, workerUrl);
-            if (transformedCode === code) {
-                return null;
-            }
-
-            return { code: transformedCode, map: null };
-        },
-        configureServer(server) {
-            server.watcher.on("change", () => (bundlePromise = undefined));
-
-            server.middlewares.use(async (req, res, next) => {
-                const pathname = req.url?.split(/[?#]/)[0] ?? "";
-                if (pathname !== LottieWorkerDevUrl) {
-                    next();
-                    return;
-                }
-
-                try {
-                    const workerCode = await bundleWorker();
-                    res.setHeader("Content-Type", "application/javascript; charset=utf-8");
-                    res.end(workerCode);
-                } catch (error) {
-                    next(error);
-                }
-            });
-        },
-    };
 }
 
 /**
@@ -197,7 +115,6 @@ export default defineConfig((_env) => {
         serializers: path.resolve("../../dev/serializers/src"),
         loaders: path.resolve("../../dev/loaders/src"),
         materials: path.resolve("../../dev/materials/src"),
-        "lottie-player": path.resolve("../../dev/lottiePlayer/src"),
         inspector: path.resolve("../../dev/inspector/src"),
         "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
         "post-processes": path.resolve("../../dev/postProcesses/src"),
@@ -218,6 +135,6 @@ export default defineConfig((_env) => {
 
     return {
         ...base,
-        plugins: [...(base.plugins ?? []), lottieClassicWorkerPlugin(aliases), stubOptionalPeerDepsPlugin(), serveHavokWasmPlugin()],
+        plugins: [...(base.plugins ?? []), stubOptionalPeerDepsPlugin(), serveHavokWasmPlugin()],
     };
 });
