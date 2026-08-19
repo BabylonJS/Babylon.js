@@ -32,6 +32,7 @@ import { RegisterEnginesExtensionsEngineRawTexture } from "core/Engines/Extensio
 import { RegisterEnginesExtensionsEngineRenderTarget } from "core/Engines/Extensions/engine.renderTarget.pure";
 import { RegisterEnginesExtensionsEngineRenderTargetTexture } from "core/Engines/Extensions/engine.renderTargetTexture.pure";
 import { RegisterThinInstanceMesh } from "core/Meshes/thinInstanceMesh.pure";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 const DefaultDepthSlices = 16;
 const MobileClusteredLightBatchSize = 8;
@@ -40,6 +41,11 @@ const MobileClusteredLightBatchSize = 8;
  * A special light that renders all its associated spot or point lights using a clustered or forward+ system.
  */
 export class ClusteredLightContainer extends Light {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../Shaders/lightProxy.vertex"), import("../../Shaders/lightProxy.fragment")],
+        webGPU: () => [import("../../ShadersWGSL/lightProxy.vertex"), import("../../ShadersWGSL/lightProxy.fragment")],
+    });
+
     private static _GetEngineBatchSize(engine: AbstractEngine): number {
         const caps = engine._caps;
         if (!caps.texelFetch) {
@@ -264,13 +270,7 @@ export class ClusteredLightContainer extends Light {
             storageBuffers: ["tileMaskBuffer"],
             defines,
             shaderLanguage: engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (engine.isWebGPU) {
-                    await Promise.all([import("../../ShadersWGSL/lightProxy.vertex"), import("../../ShadersWGSL/lightProxy.fragment")]);
-                } else {
-                    await Promise.all([import("../../Shaders/lightProxy.vertex"), import("../../Shaders/lightProxy.fragment")]);
-                }
-            },
+            shaderLoader: ClusteredLightContainer._ShaderLoader,
         });
 
         // Additive blending is for merging masks on WebGL

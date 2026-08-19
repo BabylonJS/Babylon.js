@@ -16,7 +16,7 @@ import { type SubMesh } from "core/Meshes/subMesh";
 import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
@@ -127,7 +127,10 @@ export class NormalMaterial extends PushMaterial {
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
     public accessor maxSimultaneousLights: number;
 
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./normal.vertex"), import("./normal.fragment")],
+        webGPU: () => [import("./wgsl/normal.vertex"), import("./wgsl/normal.fragment")],
+    });
 
     /**
      * Instantiates a Normal Material in the given scene
@@ -303,17 +306,7 @@ export class NormalMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("./wgsl/normal.vertex"), import("./wgsl/normal.fragment")]);
-                                  } else {
-                                      await Promise.all([import("./normal.vertex"), import("./normal.fragment")]);
-                                  }
-
-                                  this._shadersLoaded = true;
-                              },
+                        shaderLoader: NormalMaterial._ShaderLoader,
                     },
                     engine
                 ),

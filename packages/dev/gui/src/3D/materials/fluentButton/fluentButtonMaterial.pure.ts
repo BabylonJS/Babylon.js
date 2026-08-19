@@ -18,7 +18,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { Color3, Color4 } from "core/Maths/math.color.pure";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { Constants } from "core/Engines/constants";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
 import { Tools } from "core/Misc/tools.pure";
@@ -41,7 +41,10 @@ class FluentButtonMaterialDefines extends MaterialDefines {
  * @since 5.0.0
  */
 export class FluentButtonMaterial extends PushMaterial {
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./shaders/fluentButton.vertex"), import("./shaders/fluentButton.fragment")],
+        webGPU: () => [import("./wgsl/fluentButton.vertex"), import("./wgsl/fluentButton.fragment")],
+    });
 
     /**
      * URL pointing to the texture used to define the coloring for the fluent blob effect.
@@ -457,17 +460,7 @@ export class FluentButtonMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("./wgsl/fluentButton.vertex"), import("./wgsl/fluentButton.fragment")]);
-                                  } else {
-                                      await Promise.all([import("./shaders/fluentButton.vertex"), import("./shaders/fluentButton.fragment")]);
-                                  }
-
-                                  this._shadersLoaded = true;
-                              },
+                        shaderLoader: FluentButtonMaterial._ShaderLoader,
                     },
                     engine
                 ),

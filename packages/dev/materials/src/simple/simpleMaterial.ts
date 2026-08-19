@@ -16,7 +16,7 @@ import { type SubMesh } from "core/Meshes/subMesh";
 import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
@@ -87,7 +87,10 @@ export class SimpleMaterial extends PushMaterial {
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
     public accessor maxSimultaneousLights: number;
 
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./simple.vertex"), import("./simple.fragment")],
+        webGPU: () => [import("./wgsl/simple.vertex"), import("./wgsl/simple.fragment")],
+    });
 
     /**
      * Instantiates a Simple Material in the given scene
@@ -257,17 +260,7 @@ export class SimpleMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights - 1 },
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("./wgsl/simple.vertex"), import("./wgsl/simple.fragment")]);
-                                  } else {
-                                      await Promise.all([import("./simple.vertex"), import("./simple.fragment")]);
-                                  }
-
-                                  this._shadersLoaded = true;
-                              },
+                        shaderLoader: SimpleMaterial._ShaderLoader,
                     },
                     engine
                 ),

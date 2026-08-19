@@ -5,11 +5,17 @@ import { type Observer } from "core/Misc/observable";
 import { Color3, TmpColors } from "core/Maths/math.color.pure";
 import { Vector3 } from "core/Maths/math.vector.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Class used to render gizmo handles with fluent design
  */
 export class HandleMaterial extends ShaderMaterial {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./shaders/handle.vertex"), import("./shaders/handle.fragment")],
+        webGPU: () => [import("./wgsl/handle.vertex"), import("./wgsl/handle.fragment")],
+    });
+
     private _hover: boolean = false;
     private _drag: boolean = false;
     private _onBeforeRender: Nullable<Observer<Scene>>;
@@ -94,14 +100,7 @@ export class HandleMaterial extends ShaderMaterial {
             needAlphaBlending: false,
             needAlphaTesting: false,
             shaderLanguage,
-            extraInitializationsAsync:
-                shaderLanguage === ShaderLanguage.WGSL
-                    ? async () => {
-                          await Promise.all([import("./wgsl/handle.vertex"), import("./wgsl/handle.fragment")]);
-                      }
-                    : async () => {
-                          await Promise.all([import("./shaders/handle.vertex"), import("./shaders/handle.fragment")]);
-                      },
+            shaderLoader: HandleMaterial._ShaderLoader,
         });
 
         this._updateInterpolationTarget();

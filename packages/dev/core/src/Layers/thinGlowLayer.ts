@@ -6,15 +6,15 @@ import { type SubMesh } from "../Meshes/subMesh";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Mesh } from "../Meshes/mesh";
 import { type Texture } from "../Materials/Textures/texture";
-import { type Effect } from "../Materials/effect";
+import { type Effect, type IEffectCreationOptions } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { ThinEffectLayer, type IThinEffectLayerOptions } from "./thinEffectLayer";
 import { Constants } from "../Engines/constants";
 import { Color4 } from "../Maths/math.color.pure";
 import { type PBRMaterial } from "../Materials/PBR/pbrMaterial";
 
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
+import { ShaderLoader } from "../Misc/shaderLoader";
 
 /**
  * Glow layer options. This helps customizing the behaviour
@@ -53,6 +53,11 @@ export class ThinGlowLayer extends ThinEffectLayer {
      * The default blur kernel size used for the glow.
      */
     public static DefaultBlurKernelSize = 32;
+
+    private static readonly _MergeShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/glowMapMerge.fragment"), import("../Shaders/glowMapMerge.vertex"), import("../Shaders/glowBlurPostProcess.fragment")],
+        webGPU: () => [import("../ShadersWGSL/glowMapMerge.fragment"), import("../ShadersWGSL/glowMapMerge.vertex"), import("../ShadersWGSL/glowBlurPostProcess.fragment")],
+    });
 
     /**
      * Gets the ldrMerge option.
@@ -169,20 +174,6 @@ export class ThinGlowLayer extends ThinEffectLayer {
         return "GlowLayer";
     }
 
-    protected override async _importShadersAsync() {
-        if (this._shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../ShadersWGSL/glowMapMerge.fragment"),
-                import("../ShadersWGSL/glowMapMerge.vertex"),
-                import("../ShadersWGSL/glowBlurPostProcess.fragment"),
-            ]);
-        } else {
-            await Promise.all([import("../Shaders/glowMapMerge.fragment"), import("../Shaders/glowMapMerge.vertex"), import("../Shaders/glowBlurPostProcess.fragment")]);
-        }
-
-        await super._importShadersAsync();
-    }
-
     public override getEffectName(): string {
         return ThinGlowLayer.EffectName;
     }
@@ -204,21 +195,24 @@ export class ThinGlowLayer extends ThinEffectLayer {
         // Effect
         return this._engine.createEffect(
             "glowMapMerge",
-            [VertexBuffer.PositionKind],
-            ["offset"],
-            ["textureSampler", "textureSampler2"],
-            defines,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            this.shaderLanguage,
-            this._shadersLoaded
-                ? undefined
-                : async () => {
-                      await this._importShadersAsync();
-                      this._shadersLoaded = true;
-                  }
+            <IEffectCreationOptions>{
+                attributes: [VertexBuffer.PositionKind],
+                uniformsNames: ["offset"],
+                samplers: ["textureSampler", "textureSampler2"],
+                defines: defines,
+                fallbacks: null,
+                onCompiled: null,
+                onError: null,
+                shaderLanguage: this.shaderLanguage,
+                shaderLoader: ThinGlowLayer._MergeShaderLoader,
+                extraInitializationsAsync: this._shadersLoaded
+                    ? undefined
+                    : async () => {
+                          await this._importShadersAsync();
+                          this._shadersLoaded = true;
+                      },
+            },
+            this._engine
         );
     }
 

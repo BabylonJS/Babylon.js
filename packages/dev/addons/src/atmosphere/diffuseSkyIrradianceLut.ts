@@ -14,6 +14,7 @@ import { type Nullable } from "core/types";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.pure";
 import { Sample2DRgbaToRef } from "./sampling";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { ShaderStore } from "core/Engines/shaderStore";
 import { Vector3Dot } from "core/Maths/math.vector.functions";
 
@@ -36,6 +37,12 @@ const ComputeLutUVToRef = (properties: AtmospherePhysicalProperties, radius: num
  * The diffuse sky irradiance LUT is used to query the diffuse irradiance at a specified position.
  */
 export class DiffuseSkyIrradianceLut {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/diffuseSkyIrradiance.fragment")],
+        webGPU: () => [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/diffuseSkyIrradiance.fragment")],
+    });
+    private static _Patched = false;
+
     private readonly _atmosphere: Atmosphere;
     private _renderTarget: Nullable<RenderTargetTexture> = null;
     private _effectWrapper: Nullable<EffectWrapper> = null;
@@ -121,12 +128,13 @@ export class DiffuseSkyIrradianceLut {
             samplers: ["transmittanceLut", "multiScatteringLut"],
             useShaderStore: true,
             shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            shaderLoader: DiffuseSkyIrradianceLut._ShaderLoader,
             extraInitializationsAsync: async () => {
-                await Promise.all(
-                    useWebGPU
-                        ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/diffuseSkyIrradiance.fragment")]
-                        : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/diffuseSkyIrradiance.fragment")]
-                );
+                // The shader modules are guaranteed to be loaded by this point, since the shaderLoader above is awaited first.
+                if (DiffuseSkyIrradianceLut._Patched) {
+                    return;
+                }
+                DiffuseSkyIrradianceLut._Patched = true;
 
                 // Replace the CUSTOM_IRRADIANCE_FILTERING_INPUT and CUSTOM_IRRADIANCE_FILTERING_FUNCTION placeholders.
                 // Note, the regex replacements look for lines that *only* contain these placeholder strings.

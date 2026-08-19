@@ -7,12 +7,23 @@ import { Observable } from "core/Misc/observable";
 import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Defines the base object used for fluid rendering.
  * It is based on a list of vertices (particles)
  */
 export abstract class FluidRenderingObject {
+    private static readonly _DepthShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../Shaders/fluidRenderingParticleDepth.vertex"), import("../../Shaders/fluidRenderingParticleDepth.fragment")],
+        webGPU: () => [import("../../ShadersWGSL/fluidRenderingParticleDepth.vertex"), import("../../ShadersWGSL/fluidRenderingParticleDepth.fragment")],
+    });
+
+    private static readonly _ThicknessShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../Shaders/fluidRenderingParticleThickness.vertex"), import("../../Shaders/fluidRenderingParticleThickness.fragment")],
+        webGPU: () => [import("../../ShadersWGSL/fluidRenderingParticleThickness.vertex"), import("../../ShadersWGSL/fluidRenderingParticleThickness.fragment")],
+    });
+
     protected _scene: Scene;
     protected _engine: AbstractEngine;
     protected _effectsAreDirty: boolean;
@@ -138,13 +149,7 @@ export abstract class FluidRenderingObject {
             samplerNames: [],
             defines,
             shaderLanguage: this._shaderLanguage,
-            extraInitializationsAsync: async () => {
-                if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                    await Promise.all([import("../../ShadersWGSL/fluidRenderingParticleDepth.vertex"), import("../../ShadersWGSL/fluidRenderingParticleDepth.fragment")]);
-                } else {
-                    await Promise.all([import("../../Shaders/fluidRenderingParticleDepth.vertex"), import("../../Shaders/fluidRenderingParticleDepth.fragment")]);
-                }
-            },
+            shaderLoader: FluidRenderingObject._DepthShaderLoader,
         });
 
         uniformNames.push("particleAlpha");
@@ -158,13 +163,7 @@ export abstract class FluidRenderingObject {
             uniformNames,
             samplerNames: [],
             shaderLanguage: this._shaderLanguage,
-            extraInitializationsAsync: async () => {
-                if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                    await Promise.all([import("../../ShadersWGSL/fluidRenderingParticleThickness.vertex"), import("../../ShadersWGSL/fluidRenderingParticleThickness.fragment")]);
-                } else {
-                    await Promise.all([import("../../Shaders/fluidRenderingParticleThickness.vertex"), import("../../Shaders/fluidRenderingParticleThickness.fragment")]);
-                }
-            },
+            shaderLoader: FluidRenderingObject._ThicknessShaderLoader,
         });
     }
 

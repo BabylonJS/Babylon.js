@@ -11,6 +11,7 @@ import { type DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "./drawWrapper";
 import { type IRenderTargetTexture, type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "./shaderLanguage";
+import { type ShaderLoader } from "../Misc/shaderLoader";
 
 // Prevents ES6 issue if not imported.
 
@@ -296,6 +297,10 @@ export interface EffectWrapperCreationOptions {
      */
     extraInitializations?: (useWebGPU: boolean, list: Promise<any>[]) => void;
     /**
+     * Shader loader used to load additional shader files before preparing the effect.
+     */
+    shaderLoader?: ShaderLoader;
+    /**
      * Additional async code to run before preparing the effect
      */
     extraInitializationsAsync?: () => Promise<void>;
@@ -432,6 +437,7 @@ export class EffectWrapper {
             onCompiled: creationOptions.onCompiled || (undefined as any),
             extraInitializations: creationOptions.extraInitializations || (undefined as any),
             extraInitializationsAsync: creationOptions.extraInitializationsAsync || (undefined as any),
+            shaderLoader: creationOptions.shaderLoader || (undefined as any),
             useAsPostProcess: creationOptions.useAsPostProcess ?? false,
             allowEmptySourceTexture: creationOptions.allowEmptySourceTexture ?? false,
         };
@@ -609,6 +615,7 @@ export class EffectWrapper {
                         ? (shaderType: string, code: string) => customShaderCodeProcessing.processFinalCode!(this.name, shaderType, code)
                         : null,
                     shaderLanguage: this.options.shaderLanguage,
+                    shaderLoader: this.options.shaderLoader,
                     extraInitializationsAsync,
                 },
                 this.options.engine

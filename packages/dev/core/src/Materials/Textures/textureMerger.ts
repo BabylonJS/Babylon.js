@@ -6,6 +6,7 @@ import { type TextureSize } from "./textureCreationOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../../Engines/constants";
 import { type Texture } from "./texture";
+import { ShaderLoader } from "../../Misc/shaderLoader";
 
 /**
  * Configuration for a texture input source
@@ -49,6 +50,11 @@ export interface ITextureMergeConfiguration {
 }
 
 const _ShaderName = "textureMerger";
+
+const _TextureMergerShaderLoader = /*#__PURE__*/ new ShaderLoader({
+    webGL: () => [import("../../Shaders/textureMerger.fragment")],
+    webGPU: () => [import("../../ShadersWGSL/textureMerger.fragment")],
+});
 
 /**
  * @internal
@@ -176,13 +182,7 @@ export async function MergeTexturesAsync(name: string, config: ITextureMergeConf
         generateDepthBuffer: false,
         generateMipMaps: false,
         shaderLanguage: scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-        extraInitializationsAsync: async () => {
-            if (scene.getEngine().isWebGPU) {
-                await Promise.all([import("../../ShadersWGSL/textureMerger.fragment")]);
-            } else {
-                await Promise.all([import("../../Shaders/textureMerger.fragment")]);
-            }
-        },
+        shaderLoader: _TextureMergerShaderLoader,
         skipSceneRegistration: true,
     };
     const proceduralTexture = new ProceduralTexture(name, outputSize, _ShaderName, scene, outputTextureOptions);

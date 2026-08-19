@@ -19,6 +19,7 @@ import { SmartArray } from "../Misc/smartArray";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { LinesMesh, InstancedLinesMesh } from "../Meshes/linesMesh.pure";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * FaceAdjacencies Helper class to generate edges
@@ -107,6 +108,11 @@ export interface IEdgesRendererOptions {
  * This class is used to generate edges of the mesh that could then easily be rendered in a scene.
  */
 export class EdgesRenderer implements IEdgesRenderer {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/line.vertex"), import("../Shaders/line.fragment")],
+        webGPU: () => [import("../ShadersWGSL/line.vertex"), import("../ShadersWGSL/line.fragment")],
+    });
+
     /**
      * Define the size of the edges with an orthographic camera
      */
@@ -180,13 +186,7 @@ export class EdgesRenderer implements IEdgesRenderer {
                     uniforms: ["world", "viewProjection", "color", "width", "aspectRatio"],
                     uniformBuffers: ["Scene", "Mesh"],
                     shaderLanguage: shaderLanguage,
-                    extraInitializationsAsync: async () => {
-                        if (shaderLanguage === ShaderLanguage.WGSL) {
-                            await Promise.all([import("../ShadersWGSL/line.vertex"), import("../ShadersWGSL/line.fragment")]);
-                        } else {
-                            await Promise.all([import("../Shaders/line.vertex"), import("../Shaders/line.fragment")]);
-                        }
-                    },
+                    shaderLoader: EdgesRenderer._ShaderLoader,
                 },
                 false
             );

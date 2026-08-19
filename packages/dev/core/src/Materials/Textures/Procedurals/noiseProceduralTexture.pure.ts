@@ -7,24 +7,12 @@ import { type Texture } from "../../../Materials/Textures/texture.pure";
 import { type IProceduralTextureCreationOptions, ProceduralTexture } from "./proceduralTexture.pure";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { ShaderLanguage } from "../../../Materials/shaderLanguage";
+import { ShaderLoader } from "../../../Misc/shaderLoader";
 
-let _NoiseProceduralTextureGlslShaderPromise: Promise<void> | undefined;
-let _NoiseProceduralTextureWgslShaderPromise: Promise<void> | undefined;
-
-async function _EnsureNoiseProceduralTextureShaderAsync(shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL): Promise<void> {
-    if (shaderLanguage === ShaderLanguage.WGSL) {
-        _NoiseProceduralTextureWgslShaderPromise ??= (async () => {
-            await import("../../../ShadersWGSL/noise.fragment");
-        })();
-        await _NoiseProceduralTextureWgslShaderPromise;
-        return;
-    }
-
-    _NoiseProceduralTextureGlslShaderPromise ??= (async () => {
-        await import("../../../Shaders/noise.fragment");
-    })();
-    await _NoiseProceduralTextureGlslShaderPromise;
-}
+const _NoiseProceduralTextureShaderLoader = /*#__PURE__*/ new ShaderLoader({
+    webGL: () => [import("../../../Shaders/noise.fragment")],
+    webGPU: () => [import("../../../ShadersWGSL/noise.fragment")],
+});
 
 /**
  * Class used to generate noise procedural textures
@@ -58,9 +46,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
         const creationOptions: IProceduralTextureCreationOptions = {
             fallbackTexture,
             shaderLanguage,
-            extraInitializationsAsync: async () => {
-                await _EnsureNoiseProceduralTextureShaderAsync(shaderLanguage);
-            },
+            shaderLoader: _NoiseProceduralTextureShaderLoader,
         };
 
         super(name, size, "noise", scene, creationOptions, generateMipMaps);
@@ -175,6 +161,6 @@ export function RegisterNoiseProceduralTexture(): void {
     }
     _Registered = true;
 
-    void _EnsureNoiseProceduralTextureShaderAsync();
+    void _NoiseProceduralTextureShaderLoader.loadAsync(ShaderLanguage.GLSL);
     RegisterClass("BABYLON.NoiseProceduralTexture", NoiseProceduralTexture);
 }

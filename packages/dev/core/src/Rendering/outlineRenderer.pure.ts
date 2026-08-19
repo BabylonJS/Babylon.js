@@ -15,12 +15,18 @@ import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttrib
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { type IEffectCreationOptions } from "core/Materials/effect.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * This class is responsible to draw the outline/overlay of meshes.
  * It should not be used directly but through the available method on mesh.
  */
 export class OutlineRenderer implements ISceneComponent {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/outline.fragment"), import("../Shaders/outline.vertex")],
+        webGPU: () => [import("../ShadersWGSL/outline.fragment"), import("../ShadersWGSL/outline.vertex")],
+    });
+
     /**
      * Stencil value used to avoid outline being seen within the mesh when the mesh is transparent
      */
@@ -344,13 +350,7 @@ export class OutlineRenderer implements ISceneComponent {
                         onError: null,
                         indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: async () => {
-                            if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                                await Promise.all([import("../ShadersWGSL/outline.fragment"), import("../ShadersWGSL/outline.vertex")]);
-                            } else {
-                                await Promise.all([import("../Shaders/outline.fragment"), import("../Shaders/outline.vertex")]);
-                            }
-                        },
+                        shaderLoader: OutlineRenderer._ShaderLoader,
                     },
                     this.scene.getEngine()
                 ),

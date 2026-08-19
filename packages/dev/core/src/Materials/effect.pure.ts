@@ -133,7 +133,7 @@ export interface IEffectCreationOptions {
     existingPipelineContext?: IPipelineContext;
 
     /**
-     * Additional async code to run before preparing the effect
+     * Shader loader used to load additional shader files before preparing the effect.
      */
     shaderLoader?: ShaderLoader;
 

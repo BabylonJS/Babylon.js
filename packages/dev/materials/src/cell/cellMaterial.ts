@@ -15,7 +15,7 @@ import { type SubMesh } from "core/Meshes/subMesh";
 import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { type IAnimatable } from "core/Animations/animatable.interface";
 
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
@@ -95,7 +95,10 @@ export class CellMaterial extends PushMaterial {
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
     public accessor maxSimultaneousLights: number;
 
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./cell.vertex"), import("./cell.fragment")],
+        webGPU: () => [import("./wgsl/cell.vertex"), import("./wgsl/cell.fragment")],
+    });
 
     /**
      * Instantiates a Cell Material in the given scene
@@ -268,17 +271,7 @@ export class CellMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights - 1 },
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("./wgsl/cell.vertex"), import("./wgsl/cell.fragment")]);
-                                  } else {
-                                      await Promise.all([import("./cell.vertex"), import("./cell.fragment")]);
-                                  }
-
-                                  this._shadersLoaded = true;
-                              },
+                        shaderLoader: CellMaterial._ShaderLoader,
                     },
                     engine
                 ),

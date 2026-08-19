@@ -14,7 +14,7 @@ import { type Mesh } from "core/Meshes/mesh";
 import { type Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Color3, Color4 } from "core/Maths/math.color.pure";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 import { PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
 
@@ -35,7 +35,10 @@ export class FluentMaterialDefines extends MaterialDefines {
  * Class used to render controls with fluent design
  */
 export class FluentMaterial extends PushMaterial {
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./shaders/fluent.vertex"), import("./shaders/fluent.fragment")],
+        webGPU: () => [import("./wgsl/fluent.vertex"), import("./wgsl/fluent.fragment")],
+    });
 
     /**
      * Gets or sets inner glow intensity. A value of 0 means no glow (default is 0.5)
@@ -226,17 +229,7 @@ export class FluentMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("./wgsl/fluent.vertex"), import("./wgsl/fluent.fragment")]);
-                                  } else {
-                                      await Promise.all([import("./shaders/fluent.vertex"), import("./shaders/fluent.fragment")]);
-                                  }
-
-                                  this._shadersLoaded = true;
-                              },
+                        shaderLoader: FluentMaterial._ShaderLoader,
                     },
                     engine
                 ),

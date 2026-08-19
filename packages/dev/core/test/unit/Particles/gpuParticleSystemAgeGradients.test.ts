@@ -3,6 +3,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { Scene } from "core/scene";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 // Side-effect import to register the WebGL2ParticleSystem class
 import "core/Particles/webgl2ParticleSystem";
@@ -184,7 +185,7 @@ describe("GPUParticleSystem WebGPU render shader", () => {
         expect(createEffect).toHaveBeenCalled();
         const options = createEffect.mock.calls[0][1] as any;
         expect(options.shaderLanguage).toBe(ShaderLanguage.WGSL);
-        expect(options.extraInitializationsAsync).toBeTypeOf("function");
+        expect(options.shaderLoader).toBeInstanceOf(ShaderLoader);
 
         ps.dispose();
     });

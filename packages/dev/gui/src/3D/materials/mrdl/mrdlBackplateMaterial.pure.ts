@@ -18,6 +18,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { Color4 } from "core/Maths/math.color.pure";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { Constants } from "core/Engines/constants";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
 import { Tools } from "core/Misc/tools.pure";
@@ -41,6 +42,10 @@ class MRDLBackplateMaterialDefines extends MaterialDefines {
  * Class used to render backplate material with MRDL
  */
 export class MRDLBackplateMaterial extends PushMaterial {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./shaders/mrdlBackplate.vertex"), import("./shaders/mrdlBackplate.fragment")],
+    });
+
     /**
      * URL pointing to the texture used to define the coloring for the Iridescent Map effect.
      */
@@ -366,9 +371,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
-                        extraInitializationsAsync: async () => {
-                            await Promise.all([import("./shaders/mrdlBackplate.vertex"), import("./shaders/mrdlBackplate.fragment")]);
-                        },
+                        shaderLoader: MRDLBackplateMaterial._ShaderLoader,
                     },
                     engine
                 ),

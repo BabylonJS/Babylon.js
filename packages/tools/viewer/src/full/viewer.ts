@@ -54,6 +54,7 @@ import { deepMerge } from "core/Misc/deepMerger";
 import { AbortError } from "core/Misc/error";
 import { Lazy } from "core/Misc/lazy";
 import { Logger } from "core/Misc/logger";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { HardwareScalingOptimization, SceneOptimizer, SceneOptimizerOptions } from "core/Misc/sceneOptimizer";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { _RetryWithInterval } from "core/Misc/timingTools";
@@ -468,6 +469,11 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
     static {
         registerBuiltInLoaders();
     }
+
+    private static readonly _EnvShadowGroundShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./Shaders/envShadowGround.vertex"), import("./Shaders/envShadowGround.fragment")],
+        webGPU: () => [import("./ShadersWGSL/envShadowGround.vertex"), import("./ShadersWGSL/envShadowGround.fragment")],
+    });
 
     /**
      * When enabled, the Viewer will emit additional diagnostic logs to the console.
@@ -1600,13 +1606,7 @@ export class Viewer extends ViewerBase implements IDisposable, IViewer {
                 uniforms: ["world", "worldView", "worldViewProjection", "view", "projection", "renderTargetSize", "shadowOpacity"],
                 samplers: ["shadowTexture"],
                 shaderLanguage,
-                extraInitializationsAsync: async () => {
-                    if (shaderLanguage === ShaderLanguage.WGSL) {
-                        await Promise.all([import("./ShadersWGSL/envShadowGround.vertex"), import("./ShadersWGSL/envShadowGround.fragment")]);
-                    } else {
-                        await Promise.all([import("./Shaders/envShadowGround.vertex"), import("./Shaders/envShadowGround.fragment")]);
-                    }
-                },
+                shaderLoader: Viewer._EnvShadowGroundShaderLoader,
             };
 
             const groundMaterial = new ShaderMaterial("envShadowGroundMaterial", this._scene, "envShadowGround", options);

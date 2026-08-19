@@ -11,6 +11,7 @@ import { VertexBuffer } from "../Buffers/buffer.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { type Effect, type IEffectCreationOptions, type IShaderPath } from "./effect.pure";
+import { type ShaderLoader } from "../Misc/shaderLoader";
 import { EffectFallbacks } from "./effectFallbacks";
 import { WebRequest } from "../Misc/webRequest";
 import { type ShaderLanguage } from "./shaderLanguage";
@@ -108,6 +109,11 @@ export interface IShaderMaterialOptions {
      * The language the shader is written in (default: GLSL)
      */
     shaderLanguage?: ShaderLanguage;
+
+    /**
+     * Shader loader used to load additional shader files before preparing the effect.
+     */
+    shaderLoader?: ShaderLoader;
 
     /**
      * Defines additional code to call to prepare the shader code
@@ -957,6 +963,7 @@ export class ShaderMaterial extends PushMaterial {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
                     shaderLanguage: this._options.shaderLanguage,
+                    shaderLoader: this._options.shaderLoader,
                     extraInitializationsAsync: this._options.extraInitializationsAsync,
                 },
                 engine

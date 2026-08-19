@@ -8,6 +8,7 @@ import { Vector2 } from "core/Maths/math.vector.pure";
 import { WhenTextureReadyAsync } from "core/Misc/textureTools";
 import { BaseTexture } from "core/Materials/Textures/baseTexture.pure";
 import { Constants } from "core/Engines/constants";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 type KernelData = {
     kernel: Float32Array;
@@ -19,6 +20,11 @@ type KernelData = {
  * Class used for fast copy from one texture to another
  */
 export class AreaLightTextureTools {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/areaLightTextureProcessing.fragment")],
+        webGPU: () => [import("../ShadersWGSL/areaLightTextureProcessing.fragment")],
+    });
+
     private _engine: AbstractEngine;
     private _renderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
@@ -58,14 +64,11 @@ export class AreaLightTextureTools {
         }
     }
 
-    private _shadersLoaded = false;
     private _createEffect(): EffectWrapper {
         const engine = this._engine;
-        let isWebGPU = false;
 
         if (engine?.isWebGPU) {
             this._shaderLanguage = ShaderLanguage.WGSL;
-            isWebGPU = true;
         }
 
         const effectWrapper = new EffectWrapper({
@@ -77,13 +80,7 @@ export class AreaLightTextureTools {
             samplerNames: ["textureSampler"],
             defines: [],
             shaderLanguage: this._shaderLanguage,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await import("../ShadersWGSL/areaLightTextureProcessing.fragment");
-                } else {
-                    await import("../Shaders/areaLightTextureProcessing.fragment");
-                }
-            },
+            shaderLoader: AreaLightTextureTools._ShaderLoader,
         });
 
         effectWrapper.onApplyObservable.add(() => {
@@ -104,7 +101,7 @@ export class AreaLightTextureTools {
      * @returns true if "copy" can be called without delay, else false
      */
     public isReady(): boolean {
-        return this._shadersLoaded && !!this._effectWrapper?.effect?.isReady();
+        return !!this._effectWrapper?.effect?.isReady();
     }
 
     /**
@@ -113,10 +110,9 @@ export class AreaLightTextureTools {
      * @returns A promise that resolves with the pre-processed texture
      */
     public async processAsync(source: BaseTexture): Promise<Nullable<BaseTexture>> {
-        if (!this._shadersLoaded) {
+        if (!this._effectWrapper) {
             this._effectWrapper = this._createEffect();
             await this._effectWrapper.effect.whenCompiledAsync();
-            this._shadersLoaded = true;
         }
 
         if (!source.isReady()) {

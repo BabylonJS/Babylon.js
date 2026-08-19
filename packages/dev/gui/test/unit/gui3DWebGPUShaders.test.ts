@@ -3,6 +3,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { FluentMaterial } from "../../src/3D/materials/fluent/fluentMaterial";
 import { FluentBackplateMaterial } from "../../src/3D/materials/fluentBackplate/fluentBackplateMaterial";
 import { FluentButtonMaterial } from "../../src/3D/materials/fluentButton/fluentButtonMaterial";
@@ -66,7 +67,7 @@ describe("GUI3D WebGPU shaders", () => {
 
         const options = createEffect.mock.calls[0][1] as any;
         expect(options.shaderLanguage).toBe(ShaderLanguage.WGSL);
-        expect(options.extraInitializationsAsync).toBeTypeOf("function");
+        expect(options.shaderLoader).toBeInstanceOf(ShaderLoader);
     });
 
     it("uses WGSL when FluentBackplateMaterial creates an effect under WebGPU", () => {
@@ -83,7 +84,7 @@ describe("GUI3D WebGPU shaders", () => {
 
         const options = createEffect.mock.calls[0][1] as any;
         expect(options.shaderLanguage).toBe(ShaderLanguage.WGSL);
-        expect(options.extraInitializationsAsync).toBeTypeOf("function");
+        expect(options.shaderLoader).toBeInstanceOf(ShaderLoader);
     });
 
     it("uses WGSL when FluentButtonMaterial creates an effect under WebGPU", () => {
@@ -99,7 +100,7 @@ describe("GUI3D WebGPU shaders", () => {
 
         const options = createEffect.mock.calls[0][1] as any;
         expect(options.shaderLanguage).toBe(ShaderLanguage.WGSL);
-        expect(options.extraInitializationsAsync).toBeTypeOf("function");
+        expect(options.shaderLoader).toBeInstanceOf(ShaderLoader);
     });
 
     it("should not create the effect until the blob texture is ready", () => {
@@ -158,6 +159,6 @@ describe("GUI3D WebGPU shaders", () => {
         const material = new HandleMaterial("handle", scene);
 
         expect(material.options.shaderLanguage).toBe(ShaderLanguage.WGSL);
-        expect(material.options.extraInitializationsAsync).toBeTypeOf("function");
+        expect(material.options.shaderLoader).toBeInstanceOf(ShaderLoader);
     });
 });

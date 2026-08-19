@@ -12,9 +12,10 @@ import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Mesh } from "../Meshes/mesh";
 import { type EffectWrapperCreationOptions, EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
-import { type Effect } from "../Materials/effect";
+import { type Effect, type IEffectCreationOptions } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
+import { ShaderLoader } from "../Misc/shaderLoader";
 
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
@@ -329,6 +330,11 @@ export class ThinEffectLayer {
         this._generateIndexBuffer();
         this._generateVertexBuffer();
     }
+
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/glowMapGeneration.vertex"), import("../Shaders/glowMapGeneration.fragment")],
+        webGPU: () => [import("../ShadersWGSL/glowMapGeneration.vertex"), import("../ShadersWGSL/glowMapGeneration.fragment")],
+    });
 
     /** @internal */
     public _shadersLoaded = false;
@@ -724,21 +730,26 @@ export class ThinEffectLayer {
             drawWrapper.setEffect(
                 this._engine.createEffect(
                     "glowMapGeneration",
-                    attribs,
-                    uniforms,
-                    ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"],
-                    join,
-                    fallbacks,
-                    undefined,
-                    undefined,
-                    { maxSimultaneousMorphTargets: numMorphInfluencers },
-                    this._shaderLanguage,
-                    this._shadersLoaded
-                        ? undefined
-                        : async () => {
-                              await this._importShadersAsync();
-                              this._shadersLoaded = true;
-                          }
+                    <IEffectCreationOptions>{
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: [],
+                        samplers: ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"],
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: null,
+                        onError: null,
+                        indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
+                        shaderLanguage: this._shaderLanguage,
+                        shaderLoader: ThinEffectLayer._ShaderLoader,
+                        extraInitializationsAsync: this._shadersLoaded
+                            ? undefined
+                            : async () => {
+                                  await this._additionalImportShadersAsync?.();
+                                  this._shadersLoaded = true;
+                              },
+                    },
+                    this._engine
                 ),
                 join
             );
@@ -755,13 +766,10 @@ export class ThinEffectLayer {
     }
 
     protected async _importShadersAsync(): Promise<void> {
-        if (this._shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([import("../ShadersWGSL/glowMapGeneration.vertex"), import("../ShadersWGSL/glowMapGeneration.fragment")]);
-        } else {
-            await Promise.all([import("../Shaders/glowMapGeneration.vertex"), import("../Shaders/glowMapGeneration.fragment")]);
-        }
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._additionalImportShadersAsync?.();
+        // The base class's own glowMapGeneration shaders are loaded via the static ThinEffectLayer._ShaderLoader
+        // passed directly to the createEffect call in _internalIsSubMeshReady, so this method only needs to
+        // chain into the additional shaders hook (used by subclasses/EffectLayer wrappers).
+        await this._additionalImportShadersAsync?.();
     }
 
     /** @internal */

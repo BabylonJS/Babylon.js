@@ -8,8 +8,14 @@ import { type TextureSize } from "./textureCreationOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../../Engines/constants";
 import { Color4 } from "core/Maths/math.color.pure";
+import { ShaderLoader } from "../../Misc/shaderLoader";
 
 const _ShaderName = "textureProcessor";
+
+const _TextureProcessorShaderLoader = /*#__PURE__*/ new ShaderLoader({
+    webGL: () => [import("../../Shaders/textureProcessor.fragment")],
+    webGPU: () => [import("../../ShadersWGSL/textureProcessor.fragment")],
+});
 
 /**
  * Specifies the color space of a texture operand.
@@ -482,13 +488,7 @@ function _CreateProcessorTexture(
         generateMipMaps: false,
         gammaSpace: outputColorSpace === TextureColorSpace.SRGB,
         shaderLanguage: scene.getEngine().isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-        extraInitializationsAsync: async () => {
-            if (scene.getEngine().isWebGPU) {
-                await Promise.all([import("../../ShadersWGSL/textureProcessor.fragment")]);
-            } else {
-                await Promise.all([import("../../Shaders/textureProcessor.fragment")]);
-            }
-        },
+        shaderLoader: _TextureProcessorShaderLoader,
         // Opt out of scene-managed rendering. _shouldRender() would re-render the texture
         // on the first scene frame regardless of refreshRate (because _currentRefreshId starts
         // at -1 and is only advanced by _shouldRender() itself, not by a direct render() call).

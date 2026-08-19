@@ -12,6 +12,7 @@ import { type CubeTexture } from "../../Materials/Textures/cubeTexture";
 import { Logger } from "../../Misc/logger";
 import { type EventState } from "../../Misc/observable";
 import { type Nullable } from "../../types";
+import { ShaderLoader } from "../../Misc/shaderLoader";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -19,6 +20,11 @@ import { type Nullable } from "../../types";
  * @internal
  */
 export class _IblShadowsVoxelTracingPass {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../Shaders/iblShadowVoxelTracing.fragment")],
+        webGPU: () => [import("../../ShadersWGSL/iblShadowVoxelTracing.fragment")],
+    });
+
     private _scene: Scene;
     private _engine: AbstractEngine;
     private _renderPipeline: IblShadowsRenderPipeline;
@@ -314,13 +320,7 @@ export class _IblShadowsVoxelTracingPass {
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             generateDepthBuffer: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await Promise.all([import("../../ShadersWGSL/iblShadowVoxelTracing.fragment")]);
-                } else {
-                    await Promise.all([import("../../Shaders/iblShadowVoxelTracing.fragment")]);
-                }
-            },
+            shaderLoader: _IblShadowsVoxelTracingPass._ShaderLoader,
         };
         this._outputTexture = new ProceduralTexture(
             "voxelTracingPass",

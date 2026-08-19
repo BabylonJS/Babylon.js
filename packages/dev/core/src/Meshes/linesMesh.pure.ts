@@ -13,6 +13,7 @@ import { type IShaderMaterialOptions } from "../Materials/shaderMaterial";
 import { type Effect } from "../Materials/effect.pure";
 import { type MeshCreationOptions } from "./mesh.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "../Misc/shaderLoader";
 import { type Scene } from "../scene.pure";
 
 /**
@@ -20,6 +21,11 @@ import { type Scene } from "../scene.pure";
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param
  */
 export class LinesMesh extends Mesh {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/color.vertex"), import("../Shaders/color.fragment")],
+        webGPU: () => [import("../ShadersWGSL/color.vertex"), import("../ShadersWGSL/color.fragment")],
+    });
+
     /**
      * Force all the LineMeshes to compile their default color material to glsl even on WebGPU engines.
      * False by default. This is mostly meant for backward compatibility.
@@ -132,13 +138,7 @@ export class LinesMesh extends Mesh {
             }
 
             options.shaderLanguage = this._shaderLanguage;
-            options.extraInitializationsAsync = async () => {
-                if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                    await Promise.all([import("../ShadersWGSL/color.vertex"), import("../ShadersWGSL/color.fragment")]);
-                } else {
-                    await Promise.all([import("../Shaders/color.vertex"), import("../Shaders/color.fragment")]);
-                }
-            };
+            options.shaderLoader = LinesMesh._ShaderLoader;
 
             const material = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
             material.doNotSerialize = true;

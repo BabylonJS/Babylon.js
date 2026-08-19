@@ -18,7 +18,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { Color4 } from "core/Maths/math.color.pure";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { Constants } from "core/Engines/constants";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
 import { Tools } from "core/Misc/tools.pure";
@@ -41,7 +41,10 @@ class FluentBackplateMaterialDefines extends MaterialDefines {
  * Class used to render square buttons with fluent design
  */
 export class FluentBackplateMaterial extends PushMaterial {
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./shaders/fluentBackplate.vertex"), import("./shaders/fluentBackplate.fragment")],
+        webGPU: () => [import("./wgsl/fluentBackplate.vertex"), import("./wgsl/fluentBackplate.fragment")],
+    });
 
     /**
      * URL pointing to the texture used to define the coloring for the fluent blob effect.
@@ -389,17 +392,7 @@ export class FluentBackplateMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("./wgsl/fluentBackplate.vertex"), import("./wgsl/fluentBackplate.fragment")]);
-                                  } else {
-                                      await Promise.all([import("./shaders/fluentBackplate.vertex"), import("./shaders/fluentBackplate.fragment")]);
-                                  }
-
-                                  this._shadersLoaded = true;
-                              },
+                        shaderLoader: FluentBackplateMaterial._ShaderLoader,
                     },
                     engine
                 ),
