@@ -245,6 +245,19 @@ export class _IblShadowsVoxelTracingPass {
     }
     private _coloredShadows: boolean = false;
 
+    /**
+     * Maximum number of occupied voxels a shadow ray will apply the Russian-roulette transmittance
+     * test to before it is treated as unoccluded. Higher values converge more accurately through
+     * thick translucent volumes at extra cost; lower values are cheaper. Applied via a shader define.
+     */
+    public set maxVoxelRouletteTests(value: number) {
+        this._maxVoxelRouletteTests = value;
+    }
+    public get maxVoxelRouletteTests(): number {
+        return this._maxVoxelRouletteTests;
+    }
+    private _maxVoxelRouletteTests: number = 16;
+
     private _debugVoxelMarchEnabled: boolean = false;
     private _debugPassPP: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
@@ -360,6 +373,7 @@ export class _IblShadowsVoxelTracingPass {
         if (this._scene.geometryBufferRenderer?.normalsAreUnsigned) {
             defines += "#define WORLD_NORMAL_UNSIGNED\n";
         }
+        defines += `#define MAX_VOXEL_ROULETTE_TESTS ${Math.max(1, Math.floor(this._maxVoxelRouletteTests))}\n`;
         return defines;
     }
 

@@ -112,6 +112,14 @@ interface IIblShadowsSettings {
      * region so shouldn't need to change if you scale your scene.
      */
     ssShadowThicknessScale?: number;
+
+    /**
+     * Maximum number of occupied voxels a shadow ray applies the Russian-roulette transmittance test
+     * to before it is treated as unoccluded (default 16). Higher values converge more accurately
+     * through thick translucent volumes (e.g. dense Gaussian splats) at extra cost; lower values are
+     * cheaper. Only affects translucent voxels — fully opaque voxels always block on first contact.
+     */
+    maxVoxelRouletteTests?: number;
 }
 
 /**
@@ -231,6 +239,23 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             return;
         }
         this._voxelTracingPass.voxelShadowOpacity = value;
+    }
+
+    /**
+     * Maximum number of occupied voxels a shadow ray applies the Russian-roulette transmittance test
+     * to before it is treated as unoccluded. Higher values converge more accurately through thick
+     * translucent volumes at extra cost; lower values are cheaper. Fully opaque voxels are unaffected
+     * (they always block on first contact).
+     */
+    public get maxVoxelRouletteTests(): number {
+        return this._voxelTracingPass?.maxVoxelRouletteTests;
+    }
+
+    public set maxVoxelRouletteTests(value: number) {
+        if (!this._voxelTracingPass) {
+            return;
+        }
+        this._voxelTracingPass.maxVoxelRouletteTests = value;
     }
 
     /**
@@ -832,6 +857,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.ssShadowStride = options.ssShadowStride || 8;
         this.ssShadowThicknessScale = options.ssShadowThicknessScale || 1.0;
         this.shadowRemanence = options.shadowRemanence ?? 0.75;
+        this.maxVoxelRouletteTests = options.maxVoxelRouletteTests ?? 16;
         this._noiseTexture = new Texture(
             Tools.GetAssetUrl("https://assets.babylonjs.com/core/blue_noise/blue_noise_rgb.png"),
             this.scene,

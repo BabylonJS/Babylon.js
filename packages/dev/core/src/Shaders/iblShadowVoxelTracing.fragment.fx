@@ -107,7 +107,10 @@ float prngCanonical3d(vec3 co) { return prngCanonical2d(co.xy + prngCanonical1d(
 
 // Upper bound on occupied leaves a shadow ray may roulette through before it is treated as
 // unoccluded. Bounds traversal cost through soft/transparent volumes; on cap the ray passes.
-#define MAX_VOXEL_ROULETTE_TESTS 64
+// Injected by the IBL shadow pipeline (maxVoxelRouletteTests); falls back to 16 if not provided.
+#ifndef MAX_VOXEL_ROULETTE_TESTS
+#define MAX_VOXEL_ROULETTE_TESTS 16
+#endif
 
 vec3 uv_to_normal(vec2 uv) {
   vec3 N;
