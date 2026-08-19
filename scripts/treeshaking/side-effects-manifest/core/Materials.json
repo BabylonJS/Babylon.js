@@ -146,6 +146,7 @@
         "Materials/Textures/exrCubeTexture.ts": ["top-level-call"],
         "Materials/Textures/hdrCubeTexture.ts": ["top-level-call"],
         "Materials/Textures/mirrorTexture.ts": ["top-level-call"],
+        "Materials/Textures/multiTexture.ts": ["bare-import"],
         "Materials/Textures/renderTargetTexture.ts": ["top-level-call"],
         "Materials/Textures/renderTargetTexture.types.ts": ["declare-module"],
         "Materials/Textures/texture.ts": ["top-level-call"],

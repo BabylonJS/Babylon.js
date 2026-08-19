@@ -16,6 +16,7 @@ export * from "./HTML/index";
 export * from "./internalTexture";
 export * from "./Loaders/index";
 export * from "./mirrorTexture";
+export * from "./multiTexture";
 export * from "./multiRenderTarget";
 export * from "./Packer/index";
 export * from "./Procedurals/index";
