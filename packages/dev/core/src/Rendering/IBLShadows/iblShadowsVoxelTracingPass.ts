@@ -24,6 +24,10 @@ export class _IblShadowsVoxelTracingPass {
         webGL: () => [import("../../Shaders/iblShadowVoxelTracing.fragment")],
         webGPU: () => [import("../../ShadersWGSL/iblShadowVoxelTracing.fragment")],
     });
+    private static readonly _DebugShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../Shaders/iblShadowDebug.fragment")],
+        webGPU: () => [import("../../ShadersWGSL/iblShadowDebug.fragment")],
+    });
 
     private _scene: Scene;
     private _engine: AbstractEngine;
@@ -280,13 +284,7 @@ export class _IblShadowsVoxelTracingPass {
                 engine: this._engine,
                 reusable: true,
                 shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-                extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
-                    if (useWebGPU) {
-                        list.push(import("../../ShadersWGSL/iblShadowDebug.fragment"));
-                    } else {
-                        list.push(import("../../Shaders/iblShadowDebug.fragment"));
-                    }
-                },
+                shaderLoaders: [_IblShadowsVoxelTracingPass._DebugShaderLoader],
             };
             this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPassPP.autoClear = false;

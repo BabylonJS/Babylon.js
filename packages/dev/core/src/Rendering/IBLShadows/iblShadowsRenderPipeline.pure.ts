@@ -18,6 +18,7 @@ import { PostProcessRenderPipeline } from "../../PostProcesses/RenderPipeline/po
 import { PostProcessRenderEffect } from "core/PostProcesses/RenderPipeline/postProcessRenderEffect";
 import { type Camera } from "core/Cameras/camera.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { GeometryBufferRenderer, type IGeometryBufferTextureTypeAndFormat } from "core/Rendering/geometryBufferRenderer.pure";
 import { RegisterGeometryBufferRendererSceneComponent } from "core/Rendering/geometryBufferRendererSceneComponent.pure";
 import { IblCdfGenerator } from "core/Rendering/iblCdfGenerator";
@@ -119,6 +120,11 @@ interface IIblShadowsSettings {
  * This should not be instanciated directly, as it is part of a scene component
  */
 export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
+    private static readonly _DebugShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../Shaders/iblShadowGBufferDebug.fragment")],
+        webGPU: () => [import("../../ShadersWGSL/iblShadowGBufferDebug.fragment")],
+    });
+
     /**
      * The scene that this pipeline is attached to
      */
@@ -883,13 +889,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             samplers: textureNames,
             reusable: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
-                if (useWebGPU) {
-                    list.push(import("../../ShadersWGSL/iblShadowGBufferDebug.fragment"));
-                } else {
-                    list.push(import("../../Shaders/iblShadowGBufferDebug.fragment"));
-                }
-            },
+            shaderLoaders: [IblShadowsRenderPipeline._DebugShaderLoader],
         };
         this._gbufferDebugPass = new PostProcess("iblShadowGBufferDebug", "iblShadowGBufferDebug", options);
         if (this.engine.isWebGPU) {

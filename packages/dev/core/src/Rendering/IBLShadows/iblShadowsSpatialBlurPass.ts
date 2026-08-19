@@ -20,6 +20,10 @@ export class _IblShadowsSpatialBlurPass {
         webGL: () => [import("../../Shaders/iblShadowSpatialBlur.fragment")],
         webGPU: () => [import("../../ShadersWGSL/iblShadowSpatialBlur.fragment")],
     });
+    private static readonly _DebugShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../Shaders/iblShadowDebug.fragment")],
+        webGPU: () => [import("../../ShadersWGSL/iblShadowDebug.fragment")],
+    });
 
     private _scene: Scene;
     private _engine: AbstractEngine;
@@ -114,13 +118,7 @@ export class _IblShadowsSpatialBlurPass {
                 engine: this._engine,
                 reusable: false,
                 shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-                extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
-                    if (useWebGPU) {
-                        list.push(import("../../ShadersWGSL/iblShadowDebug.fragment"));
-                    } else {
-                        list.push(import("../../Shaders/iblShadowDebug.fragment"));
-                    }
-                },
+                shaderLoaders: [_IblShadowsSpatialBlurPass._DebugShaderLoader],
             };
             this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPassPP.autoClear = false;

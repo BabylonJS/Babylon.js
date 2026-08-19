@@ -28,10 +28,13 @@ export class IblCdfGenerator {
         webGL: () => [import("../Shaders/iblCdfx.fragment"), import("../Shaders/iblCdfy.fragment"), import("../Shaders/iblScaledLuminance.fragment")],
         webGPU: () => [import("../ShadersWGSL/iblCdfx.fragment"), import("../ShadersWGSL/iblCdfy.fragment"), import("../ShadersWGSL/iblScaledLuminance.fragment")],
     });
-
     private static readonly _IcdfShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [import("../Shaders/iblIcdf.fragment"), import("../Shaders/iblDominantDirection.fragment")],
         webGPU: () => [import("../ShadersWGSL/iblIcdf.fragment"), import("../ShadersWGSL/iblDominantDirection.fragment")],
+    });
+    private static readonly _DebugShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/iblCdfDebug.fragment")],
+        webGPU: () => [import("../ShadersWGSL/iblCdfDebug.fragment")],
     });
 
     private _scene: Nullable<Scene>;
@@ -378,13 +381,7 @@ export class IblCdfGenerator {
             samplers: ["cdfy", "icdf", "cdfx", "iblSource"],
             defines: this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : "",
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
-                if (useWebGPU) {
-                    list.push(import("../ShadersWGSL/iblCdfDebug.fragment"));
-                } else {
-                    list.push(import("../Shaders/iblCdfDebug.fragment"));
-                }
-            },
+            shaderLoaders: [IblCdfGenerator._DebugShaderLoader],
         };
         this._debugPass = new PostProcess(this._debugPassName, "iblCdfDebug", debugOptions);
         const debugEffect = this._debugPass.getEffect();
