@@ -15,8 +15,10 @@ fn voxelOpacityAtomicMax(vidx: u32, value: u32) {
             break;
         }
         let newWord: u32 = (oldWord & ~mask) | shifted;
-        // Retry on contention from a concurrent write to another byte of the same word.
-        if (atomicCompareExchangeWeak(&voxelOpacityBuffer[wordIdx], oldWord, newWord).old_value == oldWord) {
+        // Retry on contention from a concurrent write to another byte of the same word. A weak CAS can
+        // also fail spuriously while still returning old_value == oldWord, so break only when it reports
+        // an actual exchange; otherwise the opacity write would be silently dropped.
+        if (atomicCompareExchangeWeak(&voxelOpacityBuffer[wordIdx], oldWord, newWord).exchanged) {
             break;
         }
     }

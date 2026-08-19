@@ -251,7 +251,13 @@ export class _IblShadowsVoxelTracingPass {
      * thick translucent volumes at extra cost; lower values are cheaper. Applied via a shader define.
      */
     public set maxVoxelRouletteTests(value: number) {
-        this._maxVoxelRouletteTests = value;
+        // This value becomes a shader define, so it must be a finite, bounded integer: NaN/Infinity would
+        // emit invalid shader source and fractional values would make the getter disagree with the
+        // effective (integer) limit. Non-finite input is ignored, keeping the previous valid value.
+        if (!Number.isFinite(value)) {
+            return;
+        }
+        this._maxVoxelRouletteTests = Math.min(4096, Math.max(1, Math.floor(value)));
     }
     public get maxVoxelRouletteTests(): number {
         return this._maxVoxelRouletteTests;
@@ -373,7 +379,8 @@ export class _IblShadowsVoxelTracingPass {
         if (this._scene.geometryBufferRenderer?.normalsAreUnsigned) {
             defines += "#define WORLD_NORMAL_UNSIGNED\n";
         }
-        defines += `#define MAX_VOXEL_ROULETTE_TESTS ${Math.max(1, Math.floor(this._maxVoxelRouletteTests))}\n`;
+        // _maxVoxelRouletteTests is normalized to a finite integer in [1, 4096] by its setter.
+        defines += `#define MAX_VOXEL_ROULETTE_TESTS ${this._maxVoxelRouletteTests}\n`;
         return defines;
     }
 

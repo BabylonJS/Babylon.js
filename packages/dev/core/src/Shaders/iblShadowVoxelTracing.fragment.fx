@@ -185,15 +185,18 @@ bool anyHitVoxels(const Ray ray_vs, const vec3 rouletteSeed) {
 #endif
         return true;
       }
+      // Budget the translucent roulette tests: check before consuming one so we run at most
+      // MAX_VOXEL_ROULETTE_TESTS of them. On exhaustion, treat the ray as passing (unoccluded).
+      if (leafTests >= MAX_VOXEL_ROULETTE_TESTS) {
+        return false;
+      }
+      leafTests++;
       if (cellOpacity >= prngCanonical3d(vec3(Coords.xyz) + rouletteSeed)) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
         voxel_march_diagnostic_info.heat = float(steps) / 24.0;
         //   voxel_march_diagnostic_info.voxel_intersect_coords = node_coords;
 #endif
         return true;
-      }
-      if (++leafTests > MAX_VOXEL_ROULETTE_TESTS) {
-        return false;
       }
       continue;
     }

@@ -574,6 +574,10 @@ export class _IblShadowsVoxelRenderer {
         this._voxelOpacityBuffer?.dispose();
         this._voxelOpacityBuffer = undefined;
         this._copyBufferToGridCompute = undefined;
+        // The recreated _voxelMaterial has no IBL_VOXEL_OPACITY_BUFFER define, so reset the flag to keep
+        // it in sync — otherwise updateVoxelGrid's change check would skip re-adding the define after a
+        // resolution change, dropping regular-mesh contributions in mixed WebGPU scenes.
+        this._useOpacityBuffer = false;
         this._mipArray = [];
         this._voxelMrtsXaxis = [];
         this._voxelMrtsYaxis = [];
