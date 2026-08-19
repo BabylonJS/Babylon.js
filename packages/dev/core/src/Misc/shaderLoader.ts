@@ -39,29 +39,11 @@ export class ShaderLoader {
 
     /**
      * @param shaderLanguage The shader language to load for.
+     * @returns A `Promise` if loading has started, `null` otherwise.
      */
-    public async loadAsync(shaderLanguage: ShaderLanguage): Promise<void> {
+    public load(shaderLanguage: ShaderLanguage): Promise<void> | null {
         const state = this._getState(shaderLanguage);
-        if (state.loaded) {
-            return;
-        }
-        let { loadPromise } = state;
-        const first = loadPromise === null;
-        if (first) {
-            const { load } = state;
-            if (load) {
-                const loadPromise2 = load();
-                loadPromise = Array.isArray(loadPromise2) ? Promise.all(loadPromise2) : loadPromise2;
-                state.loadPromise = loadPromise;
-            }
-        }
-        if (loadPromise !== null) {
-            await loadPromise;
-        }
-        if (first) {
-            state.loaded = true;
-            state.loadPromise = null;
-        }
+        return state.loaded ? null : LoadShaders(state);
     }
 
     private _getState(shaderLanguage: ShaderLanguage): IShaderLoaderState {
@@ -80,4 +62,26 @@ function CreateState(load: ShaderLoadFunction | undefined): IShaderLoaderState {
         loadPromise: null,
         load,
     };
+}
+
+async function LoadShaders(state: IShaderLoaderState): Promise<void> {
+    let { loadPromise } = state;
+    const first = loadPromise === null;
+    if (first) {
+        const { load } = state;
+        if (load) {
+            const loadPromise2 = load();
+            loadPromise = Array.isArray(loadPromise2) ? Promise.all(loadPromise2) : loadPromise2;
+            state.loadPromise = loadPromise;
+        }
+    }
+    if (loadPromise !== null) {
+        await loadPromise;
+    }
+    if (first) {
+        // eslint-disable-next-line require-atomic-updates
+        state.loaded = true;
+        // eslint-disable-next-line require-atomic-updates
+        state.loadPromise = null;
+    }
 }

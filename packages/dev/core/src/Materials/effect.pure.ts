@@ -442,8 +442,9 @@ export class Effect implements IDisposable {
         if (shaderLoaders) {
             const promises: Promise<void>[] = [];
             for (const shaderLoader of shaderLoaders) {
-                if (!shaderLoader.isLoaded(this._shaderLanguage)) {
-                    promises.push(shaderLoader.loadAsync(this._shaderLanguage));
+                const promise = shaderLoader.load(this._shaderLanguage);
+                if (promise !== null) {
+                    promises.push(promise);
                 }
             }
             if (promises.length > 0) {
