@@ -42,6 +42,9 @@ export class ShaderLoader {
      */
     public async loadAsync(shaderLanguage: ShaderLanguage): Promise<void> {
         const state = this._getState(shaderLanguage);
+        if (state.loaded) {
+            return;
+        }
         let { loadPromise } = state;
         const first = loadPromise === null;
         if (first) {
