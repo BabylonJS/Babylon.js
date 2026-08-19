@@ -31,6 +31,29 @@ import { type GaussianSplattingMaterial } from "../../Materials/GaussianSplattin
 const _MaxSortSettleWaitFrames = 180;
 
 /**
+ * Returns true if any of the given meshes (or their children) is a Gaussian splatting mesh.
+ * Used to decide whether WebGPU voxelization needs the opacity accumulator buffer + copy pass.
+ * @param meshes meshes included in the voxelization
+ * @returns whether any included mesh (or child) is a Gaussian splatting mesh
+ */
+function _HasGaussianSplatting(meshes: Mesh[]): boolean {
+    for (const mesh of meshes) {
+        if (!mesh) {
+            continue;
+        }
+        if (IsGaussianSplattingClassName(mesh.getClassName())) {
+            return true;
+        }
+        for (const child of mesh.getChildMeshes()) {
+            if (IsGaussianSplattingClassName(child.getClassName())) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/**
  * Voxel-based shadow rendering for IBL's.
  * This should not be instanciated directly, as it is part of a scene component
  * @internal
@@ -65,8 +88,12 @@ export class _IblShadowsVoxelRenderer {
 
     // WebGPU only: per-voxel opacity accumulator written via atomicMax during voxelization, then
     // copied into the r8 voxel grid (mip 0) by _copyBufferToGridCompute before mip generation.
+    // Only used when Gaussian splats are present; regular-mesh-only voxelization writes the grid
+    // directly and skips this buffer + copy pass entirely.
     private _voxelOpacityBuffer?: StorageBuffer;
     private _copyBufferToGridCompute?: ComputeShader;
+    private _useOpacityBuffer = false;
+    private _voxelClearColor: Color4 = new Color4(0, 0, 0, 1);
 
     /**
      * Return the voxel grid texture.
@@ -375,7 +402,8 @@ export class _IblShadowsVoxelRenderer {
                 this._scene,
                 voxelAxisOptions
             );
-            this._createVoxelOpacityAccumulator();
+            // The opacity accumulator buffer + copy compute are created lazily on first use, only
+            // when a voxelization actually includes Gaussian splats (see _ensureVoxelOpacityAccumulator).
         } else if (this._triPlanarVoxelization) {
             this._voxelGridXaxis = new RenderTargetTexture("voxelGridXaxis", size, this._scene, voxelAxisOptions);
             this._voxelGridYaxis = new RenderTargetTexture("voxelGridYaxis", size, this._scene, voxelAxisOptions);
@@ -438,12 +466,14 @@ export class _IblShadowsVoxelRenderer {
      * overlapping splats (and the three per-axis passes) accumulate into this buffer via atomicMax,
      * then this compute pass decodes it into mip 0 before the mip hierarchy is generated.
      */
-    private _createVoxelOpacityAccumulator(): void {
+    private _ensureVoxelOpacityAccumulator(): void {
+        if (this._voxelOpacityBuffer) {
+            return;
+        }
         const res = this._voxelResolution;
         // Packed accumulator: 4 voxels share one u32 (one quantized-opacity byte each), so the buffer
         // is res^3 bytes rather than res^3 * 4. res is a power of two >= 8, so res^3 is a multiple of 4.
         this._voxelOpacityBuffer = new StorageBuffer(this._engine as unknown as WebGPUEngine, res * res * res);
-        this._copyBufferToGridCompute = undefined;
         void (async () => {
             await import("../../ShadersWGSL/iblCopyVoxelBufferToGrid.compute");
             this._copyBufferToGridCompute = new ComputeShader("iblCopyVoxelBufferToGrid", this._engine, "iblCopyVoxelBufferToGrid", {
@@ -632,6 +662,20 @@ export class _IblShadowsVoxelRenderer {
         this._voxelizationInProgress = true;
 
         if (this._engine.isWebGPU) {
+            // Only route through the opacity accumulator buffer (and its copy compute) when Gaussian
+            // splats are present — they need non-binary MAX accumulation. Regular-mesh-only
+            // voxelization writes the grid directly (original behavior), skipping the buffer + copy.
+            const useBuffer = _HasGaussianSplatting(includedMeshes);
+            if (useBuffer) {
+                this._ensureVoxelOpacityAccumulator();
+            }
+            if (useBuffer !== this._useOpacityBuffer) {
+                this._useOpacityBuffer = useBuffer;
+                this._voxelMaterial.setDefine("IBL_VOXEL_OPACITY_BUFFER", useBuffer);
+            }
+        }
+
+        if (this._engine.isWebGPU) {
             this._voxelGridRT.renderList = includedMeshes;
             this._addRTsForRender([this._voxelGridRT], includedMeshes, 0);
         } else if (this._triPlanarVoxelization) {
@@ -710,14 +754,24 @@ export class _IblShadowsVoxelRenderer {
             }
 
             if (this._engine.isWebGPU) {
-                // The compute pass that copies the opacity accumulator into the grid must be ready
-                // before we voxelize, otherwise the grid would never be populated this pass.
-                if (!this._copyBufferToGridCompute || !this._copyBufferToGridCompute.isReady()) {
-                    return;
+                if (this._useOpacityBuffer) {
+                    // The compute pass that copies the opacity accumulator into the grid must be ready
+                    // before we voxelize, otherwise the grid would never be populated this pass.
+                    if (!this._copyBufferToGridCompute || !this._copyBufferToGridCompute.isReady()) {
+                        return;
+                    }
+                    // Reset the per-voxel opacity accumulator. clearBuffer is a command-encoder op that
+                    // must run before any render pass opens, so it happens here rather than mid-render.
+                    this._voxelOpacityBuffer?.clear();
+                } else if (this._voxelGrid && this._voxelGrid.renderTarget) {
+                    // Direct mode (no Gaussian splats): regular meshes textureStore into the grid, so
+                    // clear it first. Each layer must be cleared individually.
+                    for (let layer = 0; layer < this._voxelResolution; layer++) {
+                        this._engine.bindFramebuffer(this._voxelGrid.renderTarget, 0, undefined, undefined, true, 0, layer);
+                        this._engine.clear(this._voxelClearColor, true, false, false);
+                        this._engine.unBindFramebuffer(this._voxelGrid.renderTarget, true);
+                    }
                 }
-                // Reset the per-voxel opacity accumulator. clearBuffer is a command-encoder op that
-                // must run before any render pass opens, so it happens here rather than mid-render.
-                this._voxelOpacityBuffer?.clear();
             }
 
             for (const rt of this._renderTargets) {
@@ -726,8 +780,10 @@ export class _IblShadowsVoxelRenderer {
             this._stopVoxelization();
 
             if (this._engine.isWebGPU) {
-                // Decode the atomically-accumulated opacity buffer into the r8 voxel grid (mip 0).
-                this._copyVoxelOpacityBufferToGrid();
+                if (this._useOpacityBuffer) {
+                    // Decode the atomically-accumulated opacity buffer into the r8 voxel grid (mip 0).
+                    this._copyVoxelOpacityBufferToGrid();
+                }
             } else if (this._triPlanarVoxelization) {
                 this._combinedVoxelGridPT.render();
             }

@@ -179,6 +179,13 @@ fn anyHitVoxels(ray_vs: Ray, rouletteSeed: vec3f) -> bool {
       // varies per shadow sample so, averaged over samples/frames, occlusion converges to the true
       // transmittance 1 - prod(1 - alpha_i) instead of a hard binary hit.
       let cellOpacity: f32 = textureLoad(voxelGridSampler, Coords.xyz, 0).x;
+      // Fully opaque cells (e.g. regular meshes) always block: take the fast path and skip the PRNG.
+      if (cellOpacity >= 1.0) {
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+        *voxel_march_diagnostic_info.heat =  f32(steps) / 24.0;
+#endif
+        return true;
+      }
       if (cellOpacity >= prngCanonical3d(vec3f(Coords.xyz) + rouletteSeed)) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
         *voxel_march_diagnostic_info.heat =  f32(steps) / 24.0;
