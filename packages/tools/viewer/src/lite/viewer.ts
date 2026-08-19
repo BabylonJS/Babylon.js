@@ -1582,10 +1582,13 @@ export class Viewer extends ViewerBase implements IViewer {
         // to the hotspot's world position — mirroring the full Viewer's `focusHotSpot`, which calls
         // `ArcRotateCamera.interpolateTo`. Omitted/NaN orbit components keep the camera's current value.
         const orbit = hotSpot.cameraOrbit;
+        const alpha = orbit?.[0] == null ? undefined : Number(orbit[0]);
+        const beta = orbit?.[1] == null ? undefined : Number(orbit[1]);
+        const radius = orbit?.[2] == null ? undefined : Number(orbit[2]);
         this._interpolateCameraTo({
-            alpha: Number(orbit?.[0]),
-            beta: Number(orbit?.[1]),
-            radius: Number(orbit?.[2]),
+            alpha,
+            beta,
+            radius,
             target: { x: result.worldPosition[0], y: result.worldPosition[1], z: result.worldPosition[2] },
         });
         return true;

@@ -715,6 +715,62 @@ test("focusHotSpot handles string camera orbits while auto-orbit is active", asy
     }
 });
 
+test("focusHotSpot preserves omitted camera orbit components", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/flightHelmet.glb"
+            hotspots='{
+                "Plaque": {
+                    "type": "surface",
+                    "meshIndex": 7,
+                    "pointIndex": [8576, 8561, 8565],
+                    "barycentric": ["0.538", "0.007", "0.455"]
+                }
+            }'
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const result = await page.evaluate(async (viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer!;
+        const viewerInternals = viewer as unknown as {
+            _camera: { alpha: number; beta: number; radius: number };
+            _cameraInterpolationAbort: AbortController | null;
+        };
+        const camera = viewerInternals._camera;
+        camera.alpha = 0.7;
+        camera.beta = 1.1;
+        camera.radius = 9;
+
+        const focused = viewer.focusHotSpot("Plaque");
+        const timeout = performance.now() + 5000;
+        while (viewerInternals._cameraInterpolationAbort !== null && performance.now() < timeout) {
+            await new Promise((resolve) => setTimeout(resolve, 16));
+        }
+
+        return {
+            focused,
+            settled: viewerInternals._cameraInterpolationAbort === null,
+            alpha: camera.alpha,
+            beta: camera.beta,
+            radius: camera.radius,
+        };
+    }, viewerElementHandle);
+
+    expect(result).toMatchObject({
+        focused: true,
+        settled: true,
+        alpha: 0.7,
+        beta: 1.1,
+        radius: 9,
+    });
+});
+
 test("resetCamera()", async ({ page }) => {
     const viewerElementHandle = await attachViewerElement(
         page,
