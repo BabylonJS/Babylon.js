@@ -428,11 +428,7 @@ export class ProceduralTexture extends Texture {
                     indexParameters: undefined,
                     shaderLanguage: this._shaderLanguage,
                     shaderLoaders: [ProceduralTexture._ShaderLoader, ...(this._options.shaderLoaders ?? [])],
-                    extraInitializationsAsync: async () => {
-                        if (this._options.extraInitializationsAsync) {
-                            await this._options.extraInitializationsAsync();
-                        }
-                    },
+                    extraInitializationsAsync: this._options.extraInitializationsAsync,
                 },
                 engine
             );
