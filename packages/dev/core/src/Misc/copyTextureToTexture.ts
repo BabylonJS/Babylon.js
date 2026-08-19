@@ -7,6 +7,7 @@ import { Constants } from "core/Engines/constants";
 import { type Nullable } from "core/types";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Conversion modes available when copying a texture into another one
@@ -31,6 +32,12 @@ export class CopyTextureToTexture {
 
     /** Shader language used */
     protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/copyTextureToTexture.fragment")],
+        webGPU: () => [import("../ShadersWGSL/copyTextureToTexture.fragment")],
+    });
 
     /**
      * Gets the shader language
@@ -90,16 +97,15 @@ export class CopyTextureToTexture {
         this._initShaderSourceAsync(isDepthTexture, sameSizeCopy);
     }
 
-    private _shadersLoaded = false;
     private async _initShaderSourceAsync(isDepthTexture: boolean, sameSizeCopy: boolean) {
         const engine = this._engine;
 
         if (engine.isWebGPU) {
             this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await import("../ShadersWGSL/copyTextureToTexture.fragment");
-        } else {
-            await import("../Shaders/copyTextureToTexture.fragment");
+        }
+        const promise = CopyTextureToTexture._ShaderLoader.load(this._shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._shadersLoaded = true;

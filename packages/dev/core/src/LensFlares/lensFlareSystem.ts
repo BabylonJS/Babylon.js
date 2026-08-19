@@ -16,6 +16,7 @@ import { type DataBuffer } from "../Buffers/dataBuffer";
 import { Color3 } from "../Maths/math.color.pure";
 import { type Viewport } from "../Maths/math.viewport";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { Observable } from "core/Misc/observable";
 import { RegisterLensFlareSystemSceneComponent } from "./lensFlareSystemSceneComponent.pure";
 
@@ -85,6 +86,14 @@ export class LensFlareSystem {
     private _positionY: number;
     private _isEnabled = true;
 
+    /** @internal */
+    public _onShadersLoaded = new Observable<void>(undefined, true);
+    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/lensFlare.fragment"), import("../Shaders/lensFlare.vertex")],
+        webGPU: () => [import("../ShadersWGSL/lensFlare.fragment"), import("../ShadersWGSL/lensFlare.vertex")],
+    });
+
     /**
      * @internal
      */
@@ -140,20 +149,15 @@ export class LensFlareSystem {
         this._initShaderSourceAsync();
     }
 
-    /** @internal */
-    public _onShadersLoaded = new Observable<void>(undefined, true);
-
-    private _shadersLoaded = false;
-
     protected async _initShaderSourceAsync() {
         const engine = this._scene.getEngine();
 
         if (engine.isWebGPU && !LensFlareSystem.ForceGLSL) {
             this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([import("../ShadersWGSL/lensFlare.fragment"), import("../ShadersWGSL/lensFlare.vertex")]);
-        } else {
-            await Promise.all([import("../Shaders/lensFlare.fragment"), import("../Shaders/lensFlare.vertex")]);
+        }
+        const promise = LensFlareSystem._ShaderLoader.load(this._shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._shadersLoaded = true;

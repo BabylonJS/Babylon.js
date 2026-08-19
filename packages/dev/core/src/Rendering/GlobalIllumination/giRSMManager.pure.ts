@@ -25,6 +25,7 @@ import { type WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRender
 import { expandToProperty, serialize } from "core/Misc/decorators";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**
@@ -286,6 +287,23 @@ export class GIRSMManager {
     /** Shader language used by the material */
     protected _shaderLanguage = ShaderLanguage.GLSL;
 
+    private _shadersLoaded = false;
+    private _onShaderLoadedObservable = new Observable<void>();
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [
+            import("../../Shaders/bilateralBlur.fragment"),
+            import("../../Shaders/bilateralBlurQuality.fragment"),
+            import("../../Shaders/rsmGlobalIllumination.fragment"),
+            import("../../Shaders/rsmFullGlobalIllumination.fragment"),
+        ],
+        webGPU: () => [
+            import("../../ShadersWGSL/bilateralBlur.fragment"),
+            import("../../ShadersWGSL/bilateralBlurQuality.fragment"),
+            import("../../ShadersWGSL/rsmGlobalIllumination.fragment"),
+            import("../../ShadersWGSL/rsmFullGlobalIllumination.fragment"),
+        ],
+    });
+
     /** Gets the shader language used in this material. */
     public get shaderLanguage(): ShaderLanguage {
         return this._shaderLanguage;
@@ -502,27 +520,15 @@ export class GIRSMManager {
         });
     }
 
-    private _shadersLoaded = false;
-    private _onShaderLoadedObservable = new Observable<void>();
     private async _initShaderSourceAsync() {
         const engine = this._engine;
 
         if (engine.isWebGPU) {
             this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([
-                import("../../ShadersWGSL/bilateralBlur.fragment"),
-                import("../../ShadersWGSL/bilateralBlurQuality.fragment"),
-                import("../../ShadersWGSL/rsmGlobalIllumination.fragment"),
-                import("../../ShadersWGSL/rsmFullGlobalIllumination.fragment"),
-            ]);
-        } else {
-            await Promise.all([
-                import("../../Shaders/bilateralBlur.fragment"),
-                import("../../Shaders/bilateralBlurQuality.fragment"),
-                import("../../Shaders/rsmGlobalIllumination.fragment"),
-                import("../../Shaders/rsmFullGlobalIllumination.fragment"),
-            ]);
+        }
+        const promise = GIRSMManager._ShaderLoader.load(this._shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
         this._shadersLoaded = true;
         this._onShaderLoadedObservable.notifyObservers();

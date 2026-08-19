@@ -19,6 +19,7 @@ import { type Material } from "../Materials/material.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { type IEffectCreationOptions } from "core/Materials/effect.pure";
 import { type GaussianSplattingMaterial } from "../Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
@@ -96,6 +97,12 @@ export class DepthRenderer {
      * So, basically, when "true", back facing instead of front facing faces are rasterized into the texture
      */
     public reverseCulling = false;
+
+    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/depth.vertex"), import("../Shaders/depth.fragment")],
+        webGPU: () => [import("../ShadersWGSL/depth.vertex"), import("../ShadersWGSL/depth.fragment")],
+    });
 
     /**
      * @internal
@@ -445,16 +452,15 @@ export class DepthRenderer {
         };
     }
 
-    private _shadersLoaded = false;
     private async _initShaderSourceAsync(forceGLSL = false) {
         const engine = this._scene.getEngine();
 
         if (engine.isWebGPU && !forceGLSL && !DepthRenderer.ForceGLSL) {
             this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([import("../ShadersWGSL/depth.vertex"), import("../ShadersWGSL/depth.fragment")]);
-        } else {
-            await Promise.all([import("../Shaders/depth.vertex"), import("../Shaders/depth.fragment")]);
+        }
+        const promise = DepthRenderer._ShaderLoader.load(this._shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._shadersLoaded = true;
