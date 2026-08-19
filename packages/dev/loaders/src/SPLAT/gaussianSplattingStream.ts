@@ -44,7 +44,7 @@ interface ISOGLODNode {
     activeLod?: number;
     /** Distance-based ideal LOD level for this node, recomputed per frame. */
     optimalLod?: number;
-    /** Foveation-scaled projected screen size (pixels) of the node's AABB, used as the budget threshold priority.
+    /** Projected screen size (pixels) of the node's AABB — the max across active cameras — used as the budget threshold priority.
      * Only computed while the splat budget is enabled. */
     pixelSize?: number;
     /** Available LOD levels for this leaf, sorted ascending (0 = finest). Set during the tree walk. */
@@ -152,10 +152,11 @@ export interface IGaussianSplattingStreamOptions {
      */
     evictionCooldownFrames?: number;
     /**
-     * Enables budget-driven LOD: caps the number of splats rendered at a target and, while enabled, applies
-     * cone foveation (full detail within ±45° of the view direction, ramping down off-axis and behind).
+     * Enables budget-driven LOD: caps the total rendered splats by converging a screen-space (size + distance)
+     * pixel-size threshold to the budget. Selection is view-direction-independent, so it is consistent across any
+     * number of active cameras (each node takes the finest level and largest projected size any camera demands).
      * A number is an explicit splat cap; `"auto"` picks a device-tiered default (desktop 2.5M / iOS 1.5M /
-     * other mobile 1M; XR shares the mobile tier). **Undefined (default) disables both the cap and the foveation** — LOD is pure
+     * other mobile 1M; XR shares the mobile tier). **Undefined (default) disables the cap** — LOD is pure
      * distance, identical to prior behavior. Runtime-mutable via the {@link splatBudget} accessor. When this stream
      * is hosted in a compound, the compound's {@link GaussianSplattingMesh.splatBudget} (if set) overrides this and
      * apportions a shared budget across all its streams.
@@ -292,6 +293,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         new Plane(0, 0, 0, 0),
     ];
     private readonly _cullViewProj = new Matrix();
+    // Reused per-leaf "inside any active camera's frustum" accumulator for the union frustum test (avoids per-frame allocation).
+    private readonly _frustumScratch: boolean[] = [];
 
     // GPU work buffer holding all decoded splats; created once the total capacity is known.
     private _workBuffer: Nullable<GaussianSplattingWorkBuffer> = null;
@@ -354,12 +357,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     // Per-frame LOD streaming loop; installed once the base layer is ready.
     private _lodObserver: Nullable<Observer<Scene>> = null;
     private _baseLayerReady = false;
-    // Throttling state for the per-frame LOD loop.
+    // Throttling state for the per-frame LOD loop: each active camera's world position at the last LOD evaluation, so
+    // a re-eval is gated on the camera set changing or any camera translating past `_lodUpdateDistance`.
     private _framesSinceLodUpdate = 0;
-    private readonly _lastLodCamPos = new Vector3(Infinity, Infinity, Infinity);
-    // World-space camera forward at the last LOD evaluation. Budget foveation concentrates detail around the view
-    // direction, so a stationary rotation (no translation, no frustum-membership change) must also trigger a re-eval.
-    private readonly _lastLodCamForward = new Vector3(0, 0, 0);
+    private readonly _lastLodCamPositions: Vector3[] = [];
     // Forces the next LOD update to run regardless of the throttle (e.g. after a budget change).
     private _forceLodUpdate = false;
 
@@ -724,8 +725,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
 
     /**
      * This stream's own budget-driven LOD cap in splats (see {@link IGaussianSplattingStreamOptions.splatBudget}).
-     * `0` disables the budget and its bundled foveation (pure distance LOD). Setting it caps the rendered splat count
-     * and enables cone foveation, taking effect on the next frame. Overrides the inherited compound
+     * `0` disables the budget (pure distance LOD). Setting it caps the rendered splat count, taking effect on the
+     * next frame. Overrides the inherited compound
      * accessor to force an immediate LOD re-eval (the stream never hosts other budget participants). When this stream
      * is hosted in a compound whose own budget is set, that shared budget overrides this value.
      */
@@ -796,7 +797,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     }
 
     /**
-     * Whether budget-driven LOD (and its bundled foveation) is active this frame.
+     * Whether budget-driven LOD is active this frame.
      * @returns true when a positive effective budget is in force
      */
     private _splatBudgetEnabled(): boolean {
@@ -806,7 +807,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     /**
      * {@link IGaussianSplattingLodBudgetParticipant}: the splats this stream would render at full (distance-optimal)
      * detail — its demand on a host compound's shared budget. Computed from the current per-node distance-optimal
-     * levels (no pixel threshold/foveation), so it does not depend on the allocation it is helping to compute.
+     * levels (no pixel threshold), so it does not depend on the allocation it is helping to compute.
      * @returns the full-detail rendered splat count (0 before the base layer is ready)
      */
     public getBudgetDemand(): number {
@@ -981,13 +982,25 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     }
 
     /**
-     * Re-evaluates the optimal LOD for every node based on the camera position. The result is stored in
-     * each node's `optimalLod`. Rendering is unaffected; this currently drives only diagnostics and the
-     * debug wireframe display.
-     * @param camera camera to evaluate against (defaults to the scene's active camera)
+     * The cameras the LOD should serve: `scene.activeCameras` when set (split-view / multi-view), else the single
+     * `scene.activeCamera`. Mirrors the sort path's multi-camera handling.
+     * @returns the non-null active cameras (may be empty)
      */
-    public evaluateOptimalLods(camera: Nullable<Camera> = this._scene.activeCamera): void {
-        if (!camera || this._leafNodes.length === 0) {
+    private _getActiveLodCameras(): Camera[] {
+        const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : this._scene.activeCamera ? [this._scene.activeCamera] : [];
+        return cameras.filter((camera): camera is Camera => !!camera);
+    }
+
+    /**
+     * Re-evaluates the optimal LOD for every node from the active cameras. Each node takes the finest level and the
+     * largest projected pixel size any active camera demands (so every pane of a split view is served), and the
+     * frustum bias uses the union of the frusta. Selection is view-direction-independent, so single- and multi-camera
+     * rendering are consistent. The results are stored in each node's `optimalLod` / `pixelSize`.
+     * @param camera when provided, evaluate against just this camera; otherwise use the active-camera set
+     */
+    public evaluateOptimalLods(camera: Nullable<Camera> = null): void {
+        const cameras = camera ? [camera] : this._getActiveLodCameras();
+        if (cameras.length === 0 || this._leafNodes.length === 0) {
             return;
         }
 
@@ -997,70 +1010,95 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         const behindPenalty = this._lodBehindPenalty;
         const rangeMin = this._lodRangeMin;
         const rangeMax = this._lodRangeMax;
-
-        // FOV compensation: use min(tanHalfV, tanHalfH) so transitions stay perceptually uniform (matches PlayCanvas).
-        const aspect = this._scene.getEngine().getAspectRatio(camera) || 1;
-        let tanHalfV = Math.tan(camera.fov * 0.5);
-        if (camera.fovMode === Camera.FOVMODE_HORIZONTAL_FIXED) {
-            tanHalfV /= aspect;
-        }
-        const tanHalfH = tanHalfV * aspect;
-        const fovScale = Math.min(tanHalfV, tanHalfH) / RefTanHalfFov;
-
-        // Transform the camera into the mesh's local space (where the node bounds live).
-        this._getEffectiveWorldMatrix(false).invertToRef(TmpInvWorld);
-        const localCamera = Vector3.TransformCoordinatesToRef(camera.globalPosition, TmpInvWorld, TmpLocalCamera);
-        const px = localCamera.x;
-        const py = localCamera.y;
-        const pz = localCamera.z;
-
-        // The budget-driven path needs the view direction (for cone foveation) and the projected pixel size.
         const budgetEnabled = this._splatBudgetEnabled();
         const renderHeight = this._scene.getEngine().getRenderHeight() || 1;
 
-        let fwx = 0;
-        let fwy = 0;
-        let fwz = 0;
-        if (behindPenalty > 1 || budgetEnabled) {
-            camera.getDirectionToRef(LocalForwardAxis, TmpWorldForward);
-            const localForward = Vector3.TransformNormalToRef(TmpWorldForward, TmpInvWorld, TmpLocalForward);
-            localForward.normalize();
-            fwx = localForward.x;
-            fwy = localForward.y;
-            fwz = localForward.z;
-        }
+        // Precompute each camera in the mesh's local space (where the node bounds live). The local forward is only
+        // needed for the behind-camera penalty. FOV compensation uses min(tanHalfV, tanHalfH) (matches PlayCanvas).
+        const engine = this._scene.getEngine();
+        this._getEffectiveWorldMatrix(false).invertToRef(TmpInvWorld);
+        const camInfos = cameras.map((cam) => {
+            const aspect = engine.getAspectRatio(cam) || 1;
+            let tanHalfV = Math.tan(cam.fov * 0.5);
+            if (cam.fovMode === Camera.FOVMODE_HORIZONTAL_FIXED) {
+                tanHalfV /= aspect;
+            }
+            const fovScale = Math.min(tanHalfV, tanHalfV * aspect) / RefTanHalfFov;
+            // Vertical pixel extent of THIS camera's viewport (split-view panes render to a fraction of the canvas),
+            // so a node's projected size is measured against the pixels the camera actually draws into.
+            const pixelHeight = renderHeight * (cam.viewport ? cam.viewport.height : 1);
+            const localCamera = Vector3.TransformCoordinatesToRef(cam.globalPosition, TmpInvWorld, TmpLocalCamera);
+            const info = { px: localCamera.x, py: localCamera.y, pz: localCamera.z, fwx: 0, fwy: 0, fwz: 0, fovScale, tanHalfV, pixelHeight };
+            if (behindPenalty > 1) {
+                cam.getDirectionToRef(LocalForwardAxis, TmpWorldForward);
+                const localForward = Vector3.TransformNormalToRef(TmpWorldForward, TmpInvWorld, TmpLocalForward);
+                localForward.normalize();
+                info.fwx = localForward.x;
+                info.fwy = localForward.y;
+                info.fwz = localForward.z;
+            }
+            return info;
+        });
 
         for (const node of this._leafNodes) {
             const mn = node.bound.min;
             const mx = node.bound.max;
+            const cx = (mn[0] + mx[0]) * 0.5;
+            const cy = (mn[1] + mx[1]) * 0.5;
+            const cz = (mn[2] + mx[2]) * 0.5;
+            const hx = mx[0] - mn[0];
+            const hy = mx[1] - mn[1];
+            const hz = mx[2] - mn[2];
+            const radius = 0.5 * Math.sqrt(hx * hx + hy * hy + hz * hz);
 
-            // Distance from the camera to the closest point on this node's AABB (local space).
-            const qx = px < mn[0] ? mn[0] : px > mx[0] ? mx[0] : px;
-            const qy = py < mn[1] ? mn[1] : py > mx[1] ? mx[1] : py;
-            const qz = pz < mn[2] ? mn[2] : pz > mx[2] ? mx[2] : pz;
-            const dx = qx - px;
-            const dy = qy - py;
-            const dz = qz - pz;
-            const actualDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            // Aggregate across cameras: the finest level and the largest projected size any active camera demands.
+            let optimalLod = Number.POSITIVE_INFINITY;
+            let pixelSize = 0;
+            for (const cam of camInfos) {
+                // Distance from the camera to the closest point on this node's AABB (local space).
+                const qx = cam.px < mn[0] ? mn[0] : cam.px > mx[0] ? mx[0] : cam.px;
+                const qy = cam.py < mn[1] ? mn[1] : cam.py > mx[1] ? mx[1] : cam.py;
+                const qz = cam.pz < mn[2] ? mn[2] : cam.pz > mx[2] ? mx[2] : cam.pz;
+                const dx = qx - cam.px;
+                const dy = qy - cam.py;
+                const dz = qz - cam.pz;
+                const actualDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
-            // Push nodes behind the camera toward coarser LODs when a penalty is configured.
-            let penalizedDistance = actualDistance;
-            if (behindPenalty > 1 && actualDistance > 0.01) {
-                const dotOverDistance = (fwx * dx + fwy * dy + fwz * dz) / actualDistance;
-                if (dotOverDistance < 0) {
-                    penalizedDistance = actualDistance * (1 + -dotOverDistance * (behindPenalty - 1));
+                // Push nodes behind the camera toward coarser LODs when a penalty is configured.
+                let penalizedDistance = actualDistance;
+                if (behindPenalty > 1 && actualDistance > 0.01) {
+                    const dotOverDistance = (cam.fwx * dx + cam.fwy * dy + cam.fwz * dz) / actualDistance;
+                    if (dotOverDistance < 0) {
+                        penalizedDistance = actualDistance * (1 + -dotOverDistance * (behindPenalty - 1));
+                    }
                 }
-            }
 
-            // Geometric LOD bands: threshold[k] = base * mult^(k-1).
-            const fovAdjustedDistance = penalizedDistance * fovScale;
-            let optimalLod: number;
-            if (maxLod === 0 || fovAdjustedDistance < base) {
-                optimalLod = 0;
-            } else {
-                optimalLod = maxLod;
-                while (optimalLod > 1 && fovAdjustedDistance < base * Math.pow(mult, optimalLod - 1)) {
-                    optimalLod--;
+                // Geometric LOD bands: threshold[k] = base * mult^(k-1). Keep the finest (min) any camera wants.
+                const fovAdjustedDistance = penalizedDistance * cam.fovScale;
+                let lod: number;
+                if (maxLod === 0 || fovAdjustedDistance < base) {
+                    lod = 0;
+                } else {
+                    lod = maxLod;
+                    while (lod > 1 && fovAdjustedDistance < base * Math.pow(mult, lod - 1)) {
+                        lod--;
+                    }
+                }
+                if (lod < optimalLod) {
+                    optimalLod = lod;
+                }
+
+                // Budget-driven LOD: raw projected pixel size (node diameter in pixels), largest across cameras.
+                // Local radius/distance is world-uniform-scale-invariant. No view-direction weighting (no foveation).
+                if (budgetEnabled) {
+                    const rdx = cx - cam.px;
+                    const rdy = cy - cam.py;
+                    const rdz = cz - cam.pz;
+                    const centerDist = Math.sqrt(rdx * rdx + rdy * rdy + rdz * rdz);
+                    const pixels = (radius * cam.pixelHeight) / (Math.max(centerDist, 1e-4) * cam.tanHalfV);
+                    if (pixels > pixelSize) {
+                        pixelSize = pixels;
+                    }
                 }
             }
 
@@ -1070,37 +1108,16 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
                 optimalLod = rangeMax;
             }
 
-            // Frustum-based LOD bias: nodes outside the camera frustum are pushed to the coarsest allowed
-            // level instead of being hidden. They stay in the render/sort set (their splats are off-screen
-            // and clipped anyway), so when the camera turns to include them they are already present at low
-            // detail with no invisible frames, then refine to the distance-optimal level.
+            // Frustum-based LOD bias: nodes outside EVERY active camera's frustum (see _updateNodeFrustum) are pushed
+            // to the coarsest allowed level instead of being hidden. They stay in the render/sort set (off-screen and
+            // clipped anyway), so turning a camera toward them shows low detail immediately, then refines.
             if (this._frustumCulling && node.inFrustum === false) {
                 optimalLod = rangeMax;
             }
 
             node.optimalLod = optimalLod;
-
-            // Budget-driven LOD: projected pixel size of the node, scaled by cone foveation (both only when the
-            // budget is enabled). Larger on-screen / more central nodes get a bigger pixelSize and thus survive the
-            // budget cut with finer detail. Uses distance to the node center (not the closest AABB point).
             if (budgetEnabled) {
-                const cx = (mn[0] + mx[0]) * 0.5;
-                const cy = (mn[1] + mx[1]) * 0.5;
-                const cz = (mn[2] + mx[2]) * 0.5;
-                const rdx = cx - px;
-                const rdy = cy - py;
-                const rdz = cz - pz;
-                const centerDist = Math.sqrt(rdx * rdx + rdy * rdy + rdz * rdz);
-                const hx = mx[0] - mn[0];
-                const hy = mx[1] - mn[1];
-                const hz = mx[2] - mn[2];
-                const radius = 0.5 * Math.sqrt(hx * hx + hy * hy + hz * hz);
-                // Projected pixel extent: worldRadius / distance * (renderHeight / (2·tanHalfV)) * 2, i.e. the
-                // node's diameter in pixels. Local radius/distance is world-uniform-scale-invariant.
-                let pixels = (radius * renderHeight) / (Math.max(centerDist, 1e-4) * tanHalfV);
-                const cosTheta = centerDist > 1e-4 ? (fwx * rdx + fwy * rdy + fwz * rdz) / centerDist : 1;
-                pixels *= GaussianSplattingStream._FoveationScaleFromCos(cosTheta);
-                node.pixelSize = pixels;
+                node.pixelSize = pixelSize;
             }
         }
     }
@@ -2055,7 +2072,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
      * Computes each node's {@link ISOGLODNode.targetLevel}. With the splat budget disabled this is the
      * distance-optimal level snapped to an available level (capped by {@link maxDetailLod}) — unchanged prior
      * behavior. With the budget enabled it converges a global pixel-size threshold to the budget and coarsens each
-     * node from its distance-optimal ceiling by how far its (foveated) projected size falls below that threshold.
+     * node from its distance-optimal ceiling by how far its projected size falls below that threshold.
      */
     private _computeTargetLevels(): void {
         const budget = this._effectiveSplatBudget();
@@ -2087,25 +2104,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     }
 
     /**
-     * Cone-foveation detail scale for an angle from the view direction, from its cosine: full detail (1.0) within
-     * ±45°, ramping to 0.4 by ±60°, then to 0.2 by 180°.
-     * @param cosTheta cosine of the angle between the node direction and the view forward
-     * @returns detail scale in [0.2, 1.0]
-     */
-    private static _FoveationScaleFromCos(cosTheta: number): number {
-        const theta = (Math.acos(Math.min(1, Math.max(-1, cosTheta))) * 180) / Math.PI;
-        if (theta <= 45) {
-            return 1.0;
-        }
-        if (theta <= 60) {
-            return 1.0 + (0.4 - 1.0) * ((theta - 45) / 15);
-        }
-        return 0.4 + (0.2 - 0.4) * ((theta - 60) / 120);
-    }
-
-    /**
      * The level a node renders at for a given pixel-size threshold `t`: its distance-optimal ceiling, coarsened by
-     * `round(log_mult(t / pixelSize))` geometric steps when its (foveated) projected size is below `t`. Snapped to
+     * `round(log_mult(t / pixelSize))` geometric steps when its projected size is below `t`. Snapped to
      * an available level honoring {@link maxDetailLod}.
      * @param node leaf node
      * @param t pixel-size threshold (pixels)
@@ -2353,23 +2353,19 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
 
         let runLodEval = this._forceLodUpdate || frustumChanged || cooldownExpiredWithPendingSwitch;
         if (!runLodEval && ++this._framesSinceLodUpdate >= this._lodUpdateInterval) {
-            const camera = this._scene.activeCamera;
+            const cameras = this._getActiveLodCameras();
             const threshold = this._lodUpdateDistance;
-            if (!camera) {
+            // Re-evaluate when the active-camera set changes, or when ANY active camera translated past the threshold.
+            // LOD selection is view-direction-independent, so rotation alone doesn't need a re-eval (the frustum test
+            // above already tracks rotation for the off-screen bias).
+            if (cameras.length !== this._lastLodCamPositions.length) {
                 runLodEval = true;
             } else {
-                const movedFar = Vector3.DistanceSquared(camera.globalPosition, this._lastLodCamPos) >= threshold * threshold;
-                // Foveation depends on the view direction, so a stationary rotation must re-eval too — but only when
-                // the budget (and thus foveation) is active; distance LOD alone is orientation-independent.
-                let rotated = false;
-                if (this._splatBudgetEnabled()) {
-                    camera.getDirectionToRef(LocalForwardAxis, TmpWorldForward);
-                    TmpWorldForward.normalize();
-                    rotated = Vector3.Dot(TmpWorldForward, this._lastLodCamForward) < 0.999;
-                }
-                if (movedFar || rotated) {
-                    this._lastLodCamPos.copyFrom(camera.globalPosition);
-                    runLodEval = true;
+                for (let i = 0; i < cameras.length; i++) {
+                    if (Vector3.DistanceSquared(cameras[i].globalPosition, this._lastLodCamPositions[i]) >= threshold * threshold) {
+                        runLodEval = true;
+                        break;
+                    }
                 }
             }
         }
@@ -2377,13 +2373,13 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         if (runLodEval) {
             this._forceLodUpdate = false;
             this._framesSinceLodUpdate = 0;
-            // Remember the view direction this evaluation used so the next rotation is measured against it.
-            const camera = this._scene.activeCamera;
-            if (camera) {
-                camera.getDirectionToRef(LocalForwardAxis, TmpWorldForward);
-                this._lastLodCamForward.copyFrom(TmpWorldForward).normalize();
+            // Snapshot each active camera's position so the next throttled check measures movement against it.
+            const cameras = this._getActiveLodCameras();
+            this._lastLodCamPositions.length = 0;
+            for (const cam of cameras) {
+                this._lastLodCamPositions.push(cam.globalPosition.clone());
             }
-            this.evaluateOptimalLods(this._scene.activeCamera);
+            this.evaluateOptimalLods();
             this._computeTargetLevels();
             if (this._applyDesiredLods()) {
                 this._refreshActiveRanges();
@@ -2399,10 +2395,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
      * @returns whether any node's in-frustum state changed
      */
     private _updateNodeFrustum(): boolean {
-        const camera = this._scene.activeCamera;
+        const cameras = this._getActiveLodCameras();
         let changed = false;
 
-        if (!this._frustumCulling || !camera) {
+        if (!this._frustumCulling || cameras.length === 0) {
             for (const node of this._leafNodes) {
                 if (node.inFrustum === false) {
                     node.inFrustum = true;
@@ -2412,18 +2408,28 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             return changed;
         }
 
-        // World-space frustum planes from the current view-projection, tested against each node's world AABB.
-        // force=false uses the renderId/sync fast-path (still recomputes when the transform actually changed),
-        // avoiding a full world-matrix recompute every frame for the per-node frustum test.
+        const nodes = this._leafNodes;
+        const inAny = this._frustumScratch;
+        // Update each node's world AABB once (force=false uses the renderId/sync fast-path, avoiding a full
+        // world-matrix recompute), then seed the union accumulator to false.
         const world = this._getEffectiveWorldMatrix(false);
-        camera.getViewMatrix().multiplyToRef(camera.getProjectionMatrix(), this._cullViewProj);
-        Frustum.GetPlanesToRef(this._cullViewProj, this._frustumPlanes);
-
-        for (const node of this._leafNodes) {
-            node.cullBounds!.update(world);
-            const inFrustum = node.cullBounds!.isInFrustum(this._frustumPlanes);
-            if (inFrustum !== node.inFrustum) {
-                node.inFrustum = inFrustum;
+        for (let i = 0; i < nodes.length; i++) {
+            nodes[i].cullBounds!.update(world);
+            inAny[i] = false;
+        }
+        // A node is in-frustum if inside ANY active camera's frustum: OR each camera's test into the accumulator.
+        for (const cam of cameras) {
+            cam.getViewMatrix().multiplyToRef(cam.getProjectionMatrix(), this._cullViewProj);
+            Frustum.GetPlanesToRef(this._cullViewProj, this._frustumPlanes);
+            for (let i = 0; i < nodes.length; i++) {
+                if (!inAny[i] && nodes[i].cullBounds!.isInFrustum(this._frustumPlanes)) {
+                    inAny[i] = true;
+                }
+            }
+        }
+        for (let i = 0; i < nodes.length; i++) {
+            if (inAny[i] !== nodes[i].inFrustum) {
+                nodes[i].inFrustum = inAny[i];
                 changed = true;
             }
         }

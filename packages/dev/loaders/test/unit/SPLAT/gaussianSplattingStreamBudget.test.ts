@@ -2,6 +2,8 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { Vector3 } from "core/Maths/math.vector";
+import { BoundingInfo } from "core/Culling/boundingInfo";
+import { Viewport } from "core/Maths/math.viewport";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingStream, type ISOGLODMetadata } from "loaders/SPLAT/gaussianSplattingStream";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -79,7 +81,7 @@ describe("GaussianSplattingStream budget-driven LOD", () => {
         const s = makeStream(undefined, [node]);
         s.evaluateOptimalLods(camera);
         s._computeTargetLevels();
-        expect(node.pixelSize).toBeUndefined(); // foveation/pixel path not entered
+        expect(node.pixelSize).toBeUndefined(); // pixel-size path not entered when the budget is off
         expect(node.targetLevel).toBe(node.optimalLod);
         expect(node.optimalLod).toBe(0);
     });
@@ -94,21 +96,81 @@ describe("GaussianSplattingStream budget-driven LOD", () => {
         expect(big.targetLevel).toBeLessThan(small.targetLevel!); // bigger node keeps finer (lower index) detail
     });
 
-    it("foveates: at a tight budget the on-axis node keeps finer detail than one behind the camera", () => {
-        const front = makeNode([2, -1, -1], [4, 1, 1], { 0: 1000, 1: 100, 2: 10 }); // center (3,0,0), on-axis
-        const behind = makeNode([-4, -1, -1], [-2, 1, 1], { 0: 1000, 1: 100, 2: 10 }); // center (-3,0,0), behind
-        const s = makeStream(1100, [front, behind]);
-        s.evaluateOptimalLods(camera);
-        s._computeTargetLevels();
-        expect(front.targetLevel).toBeLessThan(behind.targetLevel!);
+    it("aggregates across active cameras: finest level and largest projected size any camera demands", () => {
+        const node = makeNode([2, -1, -1], [4, 1, 1], { 0: 1000, 1: 100, 2: 10 }); // center (3,0,0)
+        const s = makeStream(2000, [node]);
+        const camB = new FreeCamera("camB", new Vector3(2000, 0, 0), scene);
+        camB.setTarget(new Vector3(1999, 0, 0)); // far along +X, looking back toward the node
+        camB.getViewMatrix(); // populate globalPosition (no render happens in the test)
 
-        // With the budget off, both are at the same distance so the view angle has no effect.
-        const f2 = makeNode([2, -1, -1], [4, 1, 1], { 0: 1000, 1: 100, 2: 10 });
-        const b2 = makeNode([-4, -1, -1], [-2, 1, 1], { 0: 1000, 1: 100, 2: 10 });
-        const off = makeStream(undefined, [f2, b2]);
-        off.evaluateOptimalLods(camera);
-        off._computeTargetLevels();
-        expect(f2.targetLevel).toBe(b2.targetLevel);
+        // camB alone: the node is ~2000 away => coarsest level, tiny projected size.
+        s.evaluateOptimalLods(camB);
+        expect(node.optimalLod).toBe(2);
+        const pixelSizeB = node.pixelSize as number;
+
+        // camA (origin) alone: the node is close => finest level, large projected size.
+        s.evaluateOptimalLods(camera);
+        expect(node.optimalLod).toBe(0);
+        const pixelSizeA = node.pixelSize as number;
+
+        // Both active: finest level (min = A's 0) and largest projected size (max = A's, the closer camera).
+        scene.activeCameras = [camera, camB];
+        s.evaluateOptimalLods();
+        expect(node.optimalLod).toBe(0);
+        expect(node.pixelSize).toBeCloseTo(pixelSizeA, 5);
+        expect(node.pixelSize!).toBeGreaterThan(pixelSizeB);
+    });
+
+    it("scales projected size by each camera's viewport height (split-view panes)", () => {
+        const node = makeNode([2, -1, -1], [4, 1, 1], { 0: 1000, 1: 100, 2: 10 });
+        const s = makeStream(2000, [node]);
+
+        camera.viewport = new Viewport(0, 0, 1, 1); // full canvas
+        s.evaluateOptimalLods(camera);
+        const full = node.pixelSize as number;
+
+        camera.viewport = new Viewport(0, 0, 1, 0.5); // half-height pane => half the vertical pixels
+        s.evaluateOptimalLods(camera);
+        expect(node.pixelSize).toBeCloseTo(full * 0.5, 4);
+    });
+
+    it("is view-direction-independent: two cameras at one position match a single camera there (no foveation)", () => {
+        const node = makeNode([2, -1, -1], [4, 1, 1], { 0: 1000, 1: 100, 2: 10 });
+        const s = makeStream(2000, [node]);
+
+        s.evaluateOptimalLods(camera); // single camera at origin looking +X
+        const singleLod = node.optimalLod;
+        const singlePixel = node.pixelSize as number;
+
+        // A second camera at the SAME position but looking a different direction must not change the result.
+        const camRot = new FreeCamera("camRot", new Vector3(0, 0, 0), scene);
+        camRot.setTarget(new Vector3(0, 0, 1)); // look +Z
+        scene.activeCameras = [camera, camRot];
+        s.evaluateOptimalLods();
+        expect(node.optimalLod).toBe(singleLod);
+        expect(node.pixelSize).toBeCloseTo(singlePixel, 5);
+    });
+
+    it("union frustum: a node visible to any active camera is in-frustum", () => {
+        const s = makeStream(undefined, []);
+        const node: any = makeNode([-11, -1, -1], [-9, 1, 1], { 0: 100, 1: 10 }); // center (-10,0,0)
+        node.cullBounds = new BoundingInfo(Vector3.FromArray(node.bound.min), Vector3.FromArray(node.bound.max));
+        node.inFrustum = true;
+        s._leafNodes.length = 0;
+        s._leafNodes.push(node);
+
+        const camB = new FreeCamera("camB", new Vector3(0, 0, 0), scene);
+        camB.setTarget(new Vector3(-1, 0, 0)); // look -X, toward the node
+
+        // camA (looks +X) alone: the node is behind it => out of frustum.
+        scene.activeCameras = [camera];
+        s._updateNodeFrustum();
+        expect(node.inFrustum).toBe(false);
+
+        // Union with camB (which sees it): in frustum.
+        scene.activeCameras = [camera, camB];
+        s._updateNodeFrustum();
+        expect(node.inFrustum).toBe(true);
     });
 
     it("applies a runtime budget change immediately (forces re-eval; lower coarsens, higher refines)", () => {
