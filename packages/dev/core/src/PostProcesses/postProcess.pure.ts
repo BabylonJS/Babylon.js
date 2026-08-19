@@ -267,8 +267,6 @@ export class PostProcess {
     protected _scene: Scene;
     private _engine: AbstractEngine;
 
-    protected _webGPUReady = false;
-
     private _options: number | { width: number; height: number };
     private _reusable = false;
     private _renderId = 0;
@@ -645,11 +643,7 @@ export class PostProcess {
         this._indexParameters = indexParameters;
 
         if (!this._useExistingThinPostProcess) {
-            this._webGPUReady = this._shaderLanguage === ShaderLanguage.WGSL;
-
             shaderLoaders = [...this._getShaderLoaders(), ...(shaderLoaders ?? [])];
-
-            this._effectWrapper._webGPUReady = this._webGPUReady;
             this._effectWrapper._postConstructor(blockCompilation, defines, extraInitializations, undefined, shaderLoaders);
         }
     }

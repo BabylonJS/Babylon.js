@@ -406,8 +406,6 @@ export class EffectWrapper {
     protected readonly _drawWrapper: DrawWrapper;
     protected _shadersLoaded = false;
     protected readonly _shaderPath: IShaderPath;
-    /** @internal */
-    public _webGPUReady = false;
 
     private _onContextRestoredObserver: Nullable<Observer<AbstractEngine>>;
 
@@ -503,7 +501,6 @@ export class EffectWrapper {
         }
 
         this._drawWrapper = new DrawWrapper(this.options.engine);
-        this._webGPUReady = this.options.shaderLanguage === ShaderLanguage.WGSL;
 
         const defines = Array.isArray(this.options.defines) ? this.options.defines.join("\n") : this.options.defines;
 
@@ -526,7 +523,7 @@ export class EffectWrapper {
     ) {
         this._importPromises.length = 0;
 
-        const useWebGPU = this.options.engine.isWebGPU && !EffectWrapper.ForceGLSL && this._webGPUReady;
+        const useWebGPU = this.options.engine.isWebGPU && !EffectWrapper.ForceGLSL;
         const shaderLanguage = useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
         const shaderLoaders2 = this._getShaderLoaders();
         if (shaderLoaders) {
