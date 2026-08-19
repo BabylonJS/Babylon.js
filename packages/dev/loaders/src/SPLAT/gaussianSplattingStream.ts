@@ -831,9 +831,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     /**
      * {@link IGaussianSplattingLodBudgetParticipant}: sets the compound's apportioned share of the shared budget.
      * `null` releases coordination (revert to this stream's own {@link splatBudget}); a number (incl. 0, meaning
-     * "coordinated at the coarsest level") drives the pixel-threshold convergence. Any decrease forces a next-frame
-     * re-eval (the current selection may exceed the new, smaller cap); increases only force one past a small margin
-     * so per-frame water-fill jitter does not defeat the throttle (over-allocating briefly is harmless).
+     * "coordinated at the coarsest level") drives the pixel-threshold convergence. Any change to the (already integer)
+     * allocation forces a next-frame re-eval: a decrease may put the current selection over the new cap, and even a
+     * small increase can unlock a finer level that a stationary camera would otherwise never re-evaluate to. The
+     * apportioned demand is allocation-independent, so this settles in one step and does not churn frame to frame.
      * @param splats the apportioned allocation, or null to release coordination
      */
     public setBudgetAllocation(splats: Nullable<number>): void {
@@ -846,9 +847,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         }
         const prev = this._hostBudgetAllocation;
         this._hostBudgetAllocation = splats;
-        // Force on: first coordination, ANY decrease (the current active count may now exceed the cap), or an
-        // increase beyond a small margin (small increases only under-serve, so the throttle can absorb them).
-        if (prev === null || splats < prev || splats > prev * 1.02) {
+        if (prev === null || splats !== prev) {
             this._forceLodUpdate = true;
         }
     }
@@ -1291,24 +1290,40 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             return;
         }
 
-        // Malformed bounds (missing / non-finite) break distance, projected-size, and frustum math — e.g. an infinite
-        // AABB makes the budget's terminal threshold infinite and defeats the cap — so skip such a node entirely.
+        // Malformed bounds break distance, projected-size, and frustum math. Check the coordinates are present and
+        // finite, then the DERIVED diagonal is finite and positive: finite-but-huge coordinates (e.g. ±1e308) yield an
+        // infinite span/radius/pixel-size and thus an infinite budget threshold that defeats the cap, while a zero
+        // (degenerate) span projects to zero pixels and never coarsens. Either way, skip such a node entirely.
         const bmin = node.bound?.min;
         const bmax = node.bound?.max;
         if (!bmin || !bmax || bmin.length < 3 || bmax.length < 3 || !bmin.every((v) => Number.isFinite(v)) || !bmax.every((v) => Number.isFinite(v))) {
             return;
         }
+        const spanX = bmax[0] - bmin[0];
+        const spanY = bmax[1] - bmin[1];
+        const spanZ = bmax[2] - bmin[2];
+        const diagonal = Math.sqrt(spanX * spanX + spanY * spanY + spanZ * spanZ);
+        if (!Number.isFinite(diagonal) || diagonal <= 0) {
+            return;
+        }
+
+        // Declared LOD range: keys must resolve to a canonical, in-range, integer level so later `node.lods[String(level)]`
+        // lookups always hit and an out-of-range fine level can't slip past the convergence (which only coarsens within
+        // the declared level count) and defeat the cap.
+        const declaredLevels = Math.floor(Number(this._metadata.lodLevels));
+        const maxLevel = Number.isFinite(declaredLevels) && declaredLevels > 0 ? declaredLevels - 1 : 0;
 
         // Collect all levels that hold splats (PlayCanvas convention: level 0 is the finest, higher = coarser).
         // Normalize each entry's count to a finite positive integer HERE (metadata is untrusted and only shallowly
         // validated, so `count` may be a string): all downstream arithmetic — budget demand/convergence — then adds
-        // numbers instead of concatenating strings.
+        // numbers instead of concatenating strings. Require `String(level) === key` so a non-canonical key like "01"
+        // (which `Number` maps to 1, but `String(1)` can't retrieve) is rejected rather than crashing a later lookup.
         const levels: number[] = [];
         for (const key of Object.keys(node.lods)) {
             const level = Number(key);
             const entry = node.lods[key];
             const count = entry ? Math.floor(Number(entry.count)) : NaN;
-            if (Number.isFinite(level) && entry && Number.isFinite(count) && count > 0) {
+            if (Number.isInteger(level) && String(level) === key && level >= 0 && level <= maxLevel && entry && Number.isFinite(count) && count > 0) {
                 entry.count = count;
                 levels.push(level);
             }
@@ -1318,15 +1333,16 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         }
         levels.sort((a, b) => a - b);
 
-        // Enforce non-increasing count as the level index increases (a coarser level must be cheaper): keep only the
-        // strictly-decreasing-count subsequence. This drops malformed "coarser but larger" levels that would otherwise
-        // let the budget pick more splats than a cheaper available level, and makes the coarsest kept level (the base)
-        // the true minimum — which the convergence relies on for its guaranteed cap.
+        // Enforce non-increasing count as the level index increases (a coarser level must not cost MORE than a finer
+        // one). Keep every level whose count is at or below the running minimum: equal-count adjacent levels are valid
+        // (same splat count, different geometry) and preserved, while a malformed "coarser but larger" level is dropped
+        // so the budget can never pick more splats than a cheaper available level and the coarsest kept level (the base)
+        // is the true minimum — which the convergence relies on for its guaranteed cap.
         const usable: number[] = [];
         let minCount = Infinity;
         for (const level of levels) {
             const count = node.lods[String(level)].count;
-            if (count < minCount) {
+            if (count <= minCount) {
                 usable.push(level);
                 minCount = count;
             }
@@ -2225,19 +2241,20 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
 
     /**
      * The finest already-decoded level of a node that is at least as coarse as `level` (index >= level). Used to
-     * enforce the budget cap immediately without waiting for a download. Falls back to the permanently-resident base
-     * layer, which is always at least as coarse and always decoded.
+     * enforce the budget cap immediately without waiting for a download. Returns `null` when no such level is resident
+     * — including when eviction has freed the base layer — so the caller keeps the currently-visible (resident) file
+     * rather than switching to a non-resident one, which would render a hole.
      * @param node leaf node
      * @param level the minimum coarseness (level index) required
-     * @returns a resident level index >= level
+     * @returns a resident level index >= level, or null when none is resident
      */
-    private _residentLevelAtLeast(node: ISOGLODNode, level: number): number {
+    private _residentLevelAtLeast(node: ISOGLODNode, level: number): Nullable<number> {
         for (const lvl of node.availableLevels!) {
             if (lvl >= level && this._decodedFiles.has(node.lods![String(lvl)].file)) {
                 return lvl;
             }
         }
-        return node.baseLod!;
+        return null;
     }
 
     /**
@@ -2256,14 +2273,15 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         for (const node of this._leafNodes) {
             const desired = node.targetLevel ?? node.baseLod!;
 
-            // Budget cap enforcement: if the node currently renders FINER than its target (activeLod index < target),
-            // it exceeds the cap. Coarsen immediately — bypassing the oscillation cooldown and any not-yet-downloaded
-            // finer target — to the finest already-resident level that is at least as coarse as the target (the base
-            // layer is permanently resident, so this always succeeds). This keeps the rendered count within budget
-            // every frame, rather than only after a cooldown or a download completes.
-            if (node.activeLod !== undefined && node.activeLod < desired) {
+            // Budget cap enforcement (only when a budget is in force — otherwise ordinary distance/frustum coarsening
+            // must keep going through the cooldown path below, unchanged from pre-budget behavior). If the node renders
+            // FINER than its target (activeLod index < target) it exceeds the cap, so coarsen immediately — bypassing
+            // the oscillation cooldown and any not-yet-downloaded finer target — to the finest already-resident level at
+            // least as coarse as the target. When nothing coarser is resident (e.g. eviction freed the base layer) keep
+            // the current visible file and let the normal path below queue the coarse download, so nothing disappears.
+            if (this._splatBudgetEnabled() && node.activeLod !== undefined && node.activeLod < desired) {
                 const coarse = this._residentLevelAtLeast(node, desired);
-                if (coarse !== node.activeLod) {
+                if (coarse !== null && coarse !== node.activeLod) {
                     this._switchActiveFile(node, node.lods![String(coarse)].file);
                     node.activeLod = coarse;
                     node.lodCooldown = this._lodCooldownFrames;
@@ -2454,14 +2472,16 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
 
     /**
      * A cheap signature of the discrete inputs (besides camera translation, tracked separately) that affect projected
-     * pixel size: each camera's identity, FOV, FOV mode and viewport, plus the engine render size. A change invalidates
-     * the throttled budget LOD so a colocated camera swap / viewport resize / FOV change can't leave it stale.
+     * pixel size: each camera's identity, FOV, FOV mode and viewport, plus the engine render size and the effective
+     * world matrix revision. A change invalidates the throttled budget LOD so a colocated camera swap / viewport
+     * resize / FOV change — or the stream (or its hosted proxy) being moved or scaled while still in frustum, which
+     * shifts every node's distance and projected size — can't leave it stale.
      * @param cameras the active cameras
      * @returns the signature string
      */
     private _computeLodSignature(cameras: Camera[]): string {
         const engine = this._scene.getEngine();
-        let sig = `${engine.getRenderWidth()}x${engine.getRenderHeight()}`;
+        let sig = `${engine.getRenderWidth()}x${engine.getRenderHeight()}#${this._getEffectiveWorldMatrix(false).updateFlag}`;
         for (const cam of cameras) {
             const vp = cam.viewport;
             sig += `|${cam.uniqueId}:${cam.fov}:${cam.fovMode}:${vp.x},${vp.y},${vp.width},${vp.height}`;

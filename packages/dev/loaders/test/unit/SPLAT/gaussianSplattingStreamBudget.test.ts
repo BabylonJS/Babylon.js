@@ -6,7 +6,7 @@ import { BoundingInfo } from "core/Culling/boundingInfo";
 import { Viewport } from "core/Maths/math.viewport";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh";
-import { GaussianSplattingStream, type ISOGLODMetadata } from "loaders/SPLAT/gaussianSplattingStream";
+import { AddGaussianSplattingStreamPart, GaussianSplattingStream, type ISOGLODMetadata } from "loaders/SPLAT/gaussianSplattingStream";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Budget-driven LOD selection is pure logic over the leaf nodes + camera, but the stream constructor kicks off
@@ -263,18 +263,68 @@ describe("GaussianSplattingStream budget-driven LOD", () => {
         expect(s._leafNodes).not.toContain(node);
     });
 
-    it("re-evaluates on any downward allocation change, not just large ones", () => {
+    it("skips nodes whose finite bounds still produce a non-finite or zero span at ingestion", () => {
+        const s = makeStream(undefined, []);
+        // Coordinates are individually finite, but the span overflows to Infinity: an infinite radius/pixel size makes
+        // the budget's terminal threshold infinite and defeats the cap.
+        const huge: any = { bound: { min: [-1e308, -1e308, -1e308], max: [1e308, 1e308, 1e308] }, lods: { "0": { file: 0, offset: 0, count: 100 } } };
+        // Degenerate zero-extent AABB: projects to zero pixels and would never coarsen.
+        const degenerate: any = { bound: { min: [1, 1, 1], max: [1, 1, 1] }, lods: { "0": { file: 0, offset: 0, count: 100 } } };
+        s._leafNodes.length = 0;
+        s._collectLodEntries(huge);
+        s._collectLodEntries(degenerate);
+        expect(s._leafNodes).not.toContain(huge);
+        expect(s._leafNodes).not.toContain(degenerate);
+    });
+
+    it("rejects non-canonical and out-of-range LOD keys at ingestion (METADATA.lodLevels = 3 => 0..2)", () => {
+        const s = makeStream(undefined, []);
+        const node: any = {
+            bound: { min: [0, 0, 0], max: [1, 1, 1] },
+            lods: {
+                "0": { file: 0, offset: 0, count: 1000 },
+                "01": { file: 1, offset: 0, count: 500 }, // non-canonical: String(Number("01")) === "1" !== "01"
+                "1": { file: 2, offset: 0, count: 100 },
+                "5": { file: 3, offset: 0, count: 10 }, // out of the declared range (> 2)
+            },
+        };
+        s._leafNodes.length = 0;
+        s._collectLodEntries(node);
+        expect(node.availableLevels).toEqual([0, 1]); // "01" and "5" dropped
+        // Every kept level must resolve through String(level) — no crash in later lookups.
+        for (const lvl of node.availableLevels) {
+            expect(node.lods[String(lvl)]).toBeDefined();
+        }
+    });
+
+    it("preserves adjacent LOD levels with equal counts (only rejects a coarser level that costs more)", () => {
+        const s = makeStream(undefined, []);
+        const node: any = {
+            bound: { min: [0, 0, 0], max: [1, 1, 1] },
+            lods: {
+                "0": { file: 0, offset: 0, count: 100 },
+                "1": { file: 1, offset: 0, count: 100 }, // equal count — different geometry, must be kept
+                "2": { file: 2, offset: 0, count: 50 },
+            },
+        };
+        s._leafNodes.length = 0;
+        s._collectLodEntries(node);
+        expect(node.availableLevels).toEqual([0, 1, 2]);
+        expect(node.baseLod).toBe(2);
+    });
+
+    it("re-evaluates on any allocation change, up or down (a stationary camera would otherwise never re-eval)", () => {
         const s = makeStream(undefined, [makeNode([2, -1, -1], [4, 1, 1], { 0: 1000, 1: 100, 2: 10 })]);
         s.setBudgetAllocation(1000); // first coordination
         s._forceLodUpdate = false;
-        s.setBudgetAllocation(990); // small decrease => must force (the active count may now exceed the smaller cap)
+        s.setBudgetAllocation(990); // small decrease => force (the active count may now exceed the smaller cap)
         expect(s._forceLodUpdate).toBe(true);
         s._forceLodUpdate = false;
-        s.setBudgetAllocation(995); // small increase within margin => no force (only briefly under-serves)
+        s.setBudgetAllocation(991); // small increase => force (may unlock a finer level; the camera never moves)
+        expect(s._forceLodUpdate).toBe(true);
+        s._forceLodUpdate = false;
+        s.setBudgetAllocation(991); // no change => no force
         expect(s._forceLodUpdate).toBe(false);
-        s._forceLodUpdate = false;
-        s.setBudgetAllocation(994); // any decrease => force
-        expect(s._forceLodUpdate).toBe(true);
     });
 
     it("enforces the cap immediately: an over-budget node coarsens past its cooldown to the resident target", () => {
@@ -289,11 +339,30 @@ describe("GaussianSplattingStream budget-driven LOD", () => {
             targetLevel: 2, // budget wants the coarsest
             lodCooldown: 5, // in cooldown — must NOT block the cap coarsening
         };
-        const s = makeStream(undefined, [node]);
+        const s = makeStream(500, [node]); // budget enabled: only then does the cap bypass the cooldown
         s._decodedFiles.add(2); // the target (base) level is resident
         const dirty = s._applyDesiredLods();
         expect(dirty).toBe(true);
         expect(node.activeLod).toBe(2); // coarsened immediately despite the cooldown
+    });
+
+    it("does NOT bypass the cooldown when no budget is enabled (ordinary coarsening keeps its cooldown)", () => {
+        const node: any = {
+            bound: { min: [2, -1, -1], max: [4, 1, 1] },
+            lods: { "0": { file: 0, offset: 0, count: 1000 }, "1": { file: 1, offset: 0, count: 100 }, "2": { file: 2, offset: 0, count: 10 } },
+            availableLevels: [0, 1, 2],
+            baseLod: 2,
+            inFrustum: true,
+            activeLod: 0,
+            activeFile: 0,
+            targetLevel: 2,
+            lodCooldown: 5, // in cooldown
+        };
+        const s = makeStream(undefined, [node]); // budget disabled => pre-budget behavior: cooldown blocks the switch
+        s._decodedFiles.add(2);
+        const dirty = s._applyDesiredLods();
+        expect(dirty).toBe(false);
+        expect(node.activeLod).toBe(0); // untouched — the cooldown was respected
     });
 
     it("enforces the cap even before the exact target downloads: falls back to the resident base", () => {
@@ -308,10 +377,29 @@ describe("GaussianSplattingStream budget-driven LOD", () => {
             targetLevel: 1, // wants level 1, but it isn't decoded yet
             lodCooldown: 0,
         };
-        const s = makeStream(undefined, [node]);
+        const s = makeStream(500, [node]);
         s._decodedFiles.add(2); // only the base (level 2) is resident
         s._applyDesiredLods();
         expect(node.activeLod).toBe(2); // over-budget node coarsened to the resident base (<= the target's cap)
+    });
+
+    it("keeps the current visible file when no coarser level is resident (evicted base): never renders a hole", () => {
+        const node: any = {
+            bound: { min: [2, -1, -1], max: [4, 1, 1] },
+            lods: { "0": { file: 0, offset: 0, count: 1000 }, "1": { file: 1, offset: 0, count: 100 }, "2": { file: 2, offset: 0, count: 10 } },
+            availableLevels: [0, 1, 2],
+            baseLod: 2,
+            inFrustum: true,
+            activeLod: 0, // rendering the finest (and only resident) file
+            activeFile: 0,
+            targetLevel: 2, // budget wants the coarsest, but neither level 1 nor the base is resident anymore
+            lodCooldown: 0,
+        };
+        const s = makeStream(500, [node]);
+        s._decodedFiles.add(0); // ONLY the fine file is resident; eviction freed levels 1 and 2 (the base)
+        s._applyDesiredLods();
+        expect(node.activeLod).toBe(0); // stays on the visible fine file — not switched to a non-resident base
+        expect(node.pendingFile).toBe(2); // and the coarse target download is queued
     });
 
     it("hosted stream: the compound apportions its budget to the stream and releases it on unregister", () => {
@@ -337,5 +425,42 @@ describe("GaussianSplattingStream budget-driven LOD", () => {
         compound.unregisterLodBudgetParticipant(s);
         expect(s._hostBudgetAllocation).toBeNull();
         expect(s._effectiveSplatBudget()).toBe(0);
+    });
+
+    it("hosted lifecycle via AddGaussianSplattingStreamPart: construction, apportionment, budget-off release, disposal unregister", () => {
+        const compound = new GaussianSplattingCompoundMesh("compound", null, scene) as any;
+        // The real hosted entry point binds the controller to the compound. The network pre-pass is stubbed offline,
+        // so the atlas region isn't reserved here (that needs a live render loop) — registration is driven manually to
+        // mirror exactly what _streamAllAsync does once the region is reserved.
+        const s = AddGaussianSplattingStreamPart(compound, "part", METADATA, "", {}) as any;
+        expect(s._hostCompound).toBe(compound);
+
+        const node = makeNode([2, -1, -1], [4, 1, 1], { 0: 1000, 1: 100, 2: 10 });
+        s._baseLayerReady = true;
+        s._leafNodes.length = 0;
+        s._leafNodes.push(node);
+        s.computeWorldMatrix(true);
+        s.evaluateOptimalLods(camera);
+
+        compound.registerLodBudgetParticipant(s);
+        expect(compound._lodBudgetParticipants).toContain(s);
+
+        // The per-frame observer apportions the compound's cap to the stream.
+        compound.splatBudget = 500;
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(s._hostBudgetAllocation).toBe(500);
+
+        // Disabling the compound budget tears coordination down and releases every participant's allocation to null.
+        compound.splatBudget = 0;
+        expect(s._hostBudgetAllocation).toBeNull();
+        expect(s._effectiveSplatBudget()).toBe(0);
+
+        // Disposing the hosted controller unregisters it (dispose() covers the hosted path), so the compound stops
+        // apportioning to a dead stream.
+        compound.splatBudget = 500;
+        scene.onBeforeRenderObservable.notifyObservers(scene);
+        expect(compound._lodBudgetParticipants).toContain(s);
+        s.dispose();
+        expect(compound._lodBudgetParticipants).not.toContain(s);
     });
 });
