@@ -584,6 +584,21 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         compound._vertexCount = 70;
         expect(compound._staticSplatCount()).toBe(70);
 
+        // A tombstoned proxied static part renders nothing, so it is excluded from the floor.
+        compound._partProxies = [
+            { _vertexCount: 40, partIndex: 0 },
+            { _vertexCount: 30, partIndex: 1 },
+        ];
+        compound._tombstonedPartIndices = new Set([1]);
+        compound._vertexCount = 70;
+        expect(compound._staticSplatCount()).toBe(40);
+
+        // A tombstoned unproxied legacy part 0 is excluded too (only the live proxied static part counts).
+        compound._partProxies = [undefined, { _vertexCount: 30, partIndex: 1 }];
+        compound._tombstonedPartIndices = new Set([0]);
+        compound._vertexCount = 100;
+        expect(compound._staticSplatCount()).toBe(30);
+
         // Reset so afterEach's dispose doesn't call into the mock proxies.
         compound._partProxies = [];
     });

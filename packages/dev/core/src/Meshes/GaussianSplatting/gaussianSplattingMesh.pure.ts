@@ -653,15 +653,17 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             if (!proxy) {
                 continue;
             }
-            proxied += proxy._vertexCount;
-            // Streaming regions are excluded (their rendered count is LOD-driven).
-            if (!this._streamingStates.some((s) => s.proxy === proxy)) {
+            proxied += proxy._vertexCount; // all proxies feed the legacy part-0 derivation below
+            // Count only static (non-streaming), non-tombstoned parts: streaming regions are LOD-driven, and a
+            // tombstoned part renders nothing (empty active range) until compaction reclaims its rows.
+            if (!this._streamingStates.some((s) => s.proxy === proxy) && !this._tombstonedPartIndices.has(proxy.partIndex)) {
                 sum += proxy._vertexCount;
             }
         }
         // Legacy layout: the compound's own splat data is an implicit, unproxied part 0 (always static). Its count
-        // is the atlas total minus every proxied part — the same derivation used in _addPartsInternal.
-        if (!this._partProxies[0]) {
+        // is the atlas total minus every proxied part — the same derivation used in _addPartsInternal. Excluded when
+        // part 0 has been tombstoned.
+        if (!this._partProxies[0] && !this._tombstonedPartIndices.has(0)) {
             sum += Math.max(0, this._vertexCount - proxied);
         }
         return sum;

@@ -361,6 +361,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     // a re-eval is gated on the camera set changing or any camera translating past `_lodUpdateDistance`.
     private _framesSinceLodUpdate = 0;
     private readonly _lastLodCamPositions: Vector3[] = [];
+    // Signature of the discrete projected-size inputs (per-camera identity/FOV/FOV-mode/viewport + render size) at the
+    // last LOD evaluation. Camera translation is tracked separately (above); this catches the rest — a colocated
+    // camera swap, a viewport resize, or an FOV change — which would otherwise leave the budget LODs stale.
+    private _lastLodSignature = "";
     // Forces the next LOD update to run regardless of the throttle (e.g. after a budget change).
     private _forceLodUpdate = false;
 
@@ -827,8 +831,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     /**
      * {@link IGaussianSplattingLodBudgetParticipant}: sets the compound's apportioned share of the shared budget.
      * `null` releases coordination (revert to this stream's own {@link splatBudget}); a number (incl. 0, meaning
-     * "coordinated at the coarsest level") drives the pixel-threshold convergence. Forces a next-frame LOD re-eval
-     * only when the allocation changes materially, so per-frame water-fill jitter does not defeat the throttle.
+     * "coordinated at the coarsest level") drives the pixel-threshold convergence. Any decrease forces a next-frame
+     * re-eval (the current selection may exceed the new, smaller cap); increases only force one past a small margin
+     * so per-frame water-fill jitter does not defeat the throttle (over-allocating briefly is harmless).
      * @param splats the apportioned allocation, or null to release coordination
      */
     public setBudgetAllocation(splats: Nullable<number>): void {
@@ -841,7 +846,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         }
         const prev = this._hostBudgetAllocation;
         this._hostBudgetAllocation = splats;
-        if (prev === null || Math.abs(splats - prev) > Math.max(1, prev) * 0.02) {
+        // Force on: first coordination, ANY decrease (the current active count may now exceed the cap), or an
+        // increase beyond a small margin (small increases only under-serve, so the throttle can absorb them).
+        if (prev === null || splats < prev || splats > prev * 1.02) {
             this._forceLodUpdate = true;
         }
     }
@@ -1284,6 +1291,14 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             return;
         }
 
+        // Malformed bounds (missing / non-finite) break distance, projected-size, and frustum math — e.g. an infinite
+        // AABB makes the budget's terminal threshold infinite and defeats the cap — so skip such a node entirely.
+        const bmin = node.bound?.min;
+        const bmax = node.bound?.max;
+        if (!bmin || !bmax || bmin.length < 3 || bmax.length < 3 || !bmin.every((v) => Number.isFinite(v)) || !bmax.every((v) => Number.isFinite(v))) {
+            return;
+        }
+
         // Collect all levels that hold splats (PlayCanvas convention: level 0 is the finest, higher = coarser).
         // Normalize each entry's count to a finite positive integer HERE (metadata is untrusted and only shallowly
         // validated, so `count` may be a string): all downstream arithmetic — budget demand/convergence — then adds
@@ -1303,13 +1318,27 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         }
         levels.sort((a, b) => a - b);
 
-        node.availableLevels = levels;
-        node.baseLod = levels[levels.length - 1];
+        // Enforce non-increasing count as the level index increases (a coarser level must be cheaper): keep only the
+        // strictly-decreasing-count subsequence. This drops malformed "coarser but larger" levels that would otherwise
+        // let the budget pick more splats than a cheaper available level, and makes the coarsest kept level (the base)
+        // the true minimum — which the convergence relies on for its guaranteed cap.
+        const usable: number[] = [];
+        let minCount = Infinity;
+        for (const level of levels) {
+            const count = node.lods[String(level)].count;
+            if (count < minCount) {
+                usable.push(level);
+                minCount = count;
+            }
+        }
+
+        node.availableLevels = usable;
+        node.baseLod = usable[usable.length - 1];
         node.activeLod = undefined;
         node.lodCooldown = 0;
         node.inFrustum = true;
         // Local-space bounds for the per-node frustum test; the mesh world matrix is applied per evaluation.
-        node.cullBounds = new BoundingInfo(Vector3.FromArray(node.bound.min), Vector3.FromArray(node.bound.max));
+        node.cullBounds = new BoundingInfo(Vector3.FromArray(bmin), Vector3.FromArray(bmax));
         this._leafNodes.push(node);
     }
 
@@ -2195,6 +2224,23 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     }
 
     /**
+     * The finest already-decoded level of a node that is at least as coarse as `level` (index >= level). Used to
+     * enforce the budget cap immediately without waiting for a download. Falls back to the permanently-resident base
+     * layer, which is always at least as coarse and always decoded.
+     * @param node leaf node
+     * @param level the minimum coarseness (level index) required
+     * @returns a resident level index >= level
+     */
+    private _residentLevelAtLeast(node: ISOGLODNode, level: number): number {
+        for (const lvl of node.availableLevels!) {
+            if (lvl >= level && this._decodedFiles.has(node.lods![String(lvl)].file)) {
+                return lvl;
+            }
+        }
+        return node.baseLod!;
+    }
+
+    /**
      * Applies each node's {@link ISOGLODNode.targetLevel}: switches a node to its target level when that
      * level's file is already decoded, otherwise records a pending download request for the file and leaves
      * the node on its current LOD (so nothing ever disappears). Nodes within their post-switch cooldown are
@@ -2208,11 +2254,28 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     private _applyDesiredLods(): boolean {
         let dirty = false;
         for (const node of this._leafNodes) {
-            // Nodes in cooldown keep their current LOD and their existing pending request untouched.
+            const desired = node.targetLevel ?? node.baseLod!;
+
+            // Budget cap enforcement: if the node currently renders FINER than its target (activeLod index < target),
+            // it exceeds the cap. Coarsen immediately — bypassing the oscillation cooldown and any not-yet-downloaded
+            // finer target — to the finest already-resident level that is at least as coarse as the target (the base
+            // layer is permanently resident, so this always succeeds). This keeps the rendered count within budget
+            // every frame, rather than only after a cooldown or a download completes.
+            if (node.activeLod !== undefined && node.activeLod < desired) {
+                const coarse = this._residentLevelAtLeast(node, desired);
+                if (coarse !== node.activeLod) {
+                    this._switchActiveFile(node, node.lods![String(coarse)].file);
+                    node.activeLod = coarse;
+                    node.lodCooldown = this._lodCooldownFrames;
+                    dirty = true;
+                }
+            }
+
+            // Nodes in cooldown keep their current LOD and their existing pending request untouched (the cap
+            // coarsening above already ran, so this only gates refinement toward the target).
             if (node.lodCooldown && node.lodCooldown > 0) {
                 continue;
             }
-            const desired = node.targetLevel ?? node.baseLod!;
             let newPending: number | undefined;
             if (desired !== node.activeLod) {
                 const entry = node.lods![String(desired)];
@@ -2355,10 +2418,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         if (!runLodEval && ++this._framesSinceLodUpdate >= this._lodUpdateInterval) {
             const cameras = this._getActiveLodCameras();
             const threshold = this._lodUpdateDistance;
-            // Re-evaluate when the active-camera set changes, or when ANY active camera translated past the threshold.
-            // LOD selection is view-direction-independent, so rotation alone doesn't need a re-eval (the frustum test
-            // above already tracks rotation for the off-screen bias).
-            if (cameras.length !== this._lastLodCamPositions.length) {
+            // Re-evaluate when the active-camera set changes, when ANY active camera translated past the threshold, or
+            // when a discrete projected-size input changed (identity / FOV / viewport / render size). LOD selection is
+            // view-direction-independent, so rotation alone doesn't need a re-eval (the frustum test above tracks it).
+            if (cameras.length !== this._lastLodCamPositions.length || this._computeLodSignature(cameras) !== this._lastLodSignature) {
                 runLodEval = true;
             } else {
                 for (let i = 0; i < cameras.length; i++) {
@@ -2373,18 +2436,37 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         if (runLodEval) {
             this._forceLodUpdate = false;
             this._framesSinceLodUpdate = 0;
-            // Snapshot each active camera's position so the next throttled check measures movement against it.
+            // Snapshot each active camera's position and the projected-size signature so the next throttled check
+            // measures movement/input changes against them.
             const cameras = this._getActiveLodCameras();
             this._lastLodCamPositions.length = 0;
             for (const cam of cameras) {
                 this._lastLodCamPositions.push(cam.globalPosition.clone());
             }
+            this._lastLodSignature = this._computeLodSignature(cameras);
             this.evaluateOptimalLods();
             this._computeTargetLevels();
             if (this._applyDesiredLods()) {
                 this._refreshActiveRanges();
             }
         }
+    }
+
+    /**
+     * A cheap signature of the discrete inputs (besides camera translation, tracked separately) that affect projected
+     * pixel size: each camera's identity, FOV, FOV mode and viewport, plus the engine render size. A change invalidates
+     * the throttled budget LOD so a colocated camera swap / viewport resize / FOV change can't leave it stale.
+     * @param cameras the active cameras
+     * @returns the signature string
+     */
+    private _computeLodSignature(cameras: Camera[]): string {
+        const engine = this._scene.getEngine();
+        let sig = `${engine.getRenderWidth()}x${engine.getRenderHeight()}`;
+        for (const cam of cameras) {
+            const vp = cam.viewport;
+            sig += `|${cam.uniqueId}:${cam.fov}:${cam.fovMode}:${vp.x},${vp.y},${vp.width},${vp.height}`;
+        }
+        return sig;
     }
 
     /**

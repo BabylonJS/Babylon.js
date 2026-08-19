@@ -5,6 +5,7 @@ import { Vector3 } from "core/Maths/math.vector";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import { Viewport } from "core/Maths/math.viewport";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
+import { GaussianSplattingCompoundMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingCompoundMesh";
 import { GaussianSplattingStream, type ISOGLODMetadata } from "loaders/SPLAT/gaussianSplattingStream";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -238,5 +239,103 @@ describe("GaussianSplattingStream budget-driven LOD", () => {
         expect(node.lods["0"].count).toBe(500); // number, not "500"
         expect(typeof node.lods["1"].count).toBe("number");
         expect(s._countAtLevel(node, 0)).toBe(500);
+    });
+
+    it("drops malformed coarser-but-larger LOD levels at ingestion (enforces monotonic counts)", () => {
+        const s = makeStream(undefined, []);
+        // Level 2 (1000) is more expensive than the finer level 1 (10) — malformed; it must be dropped so the base
+        // is the true cheapest level and the budget cap can't be defeated.
+        const node: any = {
+            bound: { min: [0, 0, 0], max: [1, 1, 1] },
+            lods: { "0": { file: 0, offset: 0, count: 1000 }, "1": { file: 1, offset: 0, count: 10 }, "2": { file: 2, offset: 0, count: 1000 } },
+        };
+        s._leafNodes.length = 0;
+        s._collectLodEntries(node);
+        expect(node.availableLevels).toEqual([0, 1]);
+        expect(node.baseLod).toBe(1);
+    });
+
+    it("skips nodes with non-finite bounds at ingestion", () => {
+        const s = makeStream(undefined, []);
+        const node: any = { bound: { min: [0, 0, 0], max: [Infinity, 1, 1] }, lods: { "0": { file: 0, offset: 0, count: 100 } } };
+        s._leafNodes.length = 0;
+        s._collectLodEntries(node);
+        expect(s._leafNodes).not.toContain(node);
+    });
+
+    it("re-evaluates on any downward allocation change, not just large ones", () => {
+        const s = makeStream(undefined, [makeNode([2, -1, -1], [4, 1, 1], { 0: 1000, 1: 100, 2: 10 })]);
+        s.setBudgetAllocation(1000); // first coordination
+        s._forceLodUpdate = false;
+        s.setBudgetAllocation(990); // small decrease => must force (the active count may now exceed the smaller cap)
+        expect(s._forceLodUpdate).toBe(true);
+        s._forceLodUpdate = false;
+        s.setBudgetAllocation(995); // small increase within margin => no force (only briefly under-serves)
+        expect(s._forceLodUpdate).toBe(false);
+        s._forceLodUpdate = false;
+        s.setBudgetAllocation(994); // any decrease => force
+        expect(s._forceLodUpdate).toBe(true);
+    });
+
+    it("enforces the cap immediately: an over-budget node coarsens past its cooldown to the resident target", () => {
+        const node: any = {
+            bound: { min: [2, -1, -1], max: [4, 1, 1] },
+            lods: { "0": { file: 0, offset: 0, count: 1000 }, "1": { file: 1, offset: 0, count: 100 }, "2": { file: 2, offset: 0, count: 10 } },
+            availableLevels: [0, 1, 2],
+            baseLod: 2,
+            inFrustum: true,
+            activeLod: 0, // currently rendering the FINEST level
+            activeFile: 0,
+            targetLevel: 2, // budget wants the coarsest
+            lodCooldown: 5, // in cooldown — must NOT block the cap coarsening
+        };
+        const s = makeStream(undefined, [node]);
+        s._decodedFiles.add(2); // the target (base) level is resident
+        const dirty = s._applyDesiredLods();
+        expect(dirty).toBe(true);
+        expect(node.activeLod).toBe(2); // coarsened immediately despite the cooldown
+    });
+
+    it("enforces the cap even before the exact target downloads: falls back to the resident base", () => {
+        const node: any = {
+            bound: { min: [2, -1, -1], max: [4, 1, 1] },
+            lods: { "0": { file: 0, offset: 0, count: 1000 }, "1": { file: 1, offset: 0, count: 100 }, "2": { file: 2, offset: 0, count: 10 } },
+            availableLevels: [0, 1, 2],
+            baseLod: 2,
+            inFrustum: true,
+            activeLod: 0,
+            activeFile: 0,
+            targetLevel: 1, // wants level 1, but it isn't decoded yet
+            lodCooldown: 0,
+        };
+        const s = makeStream(undefined, [node]);
+        s._decodedFiles.add(2); // only the base (level 2) is resident
+        s._applyDesiredLods();
+        expect(node.activeLod).toBe(2); // over-budget node coarsened to the resident base (<= the target's cap)
+    });
+
+    it("hosted stream: the compound apportions its budget to the stream and releases it on unregister", () => {
+        const compound = new GaussianSplattingCompoundMesh("compound", null, scene) as any;
+        const node = makeNode([2, -1, -1], [4, 1, 1], { 0: 1000, 1: 100, 2: 10 });
+        const s = makeStream(undefined, [node]); // own budget disabled; only the host's applies
+        s.evaluateOptimalLods(camera); // node wants the finest level (demand ~1000)
+
+        compound.registerLodBudgetParticipant(s);
+        compound.splatBudget = 500; // installs the per-frame apportion observer
+        scene.onBeforeRenderObservable.notifyObservers(scene); // fire it (stands in for a rendered frame)
+
+        // Host override precedence: the stream's effective budget is the compound's apportioned slice.
+        expect(s._hostBudgetAllocation).toBe(500);
+        expect(s._effectiveSplatBudget()).toBe(500);
+        // ...and it drives the active selection: with the budget now enabled, re-eval computes pixel sizes and the
+        // rendered total stays within the allocation.
+        s.evaluateOptimalLods();
+        s._computeTargetLevels();
+        expect(totalRendered(s, [node])).toBeLessThanOrEqual(500);
+
+        // Unregister releases coordination: the stream reverts to its own (disabled) budget.
+        compound.unregisterLodBudgetParticipant(s);
+        expect(s._hostBudgetAllocation).toBeNull();
+        expect(s._effectiveSplatBudget()).toBe(0);
     });
 });
