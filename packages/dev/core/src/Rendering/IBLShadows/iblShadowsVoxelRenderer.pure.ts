@@ -422,6 +422,7 @@ export class _IblShadowsVoxelRenderer {
             this._combinedVoxelGridPT.autoClear = false;
             this._combinedVoxelGridPT.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._combinedVoxelGridPT.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this._combinedVoxelGridPT.wrapR = Texture.CLAMP_ADDRESSMODE;
         } else {
             this._voxelGridZaxis = new RenderTargetTexture("voxelGridZaxis", size, this._scene, voxelCombinedOptions);
             this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
@@ -453,6 +454,7 @@ export class _IblShadowsVoxelRenderer {
             mipTarget.autoClear = false;
             mipTarget.wrapU = Texture.CLAMP_ADDRESSMODE;
             mipTarget.wrapV = Texture.CLAMP_ADDRESSMODE;
+            mipTarget.wrapR = Texture.CLAMP_ADDRESSMODE;
             mipTarget.setTexture("srcMip", mipIdx > 1 ? this._mipArray[mipIdx - 2] : this.getVoxelGrid());
             mipTarget.setInt("layerNum", 0);
         }
@@ -504,6 +506,10 @@ export class _IblShadowsVoxelRenderer {
     private _createVoxelMRTs(name: string, voxelRT: RenderTargetTexture, numSlabs: number): MultiRenderTarget[] {
         voxelRT.wrapU = Texture.CLAMP_ADDRESSMODE;
         voxelRT.wrapV = Texture.CLAMP_ADDRESSMODE;
+        // This is a 3D texture: the depth (R) axis must clamp too. The combine shader samples each
+        // per-axis grid with the depth coordinate spanning [0,1], so without this it wraps around to
+        // the opposite face of the grid at the boundaries.
+        voxelRT.wrapR = Texture.CLAMP_ADDRESSMODE;
         voxelRT.noPrePassRenderer = true;
         const mrtArray: MultiRenderTarget[] = [];
         const targetTypes = new Array(this._maxDrawBuffers).fill(Constants.TEXTURE_3D);
