@@ -21,7 +21,7 @@ import { UniformBuffer } from "../Materials/uniformBuffer";
 import { CreateBoxVertexData } from "../Meshes/Builders/boxBuilder.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../Engines/constants";
-import { ShaderLoader } from "../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { _RetryWithInterval } from "../Misc/timingTools";
 import { Logger } from "../Misc/logger";
 

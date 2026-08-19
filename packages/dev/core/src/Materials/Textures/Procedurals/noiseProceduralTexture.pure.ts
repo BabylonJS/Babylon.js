@@ -7,7 +7,7 @@ import { type Texture } from "../../../Materials/Textures/texture.pure";
 import { type IProceduralTextureCreationOptions, ProceduralTexture } from "./proceduralTexture.pure";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { ShaderLanguage } from "../../../Materials/shaderLanguage";
-import { ShaderLoader } from "../../../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 const _NoiseProceduralTextureShaderLoader = /*#__PURE__*/ new ShaderLoader({
     webGL: () => [import("../../../Shaders/noise.fragment")],

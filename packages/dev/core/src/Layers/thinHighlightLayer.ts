@@ -19,7 +19,7 @@ import { Constants } from "../Engines/constants";
 import { Color4 } from "../Maths/math.color.pure";
 import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
 import { type IEffectCreationOptions } from "../Materials/effect";
-import { ShaderLoader } from "../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 interface IBlurPostProcess extends EffectWrapper {
     kernel: number;

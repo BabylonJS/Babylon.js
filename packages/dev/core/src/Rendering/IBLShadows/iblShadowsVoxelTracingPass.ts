@@ -12,7 +12,7 @@ import { type CubeTexture } from "../../Materials/Textures/cubeTexture";
 import { Logger } from "../../Misc/logger";
 import { type EventState } from "../../Misc/observable";
 import { type Nullable } from "../../types";
-import { ShaderLoader } from "../../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.

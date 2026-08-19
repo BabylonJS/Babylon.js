@@ -9,7 +9,7 @@ import { ProceduralTexture, type IProceduralTextureCreationOptions } from "core/
 import { type IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import { Observable, type EventState } from "../../Misc/observable";
 import { type Nullable } from "../../types";
-import { ShaderLoader } from "../../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * This should not be instantiated directly, as it is part of a scene component

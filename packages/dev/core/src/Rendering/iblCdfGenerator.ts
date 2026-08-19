@@ -12,7 +12,7 @@ import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Observable } from "../Misc/observable";
 import { CubeTexture } from "../Materials/Textures/cubeTexture.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { ShaderLoader } from "../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { _WarnImport } from "../Misc/devTools";
 import { type Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";

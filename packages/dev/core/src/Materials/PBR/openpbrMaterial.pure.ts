@@ -71,7 +71,7 @@ import { Tools } from "../../Misc/tools.pure";
 import { type UniformBuffer } from "../../Materials/uniformBuffer";
 import { GeometryBufferRenderer } from "core/Rendering/geometryBufferRenderer.pure";
 import { RegisterClass } from "../../Misc/typeStore";
-import { ShaderLoader } from "../../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 

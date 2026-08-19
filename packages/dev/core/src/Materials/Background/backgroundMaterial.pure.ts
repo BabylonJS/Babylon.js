@@ -51,7 +51,7 @@ import {
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { ImageProcessingMixin } from "../imageProcessing";
 import { RegisterClass } from "../../Misc/typeStore";
-import { ShaderLoader } from "../../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 class BackgroundMaterialDefinesBase extends MaterialDefines {}
 

@@ -64,7 +64,7 @@ import { UVDefinesMixin } from "./uv.defines";
 import { PrepassDefinesMixin } from "./prepass.defines";
 import { ImageProcessingMixin } from "./imageProcessing";
 import { RegisterClass } from "../Misc/typeStore";
-import { ShaderLoader } from "../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

@@ -28,7 +28,7 @@ import { AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import { ShaderLoader } from "../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { type UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import { type IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import { GetClass } from "../Misc/typeStore";

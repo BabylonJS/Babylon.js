@@ -9,7 +9,7 @@ import { type Nullable } from "../../../types";
 import { type RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { ShaderLoader } from "../../../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { IblCdfGenerator } from "../../../Rendering/iblCdfGenerator";
 
 /**

@@ -9,7 +9,7 @@ import { type Effect, type IEffectCreationOptions } from "../Materials/effect";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { Material } from "../Materials/material";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
-import { ShaderLoader } from "../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Color3, Color4 } from "../Maths/math.color.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh";

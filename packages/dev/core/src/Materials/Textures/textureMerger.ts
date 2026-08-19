@@ -6,7 +6,7 @@ import { type TextureSize } from "./textureCreationOptions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../../Engines/constants";
 import { type Texture } from "./texture";
-import { ShaderLoader } from "../../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Configuration for a texture input source

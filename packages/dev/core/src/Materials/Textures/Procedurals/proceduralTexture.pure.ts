@@ -12,7 +12,7 @@ import { SceneComponentConstants } from "../../../sceneComponent";
 
 import { Material } from "../../../Materials/material.pure";
 import { type Effect, type IEffectCreationOptions } from "../../../Materials/effect.pure";
-import { ShaderLoader } from "../../../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { Texture } from "../../../Materials/Textures/texture.pure";
 import { type RenderTargetTextureOptions, RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture.pure";
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";

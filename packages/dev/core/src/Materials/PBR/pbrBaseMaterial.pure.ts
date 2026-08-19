@@ -72,7 +72,7 @@ import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrende
 import { UVDefinesMixin } from "../uv.defines";
 import { PrepassDefinesMixin } from "../prepass.defines";
 import { ImageProcessingMixin } from "../imageProcessing";
-import { ShaderLoader } from "../../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 

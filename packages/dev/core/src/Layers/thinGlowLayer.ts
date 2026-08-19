@@ -14,7 +14,7 @@ import { Color4 } from "../Maths/math.color.pure";
 import { type PBRMaterial } from "../Materials/PBR/pbrMaterial";
 
 import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
-import { ShaderLoader } from "../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Glow layer options. This helps customizing the behaviour

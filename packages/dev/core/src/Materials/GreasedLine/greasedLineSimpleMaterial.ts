@@ -6,7 +6,7 @@ import { Color3 } from "../../Maths/math.color.pure";
 import { Vector2 } from "../../Maths/math.vector.pure";
 import { ShaderLanguage } from "../shaderLanguage";
 import { TextureSampler } from "../Textures/textureSampler";
-import { ShaderLoader } from "../../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 import { type GreasedLineMaterialOptions, type IGreasedLineMaterial, GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";

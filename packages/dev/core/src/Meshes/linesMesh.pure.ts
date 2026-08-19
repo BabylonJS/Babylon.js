@@ -13,7 +13,7 @@ import { type IShaderMaterialOptions } from "../Materials/shaderMaterial";
 import { type Effect } from "../Materials/effect.pure";
 import { type MeshCreationOptions } from "./mesh.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { ShaderLoader } from "../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { type Scene } from "../scene.pure";
 
 /**

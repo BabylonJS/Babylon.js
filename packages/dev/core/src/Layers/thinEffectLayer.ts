@@ -15,7 +15,7 @@ import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { type Effect, type IEffectCreationOptions } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
-import { ShaderLoader } from "../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";

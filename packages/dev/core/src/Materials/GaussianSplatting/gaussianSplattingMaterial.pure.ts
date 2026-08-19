@@ -31,7 +31,7 @@ import {
 import { type ShaderLanguage } from "../shaderLanguage";
 import { Engine } from "../../Engines/engine.pure";
 import { RegisterClass } from "../../Misc/typeStore";
-import { ShaderLoader } from "../../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Computes the maximum number of Gaussian Splatting compound parts supported by the given engine.

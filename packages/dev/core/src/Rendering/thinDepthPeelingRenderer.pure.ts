@@ -23,7 +23,7 @@ import { Material } from "../Materials/material.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { type Nullable } from "../types";
-import { ShaderLoader } from "../Misc/shaderLoader";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * @internal
