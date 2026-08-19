@@ -10,6 +10,9 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import { type Scene } from "../scene.pure";
 import { RegisterClass } from "../Misc/typeStore";
 
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
+
 /**
  * DisplayPassPostProcess which produces an output the same as it's input
  */
@@ -35,12 +38,19 @@ export class DisplayPassPostProcess extends PostProcess {
         super(name, "displayPass", ["passSampler"], ["passSampler"], options, camera, samplingMode, engine, reusable);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/displayPass.fragment")],
+        webGPU: () => [import("../ShadersWGSL/displayPass.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/displayPass.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/displayPass.fragment")]));
+        }
+
+        const promise = DisplayPassPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
 
         super._gatherImports(useWebGPU, list);

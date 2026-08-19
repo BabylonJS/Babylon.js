@@ -8,6 +8,7 @@ import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { VertexBuffer } from "core/Meshes/buffer";
 import { type GaussianSplattingMesh, IsGaussianSplattingClassName } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.pure";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -106,21 +107,25 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [
+            import("../../../../Shaders/ShadersInclude/gaussianSplattingVertexDeclaration"),
+            import("../../../../Shaders/ShadersInclude/gaussianSplatting"),
+            import("../../../../Shaders/ShadersInclude/helperFunctions"),
+        ],
+        webGPU: () => [
+            import("../../../../ShadersWGSL/ShadersInclude/gaussianSplattingVertexDeclaration"),
+            import("../../../../ShadersWGSL/ShadersInclude/gaussianSplatting"),
+            import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
+        ],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../../../../ShadersWGSL/ShadersInclude/gaussianSplattingVertexDeclaration"),
-                import("../../../../ShadersWGSL/ShadersInclude/gaussianSplatting"),
-                import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
-            ]);
-        } else {
-            await Promise.all([
-                import("../../../../Shaders/ShadersInclude/gaussianSplattingVertexDeclaration"),
-                import("../../../../Shaders/ShadersInclude/gaussianSplatting"),
-                import("../../../../Shaders/ShadersInclude/helperFunctions"),
-            ]);
+        const promise = GaussianSplattingBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

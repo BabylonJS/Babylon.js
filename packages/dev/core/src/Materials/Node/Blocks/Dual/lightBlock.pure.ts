@@ -18,6 +18,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import { Logger } from "../../../../Misc/logger";
 import { BindLight, BindLights, PrepareDefinesForLight, PrepareDefinesForLights, PrepareUniformsAndSamplersForLight } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -175,31 +176,35 @@ export class LightBlock extends NodeMaterialBlock {
         state._excludeVariableName("vViewDepth");
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [
+            import("../../../../Shaders/ShadersInclude/lightFragmentDeclaration"),
+            import("../../../../Shaders/ShadersInclude/lightFragment"),
+            import("../../../../Shaders/ShadersInclude/lightUboDeclaration"),
+            import("../../../../Shaders/ShadersInclude/lightVxUboDeclaration"),
+            import("../../../../Shaders/ShadersInclude/lightVxFragmentDeclaration"),
+            import("../../../../Shaders/ShadersInclude/helperFunctions"),
+            import("../../../../Shaders/ShadersInclude/lightsFragmentFunctions"),
+            import("../../../../Shaders/ShadersInclude/shadowsFragmentFunctions"),
+            import("../../../../Shaders/ShadersInclude/shadowsVertex"),
+        ],
+        webGPU: () => [
+            import("../../../../ShadersWGSL/ShadersInclude/lightFragment"),
+            import("../../../../ShadersWGSL/ShadersInclude/lightUboDeclaration"),
+            import("../../../../ShadersWGSL/ShadersInclude/lightVxUboDeclaration"),
+            import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
+            import("../../../../ShadersWGSL/ShadersInclude/lightsFragmentFunctions"),
+            import("../../../../ShadersWGSL/ShadersInclude/shadowsFragmentFunctions"),
+            import("../../../../ShadersWGSL/ShadersInclude/shadowsVertex"),
+        ],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../../../../ShadersWGSL/ShadersInclude/lightFragment"),
-                import("../../../../ShadersWGSL/ShadersInclude/lightUboDeclaration"),
-                import("../../../../ShadersWGSL/ShadersInclude/lightVxUboDeclaration"),
-                import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
-                import("../../../../ShadersWGSL/ShadersInclude/lightsFragmentFunctions"),
-                import("../../../../ShadersWGSL/ShadersInclude/shadowsFragmentFunctions"),
-                import("../../../../ShadersWGSL/ShadersInclude/shadowsVertex"),
-            ]);
-        } else {
-            await Promise.all([
-                import("../../../../Shaders/ShadersInclude/lightFragmentDeclaration"),
-                import("../../../../Shaders/ShadersInclude/lightFragment"),
-                import("../../../../Shaders/ShadersInclude/lightUboDeclaration"),
-                import("../../../../Shaders/ShadersInclude/lightVxUboDeclaration"),
-                import("../../../../Shaders/ShadersInclude/lightVxFragmentDeclaration"),
-                import("../../../../Shaders/ShadersInclude/helperFunctions"),
-                import("../../../../Shaders/ShadersInclude/lightsFragmentFunctions"),
-                import("../../../../Shaders/ShadersInclude/shadowsFragmentFunctions"),
-                import("../../../../Shaders/ShadersInclude/shadowsVertex"),
-            ]);
+        const promise = LightBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

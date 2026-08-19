@@ -16,6 +16,7 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { type Scene } from "../scene.pure";
 import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { type Animation } from "../Animations/animation.pure";
@@ -654,12 +655,16 @@ export class PostProcess {
         }
     }
 
+    private static readonly _VertexShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/postprocess.vertex")],
+        webGPU: () => [import("../ShadersWGSL/postprocess.vertex")],
+    });
+
     protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {
         // this._webGPUReady is used to detect when a postprocess is intended to be used with WebGPU
-        if (useWebGPU && this._webGPUReady) {
-            list.push(Promise.all([import("../ShadersWGSL/postprocess.vertex")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/postprocess.vertex")]));
+        const promise = PostProcess._VertexShaderLoader.load(useWebGPU && this._webGPUReady ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
     }
 

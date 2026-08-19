@@ -1,6 +1,7 @@
 import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions, type Vector2, type Effect } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { EngineStore } from "../Engines/engineStore";
 
 /**
@@ -27,12 +28,19 @@ export class ThinBlurPostProcess extends EffectWrapper {
      */
     public static readonly Samplers = ["circleOfConfusionSampler"];
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/kernelBlur.fragment"), import("../Shaders/kernelBlur.vertex")],
+        webGPU: () => [import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/kernelBlur.fragment"), import("../Shaders/kernelBlur.vertex")]));
+        }
+
+        const promise = ThinBlurPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
     }
 

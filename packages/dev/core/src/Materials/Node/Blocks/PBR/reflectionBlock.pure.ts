@@ -17,6 +17,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import { type Scene } from "../../../../scene.pure";
 import { Logger } from "core/Misc/logger";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -74,21 +75,25 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         this._initReflectionBlockShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ReflectionBlockShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [
+            import("../../../../Shaders/ShadersInclude/helperFunctions"),
+            import("../../../../Shaders/ShadersInclude/reflectionFunction"),
+            import("../../../../Shaders/ShadersInclude/harmonicsFunctions"),
+        ],
+        webGPU: () => [
+            import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
+            import("../../../../ShadersWGSL/ShadersInclude/reflectionFunction"),
+            import("../../../../ShadersWGSL/ShadersInclude/harmonicsFunctions"),
+        ],
+    });
+
     private async _initReflectionBlockShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
-                import("../../../../ShadersWGSL/ShadersInclude/reflectionFunction"),
-                import("../../../../ShadersWGSL/ShadersInclude/harmonicsFunctions"),
-            ]);
-        } else {
-            await Promise.all([
-                import("../../../../Shaders/ShadersInclude/helperFunctions"),
-                import("../../../../Shaders/ShadersInclude/reflectionFunction"),
-                import("../../../../Shaders/ShadersInclude/harmonicsFunctions"),
-            ]);
+        const promise = ReflectionBlock._ReflectionBlockShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

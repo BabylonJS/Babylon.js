@@ -40,6 +40,7 @@ import {
     PrepareUniformsAndSamplersForLight,
 } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 const MapOutputToVariable: { [name: string]: [string, string] } = {
@@ -460,12 +461,17 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../../../Shaders/pbr.vertex"), import("../../../../Shaders/pbr.fragment")],
+        webGPU: () => [import("../../../../ShadersWGSL/pbr.vertex"), import("../../../../ShadersWGSL/pbr.fragment")],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([import("../../../../ShadersWGSL/pbr.vertex"), import("../../../../ShadersWGSL/pbr.fragment")]);
-        } else {
-            await Promise.all([import("../../../../Shaders/pbr.vertex"), import("../../../../Shaders/pbr.fragment")]);
+
+        const promise = PBRMetallicRoughnessBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

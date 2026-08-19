@@ -10,6 +10,7 @@ import { type Mesh } from "core/Meshes/mesh.pure";
 import { type Effect } from "core/Materials/effect.pure";
 import { type NodeMaterial } from "../../nodeMaterial.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -77,16 +78,17 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../../../Shaders/ShadersInclude/gaussianSplattingVertexDeclaration"), import("../../../../Shaders/ShadersInclude/gaussianSplatting")],
+        webGPU: () => [import("../../../../ShadersWGSL/ShadersInclude/gaussianSplattingVertexDeclaration"), import("../../../../ShadersWGSL/ShadersInclude/gaussianSplatting")],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../../../../ShadersWGSL/ShadersInclude/gaussianSplattingVertexDeclaration"),
-                import("../../../../ShadersWGSL/ShadersInclude/gaussianSplatting"),
-            ]);
-        } else {
-            await Promise.all([import("../../../../Shaders/ShadersInclude/gaussianSplattingVertexDeclaration"), import("../../../../Shaders/ShadersInclude/gaussianSplatting")]);
+        const promise = SplatReaderBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

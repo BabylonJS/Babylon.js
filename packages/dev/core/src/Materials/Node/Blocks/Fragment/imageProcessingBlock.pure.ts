@@ -13,6 +13,7 @@ import { type Scene } from "../../../../scene.pure";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -93,21 +94,25 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [
+            import("../../../../Shaders/ShadersInclude/helperFunctions"),
+            import("../../../../Shaders/ShadersInclude/imageProcessingDeclaration"),
+            import("../../../../Shaders/ShadersInclude/imageProcessingFunctions"),
+        ],
+        webGPU: () => [
+            import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
+            import("../../../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration"),
+            import("../../../../ShadersWGSL/ShadersInclude/imageProcessingFunctions"),
+        ],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
-                import("../../../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration"),
-                import("../../../../ShadersWGSL/ShadersInclude/imageProcessingFunctions"),
-            ]);
-        } else {
-            await Promise.all([
-                import("../../../../Shaders/ShadersInclude/helperFunctions"),
-                import("../../../../Shaders/ShadersInclude/imageProcessingDeclaration"),
-                import("../../../../Shaders/ShadersInclude/imageProcessingFunctions"),
-            ]);
+        const promise = ImageProcessingBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

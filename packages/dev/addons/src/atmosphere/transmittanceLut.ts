@@ -17,6 +17,7 @@ import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture
 import { Sample2DRgbaToRef } from "./sampling";
 import { Vector3Dot } from "core/Maths/math.vector.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 const LutWidthPx = 256;
 const LutHeightPx = 64;
@@ -118,6 +119,11 @@ export class TransmittanceLut {
         return this._lutData[0] !== undefined;
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/transmittance.fragment")],
+        webGPU: () => [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/transmittance.fragment")],
+    });
+
     /**
      * Constructs the {@link TransmittanceLut}.
      * @param atmosphere - The atmosphere that owns this LUT.
@@ -159,13 +165,7 @@ export class TransmittanceLut {
             defines: ["#define POSITION_VEC2"],
             useShaderStore: true,
             shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializations: (_, list) => {
-                list.push(
-                    ...(useWebGPU
-                        ? [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/transmittance.fragment")]
-                        : [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/transmittance.fragment")])
-                );
-            },
+            shaderLoaders: [TransmittanceLut._ShaderLoader],
         });
 
         this._effectRenderer = new EffectRenderer(engine, {

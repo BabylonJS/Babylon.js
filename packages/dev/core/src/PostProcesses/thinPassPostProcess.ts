@@ -1,6 +1,8 @@
 import { type Nullable, type EffectWrapperCreationOptions, type AbstractEngine } from "core/index";
 import { EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * PassPostProcess which produces an output the same as it's input
@@ -11,12 +13,19 @@ export class ThinPassPostProcess extends EffectWrapper {
      */
     public static readonly FragmentUrl = "pass";
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/pass.fragment")],
+        webGPU: () => [import("../ShadersWGSL/pass.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/pass.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/pass.fragment")]));
+        }
+
+        const promise = ThinPassPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
 
         super._gatherImports(useWebGPU, list);
@@ -55,12 +64,19 @@ export class ThinPassCubePostProcess extends EffectWrapper {
      */
     public static readonly FragmentUrl = "passCube";
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/passCube.fragment")],
+        webGPU: () => [import("../ShadersWGSL/passCube.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/passCube.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/passCube.fragment")]));
+        }
+
+        const promise = ThinPassCubePostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
 
         super._gatherImports(useWebGPU, list);

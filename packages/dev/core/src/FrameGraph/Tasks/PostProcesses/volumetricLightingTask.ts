@@ -8,6 +8,7 @@ import { FrameGraphClearTextureTask } from "../Texture/clearTextureTask";
 import { FrameGraphObjectRendererTask } from "../Rendering/objectRendererTask";
 import { ShaderMaterial } from "core/Materials/shaderMaterial.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 const InvViewProjectionMatrix = new Matrix();
 
@@ -210,13 +211,14 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
         this.lightPower = this._lightPower;
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../../Shaders/volumetricLightingRenderVolume.vertex"), import("../../../Shaders/volumetricLightingRenderVolume.fragment")],
+        webGPU: () => [import("../../../ShadersWGSL/volumetricLightingRenderVolume.vertex"), import("../../../ShadersWGSL/volumetricLightingRenderVolume.fragment")],
+    });
+
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public override initAsync(): Promise<unknown> {
-        if (this._frameGraph.engine.isWebGPU) {
-            return Promise.all([import("../../../ShadersWGSL/volumetricLightingRenderVolume.vertex"), import("../../../ShadersWGSL/volumetricLightingRenderVolume.fragment")]);
-        }
-
-        return Promise.all([import("../../../Shaders/volumetricLightingRenderVolume.vertex"), import("../../../Shaders/volumetricLightingRenderVolume.fragment")]);
+        return FrameGraphVolumetricLightingTask._ShaderLoader.load(this._frameGraph.engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL) ?? Promise.resolve();
     }
 
     public override isReady() {

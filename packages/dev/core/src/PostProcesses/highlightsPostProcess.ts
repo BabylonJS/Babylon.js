@@ -3,6 +3,8 @@ import { type Camera } from "../Cameras/camera";
 import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Extracts highlights from the image
@@ -40,12 +42,19 @@ export class HighlightsPostProcess extends PostProcess {
         super(name, "highlights", null, null, options, camera, samplingMode, engine, reusable, null, textureType);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../Shaders/highlights.fragment")],
+        webGPU: () => [import("../ShadersWGSL/highlights.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/highlights.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/highlights.fragment")]));
+        }
+
+        const promise = HighlightsPostProcess._ShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
 
         super._gatherImports(useWebGPU, list);

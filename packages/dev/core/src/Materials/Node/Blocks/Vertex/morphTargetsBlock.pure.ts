@@ -14,6 +14,7 @@ import { InputBlock } from "../Input/inputBlock.pure";
 
 import { BindMorphTargetParameters, PrepareDefinesForMorphTargets } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -149,23 +150,27 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [
+            import("../../../../Shaders/ShadersInclude/morphTargetsVertex"),
+            import("../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration"),
+            import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobal"),
+            import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration"),
+        ],
+        webGPU: () => [
+            import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertex"),
+            import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration"),
+            import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal"),
+            import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration"),
+        ],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertex"),
-                import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration"),
-                import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal"),
-                import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration"),
-            ]);
-        } else {
-            await Promise.all([
-                import("../../../../Shaders/ShadersInclude/morphTargetsVertex"),
-                import("../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration"),
-                import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobal"),
-                import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration"),
-            ]);
+        const promise = MorphTargetsBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

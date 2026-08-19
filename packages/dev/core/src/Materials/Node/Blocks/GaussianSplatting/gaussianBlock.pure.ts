@@ -6,6 +6,7 @@ import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -74,23 +75,27 @@ export class GaussianBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [
+            import("../../../../Shaders/ShadersInclude/clipPlaneFragmentDeclaration"),
+            import("../../../../Shaders/ShadersInclude/logDepthDeclaration"),
+            import("../../../../Shaders/ShadersInclude/fogFragmentDeclaration"),
+            import("../../../../Shaders/ShadersInclude/gaussianSplattingFragmentDeclaration"),
+        ],
+        webGPU: () => [
+            import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration"),
+            import("../../../../ShadersWGSL/ShadersInclude/logDepthDeclaration"),
+            import("../../../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration"),
+            import("../../../../ShadersWGSL/ShadersInclude/gaussianSplattingFragmentDeclaration"),
+        ],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration"),
-                import("../../../../ShadersWGSL/ShadersInclude/logDepthDeclaration"),
-                import("../../../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration"),
-                import("../../../../ShadersWGSL/ShadersInclude/gaussianSplattingFragmentDeclaration"),
-            ]);
-        } else {
-            await Promise.all([
-                import("../../../../Shaders/ShadersInclude/clipPlaneFragmentDeclaration"),
-                import("../../../../Shaders/ShadersInclude/logDepthDeclaration"),
-                import("../../../../Shaders/ShadersInclude/fogFragmentDeclaration"),
-                import("../../../../Shaders/ShadersInclude/gaussianSplattingFragmentDeclaration"),
-            ]);
+        const promise = GaussianBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

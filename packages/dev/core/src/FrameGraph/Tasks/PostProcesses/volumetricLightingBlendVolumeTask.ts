@@ -11,6 +11,8 @@ import { Vector3, Matrix } from "core/Maths/math.vector.pure";
 import { Constants } from "core/Engines/constants";
 import { ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * @internal
@@ -28,12 +30,19 @@ class VolumetricLightingBlendVolumeThinPostProcess extends ThinPassPostProcess {
 
     private _invProjection: Matrix;
 
+    private static readonly _BlendVolumeShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("../../../Shaders/pass.fragment"), import("../../../Shaders/volumetricLightingBlendVolume.fragment")],
+        webGPU: () => [import("../../../ShadersWGSL/pass.fragment"), import("../../../ShadersWGSL/volumetricLightingBlendVolume.fragment")],
+    });
+
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
             this._webGPUReady = true;
-            list.push(Promise.all([import("../../../ShadersWGSL/pass.fragment"), import("../../../ShadersWGSL/volumetricLightingBlendVolume.fragment")]));
-        } else {
-            list.push(Promise.all([import("../../../Shaders/pass.fragment"), import("../../../Shaders/volumetricLightingBlendVolume.fragment")]));
+        }
+
+        const promise = VolumetricLightingBlendVolumeThinPostProcess._BlendVolumeShaderLoader.load(useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
+        if (promise !== null) {
+            list.push(promise);
         }
 
         super._gatherImports(useWebGPU, list);
