@@ -4395,10 +4395,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 if (this.geometry.isVerticesDataPresent(VertexBuffer.TangentKind + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.TangentKind + index);
                 }
-                if (this.geometry.isVerticesDataPresent(VertexBuffer.UVKind + index)) {
+                if (this.geometry.isVerticesDataPresent(VertexBuffer.UVKind + "_" + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.UVKind + "_" + index);
                 }
-                if (this.geometry.isVerticesDataPresent(VertexBuffer.UV2Kind + index)) {
+                if (this.geometry.isVerticesDataPresent(VertexBuffer.UV2Kind + "_" + index)) {
                     this.geometry.removeVerticesData(VertexBuffer.UV2Kind + "_" + index);
                 }
                 if (this.geometry.isVerticesDataPresent(VertexBuffer.ColorKind + index)) {
