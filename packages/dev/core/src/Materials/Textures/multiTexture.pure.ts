@@ -381,6 +381,7 @@ export class MultiTexture extends ProceduralTexture {
         for (let i = 0; i < this.pixels.length; i++) {
             this.pixels[i] = null;
         }
+        this._layers.length = 0;
         this._canvas = null;
         this._ctx = null;
 
@@ -470,6 +471,15 @@ export class MultiTexture extends ProceduralTexture {
     }
 
     private _uploadBitmap(index: number, bitmap: ImageBitmap, meta: { etag: string | null; lastModified: string | null }): void {
+        // If dispose() won the race, drop the decoded bitmap without touching the layer entry
+        // (dispose clears _layers), the pixel cache, the refresh counter or the onLoad path:
+        // the internal 2D array texture is already destroyed and upload would throw
+        // "Cannot upload to a 2D array texture that has no internal texture".
+        if (this._disposed) {
+            bitmap.close();
+            return;
+        }
+
         UploadImageToTexture2DArrayLayer(this._arrayTexture, bitmap, index, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
 
         const entry = this._layers[index];
@@ -489,15 +499,6 @@ export class MultiTexture extends ProceduralTexture {
         entry.loaded = true;
         entry.etag = meta.etag;
         entry.lastModified = meta.lastModified;
-        // If dispose() won the race, drop the decoded bitmap without touching the pixel cache,
-        // refresh counter or onLoad path: the internal 2D array texture is already destroyed
-        // and upload/refresh would throw "no internal texture".
-        if (this._disposed) {
-            entry.bitmap.close();
-            entry.bitmap = null;
-            entry.loaded = false;
-            return;
-        }
         this.pixels[index] = entry.pixels;
 
         this.resetRefreshCounter();
@@ -506,6 +507,10 @@ export class MultiTexture extends ProceduralTexture {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private async _initialize(): Promise<void> {
         try {
+            if (this._disposed) {
+                // Dispose won the init race; leave the texture as-is, the object is dead.
+                return;
+            }
             const internal = this._arrayTexture.getInternalTexture();
             const mips = this._mtOptions.generateMipMaps ?? false;
             if (mips && internal) {

@@ -692,7 +692,7 @@ describe("MultiTexture", () => {
         await new Promise((resolve) => setTimeout(resolve, 100));
         expect(errorSpy).not.toHaveBeenCalled();
         expect(mt.pixels[0]).toBeNull();
-        expect((mt as any)._layers[0].loaded).toBe(false);
+        expect((mt as any)._layers.length).toBe(0);
         errorSpy.mockRestore();
     });
 
