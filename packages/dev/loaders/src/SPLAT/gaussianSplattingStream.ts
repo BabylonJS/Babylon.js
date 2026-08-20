@@ -44,8 +44,8 @@ interface ISOGLODNode {
     activeLod?: number;
     /** Distance-based ideal LOD level for this node, recomputed per frame. */
     optimalLod?: number;
-    /** Projected screen size (pixels) of the node's AABB — the max across active cameras — used as the budget threshold priority.
-     * Only computed while the splat budget is enabled. */
+    /** Projected screen size (pixels) of the node's AABB — the max across active cameras. Larger nodes keep finer
+     * detail under the splat budget. Only computed while the budget is enabled. */
     pixelSize?: number;
     /** Available LOD levels for this leaf, sorted ascending (0 = finest). Set during the tree walk. */
     availableLevels?: number[];
@@ -730,10 +730,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     /**
      * This stream's own budget-driven LOD cap in splats (see {@link IGaussianSplattingStreamOptions.splatBudget}).
      * `0` disables the budget (pure distance LOD). Setting it caps the rendered splat count, taking effect on the
-     * next frame. Overrides the inherited compound
-     * accessor to force an immediate LOD re-eval (the stream never hosts other budget participants). When this stream
-     * is hosted in a compound whose own budget is set, that shared budget overrides this value — read the actual
-     * runtime cap from {@link effectiveSplatBudget}, not this getter (which always reports the configured own cap).
+     * next frame. When this stream is hosted in a compound whose own budget is set, that shared budget overrides
+     * this value — read the actual runtime cap from {@link effectiveSplatBudget}, not this getter (which always
+     * reports the configured own cap).
      * @experimental
      */
     public override get splatBudget(): number {
@@ -1109,7 +1108,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
                 }
 
                 // Budget-driven LOD: raw projected pixel size (node diameter in pixels), largest across cameras.
-                // Local radius/distance is world-uniform-scale-invariant. No view-direction weighting (no foveation).
+                // Uses local radius/distance (invariant under uniform world scale); every camera weighs the same and
+                // view direction is ignored, so single- and multi-camera rendering stay consistent.
                 if (budgetEnabled) {
                     const rdx = cx - cam.px;
                     const rdy = cy - cam.py;
@@ -2504,10 +2504,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     }
 
     /**
-     * Updates each leaf node's {@link ISOGLODNode.inFrustum} flag from a per-node frustum test against the
-     * active camera. When {@link frustumCulling} is disabled (or there is no camera) every node is marked
-     * in-frustum. Bounds are static (from the LOD tree), so flags are valid for all nodes regardless of
-     * decode state. Returns true when any node's in-frustum state changed (so the LOD bias must be re-applied).
+     * Updates each leaf node's {@link ISOGLODNode.inFrustum} flag: a node is in-frustum if it is inside ANY
+     * active camera's frustum (the union). When {@link frustumCulling} is disabled (or there are no cameras)
+     * every node is marked in-frustum. Bounds are static (from the LOD tree), so flags are valid for all nodes
+     * regardless of decode state. Returns true when any node's in-frustum state changed (so the LOD bias must be re-applied).
      * @returns whether any node's in-frustum state changed
      */
     private _updateNodeFrustum(): boolean {

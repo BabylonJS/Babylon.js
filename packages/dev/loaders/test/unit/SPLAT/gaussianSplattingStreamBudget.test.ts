@@ -135,7 +135,7 @@ describe("GaussianSplattingStream budget-driven LOD", () => {
         expect(node.pixelSize).toBeCloseTo(full * 0.5, 4);
     });
 
-    it("is view-direction-independent: two cameras at one position match a single camera there (no foveation)", () => {
+    it("is view-direction-independent: two cameras at one position match a single camera there", () => {
         const node = makeNode([2, -1, -1], [4, 1, 1], { 0: 1000, 1: 100, 2: 10 });
         const s = makeStream(2000, [node]);
 
