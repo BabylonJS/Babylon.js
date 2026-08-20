@@ -292,14 +292,17 @@ export class Layer {
             this._previousDefines = defines;
             this._drawWrapper.effect = engine.createEffect(
                 "layer",
-                <IEffectCreationOptions>{
+                {
                     attributes: [VertexBuffer.PositionKind],
                     uniformsNames: ["textureMatrix", "color", "scale", "offset"],
                     samplers: ["textureSampler"],
                     defines,
+                    fallbacks: null,
+                    onCompiled: null,
+                    onError: null,
                     shaderLanguage: this._shaderLanguage,
                     shaderLoaders: [Layer._ShaderLoader],
-                },
+                } satisfies IEffectCreationOptions,
                 engine
             );
         }

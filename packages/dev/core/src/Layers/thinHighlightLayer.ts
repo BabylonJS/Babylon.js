@@ -266,7 +266,7 @@ export class ThinHighlightLayer extends ThinEffectLayer {
     public override _createMergeEffect(): Effect {
         return this._engine.createEffect(
             "glowMapMerge",
-            <IEffectCreationOptions>{
+            {
                 attributes: [VertexBuffer.PositionKind],
                 uniformsNames: ["offset"],
                 samplers: ["textureSampler"],
@@ -276,7 +276,7 @@ export class ThinHighlightLayer extends ThinEffectLayer {
                 onError: null,
                 shaderLanguage: this._shaderLanguage,
                 shaderLoaders: [ThinHighlightLayer._MergeShaderLoader],
-            },
+            } satisfies IEffectCreationOptions,
             this._engine
         );
     }

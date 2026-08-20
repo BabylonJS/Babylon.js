@@ -404,7 +404,7 @@ export class ProceduralTexture extends Texture {
 
             this._drawWrapper.effect = engine.createEffect(
                 shaders,
-                <IEffectCreationOptions>{
+                {
                     attributes: [VertexBuffer.PositionKind],
                     uniformsNames: this._uniforms,
                     samplers: this._samplers,
@@ -429,7 +429,7 @@ export class ProceduralTexture extends Texture {
                     shaderLanguage: this._shaderLanguage,
                     shaderLoaders: [ProceduralTexture._ShaderLoader, ...(this._options.shaderLoaders ?? [])],
                     extraInitializationsAsync: this._options.extraInitializationsAsync,
-                },
+                } satisfies IEffectCreationOptions,
                 engine
             );
         }

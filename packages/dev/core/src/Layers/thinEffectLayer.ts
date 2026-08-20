@@ -718,7 +718,7 @@ export class ThinEffectLayer {
             drawWrapper.setEffect(
                 this._engine.createEffect(
                     "glowMapGeneration",
-                    <IEffectCreationOptions>{
+                    {
                         attributes: attribs,
                         uniformsNames: uniforms,
                         uniformBuffersNames: [],
@@ -730,7 +730,7 @@ export class ThinEffectLayer {
                         indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
                         shaderLanguage: this._shaderLanguage,
                         shaderLoaders: [ThinEffectLayer._ShaderLoader],
-                    },
+                    } satisfies IEffectCreationOptions,
                     this._engine
                 ),
                 join

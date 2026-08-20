@@ -195,7 +195,7 @@ export class ThinGlowLayer extends ThinEffectLayer {
         // Effect
         return this._engine.createEffect(
             "glowMapMerge",
-            <IEffectCreationOptions>{
+            {
                 attributes: [VertexBuffer.PositionKind],
                 uniformsNames: ["offset"],
                 samplers: ["textureSampler", "textureSampler2"],
@@ -205,7 +205,7 @@ export class ThinGlowLayer extends ThinEffectLayer {
                 onError: null,
                 shaderLanguage: this.shaderLanguage,
                 shaderLoaders: [ThinGlowLayer._MergeShaderLoader],
-            },
+            } satisfies IEffectCreationOptions,
             this._engine
         );
     }
