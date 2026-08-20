@@ -466,9 +466,7 @@ test("environment added after model is built relights the model", async ({ page 
 test("environment skybox", async ({ page }) => {
     // Regression test for the previous behavior where requesting a skybox with no lighting loaded threw.
     // ViewerLite now loads the requested skybox URL as the environment (Lite couples skybox + IBL to one
-    // cubemap). This is validated behaviorally rather than via a shared reference screenshot: the full
-    // viewer blurs the skybox by default (environmentConfig.blur = 0.3), a feature ViewerLite does not
-    // support yet, so the backgrounds diverge too much for pixel parity.
+    // cubemap).
     await attachViewerElement(
         page,
         `
@@ -488,6 +486,159 @@ test("environment skybox", async ({ page }) => {
         return viewer._currentSkyboxUrl;
     });
     expect(skyboxUrl).toBe("https://assets.babylonjs.com/environments/environmentSpecular.env");
+
+    await expectScreenshotMatch(page, "viewer-env-skybox.png");
+});
+
+test("environment-rotation", async ({ page }) => {
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            environment="auto"
+            environment-rotation="1.5"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    const rotation = await page.evaluate(() => {
+        return (document.querySelector("babylon-viewer") as ViewerElement).viewer?.environmentConfig.rotation;
+    });
+    expect(rotation).toBe(1.5);
+    await expectScreenshotMatch(page, "viewer-env-rotation.png");
+});
+
+test("dynamic environment rotation", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            environment="auto"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    const rotation = await page.evaluate((viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer!;
+        viewer.environmentConfig = { rotation: 1.5 };
+        return viewer.environmentConfig.rotation;
+    }, viewerElementHandle);
+    expect(rotation).toBe(1.5);
+    await expectScreenshotMatch(page, "viewer-env-rotation.png");
+});
+
+test("dynamic environment rotation with lighting only", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            environment-lighting="https://assets.babylonjs.com/environments/environmentSpecular.env"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    await page.evaluate((viewerElement) => {
+        (viewerElement as ViewerElement).viewer!.environmentConfig = { rotation: 1.5 };
+    }, viewerElementHandle);
+    const before = await waitForFrameCount(page, 1);
+    await waitForFrameCount(page, before + 2);
+
+    const rotation = await page.evaluate((viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer as unknown as {
+            _scene: { _environmentRotation?: number; _frameGraph: { _tasks: { _suData?: Float32Array }[] } };
+        };
+        return {
+            scene: viewer._scene._environmentRotation,
+            ubo: viewer._scene._frameGraph._tasks.find((task) => task._suData)?._suData?.[36],
+        };
+    }, viewerElementHandle);
+    expect(rotation.scene).toBe(1.5);
+    expect(rotation.ubo).toBe(1.5);
+});
+
+test("dynamic environment rotation rotates the shadow light", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            environment="auto"
+            shadow-quality="normal"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    const directions = await page.evaluate((viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer as unknown as {
+            environmentConfig: { rotation: number };
+            _shadowLight: { direction: { x: number; y: number; z: number } } | null;
+        };
+        const light = viewer._shadowLight;
+        if (!light) {
+            return null;
+        }
+
+        const before = [light.direction.x, light.direction.y, light.direction.z];
+        viewer.environmentConfig = { rotation: Math.PI / 2 };
+        const after = [light.direction.x, light.direction.y, light.direction.z];
+        return { before, after };
+    }, viewerElementHandle);
+
+    expect(directions).not.toBeNull();
+    expect(directions!.after[0]).toBeCloseTo(-directions!.before[2]);
+    expect(directions!.after[1]).toBeCloseTo(directions!.before[1]);
+    expect(directions!.after[2]).toBeCloseTo(directions!.before[0]);
+});
+
+test("skybox-blur", async ({ page }) => {
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            environment-skybox="https://assets.babylonjs.com/environments/environmentSpecular.env"
+            skybox-blur="0.8"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    await expectScreenshotMatch(page, "viewer-skybox-blur.png");
+});
+
+test("dynamic skybox blur", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            environment-skybox="https://assets.babylonjs.com/environments/environmentSpecular.env"
+            skybox-blur="0"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    const blur = await page.evaluate((viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer!;
+        viewer.environmentConfig = { blur: 0.8 };
+        return viewer.environmentConfig.blur;
+    }, viewerElementHandle);
+    expect(blur).toBe(0.8);
+    await expectScreenshotMatch(page, "viewer-skybox-blur.png");
 });
 
 // ============================================================
@@ -522,6 +673,138 @@ test("camera-auto-orbit", async ({ page }) => {
     expect(autoOrbit.enabled).toBe(true);
     expect(autoOrbit.speed).toBe(0.1);
     expect(autoOrbit.delay).toBe(500);
+});
+
+test("focusHotSpot handles string camera orbits while auto-orbit is active", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/flightHelmet.glb"
+            camera-auto-orbit
+            hotspots='{
+                "Plaque": {
+                    "type": "surface",
+                    "meshIndex": 7,
+                    "pointIndex": [8576, 8561, 8565],
+                    "barycentric": ["0.538", "0.007", "0.455"],
+                    "cameraOrbit": ["1.625", "1.540", "12.615"]
+                },
+                "Plug": {
+                    "type": "surface",
+                    "meshIndex": 7,
+                    "pointIndex": [8627, 8624, 8744],
+                    "barycentric": ["0.550", "0.172", "0.278"],
+                    "cameraOrbit": ["4.108", "1.350", "8.581"]
+                }
+            }'
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const cameraPoses = await page.evaluate(async (viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer!;
+        const viewerInternals = viewer as unknown as {
+            _camera: { alpha: number; beta: number; radius: number; target: { x: number; y: number; z: number } };
+            _cameraInterpolationAbort: AbortController | null;
+        };
+        const poses = [];
+
+        for (const name of ["Plaque", "Plug"]) {
+            viewer.cameraAutoOrbit = { enabled: true, speed: 0.5, delay: 0 };
+            const focused = viewer.focusHotSpot(name);
+            const timeout = performance.now() + 5000;
+            while (viewerInternals._cameraInterpolationAbort !== null && performance.now() < timeout) {
+                await new Promise((resolve) => setTimeout(resolve, 16));
+            }
+            viewer.cameraAutoOrbit = { enabled: false };
+
+            const camera = viewerInternals._camera;
+            poses.push({
+                focused,
+                settled: viewerInternals._cameraInterpolationAbort === null,
+                alpha: camera.alpha,
+                beta: camera.beta,
+                radius: camera.radius,
+                target: [camera.target.x, camera.target.y, camera.target.z],
+            });
+        }
+
+        return poses;
+    }, viewerElementHandle);
+
+    expect(cameraPoses).toHaveLength(2);
+    expect(cameraPoses[0]).toMatchObject({ focused: true, settled: true });
+    expect(cameraPoses[0].alpha).toBeCloseTo(1.625, 1);
+    expect(cameraPoses[0].beta).toBeCloseTo(1.54, 2);
+    expect(cameraPoses[0].radius).toBeCloseTo(12.615, 2);
+    expect(cameraPoses[1]).toMatchObject({ focused: true, settled: true });
+    expect(cameraPoses[1].alpha).toBeCloseTo(4.108, 1);
+    expect(cameraPoses[1].beta).toBeCloseTo(1.35, 2);
+    expect(cameraPoses[1].radius).toBeCloseTo(8.581, 2);
+
+    for (const pose of cameraPoses) {
+        expect([pose.alpha, pose.beta, pose.radius, ...pose.target].every((value) => typeof value === "number" && Number.isFinite(value))).toBe(true);
+    }
+});
+
+test("focusHotSpot preserves omitted camera orbit components", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/flightHelmet.glb"
+            hotspots='{
+                "Plaque": {
+                    "type": "surface",
+                    "meshIndex": 7,
+                    "pointIndex": [8576, 8561, 8565],
+                    "barycentric": ["0.538", "0.007", "0.455"]
+                }
+            }'
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+
+    const result = await page.evaluate(async (viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer!;
+        const viewerInternals = viewer as unknown as {
+            _camera: { alpha: number; beta: number; radius: number };
+            _cameraInterpolationAbort: AbortController | null;
+        };
+        const camera = viewerInternals._camera;
+        camera.alpha = 0.7;
+        camera.beta = 1.1;
+        camera.radius = 9;
+
+        const focused = viewer.focusHotSpot("Plaque");
+        const timeout = performance.now() + 5000;
+        while (viewerInternals._cameraInterpolationAbort !== null && performance.now() < timeout) {
+            await new Promise((resolve) => setTimeout(resolve, 16));
+        }
+
+        return {
+            focused,
+            settled: viewerInternals._cameraInterpolationAbort === null,
+            alpha: camera.alpha,
+            beta: camera.beta,
+            radius: camera.radius,
+        };
+    }, viewerElementHandle);
+
+    expect(result).toMatchObject({
+        focused: true,
+        settled: true,
+        alpha: 0.7,
+        beta: 1.1,
+        radius: 9,
+    });
 });
 
 test("resetCamera()", async ({ page }) => {
