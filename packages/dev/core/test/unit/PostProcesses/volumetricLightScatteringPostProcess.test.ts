@@ -73,12 +73,14 @@ describe("VolumetricLightScatteringPostProcess", () => {
             PostProcess.ForceGLSL = forceGLSL;
 
             const createEffect = vi.spyOn(engine, "createEffect").mockReturnValue(createReadyEffect(engine));
+            const getShaderLoaders = vi.spyOn(VolumetricLightScatteringPostProcess.prototype as any, "_getShaderLoaders").mockImplementation(() => []);
 
             expect(() => {
                 postProcess = new VolumetricLightScatteringPostProcess("vls", 1, null, undefined, undefined, undefined, undefined, undefined, scene);
             }).not.toThrow();
 
             expect(postProcess!.getEngine()).toBe(engine);
+            expect(getShaderLoaders).toHaveBeenCalledWith();
 
             const postProcessEffectCall = createEffect.mock.calls.find(([shaderPath]) => {
                 return typeof shaderPath === "object" && shaderPath !== null && "fragment" in shaderPath && shaderPath.fragment === "volumetricLightScattering";
