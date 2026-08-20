@@ -16,6 +16,7 @@ export * from "./observable.extensions.pure";
 export * from "./performanceMonitor";
 export * from "./sceneOptimizer";
 export * from "./sceneSerializer";
+export * from "./shaderLoader";
 export * from "./smartArray";
 export * from "./stringDictionary";
 export * from "./tags";
