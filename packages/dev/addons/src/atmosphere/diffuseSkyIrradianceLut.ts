@@ -41,7 +41,6 @@ export class DiffuseSkyIrradianceLut {
         webGL: () => [import("./Shaders/fullscreenTriangle.vertex"), import("./Shaders/diffuseSkyIrradiance.fragment")],
         webGPU: () => [import("./ShadersWGSL/fullscreenTriangle.vertex"), import("./ShadersWGSL/diffuseSkyIrradiance.fragment")],
     });
-    private static _Patched = false;
 
     private readonly _atmosphere: Atmosphere;
     private _renderTarget: Nullable<RenderTargetTexture> = null;
@@ -130,12 +129,6 @@ export class DiffuseSkyIrradianceLut {
             shaderLanguage: useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             shaderLoaders: [DiffuseSkyIrradianceLut._ShaderLoader],
             extraInitializationsAsync: async () => {
-                // The shader modules are guaranteed to be loaded by this point, since the shaderLoaders above are awaited first.
-                if (DiffuseSkyIrradianceLut._Patched) {
-                    return;
-                }
-                DiffuseSkyIrradianceLut._Patched = true;
-
                 // Replace the CUSTOM_IRRADIANCE_FILTERING_INPUT and CUSTOM_IRRADIANCE_FILTERING_FUNCTION placeholders.
                 // Note, the regex replacements look for lines that *only* contain these placeholder strings.
                 // Since buildShaders removes leading whitespace, the placeholders are expected to start at the beginning of the line.
