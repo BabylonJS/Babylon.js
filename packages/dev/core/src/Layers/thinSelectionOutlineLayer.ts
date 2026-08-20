@@ -383,12 +383,6 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                         indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
                         shaderLanguage: this._shaderLanguage,
                         shaderLoaders: [ThinSelectionOutlineLayer._SelectionShaderLoader],
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  await this._importShadersAsync();
-                                  this._shadersLoaded = true;
-                              },
                     },
                     this._engine
                 ),
@@ -449,12 +443,6 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 onError: null,
                 shaderLanguage: this._shaderLanguage,
                 shaderLoaders: [ThinSelectionOutlineLayer._SelectionShaderLoader],
-                extraInitializationsAsync: this._shadersLoaded
-                    ? undefined
-                    : async () => {
-                          await this._importShadersAsync();
-                          this._shadersLoaded = true;
-                      },
             },
             this._engine
         );

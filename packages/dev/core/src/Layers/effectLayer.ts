@@ -299,7 +299,7 @@ export abstract class EffectLayer {
     ) {
         this._internalThinEffectLayer = !thinEffectLayer;
         if (!thinEffectLayer) {
-            thinEffectLayer = new ThinEffectLayer(name, scene, forceGLSL, false, this._importShadersAsync.bind(this));
+            thinEffectLayer = new ThinEffectLayer(name, scene, forceGLSL, false);
             thinEffectLayer.getEffectName = this.getEffectName.bind(this);
             thinEffectLayer.isReady = this.isReady.bind(this);
             thinEffectLayer._createMergeEffect = this._createMergeEffect.bind(this);
@@ -349,14 +349,6 @@ export abstract class EffectLayer {
         this._thinEffectLayer.onAfterComposeObservable.add(() => {
             this.onAfterComposeObservable.notifyObservers(this);
         });
-    }
-
-    protected get _shadersLoaded() {
-        return this._thinEffectLayer._shadersLoaded;
-    }
-
-    protected set _shadersLoaded(value: boolean) {
-        this._thinEffectLayer._shadersLoaded = value;
     }
 
     /**
@@ -525,8 +517,6 @@ export abstract class EffectLayer {
             ? this._thinEffectLayer._internalIsSubMeshReady(subMesh, useInstances, emissiveTexture)
             : this._thinEffectLayer._isSubMeshReady(subMesh, useInstances, emissiveTexture);
     }
-
-    protected async _importShadersAsync(): Promise<void> {}
 
     protected _arePostProcessAndMergeReady(): boolean {
         return this._internalThinEffectLayer ? this._thinEffectLayer._internalIsLayerReady() : this._thinEffectLayer.isLayerReady();

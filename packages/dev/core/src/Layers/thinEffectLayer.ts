@@ -301,15 +301,8 @@ export class ThinEffectLayer {
      * @param scene The scene to use the layer in
      * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      * @param dontCheckIfReady Specifies if the layer should disable checking whether all the post processes are ready (default: false). To save performance, this should be set to true and you should call `isReady` manually before rendering to the layer.
-     * @param _additionalImportShadersAsync Additional shaders to import when the layer is created
      */
-    constructor(
-        name: string,
-        scene?: Scene,
-        forceGLSL = false,
-        dontCheckIfReady = false,
-        private _additionalImportShadersAsync?: () => Promise<void>
-    ) {
+    constructor(name: string, scene?: Scene, forceGLSL = false, dontCheckIfReady = false) {
         this.name = name;
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
         this._dontCheckIfReady = dontCheckIfReady;
@@ -333,9 +326,6 @@ export class ThinEffectLayer {
         webGL: () => [import("core/Shaders/glowMapGeneration.vertex"), import("core/Shaders/glowMapGeneration.fragment")],
         webGPU: () => [import("core/ShadersWGSL/glowMapGeneration.vertex"), import("core/ShadersWGSL/glowMapGeneration.fragment")],
     });
-
-    /** @internal */
-    public _shadersLoaded = false;
 
     /**
      * Get the effect name of the layer.
@@ -740,12 +730,6 @@ export class ThinEffectLayer {
                         indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
                         shaderLanguage: this._shaderLanguage,
                         shaderLoaders: [ThinEffectLayer._ShaderLoader],
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  await this._additionalImportShadersAsync?.();
-                                  this._shadersLoaded = true;
-                              },
                     },
                     this._engine
                 ),
@@ -761,13 +745,6 @@ export class ThinEffectLayer {
     /** @internal */
     public _isSubMeshReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean {
         return this._internalIsSubMeshReady(subMesh, useInstances, emissiveTexture);
-    }
-
-    protected async _importShadersAsync(): Promise<void> {
-        // The base class's own glowMapGeneration shaders are loaded via the static ThinEffectLayer._ShaderLoader
-        // passed directly to the createEffect call in _internalIsSubMeshReady, so this method only needs to
-        // chain into the additional shaders hook (used by subclasses/EffectLayer wrappers).
-        await this._additionalImportShadersAsync?.();
     }
 
     /** @internal */
