@@ -1,7 +1,30 @@
 {
-    "fromTag": "9.21.2",
+    "fromTag": "9.22.0",
     "changelog": {
         "9.22.0": [],
+        "9.22.1": [
+            {
+                "pr": "18814",
+                "title": "fix: improve Viewer Lite compatibility",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\n## Summary\r\n\r\n- Update Viewer dependencies and peer range to published `@babylonjs/lite@1.23.0`.\r\n- Add Lite environment blur/rotation, cubemap HDR skyboxes, rotated shadows, and the new tree-shakeable shadow-only API.\r\n- Fix string hotspot camera orbits and prevent auto-orbit from fighting camera interpolation.\r\n- Add Viewer Lite regression coverage for the compatibility fixes.\r\n\r\n## Validation\r\n\r\n- Viewer package and source builds\r\n- 34 Viewer Lite Playwright tests\r\n- Lint, formatting, and tree-shaking checks\r\n- Manual WebGPU rendering smoke test\r\n\r\nRelated: BabylonJS/Babylon-Lite#577 and BabylonJS/Babylon-Lite#572.\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/public/@babylonjs/viewer/package.json",
+                    "packages/tools/viewer/package.json",
+                    "packages/tools/viewer/src/lite/viewer.ts",
+                    "packages/tools/viewer/test/viewer.lite.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "viewer"
+                ]
+            }
+        ],
         "9.21.2": [
             {
                 "pr": "18801",
