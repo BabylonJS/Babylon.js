@@ -655,4 +655,62 @@ describe("MultiTexture", () => {
 
         expect(mt.creationOptions.shaderLanguage).toBe(ShaderLanguage.WGSL);
     });
+
+    it("does not attempt upload or log errors when a layer load lands after dispose", async () => {
+        const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 });
+
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => undefined);
+
+        mt.dispose();
+
+        // Simulate the tail of an in-flight refresh whose decode completes after dispose.
+        await expect(mt["_loadLayer"](0, "a.png", true)).resolves.toBeUndefined();
+        await expect(mt["_poll"]()).resolves.toBeUndefined();
+
+        expect(errorSpy).not.toHaveBeenCalled();
+        errorSpy.mockRestore();
+    });
+
+    it("finishes initialization quietly when disposed mid-decode", async () => {
+        // Load the seed (harness scene) first; the pending-decode stub below must not park
+        // the seed's own init.
+        const { mt: seed } = await createLoaded(["seed.png"], { width: 8, height: 8 });
+
+        let releaseImage: ((bitmap: ImageBitmap) => void) | undefined;
+        const pendingImage = new Promise<ImageBitmap>((resolve) => {
+            releaseImage = resolve;
+        });
+        vi.stubGlobal("createImageBitmap", () => pendingImage);
+
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => undefined);
+
+        const mt = new MultiTexture(["late.png"], seed.getScene()!, { updateIntervalMs: 120_000, width: 8, height: 8 });
+        mt.dispose();
+        releaseImage?.(({ close: vi.fn(), width: 8, height: 8 } as unknown as ImageBitmap));
+
+        // Decode lands after dispose: init must settle quietly, retain no pixel data, and report nothing.
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        expect(errorSpy).not.toHaveBeenCalled();
+        expect(mt.pixels[0]).toBeNull();
+        expect((mt as any)._layers[0].loaded).toBe(false);
+        errorSpy.mockRestore();
+    });
+
+    it("clears material texture slots on dispose so materials fall back to shader defaults", async () => {
+        const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 });
+        const scene = mt.getScene() as any;
+        // Duck-typed material: the fake engine cannot construct real materials, and dispose
+        // only ever reads the scene's material list and nulls slots referencing this texture.
+        const mat = { name: "mat", diffuseTexture: mt, specularTexture: mt };
+        if (Array.isArray(scene.materials)) {
+            scene.materials.push(mat);
+        } else {
+            scene.materials = [mat];
+        }
+
+        mt.dispose();
+
+        expect(mat.diffuseTexture).toBeNull();
+        expect(mat.specularTexture).toBeNull();
+    });
 });
