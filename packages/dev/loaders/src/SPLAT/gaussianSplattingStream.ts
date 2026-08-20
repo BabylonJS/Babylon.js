@@ -732,7 +732,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
      * `0` disables the budget (pure distance LOD). Setting it caps the rendered splat count, taking effect on the
      * next frame. Overrides the inherited compound
      * accessor to force an immediate LOD re-eval (the stream never hosts other budget participants). When this stream
-     * is hosted in a compound whose own budget is set, that shared budget overrides this value.
+     * is hosted in a compound whose own budget is set, that shared budget overrides this value — read the actual
+     * runtime cap from {@link effectiveSplatBudget}, not this getter (which always reports the configured own cap).
+     * @experimental
      */
     public override get splatBudget(): number {
         return this._splatBudget;
@@ -746,6 +748,17 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         this._splatBudget = budget;
         // Re-evaluate LODs on the next frame regardless of the movement throttle so the change is immediate.
         this._forceLodUpdate = true;
+    }
+
+    /**
+     * The splat cap actually in force this frame: a hosting compound's apportioned allocation when this stream is
+     * coordinated, otherwise this stream's own {@link splatBudget}, clamped to what can be kept resident. `0` means
+     * no cap (pure distance LOD). Unlike {@link splatBudget}, this reflects the compound override, so it is the value
+     * to display or reason about at runtime.
+     * @experimental
+     */
+    public get effectiveSplatBudget(): number {
+        return this._effectiveSplatBudget();
     }
 
     /**
@@ -1029,7 +1042,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             if (cam.fovMode === Camera.FOVMODE_HORIZONTAL_FIXED) {
                 tanHalfV /= aspect;
             }
-            const fovScale = Math.min(tanHalfV, tanHalfV * aspect) / RefTanHalfFov;
+            const tanHalfH = tanHalfV * aspect;
+            const fovScale = Math.min(tanHalfV, tanHalfH) / RefTanHalfFov;
             // Vertical pixel extent of THIS camera's viewport (split-view panes render to a fraction of the canvas),
             // so a node's projected size is measured against the pixels the camera actually draws into.
             const pixelHeight = renderHeight * (cam.viewport ? cam.viewport.height : 1);

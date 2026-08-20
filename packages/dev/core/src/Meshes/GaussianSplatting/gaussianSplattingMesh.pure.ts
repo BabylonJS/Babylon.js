@@ -95,6 +95,7 @@ function ParsePartIndices(compressed: Uint32Array | number[]): Uint8Array {
  * by demand and pushes each its allocation. Defined here (core) so the compound never depends on the loader's
  * streaming engine; the engine implements this and registers via
  * {@link GaussianSplattingMesh.registerLodBudgetParticipant}.
+ * @experimental
  */
 export interface IGaussianSplattingLodBudgetParticipant {
     /** The number of splats this participant would render at full (distance-optimal) detail — its budget demand. */
@@ -601,6 +602,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * engines (hosted streamed parts) render together, net of static parts. `0`/undefined disables it (each stream
      * uses its own budget, or none). Setting it apportions the cap across all registered participants by demand and
      * takes effect on the next frame. See {@link IGaussianSplattingLodBudgetParticipant}.
+     * @experimental
      */
     public get splatBudget(): number {
         return this._splatBudget;
@@ -619,6 +621,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * Registers a LOD engine to share this compound's {@link splatBudget}. The compound apportions the budget
      * across all registered participants each frame. No-op if already registered.
      * @param participant the LOD engine (e.g. a hosted streamed part)
+     * @experimental
      */
     public registerLodBudgetParticipant(participant: IGaussianSplattingLodBudgetParticipant): void {
         if (this._lodBudgetParticipants.indexOf(participant) === -1) {
@@ -631,6 +634,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * Removes a previously registered budget participant and releases its coordinated allocation (it reverts to its
      * own budget).
      * @param participant the LOD engine to remove
+     * @experimental
      */
     public unregisterLodBudgetParticipant(participant: IGaussianSplattingLodBudgetParticipant): void {
         const i = this._lodBudgetParticipants.indexOf(participant);
