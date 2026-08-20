@@ -18,10 +18,17 @@ import { backbufferColorTextureHandle } from "../FrameGraph/frameGraphTypes";
 import { FrameGraphFXAATask } from "../FrameGraph/Tasks/PostProcesses/fxaaTask";
 import { FrameGraphPassTask } from "../FrameGraph/Tasks/PostProcesses/passTask";
 import { FrameGraphUtils } from "../FrameGraph/frameGraphUtils";
+import { ShaderLoader } from "core/Misc/shaderLoader";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
+
+const _PassShaderLoader = /*#__PURE__*/ new ShaderLoader({
+    webGL: () => [import("core/Shaders/pass.fragment")],
+    webGPU: () => [import("core/ShadersWGSL/pass.fragment")],
+});
 
 /**
  * Captures a screenshot of the current rendering
@@ -384,9 +391,9 @@ export function CreateScreenshotUsingRenderTarget(
                             texture.dispose();
                         });
                     } else {
-                        const importPromise = engine.isWebGPU ? import("core/ShadersWGSL/pass.fragment") : import("core/Shaders/pass.fragment");
+                        const loadPromise = _PassShaderLoader.load(engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL) ?? Promise.resolve();
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-                        importPromise.then(
+                        loadPromise.then(
                             async () =>
                                 // eslint-disable-next-line github/no-then
                                 await ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
