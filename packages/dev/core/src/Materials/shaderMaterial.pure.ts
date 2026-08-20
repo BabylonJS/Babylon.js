@@ -1557,7 +1557,10 @@ export class ShaderMaterial extends PushMaterial {
         serializationObject.customType = "BABYLON.ShaderMaterial";
         serializationObject.uniqueId = this.uniqueId;
 
-        serializationObject.options = this._options;
+        const optionsClone: IShaderMaterialOptions = { ...this._options };
+        delete optionsClone.shaderLoaders;
+        delete optionsClone.extraInitializationsAsync;
+        serializationObject.options = optionsClone;
         serializationObject.shaderPath = this._shaderPath;
         serializationObject.storeEffectOnSubMeshes = this._storeEffectOnSubMeshes;
 
