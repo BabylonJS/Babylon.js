@@ -59,6 +59,7 @@ export class WebGPUClearQuad {
         this._effect = engine.createEffect(
             "clearQuad",
             <IEffectCreationOptions>{
+                attributes: [] as string[],
                 uniformsNames: ["color", "depthValue"],
                 shaderLanguage: ShaderLanguage.WGSL,
                 // On the pure import path the wrapper modules that eagerly register the clearQuad shaders are not in the

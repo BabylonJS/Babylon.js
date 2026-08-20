@@ -64,6 +64,7 @@ export class AreaLightTextureTools {
         }
     }
 
+    private _shadersLoaded = false;
     private _createEffect(): EffectWrapper {
         const engine = this._engine;
 
@@ -101,7 +102,7 @@ export class AreaLightTextureTools {
      * @returns true if "copy" can be called without delay, else false
      */
     public isReady(): boolean {
-        return !!this._effectWrapper?.effect?.isReady();
+        return this._shadersLoaded && !!this._effectWrapper?.effect?.isReady();
     }
 
     /**
@@ -110,9 +111,10 @@ export class AreaLightTextureTools {
      * @returns A promise that resolves with the pre-processed texture
      */
     public async processAsync(source: BaseTexture): Promise<Nullable<BaseTexture>> {
-        if (!this._effectWrapper) {
+        if (!this._shadersLoaded) {
             this._effectWrapper = this._createEffect();
             await this._effectWrapper.effect.whenCompiledAsync();
+            this._shadersLoaded = true;
         }
 
         if (!source.isReady()) {
