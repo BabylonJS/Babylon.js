@@ -28,8 +28,7 @@ void main(void) {
     //   float voxelY = texelFetch(voxelYaxisSampler, coordY, 0).r;
     //   float voxelZ = texelFetch(voxelZaxisSampler, coordZ, 0).r;
 
-    // Combine the three per-axis grids with a MAX so non-binary opacity survives
-    // (was a boolean OR that collapsed to 1.0).
+    // Combine the three per-axis grids with MAX so non-binary opacity survives.
     float voxel = max(voxelX, max(voxelY, voxelZ));
     glFragColor = vec4(vec3(voxel), 1.0);
     // glFragColor = vec4(voxelX, voxelY, voxelZ, 1.0);

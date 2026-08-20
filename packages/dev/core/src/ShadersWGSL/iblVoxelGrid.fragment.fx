@@ -1,10 +1,8 @@
 var voxel_storage: texture_storage_3d<r8unorm, write>;
 #ifdef IBL_VOXEL_OPACITY_BUFFER
-// Only defined when Gaussian splats are present in the voxelization. Then voxel_storage is kept
-// bound only to source the grid resolution via textureDimensions, and the grid texture is written
-// later by the buffer->grid copy compute pass; here we accumulate into the shared opacity buffer
-// (packed 4 voxels per u32). Opaque meshes write full opacity (255); overlaps combine with max.
-// Without Gaussian splats we skip the buffer entirely and write the grid texture directly below.
+// Defined only when Gaussian splats are present: accumulate into the shared opacity buffer (opaque
+// meshes write 255) and let the copy compute pass write the grid; voxel_storage is then bound only
+// for its resolution. Without splats we write the grid texture directly (#else branch).
 var<storage, read_write> voxelOpacityBuffer: array<atomic<u32>>;
 #include<iblVoxelOpacityAtomicMax>
 #endif

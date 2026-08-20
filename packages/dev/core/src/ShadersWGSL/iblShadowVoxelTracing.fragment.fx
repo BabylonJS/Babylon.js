@@ -105,9 +105,8 @@ fn prngCanonical1d(co: f32) -> f32 { return fract(sin(co * 91.3458) * 47453.5453
 fn prngCanonical2d(co: vec2f) -> f32 { return fract(sin(dot(co, vec2f(12.9898, 78.233))) * 43758.5453); }
 fn prngCanonical3d(co: vec3f) -> f32 { return prngCanonical2d(co.xy + prngCanonical1d(co.z)); }
 
-// Upper bound on occupied leaves a shadow ray may roulette through before it is treated as
-// unoccluded. Bounds traversal cost through soft/transparent volumes; on cap the ray passes.
-// Injected by the IBL shadow pipeline (maxVoxelRouletteTests); falls back to 16 if not provided.
+// Max occupied leaves a shadow ray roulettes through before treated as unoccluded; bounds cost in
+// soft volumes. Injected by the pipeline (maxVoxelRouletteTests); falls back to 16.
 #ifndef MAX_VOXEL_ROULETTE_TESTS
 #define MAX_VOXEL_ROULETTE_TESTS 16
 #endif
@@ -177,20 +176,17 @@ fn anyHitVoxels(ray_vs: Ray, rouletteSeed: vec3f) -> bool {
         vec4i(elem & 0xFF, (elem >> 8) & 0xFF, (elem >> 16) & 0xFF, elem >> 24);
 
     if (Coords.w == 0) {
-      // Leaf voxel. mip 0 stores the cell's non-binary opacity. Russian-roulette: treat it as a
-      // blocker with probability equal to that opacity, otherwise keep marching past it. The seed
-      // varies per shadow sample so, averaged over samples/frames, occlusion converges to the true
-      // transmittance 1 - prod(1 - alpha_i) instead of a hard binary hit.
+      // Leaf voxel; mip 0 holds its opacity. Russian-roulette: block with probability = opacity, else
+      // keep marching. Averaged over samples/frames this converges to transmittance 1 - prod(1-alpha_i).
       let cellOpacity: f32 = textureLoad(voxelGridSampler, Coords.xyz, 0).x;
-      // Fully opaque cells (e.g. regular meshes) always block: take the fast path and skip the PRNG.
+      // Fully opaque cells always block: fast path, skip the PRNG.
       if (cellOpacity >= 1.0) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
         *voxel_march_diagnostic_info.heat =  f32(steps) / 24.0;
 #endif
         return true;
       }
-      // Budget the translucent roulette tests: check before consuming one so we run at most
-      // MAX_VOXEL_ROULETTE_TESTS of them. On exhaustion, treat the ray as passing (unoccluded).
+      // Cap the translucent tests at MAX_VOXEL_ROULETTE_TESTS; on exhaustion the ray passes.
       if (leafTests >= MAX_VOXEL_ROULETTE_TESTS) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
         *voxel_march_diagnostic_info.heat =  f32(steps) / 24.0;
@@ -407,7 +403,7 @@ fn voxelShadow(wsOrigin: vec3f, wsDirection: vec3f, wsNormal: vec3f,
   ray_vs.t_min = max(ray_vs.t_min, near);
   ray_vs.t_max = min(ray_vs.t_max, far);
 
-  // Per-sample seed for the per-voxel roulette; DitherNoise already varies per pixel/frame/direction.
+  // Per-sample roulette seed; DitherNoise varies per pixel/frame/direction.
   let rouletteSeed: vec3f = vec3f(DitherNoise, DitherNoise.x + DitherNoise.y) * 17.0;
 
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION

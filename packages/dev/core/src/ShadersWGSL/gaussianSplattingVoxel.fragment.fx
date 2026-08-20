@@ -1,10 +1,8 @@
-// voxel_storage is kept bound only to source the grid resolution via textureDimensions; the grid
-// texture itself is written later by the buffer->grid copy compute pass, not here.
+// voxel_storage is bound only to read the grid resolution (textureDimensions); the grid is written
+// later by the copy compute pass.
 var voxel_storage: texture_storage_3d<r8unorm, write>;
-// Per-voxel opacity accumulator (packed: 4 voxels per u32). We atomicMax the quantized opacity so
-// overlapping splats (and the three per-axis passes) keep the strongest occluder, since storage
-// textures can't blend/atomic. See the KNOWN LIMITATION on opacity compositing in
-// iblVoxelOpacityAtomicMax (MAX under-shadows overlapping distinct splats; kept for backend parity).
+// Per-voxel opacity accumulator (packed 4 voxels/u32); storage textures can't blend/atomic. Combines
+// with MAX — see the opacity-compositing limitation in iblVoxelOpacityAtomicMax.
 var<storage, read_write> voxelOpacityBuffer: array<atomic<u32>>;
 #include<iblVoxelOpacityAtomicMax>
 
@@ -25,9 +23,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     let diff: vec3f = abs(input.vNormalizedCenterPosition - normPos);
     let distToCenter: f32 = max(max(diff.x, diff.y), diff.z);
 
-    // Per-fragment coverage of the voxel cell times the splat's transparency. We store this
-    // non-binary opacity (no bake-time roulette); the Russian-roulette is deferred to the shadow
-    // ray-march so it can vary per sample and converge to the correct transmittance.
+    // Per-fragment cell coverage times splat transparency, stored as non-binary opacity; the
+    // Russian-roulette is deferred to the shadow ray-march.
     let gaussian: f32 = exp(-dot(input.vPatchPosition, input.vPatchPosition));
     let shadowingOpacity: f32 = clamp(
         select(gaussian, 1.0, distToCenter < stepSize) * input.vAlpha,

@@ -114,10 +114,9 @@ interface IIblShadowsSettings {
     ssShadowThicknessScale?: number;
 
     /**
-     * Maximum number of occupied voxels a shadow ray applies the Russian-roulette transmittance test
-     * to before it is treated as unoccluded (default 16). Higher values converge more accurately
-     * through thick translucent volumes (e.g. dense Gaussian splats) at extra cost; lower values are
-     * cheaper. Only affects translucent voxels — fully opaque voxels always block on first contact.
+     * Maximum number of translucent voxels a shadow ray roulettes through before it is treated as
+     * unoccluded (default 16). Higher values converge more accurately through thick translucent volumes
+     * (e.g. dense Gaussian splats) at extra cost. Opaque voxels always block on first contact.
      */
     maxVoxelRouletteTests?: number;
 }
@@ -242,10 +241,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Maximum number of occupied voxels a shadow ray applies the Russian-roulette transmittance test
-     * to before it is treated as unoccluded. Higher values converge more accurately through thick
-     * translucent volumes at extra cost; lower values are cheaper. Fully opaque voxels are unaffected
-     * (they always block on first contact).
+     * Maximum number of translucent voxels a shadow ray roulettes through before it is treated as
+     * unoccluded. Higher values converge more accurately at extra cost. Opaque voxels always block.
      */
     public get maxVoxelRouletteTests(): number {
         return this._voxelTracingPass?.maxVoxelRouletteTests;

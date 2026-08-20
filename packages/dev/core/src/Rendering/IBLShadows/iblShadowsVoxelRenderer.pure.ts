@@ -86,10 +86,9 @@ export class _IblShadowsVoxelRenderer {
 
     private _voxelMaterial: ShaderMaterial;
 
-    // WebGPU only: per-voxel opacity accumulator written via atomicMax during voxelization, then
-    // copied into the r8 voxel grid (mip 0) by _copyBufferToGridCompute before mip generation.
-    // Only used when Gaussian splats are present; regular-mesh-only voxelization writes the grid
-    // directly and skips this buffer + copy pass entirely.
+    // WebGPU only: per-voxel opacity accumulator (atomicMax during voxelization, copied to the r8 grid
+    // mip 0 by _copyBufferToGridCompute). Used only when Gaussian splats are present; regular-mesh-only
+    // voxelization writes the grid directly and skips it.
     private _voxelOpacityBuffer?: StorageBuffer;
     private _copyBufferToGridCompute?: ComputeShader;
     private _useOpacityBuffer = false;
@@ -402,8 +401,8 @@ export class _IblShadowsVoxelRenderer {
                 this._scene,
                 voxelAxisOptions
             );
-            // The opacity accumulator buffer + copy compute are created lazily on first use, only
-            // when a voxelization actually includes Gaussian splats (see _ensureVoxelOpacityAccumulator).
+            // The opacity accumulator is created lazily, only when a voxelization includes Gaussian
+            // splats (see _ensureVoxelOpacityAccumulator).
         } else if (this._triPlanarVoxelization) {
             this._voxelGridXaxis = new RenderTargetTexture("voxelGridXaxis", size, this._scene, voxelAxisOptions);
             this._voxelGridYaxis = new RenderTargetTexture("voxelGridYaxis", size, this._scene, voxelAxisOptions);
@@ -463,18 +462,16 @@ export class _IblShadowsVoxelRenderer {
     }
 
     /**
-     * WebGPU only. Allocates the per-voxel opacity accumulator storage buffer and the compute shader
-     * that copies it into the r8 voxel grid. Storage textures can't blend or do float atomics, so
-     * overlapping splats (and the three per-axis passes) accumulate into this buffer via atomicMax,
-     * then this compute pass decodes it into mip 0 before the mip hierarchy is generated.
+     * WebGPU only. Allocates the opacity accumulator buffer and the compute shader that copies it into
+     * the r8 grid. Storage textures can't blend or do float atomics, so splats accumulate via atomicMax
+     * and this compute pass decodes the result into mip 0.
      */
     private _ensureVoxelOpacityAccumulator(): void {
         if (this._voxelOpacityBuffer) {
             return;
         }
         const res = this._voxelResolution;
-        // Packed accumulator: 4 voxels share one u32 (one quantized-opacity byte each), so the buffer
-        // is res^3 bytes rather than res^3 * 4. res is a power of two >= 8, so res^3 is a multiple of 4.
+        // Packed 4 voxels/u32, so res^3 bytes. res is a power of two >= 8, so res^3 is a multiple of 4.
         this._voxelOpacityBuffer = new StorageBuffer(this._engine as unknown as WebGPUEngine, res * res * res);
         void (async () => {
             await import("../../ShadersWGSL/iblCopyVoxelBufferToGrid.compute");
@@ -506,9 +503,8 @@ export class _IblShadowsVoxelRenderer {
     private _createVoxelMRTs(name: string, voxelRT: RenderTargetTexture, numSlabs: number): MultiRenderTarget[] {
         voxelRT.wrapU = Texture.CLAMP_ADDRESSMODE;
         voxelRT.wrapV = Texture.CLAMP_ADDRESSMODE;
-        // This is a 3D texture: the depth (R) axis must clamp too. The combine shader samples each
-        // per-axis grid with the depth coordinate spanning [0,1], so without this it wraps around to
-        // the opposite face of the grid at the boundaries.
+        // 3D texture: clamp the depth (R) axis too. The combine shader samples each grid with the depth
+        // coordinate spanning [0,1], so without this it wraps to the opposite face at the boundaries.
         voxelRT.wrapR = Texture.CLAMP_ADDRESSMODE;
         voxelRT.noPrePassRenderer = true;
         const mrtArray: MultiRenderTarget[] = [];
@@ -574,9 +570,8 @@ export class _IblShadowsVoxelRenderer {
         this._voxelOpacityBuffer?.dispose();
         this._voxelOpacityBuffer = undefined;
         this._copyBufferToGridCompute = undefined;
-        // The recreated _voxelMaterial has no IBL_VOXEL_OPACITY_BUFFER define, so reset the flag to keep
-        // it in sync — otherwise updateVoxelGrid's change check would skip re-adding the define after a
-        // resolution change, dropping regular-mesh contributions in mixed WebGPU scenes.
+        // The recreated _voxelMaterial has no IBL_VOXEL_OPACITY_BUFFER define; reset the flag so
+        // updateVoxelGrid re-adds it (its change check would otherwise skip it after a resolution change).
         this._useOpacityBuffer = false;
         this._mipArray = [];
         this._voxelMrtsXaxis = [];
@@ -672,9 +667,8 @@ export class _IblShadowsVoxelRenderer {
         this._voxelizationInProgress = true;
 
         if (this._engine.isWebGPU) {
-            // Only route through the opacity accumulator buffer (and its copy compute) when Gaussian
-            // splats are present — they need non-binary MAX accumulation. Regular-mesh-only
-            // voxelization writes the grid directly (original behavior), skipping the buffer + copy.
+            // Route through the opacity accumulator only when Gaussian splats are present (they need
+            // non-binary accumulation). Regular-mesh-only voxelization writes the grid directly.
             const useBuffer = _HasGaussianSplatting(includedMeshes);
             if (useBuffer) {
                 this._ensureVoxelOpacityAccumulator();
@@ -765,17 +759,16 @@ export class _IblShadowsVoxelRenderer {
 
             if (this._engine.isWebGPU) {
                 if (this._useOpacityBuffer) {
-                    // The compute pass that copies the opacity accumulator into the grid must be ready
-                    // before we voxelize, otherwise the grid would never be populated this pass.
+                    // The copy compute must be ready before we voxelize, else the grid stays unpopulated.
                     if (!this._copyBufferToGridCompute || !this._copyBufferToGridCompute.isReady()) {
                         return;
                     }
-                    // Reset the per-voxel opacity accumulator. clearBuffer is a command-encoder op that
-                    // must run before any render pass opens, so it happens here rather than mid-render.
+                    // Reset the accumulator. clear() is a command-encoder op, so it must run before any
+                    // render pass opens (here, not mid-render).
                     this._voxelOpacityBuffer?.clear();
                 } else if (this._voxelGrid && this._voxelGrid.renderTarget) {
-                    // Direct mode (no Gaussian splats): regular meshes textureStore into the grid, so
-                    // clear it first. Each layer must be cleared individually.
+                    // Direct mode (no splats): regular meshes textureStore into the grid, so clear each
+                    // layer first.
                     for (let layer = 0; layer < this._voxelResolution; layer++) {
                         this._engine.bindFramebuffer(this._voxelGrid.renderTarget, 0, undefined, undefined, true, 0, layer);
                         this._engine.clear(this._voxelClearColor, true, false, false);
@@ -861,16 +854,10 @@ export class _IblShadowsVoxelRenderer {
                     });
                 }
             } else {
-                // Accumulate overlapping splats with a MAX blend equation so each cell keeps the
-                // strongest occluder's opacity (dst = max(src, dst)) instead of the last fragment's
-                // value. Writing 0.0 into non-slab draw buffers is then a no-op.
-                //
-                // KNOWN LIMITATION (opacity compositing): MAX keeps the strongest overlapping occluder
-                // rather than compositing distinct splats (two 0.5 splats read 0.5, not 0.75), so dense
-                // splat clouds under-shadow vs. true transmittance. MAX is intentional and matches the
-                // WebGPU atomicMax path so both backends agree: it is idempotent, correctly deduping
-                // each splat's three tri-planar proxy draws (a composite would triple-count them). A
-                // correct fix needs per-axis optical-depth accumulation; tracked as a follow-up.
+                // Accumulate overlapping splats with a MAX blend equation (dst = max(src, dst)) so each
+                // cell keeps the strongest occluder; writing 0.0 into non-slab draw buffers is a no-op.
+                // Matches the WebGPU atomicMax path; see the opacity-compositing limitation in
+                // iblVoxelOpacityAtomicMax.
                 const previousAlphaMode = engine.getAlphaMode();
                 engine.setAlphaMode(Constants.ALPHA_MAX, true);
                 renderingMesh._processRendering(effectiveMesh, sm, effect, fillMode, batch, hardwareInstancedRendering, (_isInstance, world) => effect.setMatrix("world", world));

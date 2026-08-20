@@ -246,14 +246,11 @@ export class _IblShadowsVoxelTracingPass {
     private _coloredShadows: boolean = false;
 
     /**
-     * Maximum number of occupied voxels a shadow ray will apply the Russian-roulette transmittance
-     * test to before it is treated as unoccluded. Higher values converge more accurately through
-     * thick translucent volumes at extra cost; lower values are cheaper. Applied via a shader define.
+     * Maximum number of translucent voxels a shadow ray roulettes through before it is treated as
+     * unoccluded. Higher values converge more accurately at extra cost. Applied via a shader define.
      */
     public set maxVoxelRouletteTests(value: number) {
-        // This value becomes a shader define, so it must be a finite, bounded integer: NaN/Infinity would
-        // emit invalid shader source and fractional values would make the getter disagree with the
-        // effective (integer) limit. Non-finite input is ignored, keeping the previous valid value.
+        // Becomes a shader define, so keep it a finite integer in [1, 4096]; ignore non-finite input.
         if (!Number.isFinite(value)) {
             return;
         }
