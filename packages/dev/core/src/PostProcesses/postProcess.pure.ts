@@ -16,7 +16,7 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import { ShaderLoader } from "core/Misc/shaderLoader";
+import { type ShaderLoader } from "core/Misc/shaderLoader";
 import { type Scene } from "../scene.pure";
 import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { type Animation } from "../Animations/animation.pure";
@@ -648,13 +648,8 @@ export class PostProcess {
         }
     }
 
-    private static readonly _VertexShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("core/Shaders/postprocess.vertex")],
-        webGPU: () => [import("core/ShadersWGSL/postprocess.vertex")],
-    });
-
     protected _getShaderLoaders(): ShaderLoader[] {
-        return [PostProcess._VertexShaderLoader];
+        return [EffectWrapper._PostProcessVertexShaderLoader];
     }
 
     /**

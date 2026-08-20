@@ -409,7 +409,8 @@ export class EffectWrapper {
 
     private _onContextRestoredObserver: Nullable<Observer<AbstractEngine>>;
 
-    private static readonly _PostprocessShaderLoader = /*#__PURE__*/ new ShaderLoader({
+    /** @internal */
+    public static readonly _PostProcessVertexShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [import("core/Shaders/postprocess.vertex")],
         webGPU: () => [import("core/ShadersWGSL/postprocess.vertex")],
     });
@@ -530,8 +531,9 @@ export class EffectWrapper {
             shaderLoaders2.push(...shaderLoaders);
         }
         if (this.options.useShaderStore && this._shaderPath.vertex === "postprocess") {
-            shaderLoaders2.push(EffectWrapper._PostprocessShaderLoader);
+            shaderLoaders2.push(EffectWrapper._PostProcessVertexShaderLoader);
         }
+
         for (const shaderLoader of shaderLoaders2) {
             const promise = shaderLoader.load(shaderLanguage);
             if (promise !== null) {
