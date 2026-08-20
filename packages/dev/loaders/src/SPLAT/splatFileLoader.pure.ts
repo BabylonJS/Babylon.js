@@ -593,6 +593,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             float: 4,
             short: 2,
             ushort: 2,
+            uint16: 2,
             uchar: 1,
             list: 0,
         };
