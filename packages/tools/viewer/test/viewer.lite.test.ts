@@ -565,6 +565,42 @@ test("dynamic environment rotation with lighting only", async ({ page }) => {
     expect(rotation.ubo).toBe(1.5);
 });
 
+test("dynamic environment rotation rotates the shadow light", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+            environment="auto"
+            shadow-quality="normal"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    const directions = await page.evaluate((viewerElement) => {
+        const viewer = (viewerElement as ViewerElement).viewer as unknown as {
+            environmentConfig: { rotation: number };
+            _shadowLight: { direction: { x: number; y: number; z: number } } | null;
+        };
+        const light = viewer._shadowLight;
+        if (!light) {
+            return null;
+        }
+
+        const before = [light.direction.x, light.direction.y, light.direction.z];
+        viewer.environmentConfig = { rotation: Math.PI / 2 };
+        const after = [light.direction.x, light.direction.y, light.direction.z];
+        return { before, after };
+    }, viewerElementHandle);
+
+    expect(directions).not.toBeNull();
+    expect(directions!.after[0]).toBeCloseTo(-directions!.before[2]);
+    expect(directions!.after[1]).toBeCloseTo(directions!.before[1]);
+    expect(directions!.after[2]).toBeCloseTo(directions!.before[0]);
+});
+
 test("skybox-blur", async ({ page }) => {
     await attachViewerElement(
         page,
