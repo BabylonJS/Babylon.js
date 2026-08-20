@@ -384,6 +384,33 @@ export class MultiTexture extends ProceduralTexture {
         this._canvas = null;
         this._ctx = null;
 
+        // Clear material slots that still reference us so materials re-derive their defines and
+        // fall back to texture-less shader defaults (flat color) instead of binding the
+        // destroyed texture and rendering black.
+        const materialContainer = this.getScene().materials as unknown;
+        const materialList = Array.isArray(materialContainer)
+            ? (materialContainer as { getPropertiesNames?: () => string[] }[])
+            : typeof (materialContainer as { get?: () => unknown[] })?.get === "function"
+              ? ((materialContainer as { get: () => unknown[] }).get() as { getPropertiesNames?: () => string[] }[])
+              : [];
+        for (const material of materialList) {
+            const record = material as unknown as Record<string, unknown>;
+            const keys =
+                typeof (material as { getPropertiesNames?: () => string[] }).getPropertiesNames === "function"
+                    ? (material as { getPropertiesNames: () => string[] }).getPropertiesNames()
+                    : Object.keys(record);
+            for (const key of keys) {
+                const slot = (record as Record<string, unknown>)[key];
+                if ((key.endsWith("Texture") || key === "diffuseTexture") && slot === this) {
+                    try {
+                        (record as Record<string, unknown>)[key] = null;
+                    } catch {
+                        // Getter-only slot; best-effort clear.
+                    }
+                }
+            }
+        }
+
         this._arrayTexture.dispose();
 
         super.dispose();
@@ -414,6 +441,10 @@ export class MultiTexture extends ProceduralTexture {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private async _loadLayer(index: number, url: string, _force: boolean): Promise<void> {
+        // Body runs across awaits; if dispose() wins the race, skip the fetch entirely.
+        if (this._disposed) {
+            return;
+        }
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`MultiTexture: failed to fetch ${url}: ${response.status} ${response.statusText}`);
@@ -458,6 +489,15 @@ export class MultiTexture extends ProceduralTexture {
         entry.loaded = true;
         entry.etag = meta.etag;
         entry.lastModified = meta.lastModified;
+        // If dispose() won the race, drop the decoded bitmap without touching the pixel cache,
+        // refresh counter or onLoad path: the internal 2D array texture is already destroyed
+        // and upload/refresh would throw "no internal texture".
+        if (this._disposed) {
+            entry.bitmap.close();
+            entry.bitmap = null;
+            entry.loaded = false;
+            return;
+        }
         this.pixels[index] = entry.pixels;
 
         this.resetRefreshCounter();
@@ -491,17 +531,19 @@ export class MultiTexture extends ProceduralTexture {
             }
             await Promise.all(workers);
 
-            if (mips && internal) {
+            if (!this._disposed && mips && internal) {
                 internal.generateMipMaps = true;
                 this.getScene()!.getEngine().generateMipmaps(internal);
             }
 
-            this.onLoadObservable.notifyObservers(this);
-            this._mtOptions.onLoad?.();
+            if (!this._disposed) {
+                this.onLoadObservable.notifyObservers(this);
+                this._mtOptions.onLoad?.();
 
-            this.resetRefreshCounter();
+                this.resetRefreshCounter();
+            }
 
-            if (this._mtOptions.prewarmBlendModes) {
+            if (!this._disposed && this._mtOptions.prewarmBlendModes) {
                 this._prewarmBlendModes();
             }
             if (this._mtOptions.watch) {
