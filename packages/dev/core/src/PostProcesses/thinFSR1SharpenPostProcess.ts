@@ -3,6 +3,7 @@ import { type Effect } from "core/Materials/effect";
 import { EngineStore } from "core/Engines/engineStore";
 import { EffectWrapper, type EffectWrapperCreationOptions } from "core/Materials/effectRenderer.pure";
 import { type Nullable } from "core/types";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Robust Contrast Adaptive Sharpening (RCAS) post-process used by FSR 1
@@ -37,13 +38,13 @@ export class ThinFSR1SharpenPostProcess extends EffectWrapper {
         });
     }
 
-    protected override _gatherImports(useWebGPU: boolean | undefined, list: Promise<any>[]): void {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/fsr1Sharpen.fragment"));
-        } else {
-            list.push(import("../Shaders/fsr1Sharpen.fragment"));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/fsr1Sharpen.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/fsr1Sharpen.fragment")],
+    });
+
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinFSR1SharpenPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

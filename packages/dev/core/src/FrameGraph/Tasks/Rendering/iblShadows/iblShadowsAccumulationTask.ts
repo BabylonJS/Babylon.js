@@ -4,6 +4,7 @@ import { type FrameGraphIblShadowsVoxelizationTask } from "./iblShadowsVoxelizat
 import { Vector4 } from "core/Maths/math.vector.pure";
 import { ThinCustomPostProcess } from "core/PostProcesses/thinCustomPostProcess";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { FrameGraphTask } from "../../../frameGraphTask";
 
 /**
@@ -57,13 +58,14 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
         return "FrameGraphIblShadowsAccumulationTask";
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblShadowAccumulation.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowAccumulation.fragment")],
+    });
+
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public override initAsync(): Promise<unknown> {
-        if (this._frameGraph.engine.isWebGPU) {
-            return import("../../../../ShadersWGSL/iblShadowAccumulation.fragment");
-        }
-
-        return import("../../../../Shaders/iblShadowAccumulation.fragment");
+        return FrameGraphIblShadowsAccumulationTask._ShaderLoader.load(this._frameGraph.engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL) ?? Promise.resolve();
     }
 
     public override isReady(): boolean {

@@ -1,6 +1,7 @@
 import { type EffectWrapperCreationOptions, type Scene } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { Matrix, TmpVectors } from "../Maths/math.vector.pure";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Post process used to apply a motion blur post process
@@ -26,13 +27,13 @@ export class ThinMotionBlurPostProcess extends EffectWrapper {
      */
     public static readonly Defines = "#define GEOMETRY_SUPPORTED\n#define SAMPLES 64.0\n#define OBJECT_BASED";
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/motionBlur.fragment"));
-        } else {
-            list.push(import("../Shaders/motionBlur.fragment"));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/motionBlur.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/motionBlur.fragment")],
+    });
+
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinMotionBlurPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     private _scene: Scene;

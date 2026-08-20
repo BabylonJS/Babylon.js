@@ -18,6 +18,7 @@ import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { type ThinTexture } from "../Materials/Textures/thinTexture";
 import { type IPipelineGenerationOptions, _ProcessShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
 import { _RetryWithInterval } from "core/Misc/timingTools";
+import { type ShaderLoader } from "../Misc/shaderLoader";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -130,6 +131,12 @@ export interface IEffectCreationOptions {
      * Provide an existing pipeline context to avoid creating a new one
      */
     existingPipelineContext?: IPipelineContext;
+
+    /**
+     * Shader loaders used to load additional shader files before preparing the effect.
+     */
+    shaderLoaders?: ShaderLoader[];
+
     /**
      * Additional async code to run before preparing the effect
      */
@@ -339,6 +346,7 @@ export class Effect implements IDisposable {
         const pipelineName = this._key.replace(/\r/g, "").replace(/\n/g, "|");
         let cachedPipeline: IPipelineContext | undefined = undefined;
 
+        let shaderLoaders: ShaderLoader[] | undefined;
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             const options = <IEffectCreationOptions>attributesNamesOrOptions;
             this._engine = <AbstractEngine>uniformsNamesOrEngine;
@@ -365,6 +373,7 @@ export class Effect implements IDisposable {
 
             this._processFinalCode = options.processFinalCode ?? null;
             this._processCodeAfterIncludes = options.processCodeAfterIncludes ?? undefined;
+            shaderLoaders = options.shaderLoaders;
             extraInitializationsAsync = options.extraInitializationsAsync;
 
             cachedPipeline = options.existingPipelineContext;
@@ -394,7 +403,7 @@ export class Effect implements IDisposable {
         this.uniqueId = Effect._UniqueIdSeed++;
         if (!cachedPipeline) {
             // eslint-disable-next-line github/no-then
-            void this._processShaderCodeAsync(null, false, null, extraInitializationsAsync).catch((error) => {
+            void this._processShaderCodeAsync(null, false, null, shaderLoaders, extraInitializationsAsync).catch((error) => {
                 const message = error?.message ?? String(error);
                 const asyncError = new Error(`Effect async shader preparation failed for "${String(this.name)}": ${message}`);
                 if (error && typeof error.stack === "string") {
@@ -427,8 +436,21 @@ export class Effect implements IDisposable {
         shaderProcessor: Nullable<IShaderProcessor> = null,
         keepExistingPipelineContext = false,
         shaderProcessingContext: Nullable<_IShaderProcessingContext> = null,
+        shaderLoaders?: ShaderLoader[],
         extraInitializationsAsync?: () => Promise<void>
     ) {
+        if (shaderLoaders) {
+            const promises: Promise<void>[] = [];
+            for (const shaderLoader of shaderLoaders) {
+                const promise = shaderLoader.load(this._shaderLanguage);
+                if (promise !== null) {
+                    promises.push(promise);
+                }
+            }
+            if (promises.length > 0) {
+                await Promise.all(promises);
+            }
+        }
         if (extraInitializationsAsync) {
             await extraInitializationsAsync();
         }

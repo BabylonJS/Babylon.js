@@ -10,8 +10,10 @@ import { type NodeMaterial, type NodeMaterialDefines } from "../../nodeMaterial.
 import { type Mesh } from "../../../../Meshes/mesh.pure";
 import { type AbstractMesh } from "../../../../Meshes/abstractMesh.pure";
 import { BindClipPlane } from "../../../../Materials/clipPlaneMaterialHelper";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { type ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
+
 /**
  * Block used to implement clip planes
  */
@@ -56,23 +58,27 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [
+            import("core/Shaders/ShadersInclude/clipPlaneFragment"),
+            import("core/Shaders/ShadersInclude/clipPlaneFragmentDeclaration"),
+            import("core/Shaders/ShadersInclude/clipPlaneVertex"),
+            import("core/Shaders/ShadersInclude/clipPlaneVertexDeclaration"),
+        ],
+        webGPU: () => [
+            import("core/ShadersWGSL/ShadersInclude/clipPlaneFragment"),
+            import("core/ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration"),
+            import("core/ShadersWGSL/ShadersInclude/clipPlaneVertex"),
+            import("core/ShadersWGSL/ShadersInclude/clipPlaneVertexDeclaration"),
+        ],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragment"),
-                import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration"),
-                import("../../../../ShadersWGSL/ShadersInclude/clipPlaneVertex"),
-                import("../../../../ShadersWGSL/ShadersInclude/clipPlaneVertexDeclaration"),
-            ]);
-        } else {
-            await Promise.all([
-                import("../../../../Shaders/ShadersInclude/clipPlaneFragment"),
-                import("../../../../Shaders/ShadersInclude/clipPlaneFragmentDeclaration"),
-                import("../../../../Shaders/ShadersInclude/clipPlaneVertex"),
-                import("../../../../Shaders/ShadersInclude/clipPlaneVertexDeclaration"),
-            ]);
+        const promise = ClipPlanesBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

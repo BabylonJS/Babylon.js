@@ -11,7 +11,8 @@ import { VertexBuffer } from "../../../Buffers/buffer.pure";
 import { SceneComponentConstants } from "../../../sceneComponent";
 
 import { Material } from "../../../Materials/material.pure";
-import { type Effect } from "../../../Materials/effect.pure";
+import { type Effect, type IEffectCreationOptions } from "../../../Materials/effect.pure";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { Texture } from "../../../Materials/Textures/texture.pure";
 import { type RenderTargetTextureOptions, RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture.pure";
 import { ProceduralTextureSceneComponent } from "./proceduralTextureSceneComponent";
@@ -40,6 +41,10 @@ export interface IProceduralTextureCreationOptions extends RenderTargetTextureOp
      */
     shaderLanguage?: ShaderLanguage;
     /**
+     * Shader loader used to load additional shader files before preparing the effect.
+     */
+    shaderLoaders?: ShaderLoader[];
+    /**
      * Additional async code to run before preparing the effect
      */
     extraInitializationsAsync?: () => Promise<void>;
@@ -57,6 +62,11 @@ export interface IProceduralTextureCreationOptions extends RenderTargetTextureOp
  * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/proceduralTextures
  */
 export class ProceduralTexture extends Texture {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/procedural.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/procedural.vertex")],
+    });
+
     /**
      * Define if the texture is enabled or not (disabled texture will not render)
      */
@@ -394,43 +404,33 @@ export class ProceduralTexture extends Texture {
 
             this._drawWrapper.effect = engine.createEffect(
                 shaders,
-                [VertexBuffer.PositionKind],
-                this._uniforms,
-                this._samplers,
-                defines,
-                undefined,
-                undefined,
-                () => {
-                    this._rtWrapper?.dispose();
-                    this._rtWrapper = this._texture = null;
+                {
+                    attributes: [VertexBuffer.PositionKind],
+                    uniformsNames: this._uniforms,
+                    samplers: this._samplers,
+                    defines: defines,
+                    fallbacks: null,
+                    onCompiled: null,
+                    onError: () => {
+                        this._rtWrapper?.dispose();
+                        this._rtWrapper = this._texture = null;
 
-                    if (this._fallbackTexture) {
-                        this._texture = this._fallbackTexture._texture;
+                        if (this._fallbackTexture) {
+                            this._texture = this._fallbackTexture._texture;
 
-                        if (this._texture) {
-                            this._texture.incrementReferences();
+                            if (this._texture) {
+                                this._texture.incrementReferences();
+                            }
                         }
-                    }
 
-                    this._fallbackTextureUsed = true;
-                },
-                undefined,
-                this._shaderLanguage,
-                async () => {
-                    if (this._options.extraInitializationsAsync) {
-                        if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                            await Promise.all([import("../../../ShadersWGSL/procedural.vertex"), this._options.extraInitializationsAsync()]);
-                        } else {
-                            await Promise.all([import("../../../Shaders/procedural.vertex"), this._options.extraInitializationsAsync()]);
-                        }
-                    } else {
-                        if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                            await import("../../../ShadersWGSL/procedural.vertex");
-                        } else {
-                            await import("../../../Shaders/procedural.vertex");
-                        }
-                    }
-                }
+                        this._fallbackTextureUsed = true;
+                    },
+                    indexParameters: undefined,
+                    shaderLanguage: this._shaderLanguage,
+                    shaderLoaders: [ProceduralTexture._ShaderLoader, ...(this._options.shaderLoaders ?? [])],
+                    extraInitializationsAsync: this._options.extraInitializationsAsync,
+                } satisfies IEffectCreationOptions,
+                engine
             );
         }
 

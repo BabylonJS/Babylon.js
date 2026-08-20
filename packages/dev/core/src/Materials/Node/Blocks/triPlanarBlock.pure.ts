@@ -18,6 +18,7 @@ import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnecti
 import { EngineStore } from "../../../Engines/engineStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../Misc/typeStore";
 
 /**
@@ -235,13 +236,17 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/ShadersInclude/helperFunctions")],
+        webGPU: () => [import("core/ShadersWGSL/ShadersInclude/helperFunctions")],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../ShadersWGSL/ShadersInclude/helperFunctions");
-        } else {
-            await import("../../../Shaders/ShadersInclude/helperFunctions");
+        const promise = TriPlanarBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

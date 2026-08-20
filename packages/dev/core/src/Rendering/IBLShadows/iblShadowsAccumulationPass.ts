@@ -9,12 +9,26 @@ import { ProceduralTexture, type IProceduralTextureCreationOptions } from "core/
 import { type IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import { Observable, type EventState } from "../../Misc/observable";
 import { type Nullable } from "../../types";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * This should not be instantiated directly, as it is part of a scene component
  * @internal
  */
 export class _IblShadowsAccumulationPass {
+    private static readonly _AccumulationShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblShadowAccumulation.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowAccumulation.fragment")],
+    });
+    private static readonly _PassShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/pass.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/pass.fragment")],
+    });
+    private static readonly _DebugShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblShadowDebug.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowDebug.fragment")],
+    });
+
     private _scene: Scene;
     private _engine: AbstractEngine;
     private _renderPipeline: IblShadowsRenderPipeline;
@@ -161,13 +175,7 @@ export class _IblShadowsAccumulationPass {
                 engine: this._engine,
                 reusable: false,
                 shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-                extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
-                    if (useWebGPU) {
-                        list.push(import("../../ShadersWGSL/iblShadowDebug.fragment"));
-                    } else {
-                        list.push(import("../../Shaders/iblShadowDebug.fragment"));
-                    }
-                },
+                shaderLoaders: [_IblShadowsAccumulationPass._DebugShaderLoader],
             };
             this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPassPP.autoClear = false;
@@ -202,13 +210,7 @@ export class _IblShadowsAccumulationPass {
             generateDepthBuffer: false,
             generateMipMaps: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await Promise.all([import("../../ShadersWGSL/iblShadowAccumulation.fragment")]);
-                } else {
-                    await Promise.all([import("../../Shaders/iblShadowAccumulation.fragment")]);
-                }
-            },
+            shaderLoaders: [_IblShadowsAccumulationPass._AccumulationShaderLoader],
         };
         this._outputTexture = new ProceduralTexture(
             "shadowAccumulationPass",
@@ -246,13 +248,7 @@ export class _IblShadowsAccumulationPass {
             generateDepthBuffer: false,
             generateMipMaps: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await Promise.all([import("../../ShadersWGSL/pass.fragment")]);
-                } else {
-                    await Promise.all([import("../../Shaders/pass.fragment")]);
-                }
-            },
+            shaderLoaders: [_IblShadowsAccumulationPass._PassShaderLoader],
         };
 
         this._oldAccumulationCopy = new ProceduralTexture(
@@ -278,13 +274,7 @@ export class _IblShadowsAccumulationPass {
             generateDepthBuffer: false,
             generateMipMaps: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await Promise.all([import("../../ShadersWGSL/pass.fragment")]);
-                } else {
-                    await Promise.all([import("../../Shaders/pass.fragment")]);
-                }
-            },
+            shaderLoaders: [_IblShadowsAccumulationPass._PassShaderLoader],
         };
 
         this._oldPositionCopy = new ProceduralTexture(

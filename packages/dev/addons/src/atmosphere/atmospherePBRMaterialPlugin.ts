@@ -11,6 +11,7 @@ import { Logger } from "core/Misc/logger";
 import { type UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3FromFloatsToRef, Vector3ScaleToRef } from "core/Maths/math.vector.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { ShaderStore } from "core/Engines/shaderStore";
 
 class AtmospherePBRMaterialDefines extends MaterialDefines {
@@ -68,6 +69,17 @@ type ShaderIncludesLoadState = {
 const GlslShaderIncludesLoadState: ShaderIncludesLoadState = { loaded: false, loadPromise: null, nextRetryTime: 0 };
 const WgslShaderIncludesLoadState: ShaderIncludesLoadState = { loaded: false, loadPromise: null, nextRetryTime: 0 };
 
+// Note: there is some level of redundancy here with the new ShaderLoader and the old ShaderIncludesLoadState.
+// Potential room for future simplification.
+const _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+    webGL: () => [
+        import("./Shaders/ShadersInclude/atmosphereFunctions"),
+        import("./Shaders/ShadersInclude/atmosphereUboDeclaration"),
+        import("./Shaders/ShadersInclude/atmosphereFragmentDeclaration"),
+    ],
+    webGPU: () => [import("./ShadersWGSL/ShadersInclude/atmosphereFunctions"), import("./ShadersWGSL/ShadersInclude/atmosphereUboDeclaration")],
+});
+
 function GetShaderIncludesLoadState(shaderLanguage: ShaderLanguage): ShaderIncludesLoadState {
     return shaderLanguage === ShaderLanguage.WGSL ? WgslShaderIncludesLoadState : GlslShaderIncludesLoadState;
 }
@@ -97,15 +109,7 @@ function AreShaderIncludesRegistered(shaderLanguage: ShaderLanguage): boolean {
  * @returns A promise that resolves once the includes are registered.
  */
 async function ImportShaderIncludesAsync(shaderLanguage: ShaderLanguage): Promise<void> {
-    if (shaderLanguage === ShaderLanguage.WGSL) {
-        await Promise.all([import("./ShadersWGSL/ShadersInclude/atmosphereFunctions"), import("./ShadersWGSL/ShadersInclude/atmosphereUboDeclaration")]);
-    } else {
-        await Promise.all([
-            import("./Shaders/ShadersInclude/atmosphereFunctions"),
-            import("./Shaders/ShadersInclude/atmosphereUboDeclaration"),
-            import("./Shaders/ShadersInclude/atmosphereFragmentDeclaration"),
-        ]);
-    }
+    await _ShaderLoader.load(shaderLanguage);
 }
 
 /**

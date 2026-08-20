@@ -16,6 +16,7 @@ import { PushMaterial } from "core/Materials/pushMaterial";
 import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { VertexBuffer } from "core/Buffers/buffer.pure";
 
 import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
@@ -31,6 +32,10 @@ class MRDLBackglowMaterialDefines extends MaterialDefines {
 }
 
 export class MRDLBackglowMaterial extends PushMaterial {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./shaders/mrdlBackglow.vertex"), import("./shaders/mrdlBackglow.fragment")],
+    });
+
     /**
      * Gets or sets the bevel radius on the backglow. If this value is changed, update the lineWidth to match.
      */
@@ -253,9 +258,7 @@ export class MRDLBackglowMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 4 },
-                        extraInitializationsAsync: async () => {
-                            await Promise.all([import("./shaders/mrdlBackglow.vertex"), import("./shaders/mrdlBackglow.fragment")]);
-                        },
+                        shaderLoaders: [MRDLBackglowMaterial._ShaderLoader],
                     },
                     engine
                 ),

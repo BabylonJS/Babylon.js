@@ -15,7 +15,9 @@ import { type RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
 
+import { type IEffectCreationOptions } from "core/Materials/effect.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * This represents a full screen 2d layer.
@@ -170,6 +172,11 @@ export class Layer {
         return this._shaderLanguage;
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/layer.vertex"), import("core/Shaders/layer.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/layer.vertex"), import("core/ShadersWGSL/layer.fragment")],
+    });
+
     /**
      * Instantiates a new layer.
      * This represents a full screen 2d layer.
@@ -231,8 +238,6 @@ export class Layer {
         this._createIndexBuffer();
     }
 
-    private _shadersLoaded = false;
-
     private _createIndexBuffer(): void {
         const engine = this._scene.getEngine();
 
@@ -287,25 +292,19 @@ export class Layer {
             this._previousDefines = defines;
             this._drawWrapper.effect = engine.createEffect(
                 "layer",
-                [VertexBuffer.PositionKind],
-                ["textureMatrix", "color", "scale", "offset"],
-                ["textureSampler"],
-                defines,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                this._shaderLanguage,
-                this._shadersLoaded
-                    ? undefined
-                    : async () => {
-                          if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                              await Promise.all([import("../ShadersWGSL/layer.vertex"), import("../ShadersWGSL/layer.fragment")]);
-                          } else {
-                              await Promise.all([import("../Shaders/layer.vertex"), import("../Shaders/layer.fragment")]);
-                          }
-                          this._shadersLoaded = true;
-                      }
+                {
+                    attributes: [VertexBuffer.PositionKind],
+                    uniformBuffersNames: [],
+                    uniformsNames: ["textureMatrix", "color", "scale", "offset"],
+                    samplers: ["textureSampler"],
+                    defines,
+                    fallbacks: null,
+                    onCompiled: null,
+                    onError: null,
+                    shaderLanguage: this._shaderLanguage,
+                    shaderLoaders: [Layer._ShaderLoader],
+                } satisfies IEffectCreationOptions,
+                engine
             );
         }
 

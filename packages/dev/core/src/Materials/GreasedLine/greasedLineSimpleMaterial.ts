@@ -6,6 +6,7 @@ import { Color3 } from "../../Maths/math.color.pure";
 import { Vector2 } from "../../Maths/math.vector.pure";
 import { ShaderLanguage } from "../shaderLanguage";
 import { TextureSampler } from "../Textures/textureSampler";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 import { type GreasedLineMaterialOptions, type IGreasedLineMaterial, GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
@@ -21,6 +22,11 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * Force to use GLSL in WebGPU
      */
     public static ForceGLSL = false;
+
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/greasedLine.vertex"), import("core/Shaders/greasedLine.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/greasedLine.vertex"), import("core/ShadersWGSL/greasedLine.fragment")],
+    });
 
     private _visibility: number;
     private _width: number;
@@ -105,14 +111,8 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                 uniforms,
                 samplers: isWGSL ? [] : ["grlColors"],
                 defines,
-                extraInitializationsAsync: async () => {
-                    if (isWGSL) {
-                        await Promise.all([import("../../ShadersWGSL/greasedLine.vertex"), import("../../ShadersWGSL/greasedLine.fragment")]);
-                    } else {
-                        await Promise.all([import("../../Shaders/greasedLine.vertex"), import("../../Shaders/greasedLine.fragment")]);
-                    }
-                },
                 shaderLanguage: isWGSL ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+                shaderLoaders: [GreasedLineSimpleMaterial._ShaderLoader],
             }
         );
 

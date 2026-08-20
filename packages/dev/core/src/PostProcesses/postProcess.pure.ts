@@ -16,6 +16,7 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
+import { type ShaderLoader } from "core/Misc/shaderLoader";
 import { type Scene } from "../scene.pure";
 import { type InternalTexture } from "../Materials/Textures/internalTexture";
 import { type Animation } from "../Animations/animation.pure";
@@ -265,8 +266,6 @@ export class PostProcess {
     private _camera: Camera;
     protected _scene: Scene;
     private _engine: AbstractEngine;
-
-    protected _webGPUReady = false;
 
     private _options: number | { width: number; height: number };
     private _reusable = false;
@@ -555,6 +554,7 @@ export class PostProcess {
         let size: number | { width: number; height: number } = 1;
         let uniformBuffers: Nullable<string[]> = null;
         let effectWrapper: EffectWrapper | undefined;
+        let shaderLoaders: ShaderLoader[] | undefined;
         if (parameters && !Array.isArray(parameters)) {
             const options = parameters;
             parameters = options.uniforms ?? null;
@@ -573,6 +573,7 @@ export class PostProcess {
             shaderLanguage = options.shaderLanguage ?? ShaderLanguage.GLSL;
             uniformBuffers = options.uniformBuffers ?? null;
             extraInitializations = options.extraInitializations;
+            shaderLoaders = options.shaderLoaders;
             effectWrapper = options.effectWrapper;
         } else if (_size) {
             if (typeof _size === "number") {
@@ -600,7 +601,6 @@ export class PostProcess {
                 indexParameters,
                 blockCompilation: true,
                 shaderLanguage,
-                extraInitializations: undefined,
             });
 
         this.name = name;
@@ -643,24 +643,13 @@ export class PostProcess {
         this._indexParameters = indexParameters;
 
         if (!this._useExistingThinPostProcess) {
-            this._webGPUReady = this._shaderLanguage === ShaderLanguage.WGSL;
-
-            const importPromises: Array<Promise<any>> = [];
-
-            this._gatherImports(this._engine.isWebGPU && !PostProcess.ForceGLSL, importPromises);
-
-            this._effectWrapper._webGPUReady = this._webGPUReady;
-            this._effectWrapper._postConstructor(blockCompilation, defines, extraInitializations, importPromises);
+            shaderLoaders = [...this._getShaderLoaders(), ...(shaderLoaders ?? [])];
+            this._effectWrapper._postConstructor(blockCompilation, defines, extraInitializations, undefined, shaderLoaders);
         }
     }
 
-    protected _gatherImports(useWebGPU = false, list: Promise<any>[]) {
-        // this._webGPUReady is used to detect when a postprocess is intended to be used with WebGPU
-        if (useWebGPU && this._webGPUReady) {
-            list.push(Promise.all([import("../ShadersWGSL/postprocess.vertex")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/postprocess.vertex")]));
-        }
+    protected _getShaderLoaders(): ShaderLoader[] {
+        return [EffectWrapper._PostProcessVertexShaderLoader];
     }
 
     /**

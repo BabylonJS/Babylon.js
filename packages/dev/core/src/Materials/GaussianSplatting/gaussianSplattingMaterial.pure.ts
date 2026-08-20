@@ -28,9 +28,10 @@ import {
     PrepareDefinesForMisc,
     PrepareUniformsAndSamplersList,
 } from "../materialHelper.functions";
-import { ShaderLanguage } from "../shaderLanguage";
+import { type ShaderLanguage } from "../shaderLanguage";
 import { Engine } from "../../Engines/engine.pure";
 import { RegisterClass } from "../../Misc/typeStore";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Computes the maximum number of Gaussian Splatting compound parts supported by the given engine.
@@ -255,6 +256,15 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "sogShnMax",
         "sogShCoeffCount",
     ];
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/gaussianSplatting.fragment"), import("core/Shaders/gaussianSplatting.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/gaussianSplatting.fragment"), import("core/ShadersWGSL/gaussianSplatting.vertex")],
+    });
+    private static readonly _VoxelShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/gaussianSplattingVoxel.vertex"), import("core/Shaders/gaussianSplattingVoxel.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/gaussianSplattingVoxel.vertex"), import("core/ShadersWGSL/gaussianSplattingVoxel.fragment")],
+    });
+
     private _sourceMesh: GaussianSplattingMesh | null = null;
     /**
      * Checks whether the material is ready to be rendered for a given mesh.
@@ -406,13 +416,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                     indexParameters: {},
                     processCodeAfterIncludes: this._eventInfo.customCode,
                     shaderLanguage: this._shaderLanguage,
-                    extraInitializationsAsync: async () => {
-                        if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                            await Promise.all([import("../../ShadersWGSL/gaussianSplatting.fragment"), import("../../ShadersWGSL/gaussianSplatting.vertex")]);
-                        } else {
-                            await Promise.all([import("../../Shaders/gaussianSplatting.fragment"), import("../../Shaders/gaussianSplatting.vertex")]);
-                        }
-                    },
+                    shaderLoaders: [GaussianSplattingMaterial._ShaderLoader],
                 },
                 engine
             );
@@ -762,13 +766,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 shaderLanguage: shaderLanguage,
                 defines: defines,
                 needAlphaBlending: false,
-                extraInitializationsAsync: async () => {
-                    if (shaderLanguage === ShaderLanguage.WGSL) {
-                        await Promise.all([import("../../ShadersWGSL/gaussianSplattingVoxel.vertex"), import("../../ShadersWGSL/gaussianSplattingVoxel.fragment")]);
-                    } else {
-                        await Promise.all([import("../../Shaders/gaussianSplattingVoxel.vertex"), import("../../Shaders/gaussianSplattingVoxel.fragment")]);
-                    }
-                },
+                shaderLoaders: [GaussianSplattingMaterial._VoxelShaderLoader],
             }
         );
         shaderMaterial.cullBackFaces = false;

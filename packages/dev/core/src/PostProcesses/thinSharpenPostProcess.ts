@@ -1,6 +1,7 @@
 import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Post process used to apply a sharpen effect
@@ -16,13 +17,13 @@ export class ThinSharpenPostProcess extends EffectWrapper {
      */
     public static readonly Uniforms = ["sharpnessAmounts", "screenSize"];
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/sharpen.fragment"));
-        } else {
-            list.push(import("../Shaders/sharpen.fragment"));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/sharpen.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/sharpen.fragment")],
+    });
+
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinSharpenPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

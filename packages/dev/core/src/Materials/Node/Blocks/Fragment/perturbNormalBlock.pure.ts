@@ -16,6 +16,7 @@ import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConne
 import { TBNBlock } from "./TBNBlock.pure";
 
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { Constants } from "../../../../Engines/constants";
 import { type Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -192,21 +193,25 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [
+            import("core/Shaders/ShadersInclude/bumpFragment"),
+            import("core/Shaders/ShadersInclude/bumpFragmentMainFunctions"),
+            import("core/Shaders/ShadersInclude/bumpFragmentFunctions"),
+        ],
+        webGPU: () => [
+            import("core/ShadersWGSL/ShadersInclude/bumpFragment"),
+            import("core/ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions"),
+            import("core/ShadersWGSL/ShadersInclude/bumpFragmentFunctions"),
+        ],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../../../../ShadersWGSL/ShadersInclude/bumpFragment"),
-                import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions"),
-                import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentFunctions"),
-            ]);
-        } else {
-            await Promise.all([
-                import("../../../../Shaders/ShadersInclude/bumpFragment"),
-                import("../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions"),
-                import("../../../../Shaders/ShadersInclude/bumpFragmentFunctions"),
-            ]);
+        const promise = PerturbNormalBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

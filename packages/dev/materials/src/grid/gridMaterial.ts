@@ -14,7 +14,7 @@ import { type SubMesh } from "core/Meshes/subMesh";
 import { type Mesh } from "core/Meshes/mesh";
 import { type Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 import {
     BindFogParameters,
@@ -216,7 +216,10 @@ export class GridMaterial extends PushMaterial {
         super(name, scene, undefined, forceGLSL);
     }
 
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./grid.vertex"), import("./grid.fragment")],
+        webGPU: () => [import("./wgsl/grid.vertex"), import("./wgsl/grid.fragment")],
+    });
 
     /**
      * @returns whether or not the grid requires alpha blending.
@@ -371,17 +374,7 @@ export class GridMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("./wgsl/grid.vertex"), import("./wgsl/grid.fragment")]);
-                                  } else {
-                                      await Promise.all([import("./grid.vertex"), import("./grid.fragment")]);
-                                  }
-
-                                  this._shadersLoaded = true;
-                              },
+                        shaderLoaders: [GridMaterial._ShaderLoader],
                     },
                     scene.getEngine()
                 ),

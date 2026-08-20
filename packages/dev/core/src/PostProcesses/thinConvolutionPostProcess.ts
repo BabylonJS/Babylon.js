@@ -1,6 +1,7 @@
 import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Post process used to apply a convolution effect
@@ -42,13 +43,13 @@ export class ThinConvolutionPostProcess extends EffectWrapper {
      */
     public static readonly Uniforms = ["kernel", "screenSize"];
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/convolution.fragment"));
-        } else {
-            list.push(import("../Shaders/convolution.fragment"));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/convolution.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/convolution.fragment")],
+    });
+
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinConvolutionPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

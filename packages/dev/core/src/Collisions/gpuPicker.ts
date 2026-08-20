@@ -22,6 +22,7 @@ import { Logger } from "core/Misc/logger";
 import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Class used to store the result of a GPU picking operation
@@ -128,6 +129,11 @@ export interface IGPUMultiPickOptions {
  * GPUPicker can pick meshes, instances and thin instances
  */
 export class GPUPicker {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/picking.fragment"), import("core/Shaders/picking.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/picking.fragment"), import("core/ShadersWGSL/picking.vertex")],
+    });
+
     private static readonly _AttributeName = "instanceMeshID";
     private static readonly _MaxPickingId = 0x00ffffff; // 24 bits unsigned integer max
     private static readonly _DepthPixelRadius = 1;
@@ -385,13 +391,7 @@ export class GPUPicker {
             defines: defines,
             useClipPlane: null,
             shaderLanguage: this._shaderLanguage,
-            extraInitializationsAsync: async () => {
-                if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                    await Promise.all([import("../ShadersWGSL/picking.fragment"), import("../ShadersWGSL/picking.vertex")]);
-                } else {
-                    await Promise.all([import("../Shaders/picking.fragment"), import("../Shaders/picking.vertex")]);
-                }
-            },
+            shaderLoaders: [GPUPicker._ShaderLoader],
         };
 
         const newMaterial = new ShaderMaterial("pickingShader", scene, "picking", options, false);

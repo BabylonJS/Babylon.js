@@ -4,6 +4,7 @@ import { Halton2DSequence } from "core/Maths/halton2DSequence";
 import { Vector2 } from "core/Maths/math.vector.pure";
 import { EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { TAAMaterialManager } from "./RenderPipeline/Pipelines/taaMaterialManager.pure";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Simple implementation of Temporal Anti-Aliasing (TAA).
@@ -25,13 +26,13 @@ export class ThinTAAPostProcess extends EffectWrapper {
      */
     public static readonly Samplers = ["historySampler"];
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/taa.fragment"));
-        } else {
-            list.push(import("../Shaders/taa.fragment"));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/taa.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/taa.fragment")],
+    });
+
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinTAAPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     private _samples = 8;

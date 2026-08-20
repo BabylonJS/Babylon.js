@@ -19,6 +19,7 @@ import { PBRClearCoatConfiguration } from "../../../PBR/pbrClearCoatConfiguratio
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { TBNBlock } from "../Fragment/TBNBlock.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -87,13 +88,17 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/ShadersInclude/bumpFragmentMainFunctions")],
+        webGPU: () => [import("core/ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions")],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions");
-        } else {
-            await import("../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions");
+        const promise = ClearCoatBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

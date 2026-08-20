@@ -37,6 +37,7 @@ import {
     PushAttributesForInstances,
 } from "../../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { FloatingOriginCurrentScene, GetFullOffsetViewProjectionToRef } from "../../Materials/floatingOriginMatrixOverrides";
 
 /**
@@ -718,6 +719,22 @@ export class ShadowGenerator implements IShadowGenerator {
     protected _shadowMap: Nullable<RenderTargetTexture>;
     protected _shadowMap2: Nullable<RenderTargetTexture>;
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [
+            import("core/Shaders/shadowMap.fragment"),
+            import("core/Shaders/shadowMap.vertex"),
+            import("core/Shaders/depthBoxBlur.fragment"),
+            import("core/Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow"),
+        ],
+        webGPU: () => [
+            import("core/ShadersWGSL/shadowMap.fragment"),
+            import("core/ShadersWGSL/shadowMap.vertex"),
+            import("core/ShadersWGSL/depthBoxBlur.fragment"),
+            import("core/ShadersWGSL/ShadersInclude/shadowMapFragmentSoftTransparentShadow"),
+        ],
+    });
+    private _shadersLoaded = false;
+
     /**
      * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
      * @returns The render target texture if present otherwise, null
@@ -1215,26 +1232,15 @@ export class ShadowGenerator implements IShadowGenerator {
         }
     }
 
-    private _shadersLoaded = false;
     private async _initShaderSourceAsync(forceGLSL = false) {
         const engine = this._scene.getEngine();
 
         if (engine.isWebGPU && !forceGLSL && !ShadowGenerator.ForceGLSL) {
             this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([
-                import("../../ShadersWGSL/shadowMap.fragment"),
-                import("../../ShadersWGSL/shadowMap.vertex"),
-                import("../../ShadersWGSL/depthBoxBlur.fragment"),
-                import("../../ShadersWGSL/ShadersInclude/shadowMapFragmentSoftTransparentShadow"),
-            ]);
-        } else {
-            await Promise.all([
-                import("../../Shaders/shadowMap.fragment"),
-                import("../../Shaders/shadowMap.vertex"),
-                import("../../Shaders/depthBoxBlur.fragment"),
-                import("../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow"),
-            ]);
+        }
+        const promise = ShadowGenerator._ShaderLoader.load(this._shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._shadersLoaded = true;

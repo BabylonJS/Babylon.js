@@ -14,6 +14,7 @@ import { type ThinEngine } from "../Engines/thinEngine";
 import { Logger } from "../Misc/logger";
 import { BindLogDepth } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { Vector3 } from "../Maths/math.vector.pure";
 
 /**
@@ -173,6 +174,12 @@ export class SpriteRenderer {
     private _vertexArrayObject: WebGLVertexArrayObject;
     private _isDisposed = false;
 
+    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/sprites.vertex"), import("core/Shaders/sprites.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/sprites.vertex"), import("core/ShadersWGSL/sprites.fragment")],
+    });
+
     /**
      * Creates a new sprite renderer
      * @param engine defines the engine the renderer works with
@@ -241,17 +248,15 @@ export class SpriteRenderer {
         this._initShaderSourceAsync();
     }
 
-    private _shadersLoaded = false;
-
     private async _initShaderSourceAsync() {
         const engine = this._engine;
 
         if (engine.isWebGPU && !SpriteRenderer.ForceGLSL) {
             this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([import("../ShadersWGSL/sprites.vertex"), import("../ShadersWGSL/sprites.fragment")]);
-        } else {
-            await Promise.all([import("../Shaders/sprites.vertex"), import("../Shaders/sprites.fragment")]);
+        }
+        const promise = SpriteRenderer._ShaderLoader.load(this._shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._shadersLoaded = true;

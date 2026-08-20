@@ -11,6 +11,7 @@ import { VertexBuffer } from "../Buffers/buffer.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
 import { type Effect, type IEffectCreationOptions, type IShaderPath } from "./effect.pure";
+import { type ShaderLoader } from "../Misc/shaderLoader";
 import { EffectFallbacks } from "./effectFallbacks";
 import { WebRequest } from "../Misc/webRequest";
 import { type ShaderLanguage } from "./shaderLanguage";
@@ -108,6 +109,11 @@ export interface IShaderMaterialOptions {
      * The language the shader is written in (default: GLSL)
      */
     shaderLanguage?: ShaderLanguage;
+
+    /**
+     * Shader loader used to load additional shader files before preparing the effect.
+     */
+    shaderLoaders?: ShaderLoader[];
 
     /**
      * Defines additional code to call to prepare the shader code
@@ -957,6 +963,7 @@ export class ShaderMaterial extends PushMaterial {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
                     shaderLanguage: this._options.shaderLanguage,
+                    shaderLoaders: this._options.shaderLoaders,
                     extraInitializationsAsync: this._options.extraInitializationsAsync,
                 },
                 engine
@@ -1368,7 +1375,7 @@ export class ShaderMaterial extends PushMaterial {
         for (const propName of keys) {
             const propValue = this._options[propName];
             if (Array.isArray(propValue)) {
-                (<string[]>this._options[propName]) = propValue.slice(0);
+                (<unknown[]>this._options[propName]) = propValue.slice(0);
             }
         }
 
@@ -1550,7 +1557,10 @@ export class ShaderMaterial extends PushMaterial {
         serializationObject.customType = "BABYLON.ShaderMaterial";
         serializationObject.uniqueId = this.uniqueId;
 
-        serializationObject.options = this._options;
+        const optionsClone: IShaderMaterialOptions = { ...this._options };
+        delete optionsClone.shaderLoaders;
+        delete optionsClone.extraInitializationsAsync;
+        serializationObject.options = optionsClone;
         serializationObject.shaderPath = this._shaderPath;
         serializationObject.storeEffectOnSubMeshes = this._storeEffectOnSubMeshes;
 

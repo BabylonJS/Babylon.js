@@ -12,6 +12,12 @@ import { AddParser, AddIndividualParser, GetIndividualParser } from "core/Loadin
 import { Mesh } from "../Meshes/mesh.pure";
 import { AbstractEngine } from "../Engines/abstractEngine.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
+
+const _ParticlesVertexShaderLoader = /*#__PURE__*/ new ShaderLoader({
+    webGL: () => [import("core/Shaders/particles.vertex")],
+    webGPU: () => [import("core/ShadersWGSL/particles.vertex")],
+});
 
 let _Registered = false;
 /**
@@ -103,10 +109,9 @@ export function RegisterParticleSystemComponent(): void {
             undefined,
             shaderLanguage,
             async () => {
-                if (shaderLanguage === ShaderLanguage.GLSL) {
-                    await import("../Shaders/particles.vertex");
-                } else {
-                    await import("../ShadersWGSL/particles.vertex");
+                const promise = _ParticlesVertexShaderLoader.load(shaderLanguage);
+                if (promise !== null) {
+                    await promise;
                 }
             }
         );

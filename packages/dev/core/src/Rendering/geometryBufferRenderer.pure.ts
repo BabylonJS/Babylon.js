@@ -28,6 +28,7 @@ import {
     PrepareUniformsAndSamplersForIBL,
 } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { type OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial.pure";
 import { type IblShadowsRenderPipeline } from "./IBLShadows/iblShadowsRenderPipeline.pure";
 import { RegisterGeometryBufferRendererSceneComponent } from "./geometryBufferRendererSceneComponent.pure";
@@ -552,6 +553,12 @@ export class GeometryBufferRenderer {
     /** Shader language used by the material */
     protected _shaderLanguage = ShaderLanguage.GLSL;
 
+    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/geometry.vertex"), import("core/Shaders/geometry.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/geometry.vertex"), import("core/ShadersWGSL/geometry.fragment")],
+    });
+
     /**
      * Gets the shader language used in this material.
      */
@@ -596,17 +603,15 @@ export class GeometryBufferRenderer {
         this._createRenderTargets();
     }
 
-    private _shadersLoaded = false;
-
     private async _initShaderSourceAsync() {
         const engine = this._scene.getEngine();
 
         if (engine.isWebGPU && !GeometryBufferRenderer.ForceGLSL) {
             this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([import("../ShadersWGSL/geometry.vertex"), import("../ShadersWGSL/geometry.fragment")]);
-        } else {
-            await Promise.all([import("../Shaders/geometry.vertex"), import("../Shaders/geometry.fragment")]);
+        }
+        const promise = GeometryBufferRenderer._ShaderLoader.load(this._shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._shadersLoaded = true;

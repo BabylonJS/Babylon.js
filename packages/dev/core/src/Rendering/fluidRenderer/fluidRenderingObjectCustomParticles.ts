@@ -5,13 +5,19 @@ import { type Scene } from "core/scene";
 import { type FloatArray, type Nullable } from "core/types";
 
 import { FluidRenderingObject } from "./fluidRenderingObject";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { type ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Defines a rendering object based on a list of custom buffers
  * The list must contain at least a "position" buffer!
  */
 export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/fluidRenderingParticleDiffuse.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/fluidRenderingParticleDiffuse.fragment")],
+    });
+
     private _numParticles: number;
     private _diffuseEffectWrapper: Nullable<EffectWrapper>;
     private _vertexBuffers: { [key: string]: VertexBuffer };
@@ -84,13 +90,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
             uniformNames,
             samplerNames: [],
             shaderLanguage: this._shaderLanguage,
-            extraInitializationsAsync: async () => {
-                if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                    await import("../../ShadersWGSL/fluidRenderingParticleDiffuse.fragment");
-                } else {
-                    await import("../../Shaders/fluidRenderingParticleDiffuse.fragment");
-                }
-            },
+            shaderLoaders: [FluidRenderingObjectCustomParticles._ShaderLoader],
         });
     }
 

@@ -23,6 +23,7 @@ import { Material } from "../Materials/material.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { type Nullable } from "../types";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * @internal
@@ -58,6 +59,16 @@ export class ThinDepthPeelingRenderer {
         new Color4(-ThinDepthPeelingRenderer._MIN_DEPTH, ThinDepthPeelingRenderer._MAX_DEPTH, 0, 0),
         new Color4(0, 0, 0, 0),
     ];
+
+    private static readonly _OitBackBlendShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/oitBackBlend.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/oitBackBlend.fragment")],
+    });
+
+    private static readonly _OitFinalSimpleBlendShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/oitFinalSimpleBlend.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/oitFinalSimpleBlend.fragment")],
+    });
 
     protected _passCount: number;
     /**
@@ -290,13 +301,7 @@ export class ThinDepthPeelingRenderer {
             samplerNames: ["uBackColor"],
             uniformNames: [],
             shaderLanguage: this._shaderLanguage,
-            extraInitializationsAsync: async () => {
-                if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                    await import("../ShadersWGSL/oitBackBlend.fragment");
-                } else {
-                    await import("../Shaders/oitBackBlend.fragment");
-                }
-            },
+            shaderLoaders: [ThinDepthPeelingRenderer._OitBackBlendShaderLoader],
         });
         this._blendBackEffectWrapperPingPong = new EffectWrapper({
             fragmentShader: "oitBackBlend",
@@ -305,13 +310,7 @@ export class ThinDepthPeelingRenderer {
             samplerNames: ["uBackColor"],
             uniformNames: [],
             shaderLanguage: this._shaderLanguage,
-            extraInitializationsAsync: async () => {
-                if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                    await import("../ShadersWGSL/oitBackBlend.fragment");
-                } else {
-                    await import("../Shaders/oitBackBlend.fragment");
-                }
-            },
+            shaderLoaders: [ThinDepthPeelingRenderer._OitBackBlendShaderLoader],
         });
 
         this._finalEffectWrapper = new EffectWrapper({
@@ -321,13 +320,7 @@ export class ThinDepthPeelingRenderer {
             samplerNames: finalEffectSamplerNames,
             uniformNames: [],
             shaderLanguage: this._shaderLanguage,
-            extraInitializationsAsync: async () => {
-                if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                    await import("../ShadersWGSL/oitFinalSimpleBlend.fragment");
-                } else {
-                    await import("../Shaders/oitFinalSimpleBlend.fragment");
-                }
-            },
+            shaderLoaders: [ThinDepthPeelingRenderer._OitFinalSimpleBlendShaderLoader],
         });
 
         this._effectRenderer = new EffectRenderer(this._engine);

@@ -1,6 +1,7 @@
 import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Post process used to apply a screen space curvature post process
@@ -21,13 +22,13 @@ export class ThinScreenSpaceCurvaturePostProcess extends EffectWrapper {
      */
     public static readonly Samplers = ["normalSampler"];
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/screenSpaceCurvature.fragment"));
-        } else {
-            list.push(import("../Shaders/screenSpaceCurvature.fragment"));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/screenSpaceCurvature.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/screenSpaceCurvature.fragment")],
+    });
+
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinScreenSpaceCurvaturePostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

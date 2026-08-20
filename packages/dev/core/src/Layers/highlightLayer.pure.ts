@@ -31,6 +31,7 @@ import { GetExponentOfTwo } from "../Misc/tools.functions";
 import { ThinGlowBlurPostProcess } from "./thinEffectLayer";
 import { type Nullable } from "../types";
 import { RegisterClass } from "../Misc/typeStore";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 interface IBlurPostProcess extends PostProcess {
     kernel: number;
@@ -74,15 +75,13 @@ class GlowBlurPostProcess extends PostProcess {
         });
     }
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/glowBlurPostProcess.fragment"));
-        } else {
-            list.push(import("../Shaders/glowBlurPostProcess.fragment"));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/glowBlurPostProcess.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/glowBlurPostProcess.fragment")],
+    });
 
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [GlowBlurPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 }
 

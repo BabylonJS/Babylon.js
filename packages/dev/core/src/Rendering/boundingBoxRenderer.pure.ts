@@ -21,6 +21,7 @@ import { UniformBuffer } from "../Materials/uniformBuffer";
 import { CreateBoxVertexData } from "../Meshes/Builders/boxBuilder.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../Engines/constants";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { _RetryWithInterval } from "../Misc/timingTools";
 import { Logger } from "../Misc/logger";
 
@@ -43,6 +44,11 @@ export class BoundingBoxRenderer implements ISceneComponent {
      * The component name helpful to identify the component in the list of scene components.
      */
     public readonly name = SceneComponentConstants.NAME_BOUNDINGBOXRENDERER;
+
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/boundingBoxRenderer.vertex"), import("core/Shaders/boundingBoxRenderer.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/boundingBoxRenderer.vertex"), import("core/ShadersWGSL/boundingBoxRenderer.fragment")],
+    });
 
     /**
      * The scene the component belongs to.
@@ -243,13 +249,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
                 uniforms: ["world", "viewProjection", "viewProjectionR", "color"],
                 uniformBuffers: ["BoundingBoxRenderer"],
                 shaderLanguage: this._shaderLanguage,
-                extraInitializationsAsync: async () => {
-                    if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                        await Promise.all([import("../ShadersWGSL/boundingBoxRenderer.vertex"), import("../ShadersWGSL/boundingBoxRenderer.fragment")]);
-                    } else {
-                        await Promise.all([import("../Shaders/boundingBoxRenderer.vertex"), import("../Shaders/boundingBoxRenderer.fragment")]);
-                    }
-                },
+                shaderLoaders: [BoundingBoxRenderer._ShaderLoader],
             },
             false
         );
@@ -269,13 +269,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
                 uniforms: ["world", "viewProjection", "viewProjectionR", "color"],
                 uniformBuffers: ["BoundingBoxRenderer"],
                 shaderLanguage: this._shaderLanguage,
-                extraInitializationsAsync: async () => {
-                    if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                        await Promise.all([import("../ShadersWGSL/boundingBoxRenderer.vertex"), import("../ShadersWGSL/boundingBoxRenderer.fragment")]);
-                    } else {
-                        await Promise.all([import("../Shaders/boundingBoxRenderer.vertex"), import("../Shaders/boundingBoxRenderer.fragment")]);
-                    }
-                },
+                shaderLoaders: [BoundingBoxRenderer._ShaderLoader],
             },
             true
         );

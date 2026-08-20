@@ -2,6 +2,7 @@ import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions }
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { Vector2 } from "../Maths/math.vector.pure";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * @internal
@@ -13,13 +14,13 @@ export class ThinSSRBlurPostProcess extends EffectWrapper {
 
     public static readonly Samplers = ["textureSampler"];
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/screenSpaceReflection2Blur.fragment"));
-        } else {
-            list.push(import("../Shaders/screenSpaceReflection2Blur.fragment"));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/screenSpaceReflection2Blur.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/screenSpaceReflection2Blur.fragment")],
+    });
+
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinSSRBlurPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     constructor(name: string, engine: Nullable<AbstractEngine> = null, direction?: Vector2, blurStrength?: number, options?: EffectWrapperCreationOptions) {

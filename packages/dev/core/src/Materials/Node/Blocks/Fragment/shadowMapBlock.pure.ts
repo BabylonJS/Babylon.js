@@ -6,6 +6,7 @@ import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { type NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -53,21 +54,25 @@ export class ShadowMapBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [
+            import("core/Shaders/ShadersInclude/shadowMapVertexMetric"),
+            import("core/Shaders/ShadersInclude/packingFunctions"),
+            import("core/Shaders/ShadersInclude/shadowMapFragment"),
+        ],
+        webGPU: () => [
+            import("core/ShadersWGSL/ShadersInclude/shadowMapVertexMetric"),
+            import("core/ShadersWGSL/ShadersInclude/packingFunctions"),
+            import("core/ShadersWGSL/ShadersInclude/shadowMapFragment"),
+        ],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../../../../ShadersWGSL/ShadersInclude/shadowMapVertexMetric"),
-                import("../../../../ShadersWGSL/ShadersInclude/packingFunctions"),
-                import("../../../../ShadersWGSL/ShadersInclude/shadowMapFragment"),
-            ]);
-        } else {
-            await Promise.all([
-                import("../../../../Shaders/ShadersInclude/shadowMapVertexMetric"),
-                import("../../../../Shaders/ShadersInclude/packingFunctions"),
-                import("../../../../Shaders/ShadersInclude/shadowMapFragment"),
-            ]);
+        const promise = ShadowMapBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

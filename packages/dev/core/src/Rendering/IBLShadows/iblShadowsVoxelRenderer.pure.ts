@@ -20,6 +20,7 @@ import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer.pu
 import { type IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline.pure";
 import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { type GaussianSplattingMesh, IsGaussianSplattingClassName } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
 import { type GaussianSplattingMaterial } from "../../Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 
@@ -40,6 +41,26 @@ export class _IblShadowsVoxelRenderer {
         Matrix.LookAtLH(Vector3.Zero(), new Vector3(0, 1, 0), new Vector3(1, 0, 0)),
         Matrix.LookAtLH(Vector3.Zero(), new Vector3(0, 0, 1), Vector3.Up()),
     ];
+
+    private static readonly _CopyTexture3DLayerToTextureShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/copyTexture3DLayerToTexture.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/copyTexture3DLayerToTexture.fragment")],
+    });
+
+    private static readonly _CombineVoxelGridsShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblCombineVoxelGrids.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblCombineVoxelGrids.fragment")],
+    });
+
+    private static readonly _GenerateVoxelMipShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblGenerateVoxelMip.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblGenerateVoxelMip.fragment")],
+    });
+
+    private static readonly _VoxelGridShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblVoxelGrid.fragment"), import("core/Shaders/iblVoxelGrid.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/iblVoxelGrid.fragment"), import("core/ShadersWGSL/iblVoxelGrid.vertex")],
+    });
 
     private _scene: Scene;
     private _engine: Engine;
@@ -209,13 +230,7 @@ export class _IblShadowsVoxelRenderer {
             uniformNames: ["layerNum"],
             samplerNames: ["textureSampler"],
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await import("../../ShadersWGSL/copyTexture3DLayerToTexture.fragment");
-                } else {
-                    await import("../../Shaders/copyTexture3DLayerToTexture.fragment");
-                }
-            },
+            shaderLoaders: [_IblShadowsVoxelRenderer._CopyTexture3DLayerToTextureShaderLoader],
         });
         this._copyMipEffectWrapper.onApplyObservable.add(() => {
             const effect = this._copyMipEffectWrapper.effect;
@@ -348,13 +363,7 @@ export class _IblShadowsVoxelRenderer {
             format: Constants.TEXTUREFORMAT_R,
             samplingMode: Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await import("../../ShadersWGSL/iblCombineVoxelGrids.fragment");
-                } else {
-                    await import("../../Shaders/iblCombineVoxelGrids.fragment");
-                }
-            },
+            shaderLoaders: [_IblShadowsVoxelRenderer._CombineVoxelGridsShaderLoader],
         };
         if (this._engine.isWebGPU) {
             this._voxelGrid = new RenderTargetTexture("voxelGrid", size, this._scene, {
@@ -398,13 +407,7 @@ export class _IblShadowsVoxelRenderer {
             format: Constants.TEXTUREFORMAT_R,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await import("../../ShadersWGSL/iblGenerateVoxelMip.fragment");
-                } else {
-                    await import("../../Shaders/iblGenerateVoxelMip.fragment");
-                }
-            },
+            shaderLoaders: [_IblShadowsVoxelRenderer._GenerateVoxelMipShaderLoader],
         };
         this._mipArray = new Array(Math.ceil(Math.log2(this._voxelResolution)));
         for (let mipIdx = 1; mipIdx <= this._mipArray.length; mipIdx++) {
@@ -500,13 +503,7 @@ export class _IblShadowsVoxelRenderer {
             uniforms: ["world", "viewMatrix", "invTransWorld", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
             defines: ["MAX_DRAW_BUFFERS " + this._maxDrawBuffers],
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await Promise.all([import("../../ShadersWGSL/iblVoxelGrid.fragment"), import("../../ShadersWGSL/iblVoxelGrid.vertex")]);
-                } else {
-                    await Promise.all([import("../../Shaders/iblVoxelGrid.fragment"), import("../../Shaders/iblVoxelGrid.vertex")]);
-                }
-            },
+            shaderLoaders: [_IblShadowsVoxelRenderer._VoxelGridShaderLoader],
         });
 
         this._voxelMaterial.cullBackFaces = false;

@@ -16,6 +16,8 @@ import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 import { renderableTextureFormatToIndex } from "./webgpuTextureManager";
 
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
+import { type IEffectCreationOptions } from "core/Materials/effect.pure";
 
 /** @internal */
 export class WebGPUClearQuad {
@@ -27,6 +29,10 @@ export class WebGPUClearQuad {
     private _depthTextureFormat: GPUTextureFormat | undefined;
     private _bundleCache: { [key: string]: GPURenderBundle } = {};
     private _keyTemp: number[] = [];
+
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGPU: () => [import("core/ShadersWGSL/clearQuad.vertex"), import("core/ShadersWGSL/clearQuad.fragment")],
+    });
 
     public setDepthStencilFormat(format: GPUTextureFormat | undefined): void {
         this._depthTextureFormat = format;
@@ -52,21 +58,21 @@ export class WebGPUClearQuad {
 
         this._effect = engine.createEffect(
             "clearQuad",
-            [],
-            ["color", "depthValue"],
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            ShaderLanguage.WGSL,
-            // On the pure import path the wrapper modules that eagerly register the clearQuad shaders are not in the
-            // module graph, so load the generated shader modules here to guarantee they are present in the ShaderStore
-            // before the effect compiles (otherwise the engine falls back to fetching clearQuad.*.fx and 404s).
-            async () => {
-                await Promise.all([import("../../ShadersWGSL/clearQuad.vertex"), import("../../ShadersWGSL/clearQuad.fragment")]);
-            }
+            {
+                attributes: [],
+                uniformsNames: ["color", "depthValue"],
+                samplers: [],
+                defines: "",
+                fallbacks: null,
+                onCompiled: null,
+                onError: null,
+                shaderLanguage: ShaderLanguage.WGSL,
+                // On the pure import path the wrapper modules that eagerly register the clearQuad shaders are not in the
+                // module graph, so load the generated shader modules here to guarantee they are present in the ShaderStore
+                // before the effect compiles (otherwise the engine falls back to fetching clearQuad.*.fx and 404s).
+                shaderLoaders: [WebGPUClearQuad._ShaderLoader],
+            } satisfies IEffectCreationOptions,
+            engine
         );
     }
 

@@ -1,6 +1,7 @@
 import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * @internal
@@ -12,13 +13,13 @@ export class ThinBloomMergePostProcess extends EffectWrapper {
 
     public static readonly Samplers = ["bloomBlur"];
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/bloomMerge.fragment"));
-        } else {
-            list.push(import("../Shaders/bloomMerge.fragment"));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/bloomMerge.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/bloomMerge.fragment")],
+    });
+
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinBloomMergePostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: EffectWrapperCreationOptions) {

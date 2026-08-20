@@ -9,7 +9,7 @@ import { type Effect, type IEffectCreationOptions } from "../Materials/effect";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { Material } from "../Materials/material";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
-import { ShaderLanguage } from "../Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Color3, Color4 } from "../Maths/math.color.pure";
 import { type AbstractMesh } from "../Meshes/abstractMesh";
@@ -62,6 +62,21 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
      * @internal
      */
     public static readonly InstanceSelectionIdAttributeName = "instanceSelectionId";
+
+    private static readonly _SelectionShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [
+            import("core/Shaders/selection.vertex"),
+            import("core/Shaders/selection.fragment"),
+            import("core/Shaders/glowMapMerge.vertex"),
+            import("core/Shaders/selectionOutline.fragment"),
+        ],
+        webGPU: () => [
+            import("core/ShadersWGSL/selection.vertex"),
+            import("core/ShadersWGSL/selection.fragment"),
+            import("core/ShadersWGSL/glowMapMerge.vertex"),
+            import("core/ShadersWGSL/selectionOutline.fragment"),
+        ],
+    });
 
     /**
      * The outline color
@@ -367,12 +382,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                         onError: null,
                         indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  await this._importShadersAsync();
-                                  this._shadersLoaded = true;
-                              },
+                        shaderLoaders: [ThinSelectionOutlineLayer._SelectionShaderLoader],
                     },
                     this._engine
                 ),
@@ -383,26 +393,6 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
         const effectIsReady = drawWrapper.effect!.isReady();
 
         return effectIsReady && (this._dontCheckIfReady || (!this._dontCheckIfReady && this.isLayerReady()));
-    }
-
-    protected override async _importShadersAsync(): Promise<void> {
-        if (this._shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../ShadersWGSL/selection.vertex"),
-                import("../ShadersWGSL/selection.fragment"),
-                import("../ShadersWGSL/glowMapMerge.vertex"),
-                import("../ShadersWGSL/selectionOutline.fragment"),
-            ]);
-        } else {
-            await Promise.all([
-                import("../Shaders/selection.vertex"),
-                import("../Shaders/selection.fragment"),
-                import("../Shaders/glowMapMerge.vertex"),
-                import("../Shaders/selectionOutline.fragment"),
-            ]);
-        }
-
-        await super._importShadersAsync();
     }
 
     /**
@@ -452,12 +442,7 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
                 onCompiled: null,
                 onError: null,
                 shaderLanguage: this._shaderLanguage,
-                extraInitializationsAsync: this._shadersLoaded
-                    ? undefined
-                    : async () => {
-                          await this._importShadersAsync();
-                          this._shadersLoaded = true;
-                      },
+                shaderLoaders: [ThinSelectionOutlineLayer._SelectionShaderLoader],
             },
             this._engine
         );

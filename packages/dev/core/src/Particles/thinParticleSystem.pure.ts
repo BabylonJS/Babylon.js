@@ -35,6 +35,7 @@ import { Lerp } from "../Maths/math.scalar.functions";
 import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "../Materials/imageProcessingConfiguration.functions";
 import { type ThinEngine } from "../Engines/thinEngine.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import {
     _CreateAngleData,
     _CreateAngleGradientsData,
@@ -379,6 +380,12 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
     /** Shader language used by the material */
     protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/particles.vertex"), import("core/Shaders/particles.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/particles.vertex"), import("core/ShadersWGSL/particles.fragment")],
+    });
 
     /**
      * Gets the shader language used in this material.
@@ -2163,16 +2170,15 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         this.resetDrawCache();
     }
 
-    private _shadersLoaded = false;
     private async _initShaderSourceAsync() {
         const engine = this._engine;
 
         if (engine.isWebGPU && !ThinParticleSystem.ForceGLSL) {
             this._shaderLanguage = ShaderLanguage.WGSL;
-
-            await Promise.all([import("../ShadersWGSL/particles.vertex"), import("../ShadersWGSL/particles.fragment")]);
-        } else {
-            await Promise.all([import("../Shaders/particles.vertex"), import("../Shaders/particles.fragment")]);
+        }
+        const promise = ThinParticleSystem._ShaderLoader.load(this._shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._shadersLoaded = true;

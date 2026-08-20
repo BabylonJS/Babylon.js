@@ -28,6 +28,7 @@ import { AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { type UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import { type IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import { GetClass } from "../Misc/typeStore";
@@ -96,7 +97,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _actualFrame = 0;
     private _drawWrappers: { [blendMode: number]: DrawWrapper };
     private _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
-    private _renderShadersLoaded = false;
+
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGPU: () => [import("core/ShadersWGSL/gpuRenderParticles.vertex"), import("core/ShadersWGSL/gpuRenderParticles.fragment")],
+    });
 
     private readonly _rawTextureWidth = 256;
 
@@ -1621,15 +1625,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                         samplers,
                         defines: join,
                         shaderLanguage,
-                        extraInitializationsAsync: this._renderShadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("../ShadersWGSL/gpuRenderParticles.vertex"), import("../ShadersWGSL/gpuRenderParticles.fragment")]);
-                                  }
-
-                                  this._renderShadersLoaded = true;
-                              },
+                        shaderLoaders: [GPUParticleSystem._ShaderLoader],
                     },
                     this._engine
                 ),

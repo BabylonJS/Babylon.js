@@ -13,7 +13,7 @@ import { type SubMesh } from "core/Meshes/subMesh";
 import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { type IEffectCreationOptions } from "core/Materials/effect";
 
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
@@ -135,7 +135,10 @@ export class SkyMaterial extends PushMaterial {
     private _cameraPosition: Vector3 = Vector3.Zero();
     private _skyOrientation: Quaternion = new Quaternion();
 
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("./sky.vertex"), import("./sky.fragment")],
+        webGPU: () => [import("./wgsl/sky.vertex"), import("./wgsl/sky.fragment")],
+    });
 
     /**
      * Instantiates a new sky material.
@@ -283,17 +286,7 @@ export class SkyMaterial extends PushMaterial {
                         onCompiled: this.onCompiled,
                         onError: this.onError,
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("./wgsl/sky.vertex"), import("./wgsl/sky.fragment")]);
-                                  } else {
-                                      await Promise.all([import("./sky.vertex"), import("./sky.fragment")]);
-                                  }
-
-                                  this._shadersLoaded = true;
-                              },
+                        shaderLoaders: [SkyMaterial._ShaderLoader],
                     },
                     scene.getEngine()
                 ),

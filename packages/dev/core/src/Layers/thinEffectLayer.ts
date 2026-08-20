@@ -12,9 +12,10 @@ import { type AbstractMesh } from "../Meshes/abstractMesh";
 import { type Mesh } from "../Meshes/mesh";
 import { type EffectWrapperCreationOptions, EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture";
-import { type Effect } from "../Materials/effect";
+import { type Effect, type IEffectCreationOptions } from "../Materials/effect";
 import { Material } from "../Materials/material";
 import { Constants } from "../Engines/constants";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 import { type DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
@@ -60,15 +61,13 @@ export class ThinGlowBlurPostProcess extends EffectWrapper {
         });
     }
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/glowBlurPostProcess.fragment"));
-        } else {
-            list.push(import("../Shaders/glowBlurPostProcess.fragment"));
-        }
+    private static readonly _GlowBlurShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/glowBlurPostProcess.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/glowBlurPostProcess.fragment")],
+    });
 
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinGlowBlurPostProcess._GlowBlurShaderLoader, ...super._getShaderLoaders()];
     }
 
     public textureWidth: number = 0;
@@ -302,15 +301,8 @@ export class ThinEffectLayer {
      * @param scene The scene to use the layer in
      * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      * @param dontCheckIfReady Specifies if the layer should disable checking whether all the post processes are ready (default: false). To save performance, this should be set to true and you should call `isReady` manually before rendering to the layer.
-     * @param _additionalImportShadersAsync Additional shaders to import when the layer is created
      */
-    constructor(
-        name: string,
-        scene?: Scene,
-        forceGLSL = false,
-        dontCheckIfReady = false,
-        private _additionalImportShadersAsync?: () => Promise<void>
-    ) {
+    constructor(name: string, scene?: Scene, forceGLSL = false, dontCheckIfReady = false) {
         this.name = name;
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
         this._dontCheckIfReady = dontCheckIfReady;
@@ -330,8 +322,10 @@ export class ThinEffectLayer {
         this._generateVertexBuffer();
     }
 
-    /** @internal */
-    public _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/glowMapGeneration.vertex"), import("core/Shaders/glowMapGeneration.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/glowMapGeneration.vertex"), import("core/ShadersWGSL/glowMapGeneration.fragment")],
+    });
 
     /**
      * Get the effect name of the layer.
@@ -724,21 +718,20 @@ export class ThinEffectLayer {
             drawWrapper.setEffect(
                 this._engine.createEffect(
                     "glowMapGeneration",
-                    attribs,
-                    uniforms,
-                    ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"],
-                    join,
-                    fallbacks,
-                    undefined,
-                    undefined,
-                    { maxSimultaneousMorphTargets: numMorphInfluencers },
-                    this._shaderLanguage,
-                    this._shadersLoaded
-                        ? undefined
-                        : async () => {
-                              await this._importShadersAsync();
-                              this._shadersLoaded = true;
-                          }
+                    {
+                        attributes: attribs,
+                        uniformsNames: uniforms,
+                        uniformBuffersNames: [],
+                        samplers: ["diffuseSampler", "emissiveSampler", "opacitySampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"],
+                        defines: join,
+                        fallbacks: fallbacks,
+                        onCompiled: null,
+                        onError: null,
+                        indexParameters: { maxSimultaneousMorphTargets: numMorphInfluencers },
+                        shaderLanguage: this._shaderLanguage,
+                        shaderLoaders: [ThinEffectLayer._ShaderLoader],
+                    } satisfies IEffectCreationOptions,
+                    this._engine
                 ),
                 join
             );
@@ -752,16 +745,6 @@ export class ThinEffectLayer {
     /** @internal */
     public _isSubMeshReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<BaseTexture>): boolean {
         return this._internalIsSubMeshReady(subMesh, useInstances, emissiveTexture);
-    }
-
-    protected async _importShadersAsync(): Promise<void> {
-        if (this._shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([import("../ShadersWGSL/glowMapGeneration.vertex"), import("../ShadersWGSL/glowMapGeneration.fragment")]);
-        } else {
-            await Promise.all([import("../Shaders/glowMapGeneration.vertex"), import("../Shaders/glowMapGeneration.fragment")]);
-        }
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._additionalImportShadersAsync?.();
     }
 
     /** @internal */

@@ -1,6 +1,7 @@
 import { type Nullable, type EffectWrapperCreationOptions, type AbstractEngine } from "core/index";
 import { EffectWrapper } from "core/Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * PassPostProcess which produces an output the same as it's input
@@ -11,15 +12,13 @@ export class ThinPassPostProcess extends EffectWrapper {
      */
     public static readonly FragmentUrl = "pass";
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/pass.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/pass.fragment")]));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/pass.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/pass.fragment")],
+    });
 
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinPassPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**
@@ -55,15 +54,13 @@ export class ThinPassCubePostProcess extends EffectWrapper {
      */
     public static readonly FragmentUrl = "passCube";
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/passCube.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/passCube.fragment")]));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/passCube.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/passCube.fragment")],
+    });
 
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinPassCubePostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

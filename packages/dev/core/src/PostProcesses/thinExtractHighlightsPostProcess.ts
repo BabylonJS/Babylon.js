@@ -2,6 +2,7 @@ import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions }
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { ToGammaSpace } from "../Maths/math.constants";
 import { EngineStore } from "../Engines/engineStore";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Post process used to extract highlights.
@@ -17,13 +18,13 @@ export class ThinExtractHighlightsPostProcess extends EffectWrapper {
      */
     public static readonly Uniforms = ["threshold", "exposure"];
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/extractHighlights.fragment"));
-        } else {
-            list.push(import("../Shaders/extractHighlights.fragment"));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/extractHighlights.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/extractHighlights.fragment")],
+    });
+
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinExtractHighlightsPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

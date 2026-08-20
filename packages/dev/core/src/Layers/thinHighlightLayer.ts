@@ -17,8 +17,9 @@ import { ThinPassPostProcess } from "../PostProcesses/thinPassPostProcess";
 import { ThinEffectLayer, ThinGlowBlurPostProcess } from "./thinEffectLayer";
 import { Constants } from "../Engines/constants";
 import { Color4 } from "../Maths/math.color.pure";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
+import { type IEffectCreationOptions } from "../Materials/effect";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 interface IBlurPostProcess extends EffectWrapper {
     kernel: number;
@@ -129,6 +130,11 @@ export class ThinHighlightLayer extends ThinEffectLayer {
      * Stencil value used for the other meshes in the scene.
      */
     public static NormalMeshStencilReference = 0x01;
+
+    private static readonly _MergeShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/glowMapMerge.fragment"), import("core/Shaders/glowMapMerge.vertex"), import("core/Shaders/glowBlurPostProcess.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/glowMapMerge.fragment"), import("core/ShadersWGSL/glowMapMerge.vertex"), import("core/ShadersWGSL/glowBlurPostProcess.fragment")],
+    });
 
     /**
      * Specifies whether or not the inner glow is ACTIVE in the layer.
@@ -249,20 +255,6 @@ export class ThinHighlightLayer extends ThinEffectLayer {
         return "HighlightLayer";
     }
 
-    protected override async _importShadersAsync() {
-        if (this._shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../ShadersWGSL/glowMapMerge.fragment"),
-                import("../ShadersWGSL/glowMapMerge.vertex"),
-                import("../ShadersWGSL/glowBlurPostProcess.fragment"),
-            ]);
-        } else {
-            await Promise.all([import("../Shaders/glowMapMerge.fragment"), import("../Shaders/glowMapMerge.vertex"), import("../Shaders/glowBlurPostProcess.fragment")]);
-        }
-
-        await super._importShadersAsync();
-    }
-
     public override getEffectName(): string {
         return ThinHighlightLayer.EffectName;
     }
@@ -274,21 +266,18 @@ export class ThinHighlightLayer extends ThinEffectLayer {
     public override _createMergeEffect(): Effect {
         return this._engine.createEffect(
             "glowMapMerge",
-            [VertexBuffer.PositionKind],
-            ["offset"],
-            ["textureSampler"],
-            this._options.isStroke ? "#define STROKE \n" : undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            this._shaderLanguage,
-            this._shadersLoaded
-                ? undefined
-                : async () => {
-                      await this._importShadersAsync();
-                      this._shadersLoaded = true;
-                  }
+            {
+                attributes: [VertexBuffer.PositionKind],
+                uniformsNames: ["offset"],
+                samplers: ["textureSampler"],
+                defines: this._options.isStroke ? "#define STROKE \n" : "",
+                fallbacks: null,
+                onCompiled: null,
+                onError: null,
+                shaderLanguage: this._shaderLanguage,
+                shaderLoaders: [ThinHighlightLayer._MergeShaderLoader],
+            } satisfies IEffectCreationOptions,
+            this._engine
         );
     }
 

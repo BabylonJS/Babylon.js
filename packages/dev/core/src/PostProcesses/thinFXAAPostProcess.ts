@@ -2,6 +2,7 @@ import { type Nullable, type AbstractEngine, type EffectWrapperCreationOptions }
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { Vector2 } from "../Maths/math.vector.pure";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Postprocess used to apply FXAA (antialiasing) to the scene
@@ -35,13 +36,13 @@ export class ThinFXAAPostProcess extends EffectWrapper {
      */
     public static readonly Uniforms = ["texelSize"];
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/fxaa.fragment"), import("../ShadersWGSL/fxaa.vertex")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/fxaa.fragment"), import("../Shaders/fxaa.vertex")]));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/fxaa.fragment"), import("core/Shaders/fxaa.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/fxaa.fragment"), import("core/ShadersWGSL/fxaa.vertex")],
+    });
+
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinFXAAPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

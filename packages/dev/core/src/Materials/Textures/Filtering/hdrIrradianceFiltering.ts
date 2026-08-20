@@ -9,6 +9,7 @@ import { type Nullable } from "../../../types";
 import { type RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { IblCdfGenerator } from "../../../Rendering/iblCdfGenerator";
 
 /**
@@ -35,6 +36,11 @@ interface IHDRIrradianceFilteringOptions {
  * Filters HDR maps to get correct renderings of PBR reflections
  */
 export class HDRIrradianceFiltering {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/hdrIrradianceFiltering.vertex"), import("core/Shaders/hdrIrradianceFiltering.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/hdrIrradianceFiltering.vertex"), import("core/ShadersWGSL/hdrIrradianceFiltering.fragment")],
+    });
+
     private _engine: AbstractEngine;
     private _effectRenderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
@@ -171,13 +177,7 @@ export class HDRIrradianceFiltering {
             defines,
             onCompiled: onCompiled,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await Promise.all([import("../../../ShadersWGSL/hdrIrradianceFiltering.vertex"), import("../../../ShadersWGSL/hdrIrradianceFiltering.fragment")]);
-                } else {
-                    await Promise.all([import("../../../Shaders/hdrIrradianceFiltering.vertex"), import("../../../Shaders/hdrIrradianceFiltering.fragment")]);
-                }
-            },
+            shaderLoaders: [HDRIrradianceFiltering._ShaderLoader],
         });
 
         return effectWrapper;

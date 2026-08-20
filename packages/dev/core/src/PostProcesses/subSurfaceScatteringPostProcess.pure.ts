@@ -9,6 +9,7 @@ import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type Scene } from "../scene.pure";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Sub surface scattering post process
@@ -22,15 +23,13 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         return "SubSurfaceScatteringPostProcess";
     }
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/imageProcessing.fragment"), import("../ShadersWGSL/subSurfaceScattering.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/imageProcessing.fragment"), import("../Shaders/subSurfaceScattering.fragment")]));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/imageProcessing.fragment"), import("core/Shaders/subSurfaceScattering.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/imageProcessing.fragment"), import("core/ShadersWGSL/subSurfaceScattering.fragment")],
+    });
 
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [SubSurfaceScatteringPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     constructor(

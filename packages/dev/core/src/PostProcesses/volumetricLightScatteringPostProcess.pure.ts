@@ -26,6 +26,7 @@ import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { RegisterClass } from "../Misc/typeStore";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  *  Inspired by https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process
@@ -188,27 +189,21 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         });
     }
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(
-                Promise.all([
-                    import("../ShadersWGSL/volumetricLightScattering.fragment"),
-                    import("../ShadersWGSL/volumetricLightScatteringPass.vertex"),
-                    import("../ShadersWGSL/volumetricLightScatteringPass.fragment"),
-                ])
-            );
-        } else {
-            list.push(
-                Promise.all([
-                    import("../Shaders/volumetricLightScattering.fragment"),
-                    import("../Shaders/volumetricLightScatteringPass.vertex"),
-                    import("../Shaders/volumetricLightScatteringPass.fragment"),
-                ])
-            );
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [
+            import("core/Shaders/volumetricLightScattering.fragment"),
+            import("core/Shaders/volumetricLightScatteringPass.vertex"),
+            import("core/Shaders/volumetricLightScatteringPass.fragment"),
+        ],
+        webGPU: () => [
+            import("core/ShadersWGSL/volumetricLightScattering.fragment"),
+            import("core/ShadersWGSL/volumetricLightScatteringPass.vertex"),
+            import("core/ShadersWGSL/volumetricLightScatteringPass.fragment"),
+        ],
+    });
 
-        super._gatherImports(useWebGPU, list);
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [VolumetricLightScatteringPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

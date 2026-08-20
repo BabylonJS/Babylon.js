@@ -21,6 +21,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import { type SubMesh } from "../../../..//Meshes/subMesh.pure";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -179,13 +180,17 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/ShadersInclude/helperFunctions"), import("core/Shaders/ShadersInclude/reflectionFunction")],
+        webGPU: () => [import("core/ShadersWGSL/ShadersInclude/helperFunctions"), import("core/ShadersWGSL/ShadersInclude/reflectionFunction")],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"), import("../../../../ShadersWGSL/ShadersInclude/reflectionFunction")]);
-        } else {
-            await Promise.all([import("../../../../Shaders/ShadersInclude/helperFunctions"), import("../../../../Shaders/ShadersInclude/reflectionFunction")]);
+        const promise = ReflectionTextureBaseBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

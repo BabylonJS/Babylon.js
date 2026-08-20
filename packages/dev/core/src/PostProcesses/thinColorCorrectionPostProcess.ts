@@ -1,6 +1,7 @@
 import { type EffectWrapperCreationOptions, type Nullable, type Scene } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { Texture } from "../Materials/Textures/texture.pure";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Post process used to apply color correction
@@ -18,13 +19,13 @@ export class ThinColorCorrectionPostProcess extends EffectWrapper {
      */
     public static readonly Samplers = ["colorTable"];
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/colorCorrection.fragment"));
-        } else {
-            list.push(import("../Shaders/colorCorrection.fragment"));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/colorCorrection.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/colorCorrection.fragment")],
+    });
+
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinColorCorrectionPostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     /**

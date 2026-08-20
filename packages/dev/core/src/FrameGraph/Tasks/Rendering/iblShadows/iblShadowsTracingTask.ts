@@ -3,6 +3,7 @@ import { Constants } from "core/Engines/constants";
 import { type FrameGraphIblShadowsVoxelizationTask } from "./iblShadowsVoxelizationTask";
 import { Matrix, Vector4 } from "core/Maths/math.vector.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { ThinCustomPostProcess } from "core/PostProcesses/thinCustomPostProcess";
 import { FrameGraphTask } from "../../../frameGraphTask";
 import { Color4 } from "core/Maths/math.color.pure";
@@ -108,13 +109,14 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
         return "FrameGraphIblShadowsTracingTask";
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblShadowVoxelTracing.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowVoxelTracing.fragment")],
+    });
+
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public override initAsync(): Promise<unknown> {
-        if (this._frameGraph.engine.isWebGPU) {
-            return import("../../../../ShadersWGSL/iblShadowVoxelTracing.fragment");
-        }
-
-        return import("../../../../Shaders/iblShadowVoxelTracing.fragment");
+        return FrameGraphIblShadowsTracingTask._ShaderLoader.load(this._frameGraph.engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL) ?? Promise.resolve();
     }
 
     public get coloredShadows(): boolean {

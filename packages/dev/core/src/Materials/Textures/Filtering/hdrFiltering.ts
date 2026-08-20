@@ -9,6 +9,7 @@ import { type Nullable } from "../../../types";
 import { type RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Options for texture filtering
@@ -29,6 +30,11 @@ interface IHDRFilteringOptions {
  * Filters HDR maps to get correct renderings of PBR reflections
  */
 export class HDRFiltering {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/hdrFiltering.vertex"), import("core/Shaders/hdrFiltering.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/hdrFiltering.vertex"), import("core/ShadersWGSL/hdrFiltering.fragment")],
+    });
+
     private _engine: AbstractEngine;
     private _effectRenderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
@@ -186,13 +192,7 @@ export class HDRFiltering {
             defines,
             onCompiled: onCompiled,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await Promise.all([import("../../../ShadersWGSL/hdrFiltering.vertex"), import("../../../ShadersWGSL/hdrFiltering.fragment")]);
-                } else {
-                    await Promise.all([import("../../../Shaders/hdrFiltering.vertex"), import("../../../Shaders/hdrFiltering.fragment")]);
-                }
-            },
+            shaderLoaders: [HDRFiltering._ShaderLoader],
         });
 
         return effectWrapper;

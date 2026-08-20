@@ -9,12 +9,22 @@ import { ProceduralTexture, type IProceduralTextureCreationOptions } from "core/
 import { type IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 import { type EventState } from "../../Misc/observable";
 import { type Nullable } from "../../types";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
  * @internal
  */
 export class _IblShadowsSpatialBlurPass {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblShadowSpatialBlur.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowSpatialBlur.fragment")],
+    });
+    private static readonly _DebugShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblShadowDebug.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowDebug.fragment")],
+    });
+
     private _scene: Scene;
     private _engine: AbstractEngine;
     private _renderPipeline: IblShadowsRenderPipeline;
@@ -108,13 +118,7 @@ export class _IblShadowsSpatialBlurPass {
                 engine: this._engine,
                 reusable: false,
                 shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-                extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
-                    if (useWebGPU) {
-                        list.push(import("../../ShadersWGSL/iblShadowDebug.fragment"));
-                    } else {
-                        list.push(import("../../Shaders/iblShadowDebug.fragment"));
-                    }
-                },
+                shaderLoaders: [_IblShadowsSpatialBlurPass._DebugShaderLoader],
             };
             this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPassPP.autoClear = false;
@@ -148,13 +152,7 @@ export class _IblShadowsSpatialBlurPass {
             generateDepthBuffer: false,
             generateMipMaps: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await Promise.all([import("../../ShadersWGSL/iblShadowSpatialBlur.fragment")]);
-                } else {
-                    await Promise.all([import("../../Shaders/iblShadowSpatialBlur.fragment")]);
-                }
-            },
+            shaderLoaders: [_IblShadowsSpatialBlurPass._ShaderLoader],
         };
         this._outputTexture = new ProceduralTexture(
             "spatialBlurPass",

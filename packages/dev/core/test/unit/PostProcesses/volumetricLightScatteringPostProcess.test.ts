@@ -1,5 +1,6 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { PostProcess } from "core/PostProcesses/postProcess.pure";
 import { VolumetricLightScatteringPostProcess } from "core/PostProcesses/volumetricLightScatteringPostProcess.pure";
 import { Scene } from "core/scene";
@@ -48,42 +49,44 @@ describe("VolumetricLightScatteringPostProcess", () => {
         engine.dispose();
     });
 
-    for (const { name, isWebGPU, forceGLSL, expectedShaderLanguage, expectedUseWebGPU } of [
+    for (const { name, isWebGPU, forceGLSL, expectedShaderLanguage } of [
         {
             name: "WGSL on WebGPU",
             isWebGPU: true,
             forceGLSL: false,
             expectedShaderLanguage: ShaderLanguage.WGSL,
-            expectedUseWebGPU: true,
         },
         {
             name: "GLSL when ForceGLSL is enabled on WebGPU",
             isWebGPU: true,
             forceGLSL: true,
             expectedShaderLanguage: ShaderLanguage.GLSL,
-            expectedUseWebGPU: false,
         },
         {
             name: "GLSL on non-WebGPU engines",
             isWebGPU: false,
             forceGLSL: false,
             expectedShaderLanguage: ShaderLanguage.GLSL,
-            expectedUseWebGPU: false,
         },
     ] as const) {
         it(`uses the scene engine and selects ${name} when camera is null`, () => {
             Object.defineProperty(engine, "isWebGPU", { configurable: true, value: isWebGPU });
             PostProcess.ForceGLSL = forceGLSL;
 
+            const shaderLoader = new ShaderLoader({
+                webGL: () => [],
+                webGPU: () => [],
+            });
+
             const createEffect = vi.spyOn(engine, "createEffect").mockReturnValue(createReadyEffect(engine));
-            const gatherImports = vi.spyOn(VolumetricLightScatteringPostProcess.prototype as any, "_gatherImports").mockImplementation((_useWebGPU, _list) => {});
+            const getShaderLoaders = vi.spyOn(VolumetricLightScatteringPostProcess.prototype as any, "_getShaderLoaders").mockImplementation(() => [shaderLoader]);
 
             expect(() => {
                 postProcess = new VolumetricLightScatteringPostProcess("vls", 1, null, undefined, undefined, undefined, undefined, undefined, scene);
             }).not.toThrow();
 
             expect(postProcess!.getEngine()).toBe(engine);
-            expect(gatherImports).toHaveBeenCalledWith(expectedUseWebGPU, expect.any(Array));
+            expect(getShaderLoaders).toHaveBeenCalledWith();
 
             const postProcessEffectCall = createEffect.mock.calls.find(([shaderPath]) => {
                 return typeof shaderPath === "object" && shaderPath !== null && "fragment" in shaderPath && shaderPath.fragment === "volumetricLightScattering";

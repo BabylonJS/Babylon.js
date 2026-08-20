@@ -12,6 +12,7 @@ import { type BaseTexture } from "../Materials/Textures/baseTexture";
 import { Observable } from "../Misc/observable";
 import { CubeTexture } from "../Materials/Textures/cubeTexture.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { _WarnImport } from "../Misc/devTools";
 import { type Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
@@ -23,6 +24,19 @@ import { RegisterIblCdfGeneratorSceneComponent } from "./iblCdfGeneratorSceneCom
  * Build cdf maps to be used for IBL importance sampling.
  */
 export class IblCdfGenerator {
+    private static readonly _CdfShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblCdfx.fragment"), import("core/Shaders/iblCdfy.fragment"), import("core/Shaders/iblScaledLuminance.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblCdfx.fragment"), import("core/ShadersWGSL/iblCdfy.fragment"), import("core/ShadersWGSL/iblScaledLuminance.fragment")],
+    });
+    private static readonly _IcdfShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblIcdf.fragment"), import("core/Shaders/iblDominantDirection.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblIcdf.fragment"), import("core/ShadersWGSL/iblDominantDirection.fragment")],
+    });
+    private static readonly _DebugShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblCdfDebug.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblCdfDebug.fragment")],
+    });
+
     private _scene: Nullable<Scene>;
     private _engine: AbstractEngine;
 
@@ -270,13 +284,7 @@ export class IblCdfGenerator {
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             gammaSpace: false,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await Promise.all([import("../ShadersWGSL/iblCdfx.fragment"), import("../ShadersWGSL/iblCdfy.fragment"), import("../ShadersWGSL/iblScaledLuminance.fragment")]);
-                } else {
-                    await Promise.all([import("../Shaders/iblCdfx.fragment"), import("../Shaders/iblCdfy.fragment"), import("../Shaders/iblScaledLuminance.fragment")]);
-                }
-            },
+            shaderLoaders: [IblCdfGenerator._CdfShaderLoader],
         };
         const icdfOptions: IProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
@@ -286,13 +294,7 @@ export class IblCdfGenerator {
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             gammaSpace: false,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await Promise.all([import("../ShadersWGSL/iblIcdf.fragment"), import("../ShadersWGSL/iblDominantDirection.fragment")]);
-                } else {
-                    await Promise.all([import("../Shaders/iblIcdf.fragment"), import("../Shaders/iblDominantDirection.fragment")]);
-                }
-            },
+            shaderLoaders: [IblCdfGenerator._IcdfShaderLoader],
         };
         this._cdfyPT = new ProceduralTexture("cdfyTexture", { width: size.width, height: size.height + 1 }, "iblCdfy", this._scene, cdfOptions, false, false);
         this._cdfyPT.autoClear = false;
@@ -379,13 +381,7 @@ export class IblCdfGenerator {
             samplers: ["cdfy", "icdf", "cdfx", "iblSource"],
             defines: this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : "",
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
-                if (useWebGPU) {
-                    list.push(import("../ShadersWGSL/iblCdfDebug.fragment"));
-                } else {
-                    list.push(import("../Shaders/iblCdfDebug.fragment"));
-                }
-            },
+            shaderLoaders: [IblCdfGenerator._DebugShaderLoader],
         };
         this._debugPass = new PostProcess(this._debugPassName, "iblCdfDebug", debugOptions);
         const debugEffect = this._debugPass.getEffect();

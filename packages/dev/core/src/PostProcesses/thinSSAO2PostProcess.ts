@@ -7,6 +7,7 @@ import { Camera } from "core/Cameras/camera.pure";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RandomRange } from "core/Maths/math.scalar.functions";
 import { Texture } from "core/Materials/Textures/texture.pure";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * @internal
@@ -40,13 +41,13 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
 
     public static readonly Samplers = ["randomSampler", "depthSampler", "normalSampler"];
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(import("../ShadersWGSL/ssao2.fragment"));
-        } else {
-            list.push(import("../Shaders/ssao2.fragment"));
-        }
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/ssao2.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/ssao2.fragment")],
+    });
+
+    protected override _getShaderLoaders(): ShaderLoader[] {
+        return [ThinSSAO2PostProcess._ShaderLoader, ...super._getShaderLoaders()];
     }
 
     public camera: Nullable<Camera> = null;

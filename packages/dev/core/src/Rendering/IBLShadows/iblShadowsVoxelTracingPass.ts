@@ -12,6 +12,7 @@ import { type CubeTexture } from "../../Materials/Textures/cubeTexture";
 import { Logger } from "../../Misc/logger";
 import { type EventState } from "../../Misc/observable";
 import { type Nullable } from "../../types";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -19,6 +20,15 @@ import { type Nullable } from "../../types";
  * @internal
  */
 export class _IblShadowsVoxelTracingPass {
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblShadowVoxelTracing.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowVoxelTracing.fragment")],
+    });
+    private static readonly _DebugShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/iblShadowDebug.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowDebug.fragment")],
+    });
+
     private _scene: Scene;
     private _engine: AbstractEngine;
     private _renderPipeline: IblShadowsRenderPipeline;
@@ -274,13 +284,7 @@ export class _IblShadowsVoxelTracingPass {
                 engine: this._engine,
                 reusable: true,
                 shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-                extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
-                    if (useWebGPU) {
-                        list.push(import("../../ShadersWGSL/iblShadowDebug.fragment"));
-                    } else {
-                        list.push(import("../../Shaders/iblShadowDebug.fragment"));
-                    }
-                },
+                shaderLoaders: [_IblShadowsVoxelTracingPass._DebugShaderLoader],
             };
             this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPassPP.autoClear = false;
@@ -314,13 +318,7 @@ export class _IblShadowsVoxelTracingPass {
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             generateDepthBuffer: false,
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
-            extraInitializationsAsync: async () => {
-                if (isWebGPU) {
-                    await Promise.all([import("../../ShadersWGSL/iblShadowVoxelTracing.fragment")]);
-                } else {
-                    await Promise.all([import("../../Shaders/iblShadowVoxelTracing.fragment")]);
-                }
-            },
+            shaderLoaders: [_IblShadowsVoxelTracingPass._ShaderLoader],
         };
         this._outputTexture = new ProceduralTexture(
             "voxelTracingPass",

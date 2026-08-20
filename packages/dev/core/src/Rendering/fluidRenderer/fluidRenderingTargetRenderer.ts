@@ -15,6 +15,7 @@ import { type FluidRenderingObject } from "./fluidRenderingObject";
 import { FluidRenderingTextures } from "./fluidRenderingTextures";
 import { type WebGPUEngine } from "core/Engines/webgpuEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 /**
  * Textures that can be displayed as a debugging tool
@@ -661,6 +662,11 @@ export class FluidRenderingTargetRenderer {
         renderTarget.initialize();
     }
 
+    private static readonly _RenderShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/fluidRenderingRender.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/fluidRenderingRender.fragment")],
+    });
+
     protected _createLiquidRenderingPostProcess(): void {
         const engine = this._scene.getEngine();
 
@@ -740,32 +746,19 @@ export class FluidRenderingTargetRenderer {
             }
         }
 
-        this._renderPostProcess = new PostProcess(
-            "FluidRendering",
-            "fluidRenderingRender",
-            uniformNames,
-            samplerNames,
-            1,
-            null,
-            Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+        this._renderPostProcess = new PostProcess("FluidRendering", "fluidRenderingRender", {
+            uniforms: uniformNames,
+            samplers: samplerNames,
+            size: 1,
+            camera: null,
+            samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
             engine,
-            false,
-            null,
-            Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            undefined,
-            undefined,
-            true,
-            undefined,
-            this._shaderLanguage,
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            async () => {
-                if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                    await import("../../ShadersWGSL/fluidRenderingRender.fragment");
-                } else {
-                    await import("../../Shaders/fluidRenderingRender.fragment");
-                }
-            }
-        );
+            reusable: false,
+            textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            blockCompilation: true,
+            shaderLanguage: this._shaderLanguage,
+            shaderLoaders: [FluidRenderingTargetRenderer._RenderShaderLoader],
+        });
         this._renderPostProcess.updateEffect(defines.join("\n"));
 
         this._renderPostProcess.samples = this._samples;

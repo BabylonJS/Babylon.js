@@ -14,7 +14,8 @@ import { InputBlock } from "../Input/inputBlock.pure";
 
 import { type EffectFallbacks } from "../../../effectFallbacks";
 import { BindBonesParameters, PrepareDefinesForBones } from "../../../materialHelper.functions";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { type ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 /**
@@ -51,12 +52,17 @@ export class BonesBlock extends NodeMaterialBlock {
         this._initShaderSourceAsync(state.shaderLanguage);
     }
 
+    private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
+        webGL: () => [import("core/Shaders/ShadersInclude/bonesDeclaration"), import("core/Shaders/ShadersInclude/bonesVertex")],
+        webGPU: () => [import("core/ShadersWGSL/ShadersInclude/bonesDeclaration"), import("core/ShadersWGSL/ShadersInclude/bonesVertex")],
+    });
+
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([import("../../../../ShadersWGSL/ShadersInclude/bonesDeclaration"), import("../../../../ShadersWGSL/ShadersInclude/bonesVertex")]);
-        } else {
-            await Promise.all([import("../../../../Shaders/ShadersInclude/bonesDeclaration"), import("../../../../Shaders/ShadersInclude/bonesVertex")]);
+
+        const promise = BonesBlock._ShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         this._codeIsReady = true;

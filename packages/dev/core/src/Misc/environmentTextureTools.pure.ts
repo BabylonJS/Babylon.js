@@ -15,6 +15,7 @@ import { Logger } from "../Misc/logger";
 import { RGBDTextureTools } from "./rgbdTextureTools";
 import { DumpDataAsync } from "../Misc/dumpTools.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 
 import { type RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import { type Engine, type WebGPUEngine } from "core/Engines";
@@ -23,6 +24,11 @@ import { GetBlobBufferSource } from "../Buffers/bufferUtils";
 
 const DefaultEnvironmentTextureImageType = "image/png";
 const CurrentVersion = 2;
+
+const _RgbdDecodeShaderLoader = /*#__PURE__*/ new ShaderLoader({
+    webGL: () => [import("core/Shaders/rgbdDecode.fragment")],
+    webGPU: () => [import("core/ShadersWGSL/rgbdDecode.fragment")],
+});
 
 /**
  * Raw texture data and descriptor sufficient for WebGL texture upload
@@ -770,9 +776,11 @@ async function _UploadLevelsAsync(
     if (expandTexture) {
         if (engine.isWebGPU) {
             shaderLanguage = ShaderLanguage.WGSL;
-            await import("../ShadersWGSL/rgbdDecode.fragment");
-        } else {
-            await import("../Shaders/rgbdDecode.fragment");
+        }
+
+        const promise = _RgbdDecodeShaderLoader.load(shaderLanguage);
+        if (promise !== null) {
+            await promise;
         }
 
         // Simply run through the decode PP
