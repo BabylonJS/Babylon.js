@@ -75,13 +75,18 @@ async function LoadShaders(state: IShaderLoaderState): Promise<void> {
             state.loadPromise = loadPromise;
         }
     }
-    if (loadPromise !== null) {
-        await loadPromise;
-    }
-    if (first) {
-        // eslint-disable-next-line require-atomic-updates
-        state.loaded = true;
-        // eslint-disable-next-line require-atomic-updates
-        state.loadPromise = null;
+    try {
+        if (loadPromise !== null) {
+            await loadPromise;
+        }
+        if (first) {
+            // eslint-disable-next-line require-atomic-updates
+            state.loaded = true;
+        }
+    } finally {
+        if (first) {
+            // eslint-disable-next-line require-atomic-updates
+            state.loadPromise = null;
+        }
     }
 }
