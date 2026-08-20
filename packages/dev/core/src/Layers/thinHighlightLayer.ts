@@ -270,7 +270,7 @@ export class ThinHighlightLayer extends ThinEffectLayer {
                 attributes: [VertexBuffer.PositionKind],
                 uniformsNames: ["offset"],
                 samplers: ["textureSampler"],
-                defines: this._options.isStroke ? "#define STROKE \n" : undefined,
+                defines: this._options.isStroke ? "#define STROKE \n" : "",
                 fallbacks: null,
                 onCompiled: null,
                 onError: null,
