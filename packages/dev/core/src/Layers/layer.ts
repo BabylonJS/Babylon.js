@@ -294,6 +294,7 @@ export class Layer {
                 "layer",
                 {
                     attributes: [VertexBuffer.PositionKind],
+                    uniformBuffersNames: [],
                     uniformsNames: ["textureMatrix", "color", "scale", "offset"],
                     samplers: ["textureSampler"],
                     defines,
