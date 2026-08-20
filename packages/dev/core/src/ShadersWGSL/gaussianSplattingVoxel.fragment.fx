@@ -3,7 +3,8 @@
 var voxel_storage: texture_storage_3d<r8unorm, write>;
 // Per-voxel opacity accumulator (packed: 4 voxels per u32). We atomicMax the quantized opacity so
 // overlapping splats (and the three per-axis passes) keep the strongest occluder, since storage
-// textures can't blend/atomic.
+// textures can't blend/atomic. See the KNOWN LIMITATION on opacity compositing in
+// iblVoxelOpacityAtomicMax (MAX under-shadows overlapping distinct splats; kept for backend parity).
 var<storage, read_write> voxelOpacityBuffer: array<atomic<u32>>;
 #include<iblVoxelOpacityAtomicMax>
 

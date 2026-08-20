@@ -19,7 +19,7 @@ import { ProceduralTexture, type IProceduralTextureCreationOptions } from "../..
 import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer.pure";
 import { StorageBuffer } from "../../Buffers/storageBuffer";
 import { ComputeShader } from "../../Compute/computeShader.pure";
-import { type WebGPUEngine } from "../../Engines/webgpuEngine";
+import { type WebGPUEngine } from "../../Engines/webgpuEngine.pure";
 import { type IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline.pure";
 import { type RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -864,6 +864,13 @@ export class _IblShadowsVoxelRenderer {
                 // Accumulate overlapping splats with a MAX blend equation so each cell keeps the
                 // strongest occluder's opacity (dst = max(src, dst)) instead of the last fragment's
                 // value. Writing 0.0 into non-slab draw buffers is then a no-op.
+                //
+                // KNOWN LIMITATION (opacity compositing): MAX keeps the strongest overlapping occluder
+                // rather than compositing distinct splats (two 0.5 splats read 0.5, not 0.75), so dense
+                // splat clouds under-shadow vs. true transmittance. MAX is intentional and matches the
+                // WebGPU atomicMax path so both backends agree: it is idempotent, correctly deduping
+                // each splat's three tri-planar proxy draws (a composite would triple-count them). A
+                // correct fix needs per-axis optical-depth accumulation; tracked as a follow-up.
                 const previousAlphaMode = engine.getAlphaMode();
                 engine.setAlphaMode(Constants.ALPHA_MAX, true);
                 renderingMesh._processRendering(effectiveMesh, sm, effect, fillMode, batch, hardwareInstancedRendering, (_isInstance, world) => effect.setMatrix("world", world));

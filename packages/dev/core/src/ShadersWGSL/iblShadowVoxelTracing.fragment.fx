@@ -192,6 +192,9 @@ fn anyHitVoxels(ray_vs: Ray, rouletteSeed: vec3f) -> bool {
       // Budget the translucent roulette tests: check before consuming one so we run at most
       // MAX_VOXEL_ROULETTE_TESTS of them. On exhaustion, treat the ray as passing (unoccluded).
       if (leafTests >= MAX_VOXEL_ROULETTE_TESTS) {
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+        *voxel_march_diagnostic_info.heat =  f32(steps) / 24.0;
+#endif
         return false;
       }
       leafTests++;

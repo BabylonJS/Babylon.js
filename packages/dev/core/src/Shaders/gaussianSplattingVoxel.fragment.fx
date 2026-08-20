@@ -25,7 +25,8 @@ void main(void) {
     // binary 0/1 occupancy, we write this non-binary opacity into the cell. The
     // roulette is deferred to the shadow ray-march, where it can vary per sample and
     // thus converge to the correct transmittance. Cells accumulate with a MAX blend
-    // equation, so overlapping splats keep the strongest occluder.
+    // equation, so overlapping splats keep the strongest occluder (see the KNOWN
+    // LIMITATION on opacity compositing in iblShadowsVoxelRenderer's renderGsSplat).
     float distToCenter = max3(abs(vNormalizedCenterPosition - normPos));
     float shadowingOpacity = clamp((distToCenter < stepSize ? 1.0 : exp(-dot(vPatchPosition, vPatchPosition))) * vAlpha, 0.0, 1.0);
 
