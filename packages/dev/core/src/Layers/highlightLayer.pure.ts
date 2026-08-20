@@ -76,8 +76,8 @@ class GlowBlurPostProcess extends PostProcess {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/glowBlurPostProcess.fragment")],
-        webGPU: () => [import("../ShadersWGSL/glowBlurPostProcess.fragment")],
+        webGL: () => [import("core/Shaders/glowBlurPostProcess.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/glowBlurPostProcess.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

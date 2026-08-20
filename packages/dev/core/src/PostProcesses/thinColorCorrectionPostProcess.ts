@@ -20,8 +20,8 @@ export class ThinColorCorrectionPostProcess extends EffectWrapper {
     public static readonly Samplers = ["colorTable"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/colorCorrection.fragment")],
-        webGPU: () => [import("../ShadersWGSL/colorCorrection.fragment")],
+        webGL: () => [import("core/Shaders/colorCorrection.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/colorCorrection.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

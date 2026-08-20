@@ -721,16 +721,16 @@ export class ShadowGenerator implements IShadowGenerator {
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [
-            import("../../Shaders/shadowMap.fragment"),
-            import("../../Shaders/shadowMap.vertex"),
-            import("../../Shaders/depthBoxBlur.fragment"),
-            import("../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow"),
+            import("core/Shaders/shadowMap.fragment"),
+            import("core/Shaders/shadowMap.vertex"),
+            import("core/Shaders/depthBoxBlur.fragment"),
+            import("core/Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow"),
         ],
         webGPU: () => [
-            import("../../ShadersWGSL/shadowMap.fragment"),
-            import("../../ShadersWGSL/shadowMap.vertex"),
-            import("../../ShadersWGSL/depthBoxBlur.fragment"),
-            import("../../ShadersWGSL/ShadersInclude/shadowMapFragmentSoftTransparentShadow"),
+            import("core/ShadersWGSL/shadowMap.fragment"),
+            import("core/ShadersWGSL/shadowMap.vertex"),
+            import("core/ShadersWGSL/depthBoxBlur.fragment"),
+            import("core/ShadersWGSL/ShadersInclude/shadowMapFragmentSoftTransparentShadow"),
         ],
     });
     private _shadersLoaded = false;

@@ -152,16 +152,16 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [
-            import("../../../../Shaders/ShadersInclude/morphTargetsVertex"),
-            import("../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration"),
-            import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobal"),
-            import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration"),
+            import("core/Shaders/ShadersInclude/morphTargetsVertex"),
+            import("core/Shaders/ShadersInclude/morphTargetsVertexDeclaration"),
+            import("core/Shaders/ShadersInclude/morphTargetsVertexGlobal"),
+            import("core/Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration"),
         ],
         webGPU: () => [
-            import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertex"),
-            import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration"),
-            import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal"),
-            import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration"),
+            import("core/ShadersWGSL/ShadersInclude/morphTargetsVertex"),
+            import("core/ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration"),
+            import("core/ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal"),
+            import("core/ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration"),
         ],
     });
 

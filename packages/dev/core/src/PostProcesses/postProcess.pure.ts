@@ -649,8 +649,8 @@ export class PostProcess {
     }
 
     private static readonly _VertexShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/postprocess.vertex")],
-        webGPU: () => [import("../ShadersWGSL/postprocess.vertex")],
+        webGL: () => [import("core/Shaders/postprocess.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/postprocess.vertex")],
     });
 
     protected _getShaderLoaders(): ShaderLoader[] {

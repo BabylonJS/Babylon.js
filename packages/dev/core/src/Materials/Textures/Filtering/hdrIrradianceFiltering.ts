@@ -37,8 +37,8 @@ interface IHDRIrradianceFilteringOptions {
  */
 export class HDRIrradianceFiltering {
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../Shaders/hdrIrradianceFiltering.vertex"), import("../../../Shaders/hdrIrradianceFiltering.fragment")],
-        webGPU: () => [import("../../../ShadersWGSL/hdrIrradianceFiltering.vertex"), import("../../../ShadersWGSL/hdrIrradianceFiltering.fragment")],
+        webGL: () => [import("core/Shaders/hdrIrradianceFiltering.vertex"), import("core/Shaders/hdrIrradianceFiltering.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/hdrIrradianceFiltering.vertex"), import("core/ShadersWGSL/hdrIrradianceFiltering.fragment")],
     });
 
     private _engine: AbstractEngine;

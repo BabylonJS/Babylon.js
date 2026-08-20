@@ -31,7 +31,7 @@ export class WebGPUClearQuad {
     private _keyTemp: number[] = [];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGPU: () => [import("../../ShadersWGSL/clearQuad.vertex"), import("../../ShadersWGSL/clearQuad.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/clearQuad.vertex"), import("core/ShadersWGSL/clearQuad.fragment")],
     });
 
     public setDepthStencilFormat(format: GPUTextureFormat | undefined): void {

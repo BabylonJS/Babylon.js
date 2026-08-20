@@ -555,8 +555,8 @@ export class GeometryBufferRenderer {
 
     private _shadersLoaded = false;
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/geometry.vertex"), import("../Shaders/geometry.fragment")],
-        webGPU: () => [import("../ShadersWGSL/geometry.vertex"), import("../ShadersWGSL/geometry.fragment")],
+        webGL: () => [import("core/Shaders/geometry.vertex"), import("core/Shaders/geometry.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/geometry.vertex"), import("core/ShadersWGSL/geometry.fragment")],
     });
 
     /**

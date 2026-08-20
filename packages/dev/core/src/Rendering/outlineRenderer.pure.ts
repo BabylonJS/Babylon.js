@@ -23,8 +23,8 @@ import { ShaderLoader } from "core/Misc/shaderLoader";
  */
 export class OutlineRenderer implements ISceneComponent {
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/outline.fragment"), import("../Shaders/outline.vertex")],
-        webGPU: () => [import("../ShadersWGSL/outline.fragment"), import("../ShadersWGSL/outline.vertex")],
+        webGL: () => [import("core/Shaders/outline.fragment"), import("core/Shaders/outline.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/outline.fragment"), import("core/ShadersWGSL/outline.vertex")],
     });
 
     /**

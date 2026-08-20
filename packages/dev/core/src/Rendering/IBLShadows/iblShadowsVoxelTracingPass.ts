@@ -21,12 +21,12 @@ import { ShaderLoader } from "core/Misc/shaderLoader";
  */
 export class _IblShadowsVoxelTracingPass {
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/iblShadowVoxelTracing.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/iblShadowVoxelTracing.fragment")],
+        webGL: () => [import("core/Shaders/iblShadowVoxelTracing.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowVoxelTracing.fragment")],
     });
     private static readonly _DebugShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/iblShadowDebug.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/iblShadowDebug.fragment")],
+        webGL: () => [import("core/Shaders/iblShadowDebug.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowDebug.fragment")],
     });
 
     private _scene: Scene;

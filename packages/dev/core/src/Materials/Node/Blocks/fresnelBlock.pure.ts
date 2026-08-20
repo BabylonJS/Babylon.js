@@ -84,8 +84,8 @@ export class FresnelBlock extends NodeMaterialBlock {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../Shaders/ShadersInclude/fresnelFunction")],
-        webGPU: () => [import("../../../ShadersWGSL/ShadersInclude/fresnelFunction")],
+        webGL: () => [import("core/Shaders/ShadersInclude/fresnelFunction")],
+        webGPU: () => [import("core/ShadersWGSL/ShadersInclude/fresnelFunction")],
     });
 
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {

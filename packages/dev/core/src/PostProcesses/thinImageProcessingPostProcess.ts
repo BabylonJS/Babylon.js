@@ -42,8 +42,8 @@ export class ThinImageProcessingPostProcess extends EffectWrapper {
     public static readonly FragmentUrl = "imageProcessing";
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/imageProcessing.fragment")],
-        webGPU: () => [import("../ShadersWGSL/imageProcessing.fragment")],
+        webGL: () => [import("core/Shaders/imageProcessing.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/imageProcessing.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

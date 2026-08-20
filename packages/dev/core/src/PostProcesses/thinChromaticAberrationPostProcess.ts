@@ -19,8 +19,8 @@ export class ThinChromaticAberrationPostProcess extends EffectWrapper {
     public static readonly Uniforms = ["chromatic_aberration", "screen_width", "screen_height", "direction", "radialIntensity", "centerPosition"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/chromaticAberration.fragment")],
-        webGPU: () => [import("../ShadersWGSL/chromaticAberration.fragment")],
+        webGL: () => [import("core/Shaders/chromaticAberration.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/chromaticAberration.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

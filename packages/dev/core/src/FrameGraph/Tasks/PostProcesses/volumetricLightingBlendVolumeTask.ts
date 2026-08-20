@@ -30,8 +30,8 @@ class VolumetricLightingBlendVolumeThinPostProcess extends ThinPassPostProcess {
     private _invProjection: Matrix;
 
     private static readonly _BlendVolumeShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../Shaders/pass.fragment"), import("../../../Shaders/volumetricLightingBlendVolume.fragment")],
-        webGPU: () => [import("../../../ShadersWGSL/pass.fragment"), import("../../../ShadersWGSL/volumetricLightingBlendVolume.fragment")],
+        webGL: () => [import("core/Shaders/pass.fragment"), import("core/Shaders/volumetricLightingBlendVolume.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/pass.fragment"), import("core/ShadersWGSL/volumetricLightingBlendVolume.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

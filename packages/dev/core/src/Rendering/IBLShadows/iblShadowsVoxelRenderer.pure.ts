@@ -43,23 +43,23 @@ export class _IblShadowsVoxelRenderer {
     ];
 
     private static readonly _CopyTexture3DLayerToTextureShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/copyTexture3DLayerToTexture.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/copyTexture3DLayerToTexture.fragment")],
+        webGL: () => [import("core/Shaders/copyTexture3DLayerToTexture.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/copyTexture3DLayerToTexture.fragment")],
     });
 
     private static readonly _CombineVoxelGridsShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/iblCombineVoxelGrids.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/iblCombineVoxelGrids.fragment")],
+        webGL: () => [import("core/Shaders/iblCombineVoxelGrids.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblCombineVoxelGrids.fragment")],
     });
 
     private static readonly _GenerateVoxelMipShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/iblGenerateVoxelMip.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/iblGenerateVoxelMip.fragment")],
+        webGL: () => [import("core/Shaders/iblGenerateVoxelMip.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblGenerateVoxelMip.fragment")],
     });
 
     private static readonly _VoxelGridShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/iblVoxelGrid.fragment"), import("../../Shaders/iblVoxelGrid.vertex")],
-        webGPU: () => [import("../../ShadersWGSL/iblVoxelGrid.fragment"), import("../../ShadersWGSL/iblVoxelGrid.vertex")],
+        webGL: () => [import("core/Shaders/iblVoxelGrid.fragment"), import("core/Shaders/iblVoxelGrid.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/iblVoxelGrid.fragment"), import("core/ShadersWGSL/iblVoxelGrid.vertex")],
     });
 
     private _scene: Scene;

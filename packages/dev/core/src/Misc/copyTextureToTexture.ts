@@ -35,8 +35,8 @@ export class CopyTextureToTexture {
 
     private _shadersLoaded = false;
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/copyTextureToTexture.fragment")],
-        webGPU: () => [import("../ShadersWGSL/copyTextureToTexture.fragment")],
+        webGL: () => [import("core/Shaders/copyTextureToTexture.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/copyTextureToTexture.fragment")],
     });
 
     /**

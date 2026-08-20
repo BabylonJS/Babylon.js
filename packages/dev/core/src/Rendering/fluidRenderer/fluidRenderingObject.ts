@@ -15,13 +15,13 @@ import { ShaderLoader } from "core/Misc/shaderLoader";
  */
 export abstract class FluidRenderingObject {
     private static readonly _DepthShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/fluidRenderingParticleDepth.vertex"), import("../../Shaders/fluidRenderingParticleDepth.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/fluidRenderingParticleDepth.vertex"), import("../../ShadersWGSL/fluidRenderingParticleDepth.fragment")],
+        webGL: () => [import("core/Shaders/fluidRenderingParticleDepth.vertex"), import("core/Shaders/fluidRenderingParticleDepth.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/fluidRenderingParticleDepth.vertex"), import("core/ShadersWGSL/fluidRenderingParticleDepth.fragment")],
     });
 
     private static readonly _ThicknessShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/fluidRenderingParticleThickness.vertex"), import("../../Shaders/fluidRenderingParticleThickness.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/fluidRenderingParticleThickness.vertex"), import("../../ShadersWGSL/fluidRenderingParticleThickness.fragment")],
+        webGL: () => [import("core/Shaders/fluidRenderingParticleThickness.vertex"), import("core/Shaders/fluidRenderingParticleThickness.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/fluidRenderingParticleThickness.vertex"), import("core/ShadersWGSL/fluidRenderingParticleThickness.fragment")],
     });
 
     protected _scene: Scene;

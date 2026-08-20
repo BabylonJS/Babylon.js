@@ -13,8 +13,8 @@ export class ThinPassPostProcess extends EffectWrapper {
     public static readonly FragmentUrl = "pass";
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/pass.fragment")],
-        webGPU: () => [import("../ShadersWGSL/pass.fragment")],
+        webGL: () => [import("core/Shaders/pass.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/pass.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {
@@ -55,8 +55,8 @@ export class ThinPassCubePostProcess extends EffectWrapper {
     public static readonly FragmentUrl = "passCube";
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/passCube.fragment")],
-        webGPU: () => [import("../ShadersWGSL/passCube.fragment")],
+        webGL: () => [import("core/Shaders/passCube.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/passCube.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

@@ -516,8 +516,8 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
     private _primaryHighlightColor = Color3.Black();
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/background.vertex"), import("../../Shaders/background.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/background.vertex"), import("../../ShadersWGSL/background.fragment")],
+        webGL: () => [import("core/Shaders/background.vertex"), import("core/Shaders/background.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/background.vertex"), import("core/ShadersWGSL/background.fragment")],
     });
 
     /**

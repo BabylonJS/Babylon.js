@@ -15,8 +15,8 @@ export class ThinSSRBlurPostProcess extends EffectWrapper {
     public static readonly Samplers = ["textureSampler"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/screenSpaceReflection2Blur.fragment")],
-        webGPU: () => [import("../ShadersWGSL/screenSpaceReflection2Blur.fragment")],
+        webGL: () => [import("core/Shaders/screenSpaceReflection2Blur.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/screenSpaceReflection2Blur.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

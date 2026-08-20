@@ -110,8 +110,8 @@ export class FrameGraphIblShadowsTracingTask extends FrameGraphTask {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../../Shaders/iblShadowVoxelTracing.fragment")],
-        webGPU: () => [import("../../../../ShadersWGSL/iblShadowVoxelTracing.fragment")],
+        webGL: () => [import("core/Shaders/iblShadowVoxelTracing.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowVoxelTracing.fragment")],
     });
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax

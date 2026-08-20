@@ -14,8 +14,8 @@ import { ShaderLoader } from "core/Misc/shaderLoader";
  */
 export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/fluidRenderingParticleDiffuse.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/fluidRenderingParticleDiffuse.fragment")],
+        webGL: () => [import("core/Shaders/fluidRenderingParticleDiffuse.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/fluidRenderingParticleDiffuse.fragment")],
     });
 
     private _numParticles: number;

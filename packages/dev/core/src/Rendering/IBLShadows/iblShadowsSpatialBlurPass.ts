@@ -17,12 +17,12 @@ import { ShaderLoader } from "core/Misc/shaderLoader";
  */
 export class _IblShadowsSpatialBlurPass {
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/iblShadowSpatialBlur.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/iblShadowSpatialBlur.fragment")],
+        webGL: () => [import("core/Shaders/iblShadowSpatialBlur.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowSpatialBlur.fragment")],
     });
     private static readonly _DebugShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/iblShadowDebug.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/iblShadowDebug.fragment")],
+        webGL: () => [import("core/Shaders/iblShadowDebug.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowDebug.fragment")],
     });
 
     private _scene: Scene;

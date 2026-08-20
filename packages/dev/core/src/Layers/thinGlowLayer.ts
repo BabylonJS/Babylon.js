@@ -55,8 +55,8 @@ export class ThinGlowLayer extends ThinEffectLayer {
     public static DefaultBlurKernelSize = 32;
 
     private static readonly _MergeShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/glowMapMerge.fragment"), import("../Shaders/glowMapMerge.vertex"), import("../Shaders/glowBlurPostProcess.fragment")],
-        webGPU: () => [import("../ShadersWGSL/glowMapMerge.fragment"), import("../ShadersWGSL/glowMapMerge.vertex"), import("../ShadersWGSL/glowBlurPostProcess.fragment")],
+        webGL: () => [import("core/Shaders/glowMapMerge.fragment"), import("core/Shaders/glowMapMerge.vertex"), import("core/Shaders/glowBlurPostProcess.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/glowMapMerge.fragment"), import("core/ShadersWGSL/glowMapMerge.vertex"), import("core/ShadersWGSL/glowBlurPostProcess.fragment")],
     });
 
     /**

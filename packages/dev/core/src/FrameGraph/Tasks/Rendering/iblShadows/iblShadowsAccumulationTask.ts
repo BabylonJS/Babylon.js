@@ -59,8 +59,8 @@ export class FrameGraphIblShadowsAccumulationTask extends FrameGraphTask {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../../Shaders/iblShadowAccumulation.fragment")],
-        webGPU: () => [import("../../../../ShadersWGSL/iblShadowAccumulation.fragment")],
+        webGL: () => [import("core/Shaders/iblShadowAccumulation.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowAccumulation.fragment")],
     });
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax

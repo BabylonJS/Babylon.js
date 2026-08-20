@@ -38,8 +38,8 @@ export class DisplayPassPostProcess extends PostProcess {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/displayPass.fragment")],
-        webGPU: () => [import("../ShadersWGSL/displayPass.fragment")],
+        webGL: () => [import("core/Shaders/displayPass.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/displayPass.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

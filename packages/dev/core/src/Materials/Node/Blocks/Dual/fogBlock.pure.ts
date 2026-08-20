@@ -102,8 +102,8 @@ export class FogBlock extends NodeMaterialBlock {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../../Shaders/ShadersInclude/fogFragmentDeclaration")],
-        webGPU: () => [import("../../../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration")],
+        webGL: () => [import("core/Shaders/ShadersInclude/fogFragmentDeclaration")],
+        webGPU: () => [import("core/ShadersWGSL/ShadersInclude/fogFragmentDeclaration")],
     });
 
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {

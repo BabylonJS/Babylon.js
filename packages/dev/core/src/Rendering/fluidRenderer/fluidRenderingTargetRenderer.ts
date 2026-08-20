@@ -663,8 +663,8 @@ export class FluidRenderingTargetRenderer {
     }
 
     private static readonly _RenderShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/fluidRenderingRender.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/fluidRenderingRender.fragment")],
+        webGL: () => [import("core/Shaders/fluidRenderingRender.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/fluidRenderingRender.fragment")],
     });
 
     protected _createLiquidRenderingPostProcess(): void {

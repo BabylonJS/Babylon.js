@@ -384,7 +384,7 @@ export function CreateScreenshotUsingRenderTarget(
                             texture.dispose();
                         });
                     } else {
-                        const importPromise = engine.isWebGPU ? import("../ShadersWGSL/pass.fragment") : import("../Shaders/pass.fragment");
+                        const importPromise = engine.isWebGPU ? import("core/ShadersWGSL/pass.fragment") : import("core/Shaders/pass.fragment");
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         importPromise.then(
                             async () =>

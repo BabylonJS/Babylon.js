@@ -42,8 +42,8 @@ const MobileClusteredLightBatchSize = 8;
  */
 export class ClusteredLightContainer extends Light {
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/lightProxy.vertex"), import("../../Shaders/lightProxy.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/lightProxy.vertex"), import("../../ShadersWGSL/lightProxy.fragment")],
+        webGL: () => [import("core/Shaders/lightProxy.vertex"), import("core/Shaders/lightProxy.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/lightProxy.vertex"), import("core/ShadersWGSL/lightProxy.fragment")],
     });
 
     private static _GetEngineBatchSize(engine: AbstractEngine): number {

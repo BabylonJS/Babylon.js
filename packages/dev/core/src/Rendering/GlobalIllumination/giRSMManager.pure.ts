@@ -291,16 +291,16 @@ export class GIRSMManager {
     private _onShaderLoadedObservable = new Observable<void>();
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [
-            import("../../Shaders/bilateralBlur.fragment"),
-            import("../../Shaders/bilateralBlurQuality.fragment"),
-            import("../../Shaders/rsmGlobalIllumination.fragment"),
-            import("../../Shaders/rsmFullGlobalIllumination.fragment"),
+            import("core/Shaders/bilateralBlur.fragment"),
+            import("core/Shaders/bilateralBlurQuality.fragment"),
+            import("core/Shaders/rsmGlobalIllumination.fragment"),
+            import("core/Shaders/rsmFullGlobalIllumination.fragment"),
         ],
         webGPU: () => [
-            import("../../ShadersWGSL/bilateralBlur.fragment"),
-            import("../../ShadersWGSL/bilateralBlurQuality.fragment"),
-            import("../../ShadersWGSL/rsmGlobalIllumination.fragment"),
-            import("../../ShadersWGSL/rsmFullGlobalIllumination.fragment"),
+            import("core/ShadersWGSL/bilateralBlur.fragment"),
+            import("core/ShadersWGSL/bilateralBlurQuality.fragment"),
+            import("core/ShadersWGSL/rsmGlobalIllumination.fragment"),
+            import("core/ShadersWGSL/rsmFullGlobalIllumination.fragment"),
         ],
     });
 

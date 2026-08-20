@@ -23,8 +23,8 @@ export class ThinMinMaxReducerPostProcess extends EffectWrapper {
     public static readonly Uniforms = ["texSize"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/minmaxRedux.fragment")],
-        webGPU: () => [import("../ShadersWGSL/minmaxRedux.fragment")],
+        webGL: () => [import("core/Shaders/minmaxRedux.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/minmaxRedux.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

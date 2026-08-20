@@ -109,8 +109,8 @@ export interface IEdgesRendererOptions {
  */
 export class EdgesRenderer implements IEdgesRenderer {
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/line.vertex"), import("../Shaders/line.fragment")],
-        webGPU: () => [import("../ShadersWGSL/line.vertex"), import("../ShadersWGSL/line.fragment")],
+        webGL: () => [import("core/Shaders/line.vertex"), import("core/Shaders/line.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/line.vertex"), import("core/ShadersWGSL/line.fragment")],
     });
 
     /**

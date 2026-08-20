@@ -62,8 +62,8 @@ export class ThinGlowBlurPostProcess extends EffectWrapper {
     }
 
     private static readonly _GlowBlurShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/glowBlurPostProcess.fragment")],
-        webGPU: () => [import("../ShadersWGSL/glowBlurPostProcess.fragment")],
+        webGL: () => [import("core/Shaders/glowBlurPostProcess.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/glowBlurPostProcess.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {
@@ -330,8 +330,8 @@ export class ThinEffectLayer {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/glowMapGeneration.vertex"), import("../Shaders/glowMapGeneration.fragment")],
-        webGPU: () => [import("../ShadersWGSL/glowMapGeneration.vertex"), import("../ShadersWGSL/glowMapGeneration.fragment")],
+        webGL: () => [import("core/Shaders/glowMapGeneration.vertex"), import("core/Shaders/glowMapGeneration.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/glowMapGeneration.vertex"), import("core/ShadersWGSL/glowMapGeneration.fragment")],
     });
 
     /** @internal */

@@ -130,8 +130,8 @@ export interface IGPUMultiPickOptions {
  */
 export class GPUPicker {
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/picking.fragment"), import("../Shaders/picking.vertex")],
-        webGPU: () => [import("../ShadersWGSL/picking.fragment"), import("../ShadersWGSL/picking.vertex")],
+        webGL: () => [import("core/Shaders/picking.fragment"), import("core/Shaders/picking.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/picking.fragment"), import("core/ShadersWGSL/picking.vertex")],
     });
 
     private static readonly _AttributeName = "instanceMeshID";

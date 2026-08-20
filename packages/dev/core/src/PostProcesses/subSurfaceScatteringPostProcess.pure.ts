@@ -24,8 +24,8 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/imageProcessing.fragment"), import("../Shaders/subSurfaceScattering.fragment")],
-        webGPU: () => [import("../ShadersWGSL/imageProcessing.fragment"), import("../ShadersWGSL/subSurfaceScattering.fragment")],
+        webGL: () => [import("core/Shaders/imageProcessing.fragment"), import("core/Shaders/subSurfaceScattering.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/imageProcessing.fragment"), import("core/ShadersWGSL/subSurfaceScattering.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

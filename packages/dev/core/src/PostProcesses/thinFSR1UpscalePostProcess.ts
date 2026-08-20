@@ -39,8 +39,8 @@ export class ThinFSR1UpscalePostProcess extends EffectWrapper {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/fsr1Upscale.fragment")],
-        webGPU: () => [import("../ShadersWGSL/fsr1Upscale.fragment")],
+        webGL: () => [import("core/Shaders/fsr1Upscale.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/fsr1Upscale.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

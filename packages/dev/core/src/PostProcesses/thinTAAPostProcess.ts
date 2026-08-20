@@ -27,8 +27,8 @@ export class ThinTAAPostProcess extends EffectWrapper {
     public static readonly Samplers = ["historySampler"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/taa.fragment")],
-        webGPU: () => [import("../ShadersWGSL/taa.fragment")],
+        webGL: () => [import("core/Shaders/taa.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/taa.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

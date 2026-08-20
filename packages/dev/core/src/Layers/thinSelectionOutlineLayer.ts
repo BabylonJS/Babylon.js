@@ -65,16 +65,16 @@ export class ThinSelectionOutlineLayer extends ThinEffectLayer {
 
     private static readonly _SelectionShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [
-            import("../Shaders/selection.vertex"),
-            import("../Shaders/selection.fragment"),
-            import("../Shaders/glowMapMerge.vertex"),
-            import("../Shaders/selectionOutline.fragment"),
+            import("core/Shaders/selection.vertex"),
+            import("core/Shaders/selection.fragment"),
+            import("core/Shaders/glowMapMerge.vertex"),
+            import("core/Shaders/selectionOutline.fragment"),
         ],
         webGPU: () => [
-            import("../ShadersWGSL/selection.vertex"),
-            import("../ShadersWGSL/selection.fragment"),
-            import("../ShadersWGSL/glowMapMerge.vertex"),
-            import("../ShadersWGSL/selectionOutline.fragment"),
+            import("core/ShadersWGSL/selection.vertex"),
+            import("core/ShadersWGSL/selection.fragment"),
+            import("core/ShadersWGSL/glowMapMerge.vertex"),
+            import("core/ShadersWGSL/selectionOutline.fragment"),
         ],
     });
 

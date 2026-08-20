@@ -173,8 +173,8 @@ export class Layer {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/layer.vertex"), import("../Shaders/layer.fragment")],
-        webGPU: () => [import("../ShadersWGSL/layer.vertex"), import("../ShadersWGSL/layer.fragment")],
+        webGL: () => [import("core/Shaders/layer.vertex"), import("core/Shaders/layer.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/layer.vertex"), import("core/ShadersWGSL/layer.fragment")],
     });
 
     /**

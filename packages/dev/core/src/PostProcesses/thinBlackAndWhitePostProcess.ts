@@ -18,8 +18,8 @@ export class ThinBlackAndWhitePostProcess extends EffectWrapper {
     public static readonly Uniforms = ["degree"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/blackAndWhite.fragment")],
-        webGPU: () => [import("../ShadersWGSL/blackAndWhite.fragment")],
+        webGL: () => [import("core/Shaders/blackAndWhite.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/blackAndWhite.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

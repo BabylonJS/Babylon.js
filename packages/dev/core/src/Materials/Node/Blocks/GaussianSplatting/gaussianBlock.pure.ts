@@ -77,16 +77,16 @@ export class GaussianBlock extends NodeMaterialBlock {
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [
-            import("../../../../Shaders/ShadersInclude/clipPlaneFragmentDeclaration"),
-            import("../../../../Shaders/ShadersInclude/logDepthDeclaration"),
-            import("../../../../Shaders/ShadersInclude/fogFragmentDeclaration"),
-            import("../../../../Shaders/ShadersInclude/gaussianSplattingFragmentDeclaration"),
+            import("core/Shaders/ShadersInclude/clipPlaneFragmentDeclaration"),
+            import("core/Shaders/ShadersInclude/logDepthDeclaration"),
+            import("core/Shaders/ShadersInclude/fogFragmentDeclaration"),
+            import("core/Shaders/ShadersInclude/gaussianSplattingFragmentDeclaration"),
         ],
         webGPU: () => [
-            import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration"),
-            import("../../../../ShadersWGSL/ShadersInclude/logDepthDeclaration"),
-            import("../../../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration"),
-            import("../../../../ShadersWGSL/ShadersInclude/gaussianSplattingFragmentDeclaration"),
+            import("core/ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration"),
+            import("core/ShadersWGSL/ShadersInclude/logDepthDeclaration"),
+            import("core/ShadersWGSL/ShadersInclude/fogFragmentDeclaration"),
+            import("core/ShadersWGSL/ShadersInclude/gaussianSplattingFragmentDeclaration"),
         ],
     });
 

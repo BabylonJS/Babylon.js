@@ -10,8 +10,8 @@ import { ShaderLanguage } from "../../../Materials/shaderLanguage";
 import { ShaderLoader } from "core/Misc/shaderLoader";
 
 const _NoiseProceduralTextureShaderLoader = /*#__PURE__*/ new ShaderLoader({
-    webGL: () => [import("../../../Shaders/noise.fragment")],
-    webGPU: () => [import("../../../ShadersWGSL/noise.fragment")],
+    webGL: () => [import("core/Shaders/noise.fragment")],
+    webGPU: () => [import("core/ShadersWGSL/noise.fragment")],
 });
 
 /**

@@ -212,8 +212,8 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../Shaders/volumetricLightingRenderVolume.vertex"), import("../../../Shaders/volumetricLightingRenderVolume.fragment")],
-        webGPU: () => [import("../../../ShadersWGSL/volumetricLightingRenderVolume.vertex"), import("../../../ShadersWGSL/volumetricLightingRenderVolume.fragment")],
+        webGL: () => [import("core/Shaders/volumetricLightingRenderVolume.vertex"), import("core/Shaders/volumetricLightingRenderVolume.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/volumetricLightingRenderVolume.vertex"), import("core/ShadersWGSL/volumetricLightingRenderVolume.fragment")],
     });
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax

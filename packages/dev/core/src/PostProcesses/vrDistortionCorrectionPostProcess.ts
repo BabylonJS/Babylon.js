@@ -58,8 +58,8 @@ export class VRDistortionCorrectionPostProcess extends PostProcess {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/vrDistortionCorrection.fragment")],
-        webGPU: () => [import("../ShadersWGSL/vrDistortionCorrection.fragment")],
+        webGL: () => [import("core/Shaders/vrDistortionCorrection.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/vrDistortionCorrection.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

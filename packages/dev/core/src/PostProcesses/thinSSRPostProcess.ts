@@ -45,8 +45,8 @@ export class ThinSSRPostProcess extends EffectWrapper {
     public static readonly Samplers = ["textureSampler", "normalSampler", "reflectivitySampler", "depthSampler", "envCubeSampler", "backDepthSampler"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/screenSpaceReflection2.fragment")],
-        webGPU: () => [import("../ShadersWGSL/screenSpaceReflection2.fragment")],
+        webGL: () => [import("core/Shaders/screenSpaceReflection2.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/screenSpaceReflection2.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

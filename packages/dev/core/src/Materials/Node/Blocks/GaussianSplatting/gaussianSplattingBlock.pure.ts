@@ -109,14 +109,14 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [
-            import("../../../../Shaders/ShadersInclude/gaussianSplattingVertexDeclaration"),
-            import("../../../../Shaders/ShadersInclude/gaussianSplatting"),
-            import("../../../../Shaders/ShadersInclude/helperFunctions"),
+            import("core/Shaders/ShadersInclude/gaussianSplattingVertexDeclaration"),
+            import("core/Shaders/ShadersInclude/gaussianSplatting"),
+            import("core/Shaders/ShadersInclude/helperFunctions"),
         ],
         webGPU: () => [
-            import("../../../../ShadersWGSL/ShadersInclude/gaussianSplattingVertexDeclaration"),
-            import("../../../../ShadersWGSL/ShadersInclude/gaussianSplatting"),
-            import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
+            import("core/ShadersWGSL/ShadersInclude/gaussianSplattingVertexDeclaration"),
+            import("core/ShadersWGSL/ShadersInclude/gaussianSplatting"),
+            import("core/ShadersWGSL/ShadersInclude/helperFunctions"),
         ],
     });
 

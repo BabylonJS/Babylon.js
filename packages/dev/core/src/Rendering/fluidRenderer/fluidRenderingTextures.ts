@@ -201,13 +201,13 @@ export class FluidRenderingTextures {
     }
 
     private static readonly _StandardBlurShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/fluidRenderingStandardBlur.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/fluidRenderingStandardBlur.fragment")],
+        webGL: () => [import("core/Shaders/fluidRenderingStandardBlur.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/fluidRenderingStandardBlur.fragment")],
     });
 
     private static readonly _BilateralBlurShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/fluidRenderingBilateralBlur.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/fluidRenderingBilateralBlur.fragment")],
+        webGL: () => [import("core/Shaders/fluidRenderingBilateralBlur.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/fluidRenderingBilateralBlur.fragment")],
     });
 
     protected _createBlurPostProcesses(

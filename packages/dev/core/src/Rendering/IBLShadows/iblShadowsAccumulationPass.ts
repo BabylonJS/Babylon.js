@@ -17,16 +17,16 @@ import { ShaderLoader } from "core/Misc/shaderLoader";
  */
 export class _IblShadowsAccumulationPass {
     private static readonly _AccumulationShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/iblShadowAccumulation.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/iblShadowAccumulation.fragment")],
+        webGL: () => [import("core/Shaders/iblShadowAccumulation.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowAccumulation.fragment")],
     });
     private static readonly _PassShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/pass.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/pass.fragment")],
+        webGL: () => [import("core/Shaders/pass.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/pass.fragment")],
     });
     private static readonly _DebugShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/iblShadowDebug.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/iblShadowDebug.fragment")],
+        webGL: () => [import("core/Shaders/iblShadowDebug.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowDebug.fragment")],
     });
 
     private _scene: Scene;

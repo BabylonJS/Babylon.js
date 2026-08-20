@@ -257,8 +257,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "sogShCoeffCount",
     ];
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/gaussianSplatting.fragment"), import("../../Shaders/gaussianSplatting.vertex")],
-        webGPU: () => [import("../../ShadersWGSL/gaussianSplatting.fragment"), import("../../ShadersWGSL/gaussianSplatting.vertex")],
+        webGL: () => [import("core/Shaders/gaussianSplatting.fragment"), import("core/Shaders/gaussianSplatting.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/gaussianSplatting.fragment"), import("core/ShadersWGSL/gaussianSplatting.vertex")],
     });
 
     private _sourceMesh: GaussianSplattingMesh | null = null;
@@ -738,8 +738,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * @returns voxel rendering shader material
      */
     private static readonly _VoxelShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/gaussianSplattingVoxel.vertex"), import("../../Shaders/gaussianSplattingVoxel.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/gaussianSplattingVoxel.vertex"), import("../../ShadersWGSL/gaussianSplattingVoxel.fragment")],
+        webGL: () => [import("core/Shaders/gaussianSplattingVoxel.vertex"), import("core/Shaders/gaussianSplattingVoxel.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/gaussianSplattingVoxel.vertex"), import("core/ShadersWGSL/gaussianSplattingVoxel.fragment")],
     });
 
     public makeVoxelRenderingMaterial(scene: Scene, shaderLanguage: ShaderLanguage, maxDrawBuffers: number, compoundMesh: boolean = false): ShaderMaterial {

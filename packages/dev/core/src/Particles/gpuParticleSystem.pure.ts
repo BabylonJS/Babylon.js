@@ -99,7 +99,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGPU: () => [import("../ShadersWGSL/gpuRenderParticles.vertex"), import("../ShadersWGSL/gpuRenderParticles.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/gpuRenderParticles.vertex"), import("core/ShadersWGSL/gpuRenderParticles.fragment")],
     });
 
     private readonly _rawTextureWidth = 256;

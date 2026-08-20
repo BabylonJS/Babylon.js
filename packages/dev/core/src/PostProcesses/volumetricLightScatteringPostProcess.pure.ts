@@ -191,14 +191,14 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [
-            import("../Shaders/volumetricLightScattering.fragment"),
-            import("../Shaders/volumetricLightScatteringPass.vertex"),
-            import("../Shaders/volumetricLightScatteringPass.fragment"),
+            import("core/Shaders/volumetricLightScattering.fragment"),
+            import("core/Shaders/volumetricLightScatteringPass.vertex"),
+            import("core/Shaders/volumetricLightScatteringPass.fragment"),
         ],
         webGPU: () => [
-            import("../ShadersWGSL/volumetricLightScattering.fragment"),
-            import("../ShadersWGSL/volumetricLightScatteringPass.vertex"),
-            import("../ShadersWGSL/volumetricLightScatteringPass.fragment"),
+            import("core/ShadersWGSL/volumetricLightScattering.fragment"),
+            import("core/ShadersWGSL/volumetricLightScatteringPass.vertex"),
+            import("core/ShadersWGSL/volumetricLightScatteringPass.fragment"),
         ],
     });
 

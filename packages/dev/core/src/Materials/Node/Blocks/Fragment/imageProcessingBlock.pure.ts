@@ -96,14 +96,14 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [
-            import("../../../../Shaders/ShadersInclude/helperFunctions"),
-            import("../../../../Shaders/ShadersInclude/imageProcessingDeclaration"),
-            import("../../../../Shaders/ShadersInclude/imageProcessingFunctions"),
+            import("core/Shaders/ShadersInclude/helperFunctions"),
+            import("core/Shaders/ShadersInclude/imageProcessingDeclaration"),
+            import("core/Shaders/ShadersInclude/imageProcessingFunctions"),
         ],
         webGPU: () => [
-            import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
-            import("../../../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration"),
-            import("../../../../ShadersWGSL/ShadersInclude/imageProcessingFunctions"),
+            import("core/ShadersWGSL/ShadersInclude/helperFunctions"),
+            import("core/ShadersWGSL/ShadersInclude/imageProcessingDeclaration"),
+            import("core/ShadersWGSL/ShadersInclude/imageProcessingFunctions"),
         ],
     });
 

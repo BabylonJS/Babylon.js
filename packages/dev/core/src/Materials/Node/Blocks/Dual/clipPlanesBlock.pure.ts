@@ -60,16 +60,16 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [
-            import("../../../../Shaders/ShadersInclude/clipPlaneFragment"),
-            import("../../../../Shaders/ShadersInclude/clipPlaneFragmentDeclaration"),
-            import("../../../../Shaders/ShadersInclude/clipPlaneVertex"),
-            import("../../../../Shaders/ShadersInclude/clipPlaneVertexDeclaration"),
+            import("core/Shaders/ShadersInclude/clipPlaneFragment"),
+            import("core/Shaders/ShadersInclude/clipPlaneFragmentDeclaration"),
+            import("core/Shaders/ShadersInclude/clipPlaneVertex"),
+            import("core/Shaders/ShadersInclude/clipPlaneVertexDeclaration"),
         ],
         webGPU: () => [
-            import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragment"),
-            import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration"),
-            import("../../../../ShadersWGSL/ShadersInclude/clipPlaneVertex"),
-            import("../../../../ShadersWGSL/ShadersInclude/clipPlaneVertexDeclaration"),
+            import("core/ShadersWGSL/ShadersInclude/clipPlaneFragment"),
+            import("core/ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration"),
+            import("core/ShadersWGSL/ShadersInclude/clipPlaneVertex"),
+            import("core/ShadersWGSL/ShadersInclude/clipPlaneVertexDeclaration"),
         ],
     });
 

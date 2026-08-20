@@ -23,8 +23,8 @@ export class ThinScreenSpaceCurvaturePostProcess extends EffectWrapper {
     public static readonly Samplers = ["normalSampler"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/screenSpaceCurvature.fragment")],
-        webGPU: () => [import("../ShadersWGSL/screenSpaceCurvature.fragment")],
+        webGL: () => [import("core/Shaders/screenSpaceCurvature.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/screenSpaceCurvature.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

@@ -18,8 +18,8 @@ export class ThinSharpenPostProcess extends EffectWrapper {
     public static readonly Uniforms = ["sharpnessAmounts", "screenSize"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/sharpen.fragment")],
-        webGPU: () => [import("../ShadersWGSL/sharpen.fragment")],
+        webGL: () => [import("core/Shaders/sharpen.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/sharpen.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

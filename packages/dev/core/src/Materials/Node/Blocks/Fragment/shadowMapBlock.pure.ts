@@ -56,14 +56,14 @@ export class ShadowMapBlock extends NodeMaterialBlock {
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [
-            import("../../../../Shaders/ShadersInclude/shadowMapVertexMetric"),
-            import("../../../../Shaders/ShadersInclude/packingFunctions"),
-            import("../../../../Shaders/ShadersInclude/shadowMapFragment"),
+            import("core/Shaders/ShadersInclude/shadowMapVertexMetric"),
+            import("core/Shaders/ShadersInclude/packingFunctions"),
+            import("core/Shaders/ShadersInclude/shadowMapFragment"),
         ],
         webGPU: () => [
-            import("../../../../ShadersWGSL/ShadersInclude/shadowMapVertexMetric"),
-            import("../../../../ShadersWGSL/ShadersInclude/packingFunctions"),
-            import("../../../../ShadersWGSL/ShadersInclude/shadowMapFragment"),
+            import("core/ShadersWGSL/ShadersInclude/shadowMapVertexMetric"),
+            import("core/ShadersWGSL/ShadersInclude/packingFunctions"),
+            import("core/ShadersWGSL/ShadersInclude/shadowMapFragment"),
         ],
     });
 

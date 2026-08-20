@@ -367,8 +367,8 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../../Shaders/ShadersInclude/helperFunctions")],
-        webGPU: () => [import("../../../../ShadersWGSL/ShadersInclude/helperFunctions")],
+        webGL: () => [import("core/Shaders/ShadersInclude/helperFunctions")],
+        webGPU: () => [import("core/ShadersWGSL/ShadersInclude/helperFunctions")],
     });
 
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {

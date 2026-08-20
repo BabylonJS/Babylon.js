@@ -567,8 +567,8 @@ export class StandardMaterial extends StandardMaterialBase {
     public accessor applyDecalMapAfterDetailMap: boolean;
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/default.vertex"), import("../Shaders/default.fragment")],
-        webGPU: () => [import("../ShadersWGSL/default.vertex"), import("../ShadersWGSL/default.fragment")],
+        webGL: () => [import("core/Shaders/default.vertex"), import("core/Shaders/default.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/default.vertex"), import("core/ShadersWGSL/default.fragment")],
     });
 
     private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;

@@ -46,8 +46,8 @@ export class BoundingBoxRenderer implements ISceneComponent {
     public readonly name = SceneComponentConstants.NAME_BOUNDINGBOXRENDERER;
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/boundingBoxRenderer.vertex"), import("../Shaders/boundingBoxRenderer.fragment")],
-        webGPU: () => [import("../ShadersWGSL/boundingBoxRenderer.vertex"), import("../ShadersWGSL/boundingBoxRenderer.fragment")],
+        webGL: () => [import("core/Shaders/boundingBoxRenderer.vertex"), import("core/Shaders/boundingBoxRenderer.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/boundingBoxRenderer.vertex"), import("core/ShadersWGSL/boundingBoxRenderer.fragment")],
     });
 
     /**

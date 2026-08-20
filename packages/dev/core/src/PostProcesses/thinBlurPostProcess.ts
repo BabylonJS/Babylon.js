@@ -29,8 +29,8 @@ export class ThinBlurPostProcess extends EffectWrapper {
     public static readonly Samplers = ["circleOfConfusionSampler"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/kernelBlur.fragment"), import("../Shaders/kernelBlur.vertex")],
-        webGPU: () => [import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")],
+        webGL: () => [import("core/Shaders/kernelBlur.fragment"), import("core/Shaders/kernelBlur.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/kernelBlur.fragment"), import("core/ShadersWGSL/kernelBlur.vertex")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

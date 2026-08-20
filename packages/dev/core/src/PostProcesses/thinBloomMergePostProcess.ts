@@ -14,8 +14,8 @@ export class ThinBloomMergePostProcess extends EffectWrapper {
     public static readonly Samplers = ["bloomBlur"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/bloomMerge.fragment")],
-        webGPU: () => [import("../ShadersWGSL/bloomMerge.fragment")],
+        webGL: () => [import("core/Shaders/bloomMerge.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/bloomMerge.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

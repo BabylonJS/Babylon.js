@@ -25,16 +25,16 @@ import { RegisterIblCdfGeneratorSceneComponent } from "./iblCdfGeneratorSceneCom
  */
 export class IblCdfGenerator {
     private static readonly _CdfShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/iblCdfx.fragment"), import("../Shaders/iblCdfy.fragment"), import("../Shaders/iblScaledLuminance.fragment")],
-        webGPU: () => [import("../ShadersWGSL/iblCdfx.fragment"), import("../ShadersWGSL/iblCdfy.fragment"), import("../ShadersWGSL/iblScaledLuminance.fragment")],
+        webGL: () => [import("core/Shaders/iblCdfx.fragment"), import("core/Shaders/iblCdfy.fragment"), import("core/Shaders/iblScaledLuminance.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblCdfx.fragment"), import("core/ShadersWGSL/iblCdfy.fragment"), import("core/ShadersWGSL/iblScaledLuminance.fragment")],
     });
     private static readonly _IcdfShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/iblIcdf.fragment"), import("../Shaders/iblDominantDirection.fragment")],
-        webGPU: () => [import("../ShadersWGSL/iblIcdf.fragment"), import("../ShadersWGSL/iblDominantDirection.fragment")],
+        webGL: () => [import("core/Shaders/iblIcdf.fragment"), import("core/Shaders/iblDominantDirection.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblIcdf.fragment"), import("core/ShadersWGSL/iblDominantDirection.fragment")],
     });
     private static readonly _DebugShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/iblCdfDebug.fragment")],
-        webGPU: () => [import("../ShadersWGSL/iblCdfDebug.fragment")],
+        webGL: () => [import("core/Shaders/iblCdfDebug.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblCdfDebug.fragment")],
     });
 
     private _scene: Nullable<Scene>;

@@ -181,8 +181,8 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../../Shaders/ShadersInclude/helperFunctions"), import("../../../../Shaders/ShadersInclude/reflectionFunction")],
-        webGPU: () => [import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"), import("../../../../ShadersWGSL/ShadersInclude/reflectionFunction")],
+        webGL: () => [import("core/Shaders/ShadersInclude/helperFunctions"), import("core/Shaders/ShadersInclude/reflectionFunction")],
+        webGPU: () => [import("core/ShadersWGSL/ShadersInclude/helperFunctions"), import("core/ShadersWGSL/ShadersInclude/reflectionFunction")],
     });
 
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {

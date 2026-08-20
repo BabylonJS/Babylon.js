@@ -42,8 +42,8 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
     public static readonly Samplers = ["randomSampler", "depthSampler", "normalSampler"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/ssao2.fragment")],
-        webGPU: () => [import("../ShadersWGSL/ssao2.fragment")],
+        webGL: () => [import("core/Shaders/ssao2.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/ssao2.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

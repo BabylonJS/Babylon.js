@@ -22,8 +22,8 @@ import { type Scene } from "../scene.pure";
  */
 export class LinesMesh extends Mesh {
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/color.vertex"), import("../Shaders/color.fragment")],
-        webGPU: () => [import("../ShadersWGSL/color.vertex"), import("../ShadersWGSL/color.fragment")],
+        webGL: () => [import("core/Shaders/color.vertex"), import("core/Shaders/color.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/color.vertex"), import("core/ShadersWGSL/color.fragment")],
     });
 
     /**

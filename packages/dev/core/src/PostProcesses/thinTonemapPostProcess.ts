@@ -42,8 +42,8 @@ export class ThinTonemapPostProcess extends EffectWrapper {
     public static readonly Uniforms = ["_ExposureAdjustment"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/tonemap.fragment")],
-        webGPU: () => [import("../ShadersWGSL/tonemap.fragment")],
+        webGL: () => [import("core/Shaders/tonemap.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/tonemap.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

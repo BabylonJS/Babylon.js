@@ -53,8 +53,8 @@ export class BonesBlock extends NodeMaterialBlock {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../../Shaders/ShadersInclude/bonesDeclaration"), import("../../../../Shaders/ShadersInclude/bonesVertex")],
-        webGPU: () => [import("../../../../ShadersWGSL/ShadersInclude/bonesDeclaration"), import("../../../../ShadersWGSL/ShadersInclude/bonesVertex")],
+        webGL: () => [import("core/Shaders/ShadersInclude/bonesDeclaration"), import("core/Shaders/ShadersInclude/bonesVertex")],
+        webGPU: () => [import("core/ShadersWGSL/ShadersInclude/bonesDeclaration"), import("core/ShadersWGSL/ShadersInclude/bonesVertex")],
     });
 
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {

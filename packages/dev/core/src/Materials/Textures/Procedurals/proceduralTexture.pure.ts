@@ -63,8 +63,8 @@ export interface IProceduralTextureCreationOptions extends RenderTargetTextureOp
  */
 export class ProceduralTexture extends Texture {
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../Shaders/procedural.vertex")],
-        webGPU: () => [import("../../../ShadersWGSL/procedural.vertex")],
+        webGL: () => [import("core/Shaders/procedural.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/procedural.vertex")],
     });
 
     /**

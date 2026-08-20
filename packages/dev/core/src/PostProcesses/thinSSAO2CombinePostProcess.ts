@@ -15,8 +15,8 @@ export class ThinSSAO2CombinePostProcess extends EffectWrapper {
     public static readonly Samplers = ["originalColor"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/ssaoCombine.fragment")],
-        webGPU: () => [import("../ShadersWGSL/ssaoCombine.fragment")],
+        webGL: () => [import("core/Shaders/ssaoCombine.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/ssaoCombine.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

@@ -462,8 +462,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../../Shaders/pbr.vertex"), import("../../../../Shaders/pbr.fragment")],
-        webGPU: () => [import("../../../../ShadersWGSL/pbr.vertex"), import("../../../../ShadersWGSL/pbr.fragment")],
+        webGL: () => [import("core/Shaders/pbr.vertex"), import("core/Shaders/pbr.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/pbr.vertex"), import("core/ShadersWGSL/pbr.fragment")],
     });
 
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {

@@ -19,8 +19,8 @@ export class ThinFilterPostProcess extends EffectWrapper {
     public static readonly Uniforms = ["kernelMatrix"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/filter.fragment")],
-        webGPU: () => [import("../ShadersWGSL/filter.fragment")],
+        webGL: () => [import("core/Shaders/filter.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/filter.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

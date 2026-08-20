@@ -77,14 +77,14 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
     private static readonly _ReflectionBlockShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [
-            import("../../../../Shaders/ShadersInclude/helperFunctions"),
-            import("../../../../Shaders/ShadersInclude/reflectionFunction"),
-            import("../../../../Shaders/ShadersInclude/harmonicsFunctions"),
+            import("core/Shaders/ShadersInclude/helperFunctions"),
+            import("core/Shaders/ShadersInclude/reflectionFunction"),
+            import("core/Shaders/ShadersInclude/harmonicsFunctions"),
         ],
         webGPU: () => [
-            import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
-            import("../../../../ShadersWGSL/ShadersInclude/reflectionFunction"),
-            import("../../../../ShadersWGSL/ShadersInclude/harmonicsFunctions"),
+            import("core/ShadersWGSL/ShadersInclude/helperFunctions"),
+            import("core/ShadersWGSL/ShadersInclude/reflectionFunction"),
+            import("core/ShadersWGSL/ShadersInclude/harmonicsFunctions"),
         ],
     });
 

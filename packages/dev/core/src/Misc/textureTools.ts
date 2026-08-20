@@ -259,18 +259,18 @@ export async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void>
 }
 
 const _LodShaderLoader = /*#__PURE__*/ new ShaderLoader({
-    webGL: () => [import("../Shaders/lod.fragment")],
-    webGPU: () => [import("../ShadersWGSL/lod.fragment")],
+    webGL: () => [import("core/Shaders/lod.fragment")],
+    webGPU: () => [import("core/ShadersWGSL/lod.fragment")],
 });
 
 const _LodCubeShaderLoader = /*#__PURE__*/ new ShaderLoader({
-    webGL: () => [import("../Shaders/lodCube.fragment")],
-    webGPU: () => [import("../ShadersWGSL/lodCube.fragment")],
+    webGL: () => [import("core/Shaders/lodCube.fragment")],
+    webGPU: () => [import("core/ShadersWGSL/lodCube.fragment")],
 });
 
 const _Lod3DShaderLoader = /*#__PURE__*/ new ShaderLoader({
-    webGL: () => [import("../Shaders/lod3D.fragment")],
-    webGPU: () => [import("../ShadersWGSL/lod3D.fragment")],
+    webGL: () => [import("core/Shaders/lod3D.fragment")],
+    webGPU: () => [import("core/ShadersWGSL/lod3D.fragment")],
 });
 
 /**

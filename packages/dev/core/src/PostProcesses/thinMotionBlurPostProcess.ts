@@ -28,8 +28,8 @@ export class ThinMotionBlurPostProcess extends EffectWrapper {
     public static readonly Defines = "#define GEOMETRY_SUPPORTED\n#define SAMPLES 64.0\n#define OBJECT_BASED";
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/motionBlur.fragment")],
-        webGPU: () => [import("../ShadersWGSL/motionBlur.fragment")],
+        webGL: () => [import("core/Shaders/motionBlur.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/motionBlur.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

@@ -40,8 +40,8 @@ export class ThinCircleOfConfusionPostProcess extends EffectWrapper {
     public static readonly DefinesDepthNotNormalized = "#define COC_DEPTH_NOT_NORMALIZED";
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/circleOfConfusion.fragment")],
-        webGPU: () => [import("../ShadersWGSL/circleOfConfusion.fragment")],
+        webGL: () => [import("core/Shaders/circleOfConfusion.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/circleOfConfusion.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

@@ -42,8 +42,8 @@ export class HighlightsPostProcess extends PostProcess {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/highlights.fragment")],
-        webGPU: () => [import("../ShadersWGSL/highlights.fragment")],
+        webGL: () => [import("core/Shaders/highlights.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/highlights.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

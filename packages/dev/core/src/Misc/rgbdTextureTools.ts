@@ -10,13 +10,13 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderLoader } from "core/Misc/shaderLoader";
 
 const _RgbdDecodeShaderLoader = /*#__PURE__*/ new ShaderLoader({
-    webGL: () => [import("../Shaders/rgbdDecode.fragment")],
-    webGPU: () => [import("../ShadersWGSL/rgbdDecode.fragment")],
+    webGL: () => [import("core/Shaders/rgbdDecode.fragment")],
+    webGPU: () => [import("core/ShadersWGSL/rgbdDecode.fragment")],
 });
 
 const _RgbdEncodeShaderLoader = /*#__PURE__*/ new ShaderLoader({
-    webGL: () => [import("../Shaders/rgbdEncode.fragment")],
-    webGPU: () => [import("../ShadersWGSL/rgbdEncode.fragment")],
+    webGL: () => [import("core/Shaders/rgbdEncode.fragment")],
+    webGPU: () => [import("core/ShadersWGSL/rgbdEncode.fragment")],
 });
 
 /**

@@ -18,8 +18,8 @@ export class ThinGrainPostProcess extends EffectWrapper {
     public static readonly Uniforms = ["intensity", "animatedSeed"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/grain.fragment")],
-        webGPU: () => [import("../ShadersWGSL/grain.fragment")],
+        webGL: () => [import("core/Shaders/grain.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/grain.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

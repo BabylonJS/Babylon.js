@@ -100,8 +100,8 @@ export class DepthRenderer {
 
     private _shadersLoaded = false;
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/depth.vertex"), import("../Shaders/depth.fragment")],
-        webGPU: () => [import("../ShadersWGSL/depth.vertex"), import("../ShadersWGSL/depth.fragment")],
+        webGL: () => [import("core/Shaders/depth.vertex"), import("core/Shaders/depth.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/depth.vertex"), import("core/ShadersWGSL/depth.fragment")],
     });
 
     /**

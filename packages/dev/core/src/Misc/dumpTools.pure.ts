@@ -65,7 +65,7 @@ async function _CreateDumpResourcesAsync(): Promise<DumpResources> {
     engine.getCaps().parallelShaderCompile = undefined;
 
     const renderer = new EffectRenderer(engine);
-    const { passPixelShader } = await import("../Shaders/pass.fragment");
+    const { passPixelShader } = await import("core/Shaders/pass.fragment");
     const wrapper = new EffectWrapper({
         engine,
         name: passPixelShader.name,

@@ -79,8 +79,8 @@ export class SplatReaderBlock extends NodeMaterialBlock {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../../Shaders/ShadersInclude/gaussianSplattingVertexDeclaration"), import("../../../../Shaders/ShadersInclude/gaussianSplatting")],
-        webGPU: () => [import("../../../../ShadersWGSL/ShadersInclude/gaussianSplattingVertexDeclaration"), import("../../../../ShadersWGSL/ShadersInclude/gaussianSplatting")],
+        webGL: () => [import("core/Shaders/ShadersInclude/gaussianSplattingVertexDeclaration"), import("core/Shaders/ShadersInclude/gaussianSplatting")],
+        webGPU: () => [import("core/ShadersWGSL/ShadersInclude/gaussianSplattingVertexDeclaration"), import("core/ShadersWGSL/ShadersInclude/gaussianSplatting")],
     });
 
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {

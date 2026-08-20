@@ -31,8 +31,8 @@ interface IHDRFilteringOptions {
  */
 export class HDRFiltering {
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../Shaders/hdrFiltering.vertex"), import("../../../Shaders/hdrFiltering.fragment")],
-        webGPU: () => [import("../../../ShadersWGSL/hdrFiltering.vertex"), import("../../../ShadersWGSL/hdrFiltering.fragment")],
+        webGL: () => [import("core/Shaders/hdrFiltering.vertex"), import("core/Shaders/hdrFiltering.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/hdrFiltering.vertex"), import("core/ShadersWGSL/hdrFiltering.fragment")],
     });
 
     private _engine: AbstractEngine;

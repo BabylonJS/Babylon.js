@@ -410,8 +410,8 @@ export class EffectWrapper {
     private _onContextRestoredObserver: Nullable<Observer<AbstractEngine>>;
 
     private static readonly _PostprocessShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/postprocess.vertex")],
-        webGPU: () => [import("../ShadersWGSL/postprocess.vertex")],
+        webGL: () => [import("core/Shaders/postprocess.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/postprocess.vertex")],
     });
 
     /**

@@ -64,20 +64,20 @@ export class MeshUVSpaceRenderer {
     private _isDisposed = false;
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [
-            import("../Shaders/meshUVSpaceRenderer.vertex"),
-            import("../Shaders/meshUVSpaceRenderer.fragment"),
-            import("../Shaders/meshUVSpaceRendererMasker.vertex"),
-            import("../Shaders/meshUVSpaceRendererMasker.fragment"),
-            import("../Shaders/meshUVSpaceRendererFinaliser.vertex"),
-            import("../Shaders/meshUVSpaceRendererFinaliser.fragment"),
+            import("core/Shaders/meshUVSpaceRenderer.vertex"),
+            import("core/Shaders/meshUVSpaceRenderer.fragment"),
+            import("core/Shaders/meshUVSpaceRendererMasker.vertex"),
+            import("core/Shaders/meshUVSpaceRendererMasker.fragment"),
+            import("core/Shaders/meshUVSpaceRendererFinaliser.vertex"),
+            import("core/Shaders/meshUVSpaceRendererFinaliser.fragment"),
         ],
         webGPU: () => [
-            import("../ShadersWGSL/meshUVSpaceRenderer.vertex"),
-            import("../ShadersWGSL/meshUVSpaceRenderer.fragment"),
-            import("../ShadersWGSL/meshUVSpaceRendererMasker.vertex"),
-            import("../ShadersWGSL/meshUVSpaceRendererMasker.fragment"),
-            import("../ShadersWGSL/meshUVSpaceRendererFinaliser.vertex"),
-            import("../ShadersWGSL/meshUVSpaceRendererFinaliser.fragment"),
+            import("core/ShadersWGSL/meshUVSpaceRenderer.vertex"),
+            import("core/ShadersWGSL/meshUVSpaceRenderer.fragment"),
+            import("core/ShadersWGSL/meshUVSpaceRendererMasker.vertex"),
+            import("core/ShadersWGSL/meshUVSpaceRendererMasker.fragment"),
+            import("core/ShadersWGSL/meshUVSpaceRendererFinaliser.vertex"),
+            import("core/ShadersWGSL/meshUVSpaceRendererFinaliser.fragment"),
         ],
     });
 

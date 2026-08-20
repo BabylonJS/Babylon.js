@@ -24,8 +24,8 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
     public static ForceGLSL = false;
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/greasedLine.vertex"), import("../../Shaders/greasedLine.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/greasedLine.vertex"), import("../../ShadersWGSL/greasedLine.fragment")],
+        webGL: () => [import("core/Shaders/greasedLine.vertex"), import("core/Shaders/greasedLine.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/greasedLine.vertex"), import("core/ShadersWGSL/greasedLine.fragment")],
     });
 
     private _visibility: number;

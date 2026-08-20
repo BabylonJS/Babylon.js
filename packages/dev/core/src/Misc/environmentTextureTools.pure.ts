@@ -26,8 +26,8 @@ const DefaultEnvironmentTextureImageType = "image/png";
 const CurrentVersion = 2;
 
 const _RgbdDecodeShaderLoader = /*#__PURE__*/ new ShaderLoader({
-    webGL: () => [import("../Shaders/rgbdDecode.fragment")],
-    webGPU: () => [import("../ShadersWGSL/rgbdDecode.fragment")],
+    webGL: () => [import("core/Shaders/rgbdDecode.fragment")],
+    webGPU: () => [import("core/ShadersWGSL/rgbdDecode.fragment")],
 });
 
 /**

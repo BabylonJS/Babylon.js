@@ -52,8 +52,8 @@ export interface ITextureMergeConfiguration {
 const _ShaderName = "textureMerger";
 
 const _TextureMergerShaderLoader = /*#__PURE__*/ new ShaderLoader({
-    webGL: () => [import("../../Shaders/textureMerger.fragment")],
-    webGPU: () => [import("../../ShadersWGSL/textureMerger.fragment")],
+    webGL: () => [import("core/Shaders/textureMerger.fragment")],
+    webGPU: () => [import("core/ShadersWGSL/textureMerger.fragment")],
 });
 
 /**

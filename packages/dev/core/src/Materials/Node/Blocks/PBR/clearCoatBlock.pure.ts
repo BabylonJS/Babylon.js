@@ -89,8 +89,8 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions")],
-        webGPU: () => [import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions")],
+        webGL: () => [import("core/Shaders/ShadersInclude/bumpFragmentMainFunctions")],
+        webGPU: () => [import("core/ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions")],
     });
 
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {

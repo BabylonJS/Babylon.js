@@ -61,13 +61,13 @@ export class ThinDepthPeelingRenderer {
     ];
 
     private static readonly _OitBackBlendShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/oitBackBlend.fragment")],
-        webGPU: () => [import("../ShadersWGSL/oitBackBlend.fragment")],
+        webGL: () => [import("core/Shaders/oitBackBlend.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/oitBackBlend.fragment")],
     });
 
     private static readonly _OitFinalSimpleBlendShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/oitFinalSimpleBlend.fragment")],
-        webGPU: () => [import("../ShadersWGSL/oitFinalSimpleBlend.fragment")],
+        webGL: () => [import("core/Shaders/oitFinalSimpleBlend.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/oitFinalSimpleBlend.fragment")],
     });
 
     protected _passCount: number;

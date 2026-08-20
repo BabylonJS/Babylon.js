@@ -39,8 +39,8 @@ export class ThinFSR1SharpenPostProcess extends EffectWrapper {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/fsr1Sharpen.fragment")],
-        webGPU: () => [import("../ShadersWGSL/fsr1Sharpen.fragment")],
+        webGL: () => [import("core/Shaders/fsr1Sharpen.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/fsr1Sharpen.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

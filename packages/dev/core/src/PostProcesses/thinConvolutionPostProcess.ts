@@ -44,8 +44,8 @@ export class ThinConvolutionPostProcess extends EffectWrapper {
     public static readonly Uniforms = ["kernel", "screenSize"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/convolution.fragment")],
-        webGPU: () => [import("../ShadersWGSL/convolution.fragment")],
+        webGL: () => [import("core/Shaders/convolution.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/convolution.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

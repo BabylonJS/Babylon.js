@@ -121,8 +121,8 @@ interface IIblShadowsSettings {
  */
 export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     private static readonly _DebugShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/iblShadowGBufferDebug.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/iblShadowGBufferDebug.fragment")],
+        webGL: () => [import("core/Shaders/iblShadowGBufferDebug.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowGBufferDebug.fragment")],
     });
 
     /**

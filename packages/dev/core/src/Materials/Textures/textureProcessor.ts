@@ -13,8 +13,8 @@ import { ShaderLoader } from "core/Misc/shaderLoader";
 const _ShaderName = "textureProcessor";
 
 const _TextureProcessorShaderLoader = /*#__PURE__*/ new ShaderLoader({
-    webGL: () => [import("../../Shaders/textureProcessor.fragment")],
-    webGPU: () => [import("../../ShadersWGSL/textureProcessor.fragment")],
+    webGL: () => [import("core/Shaders/textureProcessor.fragment")],
+    webGPU: () => [import("core/ShadersWGSL/textureProcessor.fragment")],
 });
 
 /**

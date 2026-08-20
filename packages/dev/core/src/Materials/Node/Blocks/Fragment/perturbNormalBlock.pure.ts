@@ -195,14 +195,14 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
         webGL: () => [
-            import("../../../../Shaders/ShadersInclude/bumpFragment"),
-            import("../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions"),
-            import("../../../../Shaders/ShadersInclude/bumpFragmentFunctions"),
+            import("core/Shaders/ShadersInclude/bumpFragment"),
+            import("core/Shaders/ShadersInclude/bumpFragmentMainFunctions"),
+            import("core/Shaders/ShadersInclude/bumpFragmentFunctions"),
         ],
         webGPU: () => [
-            import("../../../../ShadersWGSL/ShadersInclude/bumpFragment"),
-            import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions"),
-            import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentFunctions"),
+            import("core/ShadersWGSL/ShadersInclude/bumpFragment"),
+            import("core/ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions"),
+            import("core/ShadersWGSL/ShadersInclude/bumpFragmentFunctions"),
         ],
     });
 

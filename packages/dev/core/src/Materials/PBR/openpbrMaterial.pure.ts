@@ -1890,8 +1890,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _debugMode = 0;
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../Shaders/openpbr.vertex"), import("../../Shaders/openpbr.fragment")],
-        webGPU: () => [import("../../ShadersWGSL/openpbr.vertex"), import("../../ShadersWGSL/openpbr.fragment")],
+        webGL: () => [import("core/Shaders/openpbr.vertex"), import("core/Shaders/openpbr.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/openpbr.vertex"), import("core/ShadersWGSL/openpbr.fragment")],
     });
 
     private _breakShaderLoadedCheck = false;

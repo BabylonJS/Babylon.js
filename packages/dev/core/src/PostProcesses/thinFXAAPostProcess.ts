@@ -37,8 +37,8 @@ export class ThinFXAAPostProcess extends EffectWrapper {
     public static readonly Uniforms = ["texelSize"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/fxaa.fragment"), import("../Shaders/fxaa.vertex")],
-        webGPU: () => [import("../ShadersWGSL/fxaa.fragment"), import("../ShadersWGSL/fxaa.vertex")],
+        webGL: () => [import("core/Shaders/fxaa.fragment"), import("core/Shaders/fxaa.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/fxaa.fragment"), import("core/ShadersWGSL/fxaa.vertex")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

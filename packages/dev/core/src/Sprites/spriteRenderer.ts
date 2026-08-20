@@ -176,8 +176,8 @@ export class SpriteRenderer {
 
     private _shadersLoaded = false;
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/sprites.vertex"), import("../Shaders/sprites.fragment")],
-        webGPU: () => [import("../ShadersWGSL/sprites.vertex"), import("../ShadersWGSL/sprites.fragment")],
+        webGL: () => [import("core/Shaders/sprites.vertex"), import("core/Shaders/sprites.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/sprites.vertex"), import("core/ShadersWGSL/sprites.fragment")],
     });
 
     /**

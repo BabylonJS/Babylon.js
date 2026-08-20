@@ -383,8 +383,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
     private _shadersLoaded = false;
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/particles.vertex"), import("../Shaders/particles.fragment")],
-        webGPU: () => [import("../ShadersWGSL/particles.vertex"), import("../ShadersWGSL/particles.fragment")],
+        webGL: () => [import("core/Shaders/particles.vertex"), import("core/Shaders/particles.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/particles.vertex"), import("core/ShadersWGSL/particles.fragment")],
     });
 
     /**

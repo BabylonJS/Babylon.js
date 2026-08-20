@@ -19,8 +19,8 @@ export class ThinExtractHighlightsPostProcess extends EffectWrapper {
     public static readonly Uniforms = ["threshold", "exposure"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/extractHighlights.fragment")],
-        webGPU: () => [import("../ShadersWGSL/extractHighlights.fragment")],
+        webGL: () => [import("core/Shaders/extractHighlights.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/extractHighlights.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

@@ -18,8 +18,8 @@ export class ThinAnaglyphPostProcess extends EffectWrapper {
     public static readonly Samplers = ["leftSampler"];
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/anaglyph.fragment")],
-        webGPU: () => [import("../ShadersWGSL/anaglyph.fragment")],
+        webGL: () => [import("core/Shaders/anaglyph.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/anaglyph.fragment")],
     });
 
     protected override _getShaderLoaders(): ShaderLoader[] {

@@ -15,8 +15,8 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderLoader } from "core/Misc/shaderLoader";
 
 const _ParticlesVertexShaderLoader = /*#__PURE__*/ new ShaderLoader({
-    webGL: () => [import("../Shaders/particles.vertex")],
-    webGPU: () => [import("../ShadersWGSL/particles.vertex")],
+    webGL: () => [import("core/Shaders/particles.vertex")],
+    webGPU: () => [import("core/ShadersWGSL/particles.vertex")],
 });
 
 let _Registered = false;

@@ -21,8 +21,8 @@ type KernelData = {
  */
 export class AreaLightTextureTools {
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/areaLightTextureProcessing.fragment")],
-        webGPU: () => [import("../ShadersWGSL/areaLightTextureProcessing.fragment")],
+        webGL: () => [import("core/Shaders/areaLightTextureProcessing.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/areaLightTextureProcessing.fragment")],
     });
 
     private _engine: AbstractEngine;

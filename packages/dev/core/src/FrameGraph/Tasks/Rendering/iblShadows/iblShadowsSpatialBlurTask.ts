@@ -44,8 +44,8 @@ export class FrameGraphIblShadowsSpatialBlurTask extends FrameGraphTask {
     }
 
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../../../../Shaders/iblShadowSpatialBlur.fragment")],
-        webGPU: () => [import("../../../../ShadersWGSL/iblShadowSpatialBlur.fragment")],
+        webGL: () => [import("core/Shaders/iblShadowSpatialBlur.fragment")],
+        webGPU: () => [import("core/ShadersWGSL/iblShadowSpatialBlur.fragment")],
     });
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax

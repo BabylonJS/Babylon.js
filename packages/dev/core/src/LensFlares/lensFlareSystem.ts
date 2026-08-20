@@ -90,8 +90,8 @@ export class LensFlareSystem {
     public _onShadersLoaded = new Observable<void>(undefined, true);
     private _shadersLoaded = false;
     private static readonly _ShaderLoader = /*#__PURE__*/ new ShaderLoader({
-        webGL: () => [import("../Shaders/lensFlare.fragment"), import("../Shaders/lensFlare.vertex")],
-        webGPU: () => [import("../ShadersWGSL/lensFlare.fragment"), import("../ShadersWGSL/lensFlare.vertex")],
+        webGL: () => [import("core/Shaders/lensFlare.fragment"), import("core/Shaders/lensFlare.vertex")],
+        webGPU: () => [import("core/ShadersWGSL/lensFlare.fragment"), import("core/ShadersWGSL/lensFlare.vertex")],
     });
 
     /**
