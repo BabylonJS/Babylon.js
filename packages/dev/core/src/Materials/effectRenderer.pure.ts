@@ -524,8 +524,6 @@ export class EffectWrapper {
     ) {
         this._importPromises.length = 0;
 
-        const useWebGPU = this.options.engine.isWebGPU && !EffectWrapper.ForceGLSL;
-        const shaderLanguage = useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
         const shaderLoaders2 = this._getShaderLoaders();
         if (shaderLoaders) {
             shaderLoaders2.push(...shaderLoaders);
@@ -533,6 +531,12 @@ export class EffectWrapper {
         if (this.options.useShaderStore && this._shaderPath.vertex === "postprocess") {
             shaderLoaders2.push(EffectWrapper._PostProcessVertexShaderLoader);
         }
+
+        const useWebGPU =
+            this.options.engine.isWebGPU &&
+            !EffectWrapper.ForceGLSL &&
+            (this.options.shaderLanguage === ShaderLanguage.WGSL || shaderLoaders2.some((shaderLoader) => shaderLoader.supported(ShaderLanguage.WGSL)));
+        const shaderLanguage = useWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
 
         for (const shaderLoader of shaderLoaders2) {
             const promise = shaderLoader.load(shaderLanguage);

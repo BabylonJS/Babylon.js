@@ -11,6 +11,7 @@ export interface IShaderLoaderOptions {
 }
 
 interface IShaderLoaderState {
+    readonly supported: boolean;
     loaded: boolean;
     loadPromise: Promise<unknown> | null;
     readonly load: ShaderLoadFunction | undefined;
@@ -46,6 +47,14 @@ export class ShaderLoader {
         return state.loaded ? null : LoadShaders(state);
     }
 
+    /**
+     * @param shaderLanguage The shader language to check for support in.
+     * @returns `true` if supported, `false` otherwise.
+     */
+    public supported(shaderLanguage: ShaderLanguage): boolean {
+        return this._getState(shaderLanguage).supported;
+    }
+
     private _getState(shaderLanguage: ShaderLanguage): IShaderLoaderState {
         switch (shaderLanguage) {
             case ShaderLanguage.GLSL:
@@ -57,8 +66,10 @@ export class ShaderLoader {
 }
 
 function CreateState(load: ShaderLoadFunction | undefined): IShaderLoaderState {
+    const supported = load !== undefined;
     return {
-        loaded: load === undefined,
+        supported,
+        loaded: !supported,
         loadPromise: null,
         load,
     };

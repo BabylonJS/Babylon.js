@@ -1,5 +1,6 @@
 import { NullEngine } from "core/Engines/nullEngine";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLoader } from "core/Misc/shaderLoader";
 import { PostProcess } from "core/PostProcesses/postProcess.pure";
 import { VolumetricLightScatteringPostProcess } from "core/PostProcesses/volumetricLightScatteringPostProcess.pure";
 import { Scene } from "core/scene";
@@ -72,8 +73,13 @@ describe("VolumetricLightScatteringPostProcess", () => {
             Object.defineProperty(engine, "isWebGPU", { configurable: true, value: isWebGPU });
             PostProcess.ForceGLSL = forceGLSL;
 
+            const shaderLoader = new ShaderLoader({
+                webGL: () => [],
+                webGPU: () => [],
+            });
+
             const createEffect = vi.spyOn(engine, "createEffect").mockReturnValue(createReadyEffect(engine));
-            const getShaderLoaders = vi.spyOn(VolumetricLightScatteringPostProcess.prototype as any, "_getShaderLoaders").mockImplementation(() => []);
+            const getShaderLoaders = vi.spyOn(VolumetricLightScatteringPostProcess.prototype as any, "_getShaderLoaders").mockImplementation(() => [shaderLoader]);
 
             expect(() => {
                 postProcess = new VolumetricLightScatteringPostProcess("vls", 1, null, undefined, undefined, undefined, undefined, undefined, scene);
