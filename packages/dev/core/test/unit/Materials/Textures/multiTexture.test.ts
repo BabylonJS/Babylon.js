@@ -395,7 +395,7 @@ describe("MultiTexture", () => {
         expect(mockState.decodeCalls[0].opts).toEqual({ resizeWidth: 32, resizeHeight: 16, resizeQuality: "high" });
     });
 
-    it("updateLayer(url) re-uploads only that layer without touching uLayerCount", async () => {
+    it("updateLayerAsync(url) re-uploads only that layer without touching uLayerCount", async () => {
         const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
 
         const uploadsBefore = mockState.upload.mock.calls.length;
@@ -403,7 +403,7 @@ describe("MultiTexture", () => {
         const setIntsBefore = mt.setIntCalls.length;
         mockState.fetchCalls.length = 0;
 
-        await mt.updateLayer(0, "new.png");
+        await mt.updateLayerAsync(0, "new.png");
 
         expect(mockState.fetchCalls.map((c: any) => c.url)).toEqual(["new.png"]);
         const newCalls = mockState.upload.mock.calls.slice(uploadsBefore);
@@ -416,15 +416,8 @@ describe("MultiTexture", () => {
     it("updateLayer with an out-of-range index throws RangeError", async () => {
         const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
 
-        await expect(mt.updateLayer(5, "x.png")).rejects.toThrow(RangeError);
-        await expect(mt.updateLayer(5, "x.png")).rejects.toThrow("MultiTexture: layer index 5 out of range [0, 2).");
-    });
-
-    it("updateLayer without a source throws RangeError", async () => {
-        const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
-
-        await expect((mt as any).updateLayer(0)).rejects.toThrow(RangeError);
-        await expect((mt as any).updateLayer(0)).rejects.toThrow("MultiTexture: provide exactly one of url or imageSource.");
+        await expect(mt.updateLayerAsync(5, "x.png")).rejects.toThrow(RangeError);
+        await expect(mt.updateLayerAsync(5, "x.png")).rejects.toThrow("MultiTexture: layer index 5 out of range [0, 2).");
     });
 
     it("addLayer beyond maxLayers grows the array and re-uploads existing layers", async () => {

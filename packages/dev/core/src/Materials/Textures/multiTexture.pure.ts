@@ -109,7 +109,7 @@ export class MultiTexture extends ProceduralTexture {
     }
 
     /**
-     * The input URLs, in layer order. Updated by addLayer/removeLayer/updateLayer(url).
+     * The input URLs, in layer order. Updated by addLayer/removeLayer/updateLayerAsync(url).
      */
     public readonly urls: string[];
 
@@ -265,34 +265,19 @@ export class MultiTexture extends ProceduralTexture {
     }
 
     /**
-     * Replaces a layer.
-     * - `updateLayer(i, url)` fetches, decodes and uploads layer i only.
-     * - `updateLayer(i, imageSource)` decodes the given ImageBitmap/HTMLCanvasElement/OffscreenCanvas
-     *   and uploads layer i only (the recorded URL is left unchanged).
+     * Replaces a layer by URL. Fetches, decodes and uploads layer i only.
      * Exactly one texSubImage3D is issued for the target layer; uLayerCount is unchanged.
      * @param index defines the layer index to replace
-     * @param urlOrImageSource defines the new source for the layer
+     * @param url defines the new source for the layer
      * @returns a promise resolving once the layer has been uploaded
      */
-    public updateLayer(index: number, url: string): Promise<void>;
-    public updateLayer(index: number, imageSource: ImageBitmap | HTMLCanvasElement | OffscreenCanvas): Promise<void>;
-    // eslint-disable-next-line @typescript-eslint/naming-convention -- public API name mandated by docs/plans/multi-texture-plan.md
-    public async updateLayer(index: number, urlOrImageSource?: string | ImageBitmap | HTMLCanvasElement | OffscreenCanvas): Promise<void> {
+    public async updateLayerAsync(index: number, url: string): Promise<void> {
         if (!Number.isInteger(index) || index < 0 || index >= this._layerCount) {
             throw new RangeError(`MultiTexture: layer index ${index} out of range [0, ${this._layerCount}).`);
         }
 
-        if (urlOrImageSource === undefined) {
-            throw new RangeError("MultiTexture: provide exactly one of url or imageSource.");
-        }
-
         try {
-            if (typeof urlOrImageSource === "string") {
-                await this._loadLayer(index, urlOrImageSource, /*force*/ true);
-            } else {
-                const bitmap = await createImageBitmap(urlOrImageSource, this._bitmapOptions());
-                this._uploadBitmap(index, bitmap, { etag: null, lastModified: null });
-            }
+            await this._loadLayer(index, url, /*force*/ true);
         } catch (e) {
             this._reportError(e);
             throw e;
