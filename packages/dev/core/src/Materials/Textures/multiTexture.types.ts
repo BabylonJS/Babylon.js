@@ -41,8 +41,6 @@ export interface IMultiTextureOptions {
     premultiplyAlpha?: boolean;
     /** "resize" (default): decode-time rescale to width×height. "strict": reject mismatched dims. */
     fit?: "resize" | "strict";
-    /** Default true (requirement: CPU pixel array). */
-    keepPixels?: boolean;
     /** Composite RTT resolution = width*rttScale × height*rttScale. Default 1. */
     rttScale?: number;
     /** Default false. HEAD-polling change detection. */
