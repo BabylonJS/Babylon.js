@@ -29,6 +29,9 @@ const MODE_FLAGS = ["ALPHA_BLEND", "ALPHA_MAX", "ADD", "MULTIPLY", "SUBTRACT", "
 /** Maximum number of in-flight decodes during initialization and watch polling. */
 const DECODE_CONCURRENCY = 4;
 
+/** Default watch-mode poll interval in milliseconds when options.pollInterval is omitted. */
+const DEFAULT_POLL_INTERVAL_MS = 2000;
+
 interface ILayerEntry {
     url: string;
     etag: string | null;
@@ -87,7 +90,7 @@ export class MultiTexture extends ProceduralTexture {
     private _ctx: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
     private _warned404: boolean[];
     private _disposed: boolean = false;
-    private _mtOptions: IMultiTextureOptions;
+    private _options: IMultiTextureOptions;
     private _extraInitializationsAsync: (() => Promise<void>) | undefined;
     private _arrayTexture: RawTexture2DArray;
 
@@ -187,7 +190,7 @@ export class MultiTexture extends ProceduralTexture {
             Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
 
-        this._mtOptions = {
+        this._options = {
             ...options,
             maxLayers,
             blendMode,
@@ -198,7 +201,7 @@ export class MultiTexture extends ProceduralTexture {
             keepPixels: options.keepPixels ?? true,
             rttScale: options.rttScale ?? 1,
             watch: options.watch ?? false,
-            pollInterval: options.pollInterval ?? 2000,
+            pollInterval: options.pollInterval ?? DEFAULT_POLL_INTERVAL_MS,
             prewarmBlendModes: options.prewarmBlendModes ?? false,
         };
         this._maxLayers = maxLayers;
@@ -229,7 +232,7 @@ export class MultiTexture extends ProceduralTexture {
         this.setInt("uLayerCount", this._layerCount);
         this.refreshRate = 0; // Render only when resetRefreshCounter() is called.
 
-        if (this._mtOptions.keepPixels) {
+        if (this._options.keepPixels) {
             const canvas = typeof OffscreenCanvas !== "undefined" ? new OffscreenCanvas(options.width, options.height) : document.createElement("canvas");
             this._canvas = canvas;
             this._ctx = canvas.getContext("2d", { willReadFrequently: true }) || null;
@@ -348,7 +351,7 @@ export class MultiTexture extends ProceduralTexture {
         for (let j = index + 1; j < this._layerCount; j++) {
             const bitmap = this._layers[j - 1].bitmap;
             if (bitmap !== null) {
-                UploadImageToTexture2DArrayLayer(this._arrayTexture, bitmap, j - 1, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
+                UploadImageToTexture2DArrayLayer(this._arrayTexture, bitmap, j - 1, { premultiplyAlpha: this._options.premultiplyAlpha });
             }
         }
 
@@ -422,22 +425,22 @@ export class MultiTexture extends ProceduralTexture {
             "#define MULTITEXTURE_MAXLAYERS " +
             maxLayers +
             "\n#define MULTITEXTURE_WIDTH " +
-            this._mtOptions.width +
+            this._options.width +
             "\n#define MULTITEXTURE_HEIGHT " +
-            this._mtOptions.height +
+            this._options.height +
             "\n#define MULTITEXTURE_BLEND_" +
             flag
         );
     }
 
     private _bitmapOptions(): ImageBitmapOptions {
-        return this._mtOptions.fit === "resize" ? { resizeWidth: this._mtOptions.width, resizeHeight: this._mtOptions.height, resizeQuality: "high" } : {};
+        return this._options.fit === "resize" ? { resizeWidth: this._options.width, resizeHeight: this._options.height, resizeQuality: "high" } : {};
     }
 
     private _reportError(error: unknown): void {
         const message = String((error as { message?: unknown })?.message ?? error);
         Logger.Error(message);
-        this._mtOptions.onError?.(message, error);
+        this._options.onError?.(message, error);
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -456,13 +459,13 @@ export class MultiTexture extends ProceduralTexture {
 
         const bitmap = await createImageBitmap(blob, this._bitmapOptions());
 
-        if (this._mtOptions.fit === "strict") {
+        if (this._options.fit === "strict") {
             const width = bitmap.width;
             const height = bitmap.height;
-            if (width !== this._mtOptions.width || height !== this._mtOptions.height) {
+            if (width !== this._options.width || height !== this._options.height) {
                 bitmap.close();
                 throw new Error(
-                    `MultiTexture: layer ${index} (${url}) is ${width}x${height}, expected ${this._mtOptions.width}x${this._mtOptions.height}. Use fit: "resize" to auto-scale.`
+                    `MultiTexture: layer ${index} (${url}) is ${width}x${height}, expected ${this._options.width}x${this._options.height}. Use fit: "resize" to auto-scale.`
                 );
             }
         }
@@ -480,14 +483,14 @@ export class MultiTexture extends ProceduralTexture {
             return;
         }
 
-        UploadImageToTexture2DArrayLayer(this._arrayTexture, bitmap, index, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
+        UploadImageToTexture2DArrayLayer(this._arrayTexture, bitmap, index, { premultiplyAlpha: this._options.premultiplyAlpha });
 
         const entry = this._layers[index];
 
-        if (this._mtOptions.keepPixels && this._canvas && this._ctx) {
-            this._ctx.clearRect(0, 0, this._mtOptions.width, this._mtOptions.height);
-            this._ctx.drawImage(bitmap, 0, 0, this._mtOptions.width, this._mtOptions.height);
-            entry.pixels = this._ctx.getImageData(0, 0, this._mtOptions.width, this._mtOptions.height).data.slice();
+        if (this._options.keepPixels && this._canvas && this._ctx) {
+            this._ctx.clearRect(0, 0, this._options.width, this._options.height);
+            this._ctx.drawImage(bitmap, 0, 0, this._options.width, this._options.height);
+            entry.pixels = this._ctx.getImageData(0, 0, this._options.width, this._options.height).data.slice();
         } else {
             entry.pixels = null;
         }
@@ -512,7 +515,7 @@ export class MultiTexture extends ProceduralTexture {
                 return;
             }
             const internal = this._arrayTexture.getInternalTexture();
-            const mips = this._mtOptions.generateMipMaps ?? false;
+            const mips = this._options.generateMipMaps ?? false;
             if (mips && internal) {
                 internal.generateMipMaps = false;
             }
@@ -543,15 +546,15 @@ export class MultiTexture extends ProceduralTexture {
 
             if (!this._disposed) {
                 this.onLoadObservable.notifyObservers(this);
-                this._mtOptions.onLoad?.();
+                this._options.onLoad?.();
 
                 this.resetRefreshCounter();
             }
 
-            if (!this._disposed && this._mtOptions.prewarmBlendModes) {
+            if (!this._disposed && this._options.prewarmBlendModes) {
                 this._prewarmBlendModes();
             }
-            if (this._mtOptions.watch) {
+            if (this._options.watch) {
                 this._startPolling();
             }
         } catch (e) {
@@ -597,21 +600,21 @@ export class MultiTexture extends ProceduralTexture {
 
         const newRaw = new RawTexture2DArray(
             null,
-            this._mtOptions.width,
-            this._mtOptions.height,
+            this._options.width,
+            this._options.height,
             newDepth,
             Constants.TEXTUREFORMAT_RGBA,
             scene,
-            this._mtOptions.generateMipMaps ?? false,
+            this._options.generateMipMaps ?? false,
             /*invertY*/ false,
-            this._mtOptions.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE,
+            this._options.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE,
             Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
 
         for (let i = 0; i < this._layerCount; i++) {
             const bitmap = this._layers[i].bitmap;
             if (bitmap !== null) {
-                UploadImageToTexture2DArrayLayer(newRaw, bitmap, i, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
+                UploadImageToTexture2DArrayLayer(newRaw, bitmap, i, { premultiplyAlpha: this._options.premultiplyAlpha });
             }
         }
 
@@ -632,7 +635,7 @@ export class MultiTexture extends ProceduralTexture {
         }
         this._pollTimer = setInterval(() => {
             void this._poll();
-        }, this._mtOptions.pollInterval);
+        }, this._options.pollInterval);
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -662,7 +665,7 @@ export class MultiTexture extends ProceduralTexture {
                             this._warned404[i] = true;
                             const message = `MultiTexture: watched layer ${i} (${entry.url}) returned 404.`;
                             Logger.Error(message);
-                            this._mtOptions.onError?.(message);
+                            this._options.onError?.(message);
                         }
                         continue;
                     }
