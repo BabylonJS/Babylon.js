@@ -218,32 +218,29 @@ beforeEach(() => {
 
     vi.spyOn(Logger, "Error").mockImplementation(() => undefined);
 
-    vi.stubGlobal(
-        "fetch",
-        (url: string, init?: any) => {
-            mockState.fetchCalls.push({ url, init });
-            const behavior = mockState.urlBehaviors[url];
-            if (behavior === "reject") {
-                return Promise.reject(new Error(`MultiTexture: failed to fetch ${url}: 500 Internal Server Error`));
-            }
-            if (behavior === "notok") {
-                return Promise.resolve({
-                    ok: false,
-                    status: 500,
-                    statusText: "Internal Server Error",
-                    headers: { get: () => null },
-                    blob: async () => ({}),
-                });
-            }
+    vi.stubGlobal("fetch", (url: string, init?: any) => {
+        mockState.fetchCalls.push({ url, init });
+        const behavior = mockState.urlBehaviors[url];
+        if (behavior === "reject") {
+            return Promise.reject(new Error(`MultiTexture: failed to fetch ${url}: 500 Internal Server Error`));
+        }
+        if (behavior === "notok") {
             return Promise.resolve({
-                ok: true,
-                status: 200,
-                statusText: "OK",
-                headers: { get: (key: string) => mockState.headers[key.toLowerCase()] ?? null },
-                blob: async () => ({ __url: url }),
+                ok: false,
+                status: 500,
+                statusText: "Internal Server Error",
+                headers: { get: () => null },
+                blob: async () => ({}),
             });
         }
-    );
+        return Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: "OK",
+            headers: { get: (key: string) => mockState.headers[key.toLowerCase()] ?? null },
+            blob: async () => ({ __url: url }),
+        });
+    });
 
     vi.stubGlobal("createImageBitmap", (source: any, opts?: any) => {
         mockState.decodeCalls.push({ source, opts });
@@ -384,7 +381,7 @@ describe("MultiTexture", () => {
         const { mt } = await createLoaded(["a.png"], { width: 8, height: 8, fit: "strict", onError });
 
         expect(onError).toHaveBeenCalledTimes(1);
-        expect(onError.mock.calls[0][0]).toBe("MultiTexture: layer 0 (a.png) is 16x8, expected 8x8. Use fit: \"resize\" to auto-scale.");
+        expect(onError.mock.calls[0][0]).toBe('MultiTexture: layer 0 (a.png) is 16x8, expected 8x8. Use fit: "resize" to auto-scale.');
         expect(badBitmap.close).toHaveBeenCalled();
         expect((mt as any)._layers[0].loaded).toBe(false);
     });
@@ -677,9 +674,9 @@ describe("MultiTexture", () => {
 
         const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => undefined);
 
-        const mt = new MultiTexture(["late.png"], seed.getScene()!, { updateIntervalMs: 120_000, width: 8, height: 8 });
+        const mt = new MultiTexture(["late.png"], seed.getScene()!, { width: 8, height: 8 });
         mt.dispose();
-        releaseImage?.(({ close: vi.fn(), width: 8, height: 8 } as unknown as ImageBitmap));
+        releaseImage?.({ close: vi.fn(), width: 8, height: 8 } as unknown as ImageBitmap);
 
         // Decode lands after dispose: init must settle quietly, retain no pixel data, and report nothing.
         await new Promise((resolve) => setTimeout(resolve, 100));
