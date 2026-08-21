@@ -207,8 +207,34 @@ function _MaxConstants(a: Color4, b: Color4): Color4 {
 }
 
 /** @internal */
+function _DivideConstants(a: Color4, b: Color4): Color4 {
+    const eps = 0.00001;
+    return new Color4(a.r / Math.max(b.r, eps), a.g / Math.max(b.g, eps), a.b / Math.max(b.b, eps), a.a / Math.max(b.a, eps));
+}
+
+/** @internal */
 function _LerpConstants(a: Color4, b: Color4, t: Color4): Color4 {
     return new Color4(a.r + (b.r - a.r) * t.r, a.g + (b.g - a.g) * t.g, a.b + (b.b - a.b) * t.b, a.a + (b.a - a.a) * t.a);
+}
+
+/** @internal */
+function _MultiScatterToSingleScatterAlbedoConstant(multiScatter: Color4): Color4 {
+    const convert = (value: number) => {
+        const rhoMs = Math.min(Math.max(value, 0), 1);
+        const s = 4.09712 + 4.20863 * rhoMs - Math.sqrt(9.59217 + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
+        return 1 - s * s;
+    };
+    return new Color4(convert(multiScatter.r), convert(multiScatter.g), convert(multiScatter.b), multiScatter.a);
+}
+
+/** @internal */
+function _SingleScatterToMultiScatterAlbedoConstant(singleScatter: Color4): Color4 {
+    const convert = (value: number) => {
+        const ssAlbedo = Math.min(Math.max(value, 0), 1);
+        const s = Math.sqrt(1 - ssAlbedo);
+        return ((1 - s) * (1 - 0.139 * s)) / (1 + 1.17 * s);
+    };
+    return new Color4(convert(singleScatter.r), convert(singleScatter.g), convert(singleScatter.b), singleScatter.a);
 }
 
 /**
@@ -674,6 +700,80 @@ export async function MaxTexturesAsync(
 }
 
 /**
+ * Component-wise safe division of two texture operands: `result = a / max(b, 0.00001)`.
+ *
+ * Each operand can be a texture, a constant factor, or a texture scaled by a factor.
+ * Division by zero is guarded with a small epsilon so the result is always finite.
+ *
+ * If both operands are constant (no textures), the operation is performed on the CPU and
+ * the result is returned as a factor-only operand with no texture allocated.
+ *
+ * When operands are results of previous operations (i.e. they carry a `dispose` function),
+ * their intermediate textures are automatically released after the GPU pass completes.
+ *
+ * @param name - Name for the resulting procedural texture (used only when a GPU pass is needed)
+ * @param a - Numerator operand
+ * @param b - Denominator operand
+ * @param scene - Scene to create the texture in (used only when a GPU pass is needed)
+ * @param outputColorSpace - Optional output color space.
+ * @param outputChannelMask - Optional bitmask of channels to write.
+ * @returns An operand whose `texture` holds the GPU result, or whose `factor` holds the CPU-folded constant
+ */
+export async function DivideTexturesAsync(
+    name: string,
+    a: ITextureProcessOperand,
+    b: ITextureProcessOperand,
+    scene: Scene,
+    outputColorSpace?: TextureColorSpace,
+    outputChannelMask?: ChannelMask
+): Promise<ITextureProcessOperand> {
+    if (!a.texture && !b.texture) {
+        const factor = _DivideConstants(_EvalConstant(a), _EvalConstant(b));
+        return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(factor, outputChannelMask) : factor };
+    }
+
+    const allTextures: BaseTexture[] = [];
+    if (a.texture) {
+        allTextures.push(a.texture);
+    }
+    if (b.texture) {
+        allTextures.push(b.texture);
+    }
+    const canPropagate = _AllTransformsMatch(allTextures);
+    const bakeTransform = !canPropagate;
+
+    const defines = [
+        "OP_DIVIDE",
+        ..._BuildOperandDefines(a, "A", bakeTransform),
+        ..._BuildOperandDefines(b, "B", bakeTransform),
+        ...(outputChannelMask ? _BuildOutputChannelMaskDefines(outputChannelMask) : []),
+    ];
+    if (outputColorSpace) {
+        defines.push("OUTPUT_SRGB");
+    }
+    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([a, b]), scene, outputColorSpace);
+    _SetOperandUniforms(pt, a, "textureA", "factorA", bakeTransform);
+    _SetOperandUniforms(pt, b, "textureB", "factorB", bakeTransform);
+    try {
+        await _RenderAsync(pt);
+    } catch (error) {
+        a.dispose?.();
+        b.dispose?.();
+        throw error;
+    }
+
+    a.dispose?.();
+    b.dispose?.();
+
+    _CopyTextureMetadata(allTextures[0], pt, canPropagate);
+    const result: ITextureProcessOperand = { texture: pt, dispose: () => pt.dispose() };
+    if (outputColorSpace) {
+        result.colorSpace = outputColorSpace;
+    }
+    return result;
+}
+
+/**
  * Linearly interpolate between two texture operands: `result = mix(a, b, t)`.
  *
  * Each operand can be a texture, a constant factor, or a texture scaled by a factor.
@@ -704,7 +804,7 @@ export async function LerpTexturesAsync(
     b: ITextureProcessOperand,
     t: ITextureProcessOperand,
     scene: Scene,
-    outputColorSpace?: TextureColorSpace,
+    outputColorSpace: TextureColorSpace = TextureColorSpace.Linear,
     outputChannelMask?: ChannelMask
 ): Promise<ITextureProcessOperand> {
     if (!a.texture && !b.texture && !t.texture) {
@@ -732,7 +832,7 @@ export async function LerpTexturesAsync(
         ..._BuildLerpBlendDefines(t, bakeTransform),
         ...(outputChannelMask ? _BuildOutputChannelMaskDefines(outputChannelMask) : []),
     ];
-    if (outputColorSpace) {
+    if (outputColorSpace == TextureColorSpace.SRGB) {
         defines.push("OUTPUT_SRGB");
     }
     const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([a, b, t]), scene, outputColorSpace);
@@ -945,4 +1045,138 @@ export async function ExtractChannelAsync(
         return { texture: null, factor: outputChannelMask ? _ApplyOutputChannelMask(swizzled, outputChannelMask) : swizzled };
     }
     return await MultiplyTexturesAsync(name, { ...input, channel }, CreateFactorOperand(new Color4(1, 1, 1, 1)), scene, outputColorSpace, outputChannelMask);
+}
+
+/**
+ * Convert a multi-scatter albedo operand to single-scatter albedo using the OpenPBR/KHR
+ * approximation. RGB is clamped to `[0, 1]` before conversion and alpha is preserved.
+ *
+ * If the operand is constant, the conversion is performed on the CPU. Otherwise it is baked
+ * into a linear procedural texture. Input color-space conversion, channel selection, factors,
+ * UV transforms, metadata propagation, and intermediate disposal follow the other unary texture
+ * processor operations.
+ *
+ * @param name - Name for the resulting procedural texture (used only when a GPU pass is needed)
+ * @param input - Multi-scatter albedo operand to convert
+ * @param scene - Scene to create the texture in (used only when a GPU pass is needed)
+ * @returns An operand containing the converted single-scatter albedo
+ */
+export async function MultiScatterToSingleScatterAlbedoAsync(name: string, input: ITextureProcessOperand, scene: Scene): Promise<ITextureProcessOperand> {
+    if (!input.texture) {
+        return { texture: null, factor: _MultiScatterToSingleScatterAlbedoConstant(_EvalConstant(input)) };
+    }
+
+    const defines = [..._BuildOperandDefines(input, "A", false), "OP_MULTI_SCATTER_TO_SINGLE_SCATTER"];
+    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([input]), scene);
+    _SetOperandUniforms(pt, input, "textureA", "factorA", false);
+    try {
+        await _RenderAsync(pt);
+    } catch (error) {
+        input.dispose?.();
+        throw error;
+    }
+
+    input.dispose?.();
+
+    _CopyTextureMetadata(input.texture, pt, true);
+    return { texture: pt, dispose: () => pt.dispose() };
+}
+
+/**
+ * Convert a single-scatter albedo operand to multi-scatter albedo using the OpenPBR/KHR
+ * approximation. This is the inverse of {@link MultiScatterToSingleScatterAlbedoAsync}.
+ * RGB is clamped to `[0, 1]` before conversion and alpha is preserved.
+ *
+ * If the operand is constant, the conversion is performed on the CPU. Otherwise it is baked
+ * into a linear procedural texture. Input color-space conversion, channel selection, factors,
+ * UV transforms, metadata propagation, and intermediate disposal follow the other unary texture
+ * processor operations.
+ *
+ * @param name - Name for the resulting procedural texture (used only when a GPU pass is needed)
+ * @param input - Single-scatter albedo operand to convert
+ * @param scene - Scene to create the texture in (used only when a GPU pass is needed)
+ * @returns An operand containing the converted multi-scatter albedo
+ */
+export async function SingleScatterToMultiScatterAlbedoAsync(name: string, input: ITextureProcessOperand, scene: Scene): Promise<ITextureProcessOperand> {
+    if (!input.texture) {
+        return { texture: null, factor: _SingleScatterToMultiScatterAlbedoConstant(_EvalConstant(input)) };
+    }
+
+    const defines = [..._BuildOperandDefines(input, "A", false), "OP_SINGLE_SCATTER_TO_MULTI_SCATTER"];
+    const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([input]), scene);
+    _SetOperandUniforms(pt, input, "textureA", "factorA", false);
+    try {
+        await _RenderAsync(pt);
+    } catch (error) {
+        input.dispose?.();
+        throw error;
+    }
+
+    input.dispose?.();
+
+    _CopyTextureMetadata(input.texture, pt, true);
+    return { texture: pt, dispose: () => pt.dispose() };
+}
+
+/**
+ * Compute the OpenPBR thin-walled scatter weights from a transmission operand (T) and a
+ * scatter-strength operand (S).  Both operands are read from their R channel.
+ *
+ * For each texel:
+ * ```
+ *   transmission_weight = T * (1 - S)
+ *   subsurface_weight   = T * S / (1 - T*(1-S))
+ * ```
+ *
+ * These are the OpenPBR weight values when a thin-walled glTF material combines
+ * KHR_materials_transmission (T = transmissionFactor * transmissionTexture) and
+ * KHR_materials_scatter (S = scatterStrengthFactor * scatterStrengthTexture):
+ * `scatterStrengthFactor` converts a fraction of the coherent transmission budget into
+ * scattered (subsurface) transmission while keeping the total translucency constant.
+ *
+ * When both operands are constants the computation is performed entirely on the CPU.
+ * When either operand has a texture the result is computed via five composable GPU passes:
+ * `invert`, `multiply`, `multiply`, `invert`, `divide` (see {@link DivideTexturesAsync}).
+ *
+ * @param name - Base name for any procedural textures created
+ * @param transmission - T operand (transmissionFactor × optional transmissionTexture, R channel)
+ * @param scatter - S operand (scatterStrengthFactor × optional scatterStrengthTexture, R channel)
+ * @param scene - Scene used for GPU passes when textures are involved
+ * @returns `{ transmission, subsurface }` – two operands ready to assign to
+ *   `transmissionWeightTexture` / `subsurfaceWeightTexture` (and the corresponding scalar factors)
+ */
+export async function ThinWalledScatterWeightsAsync(
+    name: string,
+    transmission: ITextureProcessOperand,
+    scatter: ITextureProcessOperand,
+    scene: Scene
+): Promise<{ transmission: ITextureProcessOperand; subsurface: ITextureProcessOperand }> {
+    // Constant-only fast path — compute entirely on the CPU.
+    if (!transmission.texture && !scatter.texture) {
+        const transmissionFactor = _EvalConstant(transmission).r;
+        const scatterStrength = _EvalConstant(scatter).r;
+        const transW = transmissionFactor * (1.0 - scatterStrength);
+        const denom = 1.0 - transW;
+        const ssW = denom > 0.00001 ? (transmissionFactor * scatterStrength) / denom : 0.0;
+        return {
+            transmission: { texture: null, factor: new Color4(transW, transW, transW, 1.0) },
+            subsurface: { texture: null, factor: new Color4(ssW, ssW, ssW, 1.0) },
+        };
+    }
+
+    // GPU path — five composable passes:
+    //   1. invertedS    = 1 - S                         (invert)
+    //   2. transW       = T * (1 - S)                   (multiply)
+    //   3. tTimesS      = T * S                         (multiply)
+    //   4. oneMinusTransW = 1 - transW                  (invert, no-dispose ref so transW survives)
+    //   5. ssW          = T*S / (1 - transW)            (divide)
+    // transmission and scatter have no dispose, so they can safely be reused across passes.
+    const invertedS = await InvertTextureAsync(`${name}/1-S`, scatter, scene);
+    const transW = await MultiplyTexturesAsync(`${name}_transWeight`, transmission, invertedS, scene);
+    const tTimesS = await MultiplyTexturesAsync(`${name}/T*S`, transmission, scatter, scene);
+    // Pass transW without its dispose so transW.texture survives for the return value.
+    const oneMinusTransW = await InvertTextureAsync(`${name}/1-transW`, { texture: transW.texture }, scene);
+    const ssW = await DivideTexturesAsync(`${name}_subWeight`, tTimesS, oneMinusTransW, scene);
+
+    return { transmission: transW, subsurface: ssW };
 }

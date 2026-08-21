@@ -4440,6 +4440,18 @@
             "dependsOn": ["LibMaterials", "Lights", "Loaders", "Materials", "PBR", "Textures", "glTF"]
         },
         {
+            "title": "OpenPBR Subsurface Transmission Volume Blending with Textures",
+            "playgroundId": "#SXXR4T#3",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
+        },
+        {
+            "title": "OpenPBR Subsurface Transmission Thin-walled Blending with Textures",
+            "playgroundId": "#SXXR4T#4",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "Loaders", "PBR", "Textures", "glTF"]
+        },
+        {
             "title": "OpenPBR Subsurface SSS Frame Graph - Shadows - IBL",
             "playgroundId": "#PJ5JXH#120",
             "excludedEngines": ["webgl1"],
