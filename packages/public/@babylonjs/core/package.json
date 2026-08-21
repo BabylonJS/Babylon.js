@@ -427,6 +427,7 @@
         "Materials/Textures/exrCubeTexture.js",
         "Materials/Textures/hdrCubeTexture.js",
         "Materials/Textures/mirrorTexture.js",
+        "Materials/Textures/multiTexture.js",
         "Materials/Textures/texture.js",
         "Materials/colorCurves.js",
         "Materials/effectRenderer.js",
