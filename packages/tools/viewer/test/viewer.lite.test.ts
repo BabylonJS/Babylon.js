@@ -104,10 +104,11 @@ async function waitForCameraSettled(page: Page) {
 }
 
 async function expectScreenshotMatch(page: Page, name: string, maxDiffPixelRatio = 0.011) {
-    // Lite renders continuously (no autoSuspend/isIdle yet), so "settled" is approximated by: no load in
-    // flight, no camera interpolation in flight, then a fixed burst of rendered frames to let deferred GPU
-    // work (skybox/ground builders, shadow map, material swaps) drain into a stable image. This
-    // intentionally does NOT require a model (environment-only and model-cleared scenes have none).
+    // Lite renders continuously while visible (offscreen suspension aside, there is no idle suspension), so
+    // "settled" is approximated by: no load in flight, no camera interpolation in flight, then a fixed burst
+    // of rendered frames to let deferred GPU work (skybox/ground builders, shadow map, material swaps) drain
+    // into a stable image. This intentionally does NOT require a model (environment-only and model-cleared
+    // scenes have none).
     await waitForLoadingComplete(page);
     await waitForCameraSettled(page);
     const before = await waitForFrameCount(page, 1);
@@ -1170,4 +1171,186 @@ test("reset() restores initial state", async ({ page }) => {
 
     // Wait for reset to complete and the scene to settle.
     await expectScreenshotMatch(page, "viewer-reset.png");
+});
+
+// ============================================================
+// Offscreen Render Suspension
+// ============================================================
+
+/**
+ * Makes the document scrollable by appending a tall spacer below the viewer, so the viewer can be scrolled
+ * out of the viewport. `test-lite.html` sizes `html`/`body` to 100% with no scrollable content; the spacer
+ * overflows the body, which propagates to the viewport and creates the scroll range. The viewer element is
+ * deliberately left at its inherited (viewport) size so screenshots still match the shared reference images.
+ */
+async function makeViewerScrollable(page: Page) {
+    await page.evaluate(() => {
+        const spacer = document.createElement("div");
+        spacer.style.height = "5000px";
+        document.body.appendChild(spacer);
+    });
+}
+
+/** Scrolls the viewer completely out of the viewport (requires {@link makeViewerScrollable}). */
+async function scrollViewerOffscreen(page: Page) {
+    await page.evaluate(() => window.scrollTo(0, 4000));
+}
+
+/** Scrolls the viewer back into the viewport. */
+async function scrollViewerOnscreen(page: Page) {
+    await page.evaluate(() => window.scrollTo(0, 0));
+}
+
+/**
+ * Waits until the viewer's render loop reaches the expected running state. The `IntersectionObserver` that
+ * drives suspension fires asynchronously after layout, so polling the loop state is more deterministic than
+ * waiting a fixed interval.
+ */
+async function waitForRenderLoopRunning(page: Page, expected: boolean) {
+    await page.waitForFunction((expected) => {
+        const viewer = (document.querySelector("babylon-viewer") as ViewerElement | null)?.viewer as unknown as { _renderLoopRunning: boolean } | undefined;
+        return viewer != null && viewer._renderLoopRunning === expected;
+    }, expected);
+}
+
+/** Reads the current rendered-frame count without waiting for it to advance. */
+async function getFrameCount(page: Page): Promise<number> {
+    return await page.evaluate(() => (window as unknown as { __liteFrameCount?: number }).__liteFrameCount ?? 0);
+}
+
+test("rendering is suspended while the viewer is offscreen", async ({ page }) => {
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    await makeViewerScrollable(page);
+
+    // Attach the frame counter and confirm frames are advancing while the viewer is visible.
+    const visibleBefore = await waitForFrameCount(page, 1);
+    await waitForFrameCount(page, visibleBefore + 5);
+
+    await scrollViewerOffscreen(page);
+    await waitForRenderLoopRunning(page, false);
+
+    // Sample after a short settle (an in-flight frame may still land as the loop stops), then confirm the
+    // count is genuinely frozen rather than merely slowed.
+    await page.waitForTimeout(200);
+    const suspended = await getFrameCount(page);
+    await page.waitForTimeout(500);
+    expect(await getFrameCount(page), "Frames rendered while offscreen").toBe(suspended);
+
+    // Restore visibility so the shared afterEach frame-count assertion can be satisfied.
+    await scrollViewerOnscreen(page);
+    await waitForRenderLoopRunning(page, true);
+});
+
+test("rendering resumes when the viewer is scrolled back into view", async ({ page }) => {
+    await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    await makeViewerScrollable(page);
+
+    await scrollViewerOffscreen(page);
+    await waitForRenderLoopRunning(page, false);
+
+    await scrollViewerOnscreen(page);
+    await waitForRenderLoopRunning(page, true);
+
+    // Frames advance again, and the scene still renders correctly after the pause. Validates against the
+    // same reference image as the plain "load model from url" test — suspending and resuming must be
+    // visually transparent.
+    await expectScreenshotMatch(page, "viewer-load-model-url.png");
+});
+
+test("model and environment loaded while offscreen render correctly on resume", async ({ page }) => {
+    // Regression test for the render-loop/scene-registration split: an environment or model loaded while
+    // rendering is suspended must still register its renderables, otherwise the skybox (or the model) would
+    // never appear even after rendering resumes. The viewer is created *below the fold* so it is suspended
+    // essentially from birth — this also covers a viewer that must reach a correct first render on resume.
+    await page.goto(viewerUrl, { waitUntil: "load" });
+
+    await page.evaluate(() => {
+        // Spacer first, so the viewer element lands below the viewport and starts out offscreen.
+        const spacer = document.createElement("div");
+        spacer.style.height = "5000px";
+        document.body.appendChild(spacer);
+
+        const container = document.createElement("div");
+        container.innerHTML = `
+            <babylon-viewer
+                source="https://assets.babylonjs.com/meshes/boombox.glb"
+                environment-skybox="https://assets.babylonjs.com/environments/environmentSpecular.env"
+            >
+            </babylon-viewer>
+            `;
+        document.body.appendChild(container);
+    });
+
+    await page.locator("babylon-viewer").waitFor();
+    await waitForRenderLoopRunning(page, false);
+
+    // The model and environment must load to completion even though no frame is ever rendered.
+    await waitForLoadingComplete(page);
+    expect(await getFrameCount(page), "Frames rendered while offscreen").toBe(0);
+
+    // Bring the viewer into view: the spacer plus the viewport-sized viewer means max scroll lands the
+    // viewer exactly in the viewport.
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await waitForRenderLoopRunning(page, true);
+    await waitForModelLoaded(page);
+
+    // Same reference image as the `environment-skybox` test: the model and skybox must both be present.
+    await expectScreenshotMatch(page, "viewer-env-skybox.png");
+});
+
+test("disposing a viewer while it is offscreen", async ({ page }) => {
+    const viewerElementHandle = await attachViewerElement(
+        page,
+        `
+        <babylon-viewer
+            source="https://assets.babylonjs.com/meshes/boombox.glb"
+        >
+        </babylon-viewer>
+        `
+    );
+
+    await waitForModelLoaded(page);
+    await makeViewerScrollable(page);
+
+    await scrollViewerOffscreen(page);
+    await waitForRenderLoopRunning(page, false);
+
+    // Dispose the suspended viewer. This must tear down cleanly: the suspension holds the render loop
+    // stopped, so anything still awaiting the loop's first frame has to be released by disposal.
+    await page.evaluate((viewerElement) => {
+        viewerElement.remove();
+    }, viewerElementHandle);
+    await page.waitForTimeout(500);
+
+    // Re-add a visible viewer so the shared afterEach frame-count assertion has something to observe. This
+    // test deliberately never attaches the frame counter before the removal, so it binds to this new viewer.
+    await scrollViewerOnscreen(page);
+    await page.evaluate(() => {
+        const container = document.createElement("div");
+        container.innerHTML = "<babylon-viewer></babylon-viewer>";
+        document.body.prepend(container);
+    });
+
+    await waitForLoadingComplete(page);
+    await waitForRenderLoopRunning(page, true);
 });
