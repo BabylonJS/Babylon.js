@@ -7,6 +7,7 @@ float reconstructDistanceFromCameraPlane(float depth, float cameraNearPlane) {
 }
 
 // If depth is at far plane, returns 0.
+#define inline
 float sampleDistanceFromCameraPlane(sampler2D depthTexture, vec2 uv, float cameraNearPlane) {
     float depth = textureLod(depthTexture, uv, 0.).r;
     return depth >= 1. ? 0. : reconstructDistanceFromCameraPlane(depth, cameraNearPlane);
@@ -19,6 +20,7 @@ float reconstructDistanceFromCamera(float depth, vec3 cameraRayDirection, vec3 c
 }
 
 // If depth is at far plane, returns 0.
+#define inline
 float reconstructDistanceFromCamera(
     sampler2D depthTexture,
     vec2 uv,

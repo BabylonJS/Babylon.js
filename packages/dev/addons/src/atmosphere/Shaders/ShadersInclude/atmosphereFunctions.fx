@@ -140,6 +140,7 @@ void getSkyViewUVFromParameters(
 
 #if USE_SKY_VIEW_LUT && SAMPLE_SKY_VIEW_LUT
 
+#define inline
 vec4 sampleSkyViewLut(
     sampler2D skyViewLut,
     float positionRadius,
@@ -296,6 +297,7 @@ vec2 getTransmittanceUV(float radius, float cosAngleLightToZenith, out float dis
 }
 
 // Gets the transmittance of an external light through the atmosphere to a point described by its radius (from the center of the planet) and the angle of incoming light.
+#define inline
 vec4 sampleTransmittanceLut(sampler2D transmittanceLut, float positionRadius, float cosAngleLightToZenith) {
 
     float distanceToHorizon;
@@ -312,6 +314,7 @@ vec4 sampleTransmittanceLut(sampler2D transmittanceLut, float positionRadius, fl
 #ifndef EXCLUDE_RAY_MARCHING_FUNCTIONS
 
 #ifndef COMPUTE_MULTI_SCATTERING
+#define inline
 vec3 sampleMultiScatteringLut(sampler2D multiScatteringLut, float radius, float cosAngleLightToZenith) {
 
     vec2 unit = vec2(0.5 + 0.5 * cosAngleLightToZenith, (radius - planetRadius) / atmosphereThickness);
@@ -328,6 +331,7 @@ vec3 sampleMultiScatteringLut(sampler2D multiScatteringLut, float radius, float 
 const float uniformPhase = RECIPROCAL_PI4;
 
 // Utilizes the transmittance LUT and multiple scattering LUT to compute the radiance and transmittance for a given ray.
+#define inline
 vec3 integrateScatteredRadiance(
     bool isAerialPerspectiveLut,
     float lightIntensity,
@@ -599,6 +603,7 @@ vec3 getSphereSample(float azimuth, float inclination, out float sinInclination)
     return vec3(sinInclination * sin(azimuth), cos(inclination), sinInclination * cos(azimuth));
 }
 
+#define inline
 vec4 renderMultiScattering(vec2 uv, sampler2D transmittanceLut) {
     float MultiScatteringAzimuthIterationAngle = TWO_PI / multiScatteringAzimuthSampleCount;
     float MultiScatteringInclinationIterationAngle = PI / multiScatteringInclinationSampleCount;
@@ -697,6 +702,7 @@ void getSkyViewParametersFromUV(
 
 }
 
+#define inline
 vec4 renderSkyView(vec2 uv, sampler2D transmittanceLut, sampler2D multiScatteringLut) {
 
     float cosAngleBetweenViewAndZenith;
@@ -748,6 +754,7 @@ vec4 renderSkyView(vec2 uv, sampler2D transmittanceLut, sampler2D multiScatterin
 
 #if RENDER_CAMERA_VOLUME
 
+#define inline
 vec4 renderCameraVolume(
     vec3 positionOnNearPlane,
     float layerIdx,
