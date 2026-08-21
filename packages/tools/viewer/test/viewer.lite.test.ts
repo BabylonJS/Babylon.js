@@ -47,12 +47,17 @@ test.afterEach(async ({ page }) => {
     }
 });
 
-async function waitForFrameCount(page: Page, minFrameCount: number): Promise<number> {
-    // Install a frame counter on the viewer (idempotent) and wait until it reaches the target.
-    const frameCountHandle = await page.waitForFunction((minFrameCount) => {
+/**
+ * Installs the rendered-frame counter on the viewer (idempotent), waiting for the viewer to exist first.
+ * Call this explicitly before asserting that frames are *not* advancing: until the counter is installed
+ * {@link getFrameCount} reports 0 regardless of what the viewer is doing, which would make such an
+ * assertion pass vacuously.
+ */
+async function attachFrameCounter(page: Page) {
+    await page.waitForFunction(() => {
         const viewer = (document.querySelector("babylon-viewer") as ViewerElement)?.viewer;
         if (!viewer) {
-            return null;
+            return false;
         }
         const w = window as unknown as { __liteFrameCount?: number; __liteFrameObserverAttached?: boolean };
         if (!w.__liteFrameObserverAttached) {
@@ -62,6 +67,15 @@ async function waitForFrameCount(page: Page, minFrameCount: number): Promise<num
             });
             w.__liteFrameObserverAttached = true;
         }
+        return true;
+    });
+}
+
+async function waitForFrameCount(page: Page, minFrameCount: number): Promise<number> {
+    await attachFrameCounter(page);
+
+    const frameCountHandle = await page.waitForFunction((minFrameCount) => {
+        const w = window as unknown as { __liteFrameCount?: number };
         return (w.__liteFrameCount ?? 0) >= minFrameCount ? w.__liteFrameCount : null;
     }, minFrameCount);
 
@@ -1302,11 +1316,20 @@ test("model and environment loaded while offscreen render correctly on resume", 
     });
 
     await page.locator("babylon-viewer").waitFor();
+
+    // Install the frame counter as early as possible, before anything could render, so the assertions below
+    // observe the real absence of rendering rather than an uninitialized counter.
+    await attachFrameCounter(page);
+
+    // The model and environment must load to completion even though the viewer is suspended. The
+    // `IntersectionObserver` fires asynchronously after layout, so a frame or two can land before suspension
+    // engages; the invariant that matters is that rendering does not *continue* while offscreen.
+    await waitForLoadingComplete(page);
     await waitForRenderLoopRunning(page, false);
 
-    // The model and environment must load to completion even though no frame is ever rendered.
-    await waitForLoadingComplete(page);
-    expect(await getFrameCount(page), "Frames rendered while offscreen").toBe(0);
+    const suspended = await getFrameCount(page);
+    await page.waitForTimeout(500);
+    expect(await getFrameCount(page), "Frames rendered while offscreen").toBe(suspended);
 
     // Bring the viewer into view: the spacer plus the viewport-sized viewer means max scroll lands the
     // viewer exactly in the viewport.
