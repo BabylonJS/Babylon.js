@@ -17,6 +17,7 @@ interface IDropUpButtonProps {
     selectedOption?: string;
     onOptionPicked: (option: string, index: number) => void;
     searchPlaceholder?: string;
+    dynamicWidth?: boolean;
 }
 
 export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: boolean; searchText: string }> {
@@ -76,7 +77,7 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: 
                     </div>
                 )}
                 {this.state.isOpen && (
-                    <div className={"dropup-content" + (this.props.selectedOption ? " long-mode" : "")}>
+                    <div className={"dropup-content" + (this.props.selectedOption ? " long-mode" : "") + (this.props.dynamicWidth ? " dynamic-width" : "")}>
                         <input type="text" placeholder={searchPlaceholder} value={this.state.searchText} onChange={this.onChangeSearchText} />
                         {this.props.options
                             .map((o, i) => ({ option: o, index: i }))
@@ -87,6 +88,7 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: 
                                 return (
                                     <div title={o} key={o} onClick={() => this.clickOption(o, i)} className="dropup-content-line">
                                         <div
+                                            className="dropup-content-line-text"
                                             style={{
                                                 opacity: this.props.activeEntry() === o ? "1.0" : "0.8",
                                                 fontSize: this.props.activeEntry() === o ? "var(--active-font-size)" : "var(--font-size)",
