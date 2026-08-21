@@ -195,7 +195,7 @@ function createLoaded(urls: string[], options: any, sceneOpts?: { webglVersion?:
     const scene = makeScene(sceneOpts);
     let resolveLoad!: () => void;
     const loaded = new Promise<void>((resolve) => (resolveLoad = resolve));
-    const mt = new MultiTexture(urls, scene, { ...options, onLoad: () => resolveLoad() }) as MockMultiTexture;
+    const mt = new MultiTexture("myMultiTexture", urls, scene, { ...options, onLoad: () => resolveLoad() }) as MockMultiTexture;
     return loaded.then(() => ({ mt, scene }));
 }
 
@@ -295,7 +295,7 @@ describe("MultiTexture", () => {
     it("throws on a WebGL1 engine and allocates nothing", () => {
         const scene = makeScene({ webglVersion: 1 });
 
-        expect(() => new MultiTexture(["a.png"], scene, { width: 8, height: 8 })).toThrow(/requires WebGL2/);
+        expect(() => new MultiTexture("myMultiTexture", ["a.png"], scene, { width: 8, height: 8 })).toThrow(/requires WebGL2/);
         expect(scene.proceduralTextures).toHaveLength(0);
         expect(mockState.rawInstances).toHaveLength(0);
     });
@@ -303,13 +303,13 @@ describe("MultiTexture", () => {
     it("throws on non-positive dimensions", () => {
         const scene = makeScene();
 
-        expect(() => new MultiTexture(["a.png"], scene, { width: 0, height: 8 })).toThrow("MultiTexture: width and height must be positive integers.");
+        expect(() => new MultiTexture("myMultiTexture", ["a.png"], scene, { width: 0, height: 8 })).toThrow("MultiTexture: width and height must be positive integers.");
     });
 
     it("throws when maxLayers < urls.length", () => {
         const scene = makeScene();
 
-        expect(() => new MultiTexture(["a.png", "b.png"], scene, { width: 8, height: 8, maxLayers: 1 })).toThrow("MultiTexture: maxLayers (1) must be >= urls.length (2).");
+        expect(() => new MultiTexture("myMultiTexture", ["a.png", "b.png"], scene, { width: 8, height: 8, maxLayers: 1 })).toThrow("MultiTexture: maxLayers (1) must be >= urls.length (2).");
     });
 
     it("loads all layers, caches pixels and issues one final mip generation", async () => {
@@ -364,13 +364,6 @@ describe("MultiTexture", () => {
         expect(layers[1].loaded).toBe(false);
         expect(mt.pixels[0]).toBeInstanceOf(Uint8ClampedArray);
         expect(mt.pixels[1]).toBeNull();
-    });
-
-    it("skips the CPU pixel cache when keepPixels is false", async () => {
-        const { mt } = await createLoaded(["a.png"], { width: 8, height: 8, keepPixels: false });
-
-        expect(mt.pixels[0]).toBeNull();
-        expect(mockState.ctx.getImageData).not.toHaveBeenCalled();
     });
 
     it("rejects mismatched dimensions in strict mode and closes the bitmap", async () => {
@@ -674,7 +667,7 @@ describe("MultiTexture", () => {
 
         const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => undefined);
 
-        const mt = new MultiTexture(["late.png"], seed.getScene()!, { width: 8, height: 8 });
+        const mt = new MultiTexture("myMultiTexture", ["late.png"], seed.getScene()!, { width: 8, height: 8 });
         mt.dispose();
         releaseImage?.({ close: vi.fn(), width: 8, height: 8 } as unknown as ImageBitmap);
 

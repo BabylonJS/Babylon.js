@@ -37,7 +37,7 @@ interface ILayerEntry {
     lastModified: string | null;
     /** Always retained until replaced or disposed (enables cheap re-uploads on shift/reallocation). */
     bitmap: ImageBitmap | null;
-    /** W*H*4 RGBA; null when keepPixels is false or the layer failed to load. */
+    /** W*H*4 RGBA; null when the layer failed to load. */
     pixels: Uint8ClampedArray | null;
     /** False until the first successful upload. */
     loaded: boolean;
@@ -59,9 +59,8 @@ interface ILayerEntry {
  *
  * Notes:
  * - `url` is null (the base texture loader is not used); the `urls` property is the source of truth.
- * - With `keepPixels: true` (default) every decoded layer is read back into a CPU
+ * - By default every decoded layer is read back into a CPU
  *   `Uint8ClampedArray` (see `pixels`). This costs one canvas readback per upload. Set
- *   `keepPixels: false` to skip the cache.
  * - With `premultiplyAlpha: true` the GPU layers are stored premultiplied, but the CPU `pixels`
  *   cache still holds the raw decoded (non-premultiplied) bytes.
  * - The default ALPHA_BLEND mode folds the layers with a running mix: each layer is blended over
@@ -112,18 +111,19 @@ export class MultiTexture extends ProceduralTexture {
     public readonly urls: string[];
 
     /**
-     * CPU pixel cache. `pixels[i]` is a W*H*4 RGBA buffer, or null when keepPixels is false or
+     * CPU pixel cache. `pixels[i]` is a W*H*4 RGBA buffer or
      * layer i failed to load.
      */
     public readonly pixels: Array<Uint8ClampedArray | null>;
 
     /**
      * Creates a new MultiTexture.
+     * @param name defines the name of the texture
      * @param urls defines the array of image URLs to load as layers
      * @param scene defines the hosting scene
      * @param options defines the creation options (width/height required)
      */
-    constructor(urls: string[], scene: Scene, options: IMultiTextureOptions) {
+    constructor(name: string, urls: string[], scene: Scene, options: IMultiTextureOptions) {
         const engine = scene.getEngine();
         if (!engine || (!engine.isWebGPU && (engine as ThinEngine).webGLVersion < 2)) {
             throw new Error(
@@ -178,7 +178,7 @@ export class MultiTexture extends ProceduralTexture {
         };
 
         super(
-            "multiTexture",
+            name,
             { width: rttW, height: rttH },
             FRAGMENT_NAMES[blendMode],
             scene,
@@ -196,7 +196,6 @@ export class MultiTexture extends ProceduralTexture {
             samplingMode: options.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE,
             premultiplyAlpha: options.premultiplyAlpha ?? false,
             fit: options.fit ?? "resize",
-            keepPixels: options.keepPixels ?? true,
             rttScale: options.rttScale ?? 1,
             watch: options.watch ?? false,
             pollInterval: options.pollInterval ?? DEFAULT_POLL_INTERVAL_MS,
@@ -216,7 +215,7 @@ export class MultiTexture extends ProceduralTexture {
             options.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE,
             Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
-
+        this._arrayTexture.name = `${this.name}_2DArray`;
         this._layers = urls.map((url) => ({ url, etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false }));
         this._layerCount = this._layers.length;
         this.urls = urls.slice();
@@ -228,14 +227,9 @@ export class MultiTexture extends ProceduralTexture {
         this.setInt("uLayerCount", this._layerCount);
         this.refreshRate = 0; // Render only when resetRefreshCounter() is called.
 
-        if (this._mtOptions.keepPixels) {
-            const canvas = typeof OffscreenCanvas !== "undefined" ? new OffscreenCanvas(options.width, options.height) : document.createElement("canvas");
-            this._canvas = canvas;
-            this._ctx = canvas.getContext("2d", { willReadFrequently: true }) || null;
-        } else {
-            this._canvas = null;
-            this._ctx = null;
-        }
+        const canvas = typeof OffscreenCanvas !== "undefined" ? new OffscreenCanvas(options.width, options.height) : document.createElement("canvas");
+        this._canvas = canvas;
+        this._ctx = canvas.getContext("2d", { willReadFrequently: true }) || null;
 
         void this._initialize();
     }
@@ -468,7 +462,7 @@ export class MultiTexture extends ProceduralTexture {
 
         const entry = this._layers[index];
 
-        if (this._mtOptions.keepPixels && this._canvas && this._ctx) {
+        if (this._canvas && this._ctx) {
             this._ctx.clearRect(0, 0, this._mtOptions.width, this._mtOptions.height);
             this._ctx.drawImage(bitmap, 0, 0, this._mtOptions.width, this._mtOptions.height);
             entry.pixels = this._ctx.getImageData(0, 0, this._mtOptions.width, this._mtOptions.height).data.slice();
