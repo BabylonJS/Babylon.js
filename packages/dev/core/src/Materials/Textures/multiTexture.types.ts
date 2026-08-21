@@ -49,8 +49,6 @@ export interface IMultiTextureOptions {
     watch?: boolean;
     /** Default 2000 ms. Only used when watch is true. */
     pollInterval?: number;
-    /** Default false. Compile all 6 blend-mode effects at init. */
-    prewarmBlendModes?: boolean;
     /** Fired once after all initial layers have settled (success or failure). */
     onLoad?: () => void;
     /** Fired on any async failure (init, updateLayer, poll). Not thrown. */
