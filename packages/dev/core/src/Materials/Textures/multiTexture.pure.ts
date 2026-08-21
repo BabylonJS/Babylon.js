@@ -59,8 +59,7 @@ interface ILayerEntry {
  *
  * Notes:
  * - `url` is null (the base texture loader is not used); the `urls` property is the source of truth.
- * - By default every decoded layer is read back into a CPU
- *   `Uint8ClampedArray` (see `pixels`). This costs one canvas readback per upload. Set
+ * - By default every decoded layer is read back into a CPU `Uint8ClampedArray` (see `pixels`). This costs one canvas readback per upload.
  * - With `premultiplyAlpha: true` the GPU layers are stored premultiplied, but the CPU `pixels`
  *   cache still holds the raw decoded (non-premultiplied) bytes.
  * - The default ALPHA_BLEND mode folds the layers with a running mix: each layer is blended over
