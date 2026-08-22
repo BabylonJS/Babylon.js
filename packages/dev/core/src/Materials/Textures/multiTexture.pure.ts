@@ -226,7 +226,17 @@ export class MultiTexture extends ProceduralTexture {
         this.setInt("uLayerCount", this._layerCount);
         this.refreshRate = 0; // Render only when resetRefreshCounter() is called.
 
-        const canvas = typeof OffscreenCanvas !== "undefined" ? new OffscreenCanvas(options.width, options.height) : document.createElement("canvas");
+        let canvas: OffscreenCanvas | HTMLCanvasElement | null = null;
+        if (typeof OffscreenCanvas !== "undefined") {
+            canvas = new OffscreenCanvas(options.width, options.height);
+        } else if (typeof document !== "undefined") {
+            canvas = document.createElement("canvas");
+            canvas.width = options.width;
+            canvas.height = options.height;
+        }
+        if (!canvas) {
+            throw new Error("MultiTexture: no 2D canvas surface available (requires DOM or OffscreenCanvas).");
+        }
         this._canvas = canvas;
         this._ctx = canvas.getContext("2d", { willReadFrequently: true }) || null;
 
@@ -267,6 +277,10 @@ export class MultiTexture extends ProceduralTexture {
 
         try {
             await this._loadLayer(index, url, /*force*/ true);
+            this.urls[index] = url;
+            this._layers[index].url = url;
+            this._layers[index].etag = null;
+            this._layers[index].lastModified = null;
         } catch (e) {
             this._reportError(e);
             throw e;

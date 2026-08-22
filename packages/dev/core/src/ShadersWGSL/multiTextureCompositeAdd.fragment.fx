@@ -13,7 +13,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     for (var i: i32 = 0; i < MULTITEXTURE_MAXLAYERS; i++) {
         if (i >= uniforms.uLayerCount) { break; }
         let px: vec2i = min(vec2i(i32(input.vUV.x * f32(MULTITEXTURE_WIDTH)), i32(input.vUV.y * f32(MULTITEXTURE_HEIGHT))), vec2i(MULTITEXTURE_WIDTH - 1, MULTITEXTURE_HEIGHT - 1));
-        let s: vec4f = textureLoad(uLayers, px, i);
+        let s: vec4f = textureLoad(uLayers, px, i, 0);
         result = min(result + s, vec4f(1.0));
         if (all(equal(result, vec4f(1.0)))) { break; }
     }

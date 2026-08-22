@@ -697,3 +697,62 @@ describe("MultiTexture", () => {
         expect(mat.specularTexture).toBeNull();
     });
 });
+
+describe("MultiTexture 2D canvas surface", () => {
+    it("sets canvas width/height from options on the HTMLCanvasElement path", async () => {
+        const { mt } = await createLoaded(["canvas-size.png"], { width: 12, height: 7 });
+        const canvas = (mt as any)._canvas;
+        expect(canvas).not.toBeNull();
+        expect(canvas.width).toBe(12);
+        expect(canvas.height).toBe(7);
+        mt.dispose();
+    });
+
+    it("throws a clear error when neither OffscreenCanvas nor document is available", async () => {
+        const hadDocument = typeof (globalThis as any).document !== "undefined";
+        const hadOffscreenCanvas = typeof (globalThis as any).OffscreenCanvas !== "undefined";
+        if (hadDocument) {
+            vi.stubGlobal("document", undefined);
+        }
+        if (hadOffscreenCanvas) {
+            vi.stubGlobal("OffscreenCanvas", undefined);
+        }
+        try {
+            await expect(
+                Promise.resolve().then(() => createLoaded(["no-canvas.png"], { width: 4, height: 4 }))
+            ).rejects.toThrow(/no 2D canvas surface available/i);
+        } finally {
+            vi.unstubAllGlobals();
+        }
+    });
+});
+
+describe("MultiTexture updateLayerAsync bookkeeping", () => {
+    it("updates urls[index] and the layer entry after a successful reload", async () => {
+        const { mt } = await createLoaded(["old.png"], { width: 8, height: 8 });
+
+        await mt.updateLayerAsync(0, "new.png");
+
+        expect(mt.urls[0]).toBe("new.png");
+        expect((mt as any)._layers[0].url).toBe("new.png");
+        mt.dispose();
+    });
+});
+
+describe("MultiTexture removeLayer GPU alignment", () => {
+    // NOTE: full GPU-shift verification (every shifted layer re-uploaded to its new array
+    // index) needs a real WebGL2/WebGPU harness; the headless suite's _arrayTexture wrapper
+    // exposes no spiable upload seam. CPU alignment invariants are guarded here.
+    it("keeps CPU layer state aligned when a non-last layer is removed", async () => {
+        const { mt } = await createLoaded(["a.png", "b.png", "c.png"], { width: 8, height: 8 });
+
+        mt.removeLayer(0);
+
+        expect(mt.urls).toEqual(["b.png", "c.png"]);
+        expect((mt as any)._layerCount).toBe(2);
+        expect((mt as any)._layers[0].url).toBe("b.png");
+        expect((mt as any)._layers[1].url).toBe("c.png");
+
+        mt.dispose();
+    });
+});
