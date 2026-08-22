@@ -1,4 +1,3 @@
-export * from "./multiTexture.types";
 export * from "./multiTexture.pure";
 
 // Register the 2D-array upload extensions for both engines (side effects). Each extension only

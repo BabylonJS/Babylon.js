@@ -2,8 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Logger } from "core/Misc/logger";
-import { MultiTexture } from "core/Materials/Textures/multiTexture.pure";
-import { MultiBlendMode } from "core/Materials/Textures/multiTexture.types";
+import { MultiTexture, MultiBlendMode } from "core/Materials/Textures/multiTexture.pure";
 import { type Scene } from "core/scene";
 
 /** MultiTexture whose (mocked) ProceduralTexture base exposes call-recording props. */
