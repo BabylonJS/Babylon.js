@@ -276,7 +276,7 @@ export class MultiTexture extends ProceduralTexture {
         }
 
         try {
-            await this._loadLayer(index, url, /*force*/ true);
+            await this._loadLayer(index, url);
             this.urls[index] = url;
             this._layers[index].url = url;
             this._layers[index].etag = null;
@@ -306,7 +306,7 @@ export class MultiTexture extends ProceduralTexture {
             // The fragment shader only samples the first uLayerCount layers, so the uniform must
             // track the internal count or the freshly appended layer is never composited.
             this.setInt("uLayerCount", this._layerCount);
-            await this._loadLayer(newIndex, url, /*force*/ true);
+            await this._loadLayer(newIndex, url);
         } catch (e) {
             this._reportError(e);
             throw e;
@@ -432,7 +432,7 @@ export class MultiTexture extends ProceduralTexture {
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    private async _loadLayer(index: number, url: string, _force: boolean): Promise<void> {
+    private async _loadLayer(index: number, url: string): Promise<void> {
         // Body runs across awaits; if dispose() wins the race, skip the fetch entirely.
         if (this._disposed) {
             return;
@@ -515,7 +515,7 @@ export class MultiTexture extends ProceduralTexture {
                 while ((i = next++) < count) {
                     try {
                         // eslint-disable-next-line no-await-in-loop -- decode pool: each worker processes layers sequentially.
-                        await this._loadLayer(i, this._layers[i].url, /*force*/ true);
+                        await this._loadLayer(i, this._layers[i].url);
                     } catch (e) {
                         this._reportError(e);
                     }
@@ -645,7 +645,7 @@ export class MultiTexture extends ProceduralTexture {
                     if ((etag !== null && etag !== entry.etag) || (lastModified !== null && lastModified !== entry.lastModified)) {
                         try {
                             // eslint-disable-next-line no-await-in-loop -- reload happens after the HEAD check above.
-                            await this._loadLayer(i, entry.url, /*force*/ true);
+                            await this._loadLayer(i, entry.url);
                         } catch (e) {
                             this._reportError(e);
                         }
