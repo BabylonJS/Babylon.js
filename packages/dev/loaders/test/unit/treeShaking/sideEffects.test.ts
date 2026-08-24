@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { registeredGLTFExtensions } from "loaders/glTF/2.0/glTFLoaderExtensionRegistry";
 import { GetMappingForKey } from "loaders/glTF/2.0/Extensions/objectModelMapping";
+import { registerBuiltInGLTFExtensions } from "loaders/glTF/2.0/Extensions/dynamic";
+import { type GLTFLoader } from "loaders/glTF/2.0/glTFLoader.pure";
 
 /**
  * Tree-shaking guard for the loaders package.
@@ -41,5 +43,17 @@ describe("loaders tree-shaking side effects", () => {
 
         await import("loaders/glTF/2.0/Extensions/KHR_draco_mesh_compression");
         expect(registeredGLTFExtensions.has("KHR_draco_mesh_compression")).toBe(true);
+    });
+
+    it("keeps the lazy factory registered after creating a built-in extension", async () => {
+        registerBuiltInGLTFExtensions();
+        const registration = registeredGLTFExtensions.get("ExtrasAsMetadata");
+        if (!registration) {
+            throw new Error("Expected the dynamically registered ExtrasAsMetadata factory");
+        }
+
+        await registration.factory({} as GLTFLoader);
+
+        expect(registeredGLTFExtensions.get("ExtrasAsMetadata")?.factory).toBe(registration.factory);
     });
 });
