@@ -809,7 +809,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._geometryBufferRenderer.enableNormal = true;
         this._geometryBufferRenderer.generateNormalsInWorldSpace = true;
         this.scene.enableIblCdfGenerator();
-        this.shadowOpacity = options.shadowOpacity || 0.8;
+        this.shadowOpacity = options.shadowOpacity ?? 0.8;
         this._voxelRenderer = new _IblShadowsVoxelRenderer(
             this.scene,
             this,

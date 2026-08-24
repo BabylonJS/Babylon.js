@@ -7,12 +7,12 @@ import { type Scene } from "core/scene";
 import { type Vector3WithInfo } from "../../vector3WithInfo";
 
 import { AdvancedDynamicTexture } from "../../../2D/advancedDynamicTexture";
-import { Animation } from "core/Animations/animation";
-import { AnimationGroup } from "core/Animations/animationGroup";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { Animation } from "core/Animations/animation.pure";
+import { AnimationGroup } from "core/Animations/animationGroup.pure";
+import { Color3, Color4 } from "core/Maths/math.color.pure";
 import { Control } from "../../../2D/controls/control.pure";
-import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
-import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { CreatePlane } from "core/Meshes/Builders/planeBuilder.pure";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder.pure";
 import { IsDocumentAvailable } from "core/Misc/domManagement";
 import { FadeInOutBehavior } from "core/Behaviors/Meshes/fadeInOutBehavior";
 import { Grid } from "../../../2D/controls/grid.pure";
@@ -24,12 +24,12 @@ import { MRDLInnerquadMaterial } from "../../materials/mrdl/mrdlInnerquadMateria
 import { Rectangle } from "../../../2D/controls/rectangle.pure";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { StackPanel } from "../../../2D/controls/stackPanel.pure";
-import { StandardMaterial } from "core/Materials/standardMaterial";
+import { RegisterStandardMaterial, StandardMaterial } from "core/Materials/standardMaterial.pure";
 import { TextBlock } from "../../../2D/controls/textBlock.pure";
 import { TouchButton3D } from "../touchButton3D";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Vector3 } from "core/Maths/math.vector";
-import { Tools } from "core/Misc/tools";
+import { TransformNode } from "core/Meshes/transformNode.pure";
+import { Vector3 } from "core/Maths/math.vector.pure";
+import { Tools } from "core/Misc/tools.pure";
 
 /**
  * Class used to create the mrtkv3 button
@@ -237,6 +237,7 @@ export class TouchHolographicButton extends TouchButton3D {
             this._tooltipMesh.parent = this._frontPlateCollisionMesh;
 
             // Create text texture for the tooltip
+            RegisterStandardMaterial();
             this._tooltipTexture = AdvancedDynamicTexture.CreateForMesh(this._tooltipMesh);
             const tooltipBackground = new Rectangle();
             tooltipBackground.height = 0.25;

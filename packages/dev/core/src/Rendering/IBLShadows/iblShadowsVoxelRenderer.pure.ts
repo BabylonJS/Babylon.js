@@ -121,8 +121,8 @@ export class _IblShadowsVoxelRenderer {
         if (this._triPlanarVoxelization === enabled) {
             return;
         }
-        this._triPlanarVoxelization = enabled;
         this._disposeVoxelTextures();
+        this._triPlanarVoxelization = enabled;
         this._createTextures();
     }
 

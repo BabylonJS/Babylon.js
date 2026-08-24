@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type Nullable } from "core/index";
+import { type IDisposable, type Nullable } from "core/index";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
@@ -43,7 +43,10 @@ import {
     resetVariant,
     selectVariant,
     rebuildScenePbrPipelines,
+    setEnvironmentBlur,
+    setEnvironmentRotation,
     setSceneImageProcessing,
+    setShadowOnly,
     setShadowTaskCasterMeshes,
     startEngine,
     stopEngine,
@@ -84,6 +87,7 @@ import {
     throwIfAborted,
     observePromise,
 } from "../viewerBase";
+import { SuspendRenderingWhenOffscreen } from "../offscreenRenderingSuspension";
 
 /**
  * The options for the Lite Viewer.
@@ -110,6 +114,7 @@ export const DefaultViewerOptions = DefaultViewerBaseOptions;
 const DefaultCameraAlpha = -Math.PI / 2;
 const DefaultCameraBeta = Math.PI / 2.5;
 const DefaultCameraRadius = 3;
+const DefaultShadowLightDirection: [number, number, number] = [0.12, -1, 0.05];
 
 // ── Helpers ──
 
@@ -158,6 +163,10 @@ function toneMappingToLiteToneMapping(mode: ToneMapping): LiteToneMapping | unde
  * Babylon Lite is a WebGPU-only engine that provides a subset of the full Babylon.js feature set.
  * Features that are not available in Lite (SSAO, "high" shadow quality, hot spots, File/ArrayBufferView model sources)
  * will log warnings and fall back gracefully.
+ *
+ * The `autoSuspendRendering` option is silently ignored: Lite has no scene-mutation tracking, so it cannot
+ * detect when a scene is idle. Rendering is still suspended while the canvas is offscreen (see
+ * {@link CreateViewerForCanvas}), which is the case that dominates cost on pages with multiple viewers.
  */
 export class Viewer extends ViewerBase implements IViewer {
     // ── Private State ──
@@ -166,7 +175,28 @@ export class Viewer extends ViewerBase implements IViewer {
     private readonly _camera: ArcRotateCamera;
     private readonly _deviceLostRecovery: DeviceLostRecoveryHandle;
     private _detachControl: (() => void) | null = null;
+    /** True while the engine's requestAnimationFrame loop is running. False while suspended or disposed. */
     private _renderLoopRunning = false;
+    /**
+     * True once the scene has been registered with the engine (deferred builders run, renderables bucketed).
+     * Distinct from {@link _renderLoopRunning}: suspending rendering stops the rAF loop but leaves the scene
+     * registered, so code that needs to know "has the scene been built" must consult this instead.
+     */
+    private _sceneRegistered = false;
+    /** Number of live suspension handles returned by {@link _suspendRendering}. Rendering runs only at zero. */
+    private _suspendRenderCount = 0;
+    /**
+     * Serializes every engine start/stop and scene (un)registration, so a suspend/resume triggered by the
+     * offscreen observer can never interleave with {@link _beginRendering}'s stop, unregister, register,
+     * start sequence (which is itself re-entered from model loads, environment loads, and construction).
+     */
+    private readonly _renderLoopLock = new AsyncLock();
+    /**
+     * Resolves the pending `startEngine` await when the render loop is stopped before its first frame.
+     * Lite's `startEngine` promise only settles from inside the rAF callback, so stopping the loop first
+     * (by suspension or disposal) would otherwise leave the await pending forever.
+     */
+    private _renderLoopStopped: Nullable<() => void> = null;
 
     // Auto-orbit
     private _autoOrbitIdleTime = 0;
@@ -671,14 +701,17 @@ export class Viewer extends ViewerBase implements IViewer {
     /** @internal Lite has no engine state for intensity. */
     protected override _applyEnvironmentIntensity(): void {}
 
-    /** @internal Lite has no engine state for blur. */
-    protected override _applyEnvironmentBlur(): void {}
+    /** @internal */
+    protected override _applyEnvironmentBlur(): void {
+        if (this._currentSkyboxUrl !== null) {
+            setEnvironmentBlur(this._scene, this._environmentBlur);
+        }
+    }
 
     /** @internal */
     protected override _applyEnvironmentRotation(): void {
-        if (this._scene.envRotationY !== undefined) {
-            this._scene.envRotationY = this._environmentRotation;
-        }
+        setEnvironmentRotation(this._scene, this._environmentRotation);
+        this._rotateShadowLightWithEnvironment();
     }
 
     /** @internal */
@@ -732,6 +765,11 @@ export class Viewer extends ViewerBase implements IViewer {
             const resolvedLightingUrl = effectiveLightingUrl === "auto" ? (await import("../defaultEnvironment")).default : effectiveLightingUrl;
             const ext = getExtension(resolvedLightingUrl, options.extension);
 
+            setEnvironmentRotation(this._scene, this._environmentRotation);
+            if (targetSkyboxUrl !== null) {
+                setEnvironmentBlur(this._scene, this._environmentBlur);
+            }
+
             // Lite's `loadHdrEnvironment` cannot suppress its skybox build. So:
             // - `lighting: true, skybox: false` with .hdr → would build an unwanted skybox. Throw.
             // - `lighting: true, skybox: true` (or skybox-only with same URL) → fine.
@@ -744,6 +782,7 @@ export class Viewer extends ViewerBase implements IViewer {
 
             if (ext === ".hdr") {
                 await loadHdrEnvironment(this._scene, resolvedLightingUrl, {
+                    useCubemapSkybox: true,
                     skipGround: true,
                     skyboxSize: 20,
                 });
@@ -768,10 +807,6 @@ export class Viewer extends ViewerBase implements IViewer {
                 }
             }
 
-            if (this._environmentRotation !== 0) {
-                this._scene.envRotationY = this._environmentRotation;
-            }
-
             // Lite's env loader unconditionally overwrites `scene.imageProcessing` (toneMappingEnabled,
             // exposure, contrast) with its own defaults — clobbering whatever the Viewer set during
             // construction or via subsequent `postProcessing` setter calls. Re-push our committed
@@ -780,8 +815,10 @@ export class Viewer extends ViewerBase implements IViewer {
 
             // Re-register the scene so that the env loader's deferred builders are processed
             // and the new skybox/ground renderables land in the draw buckets. Lite only fills
-            // `_opaqueRenderables` etc. at registerScene() time.
-            if (this._renderLoopRunning) {
+            // `_opaqueRenderables` etc. at registerScene() time. Gated on `_sceneRegistered` (not the
+            // rAF-loop state) so an environment loaded while rendering is suspended still re-registers;
+            // otherwise the skybox would never appear, even after rendering resumes.
+            if (this._sceneRegistered) {
                 await this._beginRendering();
             }
 
@@ -793,7 +830,7 @@ export class Viewer extends ViewerBase implements IViewer {
             // environment explicitly added to an already-displayed model — the model keeps its previous
             // (often absent) IBL and renders unlit/black while the skybox looks correct. Force a PBR rebuild
             // so the model picks up the new lighting. No-op when no model is loaded.
-            if (this._renderLoopRunning && this._container) {
+            if (this._sceneRegistered && this._container) {
                 await this._rebuildModelPbrForEnvironment();
             }
 
@@ -996,17 +1033,18 @@ export class Viewer extends ViewerBase implements IViewer {
         // from the IBL's dominant direction, which for the typical diffuse studio environment is
         // close to overhead (e.g. ~(-0.12, -0.99, -0.01)); Lite has no IBL dominant-direction
         // analysis, so this near-overhead fixed direction approximates that soft, grounded look.
-        const lightDir: [number, number, number] = [0.12, -1, 0.05];
+        const lightDir: [number, number, number] = [...DefaultShadowLightDirection];
         const dirLen = Math.sqrt(lightDir[0] ** 2 + lightDir[1] ** 2 + lightDir[2] ** 2);
         const positionFactor = radius * 3;
         const light = createDirectionalLight(lightDir, 1);
         light.position.set(cx - (lightDir[0] / dirLen) * positionFactor, cy - (lightDir[1] / dirLen) * positionFactor, cz - (lightDir[2] / dirLen) * positionFactor);
         addToScene(this._scene, light);
         this._shadowLight = light;
+        this._rotateShadowLightWithEnvironment();
 
-        // Shadow ground disc. The `shadowOnly: true` flag enables Lite's shadow-only shader path,
-        // which mirrors BJS's `BackgroundMaterial.shadowOnly`: the surface is invisible everywhere
-        // except where shadow falls on it, where it appears in `shadowOnlyColor` (black here). The
+        // Shadow ground disc. `setShadowOnly` enables Lite's shadow-only shader path, which mirrors
+        // BJS's `BackgroundMaterial.shadowOnly`: the surface is invisible everywhere except where
+        // shadow falls on it, where it appears in the configured color (black here). The
         // ground needs `receiveShadows = true` so Lite compiles it on the multi-light path where the
         // per-light `shadowFactors` the shadow-only path reads are actually written. `createPbrMaterial`
         // installs its own 1×1 fallback base/ORM textures, so none need to be supplied here.
@@ -1020,23 +1058,23 @@ export class Viewer extends ViewerBase implements IViewer {
         ground.rotation.x = Math.PI / 2;
         ground.position.y = minY;
         ground.receiveShadows = true;
-        // Shadow-only is a tree-shakeable, opt-in PBR feature: setting `shadowOnly: true` is what
-        // pulls in the shadow-only shader fragment. Lite scans materials for the flag and lazily
-        // imports (and registers) the fragment only when it's actually used, so apps that never set
-        // it pay zero base-bundle cost. The flag also forces the alpha-blend path, so no separate
+        // Shadow-only is a tree-shakeable, opt-in PBR feature: importing and calling its enabler is
+        // what pulls in and registers the shader fragment. Apps that never import the enabler pay
+        // zero bundle cost. The feature also forces the alpha-blend path, so no separate
         // `alphaBlend: true` is needed for the disc to composite over the scene.
-        ground.material = createPbrMaterial({
-            shadowOnly: true,
-            shadowOnlyColor: [0, 0, 0],
+        const groundMaterial = createPbrMaterial({});
+        setShadowOnly(groundMaterial, {
+            color: [0, 0, 0],
             // Keep the shadow light and translucent so it reads as a soft, subtle grounding shadow
             // similar to the full Viewer (whose directional shadow darkness is only ~0.2–0.8),
             // rather than a heavy pitch-black blob. Paired with the large blurKernel below, this
             // gives a gentle penumbra instead of a hard silhouette.
-            shadowOnlyOpacity: 0.3,
+            opacity: 0.3,
             // Use the natural ESM falloff (falloff = 1) so the penumbra fades smoothly. Values > 1
             // collapse the gradient into a hard aliased edge.
-            shadowOnlyFalloff: 1,
+            falloff: 1,
         });
+        ground.material = groundMaterial;
         addToScene(this._scene, ground);
         this._shadowGround = ground;
 
@@ -1079,6 +1117,31 @@ export class Viewer extends ViewerBase implements IViewer {
         }
         setShadowTaskCasterMeshes(this._shadowGenerator, casterMeshes);
         light.shadowGenerator = this._shadowGenerator ?? undefined;
+    }
+
+    private _rotateShadowLightWithEnvironment(): void {
+        const light = this._shadowLight;
+        const bounds = this._computeModelBounds();
+        if (!light || !bounds) {
+            return;
+        }
+
+        const angle = -this._environmentRotation;
+        const cosine = Math.cos(angle);
+        const sine = Math.sin(angle);
+        const directionX = DefaultShadowLightDirection[0] * cosine + DefaultShadowLightDirection[2] * sine;
+        const directionY = DefaultShadowLightDirection[1];
+        const directionZ = -DefaultShadowLightDirection[0] * sine + DefaultShadowLightDirection[2] * cosine;
+        const directionLength = Math.sqrt(directionX ** 2 + directionY ** 2 + directionZ ** 2);
+        const positionFactor = bounds.radius * 3;
+        const [centerX, centerY, centerZ] = bounds.center;
+
+        light.direction.set(directionX, directionY, directionZ);
+        light.position.set(
+            centerX - (directionX / directionLength) * positionFactor,
+            centerY - (directionY / directionLength) * positionFactor,
+            centerZ - (directionZ / directionLength) * positionFactor
+        );
     }
 
     // ── Model Loading ──
@@ -1170,7 +1233,7 @@ export class Viewer extends ViewerBase implements IViewer {
             //   `_renderableVersion` so the frame graph re-buckets them. Re-registering here would be wrong:
             //   `buildScene` clears the material-swap queue before the loop can drain it, dropping the model.
             //
-            // So only (re-)register when the render loop isn't running yet or the model's material group
+            // So only (re-)register when the scene isn't registered yet or the model's material group
             // has not been built before; otherwise let the running loop drain the swap queue.
             //
             // `this._scene` is created once in the constructor and never recreated (it is disposed only in
@@ -1186,7 +1249,11 @@ export class Viewer extends ViewerBase implements IViewer {
             // task is rebuilt against the new light/ground instead of going stale. Shadow quality is fixed at
             // construction (see `_updateShadowsImpl`), so this only affects the rarely-used shadow + model-swap
             // combination.
-            if (!this._renderLoopRunning || this._shadowQuality !== "none" || !this._modelMaterialGroupBuilt) {
+            //
+            // The condition tests `_sceneRegistered` rather than the rAF-loop state so that a model loaded
+            // while rendering is suspended still registers its renderables; the swap queue it may instead
+            // enqueue into is drained by the first frame after rendering resumes.
+            if (!this._sceneRegistered || this._shadowQuality !== "none" || !this._modelMaterialGroupBuilt) {
                 await this._beginRendering();
             }
             this._modelMaterialGroupBuilt = true;
@@ -1547,10 +1614,13 @@ export class Viewer extends ViewerBase implements IViewer {
         // to the hotspot's world position — mirroring the full Viewer's `focusHotSpot`, which calls
         // `ArcRotateCamera.interpolateTo`. Omitted/NaN orbit components keep the camera's current value.
         const orbit = hotSpot.cameraOrbit;
+        const alpha = orbit?.[0] == null ? undefined : Number(orbit[0]);
+        const beta = orbit?.[1] == null ? undefined : Number(orbit[1]);
+        const radius = orbit?.[2] == null ? undefined : Number(orbit[2]);
         this._interpolateCameraTo({
-            alpha: orbit?.[0],
-            beta: orbit?.[1],
-            radius: orbit?.[2],
+            alpha,
+            beta,
+            radius,
             target: { x: result.worldPosition[0], y: result.worldPosition[1], z: result.worldPosition[2] },
         });
         return true;
@@ -1812,25 +1882,90 @@ export class Viewer extends ViewerBase implements IViewer {
     /**
      * Registers the scene with the engine and starts the render loop.
      * Safe to call multiple times — stops and re-registers if already running.
+     * @remarks
+     * Serialized against suspend/resume via {@link _renderLoopLock} so a scroll-driven suspension can never
+     * land in the middle of the stop, unregister, register, start sequence below.
      */
     private async _beginRendering(): Promise<void> {
-        if (this._isDisposed) {
+        await this._renderLoopLock.lockAsync(async () => {
+            if (this._isDisposed) {
+                return;
+            }
+            this._stopRenderLoop();
+            if (this._sceneRegistered) {
+                unregisterScene(this._scene);
+                this._sceneRegistered = false;
+            }
+            // Install the scene-owned frame-graph shadow task only when shadows are enabled, so the
+            // shadow-task bundle is tree-shaken out for viewers that never render shadows.
+            if (this._shadowQuality === "none") {
+                await registerScene(this._scene);
+            } else {
+                await registerSceneWithShadowSupport(this._scene);
+            }
+            if (this._isDisposed) {
+                return;
+            }
+            this._sceneRegistered = true;
+            await this._startRenderLoop();
+        });
+    }
+
+    /**
+     * Starts the engine's render loop, unless rendering is suspended (or the viewer is disposed), and waits
+     * for the first frame.
+     * @remarks
+     * Lite's `startEngine` promise resolves from inside the rAF callback, so it never settles if the loop is
+     * stopped before that first frame. {@link _renderLoopStopped} races against it so a suspension or a
+     * disposal arriving in that window can't leave this await (and any model load awaiting it) pending forever.
+     */
+    private async _startRenderLoop(): Promise<void> {
+        if (this._renderLoopRunning || this._isDisposed || this._suspendRenderCount > 0) {
             return;
         }
+        this._renderLoopRunning = true;
+        const firstFrame = startEngine(this._engine);
+        const stopped = new Promise<void>((resolve) => (this._renderLoopStopped = resolve));
+        await Promise.race([firstFrame, stopped]);
+        this._renderLoopStopped = null;
+    }
+
+    /** Stops the engine's render loop (if running) and releases anyone awaiting its first frame. */
+    private _stopRenderLoop(): void {
         if (this._renderLoopRunning) {
             stopEngine(this._engine);
-            unregisterScene(this._scene);
             this._renderLoopRunning = false;
         }
-        // Install the scene-owned frame-graph shadow task only when shadows are enabled, so the
-        // shadow-task bundle is tree-shaken out for viewers that never render shadows.
-        if (this._shadowQuality === "none") {
-            await registerScene(this._scene);
-        } else {
-            await registerSceneWithShadowSupport(this._scene);
+        this._renderLoopStopped?.();
+        this._renderLoopStopped = null;
+    }
+
+    /**
+     * Suspends rendering until the returned disposable is disposed.
+     * @remarks
+     * Reference counted, mirroring the full Viewer: rendering only resumes once every suspension handle has
+     * been disposed. The scene stays registered while suspended, so resuming does not rebuild anything.
+     * @returns A disposable that resumes rendering (when no other suspensions are outstanding).
+     * @internal
+     */
+    public _suspendRendering(): IDisposable {
+        if (this._suspendRenderCount++ === 0) {
+            observePromise(this._renderLoopLock.lockAsync(() => this._stopRenderLoop()));
         }
-        await startEngine(this._engine);
-        this._renderLoopRunning = true;
+
+        let disposed = false;
+        return {
+            dispose: () => {
+                if (!disposed) {
+                    disposed = true;
+                    if (--this._suspendRenderCount === 0) {
+                        // Not awaited: resuming must not block the caller (typically an IntersectionObserver
+                        // callback) on the first rendered frame.
+                        observePromise(this._renderLoopLock.lockAsync(async () => await this._startRenderLoop()));
+                    }
+                }
+            },
+        };
     }
 
     public override dispose(): void {
@@ -1867,8 +2002,9 @@ export class Viewer extends ViewerBase implements IViewer {
         this._unloadCurrentModel();
 
         // Stop and dispose engine/scene
-        stopEngine(this._engine);
+        this._stopRenderLoop();
         unregisterScene(this._scene);
+        this._sceneRegistered = false;
         disposeScene(this._scene);
         disposeEngine(this._engine);
 
@@ -1955,7 +2091,7 @@ export class Viewer extends ViewerBase implements IViewer {
     }
 
     private _updateAutoOrbit(deltaMs: number): void {
-        if (!this._autoOrbitEnabled) {
+        if (!this._autoOrbitEnabled || this._cameraInterpolationAbort) {
             this._autoOrbitIdleTime = 0;
             return;
         }
@@ -1984,5 +2120,19 @@ export class Viewer extends ViewerBase implements IViewer {
  */
 export async function CreateViewerForCanvas(canvas: HTMLCanvasElement, options?: CanvasViewerOptions): Promise<Viewer> {
     const engine = await createEngine(canvas, { alphaMode: "premultiplied" });
-    return new Viewer(engine, options);
+    const viewer = new Viewer(engine, options);
+
+    // If the canvas is not visible, suspend rendering. Matches the full Viewer, where this is unconditional
+    // (the `autoSuspendRendering` option gates idle suspension, not offscreen suspension).
+    const offscreenSuspensionObserver = SuspendRenderingWhenOffscreen(canvas, () => viewer._suspendRendering());
+
+    // Override the Viewer's dispose method to add in additional cleanup. Matches the full Viewer's factory:
+    // only the observer needs disconnecting — any live suspension handle is dropped along with the Viewer.
+    const disposeViewer = viewer.dispose.bind(viewer);
+    viewer.dispose = () => {
+        offscreenSuspensionObserver.dispose();
+        disposeViewer();
+    };
+
+    return viewer;
 }

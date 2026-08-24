@@ -17,7 +17,7 @@ import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget.pur
 import { Color4 } from "core/Maths/math.color.pure";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { Constants } from "core/Engines/constants";
-import { ToHalfFloat } from "core/Misc/textureTools";
+import { FromHalfFloat, ToHalfFloat } from "core/Misc/textureTools";
 import { type Material } from "core/Materials/material.pure";
 import { type Effect } from "core/Materials/effect.pure";
 import { Scalar } from "core/Maths/math.scalar";
@@ -212,6 +212,7 @@ const enum PLYType {
     UINT,
     DOUBLE,
     UCHAR,
+    USHORT,
     UNDEFINED,
 }
 
@@ -1604,6 +1605,9 @@ export class GaussianSplattingMeshBase extends Mesh {
                 return PLYType.DOUBLE;
             case "uchar":
                 return PLYType.UCHAR;
+            case "ushort":
+            case "uint16":
+                return PLYType.USHORT;
         }
         return PLYType.UNDEFINED;
     }
@@ -1870,6 +1874,7 @@ export class GaussianSplattingMeshBase extends Mesh {
             float: 4,
             short: 2,
             ushort: 2,
+            uint16: 2,
             uchar: 1,
             list: 0,
         };
@@ -2086,6 +2091,9 @@ export class GaussianSplattingMeshBase extends Mesh {
                     break;
                 case PLYType.UCHAR:
                     value = dataView.getUint8(offset.value + property.offset);
+                    break;
+                case PLYType.USHORT:
+                    value = FromHalfFloat(dataView.getUint16(offset.value + property.offset, true));
                     break;
                 default:
                     continue;
