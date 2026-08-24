@@ -117,7 +117,7 @@ export class ParticleClampBlock extends NodeParticleBlock {
                     return new Vector3(func(value.x, min, max), func(value.y, min, max), func(value.z, min, max));
                 }
                 case NodeParticleBlockConnectionPointTypes.Color4: {
-                    return new Color4(func(value.x, min, max), func(value.y, min, max), func(value.z, min, max), func(value.w, min, max));
+                    return new Color4(func(value.r, min, max), func(value.g, min, max), func(value.b, min, max), func(value.a, min, max));
                 }
             }
 
@@ -125,13 +125,6 @@ export class ParticleClampBlock extends NodeParticleBlock {
         };
 
         return this;
-    }
-
-    public override _deserialize(serializationObject: any) {
-        super._deserialize(serializationObject);
-
-        this.minimum = serializationObject.minimum;
-        this.maximum = serializationObject.maximum;
     }
 }
 
