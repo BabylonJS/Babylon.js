@@ -124,6 +124,79 @@
         baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG);
     #endif
 
+    #ifdef RETROREFLECTION
+        var baseSpecularEnvironmentLightRetro: vec3f = baseSpecularEnvironmentLight;
+        #ifdef REFLECTIONMAP_3D
+            let retroViewDirectionW: vec3f = normalize(reflect(-viewDirectionW, normalW));
+            #ifdef ANISOTROPIC_BASE
+                let baseGeoInfoRetro: geometryInfoAnisoOutParams = geometryInfoAniso(
+                    normalW,
+                    retroViewDirectionW,
+                    specular_roughness,
+                    geometricNormalW,
+                    vec3f(geometry_tangent.x, geometry_tangent.y, specular_roughness_anisotropy),
+                    TBN
+                );
+                baseSpecularEnvironmentLightRetro = sampleRadianceAnisotropic(
+                    specularAlphaG,
+                    uniforms.vReflectionMicrosurfaceInfos.rgb,
+                    uniforms.vReflectionInfos,
+                    baseGeoInfoRetro,
+                    normalW,
+                    retroViewDirectionW,
+                    fragmentInputs.vPositionW,
+                    noise,
+                    false,
+                    1.0f,
+                    reflectionSampler,
+                    reflectionSamplerSampler
+                    #ifdef REALTIME_FILTERING
+                        , uniforms.vReflectionFilteringInfo
+                    #endif
+                );
+            #else
+                var retroReflectionCoords: vec3f = viewDirectionW;
+                #ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
+                    retroReflectionCoords = parallaxCorrectNormal(
+                        fragmentInputs.vPositionW,
+                        retroReflectionCoords,
+                        uniforms.vReflectionSize,
+                        uniforms.vReflectionPosition
+                    );
+                #endif
+                retroReflectionCoords = (uniforms.reflectionMatrix * vec4f(retroReflectionCoords, 0.0f)).xyz;
+                #ifdef INVERTCUBICMAP
+                    retroReflectionCoords.y *= -1.0f;
+                #endif
+                #ifdef REFLECTIONMAP_OPPOSITEZ
+                    retroReflectionCoords.z *= -1.0f;
+                #endif
+                baseSpecularEnvironmentLightRetro = sampleRadiance(
+                    specularAlphaG,
+                    uniforms.vReflectionMicrosurfaceInfos.rgb,
+                    uniforms.vReflectionInfos,
+                    baseGeoInfo,
+                    reflectionSampler,
+                    reflectionSamplerSampler,
+                    retroReflectionCoords
+                    #ifdef REALTIME_FILTERING
+                        , uniforms.vReflectionFilteringInfo
+                    #endif
+                );
+            #endif
+
+            #ifdef ANISOTROPIC_BASE
+                baseSpecularEnvironmentLightRetro = mix(
+                    baseSpecularEnvironmentLightRetro,
+                    baseDiffuseEnvironmentLight,
+                    specularAlphaG * specularAlphaG * max(1.0f - baseGeoInfoRetro.anisotropy, 0.3f)
+                );
+            #else
+                baseSpecularEnvironmentLightRetro = mix(baseSpecularEnvironmentLightRetro, baseDiffuseEnvironmentLight, specularAlphaG);
+            #endif
+        #endif
+    #endif
+
     var coatEnvironmentLight: vec3f = vec3f(0.f, 0.f, 0.f);
     if (coat_weight > 0.0) {
         #ifdef REFLECTIONMAP_3D
@@ -316,6 +389,10 @@
     var slab_glossy_ibl: vec3f = vec3f(0., 0., 0.);
     var slab_metal_ibl: vec3f = vec3f(0., 0., 0.);
     var slab_coat_ibl: vec3f = vec3f(0., 0., 0.);
+    #ifdef RETROREFLECTION
+        var slab_glossy_retro_ibl: vec3f = vec3f(0.0f);
+        var slab_metal_retro_ibl: vec3f = vec3f(0.0f);
+    #endif
 
     slab_diffuse_ibl = baseDiffuseEnvironmentLight * uniforms.vLightingIntensity.z;
     #ifdef AMBIENT_OCCLUSION
@@ -324,9 +401,15 @@
 
     // Add the specular environment light
     slab_glossy_ibl = baseSpecularEnvironmentLight * uniforms.vLightingIntensity.z;
+    #ifdef RETROREFLECTION
+        slab_glossy_retro_ibl = baseSpecularEnvironmentLightRetro * uniforms.vLightingIntensity.z;
+    #endif
 
     // _____________________________ Metal Layer IBL ____________________________
     slab_metal_ibl = baseSpecularEnvironmentLight * conductorIblFresnel * uniforms.vLightingIntensity.z;
+    #ifdef RETROREFLECTION
+        slab_metal_retro_ibl = baseSpecularEnvironmentLightRetro * conductorIblFresnel * uniforms.vLightingIntensity.z;
+    #endif
 
     // _____________________________ Coat Layer IBL _____________________________
     if (coat_weight > 0.0) {
@@ -503,10 +586,20 @@
     slab_diffuse_ibl *= ambient_occlusion;
     slab_metal_ibl *= specular_ambient_occlusion;
     slab_glossy_ibl *= specular_ambient_occlusion;
+    #ifdef RETROREFLECTION
+        slab_metal_retro_ibl *= specular_ambient_occlusion;
+        slab_glossy_retro_ibl *= specular_ambient_occlusion;
+    #endif
     slab_coat_ibl *= coat_specular_ambient_occlusion;
 
     let material_dielectric_base_ibl: vec3f = mix(slab_diffuse_ibl * base_color.rgb, slab_translucent_base_ibl, surface_translucency_weight);
-    let material_dielectric_gloss_ibl: vec3f = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
+    var material_dielectric_gloss_ibl: vec3f = material_dielectric_base_ibl * (1.0f - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
+    #ifdef RETROREFLECTION
+        let material_dielectric_gloss_retro_ibl: vec3f =
+            material_dielectric_base_ibl * (1.0f - dielectricIblFresnel) + slab_glossy_retro_ibl * dielectricIblColoredFresnel;
+        material_dielectric_gloss_ibl = mix(material_dielectric_gloss_ibl, material_dielectric_gloss_retro_ibl, specular_retroreflectivity);
+        slab_metal_ibl = mix(slab_metal_ibl, slab_metal_retro_ibl, specular_retroreflectivity);
+    #endif
     let material_base_substrate_ibl: vec3f = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     let material_coated_base_ibl: vec3f = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3f(1.0f));
     #if defined(FUZZ) && defined(FUZZENVIRONMENTBRDF)

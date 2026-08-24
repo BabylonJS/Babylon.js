@@ -340,6 +340,11 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public THIN_FILM = false;
 
     /**
+     * Tells the shader to apply retroreflection to the base specular lobes.
+     */
+    public RETROREFLECTION = false;
+
+    /**
      * Tells the shader to enable the legacy iridescence code
      * Iridescence is the name of thin film interference in the PBR material.
      */
@@ -656,6 +661,24 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     accessor specularRoughnessAnisotropyTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularRoughnessAnisotropyTexture: Sampler = new Sampler("specular_roughness_anisotropy", "specularRoughnessAnisotropy", "SPECULAR_ROUGHNESS_ANISOTROPY");
+
+    /**
+     * Blend weight between the regular and retroreflective base specular lobes.
+     * @experimental
+     */
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor specularRetroreflectivity: number;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _specularRetroreflectivity: Property<number> = new Property<number>("specular_retroreflectivity", 0, "vSpecularRetroreflectivity", 1);
+
+    /**
+     * Texture whose red channel multiplies the retroreflectivity blend weight.
+     * @experimental
+     */
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
+    accessor specularRetroreflectivityTexture: Nullable<BaseTexture>;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _specularRetroreflectivityTexture: Sampler = new Sampler("specular_retroreflectivity", "specularRetroreflectivity", "SPECULAR_RETROREFLECTIVITY");
 
     /**
      * IOR of the specular lobe.
@@ -2047,6 +2070,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._specularRoughnessTexture;
         this._specularRoughnessAnisotropy;
         this._specularRoughnessAnisotropyTexture;
+        this._specularRetroreflectivity;
+        this._specularRetroreflectivityTexture;
         this._transmissionWeight;
         this._transmissionWeightTexture;
         this._transmissionColor;
@@ -3339,6 +3364,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         defines.THIN_FILM = this.thinFilmWeight > 0.0;
         defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
+        defines.RETROREFLECTION = this.specularRetroreflectivity > 0.0;
         defines.DISPERSION = this.transmissionDispersionScale > 0.0;
         defines.SCATTERING = this.hasScattering;
         const _sssSampleCounts = [8, 16, 32];

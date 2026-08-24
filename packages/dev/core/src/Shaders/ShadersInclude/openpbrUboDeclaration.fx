@@ -48,6 +48,7 @@ uniform Material {
     vec4 vReflectanceInfo;
     vec4 vSpecularColor;
     vec3 vSpecularAnisotropy;
+    float vSpecularRetroreflectivity;
     float vTransmissionWeight;
     vec3 vTransmissionColor;
     float vTransmissionDepth;
@@ -93,6 +94,8 @@ uniform Material {
     mat4 specularRoughnessMatrix;
     vec2 vSpecularRoughnessAnisotropyInfos;
     mat4 specularRoughnessAnisotropyMatrix;
+    vec2 vSpecularRetroreflectivityInfos;
+    mat4 specularRetroreflectivityMatrix;
     vec2 vTransmissionWeightInfos;
     mat4 transmissionWeightMatrix;
     vec2 vTransmissionColorInfos;

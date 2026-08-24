@@ -463,7 +463,7 @@ export class GLTFLoader implements IGLTFLoader {
                 await this._loadExtensionsAsync();
 
                 if (!this.parent.skipMaterials) {
-                    const needsOpenPBR = this.parent.useOpenPBR || this.isExtensionUsed("KHR_materials_openpbr");
+                    const needsOpenPBR = this.parent.useOpenPBR || this.isExtensionUsed("KHR_materials_openpbr") || this.isExtensionUsed("KHR_materials_retroreflection");
 
                     let needsPBR = false;
                     if (!this.parent.useOpenPBR) {
@@ -2378,7 +2378,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns The matching loaded implementation
      */
     private _selectImplForGltfMaterial(material: IMaterial): Readonly<PBRMaterialImplementation> {
-        if (this.parent.useOpenPBR || material.extensions?.["KHR_materials_openpbr"]) {
+        if (this.parent.useOpenPBR || material.extensions?.["KHR_materials_openpbr"] || material.extensions?.["KHR_materials_retroreflection"]) {
             const impl = this._pbrMaterialImpls.get("openpbr");
             if (impl) {
                 return impl;

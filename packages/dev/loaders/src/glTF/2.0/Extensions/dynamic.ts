@@ -132,6 +132,12 @@ export function registerBuiltInGLTFExtensions() {
         return new KHR_materials_iridescence(loader);
     });
 
+    unregisterGLTFExtension("KHR_materials_retroreflection");
+    registerGLTFExtension("KHR_materials_retroreflection", true, async (loader) => {
+        const { KHR_materials_retroreflection } = await import("./KHR_materials_retroreflection");
+        return new KHR_materials_retroreflection(loader);
+    });
+
     unregisterGLTFExtension("KHR_materials_pbrSpecularGlossiness");
     registerGLTFExtension("KHR_materials_pbrSpecularGlossiness", true, async (loader) => {
         const { KHR_materials_pbrSpecularGlossiness } = await import("./KHR_materials_pbrSpecularGlossiness");
