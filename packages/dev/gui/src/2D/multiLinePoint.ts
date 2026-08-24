@@ -1,6 +1,6 @@
 import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { Epsilon } from "core/Maths/math.constants";
 import { type Camera } from "core/Cameras/camera";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";

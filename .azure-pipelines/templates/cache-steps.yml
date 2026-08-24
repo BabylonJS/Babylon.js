@@ -5,17 +5,19 @@
 # `npm install` step so the npm download cache is restored first, and (when
 # enabled) the Nx computation cache is available for the later build target.
 #
-# Requires these pipeline-level variables to be defined (see ci-monorepo.yml):
+# Uses these pipeline-level cache path variables (see ci-monorepo.yml):
 #   - npm_config_cache          e.g. $(Pipeline.Workspace)/.npm
 #   - NX_CACHE_DIRECTORY        e.g. $(Pipeline.Workspace)/.nxcache
 #   - PLAYWRIGHT_BROWSERS_PATH  e.g. $(Pipeline.Workspace)/.playwright
+# The consuming job controls Nx's local cache size; this template only persists
+# the resulting directory.
 #
 # Cache keys:
 #   - npm:        keyed on package-lock.json (hits until dependencies change).
 #   - nx:         keyed per-job on the commit, with restoreKeys falling back to
-#                 the most recent prior cache. Nx validates each task by its own
-#                 input hash, so unchanged packages are restored as cache hits —
-#                 this is what makes re-pushes (e.g. fixing one comment) fast.
+#                 that job's most recent cache. Nx validates each task by its
+#                 own input hash, so unchanged packages are restored as cache
+#                 hits — this is what makes re-pushes fast.
 #   - playwright: keyed on package-lock.json (browser version is pinned there).
 # =============================================================================
 
@@ -23,6 +25,9 @@ parameters:
     - name: nx
       type: boolean
       default: false
+    - name: nxCacheKey
+      type: string
+      default: default
     - name: playwright
       type: boolean
       default: false
@@ -46,11 +51,11 @@ steps:
     - ${{ if eq(parameters.nx, true) }}:
           - task: Cache@2
             displayName: "Cache Nx computation"
+            continueOnError: true
             inputs:
-                key: 'nx | "$(Agent.OS)" | "$(System.JobName)" | $(Build.SourceVersion)'
+                key: 'nx | "$(Agent.OS)" | "${{ parameters.nxCacheKey }}" | $(Build.SourceVersion)'
                 restoreKeys: |
-                    nx | "$(Agent.OS)" | "$(System.JobName)"
-                    nx | "$(Agent.OS)"
+                    nx | "$(Agent.OS)" | "${{ parameters.nxCacheKey }}"
                 path: $(NX_CACHE_DIRECTORY)
 
     - ${{ if eq(parameters.playwright, true) }}:

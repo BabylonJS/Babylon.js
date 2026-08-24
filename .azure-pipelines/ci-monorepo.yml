@@ -73,6 +73,11 @@ variables:
       value: $(Pipeline.Workspace)/.npm
     - name: NX_CACHE_DIRECTORY
       value: $(Pipeline.Workspace)/.nxcache
+    # Nx 22.7.8 reads NX_MAX_CACHE_SIZE and accepts B/KB/MB/GB values. Cache@2
+    # creates an uncompressed tar alongside the cache, so cap the source
+    # directory to leave enough disk headroom for that temporary archive.
+    - name: NX_MAX_CACHE_SIZE
+      value: 4GB
     - name: PLAYWRIGHT_BROWSERS_PATH
       value: $(Pipeline.Workspace)/.playwright
     # Cache location for the pinned Khronos KHR_interactivity conformance assets.
@@ -184,6 +189,7 @@ jobs:
           - template: templates/cache-steps.yml
             parameters:
                 nx: true
+                nxCacheKey: build
 
           - script: npm install
             displayName: "npm install"
@@ -316,6 +322,7 @@ jobs:
           - template: templates/cache-steps.yml
             parameters:
                 nx: true
+                nxCacheKey: es6
 
           - script: npm install
             displayName: "npm install"
@@ -396,6 +403,7 @@ jobs:
           - template: templates/cache-steps.yml
             parameters:
                 nx: true
+                nxCacheKey: es6-tools
 
           - script: npm install
             displayName: "npm install"

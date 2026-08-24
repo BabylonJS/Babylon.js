@@ -2,7 +2,7 @@
 import { EncodeArrayBufferToBase64 } from "@dev/core";
 import { Utilities } from "./utilities";
 import { type GlobalState } from "../globalState";
-import { type IPosition } from "monaco-editor";
+import { type IPosition } from "monaco-editor/esm/vs/editor/editor.api";
 
 export const ManifestVersion = 2;
 

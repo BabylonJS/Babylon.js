@@ -2211,8 +2211,8 @@ export class ShadowGenerator implements IShadowGenerator {
         serializationObject.filteringQuality = this.filteringQuality;
         serializationObject.useExponentialShadowMap = this.useExponentialShadowMap;
         serializationObject.useBlurExponentialShadowMap = this.useBlurExponentialShadowMap;
-        serializationObject.useCloseExponentialShadowMap = this.useBlurExponentialShadowMap;
-        serializationObject.useBlurCloseExponentialShadowMap = this.useBlurExponentialShadowMap;
+        serializationObject.useCloseExponentialShadowMap = this.useCloseExponentialShadowMap;
+        serializationObject.useBlurCloseExponentialShadowMap = this.useBlurCloseExponentialShadowMap;
         serializationObject.usePoissonSampling = this.usePoissonSampling;
         serializationObject.depthScale = this.depthScale;
         serializationObject.blurBoxOffset = this.blurBoxOffset;
