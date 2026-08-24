@@ -104,8 +104,6 @@ interface ILayerEntry {
  * - On WebGPU you must also import the WebGPU upload extension yourself:
  *   `import "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource";`
  *   (the WebGL2 extension is imported automatically by the non-pure `multiTexture` entry).
- *
- * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/proceduralTextures
  */
 export class MultiTexture extends ProceduralTexture {
     private _layers: ILayerEntry[];
@@ -306,12 +304,15 @@ export class MultiTexture extends ProceduralTexture {
             throw new RangeError(`MultiTexture: layer index ${index} out of range [0, ${this._layerCount}).`);
         }
 
+        const entry = this._layers[index];
+        entry.url = url;
+        entry.etag = null;
+        entry.lastModified = null;
+        this.urls[index] = url;
+        this._warnedLoadFailure[index] = false;
+
         try {
             await this._loadLayer(index, url);
-            this.urls[index] = url;
-            this._layers[index].url = url;
-            this._layers[index].etag = null;
-            this._layers[index].lastModified = null;
         } catch (e) {
             this._reportError(e);
             throw e;
@@ -367,10 +368,10 @@ export class MultiTexture extends ProceduralTexture {
         }
         this._layerCount--;
 
-        for (let j = index + 1; j < this._layerCount; j++) {
-            const bitmap = this._layers[j - 1].bitmap;
+        for (let j = index; j < this._layerCount; j++) {
+            const bitmap = this._layers[j].bitmap;
             if (bitmap !== null) {
-                UploadImageToTexture2DArrayLayer(this._arrayTexture, bitmap, j - 1, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
+                UploadImageToTexture2DArrayLayer(this._arrayTexture, bitmap, j, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
             }
         }
 
