@@ -2,7 +2,7 @@ import { type Control } from "../../2D/controls/control";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { type Nullable } from "core/types";
 import { Control3D } from "./control3D";
-import { Texture } from "core/Materials/Textures/texture";
+import { Texture } from "core/Materials/Textures/texture.pure";
 
 /**
  * The base class for controls that display content
