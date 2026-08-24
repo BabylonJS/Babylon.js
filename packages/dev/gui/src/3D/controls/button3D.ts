@@ -1,14 +1,14 @@
-import { Vector4 } from "core/Maths/math.vector";
+import { Vector4 } from "core/Maths/math.vector.pure";
 import { type TransformNode } from "core/Meshes/transformNode";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
-import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder.pure";
 import { type Material } from "core/Materials/material";
-import { StandardMaterial } from "core/Materials/standardMaterial";
+import { StandardMaterial } from "core/Materials/standardMaterial.pure";
 import { type Scene } from "core/scene";
 
 import { AbstractButton3D } from "./abstractButton3D";
 import { type AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
-import { Color3 } from "core/Maths/math.color";
+import { Color3 } from "core/Maths/math.color.pure";
 
 /**
  * Options used to create a button in 3D

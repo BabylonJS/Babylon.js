@@ -1,11 +1,11 @@
 import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
-import { Vector3 } from "core/Maths/math.vector";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Mesh } from "core/Meshes/mesh";
-import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
-import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { Vector3 } from "core/Maths/math.vector.pure";
+import { StandardMaterial } from "core/Materials/standardMaterial.pure";
+import { TransformNode } from "core/Meshes/transformNode.pure";
+import { Mesh } from "core/Meshes/mesh.pure";
+import { CreatePlane } from "core/Meshes/Builders/planeBuilder.pure";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder.pure";
 import { FadeInOutBehavior } from "core/Behaviors/Meshes/fadeInOutBehavior";
 import { type Scene } from "core/scene";
 import { FluentMaterial } from "../materials/fluent/fluentMaterial.pure";
@@ -15,13 +15,13 @@ import { Image } from "../../2D/controls/image.pure";
 import { TextBlock } from "../../2D/controls/textBlock.pure";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { type Control3D } from "./control3D";
-import { Color3 } from "core/Maths/math.color";
+import { Color3 } from "core/Maths/math.color.pure";
 import { TouchButton3D } from "./touchButton3D";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { IsDocumentAvailable } from "core/Misc/domManagement";
 import { Scalar } from "core/Maths/math.scalar";
-import { Tools } from "core/Misc/tools";
+import { Tools } from "core/Misc/tools.pure";
 
 /**
  * Class used to create a holographic button in 3D

@@ -13,18 +13,18 @@ import { type Texture } from "core/Materials/Textures/texture";
 import { Vector4 } from "core/Maths/math";
 import { Epsilon } from "core/Maths/math.constants";
 import { Scalar } from "core/Maths/math.scalar";
-import { type Matrix, Quaternion, Vector2, Vector3 } from "core/Maths/math.vector";
+import { type Matrix, Quaternion, Vector2, Vector3 } from "core/Maths/math.vector.pure";
 import { Viewport } from "core/Maths/math.viewport";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
-import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder.pure";
+import { CreatePlane } from "core/Meshes/Builders/planeBuilder.pure";
 import { type TransformNode } from "core/Meshes/transformNode";
-import { Mesh } from "core/Meshes/mesh";
+import { Mesh } from "core/Meshes/mesh.pure";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { type Observer } from "core/Misc/observable";
 import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
-import { Tools } from "core/Misc/tools";
+import { Tools } from "core/Misc/tools.pure";
 
 /**
  * Class used to create a holographic slate
