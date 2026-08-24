@@ -308,7 +308,9 @@ describe("MultiTexture", () => {
     it("throws when maxLayers < urls.length", () => {
         const scene = makeScene();
 
-        expect(() => new MultiTexture("myMultiTexture", ["a.png", "b.png"], scene, { width: 8, height: 8, maxLayers: 1 })).toThrow("MultiTexture: maxLayers (1) must be >= urls.length (2).");
+        expect(() => new MultiTexture("myMultiTexture", ["a.png", "b.png"], scene, { width: 8, height: 8, maxLayers: 1 })).toThrow(
+            "MultiTexture: maxLayers (1) must be >= urls.length (2)."
+        );
     });
 
     it("loads all layers, caches pixels and issues one final mip generation", async () => {
@@ -717,9 +719,7 @@ describe("MultiTexture 2D canvas surface", () => {
             vi.stubGlobal("OffscreenCanvas", undefined);
         }
         try {
-            await expect(
-                Promise.resolve().then(() => createLoaded(["no-canvas.png"], { width: 4, height: 4 }))
-            ).rejects.toThrow(/no 2D canvas surface available/i);
+            await expect(Promise.resolve().then(() => createLoaded(["no-canvas.png"], { width: 4, height: 4 }))).rejects.toThrow(/no 2D canvas surface available/i);
         } finally {
             vi.unstubAllGlobals();
         }
@@ -734,6 +734,44 @@ describe("MultiTexture updateLayerAsync bookkeeping", () => {
 
         expect(mt.urls[0]).toBe("new.png");
         expect((mt as any)._layers[0].url).toBe("new.png");
+        mt.dispose();
+    });
+});
+
+describe("MultiTexture watch retry after failed initial load", () => {
+    it("retries layers whose initial load failed instead of skipping them forever", async () => {
+        const { mt } = await createLoaded(["flaky.png"], { width: 8, height: 8, watch: true, pollInterval: 1 });
+
+        // Make the URL fail from this point on, then simulate a never-loaded layer
+        // entry: no etag/lastModified recorded (and loaded=false, as after a failed
+        // initial GET), so HEAD-based change detection cannot apply.
+        mockState.urlBehaviors["flaky.png"] = "notok";
+        const entry = (mt as any)._layers[0];
+        entry.loaded = false;
+        entry.etag = null;
+        entry.lastModified = null;
+
+        // The poller early-returns while the document is hidden; the mock document may be
+        // frozen so defineProperty patches fail silently. Swap in a minimal visible document.
+        const originalDocument = (globalThis as any).document;
+        vi.stubGlobal("document", { visibilityState: "visible" });
+
+        // Drive one poll tick deterministically instead of waiting on the interval.
+        const loadSpy = vi.spyOn(mt as any, "_loadLayer");
+        try {
+            await (mt as any)._poll();
+        } finally {
+            if (originalDocument !== undefined) {
+                vi.stubGlobal("document", originalDocument);
+            } else {
+                vi.unstubAllGlobals();
+            }
+        }
+        // The never-loaded layer (etag/lastModified both null) must be retried by the poller
+        // instead of being skipped forever.
+        expect(loadSpy.mock.calls.some((c: any[]) => c[0] === 0 && c[1] === "flaky.png")).toBe(true);
+        loadSpy.mockRestore();
+
         mt.dispose();
     });
 });

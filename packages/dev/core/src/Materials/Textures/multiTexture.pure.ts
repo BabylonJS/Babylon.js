@@ -115,7 +115,8 @@ export class MultiTexture extends ProceduralTexture {
     private _pollTimer: ReturnType<typeof setInterval> | null = null;
     private _canvas: Nullable<OffscreenCanvas | HTMLCanvasElement>;
     private _ctx: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
-    private _warned404: boolean[];
+    /** One-shot warning state per entry: avoids repeated error logging for persistently failing watched layers. */
+    private _warnedLoadFailure: boolean[];
     private _disposed: boolean = false;
     private _mtOptions: IMultiTextureOptions;
     private _arrayTexture: RawTexture2DArray;
@@ -249,7 +250,7 @@ export class MultiTexture extends ProceduralTexture {
         this._layerCount = this._layers.length;
         this.urls = urls.slice();
         this.pixels = new Array<Uint8ClampedArray | null>(this._layerCount).fill(null);
-        this._warned404 = new Array<boolean>(this._layerCount).fill(false);
+        this._warnedLoadFailure = new Array<boolean>(this._layerCount).fill(false);
 
         this.defines = this._buildDefines(maxLayers, MODE_FLAGS[blendMode]);
         this.setTexture("uLayers", this._arrayTexture);
@@ -360,7 +361,7 @@ export class MultiTexture extends ProceduralTexture {
         const removed = this._layers.splice(index, 1)[0];
         this.pixels.splice(index, 1);
         this.urls.splice(index, 1);
-        this._warned404.splice(index, 1);
+        this._warnedLoadFailure.splice(index, 1);
         if (removed.bitmap) {
             removed.bitmap.close();
         }
@@ -520,6 +521,7 @@ export class MultiTexture extends ProceduralTexture {
         entry.loaded = true;
         entry.etag = meta.etag;
         entry.lastModified = meta.lastModified;
+        this._warnedLoadFailure[index] = false;
         this.pixels[index] = entry.pixels;
 
         this.resetRefreshCounter();
@@ -580,7 +582,7 @@ export class MultiTexture extends ProceduralTexture {
         this._layers.push({ url, etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false });
         this.pixels.push(null);
         this.urls.push(url);
-        this._warned404.push(false);
+        this._warnedLoadFailure.push(false);
         this._layerCount++;
     }
 
@@ -643,16 +645,33 @@ export class MultiTexture extends ProceduralTexture {
             let i: number;
             while ((i = next++) < count) {
                 const entry = this._layers[i];
-                if (!entry.loaded) {
-                    continue;
-                }
                 try {
+                    if (entry.etag === null && entry.lastModified === null) {
+                        // No etag/last-modified recorded for this entry — either it never loaded or
+                        // the server sends no validators. HEAD-based change detection cannot apply,
+                        // so retry a direct full load (a 404 at startup that is published later
+                        // recovers this way instead of being skipped forever).
+                        try {
+                            // eslint-disable-next-line no-await-in-loop -- full-load retry, same pool as the HEAD checks below.
+                            await this._loadLayer(i, entry.url);
+                        } catch (e) {
+                            // Persistently failing layer: warn once, retry on the next tick.
+                            if (!this._warnedLoadFailure[i]) {
+                                this._warnedLoadFailure[i] = true;
+                                const message = `MultiTexture: watched layer ${i} (${entry.url}) failed to load: ${String((e as { message?: unknown })?.message ?? e)}`;
+                                Logger.Error(message);
+                                this._mtOptions.onError?.(message);
+                            }
+                        }
+                        continue;
+                    }
+
                     // eslint-disable-next-line no-await-in-loop -- poll pool: each worker checks layers sequentially.
                     const response = await fetch(entry.url, { method: "HEAD" });
 
                     if (response.status === 404) {
-                        if (!this._warned404[i]) {
-                            this._warned404[i] = true;
+                        if (!this._warnedLoadFailure[i]) {
+                            this._warnedLoadFailure[i] = true;
                             const message = `MultiTexture: watched layer ${i} (${entry.url}) returned 404.`;
                             Logger.Error(message);
                             this._mtOptions.onError?.(message);
@@ -668,7 +687,8 @@ export class MultiTexture extends ProceduralTexture {
                     const etag = response.headers.get("etag");
                     const lastModified = response.headers.get("last-modified");
                     if (etag === null && lastModified === null) {
-                        // Cannot detect changes.
+                        // Change detection is unavailable for this entry (server sends no
+                        // etag/last-modified); nothing to compare against — skip.
                         continue;
                     }
 
