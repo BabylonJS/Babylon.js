@@ -10,7 +10,7 @@
 };
 
 vi.mock(
-    "monaco-editor/esm/vs/language/typescript/lib/typescriptServices",
+    "monaco-editor/languages/features/typescript/lib/typescriptServices",
     () => ({
         typescript: {
             transpileModule: (source: string) => ({ outputText: source }),
