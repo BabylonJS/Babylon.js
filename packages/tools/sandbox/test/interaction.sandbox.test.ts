@@ -122,7 +122,7 @@ test("loading a model without an environment using query parameters", async ({ p
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
     await page.waitForLoadState("networkidle");
 
-    await expect(page.locator("#renderCanvas")).toHaveScreenshot({ maxDiffPixels: 3000 });
+    await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
 });
 
 test("inspector is opened when clicking on the button", async ({ page }) => {
