@@ -1,5 +1,5 @@
 // ts/tsPipeline.ts
-import * as typescript from "monaco-editor/esm/vs/languages/features/typescript/register";
+import { typescript } from "monaco-editor/esm/vs/languages/features/register.all";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 /**

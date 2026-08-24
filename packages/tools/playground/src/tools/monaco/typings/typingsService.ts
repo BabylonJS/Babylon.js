@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable jsdoc/require-jsdoc */
-import * as typescript from "monaco-editor/esm/vs/languages/features/typescript/register";
+import { typescript } from "monaco-editor/esm/vs/languages/features/register.all";
 import type * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 import { setupTypeAcquisition } from "@typescript/ata";
