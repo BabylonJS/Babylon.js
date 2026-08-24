@@ -154,8 +154,9 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         }
 
         const bytes = new Uint8Array(data);
-        if (this._loadingOptions.encoding !== "auto") {
-            return new TextDecoder(this._loadingOptions.encoding).decode(bytes);
+        const encoding = this._loadingOptions.encoding ?? "auto";
+        if (encoding !== "auto") {
+            return new TextDecoder(encoding).decode(bytes);
         }
 
         if (bytes[0] === 0xff && bytes[1] === 0xfe) {
