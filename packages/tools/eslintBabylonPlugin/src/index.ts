@@ -1158,13 +1158,12 @@ const plugin: IPlugin = {
                             return false;
                         }
 
-                        const packagesAnchor = path.sep + path.join("packages", "dev") + path.sep;
-                        const packagesIndex = filename.indexOf(packagesAnchor);
-                        if (packagesIndex === -1) {
+                        const packagesMatch = /[/\\]packages[/\\]dev[/\\]/.exec(filename);
+                        if (!packagesMatch) {
                             return false;
                         }
 
-                        const repoRoot = filename.substring(0, packagesIndex);
+                        const repoRoot = filename.substring(0, packagesMatch.index);
                         resolved = path.join(repoRoot, "packages", "dev", packageImport[1], "src", packageImport[2]);
                     }
 
