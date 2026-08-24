@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import { Logger, type ThinEngine, type Scene } from "@dev/core";
-import { typescript } from "monaco-editor";
+import * as typescript from "monaco-editor/esm/vs/languages/features/typescript/register";
 import type * as monacoNs from "monaco-editor/esm/vs/editor/editor.api";
 import * as lexer from "es-module-lexer";
 import { type TsPipeline } from "../ts/tsPipeline";

@@ -9,7 +9,7 @@
     "devDependencies": {
         "@babel/core": "^7.29.7",
         "@babel/preset-env": "^7.29.7",
-        "@babylonjs/lite": "1.23.0",
+        "@babylonjs/lite": "1.24.0",
         "@dev/build-tools": "^1.0.0",
         "@eslint/js": "^10.0.1",
         "@playwright/test": "1.57.0",
@@ -23,7 +23,8 @@
         "@vitest/eslint-plugin": "^1.6.14",
         "ajv": "~8.18.0",
         "chokidar": "~3.6.0",
-        "dotenv": "~16.0.0",
+        "dompurify": "3.4.13",
+        "dotenv": "~16.6.0",
         "es-check": "^7.1.1",
         "esbuild": "^0.28.1",
         "eslint": "^10.0.2",
@@ -161,9 +162,13 @@
         "eslint-plugin-tsdoc": {
             "@typescript-eslint/utils": "^8.58.2"
         },
-        "dompurify": "3.4.12",
+        "dompurify": "$dompurify",
+        "monaco-editor": {
+            "dompurify": "$dompurify"
+        },
         "nx": {
-            "axios": "^1.18.1"
+            "axios": "^1.18.1",
+            "brace-expansion": "5.0.9"
         }
     }
 }
