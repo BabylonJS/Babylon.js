@@ -5,11 +5,12 @@
 # `npm install` step so the npm download cache is restored first, and (when
 # enabled) the Nx computation cache is available for the later build target.
 #
-# Requires these pipeline-level variables to be defined (see ci-monorepo.yml):
+# Uses these pipeline-level cache path variables (see ci-monorepo.yml):
 #   - npm_config_cache          e.g. $(Pipeline.Workspace)/.npm
 #   - NX_CACHE_DIRECTORY        e.g. $(Pipeline.Workspace)/.nxcache
-#   - NX_MAX_CACHE_SIZE         e.g. 4GB
 #   - PLAYWRIGHT_BROWSERS_PATH  e.g. $(Pipeline.Workspace)/.playwright
+# The consuming job controls Nx's local cache size; this template only persists
+# the resulting directory.
 #
 # Cache keys:
 #   - npm:        keyed on package-lock.json (hits until dependencies change).

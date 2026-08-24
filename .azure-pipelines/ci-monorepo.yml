@@ -73,8 +73,9 @@ variables:
       value: $(Pipeline.Workspace)/.npm
     - name: NX_CACHE_DIRECTORY
       value: $(Pipeline.Workspace)/.nxcache
-    # Cache@2 creates an uncompressed tar alongside the Nx cache when saving it.
-    # Keep enough disk headroom for both the cache and that temporary archive.
+    # Nx 22.7.8 reads NX_MAX_CACHE_SIZE and accepts B/KB/MB/GB values. Cache@2
+    # creates an uncompressed tar alongside the cache, so cap the source
+    # directory to leave enough disk headroom for that temporary archive.
     - name: NX_MAX_CACHE_SIZE
       value: 4GB
     - name: PLAYWRIGHT_BROWSERS_PATH
