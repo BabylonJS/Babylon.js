@@ -8,7 +8,7 @@ import { TouchHolographicMenu } from "./touchHolographicMenu";
 import { type Observer } from "core/Misc/observable";
 import { type Vector3 } from "core/Maths/math.vector";
 import { type PickingInfo } from "core/Collisions/pickingInfo";
-import { Tools } from "core/Misc/tools";
+import { Tools } from "core/Misc/tools.pure";
 
 /**
  * NearMenu that displays buttons and follows the camera

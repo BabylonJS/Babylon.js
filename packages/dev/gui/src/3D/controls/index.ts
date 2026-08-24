@@ -1,3 +1,5 @@
+import "core/Materials/standardMaterial";
+
 export * from "./abstractButton3D";
 export * from "./button3D";
 export * from "./container3D";
