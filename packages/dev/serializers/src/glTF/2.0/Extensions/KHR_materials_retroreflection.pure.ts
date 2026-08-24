@@ -35,6 +35,13 @@ export class KHR_materials_retroreflection implements IGLTFExporterExtensionV2 {
         return this._wasUsed;
     }
 
+    /**
+     * Collects the retroreflection texture for export.
+     * @param _context GLTF context of the material
+     * @param _node Exported glTF material
+     * @param babylonMaterial Source Babylon material
+     * @returns Additional textures to export
+     */
     public async postExportMaterialAdditionalTexturesAsync?(_context: string, _node: IMaterial, babylonMaterial: Material): Promise<BaseTexture[]> {
         if (babylonMaterial instanceof OpenPBRMaterial && this._isExtensionEnabled(babylonMaterial) && babylonMaterial.specularRetroreflectivityTexture) {
             return [babylonMaterial.specularRetroreflectivityTexture];
@@ -43,6 +50,13 @@ export class KHR_materials_retroreflection implements IGLTFExporterExtensionV2 {
         return [];
     }
 
+    /**
+     * Adds retroreflection properties to the exported glTF material.
+     * @param _context GLTF context of the material
+     * @param node Exported glTF material
+     * @param babylonMaterial Source Babylon material
+     * @returns The exported glTF material
+     */
     // eslint-disable-next-line no-restricted-syntax
     public postExportMaterialAsync?(_context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve) => {
