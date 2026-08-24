@@ -843,7 +843,7 @@ export class CSG {
 
                     let areUvsDifferent = false;
 
-                    if (uvs && !(uvs[vertexIdx * 2] === uv.x || uvs[vertexIdx * 2 + 1] === uv.y)) {
+                    if (uvs && !(uvs[vertexIdx * 2] === uv.x && uvs[vertexIdx * 2 + 1] === uv.y)) {
                         areUvsDifferent = true;
                     }
 
@@ -852,9 +852,9 @@ export class CSG {
                     if (
                         vertColors &&
                         !(
-                            vertColors[vertexIdx * 4] === vertColor.r ||
-                            vertColors[vertexIdx * 4 + 1] === vertColor.g ||
-                            vertColors[vertexIdx * 4 + 2] === vertColor.b ||
+                            vertColors[vertexIdx * 4] === vertColor.r &&
+                            vertColors[vertexIdx * 4 + 1] === vertColor.g &&
+                            vertColors[vertexIdx * 4 + 2] === vertColor.b &&
                             vertColors[vertexIdx * 4 + 3] === vertColor.a
                         )
                     ) {
@@ -876,7 +876,7 @@ export class CSG {
                         if (uvs) {
                             uvs.push(uv.x, uv.y);
                         }
-                        normals.push(normal.x, normal.y, normal.z);
+                        normals.push(localNormal.x, localNormal.y, localNormal.z);
                         if (vertColors) {
                             vertColors.push(vertColor.r, vertColor.g, vertColor.b, vertColor.a);
                         }

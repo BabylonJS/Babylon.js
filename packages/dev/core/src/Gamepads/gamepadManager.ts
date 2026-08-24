@@ -32,6 +32,7 @@ export class GamepadManager {
 
     private _onGamepadConnectedEvent: Nullable<(evt: any) => void>;
     private _onGamepadDisconnectedEvent: Nullable<(evt: any) => void>;
+    private _hostWindow: Nullable<Window> = null;
 
     /**
      * Initializes the gamepad manager
@@ -108,6 +109,7 @@ export class GamepadManager {
                 const hostWindow = this._scene ? this._scene.getEngine().getHostWindow() : window;
 
                 if (hostWindow) {
+                    this._hostWindow = hostWindow;
                     hostWindow.addEventListener("gamepadconnected", this._onGamepadConnectedEvent, false);
                     hostWindow.addEventListener("gamepaddisconnected", this._onGamepadDisconnectedEvent, false);
                 }
@@ -145,12 +147,13 @@ export class GamepadManager {
     public dispose() {
         if (this._gamepadEventSupported) {
             if (this._onGamepadConnectedEvent) {
-                window.removeEventListener("gamepadconnected", this._onGamepadConnectedEvent);
+                this._hostWindow?.removeEventListener("gamepadconnected", this._onGamepadConnectedEvent);
             }
 
             if (this._onGamepadDisconnectedEvent) {
-                window.removeEventListener("gamepaddisconnected", this._onGamepadDisconnectedEvent);
+                this._hostWindow?.removeEventListener("gamepaddisconnected", this._onGamepadDisconnectedEvent);
             }
+            this._hostWindow = null;
             this._onGamepadConnectedEvent = null;
             this._onGamepadDisconnectedEvent = null;
         }

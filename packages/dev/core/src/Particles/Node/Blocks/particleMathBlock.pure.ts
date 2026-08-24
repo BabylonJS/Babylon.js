@@ -260,7 +260,7 @@ export class ParticleMathBlock extends NodeParticleBlock {
                                 const other = vector.getConnectedValue(state);
                                 const { r, g, b, a } = state.adapt(scalar, vector.type);
 
-                                return new Color4(Math.max(other.r, r), Math.min(other.g, g), Math.min(other.b, b), Math.min(other.a, a));
+                                return new Color4(Math.max(other.r, r), Math.max(other.g, g), Math.max(other.b, b), Math.max(other.a, a));
                             };
                             break;
                         }

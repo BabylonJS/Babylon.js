@@ -15,7 +15,7 @@ export function deepMerge<T extends object>(...objects: T[]): T {
             const oVal = (obj as Record<string, unknown>)[key];
 
             if (Array.isArray(pVal) && Array.isArray(oVal)) {
-                prev[key] = pVal.concat(...oVal);
+                prev[key] = pVal.concat(oVal);
             } else if (isRecord(pVal) && isRecord(oVal)) {
                 prev[key] = deepMerge(pVal, oVal);
             } else {

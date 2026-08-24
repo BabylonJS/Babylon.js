@@ -870,7 +870,7 @@ let _Registered = false;
  * @returns An instantiated pipeline from the serialized object.
  */
 export function DefaultRenderingPipelineParse(source: any, scene: Scene, rootUrl: string): DefaultRenderingPipeline {
-    return SerializationHelper.Parse(() => new DefaultRenderingPipeline(source._name, source._name._hdr, scene), source, scene, rootUrl);
+    return SerializationHelper.Parse(() => new DefaultRenderingPipeline(source._name, source._hdr, scene), source, scene, rootUrl);
 }
 
 /**
