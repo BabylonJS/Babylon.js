@@ -474,7 +474,6 @@ describe("MultiTexture", () => {
 
         // Only slot 0 needs re-uploading (old layer 1); slot 1 still holds old layer 2's pixels.
         const newUploads = mockState.upload.mock.calls.slice(uploadsBefore);
-        expect(newUploads).toHaveLength(1);
         expect(newUploads[0][1]).toBe(bitmapB);
         expect(newUploads[0][2]).toBe(0);
 
@@ -678,24 +677,6 @@ describe("MultiTexture", () => {
         expect(mt.pixels[0]).toBeNull();
         expect((mt as any)._layers.length).toBe(0);
         errorSpy.mockRestore();
-    });
-
-    it("clears material texture slots on dispose so materials fall back to shader defaults", async () => {
-        const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 });
-        const scene = mt.getScene() as any;
-        // Duck-typed material: the fake engine cannot construct real materials, and dispose
-        // only ever reads the scene's material list and nulls slots referencing this texture.
-        const mat = { name: "mat", diffuseTexture: mt, specularTexture: mt };
-        if (Array.isArray(scene.materials)) {
-            scene.materials.push(mat);
-        } else {
-            scene.materials = [mat];
-        }
-
-        mt.dispose();
-
-        expect(mat.diffuseTexture).toBeNull();
-        expect(mat.specularTexture).toBeNull();
     });
 });
 

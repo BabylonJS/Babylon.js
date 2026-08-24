@@ -408,35 +408,7 @@ export class MultiTexture extends ProceduralTexture {
         this._canvas = null;
         this._ctx = null;
 
-        // Clear material slots that still reference us so materials re-derive their defines and
-        // fall back to texture-less shader defaults (flat color) instead of binding the
-        // destroyed texture and rendering black.
-        const materialContainer = this.getScene()!.materials as unknown;
-        const materialList = Array.isArray(materialContainer)
-            ? (materialContainer as { getPropertiesNames?: () => string[] }[])
-            : typeof (materialContainer as { get?: () => unknown[] })?.get === "function"
-              ? ((materialContainer as { get: () => unknown[] }).get() as { getPropertiesNames?: () => string[] }[])
-              : [];
-        for (const material of materialList) {
-            const record = material as unknown as Record<string, unknown>;
-            const keys =
-                typeof (material as { getPropertiesNames?: () => string[] }).getPropertiesNames === "function"
-                    ? (material as { getPropertiesNames: () => string[] }).getPropertiesNames()
-                    : Object.keys(record);
-            for (const key of keys) {
-                const slot = (record as Record<string, unknown>)[key];
-                if ((key.endsWith("Texture") || key === "diffuseTexture") && slot === this) {
-                    try {
-                        (record as Record<string, unknown>)[key] = null;
-                    } catch {
-                        // Getter-only slot; best-effort clear.
-                    }
-                }
-            }
-        }
-
         this._arrayTexture.dispose();
-
         super.dispose();
     }
 
