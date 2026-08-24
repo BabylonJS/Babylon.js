@@ -3,7 +3,7 @@ import { Button3D } from "./button3D";
 import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
 import { Vector3 } from "core/Maths/math.vector.pure";
-import { StandardMaterial } from "core/Materials/standardMaterial.pure";
+import { RegisterStandardMaterial, StandardMaterial } from "core/Materials/standardMaterial.pure";
 import { type TransformNode } from "core/Meshes/transformNode";
 import { Mesh } from "core/Meshes/mesh.pure";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder.pure";
@@ -99,6 +99,7 @@ export class HolographicButton extends Button3D {
             this._tooltipMesh.parent = this._backPlate;
 
             // Create text texture for the tooltip
+            RegisterStandardMaterial();
             this._tooltipTexture = AdvancedDynamicTexture.CreateForMesh(this._tooltipMesh);
             this._tooltipTextBlock = new TextBlock();
             this._tooltipTextBlock.scaleY = 3;

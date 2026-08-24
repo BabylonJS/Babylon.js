@@ -25,6 +25,7 @@ import { type Observer } from "core/Misc/observable";
 import { type Scene } from "core/scene";
 import { type Nullable } from "core/types";
 import { Tools } from "core/Misc/tools.pure";
+import { RegisterStandardMaterial } from "core/Materials/standardMaterial.pure";
 
 /**
  * Class used to create a holographic slate
@@ -307,6 +308,7 @@ export class HolographicSlate extends ContentDisplay3D {
         this._titleBarTitle.parent = node;
         this._titleBarTitle.isPickable = false;
 
+        RegisterStandardMaterial();
         const adt = AdvancedDynamicTexture.CreateForMesh(this._titleBarTitle);
         this._titleTextComponent = new TextBlock("titleText_" + this.name, this._titleText);
         this._titleTextComponent.textWrapping = TextWrapping.Ellipsis;

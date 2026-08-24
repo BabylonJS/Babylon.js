@@ -1,6 +1,7 @@
 {
     "version": 1,
     "files": {
+        "3D/controls/index.ts": ["bare-import"],
         "3D/materials/fluent/fluentMaterial.ts": ["bare-import", "top-level-call"],
         "3D/materials/fluent/shaders/fluent.fragment.ts": ["shader-store-write"],
         "3D/materials/fluent/shaders/fluent.vertex.ts": ["shader-store-write"],

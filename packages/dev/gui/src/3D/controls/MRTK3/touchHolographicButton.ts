@@ -24,7 +24,7 @@ import { MRDLInnerquadMaterial } from "../../materials/mrdl/mrdlInnerquadMateria
 import { Rectangle } from "../../../2D/controls/rectangle.pure";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { StackPanel } from "../../../2D/controls/stackPanel.pure";
-import { StandardMaterial } from "core/Materials/standardMaterial.pure";
+import { RegisterStandardMaterial, StandardMaterial } from "core/Materials/standardMaterial.pure";
 import { TextBlock } from "../../../2D/controls/textBlock.pure";
 import { TouchButton3D } from "../touchButton3D";
 import { TransformNode } from "core/Meshes/transformNode.pure";
@@ -237,6 +237,7 @@ export class TouchHolographicButton extends TouchButton3D {
             this._tooltipMesh.parent = this._frontPlateCollisionMesh;
 
             // Create text texture for the tooltip
+            RegisterStandardMaterial();
             this._tooltipTexture = AdvancedDynamicTexture.CreateForMesh(this._tooltipMesh);
             const tooltipBackground = new Rectangle();
             tooltipBackground.height = 0.25;
