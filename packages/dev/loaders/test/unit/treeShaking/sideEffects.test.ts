@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { registeredGLTFExtensions } from "loaders/glTF/2.0/glTFLoaderExtensionRegistry";
+import { GetMappingForKey } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 
 /**
  * Tree-shaking guard for the loaders package.
@@ -14,6 +15,17 @@ import { registeredGLTFExtensions } from "loaders/glTF/2.0/glTFLoaderExtensionRe
  *    the explicit `Register*` opt-in is called.
  */
 describe("loaders tree-shaking side effects", () => {
+    it("registers glTF animation mappings only when explicitly requested", async () => {
+        const translation = GetMappingForKey("/nodes/{}/translation");
+        expect(translation?.interpolation).toBeUndefined();
+
+        const pure = await import("loaders/glTF/2.0/glTFLoaderAnimation.pure");
+        expect(translation?.interpolation).toBeUndefined();
+
+        pure.RegisterGLTFLoaderAnimation();
+        expect(translation?.interpolation).toHaveLength(1);
+    });
+
     it("does not register the extension when importing the pure module (opt-in only)", async () => {
         expect(registeredGLTFExtensions.has("KHR_materials_unlit")).toBe(false);
 
