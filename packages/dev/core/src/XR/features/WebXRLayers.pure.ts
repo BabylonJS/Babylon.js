@@ -9,7 +9,7 @@ import { WebXRProjectionLayerWrapper, DefaultXRProjectionLayerInit } from "./Lay
 import { WebXRCompositionLayerRenderTargetTextureProvider, WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
 import { WebXRWebGPUProjectionLayerWrapper, CreateDefaultXRGPUProjectionLayerInit } from "./Layers/WebXRWebGPUProjectionLayer";
 import { WebXRWebGPUCompositionLayerRenderTargetTextureProvider, WebXRWebGPUCompositionLayerWrapper } from "./Layers/WebXRWebGPUCompositionLayer";
-import { WebXRGraphicsBindingType } from "../webXRGraphicsBinding";
+import { IsWebGPUXRSupported, WebXRGraphicsBindingType } from "../webXRGraphicsBinding";
 import { type ThinTexture } from "../../Materials/Textures/thinTexture";
 import { type DynamicTexture } from "../../Materials/Textures/dynamicTexture.pure";
 import { Color4 } from "../../Maths/math.color.pure";
@@ -441,7 +441,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
 
     public override isCompatible(): boolean {
         if (this._xrSessionManager.scene.getEngine().isWebGPU) {
-            return typeof XRGPUBinding !== "undefined" && !!XRGPUBinding.prototype.createProjectionLayer;
+            return IsWebGPUXRSupported();
         }
         // Native WebGL continues to use NativeXRRenderTarget instead of WebXR Layers.
         if (this._xrSessionManager.isNative) {

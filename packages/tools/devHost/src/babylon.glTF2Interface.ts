@@ -1383,6 +1383,14 @@ interface IEXTMeshoptCompression {
 }
 
 /**
+ * Light types from the EXT_lights_area extension.
+ */
+export const enum EXTLightsArea_LightType {
+    RECT = "rect",
+    DISK = "disk",
+}
+
+/**
  * Interfaces for the KHR_interactivity extension
  */
 interface IKHRInteractivity {

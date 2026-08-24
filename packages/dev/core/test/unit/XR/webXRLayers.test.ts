@@ -14,11 +14,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 interface ProjectionLayerBindingConstructor {
     prototype: {
         createProjectionLayer?: () => void;
+        getViewSubImage?: () => void;
+        getPreferredColorFormat?: () => void;
+    };
+}
+
+interface GPUSubImageConstructor {
+    prototype: {
+        getViewDescriptor?: () => void;
     };
 }
 
 type TestGlobals = typeof globalThis & {
     XRGPUBinding?: ProjectionLayerBindingConstructor;
+    XRGPUSubImage?: GPUSubImageConstructor;
     XRWebGLBinding?: ProjectionLayerBindingConstructor;
     XRRigidTransform?: typeof XRRigidTransform;
 };
@@ -34,6 +43,7 @@ describe("WebXRLayers", () => {
     let sessionManager: WebXRSessionManager;
     const testGlobals = globalThis as TestGlobals;
     let originalGPUBinding: ProjectionLayerBindingConstructor | undefined;
+    let originalGPUSubImage: GPUSubImageConstructor | undefined;
     let originalWebGLBinding: ProjectionLayerBindingConstructor | undefined;
     let originalRigidTransform: typeof XRRigidTransform | undefined;
 
@@ -49,9 +59,13 @@ describe("WebXRLayers", () => {
         sessionManager = new WebXRSessionManager(scene);
         (sessionManager as any)._xrNavigator = { xr: { native: false } };
         originalGPUBinding = testGlobals.XRGPUBinding;
+        originalGPUSubImage = testGlobals.XRGPUSubImage;
         originalWebGLBinding = testGlobals.XRWebGLBinding;
         originalRigidTransform = testGlobals.XRRigidTransform;
         testGlobals.XRRigidTransform = vi.fn(function () {}) as unknown as typeof XRRigidTransform;
+        const subImage = vi.fn() as unknown as GPUSubImageConstructor;
+        subImage.prototype.getViewDescriptor = vi.fn();
+        testGlobals.XRGPUSubImage = subImage;
     });
 
     afterEach(() => {
@@ -64,6 +78,11 @@ describe("WebXRLayers", () => {
             testGlobals.XRWebGLBinding = originalWebGLBinding;
         } else {
             delete testGlobals.XRWebGLBinding;
+        }
+        if (originalGPUSubImage) {
+            testGlobals.XRGPUSubImage = originalGPUSubImage;
+        } else {
+            delete testGlobals.XRGPUSubImage;
         }
         if (originalRigidTransform) {
             testGlobals.XRRigidTransform = originalRigidTransform;
@@ -83,6 +102,8 @@ describe("WebXRLayers", () => {
     function installGPUBinding(): void {
         const binding = vi.fn() as unknown as ProjectionLayerBindingConstructor;
         binding.prototype.createProjectionLayer = vi.fn();
+        binding.prototype.getViewSubImage = vi.fn();
+        binding.prototype.getPreferredColorFormat = vi.fn();
         testGlobals.XRGPUBinding = binding;
     }
 
@@ -115,7 +136,7 @@ describe("WebXRLayers", () => {
     }
 
     describe("isCompatible", () => {
-        it("accepts native WebGPU when XRGPUBinding exposes projection layers", () => {
+        it("accepts native WebGPU when XRGPUBinding exposes the required projection path", () => {
             setEnvironment(true, true);
             installGPUBinding();
 
@@ -129,6 +150,22 @@ describe("WebXRLayers", () => {
             expect(new WebXRLayers(sessionManager).isCompatible()).toBe(false);
         });
 
+        it.each(["createProjectionLayer", "getViewSubImage", "getPreferredColorFormat"] as const)("rejects WebGPU when XRGPUBinding.%s is absent", (methodName) => {
+            setEnvironment(false, true);
+            installGPUBinding();
+            delete testGlobals.XRGPUBinding!.prototype[methodName];
+
+            expect(new WebXRLayers(sessionManager).isCompatible()).toBe(false);
+        });
+
+        it("rejects WebGPU when XRGPUSubImage.getViewDescriptor is absent", () => {
+            setEnvironment(false, true);
+            installGPUBinding();
+            delete testGlobals.XRGPUSubImage!.prototype.getViewDescriptor;
+
+            expect(new WebXRLayers(sessionManager).isCompatible()).toBe(false);
+        });
+
         it("keeps native WebGL on the legacy render-target path", () => {
             setEnvironment(true, false);
             installWebGLBinding();
@@ -136,7 +173,7 @@ describe("WebXRLayers", () => {
             expect(new WebXRLayers(sessionManager).isCompatible()).toBe(false);
         });
 
-        it("accepts browser WebGPU when XRGPUBinding exposes projection layers", () => {
+        it("accepts browser WebGPU when XRGPUBinding exposes the required projection path", () => {
             setEnvironment(false, true);
             installGPUBinding();
 
