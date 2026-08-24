@@ -107,6 +107,24 @@ test("loading a model using query parameters", async ({ page }) => {
     await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
 });
 
+test("loading a model without an environment using query parameters", async ({ page }) => {
+    const trafficConeUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/3582d49006fca135dc990bab0d80b83c958ac617/Models/TrafficCone/glTF/TrafficCone.gltf";
+    const query = [`assetUrl=${trafficConeUrl}`, "camera=0", "environment=none", "skybox=false", "clearcolor=000000"].join("&");
+
+    await page.goto(url + (snapshot ? "&" : "?") + query, {
+        waitUntil: "load",
+    });
+    await page.setViewportSize({
+        width: 1920,
+        height: 1080,
+    });
+    await page.waitForSelector("#babylonjsLoadingDiv", { state: "hidden" });
+    await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await page.waitForLoadState("networkidle");
+
+    await expect(page.locator("#renderCanvas")).toHaveScreenshot({ maxDiffPixels: 3000 });
+});
+
 test("inspector is opened when clicking on the button", async ({ page }) => {
     await page.goto(url + (snapshot ? "&" : "?") + "assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb", {
         waitUntil: "load",

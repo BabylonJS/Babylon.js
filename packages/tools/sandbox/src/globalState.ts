@@ -24,6 +24,7 @@ export class GlobalState {
     public autoRotate = false;
     public cameraPosition?: Vector3;
     public skybox = true;
+    public environmentEnabled = true;
     public toneMapping?: number;
 
     public reflector?: {
