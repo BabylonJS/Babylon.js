@@ -429,6 +429,10 @@ describe("WebXRLayers", () => {
             expect(cylinderLayer.space).toBe(gpuSpace);
             expect(binding.createEquirectLayer).toHaveBeenCalledWith(expect.objectContaining({ radius: 4, centralHorizontalAngle: Math.PI }));
             expect(binding.createCubeLayer).toHaveBeenCalledWith(expect.objectContaining({ colorFormat: "rgba8unorm", space: sessionManager.referenceSpace }));
+            expect(() => feature.createCubeLayer({ gpuLayerInit: { viewPixelWidth: 256, viewPixelHeight: 128 } })).toThrow(
+                "WebXR cube layer faces must have equal pixel width and height."
+            );
+            expect(binding.createCubeLayer).toHaveBeenCalledTimes(1);
         });
 
         it("updates only layers that use the session manager's default reference space", () => {

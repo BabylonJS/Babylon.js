@@ -437,6 +437,9 @@ export class WebXRLayers extends WebXRAbstractFeature {
             } as TWebGPUInit;
             copyWebGPUSpecificInit(populatedParams, gpuParams);
             Object.assign(gpuParams, options.gpuLayerInit);
+            if (layerType === "XRCubeLayer" && gpuParams.viewPixelWidth !== gpuParams.viewPixelHeight) {
+                throw new Error("WebXR cube layer faces must have equal pixel width and height.");
+            }
             effectiveParams = gpuParams;
             depthStencilFormat = gpuParams.depthStencilFormat;
             layer = createWebGPULayer(binding, gpuParams);

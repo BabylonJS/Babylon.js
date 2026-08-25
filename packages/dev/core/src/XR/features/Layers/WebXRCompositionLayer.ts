@@ -40,6 +40,9 @@ export class WebXRCompositionLayerWrapper<
         public override getHeight: () => number,
         public override readonly layer: LayerT,
         public override readonly layerType: LayerTypeT,
+        /**
+         * Whether the layer renders both views into a texture array.
+         */
         public readonly isMultiview: boolean,
         public createRTTProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider<LayerTypeT>,
         public _originalInternalTexture: Nullable<InternalTexture> = null,
