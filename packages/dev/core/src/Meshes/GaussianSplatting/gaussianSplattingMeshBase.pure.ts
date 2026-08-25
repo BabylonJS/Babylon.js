@@ -1260,45 +1260,50 @@ export class GaussianSplattingMeshBase extends Mesh {
             return false;
         }
 
-        // Before the first successful render, apply strict sort-state checks to ensure
-        // the first rendered frame uses correct splat ordering. Once the mesh has been
-        // rendered at least once, skip these checks — the render loop will continuously
-        // re-sort as the camera/world changes via _postToWorker() in render().
+        // Before the first successful render, require an applied index buffer. A pending refresh can
+        // use the latest completed buffer, otherwise a transform changed every frame would starve the
+        // first render. Once rendered, the render loop continuously re-sorts as the camera/world changes.
         if (!this._hasRenderedOnce && !this._disableDepthSort) {
             const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
+            const canRenderWithPendingRefresh = cameras.filter((camera) => camera !== null).length === 1;
             const worldMatrix = this.computeWorldMatrix(true);
-            let anyDirty = false;
+            let sortBufferMissing = false;
+            let sortRefreshPending = false;
+            let worldMatrixDirty = false;
             for (const camera of cameras) {
                 if (!camera) {
                     continue;
                 }
 
                 const cameraViewInfo = this._cameraViewInfos.get(camera.uniqueId);
-                if (!cameraViewInfo || !cameraViewInfo.splatIndexBufferSet) {
-                    anyDirty = true;
+                if (!cameraViewInfo || !cameraViewInfo.splatIndexBufferSet || cameraViewInfo.sortAppliedId === 0) {
+                    sortBufferMissing = true;
                     continue;
                 }
 
-                // Wait for the most recently requested sort to be applied so that the splat indices
-                // match the latest world/camera state.
                 if (cameraViewInfo.sortAppliedId !== cameraViewInfo.sortRequestId) {
-                    anyDirty = true;
+                    sortRefreshPending = true;
                     continue;
                 }
 
-                // If world matrix drifted (user applied transforms after load), re-sort before first render.
+                // If world matrix drifted (user applied transforms after load), request an updated sort.
                 // Camera drift is intentionally excluded here: checking camera movement would cause isReady()
                 // to return false indefinitely while the camera is moving. The render loop handles camera
                 // re-sorting continuously via _postToWorker() in render().
                 if (this._isSortStateDirty(cameraViewInfo, worldMatrix, camera, true)) {
-                    anyDirty = true;
+                    worldMatrixDirty = true;
                 }
             }
 
-            if (anyDirty) {
+            if (sortBufferMissing || sortRefreshPending || worldMatrixDirty) {
                 // Try to post any pending sort so subsequent polling iterations make progress.
                 this._postToWorker(true);
-                return false;
+                // A single-camera scene may use its latest completed sort while a transform refresh is
+                // pending, which prevents continuously changing transforms from starving the first render.
+                // Multi-camera scenes must wait because each viewport needs its own refreshed ordering.
+                if (sortBufferMissing || !canRenderWithPendingRefresh) {
+                    return false;
+                }
             }
         }
 
@@ -1462,10 +1467,15 @@ export class GaussianSplattingMeshBase extends Mesh {
                 this._cameraViewInfos.set(cameraId, newViewInfos);
             }
         });
-        // sort view infos: cameras without an initial splat-index buffer come first so they don't get starved
+        // Sort view infos: cameras without a completed initial sort come first so they don't get starved
         // by a `forced` re-sort of an already-initialized camera (which would consume `_canPostToWorker`).
+        // A camera can already have the shared index buffer bound when another camera's first sort resizes it,
+        // so splatIndexBufferSet alone does not mean this camera has received its own sorted result.
         // Among initialized cameras, the least recently updated comes first.
         activeViewInfos.sort((a, b) => {
+            if ((a.sortAppliedId === 0) !== (b.sortAppliedId === 0)) {
+                return a.sortAppliedId === 0 ? -1 : 1;
+            }
             if (a.splatIndexBufferSet !== b.splatIndexBufferSet) {
                 return a.splatIndexBufferSet ? 1 : -1;
             }

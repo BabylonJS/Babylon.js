@@ -5,7 +5,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.p
 import { type Viewport } from "../Maths/math.viewport";
 import { type IDisposable, type Scene } from "../scene";
 import { type Nullable } from "../types";
-import { type WebXRLayerWrapper } from "./webXRLayerWrapper";
+import { type WebXRLayerType, type WebXRLayerWrapper, type WebXRSupportedLayerType } from "./webXRLayerWrapper";
 
 /**
  * An interface for objects that provide render target textures for XR rendering.
@@ -37,7 +37,7 @@ export interface IWebXRRenderTargetTextureProvider extends IDisposable {
  * Provides render target textures and other important rendering information for a given XRLayer.
  * @internal
  */
-export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRenderTargetTextureProvider {
+export abstract class WebXRLayerRenderTargetTextureProvider<LayerTypeT extends WebXRSupportedLayerType = WebXRLayerType> implements IWebXRRenderTargetTextureProvider {
     public abstract trySetViewportForView(viewport: Viewport, view: XRView): boolean;
     public abstract getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
     public abstract getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture>;
@@ -49,7 +49,7 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
 
     constructor(
         protected readonly _scene: Scene,
-        public readonly layerWrapper: WebXRLayerWrapper
+        public readonly layerWrapper: WebXRLayerWrapper<LayerTypeT>
     ) {
         this._engine = _scene.getEngine();
     }

@@ -16,6 +16,7 @@
         "XR/features/WebXRHitTest.ts": ["top-level-call"],
         "XR/features/WebXRImageTracking.ts": ["top-level-call"],
         "XR/features/WebXRLayers.ts": ["top-level-call"],
+        "XR/features/WebXRLayersFallback.ts": ["top-level-call"],
         "XR/features/WebXRLightEstimation.ts": ["top-level-call"],
         "XR/features/WebXRMeshDetector.ts": ["top-level-call"],
         "XR/features/WebXRNearInteraction.ts": ["top-level-call"],
