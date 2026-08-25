@@ -20,11 +20,14 @@ import { WebXRWebGPUProjectionLayerWrapper, CreateDefaultXRGPUProjectionLayerIni
 import { WebXRWebGPUCompositionLayerRenderTargetTextureProvider } from "./Layers/WebXRWebGPUCompositionLayer";
 import { WebXRGraphicsBindingType } from "../webXRGraphicsBinding";
 import { type ThinTexture } from "../../Materials/Textures/thinTexture";
+import { type RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture.pure";
 import { type DynamicTexture } from "../../Materials/Textures/dynamicTexture.pure";
 import { Color4 } from "../../Maths/math.color.pure";
 import { type LensFlareSystem } from "../../LensFlares/lensFlareSystem";
 import { Logger } from "../../Misc/logger";
 import { type Nullable } from "../../types";
+import { type Observer } from "../../Misc/observable.pure";
+import { type Scene } from "../../scene.pure";
 import { TransformNode } from "../../Meshes/transformNode.pure";
 import { Quaternion } from "../../Maths/math.vector.pure";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -186,6 +189,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
 
     private _compositionLayerTextureMapping: WeakMap<XRCompositionLayer, ThinTexture> = new WeakMap();
     private _layerToRTTProviderMapping: WeakMap<XRCompositionLayer, WebXRLayerRenderTargetTextureProvider<WebXRSupportedLayerType>> = new WeakMap();
+    private _layerCleanupFunctions = new WeakMap<WebXRLayerWrapper<WebXRSupportedLayerType>, () => void>();
 
     constructor(
         _xrSessionManager: WebXRSessionManager,
@@ -248,6 +252,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
             return false;
         }
         for (const layer of this._existingLayers) {
+            this._layerCleanupFunctions.get(layer)?.();
             layer.dispose();
         }
         this._existingLayers.length = 0;
@@ -399,15 +404,20 @@ export class WebXRLayers extends WebXRAbstractFeature {
         }
 
         const dimensions = this._getProjectionLayerDimensions();
+        const defaultViewPixelWidth = layerType === "XRCubeLayer" ? Math.min(dimensions.width, dimensions.height) : dimensions.width;
+        const defaultViewPixelHeight = layerType === "XRCubeLayer" ? defaultViewPixelWidth : dimensions.height;
         const populatedParams = {
             space: this._xrSessionManager.referenceSpace,
-            viewPixelWidth: dimensions.width,
-            viewPixelHeight: dimensions.height,
+            viewPixelWidth: defaultViewPixelWidth,
+            viewPixelHeight: defaultViewPixelHeight,
             clearOnAccess: true,
             textureType: "texture",
             layout: "mono",
             ...options.layerInit,
         } as TWebGLInit;
+        if (layerType === "XRCubeLayer" && populatedParams.viewPixelWidth !== populatedParams.viewPixelHeight) {
+            throw new Error("WebXR cube layer faces must have equal pixel width and height.");
+        }
         this._validateLayerInit(populatedParams, false, layerType === "XRCubeLayer");
 
         let layer: LayerT;
@@ -875,25 +885,45 @@ export class WebXRLayers extends WebXRAbstractFeature {
         if (!babylonLayer) {
             throw new Error("Could not find the babylon layer for the texture");
         }
-        rttProvider.onRenderTargetTextureCreatedObservable.add((data) => {
+        const renderTargetTextures = new Set<RenderTargetTexture>();
+        const beforeRenderObservers: Observer<Scene>[] = [];
+        const previousRenderOnlyInRenderTargetTextures = babylonLayer.renderOnlyInRenderTargetTextures;
+        let cleanedUp = false;
+        const renderTargetCreatedObserver = rttProvider.onRenderTargetTextureCreatedObservable.add((data) => {
             if (data.eye && data.eye === "right") {
                 return;
             }
             data.texture.clearColor = new Color4(0, 0, 0, 0);
             babylonLayer.renderTargetTextures.push(data.texture);
+            renderTargetTextures.add(data.texture);
             babylonLayer.renderOnlyInRenderTargetTextures = true;
             // for stereo (not for gui) it should be onBeforeCameraRenderObservable
-            this._xrSessionManager.scene.onBeforeRenderObservable.add(() => {
-                data.texture.render();
-            });
-            babylonLayer.renderTargetTextures.push(data.texture);
-            babylonLayer.renderOnlyInRenderTargetTextures = true;
-            // add it back when the session ends
-            this._xrSessionManager.onXRSessionEnded.addOnce(() => {
-                babylonLayer.renderTargetTextures.splice(babylonLayer.renderTargetTextures.indexOf(data.texture), 1);
-                babylonLayer.renderOnlyInRenderTargetTextures = false;
-            });
+            beforeRenderObservers.push(
+                this._xrSessionManager.scene.onBeforeRenderObservable.add(() => {
+                    data.texture.render();
+                })
+            );
         });
+        const cleanup = () => {
+            if (cleanedUp) {
+                return;
+            }
+            cleanedUp = true;
+            rttProvider.onRenderTargetTextureCreatedObservable.remove(renderTargetCreatedObserver);
+            for (const observer of beforeRenderObservers) {
+                this._xrSessionManager.scene.onBeforeRenderObservable.remove(observer);
+            }
+            for (const renderTargetTexture of renderTargetTextures) {
+                const index = babylonLayer.renderTargetTextures.indexOf(renderTargetTexture);
+                if (index !== -1) {
+                    babylonLayer.renderTargetTextures.splice(index, 1);
+                }
+            }
+            babylonLayer.renderOnlyInRenderTargetTextures = previousRenderOnlyInRenderTargetTextures;
+            this._layerCleanupFunctions.delete(wrapper);
+        };
+        this._layerCleanupFunctions.set(wrapper, cleanup);
+        this._xrSessionManager.onXRSessionEnded.addOnce(cleanup);
         return wrapper;
     }
 
@@ -982,6 +1012,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
         }
 
         this._existingLayers.splice(index, 1);
+        this._layerCleanupFunctions.get(wrappedLayer)?.();
         if (wrappedLayer instanceof WebXRCompositionLayerWrapper) {
             this._layerToRTTProviderMapping.delete(wrappedLayer.layer);
             this._compositionLayerTextureMapping.delete(wrappedLayer.layer);

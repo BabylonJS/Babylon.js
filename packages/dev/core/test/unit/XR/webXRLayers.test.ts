@@ -4,10 +4,17 @@
 
 import { NullEngine } from "core/Engines/nullEngine";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { type StandardMaterial } from "core/Materials/standardMaterial.pure";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
-import { WebXRCompositionLayerWrapper, WebXRCubeLayerWrapper, WebXRMediaLayerWrapper, WebXRSpatialLayerWrapper } from "core/XR/features/Layers/WebXRCompositionLayer";
+import {
+    WebXRCompositionLayerRenderTargetTextureProvider,
+    WebXRCompositionLayerWrapper,
+    WebXRCubeLayerWrapper,
+    WebXRMediaLayerWrapper,
+    WebXRSpatialLayerWrapper,
+} from "core/XR/features/Layers/WebXRCompositionLayer";
 import { WebXRFallbackLayerWrapper } from "core/XR/features/WebXRLayersFallback";
 import { WebXRWebGPUCompositionLayerWrapper } from "core/XR/features/Layers/WebXRWebGPUCompositionLayer";
 import { WebXRLayers } from "core/XR/features/WebXRLayers";
@@ -360,8 +367,18 @@ describe("WebXRLayers", () => {
             expect(binding.createQuadLayer).toHaveBeenCalledWith(expect.objectContaining({ width: 1.5, height: 0.75, viewPixelWidth: 1024, viewPixelHeight: 512 }));
             expect(binding.createCylinderLayer).toHaveBeenCalledWith(expect.objectContaining({ radius: 3, centralAngle: 1, aspectRatio: 1.5 }));
             expect(binding.createEquirectLayer).toHaveBeenCalledWith(expect.objectContaining({ centralHorizontalAngle: Math.PI }));
-            expect(binding.createCubeLayer).toHaveBeenCalledWith(expect.objectContaining({ space: sessionManager.referenceSpace, textureType: "texture-array" }));
+            expect(binding.createCubeLayer).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    space: sessionManager.referenceSpace,
+                    textureType: "texture-array",
+                    viewPixelWidth: 512,
+                    viewPixelHeight: 512,
+                })
+            );
             expect(updateRenderState.mock.lastCall?.[0].layers).toEqual([projectionLayer, quadLayer, cylinderLayer, equirectLayer, cubeLayer]);
+            expect(() => feature.createCubeLayer({ layerInit: { viewPixelWidth: 256, viewPixelHeight: 128 } })).toThrow(
+                "WebXR cube layer faces must have equal pixel width and height."
+            );
         });
 
         it("translates shared initialization values for WebGPU cylinder, equirect, and cube layers", () => {
@@ -560,7 +577,58 @@ describe("WebXRLayers", () => {
             expect(feature.removeLayer(wrapper!)).toBe(true);
             expect((wrapper as WebXRFallbackLayerWrapper).mesh.isDisposed()).toBe(true);
             expect(disposeTexture).not.toHaveBeenCalled();
+
+            fallbackTexture.getInternalTexture()!.isCube = true;
+            vi.spyOn(fallbackTexture, "clone").mockReturnValue(null);
+            const cubeWrapper = feature.createCubeLayer({
+                fallbackMode: "mesh",
+                fallbackTexture,
+            }) as WebXRFallbackLayerWrapper;
+            cubeWrapper.transformNode.position.set(1, 2, 3);
+            sessionManager.onXRFrameObservable.notifyObservers({ getViewerPose: vi.fn() } as unknown as XRFrame);
+
+            expect(cubeWrapper.mesh.position.asArray()).toEqual([0, 0, 0]);
+            expect(feature.removeLayer(cubeWrapper)).toBe(true);
             fallbackTexture.dispose();
+        });
+
+        it("removes fullscreen ADT render callbacks and render-target references with the layer", () => {
+            const projectionLayer = { textureWidth: 1024, textureHeight: 512 };
+            const quadLayer = { layout: "mono", width: 0, height: 0, needsRedraw: true, destroy: vi.fn() };
+            const binding = {
+                createProjectionLayer: vi.fn(() => projectionLayer),
+                createQuadLayer: vi.fn(() => quadLayer),
+                getSubImage: vi.fn(),
+            };
+            testGlobals.XRWebGLBinding = vi.fn().mockImplementation(function () {
+                return binding;
+            }) as unknown as LayerBindingConstructor;
+            (engine as any)._gl = {};
+            initializeSession();
+            const feature = new WebXRLayers(sessionManager);
+            feature.attach();
+            const texture = {};
+            addBabylonLayer(texture);
+            const wrapper = feature.addFullscreenAdvancedDynamicTexture(texture as any)!;
+            const provider = wrapper.renderTargetTextureProvider as WebXRCompositionLayerRenderTargetTextureProvider;
+            const renderTargetTexture = new RenderTargetTexture("fullscreen ADT test", 1, scene);
+            const render = vi.spyOn(renderTargetTexture, "render").mockImplementation(() => {});
+
+            provider.onRenderTargetTextureCreatedObservable.notifyObservers({ texture: renderTargetTexture, eye: "none" });
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+
+            const babylonLayer = scene.layers[0];
+            expect(babylonLayer.renderTargetTextures).toEqual([renderTargetTexture]);
+            expect(babylonLayer.renderOnlyInRenderTargetTextures).toBe(true);
+            expect(render).toHaveBeenCalledOnce();
+
+            expect(feature.removeXRSessionLayer(wrapper)).toBe(true);
+            scene.onBeforeRenderObservable.notifyObservers(scene);
+
+            expect(babylonLayer.renderTargetTextures).toEqual([]);
+            expect(babylonLayer.renderOnlyInRenderTargetTextures).toBe(false);
+            expect(render).toHaveBeenCalledOnce();
+            renderTargetTexture.dispose();
         });
 
         it("uses a Babylon VideoTexture for media fallbacks without taking control of playback", () => {

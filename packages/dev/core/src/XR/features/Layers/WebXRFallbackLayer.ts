@@ -173,7 +173,11 @@ export class WebXRFallbackLayerWrapper {
      */
     public updateFromTransformNode(worldScalingFactor = 1): void {
         this.transformNode.computeWorldMatrix(true).decompose(undefined, this._currentRotation, this._currentPosition);
-        this.mesh.position.copyFrom(this._currentPosition);
+        if (this.layerType === "XRCubeLayer") {
+            this.mesh.position.setAll(0);
+        } else {
+            this.mesh.position.copyFrom(this._currentPosition);
+        }
         this._currentRotation.multiplyToRef(this._meshRotationOffset, this.mesh.rotationQuaternion!);
         this.mesh.scaling.setAll(worldScalingFactor);
     }
