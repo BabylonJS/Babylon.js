@@ -22,13 +22,17 @@ describe("GaussianSplatting transform before first render", () => {
         engine.dispose();
     });
 
-    it("remains ready when its transform changes after the first depth sort completes", () => {
+    it.each([
+        { title: "waits for a transform refresh outside a render frame", renderingFrameDepth: 0, expectedReady: false },
+        { title: "remains ready when its transform changes during a render frame", renderingFrameDepth: 1, expectedReady: true },
+    ])("$title", ({ renderingFrameDepth, expectedReady }) => {
         const camera = new FreeCamera("camera", new Vector3(0, 0, -10), scene);
         scene.activeCamera = camera;
 
         const mesh = new GaussianSplattingMesh("gs", null, scene);
         const cameraMesh = new Mesh("cameraMesh", scene);
         Reflect.set(mesh, "_readyToDisplay", true);
+        Reflect.set(scene, "_renderingFrameDepth", renderingFrameDepth);
         const cameraViewInfos = Reflect.get(mesh, "_cameraViewInfos") as Map<number, object>;
         const cameraViewInfo = {
             camera,
@@ -47,12 +51,12 @@ describe("GaussianSplatting transform before first render", () => {
 
         mesh.position.y = 1;
 
-        expect(mesh.isReady()).toBe(true);
+        expect(mesh.isReady()).toBe(expectedReady);
         expect(postToWorker).toHaveBeenCalledWith(true);
 
         cameraViewInfo.sortRequestId = 2;
 
-        expect(mesh.isReady()).toBe(true);
+        expect(mesh.isReady()).toBe(expectedReady);
     });
 
     it("waits for every active camera to complete its initial sort", () => {

@@ -1744,6 +1744,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _renderId = 0;
     private _frameId = 0;
+    private _renderingFrameDepth = 0;
     private _executeWhenReadyTimeoutId: Nullable<ReturnType<typeof setTimeout>> = null;
     /** @internal */
     public _intermediateRendering = false;
@@ -4568,6 +4569,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return this._intermediateRendering;
     }
 
+    /** @internal */
+    public _isInRenderingFrame(): boolean {
+        return this._renderingFrameDepth > 0;
+    }
+
     /**
      * Lambda returning the list of potentially active meshes.
      */
@@ -5549,6 +5555,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
 
+        this._renderingFrameDepth++;
+        try {
+            this._renderFrame(updateCameras, ignoreAnimations);
+        } finally {
+            this._renderingFrameDepth--;
+        }
+    }
+
+    private _renderFrame(updateCameras: boolean, ignoreAnimations: boolean): void {
         if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === null) {
             this._checkIsReady();
         }
