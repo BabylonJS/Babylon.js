@@ -18,7 +18,7 @@ export interface IMultiTextureOptions {
     width: number;
     /** Fixed layer resolution. REQUIRED. Positive integer. */
     height: number;
-    /** Array depth to allocate. Default: urls.length. Must be \>= urls.length (else throw). */
+    /** Array depth to allocate. Optional positive integer; default: urls.length. Must be \>= urls.length and \<= the engine's texture2DArrayMaxLayerCount (else throw). Required when urls is empty. */
     maxLayers?: number;
     /** Default MultiBlendMode.ALPHA_BLEND. */
     blendMode?: MultiBlendMode;
@@ -104,11 +104,16 @@ interface ILayerEntry {
  * - On WebGPU you must also import the WebGPU upload extension yourself:
  *   `import "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource";`
  *   (the WebGL2 extension is imported automatically by the non-pure `multiTexture` entry).
+ * - The allocated array depth (options.maxLayers ?? urls.length) must be a positive integer and no
+ *   larger than the device limit getCaps().texture2DArrayMaxLayerCount. Empty urls are only accepted
+ *   together with an explicit options.maxLayers. addLayer doubles the depth when it is full and
+ *   throws a RangeError if the doubled depth would exceed that limit.
  */
 export class MultiTexture extends ProceduralTexture {
     private _layers: ILayerEntry[];
     private _layerCount: number;
     private _maxLayers: number;
+    private _deviceMaxLayerCap: number;
     private _blendMode: MultiBlendMode;
     private _pollTimer: ReturnType<typeof setInterval> | null = null;
     private _canvas: Nullable<OffscreenCanvas | HTMLCanvasElement>;
@@ -165,12 +170,25 @@ export class MultiTexture extends ProceduralTexture {
             throw new Error("MultiTexture: width and height must be positive integers.");
         }
 
+        const deviceMaxLayerCap = engine.getCaps().texture2DArrayMaxLayerCount;
+
+        if (options.maxLayers !== undefined && (!Number.isInteger(options.maxLayers) || options.maxLayers < 1)) {
+            throw new Error(`MultiTexture: maxLayers must be a positive integer (got ${options.maxLayers}).`);
+        }
+        if (options.maxLayers === undefined && urls.length === 0) {
+            throw new Error(`MultiTexture: urls is empty; pass options.maxLayers (positive integer, <= device limit ${deviceMaxLayerCap}) to define the array depth.`);
+        }
         if (options.maxLayers !== undefined && options.maxLayers < urls.length) {
             throw new Error(`MultiTexture: maxLayers (${options.maxLayers}) must be >= urls.length (${urls.length}).`);
         }
 
         const blendMode = options.blendMode ?? MultiBlendMode.ALPHA_BLEND;
         const maxLayers = options.maxLayers ?? urls.length;
+        if (maxLayers > deviceMaxLayerCap) {
+            throw new Error(
+                `MultiTexture: array depth ${maxLayers} exceeds the device limit texture2DArrayMaxLayerCount (${deviceMaxLayerCap}). Pass a smaller maxLayers (or fewer urls) or use a device with a higher limit.`
+            );
+        }
         const rttW = Math.max(1, Math.round(options.width * (options.rttScale ?? 1)));
         const rttH = Math.max(1, Math.round(options.height * (options.rttScale ?? 1)));
         const generateMipMaps = options.generateMipMaps ?? false;
@@ -229,6 +247,7 @@ export class MultiTexture extends ProceduralTexture {
             pollInterval: options.pollInterval ?? DEFAULT_POLL_INTERVAL_MS,
         };
         this._maxLayers = maxLayers;
+        this._deviceMaxLayerCap = deviceMaxLayerCap;
         this._blendMode = blendMode;
 
         this._arrayTexture = new RawTexture2DArray(
@@ -322,7 +341,8 @@ export class MultiTexture extends ProceduralTexture {
     /**
      * Appends a new layer at the end and returns its index. Grows the underlying array (doubling its
      * depth and re-uploading the existing layers from their retained bitmaps) when the current depth
-     * is exhausted.
+     * is exhausted. Throws a RangeError if the doubled depth would exceed the device's
+     * texture2DArrayMaxLayerCount.
      * @param url defines the URL of the image to load as the new layer
      * @returns a promise resolving to the index of the new layer
      */
@@ -563,6 +583,12 @@ export class MultiTexture extends ProceduralTexture {
     private _growArray(): void {
         const scene = this.getScene()!;
         const newDepth = this._maxLayers * 2;
+
+        if (newDepth > this._deviceMaxLayerCap) {
+            throw new RangeError(
+                `MultiTexture: cannot grow the array from depth ${this._maxLayers} to ${newDepth}: the device limit texture2DArrayMaxLayerCount is ${this._deviceMaxLayerCap}. Remove a layer, or recreate the MultiTexture with a larger options.maxLayers (<= ${this._deviceMaxLayerCap}) to allow more growth headroom.`
+            );
+        }
 
         const newRaw = new RawTexture2DArray(
             null,

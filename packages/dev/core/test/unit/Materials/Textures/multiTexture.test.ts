@@ -180,17 +180,19 @@ function createFakeCtx() {
     };
 }
 
-function makeScene(opts?: { webglVersion?: number; isWebGPU?: boolean }): Scene {
+function makeScene(opts?: { webglVersion?: number; isWebGPU?: boolean; texture2DArrayMaxLayerCount?: number }): Scene {
+    const cap = opts?.texture2DArrayMaxLayerCount ?? 128;
     const engine: any = {
         isWebGPU: opts?.isWebGPU ?? false,
         webGLVersion: opts?.webglVersion ?? 2,
         generateMipmaps: mockState.generateMipmaps,
         createEffect: mockState.createEffect,
+        getCaps: () => ({ texture2DArrayMaxLayerCount: cap }),
     };
     return { getEngine: () => engine, proceduralTextures: [] as any[] } as Scene;
 }
 
-function createLoaded(urls: string[], options: any, sceneOpts?: { webglVersion?: number; isWebGPU?: boolean }): Promise<{ mt: MockMultiTexture; scene: any }> {
+function createLoaded(urls: string[], options: any, sceneOpts?: { webglVersion?: number; isWebGPU?: boolean; texture2DArrayMaxLayerCount?: number }): Promise<{ mt: MockMultiTexture; scene: any }> {
     const scene = makeScene(sceneOpts);
     let resolveLoad!: () => void;
     const loaded = new Promise<void>((resolve) => (resolveLoad = resolve));
@@ -311,6 +313,101 @@ describe("MultiTexture", () => {
         expect(() => new MultiTexture("myMultiTexture", ["a.png", "b.png"], scene, { width: 8, height: 8, maxLayers: 1 })).toThrow(
             "MultiTexture: maxLayers (1) must be >= urls.length (2)."
         );
+    });
+
+    it("throws when maxLayers is not a positive integer", () => {
+        const scene = makeScene();
+
+        expect(() => new MultiTexture("myMultiTexture", ["a.png"], scene, { width: 8, height: 8, maxLayers: 1.5 })).toThrow(
+            "MultiTexture: maxLayers must be a positive integer (got 1.5)."
+        );
+        expect(() => new MultiTexture("myMultiTexture", ["a.png"], scene, { width: 8, height: 8, maxLayers: 0 })).toThrow(
+            "MultiTexture: maxLayers must be a positive integer (got 0)."
+        );
+        expect(() => new MultiTexture("myMultiTexture", ["a.png"], scene, { width: 8, height: 8, maxLayers: -2 })).toThrow(
+            "MultiTexture: maxLayers must be a positive integer (got -2)."
+        );
+        expect(mockState.rawInstances).toHaveLength(0);
+    });
+
+    it("throws on empty urls without an explicit maxLayers", () => {
+        const scene = makeScene();
+
+        expect(() => new MultiTexture("myMultiTexture", [], scene, { width: 8, height: 8 })).toThrow(
+            "MultiTexture: urls is empty; pass options.maxLayers (positive integer, <= device limit 128) to define the array depth."
+        );
+        expect(mockState.rawInstances).toHaveLength(0);
+    });
+
+    it("accepts empty urls with an explicit positive maxLayers", async () => {
+        const { mt } = await createLoaded([], { width: 8, height: 8, maxLayers: 4 });
+
+        expect(mt.arrayTexture.depth).toBe(4);
+        expect(mt.layerCount).toBe(0);
+        expect(mockState.fetchCalls).toHaveLength(0);
+    });
+
+    it("throws when an explicit maxLayers exceeds the device texture2DArrayMaxLayerCount", () => {
+        const scene = makeScene({ texture2DArrayMaxLayerCount: 2 });
+
+        expect(() => new MultiTexture("myMultiTexture", ["a.png"], scene, { width: 8, height: 8, maxLayers: 4 })).toThrow(
+            "MultiTexture: array depth 4 exceeds the device limit texture2DArrayMaxLayerCount (2). Pass a smaller maxLayers (or fewer urls) or use a device with a higher limit."
+        );
+        expect(mockState.rawInstances).toHaveLength(0);
+    });
+
+    it("throws when urls.length alone exceeds the device texture2DArrayMaxLayerCount", () => {
+        const scene = makeScene({ texture2DArrayMaxLayerCount: 1 });
+
+        expect(() => new MultiTexture("myMultiTexture", ["a.png", "b.png"], scene, { width: 8, height: 8 })).toThrow(
+            "MultiTexture: array depth 2 exceeds the device limit texture2DArrayMaxLayerCount (1). Pass a smaller maxLayers (or fewer urls) or use a device with a higher limit."
+        );
+    });
+
+    it("allows a depth exactly equal to the device cap", async () => {
+        const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, maxLayers: 4 }, { texture2DArrayMaxLayerCount: 4 });
+
+        expect(mt.arrayTexture.depth).toBe(4);
+    });
+
+    it("addLayer growth beyond the device cap throws an actionable error and keeps the old array", async () => {
+        const onError = vi.fn();
+        const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, maxLayers: 2, onError }, { texture2DArrayMaxLayerCount: 2 });
+
+        const rawsBefore = mockState.rawInstances.length;
+        await expect(mt.addLayer("c.png")).rejects.toThrow(
+            "MultiTexture: cannot grow the array from depth 2 to 4: the device limit texture2DArrayMaxLayerCount is 2. Remove a layer, or recreate the MultiTexture with a larger options.maxLayers (<= 2) to allow more growth headroom."
+        );
+
+        // No new array allocated, no layer appended, failure surfaced via onError as well.
+        expect(mockState.rawInstances).toHaveLength(rawsBefore);
+        expect(mt.layerCount).toBe(2);
+        expect(onError).toHaveBeenCalledTimes(1);
+        expect(onError.mock.calls[0][0]).toContain("texture2DArrayMaxLayerCount");
+    });
+
+    it("addLayer can grow up to the device cap but not past it", async () => {
+        const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 }, { texture2DArrayMaxLayerCount: 8 });
+
+        // Depth doubles only when full: 1 -> 2 -> 4 (fits) -> 8 (fits for layers 6-8).
+        await mt.addLayer("b.png");
+        expect(mt.arrayTexture.depth).toBe(2);
+        await mt.addLayer("c.png");
+        expect(mt.arrayTexture.depth).toBe(4);
+        await mt.addLayer("d.png");
+        expect(mt.arrayTexture.depth).toBe(4);
+        await mt.addLayer("e.png");
+        expect(mt.arrayTexture.depth).toBe(8);
+        await mt.addLayer("f.png");
+        await mt.addLayer("g.png");
+        await mt.addLayer("h.png");
+        expect(mt.arrayTexture.depth).toBe(8);
+        expect(mt.layerCount).toBe(8);
+
+        // The 9th layer would need depth 16 > 8 and must fail without touching the array.
+        await expect(mt.addLayer("i.png")).rejects.toThrow(/device limit texture2DArrayMaxLayerCount is 8/);
+        expect(mt.arrayTexture.depth).toBe(8);
+        expect(mt.layerCount).toBe(8);
     });
 
     it("loads all layers, caches pixels and issues one final mip generation", async () => {
@@ -647,7 +744,7 @@ describe("MultiTexture", () => {
         mt.dispose();
 
         // Simulate the tail of an in-flight refresh whose decode completes after dispose.
-        await expect(mt["_loadLayer"](0, "a.png", true)).resolves.toBeUndefined();
+        await expect(mt["_loadLayer"](0, "a.png")).resolves.toBeUndefined();
         await expect(mt["_poll"]()).resolves.toBeUndefined();
 
         expect(errorSpy).not.toHaveBeenCalled();
