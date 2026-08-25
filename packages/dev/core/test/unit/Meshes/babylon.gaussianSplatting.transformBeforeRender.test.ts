@@ -54,4 +54,63 @@ describe("GaussianSplatting transform before first render", () => {
 
         expect(mesh.isReady()).toBe(true);
     });
+
+    it("waits for every active camera to complete its initial sort", () => {
+        const camera = new FreeCamera("camera", new Vector3(0, 0, -10), scene);
+        const camera2 = new FreeCamera("camera2", new Vector3(0, 0, 10), scene);
+        scene.activeCameras = [camera, camera2];
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const cameraViewInfos = Reflect.get(mesh, "_cameraViewInfos") as Map<number, object>;
+        const createCameraViewInfo = (viewCamera: FreeCamera, sortRequestId: number, sortAppliedId: number) => ({
+            camera: viewCamera,
+            cameraDirection: Vector3.Zero(),
+            sortWorldMatrix: Matrix.Identity(),
+            sortCameraForward: Vector3.Zero(),
+            sortCameraPosition: Vector3.Zero(),
+            sortRequestId,
+            sortAppliedId,
+            mesh: new Mesh(`${viewCamera.name}Mesh`, scene),
+            frameIdLastUpdate: scene.getFrameId(),
+            splatIndexBufferSet: true,
+        });
+        cameraViewInfos.set(camera.uniqueId, createCameraViewInfo(camera, 1, 1));
+        cameraViewInfos.set(camera2.uniqueId, createCameraViewInfo(camera2, 0, 0));
+        Reflect.set(mesh, "_readyToDisplay", true);
+        const depthMix = new BigInt64Array(16);
+        Reflect.set(mesh, "_depthMix", depthMix);
+        const postMessage = vi.fn();
+        Reflect.set(mesh, "_worker", { postMessage, terminate: vi.fn() });
+
+        expect(mesh.isReady()).toBe(false);
+        expect(postMessage).toHaveBeenCalledWith(expect.objectContaining({ cameraId: camera2.uniqueId }), [depthMix.buffer]);
+    });
+
+    it("waits for transform refreshes in multi-camera scenes", () => {
+        const camera = new FreeCamera("camera", new Vector3(0, 0, -10), scene);
+        const camera2 = new FreeCamera("camera2", new Vector3(0, 0, 10), scene);
+        scene.activeCameras = [camera, camera2];
+        const mesh = new GaussianSplattingMesh("splat", null, scene);
+        const cameraViewInfos = Reflect.get(mesh, "_cameraViewInfos") as Map<number, object>;
+        for (const activeCamera of scene.activeCameras) {
+            cameraViewInfos.set(activeCamera.uniqueId, {
+                camera: activeCamera,
+                cameraDirection: Vector3.Zero(),
+                sortWorldMatrix: Matrix.Identity(),
+                sortCameraForward: Vector3.Zero(),
+                sortCameraPosition: Vector3.Zero(),
+                sortRequestId: activeCamera.uniqueId,
+                sortAppliedId: activeCamera.uniqueId,
+                mesh: new Mesh(`${activeCamera.name}Mesh`, scene),
+                frameIdLastUpdate: scene.getFrameId(),
+                splatIndexBufferSet: true,
+            });
+        }
+        Reflect.set(mesh, "_readyToDisplay", true);
+        const postToWorker = vi.spyOn(mesh, "_postToWorker").mockImplementation(() => {});
+
+        mesh.position.y = 1;
+
+        expect(mesh.isReady()).toBe(false);
+        expect(postToWorker).toHaveBeenCalledWith(true);
+    });
 });
