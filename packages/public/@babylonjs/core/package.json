@@ -702,6 +702,7 @@
         "XR/features/WebXRHitTest.js",
         "XR/features/WebXRImageTracking.js",
         "XR/features/WebXRLayers.js",
+        "XR/features/WebXRLayersFallback.js",
         "XR/features/WebXRLightEstimation.js",
         "XR/features/WebXRMeshDetector.js",
         "XR/features/WebXRNearInteraction.js",
