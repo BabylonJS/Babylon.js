@@ -311,7 +311,21 @@ export function _AddInteractivityObjectModel(scene: Scene) {
     });
 }
 
-// Register flow graph blocks. Do it here so they are available when the extension is enabled.
+let _RuntimeRegistered = false;
+/**
+ * @internal
+ * Registers KHR_interactivity runtime dependencies without changing the extension registry.
+ */
+export function _RegisterKHRInteractivityRuntime(): void {
+    if (_RuntimeRegistered) {
+        return;
+    }
+    _RuntimeRegistered = true;
+
+    addToBlockFactory(NAME, "FlowGraphGLTFDataProvider", async () => {
+        return (await import("./KHR_interactivity/flowGraphGLTFDataProvider")).FlowGraphGLTFDataProvider;
+    });
+}
 
 let _Registered = false;
 /**
@@ -325,9 +339,7 @@ export function RegisterKHR_interactivity(): void {
     }
     _Registered = true;
 
-    addToBlockFactory(NAME, "FlowGraphGLTFDataProvider", async () => {
-        return (await import("./KHR_interactivity/flowGraphGLTFDataProvider")).FlowGraphGLTFDataProvider;
-    });
+    _RegisterKHRInteractivityRuntime();
 
     unregisterGLTFExtension(NAME);
 

@@ -20,7 +20,7 @@ export function registerBuiltInLoaders() {
     RegisterSceneLoaderPlugin({
         ...BVHFileLoaderMetadata,
         createPlugin: async (options: SceneLoaderPluginOptions) => {
-            const { BVHFileLoader } = await import("./BVH/bvhFileLoader");
+            const { BVHFileLoader } = await import("./BVH/bvhFileLoader.pure");
             return new BVHFileLoader(options[BVHFileLoaderMetadata.name]);
         },
     } satisfies ISceneLoaderPluginFactory);
@@ -29,7 +29,7 @@ export function registerBuiltInLoaders() {
     RegisterSceneLoaderPlugin({
         ...FBXFileLoaderMetadata,
         createPlugin: async (options: SceneLoaderPluginOptions) => {
-            const { FBXFileLoader } = await import("./FBX/fbxFileLoader");
+            const { FBXFileLoader } = await import("./FBX/fbxFileLoader.pure");
             return new FBXFileLoader(options[FBXFileLoaderMetadata.name]);
         },
     } satisfies ISceneLoaderPluginFactory);
@@ -38,7 +38,12 @@ export function registerBuiltInLoaders() {
     RegisterSceneLoaderPlugin({
         ...GLTFFileLoaderMetadata,
         createPlugin: async (options: SceneLoaderPluginOptions) => {
-            const { GLTFFileLoader } = await import("./glTF/2.0/glTFLoader");
+            const [{ GLTFFileLoader, RegisterGLTF2Loader }, { RegisterInstancedMesh }] = await Promise.all([
+                import("./glTF/2.0/glTFLoader.pure"),
+                import("core/Meshes/instancedMesh.pure"),
+            ]);
+            RegisterInstancedMesh();
+            RegisterGLTF2Loader();
             return new GLTFFileLoader(options[GLTFFileLoaderMetadata.name]);
         },
     } satisfies ISceneLoaderPluginFactory);
@@ -50,7 +55,7 @@ export function registerBuiltInLoaders() {
     RegisterSceneLoaderPlugin({
         ...OBJFileLoaderMetadata,
         createPlugin: async (options: SceneLoaderPluginOptions) => {
-            const { OBJFileLoader } = await import("./OBJ/objFileLoader");
+            const { OBJFileLoader } = await import("./OBJ/objFileLoader.pure");
             return new OBJFileLoader(options[OBJFileLoaderMetadata.name]);
         },
     } satisfies ISceneLoaderPluginFactory);
@@ -59,7 +64,11 @@ export function registerBuiltInLoaders() {
     RegisterSceneLoaderPlugin({
         ...SPLATFileLoaderMetadata,
         createPlugin: async (options: SceneLoaderPluginOptions) => {
-            const { SPLATFileLoader } = await import("./SPLAT/splatFileLoader");
+            const [{ SPLATFileLoader }, { RegisterEnginesExtensionsEngineDynamicTexture }] = await Promise.all([
+                import("./SPLAT/splatFileLoader.pure"),
+                import("core/Engines/Extensions/engine.dynamicTexture.pure"),
+            ]);
+            RegisterEnginesExtensionsEngineDynamicTexture();
             return new SPLATFileLoader(options[SPLATFileLoaderMetadata.name]);
         },
     } satisfies ISceneLoaderPluginFactory);
@@ -68,7 +77,8 @@ export function registerBuiltInLoaders() {
     RegisterSceneLoaderPlugin({
         ...STLFileLoaderMetadata,
         createPlugin: async () => {
-            const { STLFileLoader } = await import("./STL/stlFileLoader");
+            const [{ STLFileLoader }, { RegisterStandardMaterial }] = await Promise.all([import("./STL/stlFileLoader.pure"), import("core/Materials/standardMaterial.pure")]);
+            RegisterStandardMaterial();
             return new STLFileLoader();
         },
     } satisfies ISceneLoaderPluginFactory);

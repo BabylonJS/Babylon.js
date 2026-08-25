@@ -715,10 +715,8 @@ export class GPUPicker {
             const plugin = gsPickingMaterial.pluginManager!.getPlugin<GaussianSplattingGpuPickingMaterialPlugin>("GaussianSplatGpuPicking")!;
             plugin.isCompound = true;
             plugin.partMeshIds = partMeshIds;
-            // Only active (included, visible, and pickable) parts should contribute to the depth buffer.
-            const activeParts = group.partEntries
-                .filter((e) => (e.proxy as AbstractMesh).isPickable && (e.proxy as AbstractMesh).isVisible)
-                .map((e) => (e.proxy as any).partIndex as number);
+            // Only active (included, enabled, visible, and pickable) parts should contribute to the depth buffer.
+            const activeParts = group.partEntries.filter((e) => this._isPartProxyActiveForPicking(e.proxy as AbstractMesh)).map((e) => (e.proxy as any).partIndex as number);
             plugin.setPartActive(activeParts);
 
             gsPickingMaterial.onBindObservable.add(() => {
@@ -1007,6 +1005,10 @@ export class GPUPicker {
                 : GPUPicker._MultiPickIndividualReadbackAreaRatio;
         const pointReadArea = inBoundsPointCount * (this._useDepthPicking ? 1 + (GPUPicker._DepthPixelRadius * 2 + 1) ** 2 : 1);
         return readArea > pointReadArea * individualReadbackAreaRatio;
+    }
+
+    private _isPartProxyActiveForPicking(proxy: Pick<AbstractMesh, "isEnabled" | "isPickable" | "isVisible">): boolean {
+        return proxy.isEnabled() && proxy.isPickable && proxy.isVisible;
     }
 
     private _preparePickingBuffer(engine: AbstractEngine, rttSizeW: number, rttSizeH: number, x: number, y: number, w = 1, h = 1, readBufferW = w, readBufferH = h): void {
