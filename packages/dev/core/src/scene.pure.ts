@@ -5644,6 +5644,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (this.customRenderFunction) {
             this._renderId++;
             this._engine.currentRenderPassId = Constants.RENDERPASS_MAIN;
+            this._renderingMeshEvaluationDepth++;
 
             this.customRenderFunction(updateCameras, ignoreAnimations);
         } else {

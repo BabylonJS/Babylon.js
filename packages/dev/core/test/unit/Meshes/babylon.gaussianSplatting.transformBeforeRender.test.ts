@@ -55,6 +55,18 @@ describe("GaussianSplatting transform before first render", () => {
         expect(scene._isInRenderingMeshEvaluation()).toBe(false);
     });
 
+    it("tracks mesh evaluation during custom rendering", () => {
+        const customRenderFunction = vi.fn(() => {
+            expect(scene._isInRenderingMeshEvaluation()).toBe(true);
+        });
+        scene.customRenderFunction = customRenderFunction;
+
+        scene.render();
+
+        expect(customRenderFunction).toHaveBeenCalled();
+        expect(scene._isInRenderingMeshEvaluation()).toBe(false);
+    });
+
     it.each([
         { title: "waits for a transform refresh outside rendering mesh evaluation", renderingMeshEvaluationDepth: 0, expectedReady: false },
         { title: "remains ready when its transform changes during rendering mesh evaluation", renderingMeshEvaluationDepth: 1, expectedReady: true },
