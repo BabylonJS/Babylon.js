@@ -22,17 +22,33 @@ describe("GaussianSplatting transform before first render", () => {
         engine.dispose();
     });
 
+    it("tracks active mesh evaluation during scene rendering", () => {
+        const camera = new FreeCamera("camera", new Vector3(0, 0, -10), scene);
+        scene.activeCamera = camera;
+        const mesh = new Mesh("mesh", scene);
+        const isReady = vi.spyOn(mesh, "isReady").mockImplementation(() => {
+            expect(scene._isInActiveMeshEvaluation()).toBe(true);
+            return false;
+        });
+
+        expect(scene._isInActiveMeshEvaluation()).toBe(false);
+        scene.render();
+
+        expect(isReady).toHaveBeenCalled();
+        expect(scene._isInActiveMeshEvaluation()).toBe(false);
+    });
+
     it.each([
-        { title: "waits for a transform refresh outside a render frame", renderingFrameDepth: 0, expectedReady: false },
-        { title: "remains ready when its transform changes during a render frame", renderingFrameDepth: 1, expectedReady: true },
-    ])("$title", ({ renderingFrameDepth, expectedReady }) => {
+        { title: "waits for a transform refresh outside active mesh evaluation", activeMeshesEvaluationDepth: 0, expectedReady: false },
+        { title: "remains ready when its transform changes during active mesh evaluation", activeMeshesEvaluationDepth: 1, expectedReady: true },
+    ])("$title", ({ activeMeshesEvaluationDepth, expectedReady }) => {
         const camera = new FreeCamera("camera", new Vector3(0, 0, -10), scene);
         scene.activeCamera = camera;
 
         const mesh = new GaussianSplattingMesh("gs", null, scene);
         const cameraMesh = new Mesh("cameraMesh", scene);
         Reflect.set(mesh, "_readyToDisplay", true);
-        Reflect.set(scene, "_renderingFrameDepth", renderingFrameDepth);
+        Reflect.set(scene, "_activeMeshesEvaluationDepth", activeMeshesEvaluationDepth);
         const cameraViewInfos = Reflect.get(mesh, "_cameraViewInfos") as Map<number, object>;
         const cameraViewInfo = {
             camera,

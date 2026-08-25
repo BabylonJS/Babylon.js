@@ -1744,7 +1744,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _renderId = 0;
     private _frameId = 0;
-    private _renderingFrameDepth = 0;
+    private _activeMeshesEvaluationDepth = 0;
     private _executeWhenReadyTimeoutId: Nullable<ReturnType<typeof setTimeout>> = null;
     /** @internal */
     public _intermediateRendering = false;
@@ -4570,8 +4570,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /** @internal */
-    public _isInRenderingFrame(): boolean {
-        return this._renderingFrameDepth > 0;
+    public _isInActiveMeshEvaluation(): boolean {
+        return this._activeMeshesEvaluationDepth > 0;
     }
 
     /**
@@ -5062,7 +5062,12 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._engine.currentRenderPassId = camera.outputRenderTarget?.renderPassId ?? camera.renderPassId ?? Constants.RENDERPASS_MAIN;
 
         // Meshes
-        this._evaluateActiveMeshes();
+        this._activeMeshesEvaluationDepth++;
+        try {
+            this._evaluateActiveMeshes();
+        } finally {
+            this._activeMeshesEvaluationDepth--;
+        }
 
         // Software skinning
         for (let softwareSkinnedMeshIndex = 0; softwareSkinnedMeshIndex < this._softwareSkinnedMeshes.length; softwareSkinnedMeshIndex++) {
@@ -5555,15 +5560,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
 
-        this._renderingFrameDepth++;
-        try {
-            this._renderFrame(updateCameras, ignoreAnimations);
-        } finally {
-            this._renderingFrameDepth--;
-        }
-    }
-
-    private _renderFrame(updateCameras: boolean, ignoreAnimations: boolean): void {
         if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === null) {
             this._checkIsReady();
         }
