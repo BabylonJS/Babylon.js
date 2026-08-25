@@ -6,6 +6,7 @@ populateEnvironment();
 
 const isCI = !!process.env.CI;
 const browserType = process.env.BROWSER || (isCI ? "Firefox" : "Chrome");
+const isBrowserStackRun = browserType === "BrowserStack";
 const numberOfWorkers = process.env.CIWORKERS ? +process.env.CIWORKERS : process.env.CI ? 1 : browserType === "BrowserStack" ? 1 : 4;
 
 // Include the performance summary reporter only when running performance tests
@@ -18,7 +19,9 @@ const isPerformanceRun = (() => {
     }
     return false;
 })();
-const baseReporters: any[] = isCI ? [["line"], ["junit", { outputFile: "junit.xml" }], ["html", { open: "never" }]] : [["list"], ["html"]];
+const baseReporters: any[] = isCI
+    ? [["line"], ["junit", { outputFile: "junit.xml" }], ["./packages/tools/tests/publicReportReporter.ts", { outputFolder: "playwright-report" }]]
+    : [["list"], ["html"]];
 if (isPerformanceRun) {
     baseReporters.push(["./packages/tools/tests/performanceSummaryReporter.ts"]);
 }
@@ -38,12 +41,12 @@ export default defineConfig({
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-        trace: "on-first-retry",
+        trace: isBrowserStackRun ? "off" : "on-first-retry",
         ignoreHTTPSErrors: true,
     },
 
-    globalSetup: browserType === "BrowserStack" ? require.resolve("./packages/tools/tests/globalSetup.ts") : undefined,
-    globalTeardown: browserType === "BrowserStack" ? require.resolve("./packages/tools/tests/globalTeardown.ts") : undefined,
+    globalSetup: isBrowserStackRun ? require.resolve("./packages/tools/tests/globalSetup.ts") : undefined,
+    globalTeardown: isBrowserStackRun ? require.resolve("./packages/tools/tests/globalTeardown.ts") : undefined,
 
     /* Project configuration */
     projects: getBabylonServerTestsList(),
