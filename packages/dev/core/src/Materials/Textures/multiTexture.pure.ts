@@ -483,6 +483,51 @@ export class MultiTexture extends ProceduralTexture {
         super.dispose();
     }
 
+    /**
+     * Clones the texture: builds a fresh MultiTexture in the same scene with the same name, the
+     * current layer urls and the resolved options (layer resolution, current array capacity,
+     * current blend mode, sampling mode, mipmap generation, RTT scale, fit and watch settings).
+     * The clone re-fetches and re-decodes its layers from scratch; it never shares the 2D array
+     * texture, the pixel cache or the load callbacks (onLoad/onError are not inherited).
+     * @returns the cloned texture
+     */
+    public override clone(): MultiTexture {
+        const newTexture = new MultiTexture(this.name, this.urls.slice(), <Scene>this.getScene(), {
+            width: this._mtOptions.width,
+            height: this._mtOptions.height,
+            maxLayers: this._maxLayers,
+            blendMode: this._blendMode,
+            generateMipMaps: this._mtOptions.generateMipMaps,
+            samplingMode: this._mtOptions.samplingMode,
+            premultiplyAlpha: this._mtOptions.premultiplyAlpha,
+            fit: this._mtOptions.fit,
+            rttScale: this._mtOptions.rttScale,
+            watch: this._mtOptions.watch,
+            pollInterval: this._mtOptions.pollInterval,
+        });
+
+        // Base texture state carried over per the ProceduralTexture.clone() contract.
+        newTexture.hasAlpha = this.hasAlpha;
+        newTexture.level = this.level;
+        newTexture.coordinatesMode = this.coordinatesMode;
+
+        return newTexture;
+    }
+
+    /**
+     * MultiTexture is intentionally not scene-serializable: the scene loader has no parser for it,
+     * so the payload produced by the inherited base serialization could never be reconstructed
+     * (urls, capacity, blend mode and watch options have no serialized fields). Fails explicitly
+     * instead of returning a misleading JSON object.
+     * @param _allowEmptyName accepted for signature compatibility; ignored
+     * @throws Error always
+     */
+    public override serialize(_allowEmptyName = false): never {
+        throw new Error(
+            "MultiTexture: serialize() is not supported. The scene loader has no MultiTexture parser (urls, capacity, blend mode and watch options cannot round-trip). Use clone() for an in-memory copy, or persist your urls/options to rebuild it."
+        );
+    }
+
     private _buildDefines(maxLayers: number, flag: string): string {
         return (
             "#define MULTITEXTURE_MAXLAYERS " +

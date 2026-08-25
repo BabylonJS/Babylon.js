@@ -58,11 +58,17 @@ const mockState = vi.hoisted(() => {
         public setFragmentCalls: string[] = [];
         public resetCount = 0;
         public onLoadObservable = { notifyObservers: vi.fn() };
+        /** Base-texture name as passed by the subclass constructor (clone contract). */
+        public name: string;
+        /** RTT size object as passed by the subclass constructor (clone contract). */
+        public size: unknown;
         private _currentRefreshId = -1;
         private _frameId = -1;
         private _scene: any;
         constructor(name: string, size: unknown, fragment: string, scene: any, options: any, _generateMipMaps?: boolean, _isCube?: boolean, _textureType?: number) {
             this._scene = scene;
+            this.name = name;
+            this.size = size;
             this.creationOptions = options;
             this.shaderLanguage = options?.shaderLanguage;
             this.setFragmentCalls.push(fragment);
@@ -135,9 +141,25 @@ vi.mock("core/Materials/Textures/rawTexture2DArray", () => {
         RawTexture2DArray: class {
             public dispose = vi.fn();
             public depth: number;
+            public width: number;
+            public height: number;
+            public samplingMode: number;
             private _internal: { generateMipMaps: boolean };
-            constructor(_data: unknown, _width: number, _height: number, depth: number, _format: number, _scene: unknown, generateMipMaps = true) {
+            constructor(
+                _data: unknown,
+                width: number,
+                height: number,
+                depth: number,
+                _format: number,
+                _scene: unknown,
+                generateMipMaps = true,
+                _invertY = false,
+                samplingMode = 0
+            ) {
+                this.width = width;
+                this.height = height;
                 this.depth = depth;
+                this.samplingMode = samplingMode;
                 this._internal = { generateMipMaps: !!generateMipMaps };
                 mockState.rawInstances.push(this);
             }
@@ -192,7 +214,11 @@ function makeScene(opts?: { webglVersion?: number; isWebGPU?: boolean; texture2D
     return { getEngine: () => engine, proceduralTextures: [] as any[] } as Scene;
 }
 
-function createLoaded(urls: string[], options: any, sceneOpts?: { webglVersion?: number; isWebGPU?: boolean; texture2DArrayMaxLayerCount?: number }): Promise<{ mt: MockMultiTexture; scene: any }> {
+function createLoaded(
+    urls: string[],
+    options: any,
+    sceneOpts?: { webglVersion?: number; isWebGPU?: boolean; texture2DArrayMaxLayerCount?: number }
+): Promise<{ mt: MockMultiTexture; scene: any }> {
     const scene = makeScene(sceneOpts);
     let resolveLoad!: () => void;
     const loaded = new Promise<void>((resolve) => (resolveLoad = resolve));
@@ -1010,5 +1036,185 @@ describe("MultiTexture removeLayer GPU alignment", () => {
         expect((mt as any)._layers[1].url).toBe("c.png");
 
         mt.dispose();
+    });
+});
+
+describe("MultiTexture clone", () => {
+    it("returns a fresh MultiTexture registered in the scene (not the inherited plain ProceduralTexture)", async () => {
+        const { mt, scene } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
+
+        const clone = mt.clone() as MockMultiTexture;
+
+        expect(clone).toBeInstanceOf(MultiTexture);
+        expect(clone).not.toBe(mt);
+        expect(clone.name).toBe("myMultiTexture");
+        expect(scene.proceduralTextures).toContain(clone);
+        // Registered under the original name, like the base-class clone contract.
+        expect(mockState.ptInstances).toHaveLength(2);
+        expect(mockState.ptInstances[1].name).toBe("myMultiTexture");
+    });
+
+    it("keeps an independent copy of urls and the same layer count", async () => {
+        const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
+
+        const clone = mt.clone();
+
+        expect(clone.urls).toEqual(["a.png", "b.png"]);
+        expect(clone.urls).not.toBe(mt.urls);
+        expect(clone.layerCount).toBe(2);
+    });
+
+    it("allocates its own 2D array texture and canvas (no shared GPU/CPU resources)", async () => {
+        const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
+
+        const rawsBefore = mockState.rawInstances.length;
+        const clone = mt.clone();
+
+        expect(mockState.rawInstances).toHaveLength(rawsBefore + 1);
+        expect(clone.arrayTexture).not.toBe(mt.arrayTexture);
+        expect((clone as any)._canvas).not.toBeNull();
+        expect((clone as any)._canvas).not.toBe((mt as any)._canvas);
+    });
+
+    it("preserves resolved options: dimensions, capacity, blend mode, sampling mode, mipmaps and rttScale", async () => {
+        const { mt } = await createLoaded(["a.png", "b.png"], {
+            width: 16,
+            height: 8,
+            maxLayers: 5,
+            blendMode: MultiBlendMode.ADD,
+            samplingMode: 1,
+            generateMipMaps: true,
+            rttScale: 2,
+        });
+
+        const clone = mt.clone() as MockMultiTexture;
+        // The init pipeline toggles the mipmap flag off while loading and restores it once settled,
+        // so assert after the clone's initial load completes.
+        await vi.waitFor(() => expect(clone.onLoadObservable.notifyObservers).toHaveBeenCalled());
+        const newRaw = mockState.rawInstances[mockState.rawInstances.length - 1];
+        const newPt = mockState.ptInstances[mockState.ptInstances.length - 1];
+
+        // Layer resolution, array capacity and sampling mode re-allocated, not copied by reference.
+        expect(newRaw.width).toBe(16);
+        expect(newRaw.height).toBe(8);
+        expect(newRaw.depth).toBe(5);
+        expect(newRaw.samplingMode).toBe(1);
+        expect(newRaw.getInternalTexture().generateMipMaps).toBe(true);
+        // RTT resolution = width*rttScale x height*rttScale must be re-derived for the clone.
+        expect(newPt.size).toEqual({ width: 32, height: 16 });
+        expect(clone.blendMode).toBe(MultiBlendMode.ADD);
+        expect(newPt.setFragmentCalls[0]).toBe("multiTextureCompositeAdd");
+        expect(newPt.defines).toContain("#define MULTITEXTURE_MAXLAYERS 5");
+        expect(newPt.defines).toContain("#define MULTITEXTURE_BLEND_ADD");
+    });
+
+    it("re-fetches and re-decodes its layers from the urls and repopulates the pixel cache", async () => {
+        const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
+
+        const fetchesBefore = mockState.fetchCalls.length;
+        const decodesBefore = mockState.decodeCalls.length;
+        const clone = mt.clone() as MockMultiTexture;
+
+        // The clone starts its own initial load for every url (in layer order).
+        expect(mockState.fetchCalls.slice(fetchesBefore).map((c: any) => c.url)).toEqual(["a.png", "b.png"]);
+
+        await vi.waitFor(() => expect(clone.onLoadObservable.notifyObservers).toHaveBeenCalled());
+        expect(mockState.decodeCalls.length).toBe(decodesBefore + 2);
+        expect(clone.pixels[0]).toBeInstanceOf(Uint8ClampedArray);
+        expect(clone.pixels[1]).toBeInstanceOf(Uint8ClampedArray);
+    });
+
+    it("preserves premultiplyAlpha and fit through the load pipeline", async () => {
+        const { mt } = await createLoaded(["a.png"], { width: 8, height: 8, premultiplyAlpha: true, fit: "strict" });
+
+        const decodesBefore = mockState.decodeCalls.length;
+        const uploadsBefore = mockState.upload.mock.calls.length;
+        const clone = mt.clone() as MockMultiTexture;
+
+        await vi.waitFor(() => expect(clone.onLoadObservable.notifyObservers).toHaveBeenCalled());
+
+        // fit: "strict" -> decode without resize options; premultiplyAlpha -> upload flag stays true.
+        const cloneDecodes = mockState.decodeCalls.slice(decodesBefore);
+        expect(cloneDecodes).toHaveLength(1);
+        expect(cloneDecodes[0].opts).toEqual({});
+        const cloneUploads = mockState.upload.mock.calls.slice(uploadsBefore);
+        expect(cloneUploads).toHaveLength(1);
+        expect(cloneUploads[0][4]).toBe(true);
+    });
+
+    it("preserves the current blend mode and grown capacity after construction", async () => {
+        const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, maxLayers: 2 });
+
+        await mt.addLayer("c.png");
+        expect(mt.arrayTexture.depth).toBe(4);
+        mt.blendMode = MultiBlendMode.SCREEN;
+
+        const clone = mt.clone() as MockMultiTexture;
+        const newRaw = mockState.rawInstances[mockState.rawInstances.length - 1];
+
+        expect(clone.urls).toEqual(["a.png", "b.png", "c.png"]);
+        expect(clone.layerCount).toBe(3);
+        // Capacity follows the current (grown) depth, not the construction-time one.
+        expect(newRaw.depth).toBe(4);
+        expect(clone.blendMode).toBe(MultiBlendMode.SCREEN);
+        expect(clone.defines).toContain("#define MULTITEXTURE_MAXLAYERS 4");
+        expect(clone.defines).toContain("#define MULTITEXTURE_BLEND_SCREEN");
+    });
+
+    it("does not inherit onLoad/onError callbacks from the original", async () => {
+        const onError = vi.fn();
+        mockState.urlBehaviors["bad.png"] = "notok";
+
+        const { mt } = await createLoaded(["bad.png"], { width: 8, height: 8, onError });
+        expect(onError).toHaveBeenCalledTimes(1);
+
+        const clone = mt.clone() as MockMultiTexture;
+        await vi.waitFor(() => expect(clone.onLoadObservable.notifyObservers).toHaveBeenCalled());
+
+        // The clone re-ran the failing load, but its error must not reach the original's callbacks.
+        expect(onError).toHaveBeenCalledTimes(1);
+    });
+
+    it("inherits watch mode and poll interval from the original", async () => {
+        vi.useFakeTimers();
+        mockState.headers = { etag: "v1" };
+
+        const { mt } = await createLoaded(["a.png"], { width: 8, height: 8, watch: true, pollInterval: 500 });
+
+        const clone = mt.clone() as MockMultiTexture;
+        // Flush the clone's init so its poller starts before the poll window below.
+        await vi.advanceTimersByTimeAsync(10);
+        expect((clone as any)._pollTimer).not.toBeNull();
+
+        mockState.fetchCalls.length = 0;
+        await vi.advanceTimersByTimeAsync(1100); // two 500 ms poll ticks
+
+        // Original and clone both poll at the inherited 500 ms interval: one HEAD per texture per tick.
+        const headCalls = mockState.fetchCalls.filter((c: any) => c.init?.method === "HEAD");
+        expect(headCalls).toHaveLength(4);
+        expect(headCalls.every((c: any) => c.url === "a.png")).toBe(true);
+    });
+
+    it("copies base-texture properties (hasAlpha, level, coordinatesMode)", async () => {
+        const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 });
+        mt.hasAlpha = true;
+        mt.level = 5;
+        mt.coordinatesMode = 2;
+
+        const clone = mt.clone();
+
+        expect(clone.hasAlpha).toBe(true);
+        expect(clone.level).toBe(5);
+        expect(clone.coordinatesMode).toBe(2);
+    });
+});
+
+describe("MultiTexture serialize", () => {
+    it("throws an explicit unsupported error instead of inheriting the misleading base serialization", async () => {
+        const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 });
+
+        expect(() => mt.serialize()).toThrow(/MultiTexture/);
+        expect(() => mt.serialize()).toThrow(/not supported/);
+        expect(() => mt.serialize(true)).toThrow(/not supported/);
     });
 });
