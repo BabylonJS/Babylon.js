@@ -33,8 +33,14 @@ describe("_ShaderImportLoader", () => {
         await loader.getLoadCallback(ShaderLanguage.GLSL)!();
 
         expect(loader.getLoadCallback(ShaderLanguage.GLSL)).toBeUndefined();
-        expect(loader.getLoadCallback(ShaderLanguage.WGSL)).toBeTypeOf("function");
+        const loadWGSL = loader.getLoadCallback(ShaderLanguage.WGSL);
+        expect(loadWGSL).toBeTypeOf("function");
         expect(loadWebGPU).not.toHaveBeenCalled();
+
+        await loadWGSL!();
+
+        expect(loadWebGPU).toHaveBeenCalledOnce();
+        expect(loader.getLoadCallback(ShaderLanguage.WGSL)).toBeUndefined();
     });
 
     it("allows a failed import to be retried", async () => {
