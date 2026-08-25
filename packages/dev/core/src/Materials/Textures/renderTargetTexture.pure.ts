@@ -1063,7 +1063,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     private _dumpToolsLoading = false;
-    private _dumpTools: typeof import("../../Misc/dumpTools");
+    private _dumpTools: typeof import("../../Misc/dumpTools.pure");
 
     /**
      * This function will check if the render target texture can be rendered (textures are loaded, shaders are compiled)
@@ -1074,7 +1074,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             this._dumpToolsLoading = true;
             // avoid a static import to allow ignoring the import in some cases
             // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-            import("../../Misc/dumpTools").then((module) => (this._dumpTools = module));
+            import("../../Misc/dumpTools.pure").then((module) => (this._dumpTools = module));
         }
 
         this._objectRenderer.prepareRenderList();
