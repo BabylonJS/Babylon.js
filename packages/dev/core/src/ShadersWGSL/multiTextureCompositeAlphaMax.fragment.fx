@@ -14,9 +14,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     for (var i: i32 = 0; i < MULTITEXTURE_MAXLAYERS; i++) {
         if (i >= uniforms.uLayerCount) { break; }
         let s: vec4f = textureLoad(uLayers, px, i, 0);
-        if (s.a > result.a) {
+        if (s.a >= result.a) {
             result = s;
-            if (result.a >= 1.0) { break; }
         }
     }
     fragmentOutputs.color = result;

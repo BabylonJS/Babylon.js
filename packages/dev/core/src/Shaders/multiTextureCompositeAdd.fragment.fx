@@ -10,7 +10,6 @@ void main() {
         if (i >= uLayerCount) break;
         vec4 s = texelFetch(uLayers, ivec3(px, i), 0);
         result = min(result + s, vec4(1.0));
-        if (all(equal(result, vec4(1.0)))) break;
     }
     gl_FragColor = result;
 }

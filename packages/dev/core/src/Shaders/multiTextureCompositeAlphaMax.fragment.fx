@@ -9,9 +9,8 @@ void main() {
     for (int i = 0; i < MULTITEXTURE_MAXLAYERS; ++i) {
         if (i >= uLayerCount) break;
         vec4 s = texelFetch(uLayers, ivec3(px, i), 0);
-        if (s.a > result.a) {
+        if (s.a >= result.a) {
             result = s;
-            if (result.a >= 1.0) break;
         }
     }
     gl_FragColor = result;

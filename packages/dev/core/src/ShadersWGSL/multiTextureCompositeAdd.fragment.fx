@@ -15,7 +15,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         if (i >= uniforms.uLayerCount) { break; }
         let s: vec4f = textureLoad(uLayers, px, i, 0);
         result = min(result + s, vec4f(1.0));
-        if (all(result == vec4f(1.0))) { break; }
     }
     fragmentOutputs.color = result;
 }
