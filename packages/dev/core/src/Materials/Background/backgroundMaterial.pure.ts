@@ -49,7 +49,7 @@ import {
     AreLightsTexturesReady,
 } from "../materialHelper.functions";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import { ShaderLanguage } from "../shaderLanguage";
+import { _ShaderImportLoader } from "../../Misc/shaderImportLoader";
 import { ImageProcessingMixin } from "../imageProcessing";
 import { RegisterClass } from "../../Misc/typeStore";
 
@@ -515,7 +515,10 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
     private _primaryShadowColor = Color3.Black();
     private _primaryHighlightColor = Color3.Black();
 
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new _ShaderImportLoader(
+        () => [import("../../Shaders/background.vertex"), import("../../Shaders/background.fragment")],
+        () => [import("../../ShadersWGSL/background.vertex"), import("../../ShadersWGSL/background.fragment")]
+    );
 
     /**
      * Instantiates a Background Material in the given scene
@@ -824,17 +827,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights },
                     shaderLanguage: this._shaderLanguage,
-                    extraInitializationsAsync: this._shadersLoaded
-                        ? undefined
-                        : async () => {
-                              if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                  await Promise.all([import("../../ShadersWGSL/background.vertex"), import("../../ShadersWGSL/background.fragment")]);
-                              } else {
-                                  await Promise.all([import("../../Shaders/background.vertex"), import("../../Shaders/background.fragment")]);
-                              }
-
-                              this._shadersLoaded = true;
-                          },
+                    extraInitializationsAsync: BackgroundMaterial._ShaderLoader.getLoadCallback(this._shaderLanguage),
                 },
                 engine
             );
