@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { registeredGLTFExtensions } from "loaders/glTF/2.0/glTFLoaderExtensionRegistry";
+import { GetMappingForKey } from "loaders/glTF/2.0/Extensions/objectModelMapping";
+import { registerBuiltInGLTFExtensions } from "loaders/glTF/2.0/Extensions/dynamic";
+import { type GLTFLoader } from "loaders/glTF/2.0/glTFLoader.pure";
+import { blockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
+import { getMappingForFullOperationName } from "loaders/glTF/2.0/Extensions/KHR_interactivity/declarationMapper";
 
 /**
  * Tree-shaking guard for the loaders package.
@@ -14,6 +19,17 @@ import { registeredGLTFExtensions } from "loaders/glTF/2.0/glTFLoaderExtensionRe
  *    the explicit `Register*` opt-in is called.
  */
 describe("loaders tree-shaking side effects", () => {
+    it("registers glTF animation mappings only when explicitly requested", async () => {
+        const translation = GetMappingForKey("/nodes/{}/translation");
+        expect(translation?.interpolation).toBeUndefined();
+
+        const pure = await import("loaders/glTF/2.0/glTFLoaderAnimation.pure");
+        expect(translation?.interpolation).toBeUndefined();
+
+        pure.RegisterGLTFLoaderAnimation();
+        expect(translation?.interpolation).toHaveLength(1);
+    });
+
     it("does not register the extension when importing the pure module (opt-in only)", async () => {
         expect(registeredGLTFExtensions.has("KHR_materials_unlit")).toBe(false);
 
@@ -29,5 +45,49 @@ describe("loaders tree-shaking side effects", () => {
 
         await import("loaders/glTF/2.0/Extensions/KHR_draco_mesh_compression");
         expect(registeredGLTFExtensions.has("KHR_draco_mesh_compression")).toBe(true);
+    });
+
+    it("keeps the lazy factory registered after creating a built-in extension", async () => {
+        registerBuiltInGLTFExtensions();
+        const registration = registeredGLTFExtensions.get("ExtrasAsMetadata");
+        if (!registration) {
+            throw new Error("Expected the dynamically registered ExtrasAsMetadata factory");
+        }
+
+        await registration.factory({} as GLTFLoader);
+
+        expect(registeredGLTFExtensions.get("ExtrasAsMetadata")?.factory).toBe(registration.factory);
+    });
+
+    it("applies runtime setup without replacing lazy extension factories", async () => {
+        registerBuiltInGLTFExtensions();
+        const loader = {
+            isExtensionUsed: () => true,
+            gltf: { asset: { version: "2.0" }, extensionsUsed: [] },
+            babylonScene: null,
+            parent: { extensionOptions: {}, targetFps: 60 },
+        } as GLTFLoader;
+
+        for (const name of ["KHR_interactivity", "KHR_node_visibility", "KHR_node_hoverability", "KHR_node_selectability"]) {
+            const registration = registeredGLTFExtensions.get(name);
+            if (!registration) {
+                throw new Error(`Expected the dynamically registered ${name} factory`);
+            }
+
+            await registration.factory(loader);
+
+            expect(registeredGLTFExtensions.get(name)?.factory).toBe(registration.factory);
+        }
+
+        const provider = await blockFactory("KHR_interactivity/FlowGraphGLTFDataProvider")();
+        expect(provider.name).toBe("FlowGraphGLTFDataProvider");
+
+        expect(getMappingForFullOperationName("event/onHoverIn:KHR_node_hoverability")?.blocks).toContain("KHR_interactivity/FlowGraphGLTFDataProvider");
+        expect(getMappingForFullOperationName("event/onHoverOut:KHR_node_hoverability")?.blocks).toContain("KHR_interactivity/FlowGraphGLTFDataProvider");
+        expect(getMappingForFullOperationName("event/onSelect:KHR_node_selectability")?.blocks).toContain("KHR_interactivity/FlowGraphGLTFDataProvider");
+
+        expect(GetMappingForKey("/nodes/{}/extensions/KHR_node_visibility/visible")).toBeDefined();
+        expect(GetMappingForKey("/nodes/{}/extensions/KHR_node_hoverability/hoverable")).toBeDefined();
+        expect(GetMappingForKey("/nodes/{}/extensions/KHR_node_selectability/selectable")).toBeDefined();
     });
 });

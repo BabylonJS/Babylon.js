@@ -2369,7 +2369,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 const newPartIndex = proxyMesh.partIndex;
                 mesh._partProxies[newPartIndex] = proxyMesh;
                 mesh.setWorldMatrixForPart(newPartIndex, proxyMesh.getWorldMatrix());
-                mesh.setPartVisibility(newPartIndex, proxyMesh.visibility);
+                mesh.setPartVisibility(newPartIndex, proxyMesh.isEnabled() ? proxyMesh.visibility : 0);
             }
         }
 

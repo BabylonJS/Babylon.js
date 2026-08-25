@@ -64,7 +64,7 @@ export function RegisterEnginePrefilteredCubeTexture(): void {
                 return;
             }
 
-            const { DDSTools } = await import("core/Misc/dds");
+            const { DDSTools } = await import("core/Misc/dds.pure");
 
             const textures: BaseTexture[] = [];
             for (let i = 0; i < mipSlices; i++) {

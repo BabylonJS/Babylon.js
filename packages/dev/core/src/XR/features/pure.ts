@@ -23,3 +23,4 @@ export * from "./WebXRDepthSensing.pure";
 export * from "./WebXRSpaceWarp.pure";
 export * from "./WebXRRawCameraAccess.pure";
 export * from "./WebXRBodyTracking.pure";
+export * from "./WebXRLayersFallback.pure";
