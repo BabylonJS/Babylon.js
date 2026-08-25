@@ -45,7 +45,6 @@ uniform vBaseDiffuseRoughness: f32;
 uniform vReflectanceInfo: vec4f;
 uniform vSpecularColor: vec4f;
 uniform vSpecularAnisotropy: vec3f;
-uniform vSpecularRetroreflectivity: f32;
 uniform vTransmissionWeight : f32;
 uniform vTransmissionColor : vec3f;
 uniform vTransmissionDepth : f32;
@@ -91,8 +90,6 @@ uniform vSpecularRoughnessInfos: vec2f;
 uniform specularRoughnessMatrix: mat4x4f;
 uniform vSpecularRoughnessAnisotropyInfos: vec2f;
 uniform specularRoughnessAnisotropyMatrix: mat4x4f;
-uniform vSpecularRetroreflectivityInfos: vec2f;
-uniform specularRetroreflectivityMatrix: mat4x4f;
 uniform vTransmissionWeightInfos : vec2f;
 uniform transmissionWeightMatrix : mat4x4f;
 uniform vTransmissionColorInfos : vec2f;
@@ -148,6 +145,9 @@ uniform ambientOcclusionMatrix: mat4x4f;
 
 #define ADDITIONAL_UBO_DECLARATION
 
+#if defined(SPECULAR_RETROREFLECTIVITY) && SPECULAR_RETROREFLECTIVITYDIRECTUV == 0
+uniform specularRetroreflectivityMatrix: mat4x4f;
+#endif
 
 #include<sceneUboDeclaration>
 #include<meshUboDeclaration>

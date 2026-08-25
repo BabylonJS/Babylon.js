@@ -38,6 +38,7 @@ attribute color: vec4f;
 #include<samplerVertexDeclaration>(_DEFINENAME_,SPECULAR_WEIGHT,_VARYINGNAME_,SpecularWeight)
 #include<samplerVertexDeclaration>(_DEFINENAME_,SPECULAR_COLOR,_VARYINGNAME_,SpecularColor)
 #include<samplerVertexDeclaration>(_DEFINENAME_,SPECULAR_ROUGHNESS,_VARYINGNAME_,SpecularRoughness)
+#include<samplerVertexDeclaration>(_DEFINENAME_,SPECULAR_RETROREFLECTIVITY,_VARYINGNAME_,SpecularRetroreflectivity)
 #include<samplerVertexDeclaration>(_DEFINENAME_,SPECULAR_ROUGHNESS_ANISOTROPY,_VARYINGNAME_,SpecularRoughnessAnisotropy)
 #include<samplerVertexDeclaration>(_DEFINENAME_,TRANSMISSION_WEIGHT,_VARYINGNAME_,TransmissionWeight)
 #include<samplerVertexDeclaration>(_DEFINENAME_,TRANSMISSION_COLOR,_VARYINGNAME_,TransmissionColor)
@@ -260,7 +261,21 @@ fn main(input : VertexInputs) -> FragmentInputs {
     #include<samplerVertexImplementation>(_DEFINENAME_,SPECULAR_WEIGHT,_VARYINGNAME_,SpecularWeight,_MATRIXNAME_,specularWeight,_INFONAME_,SpecularWeightInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,SPECULAR_COLOR,_VARYINGNAME_,SpecularColor,_MATRIXNAME_,specularColor,_INFONAME_,SpecularColorInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,SPECULAR_ROUGHNESS,_VARYINGNAME_,SpecularRoughness,_MATRIXNAME_,specularRoughness,_INFONAME_,SpecularRoughnessInfos.x)
-    #include<samplerVertexImplementation>(_DEFINENAME_,SPECULAR_RETROREFLECTIVITY,_VARYINGNAME_,SpecularRetroreflectivity,_MATRIXNAME_,specularRetroreflectivity,_INFONAME_,SpecularRetroreflectivityInfos.x)
+    #if defined(SPECULAR_RETROREFLECTIVITY) && SPECULAR_RETROREFLECTIVITYDIRECTUV == 0
+        var specularRetroreflectivityUVSource: vec2f = uvUpdated;
+        #if SPECULAR_RETROREFLECTIVITY_UV_INDEX == 1
+            specularRetroreflectivityUVSource = uv2Updated;
+        #elif SPECULAR_RETROREFLECTIVITY_UV_INDEX == 2
+            specularRetroreflectivityUVSource = vertexInputs.uv3;
+        #elif SPECULAR_RETROREFLECTIVITY_UV_INDEX == 3
+            specularRetroreflectivityUVSource = vertexInputs.uv4;
+        #elif SPECULAR_RETROREFLECTIVITY_UV_INDEX == 4
+            specularRetroreflectivityUVSource = vertexInputs.uv5;
+        #elif SPECULAR_RETROREFLECTIVITY_UV_INDEX == 5
+            specularRetroreflectivityUVSource = vertexInputs.uv6;
+        #endif
+        vertexOutputs.vSpecularRetroreflectivityUV = (uniforms.specularRetroreflectivityMatrix * vec4f(specularRetroreflectivityUVSource, 1.0, 0.0)).xy;
+    #endif
     #include<samplerVertexImplementation>(_DEFINENAME_,SPECULAR_ROUGHNESS_ANISOTROPY,_VARYINGNAME_,SpecularRoughnessAnisotropy,_MATRIXNAME_,specularRoughnessAnisotropy,_INFONAME_,SpecularRoughnessAnisotropyInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,TRANSMISSION_WEIGHT,_VARYINGNAME_,TransmissionWeight,_MATRIXNAME_,transmissionWeight,_INFONAME_,TransmissionWeightInfos.x)
     #include<samplerVertexImplementation>(_DEFINENAME_,TRANSMISSION_COLOR,_VARYINGNAME_,TransmissionColor,_MATRIXNAME_,transmissionColor,_INFONAME_,TransmissionColorInfos.x)

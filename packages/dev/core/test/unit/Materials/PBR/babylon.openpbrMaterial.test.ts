@@ -1,9 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { Constants } from "core/Engines/constants";
 import { NullEngine } from "core/Engines/nullEngine";
 import { type Engine } from "core/Engines/engine";
 import { Mesh } from "core/Meshes/mesh";
 import { SubMesh } from "core/Meshes/subMesh";
-import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { OpenPBRMaterial, OpenPBRMaterialDefines } from "core/Materials/PBR/openpbrMaterial";
+import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { Texture } from "core/Materials/Textures/texture";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
 import { Scene } from "core/scene";
 
@@ -127,6 +130,48 @@ describe("OpenPBRMaterial", () => {
             // scene.isReady() is false so _checkIsReady would not notify the observable
             expect(scene.isReady()).toBe(false);
             expect(readyCallback).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("Retroreflection uniform layout", () => {
+        it("packs the factor and keeps the texture matrix outside the Material UBO", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const uniformsArray: {
+                name: string;
+                linkedProperties: Record<string, { targetUniformComponentOffset: number }>;
+            }[] = (material as any)._uniformsArray;
+            const samplers: Record<string, { useLooseMatrixUniform: boolean }> = (material as any)._samplersList;
+
+            expect(uniformsArray.find((uniform) => uniform.name === "vSpecularRetroreflectivity")).toBeUndefined();
+            expect(uniformsArray.find((uniform) => uniform.name === "vSpecularColor")!.linkedProperties.specular_retroreflectivity.targetUniformComponentOffset).toBe(3);
+            expect(samplers._specularRetroreflectivityTexture.useLooseMatrixUniform).toBe(true);
+        });
+
+        it("stores transformed texture coordinates in Native-compatible defines", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const texture = new RawTexture(new Uint8Array([255, 0, 0, 255]), 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+            texture.coordinatesIndex = 1;
+            texture.uOffset = 0.2;
+            texture.vOffset = 0.1;
+            texture.uScale = 0.5;
+            texture.vScale = 0.75;
+            texture.wAng = 0.3;
+            material.specularRetroreflectivity = 1;
+            material.specularRetroreflectivityTexture = texture;
+
+            const mesh = new Mesh("testMesh", scene);
+            const defines = new OpenPBRMaterialDefines();
+            (material as any)._prepareDefines(mesh, mesh, defines);
+            const matrix = texture.getTextureMatrix().m;
+            expect(defines.SPECULAR_RETROREFLECTIVITY_UV_INDEX).toBe(1);
+            expect([
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_0,
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_1,
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_2,
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_3,
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_4,
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_5,
+            ]).toEqual([matrix[0], matrix[4], matrix[8], matrix[1], matrix[5], matrix[9]]);
         });
     });
 

@@ -103,7 +103,7 @@ specular_color = uniforms.vSpecularColor.rgb;
 specular_weight = uniforms.vReflectanceInfo.a;
 specular_ior = uniforms.vReflectanceInfo.z;
 specular_roughness_anisotropy = uniforms.vSpecularAnisotropy.b;
-specular_retroreflectivity = uniforms.vSpecularRetroreflectivity;
+specular_retroreflectivity = uniforms.vSpecularColor.a;
 geometry_tangent = uniforms.vSpecularAnisotropy.rg;
 geometry_thickness = uniforms.vGeometryThickness;
 
@@ -202,7 +202,7 @@ geometry_thickness = uniforms.vGeometryThickness;
 #endif
 
 #ifdef SPECULAR_RETROREFLECTIVITY
-    specular_retroreflectivity *= retroreflectivityFromTexture * uniforms.vSpecularRetroreflectivityInfos.y;
+    specular_retroreflectivity *= retroreflectivityFromTexture;
 #endif
 
 #ifdef DETAIL
