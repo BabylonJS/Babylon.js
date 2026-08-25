@@ -871,7 +871,7 @@ interface XRMediaLayerInit {
 
 interface XRCylinderLayerInit extends XRLayerInit {
     textureType?: XRTextureType | undefined;
-    transform: XRRigidTransform;
+    transform?: XRRigidTransform | undefined;
     radius?: number | undefined;
     centralAngle?: number | undefined;
     aspectRatio?: number | undefined;
