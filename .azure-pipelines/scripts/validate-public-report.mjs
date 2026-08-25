@@ -6,8 +6,20 @@ if (!reportDirectory) {
     throw new Error("Usage: node validate-public-report.mjs <report-directory>");
 }
 
-const allowedExtensions = new Set([".css", ".gif", ".html", ".ico", ".jpeg", ".jpg", ".js", ".mjs", ".png", ".svg", ".ttf", ".txt", ".webp", ".woff", ".woff2"]);
-const blockedMarkers = ["browserstack.accesskey", "%22browserstack.accesskey%22", "cdp.browserstack.com/playwright?caps=", "data:application/zip;base64"];
+const allowedExtensions = new Set([".css", ".gif", ".html", ".ico", ".jpeg", ".jpg", ".png", ".svg", ".ttf", ".txt", ".webp", ".woff", ".woff2"]);
+const blockedMarkers = [
+    "browserstack.accesskey",
+    "%22browserstack.accesskey%22",
+    "cdp.browserstack.com/playwright?caps=",
+    "data:application/gzip;base64",
+    "data:application/zip;base64",
+];
+const blockedFileSignatures = [
+    ["Gzip archive", Buffer.from([0x1f, 0x8b])],
+    ["ZIP archive", Buffer.from([0x50, 0x4b, 0x03, 0x04])],
+    ["ZIP archive", Buffer.from([0x50, 0x4b, 0x05, 0x06])],
+    ["ZIP archive", Buffer.from([0x50, 0x4b, 0x07, 0x08])],
+];
 const configuredSecrets = [
     ["BrowserStack access key", process.env.BROWSERSTACK_ACCESS_KEY],
     ["BrowserStack username", process.env.BROWSERSTACK_USERNAME],
@@ -51,6 +63,12 @@ const scanDirectory = async (directory) => {
 
         const contents = await readFile(path);
         const searchableContents = contents.toString("latin1").toLowerCase();
+        for (const [name, signature] of blockedFileSignatures) {
+            if (contents.subarray(0, signature.length).equals(signature)) {
+                violations.push(`${displayPath}: contains ${name} data`);
+                break;
+            }
+        }
         for (const marker of blockedMarkers) {
             if (searchableContents.includes(marker)) {
                 violations.push(`${displayPath}: contains blocked marker "${marker}"`);
