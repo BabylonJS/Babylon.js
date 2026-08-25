@@ -1265,7 +1265,7 @@ export class GaussianSplattingMeshBase extends Mesh {
         // first render. Once rendered, the render loop continuously re-sorts as the camera/world changes.
         if (!this._hasRenderedOnce && !this._disableDepthSort) {
             const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
-            const canRenderWithPendingRefresh = this._scene._isInActiveMeshEvaluation() && cameras.filter((camera) => camera !== null).length === 1;
+            const canRenderWithPendingRefresh = this._scene._isInRenderingMeshEvaluation() && cameras.filter((camera) => camera !== null).length === 1;
             const worldMatrix = this.computeWorldMatrix(true);
             let sortBufferMissing = false;
             let sortRefreshPending = false;

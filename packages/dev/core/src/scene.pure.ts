@@ -1744,7 +1744,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _renderId = 0;
     private _frameId = 0;
-    private _activeMeshesEvaluationDepth = 0;
+    private _renderingMeshEvaluationDepth = 0;
     private _executeWhenReadyTimeoutId: Nullable<ReturnType<typeof setTimeout>> = null;
     /** @internal */
     public _intermediateRendering = false;
@@ -4570,8 +4570,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /** @internal */
-    public _isInActiveMeshEvaluation(): boolean {
-        return this._activeMeshesEvaluationDepth > 0;
+    public _isInRenderingMeshEvaluation(): boolean {
+        return this._renderingMeshEvaluationDepth > 0;
     }
 
     /**
@@ -5062,12 +5062,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._engine.currentRenderPassId = camera.outputRenderTarget?.renderPassId ?? camera.renderPassId ?? Constants.RENDERPASS_MAIN;
 
         // Meshes
-        this._activeMeshesEvaluationDepth++;
-        try {
-            this._evaluateActiveMeshes();
-        } finally {
-            this._activeMeshesEvaluationDepth--;
-        }
+        this._evaluateActiveMeshes();
 
         // Software skinning
         for (let softwareSkinnedMeshIndex = 0; softwareSkinnedMeshIndex < this._softwareSkinnedMeshes.length; softwareSkinnedMeshIndex++) {
@@ -5413,6 +5408,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.onBeforeRenderObservable.notifyObservers(this);
 
+        this._renderingMeshEvaluationDepth++;
+        try {
+            this._renderWithFrameGraphAfterBeforeRender(forceUpdateWorldMatrix);
+        } finally {
+            this._renderingMeshEvaluationDepth--;
+        }
+    }
+
+    private _renderWithFrameGraphAfterBeforeRender(forceUpdateWorldMatrix: boolean): void {
         // Customs render targets
         this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
 
@@ -5560,6 +5564,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
 
+        const renderingMeshEvaluationDepth = this._renderingMeshEvaluationDepth;
+        try {
+            this._renderFrame(updateCameras, ignoreAnimations);
+        } finally {
+            this._renderingMeshEvaluationDepth = renderingMeshEvaluationDepth;
+        }
+    }
+
+    private _renderFrame(updateCameras: boolean, ignoreAnimations: boolean): void {
         if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === null) {
             this._checkIsReady();
         }
@@ -5636,6 +5649,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         } else {
             // Before render
             this.onBeforeRenderObservable.notifyObservers(this);
+            this._renderingMeshEvaluationDepth++;
 
             // Customs render targets
             this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
