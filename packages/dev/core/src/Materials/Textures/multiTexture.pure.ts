@@ -106,8 +106,8 @@ interface ILayerEntry {
  *   (the WebGL2 extension is imported automatically by the non-pure `multiTexture` entry).
  * - The allocated array depth (options.maxLayers ?? urls.length) must be a positive integer and no
  *   larger than the device limit getCaps().texture2DArrayMaxLayerCount. Empty urls are only accepted
- *   together with an explicit options.maxLayers. addLayer doubles the depth when it is full and
- *   throws a RangeError if the doubled depth would exceed that limit.
+ *   together with an explicit options.maxLayers. addLayer/insertLayer double the depth when it is
+ *   full and throw a RangeError if the doubled depth would exceed that limit.
  */
 export class MultiTexture extends ProceduralTexture {
     private _layers: ILayerEntry[];
@@ -368,12 +368,61 @@ export class MultiTexture extends ProceduralTexture {
     }
 
     /**
+     * Inserts a new layer at the given index and returns it. Layers at index and above shift up by
+     * one and are re-uploaded from their retained bitmaps; uLayerCount is incremented. Inserting at
+     * `layerCount` appends (addLayer-equivalent). Grows the underlying array (doubling its depth)
+     * when the current depth is exhausted, same as addLayer, and throws a RangeError if the doubled
+     * depth would exceed the device's texture2DArrayMaxLayerCount.
+     * @param index defines the layer index to insert at (0..layerCount, inclusive)
+     * @param url defines the URL of the image to load as the new layer
+     * @returns a promise resolving to the index of the inserted layer
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public async insertLayer(index: number, url: string): Promise<number> {
+        if (!Number.isInteger(index) || index < 0 || index > this._layerCount) {
+            throw new RangeError(`MultiTexture: layer index ${index} out of range [0, ${this._layerCount}].`);
+        }
+
+        try {
+            if (this._layerCount + 1 > this._maxLayers) {
+                this._growArray();
+            }
+
+            this._layers.splice(index, 0, { url, etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false });
+            this.pixels.splice(index, 0, null);
+            this.urls.splice(index, 0, url);
+            this._warnedLoadFailure.splice(index, 0, false);
+            this._layerCount++;
+
+            // Move the shifted layers up on the GPU before the new layer is decoded, top-down so no
+            // slot is overwritten before its old content is re-read.
+            for (let j = this._layerCount - 1; j > index; j--) {
+                const bitmap = this._layers[j].bitmap;
+                if (bitmap !== null) {
+                    UploadImageToTexture2DArrayLayer(this._arrayTexture, bitmap, j, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
+                }
+            }
+
+            // The fragment shader only samples the first uLayerCount layers, so the uniform must
+            // track the internal count or the freshly inserted layer is never composited.
+            this.setInt("uLayerCount", this._layerCount);
+
+            await this._loadLayer(index, url);
+        } catch (e) {
+            this._reportError(e);
+            throw e;
+        }
+
+        return index;
+    }
+
+    /**
      * Removes a layer. Higher indices shift down (re-uploaded from their retained bitmaps) and
      * uLayerCount is decremented.
      * @param index defines the layer index to remove
      * @returns a promise resolving once the shift is done
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention -- public API name mandated by docs/plans/multi-texture-plan.md
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public async removeLayer(index: number): Promise<void> {
         if (!Number.isInteger(index) || index < 0 || index >= this._layerCount) {
             throw new RangeError(`MultiTexture: layer index ${index} out of range [0, ${this._layerCount}).`);
