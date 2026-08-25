@@ -730,6 +730,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
 
     /**
      * Creates a video-backed quad layer and adds it to the current XR session.
+     * @see https://playground.babylonjs.com/#D35HOL#0
      * @param video the video element presented by the XR compositor
      * @param options initialization and transform-node options for the layer
      * @returns the created media layer wrapper, or `null` when XRMediaBinding is unavailable
