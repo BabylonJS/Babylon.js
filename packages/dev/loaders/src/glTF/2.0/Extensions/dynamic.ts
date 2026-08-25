@@ -66,7 +66,8 @@ export function registerBuiltInGLTFExtensions() {
 
     unregisterGLTFExtension("KHR_interactivity");
     registerGLTFExtension("KHR_interactivity", true, async (loader) => {
-        const { KHR_interactivity } = await import("./KHR_interactivity.pure");
+        const { KHR_interactivity, _RegisterKHRInteractivityRuntime } = await import("./KHR_interactivity.pure");
+        _RegisterKHRInteractivityRuntime();
         return new KHR_interactivity(loader);
     });
 
@@ -233,19 +234,22 @@ export function registerBuiltInGLTFExtensions() {
 
     unregisterGLTFExtension("KHR_node_visibility");
     registerGLTFExtension("KHR_node_visibility", true, async (loader) => {
-        const { KHR_node_visibility } = await import("./KHR_node_visibility.pure");
+        const { KHR_node_visibility, _RegisterKHRNodeVisibilityRuntime } = await import("./KHR_node_visibility.pure");
+        _RegisterKHRNodeVisibilityRuntime();
         return new KHR_node_visibility(loader);
     });
 
     unregisterGLTFExtension("KHR_node_hoverability");
     registerGLTFExtension("KHR_node_hoverability", true, async (loader) => {
-        const { KHR_node_hoverability } = await import("./KHR_node_hoverability.pure");
+        const { KHR_node_hoverability, _RegisterKHRNodeHoverabilityRuntime } = await import("./KHR_node_hoverability.pure");
+        _RegisterKHRNodeHoverabilityRuntime();
         return new KHR_node_hoverability(loader);
     });
 
     unregisterGLTFExtension("KHR_node_selectability");
     registerGLTFExtension("KHR_node_selectability", true, async (loader) => {
-        const { KHR_node_selectability } = await import("./KHR_node_selectability.pure");
+        const { KHR_node_selectability, _RegisterKHRNodeSelectabilityRuntime } = await import("./KHR_node_selectability.pure");
+        _RegisterKHRNodeSelectabilityRuntime();
         return new KHR_node_selectability(loader);
     });
 

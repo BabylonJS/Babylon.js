@@ -4,6 +4,8 @@ import { registeredGLTFExtensions } from "loaders/glTF/2.0/glTFLoaderExtensionRe
 import { GetMappingForKey } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { registerBuiltInGLTFExtensions } from "loaders/glTF/2.0/Extensions/dynamic";
 import { type GLTFLoader } from "loaders/glTF/2.0/glTFLoader.pure";
+import { blockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
+import { getMappingForFullOperationName } from "loaders/glTF/2.0/Extensions/KHR_interactivity/declarationMapper";
 
 /**
  * Tree-shaking guard for the loaders package.
@@ -55,5 +57,37 @@ describe("loaders tree-shaking side effects", () => {
         await registration.factory({} as GLTFLoader);
 
         expect(registeredGLTFExtensions.get("ExtrasAsMetadata")?.factory).toBe(registration.factory);
+    });
+
+    it("applies runtime setup without replacing lazy extension factories", async () => {
+        registerBuiltInGLTFExtensions();
+        const loader = {
+            isExtensionUsed: () => true,
+            gltf: { asset: { version: "2.0" }, extensionsUsed: [] },
+            babylonScene: null,
+            parent: { extensionOptions: {}, targetFps: 60 },
+        } as GLTFLoader;
+
+        for (const name of ["KHR_interactivity", "KHR_node_visibility", "KHR_node_hoverability", "KHR_node_selectability"]) {
+            const registration = registeredGLTFExtensions.get(name);
+            if (!registration) {
+                throw new Error(`Expected the dynamically registered ${name} factory`);
+            }
+
+            await registration.factory(loader);
+
+            expect(registeredGLTFExtensions.get(name)?.factory).toBe(registration.factory);
+        }
+
+        const provider = await blockFactory("KHR_interactivity/FlowGraphGLTFDataProvider")();
+        expect(provider.name).toBe("FlowGraphGLTFDataProvider");
+
+        expect(getMappingForFullOperationName("event/onHoverIn:KHR_node_hoverability")?.blocks).toContain("KHR_interactivity/FlowGraphGLTFDataProvider");
+        expect(getMappingForFullOperationName("event/onHoverOut:KHR_node_hoverability")?.blocks).toContain("KHR_interactivity/FlowGraphGLTFDataProvider");
+        expect(getMappingForFullOperationName("event/onSelect:KHR_node_selectability")?.blocks).toContain("KHR_interactivity/FlowGraphGLTFDataProvider");
+
+        expect(GetMappingForKey("/nodes/{}/extensions/KHR_node_visibility/visible")).toBeDefined();
+        expect(GetMappingForKey("/nodes/{}/extensions/KHR_node_hoverability/hoverable")).toBeDefined();
+        expect(GetMappingForKey("/nodes/{}/extensions/KHR_node_selectability/selectable")).toBeDefined();
     });
 });
