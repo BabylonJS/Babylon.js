@@ -394,16 +394,18 @@ export class MultiTexture extends ProceduralTexture {
             this._pollTimer = null;
         }
 
-        for (const entry of this._layers) {
+        for (let i = 0; i < this._layers.length; i++) {
+            const entry = this._layers[i];
             if (entry.bitmap) {
                 entry.bitmap.close();
                 entry.bitmap = null;
             }
-            entry.pixels = null;
         }
+
         for (let i = 0; i < this.pixels.length; i++) {
             this.pixels[i] = null;
         }
+
         this._layers.length = 0;
         this._canvas = null;
         this._ctx = null;
@@ -482,9 +484,9 @@ export class MultiTexture extends ProceduralTexture {
         if (this._canvas && this._ctx) {
             this._ctx.clearRect(0, 0, this._mtOptions.width, this._mtOptions.height);
             this._ctx.drawImage(bitmap, 0, 0, this._mtOptions.width, this._mtOptions.height);
-            entry.pixels = this._ctx.getImageData(0, 0, this._mtOptions.width, this._mtOptions.height).data.slice();
+            this.pixels[index] = this._ctx.getImageData(0, 0, this._mtOptions.width, this._mtOptions.height).data.slice();
         } else {
-            entry.pixels = null;
+            this.pixels[index] = null;
         }
 
         if (entry.bitmap !== null) {
@@ -495,7 +497,6 @@ export class MultiTexture extends ProceduralTexture {
         entry.etag = meta.etag;
         entry.lastModified = meta.lastModified;
         this._warnedLoadFailure[index] = false;
-        this.pixels[index] = entry.pixels;
 
         this.resetRefreshCounter();
     }
