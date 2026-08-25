@@ -32,11 +32,13 @@ describe("GaussianSplattingPartProxyMesh enabled state", () => {
         proxy.setEnabled(false);
 
         expect(compound.getPartVisibility(0)).toBe(0);
-        expect(proxy.visibility).toBe(0.25);
+        proxy.visibility = 0.5;
+        expect(proxy.visibility).toBe(0.5);
+        expect(compound.getPartVisibility(0)).toBe(0);
 
         proxy.setEnabled(true);
 
-        expect(compound.getPartVisibility(0)).toBe(0.25);
+        expect(compound.getPartVisibility(0)).toBe(0.5);
     });
 
     it("tracks enabled state inherited from an ancestor", () => {

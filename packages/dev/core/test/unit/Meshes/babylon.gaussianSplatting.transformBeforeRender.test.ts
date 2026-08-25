@@ -30,7 +30,7 @@ describe("GaussianSplatting transform before first render", () => {
         const cameraMesh = new Mesh("cameraMesh", scene);
         Reflect.set(mesh, "_readyToDisplay", true);
         const cameraViewInfos = Reflect.get(mesh, "_cameraViewInfos") as Map<number, object>;
-        cameraViewInfos.set(camera.uniqueId, {
+        const cameraViewInfo = {
             camera,
             cameraDirection: Vector3.Zero(),
             sortWorldMatrix: Matrix.Identity(),
@@ -41,12 +41,17 @@ describe("GaussianSplatting transform before first render", () => {
             mesh: cameraMesh,
             frameIdLastUpdate: scene.getFrameId(),
             splatIndexBufferSet: true,
-        });
+        };
+        cameraViewInfos.set(camera.uniqueId, cameraViewInfo);
         const postToWorker = vi.spyOn(mesh, "_postToWorker").mockImplementation(() => {});
 
         mesh.position.y = 1;
 
         expect(mesh.isReady()).toBe(true);
         expect(postToWorker).toHaveBeenCalledWith(true);
+
+        cameraViewInfo.sortRequestId = 2;
+
+        expect(mesh.isReady()).toBe(true);
     });
 });

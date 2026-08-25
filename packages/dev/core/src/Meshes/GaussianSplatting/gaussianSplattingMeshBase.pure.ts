@@ -1260,14 +1260,14 @@ export class GaussianSplattingMeshBase extends Mesh {
             return false;
         }
 
-        // Before the first successful render, require an applied index buffer and no pending sort.
-        // World-matrix drift queues a fresher sort but can use the latest completed buffer, otherwise
-        // a transform changed every frame would starve the first render. Once rendered, the render loop
-        // continuously re-sorts as the camera/world changes via _postToWorker() in render().
+        // Before the first successful render, require an applied index buffer. A pending refresh can
+        // use the latest completed buffer, otherwise a transform changed every frame would starve the
+        // first render. Once rendered, the render loop continuously re-sorts as the camera/world changes.
         if (!this._hasRenderedOnce && !this._disableDepthSort) {
             const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
             const worldMatrix = this.computeWorldMatrix(true);
-            let sortPending = false;
+            let sortBufferMissing = false;
+            let sortRefreshPending = false;
             let worldMatrixDirty = false;
             for (const camera of cameras) {
                 if (!camera) {
@@ -1276,14 +1276,12 @@ export class GaussianSplattingMeshBase extends Mesh {
 
                 const cameraViewInfo = this._cameraViewInfos.get(camera.uniqueId);
                 if (!cameraViewInfo || !cameraViewInfo.splatIndexBufferSet) {
-                    sortPending = true;
+                    sortBufferMissing = true;
                     continue;
                 }
 
-                // Wait for the most recently requested sort to be applied so that the splat indices
-                // match the latest world/camera state.
                 if (cameraViewInfo.sortAppliedId !== cameraViewInfo.sortRequestId) {
-                    sortPending = true;
+                    sortRefreshPending = true;
                     continue;
                 }
 
@@ -1296,12 +1294,10 @@ export class GaussianSplattingMeshBase extends Mesh {
                 }
             }
 
-            if (sortPending || worldMatrixDirty) {
+            if (sortBufferMissing || sortRefreshPending || worldMatrixDirty) {
                 // Try to post any pending sort so subsequent polling iterations make progress.
                 this._postToWorker(true);
-                // A completed index buffer remains renderable while a new world-matrix sort is pending.
-                // Waiting here would starve the first render when the transform changes every frame.
-                if (sortPending) {
+                if (sortBufferMissing) {
                     return false;
                 }
             }
