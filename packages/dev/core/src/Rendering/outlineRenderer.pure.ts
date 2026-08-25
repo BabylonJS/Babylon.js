@@ -142,7 +142,6 @@ export class OutlineRenderer implements ISceneComponent {
         const drawWrapper = subMesh._getDrawWrapper(renderPassId)!;
         const effect = DrawWrapper.GetEffect(drawWrapper)!;
 
-        scene.resetCachedMaterial();
         engine.enableEffect(drawWrapper);
 
         // Logarithmic depth
