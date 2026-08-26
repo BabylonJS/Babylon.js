@@ -16,10 +16,11 @@ import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
 import postcss from "rollup-plugin-postcss";
 import url from "@rollup/plugin-url";
-import { copyFileSync, existsSync, readFileSync } from "fs";
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from "fs";
 import { resolve, join, dirname, relative as pathRelative } from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { transform as esbuildTransform } from "esbuild";
+import { downlevelJavaScriptToEs5 } from "../../scripts/downlevelNativeScripts.mjs";
 
 // Repo root — used as the filterRoot for @rollup/plugin-typescript so that
 // `**/*.ts` patterns are matched against repo-relative paths (which never start
@@ -620,6 +621,34 @@ function copyMinToMaxPlugin(outputDir, primaryName, chunkNames) {
     };
 }
 
+/**
+ * Produces the ES5 UMD sibling consumed by Babylon Native.
+ *
+ * @param {string} outputDir Absolute path to the output directory.
+ * @param {(chunkName: string) => string} primaryName Returns the primary output filename.
+ * @param {string} chunkName Entry chunk to downlevel.
+ */
+function generateEs5Plugin(outputDir, primaryName, chunkName) {
+    return {
+        name: "generate-es5-umd",
+        closeBundle() {
+            const primary = primaryName(chunkName);
+            const es5Name = primary.replace(/(?:\.min)?\.js$/, ".es5.js");
+            if (es5Name === primary) {
+                throw new Error(`Cannot derive an ES5 filename from ${primary}`);
+            }
+
+            const sourcePath = join(outputDir, primary);
+            if (!existsSync(sourcePath)) {
+                throw new Error(`Cannot generate ${es5Name}: ${sourcePath} does not exist`);
+            }
+
+            const source = readFileSync(sourcePath, "utf8");
+            writeFileSync(join(outputDir, es5Name), downlevelJavaScriptToEs5(source, sourcePath), "utf8");
+        },
+    };
+}
+
 // ---------------------------------------------------------------------------
 // Utility
 // ---------------------------------------------------------------------------
@@ -673,6 +702,8 @@ function shouldSuppressRollupWarning(warning) {
  *   Named entry points for multi-file packages.
  * @param {string|((chunk:{name:string})=>string)} [options.overrideFilename]
  *   Override the output filename (string) or per-chunk (function).
+ * @param {string} [options.es5EntryPoint]
+ *   Aggregate entry point that should also emit an `.es5.js` sibling in production builds.
  * @param {boolean} [options.devMode]
  *   When true, uses esbuild for TypeScript transpilation instead of tsc.
  *   ~10x faster builds at the cost of no type checking (types are already
@@ -691,6 +722,7 @@ export function commonUMDRollupConfiguration(options) {
         minToMax = false,
         entryPoints,
         overrideFilename,
+        es5EntryPoint,
         devMode = false,
         es6Mode = false,
     } = options;
@@ -742,6 +774,9 @@ export function commonUMDRollupConfiguration(options) {
     };
 
     const chunkNames = entryPoints ? Object.keys(entryPoints) : [devPackageName];
+    if (es5EntryPoint && !chunkNames.includes(es5EntryPoint)) {
+        throw new Error(`ES5 entry point "${es5EntryPoint}" is not defined by ${devPackageName}`);
+    }
 
     const externalPackageType = es6Mode ? "es6" : "umd";
     const externalsPlugin = babylonUMDExternalsPlugin([devPackageName, ...optionalExternalFunctionSkip], { bundleGltf2Interface, externalPackageType });
@@ -804,6 +839,7 @@ export function commonUMDRollupConfiguration(options) {
               ]
             : []),
         ...(minToMax && production ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, chunkNames)] : []),
+        ...(es5EntryPoint && production ? [generateEs5Plugin(resolve(outputPath), primaryFilename, es5EntryPoint)] : []),
     ];
 
     /**
@@ -918,6 +954,7 @@ export function commonUMDRollupConfiguration(options) {
                       ]
                     : []),
                 ...(minToMax && production ? [copyMinToMaxPlugin(resolve(outputPath), primaryFilename, [chunkName])] : []),
+                ...(es5EntryPoint === chunkName && production ? [generateEs5Plugin(resolve(outputPath), primaryFilename, chunkName)] : []),
             ];
             return {
                 input: inputFile,

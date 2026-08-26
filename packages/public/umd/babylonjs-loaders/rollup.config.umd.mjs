@@ -25,4 +25,5 @@ export default commonUMDRollupConfiguration({
     overrideFilename: (pathData) =>
         pathData.chunk.name === "loaders" ? `babylonjs.loaders${production ? ".min" : ""}.js` : `babylon.${pathData.chunk.name}${production ? ".min" : ""}.js`,
     minToMax: true,
+    es5EntryPoint: "loaders",
 });
