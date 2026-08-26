@@ -148,8 +148,11 @@ async function CreateSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement,
  */
 export async function Main(_searchParams: URLSearchParams): Promise<void> {
     const mainDiv = document.getElementById("main-div") as HTMLDivElement;
+    mainDiv.style.position = "relative";
+    mainDiv.style.background = "#030508";
     const canvas = document.createElement("canvas");
     canvas.id = "babylon-canvas";
+    canvas.style.cssText = "width:100%;height:100%;display:block;touch-action:none";
     mainDiv.appendChild(canvas);
     const statusPanel = CreateStatusPanel(mainDiv);
     statusPanel.text.textContent = "WebXR over WebGPU\nEngine: initializing";
