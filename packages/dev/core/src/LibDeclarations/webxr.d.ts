@@ -650,6 +650,7 @@ interface XRPlane {
     planeSpace: XRSpace;
     polygon: DOMPointReadOnly[];
     lastChangedTime: number;
+    semanticLabel?: string | null;
 }
 
 declare abstract class XRPlane implements XRPlane {}
@@ -1258,6 +1259,7 @@ interface XRMesh {
     vertices: Float32Array;
     indices: Uint32Array;
     lastChangedTime: DOMHighResTimeStamp;
+    semanticLabel?: string | null;
 }
 
 type XRMeshSet = Set<XRMesh>;
