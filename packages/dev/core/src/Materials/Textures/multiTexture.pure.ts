@@ -22,15 +22,15 @@ export interface IMultiTextureOptions {
     maxLayers?: number;
     /** Default MultiBlendMode.ALPHA_BLEND. */
     blendMode?: MultiBlendMode;
-    /** Default false — the composite RTT itself never needs mips (consumed at 1:1 by materials). */
+    /** Default false. Passed to RawTexture2DArray: mip levels of the LAYER array, consumed by the composite when rttScale < 1 (minification) under a trilinear sampling mode. The composite RTT itself never has mips (consumed at 1:1 by materials). */
     generateMipMaps?: boolean;
-    /** Default Texture.TRILINEAR_SAMPLINGMODE. Passed to RawTexture2DArray. */
+    /** Default Texture.TRILINEAR_SAMPLINGMODE. Passed to RawTexture2DArray. The composite shader reads the layers through this sampler, so it also drives the composite's mag/min filtering. */
     samplingMode?: number;
     /** Default false. Passed through to UploadImageToTexture2DArrayLayer. */
     premultiplyAlpha?: boolean;
     /** "resize" (default): decode-time rescale to width×height. "strict": reject mismatched dims. */
     fit?: "resize" | "strict";
-    /** Composite RTT resolution = width*rttScale × height*rttScale. Default 1. */
+    /** Composite RTT resolution = width*rttScale × height*rttScale. Default 1. Values other than 1 produce a filtered (bilinear) rescale of the composite, not a nearest-neighbor repeat. */
     rttScale?: number;
     /** Default false. HEAD-polling change detection. */
     watch?: boolean;
@@ -101,6 +101,10 @@ interface ILayerEntry {
  *   and MULTIPLY outputs white (empty-product identity).
  * - Compositing is skipped while `scene.proceduralTexturesEnabled` is false (standard
  *   procedural-texture render-loop behavior).
+ * - The composite shader reads the layers through the array sampler (filtered, not an integer
+ *   texel fetch), so `samplingMode` affects the composite output, `rttScale` other than 1
+ *   produces a filtered bilinear rescale, and (with `generateMipMaps: true`) trilinear
+ *   minification can use the layer mips when `rttScale` < 1.
  * - On WebGPU you must also import the WebGPU upload extension yourself:
  *   `import "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource";`
  *   (the WebGL2 extension is imported automatically by the non-pure `multiTexture` entry).
