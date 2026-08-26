@@ -7,8 +7,7 @@ import { Vector3 } from "core/Maths/math.vector";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
-import { WebXRExperienceHelper } from "core/XR/webXRExperienceHelper";
-import { WebXRInput } from "core/XR/webXRInput";
+import { WebXRDefaultExperience } from "core/XR/webXRDefaultExperience";
 import { WebXRSessionManager } from "core/XR/webXRSessionManager";
 import { WebXRState } from "core/XR/webXRTypes";
 
@@ -88,34 +87,28 @@ async function CreateSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement,
             `State: ${GetStateName(state)}`,
             lastError ? `Last error: ${lastError}` : "Last error: none",
             "",
-            "Headset checklist: stereo geometry, controller appearance, exit, and re-entry.",
+            "Headset checklist: stereo geometry, controllers, pointer selection, teleportation, exit, and re-entry.",
         ].join("\n");
         statusPanel.toggleButton.textContent = state === WebXRState.IN_XR ? "Exit immersive VR" : "Enter immersive VR";
         statusPanel.toggleButton.disabled = state === WebXRState.ENTERING_XR || state === WebXRState.EXITING_XR;
     };
     renderStatus();
 
-    let xr: WebXRExperienceHelper;
-    try {
-        xr = await WebXRExperienceHelper.CreateAsync(scene);
-    } catch (error) {
-        lastError = error instanceof Error ? error.message : String(error);
+    const xr = await WebXRDefaultExperience.CreateAsync(scene, {
+        disableDefaultUI: true,
+        floorMeshes: [ground],
+    });
+    if (!xr.baseExperience) {
+        lastError = "WebXR is not available in this browser.";
         renderStatus();
         statusPanel.toggleButton.disabled = true;
         return scene;
     }
 
-    const xrInput = new WebXRInput(xr.sessionManager, xr.camera);
-    const renderTarget = xr.sessionManager.getWebXRRenderTarget();
-    scene.onDisposeObservable.addOnce(() => {
-        xrInput.dispose();
-        renderTarget.dispose();
-    });
-
     if (capabilitySupported) {
-        xr.featuresManager.enableFeature(WebXRLayers.Name, "latest", {}, true, true);
+        xr.baseExperience.featuresManager.enableFeature(WebXRLayers.Name, "latest", {}, true, true);
     }
-    xr.onStateChangedObservable.add((newState) => {
+    xr.baseExperience.onStateChangedObservable.add((newState) => {
         state = newState;
         renderStatus();
     });
@@ -125,9 +118,9 @@ async function CreateSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement,
         renderStatus();
         try {
             if (state === WebXRState.IN_XR) {
-                await xr.exitXRAsync();
+                await xr.baseExperience.exitXRAsync();
             } else {
-                await xr.enterXRAsync("immersive-vr", "local-floor", renderTarget);
+                await xr.baseExperience.enterXRAsync("immersive-vr", "local-floor", xr.renderTarget);
             }
         } catch (error) {
             lastError = error instanceof Error ? error.message : String(error);
