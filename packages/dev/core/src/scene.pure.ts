@@ -1744,6 +1744,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _renderId = 0;
     private _frameId = 0;
+    private _renderingMeshEvaluationDepth = 0;
     private _executeWhenReadyTimeoutId: Nullable<ReturnType<typeof setTimeout>> = null;
     /** @internal */
     public _intermediateRendering = false;
@@ -4568,6 +4569,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return this._intermediateRendering;
     }
 
+    /** @internal */
+    public _isInRenderingMeshEvaluation(): boolean {
+        return this._renderingMeshEvaluationDepth > 0;
+    }
+
     /**
      * Lambda returning the list of potentially active meshes.
      */
@@ -5402,6 +5408,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         this.onBeforeRenderObservable.notifyObservers(this);
 
+        this._renderingMeshEvaluationDepth++;
+        try {
+            this._renderWithFrameGraphAfterBeforeRender(forceUpdateWorldMatrix);
+        } finally {
+            this._renderingMeshEvaluationDepth--;
+        }
+    }
+
+    private _renderWithFrameGraphAfterBeforeRender(forceUpdateWorldMatrix: boolean): void {
         // Customs render targets
         this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
 
@@ -5549,6 +5564,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
 
+        const renderingMeshEvaluationDepth = this._renderingMeshEvaluationDepth;
+        try {
+            this._renderFrame(updateCameras, ignoreAnimations);
+        } finally {
+            this._renderingMeshEvaluationDepth = renderingMeshEvaluationDepth;
+        }
+    }
+
+    private _renderFrame(updateCameras: boolean, ignoreAnimations: boolean): void {
         if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === null) {
             this._checkIsReady();
         }
@@ -5620,11 +5644,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (this.customRenderFunction) {
             this._renderId++;
             this._engine.currentRenderPassId = Constants.RENDERPASS_MAIN;
+            this._renderingMeshEvaluationDepth++;
 
             this.customRenderFunction(updateCameras, ignoreAnimations);
         } else {
             // Before render
             this.onBeforeRenderObservable.notifyObservers(this);
+            this._renderingMeshEvaluationDepth++;
 
             // Customs render targets
             this.onBeforeRenderTargetsRenderObservable.notifyObservers(this);
