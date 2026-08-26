@@ -1,9 +1,35 @@
 import path from "path";
 import { readFile } from "fs";
 import { fileURLToPath } from "url";
-import { defineConfig, normalizePath, type Plugin, type UserConfig } from "vite";
+import { defineConfig, normalizePath, transformWithEsbuild, type Plugin, type UserConfig } from "vite";
 // @ts-ignore -- untyped JS helper
 import { commonDevViteConfiguration } from "../../public/viteToolsHelper.mjs";
+
+// Vite 8's Oxc transform preserves TC39 decorators, which browsers cannot parse yet.
+// Match the Viewer and lower decorators with esbuild before Rolldown processes the modules.
+const EsbuildTransformOptions = {
+    target: "es2021",
+    tsconfigRaw: {
+        compilerOptions: {
+            useDefineForClassFields: false,
+        },
+    },
+};
+
+function esbuildDecoratorPlugin(): Plugin {
+    return {
+        name: "babylon-esbuild-tc39-decorators",
+        enforce: "pre",
+        async transform(code, id) {
+            const filePath = id.split("?")[0];
+            if (!/\.tsx?$/.test(filePath) || filePath.includes("/node_modules/")) {
+                return null;
+            }
+            const result = await transformWithEsbuild(code, id, EsbuildTransformOptions);
+            return { code: result.code, map: result.map };
+        },
+    };
+}
 
 // Serve the Havok physics WASM (used by the flowgraph showcase) from node_modules
 // during dev. The Havok ESM loader requests "/HavokPhysics.wasm" at runtime.
@@ -218,6 +244,7 @@ export default defineConfig((_env) => {
 
     return {
         ...base,
-        plugins: [...(base.plugins ?? []), lottieClassicWorkerPlugin(aliases), stubOptionalPeerDepsPlugin(), serveHavokWasmPlugin()],
+        oxc: false,
+        plugins: [esbuildDecoratorPlugin(), ...(base.plugins ?? []), lottieClassicWorkerPlugin(aliases), stubOptionalPeerDepsPlugin(), serveHavokWasmPlugin()],
     };
 });

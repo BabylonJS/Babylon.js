@@ -7,7 +7,8 @@ import { Vector3 } from "core/Maths/math.vector";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
-import { WebXRDefaultExperience } from "core/XR/webXRDefaultExperience";
+import { WebXRExperienceHelper } from "core/XR/webXRExperienceHelper";
+import { WebXRInput } from "core/XR/webXRInput";
 import { WebXRSessionManager } from "core/XR/webXRSessionManager";
 import { WebXRState } from "core/XR/webXRTypes";
 
@@ -94,21 +95,27 @@ async function CreateSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement,
     };
     renderStatus();
 
-    const xr = await WebXRDefaultExperience.CreateAsync(scene, {
-        disableDefaultUI: true,
-        floorMeshes: [ground],
-    });
-    if (!xr.baseExperience) {
-        lastError = "WebXR is not available in this browser.";
+    let xr: WebXRExperienceHelper;
+    try {
+        xr = await WebXRExperienceHelper.CreateAsync(scene);
+    } catch (error) {
+        lastError = error instanceof Error ? error.message : String(error);
         renderStatus();
         statusPanel.toggleButton.disabled = true;
         return scene;
     }
 
+    const xrInput = new WebXRInput(xr.sessionManager, xr.camera);
+    const renderTarget = xr.sessionManager.getWebXRRenderTarget();
+    scene.onDisposeObservable.addOnce(() => {
+        xrInput.dispose();
+        renderTarget.dispose();
+    });
+
     if (capabilitySupported) {
-        xr.baseExperience.featuresManager.enableFeature(WebXRLayers.Name, "latest", {}, true, true);
+        xr.featuresManager.enableFeature(WebXRLayers.Name, "latest", {}, true, true);
     }
-    xr.baseExperience.onStateChangedObservable.add((newState) => {
+    xr.onStateChangedObservable.add((newState) => {
         state = newState;
         renderStatus();
     });
@@ -118,9 +125,9 @@ async function CreateSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement,
         renderStatus();
         try {
             if (state === WebXRState.IN_XR) {
-                await xr.baseExperience.exitXRAsync();
+                await xr.exitXRAsync();
             } else {
-                await xr.baseExperience.enterXRAsync("immersive-vr", "local-floor", xr.renderTarget);
+                await xr.enterXRAsync("immersive-vr", "local-floor", renderTarget);
             }
         } catch (error) {
             lastError = error instanceof Error ? error.message : String(error);
