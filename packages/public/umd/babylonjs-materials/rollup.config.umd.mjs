@@ -34,4 +34,5 @@ export default commonUMDRollupConfiguration({
     overrideFilename: (pathData) =>
         pathData.chunk.name === "materials" ? `babylonjs.materials${production ? ".min" : ""}.js` : `babylon.${pathData.chunk.name}Material${production ? ".min" : ""}.js`,
     minToMax: true,
+    es5EntryPoint: "materials",
 });

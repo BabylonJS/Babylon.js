@@ -17,4 +17,5 @@ export default commonUMDRollupConfiguration({
     },
     overrideFilename: (pathData) => `babylonjs.${pathData.chunk.name}${mode === "production" ? ".min" : ""}.js`,
     minToMax: true,
+    es5EntryPoint: "addons",
 });
