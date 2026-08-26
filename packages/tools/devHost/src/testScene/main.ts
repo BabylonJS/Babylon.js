@@ -1,10 +1,7 @@
 import { type Scene } from "core/scene";
-import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { Engine } from "core/Engines/engine";
-import { WebGPUEngine } from "core/Engines/webgpuEngine";
 
 import { createScene as createSceneTs } from "./createScene";
-import { CreateWebGPUXRSceneAsync } from "./createWebGPUXRScene";
 
 /**
  * Main entry point for the default scene for the devhost
@@ -21,23 +18,13 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     const useTsParam = searchParams.get("usets");
     const useTs = useTsParam !== "false"; // Default to true if not specified
 
-    const useWebGPUXR = searchParams.get("webgpuxr") === "true";
-    let engine: AbstractEngine;
+    const engine = new Engine(canvas, true);
     let scene: Scene | undefined = undefined;
-    if (useWebGPUXR) {
-        const webGPUEngine = new WebGPUEngine(canvas, { xrCompatible: true });
-        await webGPUEngine.initAsync();
-        engine = webGPUEngine;
-        scene = await CreateWebGPUXRSceneAsync(webGPUEngine, canvas);
+    if (useTs) {
+        scene = await createSceneTs(engine, canvas);
     } else {
-        const webGLEngine = new Engine(canvas, true);
-        engine = webGLEngine;
-        if (useTs) {
-            scene = await createSceneTs(webGLEngine, canvas);
-        } else {
-            const { createScene: createSceneJs } = await import("./createSceneJS.js");
-            scene = await createSceneJs(webGLEngine, canvas);
-        }
+        const { createScene: createSceneJs } = await import("./createSceneJS.js");
+        scene = await createSceneJs(engine, canvas);
     }
 
     // Register a render loop to repeatedly render the scene

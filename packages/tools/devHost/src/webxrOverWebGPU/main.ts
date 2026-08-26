@@ -1,5 +1,6 @@
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import { type WebGPUEngine } from "core/Engines/webgpuEngine";
+import { WebGPUEngine } from "core/Engines/webgpuEngine";
+import { WebXRLayers } from "core/XR/features/WebXRLayers";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { Color3 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
@@ -7,9 +8,14 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
 import { WebXRDefaultExperience } from "core/XR/webXRDefaultExperience";
-import { WebXRLayers } from "core/XR/features/WebXRLayers";
 import { WebXRSessionManager } from "core/XR/webXRSessionManager";
 import { WebXRState } from "core/XR/webXRTypes";
+
+interface IStatusPanel {
+    root: HTMLDivElement;
+    text: HTMLDivElement;
+    toggleButton: HTMLButtonElement;
+}
 
 function GetStateName(state: WebXRState): string {
     switch (state) {
@@ -24,13 +30,20 @@ function GetStateName(state: WebXRState): string {
     }
 }
 
-/**
- * Creates the opt-in WebGPU-XR device-validation scene.
- * @param engine XR-compatible WebGPU engine
- * @param canvas rendering canvas
- * @returns configured scene
- */
-export async function CreateWebGPUXRSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement): Promise<Scene> {
+function CreateStatusPanel(container: HTMLElement): IStatusPanel {
+    const root = document.createElement("div");
+    root.style.cssText = "position:absolute;top:12px;left:12px;z-index:10;max-width:520px;padding:12px;background:#111c;color:#fff;font:14px/1.4 monospace;white-space:pre-wrap";
+    const text = document.createElement("div");
+    const toggleButton = document.createElement("button");
+    toggleButton.textContent = "Enter immersive VR";
+    toggleButton.style.marginTop = "8px";
+    toggleButton.disabled = true;
+    root.append(text, toggleButton);
+    container.appendChild(root);
+    return { root, text, toggleButton };
+}
+
+async function CreateSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement, statusPanel: IStatusPanel): Promise<Scene> {
     const scene = new Scene(engine);
     scene.clearColor.set(0.03, 0.05, 0.08, 1);
 
@@ -61,32 +74,23 @@ export async function CreateWebGPUXRSceneAsync(engine: WebGPUEngine, canvas: HTM
         centerBox.rotation.y += 0.01;
     });
 
-    const statusPanel = document.createElement("div");
-    statusPanel.style.cssText =
-        "position:absolute;top:12px;left:12px;z-index:10;max-width:520px;padding:12px;background:#111c;color:#fff;font:14px/1.4 monospace;white-space:pre-wrap";
-    const statusText = document.createElement("div");
-    const toggleButton = document.createElement("button");
-    toggleButton.textContent = "Enter immersive VR";
-    toggleButton.style.marginTop = "8px";
-    statusPanel.append(statusText, toggleButton);
-    canvas.parentElement?.appendChild(statusPanel);
-    scene.onDisposeObservable.addOnce(() => statusPanel.remove());
+    scene.onDisposeObservable.addOnce(() => statusPanel.root.remove());
 
     const capabilitySupported = WebXRSessionManager.IsWebGPUXRSupported;
     let state = WebXRState.NOT_IN_XR;
     let lastError = "";
     const renderStatus = () => {
-        statusText.textContent = [
-            "WebGPU-XR testScene",
+        statusPanel.text.textContent = [
+            "WebXR over WebGPU",
             `Engine: ${engine.name}`,
             `XRGPUBinding projection path: ${capabilitySupported ? "available" : "unavailable"}`,
             `State: ${GetStateName(state)}`,
             lastError ? `Last error: ${lastError}` : "Last error: none",
             "",
-            "Quest checklist: stereo geometry, controller appearance, exit, and re-entry.",
+            "Headset checklist: stereo geometry, controller appearance, exit, and re-entry.",
         ].join("\n");
-        toggleButton.textContent = state === WebXRState.IN_XR ? "Exit immersive VR" : "Enter immersive VR";
-        toggleButton.disabled = state === WebXRState.ENTERING_XR || state === WebXRState.EXITING_XR;
+        statusPanel.toggleButton.textContent = state === WebXRState.IN_XR ? "Exit immersive VR" : "Enter immersive VR";
+        statusPanel.toggleButton.disabled = state === WebXRState.ENTERING_XR || state === WebXRState.EXITING_XR;
     };
     renderStatus();
 
@@ -97,7 +101,7 @@ export async function CreateWebGPUXRSceneAsync(engine: WebGPUEngine, canvas: HTM
     if (!xr.baseExperience) {
         lastError = "WebXR is not available in this browser.";
         renderStatus();
-        toggleButton.setAttribute("disabled", "true");
+        statusPanel.toggleButton.disabled = true;
         return scene;
     }
 
@@ -123,10 +127,41 @@ export async function CreateWebGPUXRSceneAsync(engine: WebGPUEngine, canvas: HTM
             renderStatus();
         }
     };
-    toggleButton.addEventListener("click", () => {
+    statusPanel.toggleButton.addEventListener("click", () => {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         toggleXRAsync();
     });
 
     return scene;
+}
+
+/**
+ * Entry point for the dedicated WebXR-over-WebGPU devhost experience.
+ * @param _searchParams URL query parameters reserved for future example options
+ */
+export async function Main(_searchParams: URLSearchParams): Promise<void> {
+    const mainDiv = document.getElementById("main-div") as HTMLDivElement;
+    const canvas = document.createElement("canvas");
+    canvas.id = "babylon-canvas";
+    mainDiv.appendChild(canvas);
+    const statusPanel = CreateStatusPanel(mainDiv);
+    statusPanel.text.textContent = "WebXR over WebGPU\nEngine: initializing";
+
+    const webGPUSupported = await WebGPUEngine.IsSupportedAsync;
+    if (!webGPUSupported) {
+        statusPanel.text.textContent = "WebXR over WebGPU\nEngine: unavailable\nLast error: WebGPU is not supported by this browser.";
+        return;
+    }
+
+    const engine = new WebGPUEngine(canvas, { xrCompatible: true });
+    try {
+        await engine.initAsync();
+    } catch (error) {
+        statusPanel.text.textContent = `WebXR over WebGPU\nEngine: initialization failed\nLast error: ${error instanceof Error ? error.message : String(error)}`;
+        engine.dispose();
+        return;
+    }
+    const scene = await CreateSceneAsync(engine, canvas, statusPanel);
+    engine.runRenderLoop(() => scene.render());
+    window.addEventListener("resize", () => engine.resize());
 }
