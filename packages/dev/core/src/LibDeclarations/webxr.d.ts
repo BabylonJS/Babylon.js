@@ -560,10 +560,17 @@ type XRAnchorSet = Set<XRAnchor>;
 
 interface XRAnchor {
     anchorSpace: XRSpace;
+    requestPersistentHandle?: () => Promise<string>;
     delete(): void;
 }
 
 declare abstract class XRAnchor implements XRAnchor {}
+
+interface XRSession {
+    readonly persistentAnchors?: ReadonlyArray<string>;
+    restorePersistentAnchor?: (uuid: string) => Promise<XRAnchor>;
+    deletePersistentAnchor?: (uuid: string) => Promise<void>;
+}
 
 interface XRFrame {
     trackedAnchors?: XRAnchorSet | undefined;
