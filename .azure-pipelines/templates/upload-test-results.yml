@@ -1,9 +1,9 @@
 # =============================================================================
 # Template: Upload Playwright test results to the deployment server
 #
-# Looks for a playwright-report directory, zips it, and uploads to the
-# deployment server. Supports a fallback directory for cases where the
-# report may be in a different location.
+# Looks for a sanitized public report directory, validates its contents, zips
+# it, and uploads it to the deployment server. Supports a fallback directory
+# for cases where the report may be in a different location.
 # =============================================================================
 
 parameters:
@@ -30,29 +30,37 @@ parameters:
 
 steps:
     - script: |
+          set -euo pipefail
+
           REPORT_DIR="${{ parameters.reportDir }}"
           FALLBACK_DIR="${{ parameters.fallbackReportDir }}"
 
           if test -d "$REPORT_DIR"; then
-            cd "$REPORT_DIR"
+            SELECTED_REPORT_DIR="$REPORT_DIR"
           elif [ -n "$FALLBACK_DIR" ] && test -d "$FALLBACK_DIR"; then
-            cd "$FALLBACK_DIR"
+            SELECTED_REPORT_DIR="$FALLBACK_DIR"
           else
             echo "No report directory found, skipping upload"
             exit 0
           fi
 
-          zip -r $(Build.SourcesDirectory)/_test_report.zip *
-          cd $(Build.SourcesDirectory)
+          node "$(Build.SourcesDirectory)/.azure-pipelines/scripts/validate-public-report.mjs" "$SELECTED_REPORT_DIR"
 
-          curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+          REPORT_ARCHIVE="$(Build.SourcesDirectory)/_test_report.zip"
+          trap 'rm -f "$REPORT_ARCHIVE"' EXIT
+          cd "$SELECTED_REPORT_DIR"
+          zip -q -r "$REPORT_ARCHIVE" .
+          cd "$(Build.SourcesDirectory)"
+
+          curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD)" -X POST \
             -H "Content-Type: multipart/form-data" \
             -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
             -F "path=${{ parameters.deployPath }}" \
             -F "storageAccount=${{ parameters.storageAccount }}" \
-            -F "zip=@_test_report.zip"
-
-          rm -f _test_report.zip
+            -F "zip=@$REPORT_ARCHIVE"
       displayName: "${{ parameters.displayName }}"
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
+      env:
+          BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+          BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)

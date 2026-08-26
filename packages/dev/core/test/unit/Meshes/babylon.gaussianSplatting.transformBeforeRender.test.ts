@@ -22,13 +22,62 @@ describe("GaussianSplatting transform before first render", () => {
         engine.dispose();
     });
 
-    it("remains ready when its transform changes after the first depth sort completes", () => {
+    it("tracks mesh evaluation during scene rendering", () => {
+        const camera = new FreeCamera("camera", new Vector3(0, 0, -10), scene);
+        scene.activeCamera = camera;
+        const mesh = new Mesh("mesh", scene);
+        scene.onBeforeRenderObservable.add(() => {
+            expect(scene._isInRenderingMeshEvaluation()).toBe(false);
+        });
+        const isReady = vi.spyOn(mesh, "isReady").mockImplementation(() => {
+            expect(scene._isInRenderingMeshEvaluation()).toBe(true);
+            return false;
+        });
+
+        expect(scene._isInRenderingMeshEvaluation()).toBe(false);
+        scene.render();
+
+        expect(isReady).toHaveBeenCalled();
+        expect(scene._isInRenderingMeshEvaluation()).toBe(false);
+    });
+
+    it("tracks mesh evaluation during frame graph rendering", () => {
+        const mesh = new Mesh("mesh", scene);
+        const isReady = vi.spyOn(mesh, "isReady").mockImplementation(() => {
+            expect(scene._isInRenderingMeshEvaluation()).toBe(true);
+            return false;
+        });
+        const renderWithFrameGraph = Reflect.get(scene, "_renderWithFrameGraph") as (updateCameras: boolean, ignoreAnimations: boolean) => void;
+
+        renderWithFrameGraph.call(scene, false, false);
+
+        expect(isReady).toHaveBeenCalled();
+        expect(scene._isInRenderingMeshEvaluation()).toBe(false);
+    });
+
+    it("tracks mesh evaluation during custom rendering", () => {
+        const customRenderFunction = vi.fn(() => {
+            expect(scene._isInRenderingMeshEvaluation()).toBe(true);
+        });
+        scene.customRenderFunction = customRenderFunction;
+
+        scene.render();
+
+        expect(customRenderFunction).toHaveBeenCalled();
+        expect(scene._isInRenderingMeshEvaluation()).toBe(false);
+    });
+
+    it.each([
+        { title: "waits for a transform refresh outside rendering mesh evaluation", renderingMeshEvaluationDepth: 0, expectedReady: false },
+        { title: "remains ready when its transform changes during rendering mesh evaluation", renderingMeshEvaluationDepth: 1, expectedReady: true },
+    ])("$title", ({ renderingMeshEvaluationDepth, expectedReady }) => {
         const camera = new FreeCamera("camera", new Vector3(0, 0, -10), scene);
         scene.activeCamera = camera;
 
         const mesh = new GaussianSplattingMesh("gs", null, scene);
         const cameraMesh = new Mesh("cameraMesh", scene);
         Reflect.set(mesh, "_readyToDisplay", true);
+        Reflect.set(scene, "_renderingMeshEvaluationDepth", renderingMeshEvaluationDepth);
         const cameraViewInfos = Reflect.get(mesh, "_cameraViewInfos") as Map<number, object>;
         const cameraViewInfo = {
             camera,
@@ -47,12 +96,12 @@ describe("GaussianSplatting transform before first render", () => {
 
         mesh.position.y = 1;
 
-        expect(mesh.isReady()).toBe(true);
+        expect(mesh.isReady()).toBe(expectedReady);
         expect(postToWorker).toHaveBeenCalledWith(true);
 
         cameraViewInfo.sortRequestId = 2;
 
-        expect(mesh.isReady()).toBe(true);
+        expect(mesh.isReady()).toBe(expectedReady);
     });
 
     it("waits for every active camera to complete its initial sort", () => {
