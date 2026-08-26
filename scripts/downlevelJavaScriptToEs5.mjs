@@ -1,13 +1,8 @@
-#!/usr/bin/env node
-
-import { readdir, readFile, stat, writeFile } from "fs/promises";
-import { basename, join, resolve } from "path";
-import { fileURLToPath } from "url";
 import ts from "typescript";
 
-// The TC39 decorator migration forces the Native UMD bundle to be emitted at an ES2015 target (the
+// The TC39 decorator migration forces the UMD bundle to be emitted at an ES2015 target (the
 // `accessor` keyword requires ES2015+, and esbuild cannot emit ES5 classes). Babylon Native's Chakra
-// engine consumes ES5-level script, so the bundle must be down-leveled before it runs.
+// engine consumes ES5-level script, so the build also emits a down-leveled sibling.
 //
 // We use the TypeScript transpiler (not Babel) for this. Babel's ES5 class transform emits
 // `Reflect.construct`/`_wrapNativeSuper` machinery for classes that extend native built-ins (e.g.
@@ -54,62 +49,4 @@ export function downlevelJavaScriptToEs5(code, fileName) {
 
     // The original source map describes the ES2015 bundle, not this transformed output.
     return result.outputText.replace(/\n?\/\/[#@]\s*sourceMappingURL=.*(?:\r?\n)?$/, "\n");
-}
-
-function isNativeScriptFile(filePath) {
-    return /^babylon.*\.js$/i.test(basename(filePath));
-}
-
-async function collectFiles(target) {
-    const resolvedTarget = resolve(target);
-    const targetStat = await stat(resolvedTarget);
-
-    if (targetStat.isFile()) {
-        return isNativeScriptFile(resolvedTarget) ? [resolvedTarget] : [];
-    }
-
-    if (!targetStat.isDirectory()) {
-        return [];
-    }
-
-    const entries = await readdir(resolvedTarget, { withFileTypes: true });
-    const files = [];
-
-    for (const entry of entries) {
-        const entryPath = join(resolvedTarget, entry.name);
-        if (entry.isDirectory()) {
-            files.push(...(await collectFiles(entryPath)));
-        } else if (entry.isFile() && isNativeScriptFile(entryPath)) {
-            files.push(entryPath);
-        }
-    }
-
-    return files;
-}
-
-async function main(targets) {
-    if (targets.length === 0) {
-        process.stderr.write("Usage: node scripts/downlevelNativeScripts.mjs <file-or-directory> [...]\n");
-        process.exitCode = 1;
-        return;
-    }
-
-    const files = [...new Set((await Promise.all(targets.map(collectFiles))).flat())];
-
-    if (files.length === 0) {
-        process.stdout.write("No Babylon Native scripts found to downlevel.\n");
-        return;
-    }
-
-    for (const file of files) {
-        const code = await readFile(file, "utf8");
-        await writeFile(file, downlevelJavaScriptToEs5(code, file), "utf8");
-        process.stdout.write(`Downleveled ${file}\n`);
-    }
-
-    process.stdout.write(`Downleveled ${files.length} Babylon Native script file(s).\n`);
-}
-
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-    await main(process.argv.slice(2));
 }

@@ -20,7 +20,7 @@ import { copyFileSync, existsSync, readFileSync, writeFileSync } from "fs";
 import { resolve, join, dirname, relative as pathRelative } from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { transform as esbuildTransform } from "esbuild";
-import { downlevelJavaScriptToEs5 } from "../../scripts/downlevelNativeScripts.mjs";
+import { downlevelJavaScriptToEs5 } from "../../scripts/downlevelJavaScriptToEs5.mjs";
 
 // Repo root — used as the filterRoot for @rollup/plugin-typescript so that
 // `**/*.ts` patterns are matched against repo-relative paths (which never start
