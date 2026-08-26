@@ -12,6 +12,7 @@ describe("WebXRPlaneDetector", () => {
     let engine: NullEngine;
     let scene: Scene;
     let sessionManager: WebXRSessionManager;
+    const originalXRDescriptor = Object.getOwnPropertyDescriptor(navigator, "xr");
 
     const setActiveSession = (initiateRoomCapture?: () => Promise<void>) => {
         const session = {
@@ -43,8 +44,14 @@ describe("WebXRPlaneDetector", () => {
 
     afterEach(() => {
         sessionManager.inXRSession = false;
+        sessionManager.dispose();
         scene.dispose();
         engine.dispose();
+        if (originalXRDescriptor) {
+            Object.defineProperty(navigator, "xr", originalXRDescriptor);
+        } else {
+            Reflect.deleteProperty(navigator, "xr");
+        }
     });
 
     it("delegates room capture and follows native promise settlement", async () => {
