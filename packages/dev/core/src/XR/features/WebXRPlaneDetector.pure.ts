@@ -52,6 +52,11 @@ export interface IWebXRPlane {
      * the native xr-plane object
      */
     xrPlane: XRPlane;
+    /**
+     * The semantic classification supplied by the XR runtime.
+     * This is undefined when the runtime does not expose semantic labels and null when the plane has no known classification.
+     */
+    semanticLabel?: string | null;
 }
 
 let PlaneIdProvider = 0;
@@ -230,6 +235,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
     }
 
     private _updatePlaneWithXRPlane(xrPlane: XRPlane, plane: Partial<IWebXRPlane>, xrFrame: XRFrame): IWebXRPlane {
+        plane.semanticLabel = xrPlane.semanticLabel;
         plane.polygonDefinition = xrPlane.polygon.map((xrPoint) => {
             const rightHandedSystem = this._xrSessionManager.scene.useRightHandedSystem ? 1 : -1;
             return new Vector3(xrPoint.x, xrPoint.y, xrPoint.z * rightHandedSystem);
