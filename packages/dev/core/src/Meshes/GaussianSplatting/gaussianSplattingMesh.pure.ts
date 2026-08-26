@@ -295,6 +295,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     private _lodBudgetParticipants: IGaussianSplattingLodBudgetParticipant[] = [];
     /** Per-frame budget apportionment observer, installed only while a budget and participants are both present. */
     private _budgetObserver: Nullable<Observer<Scene>> = null;
+    // Reused per-participant scratch for the per-frame water-fill (avoids allocating three arrays every frame).
+    private readonly _budgetDemands: number[] = [];
+    private readonly _budgetAlloc: number[] = [];
+    private readonly _budgetSettled: boolean[] = [];
 
     /**
      * Max SH degree contributed by the live (non-tombstoned) streaming parts. Recomputed by
@@ -703,9 +707,19 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             return;
         }
         const streamable = Math.max(0, this._splatBudget - this._staticSplatCount());
-        const demands = participants.map((p) => Math.max(0, p.getBudgetDemand()));
-        const alloc = new Array<number>(participants.length).fill(0);
-        const settled = new Array<boolean>(participants.length).fill(false);
+        // Reuse the scratch arrays (resized in place) so this per-frame path allocates nothing for a stable participant set.
+        const n = participants.length;
+        const demands = this._budgetDemands;
+        const alloc = this._budgetAlloc;
+        const settled = this._budgetSettled;
+        demands.length = n;
+        alloc.length = n;
+        settled.length = n;
+        for (let i = 0; i < n; i++) {
+            demands[i] = Math.max(0, participants[i].getBudgetDemand());
+            alloc[i] = 0;
+            settled[i] = false;
+        }
         let remaining = streamable;
         let activeCount = participants.length;
         // Water-fill: repeatedly satisfy every participant whose demand is at or below the equal share, then split
