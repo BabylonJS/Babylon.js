@@ -997,6 +997,7 @@ jobs:
                   set sourceName=%%i
                   if /i "!sourceName:~-3!"==".js" (
                     set sourceName=!sourceName:.max.js=.es5.js!
+                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.min.js=.es5.js!
                     if "!sourceName!"=="%%i" set sourceName=!sourceName:.js=.es5.js!
                   )
                   unzip -p snapshot.zip "**!sourceName!" > %destDir%\%%i
@@ -1008,6 +1009,7 @@ jobs:
                   set sourceName=%%i
                   if /i "!sourceName:~-3!"==".js" (
                     set sourceName=!sourceName:.max.js=.es5.js!
+                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.min.js=.es5.js!
                     if "!sourceName!"=="%%i" set sourceName=!sourceName:.js=.es5.js!
                   )
                   unzip -p snapshot.zip "**!sourceName!" > %destDir%\%%i
