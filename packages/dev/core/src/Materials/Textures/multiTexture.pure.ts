@@ -286,7 +286,9 @@ export class MultiTexture extends ProceduralTexture {
             throw new Error("MultiTexture: no 2D canvas surface available (requires DOM or OffscreenCanvas).");
         }
         this._canvas = canvas;
-        this._ctx = canvas.getContext("2d", { willReadFrequently: true }) || null;
+        // The union overload of getContext can surface non-2D context types (e.g. ImageBitmapRenderingContext)
+        // that the "2d" id never actually returns; narrow for the field's declared type.
+        this._ctx = (canvas.getContext("2d", { willReadFrequently: true }) ?? null) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
 
         void this._initialize();
     }
@@ -331,7 +333,7 @@ export class MultiTexture extends ProceduralTexture {
         this._warnedLoadFailure[index] = false;
 
         try {
-            await this._loadLayer(index, url);
+            await this._loadEntry(entry);
         } catch (e) {
             this._reportError(e);
             throw e;
@@ -354,11 +356,11 @@ export class MultiTexture extends ProceduralTexture {
             if (newIndex >= this._maxLayers) {
                 this._growArray();
             }
-            this._pushLayerEntry(url);
+            const entry = this._pushLayerEntry(url);
             // The fragment shader only samples the first uLayerCount layers, so the uniform must
             // track the internal count or the freshly appended layer is never composited.
             this.setInt("uLayerCount", this._layerCount);
-            await this._loadLayer(newIndex, url);
+            await this._loadEntry(entry);
         } catch (e) {
             this._reportError(e);
             throw e;
@@ -369,7 +371,9 @@ export class MultiTexture extends ProceduralTexture {
 
     /**
      * Inserts a new layer at the given index and returns it. Layers at index and above shift up by
-     * one and are re-uploaded from their retained bitmaps; uLayerCount is incremented. Inserting at
+     * one: loaded layers are re-uploaded from their retained bitmaps, and a shifted layer that is
+     * still loading lands in its new slot when its in-flight load settles (loads resolve against
+     * their layer entry, never against a stale index). uLayerCount is incremented. Inserting at
      * `layerCount` appends (addLayer-equivalent). Grows the underlying array (doubling its depth)
      * when the current depth is exhausted, same as addLayer, and throws a RangeError if the doubled
      * depth would exceed the device's texture2DArrayMaxLayerCount.
@@ -388,7 +392,8 @@ export class MultiTexture extends ProceduralTexture {
                 this._growArray();
             }
 
-            this._layers.splice(index, 0, { url, etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false });
+            const entry: ILayerEntry = { url, etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false };
+            this._layers.splice(index, 0, entry);
             this.pixels.splice(index, 0, null);
             this.urls.splice(index, 0, url);
             this._warnedLoadFailure.splice(index, 0, false);
@@ -406,8 +411,10 @@ export class MultiTexture extends ProceduralTexture {
             // The fragment shader only samples the first uLayerCount layers, so the uniform must
             // track the internal count or the freshly inserted layer is never composited.
             this.setInt("uLayerCount", this._layerCount);
+            // Refresh even if the load below fails: the shift above already moved GPU slots.
+            this.resetRefreshCounter();
 
-            await this._loadLayer(index, url);
+            await this._loadEntry(entry);
         } catch (e) {
             this._reportError(e);
             throw e;
@@ -552,11 +559,12 @@ export class MultiTexture extends ProceduralTexture {
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    private async _loadLayer(index: number, url: string): Promise<void> {
+    private async _loadEntry(entry: ILayerEntry): Promise<void> {
         // Body runs across awaits; if dispose() wins the race, skip the fetch entirely.
         if (this._disposed) {
             return;
         }
+        const url = entry.url;
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`MultiTexture: failed to fetch ${url}: ${response.status} ${response.statusText}`);
@@ -572,16 +580,17 @@ export class MultiTexture extends ProceduralTexture {
             const height = bitmap.height;
             if (width !== this._mtOptions.width || height !== this._mtOptions.height) {
                 bitmap.close();
+                const index = this._layers.indexOf(entry);
                 throw new Error(
                     `MultiTexture: layer ${index} (${url}) is ${width}x${height}, expected ${this._mtOptions.width}x${this._mtOptions.height}. Use fit: "resize" to auto-scale.`
                 );
             }
         }
 
-        this._uploadBitmap(index, bitmap, { etag, lastModified });
+        this._uploadBitmap(entry, bitmap, { etag, lastModified, url });
     }
 
-    private _uploadBitmap(index: number, bitmap: ImageBitmap, meta: { etag: string | null; lastModified: string | null }): void {
+    private _uploadBitmap(entry: ILayerEntry, bitmap: ImageBitmap, meta: { etag: string | null; lastModified: string | null; url: string }): void {
         // If dispose() won the race, drop the decoded bitmap without touching the layer entry
         // (dispose clears _layers), the pixel cache, the refresh counter or the onLoad path:
         // the internal 2D array texture is already destroyed and upload would throw
@@ -591,9 +600,18 @@ export class MultiTexture extends ProceduralTexture {
             return;
         }
 
-        UploadImageToTexture2DArrayLayer(this._arrayTexture, bitmap, index, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
+        // The load ran across awaits, so the bookkeeping may have moved: insertLayer/removeLayer
+        // splice the layer arrays (this entry now sits at a different index, or is gone) and
+        // updateLayerAsync may have repointed the entry at a newer url. Resolve the entry's
+        // CURRENT index and upload there; drop the decode if the entry no longer owns the url
+        // this load fetched (a newer load owns the entry now).
+        const index = this._layers.indexOf(entry);
+        if (index === -1 || entry.url !== meta.url) {
+            bitmap.close();
+            return;
+        }
 
-        const entry = this._layers[index];
+        UploadImageToTexture2DArrayLayer(this._arrayTexture, bitmap, index, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
 
         if (this._canvas && this._ctx) {
             this._ctx.clearRect(0, 0, this._mtOptions.width, this._mtOptions.height);
@@ -628,14 +646,20 @@ export class MultiTexture extends ProceduralTexture {
                 internal.generateMipMaps = false;
             }
 
+            // Snapshot the entries so the pool always loads exactly the layers the texture was
+            // constructed with: insertLayer/removeLayer may splice _layers while the pool is
+            // running, and following live indices would skip a layer or load one twice. Each
+            // entry decides its own landing slot when its load settles (see _uploadBitmap).
+            const initial = this._layers.slice();
             let next = 0;
-            const count = this._layers.length;
+            const count = initial.length;
             const workerAsync = async (): Promise<void> => {
                 let i: number;
                 while ((i = next++) < count) {
+                    const entry = initial[i];
                     try {
                         // eslint-disable-next-line no-await-in-loop -- decode pool: each worker processes layers sequentially.
-                        await this._loadLayer(i, this._layers[i].url);
+                        await this._loadEntry(entry);
                     } catch (e) {
                         this._reportError(e);
                     }
@@ -666,12 +690,14 @@ export class MultiTexture extends ProceduralTexture {
         }
     }
 
-    private _pushLayerEntry(url: string): void {
-        this._layers.push({ url, etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false });
+    private _pushLayerEntry(url: string): ILayerEntry {
+        const entry: ILayerEntry = { url, etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false };
+        this._layers.push(entry);
         this.pixels.push(null);
         this.urls.push(url);
         this._warnedLoadFailure.push(false);
         this._layerCount++;
+        return entry;
     }
 
     private _growArray(): void {
@@ -733,12 +759,13 @@ export class MultiTexture extends ProceduralTexture {
             return;
         }
 
+        const entries = this._layers.slice();
         let next = 0;
-        const count = this._layers.length;
+        const count = entries.length;
         const workerAsync = async (): Promise<void> => {
             let i: number;
             while ((i = next++) < count) {
-                const entry = this._layers[i];
+                const entry = entries[i];
                 try {
                     if (entry.etag === null && entry.lastModified === null) {
                         // No etag/last-modified recorded for this entry — either it never loaded or
@@ -747,7 +774,7 @@ export class MultiTexture extends ProceduralTexture {
                         // recovers this way instead of being skipped forever).
                         try {
                             // eslint-disable-next-line no-await-in-loop -- full-load retry, same pool as the HEAD checks below.
-                            await this._loadLayer(i, entry.url);
+                            await this._loadEntry(entry);
                         } catch (e) {
                             // Persistently failing layer: warn once, retry on the next tick.
                             if (!this._warnedLoadFailure[i]) {
@@ -789,7 +816,7 @@ export class MultiTexture extends ProceduralTexture {
                     if ((etag !== null && etag !== entry.etag) || (lastModified !== null && lastModified !== entry.lastModified)) {
                         try {
                             // eslint-disable-next-line no-await-in-loop -- reload happens after the HEAD check above.
-                            await this._loadLayer(i, entry.url);
+                            await this._loadEntry(entry);
                         } catch (e) {
                             this._reportError(e);
                         }

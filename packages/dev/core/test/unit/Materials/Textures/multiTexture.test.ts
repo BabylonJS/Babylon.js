@@ -770,7 +770,8 @@ describe("MultiTexture", () => {
         mt.dispose();
 
         // Simulate the tail of an in-flight refresh whose decode completes after dispose.
-        await expect(mt["_loadLayer"](0, "a.png")).resolves.toBeUndefined();
+        const entry = { url: "a.png", etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false };
+        await expect(mt["_loadEntry"](entry)).resolves.toBeUndefined();
         await expect(mt["_poll"]()).resolves.toBeUndefined();
 
         expect(errorSpy).not.toHaveBeenCalled();
@@ -861,7 +862,7 @@ describe("MultiTexture watch retry after failed initial load", () => {
         vi.stubGlobal("document", { visibilityState: "visible" });
 
         // Drive one poll tick deterministically instead of waiting on the interval.
-        const loadSpy = vi.spyOn(mt as any, "_loadLayer");
+        const loadSpy = vi.spyOn(mt as any, "_loadEntry");
         try {
             await (mt as any)._poll();
         } finally {
@@ -873,7 +874,7 @@ describe("MultiTexture watch retry after failed initial load", () => {
         }
         // The never-loaded layer (etag/lastModified both null) must be retried by the poller
         // instead of being skipped forever.
-        expect(loadSpy.mock.calls.some((c: any[]) => c[0] === 0 && c[1] === "flaky.png")).toBe(true);
+        expect(loadSpy.mock.calls.some((c: any[]) => c[0] === entry)).toBe(true);
         loadSpy.mockRestore();
 
         mt.dispose();
@@ -1018,6 +1019,114 @@ describe("MultiTexture insertLayer", () => {
         const newUploads = mockState.upload.mock.calls.slice(uploadsBefore);
         expect(newUploads.map((c: any[]) => [c[1], c[2]])).toEqual([[bitmapC, 2]]);
         expect(mt.setIntCalls.slice(setIntsBefore)).toEqual([["uLayerCount", 3]]);
+    });
+});
+
+describe("MultiTexture structure changes racing in-flight loads", () => {
+    // Fetches stay pending until the test resolves them, so initial loads are in flight while
+    // insertLayer/removeLayer/updateLayerAsync run. Every decoded bitmap is tagged with its
+    // source url so upload assertions can say WHICH layer's pixels landed in which slot.
+    function deferredScene() {
+        const resolvers: Record<string, () => void> = {};
+        const bitmaps: any[] = [];
+        vi.stubGlobal(
+            "fetch",
+            (url: string) =>
+                new Promise((resolve) => {
+                    mockState.fetchCalls.push({ url });
+                    resolvers[url] = () =>
+                        resolve({
+                            ok: true,
+                            status: 200,
+                            statusText: "OK",
+                            headers: { get: () => null },
+                            blob: async () => ({ __url: url }),
+                        });
+                })
+        );
+        mockState.decodeImpl = (source: any) => {
+            const bitmap = { width: 8, height: 8, close: vi.fn(), url: source.__url };
+            bitmaps.push(bitmap);
+            return bitmap;
+        };
+        return { scene: makeScene(), resolvers, bitmaps };
+    }
+
+    const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    it("inserting while initial layers are still loading lands every layer in its final slot", async () => {
+        const { scene, resolvers } = deferredScene();
+
+        // Mirrors the field report: 2 initial urls (array depth 2, so the insert grows it),
+        // insertLayer called before any initial load has settled.
+        const mt = new MultiTexture("mt", ["rock.png", "star.png"], scene, { width: 8, height: 8 }) as MockMultiTexture;
+        expect(mockState.upload.mock.calls).toHaveLength(0);
+
+        const inserted = mt.insertLayer(1, "circle.png");
+
+        // Star (shifted 1 -> 2) settles first: must land in its NEW slot 2, not in slot 1.
+        resolvers["star.png"]();
+        await tick();
+        resolvers["rock.png"]();
+        await tick();
+        resolvers["circle.png"]();
+        await inserted;
+
+        const uploads = mockState.upload.mock.calls as any[];
+        const lastForLayer = (layer: number) => uploads.filter((c) => c[2] === layer).pop()[1].url;
+        expect(lastForLayer(0)).toBe("rock.png");
+        expect(lastForLayer(1)).toBe("circle.png");
+        expect(lastForLayer(2)).toBe("star.png");
+        // The original bug: the in-flight star upload must never touch the inserted layer's slot.
+        expect(uploads.some((c) => c[2] === 1 && c[1].url === "star.png")).toBe(false);
+
+        expect(mt.arrayTexture.depth).toBe(4);
+        expect(mt.urls).toEqual(["rock.png", "circle.png", "star.png"]);
+        expect((mt as any)._layers.map((l: any) => l.url)).toEqual(["rock.png", "circle.png", "star.png"]);
+        expect((mt as any)._layers[2].bitmap.url).toBe("star.png");
+        expect((mt as any)._layers[1].bitmap.url).toBe("circle.png");
+        expect(mt.pixels).toHaveLength(3);
+        expect(mt.pixels.every((p: any) => p instanceof Uint8ClampedArray)).toBe(true);
+    });
+
+    it("removeLayer discards the removed layer's in-flight load and lets the shifted one land in its new slot", async () => {
+        const { scene, resolvers, bitmaps } = deferredScene();
+
+        const mt = new MultiTexture("mt", ["a.png", "b.png"], scene, { width: 8, height: 8 }) as MockMultiTexture;
+
+        mt.removeLayer(0);
+
+        // a's in-flight load settles after its entry was removed: dropped, nothing uploaded.
+        resolvers["a.png"]();
+        await tick();
+        // b (shifted 1 -> 0) settles: lands in its new slot 0.
+        resolvers["b.png"]();
+        await tick();
+
+        expect(mockState.upload.mock.calls.map((c: any[]) => [c[1].url, c[2]])).toEqual([["b.png", 0]]);
+        expect(mt.urls).toEqual(["b.png"]);
+        expect((mt as any)._layers[0].bitmap.url).toBe("b.png");
+        expect(bitmaps.find((b) => b.url === "a.png").close).toHaveBeenCalledTimes(1);
+    });
+
+    it("an older in-flight load cannot overwrite a newer updateLayerAsync load", async () => {
+        const { scene, resolvers, bitmaps } = deferredScene();
+
+        const mt = new MultiTexture("mt", ["a.png"], scene, { width: 8, height: 8 }) as MockMultiTexture;
+
+        // a's initial load is still in flight when the entry is repointed at b.
+        const updated = mt.updateLayerAsync(0, "b.png");
+
+        resolvers["a.png"]();
+        await tick();
+        resolvers["b.png"]();
+        await updated;
+        await tick();
+
+        expect(mockState.upload.mock.calls.map((c: any[]) => [c[1].url, c[2]])).toEqual([["b.png", 0]]);
+        expect((mt as any)._layers[0].bitmap.url).toBe("b.png");
+        expect(bitmaps.find((b) => b.url === "a.png").close).toHaveBeenCalledTimes(1);
+        expect(mt.pixels.every((p: any) => p instanceof Uint8ClampedArray)).toBe(true);
     });
 });
 
