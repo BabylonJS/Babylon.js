@@ -138,6 +138,7 @@ describe("WebXRLightEstimation", () => {
         expect(warnSpy.mock.calls.filter(([warning]) => warning === WebGPUReflectionWarning)).toHaveLength(1);
 
         expect(feature.detach()).toBe(true);
+        expect((feature as any)._xrLightProbe).toBeNull();
         expect(feature.attach()).toBe(true);
         await Promise.resolve();
         expect(requestLightProbe).toHaveBeenCalledTimes(2);
@@ -172,6 +173,8 @@ describe("WebXRLightEstimation", () => {
         expect(feature.xrLightingEstimate?.sphericalHarmonics.l00.asArray()).toEqual([30, 31, 32]);
         expect(feature.reflectionCubeMapTexture).toBeNull();
 
+        expect(feature.detach()).toBe(true);
+        expect((feature as any)._xrLightProbe).toBeNull();
         feature.dispose();
     });
 

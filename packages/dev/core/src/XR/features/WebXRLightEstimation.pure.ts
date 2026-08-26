@@ -322,8 +322,10 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
     public override detach(): boolean {
         const detached = super.detach();
 
-        if (this._xrLightProbe !== null && this._reflectionCubeMapEnabled) {
-            this._xrLightProbe.removeEventListener("reflectionchange", this._updateReflectionCubeMap);
+        if (this._xrLightProbe !== null) {
+            if (this._reflectionCubeMapEnabled) {
+                this._xrLightProbe.removeEventListener("reflectionchange", this._updateReflectionCubeMap);
+            }
             this._xrLightProbe = null;
         }
 
