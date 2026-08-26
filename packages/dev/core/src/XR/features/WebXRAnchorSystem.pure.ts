@@ -377,12 +377,13 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
      * @throws If deleting persistent anchors is not supported by the current session
      */
     public async deletePersistentAnchorAsync(handle: string): Promise<void> {
-        const deletePersistentAnchor = this._xrSessionManager.session?.deletePersistentAnchor;
+        const session = this._xrSessionManager.session;
+        const deletePersistentAnchor = session?.deletePersistentAnchor;
         if (!deletePersistentAnchor) {
             throw new Error("Deleting persistent anchors is not supported in this environment/browser");
         }
 
-        await deletePersistentAnchor.call(this._xrSessionManager.session, handle);
+        await deletePersistentAnchor.call(session, handle);
         for (const anchor of this._trackedAnchors) {
             if (anchor.persistentHandle === handle) {
                 anchor._removed = true;

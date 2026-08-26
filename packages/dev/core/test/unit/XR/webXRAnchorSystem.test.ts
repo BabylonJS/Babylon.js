@@ -138,17 +138,33 @@ describe("WebXRAnchorSystem", () => {
     });
 
     it("deletes persistent storage and removes a tracked anchor through the existing lifecycle", async () => {
-        const deletePersistentAnchor = vi.fn(async () => {});
+        let calledSession: XRSession | undefined;
+        const deletePersistentAnchor = vi.fn(async function (this: XRSession) {
+            calledSession = this;
+        });
         initializeFeature({ deletePersistentAnchor });
+        const activeSession = sessionManager.session;
+        const replacementSession = {} as XRSession;
         const anchor = await trackAnchor(createNativeAnchor(async () => "persistent-handle"));
         await feature.requestPersistentHandleAsync(anchor);
         const removed = vi.fn();
         feature.onAnchorRemovedObservable.add(removed);
+        let sessionReadCount = 0;
+        Object.defineProperty(sessionManager, "session", {
+            configurable: true,
+            get: () => (sessionReadCount++ === 0 ? activeSession : replacementSession),
+        });
 
         await feature.deletePersistentAnchorAsync("persistent-handle");
+        Object.defineProperty(sessionManager, "session", {
+            configurable: true,
+            value: activeSession,
+            writable: true,
+        });
         sessionManager.onXRFrameObservable.notifyObservers(createFrame([]));
 
         expect(deletePersistentAnchor).toHaveBeenCalledExactlyOnceWith("persistent-handle");
+        expect(calledSession).toBe(activeSession);
         expect(feature.anchors).toHaveLength(0);
         expect(removed).toHaveBeenCalledExactlyOnceWith(anchor, expect.anything());
     });
