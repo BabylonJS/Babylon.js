@@ -124,6 +124,24 @@ describe("WebXRTrackedSources", () => {
         expect(removed).not.toHaveBeenCalled();
     });
 
+    it("updates native ordering without reporting additions or removals", () => {
+        const first = new MockXRInputSource("left", ["first"]);
+        const second = new MockXRInputSource("right", ["second"]);
+        session.trackedSources.push(first, second);
+        feature.attach();
+        const added = vi.fn();
+        const removed = vi.fn();
+        feature.onTrackedSourceAddedObservable.add(added);
+        feature.onTrackedSourceRemovedObservable.add(removed);
+
+        session.trackedSources.reverse();
+        session.dispatchEvent(new Event("trackedsourceschange"));
+
+        expect(feature.trackedSources).toEqual([second, first]);
+        expect(added).not.toHaveBeenCalled();
+        expect(removed).not.toHaveBeenCalled();
+    });
+
     it("cleans up native listeners and state on detach", () => {
         const initial = new MockXRInputSource("left", ["initial"]);
         const later = new MockXRInputSource("right", ["later"]);

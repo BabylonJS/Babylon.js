@@ -146,6 +146,11 @@ export class WebXRTrackedSources extends WebXRAbstractFeature {
                 this.onTrackedSourceAddedObservable.notifyObservers(trackedSource);
             }
         }
+
+        let index = 0;
+        for (const trackedSource of session.trackedSources) {
+            this._trackedSources[index++] = trackedSource;
+        }
     }
 
     private _clearTrackedSources(): void {
