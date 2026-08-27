@@ -24,6 +24,28 @@ export type MotionControllerComponentType = "trigger" | "squeeze" | "touchpad" |
 export type MotionControllerComponentStateType = "default" | "touched" | "pressed";
 
 /**
+ * The haptic capabilities exposed by a WebXR motion controller actuator.
+ */
+export interface IWebXRControllerHapticActuator {
+    /**
+     * The haptic effects reported as supported by this actuator.
+     */
+    readonly effects?: ReadonlyArray<GamepadHapticEffectType>;
+    /**
+     * Plays a haptic effect, when advanced haptic playback is supported.
+     */
+    playEffect?: GamepadHapticActuator["playEffect"];
+    /**
+     * Stops the active haptic effect, when reset is supported.
+     */
+    reset?: GamepadHapticActuator["reset"];
+    /**
+     * Plays a legacy haptic pulse.
+     */
+    pulse: (value: number, duration: number) => Promise<boolean>;
+}
+
+/**
  * The schema of motion controller layout.
  * No object will be initialized using this interface
  * This is used just to define the profile.
@@ -218,9 +240,7 @@ export interface IMinimalMotionControllerObject {
     /**
      * EXPERIMENTAL haptic support.
      */
-    hapticActuators?: Array<{
-        pulse: (value: number, duration: number) => Promise<boolean>;
-    }>;
+    hapticActuators?: IWebXRControllerHapticActuator[];
 }
 
 /**
@@ -463,6 +483,58 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     }
 
     /**
+     * Gets the haptic effects reported as supported by an actuator.
+     * See https://playground.babylonjs.com/#556G65#0 for an interactive example.
+     *
+     * @param hapticActuatorIndex index of the actuator (usually 0)
+     * @returns the effects reported by the actuator, or an empty array when effect discovery is unavailable
+     * @throws a RangeError when the actuator index is invalid
+     */
+    public getHapticEffects(hapticActuatorIndex: number = 0): ReadonlyArray<GamepadHapticEffectType> {
+        return this._getHapticActuator(hapticActuatorIndex).effects ?? [];
+    }
+
+    /**
+     * Plays an advanced haptic effect on this controller.
+     *
+     * @param effectType the standard Gamepad haptic effect to play
+     * @param parameters effect duration, delay, and motor magnitudes
+     * @param hapticActuatorIndex index of the actuator (usually 0)
+     * @returns the native completion result from the actuator
+     * @throws an Error when the actuator or requested effect is unsupported, or a RangeError when the actuator index is invalid
+     */
+    public async playHapticEffectAsync(effectType: GamepadHapticEffectType, parameters?: GamepadEffectParameters, hapticActuatorIndex: number = 0): Promise<GamepadHapticsResult> {
+        const actuator = this._getHapticActuator(hapticActuatorIndex);
+        if (!actuator.effects) {
+            throw new Error(`Haptic actuator ${hapticActuatorIndex} does not support effect discovery.`);
+        }
+        if (actuator.effects.indexOf(effectType) === -1) {
+            throw new Error(`Haptic effect "${effectType}" is not supported by actuator ${hapticActuatorIndex}.`);
+        }
+        if (!actuator.playEffect) {
+            throw new Error(`Haptic actuator ${hapticActuatorIndex} does not support advanced effect playback.`);
+        }
+
+        return await actuator.playEffect(effectType, parameters);
+    }
+
+    /**
+     * Stops the active haptic effect on an actuator.
+     *
+     * @param hapticActuatorIndex index of the actuator (usually 0)
+     * @returns the native completion result from the actuator
+     * @throws an Error when reset is unsupported, or a RangeError when the actuator index is invalid
+     */
+    public async resetHapticActuatorAsync(hapticActuatorIndex: number = 0): Promise<GamepadHapticsResult> {
+        const actuator = this._getHapticActuator(hapticActuatorIndex);
+        if (!actuator.reset) {
+            throw new Error(`Haptic actuator ${hapticActuatorIndex} does not support reset.`);
+        }
+
+        return await actuator.reset();
+    }
+
+    /**
      * Pulse (vibrate) this controller
      * If the controller does not support pulses, this function will fail silently and return Promise<false> directly after called
      * Consecutive calls to this function will cancel the last pulse call
@@ -479,6 +551,15 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         } else {
             return false;
         }
+    }
+
+    private _getHapticActuator(hapticActuatorIndex: number): IWebXRControllerHapticActuator {
+        const actuators = this.gamepadObject.hapticActuators;
+        if (!Number.isInteger(hapticActuatorIndex) || hapticActuatorIndex < 0 || !actuators || hapticActuatorIndex >= actuators.length) {
+            throw new RangeError(`Haptic actuator index ${hapticActuatorIndex} is out of range.`);
+        }
+
+        return actuators[hapticActuatorIndex];
     }
 
     // Look through all children recursively. This will return null if no mesh exists with the given name.
