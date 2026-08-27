@@ -200,6 +200,24 @@ export class WebXRLayers extends WebXRAbstractFeature {
     }
 
     /**
+     * Whether the active XR session exposes its compositor layer limit.
+     */
+    public get isMaxRenderLayersSupported(): boolean {
+        return this.maxRenderLayers !== null;
+    }
+
+    /**
+     * Gets the maximum number of native layers accepted in the active session's render-state `layers` array.
+     * The projection layer counts toward this limit. Fallback mesh layers do not.
+     * @returns The native layer limit, or `null` when the runtime does not expose it.
+     * @see https://playground.babylonjs.com/#TODARD#0
+     */
+    public get maxRenderLayers(): Nullable<number> {
+        const maxRenderLayers = this._xrSessionManager.session?.maxRenderLayers;
+        return typeof maxRenderLayers === "number" ? maxRenderLayers : null;
+    }
+
+    /**
      * Attach this feature.
      * Will usually be called by the features manager.
      *
@@ -403,6 +421,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
             return null;
         }
 
+        this._validateLayerCount(this._existingLayers.length + 1);
         const dimensions = this._getProjectionLayerDimensions();
         const defaultViewPixelWidth = layerType === "XRCubeLayer" ? Math.min(dimensions.width, dimensions.height) : dimensions.width;
         const defaultViewPixelHeight = layerType === "XRCubeLayer" ? defaultViewPixelWidth : dimensions.height;
@@ -531,6 +550,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
             return null;
         }
 
+        this._validateLayerCount(this._existingLayers.length + 1);
         const populatedParams = {
             space: this._xrSessionManager.referenceSpace,
             layout: "mono",
@@ -561,6 +581,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
     public createProjectionLayer(params = DefaultXRProjectionLayerInit, multiview = this._isMultiviewEnabled): WebXRProjectionLayerWrapper {
         const extendedParams = this._extendXRLayerInit(params, multiview);
         this._validateLayerInit(extendedParams, multiview);
+        this._validateLayerCount(this._existingLayers.length + 1);
 
         const projLayer = this._xrWebGLBinding.createProjectionLayer(extendedParams);
         const layer = new WebXRProjectionLayerWrapper(projLayer, multiview, this._xrWebGLBinding);
@@ -577,6 +598,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
         if (!this._xrSessionManager.inXRSession) {
             throw new Error("Cannot create a layer outside of a WebXR session. Make sure the session has started before creating layers.");
         }
+        this._validateLayerCount(this._existingLayers.length + 1);
         const binding = this._xrGPUBinding!;
         const init = CreateDefaultXRGPUProjectionLayerInit(binding.getPreferredColorFormat());
         const projLayer = binding.createProjectionLayer(init);
@@ -995,6 +1017,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * @param wrappedLayer the new layer to add to the existing ones
      */
     public addXRSessionLayer(wrappedLayer: WebXRLayerWrapper<WebXRSupportedLayerType>) {
+        this._validateLayerCount(this._existingLayers.length + 1);
         this._existingLayers.push(wrappedLayer);
         this.setXRSessionLayers(this._existingLayers);
     }
@@ -1059,6 +1082,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * @param wrappedLayers An array of WebXRLayerWrapper, usually returned from the WebXRLayers createLayer functions.
      */
     public setXRSessionLayers(wrappedLayers: Array<WebXRLayerWrapper<WebXRSupportedLayerType>> = this._existingLayers): void {
+        this._validateLayerCount(wrappedLayers.length);
         // this._existingLayers = wrappedLayers;
         const renderStateInit: XRRenderStateInit = { ...this._xrSessionManager.session.renderState };
         // Clear out the layer-related fields.
@@ -1067,6 +1091,14 @@ export class WebXRLayers extends WebXRAbstractFeature {
         this._xrSessionManager.updateRenderState(renderStateInit);
         if (!this._projectionLayerInitialized) {
             this._xrSessionManager._setBaseLayerWrapper(wrappedLayers.length > 0 ? (wrappedLayers.at(0)! as WebXRLayerWrapper) : null);
+        }
+    }
+
+    private _validateLayerCount(layerCount: number): void {
+        const maxRenderLayers = this.maxRenderLayers;
+        if (maxRenderLayers !== null && layerCount > maxRenderLayers) {
+            const layerLabel = maxRenderLayers === 1 ? "layer" : "layers";
+            throw new Error(`The XR session supports at most ${maxRenderLayers} render ${layerLabel}, but ${layerCount} were provided.`);
         }
     }
 

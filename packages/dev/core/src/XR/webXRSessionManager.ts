@@ -556,7 +556,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * If this returns null, then fixed foveation is not supported
      */
     public get fixedFoveation(): Nullable<number> {
-        return this._baseLayerWrapper?.fixedFoveation || null;
+        return this._baseLayerWrapper?.fixedFoveation ?? null;
     }
 
     /**

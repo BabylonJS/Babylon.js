@@ -33,31 +33,34 @@ export class WebXRLayerWrapper<LayerTypeT extends WebXRSupportedLayerType = WebX
         return this._rttWrapper;
     }
     /**
-     * Check if fixed foveation is supported on this device
+     * Check if fixed foveation is supported by the wrapped XRWebGLLayer or XRProjectionLayer.
      */
     public get isFixedFoveationSupported(): boolean {
-        return this.layerType == "XRWebGLLayer" && typeof (this.layer as XRWebGLLayer).fixedFoveation == "number";
+        const isFoveationLayer = this.layerType === "XRWebGLLayer" || this.layerType === "XRProjectionLayer";
+        return isFoveationLayer && typeof (this.layer as XRWebGLLayer | XRProjectionLayer).fixedFoveation === "number";
     }
 
     /**
-     * Get the fixed foveation currently set, as specified by the webxr specs
-     * If this returns null, then fixed foveation is not supported
+     * Gets the fixed foveation currently set, as specified by the WebXR specs.
+     * @returns The fixed foveation level, or `null` when fixed foveation is not supported.
      */
     public get fixedFoveation(): Nullable<number> {
         if (this.isFixedFoveationSupported) {
-            return (this.layer as XRWebGLLayer).fixedFoveation!;
+            return (this.layer as XRWebGLLayer | XRProjectionLayer).fixedFoveation ?? null;
         }
         return null;
     }
 
     /**
-     * Set the fixed foveation to the specified value, as specified by the webxr specs
-     * This value will be normalized to be between 0 and 1, 1 being max foveation, 0 being no foveation
+     * Sets the fixed foveation level, as specified by the WebXR specs.
+     * The value is normalized between 0 and 1, where 1 is maximum foveation and 0 is no foveation.
+     * Unsupported native layers ignore the assignment, matching the WebXR fixed-foveation contract.
+     * @param value The fixed foveation level, or `null` to use no foveation.
      */
     public set fixedFoveation(value: Nullable<number>) {
         if (this.isFixedFoveationSupported) {
             const val = Math.max(0, Math.min(1, value || 0));
-            (this.layer as XRWebGLLayer).fixedFoveation = val;
+            (this.layer as XRWebGLLayer | XRProjectionLayer).fixedFoveation = val;
         }
     }
 

@@ -15,6 +15,7 @@ import {
     WebXRMediaLayerWrapper,
     WebXRSpatialLayerWrapper,
 } from "core/XR/features/Layers/WebXRCompositionLayer";
+import { WebXRProjectionLayerWrapper } from "core/XR/features/Layers/WebXRProjectionLayer";
 import { WebXRFallbackLayerWrapper } from "core/XR/features/WebXRLayersFallback";
 import { WebXRWebGPUCompositionLayerWrapper } from "core/XR/features/Layers/WebXRWebGPUCompositionLayer";
 import { WebXRLayers } from "core/XR/features/WebXRLayers";
@@ -186,6 +187,98 @@ describe("WebXRLayers", () => {
             installWebGLBinding();
 
             expect(new WebXRLayers(sessionManager).isCompatible()).toBe(true);
+        });
+    });
+
+    describe("maxRenderLayers", () => {
+        function createProjectionLayer(): WebXRProjectionLayerWrapper {
+            const layer = { textureHeight: 512, textureWidth: 1024 } as ConstructorParameters<typeof WebXRProjectionLayerWrapper>[0];
+            return new WebXRProjectionLayerWrapper(layer, false, {} as XRWebGLBinding);
+        }
+
+        function createWrappedLayer(): WebXRCompositionLayerWrapper {
+            const layer = {} as ConstructorParameters<typeof WebXRCompositionLayerWrapper>[2];
+            return new WebXRCompositionLayerWrapper(
+                () => 1,
+                () => 1,
+                layer,
+                "XRQuadLayer",
+                false,
+                () => {
+                    throw new Error("Only the projection layer creates a render target provider in these tests.");
+                }
+            );
+        }
+
+        it("exposes the active session limit and rejects arrays that exceed it", () => {
+            const updateRenderState = initializeSession();
+            Object.defineProperty(sessionManager.session, "maxRenderLayers", { configurable: true, value: 2 });
+            const feature = new WebXRLayers(sessionManager);
+            const layers = [createProjectionLayer(), createWrappedLayer(), createWrappedLayer()];
+
+            expect(feature.isMaxRenderLayersSupported).toBe(true);
+            expect(feature.maxRenderLayers).toBe(2);
+            feature.setXRSessionLayers(layers.slice(0, 2));
+            expect(updateRenderState.mock.lastCall?.[0].layers).toEqual(layers.slice(0, 2).map((wrapper) => wrapper.layer));
+
+            expect(() => feature.setXRSessionLayers(layers)).toThrow("The XR session supports at most 2 render layers, but 3 were provided.");
+            expect(updateRenderState).toHaveBeenCalledTimes(1);
+        });
+
+        it("remains unsupported-aware and delegates layer limits when the native member is absent", () => {
+            const updateRenderState = initializeSession();
+            const feature = new WebXRLayers(sessionManager);
+            const layers = [createProjectionLayer(), createWrappedLayer(), createWrappedLayer()];
+
+            expect(feature.isMaxRenderLayersSupported).toBe(false);
+            expect(feature.maxRenderLayers).toBeNull();
+            expect(() => feature.setXRSessionLayers(layers)).not.toThrow();
+            expect(updateRenderState.mock.lastCall?.[0].layers).toEqual(layers.map((wrapper) => wrapper.layer));
+        });
+
+        it("checks the active limit before creating another native layer", () => {
+            const projectionLayer = { textureHeight: 512, textureWidth: 1024 };
+            const createQuadLayer = vi.fn();
+            const nativeBinding = {
+                createProjectionLayer: vi.fn(() => projectionLayer),
+                createQuadLayer,
+                getSubImage: vi.fn(),
+            };
+            testGlobals.XRWebGLBinding = vi.fn().mockImplementation(function () {
+                return nativeBinding;
+            }) as unknown as LayerBindingConstructor;
+            Object.defineProperty(engine, "_gl", { configurable: true, value: {} });
+            const updateRenderState = initializeSession();
+            Object.defineProperty(sessionManager.session, "maxRenderLayers", { configurable: true, value: 1 });
+            const feature = new WebXRLayers(sessionManager);
+
+            expect(feature.attach()).toBe(true);
+            expect(() => feature.createQuadLayer()).toThrow("The XR session supports at most 1 render layer, but 2 were provided.");
+            expect(createQuadLayer).not.toHaveBeenCalled();
+            expect(updateRenderState).toHaveBeenCalledTimes(1);
+            expect(updateRenderState.mock.lastCall?.[0].layers).toEqual([projectionLayer]);
+        });
+    });
+
+    describe("projection fixed foveation", () => {
+        it("exposes XRProjectionLayer fixed foveation through the session manager convenience API", () => {
+            const projectionLayer = { fixedFoveation: 0, textureHeight: 512, textureWidth: 1024 };
+            const nativeBinding = {
+                createProjectionLayer: vi.fn(() => projectionLayer),
+            };
+            testGlobals.XRWebGLBinding = vi.fn().mockImplementation(function () {
+                return nativeBinding;
+            }) as unknown as LayerBindingConstructor;
+            Object.defineProperty(engine, "_gl", { configurable: true, value: {} });
+            initializeSession();
+            const feature = new WebXRLayers(sessionManager);
+
+            expect(feature.attach()).toBe(true);
+            expect(sessionManager.isFixedFoveationSupported).toBe(true);
+            expect(sessionManager.fixedFoveation).toBe(0);
+
+            sessionManager.fixedFoveation = 0.5;
+            expect(projectionLayer.fixedFoveation).toBe(0.5);
         });
     });
 

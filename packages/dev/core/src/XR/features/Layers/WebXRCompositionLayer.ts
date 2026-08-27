@@ -20,6 +20,7 @@ export type { WebXRSpatialLayerType } from "core/XR/webXRLayerWrapper";
 /**
  * Wraps an XR composition layer and creates its Babylon render target provider.
  * @typeParam LayerT the concrete WebXR composition layer type
+ * @see https://playground.babylonjs.com/#TODARD#0
  */
 export class WebXRCompositionLayerWrapper<
     LayerT extends XRCompositionLayer = XRCompositionLayer,
@@ -34,6 +35,89 @@ export class WebXRCompositionLayerWrapper<
      * Whether Babylon should acquire subimages and expose render target textures for this layer.
      */
     public readonly usesRenderTargetProvider: boolean = true;
+
+    /**
+     * Whether the native layer exposes compositor opacity control.
+     */
+    public get isOpacitySupported(): boolean {
+        return "opacity" in this.layer;
+    }
+
+    /**
+     * Gets the compositor opacity applied to this layer.
+     * @returns The native opacity in the range 0 to 1.
+     * @throws If opacity is not supported by the active XR runtime.
+     */
+    public get opacity(): number {
+        this._assertControlSupported("opacity");
+        return this.layer.opacity!;
+    }
+
+    /**
+     * Sets the compositor opacity applied to this layer.
+     * The native runtime clamps the value to the range 0 to 1.
+     * @param value The desired opacity.
+     * @throws If opacity is not supported by the active XR runtime.
+     */
+    public set opacity(value: number) {
+        this._assertControlSupported("opacity");
+        this.layer.opacity = value;
+    }
+
+    /**
+     * Whether the native layer exposes compositor quality hints.
+     */
+    public get isQualitySupported(): boolean {
+        return "quality" in this.layer;
+    }
+
+    /**
+     * Gets the compositor quality hint applied to this layer.
+     * @returns The current native layer quality hint.
+     * @throws If quality hints are not supported by the active XR runtime.
+     */
+    public get quality(): XRLayerQuality {
+        this._assertControlSupported("quality");
+        return this.layer.quality!;
+    }
+
+    /**
+     * Sets the compositor quality hint applied to this layer.
+     * @param value The desired quality hint.
+     * @throws If quality hints are not supported by the active XR runtime, or the native runtime rejects the value.
+     */
+    public set quality(value: XRLayerQuality) {
+        this._assertControlSupported("quality");
+        this.layer.quality = value;
+    }
+
+    /**
+     * Whether the native layer exposes mono-presentation control.
+     */
+    public get isForceMonoPresentationSupported(): boolean {
+        return "forceMonoPresentation" in this.layer;
+    }
+
+    /**
+     * Gets whether the compositor presents the left-eye layer configuration to both eyes.
+     * @returns Whether mono presentation is forced.
+     * @throws If mono presentation control is not supported by the active XR runtime.
+     */
+    public get forceMonoPresentation(): boolean {
+        this._assertControlSupported("forceMonoPresentation");
+        return this.layer.forceMonoPresentation!;
+    }
+
+    /**
+     * Sets whether the compositor presents the left-eye layer configuration to both eyes.
+     * Applications should continue rendering both eyes when this is enabled.
+     * @param value Whether to force mono presentation.
+     * @throws If mono presentation control is not supported by the active XR runtime.
+     */
+    public set forceMonoPresentation(value: boolean) {
+        this._assertControlSupported("forceMonoPresentation");
+        this.layer.forceMonoPresentation = value;
+    }
 
     constructor(
         public override getWidth: () => number,
@@ -53,6 +137,12 @@ export class WebXRCompositionLayerWrapper<
         public readonly isStatic = false
     ) {
         super(getWidth, getHeight, layer, layerType, createRTTProvider);
+    }
+
+    private _assertControlSupported(control: "opacity" | "quality" | "forceMonoPresentation"): void {
+        if (!(control in this.layer)) {
+            throw new Error(`XRCompositionLayer.${control} is not supported by this XR runtime.`);
+        }
     }
 
     /**
