@@ -22,7 +22,7 @@ export interface IMultiTextureOptions {
     maxLayers?: number;
     /** Default MultiBlendMode.ALPHA_BLEND. */
     blendMode?: MultiBlendMode;
-    /** Default false. Passed to RawTexture2DArray: mip levels of the LAYER array, consumed by the composite when rttScale < 1 (minification) under a trilinear sampling mode. The composite RTT itself never has mips (consumed at 1:1 by materials). */
+    /** Default false. Passed to RawTexture2DArray: mip levels of the LAYER array, consumed by the composite when rttScale less than 1 (minification) under a trilinear sampling mode. The composite RTT itself never has mips (consumed at 1:1 by materials). */
     generateMipMaps?: boolean;
     /** Default Texture.TRILINEAR_SAMPLINGMODE. Passed to RawTexture2DArray. The composite shader reads the layers through this sampler, so it also drives the composite's mag/min filtering. */
     samplingMode?: number;
@@ -71,6 +71,14 @@ interface ILayerEntry {
     pixels: Uint8ClampedArray | null;
     /** False until the first successful upload. */
     loaded: boolean;
+    /**
+     * Per-layer generation token: bumped every time a load for this entry starts. A settling
+     * load may only commit state if it still carries the entry's newest generation, so a
+     * superseded load (newer updateLayerAsync / watch reload for the same entry) is dropped.
+     */
+    generation: number;
+    /** One-shot warning state: avoids repeated error logging for persistently failing watched layers. */
+    warnedLoadFailure: boolean;
 }
 
 /**
@@ -104,7 +112,7 @@ interface ILayerEntry {
  * - The composite shader reads the layers through the array sampler (filtered, not an integer
  *   texel fetch), so `samplingMode` affects the composite output, `rttScale` other than 1
  *   produces a filtered bilinear rescale, and (with `generateMipMaps: true`) trilinear
- *   minification can use the layer mips when `rttScale` < 1.
+ *   minification can use the layer mips when `rttScale` less than 1.
  * - On WebGPU you must also import the WebGPU upload extension yourself:
  *   `import "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource";`
  *   (the WebGL2 extension is imported automatically by the non-pure `multiTexture` entry).
@@ -122,8 +130,6 @@ export class MultiTexture extends ProceduralTexture {
     private _pollTimer: ReturnType<typeof setInterval> | null = null;
     private _canvas: Nullable<OffscreenCanvas | HTMLCanvasElement>;
     private _ctx: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
-    /** One-shot warning state per entry: avoids repeated error logging for persistently failing watched layers. */
-    private _warnedLoadFailure: boolean[];
     private _disposed: boolean = false;
     private _mtOptions: IMultiTextureOptions;
     private _arrayTexture: RawTexture2DArray;
@@ -267,11 +273,10 @@ export class MultiTexture extends ProceduralTexture {
             Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
         this._arrayTexture.name = `${this.name}_2DArray`;
-        this._layers = urls.map((url) => ({ url, etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false }));
+        this._layers = urls.map((url) => this._createLayerEntry(url));
         this._layerCount = this._layers.length;
         this.urls = urls.slice();
         this.pixels = new Array<Uint8ClampedArray | null>(this._layerCount).fill(null);
-        this._warnedLoadFailure = new Array<boolean>(this._layerCount).fill(false);
 
         this.defines = this._buildDefines(maxLayers, MODE_FLAGS[blendMode]);
         this.setTexture("uLayers", this._arrayTexture);
@@ -333,15 +338,10 @@ export class MultiTexture extends ProceduralTexture {
         entry.url = url;
         entry.etag = null;
         entry.lastModified = null;
+        entry.warnedLoadFailure = false;
         this.urls[index] = url;
-        this._warnedLoadFailure[index] = false;
 
-        try {
-            await this._loadEntry(entry);
-        } catch (e) {
-            this._reportError(e);
-            throw e;
-        }
+        await this._loadEntryOrThrow(entry);
     }
 
     /**
@@ -356,19 +356,21 @@ export class MultiTexture extends ProceduralTexture {
     public async addLayer(url: string): Promise<number> {
         const newIndex = this._layerCount;
 
+        let entry: ILayerEntry;
         try {
             if (newIndex >= this._maxLayers) {
                 this._growArray();
             }
-            const entry = this._pushLayerEntry(url);
+            entry = this._pushLayerEntry(url);
             // The fragment shader only samples the first uLayerCount layers, so the uniform must
             // track the internal count or the freshly appended layer is never composited.
             this.setInt("uLayerCount", this._layerCount);
-            await this._loadEntry(entry);
         } catch (e) {
             this._reportError(e);
             throw e;
         }
+
+        await this._loadEntryOrThrow(entry);
 
         return newIndex;
     }
@@ -391,25 +393,22 @@ export class MultiTexture extends ProceduralTexture {
             throw new RangeError(`MultiTexture: layer index ${index} out of range [0, ${this._layerCount}].`);
         }
 
+        let entry: ILayerEntry;
         try {
             if (this._layerCount + 1 > this._maxLayers) {
                 this._growArray();
             }
 
-            const entry: ILayerEntry = { url, etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false };
+            entry = this._createLayerEntry(url);
             this._layers.splice(index, 0, entry);
             this.pixels.splice(index, 0, null);
             this.urls.splice(index, 0, url);
-            this._warnedLoadFailure.splice(index, 0, false);
             this._layerCount++;
 
             // Move the shifted layers up on the GPU before the new layer is decoded, top-down so no
             // slot is overwritten before its old content is re-read.
             for (let j = this._layerCount - 1; j > index; j--) {
-                const bitmap = this._layers[j].bitmap;
-                if (bitmap !== null) {
-                    UploadImageToTexture2DArrayLayer(this._arrayTexture, bitmap, j, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
-                }
+                this._reuploadSlot(j);
             }
 
             // The fragment shader only samples the first uLayerCount layers, so the uniform must
@@ -417,12 +416,12 @@ export class MultiTexture extends ProceduralTexture {
             this.setInt("uLayerCount", this._layerCount);
             // Refresh even if the load below fails: the shift above already moved GPU slots.
             this.resetRefreshCounter();
-
-            await this._loadEntry(entry);
         } catch (e) {
             this._reportError(e);
             throw e;
         }
+
+        await this._loadEntryOrThrow(entry);
 
         return index;
     }
@@ -442,17 +441,13 @@ export class MultiTexture extends ProceduralTexture {
         const removed = this._layers.splice(index, 1)[0];
         this.pixels.splice(index, 1);
         this.urls.splice(index, 1);
-        this._warnedLoadFailure.splice(index, 1);
         if (removed.bitmap) {
             removed.bitmap.close();
         }
         this._layerCount--;
 
         for (let j = index; j < this._layerCount; j++) {
-            const bitmap = this._layers[j].bitmap;
-            if (bitmap !== null) {
-                UploadImageToTexture2DArrayLayer(this._arrayTexture, bitmap, j, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
-            }
+            this._reuploadSlot(j);
         }
 
         this.setInt("uLayerCount", this._layerCount);
@@ -562,12 +557,63 @@ export class MultiTexture extends ProceduralTexture {
         this._mtOptions.onError?.(message, error);
     }
 
+    private _createLayerEntry(url: string): ILayerEntry {
+        return { url, etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false, generation: 0, warnedLoadFailure: false };
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    private async _loadEntryOrThrow(entry: ILayerEntry): Promise<void> {
+        // Public addLayer/insertLayer/updateLayerAsync contract: report the failure and rethrow.
+        try {
+            await this._loadEntry(entry);
+        } catch (e) {
+            this._reportError(e);
+            throw e;
+        }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    private async _loadEntryAndReport(entry: ILayerEntry): Promise<void> {
+        // Internal pools (init, watch): report the failure and keep going.
+        try {
+            await this._loadEntry(entry);
+        } catch (e) {
+            this._reportError(e);
+        }
+    }
+
+    private _warnWatchFailure(entry: ILayerEntry, detail: string): void {
+        if (entry.warnedLoadFailure) {
+            return;
+        }
+        // The entry may have been removed while this tick was running: nothing left to warn about.
+        const index = this._layers.indexOf(entry);
+        if (index === -1) {
+            return;
+        }
+        entry.warnedLoadFailure = true;
+        const message = `MultiTexture: watched layer ${index} (${entry.url}) ${detail}`;
+        Logger.Error(message);
+        this._mtOptions.onError?.(message);
+    }
+
+    private _reuploadSlot(index: number, target: RawTexture2DArray = this._arrayTexture): void {
+        const bitmap = this._layers[index].bitmap;
+        if (bitmap !== null) {
+            UploadImageToTexture2DArrayLayer(target, bitmap, index, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
+        }
+    }
+
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private async _loadEntry(entry: ILayerEntry): Promise<void> {
         // Body runs across awaits; if dispose() wins the race, skip the fetch entirely.
         if (this._disposed) {
             return;
         }
+        // Per-layer generation token: every new load for this entry (init, updateLayerAsync,
+        // watch reload) supersedes the previous one. The settling load revalidates it in
+        // _uploadBitmap before committing any state.
+        const generation = ++entry.generation;
         const url = entry.url;
         const response = await fetch(url);
         if (!response.ok) {
@@ -591,26 +637,25 @@ export class MultiTexture extends ProceduralTexture {
             }
         }
 
-        this._uploadBitmap(entry, bitmap, { etag, lastModified, url });
+        this._uploadBitmap(entry, bitmap, { etag, lastModified, generation });
     }
 
-    private _uploadBitmap(entry: ILayerEntry, bitmap: ImageBitmap, meta: { etag: string | null; lastModified: string | null; url: string }): void {
-        // If dispose() won the race, drop the decoded bitmap without touching the layer entry
-        // (dispose clears _layers), the pixel cache, the refresh counter or the onLoad path:
-        // the internal 2D array texture is already destroyed and upload would throw
-        // "Cannot upload to a 2D array texture that has no internal texture".
+    private _uploadBitmap(entry: ILayerEntry, bitmap: ImageBitmap, meta: { etag: string | null; lastModified: string | null; generation: number }): void {
+        // The load ran across awaits, so revalidate EVERYTHING it is about to touch before
+        // committing any state:
+        // - dispose() may have won the race (it clears _layers and destroys the internal 2D
+        //   array texture, so an upload would throw "no internal texture");
+        // - insertLayer/removeLayer may have spliced the layer arrays, so the entry's CURRENT
+        //   index (never an index captured before the awaits) is the only valid landing slot,
+        //   and a removed entry must drop its decode entirely;
+        // - a newer load for the same entry (updateLayerAsync, watch reload) bumped its
+        //   generation, so this superseded load must drop its decode.
         if (this._disposed) {
             bitmap.close();
             return;
         }
-
-        // The load ran across awaits, so the bookkeeping may have moved: insertLayer/removeLayer
-        // splice the layer arrays (this entry now sits at a different index, or is gone) and
-        // updateLayerAsync may have repointed the entry at a newer url. Resolve the entry's
-        // CURRENT index and upload there; drop the decode if the entry no longer owns the url
-        // this load fetched (a newer load owns the entry now).
         const index = this._layers.indexOf(entry);
-        if (index === -1 || entry.url !== meta.url) {
+        if (index === -1 || entry.generation !== meta.generation) {
             bitmap.close();
             return;
         }
@@ -632,7 +677,7 @@ export class MultiTexture extends ProceduralTexture {
         entry.loaded = true;
         entry.etag = meta.etag;
         entry.lastModified = meta.lastModified;
-        this._warnedLoadFailure[index] = false;
+        entry.warnedLoadFailure = false;
 
         this.resetRefreshCounter();
     }
@@ -660,13 +705,8 @@ export class MultiTexture extends ProceduralTexture {
             const workerAsync = async (): Promise<void> => {
                 let i: number;
                 while ((i = next++) < count) {
-                    const entry = initial[i];
-                    try {
-                        // eslint-disable-next-line no-await-in-loop -- decode pool: each worker processes layers sequentially.
-                        await this._loadEntry(entry);
-                    } catch (e) {
-                        this._reportError(e);
-                    }
+                    // eslint-disable-next-line no-await-in-loop -- decode pool: each worker processes layers sequentially.
+                    await this._loadEntryAndReport(initial[i]);
                 }
             };
             const workers: Promise<void>[] = [];
@@ -675,9 +715,16 @@ export class MultiTexture extends ProceduralTexture {
             }
             await Promise.all(workers);
 
-            if (!this._disposed && mips && internal) {
-                internal.generateMipMaps = true;
-                this.getScene()!.getEngine().generateMipmaps(internal);
+            // Re-resolve the internal texture AFTER the pool: addLayer/insertLayer may have grown
+            // the array mid-pool, disposing the `internal` captured above and replacing
+            // this._arrayTexture. Generating mips on the stale capture would target a dead
+            // texture and leave the live array unmipped.
+            if (!this._disposed && mips) {
+                const finalInternal = this._arrayTexture.getInternalTexture();
+                if (finalInternal) {
+                    finalInternal.generateMipMaps = true;
+                    this.getScene()!.getEngine().generateMipmaps(finalInternal);
+                }
             }
 
             if (!this._disposed) {
@@ -695,11 +742,10 @@ export class MultiTexture extends ProceduralTexture {
     }
 
     private _pushLayerEntry(url: string): ILayerEntry {
-        const entry: ILayerEntry = { url, etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false };
+        const entry = this._createLayerEntry(url);
         this._layers.push(entry);
         this.pixels.push(null);
         this.urls.push(url);
-        this._warnedLoadFailure.push(false);
         this._layerCount++;
         return entry;
     }
@@ -728,10 +774,7 @@ export class MultiTexture extends ProceduralTexture {
         );
 
         for (let i = 0; i < this._layerCount; i++) {
-            const bitmap = this._layers[i].bitmap;
-            if (bitmap !== null) {
-                UploadImageToTexture2DArrayLayer(newRaw, bitmap, i, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
-            }
+            this._reuploadSlot(i, newRaw);
         }
 
         this._arrayTexture.dispose();
@@ -781,12 +824,7 @@ export class MultiTexture extends ProceduralTexture {
                             await this._loadEntry(entry);
                         } catch (e) {
                             // Persistently failing layer: warn once, retry on the next tick.
-                            if (!this._warnedLoadFailure[i]) {
-                                this._warnedLoadFailure[i] = true;
-                                const message = `MultiTexture: watched layer ${i} (${entry.url}) failed to load: ${String((e as { message?: unknown })?.message ?? e)}`;
-                                Logger.Error(message);
-                                this._mtOptions.onError?.(message);
-                            }
+                            this._warnWatchFailure(entry, `failed to load: ${String((e as { message?: unknown })?.message ?? e)}`);
                         }
                         continue;
                     }
@@ -795,12 +833,7 @@ export class MultiTexture extends ProceduralTexture {
                     const response = await fetch(entry.url, { method: "HEAD" });
 
                     if (response.status === 404) {
-                        if (!this._warnedLoadFailure[i]) {
-                            this._warnedLoadFailure[i] = true;
-                            const message = `MultiTexture: watched layer ${i} (${entry.url}) returned 404.`;
-                            Logger.Error(message);
-                            this._mtOptions.onError?.(message);
-                        }
+                        this._warnWatchFailure(entry, "returned 404.");
                         continue;
                     }
 
@@ -818,12 +851,8 @@ export class MultiTexture extends ProceduralTexture {
                     }
 
                     if ((etag !== null && etag !== entry.etag) || (lastModified !== null && lastModified !== entry.lastModified)) {
-                        try {
-                            // eslint-disable-next-line no-await-in-loop -- reload happens after the HEAD check above.
-                            await this._loadEntry(entry);
-                        } catch (e) {
-                            this._reportError(e);
-                        }
+                        // eslint-disable-next-line no-await-in-loop -- reload happens after the HEAD check above.
+                        await this._loadEntryAndReport(entry);
                     }
                 } catch {
                     // Transient fetch failure: ignore for this tick.

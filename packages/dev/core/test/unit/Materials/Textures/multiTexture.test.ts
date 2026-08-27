@@ -770,7 +770,7 @@ describe("MultiTexture", () => {
         mt.dispose();
 
         // Simulate the tail of an in-flight refresh whose decode completes after dispose.
-        const entry = { url: "a.png", etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false };
+        const entry = { url: "a.png", etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false, generation: 0, warnedLoadFailure: false };
         await expect(mt["_loadEntry"](entry)).resolves.toBeUndefined();
         await expect(mt["_poll"]()).resolves.toBeUndefined();
 
@@ -1014,7 +1014,7 @@ describe("MultiTexture insertLayer", () => {
         expect(mt.pixels).toHaveLength(3);
         expect(mt.pixels[1]).toBeNull();
         expect((mt as any)._layers[1].loaded).toBe(false);
-        expect((mt as any)._warnedLoadFailure).toHaveLength(3);
+        expect((mt as any)._layers.map((l: any) => l.warnedLoadFailure)).toEqual([false, false, false]);
 
         const newUploads = mockState.upload.mock.calls.slice(uploadsBefore);
         expect(newUploads.map((c: any[]) => [c[1], c[2]])).toEqual([[bitmapC, 2]]);
@@ -1127,6 +1127,186 @@ describe("MultiTexture structure changes racing in-flight loads", () => {
         expect((mt as any)._layers[0].bitmap.url).toBe("b.png");
         expect(bitmaps.find((b) => b.url === "a.png").close).toHaveBeenCalledTimes(1);
         expect(mt.pixels.every((p: any) => p instanceof Uint8ClampedArray)).toBe(true);
+    });
+
+    it("a newer same-url load supersedes the older in-flight load via the generation token", async () => {
+        // Same url as the in-flight initial load: a url comparison cannot tell the two loads
+        // apart, only the per-layer generation token can. Fetches queue per url so both can
+        // stay pending and be released together.
+        const queues: Record<string, Array<() => void>> = {};
+        vi.stubGlobal(
+            "fetch",
+            (url: string) =>
+                new Promise((resolve) => {
+                    mockState.fetchCalls.push({ url });
+                    (queues[url] ?? (queues[url] = [])).push(() =>
+                        resolve({
+                            ok: true,
+                            status: 200,
+                            statusText: "OK",
+                            headers: { get: () => null },
+                            blob: async () => ({ __url: url }),
+                        })
+                    );
+                })
+        );
+        const bitmaps: any[] = [];
+        mockState.decodeImpl = (source: any) => {
+            const bitmap = { width: 8, height: 8, close: vi.fn(), url: source.__url };
+            bitmaps.push(bitmap);
+            return bitmap;
+        };
+
+        const mt = new MultiTexture("mt", ["a.png"], makeScene(), { width: 8, height: 8 }) as MockMultiTexture;
+
+        // The update reuses the SAME url as the in-flight initial load (gen 1 -> gen 2).
+        const updated = mt.updateLayerAsync(0, "a.png");
+
+        // Both fetches settle: the initial load must be dropped, only the update commits.
+        (queues["a.png"] ?? []).slice().forEach((fn) => fn());
+        await updated;
+        await tick();
+
+        expect(mockState.upload.mock.calls.map((c: any[]) => [c[1].url, c[2]])).toEqual([["a.png", 0]]);
+        expect(bitmaps).toHaveLength(2);
+        expect(bitmaps[0].close).toHaveBeenCalledTimes(1); // superseded initial load dropped
+        expect(bitmaps[1].close).not.toHaveBeenCalled();
+        expect((mt as any)._layers[0].bitmap).toBe(bitmaps[1]);
+    });
+});
+
+describe("MultiTexture mid-flight array growth and watch races", () => {
+    function deferredScene() {
+        const resolvers: Record<string, () => void> = {};
+        vi.stubGlobal(
+            "fetch",
+            (url: string) =>
+                new Promise((resolve) => {
+                    mockState.fetchCalls.push({ url });
+                    resolvers[url] = () =>
+                        resolve({
+                            ok: true,
+                            status: 200,
+                            statusText: "OK",
+                            headers: { get: () => null },
+                            blob: async () => ({ __url: url }),
+                        });
+                })
+        );
+        mockState.decodeImpl = (source: any) => ({ width: 8, height: 8, close: vi.fn(), url: source.__url });
+        return { scene: makeScene(), resolvers };
+    }
+
+    const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+    it("generates mips on the live array texture after a mid-pool grow, not on the disposed capture", async () => {
+        const { scene, resolvers } = deferredScene();
+        let resolveLoad!: () => void;
+        const loaded = new Promise<void>((resolve) => (resolveLoad = resolve));
+
+        const mt = new MultiTexture("mt", ["a.png", "b.png"], scene, {
+            width: 8,
+            height: 8,
+            maxLayers: 2,
+            generateMipMaps: true,
+            onLoad: () => resolveLoad(),
+        }) as MockMultiTexture;
+
+        const oldRaw = mockState.rawInstances[0];
+
+        // addLayer hits the capacity while the init pool is still running: the array grows
+        // (old raw disposed, new raw bound) before any initial load has settled.
+        const added = mt.addLayer("c.png");
+        const newRaw = mockState.rawInstances[1];
+        expect(oldRaw.dispose).toHaveBeenCalledTimes(1);
+
+        resolvers["a.png"]();
+        await tick();
+        resolvers["b.png"]();
+        await tick();
+        resolvers["c.png"]();
+        await Promise.all([added, loaded]);
+
+        // The final mip generation must target the LIVE array's internal texture: the capture
+        // taken before the pool was disposed by the grow and would leave the live array unmipped.
+        expect(mockState.generateMipmaps).toHaveBeenCalledTimes(1);
+        expect(mockState.generateMipmaps.mock.calls[0][0]).toBe(newRaw.getInternalTexture());
+        expect(newRaw.getInternalTexture().generateMipMaps).toBe(true);
+
+        // Every layer's final upload landed in the live array.
+        const uploads = mockState.upload.mock.calls as any[];
+        const lastForLayer = (layer: number) => uploads.filter((c) => c[2] === layer).pop();
+        expect(lastForLayer(0)[1].url).toBe("a.png");
+        expect(lastForLayer(1)[1].url).toBe("b.png");
+        expect(lastForLayer(2)[1].url).toBe("c.png");
+        expect(lastForLayer(0)[0]).toBe(newRaw.getInternalTexture());
+        expect(lastForLayer(1)[0]).toBe(newRaw.getInternalTexture());
+        expect(lastForLayer(2)[0]).toBe(newRaw.getInternalTexture());
+    });
+
+    it("drops a watch reload whose layer was removed mid-tick", async () => {
+        // Fetches (initial GET, HEAD checks, reload GETs) stay pending until released, so a
+        // removeLayer can land between a poll tick's snapshot and its reload's settle.
+        const headResolvers: Array<() => void> = [];
+        const getResolvers: Array<() => void> = [];
+        vi.stubGlobal(
+            "fetch",
+            (url: string, init?: any) =>
+                new Promise((resolve) => {
+                    mockState.fetchCalls.push({ url, init });
+                    const isHead = init?.method === "HEAD";
+                    const queue = isHead ? headResolvers : getResolvers;
+                    const getOrdinal = queue.length;
+                    queue.push(() =>
+                        resolve({
+                            ok: true,
+                            status: 200,
+                            statusText: "OK",
+                            // Initial GET records v1; the later HEAD reports v2 (changed);
+                            // the reload GET would serve v2.
+                            headers: { get: () => (isHead ? "v2" : getOrdinal === 0 ? "v1" : "v2") },
+                            blob: async () => ({ __url: url }),
+                        })
+                    );
+                })
+        );
+        const bitmaps: any[] = [];
+        mockState.decodeImpl = (source: any) => {
+            const bitmap = { width: 8, height: 8, close: vi.fn(), url: source.__url };
+            bitmaps.push(bitmap);
+            return bitmap;
+        };
+
+        const scene = makeScene();
+        const mt = new MultiTexture("mt", ["a.png"], scene, { width: 8, height: 8, watch: true, pollInterval: 100000 }) as MockMultiTexture;
+
+        // Settle the initial GET: entry records etag v1.
+        getResolvers[0]();
+        await tick();
+        expect((mt as any)._layers[0].etag).toBe("v1");
+        expect(mockState.upload.mock.calls).toHaveLength(1);
+
+        // Start a poll tick (snapshots the entry, issues the pending HEAD), then remove the
+        // layer BEFORE the HEAD settles.
+        const poll = (mt as any)._poll();
+        await mt.removeLayer(0);
+        expect(headResolvers).toHaveLength(1);
+
+        // HEAD settles: etag changed -> reload starts for the now-removed entry.
+        headResolvers[0]();
+        await tick();
+        expect(getResolvers).toHaveLength(2);
+
+        // Reload settles: the entry is gone, so the decode must be dropped, not uploaded.
+        getResolvers[1]();
+        await poll;
+        await tick();
+
+        // Only the initial upload ever happened; the reload's bitmap was dropped.
+        expect(mockState.upload.mock.calls).toHaveLength(1);
+        expect(bitmaps).toHaveLength(2);
+        expect(bitmaps[1].close).toHaveBeenCalledTimes(1);
+        expect(mt.layerCount).toBe(0);
     });
 });
 
