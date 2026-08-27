@@ -247,6 +247,8 @@ interface XRInputSource {
     readonly gamepad?: Gamepad | undefined;
     readonly profiles: string[];
     readonly hand?: XRHand;
+    /** Indicates that the user agent recommends omitting the application's input source representation. */
+    readonly skipRendering?: boolean;
 }
 
 declare abstract class XRInputSource implements XRInputSource {}

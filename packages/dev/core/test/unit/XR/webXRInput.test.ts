@@ -77,11 +77,11 @@ describe("WebXRInput", () => {
     });
 
     describe("controller management via session events", () => {
-        it("adds a controller when inputsourceschange fires with added sources", () => {
+        it("adds a skipRendering controller when inputsourceschange fires with added sources", () => {
             const addedCallback = vi.fn();
             xrInput.onControllerAddedObservable.add(addedCallback);
 
-            const mockInputSource = createMockInputSource();
+            const mockInputSource = createMockInputSource({ skipRendering: true });
 
             // Simulate session init so the event listener is registered
             const mockSession = {
@@ -100,14 +100,15 @@ describe("WebXRInput", () => {
             handler({ added: [mockInputSource], removed: [] });
 
             expect(xrInput.controllers.length).toBe(1);
+            expect(xrInput.controllers[0].inputSource).toBe(mockInputSource);
             expect(addedCallback).toHaveBeenCalledTimes(1);
         });
 
-        it("removes a controller when inputsourceschange fires with removed sources", () => {
+        it("removes a skipRendering controller when inputsourceschange fires with removed sources", () => {
             const removedCallback = vi.fn();
             xrInput.onControllerRemovedObservable.add(removedCallback);
 
-            const mockInputSource = createMockInputSource();
+            const mockInputSource = createMockInputSource({ skipRendering: true });
 
             const mockSession = {
                 addEventListener: vi.fn(),
