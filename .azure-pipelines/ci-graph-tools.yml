@@ -51,9 +51,10 @@ jobs:
                 version: "24.x"
 
           - task: Npm@1
-            displayName: "npm install"
+            displayName: "npm ci"
             inputs:
-                command: install
+                command: custom
+                customCommand: "ci"
 
           - task: Npm@1
             displayName: "npm build:dev"
