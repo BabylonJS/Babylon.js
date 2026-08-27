@@ -10,6 +10,7 @@ import { type IProceduralTextureCreationOptions, ProceduralTexture } from "./Pro
 import { RawTexture2DArray } from "./rawTexture2DArray";
 import { UploadImageToTexture2DArrayLayer } from "./rawTexture2DArray.functions";
 import { Texture } from "./texture.pure";
+import { RegisterClass } from "../../Misc/typeStore";
 /**
  * Options for creating a MultiTexture.
  */
@@ -79,6 +80,20 @@ interface ILayerEntry {
     generation: number;
     /** One-shot warning state: avoids repeated error logging for persistently failing watched layers. */
     warnedLoadFailure: boolean;
+}
+
+let _Registered = false;
+/**
+ * Register side effects for action.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+export function RegisterAction(): void {
+    if (_Registered) {
+        return;
+    }
+    _Registered = true;
+
+    RegisterClass("BABYLON.MultiTexture", MultiTexture);
 }
 
 /**
