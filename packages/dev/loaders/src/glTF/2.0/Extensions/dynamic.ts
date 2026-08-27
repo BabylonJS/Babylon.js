@@ -48,7 +48,11 @@ export function registerBuiltInGLTFExtensions() {
 
     unregisterGLTFExtension("KHR_animation_pointer");
     registerGLTFExtension("KHR_animation_pointer", true, async (loader) => {
-        const { KHR_animation_pointer } = await import("./KHR_animation_pointer");
+        const [{ KHR_animation_pointer }, { _RegisterKHRAnimationPointerData }] = await Promise.all([
+            import("./KHR_animation_pointer.pure"),
+            import("./KHR_animation_pointer.data.pure"),
+        ]);
+        _RegisterKHRAnimationPointerData();
         return new KHR_animation_pointer(loader);
     });
 
