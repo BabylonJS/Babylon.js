@@ -26,6 +26,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     private _xrNavigator: any;
     private _sessionMode: XRSessionMode;
     private _onEngineDisposedObserver: Nullable<Observer<AbstractEngine>>;
+    private _referenceSpaceInitialized = false;
 
     /**
      * The base reference space from which the session started. good if you want to reset your
@@ -148,6 +149,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      */
     public set referenceSpace(newReferenceSpace: XRReferenceSpace) {
         this._referenceSpace = newReferenceSpace;
+        this._referenceSpaceInitialized = true;
         this.onXRReferenceSpaceChanged.notifyObservers(this._referenceSpace);
     }
 
@@ -280,6 +282,9 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         if (!this.inXRFrameLoop || !this.currentFrame) {
             throw new Error("Dynamic viewport scaling must be used during an active XR frame.");
         }
+        if (!this._referenceSpaceInitialized) {
+            throw new Error("Dynamic viewport scaling requires an initialized XR reference space.");
+        }
         if (!Number.isInteger(viewIndex) || viewIndex < 0) {
             throw new RangeError("The XR view index must be a non-negative integer.");
         }
@@ -364,6 +369,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         const session = await this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit);
 
         this.session = session;
+        this._referenceSpaceInitialized = false;
         this._sessionMode = xrSessionMode;
         this.inXRSession = true;
         this.onXRSessionInit.notifyObservers(session);
@@ -373,6 +379,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             "end",
             () => {
                 this.inXRSession = false;
+                this._referenceSpaceInitialized = false;
 
                 // Cache the value of engine in case it is disposed during onXRSessionEnded callbacks
                 const engine = this._engine;

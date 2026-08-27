@@ -170,6 +170,17 @@ describe("WebXR viewport scaling", () => {
         expect(() => sessionManager.requestViewportScale(0, 0.5)).toThrow("XR view 0 is not available in the current viewer pose.");
     });
 
+    it("rejects calls before the XR reference space is initialized", () => {
+        const getViewerPose = vi.fn();
+        sessionManager.session = { end: vi.fn().mockResolvedValue(undefined) } as unknown as XRSession;
+        sessionManager.currentFrame = { getViewerPose } as unknown as XRFrame;
+        sessionManager.inXRSession = true;
+        sessionManager.inXRFrameLoop = true;
+
+        expect(() => sessionManager.isViewportScaleSupported(0)).toThrow("Dynamic viewport scaling requires an initialized XR reference space.");
+        expect(getViewerPose).not.toHaveBeenCalled();
+    });
+
     it("refreshes every rig viewport from the native dimensions on each frame", () => {
         const camera = new WebXRCamera("xr", scene, sessionManager);
         const views = [createView({ eye: "left" }), createView({ eye: "right" })];
