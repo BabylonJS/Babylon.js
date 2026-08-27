@@ -438,6 +438,7 @@ interface XRSession extends EventTarget {
     readonly visibilityState: XRVisibilityState;
     readonly frameRate?: number | undefined;
     readonly supportedFrameRates?: Float32Array | undefined;
+    readonly maxRenderLayers?: number | undefined;
 
     /**
      * Removes a callback from the animation frame painting callback from
@@ -814,8 +815,11 @@ interface XRCompositionLayer extends XRLayer {
     readonly layout: XRLayerLayout;
     blendTextureSourceAlpha: boolean;
     chromaticAberrationCorrection?: boolean | undefined;
+    forceMonoPresentation?: boolean | undefined;
+    opacity?: number | undefined;
     readonly mipLevels: number;
     readonly needsRedraw: boolean;
+    quality?: XRLayerQuality | undefined;
     destroy(): void;
 
     space: XRSpace;
@@ -841,6 +845,8 @@ type XRTextureType = "texture" | "texture-array";
 
 type XRLayerLayout = "default" | "mono" | "stereo" | "stereo-left-right" | "stereo-top-bottom";
 
+type XRLayerQuality = "default" | "text-optimized" | "graphics-optimized";
+
 interface XRProjectionLayerInit {
     scaleFactor?: number | undefined;
     textureType?: XRTextureType | undefined;
@@ -854,7 +860,7 @@ interface XRProjectionLayer extends XRCompositionLayer {
     readonly textureHeight: number;
     readonly textureArrayLength: number;
     readonly ignoreDepthValues: number;
-    fixedFoveation: number;
+    fixedFoveation?: number | null | undefined;
 }
 
 declare abstract class XRProjectionLayer implements XRProjectionLayer {}
