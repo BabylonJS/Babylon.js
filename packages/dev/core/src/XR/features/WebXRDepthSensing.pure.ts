@@ -29,6 +29,12 @@ import { WebXRGraphicsBindingType } from "../webXRGraphicsBinding";
 export type WebXRDepthUsage = "cpu" | "gpu";
 export type WebXRDepthDataFormat = "ushort" | "float" | "luminance-alpha";
 
+interface IWebXRDepthSensingSession extends XRSession {
+    readonly depthActive?: boolean;
+    pauseDepthSensing?: () => Promise<void>;
+    resumeDepthSensing?: () => Promise<void>;
+}
+
 /**
  * Options for Depth Sensing feature
  */
@@ -523,6 +529,48 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
             case "unsigned-short":
                 return "ushort";
         }
+    }
+
+    /**
+     * Whether depth sensing is currently active for the XR session.
+     * Returns false when there is no active session or the runtime does not expose the active state.
+     * @see https://playground.babylonjs.com/#SU7NUW#0
+     */
+    public get isDepthSensingActive(): boolean {
+        const session: IWebXRDepthSensingSession | undefined = this._xrSessionManager.session;
+        return this._xrSessionManager.inXRSession && session?.depthActive === true;
+    }
+
+    /**
+     * Pauses depth sensing for the active XR session.
+     * @returns A promise that resolves when the native pause operation completes.
+     * @throws If there is no active XR session or pausing depth sensing is not supported by the runtime.
+     */
+    public async pauseDepthSensingAsync(): Promise<void> {
+        const session: IWebXRDepthSensingSession | undefined = this._xrSessionManager.session;
+        if (!this._xrSessionManager.inXRSession || !session) {
+            throw new Error("Pausing WebXR depth sensing requires an active XR session.");
+        }
+        if (typeof session.pauseDepthSensing !== "function") {
+            throw new Error("XRSession.pauseDepthSensing is not supported by this XR runtime.");
+        }
+        return await session.pauseDepthSensing();
+    }
+
+    /**
+     * Resumes depth sensing for the active XR session.
+     * @returns A promise that resolves when the native resume operation completes.
+     * @throws If there is no active XR session or resuming depth sensing is not supported by the runtime.
+     */
+    public async resumeDepthSensingAsync(): Promise<void> {
+        const session: IWebXRDepthSensingSession | undefined = this._xrSessionManager.session;
+        if (!this._xrSessionManager.inXRSession || !session) {
+            throw new Error("Resuming WebXR depth sensing requires an active XR session.");
+        }
+        if (typeof session.resumeDepthSensing !== "function") {
+            throw new Error("XRSession.resumeDepthSensing is not supported by this XR runtime.");
+        }
+        return await session.resumeDepthSensing();
     }
 
     /**
