@@ -1,8 +1,8 @@
 ---
 name: create-pr
 description: |
-    Orchestrates the full PR lifecycle: merge upstream, create draft PR,
-    self code review, mark ready, monitor, and iterate on fixes.
+    Orchestrates the full PR lifecycle: merge upstream, self code review
+    locally, create a standard PR, monitor, and iterate on fixes.
     Can also monitor and iterate on an existing PR.
     Input: [--push-remote <fork>] [--upstream-remote <remote>] [--base <branch>] [--merge] [--mode automatic|interactive] [--review-lens instructions|agnostic|both] [--pr <number>]
 argument-hint: "[--push-remote <fork>] [--upstream-remote <remote>] [--base <branch>] [--merge] [--mode automatic|interactive] [--review-lens instructions|agnostic|both] [--pr <number>]"
@@ -26,14 +26,14 @@ Parse `$ARGUMENTS`:
 | `--mode automatic`         | Fixes are applied, committed, pushed, and comments resolved automatically.                                                                                 |
 | `--mode interactive`       | Fixes are staged; skill pauses before commit/push/resolve so the user can review.                                                                          |
 | `--review-lens <lens>`     | Self code review lens passed to `code-review`: `instructions`, `agnostic`, or `both`. If omitted, use `both`.                                              |
-| `--pr <number>`            | Monitor and iterate on an existing PR. Skips Steps 1–5 (no merge, no PR creation, no self code review). Only `--mode` applies; `--review-lens` is ignored. |
+| `--pr <number>`            | Monitor and iterate on an existing PR. Skips Steps 1–4 (no merge, no PR creation, no self code review). Only `--mode` applies; `--review-lens` is ignored. |
 
 If `--mode` is not specified, ask the user.
 
 If `--review-lens` is invalid, stop and ask the user to choose a valid value.
 Do not silently reinterpret misspelled options.
 
-If `--pr` is provided, skip directly to Step 6 (monitor) and Step 7
+If `--pr` is provided, skip directly to Step 5 (monitor) and Step 6
 (iteration loop). Do not prompt for remote, merge, title, body, reviewers,
 labels, or self code review options; `--review-lens` has no effect because
 self code review only runs when creating a new PR.
@@ -58,8 +58,8 @@ self code review only runs when creating a new PR.
 
 ## Step 1: Gather all inputs up front
 
-> **If `--pr` was provided**, skip this entire step and Steps 2–5. Only
-> collect `--mode` (ask if not specified), then jump to Step 6.
+> **If `--pr` was provided**, skip this entire step and Steps 2–4. Only
+> collect `--mode` (ask if not specified), then jump to Step 5.
 
 > **Every user prompt in this skill MUST use the `ask_user` tool** — not
 > plain chat text. Provide multiple-choice options where possible (e.g.
@@ -209,9 +209,9 @@ Here's the plan:
 
 Steps:
 1. Merge and resolve upstream changes (if selected)
-2. Push branch and create draft PR
-3. Run self code review (code-review skill)
-4. Commit and push code review fixes, mark PR as ready for review
+2. Run self code review and quality checks locally (code-review skill)
+3. Commit review fixes locally
+4. Push once and create a standard PR
 5. Monitor PR and apply fixes for review comments / CI failures
 
 Ready to proceed?
@@ -230,7 +230,43 @@ If invocation fails because the skill is not installed, warn the user
 _"The babylon-skills:merge-and-resolve skill was not found — skipping
 merge step."_ and continue.
 
-## Step 3: Create the draft PR
+## Step 3: Self code review
+
+Complete the self review and validation locally before pushing the branch or
+creating a PR. This avoids triggering CI for code that the self review will
+immediately change.
+
+1. Invoke the code-review skill, passing through the resolved base, mode,
+   and review lens:
+
+    ```
+    /code-review --base <upstream-remote>/<base-branch> --mode <automatic|interactive> --lens <instructions|agnostic|both>
+    ```
+
+2. **If interactive:** pause after code-review completes and ask the user
+   to review the changes before committing.
+
+3. Run the Quality commands from `.github/copilot-instructions.md`, plus
+   any tests relevant to the changed code. Apply any necessary fixes and
+   iterate locally until they pass.
+
+4. Commit all reviewed, uncommitted changes before pushing. If the worktree
+   contained only fixes produced by code-review or validation, use:
+
+    ```
+    Code review fixes (automated by code-review skill)
+
+    Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+    ```
+
+    If the worktree also contained the original feature changes, use a concise
+    commit message derived from the accepted PR title and body instead of
+    describing the entire commit as review fixes.
+
+5. Confirm the worktree is clean. Do **not** push in this step. The branch is pushed once, after local
+   review and validation are complete, in Step 4.
+
+## Step 4: Create the PR
 
 Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 1a.
 
@@ -251,7 +287,7 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 1a.
    `git remote get-url <upstream-remote>` → parse `owner/repo`). For this
    repo that is `BabylonJS/Babylon.js`.
 
-4. Create the draft PR. Write the title and body to temp files first
+4. Create a standard, review-ready PR. Write the title and body to temp files first
    so shell escaping doesn't mangle backticks, `$`, `!`, or backslashes
    in the markdown, then pass the single-line title with
    `--title "$(cat ...)"` and the multi-line body with `--body-file`:
@@ -266,7 +302,6 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 1a.
       --base "<base-branch>" \
       --title "$(cat pr-title.txt)" \
       --body-file pr-body.md \
-      --draft \
       --label "<label>" \
       --reviewer "<reviewer>"
 
@@ -282,64 +317,12 @@ Use `<push-remote>`, `<upstream-remote>`, and `<base-branch>` from 1a.
     > in 1d/1e.
 
 5. `gh pr create` prints the new PR's full URL on success — surface it
-   prominently in the chat (e.g. _"Draft PR created: <url>"_) so the
+   prominently in the chat (e.g. _"PR created: <url>"_) so the
    user can click through to review it.
 
-## Step 4: Self code review
+## Step 5: Monitor the PR
 
-1. Invoke the code-review skill, passing through the resolved base, mode,
-   and review lens:
-
-    ```
-    /code-review --base <upstream-remote>/<base-branch> --mode <automatic|interactive> --lens <instructions|agnostic|both>
-    ```
-
-2. **If interactive:** pause after code-review completes and ask the user
-   to review the changes before committing.
-
-3. If code-review produced changes, commit:
-
-    ```
-    Code review fixes (automated by code-review skill)
-
-    Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
-    ```
-
-4. Push: `git push <push-remote> HEAD`
-
-## Step 5: Mark PR as ready for review
-
-1. Mark ready:
-
-    ```bash
-    gh pr ready <pr-number> --repo "<upstream-owner>/<upstream-repo>"
-    ```
-
-2. Add a PR comment. If code-review produced changes, link to the commit
-   and list the fixes as a bullet list on the next line:
-
-    ```
-    Self code review completed by the code-review skill. Review fixes: https://github.com/<owner>/<repo>/pull/<pr-number>/changes/<commit-sha>
-    - <fix 1 — brief description>
-    - <fix 2 — brief description>
-    ```
-
-    If no changes: _"Self code review completed by the code-review skill. No issues found."_
-
-    > ⚠️ Post the comment with `--body-file`, never with `--body`.
-    > Shells interpret backticks, `$`, `!`, and backslashes inside
-    > double-quoted strings, which mangles markdown code spans and
-    > special characters. Write the comment body to a temp file (e.g.
-    > `pr-comment.md`) exactly as it should appear, then:
-    >
-    > ```bash
-    > gh pr comment <pr-number> --repo "<upstream-owner>/<upstream-repo>" --body-file pr-comment.md
-    > rm pr-comment.md
-    > ```
-
-## Step 6: Monitor the PR
-
-Invoke the monitor-pr skill with the PR number (either from Step 3 or
+Invoke the monitor-pr skill with the PR number (either from Step 4 or
 from the `--pr` argument):
 
 ```
@@ -347,10 +330,10 @@ from the `--pr` argument):
 ```
 
 monitor-pr does not accept a `--mode` argument — it just polls and prints
-status. The iteration loop below (Step 7) is what handles fixes in the
+status. The iteration loop below (Step 6) is what handles fixes in the
 mode chosen back in Step 1b.
 
-## Step 7: Iteration loop
+## Step 6: Iteration loop
 
 Watch the monitor-pr output and react to actionable events.
 
@@ -458,7 +441,7 @@ review comment, not a top-level PR comment.** Do **not** use
 
 Use the parent `databaseId` and thread `id` persisted for this row in
 session-local storage (populated from the GraphQL query at the top of
-Step 7). Do **not** re-query — the IDs are already in hand. As a
+Step 6). Do **not** re-query — the IDs are already in hand. As a
 fallback, the parent `databaseId` is also encoded in the comment's URL
 as `#discussion_r<databaseId>`.
 
