@@ -710,6 +710,7 @@
         "XR/features/WebXRPlaneDetector.js",
         "XR/features/WebXRRawCameraAccess.js",
         "XR/features/WebXRSpaceWarp.js",
+        "XR/features/WebXRTrackedSources.js",
         "XR/features/WebXRWalkingLocomotion.js",
         "XR/motionController/webXRGenericHandController.js",
         "XR/motionController/webXRHTCViveMotionController.js",

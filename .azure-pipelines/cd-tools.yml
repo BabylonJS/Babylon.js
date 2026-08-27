@@ -59,10 +59,11 @@ jobs:
                 version: "24.x"
 
           - task: Npm@1
-            displayName: "npm install"
+            displayName: "npm ci"
             retryCountOnTaskFailure: 2
             inputs:
-                command: install
+                command: custom
+                customCommand: "ci"
 
           # DISABLED in classic pipeline:
           # - task: Npm@1
