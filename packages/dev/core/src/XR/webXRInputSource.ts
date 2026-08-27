@@ -115,7 +115,7 @@ export class WebXRInputSource {
                     this.motionController = motionController;
                     this.onMotionControllerInitObservable.notifyObservers(motionController);
                     // should the model be loaded?
-                    if (!this._options.doNotLoadControllerMesh && !this.motionController._doNotLoadControllerMesh) {
+                    if (!this._options.doNotLoadControllerMesh && !this.inputSource.skipRendering && !this.motionController._doNotLoadControllerMesh) {
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         this.motionController.loadModel().then((success) => {
                             if (success && this.motionController && this.motionController.rootMesh) {
