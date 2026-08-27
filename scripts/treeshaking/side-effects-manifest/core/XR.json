@@ -24,6 +24,7 @@
         "XR/features/WebXRPlaneDetector.ts": ["top-level-call"],
         "XR/features/WebXRRawCameraAccess.ts": ["top-level-call"],
         "XR/features/WebXRSpaceWarp.ts": ["bare-import", "top-level-call"],
+        "XR/features/WebXRTrackedSources.ts": ["top-level-call"],
         "XR/features/WebXRWalkingLocomotion.ts": ["top-level-call"],
         "XR/motionController/webXRGenericHandController.ts": ["top-level-call"],
         "XR/motionController/webXRHTCViveMotionController.ts": ["top-level-call"],
