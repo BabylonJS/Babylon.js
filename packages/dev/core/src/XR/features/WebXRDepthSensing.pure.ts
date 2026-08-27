@@ -534,6 +534,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     /**
      * Whether depth sensing is currently active for the XR session.
      * Returns false when there is no active session or the runtime does not expose the active state.
+     * @see https://immersive-web.github.io/depth-sensing/
      * @see https://playground.babylonjs.com/#SU7NUW#0
      */
     public get isDepthSensingActive(): boolean {
@@ -545,6 +546,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * Pauses depth sensing for the active XR session.
      * @returns A promise that resolves when the native pause operation completes.
      * @throws If there is no active XR session or pausing depth sensing is not supported by the runtime.
+     * @see https://immersive-web.github.io/depth-sensing/
      */
     public async pauseDepthSensingAsync(): Promise<void> {
         const session: IWebXRDepthSensingSession | undefined = this._xrSessionManager.session;
@@ -561,6 +563,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * Resumes depth sensing for the active XR session.
      * @returns A promise that resolves when the native resume operation completes.
      * @throws If there is no active XR session or resuming depth sensing is not supported by the runtime.
+     * @see https://immersive-web.github.io/depth-sensing/
      */
     public async resumeDepthSensingAsync(): Promise<void> {
         const session: IWebXRDepthSensingSession | undefined = this._xrSessionManager.session;
