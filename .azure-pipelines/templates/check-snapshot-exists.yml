@@ -19,7 +19,22 @@ steps:
     - script: |
           set -euo pipefail
 
-          curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=${{ parameters.snapshotPath }}" -o ./tmp.json -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+          HTTP_STATUS=$(curl --silent --show-error \
+            --output ./tmp.json \
+            --write-out "%{http_code}" \
+            "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=${{ parameters.snapshotPath }}" \
+            -H "Authorization: Bearer $(DEPLOY_TOKEN)")
+
+          if [ "$HTTP_STATUS" = "404" ]; then
+             echo "##vso[task.setvariable variable=${{ parameters.variableName }}]false"
+             exit 0
+          fi
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+             echo "Snapshot check failed with HTTP status $HTTP_STATUS"
+             exit 1
+          fi
+
           if grep "true" ./tmp.json
           then
              echo "##vso[task.setvariable variable=${{ parameters.variableName }}]true"
