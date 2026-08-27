@@ -8,18 +8,31 @@ import { type IMinimalMotionControllerObject, type IWebXRControllerHapticActuato
 import { WebXRGenericTriggerMotionController } from "core/XR/motionController/webXRGenericMotionController";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-function createActuator(overrides: Partial<IWebXRControllerHapticActuator> = {}): IWebXRControllerHapticActuator {
+type LegacyHapticActuator = NonNullable<IMinimalMotionControllerObject["hapticActuators"]>[number];
+
+function createAdvancedActuator(overrides: Partial<IWebXRControllerHapticActuator> = {}): IWebXRControllerHapticActuator {
+    return {
+        ...overrides,
+    };
+}
+
+function createLegacyActuator(overrides: Partial<LegacyHapticActuator> = {}): LegacyHapticActuator {
     return {
         pulse: vi.fn(async () => true),
         ...overrides,
     };
 }
 
-function createGamepad(hapticActuators?: IWebXRControllerHapticActuator[]): IMinimalMotionControllerObject {
+function createGamepad(
+    options: {
+        hapticActuators?: LegacyHapticActuator[];
+        vibrationActuator?: IWebXRControllerHapticActuator;
+    } = {}
+): IMinimalMotionControllerObject {
     return {
         axes: [],
         buttons: [{ value: 0, touched: false, pressed: false }],
-        hapticActuators,
+        ...options,
     };
 }
 
@@ -37,10 +50,31 @@ describe("WebXR motion controller haptics", () => {
         engine.dispose();
     });
 
-    it("enumerates only the effects reported by the selected actuator", () => {
+    it("uses the browser vibration actuator for effect discovery", () => {
         const controller = new WebXRGenericTriggerMotionController(
             scene,
-            createGamepad([createActuator({ effects: ["dual-rumble"] }), createActuator({ effects: ["trigger-rumble"] })]),
+            createGamepad({
+                hapticActuators: [createLegacyActuator()],
+                vibrationActuator: createAdvancedActuator({ effects: ["dual-rumble"] }),
+            }),
+            "right"
+        );
+
+        expect(controller.getHapticEffects()).toEqual(["dual-rumble"]);
+    });
+
+    it("supports explicitly advanced haptic actuator array entries as a fallback", () => {
+        const controller = new WebXRGenericTriggerMotionController(
+            scene,
+            createGamepad({
+                hapticActuators: [
+                    createLegacyActuator(),
+                    createLegacyActuator({
+                        effects: ["trigger-rumble"],
+                    }),
+                ],
+                vibrationActuator: createAdvancedActuator({ effects: ["dual-rumble"] }),
+            }),
             "right"
         );
 
@@ -49,7 +83,7 @@ describe("WebXR motion controller haptics", () => {
     });
 
     it("returns no effects when the actuator does not expose discovery", () => {
-        const controller = new WebXRGenericTriggerMotionController(scene, createGamepad([createActuator()]), "right");
+        const controller = new WebXRGenericTriggerMotionController(scene, createGamepad({ vibrationActuator: createAdvancedActuator() }), "right");
 
         expect(controller.getHapticEffects()).toEqual([]);
     });
@@ -69,7 +103,19 @@ describe("WebXR motion controller haptics", () => {
         };
         const controller = new WebXRGenericTriggerMotionController(
             scene,
-            createGamepad([createActuator({ effects: ["dual-rumble"], playEffect }), createActuator({ effects: ["trigger-rumble"], playEffect })]),
+            createGamepad({
+                hapticActuators: [
+                    createLegacyActuator(),
+                    createLegacyActuator({
+                        effects: ["trigger-rumble"],
+                        playEffect,
+                    }),
+                ],
+                vibrationActuator: createAdvancedActuator({
+                    effects: ["dual-rumble"],
+                    playEffect,
+                }),
+            }),
             "right"
         );
 
@@ -82,18 +128,30 @@ describe("WebXR motion controller haptics", () => {
     it("resets the selected actuator and returns its native result", async () => {
         const firstReset: NonNullable<IWebXRControllerHapticActuator["reset"]> = vi.fn(async () => "complete");
         const secondReset: NonNullable<IWebXRControllerHapticActuator["reset"]> = vi.fn(async () => "preempted");
-        const controller = new WebXRGenericTriggerMotionController(scene, createGamepad([createActuator({ reset: firstReset }), createActuator({ reset: secondReset })]), "left");
+        const controller = new WebXRGenericTriggerMotionController(
+            scene,
+            createGamepad({
+                hapticActuators: [createLegacyActuator(), createLegacyActuator({ reset: secondReset })],
+                vibrationActuator: createAdvancedActuator({ reset: firstReset }),
+            }),
+            "left"
+        );
 
+        await expect(controller.resetHapticActuatorAsync()).resolves.toBe("complete");
         await expect(controller.resetHapticActuatorAsync(1)).resolves.toBe("preempted");
-        expect(firstReset).not.toHaveBeenCalled();
+        expect(firstReset).toHaveBeenCalledOnce();
         expect(secondReset).toHaveBeenCalledOnce();
     });
 
     it("rejects advanced playback when required capabilities are unavailable", async () => {
         const playEffect: NonNullable<IWebXRControllerHapticActuator["playEffect"]> = vi.fn(async () => "complete");
-        const withoutDiscovery = new WebXRGenericTriggerMotionController(scene, createGamepad([createActuator({ playEffect })]), "right");
-        const withoutPlayback = new WebXRGenericTriggerMotionController(scene, createGamepad([createActuator({ effects: ["dual-rumble"] })]), "right");
-        const withoutRequestedEffect = new WebXRGenericTriggerMotionController(scene, createGamepad([createActuator({ effects: ["dual-rumble"], playEffect })]), "right");
+        const withoutDiscovery = new WebXRGenericTriggerMotionController(scene, createGamepad({ vibrationActuator: createAdvancedActuator({ playEffect }) }), "right");
+        const withoutPlayback = new WebXRGenericTriggerMotionController(scene, createGamepad({ vibrationActuator: createAdvancedActuator({ effects: ["dual-rumble"] }) }), "right");
+        const withoutRequestedEffect = new WebXRGenericTriggerMotionController(
+            scene,
+            createGamepad({ vibrationActuator: createAdvancedActuator({ effects: ["dual-rumble"], playEffect }) }),
+            "right"
+        );
 
         await expect(withoutDiscovery.playHapticEffectAsync("dual-rumble")).rejects.toThrow("does not support effect discovery");
         await expect(withoutPlayback.playHapticEffectAsync("dual-rumble")).rejects.toThrow("does not support advanced effect playback");
@@ -101,13 +159,13 @@ describe("WebXR motion controller haptics", () => {
     });
 
     it("rejects reset when the selected actuator does not expose it", async () => {
-        const controller = new WebXRGenericTriggerMotionController(scene, createGamepad([createActuator()]), "right");
+        const controller = new WebXRGenericTriggerMotionController(scene, createGamepad({ vibrationActuator: createAdvancedActuator() }), "right");
 
         await expect(controller.resetHapticActuatorAsync()).rejects.toThrow("does not support reset");
     });
 
     it("rejects invalid actuator indices deterministically", async () => {
-        const controller = new WebXRGenericTriggerMotionController(scene, createGamepad([createActuator()]), "right");
+        const controller = new WebXRGenericTriggerMotionController(scene, createGamepad({ vibrationActuator: createAdvancedActuator() }), "right");
 
         expect(() => controller.getHapticEffects(-1)).toThrow(RangeError);
         expect(() => controller.getHapticEffects(0.5)).toThrow(RangeError);
@@ -120,8 +178,8 @@ describe("WebXR motion controller haptics", () => {
         const resetError = new Error("native reset failure");
         const controller = new WebXRGenericTriggerMotionController(
             scene,
-            createGamepad([
-                createActuator({
+            createGamepad({
+                vibrationActuator: createAdvancedActuator({
                     effects: ["dual-rumble"],
                     playEffect: vi.fn(async () => {
                         throw playError;
@@ -130,7 +188,7 @@ describe("WebXR motion controller haptics", () => {
                         throw resetError;
                     }),
                 }),
-            ]),
+            }),
             "right"
         );
 
@@ -140,7 +198,14 @@ describe("WebXR motion controller haptics", () => {
 
     it("preserves legacy pulse behavior", async () => {
         const pulse = vi.fn(async () => true);
-        const controller = new WebXRGenericTriggerMotionController(scene, createGamepad([createActuator(), createActuator({ pulse })]), "right");
+        const controller = new WebXRGenericTriggerMotionController(
+            scene,
+            createGamepad({
+                hapticActuators: [createLegacyActuator(), createLegacyActuator({ pulse })],
+                vibrationActuator: createAdvancedActuator({ effects: ["dual-rumble"] }),
+            }),
+            "right"
+        );
         const unsupportedController = new WebXRGenericTriggerMotionController(scene, createGamepad(), "right");
 
         await expect(controller.pulse(0.7, 50, 1)).resolves.toBe(true);

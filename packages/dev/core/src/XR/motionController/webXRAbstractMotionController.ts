@@ -39,10 +39,6 @@ export interface IWebXRControllerHapticActuator {
      * Stops the active haptic effect, when reset is supported.
      */
     reset?: GamepadHapticActuator["reset"];
-    /**
-     * Plays a legacy haptic pulse.
-     */
-    pulse: (value: number, duration: number) => Promise<boolean>;
 }
 
 /**
@@ -240,7 +236,19 @@ export interface IMinimalMotionControllerObject {
     /**
      * EXPERIMENTAL haptic support.
      */
-    hapticActuators?: IWebXRControllerHapticActuator[];
+    hapticActuators?: Array<
+        IWebXRControllerHapticActuator & {
+            /**
+             * Plays a legacy haptic pulse.
+             */
+            pulse: (value: number, duration: number) => Promise<boolean>;
+        }
+    >;
+
+    /**
+     * The primary Gamepad vibration actuator used for advanced haptic effects.
+     */
+    vibrationActuator?: IWebXRControllerHapticActuator;
 }
 
 /**
@@ -484,7 +492,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
 
     /**
      * Gets the haptic effects reported as supported by an actuator.
-     * See https://playground.babylonjs.com/#556G65#0 for an interactive example.
+     * See https://playground.babylonjs.com/#ULVR1X#0 for an interactive example.
      *
      * @param hapticActuatorIndex index of the actuator (usually 0)
      * @returns the effects reported by the actuator, or an empty array when effect discovery is unavailable
@@ -554,12 +562,21 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
     }
 
     private _getHapticActuator(hapticActuatorIndex: number): IWebXRControllerHapticActuator {
-        const actuators = this.gamepadObject.hapticActuators;
-        if (!Number.isInteger(hapticActuatorIndex) || hapticActuatorIndex < 0 || !actuators || hapticActuatorIndex >= actuators.length) {
+        if (!Number.isInteger(hapticActuatorIndex) || hapticActuatorIndex < 0) {
             throw new RangeError(`Haptic actuator index ${hapticActuatorIndex} is out of range.`);
         }
 
-        return actuators[hapticActuatorIndex];
+        if (hapticActuatorIndex === 0 && this.gamepadObject.vibrationActuator) {
+            return this.gamepadObject.vibrationActuator;
+        }
+
+        const actuators = this.gamepadObject.hapticActuators;
+        const actuator = actuators?.[hapticActuatorIndex];
+        if (!actuator) {
+            throw new RangeError(`Haptic actuator index ${hapticActuatorIndex} is out of range.`);
+        }
+
+        return actuator;
     }
 
     // Look through all children recursively. This will return null if no mesh exists with the given name.
