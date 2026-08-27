@@ -68,7 +68,6 @@ interface ILayerEntry {
     lastModified: string | null;
     /** Always retained until replaced or disposed (enables cheap re-uploads on shift/reallocation). */
     bitmap: ImageBitmap | null;
-    /** W*H*4 RGBA; null when the layer failed to load. */
     pixels: Uint8ClampedArray | null;
     /** False until the first successful upload. */
     loaded: boolean;
