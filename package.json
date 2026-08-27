@@ -113,7 +113,7 @@
         "check:treeshaking": "node ./scripts/treeshaking/verifyTreeShaking.mjs --all-packages",
         "check:treeshaking-all": "npm run check:treeshaking && npm run check:side-effects-sync && npm run test:treeshaking",
         "catalog:static-helpers": "node ./scripts/treeshaking/catalogStaticHelpers.mjs",
-        "prepare": "npm run build:tools && node ./packages/dev/buildTools/dist/index.js -c pa --global && npm run build:test-tools && node scripts/setupGitHooks.mjs",
+        "prepare": "npm run build:tools && npm rebuild @dev/build-tools && npm run build:assets && npm run build:test-tools && node scripts/setupGitHooks.mjs",
         "clean": "npx nx run-many --outputStyle=static --target=clean --all --exclude=@babylonjs/root && npm run build:tools",
         "format": "npm run format:check && npm run format:fix",
         "format:check": "prettier --check \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
