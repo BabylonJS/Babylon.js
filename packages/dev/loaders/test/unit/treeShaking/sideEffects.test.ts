@@ -21,13 +21,19 @@ import { getMappingForFullOperationName } from "loaders/glTF/2.0/Extensions/KHR_
 describe("loaders tree-shaking side effects", () => {
     it("registers glTF animation mappings only when explicitly requested", async () => {
         const translation = GetMappingForKey("/nodes/{}/translation");
+        const visibility = GetMappingForKey("/nodes/{}/extensions/KHR_node_visibility/visible");
         expect(translation?.interpolation).toBeUndefined();
+        expect(visibility?.interpolation).toBeUndefined();
 
         const pure = await import("loaders/glTF/2.0/glTFLoaderAnimation.pure");
+        const animationPointerDataPure = await import("loaders/glTF/2.0/Extensions/KHR_animation_pointer.data.pure");
         expect(translation?.interpolation).toBeUndefined();
+        expect(visibility?.interpolation).toBeUndefined();
 
         pure.RegisterGLTFLoaderAnimation();
+        animationPointerDataPure._RegisterKHRAnimationPointerData();
         expect(translation?.interpolation).toHaveLength(1);
+        expect(visibility?.interpolation).toHaveLength(1);
     });
 
     it("does not register the extension when importing the pure module (opt-in only)", async () => {
@@ -68,7 +74,7 @@ describe("loaders tree-shaking side effects", () => {
             parent: { extensionOptions: {}, targetFps: 60 },
         } as GLTFLoader;
 
-        for (const name of ["KHR_interactivity", "KHR_node_visibility", "KHR_node_hoverability", "KHR_node_selectability"]) {
+        for (const name of ["KHR_animation_pointer", "KHR_interactivity", "KHR_node_visibility", "KHR_node_hoverability", "KHR_node_selectability"]) {
             const registration = registeredGLTFExtensions.get(name);
             if (!registration) {
                 throw new Error(`Expected the dynamically registered ${name} factory`);
