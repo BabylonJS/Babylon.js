@@ -87,7 +87,7 @@ let _Registered = false;
  * Register side effects for action.
  * Safe to call multiple times; only the first call has an effect.
  */
-export function RegisterAction(): void {
+export function RegisterMultiTexture(): void {
     if (_Registered) {
         return;
     }
