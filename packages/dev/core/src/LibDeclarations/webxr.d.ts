@@ -536,8 +536,8 @@ interface XRView {
     readonly eye: XREye;
     readonly projectionMatrix: Float32Array;
     readonly transform: XRRigidTransform;
-    readonly recommendedViewportScale?: number | undefined;
-    requestViewportScale(scale: number): void;
+    readonly recommendedViewportScale?: number | null | undefined;
+    requestViewportScale(scale: number | null): void;
 }
 
 declare abstract class XRView implements XRView {}
