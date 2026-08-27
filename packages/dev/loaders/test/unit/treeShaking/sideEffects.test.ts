@@ -25,12 +25,10 @@ describe("loaders tree-shaking side effects", () => {
         expect(translation?.interpolation).toBeUndefined();
         expect(visibility?.interpolation).toBeUndefined();
 
-        const pure = await import("loaders/glTF/2.0/glTFLoaderAnimation.pure");
         const animationPointerDataPure = await import("loaders/glTF/2.0/Extensions/KHR_animation_pointer.data.pure");
         expect(translation?.interpolation).toBeUndefined();
         expect(visibility?.interpolation).toBeUndefined();
 
-        pure.RegisterGLTFLoaderAnimation();
         animationPointerDataPure._RegisterKHRAnimationPointerData();
         expect(translation?.interpolation).toHaveLength(1);
         expect(visibility?.interpolation).toHaveLength(1);

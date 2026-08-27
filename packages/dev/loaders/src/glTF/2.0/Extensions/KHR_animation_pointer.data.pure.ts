@@ -5,7 +5,7 @@
 import { Animation } from "core/Animations/animation.pure";
 import { type ICamera, type IKHRLightsPunctual_Light, type IMaterial, type INode } from "../glTFLoaderInterfaces";
 import { type IAnimatable } from "core/Animations/animatable.interface";
-import { AnimationPropertyInfo } from "../glTFLoaderAnimation.pure";
+import { AnimationPropertyInfo, RegisterGLTFLoaderAnimation } from "../glTFLoaderAnimation.pure";
 import { Color3 } from "core/Maths/math.color.pure";
 import { SetInterpolationForKey } from "./objectModelMapping";
 
@@ -95,6 +95,8 @@ export function _RegisterKHRAnimationPointerData(): void {
         return;
     }
     _Registered = true;
+
+    RegisterGLTFLoaderAnimation();
 
     SetInterpolationForKey("/cameras/{}/orthographic/xmag", [
         new CameraAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "orthoLeft", getMinusFloat, () => 1),
