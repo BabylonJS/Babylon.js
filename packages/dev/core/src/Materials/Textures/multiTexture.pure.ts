@@ -142,6 +142,8 @@ export class MultiTexture extends ProceduralTexture {
     private _deviceMaxLayerCap: number;
     private _blendMode: MultiBlendMode;
     private _pollTimer: ReturnType<typeof setInterval> | null = null;
+    /** True while a _poll() tick is in flight; overlapping interval firings early-return so a slow tick never double-fetches. */
+    private _pollInFlight = false;
     private _canvas: Nullable<OffscreenCanvas | HTMLCanvasElement>;
     private _ctx: Nullable<CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D>;
     private _disposed: boolean = false;
@@ -813,10 +815,16 @@ export class MultiTexture extends ProceduralTexture {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private async _poll(): Promise<void> {
+        if (this._pollInFlight) {
+            return;
+        }
+        this._pollInFlight = true;
         if (this._disposed) {
+            this._pollInFlight = false;
             return;
         }
         if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+            this._pollInFlight = false;
             return;
         }
 
@@ -879,6 +887,7 @@ export class MultiTexture extends ProceduralTexture {
             workers.push(workerAsync());
         }
         await Promise.all(workers);
+        this._pollInFlight = false;
     }
 }
 

@@ -881,6 +881,48 @@ describe("MultiTexture watch retry after failed initial load", () => {
     });
 });
 
+describe("MultiTexture watch poll overlap", () => {
+    it("skips overlapping ticks instead of double-fetching, and releases the guard when the tick settles", async () => {
+        vi.useFakeTimers();
+        const { mt } = await createLoaded(["a.png"], { width: 8, height: 8, watch: true, pollInterval: 1000 });
+
+        // Simulate a never-loaded layer (no validators recorded) so the poller takes the
+        // full-load retry path for it.
+        const entry = (mt as any)._layers[0];
+        entry.loaded = false;
+        entry.etag = null;
+        entry.lastModified = null;
+
+        // Gate the reload so a tick can be held in flight indefinitely.
+        let releaseLoad: () => void = () => undefined;
+        const gate = new Promise<void>((resolve) => {
+            releaseLoad = resolve;
+        });
+        const loadSpy = vi.spyOn(mt as any, "_loadEntry").mockImplementation(async () => {
+            await gate;
+        });
+
+        const fetchesBefore = mockState.fetchCalls.length;
+        const poll1 = (mt as any)._poll();
+        expect(loadSpy).toHaveBeenCalledTimes(1);
+
+        // A second tick while the first is in flight must be a no-op: no second load,
+        // no duplicate fetch.
+        await (mt as any)._poll();
+        expect(loadSpy).toHaveBeenCalledTimes(1);
+        expect(mockState.fetchCalls.length).toBe(fetchesBefore);
+
+        // Once the in-flight tick settles, the guard releases and polling resumes.
+        releaseLoad();
+        await poll1;
+        await (mt as any)._poll();
+        expect(loadSpy).toHaveBeenCalledTimes(2);
+
+        loadSpy.mockRestore();
+        mt.dispose();
+    });
+});
+
 describe("MultiTexture insertLayer", () => {
     it("inserts a loaded layer at index, shifts urls/pixels/layers and re-uploads shifted layers to their new slots", async () => {
         const { mt } = await createLoaded(["a.png", "b.png", "c.png"], { width: 8, height: 8, maxLayers: 4 });
