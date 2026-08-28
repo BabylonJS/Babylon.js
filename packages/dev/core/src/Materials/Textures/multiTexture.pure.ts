@@ -68,7 +68,6 @@ interface ILayerEntry {
     lastModified: string | null;
     /** Always retained until replaced or disposed (enables cheap re-uploads on shift/reallocation). */
     bitmap: ImageBitmap | null;
-    pixels: Uint8ClampedArray | null;
     /** False until the first successful upload. */
     loaded: boolean;
     /**
@@ -571,7 +570,7 @@ export class MultiTexture extends ProceduralTexture {
     }
 
     private _createLayerEntry(url: string): ILayerEntry {
-        return { url, etag: null, lastModified: null, bitmap: null, pixels: null, loaded: false, generation: 0, warnedLoadFailure: false };
+        return { url, etag: null, lastModified: null, bitmap: null, loaded: false, generation: 0, warnedLoadFailure: false };
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention

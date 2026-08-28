@@ -226,6 +226,39 @@ function createLoaded(
     return loaded.then(() => ({ mt, scene }));
 }
 
+// Fetches stay pending until the test resolves them, so initial loads stay in flight while
+// structure changes (insertLayerAsync/removeLayerAsync/updateLayerAsync) run. Every decoded bitmap
+// is tagged with its source url so upload assertions can say WHICH layer's pixels landed in which
+// slot. Each fetches-holding test shares this so the deferred-load mechanics live in one place.
+function deferredScene() {
+    const resolvers: Record<string, () => void> = {};
+    const bitmaps: any[] = [];
+    vi.stubGlobal(
+        "fetch",
+        (url: string) =>
+            new Promise((resolve) => {
+                mockState.fetchCalls.push({ url });
+                resolvers[url] = () =>
+                    resolve({
+                        ok: true,
+                        status: 200,
+                        statusText: "OK",
+                        headers: { get: () => null },
+                        blob: async () => ({ __url: url }),
+                    });
+            })
+    );
+    mockState.decodeImpl = (source: any) => {
+        const bitmap = { width: 8, height: 8, close: vi.fn(), url: source.__url };
+        bitmaps.push(bitmap);
+        return bitmap;
+    };
+    return { scene: makeScene(), resolvers, bitmaps };
+}
+
+/** Flush the microtask/macrotask queue so a settled promise's continuations have run. */
+const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
 beforeEach(() => {
     mockState.rawInstances.length = 0;
     mockState.ptInstances.length = 0;
@@ -667,6 +700,42 @@ describe("MultiTexture", () => {
         expect(mt.defines).toContain("#define MULTITEXTURE_BLEND_ALPHA_MAX");
     });
 
+    it.each([
+        [MultiBlendMode.ALPHA_BLEND, "AlphaBlend", "ALPHA_BLEND"],
+        [MultiBlendMode.ALPHA_MAX, "AlphaMax", "ALPHA_MAX"],
+        [MultiBlendMode.ADD, "Add", "ADD"],
+        [MultiBlendMode.MULTIPLY, "Multiply", "MULTIPLY"],
+        [MultiBlendMode.SUBTRACT, "Subtract", "SUBTRACT"],
+        [MultiBlendMode.SCREEN, "Screen", "SCREEN"],
+    ])(
+        "maps blend mode %p to the matching composite fragment and defines flag",
+        async (mode: MultiBlendMode, suffix: string, flag: string) => {
+            const { mt } = await createLoaded(["a.png"], { width: 8, height: 8, blendMode: mode });
+
+            expect(mt.blendMode).toBe(mode);
+            // Every mode (incl. MULTIPLY/SUBTRACT) selects its own fragment + MAXLAYERS/flag defines.
+            expect(mt.setFragmentCalls[0]).toBe(`multiTextureComposite${suffix}`);
+            expect(mt.defines).toContain(`#define MULTITEXTURE_BLEND_${flag}`);
+            expect(mt.defines).toContain(`#define MULTITEXTURE_MAXLAYERS 1`);
+        }
+    );
+
+    it.each([
+        [MultiBlendMode.MULTIPLY, "Multiply", "MULTIPLY"],
+        [MultiBlendMode.SUBTRACT, "Subtract", "SUBTRACT"],
+    ])(
+        "swapping to %p at runtime swaps the fragment and rewrites the defines (previously untested modes)",
+        async (mode: MultiBlendMode, suffix: string, flag: string) => {
+            const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 });
+
+            mt.blendMode = mode;
+
+            expect(mt.blendMode).toBe(mode);
+            expect(mt.setFragmentCalls[mt.setFragmentCalls.length - 1]).toBe(`multiTextureComposite${suffix}`);
+            expect(mt.defines).toContain(`#define MULTITEXTURE_BLEND_${flag}`);
+        }
+    );
+
     it("renders once per resetRefreshCounter when refreshRate is 0", async () => {
         const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 });
 
@@ -680,6 +749,22 @@ describe("MultiTexture", () => {
 
         mockState.ptReady = false;
         mt.resetRefreshCounter();
+        expect(mt._shouldRender()).toBe(false);
+    });
+
+    it("_shouldRender with refreshRate > 0 renders on the refresh interval, not every call", async () => {
+        const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 });
+
+        expect(mt.refreshRate).toBe(0);
+        mt.refreshRate = 2; // render every 2nd refresh
+        mockState.ptReady = true;
+
+        mt.resetRefreshCounter();
+        expect(mt._shouldRender()).toBe(true);
+        expect(mt._shouldRender()).toBe(false);
+        expect(mt._shouldRender()).toBe(true);
+        expect(mt._shouldRender()).toBe(false);
+        expect(mt._shouldRender()).toBe(true);
         expect(mt._shouldRender()).toBe(false);
     });
 
@@ -1065,37 +1150,6 @@ describe("MultiTexture insertLayerAsync", () => {
 });
 
 describe("MultiTexture structure changes racing in-flight loads", () => {
-    // Fetches stay pending until the test resolves them, so initial loads are in flight while
-    // insertLayerAsync/removeLayerAsync/updateLayerAsync run. Every decoded bitmap is tagged with its
-    // source url so upload assertions can say WHICH layer's pixels landed in which slot.
-    function deferredScene() {
-        const resolvers: Record<string, () => void> = {};
-        const bitmaps: any[] = [];
-        vi.stubGlobal(
-            "fetch",
-            (url: string) =>
-                new Promise((resolve) => {
-                    mockState.fetchCalls.push({ url });
-                    resolvers[url] = () =>
-                        resolve({
-                            ok: true,
-                            status: 200,
-                            statusText: "OK",
-                            headers: { get: () => null },
-                            blob: async () => ({ __url: url }),
-                        });
-                })
-        );
-        mockState.decodeImpl = (source: any) => {
-            const bitmap = { width: 8, height: 8, close: vi.fn(), url: source.__url };
-            bitmaps.push(bitmap);
-            return bitmap;
-        };
-        return { scene: makeScene(), resolvers, bitmaps };
-    }
-
-    const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
-
     it("inserting while initial layers are still loading lands every layer in its final slot", async () => {
         const { scene, resolvers } = deferredScene();
 
@@ -1218,29 +1272,6 @@ describe("MultiTexture structure changes racing in-flight loads", () => {
 });
 
 describe("MultiTexture mid-flight array growth and watch races", () => {
-    function deferredScene() {
-        const resolvers: Record<string, () => void> = {};
-        vi.stubGlobal(
-            "fetch",
-            (url: string) =>
-                new Promise((resolve) => {
-                    mockState.fetchCalls.push({ url });
-                    resolvers[url] = () =>
-                        resolve({
-                            ok: true,
-                            status: 200,
-                            statusText: "OK",
-                            headers: { get: () => null },
-                            blob: async () => ({ __url: url }),
-                        });
-                })
-        );
-        mockState.decodeImpl = (source: any) => ({ width: 8, height: 8, close: vi.fn(), url: source.__url });
-        return { scene: makeScene(), resolvers };
-    }
-
-    const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
-
     it("generates mips on the live array texture after a mid-pool grow, not on the disposed capture", async () => {
         const { scene, resolvers } = deferredScene();
         let resolveLoad!: () => void;
