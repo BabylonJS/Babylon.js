@@ -141,7 +141,7 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
                     onPointerCancel={this._onPointerCancel}
                 >
                     <div id="sfe-preview-background" style={previewStyle} className={"preview-background-" + this.props.globalState.previewBackground}>
-                        <canvas id="sfe-preview-canvas" style={{ display: "block", width: "100%", height: "100%" }} ref={this._canvasRef} />
+                        <canvas id="sfe-preview-canvas" ref={this._canvasRef} />
                     </div>
                     {!this.props.globalState.smartFilter ? <div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div> : <></>}
                 </div>

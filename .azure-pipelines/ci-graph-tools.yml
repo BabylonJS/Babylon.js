@@ -208,4 +208,5 @@ jobs:
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeParticleEditor/
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeRenderGraphEditor/
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/flowGraphEditor/
+                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/smartFiltersEditor/
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/guiEditor/

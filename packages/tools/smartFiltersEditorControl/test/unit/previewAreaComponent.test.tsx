@@ -8,6 +8,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Observable } from "core/Misc/observable.js";
 import { PreviewAreaComponent } from "../../src/components/preview/previewAreaComponent.js";
+import { PreviewAreaControlComponent } from "../../src/components/preview/previewAreaControlComponent.js";
 import { FixedMode } from "../../src/previewSizeManager.js";
 import { type GlobalState } from "../../src/globalState.js";
 
@@ -36,7 +37,7 @@ describe("PreviewAreaComponent", () => {
         vi.unstubAllGlobals();
     });
 
-    it.each(["black", "white"])("replaces the %s preview background with the grid outside the WebGL canvas", (solidBackground) => {
+    it.each(["black", "white"])("moves from the %s background to the grid outside the WebGL canvas", (solidBackground) => {
         const onPreviewResetRequiredObservable = new Observable<void>();
         const globalState = {
             previewBackground: solidBackground,
@@ -52,10 +53,18 @@ describe("PreviewAreaComponent", () => {
             engine: null,
         } as unknown as GlobalState;
 
-        act(() => root.render(<PreviewAreaComponent globalState={globalState} allowPreviewFillMode={false} />));
+        act(() =>
+            root.render(
+                <>
+                    <PreviewAreaControlComponent globalState={globalState} togglePreviewAreaComponent={() => {}} allowPreviewFillMode={false} />
+                    <PreviewAreaComponent globalState={globalState} allowPreviewFillMode={false} />
+                </>
+            )
+        );
 
         const canvas = container.querySelector("#sfe-preview-canvas");
         const background = container.querySelector("#sfe-preview-background");
+        const backgroundSelector = container.querySelector("#preview-area-bar select") as HTMLSelectElement;
 
         expect(background).not.toBeNull();
         expect(background?.classList.contains(`preview-background-${solidBackground}`)).toBe(true);
@@ -63,15 +72,13 @@ describe("PreviewAreaComponent", () => {
         expect((background as HTMLElement).style.height).toBe("300px");
         expect(canvas?.parentElement).toBe(background);
         expect(canvas?.className).not.toContain("preview-background-");
-        expect((canvas as HTMLElement).style.display).toBe("block");
-        expect((canvas as HTMLElement).style.width).toBe("100%");
-        expect((canvas as HTMLElement).style.height).toBe("100%");
 
         act(() => {
-            globalState.previewBackground = "grid";
-            onPreviewResetRequiredObservable.notifyObservers();
+            backgroundSelector.value = "grid";
+            backgroundSelector.dispatchEvent(new Event("change", { bubbles: true }));
         });
 
+        expect(globalState.previewBackground).toBe("grid");
         expect(background?.classList.contains("preview-background-grid")).toBe(true);
     });
 });
