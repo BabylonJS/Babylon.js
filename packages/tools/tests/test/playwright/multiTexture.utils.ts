@@ -58,8 +58,12 @@ const evaluateRenderComposite = async (): Promise<number[][]> => {
             return canvas.toDataURL("image/png");
         };
 
+        // MultiTexture is not registered in scene.proceduralTextures: it composes an internal
+        // render target (skipSceneRegistration) that re-composites itself after each mutation, so
+        // keep a direct handle to the instance.
+        let mt: any;
         const onLoad = new Promise<void>((resolve) => {
-            new B.MultiTexture("multi", [makeSolidPng(...layer0), makeSolidPng(...layer1)], scene, {
+            mt = new B.MultiTexture("multi", [makeSolidPng(...layer0), makeSolidPng(...layer1)], scene, {
                 width: 8,
                 height: 8,
                 blendMode: B.MultiBlendMode.MULTIPLY,
@@ -67,7 +71,6 @@ const evaluateRenderComposite = async (): Promise<number[][]> => {
             });
         });
         await onLoad;
-        const mt = scene.proceduralTextures[0];
 
         // Track any composite shader compile errors so a driver that fails to compile
         // surfaces a clear message rather than an unexplained wrong pixel.

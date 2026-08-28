@@ -5,7 +5,10 @@ import { Constants } from "../../Engines/constants";
 import { Logger } from "../../Misc/logger";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import { type Nullable } from "../../types";
+import { type InternalTexture } from "./internalTexture";
 import { type Scene } from "../../scene.pure";
+import { Observable } from "../../Misc/observable";
+import { BaseTexture } from "./baseTexture.pure";
 import { type IProceduralTextureCreationOptions, ProceduralTexture } from "./Procedurals/proceduralTexture.pure";
 import { RawTexture2DArray } from "./rawTexture2DArray";
 import { UploadImageToTexture2DArrayLayer } from "./rawTexture2DArray.functions";
@@ -120,8 +123,9 @@ export function RegisterMultiTexture(): void {
  *   layer index (URL order).
  * - With zero active layers, ALPHA_BLEND/ALPHA_MAX/ADD/SUBTRACT/SCREEN output transparent black
  *   and MULTIPLY outputs white (empty-product identity).
- * - Compositing is skipped while `scene.proceduralTexturesEnabled` is false (standard
- *   procedural-texture render-loop behavior).
+ * - Compositing is performed independently of the scene render loop: MultiTexture re-composites
+ *   its internal render target explicitly after every mutation (layer add/insert/remove/update,
+ *   blend-mode change, array growth), so `scene.proceduralTexturesEnabled` has no effect on it.
  * - The composite shader reads the layers through the array sampler (filtered, not an integer
  *   texel fetch), so `samplingMode` affects the composite output, `rttScale` other than 1
  *   produces a filtered bilinear rescale, and (with `generateMipMaps: true`) trilinear
@@ -134,7 +138,17 @@ export function RegisterMultiTexture(): void {
  *   together with an explicit options.maxLayers. addLayerAsync/insertLayerAsync double the depth when it is
  *   full and throw a RangeError if the doubled depth would exceed that limit.
  */
-export class MultiTexture extends ProceduralTexture {
+export class MultiTexture extends BaseTexture {
+    /**
+     * The internal ProceduralTexture that composites the layers into the render-target texture
+     * assigned to materials. MultiTexture composes, rather than extends, ProceduralTexture: it
+     * creates this composite with `skipSceneRegistration: true` so the scene render loop does not
+     * drive it, and calls {@link _renderComposite} explicitly after each mutation. All texture
+     * surface methods (isReady/getInternalTexture) forward to it.
+     */
+    public readonly _composite: ProceduralTexture;
+    /** Fired once after all initial layers have settled (success or failure). */
+    public readonly onLoadObservable: Observable<MultiTexture> = new Observable<MultiTexture>();
     private _layers: ILayerEntry[];
     private _layerCount: number;
     private _maxLayers: number;
@@ -164,6 +178,38 @@ export class MultiTexture extends ProceduralTexture {
     }
 
     /**
+     * Forwards to the internal composite: the render-target texture that composites the layers is
+     * owned by the composite, so the material samples it through here.
+     * @returns The composite's internal texture.
+     */
+    public override getInternalTexture(): Nullable<InternalTexture> {
+        return this._composite.getInternalTexture();
+    }
+
+    /**
+     * Forwards to the internal composite: ready once the composite's render-target texture is ready.
+     * @returns True if the composite's render-target texture is ready, otherwise false.
+     */
+    public override isReady(): boolean {
+        return this._composite.isReady();
+    }
+
+    /**
+     * Renders the internal composite, applying the current layer uploads and blend mode.
+     * The composite only draws once its effect is compiled (shaders load asynchronously), so the
+     * first render is deferred to the compiled callback instead of drawing a stale/empty target.
+     */
+    private _renderComposite(): void {
+        // Kick off effect creation / definition refresh, and ensure getEffect() is populated.
+        this._composite.isReady();
+        this._composite.executeWhenReady(() => {
+            if (!this._disposed) {
+                this._composite.render();
+            }
+        });
+    }
+
+    /**
      * The input URLs, in layer order. Updated by addLayer/removeLayer/updateLayerAsync(url).
      */
     public readonly urls: string[];
@@ -182,6 +228,7 @@ export class MultiTexture extends ProceduralTexture {
      * @param options defines the creation options (width/height required)
      */
     constructor(name: string, urls: string[], scene: Scene, options: IMultiTextureOptions) {
+        super(null);
         const engine = scene.getEngine();
         if (!engine || (!engine.isWebGPU && (engine as ThinEngine).webGLVersion < 2)) {
             throw new Error(
@@ -248,16 +295,24 @@ export class MultiTexture extends ProceduralTexture {
             extraInitializationsAsync,
         };
 
-        super(
+        this._composite = new ProceduralTexture(
             name,
             { width: rttW, height: rttH },
             FRAGMENT_NAMES[blendMode],
             scene,
-            creationOptions,
+            {
+                ...creationOptions,
+                skipSceneRegistration: true,
+            },
             /*generateMipMaps*/ false,
             /*isCube*/ false,
             Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
+        // Ensure texture-surface forwarding reaches the composite and this class behaves as a
+        // self-contained BaseTexture (dedicated single-slot texture, scene-aware, render-target).
+        this.name = name;
+        this._scene = scene;
+        this.isRenderTarget = true;
 
         this._mtOptions = {
             ...options,
@@ -293,10 +348,9 @@ export class MultiTexture extends ProceduralTexture {
         this.urls = urls.slice();
         this.pixels = new Array<Uint8ClampedArray | null>(this._layerCount).fill(null);
 
-        this.defines = this._buildDefines(maxLayers, MODE_FLAGS[blendMode]);
-        this.setTexture("uLayers", this._arrayTexture);
-        this.setInt("uLayerCount", this._layerCount);
-        this.refreshRate = 0; // Render only when resetRefreshCounter() is called.
+        this._composite.defines = this._buildDefines(maxLayers, MODE_FLAGS[blendMode]);
+        this._composite.setTexture("uLayers", this._arrayTexture);
+        this._composite.setInt("uLayerCount", this._layerCount);
 
         let canvas: OffscreenCanvas | HTMLCanvasElement | null = null;
         if (typeof OffscreenCanvas !== "undefined") {
@@ -331,10 +385,10 @@ export class MultiTexture extends ProceduralTexture {
         }
         this._blendMode = value;
         // Both lines are required: setFragment alone would keep the stale cached effect, because the
-        // base class only rebuilds the effect when `defines` changes.
-        this.setFragment(FRAGMENT_NAMES[value]);
-        this.defines = this._buildDefines(this._maxLayers, MODE_FLAGS[value]);
-        this.resetRefreshCounter();
+        // composite only rebuilds its effect when `defines` changes.
+        this._composite.setFragment(FRAGMENT_NAMES[value]);
+        this._composite.defines = this._buildDefines(this._maxLayers, MODE_FLAGS[value]);
+        this._renderComposite();
     }
 
     /**
@@ -378,7 +432,7 @@ export class MultiTexture extends ProceduralTexture {
             entry = this._pushLayerEntry(url);
             // The fragment shader only samples the first uLayerCount layers, so the uniform must
             // track the internal count or the freshly appended layer is never composited.
-            this.setInt("uLayerCount", this._layerCount);
+            this._composite.setInt("uLayerCount", this._layerCount);
         } catch (e) {
             this._reportError(e);
             throw e;
@@ -426,9 +480,9 @@ export class MultiTexture extends ProceduralTexture {
 
             // The fragment shader only samples the first uLayerCount layers, so the uniform must
             // track the internal count or the freshly inserted layer is never composited.
-            this.setInt("uLayerCount", this._layerCount);
-            // Refresh even if the load below fails: the shift above already moved GPU slots.
-            this.resetRefreshCounter();
+            this._composite.setInt("uLayerCount", this._layerCount);
+            // Re-composite even if the load below fails: the shift above already moved GPU slots.
+            this._renderComposite();
         } catch (e) {
             this._reportError(e);
             throw e;
@@ -462,8 +516,8 @@ export class MultiTexture extends ProceduralTexture {
             this._reuploadSlot(j);
         }
 
-        this.setInt("uLayerCount", this._layerCount);
-        this.resetRefreshCounter();
+        this._composite.setInt("uLayerCount", this._layerCount);
+        this._renderComposite();
     }
 
     /**
@@ -498,7 +552,7 @@ export class MultiTexture extends ProceduralTexture {
         this._ctx = null;
 
         this._arrayTexture.dispose();
-        super.dispose();
+        this._composite.dispose();
     }
 
     /**
@@ -691,7 +745,7 @@ export class MultiTexture extends ProceduralTexture {
         entry.lastModified = meta.lastModified;
         entry.warnedLoadFailure = false;
 
-        this.resetRefreshCounter();
+        this._renderComposite();
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -743,7 +797,7 @@ export class MultiTexture extends ProceduralTexture {
                 this.onLoadObservable.notifyObservers(this);
                 this._mtOptions.onLoad?.();
 
-                this.resetRefreshCounter();
+                this._renderComposite();
             }
             if (this._mtOptions.watch) {
                 this._startPolling();
@@ -792,12 +846,13 @@ export class MultiTexture extends ProceduralTexture {
         this._arrayTexture.dispose();
         this._arrayTexture = newRaw;
 
-        this.setTexture("uLayers", newRaw);
+        this._composite.setTexture("uLayers", newRaw);
 
         this._maxLayers = newDepth;
 
         // The loop-bound define changed, so the effect must rebuild with the wider loop.
-        this.defines = this._buildDefines(newDepth, MODE_FLAGS[this._blendMode]);
+        this._composite.defines = this._buildDefines(newDepth, MODE_FLAGS[this._blendMode]);
+        this._renderComposite();
     }
 
     private _startPolling(): void {

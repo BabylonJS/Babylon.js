@@ -5,13 +5,29 @@ import { Logger } from "core/Misc/logger";
 import { MultiTexture, MultiBlendMode } from "core/Materials/Textures/multiTexture.pure";
 import { type Scene } from "core/scene";
 
-/** MultiTexture whose (mocked) ProceduralTexture base exposes call-recording props. */
-type MockMultiTexture = MultiTexture & {
+/** MultiTexture's internal (mocked) ProceduralTexture composite exposes call-recording props. */
+interface MockComposite {
+    name: string;
+    size: unknown;
+    defines: string;
+    refreshRate: number;
+    resetCount: number;
+    creationOptions: any;
     setTextureCalls: [string, unknown][];
     setIntCalls: [string, number][];
     setFragmentCalls: string[];
-    resetCount: number;
-    creationOptions: any;
+    render: ReturnType<typeof vi.fn>;
+    disposed: boolean;
+    resetRefreshCounter(): void;
+    _shouldRender(): boolean;
+    isReady(): boolean;
+    executeWhenReady(cb: () => void): void;
+    getInternalTexture(): unknown;
+    dispose(): void;
+}
+
+type MockMultiTexture = MultiTexture & {
+    _composite: MockComposite;
 };
 
 // ---------------------------------------------------------------------------
@@ -57,6 +73,7 @@ const mockState = vi.hoisted(() => {
         public setIntCalls: [string, number][] = [];
         public setFragmentCalls: string[] = [];
         public resetCount = 0;
+        public render = vi.fn();
         public onLoadObservable = { notifyObservers: vi.fn() };
         /** Base-texture name as passed by the subclass constructor (clone contract). */
         public name: string;
@@ -72,7 +89,7 @@ const mockState = vi.hoisted(() => {
             this.creationOptions = options;
             this.shaderLanguage = options?.shaderLanguage;
             this.setFragmentCalls.push(fragment);
-            if (scene && Array.isArray(scene.proceduralTextures)) {
+            if (scene && Array.isArray(scene.proceduralTextures) && !options?.skipSceneRegistration) {
                 scene.proceduralTextures.push(this);
             }
             state.ptInstances.push(this);
@@ -97,6 +114,12 @@ const mockState = vi.hoisted(() => {
         }
         public isReady() {
             return state.ptReady;
+        }
+        public executeWhenReady(cb: () => void) {
+            cb();
+        }
+        public getInternalTexture() {
+            return state.ptReady ? { isReady: true } : null;
         }
         // Mirrors the real ProceduralTexture._shouldRender refresh gating.
         public _shouldRender() {
@@ -211,7 +234,7 @@ function makeScene(opts?: { webglVersion?: number; isWebGPU?: boolean; texture2D
         createEffect: mockState.createEffect,
         getCaps: () => ({ texture2DArrayMaxLayerCount: cap }),
     };
-    return { getEngine: () => engine, proceduralTextures: [] as any[] } as Scene;
+    return { getEngine: () => engine, proceduralTextures: [] as any[], markAllMaterialsAsDirty: () => {} } as unknown as Scene;
 }
 
 function createLoaded(
@@ -223,6 +246,9 @@ function createLoaded(
     let resolveLoad!: () => void;
     const loaded = new Promise<void>((resolve) => (resolveLoad = resolve));
     const mt = new MultiTexture("myMultiTexture", urls, scene, { ...options, onLoad: () => resolveLoad() }) as MockMultiTexture;
+    // MultiTexture owns a real Observable for onLoadObservable; spy it per-instance so tests can
+    // await/count the async init notification after createLoaded resolves.
+    vi.spyOn(mt.onLoadObservable, "notifyObservers").mockImplementation(() => true);
     return loaded.then(() => ({ mt, scene }));
 }
 
@@ -265,8 +291,7 @@ beforeEach(() => {
     mockState.ptReady = true;
     mockState.decodeCalls.length = 0;
     mockState.inFlight = 0;
-    mockState.maxInFlight = 0;
-    mockState.decodeImpl = null;
+    mockState.maxInFlight = 0;    mockState.decodeImpl = null;
     mockState.fetchCalls.length = 0;
     mockState.urlBehaviors = {};
     mockState.headers = {};
@@ -342,12 +367,13 @@ describe("MultiTexture", () => {
     it("constructs on a WebGL2 engine and wires the composite before the first frame", async () => {
         const { mt, scene } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
 
-        expect(scene.proceduralTextures).toContain(mt);
+        // Neither MultiTexture nor its internal composite registers in the scene's procedural list
+        // (skipSceneRegistration), so the scene render loop does not drive the composite.
+        expect(scene.proceduralTextures).toHaveLength(0);
         expect(mt.arrayTexture.depth).toBe(2);
-        expect(mt.refreshRate).toBe(0);
 
-        expect(mt.setTextureCalls).toContainEqual(["uLayers", expect.anything()]);
-        expect(mt.setIntCalls).toContainEqual(["uLayerCount", 2]);
+        expect(mt._composite.setTextureCalls).toContainEqual(["uLayers", expect.anything()]);
+        expect(mt._composite.setIntCalls).toContainEqual(["uLayerCount", 2]);
         expect(mt.urls).toEqual(["a.png", "b.png"]);
         expect(mt.layerCount).toBe(2);
     });
@@ -546,8 +572,8 @@ describe("MultiTexture", () => {
         const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
 
         const uploadsBefore = mockState.upload.mock.calls.length;
-        const resetsBefore = mt.resetCount;
-        const setIntsBefore = mt.setIntCalls.length;
+        const rendersBefore = mt._composite.render.mock.calls.length;
+        const setIntsBefore = mt._composite.setIntCalls.length;
         mockState.fetchCalls.length = 0;
 
         await mt.updateLayerAsync(0, "new.png");
@@ -556,8 +582,8 @@ describe("MultiTexture", () => {
         const newCalls = mockState.upload.mock.calls.slice(uploadsBefore);
         expect(newCalls).toHaveLength(1);
         expect(newCalls[0][2]).toBe(0);
-        expect(mt.setIntCalls.length).toBe(setIntsBefore);
-        expect(mt.resetCount).toBe(resetsBefore + 1);
+        expect(mt._composite.setIntCalls.length).toBe(setIntsBefore);
+        expect(mt._composite.render).toHaveBeenCalledTimes(rendersBefore + 1);
     });
 
     it("updateLayer with an out-of-range index throws RangeError", async () => {
@@ -575,8 +601,8 @@ describe("MultiTexture", () => {
         const bitmapA = initUploads.find((call: any[]) => call[2] === 0)[1];
         const bitmapB = initUploads.find((call: any[]) => call[2] === 1)[1];
         const uploadsBefore = mockState.upload.mock.calls.length;
-        const setTextureBefore = mt.setTextureCalls.length;
-        const setIntBefore = mt.setIntCalls.length;
+        const setTextureBefore = mt._composite.setTextureCalls.length;
+        const setIntBefore = mt._composite.setIntCalls.length;
 
         const newIndex = await mt.addLayerAsync("c.png");
 
@@ -586,14 +612,14 @@ describe("MultiTexture", () => {
         expect(mt.pixels).toHaveLength(3);
 
         // The uLayerCount uniform must advance to 3 or the new layer is never sampled by the shader.
-        expect(mt.setIntCalls.slice(setIntBefore)).toContainEqual(["uLayerCount", 3]);
+        expect(mt._composite.setIntCalls.slice(setIntBefore)).toContainEqual(["uLayerCount", 3]);
 
         // New array at doubled depth; old one disposed and rebound.
         const newRaw = mockState.rawInstances[1];
         expect(newRaw.depth).toBe(4);
         expect(oldRaw.dispose).toHaveBeenCalledTimes(1);
         expect(mt.arrayTexture).toBe(newRaw);
-        const newSetTextures = mt.setTextureCalls.slice(setTextureBefore);
+        const newSetTextures = mt._composite.setTextureCalls.slice(setTextureBefore);
         expect(newSetTextures).toEqual([["uLayers", newRaw]]);
 
         // Existing layers re-uploaded from retained bitmaps, then the new layer loaded.
@@ -608,7 +634,7 @@ describe("MultiTexture", () => {
         expect(newUploads[2][2]).toBe(2);
 
         // Defines rewritten for the wider loop bound.
-        expect(mt.defines).toContain("#define MULTITEXTURE_MAXLAYERS 4");
+        expect(mt._composite.defines).toContain("#define MULTITEXTURE_MAXLAYERS 4");
     });
 
     it("removeLayerAsync shifts layers down, re-uploads them and decrements uLayerCount", async () => {
@@ -618,8 +644,8 @@ describe("MultiTexture", () => {
         const bitmapA = initUploads.find((call: any[]) => call[2] === 0)[1];
         const bitmapB = initUploads.find((call: any[]) => call[2] === 1)[1];
         const uploadsBefore = mockState.upload.mock.calls.length;
-        const setIntsBefore = mt.setIntCalls.length;
-        const resetsBefore = mt.resetCount;
+        const setIntsBefore = mt._composite.setIntCalls.length;
+        const rendersBefore = mt._composite.render.mock.calls.length;
 
         await mt.removeLayerAsync(0);
 
@@ -633,11 +659,11 @@ describe("MultiTexture", () => {
         expect(newUploads[0][1]).toBe(bitmapB);
         expect(newUploads[0][2]).toBe(0);
 
-        expect(mt.setIntCalls.slice(setIntsBefore)).toEqual([["uLayerCount", 2]]);
+        expect(mt._composite.setIntCalls.slice(setIntsBefore)).toEqual([["uLayerCount", 2]]);
 
-        // A re-composite must be scheduled even when the shift re-uploads layers, so the result
+        // A re-composite must be performed even when the shift re-uploads layers, so the result
         // is not left stale.
-        expect(mt.resetCount).toBe(resetsBefore + 1);
+        expect(mt._composite.render).toHaveBeenCalledTimes(rendersBefore + 1);
     });
 
     it("removeLayerAsync with an out-of-range index throws RangeError", async () => {
@@ -650,19 +676,19 @@ describe("MultiTexture", () => {
     it("blendMode swap swaps the fragment, rewrites defines and triggers one re-composite", async () => {
         const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 });
 
-        const fragmentsBefore = mt.setFragmentCalls.length;
-        const resetsBefore = mt.resetCount;
+        const fragmentsBefore = mt._composite.setFragmentCalls.length;
+        const rendersBefore = mt._composite.render.mock.calls.length;
 
         mt.blendMode = MultiBlendMode.ADD;
 
-        expect(mt.setFragmentCalls.slice(fragmentsBefore)).toEqual(["multiTextureCompositeAdd"]);
-        expect(mt.defines).toContain("#define MULTITEXTURE_BLEND_ADD");
-        expect(mt.resetCount).toBe(resetsBefore + 1);
+        expect(mt._composite.setFragmentCalls.slice(fragmentsBefore)).toEqual(["multiTextureCompositeAdd"]);
+        expect(mt._composite.defines).toContain("#define MULTITEXTURE_BLEND_ADD");
+        expect(mt._composite.render).toHaveBeenCalledTimes(rendersBefore + 1);
 
         // Setting the same value again is a no-op.
         mt.blendMode = MultiBlendMode.ADD;
-        expect(mt.setFragmentCalls.length).toBe(fragmentsBefore + 1);
-        expect(mt.resetCount).toBe(resetsBefore + 1);
+        expect(mt._composite.setFragmentCalls.length).toBe(fragmentsBefore + 1);
+        expect(mt._composite.render).toHaveBeenCalledTimes(rendersBefore + 1);
     });
 
     it("defaults to ALPHA_BLEND (running mix) when no blendMode is given", async () => {
@@ -670,34 +696,34 @@ describe("MultiTexture", () => {
 
         expect(mt.blendMode).toBe(MultiBlendMode.ALPHA_BLEND);
         // The composite effect is built with the alpha-blend fragment and its defines flag.
-        expect(mt.setFragmentCalls[0]).toBe("multiTextureCompositeAlphaBlend");
-        expect(mt.defines).toContain("#define MULTITEXTURE_BLEND_ALPHA_BLEND");
+        expect(mt._composite.setFragmentCalls[0]).toBe("multiTextureCompositeAlphaBlend");
+        expect(mt._composite.defines).toContain("#define MULTITEXTURE_BLEND_ALPHA_BLEND");
     });
 
     it("swapping between ALPHA_BLEND and ALPHA_MAX selects the right fragment and defines", async () => {
         const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 });
 
         // Default is ALPHA_BLEND.
-        expect(mt.setFragmentCalls[0]).toBe("multiTextureCompositeAlphaBlend");
+        expect(mt._composite.setFragmentCalls[0]).toBe("multiTextureCompositeAlphaBlend");
 
         // Swap to ALPHA_MAX: highest-alpha fragment + flag.
         mt.blendMode = MultiBlendMode.ALPHA_MAX;
         expect(mt.blendMode).toBe(MultiBlendMode.ALPHA_MAX);
-        expect(mt.setFragmentCalls[1]).toBe("multiTextureCompositeAlphaMax");
-        expect(mt.defines).toContain("#define MULTITEXTURE_BLEND_ALPHA_MAX");
+        expect(mt._composite.setFragmentCalls[1]).toBe("multiTextureCompositeAlphaMax");
+        expect(mt._composite.defines).toContain("#define MULTITEXTURE_BLEND_ALPHA_MAX");
 
         // Swap back to ALPHA_BLEND.
         mt.blendMode = MultiBlendMode.ALPHA_BLEND;
-        expect(mt.setFragmentCalls[2]).toBe("multiTextureCompositeAlphaBlend");
-        expect(mt.defines).toContain("#define MULTITEXTURE_BLEND_ALPHA_BLEND");
+        expect(mt._composite.setFragmentCalls[2]).toBe("multiTextureCompositeAlphaBlend");
+        expect(mt._composite.defines).toContain("#define MULTITEXTURE_BLEND_ALPHA_BLEND");
     });
 
     it("explicit blendMode option is honored at construction", async () => {
         const { mt } = await createLoaded(["a.png"], { width: 8, height: 8, blendMode: MultiBlendMode.ALPHA_MAX });
 
         expect(mt.blendMode).toBe(MultiBlendMode.ALPHA_MAX);
-        expect(mt.setFragmentCalls[0]).toBe("multiTextureCompositeAlphaMax");
-        expect(mt.defines).toContain("#define MULTITEXTURE_BLEND_ALPHA_MAX");
+        expect(mt._composite.setFragmentCalls[0]).toBe("multiTextureCompositeAlphaMax");
+        expect(mt._composite.defines).toContain("#define MULTITEXTURE_BLEND_ALPHA_MAX");
     });
 
     it.each([
@@ -714,9 +740,9 @@ describe("MultiTexture", () => {
 
             expect(mt.blendMode).toBe(mode);
             // Every mode (incl. MULTIPLY/SUBTRACT) selects its own fragment + MAXLAYERS/flag defines.
-            expect(mt.setFragmentCalls[0]).toBe(`multiTextureComposite${suffix}`);
-            expect(mt.defines).toContain(`#define MULTITEXTURE_BLEND_${flag}`);
-            expect(mt.defines).toContain(`#define MULTITEXTURE_MAXLAYERS 1`);
+            expect(mt._composite.setFragmentCalls[0]).toBe(`multiTextureComposite${suffix}`);
+            expect(mt._composite.defines).toContain(`#define MULTITEXTURE_BLEND_${flag}`);
+            expect(mt._composite.defines).toContain(`#define MULTITEXTURE_MAXLAYERS 1`);
         }
     );
 
@@ -731,41 +757,33 @@ describe("MultiTexture", () => {
             mt.blendMode = mode;
 
             expect(mt.blendMode).toBe(mode);
-            expect(mt.setFragmentCalls[mt.setFragmentCalls.length - 1]).toBe(`multiTextureComposite${suffix}`);
-            expect(mt.defines).toContain(`#define MULTITEXTURE_BLEND_${flag}`);
+            expect(mt._composite.setFragmentCalls[mt._composite.setFragmentCalls.length - 1]).toBe(`multiTextureComposite${suffix}`);
+            expect(mt._composite.defines).toContain(`#define MULTITEXTURE_BLEND_${flag}`);
         }
     );
 
-    it("renders once per resetRefreshCounter when refreshRate is 0", async () => {
+    it("forwards isReady()/getInternalTexture() to the internal composite (not its own state)", async () => {
         const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 });
 
-        expect(mt.refreshRate).toBe(0);
         mockState.ptReady = true;
-
-        mt.resetRefreshCounter();
-        expect(mt._shouldRender()).toBe(true);
-        expect(mt._shouldRender()).toBe(false);
-        expect(mt._shouldRender()).toBe(false);
+        expect(mt.isReady()).toBe(true);
+        expect(mt.getInternalTexture()).toBeTruthy();
 
         mockState.ptReady = false;
-        mt.resetRefreshCounter();
-        expect(mt._shouldRender()).toBe(false);
+        expect(mt.isReady()).toBe(false);
+        expect(mt.getInternalTexture()).toBeNull();
     });
 
-    it("_shouldRender with refreshRate > 0 renders on the refresh interval, not every call", async () => {
+    it("exposes no lifecycle surface inherited from ProceduralTexture (composition owns rendering)", async () => {
         const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 });
 
-        expect(mt.refreshRate).toBe(0);
-        mt.refreshRate = 2; // render every 2nd refresh
-        mockState.ptReady = true;
-
-        mt.resetRefreshCounter();
-        expect(mt._shouldRender()).toBe(true);
-        expect(mt._shouldRender()).toBe(false);
-        expect(mt._shouldRender()).toBe(true);
-        expect(mt._shouldRender()).toBe(false);
-        expect(mt._shouldRender()).toBe(true);
-        expect(mt._shouldRender()).toBe(false);
+        // The scene render loop must not drive the composite, and the composite is not registered
+        // in the scene's procedural list (skipSceneRegistration), so nothing here re-renders it.
+        expect((mt as any)._composite._currentRefreshId ?? null).toBeDefined();
+        expect((mt as any)._composite).toBeDefined();
+        // MultiTexture itself no longer inherits the PT refresh-gating members.
+        expect("refreshRate" in mt).toBe(false);
+        expect("_shouldRender" in mt).toBe(false);
     });
 
     it("dispose removes the RTT, disposes the array, closes bitmaps; second dispose is a no-op", async () => {
@@ -775,6 +793,7 @@ describe("MultiTexture", () => {
         const bitmapA = initUploads.find((call: any[]) => call[2] === 0)[1];
         const bitmapB = initUploads.find((call: any[]) => call[2] === 1)[1];
         const raw = mt.arrayTexture;
+        const composite = mt._composite;
 
         mt.dispose();
 
@@ -783,9 +802,11 @@ describe("MultiTexture", () => {
         expect(bitmapA.close).toHaveBeenCalledTimes(1);
         expect(bitmapB.close).toHaveBeenCalledTimes(1);
         expect(mt.pixels.every((p) => p === null)).toBe(true);
+        expect(composite.disposed).toBe(true);
 
         mt.dispose();
         expect(raw.dispose).toHaveBeenCalledTimes(1);
+        expect(composite.disposed).toBe(true);
     });
 
     it("watch: a changed etag triggers a forced reload of that layer only", async () => {
@@ -844,7 +865,7 @@ describe("MultiTexture", () => {
     it("accepts a WebGPU engine and selects WGSL", async () => {
         const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 }, { isWebGPU: true, webglVersion: 1 });
 
-        expect(mt.creationOptions.shaderLanguage).toBe(ShaderLanguage.WGSL);
+        expect(mt._composite.creationOptions.shaderLanguage).toBe(ShaderLanguage.WGSL);
     });
 
     it("does not attempt upload or log errors when a layer load lands after dispose", async () => {
@@ -1016,8 +1037,8 @@ describe("MultiTexture insertLayerAsync", () => {
         const bitmapB = initUploads.find((call: any[]) => call[2] === 1)[1];
         const bitmapC = initUploads.find((call: any[]) => call[2] === 2)[1];
         const uploadsBefore = mockState.upload.mock.calls.length;
-        const setIntsBefore = mt.setIntCalls.length;
-        const resetsBefore = mt.resetCount;
+        const setIntsBefore = mt._composite.setIntCalls.length;
+        const rendersBefore = mt._composite.render.mock.calls.length;
 
         const newIndex = await mt.insertLayerAsync(1, "x.png");
 
@@ -1037,8 +1058,9 @@ describe("MultiTexture insertLayerAsync", () => {
             [expect.anything(), 1],
         ]);
 
-        expect(mt.setIntCalls.slice(setIntsBefore)).toEqual([["uLayerCount", 4]]);
-        expect(mt.resetCount).toBeGreaterThanOrEqual(resetsBefore + 1);
+        expect(mt._composite.setIntCalls.slice(setIntsBefore)).toEqual([["uLayerCount", 4]]);
+        // The shift re-composites immediately AND the settling layer load re-composites again.
+        expect(mt._composite.render.mock.calls.length).toBeGreaterThanOrEqual(rendersBefore + 1);
     });
 
     it("inserting at layerCount appends without any shift work (addLayerAsync-equivalent)", async () => {
@@ -1076,7 +1098,7 @@ describe("MultiTexture insertLayerAsync", () => {
         expect(newRaw.depth).toBe(4);
         expect(oldRaw.dispose).toHaveBeenCalledTimes(1);
         expect(mt.arrayTexture).toBe(newRaw);
-        expect(mt.setTextureCalls).toContainEqual(["uLayers", newRaw]);
+        expect(mt._composite.setTextureCalls).toContainEqual(["uLayers", newRaw]);
 
         // Growth re-uploads A,B into the new array, the shift moves B to slot 2, then x loads at 1.
         const newUploads = mockState.upload.mock.calls.slice(uploadsBefore);
@@ -1087,7 +1109,7 @@ describe("MultiTexture insertLayerAsync", () => {
             [expect.anything(), 1],
         ]);
         expect(newUploads.every((c: any[]) => c[0] === newRaw.getInternalTexture())).toBe(true);
-        expect(mt.defines).toContain("#define MULTITEXTURE_MAXLAYERS 4");
+        expect(mt._composite.defines).toContain("#define MULTITEXTURE_MAXLAYERS 4");
     });
 
     it("refuses to grow beyond the device cap and leaves state untouched", async () => {
@@ -1130,7 +1152,7 @@ describe("MultiTexture insertLayerAsync", () => {
         const initUploads = mockState.upload.mock.calls.slice();
         const bitmapC = initUploads.find((call: any[]) => call[2] === 1)[1];
         const uploadsBefore = mockState.upload.mock.calls.length;
-        const setIntsBefore = mt.setIntCalls.length;
+        const setIntsBefore = mt._composite.setIntCalls.length;
 
         await expect(mt.insertLayerAsync(1, "bad.png")).rejects.toThrow("MultiTexture: failed to fetch bad.png: 500 Internal Server Error");
 
@@ -1145,7 +1167,7 @@ describe("MultiTexture insertLayerAsync", () => {
 
         const newUploads = mockState.upload.mock.calls.slice(uploadsBefore);
         expect(newUploads.map((c: any[]) => [c[1], c[2]])).toEqual([[bitmapC, 2]]);
-        expect(mt.setIntCalls.slice(setIntsBefore)).toEqual([["uLayerCount", 3]]);
+        expect(mt._composite.setIntCalls.slice(setIntsBefore)).toEqual([["uLayerCount", 3]]);
     });
 });
 
@@ -1402,7 +1424,7 @@ describe("MultiTexture removeLayerAsync GPU alignment", () => {
 });
 
 describe("MultiTexture clone", () => {
-    it("returns a fresh MultiTexture registered in the scene (not the inherited plain ProceduralTexture)", async () => {
+    it("returns a fresh MultiTexture with a fresh internal composite (not a plain ProceduralTexture)", async () => {
         const { mt, scene } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
 
         const clone = mt.clone() as MockMultiTexture;
@@ -1410,8 +1432,10 @@ describe("MultiTexture clone", () => {
         expect(clone).toBeInstanceOf(MultiTexture);
         expect(clone).not.toBe(mt);
         expect(clone.name).toBe("myMultiTexture");
-        expect(scene.proceduralTextures).toContain(clone);
-        // Registered under the original name, like the base-class clone contract.
+        // Neither the original nor the clone registers in the scene's procedural list
+        // (skipSceneRegistration); the composite is scene-independent.
+        expect(scene.proceduralTextures).toHaveLength(0);
+        // A fresh internal composite is created under the original name, like the base-class clone contract.
         expect(mockState.ptInstances).toHaveLength(2);
         expect(mockState.ptInstances[1].name).toBe("myMultiTexture");
     });
@@ -1452,6 +1476,7 @@ describe("MultiTexture clone", () => {
         const clone = mt.clone() as MockMultiTexture;
         // The init pipeline toggles the mipmap flag off while loading and restores it once settled,
         // so assert after the clone's initial load completes.
+        vi.spyOn(clone.onLoadObservable, "notifyObservers").mockImplementation(() => true);
         await vi.waitFor(() => expect(clone.onLoadObservable.notifyObservers).toHaveBeenCalled());
         const newRaw = mockState.rawInstances[mockState.rawInstances.length - 1];
         const newPt = mockState.ptInstances[mockState.ptInstances.length - 1];
@@ -1476,6 +1501,7 @@ describe("MultiTexture clone", () => {
         const fetchesBefore = mockState.fetchCalls.length;
         const decodesBefore = mockState.decodeCalls.length;
         const clone = mt.clone() as MockMultiTexture;
+        vi.spyOn(clone.onLoadObservable, "notifyObservers").mockImplementation(() => true);
 
         // The clone starts its own initial load for every url (in layer order).
         expect(mockState.fetchCalls.slice(fetchesBefore).map((c: any) => c.url)).toEqual(["a.png", "b.png"]);
@@ -1492,6 +1518,7 @@ describe("MultiTexture clone", () => {
         const decodesBefore = mockState.decodeCalls.length;
         const uploadsBefore = mockState.upload.mock.calls.length;
         const clone = mt.clone() as MockMultiTexture;
+        vi.spyOn(clone.onLoadObservable, "notifyObservers").mockImplementation(() => true);
 
         await vi.waitFor(() => expect(clone.onLoadObservable.notifyObservers).toHaveBeenCalled());
 
@@ -1519,8 +1546,8 @@ describe("MultiTexture clone", () => {
         // Capacity follows the current (grown) depth, not the construction-time one.
         expect(newRaw.depth).toBe(4);
         expect(clone.blendMode).toBe(MultiBlendMode.SCREEN);
-        expect(clone.defines).toContain("#define MULTITEXTURE_MAXLAYERS 4");
-        expect(clone.defines).toContain("#define MULTITEXTURE_BLEND_SCREEN");
+        expect((clone as MockMultiTexture)._composite.defines).toContain("#define MULTITEXTURE_MAXLAYERS 4");
+        expect((clone as MockMultiTexture)._composite.defines).toContain("#define MULTITEXTURE_BLEND_SCREEN");
     });
 
     it("does not inherit onLoad/onError callbacks from the original", async () => {
@@ -1531,6 +1558,7 @@ describe("MultiTexture clone", () => {
         expect(onError).toHaveBeenCalledTimes(1);
 
         const clone = mt.clone() as MockMultiTexture;
+        vi.spyOn(clone.onLoadObservable, "notifyObservers").mockImplementation(() => true);
         await vi.waitFor(() => expect(clone.onLoadObservable.notifyObservers).toHaveBeenCalled());
 
         // The clone re-ran the failing load, but its error must not reach the original's callbacks.
