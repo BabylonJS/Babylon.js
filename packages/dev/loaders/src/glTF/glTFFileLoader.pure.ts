@@ -455,7 +455,7 @@ abstract class GLTFLoaderOptions extends GLTFLoaderBaseOptions {
      * Setting this function allows parent-relative asset URIs and makes the callback responsible for URI safety.
      * @param url The URL referenced by the asset
      * @param rootUrl The root URL of the asset, if available
-     * @returns The URL to load
+     * @returns A promise that resolves to the URL to load
      */
     public preprocessUrlAsync: (url: string, rootUrl?: string) => Promise<string> = DefaultPreprocessUrlAsync;
 }

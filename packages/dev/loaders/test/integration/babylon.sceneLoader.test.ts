@@ -169,7 +169,6 @@ test.describe("Babylon Scene Loader", function () {
                     };
                 }, rootUrl);
                 expect(assertionData.defaultError).toContain("'../shared/mesh.bin' is invalid");
-                expect(assertionData.defaultError).toContain("'../shared/mesh.bin' is invalid");
                 expect(assertionData.hasTriangle).toBe(true);
                 expect(assertionData.preprocessCalls).toEqual([[`${rootUrl}../shared/mesh.bin`, rootUrl]]);
             } finally {
