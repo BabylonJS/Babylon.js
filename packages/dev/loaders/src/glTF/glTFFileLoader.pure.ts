@@ -184,6 +184,8 @@ type DefaultExtensionOptions<BaseExtensionOptions> = {
     enabled?: boolean;
 } & BaseExtensionOptions;
 
+const DefaultPreprocessUrlAsync = (url: string) => Promise.resolve(url);
+
 /**
  * This class contains all the concrete (not abstract) glTF options, excluding callbacks.
  * The purpose of this class is to make it easy to provide a way to mutate the default
@@ -449,11 +451,13 @@ abstract class GLTFLoaderOptions extends GLTFLoaderBaseOptions {
     public abstract onValidated?: (results: GLTF2.IGLTFValidationResults) => void;
 
     /**
-     * Function called before loading a url referenced by the asset.
-     * @param url url referenced by the asset
-     * @returns Async url to load
+     * Function called before loading a URL referenced by the asset.
+     * Setting this function allows parent-relative asset URIs and makes the callback responsible for URI safety.
+     * @param url The URL referenced by the asset
+     * @param rootUrl The root URL of the asset, if available
+     * @returns A promise that resolves to the URL to load
      */
-    public preprocessUrlAsync = (url: string) => Promise.resolve(url);
+    public preprocessUrlAsync: (url: string, rootUrl?: string) => Promise<string> = DefaultPreprocessUrlAsync;
 }
 
 /**
@@ -473,6 +477,11 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     public constructor(options?: Partial<Readonly<GLTFLoaderOptions>>) {
         super();
         this.copyFrom(Object.assign({ ...GLTFLoaderDefaultOptions }, options));
+    }
+
+    /** @internal */
+    public get _isPreprocessUrlAsyncSet(): boolean {
+        return this.preprocessUrlAsync !== DefaultPreprocessUrlAsync;
     }
 
     // --------------------
@@ -790,7 +799,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
 
         delete this._progressCallback;
 
-        this.preprocessUrlAsync = (url) => Promise.resolve(url);
+        this.preprocessUrlAsync = DefaultPreprocessUrlAsync;
 
         this.onMeshLoadedObservable.clear();
         this.onSkinLoadedObservable.clear();
@@ -1177,7 +1186,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
 
         this._startPerformanceCounter("Validate JSON");
         GLTFValidation.ValidateAsync(data, rootUrl, fileName, (uri) => {
-            return this.preprocessUrlAsync(rootUrl + uri).then((url) => {
+            return this.preprocessUrlAsync(rootUrl + uri, rootUrl).then((url) => {
                 return scene._loadFileAsync(url, undefined, true, true).then((data) => {
                     return new Uint8Array(data, 0, data.byteLength);
                 });

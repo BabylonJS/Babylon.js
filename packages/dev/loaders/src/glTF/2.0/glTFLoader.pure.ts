@@ -2770,7 +2770,7 @@ export class GLTFLoader implements IGLTFLoader {
             return extensionPromise;
         }
 
-        if (!GLTFLoader._ValidateUri(uri)) {
+        if (!this._parent._isPreprocessUrlAsyncSet && !GLTFLoader._ValidateUri(uri)) {
             throw new Error(`${context}: '${uri}' is invalid`);
         }
 
@@ -2782,7 +2782,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.log(`${context}: Loading ${uri}`);
 
-        return this._parent.preprocessUrlAsync(this._rootUrl + uri).then((url) => {
+        return this._parent.preprocessUrlAsync(this._rootUrl + uri, this._rootUrl ?? undefined).then((url) => {
             return new Promise((resolve, reject) => {
                 this._parent._loadFile(
                     this._babylonScene,
