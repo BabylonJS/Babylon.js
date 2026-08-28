@@ -46,6 +46,18 @@ export type PostProcessOptions = EffectWrapperCreationOptions & {
     height?: number;
 
     /**
+     * The white balance correlated color temperature, in Kelvin, to apply (only used by `ImageProcessingPostProcess`).
+     * Providing this (or `tint`) also enables white balance. Defaults to no adjustment (6500 K).
+     */
+    temperature?: number;
+
+    /**
+     * The white balance tint offset to apply (only used by `ImageProcessingPostProcess`). Providing this (or
+     * `temperature`) also enables white balance. Defaults to no adjustment (0).
+     */
+    tint?: number;
+
+    /**
      * The size of the post process texture.
      * It is either a ratio to downscale or upscale the texture create for this post process, or an object containing width and height values.
      * Default: 1

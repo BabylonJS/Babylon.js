@@ -149,6 +149,45 @@ export class ImageProcessingPostProcess extends PostProcess {
     }
 
     /**
+     * Gets whether the white balance effect is enabled.
+     */
+    public get whiteBalanceEnabled(): boolean {
+        return this.imageProcessingConfiguration.whiteBalanceEnabled;
+    }
+    /**
+     * Sets whether the white balance effect is enabled.
+     */
+    public set whiteBalanceEnabled(value: boolean) {
+        this.imageProcessingConfiguration.whiteBalanceEnabled = value;
+    }
+
+    /**
+     * Gets the white balance correlated color temperature, in Kelvin, used in the effect.
+     */
+    public get temperature(): number {
+        return this.imageProcessingConfiguration.temperature;
+    }
+    /**
+     * Sets the white balance correlated color temperature, in Kelvin, used in the effect.
+     */
+    public set temperature(value: number) {
+        this.imageProcessingConfiguration.temperature = value;
+    }
+
+    /**
+     * Gets the white balance tint offset used in the effect.
+     */
+    public get tint(): number {
+        return this.imageProcessingConfiguration.tint;
+    }
+    /**
+     * Sets the white balance tint offset used in the effect.
+     */
+    public set tint(value: number) {
+        this.imageProcessingConfiguration.tint = value;
+    }
+
+    /**
      * Gets Vignette stretch size.
      */
     public get vignetteStretch(): number {

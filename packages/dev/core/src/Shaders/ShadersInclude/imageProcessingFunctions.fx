@@ -121,6 +121,13 @@ vec4 applyImageProcessing(vec4 result) {
 
 	#define CUSTOM_IMAGEPROCESSINGFUNCTIONS_UPDATERESULT_ATSTART
 
+#ifdef WHITEBALANCE
+	// White balance: a Bradford chromatic-adaptation matrix (see
+	// Wyszecki, G. & Stiles, W.S., "Color Science: Concepts and Methods, Quantitative Data and Formulae",
+	// 2nd edition, John Wiley & Sons, 1982) neutralizing the configured illuminant.
+	result.rgb = whiteBalanceMatrix * result.rgb;
+#endif
+
 #ifdef EXPOSURE
 	result.rgb *= exposureLinear;
 #endif

@@ -4,6 +4,7 @@ import { serialize, serializeAsTexture, serializeAsColorCurves, serializeAsColor
 import { Observable } from "../Misc/observable.pure";
 import { type Nullable } from "../types";
 import { Color4 } from "../Maths/math.color.pure";
+import { GetWhiteBalanceMatrix } from "../Maths/colorTemperature.functions";
 import { ColorCurves, ColorCurvesBind } from "../Materials/colorCurves.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { type Effect } from "../Materials/effect.pure";
@@ -221,6 +222,79 @@ export class ImageProcessingConfiguration {
 
         this._contrast = value;
         this._updateParameters();
+    }
+
+    @serialize()
+    private _whiteBalanceEnabled = false;
+    /**
+     * Gets whether the white balance effect is enabled.
+     */
+    public get whiteBalanceEnabled(): boolean {
+        return this._whiteBalanceEnabled;
+    }
+    /**
+     * Sets whether the white balance effect is enabled.
+     */
+    public set whiteBalanceEnabled(value: boolean) {
+        if (this._whiteBalanceEnabled === value) {
+            return;
+        }
+
+        this._whiteBalanceEnabled = value;
+        this._updateParameters();
+    }
+
+    @serialize()
+    private _temperature = 6500;
+    /**
+     * Gets the white balance correlated color temperature, in Kelvin, used in the effect if whiteBalanceEnabled is
+     * set to true. The default value of 6500 performs no adjustment.
+     */
+    public get temperature(): number {
+        return this._temperature;
+    }
+    /**
+     * Sets the white balance correlated color temperature, in Kelvin, used in the effect if whiteBalanceEnabled is
+     * set to true. The default value of 6500 performs no adjustment.
+     */
+    public set temperature(value: number) {
+        if (this._temperature === value) {
+            return;
+        }
+
+        this._temperature = value;
+        this._updateWhiteBalanceMatrix();
+        this._updateParameters();
+    }
+
+    @serialize()
+    private _tint = 0;
+    /**
+     * Gets the white balance tint offset used in the effect if whiteBalanceEnabled is set to true. The default
+     * value of 0 performs no adjustment.
+     */
+    public get tint(): number {
+        return this._tint;
+    }
+    /**
+     * Sets the white balance tint offset used in the effect if whiteBalanceEnabled is set to true. The default
+     * value of 0 performs no adjustment.
+     */
+    public set tint(value: number) {
+        if (this._tint === value) {
+            return;
+        }
+
+        this._tint = value;
+        this._updateWhiteBalanceMatrix();
+        this._updateParameters();
+    }
+
+    /** @internal */
+    private _whiteBalanceMatrix: Float32Array = GetWhiteBalanceMatrix(this._temperature, this._tint);
+
+    private _updateWhiteBalanceMatrix(): void {
+        this._whiteBalanceMatrix = GetWhiteBalanceMatrix(this._temperature, this._tint);
     }
 
     /**
@@ -481,6 +555,7 @@ export class ImageProcessingConfiguration {
      */
     public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess = false): void {
         if (forPostProcess !== this.applyByPostProcess || !this._isEnabled) {
+            defines.WHITEBALANCE = false;
             defines.VIGNETTE = false;
             defines.TONEMAPPING = 0;
             defines.CONTRAST = false;
@@ -495,6 +570,7 @@ export class ImageProcessingConfiguration {
             return;
         }
 
+        defines.WHITEBALANCE = this._whiteBalanceEnabled;
         defines.VIGNETTE = this.vignetteEnabled;
         defines.VIGNETTEBLENDMODEMULTIPLY = this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY;
         defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
@@ -530,7 +606,14 @@ export class ImageProcessingConfiguration {
         defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
         defines.SKIPFINALCOLORCLAMP = this.skipFinalColorClamp;
         defines.IMAGEPROCESSING =
-            defines.VIGNETTE || !!defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING || defines.DITHER;
+            defines.WHITEBALANCE ||
+            defines.VIGNETTE ||
+            !!defines.TONEMAPPING ||
+            defines.CONTRAST ||
+            defines.EXPOSURE ||
+            defines.COLORCURVES ||
+            defines.COLORGRADING ||
+            defines.DITHER;
     }
 
     /**
@@ -548,6 +631,11 @@ export class ImageProcessingConfiguration {
      * @param overrideAspectRatio Override the aspect ratio of the effect
      */
     public bind(effect: Effect, overrideAspectRatio?: number): void {
+        // White Balance
+        if (this._whiteBalanceEnabled) {
+            effect.setMatrix3x3("whiteBalanceMatrix", this._whiteBalanceMatrix);
+        }
+
         // Color Curves
         if (this._colorCurvesEnabled && this.colorCurves) {
             ColorCurvesBind(this.colorCurves, effect);
