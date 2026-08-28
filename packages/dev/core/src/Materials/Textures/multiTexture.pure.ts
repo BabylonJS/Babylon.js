@@ -132,7 +132,7 @@ export function RegisterMultiTexture(): void {
  *   (the WebGL2 extension is imported automatically by the non-pure `multiTexture` entry).
  * - The allocated array depth (options.maxLayers ?? urls.length) must be a positive integer and no
  *   larger than the device limit getCaps().texture2DArrayMaxLayerCount. Empty urls are only accepted
- *   together with an explicit options.maxLayers. addLayer/insertLayer double the depth when it is
+ *   together with an explicit options.maxLayers. addLayerAsync/insertLayerAsync double the depth when it is
  *   full and throw a RangeError if the doubled depth would exceed that limit.
  */
 export class MultiTexture extends ProceduralTexture {
@@ -151,7 +151,7 @@ export class MultiTexture extends ProceduralTexture {
     private _arrayTexture: RawTexture2DArray;
 
     /**
-     * Number of active layers (drives the uLayerCount uniform). Changes only via addLayer/removeLayer.
+     * Number of active layers (drives the uLayerCount uniform). Changes only via addLayerAsync/removeLayerAsync.
      */
     public get layerCount(): number {
         return this._layerCount;
@@ -368,8 +368,7 @@ export class MultiTexture extends ProceduralTexture {
      * @param url defines the URL of the image to load as the new layer
      * @returns a promise resolving to the index of the new layer
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention -- public API name mandated by docs/plans/multi-texture-plan.md
-    public async addLayer(url: string): Promise<number> {
+    public async addLayerAsync(url: string): Promise<number> {
         const newIndex = this._layerCount;
 
         let entry: ILayerEntry;
@@ -396,15 +395,14 @@ export class MultiTexture extends ProceduralTexture {
      * one: loaded layers are re-uploaded from their retained bitmaps, and a shifted layer that is
      * still loading lands in its new slot when its in-flight load settles (loads resolve against
      * their layer entry, never against a stale index). uLayerCount is incremented. Inserting at
-     * `layerCount` appends (addLayer-equivalent). Grows the underlying array (doubling its depth)
-     * when the current depth is exhausted, same as addLayer, and throws a RangeError if the doubled
+     * `layerCount` appends (addLayerAsync-equivalent). Grows the underlying array (doubling its depth)
+     * when the current depth is exhausted, same as addLayerAsync, and throws a RangeError if the doubled
      * depth would exceed the device's texture2DArrayMaxLayerCount.
      * @param index defines the layer index to insert at (0..layerCount, inclusive)
      * @param url defines the URL of the image to load as the new layer
      * @returns a promise resolving to the index of the inserted layer
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    public async insertLayer(index: number, url: string): Promise<number> {
+    public async insertLayerAsync(index: number, url: string): Promise<number> {
         if (!Number.isInteger(index) || index < 0 || index > this._layerCount) {
             throw new RangeError(`MultiTexture: layer index ${index} out of range [0, ${this._layerCount}].`);
         }
@@ -448,8 +446,7 @@ export class MultiTexture extends ProceduralTexture {
      * @param index defines the layer index to remove
      * @returns a promise resolving once the shift is done
      */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    public async removeLayer(index: number): Promise<void> {
+    public async removeLayerAsync(index: number): Promise<void> {
         if (!Number.isInteger(index) || index < 0 || index >= this._layerCount) {
             throw new RangeError(`MultiTexture: layer index ${index} out of range [0, ${this._layerCount}).`);
         }
@@ -661,7 +658,7 @@ export class MultiTexture extends ProceduralTexture {
         // committing any state:
         // - dispose() may have won the race (it clears _layers and destroys the internal 2D
         //   array texture, so an upload would throw "no internal texture");
-        // - insertLayer/removeLayer may have spliced the layer arrays, so the entry's CURRENT
+        // - insertLayerAsync/removeLayerAsync may have spliced the layer arrays, so the entry's CURRENT
         //   index (never an index captured before the awaits) is the only valid landing slot,
         //   and a removed entry must drop its decode entirely;
         // - a newer load for the same entry (updateLayerAsync, watch reload) bumped its
@@ -712,7 +709,7 @@ export class MultiTexture extends ProceduralTexture {
             }
 
             // Snapshot the entries so the pool always loads exactly the layers the texture was
-            // constructed with: insertLayer/removeLayer may splice _layers while the pool is
+            // constructed with: insertLayerAsync/removeLayerAsync may splice _layers while the pool is
             // running, and following live indices would skip a layer or load one twice. Each
             // entry decides its own landing slot when its load settles (see _uploadBitmap).
             const initial = this._layers.slice();
@@ -731,7 +728,7 @@ export class MultiTexture extends ProceduralTexture {
             }
             await Promise.all(workers);
 
-            // Re-resolve the internal texture AFTER the pool: addLayer/insertLayer may have grown
+            // Re-resolve the internal texture AFTER the pool: addLayerAsync/insertLayerAsync may have grown
             // the array mid-pool, disposing the `internal` captured above and replacing
             // this._arrayTexture. Generating mips on the stale capture would target a dead
             // texture and leave the live array unmipped.

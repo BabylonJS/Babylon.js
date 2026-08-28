@@ -396,12 +396,12 @@ describe("MultiTexture", () => {
         expect(mt.arrayTexture.depth).toBe(4);
     });
 
-    it("addLayer growth beyond the device cap throws an actionable error and keeps the old array", async () => {
+    it("addLayerAsync growth beyond the device cap throws an actionable error and keeps the old array", async () => {
         const onError = vi.fn();
         const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, maxLayers: 2, onError }, { texture2DArrayMaxLayerCount: 2 });
 
         const rawsBefore = mockState.rawInstances.length;
-        await expect(mt.addLayer("c.png")).rejects.toThrow(
+        await expect(mt.addLayerAsync("c.png")).rejects.toThrow(
             "MultiTexture: cannot grow the array from depth 2 to 4: the device limit texture2DArrayMaxLayerCount is 2. Remove a layer, or recreate the MultiTexture with a larger options.maxLayers (<= 2) to allow more growth headroom."
         );
 
@@ -412,26 +412,26 @@ describe("MultiTexture", () => {
         expect(onError.mock.calls[0][0]).toContain("texture2DArrayMaxLayerCount");
     });
 
-    it("addLayer can grow up to the device cap but not past it", async () => {
+    it("addLayerAsync can grow up to the device cap but not past it", async () => {
         const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 }, { texture2DArrayMaxLayerCount: 8 });
 
         // Depth doubles only when full: 1 -> 2 -> 4 (fits) -> 8 (fits for layers 6-8).
-        await mt.addLayer("b.png");
+        await mt.addLayerAsync("b.png");
         expect(mt.arrayTexture.depth).toBe(2);
-        await mt.addLayer("c.png");
+        await mt.addLayerAsync("c.png");
         expect(mt.arrayTexture.depth).toBe(4);
-        await mt.addLayer("d.png");
+        await mt.addLayerAsync("d.png");
         expect(mt.arrayTexture.depth).toBe(4);
-        await mt.addLayer("e.png");
+        await mt.addLayerAsync("e.png");
         expect(mt.arrayTexture.depth).toBe(8);
-        await mt.addLayer("f.png");
-        await mt.addLayer("g.png");
-        await mt.addLayer("h.png");
+        await mt.addLayerAsync("f.png");
+        await mt.addLayerAsync("g.png");
+        await mt.addLayerAsync("h.png");
         expect(mt.arrayTexture.depth).toBe(8);
         expect(mt.layerCount).toBe(8);
 
         // The 9th layer would need depth 16 > 8 and must fail without touching the array.
-        await expect(mt.addLayer("i.png")).rejects.toThrow(/device limit texture2DArrayMaxLayerCount is 8/);
+        await expect(mt.addLayerAsync("i.png")).rejects.toThrow(/device limit texture2DArrayMaxLayerCount is 8/);
         expect(mt.arrayTexture.depth).toBe(8);
         expect(mt.layerCount).toBe(8);
     });
@@ -534,7 +534,7 @@ describe("MultiTexture", () => {
         await expect(mt.updateLayerAsync(5, "x.png")).rejects.toThrow("MultiTexture: layer index 5 out of range [0, 2).");
     });
 
-    it("addLayer beyond maxLayers grows the array and re-uploads existing layers", async () => {
+    it("addLayerAsync beyond maxLayers grows the array and re-uploads existing layers", async () => {
         const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, maxLayers: 2 });
 
         const oldRaw = mockState.rawInstances[0];
@@ -545,7 +545,7 @@ describe("MultiTexture", () => {
         const setTextureBefore = mt.setTextureCalls.length;
         const setIntBefore = mt.setIntCalls.length;
 
-        const newIndex = await mt.addLayer("c.png");
+        const newIndex = await mt.addLayerAsync("c.png");
 
         expect(newIndex).toBe(2);
         expect(mt.layerCount).toBe(3);
@@ -578,7 +578,7 @@ describe("MultiTexture", () => {
         expect(mt.defines).toContain("#define MULTITEXTURE_MAXLAYERS 4");
     });
 
-    it("removeLayer shifts layers down, re-uploads them and decrements uLayerCount", async () => {
+    it("removeLayerAsync shifts layers down, re-uploads them and decrements uLayerCount", async () => {
         const { mt } = await createLoaded(["a.png", "b.png", "c.png"], { width: 8, height: 8, maxLayers: 3 });
 
         const initUploads = mockState.upload.mock.calls.slice();
@@ -588,7 +588,7 @@ describe("MultiTexture", () => {
         const setIntsBefore = mt.setIntCalls.length;
         const resetsBefore = mt.resetCount;
 
-        await mt.removeLayer(0);
+        await mt.removeLayerAsync(0);
 
         expect(mt.layerCount).toBe(2);
         expect(mt.urls).toEqual(["b.png", "c.png"]);
@@ -607,11 +607,11 @@ describe("MultiTexture", () => {
         expect(mt.resetCount).toBe(resetsBefore + 1);
     });
 
-    it("removeLayer with an out-of-range index throws RangeError", async () => {
+    it("removeLayerAsync with an out-of-range index throws RangeError", async () => {
         const { mt } = await createLoaded(["a.png", "b.png", "c.png"], { width: 8, height: 8, maxLayers: 3 });
 
-        await expect(mt.removeLayer(9)).rejects.toThrow(RangeError);
-        await expect(mt.removeLayer(9)).rejects.toThrow("MultiTexture: layer index 9 out of range [0, 3).");
+        await expect(mt.removeLayerAsync(9)).rejects.toThrow(RangeError);
+        await expect(mt.removeLayerAsync(9)).rejects.toThrow("MultiTexture: layer index 9 out of range [0, 3).");
     });
 
     it("blendMode swap swaps the fragment, rewrites defines and triggers one re-composite", async () => {
@@ -923,7 +923,7 @@ describe("MultiTexture watch poll overlap", () => {
     });
 });
 
-describe("MultiTexture insertLayer", () => {
+describe("MultiTexture insertLayerAsync", () => {
     it("inserts a loaded layer at index, shifts urls/pixels/layers and re-uploads shifted layers to their new slots", async () => {
         const { mt } = await createLoaded(["a.png", "b.png", "c.png"], { width: 8, height: 8, maxLayers: 4 });
 
@@ -934,7 +934,7 @@ describe("MultiTexture insertLayer", () => {
         const setIntsBefore = mt.setIntCalls.length;
         const resetsBefore = mt.resetCount;
 
-        const newIndex = await mt.insertLayer(1, "x.png");
+        const newIndex = await mt.insertLayerAsync(1, "x.png");
 
         expect(newIndex).toBe(1);
         expect(mt.layerCount).toBe(4);
@@ -956,12 +956,12 @@ describe("MultiTexture insertLayer", () => {
         expect(mt.resetCount).toBeGreaterThanOrEqual(resetsBefore + 1);
     });
 
-    it("inserting at layerCount appends without any shift work (addLayer-equivalent)", async () => {
+    it("inserting at layerCount appends without any shift work (addLayerAsync-equivalent)", async () => {
         const { mt } = await createLoaded(["a.png"], { width: 8, height: 8, maxLayers: 2 });
 
         const uploadsBefore = mockState.upload.mock.calls.length;
 
-        const newIndex = await mt.insertLayer(1, "b.png");
+        const newIndex = await mt.insertLayerAsync(1, "b.png");
 
         expect(newIndex).toBe(1);
         expect(mt.layerCount).toBe(2);
@@ -982,7 +982,7 @@ describe("MultiTexture insertLayer", () => {
         const bitmapB = initUploads.find((call: any[]) => call[2] === 1)[1];
         const uploadsBefore = mockState.upload.mock.calls.length;
 
-        await mt.insertLayer(1, "x.png");
+        await mt.insertLayerAsync(1, "x.png");
 
         expect(mt.layerCount).toBe(3);
         expect(mt.urls).toEqual(["a.png", "x.png", "b.png"]);
@@ -1010,7 +1010,7 @@ describe("MultiTexture insertLayer", () => {
         const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, maxLayers: 2, onError }, { texture2DArrayMaxLayerCount: 2 });
 
         const rawsBefore = mockState.rawInstances.length;
-        await expect(mt.insertLayer(1, "x.png")).rejects.toThrow(
+        await expect(mt.insertLayerAsync(1, "x.png")).rejects.toThrow(
             "MultiTexture: cannot grow the array from depth 2 to 4: the device limit texture2DArrayMaxLayerCount is 2. Remove a layer, or recreate the MultiTexture with a larger options.maxLayers (<= 2) to allow more growth headroom."
         );
 
@@ -1024,10 +1024,10 @@ describe("MultiTexture insertLayer", () => {
     it("throws RangeError for out-of-range or non-integer index without loading anything", async () => {
         const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
 
-        await expect(mt.insertLayer(3, "x.png")).rejects.toThrow(RangeError);
-        await expect(mt.insertLayer(3, "x.png")).rejects.toThrow("MultiTexture: layer index 3 out of range [0, 2].");
-        await expect(mt.insertLayer(-1, "x.png")).rejects.toThrow(RangeError);
-        await expect(mt.insertLayer(1.5, "x.png")).rejects.toThrow(RangeError);
+        await expect(mt.insertLayerAsync(3, "x.png")).rejects.toThrow(RangeError);
+        await expect(mt.insertLayerAsync(3, "x.png")).rejects.toThrow("MultiTexture: layer index 3 out of range [0, 2].");
+        await expect(mt.insertLayerAsync(-1, "x.png")).rejects.toThrow(RangeError);
+        await expect(mt.insertLayerAsync(1.5, "x.png")).rejects.toThrow(RangeError);
 
         // No state change and no new fetches from the rejected insertions.
         expect(mt.layerCount).toBe(2);
@@ -1047,10 +1047,10 @@ describe("MultiTexture insertLayer", () => {
         const uploadsBefore = mockState.upload.mock.calls.length;
         const setIntsBefore = mt.setIntCalls.length;
 
-        await expect(mt.insertLayer(1, "bad.png")).rejects.toThrow("MultiTexture: failed to fetch bad.png: 500 Internal Server Error");
+        await expect(mt.insertLayerAsync(1, "bad.png")).rejects.toThrow("MultiTexture: failed to fetch bad.png: 500 Internal Server Error");
 
         expect(onError).toHaveBeenCalledTimes(1);
-        // The failed entry stays in place (addLayer semantics); the shifted layer still landed.
+        // The failed entry stays in place (addLayerAsync semantics); the shifted layer still landed.
         expect(mt.urls).toEqual(["a.png", "bad.png", "c.png"]);
         expect(mt.layerCount).toBe(3);
         expect(mt.pixels).toHaveLength(3);
@@ -1066,7 +1066,7 @@ describe("MultiTexture insertLayer", () => {
 
 describe("MultiTexture structure changes racing in-flight loads", () => {
     // Fetches stay pending until the test resolves them, so initial loads are in flight while
-    // insertLayer/removeLayer/updateLayerAsync run. Every decoded bitmap is tagged with its
+    // insertLayerAsync/removeLayerAsync/updateLayerAsync run. Every decoded bitmap is tagged with its
     // source url so upload assertions can say WHICH layer's pixels landed in which slot.
     function deferredScene() {
         const resolvers: Record<string, () => void> = {};
@@ -1100,11 +1100,11 @@ describe("MultiTexture structure changes racing in-flight loads", () => {
         const { scene, resolvers } = deferredScene();
 
         // Mirrors the field report: 2 initial urls (array depth 2, so the insert grows it),
-        // insertLayer called before any initial load has settled.
+        // insertLayerAsync called before any initial load has settled.
         const mt = new MultiTexture("mt", ["rock.png", "star.png"], scene, { width: 8, height: 8 }) as MockMultiTexture;
         expect(mockState.upload.mock.calls).toHaveLength(0);
 
-        const inserted = mt.insertLayer(1, "circle.png");
+        const inserted = mt.insertLayerAsync(1, "circle.png");
 
         // Star (shifted 1 -> 2) settles first: must land in its NEW slot 2, not in slot 1.
         resolvers["star.png"]();
@@ -1131,12 +1131,12 @@ describe("MultiTexture structure changes racing in-flight loads", () => {
         expect(mt.pixels.every((p: any) => p instanceof Uint8ClampedArray)).toBe(true);
     });
 
-    it("removeLayer discards the removed layer's in-flight load and lets the shifted one land in its new slot", async () => {
+    it("removeLayerAsync discards the removed layer's in-flight load and lets the shifted one land in its new slot", async () => {
         const { scene, resolvers, bitmaps } = deferredScene();
 
         const mt = new MultiTexture("mt", ["a.png", "b.png"], scene, { width: 8, height: 8 }) as MockMultiTexture;
 
-        mt.removeLayer(0);
+        mt.removeLayerAsync(0);
 
         // a's in-flight load settles after its entry was removed: dropped, nothing uploaded.
         resolvers["a.png"]();
@@ -1256,9 +1256,9 @@ describe("MultiTexture mid-flight array growth and watch races", () => {
 
         const oldRaw = mockState.rawInstances[0];
 
-        // addLayer hits the capacity while the init pool is still running: the array grows
+        // addLayerAsync hits the capacity while the init pool is still running: the array grows
         // (old raw disposed, new raw bound) before any initial load has settled.
-        const added = mt.addLayer("c.png");
+        const added = mt.addLayerAsync("c.png");
         const newRaw = mockState.rawInstances[1];
         expect(oldRaw.dispose).toHaveBeenCalledTimes(1);
 
@@ -1288,7 +1288,7 @@ describe("MultiTexture mid-flight array growth and watch races", () => {
 
     it("drops a watch reload whose layer was removed mid-tick", async () => {
         // Fetches (initial GET, HEAD checks, reload GETs) stay pending until released, so a
-        // removeLayer can land between a poll tick's snapshot and its reload's settle.
+        // removeLayerAsync can land between a poll tick's snapshot and its reload's settle.
         const headResolvers: Array<() => void> = [];
         const getResolvers: Array<() => void> = [];
         vi.stubGlobal(
@@ -1331,7 +1331,7 @@ describe("MultiTexture mid-flight array growth and watch races", () => {
         // Start a poll tick (snapshots the entry, issues the pending HEAD), then remove the
         // layer BEFORE the HEAD settles.
         const poll = (mt as any)._poll();
-        await mt.removeLayer(0);
+        await mt.removeLayerAsync(0);
         expect(headResolvers).toHaveLength(1);
 
         // HEAD settles: etag changed -> reload starts for the now-removed entry.
@@ -1352,14 +1352,14 @@ describe("MultiTexture mid-flight array growth and watch races", () => {
     });
 });
 
-describe("MultiTexture removeLayer GPU alignment", () => {
+describe("MultiTexture removeLayerAsync GPU alignment", () => {
     // NOTE: full GPU-shift verification (every shifted layer re-uploaded to its new array
     // index) needs a real WebGL2/WebGPU harness; the headless suite's _arrayTexture wrapper
     // exposes no spiable upload seam. CPU alignment invariants are guarded here.
     it("keeps CPU layer state aligned when a non-last layer is removed", async () => {
         const { mt } = await createLoaded(["a.png", "b.png", "c.png"], { width: 8, height: 8 });
 
-        mt.removeLayer(0);
+        mt.removeLayerAsync(0);
 
         expect(mt.urls).toEqual(["b.png", "c.png"]);
         expect((mt as any)._layerCount).toBe(2);
@@ -1476,7 +1476,7 @@ describe("MultiTexture clone", () => {
     it("preserves the current blend mode and grown capacity after construction", async () => {
         const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, maxLayers: 2 });
 
-        await mt.addLayer("c.png");
+        await mt.addLayerAsync("c.png");
         expect(mt.arrayTexture.depth).toBe(4);
         mt.blendMode = MultiBlendMode.SCREEN;
 
