@@ -33,6 +33,19 @@ describe("Color temperature function tests", () => {
             expect(r).toBeGreaterThan(1);
             expect(b).toBeLessThan(1);
         });
+
+        it("should stay bounded for a low temperature combined with an extreme tint, where the target illuminant approaches the edge of representable chromaticities", () => {
+            // Regression test: temperature=3200, tint=99 previously produced matrix entries in the hundreds
+            // because one of the target white's cone-response components approached zero, blowing up the
+            // per-channel Bradford adaptation ratio.
+            for (const tint of [90, 95, 99, 100, 120, 150]) {
+                const m = GetWhiteBalanceMatrix(3200, tint);
+                for (let i = 0; i < 9; i++) {
+                    expect(Number.isFinite(m[i])).toBe(true);
+                    expect(Math.abs(m[i])).toBeLessThan(15);
+                }
+            }
+        });
     });
 
     describe("TemperatureTintToXyz", () => {

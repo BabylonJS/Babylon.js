@@ -81,6 +81,21 @@ const XyzToRgbD65 = Matrix.FromArray([
 ]);
 
 /**
+ * Computes a single per-channel Bradford adaptation ratio, guarding against the illuminant approaching (or
+ * crossing) the edge of representable chromaticities - e.g. an extreme temperature/tint combination can push a
+ * cone response to near-zero or negative, which would otherwise blow up the resulting matrix. Non-positive source
+ * responses and out-of-range ratios are clamped, matching the standard safeguard used by chromatic-adaptation
+ * implementations for exactly this failure mode.
+ * @param destComponent The destination white's cone-response component
+ * @param sourceComponent The source white's cone-response component
+ * @returns The ratio to use for this channel, clamped to [0.1, 10]
+ */
+function ClampedAdaptationRatio(destComponent: number, sourceComponent: number): number {
+    const ratio = sourceComponent > 0 ? destComponent / sourceComponent : 10;
+    return Clamp(ratio, 0.1, 10);
+}
+
+/**
  * Computes the Bradford chromatic-adaptation matrix that maps CIE XYZ tristimulus values referenced to
  * `sourceWhiteXYZ` onto the equivalent values referenced to `destWhiteXYZ`.
  * @param sourceWhiteXYZ The CIE XYZ (Y = 1) coordinates of the source reference white
@@ -93,9 +108,9 @@ function BradfordAdapt(sourceWhiteXYZ: Vector3, destWhiteXYZ: Vector3): Matrix {
 
     // prettier-ignore
     const scale = Matrix.FromArray([
-        destLMS.x / sourceLMS.x, 0, 0, 0,
-        0, destLMS.y / sourceLMS.y, 0, 0,
-        0, 0, destLMS.z / sourceLMS.z, 0,
+        ClampedAdaptationRatio(destLMS.x, sourceLMS.x), 0, 0, 0,
+        0, ClampedAdaptationRatio(destLMS.y, sourceLMS.y), 0, 0,
+        0, 0, ClampedAdaptationRatio(destLMS.z, sourceLMS.z), 0,
         0, 0, 0, 1,
     ]);
 
