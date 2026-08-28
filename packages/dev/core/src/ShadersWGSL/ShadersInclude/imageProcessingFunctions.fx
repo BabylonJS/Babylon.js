@@ -75,9 +75,7 @@ fn applyImageProcessing(result: vec4f) -> vec4f {
 	var rgb = result.rgb;;
 
 #ifdef WHITEBALANCE
-	// White balance: a Bradford chromatic-adaptation matrix (see
-	// Wyszecki, G. & Stiles, W.S., "Color Science: Concepts and Methods, Quantitative Data and Formulae",
-	// 2nd edition, John Wiley & Sons, 1982) neutralizing the configured illuminant.
+	// White balance: a Bradford chromatic-adaptation matrix neutralizing the configured illuminant.
 	rgb = uniforms.whiteBalanceMatrix * rgb;
 #endif
 

@@ -1,9 +1,8 @@
 import { Matrix, Vector3 } from "../../../src/Maths/math.vector.pure";
 import { GetWhiteBalanceMatrix, TemperatureTintToXyz } from "../../../src/Maths/colorTemperature.functions";
 
-// The sRGB / Rec.709 (D65) CIE XYZ to linear RGB matrix, matching the one used internally by
-// colorTemperature.functions.ts, kept independent here so the self-consistency test below isn't
-// tautological with the implementation it's checking.
+// Independent copy of the sRGB / Rec.709 (D65) CIE XYZ to linear RGB matrix used internally by
+// colorTemperature.functions.ts, so the test below isn't tautological with the code it's checking.
 // prettier-ignore
 const XyzToRgbD65 = Matrix.FromArray([
     3.2404542, -0.969266, 0.0556434, 0,
@@ -25,24 +24,19 @@ describe("Color temperature function tests", () => {
             [9000, 0],
             [4000, 30],
             [7500, -50],
-        ])(
-            "should map a patch that is the illuminant's own white point (T=%d, tint=%d) back to exactly neutral (1, 1, 1)",
-            (temperatureKelvin, tint) => {
-                // This is the defining correctness property of white balance: a surface that was the color of the
-                // illuminant itself, once corrected, must read as neutral gray - regardless of which illuminant it
-                // started as. It also implicitly verifies that the Bradford adaptation's destination white is the
-                // same white point the RGB <-> XYZ matrices themselves already treat as neutral.
-                const illuminantXYZ = TemperatureTintToXyz(temperatureKelvin, tint);
-                const illuminantAsRgb = Vector3.TransformNormal(illuminantXYZ, XyzToRgbD65);
+        ])("should map a patch that is the illuminant's own white point (T=%d, tint=%d) back to exactly neutral (1, 1, 1)", (temperatureKelvin, tint) => {
+            // Defining correctness property of white balance: a surface that was the color of the illuminant
+            // itself must read as neutral gray once corrected, regardless of which illuminant it started as.
+            const illuminantXYZ = TemperatureTintToXyz(temperatureKelvin, tint);
+            const illuminantAsRgb = Vector3.TransformNormal(illuminantXYZ, XyzToRgbD65);
 
-                const m = GetWhiteBalanceMatrix(temperatureKelvin, tint);
-                const corrected = applyColumnMajor(m, illuminantAsRgb);
+            const m = GetWhiteBalanceMatrix(temperatureKelvin, tint);
+            const corrected = applyColumnMajor(m, illuminantAsRgb);
 
-                expect(corrected.x).toBeCloseTo(1, 4);
-                expect(corrected.y).toBeCloseTo(1, 4);
-                expect(corrected.z).toBeCloseTo(1, 4);
-            }
-        );
+            expect(corrected.x).toBeCloseTo(1, 4);
+            expect(corrected.y).toBeCloseTo(1, 4);
+            expect(corrected.z).toBeCloseTo(1, 4);
+        });
 
         it("should not be symmetric for a non-trivial temperature/tint (catches row/column-major mixups)", () => {
             const m = GetWhiteBalanceMatrix(3000, 40);
@@ -70,8 +64,7 @@ describe("Color temperature function tests", () => {
 
         it("should stay bounded for a low temperature combined with an extreme tint, where the target illuminant approaches the edge of representable chromaticities", () => {
             // Regression test: temperature=3200, tint=99 previously produced matrix entries in the hundreds
-            // because one of the target white's cone-response components approached zero, blowing up the
-            // per-channel Bradford adaptation ratio.
+            // because a cone-response component approached zero, blowing up the adaptation ratio.
             for (const tint of [90, 95, 99, 100, 120, 150]) {
                 const m = GetWhiteBalanceMatrix(3200, tint);
                 for (let i = 0; i < 9; i++) {

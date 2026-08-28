@@ -2,11 +2,9 @@ import { Clamp } from "./math.scalar.functions";
 import { Matrix, Vector2, Vector3 } from "./math.vector.pure";
 
 /**
- * Tabulated approximation of the Planckian locus in the CIE 1960 UCS (u, v) chromaticity diagram, together with
- * the local isotherm slope `t` used to offset a chromaticity away from the locus (the "tint" axis).
- * Source: Wyszecki, G. &amp; Stiles, W.S., "Color Science: Concepts and Methods, Quantitative Data and Formulae",
- * 2nd edition, John Wiley &amp; Sons, 1982, pp. 227-228.
- * Each row is [reciprocal megakelvin ("mired"), u, v, t].
+ * Tabulated Planckian locus in CIE 1960 UCS (u, v) space, with the local isotherm slope `t` used to offset
+ * a chromaticity along the tint axis. Source: Wyszecki &amp; Stiles, "Color Science", 2nd ed., 1982, pp. 227-228.
+ * Each row is [mired, u, v, t].
  */
 const PlanckianLocusTable: ReadonlyArray<readonly [number, number, number, number]> = [
     [0, 0.18006, 0.26352, -0.24341],
@@ -42,8 +40,7 @@ const PlanckianLocusTable: ReadonlyArray<readonly [number, number, number, numbe
     [600, 0.33724, 0.36051, -116.45],
 ];
 
-// `Matrix.FromArray` reads its 16 values column-major, so each 3x3 (translation-free, identity in the last
-// row/column) matrix below is written out column-by-column rather than row-by-row.
+// `Matrix.FromArray` reads values column-major, so each 3x3 matrix below is written column-by-column, not row-by-row.
 
 /**
  * The Bradford cone-response matrix used for chromatic adaptation.
@@ -81,11 +78,8 @@ const XyzToRgbD65 = Matrix.FromArray([
 ]);
 
 /**
- * Computes a single per-channel Bradford adaptation ratio, guarding against the illuminant approaching (or
- * crossing) the edge of representable chromaticities - e.g. an extreme temperature/tint combination can push a
- * cone response to near-zero or negative, which would otherwise blow up the resulting matrix. Non-positive source
- * responses and out-of-range ratios are clamped, matching the standard safeguard used by chromatic-adaptation
- * implementations for exactly this failure mode.
+ * Computes a per-channel Bradford adaptation ratio, clamped to avoid extreme temperature/tint combinations
+ * blowing up the resulting matrix when a cone-response component approaches zero.
  * @param destComponent The destination white's cone-response component
  * @param sourceComponent The source white's cone-response component
  * @returns The ratio to use for this channel, clamped to [0.1, 10]
@@ -96,8 +90,7 @@ function ClampedAdaptationRatio(destComponent: number, sourceComponent: number):
 }
 
 /**
- * Computes the Bradford chromatic-adaptation matrix that maps CIE XYZ tristimulus values referenced to
- * `sourceWhiteXYZ` onto the equivalent values referenced to `destWhiteXYZ`.
+ * Computes the Bradford chromatic-adaptation matrix that maps CIE XYZ values from `sourceWhiteXYZ` to `destWhiteXYZ`.
  * @param sourceWhiteXYZ The CIE XYZ (Y = 1) coordinates of the source reference white
  * @param destWhiteXYZ The CIE XYZ (Y = 1) coordinates of the destination reference white
  * @returns A matrix mapping source-referenced XYZ to destination-referenced XYZ
@@ -114,9 +107,7 @@ function BradfordAdapt(sourceWhiteXYZ: Vector3, destWhiteXYZ: Vector3): Matrix {
         0, 0, 0, 1,
     ]);
 
-    // Conventional adapt = InverseBradfordMatrix * scale * BradfordMatrix. Matrix.multiply composes in the
-    // opposite order to conventional matrix notation (`A.multiply(B)` computes `B x A`), so the calls below are
-    // deliberately written back-to-front relative to how the product reads mathematically.
+    // adapt = InverseBradfordMatrix * scale * BradfordMatrix, written back-to-front since `A.multiply(B)` computes `B x A`.
     const scaledByBradford = BradfordMatrix.multiply(scale);
     return scaledByBradford.multiply(InverseBradfordMatrix);
 }
@@ -167,17 +158,15 @@ export function TemperatureTintToXyz(temperatureKelvin: number, tint: number): V
 }
 
 /**
- * The working color space's reference white, expressed as the CIE XYZ (Y = 1) point that neutral (1, 1, 1) linear
- * RGB actually maps to through {@link RgbToXyzD65}. Deriving it this way - rather than from this module's own
- * Planckian-locus approximation at some nominal temperature - guarantees that the Bradford adaptation's
- * destination is always the same white point that the RGB <-> XYZ matrices themselves already treat as neutral,
- * so a fully white-balanced neutral patch round-trips back to exactly (1, 1, 1) for any input illuminant.
+ * The working color space's reference white, in CIE XYZ (Y = 1), derived from what neutral (1, 1, 1) linear RGB
+ * maps to through {@link RgbToXyzD65}. This ensures a fully white-balanced neutral patch round-trips back to
+ * exactly (1, 1, 1) for any input illuminant.
  */
 const ReferenceWhiteXyz = Vector3.TransformNormal(new Vector3(1, 1, 1), RgbToXyzD65);
 
 /**
- * Computes the linear RGB (sRGB / Rec.709 primaries) color-correction matrix that performs white balance for the
- * given illuminant, by chromatically adapting its white point (see {@link TemperatureTintToXyz}) onto the working
+ * Computes the linear RGB (sRGB / Rec.709 primaries) color-correction matrix that white-balances the given
+ * illuminant, by chromatically adapting its white point (see {@link TemperatureTintToXyz}) to the working
  * color space's reference white using the Bradford transform.
  * @param temperatureKelvin The correlated color temperature of the illuminant to neutralize, in Kelvin
  * @param tint An offset perpendicular to the Planckian locus (the green/magenta axis), in the range [-150, 150]
@@ -187,13 +176,12 @@ export function GetWhiteBalanceMatrix(temperatureKelvin: number, tint: number): 
     const targetWhiteXYZ = TemperatureTintToXyz(temperatureKelvin, tint);
     const adapt = BradfordAdapt(targetWhiteXYZ, ReferenceWhiteXyz);
 
-    // Conventional finalMatrix = XyzToRgbD65 * adapt * RgbToXyzD65 (see the note in BradfordAdapt about the
-    // reversed argument order Matrix.multiply expects).
+    // finalMatrix = XyzToRgbD65 * adapt * RgbToXyzD65, written back-to-front (see BradfordAdapt).
     const adaptedFromRgb = RgbToXyzD65.multiply(adapt);
     const finalMatrix = adaptedFromRgb.multiply(XyzToRgbD65);
 
-    // `Matrix` stores its values column-major, which is exactly the layout GLSL/WGSL `mat3` uniforms expect;
-    // extract the upper-left 3x3 block directly, no transpose needed.
+    // `Matrix` stores its values column-major, matching the layout GLSL/WGSL `mat3` uniforms expect,
+    // so the upper-left 3x3 block can be extracted directly with no transpose.
     const m = finalMatrix.m;
     return new Float32Array([m[0], m[1], m[2], m[4], m[5], m[6], m[8], m[9], m[10]]);
 }
