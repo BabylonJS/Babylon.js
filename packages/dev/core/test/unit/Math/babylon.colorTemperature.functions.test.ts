@@ -1,14 +1,48 @@
+import { Matrix, Vector3 } from "../../../src/Maths/math.vector.pure";
 import { GetWhiteBalanceMatrix, TemperatureTintToXyz } from "../../../src/Maths/colorTemperature.functions";
+
+// The sRGB / Rec.709 (D65) CIE XYZ to linear RGB matrix, matching the one used internally by
+// colorTemperature.functions.ts, kept independent here so the self-consistency test below isn't
+// tautological with the implementation it's checking.
+// prettier-ignore
+const XyzToRgbD65 = Matrix.FromArray([
+    3.2404542, -0.969266, 0.0556434, 0,
+    -1.5371385, 1.8760108, -0.2040259, 0,
+    -0.4985314, 0.041556, 1.0572252, 0,
+    0, 0, 0, 1,
+]);
+
+function applyColumnMajor(m: Float32Array, rgb: Vector3): Vector3 {
+    return new Vector3(m[0] * rgb.x + m[3] * rgb.y + m[6] * rgb.z, m[1] * rgb.x + m[4] * rgb.y + m[7] * rgb.z, m[2] * rgb.x + m[5] * rgb.y + m[8] * rgb.z);
+}
 
 describe("Color temperature function tests", () => {
     describe("GetWhiteBalanceMatrix", () => {
-        it("should be the identity matrix at the default (6500 K, tint 0)", () => {
-            const m = GetWhiteBalanceMatrix(6500, 0);
-            const identity = [1, 0, 0, 0, 1, 0, 0, 0, 1];
-            for (let i = 0; i < 9; i++) {
-                expect(m[i]).toBeCloseTo(identity[i], 5);
+        it.each([
+            [6500, 0],
+            [5000, 0],
+            [3000, 0],
+            [9000, 0],
+            [4000, 30],
+            [7500, -50],
+        ])(
+            "should map a patch that is the illuminant's own white point (T=%d, tint=%d) back to exactly neutral (1, 1, 1)",
+            (temperatureKelvin, tint) => {
+                // This is the defining correctness property of white balance: a surface that was the color of the
+                // illuminant itself, once corrected, must read as neutral gray - regardless of which illuminant it
+                // started as. It also implicitly verifies that the Bradford adaptation's destination white is the
+                // same white point the RGB <-> XYZ matrices themselves already treat as neutral.
+                const illuminantXYZ = TemperatureTintToXyz(temperatureKelvin, tint);
+                const illuminantAsRgb = Vector3.TransformNormal(illuminantXYZ, XyzToRgbD65);
+
+                const m = GetWhiteBalanceMatrix(temperatureKelvin, tint);
+                const corrected = applyColumnMajor(m, illuminantAsRgb);
+
+                expect(corrected.x).toBeCloseTo(1, 4);
+                expect(corrected.y).toBeCloseTo(1, 4);
+                expect(corrected.z).toBeCloseTo(1, 4);
             }
-        });
+        );
 
         it("should not be symmetric for a non-trivial temperature/tint (catches row/column-major mixups)", () => {
             const m = GetWhiteBalanceMatrix(3000, 40);

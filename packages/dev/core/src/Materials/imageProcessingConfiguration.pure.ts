@@ -248,14 +248,16 @@ export class ImageProcessingConfiguration {
     private _temperature = 6500;
     /**
      * Gets the white balance correlated color temperature, in Kelvin, used in the effect if whiteBalanceEnabled is
-     * set to true. The default value of 6500 performs no adjustment.
+     * set to true. The default value of 6500 is close to (but not exactly) a no-op, since a 6500 K blackbody
+     * illuminant is close to, but distinct from, the working color space's reference white.
      */
     public get temperature(): number {
         return this._temperature;
     }
     /**
      * Sets the white balance correlated color temperature, in Kelvin, used in the effect if whiteBalanceEnabled is
-     * set to true. The default value of 6500 performs no adjustment.
+     * set to true. The default value of 6500 is close to (but not exactly) a no-op, since a 6500 K blackbody
+     * illuminant is close to, but distinct from, the working color space's reference white.
      */
     public set temperature(value: number) {
         if (this._temperature === value) {
@@ -271,14 +273,14 @@ export class ImageProcessingConfiguration {
     private _tint = 0;
     /**
      * Gets the white balance tint offset used in the effect if whiteBalanceEnabled is set to true. The default
-     * value of 0 performs no adjustment.
+     * value of 0 applies no tint offset.
      */
     public get tint(): number {
         return this._tint;
     }
     /**
      * Sets the white balance tint offset used in the effect if whiteBalanceEnabled is set to true. The default
-     * value of 0 performs no adjustment.
+     * value of 0 applies no tint offset.
      */
     public set tint(value: number) {
         if (this._tint === value) {

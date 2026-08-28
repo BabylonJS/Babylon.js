@@ -167,13 +167,13 @@ export function TemperatureTintToXyz(temperatureKelvin: number, tint: number): V
 }
 
 /**
- * The working color space's reference white, expressed as the CIE XYZ (Y = 1) point that this module's own
- * Planckian-locus approximation assigns to 6500 K with no tint offset. Using this (rather than the separately
- * standardized CIE Standard Illuminant D65 chromaticity, which is a daylight-locus point and not exactly on the
- * Planckian locus) guarantees that `GetWhiteBalanceMatrix(6500, 0)` is the identity matrix - i.e. that the default
- * "no adjustment" temperature/tint values are a true no-op - and keeps the whole computation self-consistent.
+ * The working color space's reference white, expressed as the CIE XYZ (Y = 1) point that neutral (1, 1, 1) linear
+ * RGB actually maps to through {@link RgbToXyzD65}. Deriving it this way - rather than from this module's own
+ * Planckian-locus approximation at some nominal temperature - guarantees that the Bradford adaptation's
+ * destination is always the same white point that the RGB <-> XYZ matrices themselves already treat as neutral,
+ * so a fully white-balanced neutral patch round-trips back to exactly (1, 1, 1) for any input illuminant.
  */
-const ReferenceWhiteXyz = TemperatureTintToXyz(6500, 0);
+const ReferenceWhiteXyz = Vector3.TransformNormal(new Vector3(1, 1, 1), RgbToXyzD65);
 
 /**
  * Computes the linear RGB (sRGB / Rec.709 primaries) color-correction matrix that performs white balance for the
