@@ -160,7 +160,14 @@ export function TemperatureTintToXyz(temperatureKelvin: number, tint: number): V
 /**
  * The working color space's reference white, in CIE XYZ (Y = 1), derived from what neutral (1, 1, 1) linear RGB
  * maps to through {@link RgbToXyzD65}. This ensures a fully white-balanced neutral patch round-trips back to
- * exactly (1, 1, 1) for any input illuminant.
+ * exactly (1, 1, 1) for any input illuminant - the standard correctness guarantee used by chromatic-adaptation
+ * code in many well-known color-managed image processing software, where the adaptation target is always tied
+ * directly to whatever the working color space itself already treats as neutral, rather than to a separately
+ * computed point.
+ *
+ * One consequence: a 6500 K blackbody illuminant is close to, but not exactly, this working space's reference
+ * white, so `GetWhiteBalanceMatrix(6500, 0)` is only approximately - not exactly - the identity matrix.
+ * But this is deliberate with the reason stated above.
  */
 const ReferenceWhiteXyz = Vector3.TransformNormal(new Vector3(1, 1, 1), RgbToXyzD65);
 
