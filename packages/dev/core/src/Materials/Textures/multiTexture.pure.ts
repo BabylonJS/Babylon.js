@@ -26,15 +26,15 @@ export interface IMultiTextureOptions {
     maxLayers?: number;
     /** Default MultiBlendMode.ALPHA_BLEND. */
     blendMode?: MultiBlendMode;
-    /** Default false. Passed to RawTexture2DArray: mip levels of the LAYER array, consumed by the composite when rttScale less than 1 (minification) under a trilinear sampling mode. The composite RTT itself never has mips (consumed at 1:1 by materials). */
+    /** Default false. Passed to RawTexture2DArray: mip levels of the LAYER array. On WebGL2 they are consumed by the composite when rttScale less than 1 (trilinear minification); on WebGPU the composite fetches texels exactly, so these mips only affect direct per-layer sampling via `arrayTexture`. The composite RTT itself never has mips (consumed at 1:1 by materials). */
     generateMipMaps?: boolean;
-    /** Default Texture.TRILINEAR_SAMPLINGMODE. Passed to RawTexture2DArray. The composite shader reads the layers through this sampler, so it also drives the composite's mag/min filtering. */
+    /** Default Texture.TRILINEAR_SAMPLINGMODE. Passed to RawTexture2DArray. On WebGL2 the composite shader reads the layers through this sampler, so it also drives the composite's mag/min filtering; on WebGPU the composite fetches texels exactly (see the class notes), so it only affects direct per-layer sampling via `arrayTexture`. */
     samplingMode?: number;
     /** Default false. Passed through to UploadImageToTexture2DArrayLayer. */
     premultiplyAlpha?: boolean;
     /** "resize" (default): decode-time rescale to width×height. "strict": reject mismatched dims. */
     fit?: "resize" | "strict";
-    /** Composite RTT resolution = width*rttScale × height*rttScale. Default 1. Values other than 1 produce a filtered (bilinear) rescale of the composite, not a nearest-neighbor repeat. */
+    /** Composite RTT resolution = width*rttScale × height*rttScale. Default 1. On WebGL2 values other than 1 produce a filtered (bilinear) rescale of the composite; on WebGPU the composite fetches its texels exactly, so rttScale effectively rescales the render target without filtering. */
     rttScale?: number;
     /** Default false. HEAD-polling change detection. */
     watch?: boolean;
@@ -113,7 +113,10 @@ export function RegisterMultiTexture(): void {
  *
  * Notes:
  * - `url` is null (the base texture loader is not used); the `urls` property is the source of truth.
- * - By default every decoded layer is read back into a CPU `Uint8ClampedArray` (see `pixels`). This costs one canvas readback per upload.
+ * - By default every decoded layer is read back into a CPU `Uint8ClampedArray` (see `pixels`). This
+ *   costs one canvas readback (and a full-width×height RGBA CPU copy) per (re)load of a layer — it
+ *   runs on every initial load, `updateLayerAsync` reload, and watch-triggered reload, so frequent
+ *   reloads or large layers carry a CPU/memory cost (roughly `width × height × 4` bytes per layer).
  * - With `premultiplyAlpha: true` the GPU layers are stored premultiplied, but the CPU `pixels`
  *   cache still holds the raw decoded (non-premultiplied) bytes.
  * - The default ALPHA_BLEND mode folds the layers with a running mix: each layer is blended over
@@ -126,10 +129,16 @@ export function RegisterMultiTexture(): void {
  * - Compositing is performed independently of the scene render loop: MultiTexture re-composites
  *   its internal render target explicitly after every mutation (layer add/insert/remove/update,
  *   blend-mode change, array growth), so `scene.proceduralTexturesEnabled` has no effect on it.
- * - The composite shader reads the layers through the array sampler (filtered, not an integer
- *   texel fetch), so `samplingMode` affects the composite output, `rttScale` other than 1
- *   produces a filtered bilinear rescale, and (with `generateMipMaps: true`) trilinear
- *   minification can use the layer mips when `rttScale` less than 1.
+ * - How the composite samples the layer array depends on the engine backend. On WebGL2 the GLSL
+ *   composite shader reads the layers through the array sampler (`texture(...)`, filtered), so
+ *   `samplingMode` affects the composite output, `rttScale` other than 1 produces a filtered
+ *   bilinear rescale, and (with `generateMipMaps: true`) trilinear minification can use the layer
+ *   mips when `rttScale` less than 1. On WebGPU the WGSL composite shader instead performs an
+ *   integer texel fetch (`textureLoad`), because the WebGPU backend of Babylon does not expose
+ *   filtered sampling of `sampler2DArray` (`textureSample`) to shaders; there `samplingMode`,
+ *   `rttScale`-driven filtering and the layer mips do not affect the composite output (each layer
+ *   is sampled at its exact texel). The `_arrayTexture` sampler that materials use to read the
+ *   per-layer array is unaffected by this limitation.
  * - On WebGPU you must also import the WebGPU upload extension yourself:
  *   `import "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource";`
  *   (the WebGL2 extension is imported automatically by the non-pure `multiTexture` entry).
@@ -146,7 +155,10 @@ export class MultiTexture extends BaseTexture {
      * drive it, and calls {@link _renderComposite} explicitly after each mutation. All texture
      * surface methods (isReady/getInternalTexture) forward to it.
      */
-    public readonly _composite: ProceduralTexture;
+    public get composite(): ProceduralTexture {
+        return this._compositeInternal;
+    }
+    private _compositeInternal: ProceduralTexture;
     /** Fired once after all initial layers have settled (success or failure). */
     public readonly onLoadObservable: Observable<MultiTexture> = new Observable<MultiTexture>();
     private _layers: ILayerEntry[];
@@ -183,7 +195,7 @@ export class MultiTexture extends BaseTexture {
      * @returns The composite's internal texture.
      */
     public override getInternalTexture(): Nullable<InternalTexture> {
-        return this._composite.getInternalTexture();
+        return this.composite.getInternalTexture();
     }
 
     /**
@@ -191,7 +203,7 @@ export class MultiTexture extends BaseTexture {
      * @returns True if the composite's render-target texture is ready, otherwise false.
      */
     public override isReady(): boolean {
-        return this._composite.isReady();
+        return this.composite.isReady();
     }
 
     /**
@@ -201,10 +213,10 @@ export class MultiTexture extends BaseTexture {
      */
     private _renderComposite(): void {
         // Kick off effect creation / definition refresh, and ensure getEffect() is populated.
-        this._composite.isReady();
-        this._composite.executeWhenReady(() => {
+        this.composite.isReady();
+        this.composite.executeWhenReady(() => {
             if (!this._disposed) {
-                this._composite.render();
+                this.composite.render();
             }
         });
     }
@@ -215,8 +227,11 @@ export class MultiTexture extends BaseTexture {
     public readonly urls: string[];
 
     /**
-     * CPU pixel cache. `pixels[i]` is a W*H*4 RGBA buffer or
-     * layer i failed to load.
+     * CPU pixel cache. `pixels[i]` is a full `width × height × 4` RGBA (non-premultiplied) copy of
+     * decoded layer i, or `null` if that layer has not loaded (yet) or failed to load. It is
+     * repopulated on every (re)load of a layer (initial load, `updateLayerAsync`, watch reload) and
+     * cleared on dispose. Memory footprint is approximately `width × height × 4` bytes per loaded
+     * layer; skip it if you only need the GPU composite and do not read `pixels`.
      */
     public readonly pixels: Array<Uint8ClampedArray | null>;
 
@@ -295,7 +310,7 @@ export class MultiTexture extends BaseTexture {
             extraInitializationsAsync,
         };
 
-        this._composite = new ProceduralTexture(
+        this._compositeInternal = new ProceduralTexture(
             name,
             { width: rttW, height: rttH },
             FRAGMENT_NAMES[blendMode],
@@ -348,9 +363,9 @@ export class MultiTexture extends BaseTexture {
         this.urls = urls.slice();
         this.pixels = new Array<Uint8ClampedArray | null>(this._layerCount).fill(null);
 
-        this._composite.defines = this._buildDefines(maxLayers, MODE_FLAGS[blendMode]);
-        this._composite.setTexture("uLayers", this._arrayTexture);
-        this._composite.setInt("uLayerCount", this._layerCount);
+        this.composite.defines = this._buildDefines(maxLayers, MODE_FLAGS[blendMode]);
+        this.composite.setTexture("uLayers", this._arrayTexture);
+        this.composite.setInt("uLayerCount", this._layerCount);
 
         let canvas: OffscreenCanvas | HTMLCanvasElement | null = null;
         if (typeof OffscreenCanvas !== "undefined") {
@@ -386,8 +401,8 @@ export class MultiTexture extends BaseTexture {
         this._blendMode = value;
         // Both lines are required: setFragment alone would keep the stale cached effect, because the
         // composite only rebuilds its effect when `defines` changes.
-        this._composite.setFragment(FRAGMENT_NAMES[value]);
-        this._composite.defines = this._buildDefines(this._maxLayers, MODE_FLAGS[value]);
+        this.composite.setFragment(FRAGMENT_NAMES[value]);
+        this.composite.defines = this._buildDefines(this._maxLayers, MODE_FLAGS[value]);
         this._renderComposite();
     }
 
@@ -432,7 +447,7 @@ export class MultiTexture extends BaseTexture {
             entry = this._pushLayerEntry(url);
             // The fragment shader only samples the first uLayerCount layers, so the uniform must
             // track the internal count or the freshly appended layer is never composited.
-            this._composite.setInt("uLayerCount", this._layerCount);
+            this.composite.setInt("uLayerCount", this._layerCount);
         } catch (e) {
             this._reportError(e);
             throw e;
@@ -480,7 +495,7 @@ export class MultiTexture extends BaseTexture {
 
             // The fragment shader only samples the first uLayerCount layers, so the uniform must
             // track the internal count or the freshly inserted layer is never composited.
-            this._composite.setInt("uLayerCount", this._layerCount);
+            this.composite.setInt("uLayerCount", this._layerCount);
             // Re-composite even if the load below fails: the shift above already moved GPU slots.
             this._renderComposite();
         } catch (e) {
@@ -516,7 +531,7 @@ export class MultiTexture extends BaseTexture {
             this._reuploadSlot(j);
         }
 
-        this._composite.setInt("uLayerCount", this._layerCount);
+        this.composite.setInt("uLayerCount", this._layerCount);
         this._renderComposite();
     }
 
@@ -552,7 +567,13 @@ export class MultiTexture extends BaseTexture {
         this._ctx = null;
 
         this._arrayTexture.dispose();
-        this._composite.dispose();
+        this.composite.dispose();
+
+        // Honor the base-texture dispose contract: fires onDisposeObservable, clears metadata and
+        // tears down scene registration. The inherited _texture is null (never set), so the
+        // ThinTexture.dispose path is a safe no-op and the array/composite above are the real GPU
+        // owners.
+        super.dispose();
     }
 
     /**
@@ -846,12 +867,12 @@ export class MultiTexture extends BaseTexture {
         this._arrayTexture.dispose();
         this._arrayTexture = newRaw;
 
-        this._composite.setTexture("uLayers", newRaw);
+        this.composite.setTexture("uLayers", newRaw);
 
         this._maxLayers = newDepth;
 
         // The loop-bound define changed, so the effect must rebuild with the wider loop.
-        this._composite.defines = this._buildDefines(newDepth, MODE_FLAGS[this._blendMode]);
+        this.composite.defines = this._buildDefines(newDepth, MODE_FLAGS[this._blendMode]);
         this._renderComposite();
     }
 
