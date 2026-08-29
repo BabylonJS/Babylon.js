@@ -172,6 +172,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state.sharedData.bindableBlocks.push(this);
 
         // Uniforms
+        state.uniforms.push("whiteBalanceMatrix");
         state.uniforms.push("exposureLinear");
         state.uniforms.push("contrast");
         state.uniforms.push("vInverseScreenSize");

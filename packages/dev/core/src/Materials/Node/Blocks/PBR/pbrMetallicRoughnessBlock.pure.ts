@@ -1201,6 +1201,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitUniformFromString("ambientFromScene", NodeMaterialBlockConnectionPointTypes.Vector3);
 
         // Image processing uniforms
+        state.uniforms.push("whiteBalanceMatrix");
         state.uniforms.push("exposureLinear");
         state.uniforms.push("contrast");
         state.uniforms.push("vInverseScreenSize");
