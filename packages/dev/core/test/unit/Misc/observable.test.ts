@@ -19,9 +19,12 @@ describe("Observable", () => {
 
         observable.notifyObservers();
         observable.addOnce(callback);
-        observable.notifyObservers();
 
         expect(callback).toHaveBeenCalledOnce();
         expect(observable.hasObservers()).toBe(false);
+
+        observable.notifyObservers();
+
+        expect(callback).toHaveBeenCalledOnce();
     });
 });
