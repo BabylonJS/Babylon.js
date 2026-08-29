@@ -574,7 +574,9 @@ describe("MultiTexture", () => {
     it("rescales during decode by default", async () => {
         await createLoaded(["a.png"], { width: 32, height: 16 });
 
-        expect(mockState.decodeCalls[0].opts).toEqual({ resizeWidth: 32, resizeHeight: 16, resizeQuality: "high" });
+        // Default premultiplyAlpha:false decodes straight alpha ("none") so WebGL2 (which writes an
+        // ImageBitmap as-is) and WebGPU (which inverse-premultiplies per its flag) agree on straight layers.
+        expect(mockState.decodeCalls[0].opts).toEqual({ premultiplyAlpha: "none", resizeWidth: 32, resizeHeight: 16, resizeQuality: "high" });
     });
 
     it("updateLayerAsync(url) re-uploads only that layer without touching uLayerCount", async () => {
@@ -1533,10 +1535,11 @@ describe("MultiTexture clone", () => {
 
         await vi.waitFor(() => expect(clone.onLoadObservable.notifyObservers).toHaveBeenCalled());
 
-        // fit: "strict" -> decode without resize options; premultiplyAlpha -> upload flag stays true.
+        // fit: "strict" -> decode without resize options but matching the requested alpha mode
+        // (premultiplyAlpha: true -> premultiplied decode); the upload flag stays true.
         const cloneDecodes = mockState.decodeCalls.slice(decodesBefore);
         expect(cloneDecodes).toHaveLength(1);
-        expect(cloneDecodes[0].opts).toEqual({});
+        expect(cloneDecodes[0].opts).toEqual({ premultiplyAlpha: "premultiply" });
         const cloneUploads = mockState.upload.mock.calls.slice(uploadsBefore);
         expect(cloneUploads).toHaveLength(1);
         expect(cloneUploads[0][4]).toBe(true);

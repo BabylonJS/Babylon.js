@@ -635,7 +635,21 @@ export class MultiTexture extends BaseTexture {
     }
 
     private _bitmapOptions(): ImageBitmapOptions {
-        return this._mtOptions.fit === "resize" ? { resizeWidth: this._mtOptions.width, resizeHeight: this._mtOptions.height, resizeQuality: "high" } : {};
+        // createImageBitmap decodes image sources to PREMULTIPLIED alpha by default in Chromium, but
+        // the GPU layers must carry the alpha mode the user asked for. With the default
+        // premultiplyAlpha: false the storage must be straight: WebGL2 writes the ImageBitmap as-is
+        // (UNPACK_PREMULTIPLY_ALPHA_WEBGL=0 does not un-premultiply a premultiplied source), while
+        // WebGPU's copyExternalImageToTexture honours the flag and inverse-premultiplies. Decoding the
+        // intended mode explicitly keeps both backends byte-identical. With premultiplyAlpha: true the
+        // decode is premultiplied too, which is what WebGPU's dest premultipliedAlpha flag expects, and
+        // what WebGL2's UNPACK_PREMULTIPLY_ALPHA_WEBGL=1 (already-premultiplied source) preserves.
+        const options: ImageBitmapOptions = { premultiplyAlpha: this._mtOptions.premultiplyAlpha ? "premultiply" : "none" };
+        if (this._mtOptions.fit === "resize") {
+            options.resizeWidth = this._mtOptions.width;
+            options.resizeHeight = this._mtOptions.height;
+            options.resizeQuality = "high";
+        }
+        return options;
     }
 
     private _reportError(error: unknown): void {

@@ -25,7 +25,7 @@ import { RawTexture2DArray } from "./rawTexture2DArray";
 export interface IUploadImageToTexture2DArrayLayerOptions {
     /** Defines if the source must be stored with the Y axis inverted (false by default) */
     invertY?: boolean;
-    /** Defines if the source alpha must be premultiplied (false by default) */
+    /** Defines if the source alpha must be premultiplied in the GPU layer (false by default, i.e. straight alpha storage). The decode alpha mode follows this option so the stored bytes always match it on every backend. */
     premultiplyAlpha?: boolean;
 }
 
@@ -39,7 +39,7 @@ export interface ICreateTexture2DArrayFromImageUrlsOptions extends IUploadImageT
     samplingMode?: number;
     /** Defines the texture type (Constants.TEXTURETYPE_UNSIGNED_BYTE by default) */
     textureType?: number;
-    /** Options forwarded to createImageBitmap when decoding each url */
+    /** Options forwarded to createImageBitmap when decoding each url (a premultiplyAlpha requested here is overridden by the storage option above so layers always match the requested alpha mode) */
     imageBitmapOptions?: ImageBitmapOptions;
 }
 
@@ -96,7 +96,10 @@ export async function LoadImageToTexture2DArrayLayerAsync(
         throw new Error(`Failed to fetch image "${url}": ${response.status} ${response.statusText}`);
     }
     const blob = await response.blob();
-    const bitmap = await createImageBitmap(blob);
+    // Decode the alpha mode the storage option asked for: createImageBitmap premultiplies image
+    // sources by default, but with premultiplyAlpha:false the GPU layers must be straight (see
+    // UploadImageToTexture2DArrayLayer / MultiTexture._bitmapOptions).
+    const bitmap = await createImageBitmap(blob, { premultiplyAlpha: options?.premultiplyAlpha ? "premultiply" : "none" });
     try {
         UploadImageToTexture2DArrayLayer(texture, bitmap, layer, options);
     } finally {
@@ -236,7 +239,11 @@ export async function CreateTexture2DArrayFromImageUrlsAsync(
             if (!response.ok) {
                 throw new Error(`Failed to fetch image "${url}": ${response.status} ${response.statusText}`);
             }
-            return await createImageBitmap(await response.blob(), options?.imageBitmapOptions);
+            // Decode the alpha mode the storage option asked for (createImageBitmap premultiplies by
+            // default; the layer uploads must be straight when premultiplyAlpha is false, and
+            // imageBitmapOptions callers may not override the requested storage alpha mode).
+            const decodeOptions: ImageBitmapOptions = { ...options?.imageBitmapOptions, premultiplyAlpha: options?.premultiplyAlpha ? "premultiply" : "none" };
+            return await createImageBitmap(await response.blob(), decodeOptions);
         })
     );
 

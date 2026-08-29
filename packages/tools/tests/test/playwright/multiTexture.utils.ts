@@ -24,6 +24,9 @@ import { getGlobalConfig, evaluateInitEngine, evaluateCreateScene, evaluateDispo
 /** Per-channel tolerance; covers 8-bit rounding on the capture pipeline. */
 const PIXEL_TOLERANCE = 6;
 
+/** A straight-alpha RGBA byte color. */
+type RGBA = [number, number, number, number];
+
 // Numeric MultiBlendMode values (mirror MultiBlendMode in multiTexture.pure.ts) so the
 // Node-side runner can pass the mode into the browser without importing the pure module.
 const BABYLON_ALPHA_BLEND = 0;
@@ -58,20 +61,22 @@ let page: Page;
  * the presented frame with page.screenshot() — the same capture path the visualization
  * suite uses, proven on both WebGL2 and WebGPU — and decodes its PNG bytes.
  */
-const evaluateRenderComposite = async (blendMode: number, layer0: [number, number, number], layer1: [number, number, number]) => {
+const evaluateRenderComposite = async (blendMode: number, layer0: RGBA, layer1: RGBA) => {
     return page.evaluate(
         async ({ blendMode, layer0, layer1 }) => {
             const scene = (window as any).scene;
             const engine = (window as any).engine;
             const B = (window as any).BABYLON;
 
-            // Generated solid-color PNG data URLs keep the test fully local.
-            const makeSolidPng = (r: number, g: number, b: number) => {
+            // Generated solid-color PNG data URLs keep the test fully local. PNG stores straight
+            // alpha, and the MultiTexture upload path uses createImageBitmap + premultiplyAlpha:false
+            // on both WebGL2 and WebGPU, so the sampled layers carry straight RGBA.
+            const makeSolidPng = (r: number, g: number, b: number, a: number) => {
                 const canvas = document.createElement("canvas");
                 canvas.width = 8;
                 canvas.height = 8;
                 const ctx = canvas.getContext("2d")!;
-                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a / 255})`;
                 ctx.fillRect(0, 0, 8, 8);
                 return canvas.toDataURL("image/png");
             };
@@ -160,7 +165,6 @@ const evaluateRenderComposite = async (blendMode: number, layer0: [number, numbe
             } catch (e) {
                 compileErr = "err:" + String((e as Error)?.message ?? e).slice(0, 60);
             }
-            compositeRGBA.push(compileErr.length);
             return { compileErr, compositeRGBA };
         },
         { blendMode, layer0, layer1 }
@@ -195,19 +199,36 @@ const decodeCenterPixels = async (screenshotBase64: string): Promise<number[][]>
     }, screenshotBase64);
 };
 
-/** Asserts the presented center-cluster pixels equal the expected composite color. */
-const assertCompositePixels = async (blendMode: number, expected: [number, number, number], layer0: [number, number, number], layer1: [number, number, number]): Promise<void> => {
+/**
+ * Asserts the presented center-cluster pixels AND the internal render target's composite RGBA
+ * both match the expected composite color.
+ *
+ * The presented canvas is captured with page.screenshot() (the same capture path the visualization
+ * suite uses, proven on both WebGL2 and WebGPU; in-browser drawImage of a WebGPU canvas is not
+ * reliable, see evaluateRenderComposite notes). The composite is displayed with an opaque material
+ * (blending disabled), so the presented RGB equals the composite's straight RGB with alpha dropped —
+ * regardless of the composite alpha.
+ *
+ * The internal render target readback (compositeRGBA) covers the alpha channel directly and is the
+ * shader's straight-RGBA output on both backends, so asserting it validates the per-channel blend
+ * math including alpha (e.g. ALPHA_BLEND's alpha, MULTIPLY's absorbed alpha, SUBTRACT's zeroed
+ * alpha) that presentation alone cannot observe.
+ */
+const assertCompositePixels = async (engineName: string, blendMode: number, expected: RGBA, layer0: RGBA, layer1: RGBA): Promise<void> => {
     const { compileErr, compositeRGBA } = (await evaluateRenderComposite(blendMode, layer0, layer1)) as unknown as { compileErr: string; compositeRGBA: number[] };
     // Capture the presented frame with page.screenshot(): the same capture path the
     // visualization suite uses, proven on both WebGL2 and WebGPU (in-browser drawImage of a
     // WebGPU canvas is not reliable, see evaluateRenderComposite notes).
     const screenshot = await page.screenshot();
     const pixels = await decodeCenterPixels(screenshot.toString("base64"));
-    console.log("DIAG compositeRGBA", JSON.stringify(compositeRGBA), "pixels0", JSON.stringify(pixels[0]), "compileErr", JSON.stringify(compileErr));
+    console.log("DIAG", engineName, "compositeRGBA", JSON.stringify(compositeRGBA), "pixels0", JSON.stringify(pixels[0]), "compileErr", JSON.stringify(compileErr));
     for (const [r, g, b] of pixels) {
         expect(Math.abs(r - expected[0])).toBeLessThanOrEqual(PIXEL_TOLERANCE);
         expect(Math.abs(g - expected[1])).toBeLessThanOrEqual(PIXEL_TOLERANCE);
         expect(Math.abs(b - expected[2])).toBeLessThanOrEqual(PIXEL_TOLERANCE);
+    }
+    for (let i = 0; i < 4; i++) {
+        expect(Math.abs(compositeRGBA[i] - expected[i])).toBeLessThanOrEqual(PIXEL_TOLERANCE);
     }
 };
 
@@ -245,32 +266,62 @@ export const evaluateMultiTextureTests = (engineName: string) => {
         test(`composites MULTIPLY layers to the expected pixel (${engineName})`, async () => {
             // Expected GPU output for layer0 * layer1 in 8-bit space.
             const expectByte = (a: number, b: number) => Math.round((a / 255) * (b / 255) * 255);
-            const expected: [number, number, number] = [expectByte(200, 90), expectByte(140, 160), expectByte(90, 220)];
-            await assertCompositePixels(BABYLON_MULTIPLY, expected, [200, 140, 90], [90, 160, 220]);
+            const expected: RGBA = [expectByte(200, 90), expectByte(140, 160), expectByte(90, 220), 255];
+            await assertCompositePixels(engineName, BABYLON_MULTIPLY, expected, [200, 140, 90, 255], [90, 160, 220, 255]);
         });
 
         // Low-intensity opaque colors so ADD does not saturate to white and every blend mode
         // yields a distinct, discriminating expected pixel. ALPHA_MAX ties (all-opaque layers)
-        // resolve to the highest index, i.e. the last layer.
-        const opaque0: [number, number, number] = [120, 80, 60];
-        const opaque1: [number, number, number] = [100, 110, 70];
+        // resolve to the highest index, i.e. the last layer. Opaque layers composite to alpha 255
+        // on every mode except SUBTRACT, which absorbs the previous layer's alpha (255 - 255 = 0).
+        const opaque0: RGBA = [120, 80, 60, 255];
+        const opaque1: RGBA = [100, 110, 70, 255];
 
         const blendExpectations: Array<{
             mode: number;
             label: string;
-            expected: [number, number, number];
+            expected: RGBA;
         }> = [
-            { mode: BABYLON_ADD, label: "ADD", expected: [220, 190, 130] },
-            { mode: BABYLON_ALPHA_BLEND, label: "ALPHA_BLEND", expected: [100, 110, 70] },
-            { mode: BABYLON_ALPHA_MAX, label: "ALPHA_MAX", expected: [100, 110, 70] },
-            { mode: BABYLON_MULTIPLY, label: "MULTIPLY", expected: [47, 35, 16] },
-            { mode: BABYLON_SCREEN, label: "SCREEN", expected: [173, 155, 113] },
-            { mode: BABYLON_SUBTRACT, label: "SUBTRACT", expected: [20, 0, 0] },
+            { mode: BABYLON_ADD, label: "ADD", expected: [220, 190, 130, 255] },
+            { mode: BABYLON_ALPHA_BLEND, label: "ALPHA_BLEND", expected: [100, 110, 70, 255] },
+            { mode: BABYLON_ALPHA_MAX, label: "ALPHA_MAX", expected: [100, 110, 70, 255] },
+            { mode: BABYLON_MULTIPLY, label: "MULTIPLY", expected: [47, 35, 16, 255] },
+            { mode: BABYLON_SCREEN, label: "SCREEN", expected: [173, 155, 113, 255] },
+            { mode: BABYLON_SUBTRACT, label: "SUBTRACT", expected: [20, 0, 0, 0] },
         ];
 
         for (const { mode, label, expected } of blendExpectations) {
-            test(`composites ${label} layers (low-intensity colors) to the expected pixel (${engineName})`, async () => {
-                await assertCompositePixels(mode, expected, opaque0, opaque1);
+            test(`composites ${label} layers (low-intensity opaque colors) to the expected RGBA pixel (${engineName})`, async () => {
+                await assertCompositePixels(engineName, mode, expected, opaque0, opaque1);
+            });
+        }
+
+        // Translucent (alpha < 255) layers so every blend mode is also validated for its alpha
+        // behavior, not just its RGB: ALPHA_MAX must keep the highest-alpha layer, ALPHA_BLEND must
+        // interpolate alpha (note its fold squares alpha — mix(result, s, s.a) applies s.a as both
+        // the factor and the interpolated alpha, so two alpha-128/191 layers blend to 159, not the
+        // plain lerp of the two), MULTIPLY must absorb alpha, ADD must add-clamp, SUBTRACT must zero
+        // the alpha, and SCREEN must combine it. Expected values come from recomputing each shader's
+        // fold in double precision on the straight-alpha inputs.
+        const translucent0: RGBA = [150, 100, 60, 128];
+        const translucent1: RGBA = [100, 90, 120, 191];
+
+        const translucentExpectations: Array<{
+            mode: number;
+            label: string;
+            expected: RGBA;
+        }> = [
+            { mode: BABYLON_ADD, label: "ADD", expected: [250, 190, 180, 255] },
+            { mode: BABYLON_ALPHA_BLEND, label: "ALPHA_BLEND", expected: [94, 80, 97, 159] },
+            { mode: BABYLON_ALPHA_MAX, label: "ALPHA_MAX", expected: [100, 90, 120, 191] },
+            { mode: BABYLON_MULTIPLY, label: "MULTIPLY", expected: [59, 35, 28, 96] },
+            { mode: BABYLON_SCREEN, label: "SCREEN", expected: [191, 155, 152, 223] },
+            { mode: BABYLON_SUBTRACT, label: "SUBTRACT", expected: [50, 10, 0, 0] },
+        ];
+
+        for (const { mode, label, expected } of translucentExpectations) {
+            test(`composites ${label} layers (translucent colors) to the expected RGBA pixel (${engineName})`, async () => {
+                await assertCompositePixels(engineName, mode, expected, translucent0, translucent1);
             });
         }
     });
