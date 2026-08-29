@@ -139,9 +139,12 @@ export function RegisterMultiTexture(): void {
  *   `rttScale`-driven filtering and the layer mips do not affect the composite output (each layer
  *   is sampled at its exact texel). The `_arrayTexture` sampler that materials use to read the
  *   per-layer array is unaffected by this limitation.
- * - On WebGPU you must also import the WebGPU upload extension yourself:
- *   `import "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource";`
- *   (the WebGL2 extension is imported automatically by the non-pure `multiTexture` entry).
+ * - The non-pure `multiTexture` entry imports both the WebGL2 and WebGPU 2D-array upload
+ *   extensions automatically, so `MultiTexture` works on either engine out of the box. If you
+ *   import only the side-effect-free `multiTexture.pure` module directly, you must import the
+ *   upload extension for your backend yourself:
+ *   `import "core/Engines/Extensions/engine.texture2DArrayImageSource";` (WebGL2) or
+ *   `import "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource";` (WebGPU).
  * - The allocated array depth (options.maxLayers ?? urls.length) must be a positive integer and no
  *   larger than the device limit getCaps().texture2DArrayMaxLayerCount. Empty urls are only accepted
  *   together with an explicit options.maxLayers. addLayerAsync/insertLayerAsync double the depth when it is
@@ -222,7 +225,7 @@ export class MultiTexture extends BaseTexture {
     }
 
     /**
-     * The input URLs, in layer order. Updated by addLayer/removeLayer/updateLayerAsync(url).
+     * The input URLs, in layer order. Updated by addLayerAsync/insertLayerAsync/removeLayerAsync/updateLayerAsync.
      */
     public readonly urls: string[];
 

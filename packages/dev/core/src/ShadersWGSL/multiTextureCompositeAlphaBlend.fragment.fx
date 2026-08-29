@@ -1,4 +1,3 @@
-var uLayersSampler: sampler;
 var uLayers: texture_2d_array<f32>;
 
 uniform uLayerCount: i32;
