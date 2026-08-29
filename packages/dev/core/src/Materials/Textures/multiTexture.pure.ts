@@ -122,8 +122,8 @@ export function RegisterMultiTexture(): void {
  * - The default ALPHA_BLEND mode folds the layers with a running mix: each layer is blended over
  *   the accumulated result using its own alpha (`result = mix(result, layer, layer.a)`), so later
  *   layers draw over earlier ones and a fully opaque layer hides everything below it.
- * - ALPHA_MAX picks the sample with the highest alpha; ties (equal alpha) resolve to the lowest
- *   layer index (URL order).
+ * - ALPHA_MAX picks the sample with the highest alpha; ties (equal alpha) resolve to the highest
+ *   layer index (last input draws over earlier ones).
  * - With zero active layers, ALPHA_BLEND/ALPHA_MAX/ADD/SUBTRACT/SCREEN output transparent black
  *   and MULTIPLY outputs white (empty-product identity).
  * - Compositing is performed independently of the scene render loop: MultiTexture re-composites
@@ -974,7 +974,7 @@ export enum MultiBlendMode {
      * Zero active layers output transparent black.
      */
     ALPHA_BLEND = 0,
-    /** Keeps the sample with the highest alpha among the layers (ties: lowest index wins). Zero active layers output transparent black. */
+    /** Keeps the sample with the highest alpha among the layers (ties: highest index wins). Zero active layers output transparent black. */
     ALPHA_MAX = 1,
     /** Adds all layers per channel, clamped to 1. */
     ADD = 2,
