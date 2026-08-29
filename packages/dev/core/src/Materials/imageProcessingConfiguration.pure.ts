@@ -247,15 +247,21 @@ export class ImageProcessingConfiguration {
     @serialize()
     private _temperature = 6500;
     /**
-     * Gets the white balance correlated color temperature, in Kelvin, used in the effect if whiteBalanceEnabled is
-     * set to true. Default is 6500.
+     * Gets the correlated color temperature, in Kelvin, of the illuminant to neutralize when whiteBalanceEnabled
+     * is set to true - i.e. the light the scene is assumed to have been lit with, not a "warm"/"cool" creative
+     * adjustment. Lower values (e.g. ~2000-3500 K) correspond to warm/orange sources such as tungsten or candle
+     * light; higher values (e.g. ~7000-10000 K) correspond to cool/blue sources such as shade or overcast sky.
+     * Internally clamped to the tabulated range (roughly 1667 K and above). Default is 6500.
      */
     public get temperature(): number {
         return this._temperature;
     }
     /**
-     * Sets the white balance correlated color temperature, in Kelvin, used in the effect if whiteBalanceEnabled is
-     * set to true. Default is 6500.
+     * Sets the correlated color temperature, in Kelvin, of the illuminant to neutralize when whiteBalanceEnabled
+     * is set to true - i.e. the light the scene is assumed to have been lit with, not a "warm"/"cool" creative
+     * adjustment. Lower values (e.g. ~2000-3500 K) correspond to warm/orange sources such as tungsten or candle
+     * light; higher values (e.g. ~7000-10000 K) correspond to cool/blue sources such as shade or overcast sky.
+     * Internally clamped to the tabulated range (roughly 1667 K and above). Default is 6500.
      */
     public set temperature(value: number) {
         if (this._temperature === value) {
@@ -269,15 +275,21 @@ export class ImageProcessingConfiguration {
     @serialize()
     private _tint = 0;
     /**
-     * Gets the white balance tint offset used in the effect if whiteBalanceEnabled is set to true. Default is 0
-     * (no tint offset).
+     * Gets the white balance tint offset used in the effect if whiteBalanceEnabled is set to true, on the
+     * green/magenta axis perpendicular to temperature - e.g. to correct for illuminants (such as some
+     * fluorescent lights) that a color temperature alone can't fully neutralize. Positive values shift the
+     * corrected image toward magenta (compensating a green-tinted illuminant); negative values shift it toward
+     * green (compensating a magenta-tinted illuminant). Clamped to [-150, 150]. Default is 0 (no tint offset).
      */
     public get tint(): number {
         return this._tint;
     }
     /**
-     * Sets the white balance tint offset used in the effect if whiteBalanceEnabled is set to true. Default is 0
-     * (no tint offset).
+     * Sets the white balance tint offset used in the effect if whiteBalanceEnabled is set to true, on the
+     * green/magenta axis perpendicular to temperature - e.g. to correct for illuminants (such as some
+     * fluorescent lights) that a color temperature alone can't fully neutralize. Positive values shift the
+     * corrected image toward magenta (compensating a green-tinted illuminant); negative values shift it toward
+     * green (compensating a magenta-tinted illuminant). Clamped to [-150, 150]. Default is 0 (no tint offset).
      */
     public set tint(value: number) {
         if (this._tint === value) {

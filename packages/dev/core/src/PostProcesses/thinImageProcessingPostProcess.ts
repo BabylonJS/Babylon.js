@@ -31,14 +31,16 @@ export interface ThinImageProcessingPostProcessOptions extends EffectWrapperCrea
     scene?: Nullable<Scene>;
 
     /**
-     * The white balance correlated color temperature, in Kelvin, to apply to the resolved image processing
-     * configuration. Providing this (or `tint`) also enables white balance. Defaults to 6500 K.
+     * The correlated color temperature, in Kelvin, of the illuminant to neutralize via white balance, applied to
+     * the resolved image processing configuration - see `ImageProcessingConfiguration.temperature`. Providing
+     * this (or `tint`) also enables white balance. Defaults to 6500 K.
      */
     temperature?: number;
 
     /**
-     * The white balance tint offset to apply to the resolved image processing configuration. Providing this
-     * (or `temperature`) also enables white balance. Defaults to 0 (no tint offset).
+     * The white balance tint offset to apply, on the green/magenta axis, to the resolved image processing
+     * configuration - see `ImageProcessingConfiguration.tint`. Providing this (or `temperature`) also enables
+     * white balance. Defaults to 0 (no tint offset).
      */
     tint?: number;
 }

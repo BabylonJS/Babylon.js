@@ -46,14 +46,16 @@ export type PostProcessOptions = EffectWrapperCreationOptions & {
     height?: number;
 
     /**
-     * The white balance correlated color temperature, in Kelvin, to apply (only used by `ImageProcessingPostProcess`).
-     * Providing this (or `tint`) also enables white balance. Defaults to 6500 K.
+     * The correlated color temperature, in Kelvin, of the illuminant to neutralize via white balance (only used
+     * by `ImageProcessingPostProcess`) - see `ImageProcessingConfiguration.temperature`. Providing this (or
+     * `tint`) also enables white balance. Defaults to 6500 K.
      */
     temperature?: number;
 
     /**
-     * The white balance tint offset to apply (only used by `ImageProcessingPostProcess`). Providing this (or
-     * `temperature`) also enables white balance. Defaults to 0 (no tint offset).
+     * The white balance tint offset to apply, on the green/magenta axis (only used by `ImageProcessingPostProcess`)
+     * - see `ImageProcessingConfiguration.tint`. Providing this (or `temperature`) also enables white balance.
+     * Defaults to 0 (no tint offset).
      */
     tint?: number;
 

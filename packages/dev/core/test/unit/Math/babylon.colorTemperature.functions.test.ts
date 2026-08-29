@@ -62,6 +62,19 @@ describe("Color temperature function tests", () => {
             expect(b).toBeLessThan(1);
         });
 
+        it("should shift the corrected image toward magenta for positive tint and toward green for negative tint", () => {
+            // Locks in the documented sign convention for `tint`: positive compensates a green-tinted
+            // illuminant (output shifts toward magenta, i.e. green decreases relative to red/blue), negative
+            // compensates a magenta-tinted illuminant (output shifts toward green).
+            const applyToNeutral = (m: Float32Array) => ({ r: m[0] + m[3] + m[6], g: m[1] + m[4] + m[7], b: m[2] + m[5] + m[8] });
+
+            const positive = applyToNeutral(GetWhiteBalanceMatrix(6500, 50));
+            expect(positive.g - (positive.r + positive.b) / 2).toBeLessThan(0);
+
+            const negative = applyToNeutral(GetWhiteBalanceMatrix(6500, -50));
+            expect(negative.g - (negative.r + negative.b) / 2).toBeGreaterThan(0);
+        });
+
         it("should stay bounded for a low temperature combined with an extreme tint, where the target illuminant approaches the edge of representable chromaticities", () => {
             // Regression test: temperature=3200, tint=99 previously produced matrix entries in the hundreds
             // because a cone-response component approached zero, blowing up the adaptation ratio.
