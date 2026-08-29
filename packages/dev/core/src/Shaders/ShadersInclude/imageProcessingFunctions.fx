@@ -124,6 +124,10 @@ vec4 applyImageProcessing(vec4 result) {
 #ifdef WHITEBALANCE
 	// White balance: a Bradford chromatic-adaptation matrix neutralizing the configured illuminant.
 	result.rgb = whiteBalanceMatrix * result.rgb;
+	// The adaptation matrix can produce negative channels for saturated colors under extreme illuminants;
+	// clamp before any further processing, since gamma encoding uses fractional pow() and is undefined for
+	// negative inputs.
+	result.rgb = max(result.rgb, 0.0);
 #endif
 
 #ifdef EXPOSURE
