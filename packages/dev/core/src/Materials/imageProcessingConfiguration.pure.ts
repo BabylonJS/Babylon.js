@@ -263,7 +263,6 @@ export class ImageProcessingConfiguration {
         }
 
         this._temperature = value;
-        this._updateWhiteBalanceMatrix();
         this._updateParameters();
     }
 
@@ -286,15 +285,28 @@ export class ImageProcessingConfiguration {
         }
 
         this._tint = value;
-        this._updateWhiteBalanceMatrix();
         this._updateParameters();
     }
 
-    /** @internal */
     private _whiteBalanceMatrix: Float32Array = GetWhiteBalanceMatrix(this._temperature, this._tint);
+    private _whiteBalanceMatrixTemperature = this._temperature;
+    private _whiteBalanceMatrixTint = this._tint;
 
-    private _updateWhiteBalanceMatrix(): void {
-        this._whiteBalanceMatrix = GetWhiteBalanceMatrix(this._temperature, this._tint);
+    /**
+     * Returns the white balance matrix for the current temperature/tint, recomputing it if either value has
+     * changed since it was last computed. Deliberately lazy (checked here rather than eagerly refreshed from the
+     * temperature/tint setters) so that paths which set the private backing fields directly - such as
+     * SerializationHelper.Clone/Parse, which assign serialized properties without going through their setters -
+     * still end up with a matrix that matches the current temperature/tint.
+     * @returns the column-major white balance matrix for the current temperature/tint
+     */
+    private _getWhiteBalanceMatrix(): Float32Array {
+        if (this._whiteBalanceMatrixTemperature !== this._temperature || this._whiteBalanceMatrixTint !== this._tint) {
+            this._whiteBalanceMatrixTemperature = this._temperature;
+            this._whiteBalanceMatrixTint = this._tint;
+            this._whiteBalanceMatrix = GetWhiteBalanceMatrix(this._temperature, this._tint);
+        }
+        return this._whiteBalanceMatrix;
     }
 
     /**
@@ -633,7 +645,7 @@ export class ImageProcessingConfiguration {
     public bind(effect: Effect, overrideAspectRatio?: number): void {
         // White Balance
         if (this._whiteBalanceEnabled) {
-            effect.setMatrix3x3("whiteBalanceMatrix", this._whiteBalanceMatrix);
+            effect.setMatrix3x3("whiteBalanceMatrix", this._getWhiteBalanceMatrix());
         }
 
         // Color Curves
