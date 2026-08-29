@@ -44,6 +44,33 @@ export interface ThinImageProcessingPostProcessOptions extends EffectWrapperCrea
 }
 
 /**
+ * Applies the `temperature`/`tint` white balance options (if provided) to an image processing configuration,
+ * enabling white balance if either was supplied. Exported so it can be applied uniformly regardless of how the
+ * configuration was resolved - in particular, `ImageProcessingPostProcess` also calls this directly on
+ * `this.imageProcessingConfiguration` after construction, since a caller-supplied `effectWrapper` bypasses
+ * `ThinImageProcessingPostProcess`'s own constructor (and thus its own call to this function) entirely.
+ * @param configuration the image processing configuration to update
+ * @param options the options object that may contain `temperature`/`tint`, or a plain size number (ignored)
+ */
+export function ApplyWhiteBalanceOptions(configuration: ImageProcessingConfiguration, options?: { temperature?: number; tint?: number } | number): void {
+    if (!options || typeof options === "number") {
+        return;
+    }
+
+    if (options.temperature === undefined && options.tint === undefined) {
+        return;
+    }
+
+    if (options.temperature !== undefined) {
+        configuration.temperature = options.temperature;
+    }
+    if (options.tint !== undefined) {
+        configuration.tint = options.tint;
+    }
+    configuration.whiteBalanceEnabled = true;
+}
+
+/**
  * Post process used to apply image processing to a scene
  */
 export class ThinImageProcessingPostProcess extends EffectWrapper {
@@ -540,30 +567,16 @@ export class ThinImageProcessingPostProcess extends EffectWrapper {
         if (imageProcessingConfiguration) {
             imageProcessingConfiguration.applyByPostProcess = true;
             this._attachImageProcessingConfiguration(imageProcessingConfiguration, true);
-            this._applyWhiteBalanceOptions(options);
+            ApplyWhiteBalanceOptions(this.imageProcessingConfiguration, options);
             // This will cause the shader to be compiled
             this._updateParameters();
         }
         // Setup the default processing configuration to the scene.
         else {
             this._attachImageProcessingConfiguration(null, true);
-            this._applyWhiteBalanceOptions(options);
+            ApplyWhiteBalanceOptions(this.imageProcessingConfiguration, options);
             this.imageProcessingConfiguration.applyByPostProcess = true;
         }
-    }
-
-    private _applyWhiteBalanceOptions(options?: ThinImageProcessingPostProcessOptions): void {
-        if (options?.temperature === undefined && options?.tint === undefined) {
-            return;
-        }
-
-        if (options.temperature !== undefined) {
-            this.imageProcessingConfiguration.temperature = options.temperature;
-        }
-        if (options.tint !== undefined) {
-            this.imageProcessingConfiguration.tint = options.tint;
-        }
-        this.imageProcessingConfiguration.whiteBalanceEnabled = true;
     }
 
     /**

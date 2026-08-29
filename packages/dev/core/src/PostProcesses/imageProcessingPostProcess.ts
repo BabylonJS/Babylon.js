@@ -9,7 +9,7 @@ import { type ImageProcessingConfiguration } from "../Materials/imageProcessingC
 import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
-import { ThinImageProcessingPostProcess } from "./thinImageProcessingPostProcess";
+import { ApplyWhiteBalanceOptions, ThinImageProcessingPostProcess } from "./thinImageProcessingPostProcess";
 
 /**
  * ImageProcessingPostProcess
@@ -386,6 +386,11 @@ export class ImageProcessingPostProcess extends PostProcess {
             effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinImageProcessingPostProcess(name, engine, localOptions) : undefined,
             ...localOptions,
         });
+
+        // Applied here (not just inside ThinImageProcessingPostProcess's own constructor) so that `temperature`/
+        // `tint` are honored even when a caller supplies their own pre-built `effectWrapper`, in which case the
+        // thin wrapper above is never constructed and its own application of these options never runs.
+        ApplyWhiteBalanceOptions(this.imageProcessingConfiguration, options);
 
         this.onApply = () => {
             this._effectWrapper.overrideAspectRatio = this.aspectRatio;
