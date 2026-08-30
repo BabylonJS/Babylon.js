@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, type Page } from "@playwright/test";
 
 import { getGlobalConfig, evaluateInitEngine, evaluateCreateScene, evaluateDisposeEngine } from "@tools/test-tools";
 
@@ -90,6 +90,7 @@ const evaluateRenderComposite = async (blendMode: number, layer0: RGBA, layer1: 
                 mt = new B.MultiTexture("multi", [makeSolidPng(...layer0), makeSolidPng(...layer1)], scene, {
                     width: 8,
                     height: 8,
+                    blendMode,
                     premultiplyAlpha,
                     onLoad: () => resolve(),
                 });
@@ -220,49 +221,64 @@ const assertCompositePixels = async (engineName: string, blendMode: number, expe
         compileErr: string;
         compositeRGBA: number[];
     };
+    const modeLabels: Record<number, string> = {
+        [BABYLON_ALPHA_BLEND]: "ALPHA_BLEND",
+        [BABYLON_ALPHA_MAX]: "ALPHA_MAX",
+        [BABYLON_ADD]: "ADD",
+        [BABYLON_MULTIPLY]: "MULTIPLY",
+        [BABYLON_SUBTRACT]: "SUBTRACT",
+        [BABYLON_SCREEN]: "SCREEN",
+    };
     // Capture the presented frame with page.screenshot(): the same capture path the
     // visualization suite uses, proven on both WebGL2 and WebGPU (in-browser drawImage of a
     // WebGPU canvas is not reliable, see evaluateRenderComposite notes).
     const screenshot = await page.screenshot();
     const pixels = await decodeCenterPixels(screenshot.toString("base64"));
-    for (const [r, g, b] of pixels) {
-        expect(Math.abs(r - expected[0])).toBeLessThanOrEqual(PIXEL_TOLERANCE);
-        expect(Math.abs(g - expected[1])).toBeLessThanOrEqual(PIXEL_TOLERANCE);
-        expect(Math.abs(b - expected[2])).toBeLessThanOrEqual(PIXEL_TOLERANCE);
-    }
-    for (let i = 0; i < 4; i++) {
-        expect(Math.abs(compositeRGBA[i] - expected[i])).toBeLessThanOrEqual(PIXEL_TOLERANCE);
+
+    // Collect every mismatched channel (presented RGB + internal composite RGBA readback) into one
+    // message so a failure reports exactly which source/channel deviated and by how much, instead of
+    // a bare vitest tolerance line.
+    const failures: string[] = [];
+    const compare = (label: string, channel: string, actual: unknown, exp: number) => {
+        if (typeof actual !== "number") {
+            failures.push(`${label}.${channel}=non-numeric (${String(actual)}), expected ${exp}`);
+        } else if (Math.abs(actual - exp) > PIXEL_TOLERANCE) {
+            failures.push(`${label}.${channel}=${actual} (expected ${exp}, tol ${PIXEL_TOLERANCE})`);
+        }
+    };
+    const rgbLabels = ["r", "g", "b"];
+    pixels.forEach(([r, g, b], i) => {
+        [r, g, b].forEach((v, c) => compare(`presented[${i}]`, rgbLabels[c], v, expected[c]));
+    });
+    ["r", "g", "b", "a"].forEach((c, i) => compare("compositeRGBA", c, compositeRGBA[i], expected[i]));
+    if (failures.length > 0) {
+        throw new Error(
+            `[${engineName}] ${modeLabels[blendMode] ?? blendMode}${premultiplyAlpha ? " premultiply" : ""} mismatch: ${failures.join("; ")}` +
+                (compileErr ? ` (compile: ${compileErr})` : "")
+        );
     }
 };
 
 export const evaluateMultiTextureTests = (engineName: string) => {
     test.describe("MultiTexture real-engine integration", () => {
-        test.beforeAll(async ({ browser }) => {
+        test.beforeEach(async ({ browser }) => {
+            // A fresh page per test. MultiTexture allocates a WebGPU/WebGL2 2D-array render target per
+            // instance that a shared page accumulates across the whole describe; after ~10 composites
+            // the GPU device runs out of resources and `new MultiTexture` starts throwing (fast,
+            // ~50ms, non-pixel failures). Recreating the page each test keeps each composite on a
+            // clean device so the surface is deterministic and never resource-starved.
             page = await browser.newPage();
             await page.setViewportSize({ width: 16, height: 16 });
             await page.goto(getGlobalConfig().baseUrl + `/empty.html`, { waitUntil: "load", timeout: 0 });
             await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
             await page.waitForFunction(() => (window as any).BABYLON);
             page.setDefaultTimeout(0);
-        });
-
-        test.beforeEach(async () => {
-            // evaluateDisposeEngine nulls window.engine but NOT window.scene, and
-            // evaluateCreateScene only creates a scene when window.scene is falsy — a stale
-            // disposed scene from a prior test would otherwise be reused and render nothing.
-            await page.evaluate(() => {
-                (window as any).scene?.dispose();
-                (window as any).scene = null;
-            });
             await page.evaluate(evaluateInitEngine, { engineName });
             await page.evaluate(evaluateCreateScene);
         });
 
         test.afterEach(async () => {
             await page.evaluate(evaluateDisposeEngine);
-        });
-
-        test.afterAll(async () => {
             await page.close();
         });
 
