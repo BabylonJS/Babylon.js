@@ -123,7 +123,9 @@ export function RegisterMultiTexture(): void {
  *   layer is drawn over the accumulated result, so later layers cover earlier ones and a fully
  *   opaque layer hides everything below it. With straight-alpha layers (premultiplyAlpha: false)
  *   the fold is the source-over `over` operator (`outA = layer.a + outA * (1 - layer.a)`); with
- *   premultiplied layers it is the premultiplied form (`out = layer + out * (1 - layer.a)`).
+ *   the premultiplied form (`out = layer + out * (1 - layer.a)`). The composite always outputs
+ *   straight RGBA, so materials see identical pixels regardless of `premultiplyAlpha` (which
+ *   only controls the layer storage/fold).
  * - ALPHA_MAX picks the sample with the highest alpha; ties (equal alpha) resolve to the highest
  *   layer index (last input draws over earlier ones).
  * - With zero active layers, ALPHA_BLEND/ALPHA_MAX/ADD/SUBTRACT/SCREEN output transparent black
@@ -995,8 +997,9 @@ export enum MultiBlendMode {
      * over the accumulated result, so later layers cover earlier ones and a fully opaque layer
      * (a = 1) completely hides everything below it. With straight-alpha layers (premultiplyAlpha:
      * false) the fold is `outA = layer.a + outA * (1 - layer.a)`; with premultiplied layers it is
-     * the premultiplied form `out = layer + out * (1 - layer.a)`. Zero active layers output
-     * transparent black.
+     * the premultiplied form `out = layer + out * (1 - layer.a)`. The composite always outputs
+     * straight RGBA, so materials see identical pixels regardless of `premultiplyAlpha` (which
+     * only controls the layer storage/fold). Zero active layers output transparent black.
      */
     ALPHA_BLEND = 0,
     /** Keeps the sample with the highest alpha among the layers (ties: highest index wins). Zero active layers output transparent black. */

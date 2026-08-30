@@ -61,16 +61,17 @@ let page: Page;
  * the presented frame with page.screenshot() — the same capture path the visualization
  * suite uses, proven on both WebGL2 and WebGPU — and decodes its PNG bytes.
  */
-const evaluateRenderComposite = async (blendMode: number, layer0: RGBA, layer1: RGBA) => {
+const evaluateRenderComposite = async (blendMode: number, layer0: RGBA, layer1: RGBA, premultiplyAlpha = false) => {
     return page.evaluate(
-        async ({ blendMode, layer0, layer1 }) => {
+        async ({ blendMode, layer0, layer1, premultiplyAlpha }) => {
             const scene = (window as any).scene;
             const engine = (window as any).engine;
             const B = (window as any).BABYLON;
 
             // Generated solid-color PNG data URLs keep the test fully local. PNG stores straight
-            // alpha, and the MultiTexture upload path uses createImageBitmap + premultiplyAlpha:false
-            // on both WebGL2 and WebGPU, so the sampled layers carry straight RGBA.
+            // alpha; the MultiTexture upload path decodes it per premultiplyAlpha (createImageBitmap
+            // with premultiplyAlpha "none" by default, "premultiply" when premultiplyAlpha is true),
+            // so the sampled layers carry the requested alpha mode.
             const makeSolidPng = (r: number, g: number, b: number, a: number) => {
                 const canvas = document.createElement("canvas");
                 canvas.width = 8;
@@ -89,7 +90,7 @@ const evaluateRenderComposite = async (blendMode: number, layer0: RGBA, layer1: 
                 mt = new B.MultiTexture("multi", [makeSolidPng(...layer0), makeSolidPng(...layer1)], scene, {
                     width: 8,
                     height: 8,
-                    blendMode,
+                    premultiplyAlpha,
                     onLoad: () => resolve(),
                 });
             });
@@ -167,7 +168,7 @@ const evaluateRenderComposite = async (blendMode: number, layer0: RGBA, layer1: 
             }
             return { compileErr, compositeRGBA };
         },
-        { blendMode, layer0, layer1 }
+        { blendMode, layer0, layer1, premultiplyAlpha }
     );
 };
 
@@ -214,8 +215,11 @@ const decodeCenterPixels = async (screenshotBase64: string): Promise<number[][]>
  * math including alpha (e.g. ALPHA_BLEND's alpha, MULTIPLY's absorbed alpha, SUBTRACT's zeroed
  * alpha) that presentation alone cannot observe.
  */
-const assertCompositePixels = async (engineName: string, blendMode: number, expected: RGBA, layer0: RGBA, layer1: RGBA): Promise<void> => {
-    const { compileErr, compositeRGBA } = (await evaluateRenderComposite(blendMode, layer0, layer1)) as unknown as { compileErr: string; compositeRGBA: number[] };
+const assertCompositePixels = async (engineName: string, blendMode: number, expected: RGBA, layer0: RGBA, layer1: RGBA, premultiplyAlpha = false): Promise<void> => {
+    const { compileErr, compositeRGBA } = (await evaluateRenderComposite(blendMode, layer0, layer1, premultiplyAlpha)) as unknown as {
+        compileErr: string;
+        compositeRGBA: number[];
+    };
     // Capture the presented frame with page.screenshot(): the same capture path the
     // visualization suite uses, proven on both WebGL2 and WebGPU (in-browser drawImage of a
     // WebGPU canvas is not reliable, see evaluateRenderComposite notes).
@@ -332,5 +336,12 @@ export const evaluateMultiTextureTests = (engineName: string) => {
                 await assertCompositePixels(engineName, mode, expectedForEngine, translucent0, translucent1);
             });
         }
+        // premultiplyAlpha:true stores the layers premultiplied; the composite must still output the
+        // SAME straight source-over pixel as straight storage ([107,91,111,223]) — the un-premultiply
+        // is unconditional — so a material consuming the composite sees identical colors regardless
+        // of the layer alpha mode.
+        test(`composites ALPHA_BLEND premultiplied layers (translucent) to the same straight RGBA as straight storage (${engineName})`, async () => {
+            await assertCompositePixels(engineName, BABYLON_ALPHA_BLEND, [107, 91, 111, 223], translucent0, translucent1, true);
+        });
     });
 };

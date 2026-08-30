@@ -711,6 +711,15 @@ describe("MultiTexture", () => {
         expect(mt.composite.setFragmentCalls[0]).toBe("multiTextureCompositeAlphaBlend");
         expect(mt.composite.defines).toContain("#define MULTITEXTURE_BLEND_ALPHA_BLEND");
     });
+    it("emits the MULTITEXTURE_PREMULTIPLY define only when premultiplyAlpha is true", async () => {
+        const straight = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
+        expect(straight.mt.composite.defines).not.toContain("#define MULTITEXTURE_PREMULTIPLY");
+
+        const premultiplied = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, premultiplyAlpha: true });
+        expect(premultiplied.mt.composite.defines).toContain("#define MULTITEXTURE_PREMULTIPLY");
+        // The blend flag is still present alongside the storage-mode define.
+        expect(premultiplied.mt.composite.defines).toContain("#define MULTITEXTURE_BLEND_ALPHA_BLEND");
+    });
 
     it("swapping between ALPHA_BLEND and ALPHA_MAX selects the right fragment and defines", async () => {
         const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 });

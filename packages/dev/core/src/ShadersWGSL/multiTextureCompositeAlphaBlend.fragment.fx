@@ -9,6 +9,10 @@ varying vUV: vec2f;
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
+    // Standard source-over accumulation. `result` is a premultiplied accumulator: with straight
+    // layers (default) each sample is premultiplied on the fly; with premultiplyAlpha: true the
+    // layers are already stored premultiplied. Either way the composite outputs un-premultiplied
+    // (straight) RGBA, so materials consume identical pixels regardless of layer alpha storage.
     var result: vec4f = vec4f(0.0);
     for (var i: i32 = 0; i < MULTITEXTURE_MAXLAYERS; i++) {
         if (i >= uniforms.uLayerCount) { break; }
@@ -20,10 +24,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         result = pm + result * (1.0 - s.a);
         #endif
     }
-    #ifdef MULTITEXTURE_PREMULTIPLY
-    fragmentOutputs.color = result;
-    #else
     let outA: f32 = result.a;
     fragmentOutputs.color = vec4f(select(vec3f(0.0), result.rgb / outA, outA > 0.0), outA);
-    #endif
 }
