@@ -644,8 +644,9 @@ describe("MultiTexture", () => {
         expect(newUploads[1][2]).toBe(1);
         expect(newUploads[2][2]).toBe(2);
 
-        // Defines rewritten for the wider loop bound.
-        expect(mt.composite.defines).toContain("#define MULTITEXTURE_MAXLAYERS 4");
+        // The MAXLAYERS loop bound is baked to the device cap (not the grown depth), so growth
+        // never rewrites the defines/no effect rebuild; the actual grown depth is checked above.
+        expect(mt.composite.defines).toContain("#define MULTITEXTURE_MAXLAYERS 128");
     });
 
     it("removeLayerAsync shifts layers down, re-uploads them and decrements uLayerCount", async () => {
@@ -702,10 +703,10 @@ describe("MultiTexture", () => {
         expect(mt.composite.render).toHaveBeenCalledTimes(rendersBefore + 1);
     });
 
-    it("defaults to ALPHA_BLEND (running mix) when no blendMode is given", async () => {
+    it("defaults to ALPHA_BLEND (source-over) when no blendMode is given", async () => {
         const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
-
         expect(mt.blendMode).toBe(MultiBlendMode.ALPHA_BLEND);
+
         // The composite effect is built with the alpha-blend fragment and its defines flag.
         expect(mt.composite.setFragmentCalls[0]).toBe("multiTextureCompositeAlphaBlend");
         expect(mt.composite.defines).toContain("#define MULTITEXTURE_BLEND_ALPHA_BLEND");
@@ -1122,7 +1123,7 @@ describe("MultiTexture insertLayerAsync", () => {
             [expect.anything(), 1],
         ]);
         expect(newUploads.every((c: any[]) => c[0] === newRaw.getInternalTexture())).toBe(true);
-        expect(mt.composite.defines).toContain("#define MULTITEXTURE_MAXLAYERS 4");
+        expect(mt.composite.defines).toContain("#define MULTITEXTURE_MAXLAYERS 128");
     });
 
     it("refuses to grow beyond the device cap and leaves state untouched", async () => {
@@ -1504,7 +1505,7 @@ describe("MultiTexture clone", () => {
         expect(newPt.size).toEqual({ width: 32, height: 16 });
         expect(clone.blendMode).toBe(MultiBlendMode.ADD);
         expect(newPt.setFragmentCalls[0]).toBe("multiTextureCompositeAdd");
-        expect(newPt.defines).toContain("#define MULTITEXTURE_MAXLAYERS 5");
+        expect(newPt.defines).toContain("#define MULTITEXTURE_MAXLAYERS 128");
         expect(newPt.defines).toContain("#define MULTITEXTURE_BLEND_ADD");
     });
 
@@ -1560,7 +1561,7 @@ describe("MultiTexture clone", () => {
         // Capacity follows the current (grown) depth, not the construction-time one.
         expect(newRaw.depth).toBe(4);
         expect(clone.blendMode).toBe(MultiBlendMode.SCREEN);
-        expect((clone as MockMultiTexture).composite.defines).toContain("#define MULTITEXTURE_MAXLAYERS 4");
+        expect((clone as MockMultiTexture).composite.defines).toContain("#define MULTITEXTURE_MAXLAYERS 128");
         expect((clone as MockMultiTexture).composite.defines).toContain("#define MULTITEXTURE_BLEND_SCREEN");
     });
 

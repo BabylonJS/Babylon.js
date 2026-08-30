@@ -119,9 +119,11 @@ export function RegisterMultiTexture(): void {
  *   reloads or large layers carry a CPU/memory cost (roughly `width × height × 4` bytes per layer).
  * - With `premultiplyAlpha: true` the GPU layers are stored premultiplied, but the CPU `pixels`
  *   cache still holds the raw decoded (non-premultiplied) bytes.
- * - The default ALPHA_BLEND mode folds the layers with a running mix: each layer is blended over
- *   the accumulated result using its own alpha (`result = mix(result, layer, layer.a)`), so later
- *   layers draw over earlier ones and a fully opaque layer hides everything below it.
+ * - The default ALPHA_BLEND mode composites the layers with standard source-over blending: each
+ *   layer is drawn over the accumulated result, so later layers cover earlier ones and a fully
+ *   opaque layer hides everything below it. With straight-alpha layers (premultiplyAlpha: false)
+ *   the fold is the source-over `over` operator (`outA = layer.a + outA * (1 - layer.a)`); with
+ *   premultiplied layers it is the premultiplied form (`out = layer + out * (1 - layer.a)`).
  * - ALPHA_MAX picks the sample with the highest alpha; ties (equal alpha) resolve to the highest
  *   layer index (last input draws over earlier ones).
  * - With zero active layers, ALPHA_BLEND/ALPHA_MAX/ADD/SUBTRACT/SCREEN output transparent black
@@ -129,16 +131,15 @@ export function RegisterMultiTexture(): void {
  * - Compositing is performed independently of the scene render loop: MultiTexture re-composites
  *   its internal render target explicitly after every mutation (layer add/insert/remove/update,
  *   blend-mode change, array growth), so `scene.proceduralTexturesEnabled` has no effect on it.
- * - How the composite samples the layer array depends on the engine backend. On WebGL2 the GLSL
- *   composite shader reads the layers through the array sampler (`texture(...)`, filtered), so
- *   `samplingMode` affects the composite output, `rttScale` other than 1 produces a filtered
- *   bilinear rescale, and (with `generateMipMaps: true`) trilinear minification can use the layer
- *   mips when `rttScale` less than 1. On WebGPU the WGSL composite shader instead performs an
- *   integer texel fetch (`textureLoad`), because the WebGPU backend of Babylon does not expose
- *   filtered sampling of `sampler2DArray` (`textureSample`) to shaders; there `samplingMode`,
- *   `rttScale`-driven filtering and the layer mips do not affect the composite output (each layer
- *   is sampled at its exact texel). The `_arrayTexture` sampler that materials use to read the
- *   per-layer array is unaffected by this limitation.
+ * - How the composite samples the layer array depends on the engine backend, but both are
+ *   filtered and honour `samplingMode`. On WebGL2 the GLSL composite shader reads the layers
+ *   through the array sampler (`texture(...)`), so `samplingMode` affects the output, `rttScale`
+ *   other than 1 produces a filtered bilinear rescale, and (with `generateMipMaps: true`)
+ *   trilinear minification can use the layer mips. On WebGPU the WGSL composite shader samples
+ *   the layer array through its sampler at mip 0 (`textureSampleLevel(..., 0.0)`), so `samplingMode`
+ *   affects the output but only mip-0 filtering applies (no mip-level selection) and `rttScale`
+ *   rescale is filtered at mip 0. The `_arrayTexture` sampler that materials use to read the
+ *   per-layer array is unaffected by this backend difference.
  * - The non-pure `multiTexture` entry imports both the WebGL2 and WebGPU 2D-array upload
  *   extensions automatically, so `MultiTexture` works on either engine out of the box. If you
  *   import only the side-effect-free `multiTexture.pure` module directly, you must import the
@@ -636,7 +637,9 @@ export class MultiTexture extends BaseTexture {
             "\n#define MULTITEXTURE_HEIGHT " +
             this._mtOptions.height +
             "\n#define MULTITEXTURE_BLEND_" +
-            flag
+            flag +
+            // ALPHA_BLEND's source-over fold differs for straight-alpha vs premultiplied layers.
+            (this._mtOptions.premultiplyAlpha ? "\n#define MULTITEXTURE_PREMULTIPLY" : "")
         );
     }
 
@@ -988,10 +991,12 @@ export class MultiTexture extends BaseTexture {
  */
 export enum MultiBlendMode {
     /**
-     * Default. Folds the layers with a running mix: each layer i is blended over the accumulated
-     * result using its own alpha, `result = mix(result, layer, layer.a)`. Later layers are drawn
-     * over earlier ones; a fully opaque layer (a = 1) completely covers everything below it.
-     * Zero active layers output transparent black.
+     * Default. Composites the layers with standard source-over alpha blending: each layer is drawn
+     * over the accumulated result, so later layers cover earlier ones and a fully opaque layer
+     * (a = 1) completely hides everything below it. With straight-alpha layers (premultiplyAlpha:
+     * false) the fold is `outA = layer.a + outA * (1 - layer.a)`; with premultiplied layers it is
+     * the premultiplied form `out = layer + out * (1 - layer.a)`. Zero active layers output
+     * transparent black.
      */
     ALPHA_BLEND = 0,
     /** Keeps the sample with the highest alpha among the layers (ties: highest index wins). Zero active layers output transparent black. */

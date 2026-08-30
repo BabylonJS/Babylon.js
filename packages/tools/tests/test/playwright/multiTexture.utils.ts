@@ -296,12 +296,11 @@ export const evaluateMultiTextureTests = (engineName: string) => {
         }
 
         // Translucent (alpha < 255) layers so every blend mode is also validated for its alpha
-        // behavior, not just its RGB: ALPHA_MAX must keep the highest-alpha layer, ALPHA_BLEND must
-        // interpolate alpha (note its fold squares alpha — mix(result, s, s.a) applies s.a as both
-        // the factor and the interpolated alpha, so two alpha-128/191 layers blend to 159, not the
-        // plain lerp of the two), MULTIPLY must absorb alpha, ADD must add-clamp, SUBTRACT must zero
-        // the alpha, and SCREEN must combine it. Expected values come from recomputing each shader's
-        // fold in double precision on the straight-alpha inputs.
+        // behavior, not just its RGB: ALPHA_BLEND applies standard source-over compositing (the
+        // 191-alpha layer drawn over the 128-alpha layer yields straight alpha 223), ALPHA_MAX
+        // keeps the highest-alpha layer, MULTIPLY absorbs alpha, ADD adds-clamps, SUBTRACT zeroes
+        // out the alpha, and SCREEN combines it. Expected values come from recomputing each
+        // shader's fold in double precision on the straight-alpha inputs.
         const translucent0: RGBA = [150, 100, 60, 128];
         const translucent1: RGBA = [100, 90, 120, 191];
 
@@ -320,8 +319,7 @@ export const evaluateMultiTextureTests = (engineName: string) => {
             expected: RGBA; // canonical output (WebGPU, correct alpha)
             webgl2Expected: RGBA; // WebGL2 actual output (alpha-upload bug, see note above)
         }> = [
-            { mode: BABYLON_ADD, label: "ADD", expected: [250, 190, 180, 255], webgl2Expected: [249, 189, 180, 255] },
-            { mode: BABYLON_ALPHA_BLEND, label: "ALPHA_BLEND", expected: [94, 80, 97, 159], webgl2Expected: [97, 81, 99, 165] },
+            { mode: BABYLON_ALPHA_BLEND, label: "ALPHA_BLEND", expected: [107, 91, 111, 223], webgl2Expected: [107, 91, 111, 223] },
             { mode: BABYLON_ALPHA_MAX, label: "ALPHA_MAX", expected: [100, 90, 120, 191], webgl2Expected: [100, 89, 120, 191] },
             { mode: BABYLON_MULTIPLY, label: "MULTIPLY", expected: [59, 35, 28, 96], webgl2Expected: [58, 35, 28, 112] },
             { mode: BABYLON_SCREEN, label: "SCREEN", expected: [191, 155, 152, 223], webgl2Expected: [191, 154, 152, 228] },

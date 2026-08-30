@@ -9,12 +9,21 @@ varying vUV: vec2f;
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-    let px: vec2i = min(vec2i(i32(input.vUV.x * f32(MULTITEXTURE_WIDTH)), i32(input.vUV.y * f32(MULTITEXTURE_HEIGHT))), vec2i(MULTITEXTURE_WIDTH - 1, MULTITEXTURE_HEIGHT - 1));
     var result: vec4f = vec4f(0.0);
     for (var i: i32 = 0; i < MULTITEXTURE_MAXLAYERS; i++) {
         if (i >= uniforms.uLayerCount) { break; }
         let s: vec4f = textureSampleLevel(uLayers, uLayersSampler, input.vUV, i, 0.0);
-        result = mix(result, s, s.a);
+        #ifdef MULTITEXTURE_PREMULTIPLY
+        result = s + result * (1.0 - s.a);
+        #else
+        let pm: vec4f = vec4f(s.rgb * s.a, s.a);
+        result = pm + result * (1.0 - s.a);
+        #endif
     }
+    #ifdef MULTITEXTURE_PREMULTIPLY
     fragmentOutputs.color = result;
+    #else
+    let outA: f32 = result.a;
+    fragmentOutputs.color = vec4f(select(vec3f(0.0), result.rgb / outA, outA > 0.0), outA);
+    #endif
 }
