@@ -366,7 +366,7 @@ export class MultiTexture extends BaseTexture {
         this.urls = urls.slice();
         this.pixels = new Array<Uint8ClampedArray | null>(this._layerCount).fill(null);
 
-        this.composite.defines = this._buildDefines(maxLayers, MODE_FLAGS[blendMode]);
+        this.composite.defines = this._buildDefines(MODE_FLAGS[blendMode]);
         this.composite.setTexture("uLayers", this._arrayTexture);
         this.composite.setInt("uLayerCount", this._layerCount);
 
@@ -405,7 +405,7 @@ export class MultiTexture extends BaseTexture {
         // Both lines are required: setFragment alone would keep the stale cached effect, because the
         // composite only rebuilds its effect when `defines` changes.
         this.composite.setFragment(FRAGMENT_NAMES[value]);
-        this.composite.defines = this._buildDefines(this._maxLayers, MODE_FLAGS[value]);
+        this.composite.defines = this._buildDefines(MODE_FLAGS[value]);
         this._renderComposite();
     }
 
@@ -624,10 +624,13 @@ export class MultiTexture extends BaseTexture {
         );
     }
 
-    private _buildDefines(maxLayers: number, flag: string): string {
+    private _buildDefines(flag: string): string {
         return (
+            // The loop bound is baked to the device cap, not the current layer count, so growing the
+            // array never changes the effect defines (no shader rebuild on addLayerAsync/insertLayerAsync).
+            // The uLayerCount uniform bounds sampling, so layers beyond the active count are never read.
             "#define MULTITEXTURE_MAXLAYERS " +
-            maxLayers +
+            this._deviceMaxLayerCap +
             "\n#define MULTITEXTURE_WIDTH " +
             this._mtOptions.width +
             "\n#define MULTITEXTURE_HEIGHT " +
@@ -888,8 +891,8 @@ export class MultiTexture extends BaseTexture {
 
         this._maxLayers = newDepth;
 
-        // The loop-bound define changed, so the effect must rebuild with the wider loop.
-        this.composite.defines = this._buildDefines(newDepth, MODE_FLAGS[this._blendMode]);
+        // No defines change on growth: MAXLAYERS is baked to the device cap and uLayerCount bounds
+        // sampling, so the composite effect is reused and only re-rendered against the grown array.
         this._renderComposite();
     }
 
