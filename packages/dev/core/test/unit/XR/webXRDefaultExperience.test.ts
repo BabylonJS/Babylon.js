@@ -2,6 +2,8 @@
 
 import { NullEngine } from "core/Engines/nullEngine";
 import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Ray } from "core/Culling/ray.core";
+import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
 import { WebXRDefaultExperience } from "core/XR/webXRDefaultExperience";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -54,5 +56,6 @@ describe("WebXRDefaultExperience", () => {
         expect(experience.teleportation).toBeDefined();
         expect(experience.nearInteraction).toBeDefined();
         expect(experience.enterExitUI.overlay.querySelector(".babylonVRicon")).not.toBeNull();
+        expect(() => scene.pickWithRay(new Ray(Vector3.Zero(), Vector3.Forward()))).not.toThrow();
     });
 });

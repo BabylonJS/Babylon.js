@@ -99,6 +99,20 @@ async function CreateSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement,
             "Headset checklist: stereo geometry, controllers, pointer selection, teleportation, exit, and re-entry.",
         ].join("\n");
     };
+    const onRuntimeError = (event: ErrorEvent) => {
+        diagnostics.push(`Runtime error: ${FormatError(event.error ?? event.message)}`);
+        renderStatus();
+    };
+    const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+        diagnostics.push(`Unhandled rejection: ${FormatError(event.reason)}`);
+        renderStatus();
+    };
+    window.addEventListener("error", onRuntimeError);
+    window.addEventListener("unhandledrejection", onUnhandledRejection);
+    scene.onDisposeObservable.addOnce(() => {
+        window.removeEventListener("error", onRuntimeError);
+        window.removeEventListener("unhandledrejection", onUnhandledRejection);
+    });
     renderStatus();
 
     const xr = await WebXRDefaultExperience.CreateAsync(scene, {

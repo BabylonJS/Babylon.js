@@ -15,7 +15,7 @@ import { Axis } from "../../Maths/math.axis";
 import { StandardMaterial } from "../../Materials/standardMaterial.pure";
 import { CreateCylinder } from "../../Meshes/Builders/cylinderBuilder.pure";
 import { CreateTorus } from "../../Meshes/Builders/torusBuilder.pure";
-import { Ray } from "../../Culling/ray.pure";
+import { Ray, RegisterRay } from "../../Culling/ray.pure";
 import { PickingInfo } from "../../Collisions/pickingInfo";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
@@ -1024,6 +1024,8 @@ export function RegisterWebXRControllerPointerSelection(): void {
         return;
     }
     _Registered = true;
+
+    RegisterRay();
 
     //register the plugin
     WebXRFeaturesManager.AddWebXRFeature(
