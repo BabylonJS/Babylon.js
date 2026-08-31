@@ -14,7 +14,6 @@ import { WebXRState } from "core/XR/webXRTypes";
 interface IStatusPanel {
     root: HTMLDivElement;
     text: HTMLDivElement;
-    toggleButton: HTMLButtonElement;
 }
 
 function GetStateName(state: WebXRState): string {
@@ -34,13 +33,9 @@ function CreateStatusPanel(container: HTMLElement): IStatusPanel {
     const root = document.createElement("div");
     root.style.cssText = "position:absolute;top:12px;left:12px;z-index:10;max-width:520px;padding:12px;background:#111c;color:#fff;font:14px/1.4 monospace;white-space:pre-wrap";
     const text = document.createElement("div");
-    const toggleButton = document.createElement("button");
-    toggleButton.textContent = "Enter immersive VR";
-    toggleButton.style.marginTop = "8px";
-    toggleButton.disabled = true;
-    root.append(text, toggleButton);
+    root.appendChild(text);
     container.appendChild(root);
-    return { root, text, toggleButton };
+    return { root, text };
 }
 
 async function CreateSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement, statusPanel: IStatusPanel): Promise<Scene> {
@@ -78,30 +73,24 @@ async function CreateSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement,
 
     const capabilitySupported = WebXRSessionManager.IsWebGPUXRSupported;
     let state = WebXRState.NOT_IN_XR;
-    let lastError = "";
     const renderStatus = () => {
         statusPanel.text.textContent = [
             "WebXR over WebGPU",
             `Engine: ${engine.name}`,
             `XRGPUBinding projection path: ${capabilitySupported ? "available" : "unavailable"}`,
             `State: ${GetStateName(state)}`,
-            lastError ? `Last error: ${lastError}` : "Last error: none",
             "",
+            "Use Babylon.js's standard XR button in the lower-right corner.",
             "Headset checklist: stereo geometry, controllers, pointer selection, teleportation, exit, and re-entry.",
         ].join("\n");
-        statusPanel.toggleButton.textContent = state === WebXRState.IN_XR ? "Exit immersive VR" : "Enter immersive VR";
-        statusPanel.toggleButton.disabled = state === WebXRState.ENTERING_XR || state === WebXRState.EXITING_XR;
     };
     renderStatus();
 
     const xr = await WebXRDefaultExperience.CreateAsync(scene, {
-        disableDefaultUI: true,
         floorMeshes: [ground],
     });
     if (!xr.baseExperience) {
-        lastError = "WebXR is not available in this browser.";
-        renderStatus();
-        statusPanel.toggleButton.disabled = true;
+        statusPanel.text.textContent += "\n\nWebXR is not available in this browser.";
         return scene;
     }
 
@@ -111,25 +100,6 @@ async function CreateSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement,
     xr.baseExperience.onStateChangedObservable.add((newState) => {
         state = newState;
         renderStatus();
-    });
-
-    const toggleXRAsync = async () => {
-        lastError = "";
-        renderStatus();
-        try {
-            if (state === WebXRState.IN_XR) {
-                await xr.baseExperience.exitXRAsync();
-            } else {
-                await xr.baseExperience.enterXRAsync("immersive-vr", "local-floor", xr.renderTarget);
-            }
-        } catch (error) {
-            lastError = error instanceof Error ? error.message : String(error);
-            renderStatus();
-        }
-    };
-    statusPanel.toggleButton.addEventListener("click", () => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        toggleXRAsync();
     });
 
     return scene;

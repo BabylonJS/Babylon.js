@@ -40,6 +40,6 @@ It supports the following params:
 
 ### exp=webxrOverWebGPU
 
-This committed example creates an XR-compatible `WebGPUEngine`, enables the required WebXR Layers feature, and exercises immersive WebXR rendering over WebGPU. It displays capability, session-state, and entry-error diagnostics with controls for headset entry, exit, and re-entry.
+This committed example creates an XR-compatible `WebGPUEngine`, enables the required WebXR Layers feature, and uses `WebXRDefaultExperience` for the standard entry UI, controller models, pointer selection, teleportation, near interaction, and hand tracking. It also displays WebGPU-XR capability and session-state diagnostics.
 
-Run the dev host and open `http://localhost:1338/?exp=webxrOverWebGPU`. In a headset, verify stereo geometry, controller appearance, exit, and re-entry. On unsupported browsers or devices, the status panel displays the actionable WebGPU-XR entry error.
+Run the dev host and open `http://localhost:1338/?exp=webxrOverWebGPU`. In a headset, use the standard XR button in the lower-right corner, then verify stereo geometry, controller appearance, pointer selection, teleportation, exit, and re-entry. On unsupported browsers or devices, the status panel displays the WebGPU-XR capability failure.
