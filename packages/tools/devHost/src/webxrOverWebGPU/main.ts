@@ -10,6 +10,7 @@ import { Scene } from "core/scene";
 import { WebXRDefaultExperience } from "core/XR/webXRDefaultExperience";
 import { WebXRSessionManager } from "core/XR/webXRSessionManager";
 import { WebXRState } from "core/XR/webXRTypes";
+import "loaders/glTF/2.0/glTFLoader";
 
 interface IStatusPanel {
     root: HTMLDivElement;
