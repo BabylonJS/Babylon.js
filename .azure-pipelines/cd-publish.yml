@@ -10,19 +10,43 @@
 #   - BabylonJS-CI-Infrastructure (no secrets; pipeline scope)
 #   - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER) - job scope,
 #     PublishRelease only
+#   - BabylonJS-Publish-GitHub (GITHUB_RELEASE_TOKEN) - job scope,
+#     FetchReleaseNotes and PublishRelease only
+#   - BabylonJS-Publish-Npm (NPM_REGISTRY_TOKEN) - job scope, PublishNpm only
 #
-# Secret variables (configure in pipeline UI):
-#   - GitHubPAT
-#   - NPM_TOKEN
+# NO SECRET IS CONFIGURED ON THIS PIPELINE DEFINITION.
+#   A secret variable defined in the pipeline UI ("Pipeline -> Edit ->
+#   Variables") is *not* a protected resource. It has no pipeline permissions,
+#   no branch control and no required-template check: it is handed to every run
+#   of the definition, including a run a maintainer queues against an arbitrary
+#   ref. Azure DevOps compiles that ref's YAML, so the attacker supplies both
+#   the code and the gates that were supposed to stop it - including
+#   templates/assert-trusted-source.yml, which lives in the same repository.
+#
+#   Both release credentials therefore come from dedicated *variable groups*,
+#   which are protected resources: an administrator authorizes them for this
+#   definition alone and attaches a branch control check pinned to
+#   refs/heads/master. A run from any other ref fails the check on the resource
+#   before the job starts, so no YAML the attacker wrote is ever executed with
+#   the credential in scope. See VARIABLE-GROUPS.md, "Why no credential may be
+#   a pipeline variable".
+#
+#   The variable names inside those groups (GITHUB_RELEASE_TOKEN,
+#   NPM_REGISTRY_TOKEN) deliberately differ from the pipeline-UI names they
+#   replace (GitHubPAT, NPM_TOKEN), so a leftover UI secret cannot silently
+#   satisfy a reference here and mask a missing group. Until an administrator
+#   creates and authorizes both groups this pipeline fails closed.
 #
 # CREDENTIAL HANDLING RULES (see VARIABLE-GROUPS.md "CI trust boundary"):
 #   - Credentials are never embedded in remote URLs or command lines, so they
 #     cannot be recovered from .git/config, the process table, or shell traces.
-#   - GitHubPAT is mapped into the environment of only the steps that need it
-#     and the git credential helper that consumes it is removed afterwards.
-#   - NPM_TOKEN is written to an ephemeral npm user config outside the working
-#     directory (mode 0600) that is deleted when the job ends, so third-party
-#     lifecycle scripts executed by `npm ci`/`npm install` cannot read it.
+#   - GITHUB_RELEASE_TOKEN is mapped into the environment of only the steps that
+#     need it and the git credential helper that consumes it is removed
+#     afterwards.
+#   - NPM_REGISTRY_TOKEN is written to an ephemeral npm user config outside the
+#     working directory (mode 0600) that is deleted when the job ends, so
+#     third-party lifecycle scripts executed by `npm ci`/`npm install` cannot
+#     read it.
 #   - Publishing runs with `--ignore-scripts`; no published workspace defines
 #     prepack/prepublishOnly, so no lifecycle code executes while the registry
 #     token is reachable.
@@ -65,18 +89,19 @@ jobs:
     # set of immutable pipeline artifacts.
     #
     # It holds no credential of any kind. The changelog and release notes that
-    # used to require `GitHubPAT` in this job are now produced by the
+    # used to require the GitHub token in this job are now produced by the
     # FetchReleaseNotes job above and consumed here as a pipeline artifact, so a
     # dependency lifecycle script or a process left running by `npm ci` has
     # nothing to steal and no later step to wait for.
     # ========================================================================
     # ========================================================================
-    # 0. Fetch release notes (the only job that holds the GitHub token)
+    # 0. Fetch release notes (one of the two jobs that hold the GitHub token)
     #
     # Checks the repository out but deliberately never runs `npm ci`, so no
     # dependency lifecycle script, and no third-party package code, ever runs
-    # while GitHubPAT is in this agent's environment. scripts/fetchReleaseNotes.js
-    # and everything it requires use Node built-ins only.
+    # while GITHUB_RELEASE_TOKEN is in this agent's environment.
+    # scripts/fetchReleaseNotes.js and everything it requires use Node built-ins
+    # only.
     #
     # The result is handed to the build job as an immutable pipeline artifact,
     # so that job never needs the token at all.
@@ -84,6 +109,11 @@ jobs:
     - job: FetchReleaseNotes
       displayName: "Fetch release notes (credential-only)"
       timeoutInMinutes: 30
+      variables:
+          # Protected resource, not a pipeline-UI secret, and mapped on this job
+          # alone. The job asserts a trusted source ref and then asserts that the
+          # group really supplied the token before it is used.
+          - group: BabylonJS-Publish-GitHub
       steps:
           - checkout: self
             clean: true
@@ -92,6 +122,13 @@ jobs:
             persistCredentials: false
 
           - template: templates/assert-trusted-source.yml
+
+          - template: templates/assert-protected-secret.yml
+            parameters:
+                variableName: GITHUB_RELEASE_TOKEN
+                variableGroup: BabylonJS-Publish-GitHub
+                value: $(GITHUB_RELEASE_TOKEN)
+                displayName: "Assert GitHub release token came from its group"
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -107,7 +144,7 @@ jobs:
                 node ./scripts/fetchReleaseNotes.js
             displayName: "Fetch release notes"
             env:
-                GITHUBPAT: $(GitHubPAT)
+                GITHUBPAT: $(GITHUB_RELEASE_TOKEN)
 
           - bash: |
                 set -euo pipefail
@@ -379,10 +416,21 @@ jobs:
       displayName: "Publish to npm"
       dependsOn: BuildRelease
       condition: succeeded()
+      variables:
+          # Protected resource, not a pipeline-UI secret. This is the only job
+          # that maps it, and it runs with `checkout: none`.
+          - group: BabylonJS-Publish-Npm
       steps:
           - checkout: none
 
           - template: templates/assert-trusted-source.yml
+
+          - template: templates/assert-protected-secret.yml
+            parameters:
+                variableName: NPM_REGISTRY_TOKEN
+                variableGroup: BabylonJS-Publish-Npm
+                value: $(NPM_REGISTRY_TOKEN)
+                displayName: "Assert npm registry token came from its group"
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -413,7 +461,7 @@ jobs:
                 echo "##vso[task.setvariable variable=NpmAuthConfig]$NPM_AUTH_CONFIG"
             displayName: "write npm auth config"
             env:
-                NPM_TOKEN: $(NPM_TOKEN)
+                NPM_TOKEN: $(NPM_REGISTRY_TOKEN)
                 AGENT_TEMP_DIRECTORY: $(Agent.TempDirectory)
 
           - bash: |
@@ -472,6 +520,10 @@ jobs:
           # pipeline that uploads to the deployment server, and it runs with
           # `checkout: none` so no repository or dependency code shares the agent.
           - group: BabylonJS-Deployment
+          # The GitHub push credential, also a protected resource rather than a
+          # pipeline-UI secret. FetchReleaseNotes and this job are the only two
+          # jobs that map it.
+          - group: BabylonJS-Publish-GitHub
           - name: PackageVersion
             value: $[ dependencies.BuildRelease.outputs['ReleaseMeta.PackageVersion'] ]
           - name: ReleaseCommit
@@ -480,6 +532,20 @@ jobs:
           - checkout: none
 
           - template: templates/assert-trusted-source.yml
+
+          - template: templates/assert-protected-secret.yml
+            parameters:
+                variableName: GITHUB_RELEASE_TOKEN
+                variableGroup: BabylonJS-Publish-GitHub
+                value: $(GITHUB_RELEASE_TOKEN)
+                displayName: "Assert GitHub release token came from its group"
+
+          - template: templates/assert-protected-secret.yml
+            parameters:
+                variableName: DEPLOY_TOKEN
+                variableGroup: BabylonJS-Deployment
+                value: $(DEPLOY_TOKEN)
+                displayName: "Assert deployment token came from its group"
 
           # BuildRelease runs `npm ci` and the full build, so its output
           # variables are produced by an agent that executed dependency
@@ -560,7 +626,7 @@ jobs:
                 $GIT push origin "$TRUSTED_BRANCH_NAME" --tags
             displayName: "push branch and tags"
             env:
-                GITHUBPAT: $(GitHubPAT)
+                GITHUBPAT: $(GITHUB_RELEASE_TOKEN)
                 TRUSTED_BRANCH_NAME: $(TrustedBranchName)
                 BOT_EMAIL: $(BOT_EMAIL)
                 AGENT_TEMP_DIRECTORY: $(Agent.TempDirectory)
