@@ -47,14 +47,16 @@ export interface ThinImageProcessingPostProcessOptions extends EffectWrapperCrea
 
 /**
  * Applies the `temperature`/`tint` white balance options (if provided) to an image processing configuration,
- * enabling white balance if either was supplied. Exported so it can be applied uniformly regardless of how the
- * configuration was resolved - in particular, `ImageProcessingPostProcess` also calls this directly on
- * `this.imageProcessingConfiguration` after construction, since a caller-supplied `effectWrapper` bypasses
- * `ThinImageProcessingPostProcess`'s own constructor (and thus its own call to this function) entirely.
+ * enabling white balance if either was supplied. Exported (but internal) so it can be applied uniformly
+ * regardless of how the configuration was resolved - in particular, `ImageProcessingPostProcess` also calls this
+ * directly on `this.imageProcessingConfiguration` after construction, since a caller-supplied `effectWrapper`
+ * bypasses `ThinImageProcessingPostProcess`'s own constructor (and thus its own call to this function) entirely.
  * @param configuration the image processing configuration to update
  * @param options the options object that may contain `temperature`/`tint`, or a plain size number (ignored)
+ * @internal
  */
-export function ApplyWhiteBalanceOptions(configuration: ImageProcessingConfiguration, options?: { temperature?: number; tint?: number } | number): void {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function _ApplyWhiteBalanceOptions(configuration: ImageProcessingConfiguration, options?: { temperature?: number; tint?: number } | number): void {
     if (!options || typeof options === "number") {
         return;
     }
@@ -569,14 +571,14 @@ export class ThinImageProcessingPostProcess extends EffectWrapper {
         if (imageProcessingConfiguration) {
             imageProcessingConfiguration.applyByPostProcess = true;
             this._attachImageProcessingConfiguration(imageProcessingConfiguration, true);
-            ApplyWhiteBalanceOptions(this.imageProcessingConfiguration, options);
+            _ApplyWhiteBalanceOptions(this.imageProcessingConfiguration, options);
             // This will cause the shader to be compiled
             this._updateParameters();
         }
         // Setup the default processing configuration to the scene.
         else {
             this._attachImageProcessingConfiguration(null, true);
-            ApplyWhiteBalanceOptions(this.imageProcessingConfiguration, options);
+            _ApplyWhiteBalanceOptions(this.imageProcessingConfiguration, options);
             this.imageProcessingConfiguration.applyByPostProcess = true;
         }
     }
