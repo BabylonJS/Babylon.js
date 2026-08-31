@@ -125,6 +125,22 @@ test("loading a model without an environment using query parameters", async ({ p
     await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
 });
 
+test("selecting the default camera after loading a camera from query parameters", async ({ page }) => {
+    const camerasUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Cameras/glTF/Cameras.gltf";
+    const query = [`assetUrl=${camerasUrl}`, "camera=0"].join("&");
+
+    await page.goto(url + (snapshot ? "&" : "?") + query, {
+        waitUntil: "load",
+    });
+    await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+
+    await page.getByTitle("Select camera").click();
+    await page.locator(".dropup-content-line", { hasText: "default camera" }).click();
+    await page.getByTitle("Select camera").click();
+
+    await expect(page.locator(".dropup-content-line", { hasText: "default camera" }).locator("div")).toHaveCSS("opacity", "1");
+});
+
 test("inspector is opened when clicking on the button", async ({ page }) => {
     await page.goto(url + (snapshot ? "&" : "?") + "assetUrl=https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Binary/Box.glb", {
         waitUntil: "load",
