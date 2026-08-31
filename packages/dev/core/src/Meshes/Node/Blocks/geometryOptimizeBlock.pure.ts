@@ -199,11 +199,11 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock implements INodeGeo
                 newVertexData.indices = indices;
             }
 
+            state.restoreGeometryContext();
+            state.restoreExecutionContext();
+
             return newVertexData;
         };
-
-        state.restoreGeometryContext();
-        state.restoreExecutionContext();
 
         if (this.evaluateContext) {
             this.output._storedFunction = func;

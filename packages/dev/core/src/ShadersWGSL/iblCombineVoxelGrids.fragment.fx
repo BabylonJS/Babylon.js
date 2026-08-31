@@ -29,7 +29,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     //   var voxelY: f32 = texelFetch(voxelYaxisSampler, coordY, 0).r;
     //   var voxelZ: f32 = texelFetch(voxelZaxisSampler, coordZ, 0).r;
 
-    var voxel = select(0.0, 1.0, (voxelX > 0.0 || voxelY > 0.0 || voxelZ > 0.0));
+    // Combine the three per-axis grids with MAX so non-binary opacity survives.
+    var voxel = max(voxelX, max(voxelY, voxelZ));
     fragmentOutputs.color =  vec4f( vec3f(voxel), 1.0);
 
 }

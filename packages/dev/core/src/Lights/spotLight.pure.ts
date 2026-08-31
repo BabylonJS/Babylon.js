@@ -183,7 +183,7 @@ export class SpotLight extends ShadowLight {
      */
     public set projectionTextureUpDirection(value: Vector3) {
         this._projectionTextureUpDirection = value;
-        this._projectionTextureProjectionLightDirty = true;
+        this._projectionTextureViewLightDirty = true;
     }
 
     @serializeAsTexture("projectedLightTexture")

@@ -1,5 +1,5 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import { typescript } from "monaco-editor";
+import { typescript } from "monaco-editor/esm/vs/languages/features/register.all";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { type GlobalState } from "../../../globalState";
 

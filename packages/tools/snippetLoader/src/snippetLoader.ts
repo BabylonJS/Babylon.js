@@ -28,10 +28,9 @@ import { DecodeBase64ToString, DetectContentType, ParseDataPayload } from "./par
  */
 let CachedTsPromise: Promise<typeof import("typescript")> | null = null;
 
-// Isolated dynamic import so the untyped module specifier is contained
-// in a single place and the @ts-expect-error applies cleanly.
+// Isolated dynamic import for the Monaco bundle typed by typescriptServices.d.ts.
 async function _LoadMonacoTs(): Promise<unknown> {
-    return await import("monaco-editor/esm/vs/language/typescript/lib/typescriptServices");
+    return await import("monaco-editor/languages/features/typescript/lib/typescriptServices");
 }
 
 async function GetTypeScript(): Promise<typeof import("typescript")> {

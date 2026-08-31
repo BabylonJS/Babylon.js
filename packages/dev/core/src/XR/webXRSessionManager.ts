@@ -36,6 +36,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     private _sessionMode: XRSessionMode;
     private _onEngineDisposedObserver: Nullable<Observer<AbstractEngine>>;
     private _sessionCleanup: Nullable<() => void> = null;
+    private _referenceSpaceInitialized = false;
 
     /**
      * The base reference space from which the session started. good if you want to reset your
@@ -158,6 +159,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      */
     public set referenceSpace(newReferenceSpace: XRReferenceSpace) {
         this._referenceSpace = newReferenceSpace;
+        this._referenceSpaceInitialized = true;
         this.onXRReferenceSpaceChanged.notifyObservers(this._referenceSpace);
     }
 
@@ -236,6 +238,77 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      */
     public getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
         return this._baseLayerRTTProvider?.getRenderTargetTextureForView(view) || null;
+    }
+
+    /**
+     * Checks whether the current XR view exposes the dynamic viewport scaling API.
+     * API availability does not guarantee that the active XR device will change the viewport dimensions.
+     * This method must be called during an active XR frame.
+     * @param viewIndex the index of the view in the current viewer pose
+     * @returns whether dynamic viewport scaling is exposed for the view
+     * @see https://playground.babylonjs.com/#BAGIIM#0
+     */
+    public isViewportScaleSupported(viewIndex: number): boolean {
+        const view = this._getCurrentXRView(viewIndex);
+        return "recommendedViewportScale" in view && typeof view.requestViewportScale === "function";
+    }
+
+    /**
+     * Gets the runtime-recommended viewport scale for the current XR view.
+     * A number is returned when the runtime has a recommendation, `null` when the API is supported but
+     * the runtime has no recommendation, and `undefined` when the API is not supported.
+     * This method must be called during an active XR frame.
+     * @param viewIndex the index of the view in the current viewer pose
+     * @returns the recommended viewport scale, `null` when no recommendation is available, or `undefined` when unsupported
+     * @see https://playground.babylonjs.com/#BAGIIM#0
+     */
+    public getRecommendedViewportScale(viewIndex: number): Nullable<number> | undefined {
+        const view = this._getCurrentXRView(viewIndex);
+        if (!("recommendedViewportScale" in view) || typeof view.requestViewportScale !== "function") {
+            return undefined;
+        }
+        return view.recommendedViewportScale ?? null;
+    }
+
+    /**
+     * Requests a viewport scale for the current XR view.
+     * The request is a hint to the runtime. Babylon uses the native viewport returned on subsequent frames
+     * and does not derive viewport dimensions from this value. Pass `1` to restore the full viewport scale;
+     * `null` follows the native no-op behavior. Native ignored-value, clamping, and exception behavior is preserved.
+     * Requests made from an application observer of `onXRFrameObservable` apply to a future frame because
+     * Babylon's camera acquires the current frame's viewport before notifying application observers.
+     * This method must be called during an active XR frame.
+     * @param viewIndex the index of the view in the current viewer pose
+     * @param scale the viewport scale requested from the runtime
+     * @see https://playground.babylonjs.com/#BAGIIM#0
+     */
+    public requestViewportScale(viewIndex: number, scale: Nullable<number>): void {
+        const view = this._getCurrentXRView(viewIndex);
+        if (!("recommendedViewportScale" in view) || typeof view.requestViewportScale !== "function") {
+            throw new Error(`Dynamic viewport scaling is not supported for XR view ${viewIndex}.`);
+        }
+        view.requestViewportScale(scale);
+    }
+
+    private _getCurrentXRView(viewIndex: number): XRView {
+        if (!this.inXRSession || !this.session) {
+            throw new Error("Dynamic viewport scaling requires an active XR session.");
+        }
+        if (!this.inXRFrameLoop || !this.currentFrame) {
+            throw new Error("Dynamic viewport scaling must be used during an active XR frame.");
+        }
+        if (!this._referenceSpaceInitialized) {
+            throw new Error("Dynamic viewport scaling requires an initialized XR reference space.");
+        }
+        if (!Number.isInteger(viewIndex) || viewIndex < 0) {
+            throw new RangeError("The XR view index must be a non-negative integer.");
+        }
+
+        const pose = this.currentFrame.getViewerPose(this.referenceSpace);
+        if (!pose || viewIndex >= pose.views.length) {
+            throw new RangeError(`XR view ${viewIndex} is not available in the current viewer pose.`);
+        }
+        return pose.views[viewIndex];
     }
 
     /**
@@ -326,6 +399,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         }
 
         this.session = session;
+        this._referenceSpaceInitialized = false;
         this._sessionMode = xrSessionMode;
         this.inXRSession = true;
 
@@ -338,6 +412,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             sessionCleanupComplete = true;
             this._sessionCleanup = null;
             this.inXRSession = false;
+            this._referenceSpaceInitialized = false;
 
             // Cache the value of engine in case it is disposed during onXRSessionEnded callbacks
             const engine = this._engine;
@@ -630,7 +705,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * If this returns null, then fixed foveation is not supported
      */
     public get fixedFoveation(): Nullable<number> {
-        return this._baseLayerWrapper?.fixedFoveation || null;
+        return this._baseLayerWrapper?.fixedFoveation ?? null;
     }
 
     /**

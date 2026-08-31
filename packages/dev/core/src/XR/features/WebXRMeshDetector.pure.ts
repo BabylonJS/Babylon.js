@@ -57,6 +57,11 @@ export interface IWebXRVertexData {
      */
     xrMesh: XRMesh;
     /**
+     * The semantic classification supplied by the XR runtime.
+     * This is undefined when the runtime does not expose semantic labels and null when the mesh has no known classification.
+     */
+    semanticLabel?: string | null;
+    /**
      * The node to use to transform the local results to world coordinates.
      * WorldParentNode will only exist if it was declared in the IWebXRMeshDetectorOptions.
      */
@@ -235,6 +240,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
 
     private _updateVertexDataWithXRMesh(xrMesh: XRMesh, mesh: Partial<IWebXRVertexData>, xrFrame: XRFrame): IWebXRVertexData {
         mesh.xrMesh = xrMesh;
+        mesh.semanticLabel = xrMesh.semanticLabel;
         mesh.worldParentNode = this._options.worldParentNode;
         const positions = xrMesh.vertices || xrMesh.positions;
 

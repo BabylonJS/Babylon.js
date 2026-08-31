@@ -32,4 +32,5 @@ export default commonUMDRollupConfiguration({
             ? `babylonjs.proceduralTextures${production ? ".min" : ""}.js`
             : `babylon.${pathData.chunk.name}ProceduralTexture${production ? ".min" : ""}.js`,
     minToMax: true,
+    es5EntryPoint: "proceduralTextures",
 });

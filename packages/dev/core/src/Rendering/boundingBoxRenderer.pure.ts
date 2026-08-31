@@ -577,13 +577,12 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
             // Directly update the matrix values in column-major order
             m[0] = diff._x; // Scale X
-            m[3] = median._x; // Translate X
-
             m[5] = diff._y; // Scale Y
-            m[7] = median._y; // Translate Y
-
             m[10] = diff._z; // Scale Z
-            m[11] = median._z; // Translate Z
+
+            m[12] = median._x; // Translate X
+            m[13] = median._y; // Translate Y
+            m[14] = median._z; // Translate Z
 
             const offset = instancesCount * 16;
             // Multiply into Float64 temp matrix, subtract offset in Float64, then copy to Float32 buffer

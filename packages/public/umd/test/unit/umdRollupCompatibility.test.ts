@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -55,6 +56,44 @@ describe("UMD Rollup compatibility", () => {
         });
         expect(multiEntryConfig).toHaveLength(2);
         expect(multiEntryConfig.every((config) => config.treeshake === false)).toBe(true);
+    });
+
+    it("generates one ES5 sibling for the configured aggregate entry point", async () => {
+        const { commonUMDRollupConfiguration } = await import("../../../rollupUMDHelper.mjs");
+        const outputPath = fs.mkdtempSync(path.join(os.tmpdir(), "babylon-umd-es5-"));
+
+        try {
+            const configs = commonUMDRollupConfiguration({
+                devPackageName: "loaders",
+                mode: "production",
+                outputPath,
+                entryPoints: {
+                    loaders: "./src/index.ts",
+                    glTFFileLoader: "./src/glTFFileLoader.ts",
+                },
+                overrideFilename: ({ chunk }: { chunk: { name: string } }) => `babylonjs.${chunk.name}.min.js`,
+                es5EntryPoint: "loaders",
+            });
+            const aggregateConfig = configs[0];
+            const secondaryConfig = configs[1];
+            const source = "const exponent = (value) => value ** 2;\n//# sourceMappingURL=babylonjs.loaders.min.js.map\n";
+            fs.writeFileSync(aggregateConfig.output.file, source);
+
+            const aggregatePlugin = aggregateConfig.plugins.find((candidate: { name?: string }) => candidate?.name === "generate-es5-umd");
+            const secondaryPlugin = secondaryConfig.plugins.find((candidate: { name?: string }) => candidate?.name === "generate-es5-umd");
+            expect(aggregatePlugin).toBeDefined();
+            expect(secondaryPlugin).toBeUndefined();
+
+            aggregatePlugin.closeBundle();
+
+            const es5Path = path.join(outputPath, "babylonjs.loaders.es5.js");
+            expect(fs.existsSync(es5Path)).toBe(true);
+            expect(fs.readFileSync(es5Path, "utf8")).toContain("Math.pow(value, 2)");
+            expect(fs.readFileSync(es5Path, "utf8")).not.toContain("sourceMappingURL");
+            expect(fs.existsSync(path.join(outputPath, "babylonjs.glTFFileLoader.es5.js"))).toBe(false);
+        } finally {
+            fs.rmSync(outputPath, { recursive: true, force: true });
+        }
     });
 
     it("keeps the glTF2 legacy export compatible with nested UMD namespaces", async () => {

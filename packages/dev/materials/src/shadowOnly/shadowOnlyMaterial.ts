@@ -14,7 +14,7 @@ import { type SubMesh } from "core/Meshes/subMesh";
 import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { _ShaderImportLoader } from "core/Misc/shaderImportLoader";
 
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { type CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
@@ -60,7 +60,10 @@ class ShadowOnlyMaterialDefines extends MaterialDefines {
 export class ShadowOnlyMaterial extends PushMaterial {
     private _activeLight: IShadowLight;
     private _needAlphaBlending = true;
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new _ShaderImportLoader(
+        () => [import("./shadowOnly.vertex"), import("./shadowOnly.fragment")],
+        () => [import("./wgsl/shadowOnly.vertex"), import("./wgsl/shadowOnly.fragment")]
+    );
 
     /**
      * Instantiates a ShadowOnly Material in the given scene
@@ -250,17 +253,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: 1 },
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("./wgsl/shadowOnly.vertex"), import("./wgsl/shadowOnly.fragment")]);
-                                  } else {
-                                      await Promise.all([import("./shadowOnly.vertex"), import("./shadowOnly.fragment")]);
-                                  }
-
-                                  this._shadersLoaded = true;
-                              },
+                        extraInitializationsAsync: ShadowOnlyMaterial._ShaderLoader.getLoadCallback(this._shaderLanguage),
                     },
                     engine
                 ),

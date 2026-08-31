@@ -107,17 +107,17 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
      */
     override render() {
         let divStyle: any;
-        let canvasStyle: any;
+        let previewStyle: any;
 
         switch (this.props.globalState.previewSizeManager.mode.value) {
             case FillMode:
-                canvasStyle = { width: "100%", height: "100%" };
+                previewStyle = { width: "100%", height: "100%" };
                 break;
             case FixedMode:
                 divStyle = {
                     height: "100%",
                 };
-                canvasStyle = {
+                previewStyle = {
                     width: this.props.globalState.previewSizeManager.fixedWidth.value + "px",
                     height: this.props.globalState.previewSizeManager.fixedHeight.value + "px",
                     position: "relative",
@@ -125,7 +125,7 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
                 };
                 break;
             case "aspectRatio":
-                canvasStyle = divStyle = { aspectRatio: this.props.globalState.previewSizeManager.aspectRatio.value };
+                previewStyle = divStyle = { aspectRatio: this.props.globalState.previewSizeManager.aspectRatio.value };
                 break;
         }
 
@@ -140,7 +140,9 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
                     onPointerUp={this._onPointerUp}
                     onPointerCancel={this._onPointerCancel}
                 >
-                    <canvas id="sfe-preview-canvas" style={canvasStyle} className={"preview-background-" + this.props.globalState.previewBackground} ref={this._canvasRef} />
+                    <div id="sfe-preview-background" style={previewStyle} className={"preview-background-" + this.props.globalState.previewBackground}>
+                        <canvas id="sfe-preview-canvas" ref={this._canvasRef} />
+                    </div>
                     {!this.props.globalState.smartFilter ? <div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div> : <></>}
                 </div>
             </>

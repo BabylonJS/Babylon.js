@@ -1,9 +1,9 @@
 import { Gizmo } from "core/Gizmos/gizmo";
 import { Epsilon } from "core/Maths/math.constants";
-import { Matrix, Quaternion, TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector3 } from "core/Maths/math.vector.pure";
 import { type Scene } from "core/scene";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
-import { TransformNode } from "core/Meshes/transformNode";
+import { TransformNode } from "core/Meshes/transformNode.pure";
 import { type Observer } from "core/Misc/observable";
 import { PivotTools } from "core/Misc/pivotTools";
 import { type UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
