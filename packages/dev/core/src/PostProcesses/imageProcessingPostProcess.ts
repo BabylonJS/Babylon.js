@@ -12,6 +12,24 @@ import { Constants } from "../Engines/constants";
 import { ApplyWhiteBalanceOptions, ThinImageProcessingPostProcess } from "./thinImageProcessingPostProcess";
 
 /**
+ * Options used to create an `ImageProcessingPostProcess`.
+ */
+export type ImageProcessingPostProcessOptions = PostProcessOptions & {
+    /**
+     * The correlated color temperature, in Kelvin, of the illuminant to neutralize via white balance - see
+     * `ImageProcessingConfiguration.temperature`. Providing this (or `tint`) also enables white balance.
+     * Defaults to 6500 K.
+     */
+    temperature?: number;
+
+    /**
+     * The white balance tint offset to apply, on the green/magenta axis - see `ImageProcessingConfiguration.tint`.
+     * Providing this (or `temperature`) also enables white balance. Defaults to 0 (no tint offset).
+     */
+    tint?: number;
+};
+
+/**
  * ImageProcessingPostProcess
  * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#imageprocessing
  */
@@ -361,7 +379,7 @@ export class ImageProcessingPostProcess extends PostProcess {
 
     constructor(
         name: string,
-        options: number | PostProcessOptions,
+        options: number | ImageProcessingPostProcessOptions,
         camera: Nullable<Camera> = null,
         samplingMode?: number,
         engine?: AbstractEngine,
@@ -378,7 +396,7 @@ export class ImageProcessingPostProcess extends PostProcess {
             textureType,
             imageProcessingConfiguration,
             scene: camera?.getScene(),
-            ...(options as PostProcessOptions),
+            ...(options as ImageProcessingPostProcessOptions),
             blockCompilation: true,
         };
 
