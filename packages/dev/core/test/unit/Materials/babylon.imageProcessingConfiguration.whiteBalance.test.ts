@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 // `colorCurves` field; without this side-effect import, Parse throws before reaching our own properties.
 import "../../../src/Materials/colorCurves";
 import { ImageProcessingConfiguration } from "../../../src/Materials/imageProcessingConfiguration.pure";
-import { GetWhiteBalanceMatrix } from "../../../src/Maths/colorTemperature.functions";
+import { GetWhiteBalanceMatrix, MinTemperatureKelvin } from "../../../src/Maths/colorTemperature.functions";
 import { SerializationHelper } from "../../../src/Misc/decorators.serialization";
 import { type Effect } from "../../../src/Materials/effect.pure";
 
@@ -31,6 +31,24 @@ function createFakeEffectCapturingMatrix() {
     } as unknown as Effect;
     return { effect, getCapturedMatrix: () => capturedMatrix };
 }
+
+describe("ImageProcessingConfiguration white balance setters", () => {
+    it("clamps temperature and tint to the range that actually renders, so the getter matches what's bound", () => {
+        const configuration = new ImageProcessingConfiguration();
+
+        configuration.tint = 99999;
+        expect(configuration.tint).toBe(150);
+
+        configuration.tint = -99999;
+        expect(configuration.tint).toBe(-150);
+
+        configuration.temperature = -5000;
+        expect(configuration.temperature).toBeCloseTo(MinTemperatureKelvin, 5);
+
+        configuration.temperature = 100000;
+        expect(configuration.temperature).toBe(100000);
+    });
+});
 
 describe("ImageProcessingConfiguration white balance clone/parse", () => {
     it("recomputes the white balance matrix after clone()", () => {

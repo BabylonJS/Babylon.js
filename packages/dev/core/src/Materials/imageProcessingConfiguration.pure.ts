@@ -4,7 +4,8 @@ import { serialize, serializeAsTexture, serializeAsColorCurves, serializeAsColor
 import { Observable } from "../Misc/observable.pure";
 import { type Nullable } from "../types";
 import { Color4 } from "../Maths/math.color.pure";
-import { GetWhiteBalanceMatrix } from "../Maths/colorTemperature.functions";
+import { GetWhiteBalanceMatrix, MaxTintMagnitude, MinTemperatureKelvin } from "../Maths/colorTemperature.functions";
+import { Clamp } from "../Maths/math.scalar.functions";
 import { ColorCurves, ColorCurvesBind } from "../Materials/colorCurves.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { type Effect } from "../Materials/effect.pure";
@@ -251,7 +252,7 @@ export class ImageProcessingConfiguration {
      * is set to true - i.e. the light the scene is assumed to have been lit with, not a "warm"/"cool" creative
      * adjustment. Lower values (e.g. ~2000-3500 K) correspond to warm/orange sources such as tungsten or candle
      * light; higher values (e.g. ~7000-10000 K) correspond to cool/blue sources such as shade or overcast sky.
-     * Internally clamped to the tabulated range (roughly 1667 K and above). Default is 6500.
+     * Clamped to the tabulated range (roughly 1667 K and above) - the getter reflects the clamped value. Default is 6500.
      */
     public get temperature(): number {
         return this._temperature;
@@ -261,9 +262,11 @@ export class ImageProcessingConfiguration {
      * is set to true - i.e. the light the scene is assumed to have been lit with, not a "warm"/"cool" creative
      * adjustment. Lower values (e.g. ~2000-3500 K) correspond to warm/orange sources such as tungsten or candle
      * light; higher values (e.g. ~7000-10000 K) correspond to cool/blue sources such as shade or overcast sky.
-     * Internally clamped to the tabulated range (roughly 1667 K and above). Default is 6500.
+     * Clamped to the tabulated range (roughly 1667 K and above) - the getter reflects the clamped value. Default is 6500.
      */
     public set temperature(value: number) {
+        value = Math.max(value, MinTemperatureKelvin);
+
         if (this._temperature === value) {
             return;
         }
@@ -279,7 +282,7 @@ export class ImageProcessingConfiguration {
      * green/magenta axis perpendicular to temperature - e.g. to correct for illuminants (such as some
      * fluorescent lights) that a color temperature alone can't fully neutralize. Positive values shift the
      * corrected image toward magenta (compensating a green-tinted illuminant); negative values shift it toward
-     * green (compensating a magenta-tinted illuminant). Clamped to [-150, 150]. Default is 0 (no tint offset).
+     * green (compensating a magenta-tinted illuminant). Clamped to [-150, 150] - the getter reflects the clamped value. Default is 0 (no tint offset).
      */
     public get tint(): number {
         return this._tint;
@@ -289,9 +292,11 @@ export class ImageProcessingConfiguration {
      * green/magenta axis perpendicular to temperature - e.g. to correct for illuminants (such as some
      * fluorescent lights) that a color temperature alone can't fully neutralize. Positive values shift the
      * corrected image toward magenta (compensating a green-tinted illuminant); negative values shift it toward
-     * green (compensating a magenta-tinted illuminant). Clamped to [-150, 150]. Default is 0 (no tint offset).
+     * green (compensating a magenta-tinted illuminant). Clamped to [-150, 150] - the getter reflects the clamped value. Default is 0 (no tint offset).
      */
     public set tint(value: number) {
+        value = Clamp(value, -MaxTintMagnitude, MaxTintMagnitude);
+
         if (this._tint === value) {
             return;
         }

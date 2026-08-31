@@ -41,11 +41,23 @@ const PlanckianLocusTable: ReadonlyArray<readonly [number, number, number, numbe
 ];
 
 /**
+ * The minimum correlated color temperature, in Kelvin, representable by {@link TemperatureTintToXyz} (there is no
+ * upper bound: increasingly high temperatures approach mired 0, already within the tabulated range).
+ */
+export const MinTemperatureKelvin = 1e6 / PlanckianLocusTable[PlanckianLocusTable.length - 1][0];
+
+/**
+ * The maximum magnitude of the tint offset accepted by {@link TemperatureTintToXyz}, in either direction.
+ */
+export const MaxTintMagnitude = 150;
+
+/**
  * Converts a correlated color temperature and tint offset into the CIE XYZ (Y = 1) coordinates of the
  * corresponding illuminant white point, using a tabulated approximation of the Planckian locus in CIE 1960 UCS
  * (u, v) space.
  * @param temperatureKelvin The correlated color temperature of the illuminant, in Kelvin
- * @param tint An offset perpendicular to the Planckian locus (the green/magenta axis), in the range [-150, 150]
+ * @param tint An offset perpendicular to the Planckian locus (the green/magenta axis), in the range
+ * [-{@link MaxTintMagnitude}, {@link MaxTintMagnitude}]
  * @returns The CIE XYZ (Y = 1) coordinates of the illuminant white point
  */
 export function TemperatureTintToXyz(temperatureKelvin: number, tint: number): Vector3 {
@@ -74,7 +86,7 @@ export function TemperatureTintToXyz(temperatureKelvin: number, tint: number): V
     const isothermHigh = Vector2.Normalize(new Vector2(1, highT));
     const isotherm = Vector2.Normalize(Vector2.Lerp(isothermLow, isothermHigh, f));
 
-    const clampedTint = Clamp(tint, -150, 150);
+    const clampedTint = Clamp(tint, -MaxTintMagnitude, MaxTintMagnitude);
     uv.subtractInPlace(isotherm.scale(clampedTint / 3000));
 
     // CIE 1960 (u, v) -> CIE xyY (Y = 1) -> CIE XYZ.
