@@ -201,7 +201,6 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                 await this.session.end();
             } catch {
                 Logger.Warn("Could not end XR session.");
-                return;
             }
             try {
                 this._sessionCleanup?.();

@@ -540,6 +540,7 @@ describe("WebXRSessionManager", () => {
 
     describe("native session end cleanup", () => {
         let endHandler: (() => void) | undefined;
+        let end: ReturnType<typeof vi.fn>;
         let requestSession: ReturnType<typeof vi.fn>;
         let originalGPUBinding: unknown;
 
@@ -551,12 +552,14 @@ describe("WebXRSessionManager", () => {
             binding.prototype.getPreferredColorFormat = vi.fn();
             (globalThis as any).XRGPUBinding = binding;
             endHandler = undefined;
+            end = vi.fn().mockResolvedValue(undefined);
             const fakeSession = {
                 addEventListener: (type: string, cb: () => void) => {
                     if (type === "end") {
                         endHandler = cb;
                     }
                 },
+                end,
             } as unknown as XRSession;
             requestSession = vi.fn().mockResolvedValue(fakeSession);
             (sessionManager as any)._xrNavigator = { xr: { requestSession } };
@@ -582,6 +585,22 @@ describe("WebXRSessionManager", () => {
             // Simulate the native "end" event (no XR frame was ever produced).
             expect(() => endHandler!()).not.toThrow();
 
+            expect(sessionManager.inXRSession).toBe(false);
+            expect(endedObserver).toHaveBeenCalledTimes(1);
+            expect((sessionManager as any)._graphicsBinding).toBeNull();
+        });
+
+        it("cleans up when ending the session rejects", async () => {
+            end.mockRejectedValue(new Error("end failed"));
+            const endedObserver = vi.fn();
+            sessionManager.onXRSessionEnded.add(endedObserver);
+
+            await sessionManager.initializeSessionAsync("immersive-vr", {});
+            (sessionManager as any)._graphicsBinding = {};
+
+            await expect(sessionManager.exitXRAsync()).resolves.toBeUndefined();
+
+            expect(end).toHaveBeenCalledTimes(1);
             expect(sessionManager.inXRSession).toBe(false);
             expect(endedObserver).toHaveBeenCalledTimes(1);
             expect((sessionManager as any)._graphicsBinding).toBeNull();
