@@ -234,14 +234,21 @@ function makeScene(opts?: { webglVersion?: number; isWebGPU?: boolean; texture2D
         createEffect: mockState.createEffect,
         getCaps: () => ({ texture2DArrayMaxLayerCount: cap }),
     };
+    let uid = 0;
+    const textures: any[] = [];
     return {
         getEngine: () => engine,
         proceduralTextures: [] as any[],
         markAllMaterialsAsDirty: () => {},
         removePendingData: () => {},
         stopAnimation: () => {},
-        textures: [] as any[],
+        textures,
+        getUniqueId: () => ++uid,
+        addTexture: (t: any) => {
+            textures.push(t);
+        },
         onTextureRemovedObservable: { notifyObservers: vi.fn() },
+        getClassName: () => "Scene",
     } as unknown as Scene;
 }
 
@@ -385,6 +392,18 @@ describe("MultiTexture", () => {
         expect(mt.composite.setIntCalls).toContainEqual(["uLayerCount", 2]);
         expect(mt.urls).toEqual(["a.png", "b.png"]);
         expect(mt.layerCount).toBe(2);
+    });
+
+    it("registers itself in the supplied scene (not the engine's last-created scene)", () => {
+        const scene = makeScene();
+        const mt = new MultiTexture("myMultiTexture", ["a.png"], scene, { width: 8, height: 8 }) as unknown as MultiTexture;
+        expect(scene.textures).toContain(mt);
+    });
+
+    it("does not leave a partially-constructed texture registered after a validation throw", () => {
+        const scene = makeScene();
+        expect(() => new MultiTexture("myMultiTexture", ["a.png"], scene, { width: 0, height: 8 })).toThrow();
+        expect(scene.textures).toHaveLength(0);
     });
 
     it("throws on a WebGL1 engine and allocates nothing", () => {

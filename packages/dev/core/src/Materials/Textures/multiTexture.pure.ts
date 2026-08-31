@@ -249,147 +249,158 @@ export class MultiTexture extends BaseTexture {
      * @param options defines the creation options (width/height required)
      */
     constructor(name: string, urls: string[], scene: Scene, options: IMultiTextureOptions) {
-        super(null);
-        const engine = scene.getEngine();
-        if (!engine || (!engine.isWebGPU && (engine as ThinEngine).webGLVersion < 2)) {
-            throw new Error(
-                "MultiTexture requires WebGL2 (TEXTURE_2D_ARRAY + sampler2DArray) or WebGPU. " +
-                    "This context is WebGL1 or unavailable. Create the engine with WebGL2 enabled, e.g. " +
-                    "new Engine(canvas, { webglVersion: 2 })."
-            );
-        }
-
-        if (!Number.isInteger(options.width) || options.width <= 0 || !Number.isInteger(options.height) || options.height <= 0) {
-            throw new Error("MultiTexture: width and height must be positive integers.");
-        }
-
-        const deviceMaxLayerCap = engine.getCaps().texture2DArrayMaxLayerCount;
-
-        if (options.maxLayers !== undefined && (!Number.isInteger(options.maxLayers) || options.maxLayers < 1)) {
-            throw new Error(`MultiTexture: maxLayers must be a positive integer (got ${options.maxLayers}).`);
-        }
-        if (options.maxLayers === undefined && urls.length === 0) {
-            throw new Error(`MultiTexture: urls is empty; pass options.maxLayers (positive integer, <= device limit ${deviceMaxLayerCap}) to define the array depth.`);
-        }
-        if (options.maxLayers !== undefined && options.maxLayers < urls.length) {
-            throw new Error(`MultiTexture: maxLayers (${options.maxLayers}) must be >= urls.length (${urls.length}).`);
-        }
-
-        const blendMode = options.blendMode ?? MultiBlendMode.ALPHA_BLEND;
-        const maxLayers = options.maxLayers ?? urls.length;
-        if (maxLayers > deviceMaxLayerCap) {
-            throw new Error(
-                `MultiTexture: array depth ${maxLayers} exceeds the device limit texture2DArrayMaxLayerCount (${deviceMaxLayerCap}). Pass a smaller maxLayers (or fewer urls) or use a device with a higher limit.`
-            );
-        }
-        const rttW = Math.max(1, Math.round(options.width * (options.rttScale ?? 1)));
-        const rttH = Math.max(1, Math.round(options.height * (options.rttScale ?? 1)));
-        const generateMipMaps = options.generateMipMaps ?? false;
-        const shaderLanguage = engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
-
-        const extraInitializationsAsync = async (): Promise<void> => {
-            // Import ALL six fragment companions for this language so any later blend-mode swap
-            // finds its source in the store. Static import list - do not build dynamic import paths from variables.
-            if (shaderLanguage === ShaderLanguage.WGSL) {
-                await Promise.all([
-                    import("../../ShadersWGSL/multiTextureCompositeAlphaBlend.fragment"),
-                    import("../../ShadersWGSL/multiTextureCompositeAlphaMax.fragment"),
-                    import("../../ShadersWGSL/multiTextureCompositeAdd.fragment"),
-                    import("../../ShadersWGSL/multiTextureCompositeMultiply.fragment"),
-                    import("../../ShadersWGSL/multiTextureCompositeSubtract.fragment"),
-                    import("../../ShadersWGSL/multiTextureCompositeScreen.fragment"),
-                ]);
-            } else {
-                await Promise.all([
-                    import("../../Shaders/multiTextureCompositeAlphaBlend.fragment"),
-                    import("../../Shaders/multiTextureCompositeAlphaMax.fragment"),
-                    import("../../Shaders/multiTextureCompositeAdd.fragment"),
-                    import("../../Shaders/multiTextureCompositeMultiply.fragment"),
-                    import("../../Shaders/multiTextureCompositeSubtract.fragment"),
-                    import("../../Shaders/multiTextureCompositeScreen.fragment"),
-                ]);
+        super(scene);
+        try {
+            const engine = scene.getEngine();
+            if (!engine || (!engine.isWebGPU && (engine as ThinEngine).webGLVersion < 2)) {
+                throw new Error(
+                    "MultiTexture requires WebGL2 (TEXTURE_2D_ARRAY + sampler2DArray) or WebGPU. " +
+                        "This context is WebGL1 or unavailable. Create the engine with WebGL2 enabled, e.g. " +
+                        "new Engine(canvas, { webglVersion: 2 })."
+                );
             }
-        };
 
-        const creationOptions: IProceduralTextureCreationOptions = {
-            shaderLanguage,
-            extraInitializationsAsync,
-        };
+            if (!Number.isInteger(options.width) || options.width <= 0 || !Number.isInteger(options.height) || options.height <= 0) {
+                throw new Error("MultiTexture: width and height must be positive integers.");
+            }
 
-        this._compositeInternal = new ProceduralTexture(
-            name,
-            { width: rttW, height: rttH },
-            FRAGMENT_NAMES[blendMode],
-            scene,
-            {
-                ...creationOptions,
-                skipSceneRegistration: true,
-            },
-            /*generateMipMaps*/ false,
-            /*isCube*/ false,
-            Constants.TEXTURETYPE_UNSIGNED_BYTE
-        );
-        // Ensure texture-surface forwarding reaches the composite and this class behaves as a
-        // self-contained BaseTexture (dedicated single-slot texture, scene-aware, render-target).
-        this.name = name;
-        this._scene = scene;
-        this.isRenderTarget = true;
+            const deviceMaxLayerCap = engine.getCaps().texture2DArrayMaxLayerCount;
 
-        this._mtOptions = {
-            ...options,
-            maxLayers,
-            blendMode,
-            generateMipMaps,
-            samplingMode: options.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE,
-            premultiplyAlpha: options.premultiplyAlpha ?? false,
-            fit: options.fit ?? "resize",
-            rttScale: options.rttScale ?? 1,
-            watch: options.watch ?? false,
-            pollInterval: options.pollInterval ?? DEFAULT_POLL_INTERVAL_MS,
-        };
-        this._maxLayers = maxLayers;
-        this._deviceMaxLayerCap = deviceMaxLayerCap;
-        this._blendMode = blendMode;
+            if (options.maxLayers !== undefined && (!Number.isInteger(options.maxLayers) || options.maxLayers < 1)) {
+                throw new Error(`MultiTexture: maxLayers must be a positive integer (got ${options.maxLayers}).`);
+            }
+            if (options.maxLayers === undefined && urls.length === 0) {
+                throw new Error(`MultiTexture: urls is empty; pass options.maxLayers (positive integer, <= device limit ${deviceMaxLayerCap}) to define the array depth.`);
+            }
+            if (options.maxLayers !== undefined && options.maxLayers < urls.length) {
+                throw new Error(`MultiTexture: maxLayers (${options.maxLayers}) must be >= urls.length (${urls.length}).`);
+            }
 
-        this._arrayTexture = new RawTexture2DArray(
-            null,
-            options.width,
-            options.height,
-            maxLayers,
-            Constants.TEXTUREFORMAT_RGBA,
-            scene,
-            generateMipMaps,
-            /*invertY*/ false,
-            options.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE,
-            Constants.TEXTURETYPE_UNSIGNED_BYTE
-        );
-        this._arrayTexture.name = `${this.name}_2DArray`;
-        this._layers = urls.map((url) => this._createLayerEntry(url));
-        this._layerCount = this._layers.length;
-        this.urls = urls.slice();
-        this.pixels = new Array<Uint8ClampedArray | null>(this._layerCount).fill(null);
+            const blendMode = options.blendMode ?? MultiBlendMode.ALPHA_BLEND;
+            const maxLayers = options.maxLayers ?? urls.length;
+            if (maxLayers > deviceMaxLayerCap) {
+                throw new Error(
+                    `MultiTexture: array depth ${maxLayers} exceeds the device limit texture2DArrayMaxLayerCount (${deviceMaxLayerCap}). Pass a smaller maxLayers (or fewer urls) or use a device with a higher limit.`
+                );
+            }
+            const rttW = Math.max(1, Math.round(options.width * (options.rttScale ?? 1)));
+            const rttH = Math.max(1, Math.round(options.height * (options.rttScale ?? 1)));
+            const generateMipMaps = options.generateMipMaps ?? false;
+            const shaderLanguage = engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
 
-        this.composite.defines = this._buildDefines(MODE_FLAGS[blendMode]);
-        this.composite.setTexture("uLayers", this._arrayTexture);
-        this.composite.setInt("uLayerCount", this._layerCount);
+            const extraInitializationsAsync = async (): Promise<void> => {
+                // Import ALL six fragment companions for this language so any later blend-mode swap
+                // finds its source in the store. Static import list - do not build dynamic import paths from variables.
+                if (shaderLanguage === ShaderLanguage.WGSL) {
+                    await Promise.all([
+                        import("../../ShadersWGSL/multiTextureCompositeAlphaBlend.fragment"),
+                        import("../../ShadersWGSL/multiTextureCompositeAlphaMax.fragment"),
+                        import("../../ShadersWGSL/multiTextureCompositeAdd.fragment"),
+                        import("../../ShadersWGSL/multiTextureCompositeMultiply.fragment"),
+                        import("../../ShadersWGSL/multiTextureCompositeSubtract.fragment"),
+                        import("../../ShadersWGSL/multiTextureCompositeScreen.fragment"),
+                    ]);
+                } else {
+                    await Promise.all([
+                        import("../../Shaders/multiTextureCompositeAlphaBlend.fragment"),
+                        import("../../Shaders/multiTextureCompositeAlphaMax.fragment"),
+                        import("../../Shaders/multiTextureCompositeAdd.fragment"),
+                        import("../../Shaders/multiTextureCompositeMultiply.fragment"),
+                        import("../../Shaders/multiTextureCompositeSubtract.fragment"),
+                        import("../../Shaders/multiTextureCompositeScreen.fragment"),
+                    ]);
+                }
+            };
 
-        let canvas: OffscreenCanvas | HTMLCanvasElement | null = null;
-        if (typeof OffscreenCanvas !== "undefined") {
-            canvas = new OffscreenCanvas(options.width, options.height);
-        } else if (typeof document !== "undefined") {
-            canvas = document.createElement("canvas");
-            canvas.width = options.width;
-            canvas.height = options.height;
+            const creationOptions: IProceduralTextureCreationOptions = {
+                shaderLanguage,
+                extraInitializationsAsync,
+            };
+
+            this._compositeInternal = new ProceduralTexture(
+                name,
+                { width: rttW, height: rttH },
+                FRAGMENT_NAMES[blendMode],
+                scene,
+                {
+                    ...creationOptions,
+                    skipSceneRegistration: true,
+                },
+                /*generateMipMaps*/ false,
+                /*isCube*/ false,
+                Constants.TEXTURETYPE_UNSIGNED_BYTE
+            );
+            // Ensure texture-surface forwarding reaches the composite and this class behaves as a
+            // self-contained BaseTexture (dedicated single-slot texture, scene-aware, render-target).
+            this.name = name;
+            this.isRenderTarget = true;
+
+            this._mtOptions = {
+                ...options,
+                maxLayers,
+                blendMode,
+                generateMipMaps,
+                samplingMode: options.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE,
+                premultiplyAlpha: options.premultiplyAlpha ?? false,
+                fit: options.fit ?? "resize",
+                rttScale: options.rttScale ?? 1,
+                watch: options.watch ?? false,
+                pollInterval: options.pollInterval ?? DEFAULT_POLL_INTERVAL_MS,
+            };
+            this._maxLayers = maxLayers;
+            this._deviceMaxLayerCap = deviceMaxLayerCap;
+            this._blendMode = blendMode;
+
+            this._arrayTexture = new RawTexture2DArray(
+                null,
+                options.width,
+                options.height,
+                maxLayers,
+                Constants.TEXTUREFORMAT_RGBA,
+                scene,
+                generateMipMaps,
+                /*invertY*/ false,
+                options.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE,
+                Constants.TEXTURETYPE_UNSIGNED_BYTE
+            );
+            this._arrayTexture.name = `${this.name}_2DArray`;
+            this._layers = urls.map((url) => this._createLayerEntry(url));
+            this._layerCount = this._layers.length;
+            this.urls = urls.slice();
+            this.pixels = new Array<Uint8ClampedArray | null>(this._layerCount).fill(null);
+
+            this.composite.defines = this._buildDefines(MODE_FLAGS[blendMode]);
+            this.composite.setTexture("uLayers", this._arrayTexture);
+            this.composite.setInt("uLayerCount", this._layerCount);
+
+            let canvas: OffscreenCanvas | HTMLCanvasElement | null = null;
+            if (typeof OffscreenCanvas !== "undefined") {
+                canvas = new OffscreenCanvas(options.width, options.height);
+            } else if (typeof document !== "undefined") {
+                canvas = document.createElement("canvas");
+                canvas.width = options.width;
+                canvas.height = options.height;
+            }
+            if (!canvas) {
+                throw new Error("MultiTexture: no 2D canvas surface available (requires DOM or OffscreenCanvas).");
+            }
+            this._canvas = canvas;
+            // The union overload of getContext can surface non-2D context types (e.g. ImageBitmapRenderingContext)
+            // that the "2d" id never actually returns; narrow for the field's declared type.
+            this._ctx = (canvas.getContext("2d", { willReadFrequently: true }) ?? null) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+            void this._initialize();
+        } catch (e) {
+            // A failed constructor must not leave a half-built texture registered in the scene
+            // (BaseTexture registers `this` via addTexture in super). Roll that back before rethrowing.
+            if (scene.textures) {
+                const index = scene.textures.indexOf(this);
+                if (index >= 0) {
+                    scene.textures.splice(index, 1);
+                    scene.onTextureRemovedObservable.notifyObservers(this);
+                }
+            }
+            throw e;
         }
-        if (!canvas) {
-            throw new Error("MultiTexture: no 2D canvas surface available (requires DOM or OffscreenCanvas).");
-        }
-        this._canvas = canvas;
-        // The union overload of getContext can surface non-2D context types (e.g. ImageBitmapRenderingContext)
-        // that the "2d" id never actually returns; narrow for the field's declared type.
-        this._ctx = (canvas.getContext("2d", { willReadFrequently: true }) ?? null) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
-
-        void this._initialize();
     }
 
     /**
