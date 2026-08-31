@@ -3243,16 +3243,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                         PrepareDefinesForMergedUV(sampler.value, defines, sampler.textureDefine);
                         defines[sampler.textureDefine + "_GAMMA"] = sampler.value.gammaSpace;
                         if (sampler.textureDefine === "SPECULAR_RETROREFLECTIVITY") {
-                            // Native cannot add uniforms to the already-full Material block, so its shader
-                            // receives this infrequently changed texture transform through defines.
-                            const matrix = sampler.value.getTextureMatrix().m;
                             defines.SPECULAR_RETROREFLECTIVITY_UV_INDEX = sampler.value.coordinatesIndex;
-                            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_0 = matrix[0];
-                            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_1 = matrix[4];
-                            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_2 = matrix[8];
-                            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_3 = matrix[1];
-                            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_4 = matrix[5];
-                            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_5 = matrix[9];
                         }
                     } else {
                         defines[sampler.textureDefine] = false;
@@ -3360,6 +3351,29 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             defines.MIRRORED = !!scene._mirroredCameraPosition;
 
             defines.SPECULARAA = engine.getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
+        }
+
+        const retroreflectionTexture = this._specularRetroreflectivityTexture.value;
+        if (retroreflectionTexture) {
+            const matrix = retroreflectionTexture.getTextureMatrix().m;
+            const matrixChanged =
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_0 !== matrix[0] ||
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_1 !== matrix[4] ||
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_2 !== matrix[8] ||
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_3 !== matrix[1] ||
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_4 !== matrix[5] ||
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_5 !== matrix[9];
+
+            if (engine.shaderPlatformName === "NATIVE" && matrixChanged) {
+                defines.markAsUnprocessed();
+            }
+
+            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_0 = matrix[0];
+            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_1 = matrix[4];
+            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_2 = matrix[8];
+            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_3 = matrix[1];
+            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_4 = matrix[5];
+            defines.SPECULAR_RETROREFLECTIVITY_MATRIX_5 = matrix[9];
         }
 
         if (defines._areTexturesDirty || defines._areMiscDirty) {

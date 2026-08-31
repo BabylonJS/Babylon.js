@@ -41,9 +41,39 @@
         let thin_film_desaturation_scale: f32 = (thin_film_ior - 1.0f) * sqrt(thin_film_thickness * 0.001f);
     #endif
 
+    #ifdef RETROREFLECTION
+        let retroViewDirectionW: vec3f = normalize(reflect(-viewDirectionW, normalW));
+        var preInfoRetro: preLightingInfo = preInfo{X};
+        #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+            preInfoRetro = computeAreaPreLightingInfo(
+                areaLightsLTC1Sampler,
+                areaLightsLTC1SamplerSampler,
+                areaLightsLTC2Sampler,
+                areaLightsLTC2SamplerSampler,
+                retroViewDirectionW,
+                normalW,
+                fragmentInputs.vPositionW,
+                light{X}.vLightData.xyz,
+                light{X}.vLightWidth.xyz,
+                light{X}.vLightHeight.xyz,
+                specular_roughness
+            );
+            preInfoRetro.NdotV = baseGeoInfo.NdotV;
+        #else
+            preInfoRetro.H = normalize(preInfoRetro.L + retroViewDirectionW);
+            preInfoRetro.VdotH = saturateEps(dot(retroViewDirectionW, preInfoRetro.H));
+        #endif
+    #endif
+
     // Specular Lobe
     #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-        slab_glossy = computeAreaSpecularLighting(preInfo{X}, light{X}.vLightSpecular.rgb, baseConductorReflectance.F0, baseConductorReflectance.F90);
+        slab_glossy = computeOpenPBRAreaSpecularLighting(
+            preInfo{X},
+            light{X}.vLightSpecular.rgb,
+            baseDielectricReflectance.coloredF0,
+            baseDielectricReflectance.coloredF90
+        );
+        specularFresnel = computeOpenPBRAreaFresnel(preInfo{X}, baseDielectricReflectance.F0, baseDielectricReflectance.F90);
     #else
         {
             #ifdef ANISOTROPIC_BASE
@@ -78,13 +108,16 @@
         specularFresnelRetro = specularFresnel;
         specularColoredFresnelRetro = specularColoredFresnel;
 
-        #if !defined(AREALIGHT{X}) || !defined(AREALIGHTUSED) || !defined(AREALIGHTSUPPORTED)
+        #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+            slab_glossy_retro = computeOpenPBRAreaSpecularLighting(
+                preInfoRetro,
+                light{X}.vLightSpecular.rgb,
+                baseDielectricReflectance.coloredF0,
+                baseDielectricReflectance.coloredF90
+            );
+            specularFresnelRetro = computeOpenPBRAreaFresnel(preInfoRetro, baseDielectricReflectance.F0, baseDielectricReflectance.F90);
+        #else
         {
-            let retroViewDirectionW: vec3f = normalize(reflect(-viewDirectionW, normalW));
-            var preInfoRetro: preLightingInfo = preInfo{X};
-            preInfoRetro.H = normalize(preInfoRetro.L + retroViewDirectionW);
-            preInfoRetro.VdotH = saturateEps(dot(retroViewDirectionW, preInfoRetro.H));
-
             #ifdef ANISOTROPIC_BASE
                 slab_glossy_retro = computeAnisotropicSpecularLighting(
                     preInfoRetro,
@@ -278,7 +311,12 @@
 
     // Metal Lobe
     #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-        slab_metal = computeAreaSpecularLighting(preInfo{X}, light{X}.vLightSpecular.rgb, baseConductorReflectance.F0, baseConductorReflectance.F90);
+        slab_metal = computeOpenPBRAreaSpecularLighting(
+            preInfo{X},
+            light{X}.vLightSpecular.rgb,
+            baseConductorReflectance.coloredF0,
+            baseConductorReflectance.coloredF90
+        );
     #else
         {
             // For OpenPBR, we use the F82 specular model for metallic materials and mix with the
@@ -306,7 +344,7 @@
             #ifdef ANISOTROPIC_BASE
                 slab_metal = computeAnisotropicSpecularLighting(preInfo{X}, viewDirectionW, normalW, baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 0.0, lightColor{X}.rgb);
             #else
-                slab_metal = computeSpecularLighting(preInfo{X}, normalW, vec3f(baseConductorReflectance.coloredF0), coloredFresnel, specular_roughness, lightColor{X}.rgb);
+                slab_metal = computeSpecularLighting(preInfo{X}, normalW, vec3f(1.0f), coloredFresnel, specular_roughness, lightColor{X}.rgb);
             #endif
         }
     #endif
@@ -314,13 +352,15 @@
     #ifdef RETROREFLECTION
         slab_metal_retro = slab_metal;
 
-        #if !defined(AREALIGHT{X}) || !defined(AREALIGHTUSED) || !defined(AREALIGHTSUPPORTED)
+        #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+            slab_metal_retro = computeOpenPBRAreaSpecularLighting(
+                preInfoRetro,
+                light{X}.vLightSpecular.rgb,
+                baseConductorReflectance.coloredF0,
+                baseConductorReflectance.coloredF90
+            );
+        #else
         {
-            let retroViewDirectionW: vec3f = normalize(reflect(-viewDirectionW, normalW));
-            var preInfoRetro: preLightingInfo = preInfo{X};
-            preInfoRetro.H = normalize(preInfoRetro.L + retroViewDirectionW);
-            preInfoRetro.VdotH = saturateEps(dot(retroViewDirectionW, preInfoRetro.H));
-
             #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
                 var coloredFresnelRetro: vec3f = getF82Specular(
                     preInfoRetro.VdotH,
@@ -451,10 +491,18 @@
         total_direct_diffuse += slab_diffuse;
     #endif
     let material_dielectric_base: vec3f = mix(slab_diffuse * base_color.rgb, slab_translucent, surface_translucency_weight);
-    var material_dielectric_gloss: vec3f = material_dielectric_base * (1.0f - specularFresnel) + slab_glossy * specularColoredFresnel;
+    #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+        var material_dielectric_gloss: vec3f = material_dielectric_base * (1.0f - specularFresnel) + slab_glossy;
+    #else
+        var material_dielectric_gloss: vec3f = material_dielectric_base * (1.0f - specularFresnel) + slab_glossy * specularColoredFresnel;
+    #endif
     #ifdef RETROREFLECTION
-        let material_dielectric_gloss_retro: vec3f =
-            material_dielectric_base * (1.0f - specularFresnelRetro) + slab_glossy_retro * specularColoredFresnelRetro;
+        #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+            let material_dielectric_gloss_retro: vec3f = material_dielectric_base * (1.0f - specularFresnelRetro) + slab_glossy_retro;
+        #else
+            let material_dielectric_gloss_retro: vec3f =
+                material_dielectric_base * (1.0f - specularFresnelRetro) + slab_glossy_retro * specularColoredFresnelRetro;
+        #endif
         material_dielectric_gloss = mix(material_dielectric_gloss, material_dielectric_gloss_retro, specular_retroreflectivity);
         slab_metal = mix(slab_metal, slab_metal_retro, specular_retroreflectivity);
     #endif

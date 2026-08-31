@@ -9,6 +9,18 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
 import { Scene } from "core/scene";
+import { openpbrVertexShader as openpbrVertexShaderGLSL } from "core/Shaders/openpbr.vertex";
+import { openpbrVertexShaderWGSL } from "core/ShadersWGSL/openpbr.vertex";
+import { openpbrDirectLighting as openpbrDirectLightingGLSL } from "core/Shaders/ShadersInclude/openpbrDirectLighting";
+import { openpbrDirectLightingWGSL } from "core/ShadersWGSL/ShadersInclude/openpbrDirectLighting";
+import { openpbrEnvironmentLighting as openpbrEnvironmentLightingGLSL } from "core/Shaders/ShadersInclude/openpbrEnvironmentLighting";
+import { openpbrEnvironmentLightingWGSL } from "core/ShadersWGSL/ShadersInclude/openpbrEnvironmentLighting";
+import { pbrDirectLightingFunctions as pbrDirectLightingFunctionsGLSL } from "core/Shaders/ShadersInclude/pbrDirectLightingFunctions";
+import { pbrDirectLightingFunctionsWGSL } from "core/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions";
+import { openpbrIblFunctions as openpbrIblFunctionsGLSL } from "core/Shaders/ShadersInclude/openpbrIblFunctions";
+import { openpbrIblFunctionsWGSL } from "core/ShadersWGSL/ShadersInclude/openpbrIblFunctions";
+import { openpbrDirectLightingInit as openpbrDirectLightingInitGLSL } from "core/Shaders/ShadersInclude/openpbrDirectLightingInit";
+import { openpbrDirectLightingInitWGSL } from "core/ShadersWGSL/ShadersInclude/openpbrDirectLightingInit";
 
 describe("OpenPBRMaterial", () => {
     let engine: Engine;
@@ -172,6 +184,91 @@ describe("OpenPBRMaterial", () => {
                 defines.SPECULAR_RETROREFLECTIVITY_MATRIX_4,
                 defines.SPECULAR_RETROREFLECTIVITY_MATRIX_5,
             ]).toEqual([matrix[0], matrix[4], matrix[8], matrix[1], matrix[5], matrix[9]]);
+        });
+
+        it("rebuilds the Native shader when the texture transform changes", () => {
+            (engine as any)._shaderPlatformName = "NATIVE";
+            const material = new OpenPBRMaterial("mat", scene);
+            const texture = new RawTexture(new Uint8Array([255, 0, 0, 255]), 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+            texture.uOffset = 0.2;
+            material.specularRetroreflectivity = 1;
+            material.specularRetroreflectivityTexture = texture;
+
+            const mesh = new Mesh("testMesh", scene);
+            const defines = new OpenPBRMaterialDefines();
+            (material as any)._prepareDefines(mesh, mesh, defines);
+            defines.markAsProcessed();
+
+            texture.uOffset = 0.4;
+            (material as any)._prepareDefines(mesh, mesh, defines);
+
+            expect(defines.isDirty).toBe(true);
+            expect(defines.SPECULAR_RETROREFLECTIVITY_MATRIX_2).toBe(texture.getTextureMatrix().m[8]);
+        });
+
+        it.each([
+            ["GLSL", openpbrVertexShaderGLSL.shader, "uv3"],
+            ["WGSL", openpbrVertexShaderWGSL.shader, "vertexInputs.uv3"],
+        ])("guards missing higher UV sets in %s", (_language, shader, uvExpression) => {
+            expect(shader).toMatch(
+                new RegExp(
+                    `#elif SPECULAR_RETROREFLECTIVITY_UV_INDEX\\s*==\\s*2\\s+#ifdef UV3\\s+specularRetroreflectivityUVSource\\s*=\\s*${uvExpression.replace(".", "\\.")};\\s+#endif`
+                )
+            );
+        });
+
+        it.each([
+            ["GLSL", openpbrDirectLightingGLSL.shader],
+            ["WGSL", openpbrDirectLightingWGSL.shader],
+        ])("recomputes area-light data from the retro view direction in %s", (_language, shader) => {
+            expect(shader).toContain("preInfoRetro=computeAreaPreLightingInfo(");
+            expect(shader).toContain("slab_glossy_retro=computeOpenPBRAreaSpecularLighting(");
+            expect(shader).toContain("slab_metal_retro=computeOpenPBRAreaSpecularLighting(");
+            expect(shader.match(/baseDielectricReflectance\.coloredF0/g)).toHaveLength(2);
+            expect(shader.match(/baseConductorReflectance\.coloredF0/g)?.length).toBeGreaterThanOrEqual(4);
+            expect(shader).toMatch(
+                /material_dielectric_gloss_retro(?:: vec3f)?\s*=\s*material_dielectric_base\s*\*\s*\(1\.0f?\s*-\s*specularFresnelRetro\)\s*\+\s*slab_glossy_retro/
+            );
+        });
+
+        it.each([
+            ["GLSL", pbrDirectLightingFunctionsGLSL.shader],
+            ["WGSL", pbrDirectLightingFunctionsWGSL.shader],
+        ])("computes OpenPBR area-light Fresnel independently of light color in %s", (_language, shader) => {
+            expect(shader).toMatch(
+                /fresnel(?:: vec3f)?\s*=\s*reflectance0\s*\*\s*info\.areaLightFresnel\.x\s*\+\s*\(reflectance90\s*-\s*reflectance0\)\s*\*\s*info\.areaLightFresnel\.y/
+            );
+            expect(shader).toMatch(/return lightColor\s*\*\s*fresnel\s*\*\s*info\.areaLightSpecular/);
+            expect(shader).toMatch(/return reflectance0\s*\*\s*info\.areaLightFresnel\.x\s*\+\s*\(reflectance90\s*-\s*reflectance0\)\s*\*\s*info\.areaLightFresnel\.y/);
+        });
+
+        it("passes the GLSL area-light data with its declared vec4 type", () => {
+            expect(openpbrDirectLightingInitGLSL.shader).toContain("light{X}.vLightData,light{X}.vLightWidth.xyz");
+        });
+
+        it("passes WGSL area-light textures, samplers, and center explicitly", () => {
+            expect(openpbrDirectLightingInitWGSL.shader).toContain(
+                "computeAreaPreLightingInfo(areaLightsLTC1Sampler,areaLightsLTC1SamplerSampler,areaLightsLTC2Sampler,areaLightsLTC2SamplerSampler"
+            );
+            expect(openpbrDirectLightingInitWGSL.shader).toContain("light{X}.vLightData.xyz");
+        });
+
+        it.each([
+            ["GLSL", openpbrEnvironmentLightingGLSL.shader, "vPositionW"],
+            ["WGSL", openpbrEnvironmentLightingWGSL.shader, "fragmentInputs.vPositionW"],
+        ])("computes non-cube environment coordinates for the retro view in %s", (_language, shader, positionExpression) => {
+            expect(shader).toMatch(new RegExp(`retroReflectionCoords(?::\\s*vec2f)?=createReflectionCoords\\(${positionExpression.replace(".", "\\.")},viewDirectionW\\)`));
+        });
+
+        it.each([
+            ["GLSL", openpbrIblFunctionsGLSL.shader, "vec2 reflectionCoords=createReflectionCoords(positionW,mappingNormal)"],
+            ["WGSL", openpbrIblFunctionsWGSL.shader, "let reflectionCoords: vec2f=createReflectionCoords(positionW,mappingNormal)"],
+        ])("converts anisotropic samples to non-cube coordinates in %s", (_language, shader, expected) => {
+            expect(shader).toContain(expected);
+            expect(shader).toMatch(/originalViewDirectionW(?:: vec3f)?=normalize\((?:uniforms\.)?vEyePosition\.xyz-positionW\)/);
+            expect(shader).toMatch(/mappingNormalCandidate(?:: vec3f)?=originalViewDirectionW\+sampleDirection/);
+            expect(shader).toContain("dot(mappingNormalCandidate,mappingNormalCandidate)>Epsilon");
+            expect(shader).toContain("mappingNormal=normalize(cross(originalViewDirectionW,perpendicularAxis))");
         });
     });
 

@@ -247,13 +247,21 @@ void main(void) {
     #if SPECULAR_RETROREFLECTIVITY_UV_INDEX == 1
         specularRetroreflectivityUVSource = uv2Updated;
     #elif SPECULAR_RETROREFLECTIVITY_UV_INDEX == 2
-        specularRetroreflectivityUVSource = uv3;
+        #ifdef UV3
+            specularRetroreflectivityUVSource = uv3;
+        #endif
     #elif SPECULAR_RETROREFLECTIVITY_UV_INDEX == 3
-        specularRetroreflectivityUVSource = uv4;
+        #ifdef UV4
+            specularRetroreflectivityUVSource = uv4;
+        #endif
     #elif SPECULAR_RETROREFLECTIVITY_UV_INDEX == 4
-        specularRetroreflectivityUVSource = uv5;
+        #ifdef UV5
+            specularRetroreflectivityUVSource = uv5;
+        #endif
     #elif SPECULAR_RETROREFLECTIVITY_UV_INDEX == 5
-        specularRetroreflectivityUVSource = uv6;
+        #ifdef UV6
+            specularRetroreflectivityUVSource = uv6;
+        #endif
     #endif
     #ifdef NATIVE
         vSpecularRetroreflectivityUV = vec2(

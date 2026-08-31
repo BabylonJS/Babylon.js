@@ -126,35 +126,35 @@
 
     #ifdef RETROREFLECTION
         var baseSpecularEnvironmentLightRetro: vec3f = baseSpecularEnvironmentLight;
-        #ifdef REFLECTIONMAP_3D
-            let retroViewDirectionW: vec3f = normalize(reflect(-viewDirectionW, normalW));
-            #ifdef ANISOTROPIC_BASE
-                let baseGeoInfoRetro: geometryInfoAnisoOutParams = geometryInfoAniso(
-                    normalW,
-                    retroViewDirectionW,
-                    specular_roughness,
-                    geometricNormalW,
-                    vec3f(geometry_tangent.x, geometry_tangent.y, specular_roughness_anisotropy),
-                    TBN
-                );
-                baseSpecularEnvironmentLightRetro = sampleRadianceAnisotropic(
-                    specularAlphaG,
-                    uniforms.vReflectionMicrosurfaceInfos.rgb,
-                    uniforms.vReflectionInfos,
-                    baseGeoInfoRetro,
-                    normalW,
-                    retroViewDirectionW,
-                    fragmentInputs.vPositionW,
-                    noise,
-                    false,
-                    1.0f,
-                    reflectionSampler,
-                    reflectionSamplerSampler
-                    #ifdef REALTIME_FILTERING
-                        , uniforms.vReflectionFilteringInfo
-                    #endif
-                );
-            #else
+        let retroViewDirectionW: vec3f = normalize(reflect(-viewDirectionW, normalW));
+        #ifdef ANISOTROPIC_BASE
+            let baseGeoInfoRetro: geometryInfoAnisoOutParams = geometryInfoAniso(
+                normalW,
+                retroViewDirectionW,
+                specular_roughness,
+                geometricNormalW,
+                vec3f(geometry_tangent.x, geometry_tangent.y, specular_roughness_anisotropy),
+                TBN
+            );
+            baseSpecularEnvironmentLightRetro = sampleRadianceAnisotropic(
+                specularAlphaG,
+                uniforms.vReflectionMicrosurfaceInfos.rgb,
+                uniforms.vReflectionInfos,
+                baseGeoInfoRetro,
+                normalW,
+                retroViewDirectionW,
+                fragmentInputs.vPositionW,
+                noise,
+                false,
+                1.0f,
+                reflectionSampler,
+                reflectionSamplerSampler
+                #ifdef REALTIME_FILTERING
+                    , uniforms.vReflectionFilteringInfo
+                #endif
+            );
+        #else
+            #ifdef REFLECTIONMAP_3D
                 var retroReflectionCoords: vec3f = viewDirectionW;
                 #ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
                     retroReflectionCoords = parallaxCorrectNormal(
@@ -183,17 +183,32 @@
                         , uniforms.vReflectionFilteringInfo
                     #endif
                 );
-            #endif
-
-            #ifdef ANISOTROPIC_BASE
-                baseSpecularEnvironmentLightRetro = mix(
-                    baseSpecularEnvironmentLightRetro,
-                    baseDiffuseEnvironmentLight,
-                    specularAlphaG * specularAlphaG * max(1.0f - baseGeoInfoRetro.anisotropy, 0.3f)
-                );
             #else
-                baseSpecularEnvironmentLightRetro = mix(baseSpecularEnvironmentLightRetro, baseDiffuseEnvironmentLight, specularAlphaG);
+                // Passing V as the reflection normal maps the original incident direction -V back to V.
+                let retroReflectionCoords: vec2f = createReflectionCoords(fragmentInputs.vPositionW, viewDirectionW);
+                baseSpecularEnvironmentLightRetro = sampleRadiance(
+                    specularAlphaG,
+                    uniforms.vReflectionMicrosurfaceInfos.rgb,
+                    uniforms.vReflectionInfos,
+                    baseGeoInfo,
+                    reflectionSampler,
+                    reflectionSamplerSampler,
+                    retroReflectionCoords
+                    #ifdef REALTIME_FILTERING
+                        , uniforms.vReflectionFilteringInfo
+                    #endif
+                );
             #endif
+        #endif
+
+        #ifdef ANISOTROPIC_BASE
+            baseSpecularEnvironmentLightRetro = mix(
+                baseSpecularEnvironmentLightRetro,
+                baseDiffuseEnvironmentLight,
+                specularAlphaG * specularAlphaG * max(1.0f - baseGeoInfoRetro.anisotropy, 0.3f)
+            );
+        #else
+            baseSpecularEnvironmentLightRetro = mix(baseSpecularEnvironmentLightRetro, baseDiffuseEnvironmentLight, specularAlphaG);
         #endif
     #endif
 

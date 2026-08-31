@@ -266,13 +266,21 @@ fn main(input : VertexInputs) -> FragmentInputs {
         #if SPECULAR_RETROREFLECTIVITY_UV_INDEX == 1
             specularRetroreflectivityUVSource = uv2Updated;
         #elif SPECULAR_RETROREFLECTIVITY_UV_INDEX == 2
-            specularRetroreflectivityUVSource = vertexInputs.uv3;
+            #ifdef UV3
+                specularRetroreflectivityUVSource = vertexInputs.uv3;
+            #endif
         #elif SPECULAR_RETROREFLECTIVITY_UV_INDEX == 3
-            specularRetroreflectivityUVSource = vertexInputs.uv4;
+            #ifdef UV4
+                specularRetroreflectivityUVSource = vertexInputs.uv4;
+            #endif
         #elif SPECULAR_RETROREFLECTIVITY_UV_INDEX == 4
-            specularRetroreflectivityUVSource = vertexInputs.uv5;
+            #ifdef UV5
+                specularRetroreflectivityUVSource = vertexInputs.uv5;
+            #endif
         #elif SPECULAR_RETROREFLECTIVITY_UV_INDEX == 5
-            specularRetroreflectivityUVSource = vertexInputs.uv6;
+            #ifdef UV6
+                specularRetroreflectivityUVSource = vertexInputs.uv6;
+            #endif
         #endif
         vertexOutputs.vSpecularRetroreflectivityUV = (uniforms.specularRetroreflectivityMatrix * vec4f(specularRetroreflectivityUVSource, 1.0, 0.0)).xy;
     #endif
