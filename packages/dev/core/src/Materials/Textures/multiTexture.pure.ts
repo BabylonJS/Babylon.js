@@ -182,6 +182,8 @@ export class MultiTexture extends BaseTexture {
     private _mtOptions: IMultiTextureOptions;
     private _arrayTexture: RawTexture2DArray;
 
+    /** Number of in-flight mip-suppressed operations (init pool + mutations). See _suppressArrayMips. */
+    private _mipSuppressCount = 0;
     /**
      * Number of active layers (drives the uLayerCount uniform). Changes only via addLayerAsync/removeLayerAsync.
      */
@@ -346,6 +348,11 @@ export class MultiTexture extends BaseTexture {
      */
     constructor(name: string, urls: string[], scene: Scene, options: IMultiTextureOptions) {
         super(scene);
+        // The two child GPU resources are allocated mid-construction and must be released if the
+        // constructor throws (see the catch below): without them a failure after allocation leaves
+        // scene-registered textures whose GPU memory is never freed.
+        let compositeAllocated = false;
+        let arrayAllocated = false;
         try {
             const engine = scene.getEngine();
             if (!engine || (!engine.isWebGPU && (engine as ThinEngine).webGLVersion < 2)) {
@@ -426,6 +433,7 @@ export class MultiTexture extends BaseTexture {
                 /*isCube*/ false,
                 Constants.TEXTURETYPE_UNSIGNED_BYTE
             );
+            compositeAllocated = true;
             // Ensure texture-surface forwarding reaches the composite and this class behaves as a
             // self-contained BaseTexture (dedicated single-slot texture, scene-aware, render-target).
             this.name = name;
@@ -460,6 +468,7 @@ export class MultiTexture extends BaseTexture {
                 Constants.TEXTURETYPE_UNSIGNED_BYTE
             );
             this._arrayTexture.name = `${this.name}_2DArray`;
+            arrayAllocated = true;
             this._layers = urls.map((url) => this._createLayerEntry(url));
             this._layerCount = this._layers.length;
             this.urls = urls.slice();
@@ -486,6 +495,24 @@ export class MultiTexture extends BaseTexture {
             this._ctx = (canvas.getContext("2d", { willReadFrequently: true }) ?? null) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
             void this._initialize();
         } catch (e) {
+            // A failed constructor must not leak the child GPU resources allocated mid-build: the
+            // composite render target and the 2D-array are still scene-registered at this point, so
+            // abandon them before rethrowing. Cannot delegate to dispose() here because _layers and
+            // name may not be assigned yet when the throw predates them.
+            if (compositeAllocated) {
+                try {
+                    this._compositeInternal.dispose();
+                } catch {
+                    /* disposal of a partially-built composite must not mask the original error */
+                }
+            }
+            if (arrayAllocated) {
+                try {
+                    this._arrayTexture.dispose();
+                } catch {
+                    /* disposal of a partially-built array must not mask the original error */
+                }
+            }
             // A failed constructor must not leave a half-built texture registered in the scene
             // (BaseTexture registers `this` via addTexture in super). Roll that back before rethrowing.
             if (scene.textures) {
@@ -553,6 +580,10 @@ export class MultiTexture extends BaseTexture {
         const newIndex = this._layerCount;
 
         let entry: ILayerEntry;
+        // Rebuilding the mip chain once per upload would make a grow (N shifted layers) +
+        // the new layer's decode regenerate the whole chain N+1 times. Suppress generation for
+        // the entire mutation and build the chain exactly once in the finally below.
+        this._suppressArrayMips();
         try {
             if (newIndex >= this._maxLayers) {
                 this._growArray();
@@ -563,10 +594,17 @@ export class MultiTexture extends BaseTexture {
             this.composite.setInt("uLayerCount", this._layerCount);
         } catch (e) {
             this._reportError(e);
+            this._generateArrayMips();
             throw e;
         }
 
-        await this._loadEntryOrThrow(entry);
+        // The load reports its own failure (see _loadEntryOrThrow) and rethrows; restore the mip
+        // chain in finally so a failed decode still leaves the shifted/available layers mipped.
+        try {
+            await this._loadEntryOrThrow(entry);
+        } finally {
+            this._generateArrayMips();
+        }
 
         return newIndex;
     }
@@ -589,6 +627,9 @@ export class MultiTexture extends BaseTexture {
         }
 
         let entry: ILayerEntry;
+        // Same batching as addLayerAsync: suppression spans the grow/shift uploads AND the new
+        // layer's decode, with one final chain generation.
+        this._suppressArrayMips();
         try {
             if (this._layerCount + 1 > this._maxLayers) {
                 this._growArray();
@@ -613,10 +654,17 @@ export class MultiTexture extends BaseTexture {
             this._renderComposite();
         } catch (e) {
             this._reportError(e);
+            this._generateArrayMips();
             throw e;
         }
 
-        await this._loadEntryOrThrow(entry);
+        // The load reports its own failure (see _loadEntryOrThrow) and rethrows; restore the mip
+        // chain in finally so a failed decode still leaves the shifted/available layers mipped.
+        try {
+            await this._loadEntryOrThrow(entry);
+        } finally {
+            this._generateArrayMips();
+        }
 
         return index;
     }
@@ -631,7 +679,6 @@ export class MultiTexture extends BaseTexture {
         if (!Number.isInteger(index) || index < 0 || index >= this._layerCount) {
             throw new RangeError(`MultiTexture: layer index ${index} out of range [0, ${this._layerCount}).`);
         }
-
         const removed = this._layers.splice(index, 1)[0];
         this.pixels.splice(index, 1);
         this.urls.splice(index, 1);
@@ -640,12 +687,19 @@ export class MultiTexture extends BaseTexture {
         }
         this._layerCount--;
 
-        for (let j = index; j < this._layerCount; j++) {
-            this._reuploadSlot(j);
-        }
+        // Same batching as the other mutations: suppress mip generation for the shift uploads and
+        // rebuild the chain exactly once.
+        this._suppressArrayMips();
+        try {
+            for (let j = index; j < this._layerCount; j++) {
+                this._reuploadSlot(j);
+            }
 
-        this.composite.setInt("uLayerCount", this._layerCount);
-        this._renderComposite();
+            this.composite.setInt("uLayerCount", this._layerCount);
+            this._renderComposite();
+        } finally {
+            this._generateArrayMips();
+        }
     }
 
     /**
@@ -758,9 +812,12 @@ export class MultiTexture extends BaseTexture {
         // premultiplyAlpha: false the storage must be straight: WebGL2 writes the ImageBitmap as-is
         // (UNPACK_PREMULTIPLY_ALPHA_WEBGL=0 does not un-premultiply a premultiplied source), while
         // WebGPU's copyExternalImageToTexture honours the flag and inverse-premultiplies. Decoding the
-        // intended mode explicitly keeps both backends byte-identical. With premultiplyAlpha: true the
+        // intended mode keeps both backends consistent at the storage level. With premultiplyAlpha: true the
         // decode is premultiplied too, which is what WebGPU's dest premultipliedAlpha flag expects, and
         // what WebGL2's UNPACK_PREMULTIPLY_ALPHA_WEBGL=1 (already-premultiplied source) preserves.
+        // Note: WebGL2 readback may still diverge from WebGPU due to the engine's
+        // UNPACK_PREMULTIPLY_ALPHA rounding in UploadImageToTexture2DArrayLayer — see multiTexture
+        // utils comment for details.
         const options: ImageBitmapOptions = { premultiplyAlpha: this._mtOptions.premultiplyAlpha ? "premultiply" : "none" };
         if (this._mtOptions.fit === "resize") {
             options.resizeWidth = this._mtOptions.width;
@@ -820,7 +877,29 @@ export class MultiTexture extends BaseTexture {
         const bitmap = this._layers[index].bitmap;
         if (bitmap !== null) {
             UploadImageToTexture2DArrayLayer(target, bitmap, index, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
+        } else {
+            // A shifted layer with no decoded bitmap (still loading, or its load failed) must not
+            // leave the GPU slot holding the PREVIOUS layer: urls/pixels describe a transparent
+            // layer here, so upload a cleared canvas (a valid cross-backend ImageSource).
+            this._clearLayerSlot(target, index);
         }
+    }
+
+    /**
+     * Uploads a fully transparent fill into a layer slot. Used for shifted entries that have no
+     * decoded bitmap, so an insert/remove never leaves a stale previous layer in the destination
+     * slot. Reuses the composite's 2D canvas (cleared) as the Source: it is a valid ImageSource on
+     * both WebGL2 (gl.texSubImage3D) and WebGPU (copyExternalImageToTexture), unlike raw ImageData.
+     * @param target the RawTexture2DArray to upload into
+     * @param index the layer slot index to clear
+     */
+    private _clearLayerSlot(target: RawTexture2DArray, index: number): void {
+        if (!this._canvas || !this._ctx) {
+            // No drawable surface to clear from: leave the slot untouched.
+            return;
+        }
+        this._ctx.clearRect(0, 0, this._mtOptions.width, this._mtOptions.height);
+        UploadImageToTexture2DArrayLayer(target, this._canvas, index, { premultiplyAlpha: false });
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -908,11 +987,9 @@ export class MultiTexture extends BaseTexture {
                 // Dispose won the init race; leave the texture as-is, the object is dead.
                 return;
             }
-            const internal = this._arrayTexture.getInternalTexture();
-            const mips = this._mtOptions.generateMipMaps ?? false;
-            if (mips && internal) {
-                internal.generateMipMaps = false;
-            }
+            // Suppress mip generation for the whole decode pool so per-layer uploads never rebuild
+            // the chain; a single rebuild happens once the pool (and any concurrent mutation) settles.
+            this._suppressArrayMips();
 
             // Snapshot the entries so the pool always loads exactly the layers the texture was
             // constructed with: insertLayerAsync/removeLayerAsync may splice _layers while the pool is
@@ -934,17 +1011,10 @@ export class MultiTexture extends BaseTexture {
             }
             await Promise.all(workers);
 
-            // Re-resolve the internal texture AFTER the pool: addLayerAsync/insertLayerAsync may have grown
-            // the array mid-pool, disposing the `internal` captured above and replacing
-            // this._arrayTexture. Generating mips on the stale capture would target a dead
-            // texture and leave the live array unmipped.
-            if (!this._disposed && mips) {
-                const finalInternal = this._arrayTexture.getInternalTexture();
-                if (finalInternal) {
-                    finalInternal.generateMipMaps = true;
-                    this.getScene()!.getEngine().generateMipmaps(finalInternal);
-                }
-            }
+            // Rebuild the chain once over every upload that landed while generation was suppressed.
+            // The gate re-resolves the LIVE array texture after the pool (mutations may have grown
+            // and replaced this._arrayTexture mid-pool), so it never targets a disposed capture.
+            this._generateArrayMips();
 
             if (!this._disposed) {
                 this.onLoadObservable.notifyObservers(this);
@@ -992,31 +1062,17 @@ export class MultiTexture extends BaseTexture {
             Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
         const newInternal = newRaw.getInternalTexture();
-        const mips = this._mtOptions.generateMipMaps ?? false;
         // UploadImageToTexture2DArrayLayer regenerates the WHOLE array's mip chain per upload when
         // texture.generateMipMaps is set. Re-uploading N shifted layers would therefore rebuild the
-        // full mip chain N times. Suppress generation during the loop (the array is already
-        // allocated with mip support) and build the chain once below.
-        // A Concurrent init pool may still be populating the shifted layers (their bitmaps are null
-        // here), so only generate when this grow actually re-uploaded data: a generation over a
-        // mostly-empty array is wasted, and the init pool's final generation covers it.
-        if (mips && newInternal) {
+        // full mip chain N times. Suppress generation here and leave the array suppressed: the
+        // calling mutation (addLayerAsync/insertLayerAsync) holds the flag off across THIS grow AND
+        // the new layer's decode, then rebuilds the chain exactly once via _generateArrayMips.
+        if ((this._mtOptions.generateMipMaps ?? false) && newInternal) {
             newInternal.generateMipMaps = false;
         }
 
-        let reuploaded = false;
         for (let i = 0; i < this._layerCount; i++) {
-            if (this._layers[i].bitmap !== null) {
-                reuploaded = true;
-            }
             this._reuploadSlot(i, newRaw);
-        }
-
-        if (mips && newInternal && !this._disposed) {
-            newInternal.generateMipMaps = true;
-            if (reuploaded) {
-                this.getScene()!.getEngine().generateMipmaps(newInternal);
-            }
         }
 
         this._arrayTexture.dispose();
@@ -1030,6 +1086,49 @@ export class MultiTexture extends BaseTexture {
         // No defines change on growth: MAXLAYERS is baked to the device cap and uLayerCount bounds
         // sampling, so the composite effect is reused and only re-rendered against the grown array.
         this._renderComposite();
+    }
+
+    /**
+     * Temporarily disables mip generation on the live 2D-array texture. The upload extension
+     * regenerates the whole array's mip chain on every upload whenever texture.generateMipMaps is
+     * set, so a multi-upload mutation (a grow's shifted layers plus the new layer's decode) would
+     * rebuild the chain once per upload. Suppression keeps every upload in the mutation cheap; the
+     * matching {@link _generateArrayMips} rebuilds the chain exactly once when the last in-flight
+     * suppresser settles. A counter (rather than a boolean) lets the init pool and a concurrent
+     * mutation nest safely: the first to finish restores the flag, the rest no-op until the final
+     * one rebuilds the chain over every upload that landed.
+     */
+    private _suppressArrayMips(): void {
+        if (!(this._mtOptions.generateMipMaps ?? false) || this._disposed) {
+            return;
+        }
+        const internal = this._arrayTexture.getInternalTexture();
+        if (internal) {
+            internal.generateMipMaps = false;
+        }
+        this._mipSuppressCount++;
+    }
+
+    /**
+     * Restores mip generation and rebuilds the chain exactly once, when the last in-flight
+     * suppresser finishes (the count reaches zero). The array is allocated with mip support at
+     * creation, so re-enabling the flag and calling generateMipmaps once covers every upload that
+     * ran while generation was suppressed.
+     */
+    private _generateArrayMips(): void {
+        if (this._mipSuppressCount > 0) {
+            this._mipSuppressCount--;
+        }
+        if (this._mipSuppressCount > 0 || !(this._mtOptions.generateMipMaps ?? false) || this._disposed) {
+            // Still suppressed by another in-flight op (it will rebuild), or mips are disabled /
+            // the object was disposed, so there is nothing to (re)build.
+            return;
+        }
+        const internal = this._arrayTexture.getInternalTexture();
+        if (internal) {
+            internal.generateMipMaps = true;
+            this.getScene()!.getEngine().generateMipmaps(internal);
+        }
     }
 
     private _startPolling(): void {

@@ -68,6 +68,15 @@ test.describe("MultiTexture layered ops equivalence", () => {
             ],
             expected: ["star", "circle", "rock"],
         },
+        {
+            name: "failed layer shift clears stale slot",
+            // Append a layer whose source fails to decode (transparent), then remove a layer BEFORE
+            // it so the failed layer's null bitmap shifts 2 -> 1 into a slot that previously held
+            // the removed layer. Without clearing, that slot would retain the old "star" content.
+            initial: ["rock", "star"],
+            ops: [{ op: "addBad" }, { op: "remove", layer: 1 }],
+            expected: ["rock", "bad"],
+        },
     ] as const) {
         test(`${scenario.name}: mutation equals direct instantiation`, async () => {
             const diag = await page.evaluate(
@@ -103,9 +112,12 @@ test.describe("MultiTexture layered ops equivalence", () => {
                         x.fillStyle = "rgba(30,80,220,0.5019607843137255)";
                         x.fill();
                     });
-                    const byName = { rock, star, circle } as Record<string, string>;
+                    // Not a decodable PNG: createImageBitmap rejects, so a layer sourcing this URL
+                    // fails to load and must render as transparent (bitmap stays null).
+                    const bad = "data:image/png;base64,AAAA";
+                    const byName = { rock, star, circle, bad } as Record<string, string>;
 
-                    const build = (name: string, urls: string[], options: any = {}) =>
+                    const build = (name: string, urls: string[], options: any = {}, tolerant = false) =>
                         new Promise<any>((resolve, reject) => {
                             try {
                                 const mt = new B.MultiTexture(name, urls, scene, {
@@ -113,7 +125,9 @@ test.describe("MultiTexture layered ops equivalence", () => {
                                     height: TEX,
                                     ...options,
                                     onLoad: () => resolve(mt),
-                                    onError: reject,
+                                    // A layer whose load intentionally fails (the `bad` source)
+                                    // reports via onError; tolerate it so the build settles on load.
+                                    onError: tolerant ? () => {} : reject,
                                 });
                             } catch (e) {
                                 reject(e);
@@ -142,9 +156,12 @@ test.describe("MultiTexture layered ops equivalence", () => {
 
                     // Path A: mutate.
                     async function runMutations(): Promise<any> {
+                        const tolerant = initial.includes("bad") || ops.some((o) => o.op === "addBad");
                         const mt = await build(
                             "mut",
-                            initial.map((n) => byName[n])
+                            initial.map((n) => byName[n]),
+                            {},
+                            tolerant
                         );
                         for (const op of ops as { op: string; layer?: number; url?: string }[]) {
                             if (op.op === "insert") {
@@ -153,6 +170,14 @@ test.describe("MultiTexture layered ops equivalence", () => {
                                 await mt.removeLayerAsync(op.layer!);
                             } else if (op.op === "add") {
                                 await mt.addLayerAsync(byName[op.url!]);
+                            } else if (op.op === "addBad") {
+                                // The layer load fails by design (invalid source); the entry is
+                                // appended as transparent and the rejection is the expected outcome.
+                                try {
+                                    await mt.addLayerAsync(byName.bad);
+                                } catch {
+                                    /* failed load is the scenario under test */
+                                }
                             }
                         }
                         return mt;
@@ -162,7 +187,9 @@ test.describe("MultiTexture layered ops equivalence", () => {
                     const mtMut = await runMutations();
                     const mtDirect = await build(
                         "direct",
-                        expected.map((n) => byName[n])
+                        expected.map((n) => byName[n]),
+                        {},
+                        expected.includes("bad")
                     );
 
                     const [compositeMut, compositeDirect] = [await compositeBytes(mtMut), await compositeBytes(mtDirect)];

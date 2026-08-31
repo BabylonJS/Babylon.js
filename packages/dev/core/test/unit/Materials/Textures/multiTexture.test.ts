@@ -323,7 +323,15 @@ beforeEach(() => {
     mockState.urlBehaviors = {};
     mockState.headers = {};
     mockState.engineExtMissing = false;
-    mockState.upload = vi.fn();
+    // Default upload spy mirrors the engine extension: whenever the array's generateMipMaps flag
+    // is on, the upload itself regenerates the whole mip chain (see engine.texture2DArrayImageSource.
+    // pure, which calls gl.generateMipmap when texture.generateMipMaps is set). Modelling that lets
+    // tests assert that a mutating path does NOT leave mips on during a multi-upload mutation.
+    mockState.upload = vi.fn((internal: { generateMipMaps: boolean }) => {
+        if (internal.generateMipMaps) {
+            mockState.generateMipmaps(internal);
+        }
+    });
     mockState.generateMipmaps = vi.fn();
     mockState.createEffect = vi.fn();
     mockState.ctx = createFakeCtx();
@@ -550,8 +558,11 @@ describe("MultiTexture", () => {
 
     it("loads all layers, caches pixels and issues one final mip generation", async () => {
         const mipmapObservations: boolean[] = [];
-        mockState.upload = vi.fn((internal: any) => {
+        mockState.upload = vi.fn((internal: { generateMipMaps: boolean }) => {
             mipmapObservations.push(internal.generateMipMaps);
+            if (internal.generateMipMaps) {
+                mockState.generateMipmaps(internal);
+            }
         });
 
         const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, generateMipMaps: true });
@@ -579,8 +590,11 @@ describe("MultiTexture", () => {
 
     it("suppresses per-layer mip generation while re-uploading into a grown array and generates once after", async () => {
         const mipmapObservations: boolean[] = [];
-        mockState.upload = vi.fn((internal: any) => {
+        mockState.upload = vi.fn((internal: { generateMipMaps: boolean }) => {
             mipmapObservations.push(internal.generateMipMaps);
+            if (internal.generateMipMaps) {
+                mockState.generateMipmaps(internal);
+            }
         });
         const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, maxLayers: 2, generateMipMaps: true });
 
@@ -596,6 +610,37 @@ describe("MultiTexture", () => {
         // during the grow loop and generated once after.
         expect(mipmapObservations[0]).toBe(false);
         expect(mipmapObservations[1]).toBe(false);
+        expect(mockState.generateMipmaps).toHaveBeenCalledTimes(1);
+        expect(mt.arrayTexture.getInternalTexture()!.generateMipMaps).toBe(true);
+    });
+
+    it("batches mip generation across insert and remove shifts (uploads suppressed, one chain build)", async () => {
+        const mipmapObservations: boolean[] = [];
+        mockState.upload = vi.fn((internal: { generateMipMaps: boolean }) => {
+            mipmapObservations.push(internal.generateMipMaps);
+            if (internal.generateMipMaps) {
+                mockState.generateMipmaps(internal);
+            }
+        });
+        // Depth 8 gives insert/remove plenty of headroom so the mutation only SHIFTS layers (the
+        // reviewer's "normal mutation path") and never grows.
+        const { mt } = await createLoaded(["a.png", "b.png", "c.png"], { width: 8, height: 8, maxLayers: 8, generateMipMaps: true });
+        mipmapObservations.length = 0;
+        mockState.generateMipmaps.mockClear();
+
+        // Insert at 1: layers 1,2 shift up (2 uploads) + the decoded new layer lands at slot 1 (1).
+        await mt.insertLayerAsync(1, "x.png");
+        expect(mipmapObservations).toHaveLength(3);
+        expect(mipmapObservations.every((v) => v === false)).toBe(true);
+        expect(mockState.generateMipmaps).toHaveBeenCalledTimes(1);
+        expect(mt.arrayTexture.getInternalTexture()!.generateMipMaps).toBe(true);
+
+        mipmapObservations.length = 0;
+        mockState.generateMipmaps.mockClear();
+        // Remove index 1 (the inserted "x.png"): layers 2,3 shift down (2 uploads).
+        await mt.removeLayerAsync(1);
+        expect(mipmapObservations).toHaveLength(2);
+        expect(mipmapObservations.every((v) => v === false)).toBe(true);
         expect(mockState.generateMipmaps).toHaveBeenCalledTimes(1);
         expect(mt.arrayTexture.getInternalTexture()!.generateMipMaps).toBe(true);
     });
@@ -1021,6 +1066,11 @@ describe("MultiTexture 2D canvas surface", () => {
         }
         try {
             await expect(Promise.resolve().then(() => createLoaded(["no-canvas.png"], { width: 4, height: 4 }))).rejects.toThrow(/no 2D canvas surface available/i);
+            // The failure lands AFTER the composite and 2D-array are allocated (both are created
+            // before the canvas check). Neither may leak: assert the child GPU resources are
+            // disposed and unregistered from the scene.
+            expect(mockState.rawInstances[0].dispose).toHaveBeenCalledTimes(1);
+            expect(mockState.ptInstances[0].disposed).toBe(true);
         } finally {
             vi.unstubAllGlobals();
         }
@@ -1311,7 +1361,13 @@ describe("MultiTexture structure changes racing in-flight loads", () => {
         resolvers["b.png"]();
         await tick();
 
-        expect(mockState.upload.mock.calls.map((c: any[]) => [c[1].url, c[2]])).toEqual([["b.png", 0]]);
+        const uploads = mockState.upload.mock.calls as any[];
+        // Removing a still-loading layer issues a transparent clear into the vacated slot 0 (the
+        // shifted entry b has no bitmap yet), so no stale "a" content shows before b settles there.
+        expect(uploads.some((c) => c[2] === 0 && typeof c[1].url === "undefined")).toBe(true);
+        // The shifted b then lands in slot 0 (never in slot 1, which is beyond the new layerCount).
+        const bitmapUploads = uploads.filter((c) => typeof c[1].url !== "undefined");
+        expect(bitmapUploads.map((c) => [c[1].url, c[2]])).toEqual([["b.png", 0]]);
         expect(mt.urls).toEqual(["b.png"]);
         expect((mt as any)._layers[0].bitmap.url).toBe("b.png");
         expect(bitmaps.find((b) => b.url === "a.png").close).toHaveBeenCalledTimes(1);
