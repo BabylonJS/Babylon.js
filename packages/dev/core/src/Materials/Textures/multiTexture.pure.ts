@@ -593,8 +593,10 @@ export class MultiTexture extends BaseTexture {
             // track the internal count or the freshly appended layer is never composited.
             this.composite.setInt("uLayerCount", this._layerCount);
         } catch (e) {
-            this._reportError(e);
+            // Release the mip suppression BEFORE reporting: the onError callback may throw, and the
+            // release must not be skippable, or later mip regeneration stays disabled.
             this._generateArrayMips();
+            this._reportError(e);
             throw e;
         }
 
@@ -653,8 +655,10 @@ export class MultiTexture extends BaseTexture {
             // Re-composite even if the load below fails: the shift above already moved GPU slots.
             this._renderComposite();
         } catch (e) {
-            this._reportError(e);
+            // Release the mip suppression BEFORE reporting: the onError callback may throw, and the
+            // release must not be skippable, or later mip regeneration stays disabled.
             this._generateArrayMips();
+            this._reportError(e);
             throw e;
         }
 
@@ -1009,11 +1013,6 @@ export class MultiTexture extends BaseTexture {
             }
             await Promise.all(workers);
 
-            // Rebuild the chain once over every upload that landed while generation was suppressed.
-            // The gate re-resolves the LIVE array texture after the pool (mutations may have grown
-            // and replaced this._arrayTexture mid-pool), so it never targets a disposed capture.
-            this._generateArrayMips();
-
             if (!this._disposed) {
                 this.onLoadObservable.notifyObservers(this);
                 this._mtOptions.onLoad?.();
@@ -1025,6 +1024,13 @@ export class MultiTexture extends BaseTexture {
             }
         } catch (e) {
             this._reportError(e);
+        } finally {
+            // Build the chain once over every upload that landed while generation was suppressed,
+            // on both the success and error paths (a throwing onLoad/onError must not leave the
+            // suppression stuck). The gate re-resolves the LIVE array texture after the pool
+            // (mutations may have grown and replaced this._arrayTexture mid-pool), so it never
+            // targets a disposed capture.
+            this._generateArrayMips();
         }
     }
 

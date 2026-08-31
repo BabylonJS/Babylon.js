@@ -530,6 +530,28 @@ describe("MultiTexture", () => {
         expect(onError).toHaveBeenCalledTimes(1);
         expect(onError.mock.calls[0][0]).toContain("texture2DArrayMaxLayerCount");
     });
+    it("releases mip suppression even when onError throws, on addLayerAsync and insertLayerAsync failure paths", async () => {
+        const throwing = vi.fn(() => {
+            throw new Error("onError boom");
+        });
+        const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, maxLayers: 2, generateMipMaps: true, onError: throwing }, { texture2DArrayMaxLayerCount: 2 });
+        // Init's single final generation happened during createLoaded; observe only the mutations.
+        mockState.generateMipmaps.mockClear();
+
+        // addLayerAsync: the grow throws, and the throwing onError must not leave mip suppression
+        // wedged on (the release runs before the callback reports, so it cannot be skipped).
+        await expect(mt.addLayerAsync("c.png")).rejects.toThrow("onError boom");
+        expect(mockState.generateMipmaps).toHaveBeenCalledTimes(1);
+        expect(mt.arrayTexture.getInternalTexture()!.generateMipMaps).toBe(true);
+        expect(mt.layerCount).toBe(2);
+
+        mockState.generateMipmaps.mockClear();
+        // insertLayerAsync: same grow-beyond-cap failure, same release guarantee.
+        await expect(mt.insertLayerAsync(1, "x.png")).rejects.toThrow("onError boom");
+        expect(mockState.generateMipmaps).toHaveBeenCalledTimes(1);
+        expect(mt.arrayTexture.getInternalTexture()!.generateMipMaps).toBe(true);
+        expect(mt.layerCount).toBe(2);
+    });
 
     it("addLayerAsync can grow up to the device cap but not past it", async () => {
         const { mt } = await createLoaded(["a.png"], { width: 8, height: 8 }, { texture2DArrayMaxLayerCount: 8 });
