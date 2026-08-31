@@ -21,9 +21,26 @@
  * script uses must arrive through `env:` and be dereferenced as a shell
  * variable, where it can only ever be data.
  *
- * This script fails the build when either shape regresses. It is deliberately
- * dependency-free (no YAML parser) so it can run in a job that has not
- * installed anything, which is exactly where a credential-free check belongs.
+ * The third half - the one `pr: none` alone never covered - is *where a
+ * credential comes from* and *which upstream run a publisher trusts*:
+ *
+ *   * A secret variable defined in the pipeline UI is not a protected
+ *     resource. It has no pipeline permissions, no branch control check and no
+ *     required-template check, so every run of the definition receives it,
+ *     including a run a maintainer queues against an arbitrary ref - and Azure
+ *     DevOps compiles that ref's YAML, gates included. Credentials must come
+ *     from variable groups, mapped on the jobs that need them.
+ *   * A `resources.pipelines` entry resolves either from a real trigger or
+ *     from a run the queuer picked by hand, and the two are indistinguishable
+ *     unless the run reason and the upstream run's own ref are checked. A
+ *     publisher that skips that check will happily push a pull request's
+ *     artifacts to production.
+ *
+ * This script fails the build when any of those shapes regresses. It is
+ * deliberately dependency-free (no YAML parser) so it can run in a job that has
+ * not installed anything, which is exactly where a credential-free check
+ * belongs. `--self-test` additionally *executes* the publish request gate with
+ * each known bypass as input, so the guards are proved rather than asserted.
  *
  * Usage:
  *   node .azure-pipelines/scripts/validate-pipeline-trust-boundary.mjs
@@ -31,19 +48,55 @@
  */
 
 import { readFileSync, readdirSync, existsSync } from "fs";
+import { spawnSync } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const PipelinesDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-/** Variable groups that carry a credential. None of these may be reachable from a PR-compiled pipeline. */
-const SecretVariableGroups = new Set(["BabylonJS-Deployment", "Browserstack-Opensource"]);
+/**
+ * Every credential the pipelines use, and the protected variable group that
+ * must supply it.
+ *
+ * A variable group is a *protected resource*: an administrator authorizes it
+ * per pipeline, and can attach branch control and required-template checks that
+ * the ref being checked cannot edit. A secret variable defined in the pipeline
+ * UI is none of those things - it is handed to every run of the definition,
+ * including a run queued against an arbitrary ref whose YAML the queuer wrote.
+ * Credentials therefore only ever come from this table.
+ */
+const SecretVariableOwners = new Map([
+    ["DEPLOY_TOKEN", "BabylonJS-Deployment"],
+    ["GITHUB_RELEASE_TOKEN", "BabylonJS-Publish-GitHub"],
+    ["NPM_REGISTRY_TOKEN", "BabylonJS-Publish-Npm"],
+    ["BROWSERSTACK_ACCESS_KEY", "Browserstack-Opensource"],
+    ["BROWSERSTACK_USERNAME", "Browserstack-Opensource"],
+]);
 
-/** Pipeline-level secret variables configured in the Azure DevOps UI. */
-const SecretVariableNames = ["DEPLOY_TOKEN", "GITHUBPAT", "GitHubPAT", "NPM_TOKEN", "BROWSERSTACK_ACCESS_KEY", "BROWSERSTACK_USERNAME"];
+/**
+ * Secret variable names that only ever existed as pipeline-UI ("pipeline
+ * scoped") secrets. Referencing one is by definition a request for an
+ * unprotected credential, so none of them may appear in any pipeline again.
+ */
+const PipelineScopedSecretNames = ["GitHubPAT", "GITHUBPAT", "NPM_TOKEN", "SEARCH_KEY"];
+
+/** Variable groups that carry a credential. None of these may be reachable from a PR-compiled pipeline. */
+const SecretVariableGroups = new Set(SecretVariableOwners.values());
+
+/** Every secret variable name, whether it is sourced correctly or not. */
+const SecretVariableNames = [...SecretVariableOwners.keys(), ...PipelineScopedSecretNames];
 
 /** The gate every credentialed job runs first. It is credentialed by definition, whoever includes it. */
 const TrustGateTemplate = "templates/assert-trusted-source.yml";
+
+/** The cross-pipeline snapshot publisher, whose publish request gate is executed by the self-tests. */
+const SnapshotPublisherFile = "cd-ci-snapshots.yml";
+
+/** The step in {@link SnapshotPublisherFile} that decides what may be published where. */
+const PublishRequestGateStep = "ValidatePublishRequest";
+
+/** The template that re-asserts, inside a credentialed job, that a real resource trigger started the run. */
+const ResourceRunGateTemplate = "templates/assert-trusted-resource-run.yml";
 
 /**
  * @param {string} file
@@ -332,8 +385,163 @@ function checkCredentialHandling(name, contents) {
 }
 
 // ---------------------------------------------------------------------------
-// Whole-directory validation
+// Where credentials come from
 // ---------------------------------------------------------------------------
+
+/**
+ * Returns the body of the *pipeline-level* `variables:` block, i.e. the one at
+ * column zero. Everything mapped there is in scope for every job in the run,
+ * including the jobs that execute `npm ci` and the whole dependency tree.
+ * @param {string} contents already comment-stripped
+ * @returns {string}
+ */
+function pipelineLevelVariableBlock(contents) {
+    const lines = contents.split("\n");
+    const start = lines.findIndex((line) => /^variables:\s*$/.test(line));
+    if (start === -1) {
+        return "";
+    }
+
+    const block = [];
+    for (let index = start + 1; index < lines.length; index++) {
+        const line = lines[index];
+        if (line.trim() === "") {
+            continue;
+        }
+        if (/^\S/.test(line)) {
+            break;
+        }
+        block.push(line);
+    }
+    return block.join("\n");
+}
+
+/**
+ * A secret must come from a protected variable group, never from a secret
+ * variable configured on the pipeline definition, and the group that owns it
+ * must actually be mapped somewhere in the pipeline's graph.
+ * @param {string} name display name of the root pipeline
+ * @param {string} contents the whole graph, comment-stripped and concatenated
+ * @returns {string[]}
+ */
+function checkSecretSourcing(name, contents) {
+    const errors = [];
+
+    for (const secret of PipelineScopedSecretNames) {
+        if (new RegExp(`\\$\\(${secret}\\)`).test(contents)) {
+            errors.push(
+                `${name} reads '${secret}', which can only be a secret variable configured on the pipeline definition. ` +
+                    `A pipeline UI secret is not a protected resource: it has no pipeline permissions, no branch control and no ` +
+                    `required-template check, so every run of the definition receives it - including a run queued against an ` +
+                    `arbitrary ref, whose YAML (gates included) the queuer wrote. Move it into a dedicated variable group.`
+            );
+        }
+    }
+
+    const mappedGroups = new Set(referencedGroups(contents));
+    for (const [secret, group] of SecretVariableOwners) {
+        if (!new RegExp(`\\$\\(${secret}\\)`).test(contents) || mappedGroups.has(group)) {
+            continue;
+        }
+        errors.push(`${name} reads the secret '${secret}' but never maps its protected variable group '${group}'.`);
+    }
+
+    return errors;
+}
+
+/**
+ * A secret group mapped at pipeline scope is in scope for every job, including
+ * the ones that run repository and dependency code.
+ * @param {string} name
+ * @param {string} contents already comment-stripped
+ * @returns {string[]}
+ */
+function checkPipelineScopedGroups(name, contents) {
+    const errors = [];
+    for (const group of referencedGroups(pipelineLevelVariableBlock(contents))) {
+        if (SecretVariableGroups.has(group)) {
+            errors.push(
+                `${name} maps the secret variable group '${group}' at pipeline scope, so every job in the run - including the ones ` +
+                    `that execute dependency lifecycle scripts - can expand its secrets. Map it on the jobs that need it instead.`
+            );
+        }
+    }
+    return errors;
+}
+
+// ---------------------------------------------------------------------------
+// Cross-pipeline publisher: which upstream run may be published, and where
+// ---------------------------------------------------------------------------
+
+/**
+ * Finds the inline script step carrying `name: <stepName>`.
+ * @param {string} contents already comment-stripped
+ * @param {string} stepName
+ * @returns {{ line: number, body: string, tail: string } | undefined}
+ */
+function namedScriptStep(contents, stepName) {
+    return inlineScriptSteps(contents).find((step) => new RegExp(`^\\s*name:\\s*${stepName}\\s*$`, "m").test(step.tail));
+}
+
+/**
+ * The snapshot publisher takes its payload from another pipeline's run. Azure
+ * DevOps resolves that resource either from a real completion trigger or from a
+ * run whoever queued this one picked in the "Resources" panel - which offers
+ * pull request validation runs of unmerged code. The gate can only tell them
+ * apart from the run reason and from Azure's own metadata about the upstream
+ * run, so those must reach it, and its parameters must not default to a
+ * production destination.
+ * @param {string} name
+ * @param {string} contents already comment-stripped
+ * @returns {string[]}
+ */
+function checkSnapshotPublisher(name, contents) {
+    const errors = [];
+
+    for (const parameterName of ["sourceRunId", "buildName"]) {
+        const declaration = new RegExp(`-\\s*name:\\s*${parameterName}\\b[\\s\\S]*?default:\\s*(\\S*)`).exec(contents);
+        if (!declaration) {
+            errors.push(`${name}: parameter '${parameterName}' is missing; the publish gate depends on it.`);
+            continue;
+        }
+        if (declaration[1] !== '""' && declaration[1] !== "''") {
+            errors.push(
+                `${name}: parameter '${parameterName}' defaults to ${declaration[1]}. It must default to an empty string, so a run that ` +
+                    `supplies nothing cannot inherit a production destination or an implicitly trusted source run.`
+            );
+        }
+    }
+
+    const gate = namedScriptStep(contents, PublishRequestGateStep);
+    if (!gate) {
+        errors.push(`${name}: no inline script step named '${PublishRequestGateStep}'. The publish request is then ungated.`);
+        return errors;
+    }
+
+    const required = [
+        ["BUILD_REASON", /^\s*BUILD_REASON:\s*\$\(Build\.Reason\)\s*$/m],
+        ["RESOURCE_SOURCE_BRANCH", /^\s*RESOURCE_SOURCE_BRANCH:\s*\$\(resources\.pipeline\.\w+\.sourceBranch\)\s*$/m],
+        ["RESOURCE_PIPELINE_ID", /^\s*RESOURCE_PIPELINE_ID:\s*\$\(resources\.pipeline\.\w+\.pipelineID\)\s*$/m],
+        ["RESOURCE_RUN_ID", /^\s*RESOURCE_RUN_ID:\s*\$\(resources\.pipeline\.\w+\.runID\)\s*$/m],
+    ];
+    for (const [variable, pattern] of required) {
+        if (!pattern.test(gate.tail)) {
+            errors.push(
+                `${name}: the publish request gate must receive '${variable}' from Azure's own run metadata through 'env:'. ` +
+                    `Without it the gate cannot tell a real resource trigger from a hand-picked source run.`
+            );
+        }
+    }
+
+    if (!/requireTrustedResourceRun:\s*true/.test(contents)) {
+        errors.push(
+            `${name}: no job sets 'requireTrustedResourceRun: true'. The production CDN job must re-assert on its own agent that a ` +
+                `resource trigger from a trusted ref started the run, so a weakened 'dependsOn' cannot let a manual run reach production.`
+        );
+    }
+
+    return errors;
+}
 
 /**
  * @returns {string[]}
@@ -357,6 +565,12 @@ function validatePipelines() {
         const rootName = path.relative(PipelinesDirectory, root);
         const graph = [...collectGraph(root, errors)];
         const isPullRequestPipeline = hasPullRequestTrigger(read(root));
+
+        // A secret must be traceable to a protected variable group from
+        // anywhere in the pipeline's graph, and must never be mapped for the
+        // whole run.
+        errors.push(...checkSecretSourcing(rootName, graph.map((file) => readCode(file)).join("\n")));
+        errors.push(...checkPipelineScopedGroups(rootName, readCode(root)));
 
         if (isPullRequestPipeline) {
             pullRequestPipelineCount++;
@@ -415,7 +629,156 @@ function validatePipelines() {
         }
     }
 
+    // The cross-pipeline publisher must be able to tell a real resource trigger
+    // from a run somebody picked out of the queue-time resource picker.
+    const snapshotPublisher = path.join(PipelinesDirectory, SnapshotPublisherFile);
+    if (!existsSync(snapshotPublisher)) {
+        errors.push(`${SnapshotPublisherFile} is missing. The detection in this script has probably drifted from the pipeline layout.`);
+    } else {
+        errors.push(...checkSnapshotPublisher(SnapshotPublisherFile, readCode(snapshotPublisher)));
+    }
+
+    if (!existsSync(path.join(PipelinesDirectory, ResourceRunGateTemplate))) {
+        errors.push(`${ResourceRunGateTemplate} is missing. Production publishers have nothing to re-assert their upstream run with.`);
+    }
+
     return { errors, pullRequestPipelineCount, credentialedFileCount: credentialedFiles.size };
+}
+
+// ---------------------------------------------------------------------------
+// Executable trust boundary tests
+//
+// The checks above are structural: they prove a value reaches the gate, not
+// that the gate rejects it. These tests take the gate scripts *as shipped* out
+// of the YAML and run them with each known bypass as input, so a regression
+// that keeps the shape but loses the rule still fails the build.
+// ---------------------------------------------------------------------------
+
+/**
+ * Runs a shell script body with a fixed environment and no inherited variables
+ * beyond PATH, so nothing on the developer's machine can make a case pass.
+ * @param {string} body
+ * @param {Record<string, string>} environment
+ * @returns {{ status: number, output: string }}
+ */
+function runScript(body, environment) {
+    const result = spawnSync("bash", ["-c", body], {
+        env: { PATH: process.env.PATH ?? "/usr/bin:/bin", ...environment },
+        encoding: "utf8",
+    });
+    if (result.error) {
+        throw result.error;
+    }
+    return { status: result.status ?? 1, output: `${result.stdout ?? ""}${result.stderr ?? ""}` };
+}
+
+/**
+ * @param {string} file relative to the pipelines directory
+ * @param {string} stepName
+ * @returns {string}
+ */
+function scriptBodyOf(file, stepName) {
+    const absolute = path.join(PipelinesDirectory, file);
+    const step = namedScriptStep(readCode(absolute), stepName);
+    if (!step) {
+        throw new Error(`${file} has no inline script step named '${stepName}'`);
+    }
+    return step.body;
+}
+
+/**
+ * @param {string} file relative to the pipelines directory
+ * @returns {string} the body of the file's single inline script step
+ */
+function soleScriptBodyOf(file) {
+    const steps = inlineScriptSteps(readCode(path.join(PipelinesDirectory, file)));
+    if (steps.length !== 1) {
+        throw new Error(`${file} must contain exactly one inline script step, found ${steps.length}`);
+    }
+    return steps[0].body;
+}
+
+/** A trusted automatic publish: the shape every rejection below deviates from. */
+const AutomaticPublish = {
+    BUILD_REASON: "ResourceTrigger",
+    EXPLICIT_SOURCE_RUN_ID: "",
+    REQUESTED_BUILD_NAME: "",
+    RESOLVED_BUILD_NAME: "refs/heads/master",
+    RESOLVED_RUN_ID: "9876",
+    RESOURCE_RUN_ID: "9876",
+    RESOURCE_SOURCE_BRANCH: "refs/heads/master",
+    RESOURCE_PIPELINE_ID: "14",
+    SOURCE_DEFINITION_ID: "14",
+    PULL_REQUEST_ID: "",
+    DEPLOY_TO_CDN: "True",
+    TRUSTED_RESOURCE_REFS: "refs/heads/master refs/heads/preview",
+    PRODUCTION_REFS: "refs/heads/master refs/heads/preview",
+};
+
+/** A maintainer republishing one pull request run to a pull request snapshot. */
+const ManualRepublish = {
+    ...AutomaticPublish,
+    BUILD_REASON: "Manual",
+    EXPLICIT_SOURCE_RUN_ID: "555",
+    REQUESTED_BUILD_NAME: "refs/pull/42/merge",
+    RESOLVED_BUILD_NAME: "refs/pull/42/merge",
+    RESOLVED_RUN_ID: "555",
+    DEPLOY_TO_CDN: "False",
+};
+
+/**
+ * @param {Record<string, string>} environment
+ * @returns {{ status: number, output: string }}
+ */
+function runPublishGate(environment) {
+    return runScript(scriptBodyOf(SnapshotPublisherFile, PublishRequestGateStep), environment);
+}
+
+/**
+ * @param {Record<string, string>} environment
+ * @returns {{ status: number, output: string }}
+ */
+function runResourceRunGate(environment) {
+    return runScript(soleScriptBodyOf(ResourceRunGateTemplate), environment);
+}
+
+/**
+ * @param {{ status: number, output: string }} result
+ * @param {string} expectation text the rejection message must contain
+ * @returns {string[]}
+ */
+function expectRejected(result, expectation) {
+    const failures = [];
+    if (result.status === 0) {
+        failures.push(`the gate accepted the request (expected a rejection mentioning "${expectation}")`);
+    } else if (!result.output.includes(expectation)) {
+        failures.push(`rejected, but not because of "${expectation}": ${result.output.trim()}`);
+    }
+    // A rejection message quotes attacker-supplied text, so it must never carry
+    // a live Azure Pipelines logging command other than the logissue it emits.
+    if (/##vso\[task\.setvariable/.test(result.output)) {
+        failures.push(`the rejection emitted a live logging command: ${result.output.trim()}`);
+    }
+    return failures;
+}
+
+/**
+ * @param {{ status: number, output: string }} result
+ * @param {string[]} expectations text the acceptance must contain
+ * @returns {string[]}
+ */
+function expectAccepted(result, expectations) {
+    const failures = [];
+    if (result.status !== 0) {
+        failures.push(`the gate rejected a legitimate request: ${result.output.trim()}`);
+        return failures;
+    }
+    for (const expectation of expectations) {
+        if (!result.output.includes(expectation)) {
+            failures.push(`accepted, but did not publish "${expectation}": ${result.output.trim()}`);
+        }
+    }
+    return failures;
 }
 
 // ---------------------------------------------------------------------------
@@ -593,6 +956,227 @@ steps:
             ...(isAzureMacro("pwd") ? ["bare command flagged as macro"] : []),
             ...(isAzureMacro("mktemp -d") ? ["command with arguments flagged as macro"] : []),
         ],
+        expect: (found) => found.length === 0,
+    },
+
+    // -- where credentials come from ---------------------------------------
+    {
+        title: "a pipeline-scoped secret variable is rejected",
+        run: () => checkSecretSourcing("cd-publish.yml", "env:\n    GITHUBPAT: $(GitHubPAT)\n    NPM_TOKEN: $(NPM_TOKEN)\n"),
+        expect: (found) => found.some((error) => error.includes("GitHubPAT")) && found.some((error) => error.includes("NPM_TOKEN")),
+    },
+    {
+        title: "a secret whose protected group is never mapped is rejected",
+        run: () => checkSecretSourcing("cd-publish.yml", "env:\n    GITHUBPAT: $(GITHUB_RELEASE_TOKEN)\n"),
+        expect: (found) => found.some((error) => error.includes("BabylonJS-Publish-GitHub")),
+    },
+    {
+        title: "a secret sourced from its protected group is accepted",
+        run: () => checkSecretSourcing("cd-publish.yml", "variables:\n    - group: BabylonJS-Publish-GitHub\nenv:\n    GITHUBPAT: $(GITHUB_RELEASE_TOKEN)\n"),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "a secret group mapped at pipeline scope is rejected",
+        run: () => checkPipelineScopedGroups("cd-publish.yml", "variables:\n    - group: BabylonJS-CI-Infrastructure\n    - group: BabylonJS-Deployment\n\njobs:\n"),
+        expect: (found) => found.some((error) => error.includes("BabylonJS-Deployment")),
+    },
+    {
+        title: "a secret group mapped at job scope only is accepted",
+        run: () =>
+            checkPipelineScopedGroups(
+                "cd-publish.yml",
+                "variables:\n    - group: BabylonJS-CI-Infrastructure\n\njobs:\n    - job: Publish\n      variables:\n          - group: BabylonJS-Deployment\n"
+            ),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "a publish parameter that defaults to a production ref is rejected",
+        run: () =>
+            checkSnapshotPublisher(
+                "fixture.yml",
+                'parameters:\n    - name: sourceRunId\n      type: string\n      default: ""\n    - name: buildName\n      type: string\n      default: "refs/heads/master"\n'
+            ),
+        expect: (found) => found.some((error) => error.includes("buildName") && error.includes("empty string")),
+    },
+
+    // -- the shipped publish request gate, executed --------------------------
+    {
+        title: "BYPASS: a manual run with no sourceRunId that picked a pull request run is rejected",
+        run: () =>
+            expectRejected(
+                runPublishGate({
+                    ...AutomaticPublish,
+                    BUILD_REASON: "Manual",
+                    RESOURCE_SOURCE_BRANCH: "refs/pull/42/merge",
+                    RESOURCE_RUN_ID: "555",
+                    RESOLVED_RUN_ID: "555",
+                    RESOLVED_BUILD_NAME: "refs/pull/42/merge",
+                }),
+                "Only a resource-triggered run may publish without an explicit sourceRunId"
+            ),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "BYPASS: a manual run with no sourceRunId still targeting the master snapshot is rejected",
+        run: () =>
+            expectRejected(
+                runPublishGate({ ...AutomaticPublish, BUILD_REASON: "Manual", RESOURCE_SOURCE_BRANCH: "refs/pull/42/merge" }),
+                "Only a resource-triggered run may publish without an explicit sourceRunId"
+            ),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "BYPASS: a manual run that picked a master run but named no sourceRunId is still rejected",
+        run: () => expectRejected(runPublishGate({ ...AutomaticPublish, BUILD_REASON: "Manual" }), "explicit sourceRunId"),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "BYPASS: a manual republish to the master snapshot is rejected",
+        run: () => expectRejected(runPublishGate({ ...ManualRepublish, REQUESTED_BUILD_NAME: "refs/heads/master", RESOLVED_BUILD_NAME: "refs/heads/master" }), "may not overwrite"),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "BYPASS: a manual republish that also asks for the production CDN is rejected",
+        run: () => expectRejected(runPublishGate({ ...ManualRepublish, DEPLOY_TO_CDN: "True" }), "may not deploy to the production CDN"),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "a resource trigger whose upstream run built a pull request ref is rejected",
+        run: () =>
+            expectRejected(runPublishGate({ ...AutomaticPublish, RESOURCE_SOURCE_BRANCH: "refs/pull/42/merge", RESOLVED_BUILD_NAME: "refs/pull/42/merge" }), "not a trusted ref"),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "a resource trigger from another pipeline definition is rejected",
+        run: () => expectRejected(runPublishGate({ ...AutomaticPublish, RESOURCE_PIPELINE_ID: "99" }), "not the expected source definition"),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "an automatic run that also supplied a destination is rejected",
+        run: () => expectRejected(runPublishGate({ ...AutomaticPublish, REQUESTED_BUILD_NAME: "refs/heads/master" }), "only be supplied together with an explicit sourceRunId"),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "an automatic run whose resolved run ID is not the triggering run is rejected",
+        run: () => expectRejected(runPublishGate({ ...AutomaticPublish, RESOLVED_RUN_ID: "1234" }), "does not match the triggering resource run"),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "a non-numeric sourceRunId is rejected before it reaches a credentialed job",
+        run: () => expectRejected(runPublishGate({ ...ManualRepublish, EXPLICIT_SOURCE_RUN_ID: "555; rm -rf /" }), "sourceRunId must be a run number"),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "a snapshot name that is not a plain ref is rejected",
+        run: () => expectRejected(runPublishGate({ ...ManualRepublish, REQUESTED_BUILD_NAME: "cdn/master", RESOLVED_BUILD_NAME: "cdn/master" }), "not a plain ref"),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "a snapshot name that walks out of the snapshot root is rejected",
+        run: () =>
+            expectRejected(runPublishGate({ ...ManualRepublish, REQUESTED_BUILD_NAME: "refs/pull/../../etc", RESOLVED_BUILD_NAME: "refs/pull/../../etc" }), "path traversal"),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "a logging command smuggled through a parameter cannot reach the log",
+        run: () =>
+            expectRejected(
+                runPublishGate({
+                    ...ManualRepublish,
+                    REQUESTED_BUILD_NAME: "refs/pull/1/merge##vso[task.setvariable variable=BuildName]refs/heads/master",
+                    RESOLVED_BUILD_NAME: "refs/pull/1/merge##vso[task.setvariable variable=BuildName]refs/heads/master",
+                }),
+                "not a plain ref"
+            ),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "a pullRequestId that is not an issue number is rejected",
+        run: () => expectRejected(runPublishGate({ ...ManualRepublish, PULL_REQUEST_ID: "12##vso[task.setvariable variable=X]y" }), "pullRequestId must be an issue number"),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "the trusted automatic publish is accepted and resolves the CDN path itself",
+        run: () => expectAccepted(runPublishGate(AutomaticPublish), ["variable=CdnDestination;isOutput=true]cdn/master", "variable=PublishMode;isOutput=true]Automatic"]),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "an automatic publish of preview resolves the preview CDN path",
+        run: () =>
+            expectAccepted(runPublishGate({ ...AutomaticPublish, RESOURCE_SOURCE_BRANCH: "refs/heads/preview", RESOLVED_BUILD_NAME: "refs/heads/preview" }), [
+                "variable=CdnDestination;isOutput=true]cdn/preview",
+            ]),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "a legitimate manual republish is accepted and resolves no CDN path",
+        run: () => expectAccepted(runPublishGate(ManualRepublish), ["variable=CdnDestination;isOutput=true]\n", "variable=PublishMode;isOutput=true]Manual"]),
+        expect: (found) => found.length === 0,
+    },
+
+    // -- the in-job resource gate, executed ---------------------------------
+    {
+        title: "the credentialed CDN job rejects a manually queued run",
+        run: () =>
+            expectRejected(
+                runResourceRunGate({
+                    BUILD_REASON: "Manual",
+                    RESOURCE_SOURCE_BRANCH: "refs/heads/master",
+                    RESOURCE_PIPELINE_ID: "14",
+                    EXPECTED_PIPELINE_ID: "14",
+                    EXPLICIT_SOURCE_RUN_ID: "",
+                    ALLOWED_RESOURCE_REFS: "refs/heads/master refs/heads/preview",
+                }),
+                "Only a resource-triggered run may publish here"
+            ),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "the credentialed CDN job rejects a hand-picked source run",
+        run: () =>
+            expectRejected(
+                runResourceRunGate({
+                    BUILD_REASON: "ResourceTrigger",
+                    RESOURCE_SOURCE_BRANCH: "refs/heads/master",
+                    RESOURCE_PIPELINE_ID: "14",
+                    EXPECTED_PIPELINE_ID: "14",
+                    EXPLICIT_SOURCE_RUN_ID: "555",
+                    ALLOWED_RESOURCE_REFS: "refs/heads/master refs/heads/preview",
+                }),
+                "hand-picked source run"
+            ),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "the credentialed CDN job rejects an upstream run from a pull request ref",
+        run: () =>
+            expectRejected(
+                runResourceRunGate({
+                    BUILD_REASON: "ResourceTrigger",
+                    RESOURCE_SOURCE_BRANCH: "refs/pull/42/merge",
+                    RESOURCE_PIPELINE_ID: "14",
+                    EXPECTED_PIPELINE_ID: "14",
+                    EXPLICIT_SOURCE_RUN_ID: "",
+                    ALLOWED_RESOURCE_REFS: "refs/heads/master refs/heads/preview",
+                }),
+                "not an allowed ref"
+            ),
+        expect: (found) => found.length === 0,
+    },
+    {
+        title: "the credentialed CDN job accepts a genuine trigger from master",
+        run: () =>
+            expectAccepted(
+                runResourceRunGate({
+                    BUILD_REASON: "ResourceTrigger",
+                    RESOURCE_SOURCE_BRANCH: "refs/heads/master",
+                    RESOURCE_PIPELINE_ID: "14",
+                    EXPECTED_PIPELINE_ID: "14",
+                    EXPLICIT_SOURCE_RUN_ID: "",
+                    ALLOWED_RESOURCE_REFS: "refs/heads/master refs/heads/preview",
+                }),
+                ["Trusted resource run confirmed"]
+            ),
         expect: (found) => found.length === 0,
     },
 ];
