@@ -78,6 +78,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
      * @param state defines the state that will be used for the build
      */
     public override initialize(state: NodeMaterialBuildState) {
+        state._excludeVariableName("whiteBalanceMatrix");
         state._excludeVariableName("exposureLinear");
         state._excludeVariableName("contrast");
         state._excludeVariableName("vInverseScreenSize");
