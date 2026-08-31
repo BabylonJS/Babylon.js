@@ -59,12 +59,9 @@ steps:
     - script: |
           set -euo pipefail
 
-          STAGE_DIR="$(Build.ArtifactStagingDirectory)/staged-uploads/${{ parameters.artifact }}"
+          STAGE_DIR="$ARTIFACT_STAGING_DIRECTORY/staged-uploads/$ARTIFACT_NAME"
           rm -rf "$STAGE_DIR"
           mkdir -p "$STAGE_DIR"
-
-          SOURCE_DIR="${{ parameters.sourceDir }}"
-          FALLBACK_DIR="${{ parameters.fallbackDir }}"
 
           if test -d "$SOURCE_DIR"; then
             SELECTED_DIR="$SOURCE_DIR"
@@ -74,21 +71,30 @@ steps:
             # Nothing to publish. Still emit the marker so the artifact exists
             # and the trusted publish job can distinguish "no payload" from
             # "the producing job never ran".
-            echo "No source directory found for '${{ parameters.artifact }}', nothing to stage"
+            echo "No source directory found for '$ARTIFACT_NAME', nothing to stage"
             echo "absent" > "$STAGE_DIR/status.txt"
             exit 0
           fi
 
-          if [ "${{ parameters.validatePublicReport }}" = "True" ] || [ "${{ parameters.validatePublicReport }}" = "true" ]; then
-            node "$(Build.SourcesDirectory)/.azure-pipelines/scripts/validate-public-report.mjs" "$SELECTED_DIR"
+          if [ "$VALIDATE_PUBLIC_REPORT" = "True" ] || [ "$VALIDATE_PUBLIC_REPORT" = "true" ]; then
+            node "$SOURCES_DIRECTORY/.azure-pipelines/scripts/validate-public-report.mjs" "$SELECTED_DIR"
           fi
 
           ( cd "$SELECTED_DIR" && zip -q -r "$STAGE_DIR/payload.zip" . )
           echo "present" > "$STAGE_DIR/status.txt"
-          echo "Staged $SELECTED_DIR as artifact '${{ parameters.artifact }}'"
+          echo "Staged $SELECTED_DIR as artifact '$ARTIFACT_NAME'"
       displayName: "${{ parameters.displayName }}"
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
+      env:
+          # Caller-supplied values and Azure metadata are data, never script
+          # text: see .azure-pipelines/templates/assert-trusted-source.yml.
+          ARTIFACT_NAME: ${{ parameters.artifact }}
+          SOURCE_DIR: ${{ parameters.sourceDir }}
+          FALLBACK_DIR: ${{ parameters.fallbackDir }}
+          VALIDATE_PUBLIC_REPORT: ${{ parameters.validatePublicReport }}
+          ARTIFACT_STAGING_DIRECTORY: $(Build.ArtifactStagingDirectory)
+          SOURCES_DIRECTORY: $(Build.SourcesDirectory)
 
     - task: PublishPipelineArtifact@1
       displayName: "${{ parameters.displayName }} (publish artifact)"

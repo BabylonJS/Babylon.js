@@ -111,7 +111,7 @@ jobs:
 
           - bash: |
                 set -euo pipefail
-                OUT="$(Build.ArtifactStagingDirectory)/release-notes"
+                OUT="$ARTIFACT_STAGING_DIRECTORY/release-notes"
                 mkdir -p "$OUT"
                 cp .build/changelog.json "$OUT/changelog.json"
                 cp .build/release-notes.md "$OUT/release-notes.md"
@@ -123,6 +123,8 @@ jobs:
                     exit 1
                 fi
             displayName: "Stage release notes"
+            env:
+                ARTIFACT_STAGING_DIRECTORY: $(Build.ArtifactStagingDirectory)
 
           - task: PublishPipelineArtifact@1
             displayName: "Publish release notes"
@@ -151,7 +153,7 @@ jobs:
           - bash: |
                 set -euo pipefail
 
-                git config --global user.email "$(BOT_EMAIL)"
+                git config --global user.email "$BOT_EMAIL"
                 git config --global user.name "Babylon.js Platform"
 
                 # Anonymous remote: BabylonJS/Babylon.js is public, so fetching
@@ -162,8 +164,11 @@ jobs:
                     git remote add origin https://github.com/BabylonJS/Babylon.js.git
 
                 git fetch origin
-                git checkout "$(TrustedBranchName)"
+                git checkout "$TRUSTED_BRANCH_NAME"
             displayName: "prepare git"
+            env:
+                BOT_EMAIL: $(BOT_EMAIL)
+                TRUSTED_BRANCH_NAME: $(TrustedBranchName)
 
           - bash: npm ci
             displayName: "npm ci"
@@ -179,15 +184,21 @@ jobs:
 
           - bash: |
                 set -euo pipefail
-                cp "$(Pipeline.Workspace)/release-notes/changelog.json" .build/changelog.json
-                cp "$(Pipeline.Workspace)/release-notes/release-notes.md" .build/release-notes.md
+                cp "$PIPELINE_WORKSPACE/release-notes/changelog.json" .build/changelog.json
+                cp "$PIPELINE_WORKSPACE/release-notes/release-notes.md" .build/release-notes.md
             displayName: "Restore pre-fetched release notes"
+            env:
+                PIPELINE_WORKSPACE: $(Pipeline.Workspace)
 
           # No GITHUBPAT here. The changelog and the release notes were fetched
           # by the FetchReleaseNotes job and restored above, so the updater runs
           # entirely offline. generateChangelog() short-circuits without a token.
-          - bash: node ./scripts/updateVersion.js $(TrustedBranchName)
+          - bash: |
+                set -euo pipefail
+                node ./scripts/updateVersion.js "$TRUSTED_BRANCH_NAME"
             displayName: "run updater"
+            env:
+                TRUSTED_BRANCH_NAME: $(TrustedBranchName)
 
           - bash: npm install
             displayName: "Update package-lock.json"
@@ -195,8 +206,12 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - bash: node ./scripts/tagVersion.js $(TrustedBranchName)
+          - bash: |
+                set -euo pipefail
+                node ./scripts/tagVersion.js "$TRUSTED_BRANCH_NAME"
             displayName: "Tag the version"
+            env:
+                TRUSTED_BRANCH_NAME: $(TrustedBranchName)
 
           - bash: npm run format:fix
             displayName: "fix formatting"
@@ -218,7 +233,7 @@ jobs:
           - bash: |
                 set -euo pipefail
 
-                OUT="$(Build.ArtifactStagingDirectory)/npm-tarballs"
+                OUT="$ARTIFACT_STAGING_DIRECTORY/npm-tarballs"
                 mkdir -p "$OUT"
 
                 npm pack -ws --ignore-scripts --pack-destination "$OUT" --json > "$OUT/pack.json"
@@ -239,6 +254,8 @@ jobs:
                     console.log("Packed " + names.length + " workspace tarball(s)");
                 ' "$OUT"
             displayName: "Pack npm tarballs"
+            env:
+                ARTIFACT_STAGING_DIRECTORY: $(Build.ArtifactStagingDirectory)
 
           - bash: |
                 set -euo pipefail
@@ -246,7 +263,7 @@ jobs:
                 pv=$(jq -r '.version' ./packages/public/umd/babylonjs/package.json)
                 releaseCommit=$(git rev-parse "${pv}^{commit}")
 
-                META="$(Build.ArtifactStagingDirectory)/release-meta"
+                META="$ARTIFACT_STAGING_DIRECTORY/release-meta"
                 mkdir -p "$META"
                 printf '%s\n' "$pv" > "$META/version.txt"
                 printf '%s\n' "$releaseCommit" > "$META/commit.txt"
@@ -256,6 +273,8 @@ jobs:
                 echo "##vso[task.setvariable variable=ReleaseCommit;isOutput=true]${releaseCommit}"
             name: ReleaseMeta
             displayName: "Get release version and commit"
+            env:
+                ARTIFACT_STAGING_DIRECTORY: $(Build.ArtifactStagingDirectory)
 
           # A bundle is a single immutable file containing exactly the commits
           # and tags this job produced. The push job reconstructs the branch
@@ -263,17 +282,19 @@ jobs:
           - bash: |
                 set -euo pipefail
 
-                BUNDLE_DIR="$(Build.ArtifactStagingDirectory)/git-bundle"
+                BUNDLE_DIR="$ARTIFACT_STAGING_DIRECTORY/git-bundle"
                 mkdir -p "$BUNDLE_DIR"
 
                 git bundle create "$BUNDLE_DIR/release.bundle" --all
                 git rev-parse HEAD > "$BUNDLE_DIR/head.txt"
             displayName: "Bundle release commits"
+            env:
+                ARTIFACT_STAGING_DIRECTORY: $(Build.ArtifactStagingDirectory)
 
           - bash: |
                 set -euo pipefail
 
-                ASSETS="$(Build.ArtifactStagingDirectory)/release-assets"
+                ASSETS="$ARTIFACT_STAGING_DIRECTORY/release-assets"
                 mkdir -p "$ASSETS"
 
                 npm run prepare-snapshot
@@ -284,6 +305,8 @@ jobs:
                 cd ..
             displayName: "prepare snapshot"
             condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+            env:
+                ARTIFACT_STAGING_DIRECTORY: $(Build.ArtifactStagingDirectory)
 
           - task: Npm@1
             displayName: "run build -w @tools/tests"
@@ -302,13 +325,15 @@ jobs:
           - bash: |
                 set -euo pipefail
 
-                ASSETS="$(Build.ArtifactStagingDirectory)/release-assets"
+                ASSETS="$ARTIFACT_STAGING_DIRECTORY/release-assets"
                 mkdir -p "$ASSETS"
 
                 cd packages/tools/tests/dist
                 zip -q "$ASSETS/fileSize.zip" fileSizes.json
             displayName: "Package modules size report"
             condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+            env:
+                ARTIFACT_STAGING_DIRECTORY: $(Build.ArtifactStagingDirectory)
 
           - task: PublishPipelineArtifact@1
             displayName: "Publish npm tarballs"
@@ -328,9 +353,13 @@ jobs:
                 targetPath: "$(Build.ArtifactStagingDirectory)/release-meta"
                 artifact: releaseMeta
 
-          - bash: mkdir -p "$(Build.ArtifactStagingDirectory)/release-assets"
+          - bash: |
+                set -euo pipefail
+                mkdir -p "$ARTIFACT_STAGING_DIRECTORY/release-assets"
             displayName: "Ensure release assets directory"
             condition: succeededOrFailed()
+            env:
+                ARTIFACT_STAGING_DIRECTORY: $(Build.ArtifactStagingDirectory)
 
           - task: PublishPipelineArtifact@1
             displayName: "Publish release assets"
@@ -374,7 +403,7 @@ jobs:
                 # up by unrelated npm invocations or readable from a working
                 # directory. `ignore-scripts` is set in the config itself so it
                 # applies even to npm invocations that omit the flag.
-                NPM_AUTH_CONFIG="$(Agent.TempDirectory)/.npmrc-publish"
+                NPM_AUTH_CONFIG="$AGENT_TEMP_DIRECTORY/.npmrc-publish"
                 install -m 600 /dev/null "$NPM_AUTH_CONFIG"
                 {
                     printf '//registry.npmjs.org/:_authToken=%s\n' "$NPM_TOKEN"
@@ -385,12 +414,13 @@ jobs:
             displayName: "write npm auth config"
             env:
                 NPM_TOKEN: $(NPM_TOKEN)
+                AGENT_TEMP_DIRECTORY: $(Agent.TempDirectory)
 
           - bash: |
                 set -euo pipefail
 
-                DIR="$(Pipeline.Workspace)/npm-tarballs"
-                if [ "$(Build.SourceBranch)" = "refs/heads/master" ]; then
+                DIR="$PIPELINE_WORKSPACE/npm-tarballs"
+                if [ "$SOURCE_BRANCH" = "refs/heads/master" ]; then
                     TAG_ARGS=(--access=public)
                 else
                     TAG_ARGS=(--access=public --tag preview)
@@ -412,10 +442,16 @@ jobs:
                 )
             env:
                 NPM_CONFIG_USERCONFIG: $(NpmAuthConfig)
+                PIPELINE_WORKSPACE: $(Pipeline.Workspace)
+                SOURCE_BRANCH: $(Build.SourceBranch)
 
-          - bash: rm -f "$(Agent.TempDirectory)/.npmrc-publish"
+          - bash: |
+                set -euo pipefail
+                rm -f "$AGENT_TEMP_DIRECTORY/.npmrc-publish"
             displayName: "remove npm auth config"
             condition: always()
+            env:
+                AGENT_TEMP_DIRECTORY: $(Agent.TempDirectory)
 
     # ========================================================================
     # PUSH + RELEASE (git PAT, GitHub connection and deployment token)
@@ -494,10 +530,10 @@ jobs:
                 # any possibility of a hook running while the PAT is reachable.
                 GIT="git -c core.hooksPath=/dev/null"
 
-                WORK="$(Agent.TempDirectory)/release-repo"
+                WORK="$AGENT_TEMP_DIRECTORY/release-repo"
                 rm -rf "$WORK"
                 $GIT clone --branch "$TRUSTED_BRANCH_NAME" \
-                  "$(Pipeline.Workspace)/git-bundle/release.bundle" "$WORK"
+                  "$PIPELINE_WORKSPACE/git-bundle/release.bundle" "$WORK"
                 cd "$WORK"
 
                 $GIT config user.email "$BOT_EMAIL"
@@ -527,6 +563,8 @@ jobs:
                 GITHUBPAT: $(GitHubPAT)
                 TRUSTED_BRANCH_NAME: $(TrustedBranchName)
                 BOT_EMAIL: $(BOT_EMAIL)
+                AGENT_TEMP_DIRECTORY: $(Agent.TempDirectory)
+                PIPELINE_WORKSPACE: $(Pipeline.Workspace)
 
           - task: GitHubRelease@1
             displayName: "GitHub release (create)"
@@ -554,7 +592,7 @@ jobs:
                   -F "path=cdn/master/v$PACKAGE_VERSION" \
                   -F "storageAccount=$STORAGE_ACCOUNT" \
                   -F "saveZip=true" \
-                  -F "zip=@$(Pipeline.Workspace)/release-assets/snapshot.zip"
+                  -F "zip=@$PIPELINE_WORKSPACE/release-assets/snapshot.zip"
             displayName: "Update snapshot"
             condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
             env:
@@ -563,6 +601,7 @@ jobs:
                 UPLOAD_ENDPOINT: $(DEPLOY_ENDPOINT_UPLOAD)
                 STORAGE_ACCOUNT: $(SNAPSHOTS_STORAGE_ACCOUNT)
                 PACKAGE_VERSION: $(PackageVersion)
+                PIPELINE_WORKSPACE: $(Pipeline.Workspace)
 
           - script: |
                 set -euo pipefail
@@ -572,7 +611,7 @@ jobs:
                   -H "Content-Type: multipart/form-data" \
                   -F "path=cdn/master/v$PACKAGE_VERSION" \
                   -F "storageAccount=$STORAGE_ACCOUNT" \
-                  -F "zip=@$(Pipeline.Workspace)/release-assets/fileSize.zip"
+                  -F "zip=@$PIPELINE_WORKSPACE/release-assets/fileSize.zip"
             displayName: "Update snapshot modules size"
             condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
             env:
@@ -581,6 +620,7 @@ jobs:
                 UPLOAD_ENDPOINT: $(DEPLOY_ENDPOINT_UPLOAD)
                 STORAGE_ACCOUNT: $(SNAPSHOTS_STORAGE_ACCOUNT)
                 PACKAGE_VERSION: $(PackageVersion)
+                PIPELINE_WORKSPACE: $(Pipeline.Workspace)
 
           # DISABLED in classic pipeline:
           # - script: |

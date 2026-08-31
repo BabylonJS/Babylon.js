@@ -132,9 +132,12 @@ jobs:
 
           - bash: |
                 echo "##[section]Nightly Webkit WebGL2 report URL"
-                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/webkitplaywright/index.html"
+                echo "  $SNAPSHOT_CDN_URL/$NIGHTLY_REPORT_ROOT/webkitplaywright/index.html"
             displayName: "Log nightly Webkit report URL"
             condition: failed()
+            env:
+                SNAPSHOT_CDN_URL: $(SNAPSHOT_CDN_URL)
+                NIGHTLY_REPORT_ROOT: $(NightlyReportRoot)
 
           - task: PublishTestResults@2
             displayName: "Publish Test Results"
@@ -201,9 +204,12 @@ jobs:
 
           - bash: |
                 echo "##[section]Nightly Firefox WebGL2 report URL"
-                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/firefoxplaywright/index.html"
+                echo "  $SNAPSHOT_CDN_URL/$NIGHTLY_REPORT_ROOT/firefoxplaywright/index.html"
             displayName: "Log nightly Firefox report URL"
             condition: failed()
+            env:
+                SNAPSHOT_CDN_URL: $(SNAPSHOT_CDN_URL)
+                NIGHTLY_REPORT_ROOT: $(NightlyReportRoot)
 
           - task: PublishTestResults@2
             displayName: "Publish Test Results"
@@ -271,9 +277,12 @@ jobs:
 
           - bash: |
                 echo "##[section]Nightly Chrome WebGL2 report URL"
-                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/webgl2playwright/index.html"
+                echo "  $SNAPSHOT_CDN_URL/$NIGHTLY_REPORT_ROOT/webgl2playwright/index.html"
             displayName: "Log nightly WebGL2 report URL"
             condition: failed()
+            env:
+                SNAPSHOT_CDN_URL: $(SNAPSHOT_CDN_URL)
+                NIGHTLY_REPORT_ROOT: $(NightlyReportRoot)
 
           - task: PublishTestResults@2
             displayName: "Publish Test Results"
@@ -342,9 +351,12 @@ jobs:
 
           - bash: |
                 echo "##[section]Nightly Chrome WebGPU report URL"
-                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/webgpuplaywright/index.html"
+                echo "  $SNAPSHOT_CDN_URL/$NIGHTLY_REPORT_ROOT/webgpuplaywright/index.html"
             displayName: "Log nightly WebGPU report URL"
             condition: failed()
+            env:
+                SNAPSHOT_CDN_URL: $(SNAPSHOT_CDN_URL)
+                NIGHTLY_REPORT_ROOT: $(NightlyReportRoot)
 
           - task: PublishTestResults@2
             displayName: "Publish Test Results"
@@ -418,9 +430,12 @@ jobs:
 
           - bash: |
                 echo "##[section]Nightly ES6 visualization report URL"
-                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/es6visplaywright/index.html"
+                echo "  $SNAPSHOT_CDN_URL/$NIGHTLY_REPORT_ROOT/es6visplaywright/index.html"
             displayName: "Log nightly ES6 visualization report URL"
             condition: failed()
+            env:
+                SNAPSHOT_CDN_URL: $(SNAPSHOT_CDN_URL)
+                NIGHTLY_REPORT_ROOT: $(NightlyReportRoot)
 
           - task: PublishTestResults@2
             displayName: "Publish Test Results"
@@ -596,9 +611,12 @@ jobs:
 
           - bash: |
                 echo "##[section]Weekly Perf report URL"
-                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/perfplaywright/index.html"
+                echo "  $SNAPSHOT_CDN_URL/$NIGHTLY_REPORT_ROOT/perfplaywright/index.html"
             displayName: "Log weekly perf report URL"
             condition: eq(variables['PerfTestsFailed'], 'true')
+            env:
+                SNAPSHOT_CDN_URL: $(SNAPSHOT_CDN_URL)
+                NIGHTLY_REPORT_ROOT: $(NightlyReportRoot)
 
           - task: PublishTestResults@2
             displayName: "Publish perf test results"

@@ -25,6 +25,21 @@
 # pipelines must therefore be made against the full ref, or against
 # `TrustedBranchName` below, which this step derives from the full ref *after*
 # it has been matched against the allow-list.
+#
+# Nothing is interpolated into the script body. `$( )` macros and `${{ }}`
+# template expressions are *textual* substitutions performed while the script
+# is rendered, before a single line of it runs. Git allows `"`, `;` and `$` in
+# a ref name, so a ref such as
+#
+#     refs/heads/x";SOURCE_BRANCH="refs/heads/master
+#
+# rendered into `SOURCE_BRANCH="$(Build.SourceBranch)"` closes the assignment
+# and re-assigns the very variable this gate compares - the run then passes the
+# allow-list while building the attacker's ref. Every Azure value this step
+# reads therefore arrives through `env:`, where it is data and can never be
+# parsed as shell syntax. The same rule applies to every other credentialed
+# script body in this repository and is enforced by
+# .azure-pipelines/scripts/validate-pipeline-trust-boundary.mjs.
 # =============================================================================
 
 parameters:
@@ -54,8 +69,15 @@ steps:
     - bash: |
           set -euo pipefail
 
-          SOURCE_BRANCH="$(Build.SourceBranch)"
-          REASON="$(Build.Reason)"
+          SOURCE_BRANCH="${SOURCE_BRANCH:-}"
+          REASON="${REASON:-}"
+          ALLOWED_REFS="${ALLOWED_REFS:-}"
+          ALLOWED_REASONS="${ALLOWED_REASONS:-}"
+
+          if [ -z "$SOURCE_BRANCH" ] || [ -z "$REASON" ] || [ -z "$ALLOWED_REFS" ] || [ -z "$ALLOWED_REASONS" ]; then
+              echo "##vso[task.logissue type=error]Trust gate is missing its inputs; refusing to run credentialed work"
+              exit 1
+          fi
 
           # A pull request validation run must never reach credentialed work,
           # whatever ref it claims to be building.
@@ -63,9 +85,6 @@ steps:
               echo "##vso[task.logissue type=error]Refusing to run credentialed work for a pull request build"
               exit 1
           fi
-
-          ALLOWED_REFS="${{ join(' ', parameters.allowedRefs) }}"
-          ALLOWED_REASONS="${{ join(' ', parameters.allowedReasons) }}"
 
           ref_ok=false
           for ref in $ALLOWED_REFS; do
@@ -102,3 +121,11 @@ steps:
           # Build.SourceBranchName that a tag cannot spoof.
           echo "##vso[task.setvariable variable=TrustedBranchName]${SOURCE_BRANCH#refs/heads/}"
       displayName: "${{ parameters.displayName }}"
+      env:
+          # Every value the gate compares is passed as data, never rendered into
+          # the script above. The allow-lists are joined here, in a YAML scalar,
+          # so a ref name can never reach a position where the shell parses it.
+          SOURCE_BRANCH: $(Build.SourceBranch)
+          REASON: $(Build.Reason)
+          ALLOWED_REFS: ${{ join(' ', parameters.allowedRefs) }}
+          ALLOWED_REASONS: ${{ join(' ', parameters.allowedReasons) }}

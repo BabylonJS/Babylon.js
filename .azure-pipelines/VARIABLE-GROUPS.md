@@ -70,12 +70,35 @@ table from inside the repository. It runs in the `FormatLint` job **before**
 - any pipeline uses `Build.SourceBranchName`;
 - a credential is passed on a command line or embedded in a URL;
 - `npm publish` / `npm pack` runs without `--ignore-scripts`;
-- a step that maps a secret into `env:` interpolates a `${{ }}` expression or a
-  non-system `$( )` macro into its **script body**. Both are textual
-  substitutions performed before the script runs, so a value containing a quote
-  escapes the string it lands in and executes next to the credential - before
-  any in-script validation could reject it. Such values must be passed through
-  `env:` and dereferenced as shell variables.
+- any script body that runs where a credential is in scope interpolates a
+  `${{ }}` expression or a `$( )` macro - **including Azure's own system and
+  build variables**. Both are textual substitutions performed before the script
+  runs, so a value containing a quote escapes the string it lands in and
+  executes next to the credential, before any in-script validation could reject
+  it. Build metadata is not exempt: git allows `"`, `;` and `$` in a ref name,
+  so a branch pushed as
+
+    ```text
+    refs/heads/x";SOURCE_BRANCH="refs/heads/master
+    ```
+
+    turns `SOURCE_BRANCH="$(Build.SourceBranch)"` into two assignments and walks
+    straight through a ref allow-list. Every such value must be passed through
+    `env:` and dereferenced as a shell variable, where it can only be data.
+    "In scope" means the whole graph of a credentialed pipeline, not only the
+    step that maps the secret: a variable group is job-scoped, so any step of that
+    job can expand `$(DEPLOY_TOKEN)`.
+
+- the trust gate `templates/assert-trusted-source.yml` renders anything into its
+  script body, or stops reading the full ref and the build reason from `env:`.
+
+`npm run check:pipeline-trust-boundary` runs the script's own guard tests
+(`--self-test`) before the scan. They assert that each rejection above still
+fires - a fixture reintroducing `SOURCE_BRANCH="$(Build.SourceBranch)"`, a
+`${{ }}` expression, a pipeline-variable macro, a single-line credentialed
+script and a weakened gate must all be flagged, while values passed through
+`env:` and genuine bash command substitutions (`$(mktemp -d)`, `$(pwd)`) must
+not be.
 
 ### What moved, and what that costs
 

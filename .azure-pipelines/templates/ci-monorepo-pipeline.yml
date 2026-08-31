@@ -393,7 +393,10 @@ jobs:
           # Runs before `npm ci`, so the check that guards the credential
           # boundary cannot itself be subverted by a dependency lifecycle
           # script. It only reads .azure-pipelines and uses Node built-ins.
-          - script: node ./.azure-pipelines/scripts/validate-pipeline-trust-boundary.mjs
+          - script: |
+                set -euo pipefail
+                node ./.azure-pipelines/scripts/validate-pipeline-trust-boundary.mjs --self-test
+                node ./.azure-pipelines/scripts/validate-pipeline-trust-boundary.mjs
             displayName: "CI trust boundary"
 
           - template: cache-steps.yml

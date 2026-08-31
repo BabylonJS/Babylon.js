@@ -31,19 +31,25 @@ steps:
     - script: |
           set -euo pipefail
 
-          STAGE_DIR="$(Build.ArtifactStagingDirectory)/staged-uploads/${{ parameters.artifact }}"
+          STAGE_DIR="$ARTIFACT_STAGING_DIRECTORY/staged-uploads/$ARTIFACT_NAME"
           rm -rf "$STAGE_DIR"
           mkdir -p "$STAGE_DIR"
 
           MERGE_DIR=$(mktemp -d)
           trap 'rm -rf "$MERGE_DIR"' EXIT
 
-          cp -R "${{ parameters.toolPackageDir }}/dist/." "$MERGE_DIR/"
-          cp -R "${{ parameters.toolPackageDir }}/public/." "$MERGE_DIR/"
+          cp -R "$TOOL_PACKAGE_DIR/dist/." "$MERGE_DIR/"
+          cp -R "$TOOL_PACKAGE_DIR/public/." "$MERGE_DIR/"
 
           ( cd "$MERGE_DIR" && zip -q -r "$STAGE_DIR/payload.zip" . )
           echo "present" > "$STAGE_DIR/status.txt"
       displayName: "${{ parameters.displayName }}"
+      env:
+          # Caller-supplied values and Azure metadata are data, never script
+          # text: see .azure-pipelines/templates/assert-trusted-source.yml.
+          ARTIFACT_NAME: ${{ parameters.artifact }}
+          TOOL_PACKAGE_DIR: ${{ parameters.toolPackageDir }}
+          ARTIFACT_STAGING_DIRECTORY: $(Build.ArtifactStagingDirectory)
 
     - task: PublishPipelineArtifact@1
       displayName: "${{ parameters.displayName }} (publish artifact)"

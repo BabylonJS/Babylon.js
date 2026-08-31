@@ -187,9 +187,9 @@ jobs:
                       # Set both in-job and as an output variable, so other
                       # trusted publish jobs can reuse the probe result instead
                       # of each spending its own credentialed request.
-                      echo "##vso[task.setvariable variable=${{ check.name }}]$RESULT"
-                      echo "##vso[task.setvariable variable=${{ check.name }};isOutput=true]$RESULT"
-                      echo "${{ check.name }} resolved from HTTP $HTTP_STATUS"
+                      echo "##vso[task.setvariable variable=$CHECK_NAME]$RESULT"
+                      echo "##vso[task.setvariable variable=$CHECK_NAME;isOutput=true]$RESULT"
+                      echo "$CHECK_NAME resolved from HTTP $HTTP_STATUS"
                   name: ${{ check.name }}
                   displayName: "Check snapshot: ${{ check.name }}"
                   continueOnError: true
@@ -198,6 +198,7 @@ jobs:
                       DEPLOYMENT_SERVER: $(DEPLOYMENT_SERVER)
                       SNAPSHOT_CHECK_ENDPOINT: $(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)
                       CHECK_PATH: ${{ check.path }}
+                      CHECK_NAME: ${{ check.name }}
 
           - ${{ each delete in parameters.deletes }}:
                 - bash: |
@@ -247,11 +248,11 @@ jobs:
                 - bash: |
                       set -euo pipefail
 
-                      STAGE_DIR="$(Pipeline.Workspace)/staged-uploads/${{ upload.artifact }}"
+                      STAGE_DIR="$PIPELINE_WORKSPACE/staged-uploads/$ARTIFACT_NAME"
                       PAYLOAD="$STAGE_DIR/payload.zip"
 
                       if [ ! -f "$PAYLOAD" ]; then
-                        echo "No payload staged for '${{ upload.artifact }}', nothing to upload"
+                        echo "No payload staged for '$ARTIFACT_NAME', nothing to upload"
                         exit 0
                       fi
 
@@ -276,7 +277,7 @@ jobs:
                         printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - "$@"
                       }
 
-                      if [ "${{ upload.deleteStale }}" = "True" ] || [ "${{ upload.deleteStale }}" = "true" ]; then
+                      if [ "$DELETE_STALE" = "True" ] || [ "$DELETE_STALE" = "true" ]; then
                         HTTP_STATUS=$(curl_authorized --silent --show-error \
                           --output /dev/null \
                           --write-out "%{http_code}" \
@@ -304,7 +305,7 @@ jobs:
 
                       curl_authorized "${CURL_ARGS[@]}"
 
-                      echo "Uploaded '${{ upload.artifact }}' to $DESTINATION"
+                      echo "Uploaded '$ARTIFACT_NAME' to $DESTINATION"
                   displayName: "${{ upload.displayName }}"
                   continueOnError: true
                   env:
@@ -316,6 +317,9 @@ jobs:
                       STORAGE_ACCOUNT: ${{ parameters.storageAccount }}
                       DESTINATION: ${{ upload.destination }}
                       EXTRA_FIELDS: ${{ upload.extraFields }}
+                      ARTIFACT_NAME: ${{ upload.artifact }}
+                      DELETE_STALE: ${{ upload.deleteStale }}
+                      PIPELINE_WORKSPACE: $(Pipeline.Workspace)
 
           - ${{ each purge in parameters.purges }}:
                 - bash: |
@@ -352,10 +356,10 @@ jobs:
                 - bash: |
                       set -euo pipefail
 
-                      FILE="$(Pipeline.Workspace)/comment-payloads/${{ fileComment.artifact }}/${{ fileComment.file }}"
+                      FILE="$PIPELINE_WORKSPACE/comment-payloads/$ARTIFACT_NAME/$COMMENT_FILE"
                       if [ ! -f "$FILE" ]; then
-                        echo "No comment file staged for '${{ fileComment.artifact }}'"
-                        echo "##vso[task.setvariable variable=HasStagedComment_${{ fileComment.artifact }}]false"
+                        echo "No comment file staged for '$ARTIFACT_NAME'"
+                        echo "##vso[task.setvariable variable=HasStagedComment_$ARTIFACT_NAME]false"
                         exit 0
                       fi
 
@@ -366,10 +370,14 @@ jobs:
                       COMMENT="${COMMENT//'%'/'%25'}"
                       COMMENT="${COMMENT//$'\n'/'%0A'}"
                       COMMENT="${COMMENT//$'\r'/'%0D'}"
-                      echo "##vso[task.setvariable variable=StagedComment_${{ fileComment.artifact }}]$COMMENT"
-                      echo "##vso[task.setvariable variable=HasStagedComment_${{ fileComment.artifact }}]true"
+                      echo "##vso[task.setvariable variable=StagedComment_$ARTIFACT_NAME]$COMMENT"
+                      echo "##vso[task.setvariable variable=HasStagedComment_$ARTIFACT_NAME]true"
                   displayName: "Read ${{ fileComment.artifact }}"
                   continueOnError: true
+                  env:
+                      ARTIFACT_NAME: ${{ fileComment.artifact }}
+                      COMMENT_FILE: ${{ fileComment.file }}
+                      PIPELINE_WORKSPACE: $(Pipeline.Workspace)
 
                 - task: GitHubComment@0
                   displayName: "${{ fileComment.displayName }}"
