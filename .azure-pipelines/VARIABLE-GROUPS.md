@@ -50,6 +50,9 @@ Additional administrator-side requirements:
   and purge CDN endpoints. It must not grant access to the production `cdn/`
   release paths beyond what the trusted `Deploy` job needs.
 - `BROWSERSTACK_ACCESS_KEY` must belong to the open-source plan account only.
+  The `Browserstack-Opensource` group is no longer linked at all on pull request
+  runs of `ci-monorepo` (`${{ if ne(variables['Build.Reason'], 'PullRequest') }}`),
+  so BrowserStack visual tests only run from trusted, non-pull-request sources.
 - `GitHubPAT` and `NPM_TOKEN` must be defined **only** on `cd-publish`, which
   has `pr: none`, and must never be added to a variable group shared with a
   PR-triggered pipeline.
@@ -64,12 +67,44 @@ Additional administrator-side requirements:
   each protected resource - the `BabylonJS-Deployment` and
   `Browserstack-Opensource` variable groups, and the
   `GITHUB_SERVICE_CONNECTION` service connection - add
-  **Approvals and checks → Required template** pointing at
-  `.azure-pipelines/templates/publish-uploads-job.yml` in this repository at
-  `refs/heads/master`. Azure DevOps then refuses to release those resources to
-  any run whose YAML does not extend the trusted template, which is what stops
-  a pull request from granting itself credentials by editing the pipeline
-  definition in its own branch.
+  **Approvals and checks → Required template** pointing at this repository at
+  `refs/heads/master` and, for each protected pipeline, at its root template:
+
+    | Pipeline                    | Required template                                               |
+    | --------------------------- | --------------------------------------------------------------- |
+    | `ci-monorepo.yml`           | `.azure-pipelines/templates/ci-monorepo-pipeline.yml`           |
+    | `ci-graph-tools.yml`        | `.azure-pipelines/templates/ci-graph-tools-pipeline.yml`        |
+    | `ci-playground-sandbox.yml` | `.azure-pipelines/templates/ci-playground-sandbox-pipeline.yml` |
+
+    A required-template check only matches a pipeline's **root `extends:`**; it
+    never inspects `- template:` job or step includes. The three pull-request
+    pipelines above were therefore restructured so their root YAML contains only
+    `trigger`/`pr`/`schedules`/`resources` and an `extends:` of the trusted
+    template listed here. Without that shape the check silently matches nothing
+    and provides no protection at all.
+
+    Azure DevOps then refuses to release those resources to any run whose root
+    `extends` does not resolve to the trusted template at `refs/heads/master`,
+    which is what stops a pull request from granting itself credentials by
+    editing the pipeline definition in its own branch.
+
+    **Consequence to accept deliberately:** once the check is enabled, a pull
+    request run resolves `@self` to its own source ref, so it will _not_ be given
+    `BabylonJS-Deployment`. Pull-request snapshot previews and PR comments then
+    have to move to a pipeline triggered by run completion (a `resources:
+pipelines:` trigger, which Azure DevOps always evaluates from the default
+    branch). Enable the check on `Browserstack-Opensource` and
+    `GITHUB_SERVICE_CONNECTION` first, where nothing is lost, and plan the
+    snapshot-preview move before enabling it on `BabylonJS-Deployment`.
+
+- **Credentialed pipelines assert their own source ref.** `cd-tools`,
+  `cd-publish` and `ci-browser-testing` declare `pr: none`, but anyone with
+  queue permission can still start them by hand against an arbitrary ref, and
+  the definition would then be read from that ref. Every job in those pipelines
+  that holds a credential now runs `templates/assert-trusted-source.yml` first,
+  which fails the job unless `Build.SourceBranch` is `refs/heads/master` or
+  `refs/heads/preview`. Keep queue permission restricted regardless: the guard
+  is defence in depth, not a substitute for it.
 - Mark `BuildName` and the deployment endpoint variables as **read-only** in the
   variable group UI. The YAML already declares `BuildName` `readonly: true`, but
   variables that come from a group can only be locked there.
@@ -108,12 +143,28 @@ Additional administrator-side requirements:
 `ci-monorepo.yml`, `ci-graph-tools.yml` and `ci-playground-sandbox.yml` are
 split into two classes of job:
 
-|              | Jobs that run pull-request code               | Trusted publish jobs                                       |
-| ------------ | --------------------------------------------- | ---------------------------------------------------------- |
-| Checkout     | `checkout: self`                              | `checkout: none`                                           |
-| Credentials  | none                                          | `DEPLOY_TOKEN`, `GITHUB_SERVICE_CONNECTION`                |
-| Steps        | build, test, and `templates/stage-upload.yml` | only steps declared in `templates/publish-uploads-job.yml` |
-| Destinations | not known to the job                          | literals in trusted YAML                                   |
+|             | Jobs that run pull-request code               | Trusted publish jobs                                       |
+| ----------- | --------------------------------------------- | ---------------------------------------------------------- |
+| Checkout    | `checkout: self`                              | `checkout: none`                                           |
+| Credentials | none                                          | `DEPLOY_TOKEN`, `GITHUB_SERVICE_CONNECTION`                |
+| Steps       | build, test, and `templates/stage-upload.yml` | only steps declared in `templates/publish-uploads-job.yml` |
+
+Beyond the pull-request pipelines, the same split is now applied to the
+credentialed pipelines:
+
+| Pipeline             | Credential-free jobs                                 | Credentialed job (`checkout: none`)    |
+| -------------------- | ---------------------------------------------------- | -------------------------------------- |
+| `cd-tools`           | `BuildTools` (npm ci, tool builds, artifact staging) | `DeployTools` (`DEPLOY_TOKEN` only)    |
+| `ci-browser-testing` | the five test jobs (report staging only)             | `PublishReports` (`DEPLOY_TOKEN` only) |
+| `cd-publish`         | `BuildRelease` (npm ci, build, pack, bundle)         | `PublishNpm`, `PublishRelease`         |
+
+`cd-publish` additionally runs `FetchReleaseNotes` _before_ `BuildRelease`:
+it is a credential-only job that holds `GitHubPAT`, installs no dependencies and
+runs no repository build, fetches the release notes with Node built-ins, scans
+the result for token-shaped strings and publishes it as an artifact. The build
+job consumes the sanitized artifact and never sees the PAT, so a compromised
+dependency cannot linger on the agent and read it.
+| Destinations | not known to the job | literals in trusted YAML |
 
 - Jobs that execute pull-request code hold **no** deployment token and **no**
   GitHub service connection. They archive their output with

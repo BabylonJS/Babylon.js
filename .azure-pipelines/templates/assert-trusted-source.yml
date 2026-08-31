@@ -1,0 +1,90 @@
+# =============================================================================
+# Template: Refuse to run credentialed work from an untrusted source
+#
+# The pipelines that hold deployment, registry or BrowserStack credentials all
+# declare `pr: none`, so Azure DevOps never starts them automatically from a
+# pull request branch. That is not by itself sufficient: anyone with queue
+# permission can start those pipelines **manually against an arbitrary ref**,
+# including the head of an unmerged pull request. The pipeline definition is
+# then read from that ref, so the attacker chooses both the code and the YAML
+# while the run still has access to the protected resources.
+#
+# This guard closes that path from inside the repository. It runs before any
+# credential is used and fails the job unless the run comes from a trusted ref
+# and a trusted reason.
+#
+# It is intentionally a plain first step rather than a `condition:` - a
+# condition that evaluates to false marks the job "skipped", which reads as
+# success to downstream jobs, whereas an untrusted ref must be a hard failure.
+# =============================================================================
+
+parameters:
+    # Refs that are allowed to use credentials. Exact matches against
+    # Build.SourceBranch, so a branch named `master-something` does not pass.
+    - name: allowedRefs
+      type: object
+      default:
+          - refs/heads/master
+          - refs/heads/preview
+    # Build reasons that are allowed to use credentials. `Manual` is included
+    # because releases and tool deployments are started by hand, but it is only
+    # ever reached together with one of the refs above.
+    - name: allowedReasons
+      type: object
+      default:
+          - IndividualCI
+          - BatchedCI
+          - Schedule
+          - Manual
+          - ResourceTrigger
+    - name: displayName
+      type: string
+      default: "Assert trusted source"
+
+steps:
+    - bash: |
+          set -euo pipefail
+
+          SOURCE_BRANCH="$(Build.SourceBranch)"
+          REASON="$(Build.Reason)"
+
+          # A pull request validation run must never reach credentialed work,
+          # whatever ref it claims to be building.
+          if [ "$REASON" = "PullRequest" ]; then
+              echo "##vso[task.logissue type=error]Refusing to run credentialed work for a pull request build"
+              exit 1
+          fi
+
+          ALLOWED_REFS="${{ join(' ', parameters.allowedRefs) }}"
+          ALLOWED_REASONS="${{ join(' ', parameters.allowedReasons) }}"
+
+          ref_ok=false
+          for ref in $ALLOWED_REFS; do
+              if [ "$SOURCE_BRANCH" = "$ref" ]; then
+                  ref_ok=true
+                  break
+              fi
+          done
+
+          reason_ok=false
+          for reason in $ALLOWED_REASONS; do
+              if [ "$REASON" = "$reason" ]; then
+                  reason_ok=true
+                  break
+              fi
+          done
+
+          if [ "$ref_ok" != "true" ]; then
+              echo "##vso[task.logissue type=error]Refusing to run credentialed work from untrusted ref '$SOURCE_BRANCH'"
+              echo "Allowed refs: $ALLOWED_REFS"
+              exit 1
+          fi
+
+          if [ "$reason_ok" != "true" ]; then
+              echo "##vso[task.logissue type=error]Refusing to run credentialed work for build reason '$REASON'"
+              echo "Allowed reasons: $ALLOWED_REASONS"
+              exit 1
+          fi
+
+          echo "Trusted source confirmed: $SOURCE_BRANCH ($REASON)"
+      displayName: "${{ parameters.displayName }}"

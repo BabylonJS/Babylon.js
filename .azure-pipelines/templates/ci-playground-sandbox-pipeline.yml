@@ -1,0 +1,362 @@
+# =============================================================================
+# Playground/Sandbox CI Pipeline (Definition ID: 32) - trusted body
+#
+# Trusted pipeline body for .azure-pipelines/ci-playground-sandbox.yml.
+#
+# This template is the target of that pipeline's root `extends`, which makes
+# it the artifact an Azure DevOps "Required template" check can pin to
+# refs/heads/master. Every credentialed job in this pipeline is therefore
+# gated on this file being the trusted, merged copy rather than a version
+# rewritten on a pull request branch.
+# =============================================================================
+
+# Original pipeline documentation:
+#
+# =============================================================================
+# Playground-Sandbox-CI Pipeline (Definition ID: 32)
+# Converted from Azure DevOps Classic Pipeline
+#
+# Triggers on PRs that touch playground, sandbox, or inspector-v2 files.
+# Builds and tests both Playground and Sandbox in parallel jobs.
+#
+# Variable groups:
+#   - BabylonJS-CI-Infrastructure
+#   - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
+#
+# CI TRUST BOUNDARY
+# -----------------
+# Every job that checks the repository out runs pull-request-controlled code
+# and is therefore credential-free: it builds, tests, and stages its output as
+# pipeline artifacts, nothing more.
+#
+# The deployment token and the GitHub service connection are used only by the
+# Deploy* and Publish* jobs below, which run with `checkout: none` on freshly
+# provisioned agents. Pull-request code is never present in them, so it cannot
+# read a credential, leave a background process behind to scrape one, or
+# redirect an upload to an attacker-controlled destination.
+#
+# Fork gating alone would not be sufficient, because a compromised or malicious
+# collaborator can open a same-repo pull request. The separation is enforced by
+# job boundaries. See the "CI trust boundary" section of VARIABLE-GROUPS.md.
+# =============================================================================
+
+variables:
+    - group: BabylonJS-CI-Infrastructure
+    - group: BabylonJS-Deployment
+    - name: BuildName
+      value: $(Build.SourceBranch)
+      # Read-only: pull-request code cannot repoint deployment destinations
+      # with `##vso[task.setvariable variable=BuildName]`.
+      readonly: true
+
+pool:
+    vmImage: ubuntu-24.04
+
+jobs:
+    # ========================================================================
+    # PLAYGROUND - build (executes pull-request code, holds NO credentials)
+    # ========================================================================
+    - job: BuildPlayground
+      displayName: "Build playground"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+            persistCredentials: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - task: Npm@1
+            displayName: "npm ci"
+            inputs:
+                command: custom
+                customCommand: "ci"
+
+          - task: Npm@1
+            displayName: "npm build:dev"
+            inputs:
+                command: custom
+                customCommand: "run build:dev"
+
+          - task: Npm@1
+            displayName: "npm typecheck playground"
+            inputs:
+                command: custom
+                customCommand: "run typecheck -w @tools/playground"
+
+          - task: Npm@1
+            displayName: "npm build playground"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/playground"
+
+          - script: |
+                # Remove scenes/textures from public - not needed for testing
+                rm -rf packages/tools/playground/public/scenes
+                rm -rf packages/tools/playground/public/textures
+            displayName: "Remove scenes and textures from playground public"
+
+          - template: stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/playground"
+                artifact: "playgroundDeploy"
+                displayName: "Stage playground deployment"
+
+    # ========================================================================
+    # PLAYGROUND - deploy (trusted: `checkout: none`, no pull-request code on disk)
+    # ========================================================================
+    - template: publish-uploads-job.yml
+      parameters:
+          jobName: DeployPlayground
+          displayName: "Deploy playground snapshot (trusted)"
+          dependsOn:
+              - BuildPlayground
+          condition: succeeded()
+          uploads:
+              - artifact: "playgroundDeploy"
+                destination: "PLAYGROUND/$(BuildName)"
+                deleteStale: false
+                extraFields: ""
+                displayName: "Deploy playground snapshot"
+
+    # ========================================================================
+    # PLAYGROUND - test (executes pull-request code, holds NO credentials)
+    # ========================================================================
+    - job: TestPlayground
+      displayName: "Test playground"
+      dependsOn:
+          - DeployPlayground
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+            persistCredentials: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - task: Npm@1
+            displayName: "npm ci"
+            inputs:
+                command: custom
+                customCommand: "ci"
+
+          - template: wait-for-snapshot.yml
+
+          - script: |
+                npx playwright install --with-deps
+                npx playwright test --project=playground
+            displayName: "Test playground"
+            env:
+                CI: "true"
+                PLAYGROUND_BASE_URL: "$(SNAPSHOT_CDN_URL)/PLAYGROUND/$(BuildName)/"
+                BROWSER: "Chrome"
+                SNAPSHOT: "$(BuildName)"
+
+          - template: stage-upload.yml
+            parameters:
+                sourceDir: "playwright-report"
+                artifact: "playgroundTestReport"
+                validatePublicReport: true
+                displayName: "Stage playground test report"
+                condition: succeededOrFailed()
+                continueOnError: true
+
+    # ========================================================================
+    # PLAYGROUND - publish results (trusted: `checkout: none`)
+    # ========================================================================
+    - template: publish-uploads-job.yml
+      parameters:
+          jobName: PublishPlaygroundResults
+          displayName: "Publish playground results (trusted)"
+          dependsOn:
+              - BuildPlayground
+              - DeployPlayground
+              - TestPlayground
+          condition: succeededOrFailed()
+          variables:
+              BuildPlaygroundResult: $[ dependencies.BuildPlayground.result ]
+              DeployPlaygroundResult: $[ dependencies.DeployPlayground.result ]
+              TestPlaygroundResult: $[ dependencies.TestPlayground.result ]
+          uploads:
+              - artifact: "playgroundTestReport"
+                destination: "PLAYGROUND/$(BuildName)/testResults"
+                deleteStale: false
+                extraFields: ""
+                displayName: "Upload playground test report"
+          comments:
+              - displayName: "Writing GitHub comment - test or build failed"
+                condition: >-
+                    or(
+                      in(variables['BuildPlaygroundResult'], 'Failed', 'Canceled'),
+                      in(variables['DeployPlaygroundResult'], 'Failed', 'Canceled'),
+                      in(variables['TestPlaygroundResult'], 'Failed', 'Canceled')
+                    )
+                body: |
+                    Building or testing the playground has failed.
+
+                    If the tests failed, results can be found here:
+                    $(SNAPSHOT_CDN_URL)/PLAYGROUND/$(BuildName)/testResults/
+              - displayName: "Writing GitHub comment"
+                condition: eq(variables['TestPlaygroundResult'], 'Succeeded')
+                body: |
+                    You have made possible changes to the playground.
+                    You can test the snapshot here:
+
+                    $(SNAPSHOT_CDN_URL)/PLAYGROUND/$(BuildName)/
+
+                    The snapshot playground with the CDN snapshot (only when available):
+
+                    $(SNAPSHOT_CDN_URL)/PLAYGROUND/$(BuildName)/?snapshot=$(BuildName)
+
+                    Note that neither Babylon scenes nor textures are uploaded to the snapshot directory, so some playgrounds won't work correctly.
+
+    # ========================================================================
+    # SANDBOX - build (executes pull-request code, holds NO credentials)
+    # ========================================================================
+    - job: BuildSandbox
+      displayName: "Build sandbox"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+            persistCredentials: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - task: Npm@1
+            displayName: "npm ci"
+            inputs:
+                command: custom
+                customCommand: "ci"
+
+          - task: Npm@1
+            displayName: "npm build:dev"
+            inputs:
+                command: custom
+                customCommand: "run build:dev"
+
+          - task: Npm@1
+            displayName: "npm build sandbox"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/sandbox"
+
+          - template: stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/sandbox"
+                artifact: "sandboxDeploy"
+                displayName: "Stage sandbox deployment"
+
+    # ========================================================================
+    # SANDBOX - deploy (trusted: `checkout: none`, no pull-request code on disk)
+    # ========================================================================
+    - template: publish-uploads-job.yml
+      parameters:
+          jobName: DeploySandbox
+          displayName: "Deploy sandbox snapshot (trusted)"
+          dependsOn:
+              - BuildSandbox
+          condition: succeeded()
+          uploads:
+              - artifact: "sandboxDeploy"
+                destination: "SANDBOX/$(BuildName)"
+                deleteStale: false
+                extraFields: ""
+                displayName: "Deploy sandbox snapshot"
+
+    # ========================================================================
+    # SANDBOX - test (executes pull-request code, holds NO credentials)
+    # ========================================================================
+    - job: TestSandbox
+      displayName: "Test sandbox"
+      dependsOn:
+          - DeploySandbox
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+            persistCredentials: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - task: Npm@1
+            displayName: "npm ci"
+            inputs:
+                command: custom
+                customCommand: "ci"
+
+          - template: wait-for-snapshot.yml
+
+          - script: |
+                npx playwright install --with-deps
+                npx playwright test --project=sandbox
+            displayName: "Test sandbox"
+            env:
+                CI: "true"
+                SANDBOX_BASE_URL: "$(SNAPSHOT_CDN_URL)/SANDBOX/$(BuildName)/"
+                BROWSER: "Chrome"
+                SNAPSHOT: "$(BuildName)"
+
+          - template: stage-upload.yml
+            parameters:
+                sourceDir: "playwright-report"
+                artifact: "sandboxTestReport"
+                validatePublicReport: true
+                displayName: "Stage sandbox test report"
+                condition: succeededOrFailed()
+                continueOnError: true
+
+    # ========================================================================
+    # SANDBOX - publish results (trusted: `checkout: none`)
+    # ========================================================================
+    - template: publish-uploads-job.yml
+      parameters:
+          jobName: PublishSandboxResults
+          displayName: "Publish sandbox results (trusted)"
+          dependsOn:
+              - BuildSandbox
+              - DeploySandbox
+              - TestSandbox
+          condition: succeededOrFailed()
+          variables:
+              BuildSandboxResult: $[ dependencies.BuildSandbox.result ]
+              DeploySandboxResult: $[ dependencies.DeploySandbox.result ]
+              TestSandboxResult: $[ dependencies.TestSandbox.result ]
+          uploads:
+              - artifact: "sandboxTestReport"
+                destination: "SANDBOX/$(BuildName)/testResults"
+                deleteStale: false
+                extraFields: ""
+                displayName: "Upload sandbox test report"
+          comments:
+              - displayName: "Writing GitHub comment - test or build failed"
+                condition: >-
+                    or(
+                      in(variables['BuildSandboxResult'], 'Failed', 'Canceled'),
+                      in(variables['DeploySandboxResult'], 'Failed', 'Canceled'),
+                      in(variables['TestSandboxResult'], 'Failed', 'Canceled')
+                    )
+                body: |
+                    Building or testing the sandbox has failed.
+
+                    If the tests failed, results can be found here:
+                    $(SNAPSHOT_CDN_URL)/SANDBOX/$(BuildName)/testResults/
+              - displayName: "Writing GitHub comment"
+                condition: eq(variables['TestSandboxResult'], 'Succeeded')
+                body: |
+                    You have changed file(s) that made possible changes to the sandbox.
+                    You can test the sandbox snapshot here:
+
+                    $(SNAPSHOT_CDN_URL)/SANDBOX/$(BuildName)/

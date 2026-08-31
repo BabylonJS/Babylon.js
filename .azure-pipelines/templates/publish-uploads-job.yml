@@ -81,6 +81,23 @@ parameters:
     - name: uploads
       type: object
       default: []
+    # Storage account every upload in this job targets. Snapshot publishers use
+    # the default; the tool deployment publisher overrides it.
+    - name: storageAccount
+      type: string
+      default: "$(SNAPSHOTS_STORAGE_ACCOUNT)"
+    # CDN purges to issue after the uploads.
+    #   - endpoint / profile / displayName
+    - name: purges
+      type: object
+      default: []
+    # Set on publishers that belong to a pipeline with no pull request trigger.
+    # The job then refuses to run when it was queued manually against an
+    # untrusted ref. Snapshot publishers for pull request pipelines leave it
+    # false, because those runs are legitimately pull request builds.
+    - name: requireTrustedSource
+      type: boolean
+      default: false
     # GitHub comments with bodies that are fixed in trusted YAML.
     #   - displayName / condition / body
     - name: comments
@@ -104,6 +121,9 @@ jobs:
       steps:
           # No repository checkout: this job must never hold pull-request code.
           - checkout: none
+
+          - ${{ if parameters.requireTrustedSource }}:
+                - template: assert-trusted-source.yml
 
           - ${{ each check in parameters.snapshotChecks }}:
                 - bash: |
@@ -217,7 +237,7 @@ jobs:
                         "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD)" -X POST
                         -H "Content-Type: multipart/form-data"
                         -F "path=$DESTINATION"
-                        -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)")
+                        -F "storageAccount=${{ parameters.storageAccount }}")
 
                       for FIELD in ${{ upload.extraFields }}; do
                         CURL_ARGS+=(-F "$FIELD")
@@ -229,6 +249,20 @@ jobs:
 
                       echo "Uploaded '${{ upload.artifact }}' to $DESTINATION"
                   displayName: "${{ upload.displayName }}"
+                  continueOnError: true
+                  env:
+                      DEPLOY_TOKEN: $(DEPLOY_TOKEN)
+
+          - ${{ each purge in parameters.purges }}:
+                - bash: |
+                      set -euo pipefail
+
+                      # Async purge: the deployment server times out long before
+                      # Azure finishes a purge, so never block on it.
+                      printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - \
+                        --fail-with-body --silent --show-error -X POST -i \
+                        "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=${{ purge.endpoint }}&profileName=${{ purge.profile }}&wait=false"
+                  displayName: "${{ purge.displayName }}"
                   continueOnError: true
                   env:
                       DEPLOY_TOKEN: $(DEPLOY_TOKEN)

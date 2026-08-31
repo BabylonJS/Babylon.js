@@ -82,6 +82,8 @@ jobs:
             fetchTags: true
             persistCredentials: false
 
+          - template: templates/assert-trusted-source.yml
+
           - task: UseNode@1
             displayName: "Use Node 24.x"
             inputs:
@@ -340,6 +342,8 @@ jobs:
       steps:
           - checkout: none
 
+          - template: templates/assert-trusted-source.yml
+
           - task: UseNode@1
             displayName: "Use Node 24.x"
             inputs:
@@ -421,6 +425,8 @@ jobs:
           ReleaseCommit: $[ dependencies.BuildRelease.outputs['ReleaseMeta.ReleaseCommit'] ]
       steps:
           - checkout: none
+
+          - template: templates/assert-trusted-source.yml
 
           - task: DownloadPipelineArtifact@2
             displayName: "Download git bundle"

@@ -10,8 +10,16 @@
 #   - Build completion from Publish pipeline (ID: 15)
 #
 # Variable groups:
-#   - BabylonJS-CI-Infrastructure
-#   - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
+#   - BabylonJS-CI-Infrastructure (pipeline scope, no secrets)
+#   - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER) - scoped to the
+#     DeployTools job only.
+#
+# Security shape:
+#   BuildTools runs `npm ci` and the tool builds, so it executes third-party
+#   lifecycle scripts and repository code. It holds no credential and stages
+#   every tool as an immutable pipeline artifact. DeployTools then runs on a
+#   fresh agent with `checkout: none`, asserts a trusted source ref, and is the
+#   only job that ever sees DEPLOY_TOKEN.
 # =============================================================================
 
 trigger: none
@@ -39,8 +47,11 @@ resources:
                       - master
 
 variables:
+    # Only non-secret infrastructure values are in scope for the whole pipeline.
+    # BabylonJS-Deployment (DEPLOY_TOKEN) is linked to the DeployTools job
+    # alone, so the job that runs npm lifecycle scripts and tool builds never
+    # has the deployment token in its variable scope.
     - group: BabylonJS-CI-Infrastructure
-    - group: BabylonJS-Deployment
 
 pool:
     vmImage: ubuntu-latest
@@ -140,77 +151,53 @@ jobs:
           #     command: custom
           #     customCommand: 'run build:deployment -w @tools/smart-filters-editor'
 
-          - template: templates/deploy-tool.yml
+          - template: templates/stage-tool-deployment.yml
             parameters:
                 toolPackageDir: "packages/tools/sandbox"
-                deployPath: "sandbox"
-                storageAccount: "$(TOOLS_STORAGE_ACCOUNT)"
-                displayName: "Sandbox deployment"
-                purgeEndpoint: "$(CDN_ENDPOINT_SANDBOX)"
-                purgeProfile: "$(CDN_PROFILE_SANDBOX)"
+                artifact: "tool-deploy-sandbox"
+                displayName: "Sandbox deployment (stage)"
 
-          - template: templates/deploy-tool.yml
+          - template: templates/stage-tool-deployment.yml
             parameters:
                 toolPackageDir: "packages/tools/playground"
-                deployPath: "playground"
-                storageAccount: "$(TOOLS_STORAGE_ACCOUNT)"
-                displayName: "Playground deployment"
-                purgeEndpoint: "$(CDN_ENDPOINT_PLAYGROUND)"
-                purgeProfile: "$(CDN_PROFILE_PLAYGROUND)"
+                artifact: "tool-deploy-playground"
+                displayName: "Playground deployment (stage)"
 
-          - template: templates/deploy-tool.yml
+          - template: templates/stage-tool-deployment.yml
             parameters:
                 toolPackageDir: "packages/tools/nodeEditor"
-                deployPath: "nodeEditor"
-                storageAccount: "$(TOOLS_STORAGE_ACCOUNT)"
-                displayName: "NME deployment"
-                purgeEndpoint: "$(CDN_ENDPOINT_NME)"
-                purgeProfile: "$(CDN_PROFILE_TOOLS)"
+                artifact: "tool-deploy-nodeEditor"
+                displayName: "NME deployment (stage)"
 
-          - template: templates/deploy-tool.yml
+          - template: templates/stage-tool-deployment.yml
             parameters:
                 toolPackageDir: "packages/tools/nodeGeometryEditor"
-                deployPath: "nodeGeometryEditor"
-                storageAccount: "$(TOOLS_STORAGE_ACCOUNT)"
-                displayName: "NGE deployment"
-                purgeEndpoint: "$(CDN_ENDPOINT_NGE)"
-                purgeProfile: "$(CDN_PROFILE_TOOLS)"
+                artifact: "tool-deploy-nodeGeometryEditor"
+                displayName: "NGE deployment (stage)"
 
-          - template: templates/deploy-tool.yml
+          - template: templates/stage-tool-deployment.yml
             parameters:
                 toolPackageDir: "packages/tools/nodeRenderGraphEditor"
-                deployPath: "nodeRenderGraphEditor"
-                storageAccount: "$(TOOLS_STORAGE_ACCOUNT)"
-                displayName: "NRGE deployment"
-                purgeEndpoint: "$(CDN_ENDPOINT_NRGE)"
-                purgeProfile: "$(CDN_PROFILE_TOOLS)"
+                artifact: "tool-deploy-nodeRenderGraphEditor"
+                displayName: "NRGE deployment (stage)"
 
-          - template: templates/deploy-tool.yml
+          - template: templates/stage-tool-deployment.yml
             parameters:
                 toolPackageDir: "packages/tools/guiEditor"
-                deployPath: "guiEditor"
-                storageAccount: "$(TOOLS_STORAGE_ACCOUNT)"
-                displayName: "GUI Editor deployment"
-                purgeEndpoint: "$(CDN_ENDPOINT_GUIEDITOR)"
-                purgeProfile: "$(CDN_PROFILE_TOOLS)"
+                artifact: "tool-deploy-guiEditor"
+                displayName: "GUI Editor deployment (stage)"
 
-          - template: templates/deploy-tool.yml
+          - template: templates/stage-tool-deployment.yml
             parameters:
                 toolPackageDir: "packages/tools/nodeParticleEditor"
-                deployPath: "nodeParticleEditor"
-                storageAccount: "$(TOOLS_STORAGE_ACCOUNT)"
-                displayName: "NPE deployment"
-                purgeEndpoint: "$(CDN_ENDPOINT_NPE)"
-                purgeProfile: "$(CDN_PROFILE_TOOLS)"
+                artifact: "tool-deploy-nodeParticleEditor"
+                displayName: "NPE deployment (stage)"
 
-          - template: templates/deploy-tool.yml
+          - template: templates/stage-tool-deployment.yml
             parameters:
                 toolPackageDir: "packages/tools/flowGraphEditor"
-                deployPath: "flowGraphEditor"
-                storageAccount: "$(TOOLS_STORAGE_ACCOUNT)"
-                displayName: "FGE deployment"
-                purgeEndpoint: "$(CDN_ENDPOINT_FGE)"
-                purgeProfile: "$(CDN_PROFILE_TOOLS)"
+                artifact: "tool-deploy-flowGraphEditor"
+                displayName: "FGE deployment (stage)"
 
           # DISABLED in classic pipeline:
           # - script: |
@@ -243,3 +230,89 @@ jobs:
           # If re-enabled, the azureSubscription ID and resource group name
           # should be moved to the variable group.
           # See the original classic pipeline (Definition 16) for reference.
+
+    # =========================================================================
+    # Deploy the staged tools.
+    #
+    # Fresh agent, `checkout: none`, no npm and no repository code: the only
+    # thing this job does is push immutable artifacts produced by BuildTools to
+    # the deployment server. DEPLOY_TOKEN exists only here, so nothing built
+    # from the repository ever shares an agent with it.
+    # =========================================================================
+    - template: templates/publish-uploads-job.yml
+      parameters:
+          jobName: DeployTools
+          displayName: "Deploy tools"
+          dependsOn:
+              - BuildTools
+          condition: succeeded()
+          requireTrustedSource: true
+          storageAccount: "$(TOOLS_STORAGE_ACCOUNT)"
+          variables:
+              - group: BabylonJS-Deployment
+          uploads:
+              - artifact: "tool-deploy-sandbox"
+                destination: "sandbox"
+                deleteStale: false
+                extraFields: []
+                displayName: "Sandbox deployment (upload)"
+              - artifact: "tool-deploy-playground"
+                destination: "playground"
+                deleteStale: false
+                extraFields: []
+                displayName: "Playground deployment (upload)"
+              - artifact: "tool-deploy-nodeEditor"
+                destination: "nodeEditor"
+                deleteStale: false
+                extraFields: []
+                displayName: "NME deployment (upload)"
+              - artifact: "tool-deploy-nodeGeometryEditor"
+                destination: "nodeGeometryEditor"
+                deleteStale: false
+                extraFields: []
+                displayName: "NGE deployment (upload)"
+              - artifact: "tool-deploy-nodeRenderGraphEditor"
+                destination: "nodeRenderGraphEditor"
+                deleteStale: false
+                extraFields: []
+                displayName: "NRGE deployment (upload)"
+              - artifact: "tool-deploy-guiEditor"
+                destination: "guiEditor"
+                deleteStale: false
+                extraFields: []
+                displayName: "GUI Editor deployment (upload)"
+              - artifact: "tool-deploy-nodeParticleEditor"
+                destination: "nodeParticleEditor"
+                deleteStale: false
+                extraFields: []
+                displayName: "NPE deployment (upload)"
+              - artifact: "tool-deploy-flowGraphEditor"
+                destination: "flowGraphEditor"
+                deleteStale: false
+                extraFields: []
+                displayName: "FGE deployment (upload)"
+          purges:
+              - endpoint: "$(CDN_ENDPOINT_SANDBOX)"
+                profile: "$(CDN_PROFILE_SANDBOX)"
+                displayName: "Purge CDN (Sandbox)"
+              - endpoint: "$(CDN_ENDPOINT_PLAYGROUND)"
+                profile: "$(CDN_PROFILE_PLAYGROUND)"
+                displayName: "Purge CDN (Playground)"
+              - endpoint: "$(CDN_ENDPOINT_NME)"
+                profile: "$(CDN_PROFILE_TOOLS)"
+                displayName: "Purge CDN (NME)"
+              - endpoint: "$(CDN_ENDPOINT_NGE)"
+                profile: "$(CDN_PROFILE_TOOLS)"
+                displayName: "Purge CDN (NGE)"
+              - endpoint: "$(CDN_ENDPOINT_NRGE)"
+                profile: "$(CDN_PROFILE_TOOLS)"
+                displayName: "Purge CDN (NRGE)"
+              - endpoint: "$(CDN_ENDPOINT_GUIEDITOR)"
+                profile: "$(CDN_PROFILE_TOOLS)"
+                displayName: "Purge CDN (GUI Editor)"
+              - endpoint: "$(CDN_ENDPOINT_NPE)"
+                profile: "$(CDN_PROFILE_TOOLS)"
+                displayName: "Purge CDN (NPE)"
+              - endpoint: "$(CDN_ENDPOINT_FGE)"
+                profile: "$(CDN_PROFILE_TOOLS)"
+                displayName: "Purge CDN (FGE)"
