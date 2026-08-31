@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const glob = require("glob");
 const generateChangelog = require("./generateChangelog");
-const { runCommand, getCurrentVersion } = require("./versionUtils");
+const { runCommand, getNextVersion } = require("./versionUtils");
 
 const branchName = process.argv[2];
 
@@ -172,24 +172,9 @@ const updatePackages = (version) => {
 };
 
 async function main() {
-    // Gets the current version to update
-    const previousVersion = getCurrentVersion();
-    let [major, minor, revision] = previousVersion.split(".");
-
-    // Update accordingly
-    if (config.versionDefinition === "major") {
-        major++;
-        minor = 0;
-        revision = 0;
-    } else if (config.versionDefinition === "minor") {
-        minor++;
-        revision = 0;
-    } else {
-        revision++;
-    }
-
-    // Gets the new version
-    const version = [major, minor, revision].join(".");
+    // Shared with scripts/fetchReleaseNotes.js so the credential-only changelog job
+    // and this credential-free job derive the same version independently.
+    const version = getNextVersion();
 
     // update package.json
     updatePackages(version);
@@ -197,12 +182,16 @@ async function main() {
     await updateEngineVersion(version);
     // update CDN version in Tools and ktx2Decoder
     updateCdnVersion(version);
-    // generate changelog
+    // Generate the changelog only when this process was given a GitHub token.
+    // In the publish pipeline it is not: scripts/fetchReleaseNotes.js already produced
+    // .build/changelog.json and .build/release-notes.md in a separate job that runs no
+    // dependency code, and those files are restored here from a pipeline artifact.
     const latestVersionMarkdown = await generateChangelog(version);
-    // write release notes for the GitHub Release task
     if (latestVersionMarkdown) {
         fs.writeFileSync(path.resolve(__dirname, "../.build/release-notes.md"), latestVersionMarkdown);
         console.log("Release notes written to .build/release-notes.md");
+    } else if (fs.existsSync(path.resolve(__dirname, "../.build/release-notes.md"))) {
+        console.log("Using pre-fetched release notes from .build/release-notes.md");
     }
     // update since tags
     await updateSinceTag(version);

@@ -5,9 +5,17 @@ on:
     - cron: '0 0 * * *'  # Run every day at midnight
   workflow_dispatch:
 
+# Least privilege: the stale action only needs to label and comment.
+permissions:
+  contents: read
+
 jobs:
   stale_detection:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     steps:
       - name: Flag Stale Issues/PRs
         uses: actions/stale@v9.0.0

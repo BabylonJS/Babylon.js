@@ -11,7 +11,22 @@
 # Schedule: 1:00 AM PST daily (09:00 UTC), plus 3:00 AM PST Saturday (11:00 UTC)
 #
 # Variable groups:
-#   - Browserstack-Opensource (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME)
+#   - BabylonJS-CI-Infrastructure (no secrets) - pipeline scope
+#   - Browserstack-Opensource (BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_USERNAME) -
+#     job scope, BrowserStack test jobs only
+#   - BabylonJS-Deployment (DEPLOY_TOKEN) - job scope, PublishReports only
+#
+# Security shape:
+#   This is the only pipeline in the repository that is allowed to hold the
+#   BrowserStack credentials. It has no pull request trigger, so Azure DevOps
+#   never compiles it from a pull request branch, and every credentialed job
+#   asserts that the run comes from a trusted full ref before it starts, so a
+#   manual queue against an unmerged branch cannot harvest the account. The
+#   repository code these jobs execute is therefore always merged master code.
+#
+#   Test jobs stage their reports as pipeline artifacts; the upload happens in
+#   PublishReports, a fresh `checkout: none` job that runs no repository or
+#   dependency code and is the only holder of DEPLOY_TOKEN.
 # =============================================================================
 
 trigger: none
@@ -35,8 +50,18 @@ schedules:
       always: true
 
 variables:
-    - group: Browserstack-Opensource
-    - group: BabylonJS-Deployment
+    # Non-secret infrastructure values (public CDN base URL, deployment server
+    # endpoint names, storage account names). Needed by the report publisher and
+    # by the report-URL log lines.
+    - group: BabylonJS-CI-Infrastructure
+    # No secret group is linked at pipeline level.
+    #
+    # Browserstack-Opensource is linked to the individual BrowserStack test jobs
+    # (see the `variables:` block on each), so jobs that never talk to
+    # BrowserStack - ClosureCompile, ResolvePerfVersions - do not have the
+    # credentials in their variable scope at all. BabylonJS-Deployment
+    # (DEPLOY_TOKEN) is linked to PublishReports alone, which runs on a fresh
+    # agent with `checkout: none` and executes no repository or dependency code.
     - name: system.debug
       value: false
     # Stable path used by nightly jobs that publish test reports. Overwritten
@@ -53,10 +78,16 @@ jobs:
     # ============================================================================
     - job: WebkitWebGL2
       displayName: "Webkit WebGL2 tests"
+      variables:
+          # Job-scoped: only the jobs that drive BrowserStack can see these.
+          - group: Browserstack-Opensource
       steps:
+          - template: templates/assert-trusted-source.yml
+
           - checkout: self
             clean: true
             fetchTags: false
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -86,28 +117,27 @@ jobs:
                 SCREENSHOT_MAX_PIXEL: "6"
                 SCREENSHOT_THRESHOLD: "0.05"
 
-          # Only upload reports when the run failed. Path is stable so the
-          # previous nightly's report is overwritten and the URL never changes.
-          - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webkitplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
-            displayName: "Delete previous nightly Webkit report"
-            condition: failed()
-            continueOnError: true
-
-          - template: templates/upload-test-results.yml
+          # Stage the report as an immutable pipeline artifact. The upload
+          # itself happens in PublishReports, which holds the deployment token
+          # but never runs repository or test code.
+          - template: templates/stage-upload.yml
             parameters:
-                reportDir: "packages/tools/tests/playwright-report"
-                fallbackReportDir: "playwright-report"
-                deployPath: "$(NightlyReportRoot)/webkitplaywright"
-                displayName: "Upload nightly Webkit report"
+                sourceDir: "packages/tools/tests/playwright-report"
+                fallbackDir: "playwright-report"
+                artifact: "browser-test-report-webkitplaywright"
+                validatePublicReport: true
+                displayName: "Stage nightly Webkit report"
                 condition: "failed()"
                 continueOnError: true
 
           - bash: |
                 echo "##[section]Nightly Webkit WebGL2 report URL"
-                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/webkitplaywright/index.html"
+                echo "  $SNAPSHOT_CDN_URL/$NIGHTLY_REPORT_ROOT/webkitplaywright/index.html"
             displayName: "Log nightly Webkit report URL"
             condition: failed()
+            env:
+                SNAPSHOT_CDN_URL: $(SNAPSHOT_CDN_URL)
+                NIGHTLY_REPORT_ROOT: $(NightlyReportRoot)
 
           - task: PublishTestResults@2
             displayName: "Publish Test Results"
@@ -120,10 +150,16 @@ jobs:
     # ============================================================================
     - job: FirefoxWebGL2
       displayName: "Firefox WebGL2 tests"
+      variables:
+          # Job-scoped: only the jobs that drive BrowserStack can see these.
+          - group: Browserstack-Opensource
       steps:
+          - template: templates/assert-trusted-source.yml
+
           - checkout: self
             clean: true
             fetchTags: false
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -153,28 +189,27 @@ jobs:
                 SCREENSHOT_THRESHOLD: "0.05"
                 SCREENSHOT_MAX_PIXEL: "5"
 
-          # Only upload reports when the run failed. Path is stable so the
-          # previous nightly's report is overwritten and the URL never changes.
-          - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/firefoxplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
-            displayName: "Delete previous nightly Firefox report"
-            condition: failed()
-            continueOnError: true
-
-          - template: templates/upload-test-results.yml
+          # Stage the report as an immutable pipeline artifact. The upload
+          # itself happens in PublishReports, which holds the deployment token
+          # but never runs repository or test code.
+          - template: templates/stage-upload.yml
             parameters:
-                reportDir: "packages/tools/tests/playwright-report"
-                fallbackReportDir: "playwright-report"
-                deployPath: "$(NightlyReportRoot)/firefoxplaywright"
-                displayName: "Upload nightly Firefox report"
+                sourceDir: "packages/tools/tests/playwright-report"
+                fallbackDir: "playwright-report"
+                artifact: "browser-test-report-firefoxplaywright"
+                validatePublicReport: true
+                displayName: "Stage nightly Firefox report"
                 condition: "failed()"
                 continueOnError: true
 
           - bash: |
                 echo "##[section]Nightly Firefox WebGL2 report URL"
-                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/firefoxplaywright/index.html"
+                echo "  $SNAPSHOT_CDN_URL/$NIGHTLY_REPORT_ROOT/firefoxplaywright/index.html"
             displayName: "Log nightly Firefox report URL"
             condition: failed()
+            env:
+                SNAPSHOT_CDN_URL: $(SNAPSHOT_CDN_URL)
+                NIGHTLY_REPORT_ROOT: $(NightlyReportRoot)
 
           - task: PublishTestResults@2
             displayName: "Publish Test Results"
@@ -185,16 +220,23 @@ jobs:
     # ============================================================================
     # NIGHTLY CHROME WEBGL2 — FULL VISUALIZATION RUN
     # Runs every nightly trigger against the production CDN. Mirrors the
-    # ci-monorepo VisualizationWebGL2 job but with AFFECTED_TAGS=ALL so the full
-    # suite always runs.
+    # This is the only place BrowserStack visualization coverage runs: the
+    # equivalent ci-monorepo job was removed because that pipeline is compiled
+    # from pull request branches. AFFECTED_TAGS=ALL, so the full suite runs.
     # ============================================================================
     - job: ChromeWebGL2Full
       displayName: "Chrome WebGL2 - full nightly"
       condition: eq(variables['Build.CronSchedule.DisplayName'], 'Nightly browser testing')
+      variables:
+          # Job-scoped: only the jobs that drive BrowserStack can see these.
+          - group: Browserstack-Opensource
       steps:
+          - template: templates/assert-trusted-source.yml
+
           - checkout: self
             clean: true
             fetchTags: false
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -220,28 +262,27 @@ jobs:
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
 
-          # Only upload reports when the run failed. The path is stable so the
-          # previous nightly's report is overwritten and the URL never changes.
-          - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webgl2playwright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
-            displayName: "Delete previous nightly WebGL2 report"
-            condition: failed()
-            continueOnError: true
-
-          - template: templates/upload-test-results.yml
+          # Stage the report as an immutable pipeline artifact. The upload
+          # itself happens in PublishReports, which holds the deployment token
+          # but never runs repository or test code.
+          - template: templates/stage-upload.yml
             parameters:
-                reportDir: "packages/tools/tests/playwright-report"
-                fallbackReportDir: "playwright-report"
-                deployPath: "$(NightlyReportRoot)/webgl2playwright"
-                displayName: "Upload nightly WebGL2 report"
+                sourceDir: "packages/tools/tests/playwright-report"
+                fallbackDir: "playwright-report"
+                artifact: "browser-test-report-webgl2playwright"
+                validatePublicReport: true
+                displayName: "Stage nightly WebGL2 report"
                 condition: "failed()"
                 continueOnError: true
 
           - bash: |
                 echo "##[section]Nightly Chrome WebGL2 report URL"
-                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/webgl2playwright/index.html"
+                echo "  $SNAPSHOT_CDN_URL/$NIGHTLY_REPORT_ROOT/webgl2playwright/index.html"
             displayName: "Log nightly WebGL2 report URL"
             condition: failed()
+            env:
+                SNAPSHOT_CDN_URL: $(SNAPSHOT_CDN_URL)
+                NIGHTLY_REPORT_ROOT: $(NightlyReportRoot)
 
           - task: PublishTestResults@2
             displayName: "Publish Test Results"
@@ -254,15 +295,21 @@ jobs:
     # ============================================================================
     # NIGHTLY CHROME WEBGPU — FULL VISUALIZATION RUN
     # Runs every nightly trigger against the production CDN. Mirrors the
-    # ci-monorepo VisualizationWebGPU job but with AFFECTED_TAGS=ALL.
+    # the removed ci-monorepo WebGPU job, with AFFECTED_TAGS=ALL.
     # ============================================================================
     - job: ChromeWebGPUFull
       displayName: "Chrome WebGPU - full nightly"
       condition: eq(variables['Build.CronSchedule.DisplayName'], 'Nightly browser testing')
+      variables:
+          # Job-scoped: only the jobs that drive BrowserStack can see these.
+          - group: Browserstack-Opensource
       steps:
+          - template: templates/assert-trusted-source.yml
+
           - checkout: self
             clean: true
             fetchTags: false
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -289,28 +336,27 @@ jobs:
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
 
-          # Only upload reports when the run failed. The path is stable so the
-          # previous nightly's report is overwritten and the URL never changes.
-          - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webgpuplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
-            displayName: "Delete previous nightly WebGPU report"
-            condition: failed()
-            continueOnError: true
-
-          - template: templates/upload-test-results.yml
+          # Stage the report as an immutable pipeline artifact. The upload
+          # itself happens in PublishReports, which holds the deployment token
+          # but never runs repository or test code.
+          - template: templates/stage-upload.yml
             parameters:
-                reportDir: "packages/tools/tests/playwright-report"
-                fallbackReportDir: "playwright-report"
-                deployPath: "$(NightlyReportRoot)/webgpuplaywright"
-                displayName: "Upload nightly WebGPU report"
+                sourceDir: "packages/tools/tests/playwright-report"
+                fallbackDir: "playwright-report"
+                artifact: "browser-test-report-webgpuplaywright"
+                validatePublicReport: true
+                displayName: "Stage nightly WebGPU report"
                 condition: "failed()"
                 continueOnError: true
 
           - bash: |
                 echo "##[section]Nightly Chrome WebGPU report URL"
-                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/webgpuplaywright/index.html"
+                echo "  $SNAPSHOT_CDN_URL/$NIGHTLY_REPORT_ROOT/webgpuplaywright/index.html"
             displayName: "Log nightly WebGPU report URL"
             condition: failed()
+            env:
+                SNAPSHOT_CDN_URL: $(SNAPSHOT_CDN_URL)
+                NIGHTLY_REPORT_ROOT: $(NightlyReportRoot)
 
           - task: PublishTestResults@2
             displayName: "Publish Test Results"
@@ -319,6 +365,85 @@ jobs:
                 testResultsFormat: JUnit
                 testResultsFiles: "./packages/tools/tests/junit.xml"
                 testRunTitle: "Nightly Chrome WebGPU ALL"
+
+    # ============================================================================
+    # NIGHTLY ES6 VISUALIZATION RUN
+    #
+    # Moved here from the ci-monorepo pipeline. That pipeline is compiled from
+    # pull request branches, so it must not be able to request the
+    # Browserstack-Opensource group at all - gating the step on
+    # `Build.Reason != PullRequest` was not enough, because a pull request can
+    # delete the gate. Here the pipeline has no pull request trigger, the job
+    # asserts a trusted ref before doing anything, and the code under test is
+    # therefore always merged master code.
+    # ============================================================================
+    - job: ES6Visualization
+      displayName: "ES6 visualization tests"
+      condition: eq(variables['Build.CronSchedule.DisplayName'], 'Nightly browser testing')
+      timeoutInMinutes: 90
+      variables:
+          # Job-scoped: only the jobs that drive BrowserStack can see these.
+          - group: Browserstack-Opensource
+      steps:
+          - template: templates/assert-trusted-source.yml
+
+          - checkout: self
+            clean: true
+            fetchTags: false
+            persistCredentials: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - script: npm ci
+            displayName: "npm ci"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - bash: |
+                npm run build:assets:smart-filters && npm run build:es6:libs
+            displayName: "npm build es6 libs"
+
+          - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
+            displayName: "ES6 visualization tests (BrowserStack)"
+            env:
+                CI: "true"
+                BSTACK_TEST_TYPE: "es6vis"
+                BSTACK_BUILD_NAME: "ES6 Visualization Tests"
+                BROWSERSTACK_LOCAL: "true"
+                BROWSERSTACK_LOCAL_IDENTIFIER: "es6vis-$(Build.BuildId)-$(System.JobAttempt)"
+                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+
+          - template: templates/stage-upload.yml
+            parameters:
+                sourceDir: "packages/tools/tests/playwright-report"
+                fallbackDir: "playwright-report"
+                artifact: "browser-test-report-es6visplaywright"
+                validatePublicReport: true
+                displayName: "Stage nightly ES6 visualization report"
+                condition: "failed()"
+                continueOnError: true
+
+          - bash: |
+                echo "##[section]Nightly ES6 visualization report URL"
+                echo "  $SNAPSHOT_CDN_URL/$NIGHTLY_REPORT_ROOT/es6visplaywright/index.html"
+            displayName: "Log nightly ES6 visualization report URL"
+            condition: failed()
+            env:
+                SNAPSHOT_CDN_URL: $(SNAPSHOT_CDN_URL)
+                NIGHTLY_REPORT_ROOT: $(NightlyReportRoot)
+
+          - task: PublishTestResults@2
+            displayName: "Publish Test Results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./junit.xml"
+                testRunTitle: "Nightly ES6 visualization"
 
     # ============================================================================
     # COMPILE WITH CLOSURE
@@ -330,6 +455,7 @@ jobs:
           - checkout: self
             clean: true
             fetchTags: false
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -417,12 +543,19 @@ jobs:
       condition: and(succeeded(), eq(variables['Build.CronSchedule.DisplayName'], 'Weekly performance tests'))
       timeoutInMinutes: 120
       variables:
-          PERF_CDN_BASELINE: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_BASELINE'] ]
-          PERF_CDN_CANDIDATE: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_CANDIDATE'] ]
+          # Job-scoped: only the jobs that drive BrowserStack can see these.
+          - group: Browserstack-Opensource
+          - name: PERF_CDN_BASELINE
+            value: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_BASELINE'] ]
+          - name: PERF_CDN_CANDIDATE
+            value: $[ dependencies.ResolvePerfVersions.outputs['ResolveVersions.PERF_CDN_CANDIDATE'] ]
       steps:
+          - template: templates/assert-trusted-source.yml
+
           - checkout: self
             clean: true
             fetchTags: false
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -437,7 +570,7 @@ jobs:
 
           - bash: |
                 set +e
-                echo "Baseline: $(PERF_CDN_BASELINE), Candidate: $(PERF_CDN_CANDIDATE)"
+                echo "Baseline: $CDN_VERSION, Candidate: $CDN_VERSION_B"
                 .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
                 EXIT=$?
                 if [ $EXIT -ne 0 ]; then
@@ -463,28 +596,27 @@ jobs:
                 BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
 
-          # Upload reports only when the perf run failed. Path is stable so the
-          # previous weekly's report is overwritten and the URL never changes.
-          - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/perfplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
-            displayName: "Delete previous weekly perf report"
-            condition: eq(variables['PerfTestsFailed'], 'true')
-            continueOnError: true
-
-          - template: templates/upload-test-results.yml
+          # Stage the report as an immutable pipeline artifact. The upload
+          # itself happens in PublishReports, which holds the deployment token
+          # but never runs repository or test code.
+          - template: templates/stage-upload.yml
             parameters:
-                reportDir: "packages/tools/tests/playwright-report"
-                fallbackReportDir: "playwright-report"
-                deployPath: "$(NightlyReportRoot)/perfplaywright"
-                displayName: "Upload weekly perf report"
+                sourceDir: "packages/tools/tests/playwright-report"
+                fallbackDir: "playwright-report"
+                artifact: "browser-test-report-perfplaywright"
+                validatePublicReport: true
+                displayName: "Stage weekly perf report"
                 condition: "eq(variables['PerfTestsFailed'], 'true')"
                 continueOnError: true
 
           - bash: |
                 echo "##[section]Weekly Perf report URL"
-                echo "  $(SNAPSHOT_CDN_URL)/$(NightlyReportRoot)/perfplaywright/index.html"
+                echo "  $SNAPSHOT_CDN_URL/$NIGHTLY_REPORT_ROOT/perfplaywright/index.html"
             displayName: "Log weekly perf report URL"
             condition: eq(variables['PerfTestsFailed'], 'true')
+            env:
+                SNAPSHOT_CDN_URL: $(SNAPSHOT_CDN_URL)
+                NIGHTLY_REPORT_ROOT: $(NightlyReportRoot)
 
           - task: PublishTestResults@2
             displayName: "Publish perf test results"
@@ -493,3 +625,58 @@ jobs:
                 testResultsFormat: JUnit
                 testResultsFiles: "junit.xml"
                 testRunTitle: "Weekly Perf - ALL"
+
+    # =========================================================================
+    # Publish the staged reports.
+    #
+    # Fresh agent, `checkout: none`, no npm install and no test code. This is
+    # the only job in the pipeline that holds DEPLOY_TOKEN. Reports staged by
+    # the test jobs are uploaded verbatim; jobs that staged nothing are skipped
+    # by the publisher itself.
+    # =========================================================================
+    - template: templates/publish-uploads-job.yml
+      parameters:
+          jobName: PublishReports
+          displayName: "Publish browser test reports"
+          dependsOn:
+              - WebkitWebGL2
+              - FirefoxWebGL2
+              - ChromeWebGL2Full
+              - ChromeWebGPUFull
+              - ES6Visualization
+              - WeeklyPerfAll
+          condition: always()
+          requireTrustedSource: true
+          variables:
+              - group: BabylonJS-Deployment
+          uploads:
+              - artifact: "browser-test-report-webkitplaywright"
+                destination: "$(NightlyReportRoot)/webkitplaywright"
+                deleteStale: true
+                extraFields: []
+                displayName: "Upload nightly Webkit report"
+              - artifact: "browser-test-report-firefoxplaywright"
+                destination: "$(NightlyReportRoot)/firefoxplaywright"
+                deleteStale: true
+                extraFields: []
+                displayName: "Upload nightly Firefox report"
+              - artifact: "browser-test-report-webgl2playwright"
+                destination: "$(NightlyReportRoot)/webgl2playwright"
+                deleteStale: true
+                extraFields: []
+                displayName: "Upload nightly WebGL2 report"
+              - artifact: "browser-test-report-webgpuplaywright"
+                destination: "$(NightlyReportRoot)/webgpuplaywright"
+                deleteStale: true
+                extraFields: []
+                displayName: "Upload nightly WebGPU report"
+              - artifact: "browser-test-report-es6visplaywright"
+                destination: "$(NightlyReportRoot)/es6visplaywright"
+                deleteStale: true
+                extraFields: []
+                displayName: "Upload nightly ES6 visualization report"
+              - artifact: "browser-test-report-perfplaywright"
+                destination: "$(NightlyReportRoot)/perfplaywright"
+                deleteStale: true
+                extraFields: []
+                displayName: "Upload weekly perf report"

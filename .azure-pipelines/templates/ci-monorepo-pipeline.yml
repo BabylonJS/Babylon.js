@@ -1,0 +1,922 @@
+# =============================================================================
+# CI Monorepo Pipeline (Definition ID: 14) - pipeline body
+#
+# Pipeline body for .azure-pipelines/ci-monorepo.yml.
+#
+# This is NOT a security boundary. The root pipeline `extends` this file from
+# the *same branch*, so a pull request that edits the root can edit this file
+# too, and an Azure DevOps "Required template" check cannot pin a same-branch
+# template to refs/heads/master. The file is split out for readability only.
+#
+# The actual boundary is that this pipeline - root and body together - requests
+# no secret-bearing protected resource at all.
+# =============================================================================
+
+# Original pipeline documentation:
+#
+# =============================================================================
+# CI-Monorepo Pipeline - Babylon.js
+# Converted from Azure DevOps Classic Pipeline (Definition ID: 14)
+#
+# IMPORTANT SETUP NOTES:
+# 1. Link variable groups (see VARIABLE-GROUPS.md):
+#    - BabylonJS-CI-Infrastructure  (no secrets: public CDN URLs, deployment
+#      server endpoint names, storage account names)
+#
+#    No other group may be linked to this pipeline definition. In particular
+#    BabylonJS-Deployment (DEPLOY_TOKEN) and Browserstack-Opensource must stay
+#    *unauthorized* for definition 14, because this definition is compiled from
+#    pull-request branches and a pull request can rewrite every line of its
+#    YAML, including this comment.
+#
+# 2. Fork build settings: "Make secrets available to builds of forks" must stay
+#    DISABLED, and "Require a team member's comment before building a pull
+#    request" must stay ENABLED, in the Azure DevOps pipeline settings UI.
+#
+# 3. Do NOT authorize the GitHub service connection
+#    (GITHUB_SERVICE_CONNECTION) for this pipeline. Pull request comments are
+#    posted by .azure-pipelines/cd-ci-snapshots.yml, which has no pull request
+#    trigger.
+#
+# 4. Update the 'resources.pipelines' source names in the root file to match
+#    your actual pipeline names in Azure DevOps.
+#
+# CI TRUST BOUNDARY
+# -----------------
+# Every job here checks the repository out and runs pull-request-controlled
+# code: npm lifecycle scripts, build scripts and Playwright specs. So this
+# pipeline holds no credential of any kind. It builds, tests, and stages its
+# output as immutable pipeline artifacts.
+#
+# Snapshot uploads, CDN deployment, GitHub comments and BrowserStack runs -
+# everything that needs a credential - happen in pipelines that have no pull
+# request trigger and therefore never compile YAML from a pull request branch:
+#
+#   * .azure-pipelines/cd-ci-snapshots.yml - snapshot/report uploads, CDN
+#     deployment and pull request comments, from artifacts staged here.
+#   * .azure-pipelines/ci-browser-testing.yml - all BrowserStack runs.
+#
+# Credential hygiene also enforced by this file: checkouts use
+# `persistCredentials: false`, so the pipeline OAuth token never reaches
+# .git/config where pull-request code could read it.
+# =============================================================================
+
+variables:
+    # Non-secret infrastructure values only (public CDN base URL, deployment
+    # server endpoint *names*, storage account names). No secret group is
+    # mapped anywhere in this pipeline - see the trust boundary note above.
+    - group: BabylonJS-CI-Infrastructure
+    # Names the artifacts this run stages, so the trusted publisher can address
+    # them. `readonly` so pull-request code cannot repoint anything downstream
+    # by emitting `##vso[task.setvariable variable=BuildName]...`.
+    - name: BuildName
+      value: $(Build.SourceBranch)
+      readonly: true
+    # Loopback port the Build job's snapshot artifact is served on inside test
+    # jobs. 1337 is the port packages/tools/testTools defaults to, so tests
+    # behave exactly as they do on a developer machine.
+    - name: SnapshotServePort
+      value: 1337
+    - name: system.debug
+      value: false
+    # Stable, cacheable locations (see templates/cache-steps.yml). Kept outside
+    # the repo working dir so Cache@2 can restore/save them across runs & reruns.
+    - name: npm_config_cache
+      value: $(Pipeline.Workspace)/.npm
+    - name: NX_CACHE_DIRECTORY
+      value: $(Pipeline.Workspace)/.nxcache
+    # Nx 22.7.8 reads NX_MAX_CACHE_SIZE and accepts B/KB/MB/GB values. Cache@2
+    # creates an uncompressed tar alongside the cache, so cap the source
+    # directory to leave enough disk headroom for that temporary archive.
+    - name: NX_MAX_CACHE_SIZE
+      value: 4GB
+    - name: PLAYWRIGHT_BROWSERS_PATH
+      value: $(Pipeline.Workspace)/.playwright
+    # Cache location for the pinned Khronos KHR_interactivity conformance assets.
+    - name: KHR_ASSETS_CACHE
+      value: $(Pipeline.Workspace)/.khr-interactivity-assets
+
+# This file is the target of a root `extends:`. An extends template may not
+# declare a pipeline-level `pool:`, so every job below names its own agent
+# pool. Do not reintroduce a root `pool:` here — it fails YAML compilation.
+jobs:
+    # ============================================================================
+    # BUILD JOB
+    # Builds UMD packages, prepares and uploads snapshot, posts PR comments
+    # No dependencies - runs immediately
+    # ============================================================================
+    - job: Build
+      pool:
+          vmImage: ubuntu-latest
+      displayName: "Build job"
+      steps:
+          - template: checkout-with-tag-override.yml
+            parameters:
+                fetchDepth: 0
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "24.x"
+
+          - bash: |
+                set -uo pipefail
+
+                CHANGES=$(git diff --name-status "$(git rev-parse origin/master)" "$(git rev-parse HEAD)")
+                echo "$CHANGES"
+
+                case "$CHANGES" in
+                  *smartFilter*) echo "##vso[task.setvariable variable=SmartFiltersChanged]true" ;;
+                esac
+
+                # The reviewer notes that used to be posted straight from this job
+                # are written to an artifact instead. Posting them needs the GitHub
+                # service connection, and this pipeline is compiled from pull
+                # request branches, so it must not hold one. cd-ci-snapshots posts
+                # the file when a maintainer publishes the run.
+                OUT="$(Build.ArtifactStagingDirectory)/pr-advice"
+                mkdir -p "$OUT"
+                : > "$OUT/comment.md"
+
+                case "$CHANGES" in
+                  *"what's new.md"*)
+                    echo "There is no need to update the \"what's new.md\" file. A changelog will be generated using the PR and its tags." >> "$OUT/comment.md"
+                    echo >> "$OUT/comment.md"
+                    ;;
+                esac
+                case "$CHANGES" in
+                  *package.json*)
+                    echo "Reviewer - this PR has made changes to one or more package.json files." >> "$OUT/comment.md"
+                    echo >> "$OUT/comment.md"
+                    ;;
+                esac
+                case "$CHANGES" in
+                  *.build/config.json*)
+                    echo "Reviewer - this PR has made changes to the build configuration file." >> "$OUT/comment.md"
+                    echo >> "$OUT/comment.md"
+                    echo "*This build will release a new package on npm.* If that was unintentional please revert those changes or close this PR." >> "$OUT/comment.md"
+                    echo >> "$OUT/comment.md"
+                    ;;
+                esac
+
+                echo "Please make sure to label your PR with \"bug\", \"new feature\" or \"breaking change\" label(s). To prevent this PR from going to the changelog mark it with the \"skip changelog\" label." >> "$OUT/comment.md"
+            name: GitChanges
+            displayName: "Check git changes"
+            continueOnError: true
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish reviewer notes"
+            condition: succeededOrFailed()
+            continueOnError: true
+            inputs:
+                targetPath: "$(Build.ArtifactStagingDirectory)/pr-advice"
+                artifact: "prAdviceComment"
+
+          - bash: |
+                # For scheduled/build-completion runs, run ALL visualization tests.
+                # For PR/push runs, compute affected tags from the diff.
+                if [ "$(Build.Reason)" = "Schedule" ] || [ "$(Build.Reason)" = "BuildCompletion" ]; then
+                    TAGS="ALL"
+                    echo "Scheduled/publish run — running ALL visualization tests"
+                else
+                    TAGS=$(node scripts/compute-affected-vis-tags.mjs)
+                fi
+                echo "Affected vis-test tags: $TAGS"
+                echo "##vso[task.setvariable variable=AFFECTED_TAGS;isOutput=true]$TAGS"
+            name: ComputeVisTags
+            displayName: "Compute affected vis-test tags"
+            continueOnError: true
+
+          - template: cache-steps.yml
+            parameters:
+                nx: true
+                nxCacheKey: build
+
+          - script: npm ci
+            displayName: "npm ci"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - task: Npm@1
+            displayName: "npm build umd"
+            inputs:
+                command: custom
+                customCommand: "run build:umd"
+
+          - task: Npm@1
+            displayName: "npm build smart filters"
+            condition: and(succeeded(), eq(variables['SMARTFILTERSCHANGED'], 'true'))
+            inputs:
+                command: custom
+                customCommand: "run build:source:smart-filters"
+
+          - task: Npm@1
+            displayName: "npm build smart filters editor"
+            condition: and(succeeded(), eq(variables['SMARTFILTERSCHANGED'], 'true'))
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/smart-filters-editor"
+
+          - task: Npm@1
+            displayName: "Prepare snapshot"
+            inputs:
+                command: custom
+                customCommand: "run prepare-snapshot"
+
+          - task: Npm@1
+            displayName: "Test es version of UMD packages"
+            inputs:
+                command: custom
+                customCommand: "run test:escheck"
+
+          - task: Npm@1
+            displayName: "Test UMD build"
+            inputs:
+                command: custom
+                customCommand: "run build -w babylonjs-testproject"
+
+          - script: |
+                mkdir .snapshot/smartFiltersEditor
+                cp -r packages/tools/smartFiltersEditor/dist/* .snapshot/smartFiltersEditor
+            displayName: "Add Smart Filters Editor to snapshot"
+            condition: and(succeeded(), eq(variables['SMARTFILTERSCHANGED'], 'true'))
+
+          # Credential-free: the snapshot is staged as a pipeline artifact.
+          # The trusted cd-ci-snapshots pipeline uploads it; test jobs in this
+          # pipeline serve it from the agent (templates/serve-staged-artifacts.yml).
+          - template: stage-upload.yml
+            parameters:
+                sourceDir: ".snapshot"
+                artifact: "buildSnapshot"
+                displayName: "Stage snapshot"
+                condition: succeeded()
+
+    # ============================================================================
+    # ES6 LIBS BUILD
+    # Builds the ES6 lib packages (core/gui/loaders/…). The editor/tool builds,
+    # tree-shaking check, and file-size report run in parallel in the sibling
+    # ES6Tools job. The BrowserStack ES6 visualization suite that used to run
+    # here now runs in the trusted ci-browser-testing pipeline.
+    # No dependencies - runs immediately
+    # ============================================================================
+    - job: ES6
+      pool:
+          vmImage: ubuntu-latest
+      displayName: "ES6 libs build"
+      steps:
+          - template: checkout-with-tag-override.yml
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "24.x"
+
+          - template: cache-steps.yml
+            parameters:
+                nx: true
+                nxCacheKey: es6
+
+          - script: npm ci
+            displayName: "npm ci"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          # Only the lib packages (core/gui/loaders/…) are needed downstream.
+          # The editor/tool builds and the tree-shaking check run in parallel in
+          # the ES6Tools job.
+          #
+          # The BrowserStack ES6 visualization run that used to follow this
+          # build has moved to .azure-pipelines/ci-browser-testing.yml. It needs
+          # the Browserstack-Opensource credentials, and this definition is
+          # compiled from pull request branches, so it must not be able to
+          # request them.
+          - bash: |
+                npm run build:assets:smart-filters && npm run build:es6:libs
+            displayName: "npm build es6 libs"
+
+    # ============================================================================
+    # ES6 TOOLS, TREE-SHAKING, AND FILE SIZES
+    # Runs the full ES6 build (editor/tool packages + check:treeshaking-all),
+    # validates publishability, and generates/uploads the file-size report.
+    # Split out of the ES6 job so this work runs in parallel with the ES6
+    # visualization tests instead of gating them. Blocking: tree-shaking and
+    # build failures fail the pipeline here just as they did in the ES6 job.
+    # No dependencies - runs immediately
+    # ============================================================================
+    - job: ES6Tools
+      pool:
+          vmImage: ubuntu-latest
+      displayName: "ES6 tools, tree-shaking, and file sizes"
+      steps:
+          - template: checkout-with-tag-override.yml
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "24.x"
+
+          - template: cache-steps.yml
+            parameters:
+                nx: true
+                nxCacheKey: es6-tools
+
+          - script: npm ci
+            displayName: "npm ci"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - task: Npm@1
+            displayName: "npm build es6"
+            inputs:
+                command: custom
+                customCommand: "run build:es6"
+
+          - bash: |
+                npx nx run-many --target=prepublishOnly --all
+            displayName: "Make sure es6 packages are ready"
+
+          - task: Npm@1
+            displayName: "Test ES6 packages"
+            inputs:
+                command: custom
+                customCommand: "run test:es6-packages -w @tools/tests"
+
+          - task: Npm@1
+            displayName: "npm build modules size"
+            inputs:
+                command: custom
+                customCommand: "run build -w @tools/tests"
+
+          - task: Npm@1
+            displayName: "npm generate modules size"
+            inputs:
+                command: custom
+                customCommand: "run generate-file-size-report -w @tools/tests"
+
+          # Credential-free: only fileSizes.json is staged, and the trusted
+          # trusted cd-ci-snapshots pipeline uploads it to a hard-coded path.
+          - bash: |
+                set -euo pipefail
+                OUT="$(Build.ArtifactStagingDirectory)/file-size-report"
+                mkdir -p "$OUT"
+                cp packages/tools/tests/dist/fileSizes.json "$OUT/fileSizes.json"
+            displayName: "Collect file size results"
+
+          - template: stage-upload.yml
+            parameters:
+                sourceDir: "$(Build.ArtifactStagingDirectory)/file-size-report"
+                artifact: "fileSizeReport"
+                displayName: "Stage file size results"
+                condition: succeeded()
+
+    # ============================================================================
+    # FORMAT, LINT, AND MORE
+    # Checks formatting, linting, and circular dependencies
+    # No dependencies - runs immediately
+    # ============================================================================
+    - job: FormatLint
+      pool:
+          vmImage: ubuntu-latest
+      displayName: "Format, Lint, and more"
+      steps:
+          - template: checkout-with-tag-override.yml
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "24.x"
+
+          # Runs before `npm ci`, so the check that guards the credential
+          # boundary cannot itself be subverted by a dependency lifecycle
+          # script. It only reads .azure-pipelines and uses Node built-ins.
+          - script: |
+                set -euo pipefail
+                node ./.azure-pipelines/scripts/validate-pipeline-trust-boundary.mjs --self-test
+                node ./.azure-pipelines/scripts/validate-pipeline-trust-boundary.mjs
+            displayName: "CI trust boundary"
+
+          - template: cache-steps.yml
+
+          - script: npm ci
+            displayName: "npm ci"
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - script: npx prettier --list-different "./packages/**/src/**/*.{ts,tsx,js,json,scss,css}"
+            displayName: "Formatting"
+
+          - script: npm run lint:check-ci
+            displayName: "Linting"
+            env:
+                NODE_OPTIONS: "--max-old-space-size=8192"
+
+          - script: npm run check:treeshaking
+            displayName: "Tree-shaking verification"
+
+    # ============================================================================
+    # TYPEDOC CHECK
+    # Only runs on PRs (not on master branch)
+    # No dependencies - runs immediately
+    # ============================================================================
+    - job: TypeDocCheck
+      pool:
+          vmImage: ubuntu-latest
+      displayName: "TypeDoc check"
+      condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
+      steps:
+          - template: checkout-with-tag-override.yml
+            parameters:
+                fetchDepth: 0
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "24.x"
+
+          - template: cache-steps.yml
+
+          - script: npm ci
+            displayName: "npm ci"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+
+          - script: |
+                git branch
+                git fetch origin "+refs/heads/*:refs/remotes/origin/*"
+                git branch
+
+                GIT_CHANGES_COMMAND="git diff origin/master...HEAD --name-only --relative" npm run test:docs
+            displayName: "Run TypeDoc test"
+            env:
+                CI: "true"
+
+          - task: PublishTestResults@2
+            displayName: "Publish TypeDoc Results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./junit.xml"
+                failTaskOnFailedTests: true
+
+    # ============================================================================
+    # UNIT TESTS
+    # Depends on: FormatLint (fail-fast gate only).
+    # Intentionally does NOT depend on Build: the unit suite runs in-process
+    # (vitest) and needs no Build snapshot. The one CDN-dependent assertion
+    # (moduleFileSize.test.ts -> fileSizes.json) already self-skips when the
+    # file is absent, so dropping the Build dependency changes no test outcome
+    # while moving this job out of the post-Build "wave 2" (keeps peak agents
+    # per PR at <= 8).
+    # ============================================================================
+    - job: UnitTests
+      pool:
+          vmImage: ubuntu-latest
+      displayName: "Unit tests"
+      dependsOn:
+          - FormatLint
+      steps:
+          - template: checkout-with-tag-override.yml
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "24.x"
+
+          - template: cache-steps.yml
+
+          - task: Npm@1
+            displayName: "npm ci"
+            retryCountOnTaskFailure: 1
+            inputs:
+                command: custom
+                customCommand: "ci"
+
+          - script: npm run test:unit
+            displayName: "unit tests"
+            retryCountOnTaskFailure: 2
+            env:
+                # No CDN_BASE_URL: this job does not depend on Build, so it
+                # never had a snapshot to point at. testTools falls back to the
+                # local default, which is what a developer run uses.
+                HEADLESS: "true"
+
+          - task: PublishTestResults@2
+            displayName: "Publish Unit Test Results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./junit.xml"
+
+          # DISABLED in classic pipeline - integration tests:
+          # - script: |
+          #     export DISPLAY=:99
+          #     Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          #     sleep 3
+          #     npm run test:integration
+          #   displayName: 'integration tests'
+          #   continueOnError: true
+          #   retryCountOnTaskFailure: 4
+          #   env:
+          #     CDN_BASE_URL: '$(SNAPSHOT_CDN_URL)/$(BuildName)'
+          #     HEADLESS: 'true'
+
+    # ============================================================================
+    # INTERACTION TESTS
+    # Depends on: Build, FormatLint
+    # ============================================================================
+    - job: InteractionTests
+      pool:
+          vmImage: ubuntu-latest
+      displayName: "Interaction tests"
+      dependsOn:
+          - Build
+          - FormatLint
+      steps:
+          - template: checkout-with-tag-override.yml
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "24.x"
+
+          - template: cache-steps.yml
+            parameters:
+                playwright: true
+
+          - script: |
+                npm ci
+                npx playwright install --with-deps
+            displayName: "npm ci && playwright install"
+            retryCountOnTaskFailure: 1
+
+          # Serve the Build job's snapshot from this agent. It used to be
+          # fetched from the public CDN, which meant the pull request pipeline
+          # had to hold the deployment token just to upload it first.
+          - template: serve-staged-artifacts.yml
+            parameters:
+                port: "$(SnapshotServePort)"
+                displayName: "Serve Babylon snapshot"
+                artifacts:
+                    - artifact: "buildSnapshot"
+                      path: "."
+
+          - script: npm run test:interactions
+            displayName: "run interaction tests"
+            retryCountOnTaskFailure: 1
+            env:
+                CDN_BASE_URL: "http://127.0.0.1:$(SnapshotServePort)"
+                # No BrowserStack credentials: `npm run test:interactions` runs
+                # `playwright test -c ./playwright.config.ts --project=interaction`,
+                # which drives local browsers. The credentials that used to be
+                # mapped here were never read.
+                CI: "true"
+
+          # Credential-free: the report is staged as a pipeline artifact and
+          # uploaded later by the trusted cd-ci-snapshots pipeline.
+          - template: stage-upload.yml
+            parameters:
+                sourceDir: "packages/tools/tests/playwright-report"
+                fallbackDir: "playwright-report"
+                artifact: "interactionReport"
+                validatePublicReport: true
+                displayName: "Stage interaction test results"
+                continueOnError: true
+
+          - task: PublishTestResults@2
+            displayName: "Publish interaction test results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./packages/tools/tests/junit.xml"
+
+    # ============================================================================
+    # KHR_INTERACTIVITY CONFORMANCE
+    # Depends on: Build, FormatLint
+    # Runs the pinned Khronos conformance corpus against the deployed snapshot (the same artifact the
+    # other browser suites test), so nothing is built inside the test agent. Gated at the job level on
+    # the Build job's affected-tags output so unaffected PRs never provision an agent.
+    # ============================================================================
+    - job: KHRInteractivityConformance
+      pool:
+          vmImage: ubuntu-latest
+      displayName: "KHR_interactivity conformance"
+      dependsOn:
+          - Build
+          - FormatLint
+      # Only run when a FlowGraph or glTF change (or a run-all "ALL" change) is detected by the Build
+      # job's ComputeVisTags step. Evaluated before the agent is provisioned, so an unrelated PR neither
+      # queues the job nor clones the repo. An unset value (e.g. ComputeVisTags failure) evaluates false
+      # and skips — safe because the suite is non-blocking and informational.
+      condition: >-
+          and(
+            succeeded(),
+            or(
+              eq(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'ALL'),
+              contains(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'FlowGraph'),
+              contains(dependencies.Build.outputs['ComputeVisTags.AFFECTED_TAGS'], 'glTF')
+            )
+          )
+      # A single run: consuming the deployed snapshot (rather than building Babylon in-agent) makes the
+      # full ~174-asset suite fast enough to finish well within the timeout on one agent, and avoids the
+      # redundant per-shard npm/playwright install overhead that sharding otherwise added.
+      # Kept non-blocking (continueOnError) for now so an intermittent asset does not block merges;
+      # promote to a required gate once it has a track record of completing green.
+      continueOnError: true
+      timeoutInMinutes: 30
+      steps:
+          - template: checkout-with-tag-override.yml
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "24.x"
+
+          - template: cache-steps.yml
+            parameters:
+                playwright: true
+
+          # The conformance assets are a large, rarely changing binary corpus, so cache them on
+          # the pinned revision. The key comes from the same file the fetch script reads, so a
+          # bumped revision automatically misses the cache instead of serving stale assets.
+          - task: Cache@2
+            displayName: "Cache KHR_interactivity assets"
+            inputs:
+                key: 'khrassets | "$(Agent.OS)" | scripts/khr-interactivity-assets.json'
+                path: $(KHR_ASSETS_CACHE)
+
+          - script: |
+                npm ci
+                npx playwright install --with-deps chromium
+            displayName: "npm ci && playwright install"
+            retryCountOnTaskFailure: 1
+
+          # Serve the Build job's snapshot (empty.html + the properly built UMD
+          # bundles) from this agent. It used to be fetched from the public
+          # CDN, which required the pull request pipeline to upload it with the
+          # deployment token first.
+          - template: serve-staged-artifacts.yml
+            parameters:
+                port: "$(SnapshotServePort)"
+                displayName: "Serve Babylon snapshot"
+                artifacts:
+                    - artifact: "buildSnapshot"
+                      path: "."
+
+          - script: node ./scripts/runKHRInteractivityAssetTests.mjs
+            displayName: "run KHR_interactivity conformance tests"
+            env:
+                CI: "true"
+                # Force Chrome. The shared Playwright config defaults to Firefox on CI, but the
+                # integration project only passes the `--use-angle=default` WebGL flag on the Chrome
+                # branch, so Firefox runs the conformance suite with no working WebGL context.
+                BROWSER: "Chrome"
+                CDN_BASE_URL: "http://127.0.0.1:$(SnapshotServePort)"
+                # The snapshot is already being served on that port by the step
+                # above, so playwright.khr-interactivity.config.ts must reuse it
+                # rather than start babylon-server on top of it. Building Babylon
+                # inside the test agent is what used to exhaust its memory.
+                KHR_REUSE_BABYLON_SERVER: "1"
+                KHR_ASSETS_CACHE_DIR: $(KHR_ASSETS_CACHE)
+
+          - task: PublishTestResults@2
+            displayName: "Publish KHR_interactivity conformance results"
+            condition: succeededOrFailed()
+            inputs:
+                testResultsFormat: JUnit
+                testResultsFiles: "./khr-interactivity-junit.xml"
+                testRunTitle: "KHR_interactivity conformance"
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish conformance report"
+            condition: failed()
+            continueOnError: true
+            inputs:
+                targetPath: "khr-interactivity-report"
+                artifact: "khr-interactivity-report"
+
+    # ============================================================================
+    # NATIVE TESTS (EXPERIMENTAL)
+    # Depends on: Build, FormatLint
+    # Runs on Windows agent pool
+    # ============================================================================
+    - job: NativeTests
+      displayName: "Native tests (experimental)"
+      dependsOn:
+          - Build
+          - FormatLint
+      timeoutInMinutes: 35
+      pool:
+          vmImage: windows-latest
+      steps:
+          - template: checkout-with-tag-override.yml
+
+          - task: DownloadPipelineArtifact@2
+            displayName: "Download Pipeline Artifact"
+            inputs:
+                source: specific
+                project: "$(DEVOPS_PROJECT_ID)"
+                pipeline: 36
+                runVersion: latest
+                runBranch: "refs/heads/master"
+                path: "$(Pipeline.Workspace)"
+
+          - script: |
+                for /f %%i in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property instanceId') do (
+                  reg add HKCU\Software\Microsoft\VisualStudio\Debugger\JIT\{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}\%%i /f /v Disabled /t REG_DWORD /d 1
+                )
+
+                reg query HKCU\Software\Microsoft\VisualStudio\Debugger\JIT\{F200A7E7-DEA5-11D0-B854-00A0244A1DE2} /s
+            displayName: "Disable JIT Debugging for Script"
+
+          # The snapshot used to be downloaded from the public CDN, which meant
+          # the pull request pipeline had to upload it with the deployment token
+          # first. It is now consumed directly as the immutable artifact the
+          # Build job staged.
+          - task: DownloadPipelineArtifact@2
+            displayName: "Download Babylon snapshot"
+            inputs:
+                artifact: "buildSnapshot"
+                path: "$(Pipeline.Workspace)/buildSnapshot"
+
+          - script: |
+                copy /Y "$(Pipeline.Workspace)\buildSnapshot\payload.zip" snapshot.zip
+                if errorlevel 1 exit /b %errorlevel%
+
+                setlocal EnableDelayedExpansion
+                set destDir=..\BabylonNativeNightlyUnitTests\RelWithDebInfo\Assets
+                for /f %%i in ('dir /b %destDir%\babylon*') do (
+                  set sourceName=%%i
+                  if /i "!sourceName:~-3!"==".js" (
+                    set sourceName=!sourceName:.max.js=.es5.js!
+                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.min.js=.es5.js!
+                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.js=.es5.js!
+                  )
+                  unzip -p snapshot.zip "**!sourceName!" > %destDir%\%%i
+                  if errorlevel 1 exit /b !errorlevel!
+                )
+
+                set destDir=..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts
+                for /f %%i in ('dir /b %destDir%\babylon*') do (
+                  set sourceName=%%i
+                  if /i "!sourceName:~-3!"==".js" (
+                    set sourceName=!sourceName:.max.js=.es5.js!
+                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.min.js=.es5.js!
+                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.js=.es5.js!
+                  )
+                  unzip -p snapshot.zip "**!sourceName!" > %destDir%\%%i
+                  if errorlevel 1 exit /b !errorlevel!
+                )
+            displayName: "Update scripts from snapshot (ES5)"
+
+          - script: |
+                cd
+                cd ..\BabylonNativeNightlyUnitTests\RelWithDebInfo
+                UnitTests.exe
+            displayName: "Run unit tests"
+            retryCountOnTaskFailure: 3
+
+          - script: |
+                cd
+                cd ..\BabylonNativeNightlyPlayground\RelWithDebInfo
+                Playground.exe app:///Scripts/validation_native.js
+            displayName: "Run visualization tests"
+            retryCountOnTaskFailure: 3
+
+          - pwsh: |
+                New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\Results" | Out-Null
+                New-Item -ItemType Directory -Force -Path "..\BabylonNativeNightlyPlayground\Errors" | Out-Null
+            displayName: "Ensure native visualization output dirs"
+            condition: not(canceled())
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Upload Rendered Pictures"
+            condition: not(canceled())
+            inputs:
+                targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\Results"
+                artifact: "native-rendered-pictures-$(System.JobAttempt)"
+                publishLocation: "pipeline"
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Upload Error Pictures"
+            condition: failed()
+            inputs:
+                targetPath: "$(Build.SourcesDirectory)\\..\\BabylonNativeNightlyPlayground\\Errors"
+                artifact: "native-error-pictures-$(System.JobAttempt)"
+                publishLocation: "pipeline"
+
+    # ============================================================================
+    # MEMORY LEAK TESTS
+    # Depends on: Build, FormatLint
+    # Split into two parallel jobs (ci + packages suites) — see
+    # templates/memory-leak-job.yml. Each runs memlab locally (BrowserStack is
+    # not viable for heap snapshots) and is non-blocking. Running them in
+    # parallel instead of sequentially shortens the post-Build critical-path
+    # tail. UnitTests was moved out of "wave 2", so adding one job here keeps
+    # the peak parallel jobs per PR at <= 8.
+    # ============================================================================
+    - template: memory-leak-job.yml
+      parameters:
+          jobName: MemoryLeakTestsCI
+          commentArtifact: memleakCommentCI
+          displayName: "Memory leak tests (ci suite)"
+          npmScript: "test:memory-leaks"
+          suiteLabel: "ci suite"
+          # First-class PR-facing suite: always posts a single results comment.
+          alwaysComment: true
+
+    - template: memory-leak-job.yml
+      parameters:
+          jobName: MemoryLeakTestsPackages
+          commentArtifact: memleakCommentPackages
+          displayName: "Memory leak tests (packages suite)"
+          npmScript: "test:memory-leaks:packages"
+          suiteLabel: "packages suite"
+          # Secondary suite: stays silent only on a clean pass, and still
+          # comments on any leak or runner error, so the common (clean) case
+          # keeps the PR to a single memory-leak comment without hiding failures.
+          alwaysComment: false
+
+    # ============================================================================
+    # VIEWER TESTS
+    # No dependencies - runs immediately
+    # ============================================================================
+    - job: ViewerTests
+      pool:
+          vmImage: ubuntu-latest
+      displayName: "Viewer tests"
+      steps:
+          - template: checkout-with-tag-override.yml
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            continueOnError: true
+            retryCountOnTaskFailure: 1
+            inputs:
+                version: "24.x"
+
+          - template: cache-steps.yml
+            parameters:
+                playwright: true
+
+          - task: Npm@1
+            displayName: "npm ci"
+            retryCountOnTaskFailure: 1
+            inputs:
+                command: custom
+                customCommand: "ci"
+
+          - task: Npm@1
+            displayName: "npm build"
+            retryCountOnTaskFailure: 1
+            inputs:
+                command: custom
+                customCommand: "run build:dev"
+
+          - script: |
+                (npm run serve -w @tools/viewer &)
+                npx playwright install --with-deps
+                npm run test:playwright -w @tools/tests -- --project=viewer
+            displayName: "run tests"
+            retryCountOnTaskFailure: 1
+            env:
+                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
+                PUPPETEER_SKIP_DOWNLOAD: "true"
+                CI: "true"
+                BROWSER: "Chrome"
+
+    # ============================================================================
+    # NOTHING BELOW THIS LINE.
+    #
+    # This pipeline is compiled from pull request branches, so it must never
+    # gain a job that maps a secret variable group, uses a service connection,
+    # or otherwise requests a protected resource. Snapshot/report uploads, CDN
+    # deployment and pull request comments live in
+    # .azure-pipelines/cd-ci-snapshots.yml; BrowserStack runs live in
+    # .azure-pipelines/ci-browser-testing.yml. Both have `pr: none`.
+    #
+    # .azure-pipelines/scripts/validate-pipeline-trust-boundary.mjs fails the
+    # build if that rule is broken.
+    # ============================================================================

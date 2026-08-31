@@ -1,0 +1,271 @@
+# =============================================================================
+# Playground/Sandbox CI Pipeline (Definition ID: 32) - pipeline body
+#
+# Pipeline body for .azure-pipelines/ci-playground-sandbox.yml.
+#
+# This is NOT a security boundary. The root pipeline `extends` this file from
+# the *same branch*, so a pull request that edits the root can edit this file
+# too, and an Azure DevOps "Required template" check cannot pin a same-branch
+# template to refs/heads/master. The file is split out for readability only.
+#
+# The actual boundary is that this pipeline - root and body together - requests
+# no secret-bearing protected resource at all.
+# =============================================================================
+
+# Original pipeline documentation:
+#
+# =============================================================================
+# Playground-Sandbox-CI Pipeline (Definition ID: 32)
+# Converted from Azure DevOps Classic Pipeline
+#
+# Triggers on PRs that touch playground, sandbox, or inspector-v2 files.
+# Builds and tests both Playground and Sandbox in parallel jobs.
+#
+# Variable groups:
+#   - BabylonJS-CI-Infrastructure (no secrets; public CDN URLs and endpoint
+#     names only)
+#
+# CI TRUST BOUNDARY
+# -----------------
+# Every job in this pipeline checks the repository out and runs
+# pull-request-controlled code - `npm ci` lifecycle scripts, build scripts and
+# Playwright specs. The pipeline therefore maps NO secret variable group and
+# uses NO service connection:
+#
+#   * BabylonJS-Deployment (DEPLOY_TOKEN) is not referenced. The playground and
+#     sandbox builds are served from the agent over loopback
+#     (templates/serve-staged-artifacts.yml) instead of being uploaded to the public
+#     snapshot CDN first.
+#   * GITHUB_SERVICE_CONNECTION is not used. Pull request comments that used to
+#     be posted from here are posted by the trusted, `pr: none`
+#     .azure-pipelines/cd-ci-snapshots.yml publisher when a maintainer chooses
+#     to publish a run.
+#
+# The Azure DevOps administrator must keep this pipeline definition
+# *unauthorized* for every secret-bearing variable group and service
+# connection. That authorization - not this YAML, which a pull request can
+# rewrite - is what makes the guarantee enforceable.
+# See the "CI trust boundary" section of VARIABLE-GROUPS.md.
+# =============================================================================
+
+variables:
+    # Non-secret infrastructure values only. No secret group is mapped anywhere
+    # in this pipeline - see the trust boundary note above.
+    - group: BabylonJS-CI-Infrastructure
+    # Identifies the artifacts this run staged, for the trusted publisher.
+    # `readonly` so pull-request code cannot repoint anything downstream with
+    # `##vso[task.setvariable variable=BuildName]`.
+    - name: BuildName
+      value: $(Build.SourceBranch)
+      readonly: true
+    - name: PlaygroundPreviewPort
+      value: 1338
+    - name: SandboxPreviewPort
+      value: 1339
+
+# This file is the target of a root `extends:`. An extends template may not
+# declare a pipeline-level `pool:`, so every job below names its own agent
+# pool. Do not reintroduce a root `pool:` here — it fails YAML compilation.
+jobs:
+    # ========================================================================
+    # PLAYGROUND - build (executes pull-request code, holds NO credentials)
+    # ========================================================================
+    - job: BuildPlayground
+      pool:
+          vmImage: ubuntu-24.04
+      displayName: "Build playground"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+            persistCredentials: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - task: Npm@1
+            displayName: "npm ci"
+            inputs:
+                command: custom
+                customCommand: "ci"
+
+          - task: Npm@1
+            displayName: "npm build:dev"
+            inputs:
+                command: custom
+                customCommand: "run build:dev"
+
+          - task: Npm@1
+            displayName: "npm typecheck playground"
+            inputs:
+                command: custom
+                customCommand: "run typecheck -w @tools/playground"
+
+          - task: Npm@1
+            displayName: "npm build playground"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/playground"
+
+          - script: |
+                # Remove scenes/textures from public - not needed for testing
+                rm -rf packages/tools/playground/public/scenes
+                rm -rf packages/tools/playground/public/textures
+            displayName: "Remove scenes and textures from playground public"
+
+          - template: stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/playground"
+                artifact: "playgroundDeploy"
+                displayName: "Stage playground deployment"
+
+    # ========================================================================
+    # PLAYGROUND - test (executes pull-request code, holds NO credentials)
+    #
+    # The build is served from this agent over loopback, so the test needs no
+    # credentialed upload and exercises exactly what this run produced.
+    # ========================================================================
+    - job: TestPlayground
+      pool:
+          vmImage: ubuntu-24.04
+      displayName: "Test playground"
+      dependsOn:
+          - BuildPlayground
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+            persistCredentials: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - task: Npm@1
+            displayName: "npm ci"
+            inputs:
+                command: custom
+                customCommand: "ci"
+
+          - template: serve-staged-artifacts.yml
+            parameters:
+                port: "$(PlaygroundPreviewPort)"
+                displayName: "Serve staged playground build"
+                artifacts:
+                    - artifact: "playgroundDeploy"
+                      path: "."
+
+          - script: |
+                npx playwright install --with-deps
+                npx playwright test --project=playground
+            displayName: "Test playground"
+            env:
+                CI: "true"
+                PLAYGROUND_BASE_URL: "http://127.0.0.1:$(PlaygroundPreviewPort)/"
+                BROWSER: "Chrome"
+
+          - template: stage-upload.yml
+            parameters:
+                sourceDir: "playwright-report"
+                artifact: "playgroundTestReport"
+                validatePublicReport: true
+                displayName: "Stage playground test report"
+                condition: succeededOrFailed()
+                continueOnError: true
+
+    # ========================================================================
+    # SANDBOX - build (executes pull-request code, holds NO credentials)
+    # ========================================================================
+    - job: BuildSandbox
+      pool:
+          vmImage: ubuntu-24.04
+      displayName: "Build sandbox"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+            persistCredentials: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - task: Npm@1
+            displayName: "npm ci"
+            inputs:
+                command: custom
+                customCommand: "ci"
+
+          - task: Npm@1
+            displayName: "npm build:dev"
+            inputs:
+                command: custom
+                customCommand: "run build:dev"
+
+          - task: Npm@1
+            displayName: "npm build sandbox"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/sandbox"
+
+          - template: stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/sandbox"
+                artifact: "sandboxDeploy"
+                displayName: "Stage sandbox deployment"
+
+    # ========================================================================
+    # SANDBOX - test (executes pull-request code, holds NO credentials)
+    # ========================================================================
+    - job: TestSandbox
+      pool:
+          vmImage: ubuntu-24.04
+      displayName: "Test sandbox"
+      dependsOn:
+          - BuildSandbox
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+            persistCredentials: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - task: Npm@1
+            displayName: "npm ci"
+            inputs:
+                command: custom
+                customCommand: "ci"
+
+          - template: serve-staged-artifacts.yml
+            parameters:
+                port: "$(SandboxPreviewPort)"
+                displayName: "Serve staged sandbox build"
+                artifacts:
+                    - artifact: "sandboxDeploy"
+                      path: "."
+
+          - script: |
+                npx playwright install --with-deps
+                npx playwright test --project=sandbox
+            displayName: "Test sandbox"
+            env:
+                CI: "true"
+                SANDBOX_BASE_URL: "http://127.0.0.1:$(SandboxPreviewPort)/"
+                BROWSER: "Chrome"
+
+          - template: stage-upload.yml
+            parameters:
+                sourceDir: "playwright-report"
+                artifact: "sandboxTestReport"
+                validatePublicReport: true
+                displayName: "Stage sandbox test report"
+                condition: succeededOrFailed()
+                continueOnError: true

@@ -1,0 +1,272 @@
+# =============================================================================
+# GraphTools CI Pipeline (Definition ID: 33) - pipeline body
+#
+# Pipeline body for .azure-pipelines/ci-graph-tools.yml.
+#
+# This is NOT a security boundary. The root pipeline `extends` this file from
+# the *same branch*, so a pull request that edits the root can edit this file
+# too, and an Azure DevOps "Required template" check cannot pin a same-branch
+# template to refs/heads/master. The file is split out for readability only.
+#
+# The actual boundary is that this pipeline - root and body together - requests
+# no secret-bearing protected resource at all. Rewriting this YAML on a pull
+# request branch therefore gains an attacker nothing: there is no credential in
+# the run to steal.
+# =============================================================================
+
+# Original pipeline documentation:
+#
+# =============================================================================
+# GraphTools-CI Pipeline (Definition ID: 33)
+# Converted from Azure DevOps Classic Pipeline
+#
+# Triggers on PRs that touch graph tool editor files.
+# Builds NME, NGE, NRGE, GUI Editor, NPE, FGE and SFE, serves them from the
+# agent, and runs Playwright tests against them.
+#
+# Variable groups:
+#   - BabylonJS-CI-Infrastructure (no secrets; public CDN URLs and endpoint
+#     names only)
+#
+# CI TRUST BOUNDARY
+# -----------------
+# This pipeline is triggered by pull requests, so every job that checks the
+# repository out executes pull-request-controlled code - `npm ci` lifecycle
+# scripts, build scripts and Playwright specs. Consequently the pipeline maps
+# NO secret variable group and uses NO service connection:
+#
+#   * BabylonJS-Deployment (DEPLOY_TOKEN) is not referenced. Tool snapshots are
+#     no longer uploaded from here; the test job serves the built editors from
+#     the agent over loopback instead (templates/serve-staged-artifacts.yml).
+#   * GITHUB_SERVICE_CONNECTION is not used. Pull request comments that used to
+#     be posted from here are posted by the trusted, `pr: none`
+#     .azure-pipelines/cd-ci-snapshots.yml publisher when a maintainer chooses
+#     to publish a run.
+#
+# The Azure DevOps administrator must keep this pipeline definition
+# *unauthorized* for every secret-bearing variable group and service
+# connection. That authorization - not this YAML, which a pull request can
+# rewrite - is what makes the guarantee enforceable.
+# See the "CI trust boundary" section of VARIABLE-GROUPS.md.
+# =============================================================================
+
+variables:
+    # Non-secret infrastructure values only (public CDN base URL, deployment
+    # server endpoint *names*). No secret group is mapped anywhere in this
+    # pipeline - see the trust boundary note above.
+    - group: BabylonJS-CI-Infrastructure
+    # Identifies the artifacts this run staged, for the trusted publisher.
+    # `readonly` so pull-request code cannot repoint anything downstream with
+    # `##vso[task.setvariable variable=BuildName]`.
+    - name: BuildName
+      value: $(Build.SourceBranch)
+      readonly: true
+    - name: ToolPreviewPort
+      value: 1350
+
+# This file is the target of a root `extends:`. An extends template may not
+# declare a pipeline-level `pool:`, so every job below names its own agent
+# pool. Do not reintroduce a root `pool:` here — it fails YAML compilation.
+jobs:
+    # ========================================================================
+    # BUILD TOOLS - executes pull-request code, holds NO credentials
+    # ========================================================================
+    - job: BuildTools
+      pool:
+          vmImage: ubuntu-latest
+      displayName: "Build tools"
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+            persistCredentials: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - task: Npm@1
+            displayName: "npm ci"
+            inputs:
+                command: custom
+                customCommand: "ci"
+
+          - task: Npm@1
+            displayName: "npm build:dev"
+            inputs:
+                command: custom
+                customCommand: "run build:dev"
+
+          - task: Npm@1
+            displayName: "npm build nodeEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/node-editor"
+
+          - task: Npm@1
+            displayName: "npm build nodeGeometryEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/node-geometry-editor"
+
+          - task: Npm@1
+            displayName: "npm build nodeRenderGraphEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/node-render-graph-editor"
+
+          - task: Npm@1
+            displayName: "npm build guiEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/gui-editor"
+
+          - task: Npm@1
+            displayName: "npm build nodeParticleEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/node-particle-editor"
+
+          - task: Npm@1
+            displayName: "npm build flowGraphEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/flow-graph-editor"
+
+          - task: Npm@1
+            displayName: "npm build smart filters"
+            inputs:
+                command: custom
+                customCommand: "run build:source:smart-filters"
+
+          - task: Npm@1
+            displayName: "npm build smartFiltersEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/smart-filters-editor"
+
+          - template: stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeEditor"
+                artifact: "toolDeployNodeEditor"
+                displayName: "Stage NME deployment"
+
+          - template: stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeGeometryEditor"
+                artifact: "toolDeployNodeGeometryEditor"
+                displayName: "Stage NGE deployment"
+
+          - template: stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeRenderGraphEditor"
+                artifact: "toolDeployNodeRenderGraphEditor"
+                displayName: "Stage NRGE deployment"
+
+          - template: stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/guiEditor"
+                artifact: "toolDeployGuiEditor"
+                displayName: "Stage GUI Editor deployment"
+
+          - template: stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeParticleEditor"
+                artifact: "toolDeployNodeParticleEditor"
+                displayName: "Stage NPE deployment"
+
+          - template: stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/flowGraphEditor"
+                artifact: "toolDeployFlowGraphEditor"
+                displayName: "Stage FGE deployment"
+
+          - template: stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/smartFiltersEditor"
+                artifact: "toolDeploySmartFiltersEditor"
+                displayName: "Stage SFE deployment"
+
+    # ========================================================================
+    # TEST TOOLS - executes pull-request code, holds NO credentials
+    #
+    # The editors are served from this agent over loopback, so the tests never
+    # depend on a credentialed upload and always exercise the build this run
+    # produced.
+    # ========================================================================
+    - job: TestTools
+      pool:
+          vmImage: ubuntu-latest
+      displayName: "Test tools"
+      dependsOn:
+          - BuildTools
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+            persistCredentials: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - task: Npm@1
+            displayName: "npm ci"
+            inputs:
+                command: custom
+                customCommand: "ci"
+
+          - template: serve-staged-artifacts.yml
+            parameters:
+                port: "$(ToolPreviewPort)"
+                displayName: "Serve staged tool builds"
+                artifacts:
+                    - artifact: "toolDeployNodeEditor"
+                      path: "nodeEditor"
+                    - artifact: "toolDeployNodeGeometryEditor"
+                      path: "nodeGeometryEditor"
+                    - artifact: "toolDeployNodeRenderGraphEditor"
+                      path: "nodeRenderGraphEditor"
+                    - artifact: "toolDeployGuiEditor"
+                      path: "guiEditor"
+                    - artifact: "toolDeployNodeParticleEditor"
+                      path: "nodeParticleEditor"
+                    - artifact: "toolDeployFlowGraphEditor"
+                      path: "flowGraphEditor"
+                    - artifact: "toolDeploySmartFiltersEditor"
+                      path: "smartFiltersEditor"
+
+          - script: |
+                npx playwright install --with-deps
+                npx playwright test --project=graphTools --project=flowGraphEditor
+            displayName: "Test tools"
+            env:
+                CI: "true"
+                BROWSER: "Chrome"
+                NME_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/nodeEditor/"
+                NGE_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/nodeGeometryEditor/"
+                NRGE_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/nodeRenderGraphEditor/"
+                NPE_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/nodeParticleEditor/"
+                FGE_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/flowGraphEditor/"
+                SFE_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/smartFiltersEditor/"
+                GUIEDITOR_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/guiEditor/"
+
+          - template: stage-upload.yml
+            parameters:
+                sourceDir: "playwright-report"
+                artifact: "graphToolsTestReport"
+                validatePublicReport: true
+                displayName: "Stage graph tools test report"
+                condition: succeededOrFailed()
+                continueOnError: true
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish tool builds for review"
+            condition: succeededOrFailed()
+            continueOnError: true
+            inputs:
+                targetPath: "$(Agent.TempDirectory)/tool-preview"
+                artifact: "graphToolsPreview"
+                publishLocation: "pipeline"

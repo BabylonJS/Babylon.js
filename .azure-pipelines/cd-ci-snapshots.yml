@@ -1,0 +1,553 @@
+# =============================================================================
+# CI Snapshot Publisher (trusted)
+#
+# WHY THIS PIPELINE EXISTS
+# ------------------------
+# .azure-pipelines/ci-monorepo.yml, ci-graph-tools.yml and
+# ci-playground-sandbox.yml are compiled from pull request branches. Anything
+# their YAML can request, a pull request can request - including a variable
+# group. Keeping the deployment token or the GitHub service connection in those
+# definitions therefore hands both to any contributor who can open a pull
+# request, no matter how carefully the jobs inside are separated: the attacker
+# simply rewrites the separation away.
+#
+# A same-branch `extends:` does not fix that. An Azure DevOps "Required
+# template" check can only pin a template that lives in a *different*,
+# protected repository or ref; a template next to the root file on the same
+# branch is rewritten by the same pull request.
+#
+# So the credentials live here instead. This definition:
+#   * has no `pr:` trigger, so Azure DevOps never compiles it from a pull
+#     request branch;
+#   * has no `trigger:`, so no branch push compiles it either;
+#   * runs only when the CI Monorepo pipeline completes on master (a pipeline
+#     completion trigger evaluates the *triggered* pipeline's YAML from its own
+#     default branch, and does not fire at all for pull request validation
+#     runs), or when a maintainer queues it by hand;
+#   * asserts a trusted full ref and build reason before touching a credential,
+#     so a manual queue against an unmerged ref fails instead of publishing;
+#   * runs every job with `checkout: none`, so no repository code - trusted or
+#     not - is ever on an agent that holds a credential.
+#
+# WHAT IT PUBLISHES
+# -----------------
+# The CI pipelines stage their output as immutable pipeline artifacts. This
+# pipeline downloads those artifacts and uploads them to destinations that are
+# literals in this file. Nothing about the destination is read out of the
+# artifact, so a pull request cannot redirect an upload by writing a manifest.
+#
+# REPUBLISHING A PULL REQUEST BUILD
+# ---------------------------------
+# Pull request runs no longer publish snapshots automatically - that is the
+# point. A maintainer who wants the snapshot and the review comments for a
+# specific pull request queues this pipeline against master and supplies
+# `sourceRunId`, `buildName` and `pullRequestId`. The YAML that then executes is
+# always master's copy, and the artifacts are immutable, so reviewing the pull
+# request before publishing is a real control rather than a formality.
+#
+# TWO WAYS A PIPELINE RESOURCE RESOLVES, AND WHY THAT MATTERS
+# -----------------------------------------------------------
+# `resources.pipelines[].trigger` starts this pipeline automatically when CI
+# Monorepo completes on master. But whoever queues a run by hand can also pick
+# *any* run of that same pipeline in the "Resources" panel - including a pull
+# request validation run of unmerged code - and Azure DevOps then resolves
+# `resources.pipeline.ciMonorepo.*` from the picked run.
+#
+# So "sourceRunId was left empty" must never be read as "this is the trusted
+# automatic publish". Without the checks below, a manual queue with an empty
+# `sourceRunId`, the default `buildName` of `refs/heads/master` and the default
+# `deployToCdn` would take a pull request's artifacts and write them to the
+# master snapshot and the production CDN.
+#
+# The rules this file enforces are therefore:
+#
+#   * An automatic publish is the *only* publish that may leave `sourceRunId`
+#     empty. It must have `Build.Reason == ResourceTrigger`, the resource run
+#     must belong to the expected definition, and that run's full ref must be
+#     exactly `refs/heads/master` (or `refs/heads/preview`). All three come from
+#     Azure's own resource metadata, never from a queue-time parameter.
+#   * Its destination is not a parameter either: `BuildName` is taken from the
+#     verified resource ref, and the production CDN path is chosen from a
+#     literal allow-list in the Gate job.
+#   * A manual run must name the run it publishes (`sourceRunId`) and a
+#     `buildName` that is neither `refs/heads/master` nor `refs/heads/preview`,
+#     and it may never deploy to the CDN - whatever the resource picker points
+#     at.
+#   * `DeployCdn` re-asserts all of this on its own credentialed agent, so a
+#     future `dependsOn`/`condition` mistake cannot let a manual run through.
+#
+# `.azure-pipelines/scripts/validate-pipeline-trust-boundary.mjs --self-test`
+# executes the Gate script below with each of these bypasses as input and fails
+# the build if any of them stops being rejected.
+#
+# ADMINISTRATOR SETUP
+# -------------------
+#   * Authorize BabylonJS-CI-Infrastructure and BabylonJS-Deployment for this
+#     definition, and for this definition only among the CI pipelines.
+#   * Authorize GITHUB_SERVICE_CONNECTION for this definition.
+#   * Set "Default branch for manual and scheduled builds" to refs/heads/master.
+#   * Add a branch control check on BabylonJS-Deployment that allows
+#     refs/heads/master only.
+#   * Update `resources.pipelines[].source` below to the CI Monorepo pipeline's
+#     display name in Azure DevOps.
+# =============================================================================
+
+trigger: none
+pr: none
+
+parameters:
+    # Empty is reserved for automatic, resource-triggered publishes. Any manual
+    # run must name the run it is publishing; the Gate rejects a manual run that
+    # leaves this empty, because the resource picker would otherwise choose the
+    # payload.
+    - name: sourceRunId
+      displayName: "Run ID to publish (required for a manual republish; leave empty only for automatic runs)"
+      type: string
+      default: ""
+    # Empty for automatic runs: their destination is derived from the verified
+    # resource ref instead, so it cannot be chosen at queue time. A manual
+    # republish must supply a non-production ref, e.g. refs/pull/12345/merge.
+    - name: buildName
+      displayName: "Snapshot name for a manual republish, e.g. refs/pull/12345/merge (leave empty for automatic runs)"
+      type: string
+      default: ""
+    - name: pullRequestId
+      displayName: "Pull request number to comment on (empty = do not comment)"
+      type: string
+      default: ""
+    # Only honoured for automatic runs. A manual run that sets it is rejected.
+    - name: deployToCdn
+      displayName: "Also copy the snapshot onto the production CDN path (automatic runs only)"
+      type: boolean
+      default: true
+
+resources:
+    pipelines:
+        - pipeline: ciMonorepo
+          source: "CI Monorepo" # Update with the actual pipeline name
+          trigger:
+              branches:
+                  include:
+                      - master
+
+variables:
+    # Only the non-secret infrastructure group is pipeline-scoped.
+    # BabylonJS-Deployment (DEPLOY_TOKEN) is linked to the publishing jobs
+    # individually, so the Gate job never has the token in its scope.
+    - group: BabylonJS-CI-Infrastructure
+    # Azure Pipelines definition ID of the CI Monorepo pipeline. A literal, so
+    # a queued run can only ever pull artifacts from that one definition, and
+    # the Gate compares the resource's own pipelineID against it.
+    - name: SourceDefinitionId
+      value: 14
+    - ${{ if ne(parameters.sourceRunId, '') }}:
+          # Manual republish: the maintainer names both the run and the
+          # destination, and the Gate forces the destination away from every
+          # production path.
+          - name: SourceRunId
+            value: ${{ parameters.sourceRunId }}
+            readonly: true
+          - name: BuildName
+            value: ${{ parameters.buildName }}
+            readonly: true
+    - ${{ else }}:
+          # Automatic publish: both the run and the destination come from Azure's
+          # resource metadata for the run that triggered this one, not from
+          # anything the queue-time form can set. The Gate still verifies the
+          # reason, the definition and the ref before either is used.
+          - name: SourceRunId
+            value: $(resources.pipeline.ciMonorepo.runID)
+            readonly: true
+          - name: BuildName
+            value: $(resources.pipeline.ciMonorepo.sourceBranch)
+            readonly: true
+    - name: system.debug
+      value: false
+
+pool:
+    vmImage: ubuntu-latest
+
+jobs:
+    # ========================================================================
+    # GATE
+    #
+    # Runs before anything that holds a credential. Three independent checks:
+    #   1. templates/assert-trusted-source.yml - the run itself must come from
+    #      a trusted full ref and a trusted reason.
+    #   2. The publish request must be internally consistent: an automatic
+    #      publish must really be one (ResourceTrigger, expected definition,
+    #      trusted upstream ref), and a manual republish must name its run and
+    #      target a non-production destination.
+    #   3. The production CDN path is not accepted from anywhere - it is chosen
+    #      here from a literal allow-list and handed to DeployCdn as an output
+    #      variable.
+    # ========================================================================
+    - job: Gate
+      displayName: "Gate (trusted source)"
+      steps:
+          - checkout: none
+
+          - template: templates/assert-trusted-source.yml
+
+          # Every value this step judges is a queue-time parameter or Azure
+          # metadata, and both `$( )` macros and `${{ }}` expressions are
+          # *textual* substitutions performed before the script runs. Rendering
+          # one into the body would let a queued value close a quote and run its
+          # own commands - before these checks could reject it. So everything
+          # arrives through `env:` and is dereferenced as a shell variable, and
+          # nothing is echoed back without being stripped of Azure Pipelines
+          # logging commands first.
+          - bash: |
+                set -euo pipefail
+
+                # Azure Pipelines executes `##vso[...]` found anywhere on stdout.
+                # No attacker-controlled value reaches a log line unfiltered.
+                sanitize() {
+                    printf '%s' "${1-}" | tr -d '\r\n' | sed -e 's/##/# #/g' -e 's/\[/(/g' | cut -c1-120
+                }
+
+                fail() {
+                    printf '##vso[task.logissue type=error]%s\n' "${1-}"
+                    exit 1
+                }
+
+                BUILD_REASON="${BUILD_REASON:-}"
+                EXPLICIT_SOURCE_RUN_ID="${EXPLICIT_SOURCE_RUN_ID:-}"
+                REQUESTED_BUILD_NAME="${REQUESTED_BUILD_NAME:-}"
+                RESOLVED_BUILD_NAME="${RESOLVED_BUILD_NAME:-}"
+                RESOLVED_RUN_ID="${RESOLVED_RUN_ID:-}"
+                RESOURCE_RUN_ID="${RESOURCE_RUN_ID:-}"
+                RESOURCE_SOURCE_BRANCH="${RESOURCE_SOURCE_BRANCH:-}"
+                RESOURCE_PIPELINE_ID="${RESOURCE_PIPELINE_ID:-}"
+                SOURCE_DEFINITION_ID="${SOURCE_DEFINITION_ID:-}"
+                PULL_REQUEST_ID="${PULL_REQUEST_ID:-}"
+                DEPLOY_TO_CDN="${DEPLOY_TO_CDN:-}"
+                TRUSTED_RESOURCE_REFS="${TRUSTED_RESOURCE_REFS:-}"
+                PRODUCTION_REFS="${PRODUCTION_REFS:-}"
+
+                if [ -z "$BUILD_REASON" ] || [ -z "$SOURCE_DEFINITION_ID" ] || [ -z "$TRUSTED_RESOURCE_REFS" ] || [ -z "$PRODUCTION_REFS" ]; then
+                    fail "Publish gate is missing its inputs; refusing to publish"
+                fi
+
+                is_production_ref() {
+                    for production_ref in $PRODUCTION_REFS; do
+                        if [ "${1-}" = "$production_ref" ]; then
+                            return 0
+                        fi
+                    done
+                    return 1
+                }
+
+                if [ -n "$EXPLICIT_SOURCE_RUN_ID" ]; then
+                    PUBLISH_MODE=Manual
+
+                    # Parameters only exist on a queued run, so a run that claims
+                    # to be automatic while carrying one is malformed.
+                    if [ "$BUILD_REASON" != "Manual" ]; then
+                        fail "sourceRunId may only be supplied by a manual run, not by a '$(sanitize "$BUILD_REASON")' run"
+                    fi
+
+                    if ! printf '%s' "$EXPLICIT_SOURCE_RUN_ID" | grep -Eq '^[0-9]{1,12}$'; then
+                        fail "sourceRunId must be a run number"
+                    fi
+
+                    if [ -z "$REQUESTED_BUILD_NAME" ]; then
+                        fail "A manual republish must name the snapshot to write (buildName)"
+                    fi
+
+                    # A manual run publishes a run somebody chose by hand, so it
+                    # is never allowed at a production destination - whatever the
+                    # resource picker points at.
+                    if is_production_ref "$REQUESTED_BUILD_NAME"; then
+                        fail "A manual republish may not overwrite the '$(sanitize "$REQUESTED_BUILD_NAME")' snapshot"
+                    fi
+
+                    if [ "$DEPLOY_TO_CDN" = "True" ] || [ "$DEPLOY_TO_CDN" = "true" ]; then
+                        fail "A manual republish may not deploy to the production CDN"
+                    fi
+                else
+                    PUBLISH_MODE=Automatic
+
+                    # With no run ID this pipeline publishes whatever the
+                    # ciMonorepo resource resolved to. On a manual queue that is
+                    # a run the queuer picked in the Resources panel - a pull
+                    # request validation run, if they chose one - so the only
+                    # reason allowed to reach this branch is a real trigger.
+                    if [ "$BUILD_REASON" != "ResourceTrigger" ]; then
+                        fail "Only a resource-triggered run may publish without an explicit sourceRunId; this run's reason is '$(sanitize "$BUILD_REASON")'"
+                    fi
+
+                    if [ -n "$REQUESTED_BUILD_NAME" ]; then
+                        fail "buildName may only be supplied together with an explicit sourceRunId"
+                    fi
+
+                    if [ "$RESOURCE_PIPELINE_ID" != "$SOURCE_DEFINITION_ID" ]; then
+                        fail "Triggering run belongs to definition '$(sanitize "$RESOURCE_PIPELINE_ID")', not the expected source definition"
+                    fi
+
+                    # Azure's record of the upstream run's full ref. A pull
+                    # request run reports refs/pull/<n>/merge and is rejected
+                    # here; Build.SourceBranchName-style suffix matching would
+                    # not be, because a branch may be named `x/master`.
+                    RESOURCE_REF_OK=false
+                    for trusted_ref in $TRUSTED_RESOURCE_REFS; do
+                        if [ "$RESOURCE_SOURCE_BRANCH" = "$trusted_ref" ]; then
+                            RESOURCE_REF_OK=true
+                            break
+                        fi
+                    done
+
+                    if [ "$RESOURCE_REF_OK" != "true" ]; then
+                        fail "Triggering run built '$(sanitize "$RESOURCE_SOURCE_BRANCH")', which is not a trusted ref"
+                    fi
+
+                    if [ "$RESOLVED_RUN_ID" != "$RESOURCE_RUN_ID" ]; then
+                        fail "Resolved run ID does not match the triggering resource run"
+                    fi
+
+                    if [ "$RESOLVED_BUILD_NAME" != "$RESOURCE_SOURCE_BRANCH" ]; then
+                        fail "Resolved snapshot name does not match the triggering resource ref"
+                    fi
+                fi
+
+                # Common shape checks, applied to the values the publish jobs
+                # actually use rather than to the parameters they came from.
+                if ! printf '%s' "$RESOLVED_BUILD_NAME" | grep -Eq '^refs/(heads|pull)/[A-Za-z0-9._/-]+$'; then
+                    fail "Refusing to publish to '$(sanitize "$RESOLVED_BUILD_NAME")': not a plain ref"
+                fi
+
+                case "$RESOLVED_BUILD_NAME" in
+                    *..*)
+                        fail "Refusing to publish to '$(sanitize "$RESOLVED_BUILD_NAME")': path traversal"
+                        ;;
+                esac
+
+                if ! printf '%s' "$RESOLVED_RUN_ID" | grep -Eq '^[0-9]{1,12}$'; then
+                    fail "Resolved source run ID is not a run number"
+                fi
+
+                if [ -n "$PULL_REQUEST_ID" ] && ! printf '%s' "$PULL_REQUEST_ID" | grep -Eq '^[0-9]{1,12}$'; then
+                    fail "pullRequestId must be an issue number"
+                fi
+
+                # The production CDN path is never accepted from a parameter or
+                # from an artifact: it is selected here from literals, and only
+                # for an automatic publish that passed every check above.
+                CDN_DESTINATION=""
+                if [ "$PUBLISH_MODE" = "Automatic" ]; then
+                    case "$RESOLVED_BUILD_NAME" in
+                        refs/heads/master) CDN_DESTINATION="cdn/master" ;;
+                        refs/heads/preview) CDN_DESTINATION="cdn/preview" ;;
+                    esac
+                fi
+
+                # Only validated values are published as variables: PUBLISH_MODE
+                # and CDN_DESTINATION are literals chosen above, and the comment
+                # target has been proved to be digits or empty.
+                echo "##vso[task.setvariable variable=PublishMode;isOutput=true]$PUBLISH_MODE"
+                echo "##vso[task.setvariable variable=CdnDestination;isOutput=true]$CDN_DESTINATION"
+                echo "##vso[task.setvariable variable=SafeCommentTargetId;isOutput=true]$PULL_REQUEST_ID"
+
+                printf '%s publish of %s from definition %s run %s\n' \
+                    "$PUBLISH_MODE" "$(sanitize "$RESOLVED_BUILD_NAME")" "$SOURCE_DEFINITION_ID" "$RESOLVED_RUN_ID"
+            name: ValidatePublishRequest
+            displayName: "Validate publish request"
+            env:
+                BUILD_REASON: $(Build.Reason)
+                EXPLICIT_SOURCE_RUN_ID: ${{ parameters.sourceRunId }}
+                REQUESTED_BUILD_NAME: ${{ parameters.buildName }}
+                RESOLVED_BUILD_NAME: $(BuildName)
+                RESOLVED_RUN_ID: $(SourceRunId)
+                RESOURCE_RUN_ID: $(resources.pipeline.ciMonorepo.runID)
+                RESOURCE_SOURCE_BRANCH: $(resources.pipeline.ciMonorepo.sourceBranch)
+                RESOURCE_PIPELINE_ID: $(resources.pipeline.ciMonorepo.pipelineID)
+                SOURCE_DEFINITION_ID: $(SourceDefinitionId)
+                PULL_REQUEST_ID: ${{ parameters.pullRequestId }}
+                DEPLOY_TO_CDN: ${{ parameters.deployToCdn }}
+                TRUSTED_RESOURCE_REFS: "refs/heads/master refs/heads/preview"
+                PRODUCTION_REFS: "refs/heads/master refs/heads/preview"
+
+    # ========================================================================
+    # SNAPSHOT + FILE SIZES
+    # ========================================================================
+    - template: templates/publish-uploads-job.yml
+      parameters:
+          jobName: PublishSnapshot
+          displayName: "Publish snapshot (trusted)"
+          dependsOn:
+              - Gate
+          condition: succeeded()
+          requireTrustedSource: true
+          variables:
+              - group: BabylonJS-Deployment
+              # The comment target is the number the Gate proved to be digits,
+              # not the raw queue-time parameter. Passing it as a runtime macro
+              # also keeps a queued string out of the compiled YAML.
+              - name: SafeCommentTargetId
+                value: $[ dependencies.Gate.outputs['ValidatePublishRequest.SafeCommentTargetId'] ]
+          sourceDefinitionId: "$(SourceDefinitionId)"
+          sourceRunId: "$(SourceRunId)"
+          commentTargetId: "$(SafeCommentTargetId)"
+          snapshotChecks:
+              - name: SNAPSHOTEXISTS
+                path: "$(BuildName)"
+          # Never clear the protected snapshots: master and preview are
+          # cumulative and are only ever added to. An automatic publish is the
+          # only kind that can reach them, so the clear belongs to the manual
+          # republish path alone.
+          ${{ if ne(parameters.sourceRunId, '') }}:
+              deletes:
+                  - path: "$(BuildName)"
+                    displayName: "Clear snapshot"
+                    condition: eq(variables['SNAPSHOTEXISTS'], 'true')
+          uploads:
+              - artifact: buildSnapshot
+                destination: "$(BuildName)"
+                deleteStale: false
+                extraFields: "saveZip=true"
+                displayName: "Upload snapshot"
+              - artifact: fileSizeReport
+                destination: "$(BuildName)"
+                deleteStale: false
+                extraFields: ""
+                displayName: "Upload file size results"
+          ${{ if ne(parameters.pullRequestId, '') }}:
+              comments:
+                  - displayName: "Writing GitHub comment"
+                    condition: succeeded()
+                    body: |
+                        Snapshot stored with reference name:
+                        $(BuildName)
+
+                        Test environment:
+                        $(SNAPSHOT_CDN_URL)/$(BuildName)/index.html
+
+                        To test a playground add it to the URL, for example:
+
+                        $(SNAPSHOT_CDN_URL)/$(BuildName)/index.html#WGZLGJ#4600
+
+                        Links to test your changes to core in the published versions of the Babylon tools (does not contain changes you made to the tools themselves):
+
+                        https://playground.babylonjs.com/?snapshot=$(BuildName)
+                        https://sandbox.babylonjs.com/?snapshot=$(BuildName)
+                        https://gui.babylonjs.com/?snapshot=$(BuildName)
+                        https://nme.babylonjs.com/?snapshot=$(BuildName)
+
+                        To test the snapshot in the playground with a playground ID add it after the snapshot query string:
+
+                        https://playground.babylonjs.com/?snapshot=$(BuildName)#BCU1XR#0
+                  - displayName: "Writing SFE GitHub comment"
+                    condition: succeeded()
+                    body: |
+                        Smart Filters Editor is available to test at:
+                        https://sfe.babylonjs.com/?snapshot=$(BuildName)
+
+    # ========================================================================
+    # TEST REPORTS + REVIEW COMMENTS
+    # ========================================================================
+    - template: templates/publish-uploads-job.yml
+      parameters:
+          jobName: PublishTestReports
+          displayName: "Publish test reports (trusted)"
+          dependsOn:
+              - Gate
+              - PublishSnapshot
+          # Reports are still worth publishing when the source run was red, so
+          # a failed PublishSnapshot must not block this job. A failed Gate
+          # must, though: a bare `succeededOrFailed()` evaluates true even when
+          # a dependency failed or was skipped, which would let a rejected
+          # publish request through to a credentialed job.
+          condition: and(succeeded('Gate'), not(canceled()))
+          timeoutInMinutes: 30
+          requireTrustedSource: true
+          variables:
+              - group: BabylonJS-Deployment
+              - name: SafeCommentTargetId
+                value: $[ dependencies.Gate.outputs['ValidatePublishRequest.SafeCommentTargetId'] ]
+          sourceDefinitionId: "$(SourceDefinitionId)"
+          sourceRunId: "$(SourceRunId)"
+          commentTargetId: "$(SafeCommentTargetId)"
+          uploads:
+              - artifact: interactionReport
+                destination: "$(BuildName)/testResults/interactionplaywright"
+                deleteStale: true
+                extraFields: ""
+                displayName: "Upload interaction test results"
+          ${{ if ne(parameters.pullRequestId, '') }}:
+              fileComments:
+                  - displayName: "Post reviewer notes"
+                    artifact: prAdviceComment
+                    file: comment.md
+                    condition: succeededOrFailed()
+                  - displayName: "Post memory leak results (CI)"
+                    artifact: memleakCommentCI
+                    file: comment.md
+                    condition: succeededOrFailed()
+                  - displayName: "Post memory leak results (packages)"
+                    artifact: memleakCommentPackages
+                    file: comment.md
+                    condition: succeededOrFailed()
+              comments:
+                  - displayName: "Interaction test report comment"
+                    condition: succeededOrFailed()
+                    body: |
+                        Interaction tests
+
+                        $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/interactionplaywright/index.html
+
+    # ========================================================================
+    # PRODUCTION CDN
+    #
+    # Copies the snapshot that was just published onto the branch's CDN path.
+    #
+    # The job is only compiled for a run that supplied no `sourceRunId`, so a
+    # manual republish cannot reach it at all. It then depends on the Gate,
+    # runs only when the Gate resolved a CDN destination from its literal
+    # allow-list, and re-asserts on its own agent that a genuine resource
+    # trigger from a trusted upstream ref started the run. A hand-picked source
+    # run therefore cannot reach production through any of the three.
+    # ========================================================================
+    - ${{ if and(parameters.deployToCdn, eq(parameters.sourceRunId, '')) }}:
+          - template: templates/publish-uploads-job.yml
+            parameters:
+                jobName: DeployCdn
+                displayName: "Deploy to CDN (trusted)"
+                dependsOn:
+                    - Gate
+                    - PublishSnapshot
+                condition: and(succeeded(), ne(dependencies.Gate.outputs['ValidatePublishRequest.CdnDestination'], ''))
+                requireTrustedSource: true
+                requireTrustedResourceRun: true
+                resourceSourceBranch: "$(resources.pipeline.ciMonorepo.sourceBranch)"
+                resourcePipelineId: "$(resources.pipeline.ciMonorepo.pipelineID)"
+                explicitSourceRunId: "${{ parameters.sourceRunId }}"
+                allowedResourceRefs:
+                    - refs/heads/master
+                    - refs/heads/preview
+                variables:
+                    - group: BabylonJS-Deployment
+                    # Chosen by the Gate from `cdn/master` / `cdn/preview`, and
+                    # only for an automatic publish. It is never a parameter and
+                    # never read from an artifact.
+                    - name: CdnDestination
+                      value: $[ dependencies.Gate.outputs['ValidatePublishRequest.CdnDestination'] ]
+                sourceDefinitionId: "$(SourceDefinitionId)"
+                sourceRunId: "$(SourceRunId)"
+                uploads:
+                    - artifact: buildSnapshot
+                      destination: "$(CdnDestination)"
+                      deleteStale: false
+                      extraFields: ""
+                      displayName: "Update CDN"
+                    - artifact: fileSizeReport
+                      destination: "$(CdnDestination)"
+                      deleteStale: false
+                      extraFields: ""
+                      displayName: "Update CDN file sizes"
+                purges:
+                    - endpoint: "$(CDN_ENDPOINT_CDN)"
+                      profile: "$(CDN_PROFILE_CDN)"
+                      displayName: "Purge CDN"
+                    - endpoint: "$(CDN_ENDPOINT_PREVIEW_CDN)"
+                      profile: "$(CDN_PROFILE_CDN)"
+                      displayName: "Purge preview CDN"

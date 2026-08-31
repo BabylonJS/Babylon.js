@@ -30,6 +30,9 @@ steps:
       clean: ${{ parameters.clean }}
       fetchDepth: ${{ parameters.fetchDepth }}
       fetchTags: ${{ parameters.fetchTags }}
+      # Never leave the pipeline OAuth token in .git/config: these jobs run
+      # PR-controlled build and test code, which could otherwise read it.
+      persistCredentials: false
 
     - bash: |
           set -euo pipefail

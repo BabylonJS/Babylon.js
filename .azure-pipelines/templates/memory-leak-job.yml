@@ -15,6 +15,12 @@
 # =============================================================================
 
 parameters:
+    # Agent pool for this job. An `extends` template may not declare a
+    # pipeline-level `pool:`, so every job names its own.
+    - name: pool
+      type: object
+      default:
+          vmImage: ubuntu-latest
     - name: jobName
       type: string
     - name: displayName
@@ -27,12 +33,17 @@ parameters:
     # detected a leak. Used to keep the steady-state PR noise at a single
     # comment (the first-class "ci" suite) while still surfacing a packages
     # suite regression the moment one appears.
+    # Pipeline artifact that carries this suite's PR comment body to the
+    # trusted publish job. Must be unique within the pipeline run.
+    - name: commentArtifact
+      type: string
     - name: alwaysComment
       type: boolean
       default: true
 
 jobs:
     - job: ${{ parameters.jobName }}
+      pool: ${{ parameters.pool }}
       displayName: ${{ parameters.displayName }}
       dependsOn:
           - Build
@@ -43,6 +54,7 @@ jobs:
           - checkout: self
             clean: true
             fetchTags: false
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -57,43 +69,52 @@ jobs:
             displayName: "npm ci"
             retryCountOnTaskFailure: 1
 
+          # Serve the Build job's snapshot from this agent. It used to be
+          # fetched from the public CDN, which required the pull request
+          # pipeline to upload it with the deployment token first.
+          - template: serve-staged-artifacts.yml
+            parameters:
+                port: "$(SnapshotServePort)"
+                displayName: "Serve Babylon snapshot"
+                artifacts:
+                    - artifact: "buildSnapshot"
+                      path: "."
+
           - script: npm run ${{ parameters.npmScript }} -- --no-fail-fast
             displayName: "Run memory leak tests (${{ parameters.suiteLabel }})"
             continueOnError: true
             env:
-                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                CDN_BASE_URL: "http://127.0.0.1:$(SnapshotServePort)"
                 MEMLEAK_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/memleak-comment.md"
 
+          # Credential-free: the comment body is published as a pipeline
+          # artifact and posted later by the trusted cd-ci-snapshots pipeline.
+          # This job runs pull-request-controlled test code, so it must not be
+          # given the GitHub service connection.
           - bash: |
+                set -uo pipefail
                 FILE="$(Build.ArtifactStagingDirectory)/memleak-comment.md"
+                OUT="$(Build.ArtifactStagingDirectory)/memleak-comment-artifact"
+                mkdir -p "$OUT"
                 ALWAYS=$(echo "${{ parameters.alwaysComment }}" | tr '[:upper:]' '[:lower:]')
                 if [ ! -f "$FILE" ]; then
                     echo "No memory leak comment file found"
-                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]false"
                 elif [ "$ALWAYS" != "true" ] && grep -q "no leaks detected" "$FILE"; then
                     # The runner only emits the "no leaks detected" all-clear when
                     # it ran scenarios, found no leaks, and hit no error. Any other
                     # state (leaks, or a runner error/empty results) lacks that line
                     # and still comments, so secondary-suite failures stay visible.
                     echo "Suite is clean and alwaysComment=false; skipping PR comment to reduce noise"
-                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]false"
                 else
-                    COMMENT=$(cat "$FILE")
-                    COMMENT="${COMMENT//'%'/'%25'}"
-                    COMMENT="${COMMENT//$'\n'/'%0A'}"
-                    COMMENT="${COMMENT//$'\r'/'%0D'}"
-                    echo "##vso[task.setvariable variable=MEMLEAK_COMMENT]$COMMENT"
-                    echo "##vso[task.setvariable variable=HAS_MEMLEAK_COMMENT]true"
+                    cp "$FILE" "$OUT/comment.md"
                 fi
-            displayName: "Read memory leak comment"
+            displayName: "Stage memory leak comment"
             condition: succeededOrFailed()
 
-          - task: GitHubComment@0
-            displayName: "Post memory leak results"
-            condition: and(succeededOrFailed(), eq(variables['HAS_MEMLEAK_COMMENT'], 'true'))
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish memory leak comment"
+            condition: succeededOrFailed()
             continueOnError: true
             inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
-                    $(MEMLEAK_COMMENT)
+                targetPath: "$(Build.ArtifactStagingDirectory)/memleak-comment-artifact"
+                artifact: "${{ parameters.commentArtifact }}"
