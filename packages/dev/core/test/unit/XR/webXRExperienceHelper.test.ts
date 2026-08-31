@@ -106,11 +106,13 @@ describe("WebXRExperienceHelper", () => {
             expect(helper.state).toBe(WebXRState.NOT_IN_XR);
         });
 
-        it("ends the session when the projection-layer render state is rejected", async () => {
+        it("ends the session when the projection-layer render state update throws", async () => {
             const renderStateError = new Error("projection layer rejected");
             vi.spyOn(helper.featuresManager, "getEnabledFeature").mockReturnValue({ attached: true } as any);
             const end = vi.fn().mockResolvedValue(undefined);
-            const updateRenderState = vi.fn().mockRejectedValue(renderStateError);
+            const updateRenderState = vi.fn().mockImplementation(() => {
+                throw renderStateError;
+            });
             const requestSession = vi.fn().mockResolvedValue({
                 addEventListener: vi.fn(),
                 end,

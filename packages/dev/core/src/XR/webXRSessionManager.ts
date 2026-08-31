@@ -36,7 +36,6 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     private _sessionMode: XRSessionMode;
     private _onEngineDisposedObserver: Nullable<Observer<AbstractEngine>>;
     private _sessionCleanup: Nullable<() => void> = null;
-    private _renderStateUpdatePromise: Nullable<Promise<void>> = null;
 
     /**
      * The base reference space from which the session started. good if you want to reset your
@@ -370,7 +369,6 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                         this._baseLayerRTTProvider = null;
                         this._baseLayerWrapper = null;
                         this._graphicsBinding = null;
-                        this._renderStateUpdatePromise = null;
                     }
                 }
             }
@@ -533,15 +531,8 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             this._setBaseLayerWrapper(this.isNative ? new NativeXRLayerWrapper(state.baseLayer) : new WebXRWebGLLayerWrapper(state.baseLayer));
         }
 
-        this._renderStateUpdatePromise = this.session.updateRenderState(state);
-    }
-
-    /**
-     * Waits for the latest render-state update started through updateRenderState.
-     * @internal
-     */
-    public async _awaitLastRenderStateUpdateAsync(): Promise<void> {
-        await this._renderStateUpdatePromise;
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this.session.updateRenderState(state);
     }
 
     /**

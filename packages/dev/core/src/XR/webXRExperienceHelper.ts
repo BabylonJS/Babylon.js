@@ -216,6 +216,7 @@ export class WebXRExperienceHelper implements IDisposable {
                 this._setState(WebXRState.NOT_IN_XR);
             },
             undefined,
+            // Restore the scene before feature observers in case one of them throws during teardown.
             true,
             undefined,
             true
@@ -223,9 +224,6 @@ export class WebXRExperienceHelper implements IDisposable {
         // make sure that the session mode is supported
         try {
             await this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
-            if (this._scene.getEngine().isWebGPU) {
-                await this.sessionManager._awaitLastRenderStateUpdateAsync();
-            }
             await this.sessionManager.setReferenceSpaceTypeAsync(referenceSpaceType);
 
             const xrRenderState: XRRenderStateInit = {
@@ -242,9 +240,6 @@ export class WebXRExperienceHelper implements IDisposable {
             }
 
             this.sessionManager.updateRenderState(xrRenderState);
-            if (this._scene.getEngine().isWebGPU) {
-                await this.sessionManager._awaitLastRenderStateUpdateAsync();
-            }
             // run the render loop
             this.sessionManager.runXRRenderLoop();
             // Switch the scene to the XR camera.
