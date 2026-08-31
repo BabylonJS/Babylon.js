@@ -72,13 +72,20 @@ async function CreateSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement,
     scene.onDisposeObservable.addOnce(() => statusPanel.root.remove());
 
     const capabilitySupported = WebXRSessionManager.IsWebGPUXRSupported;
+    const immersiveVRSupported = await WebXRSessionManager.IsSessionSupportedAsync("immersive-vr");
     let state = WebXRState.NOT_IN_XR;
+    const diagnostics = [
+        `Secure context: ${window.isSecureContext ? "yes" : "no"}`,
+        `WebXR API: ${navigator.xr ? "available" : "unavailable"}`,
+        `Immersive VR session: ${immersiveVRSupported ? "supported" : "unsupported"}`,
+    ];
     const renderStatus = () => {
         statusPanel.text.textContent = [
             "WebXR over WebGPU",
             `Engine: ${engine.name}`,
             `XRGPUBinding projection path: ${capabilitySupported ? "available" : "unavailable"}`,
             `State: ${GetStateName(state)}`,
+            ...diagnostics,
             "",
             "Use Babylon.js's standard XR button in the lower-right corner.",
             "Headset checklist: stereo geometry, controllers, pointer selection, teleportation, exit, and re-entry.",
@@ -90,13 +97,29 @@ async function CreateSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement,
         floorMeshes: [ground],
     });
     if (!xr.baseExperience) {
-        statusPanel.text.textContent += "\n\nWebXR is not available in this browser.";
+        diagnostics.push("Default experience: failed before base experience initialization");
+        renderStatus();
         return scene;
     }
 
+    diagnostics.push(
+        `Default input: ${xr.input ? "ready" : "missing"}`,
+        `Pointer selection: ${xr.pointerSelection ? "ready" : "missing"}`,
+        `Teleportation: ${xr.teleportation ? "ready" : "missing"}`,
+        `Near interaction: ${xr.nearInteraction ? "ready" : "missing"}`,
+        `Render target: ${xr.renderTarget ? "ready" : "missing"}`
+    );
+
     if (capabilitySupported) {
-        xr.baseExperience.featuresManager.enableFeature(WebXRLayers.Name, "latest", {}, true, true);
+        try {
+            xr.baseExperience.featuresManager.enableFeature(WebXRLayers.Name, "latest", {}, true, true);
+            diagnostics.push("WebXR Layers: enabled");
+        } catch (error) {
+            diagnostics.push(`WebXR Layers: failed (${error instanceof Error ? error.message : String(error)})`);
+        }
     }
+    diagnostics.push(`Default XR button: ${document.querySelector(".babylonVRicon") ? "present" : "missing"}`);
+    renderStatus();
     xr.baseExperience.onStateChangedObservable.add((newState) => {
         state = newState;
         renderStatus();
