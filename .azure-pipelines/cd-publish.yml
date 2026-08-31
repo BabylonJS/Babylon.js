@@ -46,8 +46,23 @@ pool:
     vmImage: ubuntu-latest
 
 jobs:
-    - job: PublishToNpm
-      displayName: "Publish to npm"
+    # ========================================================================
+    # BUILD + PACKAGE (no registry, deployment, or release credentials)
+    #
+    # This job runs `npm ci`, `npm install`, the unit tests and the full build,
+    # so it executes every dependency lifecycle script in the tree. It is
+    # therefore treated as untrusted execution and holds no npm token, no
+    # deployment token and no GitHub service connection. Its only output is a
+    # set of immutable pipeline artifacts.
+    #
+    # `GitHubPAT` is still required here for changelog generation. It is mapped
+    # into that single step only, and scripts/versionUtils.js +
+    # scripts/generateChangelog.js strip it from the environment of every child
+    # process they spawn.
+    # ========================================================================
+    - job: BuildRelease
+      displayName: "Build and package release"
+      timeoutInMinutes: 120
       steps:
           - checkout: self
             clean: true
@@ -110,13 +125,168 @@ jobs:
           - bash: npm run build:es6
             displayName: "npm build es6"
 
+          # Pack instead of publish. `--ignore-scripts` matches the flag the
+          # publish step already used, so package contents are unchanged; the
+          # tarballs are simply produced here, where no registry token exists,
+          # and uploaded from a separate job that never runs package code.
           - bash: |
                 set -euo pipefail
 
-                # The registry token lives in an ephemeral npm user config outside
-                # the sources directory instead of ./.npmrc, so it is never picked
-                # up by unrelated npm invocations or readable by lifecycle scripts
-                # running from the working directory.
+                OUT="$(Build.ArtifactStagingDirectory)/npm-tarballs"
+                mkdir -p "$OUT"
+
+                npm pack -ws --ignore-scripts --pack-destination "$OUT" --json > "$OUT/pack.json"
+
+                # Preserve workspace publish order so interdependent packages are
+                # uploaded in the same sequence `npm publish -ws` would have used.
+                node -e '
+                    const fs = require("fs");
+                    const out = process.argv[1];
+                    const packed = JSON.parse(fs.readFileSync(out + "/pack.json", "utf8"));
+                    const names = packed.map((entry) => entry.filename);
+                    for (const name of names) {
+                        if (!fs.existsSync(out + "/" + name)) {
+                            throw new Error("Packed tarball missing: " + name);
+                        }
+                    }
+                    fs.writeFileSync(out + "/order.txt", names.join("\n") + "\n");
+                    console.log("Packed " + names.length + " workspace tarball(s)");
+                ' "$OUT"
+            displayName: "Pack npm tarballs"
+
+          - bash: |
+                set -euo pipefail
+
+                pv=$(jq -r '.version' ./packages/public/umd/babylonjs/package.json)
+                releaseCommit=$(git rev-parse "${pv}^{commit}")
+
+                META="$(Build.ArtifactStagingDirectory)/release-meta"
+                mkdir -p "$META"
+                printf '%s\n' "$pv" > "$META/version.txt"
+                printf '%s\n' "$releaseCommit" > "$META/commit.txt"
+                cp .build/release-notes.md "$META/release-notes.md" 2>/dev/null || : > "$META/release-notes.md"
+
+                echo "##vso[task.setvariable variable=PackageVersion;isOutput=true]${pv}"
+                echo "##vso[task.setvariable variable=ReleaseCommit;isOutput=true]${releaseCommit}"
+            name: ReleaseMeta
+            displayName: "Get release version and commit"
+
+          # A bundle is a single immutable file containing exactly the commits
+          # and tags this job produced. The push job reconstructs the branch
+          # from it, so it never needs a checkout of the repository.
+          - bash: |
+                set -euo pipefail
+
+                BUNDLE_DIR="$(Build.ArtifactStagingDirectory)/git-bundle"
+                mkdir -p "$BUNDLE_DIR"
+
+                git bundle create "$BUNDLE_DIR/release.bundle" \
+                  "$(Build.SourceBranchName)" --tags
+                git rev-parse HEAD > "$BUNDLE_DIR/head.txt"
+            displayName: "Bundle release commits"
+
+          - bash: |
+                set -euo pipefail
+
+                ASSETS="$(Build.ArtifactStagingDirectory)/release-assets"
+                mkdir -p "$ASSETS"
+
+                npm run prepare-snapshot
+                zip -q -r "$ASSETS/cdnSnapshot.zip" .snapshot
+
+                cd .snapshot
+                zip -q -r "$ASSETS/snapshot.zip" .
+                cd ..
+            displayName: "prepare snapshot"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+
+          - task: Npm@1
+            displayName: "run build -w @tools/tests"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+            inputs:
+                command: custom
+                customCommand: "run build -w @tools/tests"
+
+          - task: Npm@1
+            displayName: "npm generate modules size"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+            inputs:
+                command: custom
+                customCommand: "run generate-file-size-report -w @tools/tests"
+
+          - bash: |
+                set -euo pipefail
+
+                ASSETS="$(Build.ArtifactStagingDirectory)/release-assets"
+                mkdir -p "$ASSETS"
+
+                cd packages/tools/tests/dist
+                zip -q "$ASSETS/fileSize.zip" fileSizes.json
+            displayName: "Package modules size report"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish npm tarballs"
+            inputs:
+                targetPath: "$(Build.ArtifactStagingDirectory)/npm-tarballs"
+                artifact: npmTarballs
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish git bundle"
+            inputs:
+                targetPath: "$(Build.ArtifactStagingDirectory)/git-bundle"
+                artifact: gitBundle
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish release metadata"
+            inputs:
+                targetPath: "$(Build.ArtifactStagingDirectory)/release-meta"
+                artifact: releaseMeta
+
+          - bash: mkdir -p "$(Build.ArtifactStagingDirectory)/release-assets"
+            displayName: "Ensure release assets directory"
+            condition: succeededOrFailed()
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish release assets"
+            inputs:
+                targetPath: "$(Build.ArtifactStagingDirectory)/release-assets"
+                artifact: releaseAssets
+
+    # ========================================================================
+    # PUBLISH TO NPM (registry token only, no repository checkout)
+    #
+    # Runs on a fresh agent with `checkout: none`, so none of the code that was
+    # built above is present and no lifecycle script can execute alongside the
+    # registry token. Only the immutable tarballs produced by BuildRelease are
+    # downloaded, and they are uploaded with `--ignore-scripts`.
+    # ========================================================================
+    - job: PublishNpm
+      displayName: "Publish to npm"
+      dependsOn: BuildRelease
+      condition: succeeded()
+      steps:
+          - checkout: none
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - task: DownloadPipelineArtifact@2
+            displayName: "Download npm tarballs"
+            inputs:
+                artifact: npmTarballs
+                path: "$(Pipeline.Workspace)/npm-tarballs"
+
+          - bash: |
+                set -euo pipefail
+
+                # The registry token lives in an ephemeral npm user config in the
+                # agent temp directory instead of ./.npmrc, so it is never picked
+                # up by unrelated npm invocations or readable from a working
+                # directory. `ignore-scripts` is set in the config itself so it
+                # applies even to npm invocations that omit the flag.
                 NPM_AUTH_CONFIG="$(Agent.TempDirectory)/.npmrc-publish"
                 install -m 600 /dev/null "$NPM_AUTH_CONFIG"
                 {
@@ -129,15 +299,30 @@ jobs:
             env:
                 NPM_TOKEN: $(NPM_TOKEN)
 
-          - bash: npm publish -ws --access=public --ignore-scripts
-            displayName: "publish latest stable (master branch)"
-            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
-            env:
-                NPM_CONFIG_USERCONFIG: $(NpmAuthConfig)
+          - bash: |
+                set -euo pipefail
 
-          - bash: npm publish -ws --tag preview --ignore-scripts
-            displayName: "publish preview (preview branch)"
-            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'preview'))
+                DIR="$(Pipeline.Workspace)/npm-tarballs"
+                if [ "$(Build.SourceBranchName)" = "master" ]; then
+                    TAG_ARGS=(--access=public)
+                else
+                    TAG_ARGS=(--access=public --tag preview)
+                fi
+
+                while IFS= read -r TARBALL; do
+                    [ -n "$TARBALL" ] || continue
+                    echo "Publishing $TARBALL"
+                    npm publish "$DIR/$TARBALL" "${TAG_ARGS[@]}" --ignore-scripts
+                done < "$DIR/order.txt"
+            displayName: "Publish workspace tarballs"
+            condition: >-
+                and(
+                  succeeded(),
+                  or(
+                    eq(variables['Build.SourceBranchName'], 'master'),
+                    eq(variables['Build.SourceBranchName'], 'preview')
+                  )
+                )
             env:
                 NPM_CONFIG_USERCONFIG: $(NpmAuthConfig)
 
@@ -145,40 +330,77 @@ jobs:
             displayName: "remove npm auth config"
             condition: always()
 
+    # ========================================================================
+    # PUSH + RELEASE (git PAT, GitHub connection and deployment token)
+    #
+    # Also `checkout: none`. The branch is reconstructed from the immutable
+    # bundle produced by BuildRelease, so no package.json, no npm hook and no
+    # git hook from the built tree is ever present while these credentials are
+    # in the environment.
+    # ========================================================================
+    - job: PublishRelease
+      displayName: "Push tags and publish release"
+      dependsOn:
+          - BuildRelease
+          - PublishNpm
+      condition: succeeded()
+      variables:
+          PackageVersion: $[ dependencies.BuildRelease.outputs['ReleaseMeta.PackageVersion'] ]
+          ReleaseCommit: $[ dependencies.BuildRelease.outputs['ReleaseMeta.ReleaseCommit'] ]
+      steps:
+          - checkout: none
+
+          - task: DownloadPipelineArtifact@2
+            displayName: "Download git bundle"
+            inputs:
+                artifact: gitBundle
+                path: "$(Pipeline.Workspace)/git-bundle"
+
+          - task: DownloadPipelineArtifact@2
+            displayName: "Download release metadata"
+            inputs:
+                artifact: releaseMeta
+                path: "$(Pipeline.Workspace)/release-meta"
+
+          - task: DownloadPipelineArtifact@2
+            displayName: "Download release assets"
+            inputs:
+                artifact: releaseAssets
+                path: "$(Pipeline.Workspace)/release-assets"
+
           - bash: |
                 set -euo pipefail
 
-                # The PAT is only reachable inside this step: it is passed through
-                # the environment, consumed by an inline credential helper, and the
-                # helper is removed from .git/config before the step exits.
+                # `core.hooksPath=/dev/null` for every credentialed git command:
+                # even though this agent has no repository checkout, it removes
+                # any possibility of a hook running while the PAT is reachable.
+                GIT="git -c core.hooksPath=/dev/null"
+
+                WORK="$(Agent.TempDirectory)/release-repo"
+                rm -rf "$WORK"
+                $GIT clone --bare "$(Pipeline.Workspace)/git-bundle/release.bundle" "$WORK"
+                cd "$WORK"
+
+                $GIT config user.email "$(BOT_EMAIL)"
+                $GIT config user.name "Babylon.js Platform"
+
                 cleanup() {
-                    git config --local --unset-all credential.helper || true
+                    $GIT config --local --unset-all credential.helper || true
+                    cd /
+                    rm -rf "$WORK"
                 }
                 trap cleanup EXIT
 
-                git config --local credential.helper '!f() { printf "username=x-access-token\npassword=%s\n" "${GITHUBPAT}"; }; f'
+                # The PAT is only reachable inside this step: it is passed through
+                # the environment, consumed by an inline credential helper, and the
+                # helper is removed before the step exits.
+                $GIT config --local credential.helper '!f() { printf "username=x-access-token\npassword=%s\n" "${GITHUBPAT}"; }; f'
 
-                git fetch origin
-                git merge "origin/$(Build.SourceBranchName)"
-                git push origin "$(Build.SourceBranchName)" --tags
-            displayName: "merge and push to git"
+                $GIT remote add origin https://github.com/BabylonJS/Babylon.js.git
+                $GIT push origin "$(Build.SourceBranchName)" --tags
+            displayName: "push branch and tags"
             env:
                 GITHUBPAT: $(GitHubPAT)
-
-          - bash: |
-                set -euo pipefail
-                pv=$(jq -r '.version' ./packages/public/umd/babylonjs/package.json)
-                releaseCommit=$(git rev-parse "${pv}^{commit}")
-                echo "##vso[task.setvariable variable=PackageVersion]${pv}"
-                echo "##vso[task.setvariable variable=ReleaseCommit]${releaseCommit}"
-            displayName: "Get release version and commit"
-
-          - bash: |
-                npm run prepare-snapshot
-
-                zip -r $(Build.ArtifactStagingDirectory)/cdnSnapshot.zip .snapshot
-            displayName: "prepare snapshot"
-            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
 
           - task: GitHubRelease@1
             displayName: "GitHub release (create)"
@@ -191,51 +413,40 @@ jobs:
                 target: "$(ReleaseCommit)"
                 tagSource: userSpecifiedTag
                 tag: "$(PackageVersion)"
-                assets: "$(Build.ArtifactStagingDirectory)/cdnSnapshot.zip"
+                assets: "$(Pipeline.Workspace)/release-assets/cdnSnapshot.zip"
                 isDraft: false
                 isPreRelease: false
                 addChangeLog: false
-                releaseNotesFilePath: ".build/release-notes.md"
+                releaseNotesFilePath: "$(Pipeline.Workspace)/release-meta/release-notes.md"
 
           - script: |
-                cd .snapshot
-                zip -r ../snapshot.zip *
-                cd ..
+                set -euo pipefail
+                curlAuth() { printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - "$@"; }
 
-                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                curlAuth --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/master/v$(PackageVersion)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "saveZip=true" \
-                  -F "zip=@snapshot.zip"
+                  -F "zip=@$(Pipeline.Workspace)/release-assets/snapshot.zip"
             displayName: "Update snapshot"
-
-          - task: Npm@1
-            displayName: "run build -w @tools/tests"
-            inputs:
-                command: custom
-                customCommand: "run build -w @tools/tests"
-
-          - task: Npm@1
-            displayName: "npm generate modules size"
-            inputs:
-                command: custom
-                customCommand: "run generate-file-size-report -w @tools/tests"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+            env:
+                DEPLOY_TOKEN: $(DEPLOY_TOKEN)
 
           - script: |
-                # filesize
-                cd packages/tools/tests/dist
-                zip ../../../../fileSize.zip fileSizes.json
-                cd ../../../..
+                set -euo pipefail
+                curlAuth() { printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - "$@"; }
 
-                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                curlAuth --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/master/v$(PackageVersion)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
-                  -F "zip=@fileSize.zip"
+                  -F "zip=@$(Pipeline.Workspace)/release-assets/fileSize.zip"
             displayName: "Update snapshot modules size"
+            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+            env:
+                DEPLOY_TOKEN: $(DEPLOY_TOKEN)
 
           # DISABLED in classic pipeline:
           # - script: |

@@ -8,6 +8,13 @@
 # This step must not be given any credential beyond the deployment token it
 # actually uses - it runs right after PR-controlled test code, so every extra
 # secret mapped into its environment would be needlessly reachable.
+#
+# TRUSTED PIPELINES ONLY. This template maps the deployment token into a step
+# that runs in the calling job. It must only be used from pipelines that never
+# build pull-request code (`pr: none`), such as cd-tools.yml and
+# ci-browser-testing.yml. Pull-request-triggered pipelines stage their payload
+# with templates/stage-upload.yml and upload it from a separate, trusted
+# `checkout: none` job created by templates/publish-uploads-job.yml.
 # =============================================================================
 
 parameters:
@@ -34,6 +41,7 @@ parameters:
 
 steps:
     - script: |
+          curlAuth() { printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - "$@"; }
           set -euo pipefail
 
           REPORT_DIR="${{ parameters.reportDir }}"
@@ -56,12 +64,13 @@ steps:
           zip -q -r "$REPORT_ARCHIVE" .
           cd "$(Build.SourcesDirectory)"
 
-          curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD)" -X POST \
+          curlAuth --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD)" -X POST \
             -H "Content-Type: multipart/form-data" \
-            -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
             -F "path=${{ parameters.deployPath }}" \
             -F "storageAccount=${{ parameters.storageAccount }}" \
             -F "zip=@$REPORT_ARCHIVE"
       displayName: "${{ parameters.displayName }}"
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
+      env:
+          DEPLOY_TOKEN: $(DEPLOY_TOKEN)

@@ -30,6 +30,21 @@
 #    gated on a trusted branch plus a trusted build reason.
 # =============================================================================
 
+parameters:
+    # BrowserStack is the one credential that pull-request-controlled code must
+    # be able to reach: the Playwright config, the specs, and browserstack-wait.sh
+    # all run as pull-request code, so the credentials cannot be moved into a
+    # `checkout: none` job without deleting cross-browser coverage on PRs.
+    #
+    # Every *other* credential has been removed from those jobs, so a malicious
+    # pull request can now only obtain the BrowserStack account. Set this to
+    # `false` to drop cross-browser coverage from pull-request builds entirely
+    # (scheduled and branch builds keep it). See VARIABLE-GROUPS.md for the
+    # recommended mitigation: a restricted, PR-only BrowserStack sub-account.
+    - name: runBrowserStackOnPullRequests
+      type: boolean
+      default: true
+
 trigger:
     batch: true
     branches:
@@ -73,8 +88,11 @@ variables:
     - group: BabylonJS-CI-Infrastructure
     - group: Browserstack-Opensource
     - group: BabylonJS-Deployment
+    # `readonly` so pull-request code cannot repoint upload destinations by
+    # emitting `##vso[task.setvariable variable=BuildName]...`.
     - name: BuildName
       value: $(Build.SourceBranch)
+      readonly: true
     - name: BROWSERSTACK_BROWSER
       value: "chrome@143:OSX Sonoma"
     - name: system.debug
@@ -120,12 +138,15 @@ jobs:
                 version: "24.x"
 
           - bash: |
-                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "what's new.md" && echo "##vso[task.setvariable variable=WhatsNewChanged]true"
-                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "package.json" && echo "##vso[task.setvariable variable=PackageJsonChanged]true"
-                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q ".build/config.json" && echo "##vso[task.setvariable variable=ConfigJsonChanged]true"
-                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "smartFilter" && echo "##vso[task.setvariable variable=SmartFiltersChanged]true"
+                # Exposed as output variables so the trusted comment job can read
+                # them without ever checking out pull-request code.
+                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "what's new.md" && echo "##vso[task.setvariable variable=WhatsNewChanged;isOutput=true]true"
+                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "package.json" && echo "##vso[task.setvariable variable=PackageJsonChanged;isOutput=true]true"
+                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q ".build/config.json" && echo "##vso[task.setvariable variable=ConfigJsonChanged;isOutput=true]true"
+                git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD) | grep -q "smartFilter" && { echo "##vso[task.setvariable variable=SmartFiltersChanged;isOutput=true]true"; echo "##vso[task.setvariable variable=SmartFiltersChanged]true"; }
 
                 git diff --name-status $(git rev-parse origin/master) $(git rev-parse HEAD)
+            name: GitChanges
             displayName: "Check git changes"
             continueOnError: true
 
@@ -143,60 +164,6 @@ jobs:
             name: ComputeVisTags
             displayName: "Compute affected vis-test tags"
             continueOnError: true
-
-          - template: templates/check-snapshot-exists.yml
-            parameters:
-                snapshotPath: "$(BuildName)"
-
-          - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
-            displayName: "Clear snapshot"
-            condition: and(succeeded(), eq(variables['SNAPSHOTEXISTS'], 'true'), not(eq(variables['Build.SourceBranchName'], 'master')))
-
-          - task: GitHubComment@0
-            displayName: "Tag your PR!"
-            continueOnError: true
-            condition: and(succeeded(), eq(variables['SNAPSHOTEXISTS'], 'false'))
-            inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
-                    Please make sure to label your PR with "bug", "new feature" or "breaking change" label(s).
-                    To prevent this PR from going to the changelog marked it with the "skip changelog" label.
-
-          - task: GitHubComment@0
-            displayName: "What's new comment"
-            continueOnError: true
-            condition: and(succeeded(), eq(variables['WHATSNEWCHANGED'], 'true'))
-            inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
-                    There is no need to update the "what's new.md" file. A changelog will be generated using the PR and its tags.
-
-          - task: GitHubComment@0
-            displayName: "Did package.json changed?"
-            continueOnError: true
-            condition: and(succeeded(), eq(variables['PACKAGEJSONCHANGED'], 'true'))
-            inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
-                    Reviewer - this PR has made changes to one or more package.json files.
-
-          - task: GitHubComment@0
-            displayName: "Did build directory changed"
-            continueOnError: true
-            condition: and(succeeded(), eq(variables['CONFIGJSONCHANGED'], 'true'))
-            inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
-                    Reviewer - this PR has made changes to the build configuration file.
-
-                    *This build will release a new package on npm*
-
-                    If that was unintentional please make sure to revert those changes or close this PR.
 
           - template: templates/cache-steps.yml
             parameters:
@@ -254,61 +221,14 @@ jobs:
             displayName: "Add Smart Filters Editor to snapshot"
             condition: and(succeeded(), eq(variables['SMARTFILTERSCHANGED'], 'true'))
 
-          - script: |
-                cd .snapshot
-                zip -r ../snapshot.zip *
-                cd ..
-
-                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
-                  -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
-                  -F "path=$(BuildName)" \
-                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
-                  -F "saveZip=true" \
-                  -F "zip=@snapshot.zip"
-            displayName: "Upload snapshot"
-
-          - task: GitHubComment@0
-            displayName: "Writing GitHub comment"
-            continueOnError: true
-            condition: and(succeeded(), eq(variables['SNAPSHOTEXISTS'], 'false'))
-            inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
-                    Snapshot stored with reference name:
-                    $(BuildName)
-
-                    Test environment:
-                    $(SNAPSHOT_CDN_URL)/$(BuildName)/index.html
-
-                    To test a playground add it to the URL, for example:
-
-                    $(SNAPSHOT_CDN_URL)/$(BuildName)/index.html#WGZLGJ#4600
-
-                    Links to test your changes to core in the published versions of the Babylon tools (does not contain changes you made to the tools themselves):
-
-                    https://playground.babylonjs.com/?snapshot=$(BuildName)
-                    https://sandbox.babylonjs.com/?snapshot=$(BuildName)
-                    https://gui.babylonjs.com/?snapshot=$(BuildName)
-                    https://nme.babylonjs.com/?snapshot=$(BuildName)
-
-                    To test the snapshot in the playground with a playground ID add it after the snapshot query string:
-
-                    https://playground.babylonjs.com/?snapshot=$(BuildName)#BCU1XR#0
-
-                    *If you made changes to the sandbox or playground in this PR, additional comments will be generated soon containing links to the dev versions of those tools.*
-
-          - task: GitHubComment@0
-            displayName: "Writing SFE GitHub comment"
-            continueOnError: true
-            condition: and(succeeded(), eq(variables['SMARTFILTERSCHANGED'], 'true'))
-            inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
-                    Smart Filters Editor is available to test at:
-                    https://sfe.babylonjs.com/?snapshot=$(BuildName)
+          # Credential-free: the snapshot is staged as a pipeline artifact and
+          # uploaded later by the trusted PublishSnapshot job.
+          - template: templates/stage-upload.yml
+            parameters:
+                sourceDir: ".snapshot"
+                artifact: "buildSnapshot"
+                displayName: "Stage snapshot"
+                condition: succeeded()
 
     # ============================================================================
     # ES6 (libs + visualization)
@@ -348,10 +268,6 @@ jobs:
                 npm run build:assets:smart-filters && npm run build:es6:libs
             displayName: "npm build es6 libs"
 
-          - template: templates/check-snapshot-exists.yml
-            parameters:
-                snapshotPath: "$(BuildName)/testResults/es6visplaywright"
-
           - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "ES6 visualization tests (BrowserStack)"
             env:
@@ -360,21 +276,19 @@ jobs:
                 BSTACK_BUILD_NAME: "ES6 Visualization Tests"
                 BROWSERSTACK_LOCAL: "true"
                 BROWSERSTACK_LOCAL_IDENTIFIER: "es6vis-$(Build.BuildId)-$(System.JobAttempt)"
-                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
-                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                ${{ if or(parameters.runBrowserStackOnPullRequests, ne(variables['Build.Reason'], 'PullRequest')) }}:
+                    BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                    BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
 
-          - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/es6visplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
-            displayName: "Delete ES6 visualization test results"
-            continueOnError: true
-            condition: eq(variables['SNAPSHOTEXISTS'], 'true')
-
-          - template: templates/upload-test-results.yml
+          # Credential-free: the report is staged as a pipeline artifact and
+          # uploaded later by the trusted PublishTestReports job.
+          - template: templates/stage-upload.yml
             parameters:
-                reportDir: "packages/tools/tests/playwright-report"
-                fallbackReportDir: "playwright-report"
-                deployPath: "$(BuildName)/testResults/es6visplaywright"
-                displayName: "Upload ES6 visualization test results"
+                sourceDir: "packages/tools/tests/playwright-report"
+                fallbackDir: "playwright-report"
+                artifact: "es6visReport"
+                validatePublicReport: true
+                displayName: "Stage ES6 visualization test results"
                 continueOnError: true
 
           - bash: |
@@ -450,18 +364,21 @@ jobs:
                 command: custom
                 customCommand: "run generate-file-size-report -w @tools/tests"
 
-          - script: |
-                cd packages/tools/tests/dist
-                zip ../../../../snapshot.zip fileSizes.json
-                cd ../../../..
+          # Credential-free: only fileSizes.json is staged, and the trusted
+          # PublishSnapshot job uploads it to the hard-coded snapshot path.
+          - bash: |
+                set -euo pipefail
+                OUT="$(Build.ArtifactStagingDirectory)/file-size-report"
+                mkdir -p "$OUT"
+                cp packages/tools/tests/dist/fileSizes.json "$OUT/fileSizes.json"
+            displayName: "Collect file size results"
 
-                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
-                  -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
-                  -F "path=$(BuildName)" \
-                  -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
-                  -F "zip=@snapshot.zip"
-            displayName: "Upload file size results"
+          - template: templates/stage-upload.yml
+            parameters:
+                sourceDir: "$(Build.ArtifactStagingDirectory)/file-size-report"
+                artifact: "fileSizeReport"
+                displayName: "Stage file size results"
+                condition: succeeded()
 
     # ============================================================================
     # FORMAT, LINT, AND MORE
@@ -637,10 +554,6 @@ jobs:
             inputs:
                 version: "24.x"
 
-          - template: templates/check-snapshot-exists.yml
-            parameters:
-                snapshotPath: "$(BuildName)/testResults/interactionplaywright"
-
           - template: templates/cache-steps.yml
             parameters:
                 playwright: true
@@ -656,34 +569,21 @@ jobs:
             retryCountOnTaskFailure: 1
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
-                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
-                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                ${{ if or(parameters.runBrowserStackOnPullRequests, ne(variables['Build.Reason'], 'PullRequest')) }}:
+                    BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                    BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 CI: "true"
 
-          - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/interactionplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
-            displayName: "Delete test results"
-            continueOnError: true
-            condition: eq(variables['SNAPSHOTEXISTS'], 'true')
-
-          - template: templates/upload-test-results.yml
+          # Credential-free: the report is staged as a pipeline artifact and
+          # uploaded later by the trusted PublishTestReports job.
+          - template: templates/stage-upload.yml
             parameters:
-                reportDir: "packages/tools/tests/playwright-report"
-                fallbackReportDir: "playwright-report"
-                deployPath: "$(BuildName)/testResults/interactionplaywright"
+                sourceDir: "packages/tools/tests/playwright-report"
+                fallbackDir: "playwright-report"
+                artifact: "interactionReport"
+                validatePublicReport: true
+                displayName: "Stage interaction test results"
                 continueOnError: true
-
-          - task: GitHubComment@0
-            displayName: "Writing GitHub comment"
-            continueOnError: true
-            condition: eq(variables['SNAPSHOTEXISTS'], 'false')
-            inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
-                    Interaction tests
-
-                    $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/interactionplaywright/index.html
 
           - task: PublishTestResults@2
             displayName: "Publish interaction test results"
@@ -806,10 +706,6 @@ jobs:
             inputs:
                 version: "24.x"
 
-          - template: templates/check-snapshot-exists.yml
-            parameters:
-                snapshotPath: "$(BuildName)/testResults/webgl2playwright"
-
           - template: templates/cache-steps.yml
 
           - script: |
@@ -834,33 +730,21 @@ jobs:
                 BSTACK_TEST_TYPE: "webgl2"
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGL2"
                 TIMEOUT: "27500"
-                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
-                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                ${{ if or(parameters.runBrowserStackOnPullRequests, ne(variables['Build.Reason'], 'PullRequest')) }}:
+                    BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                    BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
 
-          - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl2playwright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
-            displayName: "Delete test results"
-            continueOnError: true
-            condition: eq(variables['SNAPSHOTEXISTS'], 'true')
-
-          - template: templates/upload-test-results.yml
+          # Credential-free: the report is staged as a pipeline artifact and
+          # uploaded later by the trusted PublishTestReports job.
+          - template: templates/stage-upload.yml
             parameters:
-                reportDir: "packages/tools/tests/playwright-report"
-                fallbackReportDir: "playwright-report"
-                deployPath: "$(BuildName)/testResults/webgl2playwright"
+                sourceDir: "packages/tools/tests/playwright-report"
+                fallbackDir: "playwright-report"
+                artifact: "webgl2Report"
+                validatePublicReport: true
+                displayName: "Stage WebGL2 visualization test results"
                 continueOnError: true
-
-          - task: GitHubComment@0
-            displayName: "GitHub WebGL2 comment"
-            condition: eq(variables['SNAPSHOTEXISTS'], 'false')
-            inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
-                    WebGL2 visualization test reporter:
-
-                    $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/webgl2playwright/index.html
 
           - task: PublishTestResults@2
             displayName: "Publish webgl2 test results"
@@ -891,10 +775,6 @@ jobs:
             inputs:
                 version: "24.x"
 
-          - template: templates/check-snapshot-exists.yml
-            parameters:
-                snapshotPath: "$(BuildName)/testResults/webgpuplaywright"
-
           - template: templates/cache-steps.yml
 
           - script: |
@@ -920,34 +800,21 @@ jobs:
                 BSTACK_TEST_TYPE: "webgpu"
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGPU"
                 TIMEOUT: "27500"
-                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
-                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                ${{ if or(parameters.runBrowserStackOnPullRequests, ne(variables['Build.Reason'], 'PullRequest')) }}:
+                    BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                    BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
 
-          - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgpuplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
-            displayName: "Delete test results"
-            continueOnError: true
-            condition: eq(variables['SNAPSHOTEXISTS'], 'true')
-
-          - template: templates/upload-test-results.yml
+          # Credential-free: the report is staged as a pipeline artifact and
+          # uploaded later by the trusted PublishTestReports job.
+          - template: templates/stage-upload.yml
             parameters:
-                reportDir: "packages/tools/tests/playwright-report"
-                fallbackReportDir: "playwright-report"
-                deployPath: "$(BuildName)/testResults/webgpuplaywright"
+                sourceDir: "packages/tools/tests/playwright-report"
+                fallbackDir: "playwright-report"
+                artifact: "webgpuReport"
+                validatePublicReport: true
+                displayName: "Stage WebGPU visualization test results"
                 continueOnError: true
-
-          - task: GitHubComment@0
-            displayName: "Writing GitHub comment"
-            continueOnError: true
-            condition: eq(variables['SNAPSHOTEXISTS'], 'false')
-            inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
-                    Visualization tests for WebGPU
-
-                    $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/webgpuplaywright/index.html
 
           - task: PublishTestResults@2
             displayName: "Publish webgpu test results"
@@ -989,46 +856,6 @@ jobs:
 
                 reg query HKCU\Software\Microsoft\VisualStudio\Debugger\JIT\{F200A7E7-DEA5-11D0-B854-00A0244A1DE2} /s
             displayName: "Disable JIT Debugging for Script"
-
-          - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=$(BuildName)&fileTocheck=cdnSnapshot.zip" -o ./tmp.json -H "Authorization: Bearer $(DEPLOY_TOKEN)"
-                if errorlevel 1 exit /b %errorlevel%
-                findstr "true" .\tmp.json >nul 2>&1
-                if %errorlevel% equ 0 (
-                   echo snapshot exists
-                ) else (
-                    echo snapshot does not exist
-                )
-
-                curl --fail-with-body --silent --show-error "$(SNAPSHOT_CDN_URL)/$(BuildName)/cdnSnapshot.zip" -o snapshot.zip
-                if errorlevel 1 exit /b %errorlevel%
-
-                setlocal EnableDelayedExpansion
-                set destDir=..\BabylonNativeNightlyUnitTests\RelWithDebInfo\Assets
-                for /f %%i in ('dir /b %destDir%\babylon*') do (
-                  set sourceName=%%i
-                  if /i "!sourceName:~-3!"==".js" (
-                    set sourceName=!sourceName:.max.js=.es5.js!
-                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.min.js=.es5.js!
-                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.js=.es5.js!
-                  )
-                  unzip -p snapshot.zip "**!sourceName!" > %destDir%\%%i
-                  if errorlevel 1 exit /b !errorlevel!
-                )
-
-                set destDir=..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts
-                for /f %%i in ('dir /b %destDir%\babylon*') do (
-                  set sourceName=%%i
-                  if /i "!sourceName:~-3!"==".js" (
-                    set sourceName=!sourceName:.max.js=.es5.js!
-                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.min.js=.es5.js!
-                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.js=.es5.js!
-                  )
-                  unzip -p snapshot.zip "**!sourceName!" > %destDir%\%%i
-                  if errorlevel 1 exit /b !errorlevel!
-                )
-            displayName: "Update scripts from snapshot (ES5)"
-            retryCountOnTaskFailure: 5
 
           - script: |
                 cd
@@ -1116,35 +943,35 @@ jobs:
                 CIWORKERS: "$(CIWORKERS)"
                 TIMEOUT: "300000"
                 PERF_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/perf-comment.md"
-                BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
-                BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                ${{ if or(parameters.runBrowserStackOnPullRequests, ne(variables['Build.Reason'], 'PullRequest')) }}:
+                    BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
+                    BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
                 BSTACK_SESSIONS_REQUIRED: "2"
 
+          # Credential-free: the comment body is published as an artifact and
+          # posted later by the trusted PublishTestReports job. It is generated
+          # by pull-request-controlled test code, so it is treated as untrusted
+          # text and sanitized on the trusted side before use.
           - bash: |
+                set -euo pipefail
+                OUT="$(Build.ArtifactStagingDirectory)/perf-comment-artifact"
+                mkdir -p "$OUT"
                 if [ -f "$(Build.ArtifactStagingDirectory)/perf-comment.md" ]; then
-                    COMMENT=$(cat "$(Build.ArtifactStagingDirectory)/perf-comment.md")
-                    COMMENT="${COMMENT//'%'/'%25'}"
-                    COMMENT="${COMMENT//$'\n'/'%0A'}"
-                    COMMENT="${COMMENT//$'\r'/'%0D'}"
-                    echo "##vso[task.setvariable variable=PERF_COMMENT]$COMMENT"
-                    echo "##vso[task.setvariable variable=HAS_PERF_COMMENT]true"
+                    cp "$(Build.ArtifactStagingDirectory)/perf-comment.md" "$OUT/comment.md"
                 else
                     echo "No performance comment file found"
-                    echo "##vso[task.setvariable variable=HAS_PERF_COMMENT]false"
                 fi
-            displayName: "Read performance comment"
+            displayName: "Stage performance comment"
             condition: succeededOrFailed()
 
-          - task: GitHubComment@0
-            displayName: "Post performance results"
-            condition: and(succeededOrFailed(), eq(variables['HAS_PERF_COMMENT'], 'true'))
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish performance comment"
+            condition: succeededOrFailed()
             continueOnError: true
             inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
-                    $(PERF_COMMENT)
+                targetPath: "$(Build.ArtifactStagingDirectory)/perf-comment-artifact"
+                artifact: "perfComment"
 
           - task: PublishTestResults@2
             displayName: "Publish performance test results"
@@ -1167,6 +994,7 @@ jobs:
     - template: templates/memory-leak-job.yml
       parameters:
           jobName: MemoryLeakTestsCI
+          commentArtifact: memleakCommentCI
           displayName: "Memory leak tests (ci suite)"
           npmScript: "test:memory-leaks"
           suiteLabel: "ci suite"
@@ -1176,6 +1004,7 @@ jobs:
     - template: templates/memory-leak-job.yml
       parameters:
           jobName: MemoryLeakTestsPackages
+          commentArtifact: memleakCommentPackages
           displayName: "Memory leak tests (packages suite)"
           npmScript: "test:memory-leaks:packages"
           suiteLabel: "packages suite"
@@ -1231,6 +1060,179 @@ jobs:
                 BROWSER: "Chrome"
 
     # ============================================================================
+    # TRUSTED PUBLISH JOBS
+    #
+    # Everything above this point runs pull-request-controlled code (npm
+    # lifecycle scripts, build scripts, Playwright specs) and is therefore
+    # completely credential-free: no deployment token, no GitHub service
+    # connection. Those jobs only produce immutable pipeline artifacts.
+    #
+    # The jobs below hold the credentials. They run with `checkout: none`, so
+    # no pull-request file is ever placed on their agents and no
+    # pull-request-controlled step can execute in them. Upload destinations and
+    # comment bodies are literals declared here, in trusted YAML, and are never
+    # read out of a downloaded artifact.
+    # ============================================================================
+    - template: templates/publish-uploads-job.yml
+      parameters:
+          jobName: PublishSnapshot
+          displayName: "Publish snapshot (trusted)"
+          dependsOn:
+              - Build
+              - ES6Tools
+          condition: succeededOrFailed()
+          variables:
+              BuildResult: $[ dependencies.Build.result ]
+              WHATSNEWCHANGED: $[ dependencies.Build.outputs['GitChanges.WhatsNewChanged'] ]
+              PACKAGEJSONCHANGED: $[ dependencies.Build.outputs['GitChanges.PackageJsonChanged'] ]
+              CONFIGJSONCHANGED: $[ dependencies.Build.outputs['GitChanges.ConfigJsonChanged'] ]
+              SMARTFILTERSCHANGED: $[ dependencies.Build.outputs['GitChanges.SmartFiltersChanged'] ]
+          snapshotChecks:
+              - name: SNAPSHOTEXISTS
+                path: "$(BuildName)"
+          deletes:
+              - path: "$(BuildName)"
+                displayName: "Clear snapshot"
+                condition: and(eq(variables['SNAPSHOTEXISTS'], 'true'), not(eq(variables['Build.SourceBranchName'], 'master')))
+          uploads:
+              - artifact: buildSnapshot
+                destination: "$(BuildName)"
+                deleteStale: false
+                extraFields: "saveZip=true"
+                displayName: "Upload snapshot"
+              - artifact: fileSizeReport
+                destination: "$(BuildName)"
+                deleteStale: false
+                extraFields: ""
+                displayName: "Upload file size results"
+          fileComments: []
+          comments:
+              - displayName: "Tag your PR!"
+                condition: and(eq(variables['BuildResult'], 'Succeeded'), eq(variables['SNAPSHOTEXISTS'], 'false'))
+                body: |
+                    Please make sure to label your PR with "bug", "new feature" or "breaking change" label(s).
+                    To prevent this PR from going to the changelog marked it with the "skip changelog" label.
+              - displayName: "What's new comment"
+                condition: and(eq(variables['BuildResult'], 'Succeeded'), eq(variables['WHATSNEWCHANGED'], 'true'))
+                body: |
+                    There is no need to update the "what's new.md" file. A changelog will be generated using the PR and its tags.
+              - displayName: "Did package.json changed?"
+                condition: and(eq(variables['BuildResult'], 'Succeeded'), eq(variables['PACKAGEJSONCHANGED'], 'true'))
+                body: |
+                    Reviewer - this PR has made changes to one or more package.json files.
+              - displayName: "Did build directory changed"
+                condition: and(eq(variables['BuildResult'], 'Succeeded'), eq(variables['CONFIGJSONCHANGED'], 'true'))
+                body: |
+                    Reviewer - this PR has made changes to the build configuration file.
+
+                    *This build will release a new package on npm*
+
+                    If that was unintentional please make sure to revert those changes or close this PR.
+              - displayName: "Writing GitHub comment"
+                condition: and(eq(variables['BuildResult'], 'Succeeded'), eq(variables['SNAPSHOTEXISTS'], 'false'))
+                body: |
+                    Snapshot stored with reference name:
+                    $(BuildName)
+
+                    Test environment:
+                    $(SNAPSHOT_CDN_URL)/$(BuildName)/index.html
+
+                    To test a playground add it to the URL, for example:
+
+                    $(SNAPSHOT_CDN_URL)/$(BuildName)/index.html#WGZLGJ#4600
+
+                    Links to test your changes to core in the published versions of the Babylon tools (does not contain changes you made to the tools themselves):
+
+                    https://playground.babylonjs.com/?snapshot=$(BuildName)
+                    https://sandbox.babylonjs.com/?snapshot=$(BuildName)
+                    https://gui.babylonjs.com/?snapshot=$(BuildName)
+                    https://nme.babylonjs.com/?snapshot=$(BuildName)
+
+                    To test the snapshot in the playground with a playground ID add it after the snapshot query string:
+
+                    https://playground.babylonjs.com/?snapshot=$(BuildName)#BCU1XR#0
+
+                    *If you made changes to the sandbox or playground in this PR, additional comments will be generated soon containing links to the dev versions of those tools.*
+              - displayName: "Writing SFE GitHub comment"
+                condition: and(eq(variables['BuildResult'], 'Succeeded'), eq(variables['SMARTFILTERSCHANGED'], 'true'))
+                body: |
+                    Smart Filters Editor is available to test at:
+                    https://sfe.babylonjs.com/?snapshot=$(BuildName)
+
+    - template: templates/publish-uploads-job.yml
+      parameters:
+          jobName: PublishTestReports
+          displayName: "Publish test reports (trusted)"
+          dependsOn:
+              - PublishSnapshot
+              - ES6
+              - InteractionTests
+              - VisualizationWebGL2
+              - VisualizationWebGPU
+              - PerformanceTests
+              - MemoryLeakTestsCI
+              - MemoryLeakTestsPackages
+          condition: succeededOrFailed()
+          timeoutInMinutes: 30
+          variables:
+              SNAPSHOTEXISTS: $[ dependencies.PublishSnapshot.outputs['SNAPSHOTEXISTS.SNAPSHOTEXISTS'] ]
+          snapshotChecks: []
+          deletes: []
+          uploads:
+              - artifact: es6visReport
+                destination: "$(BuildName)/testResults/es6visplaywright"
+                deleteStale: true
+                extraFields: ""
+                displayName: "Upload ES6 visualization test results"
+              - artifact: interactionReport
+                destination: "$(BuildName)/testResults/interactionplaywright"
+                deleteStale: true
+                extraFields: ""
+                displayName: "Upload interaction test results"
+              - artifact: webgl2Report
+                destination: "$(BuildName)/testResults/webgl2playwright"
+                deleteStale: true
+                extraFields: ""
+                displayName: "Upload WebGL2 visualization test results"
+              - artifact: webgpuReport
+                destination: "$(BuildName)/testResults/webgpuplaywright"
+                deleteStale: true
+                extraFields: ""
+                displayName: "Upload WebGPU visualization test results"
+          fileComments:
+              - displayName: "Post performance results"
+                artifact: perfComment
+                file: comment.md
+                condition: succeededOrFailed()
+              - displayName: "Post memory leak results (CI)"
+                artifact: memleakCommentCI
+                file: comment.md
+                condition: succeededOrFailed()
+              - displayName: "Post memory leak results (packages)"
+                artifact: memleakCommentPackages
+                file: comment.md
+                condition: succeededOrFailed()
+          comments:
+              - displayName: "Interaction test report comment"
+                condition: eq(variables['SNAPSHOTEXISTS'], 'false')
+                body: |
+                    Interaction tests
+
+                    $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/interactionplaywright/index.html
+              - displayName: "GitHub WebGL2 comment"
+                condition: eq(variables['SNAPSHOTEXISTS'], 'false')
+                body: |
+                    WebGL2 visualization test reporter:
+
+                    $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/webgl2playwright/index.html
+              - displayName: "GitHub WebGPU comment"
+                condition: eq(variables['SNAPSHOTEXISTS'], 'false')
+                body: |
+                    Visualization tests for WebGPU
+
+                    $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/webgpuplaywright/index.html
+
+    # ============================================================================
     # DEPLOY
     # Depends on: Build, UnitTests, VisualizationWebGL2, ES6, ES6Tools,
     #             VisualizationWebGPU, InteractionTests
@@ -1262,40 +1264,47 @@ jobs:
             )
           )
       steps:
-          - template: templates/checkout-with-tag-override.yml
+          # This job holds the deployment token, so it must never have
+          # pull-request code on its agent. It only moves already-published
+          # artifacts between CDN paths, so no checkout is required.
+          - checkout: none
 
           - bash: mkdir download
             displayName: "Prepare download directory"
 
           - script: |
+                curlAuth() { printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - "$@"; }
                 set -euo pipefail
 
-                curl --fail-with-body --silent --show-error "$(SNAPSHOT_CDN_URL)/$(BuildName)/cdnSnapshot.zip" -o snapshot.zip
+                curlAuth --fail-with-body --silent --show-error "$(SNAPSHOT_CDN_URL)/$(BuildName)/cdnSnapshot.zip" -o snapshot.zip
 
-                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                curlAuth --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/$(Build.SourceBranchName)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@snapshot.zip"
 
-                curl --fail-with-body --silent --show-error "$(SNAPSHOT_CDN_URL)/$(BuildName)/fileSizes.json" -o fileSizes.json
+                curlAuth --fail-with-body --silent --show-error "$(SNAPSHOT_CDN_URL)/$(BuildName)/fileSizes.json" -o fileSizes.json
 
                 zip ./fileSize.zip fileSizes.json
 
-                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                curlAuth --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
-                  -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/$(Build.SourceBranchName)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@fileSize.zip"
             displayName: "Update CDN"
+            env:
+                DEPLOY_TOKEN: $(DEPLOY_TOKEN)
 
           - script: |
+                curlAuth() { printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - "$@"; }
                 set -euo pipefail
 
                 # Async purge: don't block CI on the CDN purge completing.
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curlAuth --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST
 
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curlAuth --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST
             displayName: "Purge CDN"
+            env:
+                DEPLOY_TOKEN: $(DEPLOY_TOKEN)

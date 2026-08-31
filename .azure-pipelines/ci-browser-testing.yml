@@ -90,10 +90,13 @@ jobs:
           # Only upload reports when the run failed. Path is stable so the
           # previous nightly's report is overwritten and the URL never changes.
           - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webkitplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curlAuth() { printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - "$@"; }
+                curlAuth --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webkitplaywright" -X POST
             displayName: "Delete previous nightly Webkit report"
             condition: failed()
             continueOnError: true
+            env:
+                DEPLOY_TOKEN: $(DEPLOY_TOKEN)
 
           - template: templates/upload-test-results.yml
             parameters:
@@ -158,10 +161,13 @@ jobs:
           # Only upload reports when the run failed. Path is stable so the
           # previous nightly's report is overwritten and the URL never changes.
           - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/firefoxplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curlAuth() { printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - "$@"; }
+                curlAuth --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/firefoxplaywright" -X POST
             displayName: "Delete previous nightly Firefox report"
             condition: failed()
             continueOnError: true
+            env:
+                DEPLOY_TOKEN: $(DEPLOY_TOKEN)
 
           - template: templates/upload-test-results.yml
             parameters:
@@ -226,10 +232,13 @@ jobs:
           # Only upload reports when the run failed. The path is stable so the
           # previous nightly's report is overwritten and the URL never changes.
           - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webgl2playwright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curlAuth() { printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - "$@"; }
+                curlAuth --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webgl2playwright" -X POST
             displayName: "Delete previous nightly WebGL2 report"
             condition: failed()
             continueOnError: true
+            env:
+                DEPLOY_TOKEN: $(DEPLOY_TOKEN)
 
           - template: templates/upload-test-results.yml
             parameters:
@@ -296,10 +305,13 @@ jobs:
           # Only upload reports when the run failed. The path is stable so the
           # previous nightly's report is overwritten and the URL never changes.
           - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webgpuplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curlAuth() { printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - "$@"; }
+                curlAuth --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webgpuplaywright" -X POST
             displayName: "Delete previous nightly WebGPU report"
             condition: failed()
             continueOnError: true
+            env:
+                DEPLOY_TOKEN: $(DEPLOY_TOKEN)
 
           - template: templates/upload-test-results.yml
             parameters:
@@ -472,10 +484,13 @@ jobs:
           # Upload reports only when the perf run failed. Path is stable so the
           # previous weekly's report is overwritten and the URL never changes.
           - script: |
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/perfplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curlAuth() { printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - "$@"; }
+                curlAuth --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/perfplaywright" -X POST
             displayName: "Delete previous weekly perf report"
             condition: eq(variables['PerfTestsFailed'], 'true')
             continueOnError: true
+            env:
+                DEPLOY_TOKEN: $(DEPLOY_TOKEN)
 
           - template: templates/upload-test-results.yml
             parameters:

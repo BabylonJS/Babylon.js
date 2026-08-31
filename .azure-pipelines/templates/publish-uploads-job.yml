@@ -1,0 +1,284 @@
+# =============================================================================
+# Template: Trusted publish job (THE ONLY PLACE CI CREDENTIALS ARE USED)
+#
+# Creates a job that:
+#   * uses `checkout: none`, so no pull-request-controlled file is ever placed
+#     on the agent and no pull-request code can run in it;
+#   * runs only steps declared in this template, i.e. only trusted YAML;
+#   * downloads immutable pipeline artifacts staged by the build/test jobs
+#     (see templates/stage-upload.yml) and uploads them;
+#   * posts the GitHub comments that used to be posted from the build/test
+#     jobs, so the GitHub service connection is no longer authorized in any job
+#     that executes pull-request code.
+#
+# Why a separate job rather than a later step in the same job:
+#   Azure Pipelines runs each job on a freshly provisioned agent. A background
+#   process left behind by `npm ci`, a Playwright spec, or any other
+#   pull-request-controlled code therefore cannot observe this job's process
+#   table, environment, or filesystem. Job separation - not step ordering - is
+#   what actually contains a compromised pull request.
+#
+# Destination integrity:
+#   Upload destinations are supplied by the *caller's* YAML as literal strings
+#   and are re-validated here. They are never read out of the downloaded
+#   artifact, so pull-request code cannot redirect an upload by writing a
+#   manifest. `BuildName` is declared `readonly` at pipeline level, and
+#   `##vso[task.setvariable ...]` does not cross job boundaries, so the
+#   destination cannot be rewritten by a build/test job either.
+#
+# Credential handling:
+#   The authorization header is fed to curl through `--config -` on stdin, so
+#   no credential is ever placed on a command line where another process on the
+#   agent could read it from the process table.
+#
+#   `DEPLOY_TOKEN` is mapped into individual steps through `env:` - never
+#   job-wide - and is referenced as a shell variable rather than as an Azure
+#   Pipelines `$(...)` macro, so it is not expanded into the rendered script
+#   body either.
+# =============================================================================
+
+parameters:
+    - name: jobName
+      type: string
+    - name: displayName
+      type: string
+      default: "Publish (trusted)"
+    - name: dependsOn
+      type: object
+      default: []
+    - name: condition
+      type: string
+      default: "succeededOrFailed()"
+    - name: timeoutInMinutes
+      type: number
+      default: 20
+    # Extra job-scoped variables, e.g. mappings of upstream output variables.
+    - name: variables
+      type: object
+      default: {}
+    # Snapshot-existence probes evaluated BEFORE any upload in this job, so
+    # comment conditions can distinguish a branch's first build from a rerun.
+    # Each entry sets a job variable of the given name to 'true'/'false'.
+    #   - name: variable name, e.g. 'SnapshotExists'
+    #     path: server path to probe
+    - name: snapshotChecks
+      type: object
+      default: []
+    # Explicit destination clears, evaluated after `snapshotChecks` and before
+    # any upload. Used where the clear is conditional on more than "the path
+    # already exists" (for example, never clearing the master snapshot).
+    #   - path / condition / displayName
+    - name: deletes
+      type: object
+      default: []
+    # Artifacts staged by templates/stage-upload.yml, plus the literal,
+    # trusted destination each one is uploaded to.
+    #   - artifact:        pipeline artifact name
+    #     destination:     server path, e.g. '$(BuildName)/testResults/webgl2playwright'
+    #     deleteStale:     delete the destination first when it already exists
+    #     displayName:     step label
+    #     extraFields:     optional list of extra multipart fields, e.g. ['saveZip=true']
+    - name: uploads
+      type: object
+      default: []
+    # GitHub comments with bodies that are fixed in trusted YAML.
+    #   - displayName / condition / body
+    - name: comments
+      type: object
+      default: []
+    # GitHub comments whose body is a markdown file produced by a build/test
+    # job and published as a plain (unzipped) pipeline artifact. The body is
+    # untrusted text, so logging commands are stripped before it is used.
+    #   - displayName / artifact / file / condition
+    - name: fileComments
+      type: object
+      default: []
+
+jobs:
+    - job: ${{ parameters.jobName }}
+      displayName: ${{ parameters.displayName }}
+      dependsOn: ${{ parameters.dependsOn }}
+      condition: ${{ parameters.condition }}
+      timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+      variables: ${{ parameters.variables }}
+      steps:
+          # No repository checkout: this job must never hold pull-request code.
+          - checkout: none
+
+          - ${{ each check in parameters.snapshotChecks }}:
+                - bash: |
+                      set -euo pipefail
+
+                      # The token is read from the environment and handed to curl
+                      # on stdin: never on argv, never in the rendered script body.
+                      HTTP_STATUS=$(printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - \
+                        --silent --show-error \
+                        --output /dev/null \
+                        --write-out "%{http_code}" \
+                        "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=${{ check.path }}" || echo "000")
+
+                      if [ "$HTTP_STATUS" = "200" ]; then
+                        RESULT=true
+                      else
+                        RESULT=false
+                      fi
+                      # Set both in-job and as an output variable, so other
+                      # trusted publish jobs can reuse the probe result instead
+                      # of each spending its own credentialed request.
+                      echo "##vso[task.setvariable variable=${{ check.name }}]$RESULT"
+                      echo "##vso[task.setvariable variable=${{ check.name }};isOutput=true]$RESULT"
+                      echo "${{ check.name }} resolved from HTTP $HTTP_STATUS"
+                  name: ${{ check.name }}
+                  displayName: "Check snapshot: ${{ check.name }}"
+                  continueOnError: true
+                  env:
+                      DEPLOY_TOKEN: $(DEPLOY_TOKEN)
+
+          - ${{ each delete in parameters.deletes }}:
+                - bash: |
+                      set -euo pipefail
+
+                      DESTINATION="${{ delete.path }}"
+                      case "$DESTINATION" in
+                        *..* | /* | *' '* | '')
+                          echo "##vso[task.logissue type=error]Refusing to clear unsafe destination: $DESTINATION"
+                          exit 1
+                          ;;
+                      esac
+
+                      # The token is read from the environment and handed to curl
+                      # on stdin: never on argv, never in the rendered script body.
+                      printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - \
+                        --fail-with-body --silent --show-error \
+                        "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$DESTINATION" -X POST
+                  displayName: "${{ delete.displayName }}"
+                  condition: ${{ delete.condition }}
+                  continueOnError: true
+                  env:
+                      DEPLOY_TOKEN: $(DEPLOY_TOKEN)
+
+          - ${{ each upload in parameters.uploads }}:
+                - task: DownloadPipelineArtifact@2
+                  displayName: "Download ${{ upload.artifact }}"
+                  continueOnError: true
+                  inputs:
+                      artifact: "${{ upload.artifact }}"
+                      path: "$(Pipeline.Workspace)/staged-uploads/${{ upload.artifact }}"
+
+                - bash: |
+                      set -euo pipefail
+
+                      STAGE_DIR="$(Pipeline.Workspace)/staged-uploads/${{ upload.artifact }}"
+                      PAYLOAD="$STAGE_DIR/payload.zip"
+
+                      if [ ! -f "$PAYLOAD" ]; then
+                        echo "No payload staged for '${{ upload.artifact }}', nothing to upload"
+                        exit 0
+                      fi
+
+                      DESTINATION="${{ upload.destination }}"
+
+                      # Defence in depth: refuse anything that is not a plain
+                      # relative path. Destinations come from trusted YAML, but
+                      # they interpolate $(BuildName), which is derived from the
+                      # branch name.
+                      case "$DESTINATION" in
+                        *..* | /* | *' '* | '')
+                          echo "##vso[task.logissue type=error]Refusing to upload to unsafe destination: $DESTINATION"
+                          exit 1
+                          ;;
+                      esac
+                      if ! printf '%s' "$DESTINATION" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+                        echo "##vso[task.logissue type=error]Refusing to upload to unsafe destination: $DESTINATION"
+                        exit 1
+                      fi
+
+                      # The token is read from the environment and handed to curl
+                      # on stdin: never on argv, never in the rendered script body.
+                      curl_authorized() {
+                        printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - "$@"
+                      }
+
+                      if [ "${{ upload.deleteStale }}" = "True" ] || [ "${{ upload.deleteStale }}" = "true" ]; then
+                        HTTP_STATUS=$(curl_authorized --silent --show-error \
+                          --output /dev/null \
+                          --write-out "%{http_code}" \
+                          "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=$DESTINATION" || echo "000")
+
+                        if [ "$HTTP_STATUS" = "200" ]; then
+                          echo "Clearing stale contents of $DESTINATION"
+                          curl_authorized --fail-with-body --silent --show-error \
+                            "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$DESTINATION" -X POST || \
+                            echo "##vso[task.logissue type=warning]Failed to clear $DESTINATION, continuing"
+                        fi
+                      fi
+
+                      CURL_ARGS=(--fail-with-body --silent --show-error
+                        "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD)" -X POST
+                        -H "Content-Type: multipart/form-data"
+                        -F "path=$DESTINATION"
+                        -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)")
+
+                      for FIELD in ${{ upload.extraFields }}; do
+                        CURL_ARGS+=(-F "$FIELD")
+                      done
+
+                      CURL_ARGS+=(-F "zip=@$PAYLOAD")
+
+                      curl_authorized "${CURL_ARGS[@]}"
+
+                      echo "Uploaded '${{ upload.artifact }}' to $DESTINATION"
+                  displayName: "${{ upload.displayName }}"
+                  continueOnError: true
+                  env:
+                      DEPLOY_TOKEN: $(DEPLOY_TOKEN)
+
+          - ${{ each fileComment in parameters.fileComments }}:
+                - task: DownloadPipelineArtifact@2
+                  displayName: "Download ${{ fileComment.artifact }}"
+                  continueOnError: true
+                  inputs:
+                      artifact: "${{ fileComment.artifact }}"
+                      path: "$(Pipeline.Workspace)/comment-payloads/${{ fileComment.artifact }}"
+
+                - bash: |
+                      set -euo pipefail
+
+                      FILE="$(Pipeline.Workspace)/comment-payloads/${{ fileComment.artifact }}/${{ fileComment.file }}"
+                      if [ ! -f "$FILE" ]; then
+                        echo "No comment file staged for '${{ fileComment.artifact }}'"
+                        echo "##vso[task.setvariable variable=HasStagedComment_${{ fileComment.artifact }}]false"
+                        exit 0
+                      fi
+
+                      # The body is produced by pull-request-controlled test
+                      # code. Drop any Azure Pipelines logging command so it
+                      # cannot set variables or alter this trusted job.
+                      COMMENT=$(sed -e 's/##vso/## vso/g' -e 's/##\[/## [/g' "$FILE")
+                      COMMENT="${COMMENT//'%'/'%25'}"
+                      COMMENT="${COMMENT//$'\n'/'%0A'}"
+                      COMMENT="${COMMENT//$'\r'/'%0D'}"
+                      echo "##vso[task.setvariable variable=StagedComment_${{ fileComment.artifact }}]$COMMENT"
+                      echo "##vso[task.setvariable variable=HasStagedComment_${{ fileComment.artifact }}]true"
+                  displayName: "Read ${{ fileComment.artifact }}"
+                  continueOnError: true
+
+                - task: GitHubComment@0
+                  displayName: "${{ fileComment.displayName }}"
+                  continueOnError: true
+                  condition: and(succeededOrFailed(), eq(variables['HasStagedComment_${{ fileComment.artifact }}'], 'true'))
+                  inputs:
+                      gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                      repositoryName: "$(Build.Repository.Name)"
+                      comment: |
+                          $(StagedComment_${{ fileComment.artifact }})
+
+          - ${{ each comment in parameters.comments }}:
+                - task: GitHubComment@0
+                  displayName: "${{ comment.displayName }}"
+                  continueOnError: true
+                  condition: ${{ comment.condition }}
+                  inputs:
+                      gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
+                      repositoryName: "$(Build.Repository.Name)"
+                      comment: ${{ comment.body }}

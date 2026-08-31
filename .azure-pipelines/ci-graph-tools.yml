@@ -10,11 +10,23 @@
 #   - BabylonJS-CI-Infrastructure
 #   - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
 #
-# This pipeline builds and tests pull-request-controlled code in the same job
-# that holds the deployment token and the GitHub service connection, so
-# "Make secrets available to builds of forks" must stay DISABLED and
-# "Require a team member's comment before building a pull request" must stay
-# ENABLED. See the "CI trust boundary" section of VARIABLE-GROUPS.md.
+# CI TRUST BOUNDARY
+# -----------------
+# This pipeline is triggered by pull requests, so every job that checks the
+# repository out executes pull-request-controlled code. Those jobs are
+# credential-free: they build, test, and stage their output as pipeline
+# artifacts, and nothing more.
+#
+# All deployment-token and GitHub-service-connection work happens in the
+# DeployTools and PublishToolsResults jobs, which run with `checkout: none` on
+# freshly provisioned agents. Pull-request code is never present there, so it
+# cannot read a credential, leave a background process behind to scrape one, or
+# redirect an upload.
+#
+# Fork gating alone would not be sufficient - a compromised or malicious
+# collaborator can open a same-repo pull request - which is why the separation
+# is enforced by job boundaries rather than by trigger conditions.
+# See the "CI trust boundary" section of VARIABLE-GROUPS.md.
 # =============================================================================
 
 trigger: none
@@ -41,13 +53,19 @@ variables:
     - group: BabylonJS-Deployment
     - name: BuildName
       value: $(Build.SourceBranch)
+      # Read-only: pull-request code cannot repoint deployment destinations
+      # with `##vso[task.setvariable variable=BuildName]`.
+      readonly: true
 
 pool:
     vmImage: ubuntu-latest
 
 jobs:
-    - job: TestTools
-      displayName: "Test tools"
+    # ========================================================================
+    # BUILD TOOLS - executes pull-request code, holds NO credentials
+    # ========================================================================
+    - job: BuildTools
+      displayName: "Build tools"
       steps:
           - checkout: self
             clean: true
@@ -70,11 +88,6 @@ jobs:
             inputs:
                 command: custom
                 customCommand: "run build:dev"
-
-          - template: templates/check-snapshot-exists.yml
-            parameters:
-                snapshotPath: "TOOLS/$(BuildName)"
-                displayName: "Check snapshot existence"
 
           - task: Npm@1
             displayName: "npm build nodeEditor"
@@ -124,51 +137,123 @@ jobs:
                 command: custom
                 customCommand: "run build:deployment -w @tools/smart-filters-editor"
 
+          - template: templates/stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeEditor"
+                artifact: "toolDeployNodeEditor"
+                displayName: "Stage NME deployment"
+
+          - template: templates/stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeGeometryEditor"
+                artifact: "toolDeployNodeGeometryEditor"
+                displayName: "Stage NGE deployment"
+
+          - template: templates/stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeRenderGraphEditor"
+                artifact: "toolDeployNodeRenderGraphEditor"
+                displayName: "Stage NRGE deployment"
+
+          - template: templates/stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/guiEditor"
+                artifact: "toolDeployGuiEditor"
+                displayName: "Stage GUI Editor deployment"
+
+          - template: templates/stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/nodeParticleEditor"
+                artifact: "toolDeployNodeParticleEditor"
+                displayName: "Stage NPE deployment"
+
+          - template: templates/stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/flowGraphEditor"
+                artifact: "toolDeployFlowGraphEditor"
+                displayName: "Stage FGE deployment"
+
+          - template: templates/stage-tool-deployment.yml
+            parameters:
+                toolPackageDir: "packages/tools/smartFiltersEditor"
+                artifact: "toolDeploySmartFiltersEditor"
+                displayName: "Stage SFE deployment"
+
+    # ========================================================================
+    # DEPLOY TOOLS - trusted: `checkout: none`, no pull-request code on disk
+    # ========================================================================
+    - template: templates/publish-uploads-job.yml
+      parameters:
+          jobName: DeployTools
+          displayName: "Deploy tool snapshots (trusted)"
+          dependsOn:
+              - BuildTools
+          condition: succeeded()
+          uploads:
+                - artifact: "toolDeployNodeEditor"
+                  destination: "TOOLS/$(BuildName)/nodeEditor"
+                  deleteStale: false
+                  extraFields: ""
+                  displayName: "Deploy NME"
+                - artifact: "toolDeployNodeGeometryEditor"
+                  destination: "TOOLS/$(BuildName)/nodeGeometryEditor"
+                  deleteStale: false
+                  extraFields: ""
+                  displayName: "Deploy NGE"
+                - artifact: "toolDeployNodeRenderGraphEditor"
+                  destination: "TOOLS/$(BuildName)/nodeRenderGraphEditor"
+                  deleteStale: false
+                  extraFields: ""
+                  displayName: "Deploy NRGE"
+                - artifact: "toolDeployGuiEditor"
+                  destination: "TOOLS/$(BuildName)/guiEditor"
+                  deleteStale: false
+                  extraFields: ""
+                  displayName: "Deploy GUI Editor"
+                - artifact: "toolDeployNodeParticleEditor"
+                  destination: "TOOLS/$(BuildName)/nodeParticleEditor"
+                  deleteStale: false
+                  extraFields: ""
+                  displayName: "Deploy NPE"
+                - artifact: "toolDeployFlowGraphEditor"
+                  destination: "TOOLS/$(BuildName)/flowGraphEditor"
+                  deleteStale: false
+                  extraFields: ""
+                  displayName: "Deploy FGE"
+                - artifact: "toolDeploySmartFiltersEditor"
+                  destination: "TOOLS/$(BuildName)/smartFiltersEditor"
+                  deleteStale: false
+                  extraFields: ""
+                  displayName: "Deploy SFE"
+
+    # ========================================================================
+    # TEST TOOLS - executes pull-request code, holds NO credentials
+    # Tests run against the snapshots DeployTools published to the public CDN.
+    # ========================================================================
+    - job: TestTools
+      displayName: "Test tools"
+      dependsOn:
+          - DeployTools
+      steps:
+          - checkout: self
+            clean: true
+            fetchTags: false
+            persistCredentials: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - task: Npm@1
+            displayName: "npm ci"
+            inputs:
+                command: custom
+                customCommand: "ci"
+
           - template: templates/wait-for-snapshot.yml
             parameters:
                 displayName: "Wait for Babylon snapshot"
-
-          - template: templates/deploy-tool.yml
-            parameters:
-                toolPackageDir: "packages/tools/nodeEditor"
-                deployPath: "TOOLS/$(BuildName)/nodeEditor"
-                displayName: "Deploy NME"
-
-          - template: templates/deploy-tool.yml
-            parameters:
-                toolPackageDir: "packages/tools/nodeGeometryEditor"
-                deployPath: "TOOLS/$(BuildName)/nodeGeometryEditor"
-                displayName: "Deploy NGE"
-
-          - template: templates/deploy-tool.yml
-            parameters:
-                toolPackageDir: "packages/tools/nodeRenderGraphEditor"
-                deployPath: "TOOLS/$(BuildName)/nodeRenderGraphEditor"
-                displayName: "Deploy NRGE"
-
-          - template: templates/deploy-tool.yml
-            parameters:
-                toolPackageDir: "packages/tools/guiEditor"
-                deployPath: "TOOLS/$(BuildName)/guiEditor"
-                displayName: "Deploy GUI Editor"
-
-          - template: templates/deploy-tool.yml
-            parameters:
-                toolPackageDir: "packages/tools/nodeParticleEditor"
-                deployPath: "TOOLS/$(BuildName)/nodeParticleEditor"
-                displayName: "Deploy NPE"
-
-          - template: templates/deploy-tool.yml
-            parameters:
-                toolPackageDir: "packages/tools/flowGraphEditor"
-                deployPath: "TOOLS/$(BuildName)/flowGraphEditor"
-                displayName: "Deploy FGE"
-
-          - template: templates/deploy-tool.yml
-            parameters:
-                toolPackageDir: "packages/tools/smartFiltersEditor"
-                deployPath: "TOOLS/$(BuildName)/smartFiltersEditor"
-                displayName: "Deploy SFE"
 
           - script: |
                 npx playwright install --with-deps
@@ -186,28 +271,52 @@ jobs:
                 GUIEDITOR_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/guiEditor/"
                 SNAPSHOT: "$(BuildName)"
 
-          - template: templates/upload-test-results.yml
+          - template: templates/stage-upload.yml
             parameters:
-                deployPath: "TOOLS/$(BuildName)/testResults"
+                sourceDir: "playwright-report"
+                artifact: "graphToolsTestReport"
+                validatePublicReport: true
+                displayName: "Stage graph tools test report"
+                condition: succeededOrFailed()
+                continueOnError: true
 
-          - task: GitHubComment@0
-            displayName: "Tests failed message"
-            condition: failed()
-            inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
+    # ========================================================================
+    # PUBLISH RESULTS - trusted: `checkout: none`, no pull-request code on disk
+    # ========================================================================
+    - template: templates/publish-uploads-job.yml
+      parameters:
+          jobName: PublishToolsResults
+          displayName: "Publish tool results (trusted)"
+          dependsOn:
+              - BuildTools
+              - DeployTools
+              - TestTools
+          condition: succeededOrFailed()
+          variables:
+              BuildToolsResult: $[ dependencies.BuildTools.result ]
+              DeployToolsResult: $[ dependencies.DeployTools.result ]
+              TestToolsResult: $[ dependencies.TestTools.result ]
+          uploads:
+              - artifact: "graphToolsTestReport"
+                destination: "TOOLS/$(BuildName)/testResults"
+                deleteStale: false
+                extraFields: ""
+                displayName: "Upload graph tools test report"
+          comments:
+              - displayName: "Tests failed message"
+                condition: >-
+                    or(
+                      in(variables['BuildToolsResult'], 'Failed', 'Canceled'),
+                      in(variables['DeployToolsResult'], 'Failed', 'Canceled'),
+                      in(variables['TestToolsResult'], 'Failed', 'Canceled')
+                    )
+                body: |
                     Graph tools CI has failed you can find the test results at:
 
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/testResults/
-
-          - task: GitHubComment@0
-            displayName: "Tests success"
-            condition: succeeded()
-            inputs:
-                gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
-                repositoryName: "$(Build.Repository.Name)"
-                comment: |
+              - displayName: "Tests success"
+                condition: eq(variables['TestToolsResult'], 'Succeeded')
+                body: |
                     You have made possible changes to one or more graph tools. To test the snapshots:
 
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeEditor/

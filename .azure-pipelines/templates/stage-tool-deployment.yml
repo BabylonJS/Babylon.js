@@ -1,0 +1,52 @@
+# =============================================================================
+# Template: Stage a tool's dist + public directories for a trusted deployment
+#           (CREDENTIAL-FREE)
+#
+# Pull-request replacement for templates/deploy-tool.yml. It merges a tool's
+# `dist/` and `public/` directories into a single archive and publishes it as an
+# immutable pipeline artifact. No deployment token is present in the job, so a
+# malicious pull request cannot steal or misuse it.
+#
+# The upload itself, and any CDN purge, are performed later by a job created
+# from templates/publish-uploads-job.yml, which runs with `checkout: none`.
+#
+# Merge order matches the upload order of templates/deploy-tool.yml: `dist/` is
+# copied first and `public/` second, so on a name collision the `public/` copy
+# wins, exactly as it did when the two archives were uploaded in sequence.
+# =============================================================================
+
+parameters:
+    # Relative path from repo root, e.g. 'packages/tools/playground'.
+    - name: toolPackageDir
+      type: string
+    # Pipeline artifact name; must match the consuming publish job.
+    - name: artifact
+      type: string
+    - name: displayName
+      type: string
+      default: "Stage tool deployment"
+
+steps:
+    - script: |
+          set -euo pipefail
+
+          STAGE_DIR="$(Build.ArtifactStagingDirectory)/staged-uploads/${{ parameters.artifact }}"
+          rm -rf "$STAGE_DIR"
+          mkdir -p "$STAGE_DIR"
+
+          MERGE_DIR=$(mktemp -d)
+          trap 'rm -rf "$MERGE_DIR"' EXIT
+
+          cp -R "${{ parameters.toolPackageDir }}/dist/." "$MERGE_DIR/"
+          cp -R "${{ parameters.toolPackageDir }}/public/." "$MERGE_DIR/"
+
+          ( cd "$MERGE_DIR" && zip -q -r "$STAGE_DIR/payload.zip" . )
+          echo "present" > "$STAGE_DIR/status.txt"
+      displayName: "${{ parameters.displayName }}"
+
+    - task: PublishPipelineArtifact@1
+      displayName: "${{ parameters.displayName }} (publish artifact)"
+      inputs:
+          targetPath: "$(Build.ArtifactStagingDirectory)/staged-uploads/${{ parameters.artifact }}"
+          artifact: "${{ parameters.artifact }}"
+          publishLocation: "pipeline"
