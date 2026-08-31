@@ -89,6 +89,13 @@ const SecretVariableNames = [...SecretVariableOwners.keys(), ...PipelineScopedSe
 /** The gate every credentialed job runs first. It is credentialed by definition, whoever includes it. */
 const TrustGateTemplate = "templates/assert-trusted-source.yml";
 
+/**
+ * Top-level keys Azure DevOps accepts in a template used as a root `extends:`
+ * target. Notably absent: `pool`, `trigger`, `pr`, `schedules` and `resources`,
+ * which belong to the root pipeline file instead.
+ */
+const ExtendsTemplateRootKeys = new Set(["parameters", "variables", "stages", "jobs", "steps"]);
+
 /** The cross-pipeline snapshot publisher, whose publish request gate is executed by the self-tests. */
 const SnapshotPublisherFile = "cd-ci-snapshots.yml";
 
@@ -356,6 +363,88 @@ function checkPullRequestPipelineFile(rootName, name, contents) {
 }
 
 /**
+ * A pipeline that hands its body to a template with a root `extends:` is
+ * compiled against the *extends template* schema, which is narrower than the
+ * pipeline schema. `pool:` is not part of it, so a pipeline-level pool makes
+ * the whole definition fail to compile — before a single job runs and before
+ * any status is reported back to GitHub. Every job therefore has to name its
+ * own agent pool. Verified against Azure DevOps, which rejects the pipeline
+ * with "Unexpected value 'pool'".
+ *
+ * @param {string} rootName
+ * @param {string} contents root pipeline file, already comment-stripped
+ * @returns {string[]}
+ */
+function checkExtendsTemplateShape(rootName, contents) {
+    const errors = [];
+
+    const extended = /^extends:\s*\n\s+template:\s*(\S+)/m.exec(contents);
+    if (!extended) {
+        return errors;
+    }
+
+    const target = path.join(PipelinesDirectory, extended[1]);
+    if (!existsSync(target)) {
+        errors.push(`${rootName} extends '${extended[1]}', which does not exist.`);
+        return errors;
+    }
+
+    const name = path.relative(PipelinesDirectory, target);
+    const body = readCode(target);
+
+    // Top-level keys start in column 0.
+    for (const [, key] of body.matchAll(/^([A-Za-z][\w-]*):/gm)) {
+        if (!ExtendsTemplateRootKeys.has(key)) {
+            errors.push(`${name} is the target of a root 'extends:' but declares a pipeline-level '${key}:'. Azure DevOps rejects that key, so ${rootName} never compiles.`);
+        }
+    }
+
+    // Without a pipeline-level pool, a job that names none has no agent.
+    for (const job of inlineJobs(body)) {
+        if (!job.properties.some((line) => /^\s*pool:/.test(line))) {
+            errors.push(`${name} is the target of a root 'extends:', so it cannot declare a pipeline-level pool, but job '${job.name}' does not name a 'pool:' of its own.`);
+        }
+    }
+
+    return errors;
+}
+
+/**
+ * Splits a template into its inline `- job:` blocks. A block runs until the
+ * next line indented at or above the `- job:` marker itself.
+ *
+ * @param {string} body
+ * @returns {{ name: string, properties: string[] }[]}
+ */
+function inlineJobs(body) {
+    const jobs = [];
+    const lines = body.split("\n");
+
+    for (let index = 0; index < lines.length; index++) {
+        const start = /^(\s*)- job:\s*(\S+)/.exec(lines[index]);
+        if (!start) {
+            continue;
+        }
+
+        const properties = [];
+        for (let scan = index + 1; scan < lines.length; scan++) {
+            const line = lines[scan];
+            if (line.trim() === "") {
+                continue;
+            }
+            if (line.search(/\S/) <= start[1].length) {
+                break;
+            }
+            properties.push(line);
+        }
+
+        jobs.push({ name: start[2], properties });
+    }
+
+    return jobs;
+}
+
+/**
  * @param {string} name
  * @param {string} contents already comment-stripped
  * @returns {string[]}
@@ -571,6 +660,7 @@ function validatePipelines() {
         // whole run.
         errors.push(...checkSecretSourcing(rootName, graph.map((file) => readCode(file)).join("\n")));
         errors.push(...checkPipelineScopedGroups(rootName, readCode(root)));
+        errors.push(...checkExtendsTemplateShape(rootName, readCode(root)));
 
         if (isPullRequestPipeline) {
             pullRequestPipelineCount++;

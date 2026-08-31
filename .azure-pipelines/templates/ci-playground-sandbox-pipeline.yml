@@ -63,14 +63,16 @@ variables:
     - name: SandboxPreviewPort
       value: 1339
 
-pool:
-    vmImage: ubuntu-24.04
-
+# This file is the target of a root `extends:`. An extends template may not
+# declare a pipeline-level `pool:`, so every job below names its own agent
+# pool. Do not reintroduce a root `pool:` here — it fails YAML compilation.
 jobs:
     # ========================================================================
     # PLAYGROUND - build (executes pull-request code, holds NO credentials)
     # ========================================================================
     - job: BuildPlayground
+      pool:
+          vmImage: ubuntu-24.04
       displayName: "Build playground"
       steps:
           - checkout: self
@@ -126,6 +128,8 @@ jobs:
     # credentialed upload and exercises exactly what this run produced.
     # ========================================================================
     - job: TestPlayground
+      pool:
+          vmImage: ubuntu-24.04
       displayName: "Test playground"
       dependsOn:
           - BuildPlayground
@@ -176,6 +180,8 @@ jobs:
     # SANDBOX - build (executes pull-request code, holds NO credentials)
     # ========================================================================
     - job: BuildSandbox
+      pool:
+          vmImage: ubuntu-24.04
       displayName: "Build sandbox"
       steps:
           - checkout: self
@@ -216,6 +222,8 @@ jobs:
     # SANDBOX - test (executes pull-request code, holds NO credentials)
     # ========================================================================
     - job: TestSandbox
+      pool:
+          vmImage: ubuntu-24.04
       displayName: "Test sandbox"
       dependsOn:
           - BuildSandbox

@@ -15,6 +15,12 @@
 # =============================================================================
 
 parameters:
+    # Agent pool for this job. An `extends` template may not declare a
+    # pipeline-level `pool:`, so every job names its own.
+    - name: pool
+      type: object
+      default:
+          vmImage: ubuntu-latest
     - name: jobName
       type: string
     - name: displayName
@@ -37,6 +43,7 @@ parameters:
 
 jobs:
     - job: ${{ parameters.jobName }}
+      pool: ${{ parameters.pool }}
       displayName: ${{ parameters.displayName }}
       dependsOn:
           - Build

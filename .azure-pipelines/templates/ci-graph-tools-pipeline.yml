@@ -64,14 +64,16 @@ variables:
     - name: ToolPreviewPort
       value: 1350
 
-pool:
-    vmImage: ubuntu-latest
-
+# This file is the target of a root `extends:`. An extends template may not
+# declare a pipeline-level `pool:`, so every job below names its own agent
+# pool. Do not reintroduce a root `pool:` here — it fails YAML compilation.
 jobs:
     # ========================================================================
     # BUILD TOOLS - executes pull-request code, holds NO credentials
     # ========================================================================
     - job: BuildTools
+      pool:
+          vmImage: ubuntu-latest
       displayName: "Build tools"
       steps:
           - checkout: self
@@ -194,6 +196,8 @@ jobs:
     # produced.
     # ========================================================================
     - job: TestTools
+      pool:
+          vmImage: ubuntu-latest
       displayName: "Test tools"
       dependsOn:
           - BuildTools

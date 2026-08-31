@@ -96,9 +96,9 @@ variables:
     - name: KHR_ASSETS_CACHE
       value: $(Pipeline.Workspace)/.khr-interactivity-assets
 
-pool:
-    vmImage: ubuntu-latest
-
+# This file is the target of a root `extends:`. An extends template may not
+# declare a pipeline-level `pool:`, so every job below names its own agent
+# pool. Do not reintroduce a root `pool:` here — it fails YAML compilation.
 jobs:
     # ============================================================================
     # BUILD JOB
@@ -106,6 +106,8 @@ jobs:
     # No dependencies - runs immediately
     # ============================================================================
     - job: Build
+      pool:
+          vmImage: ubuntu-latest
       displayName: "Build job"
       steps:
           - template: checkout-with-tag-override.yml
@@ -262,6 +264,8 @@ jobs:
     # No dependencies - runs immediately
     # ============================================================================
     - job: ES6
+      pool:
+          vmImage: ubuntu-latest
       displayName: "ES6 libs build"
       steps:
           - template: checkout-with-tag-override.yml
@@ -307,6 +311,8 @@ jobs:
     # No dependencies - runs immediately
     # ============================================================================
     - job: ES6Tools
+      pool:
+          vmImage: ubuntu-latest
       displayName: "ES6 tools, tree-shaking, and file sizes"
       steps:
           - template: checkout-with-tag-override.yml
@@ -379,6 +385,8 @@ jobs:
     # No dependencies - runs immediately
     # ============================================================================
     - job: FormatLint
+      pool:
+          vmImage: ubuntu-latest
       displayName: "Format, Lint, and more"
       steps:
           - template: checkout-with-tag-override.yml
@@ -424,6 +432,8 @@ jobs:
     # No dependencies - runs immediately
     # ============================================================================
     - job: TypeDocCheck
+      pool:
+          vmImage: ubuntu-latest
       displayName: "TypeDoc check"
       condition: ne(variables['Build.SourceBranch'], 'refs/heads/master')
       steps:
@@ -476,6 +486,8 @@ jobs:
     # per PR at <= 8).
     # ============================================================================
     - job: UnitTests
+      pool:
+          vmImage: ubuntu-latest
       displayName: "Unit tests"
       dependsOn:
           - FormatLint
@@ -532,6 +544,8 @@ jobs:
     # Depends on: Build, FormatLint
     # ============================================================================
     - job: InteractionTests
+      pool:
+          vmImage: ubuntu-latest
       displayName: "Interaction tests"
       dependsOn:
           - Build
@@ -604,6 +618,8 @@ jobs:
     # the Build job's affected-tags output so unaffected PRs never provision an agent.
     # ============================================================================
     - job: KHRInteractivityConformance
+      pool:
+          vmImage: ubuntu-latest
       displayName: "KHR_interactivity conformance"
       dependsOn:
           - Build
@@ -848,6 +864,8 @@ jobs:
     # No dependencies - runs immediately
     # ============================================================================
     - job: ViewerTests
+      pool:
+          vmImage: ubuntu-latest
       displayName: "Viewer tests"
       steps:
           - template: checkout-with-tag-override.yml
