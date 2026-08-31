@@ -43,7 +43,6 @@ const mockState = vi.hoisted(() => {
         // When true the fake engine does NOT expose updateTextureArrayLayerFromImageSource
         // (simulates a consumer that never imported the side-effect extension).
         engineExtMissing: false,
-        // ProceduralTexture mock instances.
         ptInstances: [] as any[],
         // Controllable base-class readiness.
         ptReady: true,
@@ -314,11 +313,11 @@ const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 beforeEach(() => {
     mockState.rawInstances.length = 0;
     mockState.ptInstances.length = 0;
-    mockState.ptReady = true;
-    mockState.decodeCalls.length = 0;
+    mockState.engineExtMissing = false;
     mockState.inFlight = 0;
     mockState.maxInFlight = 0;
     mockState.decodeImpl = null;
+    mockState.decodeCalls.length = 0;
     mockState.fetchCalls.length = 0;
     mockState.urlBehaviors = {};
     mockState.headers = {};
@@ -683,12 +682,18 @@ describe("MultiTexture", () => {
         expect((mt as any)._layers[0].loaded).toBe(false);
     });
 
-    it("rescales during decode by default", async () => {
-        await createLoaded(["a.png"], { width: 32, height: 16 });
+    it("rescales straight layers via the 2D canvas, not createImageBitmap resize", async () => {
+        const { mt } = await createLoaded(["a.png"], { width: 32, height: 16 });
 
-        // Default premultiplyAlpha:false decodes straight alpha ("none") so WebGL2 (which writes an
-        // ImageBitmap as-is) and WebGPU (which inverse-premultiplies per its flag) agree on straight layers.
-        expect(mockState.decodeCalls[0].opts).toEqual({ premultiplyAlpha: "none", resizeWidth: 32, resizeHeight: 16, resizeQuality: "high" });
+        // Straight decode is native: Chrome re-encodes a createImageBitmap that also resizes as
+        // premultiplied even with "none", which corrupts straight alpha on WebGL2. Resize instead
+        // happens on the composite's 2D canvas (which preserves straight RGBA through getImageData).
+        expect(mockState.decodeCalls[0].opts).toEqual({ premultiplyAlpha: "none" });
+
+        // Native 8x8 != target 32x16, so the upload source is the scaled straight canvas.
+        const call = mockState.upload.mock.calls[0];
+        expect(call[1]).toBe((mt as unknown as { _canvas: unknown })._canvas);
+        expect(call[2]).toBe(0);
     });
 
     it("updateLayerAsync(url) re-uploads only that layer without touching uLayerCount", async () => {

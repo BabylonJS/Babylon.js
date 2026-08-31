@@ -324,32 +324,27 @@ export const evaluateMultiTextureTests = (engineName: string) => {
         const translucent0: RGBA = [150, 100, 60, 128];
         const translucent1: RGBA = [100, 90, 120, 191];
 
-        // On WebGL2 the engine's layer-upload path corrupts the ALPHA channel of straight-alpha
-        // (translucent) pixels: createImageBitmap premultiplies by default and the driver-side
-        // unpremultiply for the WebGL2 upload rounds the recovered alpha up (e.g. MULTIPLY's
-        // absorbed alpha comes out 112 instead of the correct 96). RGB is unaffected and WebGPU's
-        // ImageSource upload path is exact, so WebGPU asserts the canonical output above while
-        // WebGL2 asserts its actual (buggy) output. This is a KNOWN WebGL2 engine defect - file a
-        // team alert and delete the webgl2Expected override once the engine upload is corrected.
-        // The deviation is only observable through the internal compositeRGBA readback; the
-        // presented pixels (RGB) are identical on both engines.
+        // WebGL2 previously corrupted the ALPHA channel of straight-alpha (translucent) pixels on
+        // layer upload: the image-source texSubImage3D path premultiplied by default and the driver's
+        // unpremultiply rounded the recovered alpha up (MULTIPLY absorbed alpha read back as 112
+        // instead of 96). The engine's updateTextureArrayLayerFromImageSourceExact now reads the
+        // source's straight bytes and uploads them verbatim, so WebGL2 asserts the same canonical
+        // output as WebGPU below.
         const translucentExpectations: Array<{
             mode: number;
             label: string;
-            expected: RGBA; // canonical output (WebGPU, correct alpha)
-            webgl2Expected: RGBA; // WebGL2 actual output (alpha-upload bug, see note above)
+            expected: RGBA; // canonical output (both engines)
         }> = [
-            { mode: BABYLON_ALPHA_BLEND, label: "ALPHA_BLEND", expected: [107, 91, 111, 223], webgl2Expected: [107, 91, 111, 223] },
-            { mode: BABYLON_ALPHA_MAX, label: "ALPHA_MAX", expected: [100, 90, 120, 191], webgl2Expected: [100, 89, 120, 191] },
-            { mode: BABYLON_MULTIPLY, label: "MULTIPLY", expected: [59, 35, 28, 96], webgl2Expected: [58, 35, 28, 112] },
-            { mode: BABYLON_SCREEN, label: "SCREEN", expected: [191, 155, 152, 223], webgl2Expected: [191, 154, 152, 228] },
-            { mode: BABYLON_SUBTRACT, label: "SUBTRACT", expected: [50, 10, 0, 0], webgl2Expected: [49, 11, 0, 0] },
+            { mode: BABYLON_ALPHA_BLEND, label: "ALPHA_BLEND", expected: [107, 91, 111, 223] },
+            { mode: BABYLON_ALPHA_MAX, label: "ALPHA_MAX", expected: [100, 90, 120, 191] },
+            { mode: BABYLON_MULTIPLY, label: "MULTIPLY", expected: [59, 35, 28, 96] },
+            { mode: BABYLON_SCREEN, label: "SCREEN", expected: [191, 155, 152, 223] },
+            { mode: BABYLON_SUBTRACT, label: "SUBTRACT", expected: [50, 10, 0, 0] },
         ];
 
-        for (const { mode, label, expected, webgl2Expected } of translucentExpectations) {
+        for (const { mode, label, expected } of translucentExpectations) {
             test(`composites ${label} layers (translucent colors) to the expected RGBA pixel (${engineName})`, async () => {
-                const expectedForEngine = engineName === "webgl2" ? webgl2Expected : expected;
-                await assertCompositePixels(engineName, mode, expectedForEngine, translucent0, translucent1);
+                await assertCompositePixels(engineName, mode, expected, translucent0, translucent1);
             });
         }
         // premultiplyAlpha:true stores the layers premultiplied; the composite must still output the

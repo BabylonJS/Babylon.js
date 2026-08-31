@@ -33,7 +33,7 @@ export interface IMultiTextureOptions {
     samplingMode?: number;
     /** Default false. Passed through to UploadImageToTexture2DArrayLayer. */
     premultiplyAlpha?: boolean;
-    /** "resize" (default): decode-time rescale to width×height. "strict": reject mismatched dims. */
+    /** "resize" (default): scale to width×height. "strict": rejects mismatched dims. */
     fit?: "resize" | "strict";
     /** Composite RTT resolution = width*rttScale × height*rttScale. Default 1. On WebGL2 values other than 1 produce a filtered (bilinear) rescale of the composite; on WebGPU the composite fetches its texels exactly, so rttScale effectively rescales the render target without filtering. */
     rttScale?: number;
@@ -807,19 +807,11 @@ export class MultiTexture extends BaseTexture {
     }
 
     private _bitmapOptions(): ImageBitmapOptions {
-        // createImageBitmap decodes image sources to PREMULTIPLIED alpha by default in Chromium, but
-        // the GPU layers must carry the alpha mode the user asked for. With the default
-        // premultiplyAlpha: false the storage must be straight: WebGL2 writes the ImageBitmap as-is
-        // (UNPACK_PREMULTIPLY_ALPHA_WEBGL=0 does not un-premultiply a premultiplied source), while
-        // WebGPU's copyExternalImageToTexture honours the flag and inverse-premultiplies. Decoding the
-        // intended mode keeps both backends consistent at the storage level. With premultiplyAlpha: true the
-        // decode is premultiplied too, which is what WebGPU's dest premultipliedAlpha flag expects, and
-        // what WebGL2's UNPACK_PREMULTIPLY_ALPHA_WEBGL=1 (already-premultiplied source) preserves.
-        // Note: WebGL2 readback may still diverge from WebGPU due to the engine's
-        // UNPACK_PREMULTIPLY_ALPHA rounding in UploadImageToTexture2DArrayLayer — see multiTexture
-        // utils comment for details.
+        // Straight layers decode at native size and let _uploadToLayer resize via the 2D canvas
+        // (which preserves straight RGBA); only premultiplied storage resizes here. "strict" fit
+        // checks the native size.
         const options: ImageBitmapOptions = { premultiplyAlpha: this._mtOptions.premultiplyAlpha ? "premultiply" : "none" };
-        if (this._mtOptions.fit === "resize") {
+        if (this._mtOptions.fit === "resize" && this._mtOptions.premultiplyAlpha) {
             options.resizeWidth = this._mtOptions.width;
             options.resizeHeight = this._mtOptions.height;
             options.resizeQuality = "high";
@@ -872,11 +864,28 @@ export class MultiTexture extends BaseTexture {
         Logger.Error(message);
         this._mtOptions.onError?.(message);
     }
-
+    private _uploadToLayer(target: RawTexture2DArray, index: number, bitmap: ImageBitmap): void {
+        if (this._mtOptions.premultiplyAlpha) {
+            UploadImageToTexture2DArrayLayer(target, bitmap, index, { premultiplyAlpha: true });
+            return;
+        }
+        // Straight storage must not resize through createImageBitmap (Chromium premultiplies a
+        // resized decode even with premultiplyAlpha "none"), so upload the native-sized bitmap and
+        // only scale via the 2D canvas drawImage, which preserves straight RGBA.
+        const canvas = this._canvas;
+        const ctx = this._ctx;
+        if (canvas && ctx && (bitmap.width !== this._mtOptions.width || bitmap.height !== this._mtOptions.height)) {
+            ctx.clearRect(0, 0, this._mtOptions.width, this._mtOptions.height);
+            ctx.drawImage(bitmap, 0, 0, this._mtOptions.width, this._mtOptions.height);
+            UploadImageToTexture2DArrayLayer(target, canvas, index, { premultiplyAlpha: false });
+        } else {
+            UploadImageToTexture2DArrayLayer(target, bitmap, index, { premultiplyAlpha: false });
+        }
+    }
     private _reuploadSlot(index: number, target: RawTexture2DArray = this._arrayTexture): void {
         const bitmap = this._layers[index].bitmap;
         if (bitmap !== null) {
-            UploadImageToTexture2DArrayLayer(target, bitmap, index, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
+            this._uploadToLayer(target, index, bitmap);
         } else {
             // A shifted layer with no decoded bitmap (still loading, or its load failed) must not
             // leave the GPU slot holding the PREVIOUS layer: urls/pixels describe a transparent
@@ -885,19 +894,14 @@ export class MultiTexture extends BaseTexture {
         }
     }
 
-    /**
-     * Uploads a fully transparent fill into a layer slot. Used for shifted entries that have no
-     * decoded bitmap, so an insert/remove never leaves a stale previous layer in the destination
-     * slot. Reuses the composite's 2D canvas (cleared) as the Source: it is a valid ImageSource on
-     * both WebGL2 (gl.texSubImage3D) and WebGPU (copyExternalImageToTexture), unlike raw ImageData.
-     * @param target the RawTexture2DArray to upload into
-     * @param index the layer slot index to clear
-     */
     private _clearLayerSlot(target: RawTexture2DArray, index: number): void {
         if (!this._canvas || !this._ctx) {
             // No drawable surface to clear from: leave the slot untouched.
             return;
         }
+        // Clears a slot to transparent when the shifted layer has no decoded bitmap, so insert/remove
+        // never leaves the previous layer's pixels there. A cleared canvas is a valid ImageSource on
+        // both backends (unlike raw ImageData).
         this._ctx.clearRect(0, 0, this._mtOptions.width, this._mtOptions.height);
         UploadImageToTexture2DArrayLayer(target, this._canvas, index, { premultiplyAlpha: false });
     }
@@ -939,15 +943,9 @@ export class MultiTexture extends BaseTexture {
     }
 
     private _uploadBitmap(entry: ILayerEntry, bitmap: ImageBitmap, meta: { etag: string | null; lastModified: string | null; generation: number }): void {
-        // The load ran across awaits, so revalidate EVERYTHING it is about to touch before
-        // committing any state:
-        // - dispose() may have won the race (it clears _layers and destroys the internal 2D
-        //   array texture, so an upload would throw "no internal texture");
-        // - insertLayerAsync/removeLayerAsync may have spliced the layer arrays, so the entry's CURRENT
-        //   index (never an index captured before the awaits) is the only valid landing slot,
-        //   and a removed entry must drop its decode entirely;
-        // - a newer load for the same entry (updateLayerAsync, watch reload) bumped its
-        //   generation, so this superseded load must drop its decode.
+        // The load resolved across awaits, so revalidate before committing: dispose() may have
+        // destroyed the arrays, a mutation may have removed or moved this entry, or a newer load
+        // for the same entry may have superseded this one's generation token.
         if (this._disposed) {
             bitmap.close();
             return;
@@ -958,7 +956,7 @@ export class MultiTexture extends BaseTexture {
             return;
         }
 
-        UploadImageToTexture2DArrayLayer(this._arrayTexture, bitmap, index, { premultiplyAlpha: this._mtOptions.premultiplyAlpha });
+        this._uploadToLayer(this._arrayTexture, index, bitmap);
 
         if (this._canvas && this._ctx) {
             this._ctx.clearRect(0, 0, this._mtOptions.width, this._mtOptions.height);
@@ -1088,16 +1086,10 @@ export class MultiTexture extends BaseTexture {
         this._renderComposite();
     }
 
-    /**
-     * Temporarily disables mip generation on the live 2D-array texture. The upload extension
-     * regenerates the whole array's mip chain on every upload whenever texture.generateMipMaps is
-     * set, so a multi-upload mutation (a grow's shifted layers plus the new layer's decode) would
-     * rebuild the chain once per upload. Suppression keeps every upload in the mutation cheap; the
-     * matching {@link _generateArrayMips} rebuilds the chain exactly once when the last in-flight
-     * suppresser settles. A counter (rather than a boolean) lets the init pool and a concurrent
-     * mutation nest safely: the first to finish restores the flag, the rest no-op until the final
-     * one rebuilds the chain over every upload that landed.
-     */
+    // The upload extension regenerates the array's whole mip chain per upload when generateMipMaps
+    // is set, so a multi-upload mutation would rebuild it once per upload. Suppress it for the whole
+    // mutation and rebuild once (see _generateArrayMips); a counter rather than a boolean lets the
+    // init pool and concurrent mutations nest safely.
     private _suppressArrayMips(): void {
         if (!(this._mtOptions.generateMipMaps ?? false) || this._disposed) {
             return;
@@ -1109,12 +1101,9 @@ export class MultiTexture extends BaseTexture {
         this._mipSuppressCount++;
     }
 
-    /**
-     * Restores mip generation and rebuilds the chain exactly once, when the last in-flight
-     * suppresser finishes (the count reaches zero). The array is allocated with mip support at
-     * creation, so re-enabling the flag and calling generateMipmaps once covers every upload that
-     * ran while generation was suppressed.
-     */
+    // Restores mip generation and rebuilds the chain when the last suppressor finishes (count 0);
+    // the array was allocated with mip support, so one generateMipmaps covers every upload that ran
+    // while generation was suppressed.
     private _generateArrayMips(): void {
         if (this._mipSuppressCount > 0) {
             this._mipSuppressCount--;
