@@ -19,12 +19,21 @@
 #   what actually contains a compromised pull request.
 #
 # Destination integrity:
-#   Upload destinations are supplied by the *caller's* YAML as literal strings
-#   and are re-validated here. They are never read out of the downloaded
-#   artifact, so pull-request code cannot redirect an upload by writing a
-#   manifest. `BuildName` is declared `readonly` at pipeline level, and
+#   Upload destinations are supplied by the *caller's* YAML and are never read
+#   out of the downloaded artifact, so pull-request code cannot redirect an
+#   upload by writing a manifest. `BuildName` is declared `readonly`, and
 #   `##vso[task.setvariable ...]` does not cross job boundaries, so the
 #   destination cannot be rewritten by a build/test job either.
+#
+#   Every caller-supplied value - destinations, paths, storage account, purge
+#   targets - reaches the shell through `env:` and is dereferenced as a shell
+#   variable. None of them is interpolated into a script body. That matters
+#   because both `${{ }}` template expressions and `$( )` macros are *textual*
+#   substitutions performed before the script runs: a value containing a quote
+#   would otherwise break out of the string it was assigned to and execute in a
+#   step that has `DEPLOY_TOKEN` in its environment - and it would do so before
+#   the validation below could reject it. Passing through `env:` makes the value
+#   data, so the validation always runs first and always sees the real value.
 #
 # Credential handling:
 #   The authorization header is fed to curl through `--config -` on stdin, so
@@ -81,6 +90,23 @@ parameters:
     - name: uploads
       type: object
       default: []
+    # Azure Pipelines definition ID of the run that staged the artifacts. Empty
+    # means "this run". A non-empty value makes this job a cross-pipeline
+    # publisher: it downloads artifacts staged by a *different*, credential-free
+    # pipeline run, which is how privileged uploads are kept out of the
+    # definitions that pull requests can rewrite. The definition ID is a
+    # literal in trusted YAML, so untrusted code cannot point the publisher at
+    # an arbitrary pipeline.
+    - name: sourceDefinitionId
+      type: string
+      default: ""
+    # Run ID within `sourceDefinitionId` to publish. Only used when
+    # `sourceDefinitionId` is set. May be a runtime macro such as
+    # `$(SourceRunId)`; artifacts are immutable once published, so a run ID is
+    # a safe thing to accept from a maintainer who queued this pipeline.
+    - name: sourceRunId
+      type: string
+      default: ""
     # Storage account every upload in this job targets. Snapshot publishers use
     # the default; the tool deployment publisher overrides it.
     - name: storageAccount
@@ -98,6 +124,13 @@ parameters:
     - name: requireTrustedSource
       type: boolean
       default: false
+    # GitHub issue/PR number the comments below are posted to. Empty means
+    # "the pull request that triggered this run", which is the behaviour inside
+    # a pull request pipeline. A cross-pipeline publisher has no pull request
+    # context of its own, so it must pass the number explicitly.
+    - name: commentTargetId
+      type: string
+      default: ""
     # GitHub comments with bodies that are fixed in trusted YAML.
     #   - displayName / condition / body
     - name: comments
@@ -129,13 +162,22 @@ jobs:
                 - bash: |
                       set -euo pipefail
 
+                      # $CHECK_PATH is read from the environment, never
+                      # interpolated into this script body, so it can only ever be
+                      # data. Constrain it to a charset that also needs no
+                      # percent-encoding in the query string below.
+                      if ! printf '%s' "$CHECK_PATH" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+                        echo "##vso[task.logissue type=error]Refusing to probe unsafe path: $CHECK_PATH"
+                        exit 1
+                      fi
+
                       # The token is read from the environment and handed to curl
                       # on stdin: never on argv, never in the rendered script body.
                       HTTP_STATUS=$(printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - \
                         --silent --show-error \
                         --output /dev/null \
                         --write-out "%{http_code}" \
-                        "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=${{ check.path }}" || echo "000")
+                        "$DEPLOYMENT_SERVER/$SNAPSHOT_CHECK_ENDPOINT?buildNumber=$CHECK_PATH" || echo "000")
 
                       if [ "$HTTP_STATUS" = "200" ]; then
                         RESULT=true
@@ -153,35 +195,52 @@ jobs:
                   continueOnError: true
                   env:
                       DEPLOY_TOKEN: $(DEPLOY_TOKEN)
+                      DEPLOYMENT_SERVER: $(DEPLOYMENT_SERVER)
+                      SNAPSHOT_CHECK_ENDPOINT: $(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)
+                      CHECK_PATH: ${{ check.path }}
 
           - ${{ each delete in parameters.deletes }}:
                 - bash: |
                       set -euo pipefail
 
-                      DESTINATION="${{ delete.path }}"
+                      # Read from the environment, never interpolated into this
+                      # script body, so a destination can only ever be data.
                       case "$DESTINATION" in
                         *..* | /* | *' '* | '')
                           echo "##vso[task.logissue type=error]Refusing to clear unsafe destination: $DESTINATION"
                           exit 1
                           ;;
                       esac
+                      if ! printf '%s' "$DESTINATION" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+                        echo "##vso[task.logissue type=error]Refusing to clear unsafe destination: $DESTINATION"
+                        exit 1
+                      fi
 
                       # The token is read from the environment and handed to curl
                       # on stdin: never on argv, never in the rendered script body.
                       printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - \
-                        --fail-with-body --silent --show-error \
-                        "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$DESTINATION" -X POST
+                        --fail-with-body --silent --show-error -X POST \
+                        "$DEPLOYMENT_SERVER/$DELETE_ENDPOINT?path=$DESTINATION"
                   displayName: "${{ delete.displayName }}"
                   condition: ${{ delete.condition }}
                   continueOnError: true
                   env:
                       DEPLOY_TOKEN: $(DEPLOY_TOKEN)
+                      DEPLOYMENT_SERVER: $(DEPLOYMENT_SERVER)
+                      DELETE_ENDPOINT: $(DEPLOY_ENDPOINT_DELETE)
+                      DESTINATION: ${{ delete.path }}
 
           - ${{ each upload in parameters.uploads }}:
                 - task: DownloadPipelineArtifact@2
                   displayName: "Download ${{ upload.artifact }}"
                   continueOnError: true
                   inputs:
+                      ${{ if ne(parameters.sourceDefinitionId, '') }}:
+                          buildType: "specific"
+                          project: "$(System.TeamProject)"
+                          definition: "${{ parameters.sourceDefinitionId }}"
+                          buildVersionToDownload: "specific"
+                          pipelineId: "${{ parameters.sourceRunId }}"
                       artifact: "${{ upload.artifact }}"
                       path: "$(Pipeline.Workspace)/staged-uploads/${{ upload.artifact }}"
 
@@ -196,12 +255,10 @@ jobs:
                         exit 0
                       fi
 
-                      DESTINATION="${{ upload.destination }}"
-
-                      # Defence in depth: refuse anything that is not a plain
-                      # relative path. Destinations come from trusted YAML, but
-                      # they interpolate $(BuildName), which is derived from the
-                      # branch name.
+                      # $DESTINATION is read from the environment, never
+                      # interpolated into this script body, so a caller-supplied
+                      # value can only ever be data. Then refuse anything that is
+                      # not a plain relative path.
                       case "$DESTINATION" in
                         *..* | /* | *' '* | '')
                           echo "##vso[task.logissue type=error]Refusing to upload to unsafe destination: $DESTINATION"
@@ -223,23 +280,23 @@ jobs:
                         HTTP_STATUS=$(curl_authorized --silent --show-error \
                           --output /dev/null \
                           --write-out "%{http_code}" \
-                          "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=$DESTINATION" || echo "000")
+                          "$DEPLOYMENT_SERVER/$SNAPSHOT_CHECK_ENDPOINT?buildNumber=$DESTINATION" || echo "000")
 
                         if [ "$HTTP_STATUS" = "200" ]; then
                           echo "Clearing stale contents of $DESTINATION"
-                          curl_authorized --fail-with-body --silent --show-error \
-                            "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$DESTINATION" -X POST || \
+                          curl_authorized --fail-with-body --silent --show-error -X POST \
+                            "$DEPLOYMENT_SERVER/$DELETE_ENDPOINT?path=$DESTINATION" || \
                             echo "##vso[task.logissue type=warning]Failed to clear $DESTINATION, continuing"
                         fi
                       fi
 
                       CURL_ARGS=(--fail-with-body --silent --show-error
-                        "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD)" -X POST
+                        "$DEPLOYMENT_SERVER/$UPLOAD_ENDPOINT" -X POST
                         -H "Content-Type: multipart/form-data"
                         -F "path=$DESTINATION"
-                        -F "storageAccount=${{ parameters.storageAccount }}")
+                        -F "storageAccount=$STORAGE_ACCOUNT")
 
-                      for FIELD in ${{ upload.extraFields }}; do
+                      for FIELD in $EXTRA_FIELDS; do
                         CURL_ARGS+=(-F "$FIELD")
                       done
 
@@ -252,6 +309,13 @@ jobs:
                   continueOnError: true
                   env:
                       DEPLOY_TOKEN: $(DEPLOY_TOKEN)
+                      DEPLOYMENT_SERVER: $(DEPLOYMENT_SERVER)
+                      UPLOAD_ENDPOINT: $(DEPLOY_ENDPOINT_UPLOAD)
+                      DELETE_ENDPOINT: $(DEPLOY_ENDPOINT_DELETE)
+                      SNAPSHOT_CHECK_ENDPOINT: $(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)
+                      STORAGE_ACCOUNT: ${{ parameters.storageAccount }}
+                      DESTINATION: ${{ upload.destination }}
+                      EXTRA_FIELDS: ${{ upload.extraFields }}
 
           - ${{ each purge in parameters.purges }}:
                 - bash: |
@@ -261,17 +325,27 @@ jobs:
                       # Azure finishes a purge, so never block on it.
                       printf 'header = "Authorization: %s"\n' "$DEPLOY_TOKEN" | curl --config - \
                         --fail-with-body --silent --show-error -X POST -i \
-                        "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=${{ purge.endpoint }}&profileName=${{ purge.profile }}&wait=false"
+                        "$DEPLOYMENT_SERVER/$PURGE_ENDPOINT?endpoint=$PURGE_TARGET&profileName=$PURGE_PROFILE&wait=false"
                   displayName: "${{ purge.displayName }}"
                   continueOnError: true
                   env:
                       DEPLOY_TOKEN: $(DEPLOY_TOKEN)
+                      DEPLOYMENT_SERVER: $(DEPLOYMENT_SERVER)
+                      PURGE_ENDPOINT: $(DEPLOY_ENDPOINT_PURGE)
+                      PURGE_TARGET: ${{ purge.endpoint }}
+                      PURGE_PROFILE: ${{ purge.profile }}
 
           - ${{ each fileComment in parameters.fileComments }}:
                 - task: DownloadPipelineArtifact@2
                   displayName: "Download ${{ fileComment.artifact }}"
                   continueOnError: true
                   inputs:
+                      ${{ if ne(parameters.sourceDefinitionId, '') }}:
+                          buildType: "specific"
+                          project: "$(System.TeamProject)"
+                          definition: "${{ parameters.sourceDefinitionId }}"
+                          buildVersionToDownload: "specific"
+                          pipelineId: "${{ parameters.sourceRunId }}"
                       artifact: "${{ fileComment.artifact }}"
                       path: "$(Pipeline.Workspace)/comment-payloads/${{ fileComment.artifact }}"
 
@@ -304,6 +378,8 @@ jobs:
                   inputs:
                       gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
                       repositoryName: "$(Build.Repository.Name)"
+                      ${{ if ne(parameters.commentTargetId, '') }}:
+                          id: "${{ parameters.commentTargetId }}"
                       comment: |
                           $(StagedComment_${{ fileComment.artifact }})
 
@@ -315,4 +391,6 @@ jobs:
                   inputs:
                       gitHubConnection: "$(GITHUB_SERVICE_CONNECTION)"
                       repositoryName: "$(Build.Repository.Name)"
+                      ${{ if ne(parameters.commentTargetId, '') }}:
+                          id: "${{ parameters.commentTargetId }}"
                       comment: ${{ comment.body }}

@@ -62,15 +62,26 @@ jobs:
             displayName: "npm ci"
             retryCountOnTaskFailure: 1
 
+          # Serve the Build job's snapshot from this agent. It used to be
+          # fetched from the public CDN, which required the pull request
+          # pipeline to upload it with the deployment token first.
+          - template: serve-staged-artifacts.yml
+            parameters:
+                port: "$(SnapshotServePort)"
+                displayName: "Serve Babylon snapshot"
+                artifacts:
+                    - artifact: "buildSnapshot"
+                      path: "."
+
           - script: npm run ${{ parameters.npmScript }} -- --no-fail-fast
             displayName: "Run memory leak tests (${{ parameters.suiteLabel }})"
             continueOnError: true
             env:
-                CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
+                CDN_BASE_URL: "http://127.0.0.1:$(SnapshotServePort)"
                 MEMLEAK_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/memleak-comment.md"
 
           # Credential-free: the comment body is published as a pipeline
-          # artifact and posted later by the trusted PublishTestReports job.
+          # artifact and posted later by the trusted cd-ci-snapshots pipeline.
           # This job runs pull-request-controlled test code, so it must not be
           # given the GitHub service connection.
           - bash: |

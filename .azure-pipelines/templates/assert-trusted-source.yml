@@ -16,6 +16,15 @@
 # It is intentionally a plain first step rather than a `condition:` - a
 # condition that evaluates to false marks the job "skipped", which reads as
 # success to downstream jobs, whereas an untrusted ref must be a hard failure.
+#
+# It compares `Build.SourceBranch`, the full ref, and never
+# `Build.SourceBranchName`. `Build.SourceBranchName` is only the last segment
+# of the ref, so a tag named `master` (`refs/tags/master`) or a branch named
+# `something/master` both report `master` and would pass a check written
+# against it. Every branch decision in this repository's credentialed
+# pipelines must therefore be made against the full ref, or against
+# `TrustedBranchName` below, which this step derives from the full ref *after*
+# it has been matched against the allow-list.
 # =============================================================================
 
 parameters:
@@ -87,4 +96,9 @@ steps:
           fi
 
           echo "Trusted source confirmed: $SOURCE_BRANCH ($REASON)"
+
+          # Publish the branch *name* only after the full ref passed the
+          # allow-list above, so downstream steps have a safe replacement for
+          # Build.SourceBranchName that a tag cannot spoof.
+          echo "##vso[task.setvariable variable=TrustedBranchName]${SOURCE_BRANCH#refs/heads/}"
       displayName: "${{ parameters.displayName }}"

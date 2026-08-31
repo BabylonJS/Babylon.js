@@ -1,0 +1,337 @@
+# =============================================================================
+# CI Snapshot Publisher (trusted)
+#
+# WHY THIS PIPELINE EXISTS
+# ------------------------
+# .azure-pipelines/ci-monorepo.yml, ci-graph-tools.yml and
+# ci-playground-sandbox.yml are compiled from pull request branches. Anything
+# their YAML can request, a pull request can request - including a variable
+# group. Keeping the deployment token or the GitHub service connection in those
+# definitions therefore hands both to any contributor who can open a pull
+# request, no matter how carefully the jobs inside are separated: the attacker
+# simply rewrites the separation away.
+#
+# A same-branch `extends:` does not fix that. An Azure DevOps "Required
+# template" check can only pin a template that lives in a *different*,
+# protected repository or ref; a template next to the root file on the same
+# branch is rewritten by the same pull request.
+#
+# So the credentials live here instead. This definition:
+#   * has no `pr:` trigger, so Azure DevOps never compiles it from a pull
+#     request branch;
+#   * has no `trigger:`, so no branch push compiles it either;
+#   * runs only when the CI Monorepo pipeline completes on master (a pipeline
+#     completion trigger evaluates the *triggered* pipeline's YAML from its own
+#     default branch, and does not fire at all for pull request validation
+#     runs), or when a maintainer queues it by hand;
+#   * asserts a trusted full ref and build reason before touching a credential,
+#     so a manual queue against an unmerged ref fails instead of publishing;
+#   * runs every job with `checkout: none`, so no repository code - trusted or
+#     not - is ever on an agent that holds a credential.
+#
+# WHAT IT PUBLISHES
+# -----------------
+# The CI pipelines stage their output as immutable pipeline artifacts. This
+# pipeline downloads those artifacts and uploads them to destinations that are
+# literals in this file. Nothing about the destination is read out of the
+# artifact, so a pull request cannot redirect an upload by writing a manifest.
+#
+# REPUBLISHING A PULL REQUEST BUILD
+# ---------------------------------
+# Pull request runs no longer publish snapshots automatically - that is the
+# point. A maintainer who wants the snapshot and the review comments for a
+# specific pull request queues this pipeline against master and supplies
+# `sourceRunId`, `buildName` and `pullRequestId`. The YAML that then executes is
+# always master's copy, and the artifacts are immutable, so reviewing the pull
+# request before publishing is a real control rather than a formality.
+#
+# ADMINISTRATOR SETUP
+# -------------------
+#   * Authorize BabylonJS-CI-Infrastructure and BabylonJS-Deployment for this
+#     definition, and for this definition only among the CI pipelines.
+#   * Authorize GITHUB_SERVICE_CONNECTION for this definition.
+#   * Set "Default branch for manual and scheduled builds" to refs/heads/master.
+#   * Add a branch control check on BabylonJS-Deployment that allows
+#     refs/heads/master only.
+#   * Update `resources.pipelines[].source` below to the CI Monorepo pipeline's
+#     display name in Azure DevOps.
+# =============================================================================
+
+trigger: none
+pr: none
+
+parameters:
+    - name: sourceRunId
+      displayName: "Run ID to publish (empty = the run that triggered this one)"
+      type: string
+      default: ""
+    - name: buildName
+      displayName: "Snapshot name: the full ref of the source run"
+      type: string
+      default: "refs/heads/master"
+    - name: pullRequestId
+      displayName: "Pull request number to comment on (empty = do not comment)"
+      type: string
+      default: ""
+    - name: deployToCdn
+      displayName: "Also copy the snapshot onto the production CDN path"
+      type: boolean
+      default: true
+
+resources:
+    pipelines:
+        - pipeline: ciMonorepo
+          source: "CI Monorepo" # Update with the actual pipeline name
+          trigger:
+              branches:
+                  include:
+                      - master
+
+variables:
+    # Only the non-secret infrastructure group is pipeline-scoped.
+    # BabylonJS-Deployment (DEPLOY_TOKEN) is linked to the publishing jobs
+    # individually, so the Gate job never has the token in its scope.
+    - group: BabylonJS-CI-Infrastructure
+    # Azure Pipelines definition ID of the CI Monorepo pipeline. A literal, so
+    # a queued run can only ever pull artifacts from that one definition.
+    - name: SourceDefinitionId
+      value: 14
+    # Upload destinations are derived from this. It is a compile-time parameter
+    # rather than a runtime variable, so no job - and no artifact - can change
+    # it after the run starts.
+    - name: BuildName
+      value: ${{ parameters.buildName }}
+      readonly: true
+    - ${{ if ne(parameters.sourceRunId, '') }}:
+          - name: SourceRunId
+            value: ${{ parameters.sourceRunId }}
+            readonly: true
+    - ${{ else }}:
+          - name: SourceRunId
+            value: $(resources.pipeline.ciMonorepo.runID)
+            readonly: true
+    - name: system.debug
+      value: false
+
+pool:
+    vmImage: ubuntu-latest
+
+jobs:
+    # ========================================================================
+    # GATE
+    #
+    # Runs before anything that holds a credential. Two independent checks:
+    #   1. templates/assert-trusted-source.yml - the run itself must come from
+    #      a trusted full ref and a trusted reason.
+    #   2. A manual republish must not target a protected snapshot path. A
+    #      maintainer republishing a pull request build supplies its ref; if
+    #      they supplied `refs/heads/master` together with an arbitrary source
+    #      run they would overwrite the master snapshot with that run's output.
+    # ========================================================================
+    - job: Gate
+      displayName: "Gate (trusted source)"
+      steps:
+          - checkout: none
+
+          - template: templates/assert-trusted-source.yml
+
+          # BUILD_NAME and SOURCE_RUN_ID are queue-time parameters. They are
+          # passed through `env:` and dereferenced as shell variables: a
+          # `${{ }}` template expression is a *textual* substitution performed
+          # before the script runs, so interpolating them into the script body
+          # would let a queued value close the assignment's quote and run its
+          # own commands - before these checks could reject it.
+          - bash: |
+                set -euo pipefail
+
+                if ! printf '%s' "$BUILD_NAME" | grep -Eq '^refs/(heads|pull)/[A-Za-z0-9._/-]+$'; then
+                    echo "##vso[task.logissue type=error]Refusing to publish to '$BUILD_NAME': not a plain ref"
+                    exit 1
+                fi
+
+                if [ -n "$SOURCE_RUN_ID" ]; then
+                    case "$BUILD_NAME" in
+                        refs/heads/master | refs/heads/preview)
+                            echo "##vso[task.logissue type=error]Refusing to overwrite the '$BUILD_NAME' snapshot from an explicitly chosen run"
+                            exit 1
+                            ;;
+                    esac
+
+                    if ! printf '%s' "$SOURCE_RUN_ID" | grep -Eq '^[0-9]+$'; then
+                        echo "##vso[task.logissue type=error]sourceRunId must be a run number"
+                        exit 1
+                    fi
+                fi
+
+                if [ -n "$PULL_REQUEST_ID" ] && ! printf '%s' "$PULL_REQUEST_ID" | grep -Eq '^[0-9]+$'; then
+                    echo "##vso[task.logissue type=error]pullRequestId must be an issue number"
+                    exit 1
+                fi
+
+                echo "Publishing '$BUILD_NAME' from definition $SOURCE_DEFINITION_ID run $RESOLVED_RUN_ID"
+            displayName: "Validate publish request"
+            env:
+                BUILD_NAME: ${{ parameters.buildName }}
+                SOURCE_RUN_ID: ${{ parameters.sourceRunId }}
+                PULL_REQUEST_ID: ${{ parameters.pullRequestId }}
+                SOURCE_DEFINITION_ID: $(SourceDefinitionId)
+                RESOLVED_RUN_ID: $(SourceRunId)
+
+    # ========================================================================
+    # SNAPSHOT + FILE SIZES
+    # ========================================================================
+    - template: templates/publish-uploads-job.yml
+      parameters:
+          jobName: PublishSnapshot
+          displayName: "Publish snapshot (trusted)"
+          dependsOn:
+              - Gate
+          condition: succeeded()
+          requireTrustedSource: true
+          variables:
+              - group: BabylonJS-Deployment
+          sourceDefinitionId: "$(SourceDefinitionId)"
+          sourceRunId: "$(SourceRunId)"
+          commentTargetId: "${{ parameters.pullRequestId }}"
+          snapshotChecks:
+              - name: SNAPSHOTEXISTS
+                path: "$(BuildName)"
+          # Never clear the protected snapshots: master and preview are
+          # cumulative and are only ever added to.
+          ${{ if not(or(eq(parameters.buildName, 'refs/heads/master'), eq(parameters.buildName, 'refs/heads/preview'))) }}:
+              deletes:
+                  - path: "$(BuildName)"
+                    displayName: "Clear snapshot"
+                    condition: eq(variables['SNAPSHOTEXISTS'], 'true')
+          uploads:
+              - artifact: buildSnapshot
+                destination: "$(BuildName)"
+                deleteStale: false
+                extraFields: "saveZip=true"
+                displayName: "Upload snapshot"
+              - artifact: fileSizeReport
+                destination: "$(BuildName)"
+                deleteStale: false
+                extraFields: ""
+                displayName: "Upload file size results"
+          ${{ if ne(parameters.pullRequestId, '') }}:
+              comments:
+                  - displayName: "Writing GitHub comment"
+                    condition: succeeded()
+                    body: |
+                        Snapshot stored with reference name:
+                        $(BuildName)
+
+                        Test environment:
+                        $(SNAPSHOT_CDN_URL)/$(BuildName)/index.html
+
+                        To test a playground add it to the URL, for example:
+
+                        $(SNAPSHOT_CDN_URL)/$(BuildName)/index.html#WGZLGJ#4600
+
+                        Links to test your changes to core in the published versions of the Babylon tools (does not contain changes you made to the tools themselves):
+
+                        https://playground.babylonjs.com/?snapshot=$(BuildName)
+                        https://sandbox.babylonjs.com/?snapshot=$(BuildName)
+                        https://gui.babylonjs.com/?snapshot=$(BuildName)
+                        https://nme.babylonjs.com/?snapshot=$(BuildName)
+
+                        To test the snapshot in the playground with a playground ID add it after the snapshot query string:
+
+                        https://playground.babylonjs.com/?snapshot=$(BuildName)#BCU1XR#0
+                  - displayName: "Writing SFE GitHub comment"
+                    condition: succeeded()
+                    body: |
+                        Smart Filters Editor is available to test at:
+                        https://sfe.babylonjs.com/?snapshot=$(BuildName)
+
+    # ========================================================================
+    # TEST REPORTS + REVIEW COMMENTS
+    # ========================================================================
+    - template: templates/publish-uploads-job.yml
+      parameters:
+          jobName: PublishTestReports
+          displayName: "Publish test reports (trusted)"
+          dependsOn:
+              - Gate
+              - PublishSnapshot
+          # Reports are still worth publishing when the source run was red, so
+          # a failed PublishSnapshot must not block this job. A failed Gate
+          # must, though: a bare `succeededOrFailed()` evaluates true even when
+          # a dependency failed or was skipped, which would let a rejected
+          # publish request through to a credentialed job.
+          condition: and(succeeded('Gate'), not(canceled()))
+          timeoutInMinutes: 30
+          requireTrustedSource: true
+          variables:
+              - group: BabylonJS-Deployment
+          sourceDefinitionId: "$(SourceDefinitionId)"
+          sourceRunId: "$(SourceRunId)"
+          commentTargetId: "${{ parameters.pullRequestId }}"
+          uploads:
+              - artifact: interactionReport
+                destination: "$(BuildName)/testResults/interactionplaywright"
+                deleteStale: true
+                extraFields: ""
+                displayName: "Upload interaction test results"
+          ${{ if ne(parameters.pullRequestId, '') }}:
+              fileComments:
+                  - displayName: "Post reviewer notes"
+                    artifact: prAdviceComment
+                    file: comment.md
+                    condition: succeededOrFailed()
+                  - displayName: "Post memory leak results (CI)"
+                    artifact: memleakCommentCI
+                    file: comment.md
+                    condition: succeededOrFailed()
+                  - displayName: "Post memory leak results (packages)"
+                    artifact: memleakCommentPackages
+                    file: comment.md
+                    condition: succeededOrFailed()
+              comments:
+                  - displayName: "Interaction test report comment"
+                    condition: succeededOrFailed()
+                    body: |
+                        Interaction tests
+
+                        $(SNAPSHOT_CDN_URL)/$(BuildName)/testResults/interactionplaywright/index.html
+
+    # ========================================================================
+    # PRODUCTION CDN
+    #
+    # Copies the snapshot that was just published onto the branch's CDN path.
+    # Only reachable for the protected refs, and never for a hand-picked source
+    # run, so a republished pull request build cannot reach production.
+    # ========================================================================
+    - ${{ if and(parameters.deployToCdn, eq(parameters.sourceRunId, ''), or(eq(parameters.buildName, 'refs/heads/master'), eq(parameters.buildName, 'refs/heads/preview'))) }}:
+          - template: templates/publish-uploads-job.yml
+            parameters:
+                jobName: DeployCdn
+                displayName: "Deploy to CDN (trusted)"
+                dependsOn:
+                    - Gate
+                    - PublishSnapshot
+                condition: succeeded()
+                requireTrustedSource: true
+                variables:
+                    - group: BabylonJS-Deployment
+                sourceDefinitionId: "$(SourceDefinitionId)"
+                sourceRunId: "$(SourceRunId)"
+                uploads:
+                    - artifact: buildSnapshot
+                      destination: "cdn/${{ replace(parameters.buildName, 'refs/heads/', '') }}"
+                      deleteStale: false
+                      extraFields: ""
+                      displayName: "Update CDN"
+                    - artifact: fileSizeReport
+                      destination: "cdn/${{ replace(parameters.buildName, 'refs/heads/', '') }}"
+                      deleteStale: false
+                      extraFields: ""
+                      displayName: "Update CDN file sizes"
+                purges:
+                    - endpoint: "$(CDN_ENDPOINT_CDN)"
+                      profile: "$(CDN_PROFILE_CDN)"
+                      displayName: "Purge CDN"
+                    - endpoint: "$(CDN_ENDPOINT_PREVIEW_CDN)"
+                      profile: "$(CDN_PROFILE_CDN)"
+                      displayName: "Purge preview CDN"

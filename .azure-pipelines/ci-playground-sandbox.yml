@@ -1,19 +1,36 @@
 # =============================================================================
 # Playground/Sandbox CI Pipeline (Definition ID: 32) - root
 #
-# SECURITY: this file is the *root* of a pipeline that is evaluated from pull
-# request branches. It deliberately contains no `variables`, no `jobs` and no
-# `steps`; everything that can reference a credential lives in the trusted
-# template named by `extends` below.
+# SECURITY: this file is the root of a pipeline that Azure DevOps compiles from
+# pull request branches. A pull request can rewrite every line of it, and every
+# line of templates/ci-playground-sandbox-pipeline.yml, because that
+# template lives on the same branch. An Azure DevOps "Required template" check
+# cannot help here either - it can only pin a template that comes from a
+# separate, protected repository or ref, which this repository does not have.
 #
-# `extends` is the only pipeline construct Azure DevOps' "Required template"
-# check understands. With this shape an administrator can require that
-# templates/ci-playground-sandbox-pipeline.yml comes from refs/heads/master before a
-# protected variable group or service connection is released to the run, and a
-# pull request that rewrites this file, or the template on its own branch, is
-# denied the credential instead of being handed it.
+# The guarantee is therefore not "the YAML is trusted". It is that this
+# pipeline, root and template together, requests NO secret-bearing protected
+# resource:
 #
-# Add pipeline logic to the template, not here.
+#   * no BabylonJS-Deployment (DEPLOY_TOKEN)
+#   * no Browserstack-Opensource
+#   * no GitHub service connection
+#
+# There is nothing in the run for a malicious pull request to steal. Everything
+# that needs a credential lives in a definition with `pr: none`:
+#
+#   * .azure-pipelines/cd-ci-snapshots.yml  - snapshot/report uploads, CDN
+#     deployment and pull request comments
+#   * .azure-pipelines/ci-browser-testing.yml - BrowserStack runs
+#   * .azure-pipelines/cd-publish.yml / cd-tools.yml - releases and tool
+#     deployments
+#
+# The Azure DevOps administrator must keep this pipeline definition
+# *unauthorized* for every secret variable group and service connection. That
+# authorization, not this comment, is what enforces the boundary.
+#
+# `.azure-pipelines/scripts/validate-pipeline-trust-boundary.mjs` fails CI if a
+# secret group is reintroduced here or into the template.
 # =============================================================================
 
 trigger: none

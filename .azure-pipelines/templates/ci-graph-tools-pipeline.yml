@@ -1,13 +1,17 @@
 # =============================================================================
-# GraphTools CI Pipeline (Definition ID: 33) - trusted body
+# GraphTools CI Pipeline (Definition ID: 33) - pipeline body
 #
-# Trusted pipeline body for .azure-pipelines/ci-graph-tools.yml.
+# Pipeline body for .azure-pipelines/ci-graph-tools.yml.
 #
-# This template is the target of that pipeline's root `extends`, which makes
-# it the artifact an Azure DevOps "Required template" check can pin to
-# refs/heads/master. Every credentialed job in this pipeline is therefore
-# gated on this file being the trusted, merged copy rather than a version
-# rewritten on a pull request branch.
+# This is NOT a security boundary. The root pipeline `extends` this file from
+# the *same branch*, so a pull request that edits the root can edit this file
+# too, and an Azure DevOps "Required template" check cannot pin a same-branch
+# template to refs/heads/master. The file is split out for readability only.
+#
+# The actual boundary is that this pipeline - root and body together - requests
+# no secret-bearing protected resource at all. Rewriting this YAML on a pull
+# request branch therefore gains an attacker nothing: there is no credential in
+# the run to steal.
 # =============================================================================
 
 # Original pipeline documentation:
@@ -17,40 +21,48 @@
 # Converted from Azure DevOps Classic Pipeline
 #
 # Triggers on PRs that touch graph tool editor files.
-# Builds NME, NGE, NRGE, GUI Editor, NPE, FGE, SFE, deploys snapshots, and runs
-# Playwright tests.
+# Builds NME, NGE, NRGE, GUI Editor, NPE, FGE and SFE, serves them from the
+# agent, and runs Playwright tests against them.
 #
 # Variable groups:
-#   - BabylonJS-CI-Infrastructure
-#   - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
+#   - BabylonJS-CI-Infrastructure (no secrets; public CDN URLs and endpoint
+#     names only)
 #
 # CI TRUST BOUNDARY
 # -----------------
 # This pipeline is triggered by pull requests, so every job that checks the
-# repository out executes pull-request-controlled code. Those jobs are
-# credential-free: they build, test, and stage their output as pipeline
-# artifacts, and nothing more.
+# repository out executes pull-request-controlled code - `npm ci` lifecycle
+# scripts, build scripts and Playwright specs. Consequently the pipeline maps
+# NO secret variable group and uses NO service connection:
 #
-# All deployment-token and GitHub-service-connection work happens in the
-# DeployTools and PublishToolsResults jobs, which run with `checkout: none` on
-# freshly provisioned agents. Pull-request code is never present there, so it
-# cannot read a credential, leave a background process behind to scrape one, or
-# redirect an upload.
+#   * BabylonJS-Deployment (DEPLOY_TOKEN) is not referenced. Tool snapshots are
+#     no longer uploaded from here; the test job serves the built editors from
+#     the agent over loopback instead (templates/serve-staged-artifacts.yml).
+#   * GITHUB_SERVICE_CONNECTION is not used. Pull request comments that used to
+#     be posted from here are posted by the trusted, `pr: none`
+#     .azure-pipelines/cd-ci-snapshots.yml publisher when a maintainer chooses
+#     to publish a run.
 #
-# Fork gating alone would not be sufficient - a compromised or malicious
-# collaborator can open a same-repo pull request - which is why the separation
-# is enforced by job boundaries rather than by trigger conditions.
+# The Azure DevOps administrator must keep this pipeline definition
+# *unauthorized* for every secret-bearing variable group and service
+# connection. That authorization - not this YAML, which a pull request can
+# rewrite - is what makes the guarantee enforceable.
 # See the "CI trust boundary" section of VARIABLE-GROUPS.md.
 # =============================================================================
 
 variables:
+    # Non-secret infrastructure values only (public CDN base URL, deployment
+    # server endpoint *names*). No secret group is mapped anywhere in this
+    # pipeline - see the trust boundary note above.
     - group: BabylonJS-CI-Infrastructure
-    - group: BabylonJS-Deployment
+    # Identifies the artifacts this run staged, for the trusted publisher.
+    # `readonly` so pull-request code cannot repoint anything downstream with
+    # `##vso[task.setvariable variable=BuildName]`.
     - name: BuildName
       value: $(Build.SourceBranch)
-      # Read-only: pull-request code cannot repoint deployment destinations
-      # with `##vso[task.setvariable variable=BuildName]`.
       readonly: true
+    - name: ToolPreviewPort
+      value: 1350
 
 pool:
     vmImage: ubuntu-latest
@@ -175,60 +187,16 @@ jobs:
                 displayName: "Stage SFE deployment"
 
     # ========================================================================
-    # DEPLOY TOOLS - trusted: `checkout: none`, no pull-request code on disk
-    # ========================================================================
-    - template: publish-uploads-job.yml
-      parameters:
-          jobName: DeployTools
-          displayName: "Deploy tool snapshots (trusted)"
-          dependsOn:
-              - BuildTools
-          condition: succeeded()
-          uploads:
-              - artifact: "toolDeployNodeEditor"
-                destination: "TOOLS/$(BuildName)/nodeEditor"
-                deleteStale: false
-                extraFields: ""
-                displayName: "Deploy NME"
-              - artifact: "toolDeployNodeGeometryEditor"
-                destination: "TOOLS/$(BuildName)/nodeGeometryEditor"
-                deleteStale: false
-                extraFields: ""
-                displayName: "Deploy NGE"
-              - artifact: "toolDeployNodeRenderGraphEditor"
-                destination: "TOOLS/$(BuildName)/nodeRenderGraphEditor"
-                deleteStale: false
-                extraFields: ""
-                displayName: "Deploy NRGE"
-              - artifact: "toolDeployGuiEditor"
-                destination: "TOOLS/$(BuildName)/guiEditor"
-                deleteStale: false
-                extraFields: ""
-                displayName: "Deploy GUI Editor"
-              - artifact: "toolDeployNodeParticleEditor"
-                destination: "TOOLS/$(BuildName)/nodeParticleEditor"
-                deleteStale: false
-                extraFields: ""
-                displayName: "Deploy NPE"
-              - artifact: "toolDeployFlowGraphEditor"
-                destination: "TOOLS/$(BuildName)/flowGraphEditor"
-                deleteStale: false
-                extraFields: ""
-                displayName: "Deploy FGE"
-              - artifact: "toolDeploySmartFiltersEditor"
-                destination: "TOOLS/$(BuildName)/smartFiltersEditor"
-                deleteStale: false
-                extraFields: ""
-                displayName: "Deploy SFE"
-
-    # ========================================================================
     # TEST TOOLS - executes pull-request code, holds NO credentials
-    # Tests run against the snapshots DeployTools published to the public CDN.
+    #
+    # The editors are served from this agent over loopback, so the tests never
+    # depend on a credentialed upload and always exercise the build this run
+    # produced.
     # ========================================================================
     - job: TestTools
       displayName: "Test tools"
       dependsOn:
-          - DeployTools
+          - BuildTools
       steps:
           - checkout: self
             clean: true
@@ -246,9 +214,25 @@ jobs:
                 command: custom
                 customCommand: "ci"
 
-          - template: wait-for-snapshot.yml
+          - template: serve-staged-artifacts.yml
             parameters:
-                displayName: "Wait for Babylon snapshot"
+                port: "$(ToolPreviewPort)"
+                displayName: "Serve staged tool builds"
+                artifacts:
+                    - artifact: "toolDeployNodeEditor"
+                      path: "nodeEditor"
+                    - artifact: "toolDeployNodeGeometryEditor"
+                      path: "nodeGeometryEditor"
+                    - artifact: "toolDeployNodeRenderGraphEditor"
+                      path: "nodeRenderGraphEditor"
+                    - artifact: "toolDeployGuiEditor"
+                      path: "guiEditor"
+                    - artifact: "toolDeployNodeParticleEditor"
+                      path: "nodeParticleEditor"
+                    - artifact: "toolDeployFlowGraphEditor"
+                      path: "flowGraphEditor"
+                    - artifact: "toolDeploySmartFiltersEditor"
+                      path: "smartFiltersEditor"
 
           - script: |
                 npx playwright install --with-deps
@@ -257,14 +241,13 @@ jobs:
             env:
                 CI: "true"
                 BROWSER: "Chrome"
-                NME_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeEditor/"
-                NGE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeGeometryEditor/"
-                NRGE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeRenderGraphEditor/"
-                NPE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeParticleEditor/"
-                FGE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/flowGraphEditor/"
-                SFE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/smartFiltersEditor/"
-                GUIEDITOR_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/guiEditor/"
-                SNAPSHOT: "$(BuildName)"
+                NME_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/nodeEditor/"
+                NGE_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/nodeGeometryEditor/"
+                NRGE_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/nodeRenderGraphEditor/"
+                NPE_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/nodeParticleEditor/"
+                FGE_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/flowGraphEditor/"
+                SFE_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/smartFiltersEditor/"
+                GUIEDITOR_BASE_URL: "http://127.0.0.1:$(ToolPreviewPort)/guiEditor/"
 
           - template: stage-upload.yml
             parameters:
@@ -275,49 +258,11 @@ jobs:
                 condition: succeededOrFailed()
                 continueOnError: true
 
-    # ========================================================================
-    # PUBLISH RESULTS - trusted: `checkout: none`, no pull-request code on disk
-    # ========================================================================
-    - template: publish-uploads-job.yml
-      parameters:
-          jobName: PublishToolsResults
-          displayName: "Publish tool results (trusted)"
-          dependsOn:
-              - BuildTools
-              - DeployTools
-              - TestTools
-          condition: succeededOrFailed()
-          variables:
-              BuildToolsResult: $[ dependencies.BuildTools.result ]
-              DeployToolsResult: $[ dependencies.DeployTools.result ]
-              TestToolsResult: $[ dependencies.TestTools.result ]
-          uploads:
-              - artifact: "graphToolsTestReport"
-                destination: "TOOLS/$(BuildName)/testResults"
-                deleteStale: false
-                extraFields: ""
-                displayName: "Upload graph tools test report"
-          comments:
-              - displayName: "Tests failed message"
-                condition: >-
-                    or(
-                      in(variables['BuildToolsResult'], 'Failed', 'Canceled'),
-                      in(variables['DeployToolsResult'], 'Failed', 'Canceled'),
-                      in(variables['TestToolsResult'], 'Failed', 'Canceled')
-                    )
-                body: |
-                    Graph tools CI has failed you can find the test results at:
-
-                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/testResults/
-              - displayName: "Tests success"
-                condition: eq(variables['TestToolsResult'], 'Succeeded')
-                body: |
-                    You have made possible changes to one or more graph tools. To test the snapshots:
-
-                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeEditor/
-                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeGeometryEditor/
-                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeParticleEditor/
-                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeRenderGraphEditor/
-                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/flowGraphEditor/
-                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/smartFiltersEditor/
-                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/guiEditor/
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish tool builds for review"
+            condition: succeededOrFailed()
+            continueOnError: true
+            inputs:
+                targetPath: "$(Agent.TempDirectory)/tool-preview"
+                artifact: "graphToolsPreview"
+                publishLocation: "pipeline"

@@ -1,0 +1,91 @@
+# =============================================================================
+# Template: Serve staged build artifacts from the agent (CREDENTIAL-FREE)
+#
+# Pull request pipelines used to test the engine and the editors by uploading
+# each build to the public snapshot CDN with the deployment token and then
+# pointing Playwright at the resulting URL. That made the deployment token a
+# hard requirement of pipelines whose YAML a pull request can rewrite, which is
+# the exact shape this repository must not have (see the "CI trust boundary"
+# section of VARIABLE-GROUPS.md).
+#
+# This template replaces that round-trip. It downloads the archives the build
+# job staged as pipeline artifacts, unpacks them under a single web root, and
+# serves that root over loopback with Python's standard-library static server -
+# already present on the hosted Ubuntu images, so no extra dependency and no
+# extra lifecycle script is introduced.
+#
+# The test job then runs against `http://127.0.0.1:<port>/<path>/`, which is:
+#   * credential-free - nothing is uploaded, so no token is needed;
+#   * hermetic - tests exercise the build produced by *this* run rather than
+#     whatever happens to be on the CDN when the test starts;
+#   * faster - no upload, no CDN propagation wait.
+#
+# The server is bound to 127.0.0.1 so it is not reachable from outside the
+# agent.
+# =============================================================================
+
+parameters:
+    # Archives to unpack under the web root.
+    #   - artifact: pipeline artifact name staged by stage-upload.yml or
+    #               stage-tool-deployment.yml
+    #     path:     directory under the web root, e.g. 'nodeEditor', or '.' to
+    #               unpack at the root
+    - name: artifacts
+      type: object
+    # Declared as a string, not a number, so callers can pass a pipeline
+    # variable macro such as `$(SnapshotServePort)`. Template parameters are
+    # resolved at compile time and a macro is not a number at that point.
+    - name: port
+      type: string
+      default: "1350"
+    - name: displayName
+      type: string
+      default: "Serve staged build artifacts"
+
+steps:
+    - ${{ each tool in parameters.artifacts }}:
+          - task: DownloadPipelineArtifact@2
+            displayName: "Download ${{ tool.artifact }}"
+            inputs:
+                artifact: "${{ tool.artifact }}"
+                path: "$(Pipeline.Workspace)/tool-preview-artifacts/${{ tool.artifact }}"
+
+          - bash: |
+                set -euo pipefail
+
+                WEB_ROOT="$(Agent.TempDirectory)/tool-preview"
+                TARGET="$WEB_ROOT/${{ tool.path }}"
+                PAYLOAD="$(Pipeline.Workspace)/tool-preview-artifacts/${{ tool.artifact }}/payload.zip"
+
+                if [ ! -f "$PAYLOAD" ]; then
+                  echo "##vso[task.logissue type=error]Missing payload for '${{ tool.artifact }}'"
+                  exit 1
+                fi
+
+                mkdir -p "$TARGET"
+                unzip -q -o "$PAYLOAD" -d "$TARGET"
+            displayName: "Unpack ${{ tool.artifact }}"
+
+    - bash: |
+          set -euo pipefail
+
+          WEB_ROOT="$(Agent.TempDirectory)/tool-preview"
+          PORT="${{ parameters.port }}"
+
+          # Loopback only: the preview is for this agent's browser, not the
+          # public internet.
+          nohup python3 -m http.server "$PORT" --bind 127.0.0.1 --directory "$WEB_ROOT" \
+            > "$(Agent.TempDirectory)/tool-preview-server.log" 2>&1 &
+
+          for _ in $(seq 1 60); do
+            if curl --silent --fail --max-time 2 "http://127.0.0.1:$PORT/" > /dev/null; then
+              echo "Static artifact server ready on http://127.0.0.1:$PORT/"
+              exit 0
+            fi
+            sleep 1
+          done
+
+          echo "##vso[task.logissue type=error]Static artifact server did not start"
+          cat "$(Agent.TempDirectory)/tool-preview-server.log" || true
+          exit 1
+      displayName: "${{ parameters.displayName }}"
