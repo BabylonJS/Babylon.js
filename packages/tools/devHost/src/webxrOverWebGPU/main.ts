@@ -16,6 +16,14 @@ interface IStatusPanel {
     text: HTMLDivElement;
 }
 
+function FormatError(error: unknown): string {
+    if (!(error instanceof Error)) {
+        return String(error);
+    }
+    const cause = error.cause ? `; cause: ${FormatError(error.cause)}` : "";
+    return `${error.name}: ${error.message}${cause}`;
+}
+
 function GetStateName(state: WebXRState): string {
     switch (state) {
         case WebXRState.ENTERING_XR:
@@ -95,6 +103,12 @@ async function CreateSceneAsync(engine: WebGPUEngine, canvas: HTMLCanvasElement,
 
     const xr = await WebXRDefaultExperience.CreateAsync(scene, {
         floorMeshes: [ground],
+        uiOptions: {
+            onError: (error) => {
+                diagnostics.push(`XR entry error: ${FormatError(error)}`);
+                renderStatus();
+            },
+        },
     });
     if (!xr.baseExperience) {
         diagnostics.push("Default experience: failed before base experience initialization");
@@ -153,7 +167,7 @@ export async function Main(_searchParams: URLSearchParams): Promise<void> {
     try {
         await engine.initAsync();
     } catch (error) {
-        statusPanel.text.textContent = `WebXR over WebGPU\nEngine: initialization failed\nLast error: ${error instanceof Error ? error.message : String(error)}`;
+        statusPanel.text.textContent = `WebXR over WebGPU\nEngine: initialization failed\nLast error: ${FormatError(error)}`;
         engine.dispose();
         return;
     }
