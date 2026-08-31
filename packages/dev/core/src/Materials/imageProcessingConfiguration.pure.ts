@@ -300,20 +300,23 @@ export class ImageProcessingConfiguration {
         this._updateParameters();
     }
 
-    private _whiteBalanceMatrix: Float32Array | Array<number> = GetWhiteBalanceMatrix(this._temperature, this._tint);
-    private _whiteBalanceMatrixTemperature = this._temperature;
-    private _whiteBalanceMatrixTint = this._tint;
+    private _whiteBalanceMatrix: Nullable<Float32Array | Array<number>> = null;
+    private _whiteBalanceMatrixTemperature: Nullable<number> = null;
+    private _whiteBalanceMatrixTint: Nullable<number> = null;
 
     /**
-     * Returns the white balance matrix for the current temperature/tint, recomputing it if either value has
-     * changed since it was last computed. Deliberately lazy (checked here rather than eagerly refreshed from the
-     * temperature/tint setters) so that paths which set the private backing fields directly - such as
-     * SerializationHelper.Clone/Parse, which assign serialized properties without going through their setters -
-     * still end up with a matrix that matches the current temperature/tint.
+     * Returns the white balance matrix for the current temperature/tint, computing it on first use and
+     * recomputing it if either value has changed since it was last computed. Deliberately lazy: white balance is
+     * disabled by default, and every `ImageProcessingConfiguration` instance (created per scene, per material,
+     * per post process) would otherwise pay this matrix's construction cost even when never enabled. Checking
+     * here (rather than eagerly refreshing from the temperature/tint setters) also means paths that set the
+     * private backing fields directly - such as SerializationHelper.Clone/Parse, which assign serialized
+     * properties without going through their setters - still end up with a matrix that matches the current
+     * temperature/tint.
      * @returns the column-major white balance matrix for the current temperature/tint
      */
     private _getWhiteBalanceMatrix(): Float32Array | Array<number> {
-        if (this._whiteBalanceMatrixTemperature !== this._temperature || this._whiteBalanceMatrixTint !== this._tint) {
+        if (this._whiteBalanceMatrix === null || this._whiteBalanceMatrixTemperature !== this._temperature || this._whiteBalanceMatrixTint !== this._tint) {
             this._whiteBalanceMatrixTemperature = this._temperature;
             this._whiteBalanceMatrixTint = this._tint;
             this._whiteBalanceMatrix = GetWhiteBalanceMatrix(this._temperature, this._tint);
