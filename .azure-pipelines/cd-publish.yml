@@ -180,8 +180,7 @@ jobs:
                 BUNDLE_DIR="$(Build.ArtifactStagingDirectory)/git-bundle"
                 mkdir -p "$BUNDLE_DIR"
 
-                git bundle create "$BUNDLE_DIR/release.bundle" \
-                  "$(Build.SourceBranchName)" --tags
+                git bundle create "$BUNDLE_DIR/release.bundle" --all
                 git rev-parse HEAD > "$BUNDLE_DIR/head.txt"
             displayName: "Bundle release commits"
 
@@ -378,7 +377,8 @@ jobs:
 
                 WORK="$(Agent.TempDirectory)/release-repo"
                 rm -rf "$WORK"
-                $GIT clone --bare "$(Pipeline.Workspace)/git-bundle/release.bundle" "$WORK"
+                $GIT clone --branch "$(Build.SourceBranchName)" \
+                  "$(Pipeline.Workspace)/git-bundle/release.bundle" "$WORK"
                 cd "$WORK"
 
                 $GIT config user.email "$(BOT_EMAIL)"
@@ -396,7 +396,12 @@ jobs:
                 # helper is removed before the step exits.
                 $GIT config --local credential.helper '!f() { printf "username=x-access-token\npassword=%s\n" "${GITHUBPAT}"; }; f'
 
-                $GIT remote add origin https://github.com/BabylonJS/Babylon.js.git
+                # The bundle's "origin" is the local bundle file; repoint it at
+                # GitHub, then reproduce the original fetch/merge/push sequence so
+                # commits landed on the branch during the build are not clobbered.
+                $GIT remote set-url origin https://github.com/BabylonJS/Babylon.js.git
+                $GIT fetch origin
+                $GIT merge "origin/$(Build.SourceBranchName)"
                 $GIT push origin "$(Build.SourceBranchName)" --tags
             displayName: "push branch and tags"
             env:
