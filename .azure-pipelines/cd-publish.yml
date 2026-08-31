@@ -13,6 +13,18 @@
 # Secret variables (configure in pipeline UI):
 #   - GitHubPAT
 #   - NPM_TOKEN
+#
+# CREDENTIAL HANDLING RULES (see VARIABLE-GROUPS.md "CI trust boundary"):
+#   - Credentials are never embedded in remote URLs or command lines, so they
+#     cannot be recovered from .git/config, the process table, or shell traces.
+#   - GitHubPAT is mapped into the environment of only the steps that need it
+#     and the git credential helper that consumes it is removed afterwards.
+#   - NPM_TOKEN is written to an ephemeral npm user config outside the working
+#     directory (mode 0600) that is deleted when the job ends, so third-party
+#     lifecycle scripts executed by `npm ci`/`npm install` cannot read it.
+#   - Publishing runs with `--ignore-scripts`; no published workspace defines
+#     prepack/prepublishOnly, so no lifecycle code executes while the registry
+#     token is reachable.
 # =============================================================================
 
 trigger:
@@ -41,6 +53,7 @@ jobs:
             clean: true
             fetchDepth: 0
             fetchTags: true
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -48,12 +61,20 @@ jobs:
                 version: "24.x"
 
           - bash: |
+                set -euo pipefail
+
                 git config --global user.email "$(BOT_EMAIL)"
                 git config --global user.name "Babylon.js Platform"
-                git remote rm origin
-                git remote add origin https://$(GitHubPAT)@github.com/BabylonJS/Babylon.js.git
+
+                # Anonymous remote: BabylonJS/Babylon.js is public, so fetching
+                # needs no credentials. Keeping the PAT out of the remote URL
+                # keeps it out of .git/config, where every later step - including
+                # third-party npm lifecycle scripts - could otherwise read it.
+                git remote set-url origin https://github.com/BabylonJS/Babylon.js.git ||
+                    git remote add origin https://github.com/BabylonJS/Babylon.js.git
+
                 git fetch origin
-                git checkout $(Build.SourceBranchName)
+                git checkout "$(Build.SourceBranchName)"
             displayName: "prepare git"
 
           - bash: npm ci
@@ -75,13 +96,9 @@ jobs:
 
           - bash: node ./scripts/tagVersion.js $(Build.SourceBranchName)
             displayName: "Tag the version"
-            env:
-                GITHUBPAT: $(GitHubPAT)
 
           - bash: npm run format:fix
             displayName: "fix formatting"
-            env:
-                GITHUBPAT: $(GitHubPAT)
 
           - bash: npm run test:unit
             displayName: "unit tests"
@@ -93,25 +110,60 @@ jobs:
           - bash: npm run build:es6
             displayName: "npm build es6"
 
-          - bash: echo "//registry.npmjs.org/:_authToken=$(NPM_TOKEN)" > ./.npmrc
-            displayName: "write npmrc"
+          - bash: |
+                set -euo pipefail
 
-          - bash: npm publish -ws --access=public
+                # The registry token lives in an ephemeral npm user config outside
+                # the sources directory instead of ./.npmrc, so it is never picked
+                # up by unrelated npm invocations or readable by lifecycle scripts
+                # running from the working directory.
+                NPM_AUTH_CONFIG="$(Agent.TempDirectory)/.npmrc-publish"
+                install -m 600 /dev/null "$NPM_AUTH_CONFIG"
+                {
+                    printf '//registry.npmjs.org/:_authToken=%s\n' "$NPM_TOKEN"
+                    printf 'ignore-scripts=true\n'
+                } > "$NPM_AUTH_CONFIG"
+
+                echo "##vso[task.setvariable variable=NpmAuthConfig]$NPM_AUTH_CONFIG"
+            displayName: "write npm auth config"
+            env:
+                NPM_TOKEN: $(NPM_TOKEN)
+
+          - bash: npm publish -ws --access=public --ignore-scripts
             displayName: "publish latest stable (master branch)"
             condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+            env:
+                NPM_CONFIG_USERCONFIG: $(NpmAuthConfig)
 
-          - bash: npm publish -ws --tag preview
+          - bash: npm publish -ws --tag preview --ignore-scripts
             displayName: "publish preview (preview branch)"
             condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'preview'))
+            env:
+                NPM_CONFIG_USERCONFIG: $(NpmAuthConfig)
 
-          - bash: git fetch origin
-            displayName: "fetch origin"
+          - bash: rm -f "$(Agent.TempDirectory)/.npmrc-publish"
+            displayName: "remove npm auth config"
+            condition: always()
 
-          - bash: git merge origin/$(Build.SourceBranchName)
-            displayName: "pull master"
+          - bash: |
+                set -euo pipefail
 
-          - bash: git push origin $(Build.SourceBranchName) --tags
-            displayName: "push to git"
+                # The PAT is only reachable inside this step: it is passed through
+                # the environment, consumed by an inline credential helper, and the
+                # helper is removed from .git/config before the step exits.
+                cleanup() {
+                    git config --local --unset-all credential.helper || true
+                }
+                trap cleanup EXIT
+
+                git config --local credential.helper '!f() { printf "username=x-access-token\npassword=%s\n" "${GITHUBPAT}"; }; f'
+
+                git fetch origin
+                git merge "origin/$(Build.SourceBranchName)"
+                git push origin "$(Build.SourceBranchName)" --tags
+            displayName: "merge and push to git"
+            env:
+                GITHUBPAT: $(GitHubPAT)
 
           - bash: |
                 set -euo pipefail

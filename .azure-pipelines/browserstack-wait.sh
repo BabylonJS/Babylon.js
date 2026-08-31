@@ -51,7 +51,11 @@ wait_for_sessions() {
 
     while [ "$elapsed" -lt "$WAIT_TIMEOUT" ]; do
         local response
-        response=$(curl -sf -u "${BROWSERSTACK_USERNAME}:${BROWSERSTACK_ACCESS_KEY}" "$API_URL" 2>/dev/null) || {
+        # Credentials are fed to curl over stdin via --config so they never
+        # appear in the process table, where any other process on the agent
+        # (including PR-controlled test code) could read them.
+        response=$(printf 'user = "%s:%s"\n' "${BROWSERSTACK_USERNAME}" "${BROWSERSTACK_ACCESS_KEY}" |
+            curl -sf --config - "$API_URL" 2>/dev/null) || {
             echo "[browserstack-wait]   API request failed — retrying in ${INTERVAL}s"
             sleep "$INTERVAL"
             elapsed=$((elapsed + INTERVAL))

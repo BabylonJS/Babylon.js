@@ -63,7 +63,26 @@ if (!fs.existsSync(path.resolve(__dirname, "..", "./.build/changelog.json"))) {
 
 const config = require(path.resolve(__dirname, "..", "./.build/changelog.json"));
 
-const githubPatToken = process.env.GITHUBPAT ? `bjsplat:${process.env.GITHUBPAT}` : ""; // bjsplat:GITHUB_PAT_TOKEN
+const githubPatToken = process.env.GITHUBPAT || "";
+
+/**
+ * Read a GitHub REST API resource using the PAT.
+ * The token is sent in a request header instead of being interpolated into a
+ * shell command line (where it would be visible in the process table, in shell
+ * traces and in any command echoing), and is never written to disk.
+ * @param {string} url the GitHub API url to read
+ * @returns {Promise<any>} the parsed JSON response
+ */
+async function getGithubJson(url) {
+    const response = await fetch(url, {
+        headers: {
+            Accept: "application/vnd.github+json",
+            Authorization: `Bearer ${githubPatToken}`,
+            "User-Agent": "BabylonJS-changelog-generator",
+        },
+    });
+    return await response.json();
+}
 
 const forceUpdateFrom = config.fromTag || "5.0.0";
 
@@ -122,13 +141,12 @@ async function generateChangelog(nextVersion) {
                 // get the github json for each PR
                 const prsJson = await Promise.all(
                     versions[version].map(async (prNumber) => {
-                        const prJson = await runCommand(`curl -u ${githubPatToken} -s https://api.github.com/repos/BabylonJS/Babylon.js/pulls/${prNumber}`);
-                        const pr = JSON.parse(prJson);
+                        const pr = await getGithubJson(`https://api.github.com/repos/BabylonJS/Babylon.js/pulls/${prNumber}`);
                         if (!pr.user || pr.message === "Not Found") {
                             return null;
                         }
-                        const prFilesJson = await runCommand(`curl -u ${githubPatToken} -s https://api.github.com/repos/BabylonJS/Babylon.js/pulls/${prNumber}/files?per_page=100`);
-                        return { prNumber, pr: JSON.parse(prJson), files: JSON.parse(prFilesJson) };
+                        const files = await getGithubJson(`https://api.github.com/repos/BabylonJS/Babylon.js/pulls/${prNumber}/files?per_page=100`);
+                        return { prNumber, pr, files };
                     })
                 );
                 console.log("version", version);
@@ -150,8 +168,8 @@ async function generateChangelog(nextVersion) {
                             let title = pr.pr.title || "Issue title not found";
                             if (matches.length) {
                                 // get the title of the issue
-                                const issueTitle = await runCommand(`curl -u ${githubPatToken} -s https://api.github.com/repos/BabylonJS/Babylon.js/issues/${matches[0][1]}`);
-                                title = JSON.parse(issueTitle).title;
+                                const issue = await getGithubJson(`https://api.github.com/repos/BabylonJS/Babylon.js/issues/${matches[0][1]}`);
+                                title = issue.title;
                             }
 
                             // filter everything inside squared brackets

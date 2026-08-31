@@ -4,6 +4,79 @@ This document describes the variable groups required by the YAML pipelines.
 All infrastructure-specific values (storage accounts, CDN endpoints, service
 connections) are stored in variable groups to keep them out of source control.
 
+## CI trust boundary
+
+Pull requests contribute executable code to CI: `npm ci` runs dependency
+lifecycle scripts, `npm run build*` runs repository build scripts, and the
+Playwright suites run spec files from the pull request. Anything reachable from
+those steps must be treated as attacker-controlled for a fork PR.
+
+### Azure DevOps settings that must be verified by an administrator
+
+These cannot be expressed in YAML and must be configured per pipeline under
+**Pipeline → Edit → Triggers → Pull request validation**:
+
+| Setting                                                       | Required value | Applies to                                          |
+| ------------------------------------------------------------- | -------------- | --------------------------------------------------- |
+| Make secrets available to builds of forks                     | **Disabled**   | ci-monorepo, ci-playground-sandbox, ci-graph-tools  |
+| Require a team member's comment before building a pull request| **Enabled**    | ci-monorepo, ci-playground-sandbox, ci-graph-tools  |
+| Build pull requests from forks of this repository             | Enabled        | ci-monorepo, ci-playground-sandbox, ci-graph-tools  |
+
+Additional administrator-side requirements:
+
+- The `GITHUB_SERVICE_CONNECTION` service connection must **not** be marked as
+  available to fork builds, and should be granted only `public_repo` /
+  issue-comment scope so a leak cannot be used to push code.
+- `DEPLOY_TOKEN` must only be able to write under the snapshot storage account
+  and purge CDN endpoints. It must not grant access to the production `cdn/`
+  release paths beyond what the trusted `Deploy` job needs.
+- `BROWSERSTACK_ACCESS_KEY` must belong to the open-source plan account only.
+- `GitHubPAT` and `NPM_TOKEN` must be defined **only** on `cd-publish`, which
+  has `pr: none`, and must never be added to a variable group shared with a
+  PR-triggered pipeline.
+- The npm publish token should be replaced by npm trusted publishing (OIDC) as
+  soon as the Azure DevOps agent pool supports it for this account; until then
+  it must be a granular, publish-only token scoped to the `@babylonjs` scope
+  and the `babylonjs-*` packages.
+- Pipelines must not enable "Allow scripts to access the OAuth token"; the YAML
+  never references `System.AccessToken`, and every `checkout` sets
+  `persistCredentials: false`.
+
+### Guarantees enforced by the YAML in this repository
+
+- Every `checkout` sets `persistCredentials: false`, so the pipeline OAuth
+  token is never written to `.git/config` where PR-controlled code could read
+  it.
+- Secrets are mapped into individual steps (`env:`) rather than being exposed
+  job-wide, and steps that do not need a secret do not receive it.
+- The privileged `Deploy` job in `ci-monorepo.yml` is gated on both a trusted
+  branch (`master`/`preview`) and a trusted build reason (`Manual`,
+  `Schedule`, `ResourceTrigger`, `BuildCompletion`), so it can never run for a
+  pull request.
+- `cd-publish.yml` and `cd-tools.yml` declare `pr: none`, so PR-controlled code
+  is never built by a pipeline holding publish credentials.
+- `cd-publish.yml` keeps the GitHub PAT out of the git remote URL and out of
+  every command line: it is passed through the environment of a single step,
+  consumed by an inline git credential helper, and the helper is removed before
+  the step ends.
+- `cd-publish.yml` writes the npm registry token to an ephemeral user config in
+  the agent temp directory (mode `0600`) that is deleted in an `always()` step,
+  instead of overwriting the repository `.npmrc`. The config also sets
+  `ignore-scripts=true` and publishing runs with `--ignore-scripts`, so no
+  package lifecycle script executes while the registry token is reachable.
+- `scripts/generateChangelog.js` sends the PAT in an HTTP `Authorization`
+  header instead of interpolating it into a `curl` command line.
+
+### Residual risk
+
+`ci-monorepo.yml`, `ci-playground-sandbox.yml` and `ci-graph-tools.yml` build
+and test PR-controlled code in the same jobs that upload snapshots and post
+GitHub comments. This is deliberate - fork PRs need snapshot links - and is
+contained by the fork-secret setting above: without it, a fork build simply has
+no secrets to steal. Removing the residual risk entirely would require
+splitting snapshot upload and comment posting into a separate pipeline that
+consumes a build artifact and never checks out PR code.
+
 ## Variable Group: `BabylonJS-CI-Infrastructure`
 
 Create this variable group in **Azure DevOps → Pipelines → Library** and link
@@ -124,6 +197,10 @@ variable group) because they contain credentials:
 | `GitHubPAT`  | cd-publish       | GitHub Personal Access Token for git push and version scripts |
 | `NPM_TOKEN`  | cd-publish       | npm registry auth token for publishing                        |
 | `SEARCH_KEY` | ci-documentation | Search API key for documentation builds                       |
+
+> **Never** add `GitHubPAT` or `NPM_TOKEN` to a variable group or to any
+> pipeline that builds pull requests. Both are only valid on `cd-publish`,
+> which is declared `pr: none`. See "CI trust boundary" above.
 
 ### Manual YAML Configuration
 

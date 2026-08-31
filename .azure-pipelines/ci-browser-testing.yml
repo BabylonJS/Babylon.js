@@ -57,6 +57,7 @@ jobs:
           - checkout: self
             clean: true
             fetchTags: false
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -124,6 +125,7 @@ jobs:
           - checkout: self
             clean: true
             fetchTags: false
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -195,6 +197,7 @@ jobs:
           - checkout: self
             clean: true
             fetchTags: false
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -263,6 +266,7 @@ jobs:
           - checkout: self
             clean: true
             fetchTags: false
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -330,6 +334,7 @@ jobs:
           - checkout: self
             clean: true
             fetchTags: false
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"
@@ -423,6 +428,7 @@ jobs:
           - checkout: self
             clean: true
             fetchTags: false
+            persistCredentials: false
 
           - task: UseNode@1
             displayName: "Use Node 24.x"

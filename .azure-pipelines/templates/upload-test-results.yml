@@ -4,6 +4,10 @@
 # Looks for a sanitized public report directory, validates its contents, zips
 # it, and uploads it to the deployment server. Supports a fallback directory
 # for cases where the report may be in a different location.
+#
+# This step must not be given any credential beyond the deployment token it
+# actually uses - it runs right after PR-controlled test code, so every extra
+# secret mapped into its environment would be needlessly reachable.
 # =============================================================================
 
 parameters:
@@ -61,6 +65,3 @@ steps:
       displayName: "${{ parameters.displayName }}"
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
-      env:
-          BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
-          BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
