@@ -121,6 +121,17 @@ const mockState = vi.hoisted(() => {
         public getInternalTexture() {
             return state.ptReady ? { isReady: true } : null;
         }
+        public samplingMode = 7;
+        public updateSamplingMode = vi.fn();
+        public readPixels = vi.fn(() => {
+            return state.ptReady ? {} : null;
+        });
+        public getSize() {
+            return { width: this.size.width, height: this.size.height };
+        }
+        public getBaseSize() {
+            return { width: this.size.width, height: this.size.height };
+        }
         // Mirrors the real ProceduralTexture._shouldRender refresh gating.
         public _shouldRender() {
             if (!this.isReady()) {
@@ -394,6 +405,20 @@ describe("MultiTexture", () => {
         expect(mt.layerCount).toBe(2);
     });
 
+    it("reports the composite render-target size as its size and base size", async () => {
+        const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, rttScale: 2 });
+        expect(mt.getSize()).toEqual({ width: 16, height: 16 });
+        expect(mt.getBaseSize()).toEqual({ width: 16, height: 16 });
+    });
+
+    it("delegates samplingMode, updateSamplingMode and readPixels to the composite", async () => {
+        const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
+        expect(mt.samplingMode).toBe(7);
+        mt.updateSamplingMode(3);
+        expect(mt.composite.updateSamplingMode).toHaveBeenCalledWith(3, false);
+        expect(mt.readPixels()).not.toBeNull();
+    });
+
     it("registers itself in the supplied scene (not the engine's last-created scene)", () => {
         const scene = makeScene();
         const mt = new MultiTexture("myMultiTexture", ["a.png"], scene, { width: 8, height: 8 }) as unknown as MultiTexture;
@@ -550,6 +575,29 @@ describe("MultiTexture", () => {
         expect(mt.pixels[0]).toBeInstanceOf(Uint8ClampedArray);
         expect(mt.pixels[0]).toHaveLength(8 * 8 * 4);
         expect(mt.pixels[1]).toBeInstanceOf(Uint8ClampedArray);
+    });
+
+    it("suppresses per-layer mip generation while re-uploading into a grown array and generates once after", async () => {
+        const mipmapObservations: boolean[] = [];
+        mockState.upload = vi.fn((internal: any) => {
+            mipmapObservations.push(internal.generateMipMaps);
+        });
+        const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, maxLayers: 2, generateMipMaps: true });
+
+        // Reset capture so we only observe the growth re-upload and the new layer's decode.
+        mipmapObservations.length = 0;
+        mockState.generateMipmaps.mockClear();
+
+        // Depth 2 -> 4 re-uploads the existing layers 0 and 1 from their retained bitmaps, then
+        // decodes and uploads the new layer 2.
+        await mt.addLayerAsync("c.png");
+
+        // The shifted re-uploads must NOT each regenerate the full mip chain: mips are suppressed
+        // during the grow loop and generated once after.
+        expect(mipmapObservations[0]).toBe(false);
+        expect(mipmapObservations[1]).toBe(false);
+        expect(mockState.generateMipmaps).toHaveBeenCalledTimes(1);
+        expect(mt.arrayTexture.getInternalTexture()!.generateMipMaps).toBe(true);
     });
 
     it("decodes at most 4 layers concurrently during init", async () => {

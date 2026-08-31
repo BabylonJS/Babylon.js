@@ -9,6 +9,7 @@ import { type InternalTexture } from "./internalTexture";
 import { type Scene } from "../../scene.pure";
 import { Observable } from "../../Misc/observable";
 import { BaseTexture } from "./baseTexture.pure";
+import { type ISize } from "../../Maths/math.size";
 import { type IProceduralTextureCreationOptions, ProceduralTexture } from "./Procedurals/proceduralTexture.pure";
 import { RawTexture2DArray } from "./rawTexture2DArray";
 import { UploadImageToTexture2DArrayLayer } from "./rawTexture2DArray.functions";
@@ -225,6 +226,101 @@ export class MultiTexture extends BaseTexture {
                 this.composite.render();
             }
         });
+    }
+
+    /**
+     * Forwards to the composite: the composite render-target is what materials sample.
+     * @returns The composite render-target size.
+     */
+    public override getSize(): ISize {
+        return this.composite.getSize();
+    }
+
+    /**
+     * Forwards to the composite: the composite render-target base size is what materials sample.
+     * @returns The composite render-target base size.
+     */
+    public override getBaseSize(): ISize {
+        return this.composite.getBaseSize();
+    }
+
+    /**
+     * Forwards to the composite's sampling mode.
+     * @returns the composite render-target's sampling mode.
+     */
+    public override get samplingMode(): number {
+        return this.composite.samplingMode;
+    }
+
+    /**
+     * Forwards to the composite, which owns the render-target texture the material binds.
+     * @param samplingMode the new sampling mode
+     * @param generateMipMaps whether to generate mip maps
+     */
+    public override updateSamplingMode(samplingMode: number, generateMipMaps = false): void {
+        this.composite.updateSamplingMode(samplingMode, generateMipMaps);
+    }
+
+    /**
+     * Forwards to the composite's render-target texture.
+     * @param faceIndex defines the face of the texture to read (in case of cube texture)
+     * @param level defines the LOD level of the texture to read (in case of Mip Maps)
+     * @param buffer defines a user defined buffer to fill with data (can be null)
+     * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+     * @param noDataConversion false to convert the data to Uint8Array (if texture type is UNSIGNED_BYTE) or to Float32Array (if texture type is anything but UNSIGNED_BYTE). If true, the type of the generated buffer (if buffer==null) will depend on the type of the texture
+     * @param x defines the region x coordinates to start reading from (default to 0)
+     * @param y defines the region y coordinates to start reading from (default to 0)
+     * @param width defines the region width to read from (default to the texture size at level)
+     * @param height defines the region width to read from (default to the texture size at level)
+     * @returns the composite render-target's pixel buffer promise.
+     */
+    public override readPixels(
+        faceIndex?: number,
+        level?: number,
+        buffer?: Nullable<ArrayBufferView>,
+        flushRenderer?: boolean,
+        noDataConversion?: boolean,
+        x?: number,
+        y?: number,
+        width?: number,
+        height?: number
+    ): Nullable<Promise<ArrayBufferView>> {
+        return this.composite.readPixels(faceIndex, level, buffer, flushRenderer, noDataConversion, x, y, width, height);
+    }
+
+    /**
+     * Forwards to the composite's render-target texture.
+     * @param faceIndex defines the face of the texture to read (in case of cube texture)
+     * @param level defines the LOD level of the texture to read (in case of Mip Maps)
+     * @param buffer defines a user defined buffer to fill with data (can be null)
+     * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+     * @param noDataConversion false to convert the data to Uint8Array (if texture type is UNSIGNED_BYTE) or to Float32Array (if texture type is anything but UNSIGNED_BYTE). If true, the type of the generated buffer (if buffer==null) will depend on the type of the texture
+     * @returns the composite render-target's pixel buffer.
+     */
+    public override _readPixelsSync(
+        faceIndex?: number,
+        level?: number,
+        buffer?: Nullable<ArrayBufferView>,
+        flushRenderer?: boolean,
+        noDataConversion?: boolean
+    ): Nullable<ArrayBufferView> {
+        return this.composite._readPixelsSync(faceIndex, level, buffer, flushRenderer, noDataConversion);
+    }
+
+    /**
+     * Forwards to the composite render-target's format.
+     * @returns the composite render-target's internal format.
+     */
+    public override get textureFormat(): number {
+        return this.composite.textureFormat;
+    }
+
+    /**
+     * Forwards to the composite render-target's type.
+     * @returns the composite render-target's internal type.
+     */
+    public override get textureType(): number {
+        return this.composite.textureType;
     }
 
     /**
