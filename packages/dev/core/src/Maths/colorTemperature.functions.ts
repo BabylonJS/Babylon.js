@@ -156,7 +156,10 @@ const StandardRgbToXyzD65 = Matrix.FromArray([
  * The linear RGB to CIE XYZ matrix actually used by {@link GetWhiteBalanceMatrix}, recalibrated from
  * {@link StandardRgbToXyzD65} via a single Bradford adaptation step so that neutral (1, 1, 1) maps exactly onto
  * this module's own Planckian-locus approximation of 6500 K (see {@link TemperatureTintToXyz}) instead of the
- * externally-standardized CIE D65 chromaticity (which sits close to, but not exactly on, the Planckian locus).
+ * externally-standardized CIE D65 chromaticity. Those two are close but never exactly equal, by definition: D65
+ * is defined via the CIE daylight locus, a model fit to measured daylight spectra, which deliberately deviates
+ * from the Planckian locus (real daylight isn't quite blackbody radiation) - no table or precision fix can close
+ * that gap without distorting temperature/tint for every other illuminant.
  *
  * This is what lets `GetWhiteBalanceMatrix(6500, 0)` be exactly the identity matrix - the default "no adjustment"
  * temperature/tint are a true no-op - without needing to special-case that one input: the reverse adaptation is
