@@ -991,12 +991,36 @@ export class MultiTexture extends BaseTexture {
             this._mtOptions.samplingMode ?? Texture.TRILINEAR_SAMPLINGMODE,
             Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
+        const newInternal = newRaw.getInternalTexture();
+        const mips = this._mtOptions.generateMipMaps ?? false;
+        // UploadImageToTexture2DArrayLayer regenerates the WHOLE array's mip chain per upload when
+        // texture.generateMipMaps is set. Re-uploading N shifted layers would therefore rebuild the
+        // full mip chain N times. Suppress generation during the loop (the array is already
+        // allocated with mip support) and build the chain once below.
+        // A Concurrent init pool may still be populating the shifted layers (their bitmaps are null
+        // here), so only generate when this grow actually re-uploaded data: a generation over a
+        // mostly-empty array is wasted, and the init pool's final generation covers it.
+        if (mips && newInternal) {
+            newInternal.generateMipMaps = false;
+        }
 
+        let reuploaded = false;
         for (let i = 0; i < this._layerCount; i++) {
+            if (this._layers[i].bitmap !== null) {
+                reuploaded = true;
+            }
             this._reuploadSlot(i, newRaw);
         }
 
+        if (mips && newInternal && !this._disposed) {
+            newInternal.generateMipMaps = true;
+            if (reuploaded) {
+                this.getScene()!.getEngine().generateMipmaps(newInternal);
+            }
+        }
+
         this._arrayTexture.dispose();
+
         this._arrayTexture = newRaw;
 
         this.composite.setTexture("uLayers", newRaw);
