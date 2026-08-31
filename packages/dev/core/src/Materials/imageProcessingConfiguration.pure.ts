@@ -300,7 +300,7 @@ export class ImageProcessingConfiguration {
         this._updateParameters();
     }
 
-    private _whiteBalanceMatrix: Float32Array = GetWhiteBalanceMatrix(this._temperature, this._tint);
+    private _whiteBalanceMatrix: Float32Array | Array<number> = GetWhiteBalanceMatrix(this._temperature, this._tint);
     private _whiteBalanceMatrixTemperature = this._temperature;
     private _whiteBalanceMatrixTint = this._tint;
 
@@ -312,7 +312,7 @@ export class ImageProcessingConfiguration {
      * still end up with a matrix that matches the current temperature/tint.
      * @returns the column-major white balance matrix for the current temperature/tint
      */
-    private _getWhiteBalanceMatrix(): Float32Array {
+    private _getWhiteBalanceMatrix(): Float32Array | Array<number> {
         if (this._whiteBalanceMatrixTemperature !== this._temperature || this._whiteBalanceMatrixTint !== this._tint) {
             this._whiteBalanceMatrixTemperature = this._temperature;
             this._whiteBalanceMatrixTint = this._tint;

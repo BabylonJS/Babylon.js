@@ -190,7 +190,7 @@ const ReferenceWhiteXyz = Vector3.TransformNormal(new Vector3(1, 1, 1), RgbToXyz
  * @param tint An offset perpendicular to the Planckian locus (the green/magenta axis), in the range [-150, 150]
  * @returns A column-major 3x3 matrix (9 values), ready to be bound as a `mat3` shader uniform
  */
-export function GetWhiteBalanceMatrix(temperatureKelvin: number, tint: number): Float32Array {
+export function GetWhiteBalanceMatrix(temperatureKelvin: number, tint: number): Float32Array | Array<number> {
     const targetWhiteXYZ = TemperatureTintToXyz(temperatureKelvin, tint);
     const adapt = BradfordAdapt(targetWhiteXYZ, ReferenceWhiteXyz);
 
@@ -200,6 +200,5 @@ export function GetWhiteBalanceMatrix(temperatureKelvin: number, tint: number): 
 
     // `Matrix` stores its values column-major, matching the layout GLSL/WGSL `mat3` uniforms expect,
     // so the upper-left 3x3 block can be extracted directly with no transpose.
-    const m = finalMatrix.m;
-    return new Float32Array([m[0], m[1], m[2], m[4], m[5], m[6], m[8], m[9], m[10]]);
+    return Matrix.GetAsMatrix3x3(finalMatrix);
 }
