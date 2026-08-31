@@ -8,7 +8,7 @@ import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Scene } from "core/scene";
-import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { type FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { EnvironmentTools } from "../tools/environmentTools";
 import { Tools } from "core/Misc/tools";
@@ -355,13 +355,15 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
         this._scene.executeWhenReady(() => {
             this._engine.runRenderLoop(() => {
-                // NOTE: this logic to adjust camera parameters based on radius is copied in viewer.ts.
-                // Please keep them in sync.
-                // Adapt the camera sensibility based on the distance to the object
-                camera.panningSensibility = 5000 / camera.radius;
-                // Update the camera speed based on the camera's distance from the target.
-                // TODO: This makes mouse wheel zooming behave well, but makes mouse based rotation a bit worse.
-                camera.speed = camera.radius * 0.2;
+                if (camera instanceof ArcRotateCamera) {
+                    // NOTE: this logic to adjust camera parameters based on radius is copied in viewer.ts.
+                    // Please keep them in sync.
+                    // Adapt the camera sensibility based on the distance to the object
+                    camera.panningSensibility = 5000 / camera.radius;
+                    // Update the camera speed based on the distance from the target.
+                    // TODO: This makes mouse wheel zooming behave well, but makes mouse based rotation a bit worse.
+                    camera.speed = camera.radius * 0.2;
+                }
                 this._scene.render();
             });
         });
