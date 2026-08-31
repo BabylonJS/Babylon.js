@@ -3,7 +3,7 @@
 # Converted from Azure DevOps Classic Pipeline
 #
 # Triggers on PRs that touch graph tool editor files.
-# Builds NME, NGE, NRGE, GUI Editor, NPE, FGE, deploys snapshots, and runs
+# Builds NME, NGE, NRGE, GUI Editor, NPE, FGE, SFE, deploys snapshots, and runs
 # Playwright tests.
 #
 # Variable groups:
@@ -25,6 +25,8 @@ pr:
             - packages/tools/nodeParticleEditor/**/*.*
             - packages/tools/guiEditor/**/*.*
             - packages/tools/flowGraphEditor/**/*.*
+            - packages/tools/smartFiltersEditor/**/*.*
+            - packages/tools/smartFiltersEditorControl/**/*.*
             - packages/dev/sharedUiComponents/**/*.*
             - "**/*interaction.tools*"
 
@@ -103,6 +105,18 @@ jobs:
                 command: custom
                 customCommand: "run build:deployment -w @tools/flow-graph-editor"
 
+          - task: Npm@1
+            displayName: "npm build smart filters"
+            inputs:
+                command: custom
+                customCommand: "run build:source:smart-filters"
+
+          - task: Npm@1
+            displayName: "npm build smartFiltersEditor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/smart-filters-editor"
+
           - template: templates/wait-for-snapshot.yml
             parameters:
                 displayName: "Wait for Babylon snapshot"
@@ -143,6 +157,12 @@ jobs:
                 deployPath: "TOOLS/$(BuildName)/flowGraphEditor"
                 displayName: "Deploy FGE"
 
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/smartFiltersEditor"
+                deployPath: "TOOLS/$(BuildName)/smartFiltersEditor"
+                displayName: "Deploy SFE"
+
           - script: |
                 npx playwright install --with-deps
                 npx playwright test --project=graphTools --project=flowGraphEditor
@@ -155,6 +175,7 @@ jobs:
                 NRGE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeRenderGraphEditor/"
                 NPE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeParticleEditor/"
                 FGE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/flowGraphEditor/"
+                SFE_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/smartFiltersEditor/"
                 GUIEDITOR_BASE_URL: "$(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/guiEditor/"
                 SNAPSHOT: "$(BuildName)"
 
@@ -187,4 +208,5 @@ jobs:
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeParticleEditor/
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/nodeRenderGraphEditor/
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/flowGraphEditor/
+                    $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/smartFiltersEditor/
                     $(SNAPSHOT_CDN_URL)/TOOLS/$(BuildName)/guiEditor/
