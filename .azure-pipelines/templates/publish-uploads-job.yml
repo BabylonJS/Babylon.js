@@ -124,6 +124,34 @@ parameters:
     - name: requireTrustedSource
       type: boolean
       default: false
+    # Set on publishers that write a production destination from *another*
+    # pipeline's artifacts. The job then re-asserts, on its own agent, that a
+    # genuine resource trigger - not a hand-picked run from the queue-time
+    # resource picker - started this run, and that the upstream run came from an
+    # allowed full ref. This repeats the calling pipeline's gate deliberately:
+    # `dependsOn`/`condition` wiring is easy to weaken by accident, whereas a
+    # step inside the credentialed job cannot be skipped without editing it.
+    - name: requireTrustedResourceRun
+      type: boolean
+      default: false
+    # `$(resources.pipeline.<alias>.sourceBranch)` of the source run.
+    - name: resourceSourceBranch
+      type: string
+      default: ""
+    # `$(resources.pipeline.<alias>.pipelineID)` of the source run.
+    - name: resourcePipelineId
+      type: string
+      default: ""
+    # Queue-time run ID, so the assertion can reject a hand-picked run.
+    - name: explicitSourceRunId
+      type: string
+      default: ""
+    # Full refs the source run is allowed to have been built from.
+    - name: allowedResourceRefs
+      type: object
+      default:
+          - refs/heads/master
+          - refs/heads/preview
     # GitHub issue/PR number the comments below are posted to. Empty means
     # "the pull request that triggered this run", which is the behaviour inside
     # a pull request pipeline. A cross-pipeline publisher has no pull request
@@ -157,6 +185,15 @@ jobs:
 
           - ${{ if parameters.requireTrustedSource }}:
                 - template: assert-trusted-source.yml
+
+          - ${{ if parameters.requireTrustedResourceRun }}:
+                - template: assert-trusted-resource-run.yml
+                  parameters:
+                      resourceSourceBranch: ${{ parameters.resourceSourceBranch }}
+                      resourcePipelineId: ${{ parameters.resourcePipelineId }}
+                      expectedPipelineId: ${{ parameters.sourceDefinitionId }}
+                      explicitSourceRunId: ${{ parameters.explicitSourceRunId }}
+                      allowedResourceRefs: ${{ parameters.allowedResourceRefs }}
 
           - ${{ each check in parameters.snapshotChecks }}:
                 - bash: |

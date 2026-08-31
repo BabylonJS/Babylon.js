@@ -1,0 +1,123 @@
+# =============================================================================
+# Template: Refuse to publish unless a trusted resource trigger started the run
+#
+# `templates/assert-trusted-source.yml` proves that *this* run was started from
+# a trusted ref of *this* repository. That is not enough for a publisher that
+# takes its payload from another pipeline's run.
+#
+# A pipeline resource can be resolved two ways:
+#
+#   * automatically, when the source pipeline completes on a branch listed in
+#     `resources.pipelines[].trigger.branches` - Azure DevOps then sets
+#     `Build.Reason` to `ResourceTrigger`; or
+#   * by hand, when whoever queues the run picks a specific source run in the
+#     "Resources" panel - `Build.Reason` is then `Manual` and the picker offers
+#     *every* run of the source pipeline, including pull request validation
+#     runs of unmerged code.
+#
+# Nothing in the resource variables distinguishes the two by itself, so a
+# manual queue that leaves the run ID parameter empty would otherwise look
+# exactly like a trusted automatic publish and would push a pull request's
+# artifacts to a production destination.
+#
+# This step therefore requires *both* that the run reason is `ResourceTrigger`
+# and that the resource run Azure DevOps recorded came from an allowed full
+# ref of the expected source definition. Those values are Azure's own metadata
+# about the upstream run; they are not queue-time parameters.
+#
+# Every value arrives through `env:`. A `$( )` macro and a `${{ }}` expression
+# are textual substitutions performed before the script runs, so a value
+# containing a quote would otherwise break out of the string it lands in and
+# execute next to the credentials this job holds.
+# =============================================================================
+
+parameters:
+    # Azure's reason for this run. Overridable only so the value can be piped in
+    # as data; callers should leave the default.
+    - name: buildReason
+      type: string
+      default: "$(Build.Reason)"
+    # `$(resources.pipeline.<alias>.sourceBranch)` of the source run.
+    - name: resourceSourceBranch
+      type: string
+    # `$(resources.pipeline.<alias>.pipelineID)` of the source run.
+    - name: resourcePipelineId
+      type: string
+    # The definition ID the resource is expected to resolve to: a literal in
+    # trusted YAML, so a run can never point the publisher at another pipeline.
+    - name: expectedPipelineId
+      type: string
+    # Queue-time run ID. A trusted automatic publish never supplies one; if it
+    # is set, the run is a manual republish and must not reach this job.
+    - name: explicitSourceRunId
+      type: string
+      default: ""
+    # Full refs the source run is allowed to have been built from.
+    - name: allowedResourceRefs
+      type: object
+      default:
+          - refs/heads/master
+          - refs/heads/preview
+    - name: displayName
+      type: string
+      default: "Assert trusted resource run"
+
+steps:
+    - bash: |
+          set -euo pipefail
+
+          # Azure Pipelines treats `##vso[...]` anywhere on stdout as a command,
+          # so no attacker-controlled value reaches a log line unfiltered.
+          sanitize() {
+              printf '%s' "${1-}" | tr -d '\r\n' | sed -e 's/##/# #/g' -e 's/\[/(/g' | cut -c1-120
+          }
+
+          fail() {
+              printf '##vso[task.logissue type=error]%s\n' "${1-}"
+              exit 1
+          }
+
+          BUILD_REASON="${BUILD_REASON:-}"
+          RESOURCE_SOURCE_BRANCH="${RESOURCE_SOURCE_BRANCH:-}"
+          RESOURCE_PIPELINE_ID="${RESOURCE_PIPELINE_ID:-}"
+          EXPECTED_PIPELINE_ID="${EXPECTED_PIPELINE_ID:-}"
+          EXPLICIT_SOURCE_RUN_ID="${EXPLICIT_SOURCE_RUN_ID:-}"
+          ALLOWED_RESOURCE_REFS="${ALLOWED_RESOURCE_REFS:-}"
+
+          if [ -z "$BUILD_REASON" ] || [ -z "$EXPECTED_PIPELINE_ID" ] || [ -z "$ALLOWED_RESOURCE_REFS" ]; then
+              fail "Resource trust gate is missing its inputs; refusing to publish"
+          fi
+
+          if [ -n "$EXPLICIT_SOURCE_RUN_ID" ]; then
+              fail "A hand-picked source run may never reach this job"
+          fi
+
+          if [ "$BUILD_REASON" != "ResourceTrigger" ]; then
+              fail "Only a resource-triggered run may publish here; this run's reason is '$(sanitize "$BUILD_REASON")'"
+          fi
+
+          if [ "$RESOURCE_PIPELINE_ID" != "$EXPECTED_PIPELINE_ID" ]; then
+              fail "Source run belongs to definition '$(sanitize "$RESOURCE_PIPELINE_ID")', not the expected one"
+          fi
+
+          REF_OK=false
+          for ref in $ALLOWED_RESOURCE_REFS; do
+              if [ "$RESOURCE_SOURCE_BRANCH" = "$ref" ]; then
+                  REF_OK=true
+                  break
+              fi
+          done
+
+          if [ "$REF_OK" != "true" ]; then
+              fail "Source run built '$(sanitize "$RESOURCE_SOURCE_BRANCH")', which is not an allowed ref"
+          fi
+
+          printf 'Trusted resource run confirmed: %s (%s)\n' "$(sanitize "$RESOURCE_SOURCE_BRANCH")" "$BUILD_REASON"
+      displayName: "${{ parameters.displayName }}"
+      env:
+          BUILD_REASON: ${{ parameters.buildReason }}
+          RESOURCE_SOURCE_BRANCH: ${{ parameters.resourceSourceBranch }}
+          RESOURCE_PIPELINE_ID: ${{ parameters.resourcePipelineId }}
+          EXPECTED_PIPELINE_ID: ${{ parameters.expectedPipelineId }}
+          EXPLICIT_SOURCE_RUN_ID: ${{ parameters.explicitSourceRunId }}
+          ALLOWED_RESOURCE_REFS: ${{ join(' ', parameters.allowedResourceRefs) }}
