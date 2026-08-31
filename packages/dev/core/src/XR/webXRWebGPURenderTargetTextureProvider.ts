@@ -6,7 +6,7 @@ import { type RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import { Color4 } from "../Maths/math.color.pure";
 import { type Nullable } from "../types";
 import { WebXRLayerRenderTargetTexture } from "./webXRLayerRenderTargetTexture";
-import { type WebXRLayerWrapper } from "./webXRLayerWrapper";
+import { type WebXRLayerType, type WebXRLayerWrapper, type WebXRSupportedLayerType } from "./webXRLayerWrapper";
 import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
 import { type WebXRSessionManager } from "./webXRSessionManager";
 
@@ -46,12 +46,14 @@ function GetBabylonDepthFormat(format: GPUTextureFormat): number {
  * WebGPU (XRGPUBinding) backend.
  * @internal
  */
-export abstract class WebXRWebGPURenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
+export abstract class WebXRWebGPURenderTargetTextureProvider<
+    LayerTypeT extends WebXRSupportedLayerType = WebXRLayerType,
+> extends WebXRLayerRenderTargetTextureProvider<LayerTypeT> {
     private readonly _transparentClearColor = new Color4(0, 0, 0, 0);
 
     constructor(
         protected readonly _xrSessionManager: WebXRSessionManager,
-        layerWrapper: WebXRLayerWrapper
+        layerWrapper: WebXRLayerWrapper<LayerTypeT>
     ) {
         super(_xrSessionManager.scene, layerWrapper);
     }

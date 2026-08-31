@@ -47,6 +47,11 @@ export interface IWebXRAnchor {
     xrAnchor: XRAnchor;
 
     /**
+     * The persistent handle associated with this anchor, if one was requested or the anchor was restored from one
+     */
+    persistentHandle?: string;
+
+    /**
      * if defined, this object will be constantly updated by the anchor's position and rotation
      */
     attachedNode?: TransformNode;
@@ -85,11 +90,15 @@ interface IWebXRFutureAnchor {
     /**
      * A reject function
      */
-    reject: (msg?: string) => void;
+    reject: (reason?: unknown) => void;
     /**
      * The XR Transformation of the future anchor
      */
-    xrTransformation: XRRigidTransform;
+    xrTransformation?: XRRigidTransform;
+    /**
+     * The persistent handle used to restore this anchor
+     */
+    persistentHandle?: string;
 }
 
 let AnchorIdProvider = 0;
@@ -154,6 +163,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
 
         if (this._options.clearAnchorsOnSessionInit) {
             this._xrSessionManager.onXRSessionInit.add(() => {
+                this._rejectPendingPersistentAnchors("Persistent anchor restoration was interrupted before tracking began");
                 this._trackedAnchors.length = 0;
                 this._futureAnchors.length = 0;
                 this._lastFrameDetected.clear();
@@ -271,6 +281,123 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
     }
 
     /**
+     * Whether the current XR session exposes all session-level persistent anchor APIs
+     * @returns Whether all session-level persistent anchor APIs are supported
+     */
+    public get isPersistentAnchorSupported(): boolean {
+        const session = this._xrSessionManager.session;
+        return (
+            !!session && session.persistentAnchors !== undefined && typeof session.restorePersistentAnchor === "function" && typeof session.deletePersistentAnchor === "function"
+        );
+    }
+
+    /**
+     * Get the persistent anchor handles known to the current XR session
+     * @returns The persistent anchor handles
+     * @throws If persistent anchor enumeration is not supported by the current session
+     */
+    public get persistentAnchors(): ReadonlyArray<string> {
+        const persistentAnchors = this._xrSessionManager.session?.persistentAnchors;
+        if (persistentAnchors === undefined) {
+            throw new Error("Persistent anchor enumeration is not supported in this environment/browser");
+        }
+        return persistentAnchors;
+    }
+
+    /**
+     * Request a persistent handle for a tracked anchor
+     * @param anchor The Babylon anchor to persist
+     * @returns A promise that resolves with the persistent handle
+     * @throws If requesting persistent handles is not supported by the native anchor
+     */
+    public async requestPersistentHandleAsync(anchor: IWebXRAnchor): Promise<string> {
+        const requestPersistentHandle = anchor.xrAnchor.requestPersistentHandle;
+        if (!requestPersistentHandle) {
+            throw new Error("Requesting persistent anchor handles is not supported in this environment/browser");
+        }
+        const handle = await requestPersistentHandle.call(anchor.xrAnchor);
+        this._setPersistentHandle(anchor, handle);
+        return handle;
+    }
+
+    /**
+     * Restore a persistent anchor into the Babylon anchor lifecycle
+     * @param handle The persistent anchor handle to restore
+     * @returns A promise that resolves after the restored anchor is tracked by an XR frame
+     * @throws If restoring persistent anchors is not supported by the current session
+     */
+    public async restorePersistentAnchorAsync(handle: string): Promise<IWebXRAnchor> {
+        if (!this.attached) {
+            throw new Error("Restoring persistent anchors requires the anchor system to be attached");
+        }
+
+        const session = this._xrSessionManager.session;
+        const restorePersistentAnchor = session?.restorePersistentAnchor;
+        if (!restorePersistentAnchor) {
+            throw new Error("Restoring persistent anchors is not supported in this environment/browser");
+        }
+
+        const nativeAnchor = await restorePersistentAnchor.call(session, handle);
+        if (!this.attached || this._xrSessionManager.session !== session) {
+            nativeAnchor.delete();
+            throw new Error("Persistent anchor restoration was interrupted before tracking began");
+        }
+        const existingAnchorIndex = this._findIndexInAnchorArray(nativeAnchor);
+        if (existingAnchorIndex !== -1) {
+            const existingAnchor = this._trackedAnchors[existingAnchorIndex];
+            existingAnchor.persistentHandle = handle;
+            return existingAnchor;
+        }
+
+        return await new Promise<IWebXRAnchor>((resolve, reject) => {
+            this._futureAnchors.push({
+                nativeAnchor,
+                resolved: false,
+                submitted: true,
+                persistentHandle: handle,
+                resolve,
+                reject,
+            });
+        });
+    }
+
+    /**
+     * Restore all persistent anchors known to the current XR session
+     * @returns A promise that resolves after all restored anchors are tracked by an XR frame
+     * @throws If persistent anchor enumeration or restoration is not supported by the current session
+     */
+    public async restorePersistentAnchorsAsync(): Promise<IWebXRAnchor[]> {
+        return await Promise.all(this.persistentAnchors.map(async (handle) => await this.restorePersistentAnchorAsync(handle)));
+    }
+
+    /**
+     * Delete a persistent anchor from native storage
+     * @param handle The persistent anchor handle to delete
+     * @returns A promise that resolves after native persistent storage is deleted
+     * @throws If deleting persistent anchors is not supported by the current session
+     */
+    public async deletePersistentAnchorAsync(handle: string): Promise<void> {
+        const session = this._xrSessionManager.session;
+        const deletePersistentAnchor = session?.deletePersistentAnchor;
+        if (!deletePersistentAnchor) {
+            throw new Error("Deleting persistent anchors is not supported in this environment/browser");
+        }
+
+        await deletePersistentAnchor.call(session, handle);
+        for (const anchor of this._trackedAnchors) {
+            if (anchor.persistentHandle === handle) {
+                anchor._removed = true;
+            }
+        }
+        for (const futureAnchor of this._futureAnchors) {
+            if (!futureAnchor.resolved && futureAnchor.persistentHandle === handle) {
+                futureAnchor.resolved = true;
+                futureAnchor.reject(new Error("The persistent anchor was deleted before tracking began"));
+            }
+        }
+    }
+
+    /**
      * detach this feature.
      * Will usually be called by the features manager
      *
@@ -280,6 +407,8 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         if (!super.detach()) {
             return false;
         }
+
+        this._rejectPendingPersistentAnchors("Persistent anchor restoration was interrupted before tracking began");
 
         if (!this._options.doNotRemoveAnchorsOnSessionEnded) {
             while (this._trackedAnchors.length) {
@@ -300,8 +429,8 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
      * Dispose this feature and all of the resources attached
      */
     public override dispose(): void {
-        this._futureAnchors.length = 0;
         super.dispose();
+        this._futureAnchors.length = 0;
         this.onAnchorAddedObservable.clear();
         this.onAnchorRemovedObservable.clear();
         this.onAnchorUpdatedObservable.clear();
@@ -325,30 +454,34 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
             }
             // now check for new ones
             trackedAnchors.forEach((xrAnchor) => {
-                if (!this._lastFrameDetected.has(xrAnchor)) {
-                    const newAnchor: Partial<IWebXRAnchor> = {
+                const trackedAnchorIndex = this._findIndexInAnchorArray(xrAnchor);
+                const futureAnchor = this._findFutureAnchor(xrAnchor);
+                if (!this._lastFrameDetected.has(xrAnchor) || (trackedAnchorIndex === -1 && futureAnchor !== undefined)) {
+                    const anchor: IWebXRAnchor = {
+                        _removed: false,
                         id: AnchorIdProvider++,
                         xrAnchor: xrAnchor,
+                        transformationMatrix: new Matrix(),
+                        persistentHandle: futureAnchor?.persistentHandle,
                         remove: () => {
-                            newAnchor._removed = true;
+                            anchor._removed = true;
                         },
                     };
-                    const anchor = this._updateAnchorWithXRFrame(xrAnchor, newAnchor, frame);
+                    this._updateAnchorWithXRFrame(xrAnchor, anchor, frame);
                     this._trackedAnchors.push(anchor);
                     this.onAnchorAddedObservable.notifyObservers(anchor);
                     // search for the future anchor promise that matches this
-                    const results = this._futureAnchors.filter((futureAnchor) => futureAnchor.nativeAnchor === xrAnchor);
-                    const result = results[0];
-                    if (result) {
-                        result.resolve(anchor);
-                        result.resolved = true;
+                    for (const pendingAnchor of this._futureAnchors) {
+                        if (pendingAnchor.nativeAnchor === xrAnchor && !pendingAnchor.resolved) {
+                            pendingAnchor.resolve(anchor);
+                            pendingAnchor.resolved = true;
+                        }
                     }
                 } else {
-                    const index = this._findIndexInAnchorArray(xrAnchor);
-                    if (index < 0) {
+                    if (trackedAnchorIndex < 0) {
                         return;
                     }
-                    const anchor = this._trackedAnchors[index];
+                    const anchor = this._trackedAnchors[trackedAnchorIndex];
                     this._updateAnchorWithXRFrame(xrAnchor, anchor, frame);
                     if (anchor.attachedNode) {
                         anchor.attachedNode.rotationQuaternion = anchor.attachedNode.rotationQuaternion || new Quaternion();
@@ -363,6 +496,11 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         // process future anchors
         for (const futureAnchor of this._futureAnchors) {
             if (!futureAnchor.resolved && !futureAnchor.submitted) {
+                if (!futureAnchor.xrTransformation) {
+                    futureAnchor.resolved = true;
+                    futureAnchor.reject(new Error("Anchor creation requires an XR transformation"));
+                    continue;
+                }
                 // eslint-disable-next-line github/no-then
                 this._createAnchorAtTransformationAsync(futureAnchor.xrTransformation, frame).then(
                     (nativeAnchor) => {
@@ -374,6 +512,11 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                     }
                 );
                 futureAnchor.submitted = true;
+            }
+        }
+        for (let i = this._futureAnchors.length - 1; i >= 0; --i) {
+            if (this._futureAnchors[i].resolved) {
+                this._futureAnchors.splice(i, 1);
             }
         }
     }
@@ -390,6 +533,28 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
             }
         }
         return -1;
+    }
+
+    private _findFutureAnchor(xrAnchor: XRAnchor): IWebXRFutureAnchor | undefined {
+        for (const futureAnchor of this._futureAnchors) {
+            if (futureAnchor.nativeAnchor === xrAnchor && !futureAnchor.resolved) {
+                return futureAnchor;
+            }
+        }
+        return undefined;
+    }
+
+    private _setPersistentHandle(anchor: IWebXRAnchor, handle: string): void {
+        anchor.persistentHandle = handle;
+    }
+
+    private _rejectPendingPersistentAnchors(message: string): void {
+        for (const futureAnchor of this._futureAnchors) {
+            if (!futureAnchor.resolved && futureAnchor.persistentHandle !== undefined) {
+                futureAnchor.resolved = true;
+                futureAnchor.reject(new Error(message));
+            }
+        }
     }
 
     private _updateAnchorWithXRFrame(xrAnchor: XRAnchor, anchor: Partial<IWebXRAnchor>, xrFrame: XRFrame): IWebXRAnchor {

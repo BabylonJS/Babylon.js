@@ -1,19 +1,8 @@
-#!/usr/bin/env node
-
-import { readdir, readFile, stat, writeFile } from "fs/promises";
-import { basename, join, resolve } from "path";
 import ts from "typescript";
 
-const targets = process.argv.slice(2);
-
-if (targets.length === 0) {
-    process.stderr.write("Usage: node scripts/downlevelNativeScripts.mjs <file-or-directory> [...]\n");
-    process.exit(1);
-}
-
-// The TC39 decorator migration forces the Native UMD bundle to be emitted at an ES2015 target (the
+// The TC39 decorator migration forces the UMD bundle to be emitted at an ES2015 target (the
 // `accessor` keyword requires ES2015+, and esbuild cannot emit ES5 classes). Babylon Native's Chakra
-// engine consumes ES5-level script, so the bundle must be down-leveled before it runs.
+// engine consumes ES5-level script, so the build also emits a down-leveled sibling.
 //
 // We use the TypeScript transpiler (not Babel) for this. Babel's ES5 class transform emits
 // `Reflect.construct`/`_wrapNativeSuper` machinery for classes that extend native built-ins (e.g.
@@ -38,47 +27,8 @@ const compilerOptions = {
     ignoreDeprecations: "6.0",
 };
 
-function isNativeScriptFile(filePath) {
-    return /^babylon.*\.js$/i.test(basename(filePath));
-}
-
-async function collectFiles(target) {
-    const resolvedTarget = resolve(target);
-    const targetStat = await stat(resolvedTarget);
-
-    if (targetStat.isFile()) {
-        return isNativeScriptFile(resolvedTarget) ? [resolvedTarget] : [];
-    }
-
-    if (!targetStat.isDirectory()) {
-        return [];
-    }
-
-    const entries = await readdir(resolvedTarget, { withFileTypes: true });
-    const files = [];
-
-    for (const entry of entries) {
-        const entryPath = join(resolvedTarget, entry.name);
-        if (entry.isDirectory()) {
-            files.push(...(await collectFiles(entryPath)));
-        } else if (entry.isFile() && isNativeScriptFile(entryPath)) {
-            files.push(entryPath);
-        }
-    }
-
-    return files;
-}
-
-const files = [...new Set((await Promise.all(targets.map(collectFiles))).flat())];
-
-if (files.length === 0) {
-    process.stdout.write("No Babylon Native scripts found to downlevel.\n");
-    process.exit(0);
-}
-
-for (const file of files) {
-    const code = await readFile(file, "utf8");
-    const result = ts.transpileModule(code, { compilerOptions, fileName: file, reportDiagnostics: true });
+export function downlevelJavaScriptToEs5(code, fileName) {
+    const result = ts.transpileModule(code, { compilerOptions, fileName, reportDiagnostics: true });
 
     // `transpileModule` only surfaces syntactic and command-line/config diagnostics (it has no type
     // information). Command-line/config diagnostics (code >= 5000) are informational for our
@@ -86,19 +36,17 @@ for (const file of files) {
     const fatalDiagnostics = (result.diagnostics || []).filter((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error && diagnostic.code < 5000);
     if (fatalDiagnostics.length > 0) {
         const formatted = ts.formatDiagnostics(fatalDiagnostics, {
-            getCanonicalFileName: (fileName) => fileName,
+            getCanonicalFileName: (diagnosticFileName) => diagnosticFileName,
             getCurrentDirectory: () => process.cwd(),
             getNewLine: () => "\n",
         });
-        throw new Error(`TypeScript reported errors while down-leveling ${file}:\n${formatted}`);
+        throw new Error(`TypeScript reported errors while down-leveling ${fileName}:\n${formatted}`);
     }
 
     if (!result.outputText) {
-        throw new Error(`TypeScript did not produce output for ${file}`);
+        throw new Error(`TypeScript did not produce output for ${fileName}`);
     }
 
-    await writeFile(file, result.outputText, "utf8");
-    process.stdout.write(`Downleveled ${file}\n`);
+    // The original source map describes the ES2015 bundle, not this transformed output.
+    return result.outputText.replace(/\n?\/\/[#@]\s*sourceMappingURL=.*(?:\r?\n)?$/, "\n");
 }
-
-process.stdout.write(`Downleveled ${files.length} Babylon Native script file(s).\n`);

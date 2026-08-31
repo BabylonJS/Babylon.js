@@ -513,4 +513,93 @@ describe("GaussianSplatting reserveStreamingPart / setPartSplatRanges", () => {
         // Same required count as the committed atlas: reuse is allowed.
         expect(compound._canReuseCachedData(1, 1, 1)).toBe(true);
     });
+
+    it("water-fills the shared splat budget across participants and releases coordination on disable", () => {
+        const compound = createCompound();
+        const make = (demand: number) => ({
+            demand,
+            alloc: 0 as number | null,
+            getBudgetDemand(): number {
+                return this.demand;
+            },
+            setBudgetAllocation(splats: number | null): void {
+                this.alloc = splats;
+            },
+        });
+        const lo = make(10); // low demand: fully satisfied
+        const hi = make(1000); // high demand: absorbs the remainder
+        compound.registerLodBudgetParticipant(lo);
+        compound.registerLodBudgetParticipant(hi);
+
+        compound.splatBudget = 200; // no static parts => streamable = 200
+        (compound as any)._apportionBudget();
+        expect(lo.alloc).toBe(10);
+        expect(hi.alloc).toBe(190);
+
+        // Equal demand => equal split of the streamable budget.
+        lo.demand = 500;
+        hi.demand = 500;
+        (compound as any)._apportionBudget();
+        expect(lo.alloc).toBe(100);
+        expect(hi.alloc).toBe(100);
+
+        // Disabling the budget releases coordination (participants revert to their own budget => allocation null).
+        compound.splatBudget = 0;
+        expect(lo.alloc).toBeNull();
+        expect(hi.alloc).toBeNull();
+    });
+
+    it("subtracts static-part splats from the shared budget before apportioning to streams", () => {
+        const compound = createCompound();
+        // Two static parts (proxied) contribute a fixed 32 splats that the budget must reserve.
+        compound.addPart(createSource(16));
+        compound.addPart(createSource(16));
+        const staticCount = (compound as any)._staticSplatCount();
+        expect(staticCount).toBe(32);
+
+        let alloc: number | null = 0;
+        const stream = {
+            getBudgetDemand: () => 10000,
+            setBudgetAllocation: (s: number | null) => {
+                alloc = s;
+            },
+        };
+        compound.registerLodBudgetParticipant(stream);
+        compound.splatBudget = 132; // streamable = 132 - 32 static = 100
+        (compound as any)._apportionBudget();
+        expect(alloc).toBe(100);
+    });
+
+    it("counts the unproxied legacy part 0 in the static budget floor", () => {
+        const compound = createCompound() as any;
+        // Legacy layout: part 0 lives directly on the compound (no proxy at index 0); a proxied static part at 1.
+        compound._partProxies = [undefined, { _vertexCount: 30 }];
+        compound._streamingStates = [];
+        compound._vertexCount = 100; // atlas total
+        // Static floor = proxied static (30) + legacy part 0 (100 - 30 = 70) = 100.
+        expect(compound._staticSplatCount()).toBe(100);
+
+        // Preferred layout: part 0 is proxied, so nothing extra is added beyond the proxies.
+        compound._partProxies = [{ _vertexCount: 40 }, { _vertexCount: 30 }];
+        compound._vertexCount = 70;
+        expect(compound._staticSplatCount()).toBe(70);
+
+        // A tombstoned proxied static part renders nothing, so it is excluded from the floor.
+        compound._partProxies = [
+            { _vertexCount: 40, partIndex: 0 },
+            { _vertexCount: 30, partIndex: 1 },
+        ];
+        compound._tombstonedPartIndices = new Set([1]);
+        compound._vertexCount = 70;
+        expect(compound._staticSplatCount()).toBe(40);
+
+        // A tombstoned unproxied legacy part 0 is excluded too (only the live proxied static part counts).
+        compound._partProxies = [undefined, { _vertexCount: 30, partIndex: 1 }];
+        compound._tombstonedPartIndices = new Set([0]);
+        compound._vertexCount = 100;
+        expect(compound._staticSplatCount()).toBe(30);
+
+        // Reset so afterEach's dispose doesn't call into the mock proxies.
+        compound._partProxies = [];
+    });
 });

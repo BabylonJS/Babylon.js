@@ -55,17 +55,17 @@ export class KHR_node_hoverability implements IGLTFLoaderExtension {
     }
 }
 
-let _Registered = false;
+let _RuntimeRegistered = false;
 /**
- * Registers the KHR_node_hoverability glTF loader extension.
- * Safe to call multiple times; only the first call has an effect.
+ * @internal
+ * Registers KHR_node_hoverability runtime dependencies without changing the extension registry.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function RegisterKHR_node_hoverability(): void {
-    if (_Registered) {
+export function _RegisterKHRNodeHoverabilityRuntime(): void {
+    if (_RuntimeRegistered) {
         return;
     }
-    _Registered = true;
+    _RuntimeRegistered = true;
 
     addNewInteractivityFlowGraphMapping("event/onHoverIn", NAME, {
         // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
@@ -224,6 +224,21 @@ export function RegisterKHR_node_hoverability(): void {
         getPropertyName: [() => "pointerOverDisableMeshTesting"],
         type: "boolean",
     });
+}
+
+let _Registered = false;
+/**
+ * Registers the KHR_node_hoverability glTF loader extension.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function RegisterKHR_node_hoverability(): void {
+    if (_Registered) {
+        return;
+    }
+    _Registered = true;
+
+    _RegisterKHRNodeHoverabilityRuntime();
 
     unregisterGLTFExtension(NAME);
 

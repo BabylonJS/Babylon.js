@@ -9,7 +9,7 @@
     "devDependencies": {
         "@babel/core": "^7.29.7",
         "@babel/preset-env": "^7.29.7",
-        "@babylonjs/lite": "1.23.0",
+        "@babylonjs/lite": "1.24.0",
         "@dev/build-tools": "^1.0.0",
         "@eslint/js": "^10.0.1",
         "@playwright/test": "1.57.0",
@@ -23,7 +23,8 @@
         "@vitest/eslint-plugin": "^1.6.14",
         "ajv": "~8.18.0",
         "chokidar": "~3.6.0",
-        "dotenv": "~16.0.0",
+        "dompurify": "3.4.13",
+        "dotenv": "~16.6.0",
         "es-check": "^7.1.1",
         "esbuild": "^0.28.1",
         "eslint": "^10.0.2",
@@ -62,7 +63,6 @@
         "build:umd": "npm run build:umd:libs && npm run build:umd:tools",
         "build:umd:libs": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=6 --projects=babylonjs,babylonjs-gui,babylonjs-loaders,babylonjs-materials,babylonjs-serializers,babylonjs-post-process,babylonjs-procedural-textures,babylonjs-ktx2decoder,babylonjs-accessibility,babylonjs-addons",
         "build:umd:tools": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=2 --projects=babylonjs-inspector-legacy,babylonjs-node-editor,babylonjs-node-geometry-editor,babylonjs-node-render-graph-editor,babylonjs-node-particle-editor,babylonjs-gui-editor,babylonjs-inspector,create-babylonjs",
-        "downlevel:native-scripts": "node ./scripts/downlevelNativeScripts.mjs",
         "build:es6": "npm run build:assets:smart-filters && npm run build:es6:libs && npm run build:es6:tools && npm run check:treeshaking-all",
         "build:es6:libs": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=6 --projects=@babylonjs/core,@babylonjs/gui,@babylonjs/loaders,@babylonjs/materials,@babylonjs/serializers,@babylonjs/post-processes,@babylonjs/procedural-textures,@babylonjs/viewer,@babylonjs/shared-ui-components,@babylonjs/addons,@babylonjs/accessibility,@babylonjs/ktx2decoder,@babylonjs/smart-filters,@babylonjs/smart-filters-blocks,@babylonjs/lottie-player",
         "build:es6:tools": "nx run-many --outputStyle=static --target=build --parallel --maxParallel=2 --projects=@babylonjs/node-editor,@babylonjs/node-geometry-editor,@babylonjs/node-render-graph-editor,@babylonjs/node-particle-editor,@babylonjs/inspector-legacy,@babylonjs/gui-editor,@tools/smart-filters-editor-control,@tools/smart-filters-debugger,@tools/smart-filters-editor,@babylonjs/inspector,@babylonjs/mcp-servers",
@@ -113,7 +113,7 @@
         "check:treeshaking": "node ./scripts/treeshaking/verifyTreeShaking.mjs --all-packages",
         "check:treeshaking-all": "npm run check:treeshaking && npm run check:side-effects-sync && npm run test:treeshaking",
         "catalog:static-helpers": "node ./scripts/treeshaking/catalogStaticHelpers.mjs",
-        "prepare": "npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools && node scripts/setupGitHooks.mjs",
+        "prepare": "npm run build:tools && npm rebuild @dev/build-tools && npm run build:assets && npm run build:test-tools && node scripts/setupGitHooks.mjs",
         "clean": "npx nx run-many --outputStyle=static --target=clean --all --exclude=@babylonjs/root && npm run build:tools",
         "format": "npm run format:check && npm run format:fix",
         "format:check": "prettier --check \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
@@ -161,9 +161,13 @@
         "eslint-plugin-tsdoc": {
             "@typescript-eslint/utils": "^8.58.2"
         },
-        "dompurify": "3.4.12",
+        "dompurify": "$dompurify",
+        "monaco-editor": {
+            "dompurify": "$dompurify"
+        },
         "nx": {
-            "axios": "^1.18.1"
+            "axios": "^1.18.1",
+            "brace-expansion": "5.0.9"
         }
     }
 }

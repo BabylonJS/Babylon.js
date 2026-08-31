@@ -74,17 +74,15 @@ const caps = {
     ...(usesBrowserStackLocal && browserStackLocalIdentifier ? { "browserstack.localIdentifier": browserStackLocalIdentifier } : {}),
 };
 
-// SECURITY NOTE: The wsEndpoint embeds BROWSERSTACK_ACCESS_KEY. Playwright may
-// log this URL on connection failure, and trace files (trace: "on-first-retry")
-// may include it. Ensure BROWSERSTACK_ACCESS_KEY is marked **secret** in the
-// Azure DevOps variable group, and do NOT publish playwright-report/ or
-// trace-*.zip as public CI artifacts.
+// The endpoint contains the BrowserStack access key. BrowserStack runs must not
+// record traces or use reporters that serialize errors, output, attachments, or
+// configuration into the public report.
 const wsEndpoint = `wss://cdp.browserstack.com/playwright?caps=${encodeURIComponent(JSON.stringify(caps))}`;
 
 // ---------------------------------------------------------------------------
 // Reporters
 // ---------------------------------------------------------------------------
-const baseReporters: any[] = [["line"], ["junit", { outputFile: "junit.xml" }], ["html", { open: "never" }]];
+const baseReporters: any[] = [["line"], ["junit", { outputFile: "junit.xml" }], ["./packages/tools/tests/publicReportReporter.ts", { outputFolder: "playwright-report" }]];
 if (isPerformanceRun) {
     baseReporters.push(["./packages/tools/tests/performanceSummaryReporter.ts"]);
 }
@@ -113,7 +111,7 @@ export default defineConfig({
     testMatch: activeConfig.testMatch,
     use: {
         connectOptions: { wsEndpoint },
-        trace: "on-first-retry",
+        trace: "off",
         ignoreHTTPSErrors: true,
         ...(activeConfig.local ? { baseURL: "http://localhost:1340" } : {}),
     },

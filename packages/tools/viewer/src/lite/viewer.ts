@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { type Nullable } from "core/index";
+import { type IDisposable, type Nullable } from "core/index";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { AbortError } from "core/Misc/error";
 import { Logger } from "core/Misc/logger";
@@ -87,6 +87,7 @@ import {
     throwIfAborted,
     observePromise,
 } from "../viewerBase";
+import { SuspendRenderingWhenOffscreen } from "../offscreenRenderingSuspension";
 
 /**
  * The options for the Lite Viewer.
@@ -162,6 +163,10 @@ function toneMappingToLiteToneMapping(mode: ToneMapping): LiteToneMapping | unde
  * Babylon Lite is a WebGPU-only engine that provides a subset of the full Babylon.js feature set.
  * Features that are not available in Lite (SSAO, "high" shadow quality, hot spots, File/ArrayBufferView model sources)
  * will log warnings and fall back gracefully.
+ *
+ * The `autoSuspendRendering` option is silently ignored: Lite has no scene-mutation tracking, so it cannot
+ * detect when a scene is idle. Rendering is still suspended while the canvas is offscreen (see
+ * {@link CreateViewerForCanvas}), which is the case that dominates cost on pages with multiple viewers.
  */
 export class Viewer extends ViewerBase implements IViewer {
     // ── Private State ──
@@ -170,7 +175,28 @@ export class Viewer extends ViewerBase implements IViewer {
     private readonly _camera: ArcRotateCamera;
     private readonly _deviceLostRecovery: DeviceLostRecoveryHandle;
     private _detachControl: (() => void) | null = null;
+    /** True while the engine's requestAnimationFrame loop is running. False while suspended or disposed. */
     private _renderLoopRunning = false;
+    /**
+     * True once the scene has been registered with the engine (deferred builders run, renderables bucketed).
+     * Distinct from {@link _renderLoopRunning}: suspending rendering stops the rAF loop but leaves the scene
+     * registered, so code that needs to know "has the scene been built" must consult this instead.
+     */
+    private _sceneRegistered = false;
+    /** Number of live suspension handles returned by {@link _suspendRendering}. Rendering runs only at zero. */
+    private _suspendRenderCount = 0;
+    /**
+     * Serializes every engine start/stop and scene (un)registration, so a suspend/resume triggered by the
+     * offscreen observer can never interleave with {@link _beginRendering}'s stop, unregister, register,
+     * start sequence (which is itself re-entered from model loads, environment loads, and construction).
+     */
+    private readonly _renderLoopLock = new AsyncLock();
+    /**
+     * Resolves the pending `startEngine` await when the render loop is stopped before its first frame.
+     * Lite's `startEngine` promise only settles from inside the rAF callback, so stopping the loop first
+     * (by suspension or disposal) would otherwise leave the await pending forever.
+     */
+    private _renderLoopStopped: Nullable<() => void> = null;
 
     // Auto-orbit
     private _autoOrbitIdleTime = 0;
@@ -789,8 +815,10 @@ export class Viewer extends ViewerBase implements IViewer {
 
             // Re-register the scene so that the env loader's deferred builders are processed
             // and the new skybox/ground renderables land in the draw buckets. Lite only fills
-            // `_opaqueRenderables` etc. at registerScene() time.
-            if (this._renderLoopRunning) {
+            // `_opaqueRenderables` etc. at registerScene() time. Gated on `_sceneRegistered` (not the
+            // rAF-loop state) so an environment loaded while rendering is suspended still re-registers;
+            // otherwise the skybox would never appear, even after rendering resumes.
+            if (this._sceneRegistered) {
                 await this._beginRendering();
             }
 
@@ -802,7 +830,7 @@ export class Viewer extends ViewerBase implements IViewer {
             // environment explicitly added to an already-displayed model — the model keeps its previous
             // (often absent) IBL and renders unlit/black while the skybox looks correct. Force a PBR rebuild
             // so the model picks up the new lighting. No-op when no model is loaded.
-            if (this._renderLoopRunning && this._container) {
+            if (this._sceneRegistered && this._container) {
                 await this._rebuildModelPbrForEnvironment();
             }
 
@@ -1205,7 +1233,7 @@ export class Viewer extends ViewerBase implements IViewer {
             //   `_renderableVersion` so the frame graph re-buckets them. Re-registering here would be wrong:
             //   `buildScene` clears the material-swap queue before the loop can drain it, dropping the model.
             //
-            // So only (re-)register when the render loop isn't running yet or the model's material group
+            // So only (re-)register when the scene isn't registered yet or the model's material group
             // has not been built before; otherwise let the running loop drain the swap queue.
             //
             // `this._scene` is created once in the constructor and never recreated (it is disposed only in
@@ -1221,7 +1249,11 @@ export class Viewer extends ViewerBase implements IViewer {
             // task is rebuilt against the new light/ground instead of going stale. Shadow quality is fixed at
             // construction (see `_updateShadowsImpl`), so this only affects the rarely-used shadow + model-swap
             // combination.
-            if (!this._renderLoopRunning || this._shadowQuality !== "none" || !this._modelMaterialGroupBuilt) {
+            //
+            // The condition tests `_sceneRegistered` rather than the rAF-loop state so that a model loaded
+            // while rendering is suspended still registers its renderables; the swap queue it may instead
+            // enqueue into is drained by the first frame after rendering resumes.
+            if (!this._sceneRegistered || this._shadowQuality !== "none" || !this._modelMaterialGroupBuilt) {
                 await this._beginRendering();
             }
             this._modelMaterialGroupBuilt = true;
@@ -1850,25 +1882,90 @@ export class Viewer extends ViewerBase implements IViewer {
     /**
      * Registers the scene with the engine and starts the render loop.
      * Safe to call multiple times — stops and re-registers if already running.
+     * @remarks
+     * Serialized against suspend/resume via {@link _renderLoopLock} so a scroll-driven suspension can never
+     * land in the middle of the stop, unregister, register, start sequence below.
      */
     private async _beginRendering(): Promise<void> {
-        if (this._isDisposed) {
+        await this._renderLoopLock.lockAsync(async () => {
+            if (this._isDisposed) {
+                return;
+            }
+            this._stopRenderLoop();
+            if (this._sceneRegistered) {
+                unregisterScene(this._scene);
+                this._sceneRegistered = false;
+            }
+            // Install the scene-owned frame-graph shadow task only when shadows are enabled, so the
+            // shadow-task bundle is tree-shaken out for viewers that never render shadows.
+            if (this._shadowQuality === "none") {
+                await registerScene(this._scene);
+            } else {
+                await registerSceneWithShadowSupport(this._scene);
+            }
+            if (this._isDisposed) {
+                return;
+            }
+            this._sceneRegistered = true;
+            await this._startRenderLoop();
+        });
+    }
+
+    /**
+     * Starts the engine's render loop, unless rendering is suspended (or the viewer is disposed), and waits
+     * for the first frame.
+     * @remarks
+     * Lite's `startEngine` promise resolves from inside the rAF callback, so it never settles if the loop is
+     * stopped before that first frame. {@link _renderLoopStopped} races against it so a suspension or a
+     * disposal arriving in that window can't leave this await (and any model load awaiting it) pending forever.
+     */
+    private async _startRenderLoop(): Promise<void> {
+        if (this._renderLoopRunning || this._isDisposed || this._suspendRenderCount > 0) {
             return;
         }
+        this._renderLoopRunning = true;
+        const firstFrame = startEngine(this._engine);
+        const stopped = new Promise<void>((resolve) => (this._renderLoopStopped = resolve));
+        await Promise.race([firstFrame, stopped]);
+        this._renderLoopStopped = null;
+    }
+
+    /** Stops the engine's render loop (if running) and releases anyone awaiting its first frame. */
+    private _stopRenderLoop(): void {
         if (this._renderLoopRunning) {
             stopEngine(this._engine);
-            unregisterScene(this._scene);
             this._renderLoopRunning = false;
         }
-        // Install the scene-owned frame-graph shadow task only when shadows are enabled, so the
-        // shadow-task bundle is tree-shaken out for viewers that never render shadows.
-        if (this._shadowQuality === "none") {
-            await registerScene(this._scene);
-        } else {
-            await registerSceneWithShadowSupport(this._scene);
+        this._renderLoopStopped?.();
+        this._renderLoopStopped = null;
+    }
+
+    /**
+     * Suspends rendering until the returned disposable is disposed.
+     * @remarks
+     * Reference counted, mirroring the full Viewer: rendering only resumes once every suspension handle has
+     * been disposed. The scene stays registered while suspended, so resuming does not rebuild anything.
+     * @returns A disposable that resumes rendering (when no other suspensions are outstanding).
+     * @internal
+     */
+    public _suspendRendering(): IDisposable {
+        if (this._suspendRenderCount++ === 0) {
+            observePromise(this._renderLoopLock.lockAsync(() => this._stopRenderLoop()));
         }
-        await startEngine(this._engine);
-        this._renderLoopRunning = true;
+
+        let disposed = false;
+        return {
+            dispose: () => {
+                if (!disposed) {
+                    disposed = true;
+                    if (--this._suspendRenderCount === 0) {
+                        // Not awaited: resuming must not block the caller (typically an IntersectionObserver
+                        // callback) on the first rendered frame.
+                        observePromise(this._renderLoopLock.lockAsync(async () => await this._startRenderLoop()));
+                    }
+                }
+            },
+        };
     }
 
     public override dispose(): void {
@@ -1905,8 +2002,9 @@ export class Viewer extends ViewerBase implements IViewer {
         this._unloadCurrentModel();
 
         // Stop and dispose engine/scene
-        stopEngine(this._engine);
+        this._stopRenderLoop();
         unregisterScene(this._scene);
+        this._sceneRegistered = false;
         disposeScene(this._scene);
         disposeEngine(this._engine);
 
@@ -2022,5 +2120,19 @@ export class Viewer extends ViewerBase implements IViewer {
  */
 export async function CreateViewerForCanvas(canvas: HTMLCanvasElement, options?: CanvasViewerOptions): Promise<Viewer> {
     const engine = await createEngine(canvas, { alphaMode: "premultiplied" });
-    return new Viewer(engine, options);
+    const viewer = new Viewer(engine, options);
+
+    // If the canvas is not visible, suspend rendering. Matches the full Viewer, where this is unconditional
+    // (the `autoSuspendRendering` option gates idle suspension, not offscreen suspension).
+    const offscreenSuspensionObserver = SuspendRenderingWhenOffscreen(canvas, () => viewer._suspendRendering());
+
+    // Override the Viewer's dispose method to add in additional cleanup. Matches the full Viewer's factory:
+    // only the observer needs disconnecting — any live suspension handle is dropped along with the Viewer.
+    const disposeViewer = viewer.dispose.bind(viewer);
+    viewer.dispose = () => {
+        offscreenSuspensionObserver.dispose();
+        disposeViewer();
+    };
+
+    return viewer;
 }

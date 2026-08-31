@@ -2,7 +2,7 @@
 # Template: Pipeline caches (npm / Nx / Playwright)
 #
 # Emits Cache@2 restore+save steps. Insert this immediately BEFORE the job's
-# `npm install` step so the npm download cache is restored first, and (when
+# `npm ci` step so the npm download cache is restored first, and (when
 # enabled) the Nx computation cache is available for the later build target.
 #
 # Uses these pipeline-level cache path variables (see ci-monorepo.yml):

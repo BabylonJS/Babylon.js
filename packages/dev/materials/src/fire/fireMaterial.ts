@@ -16,7 +16,7 @@ import { type SubMesh } from "core/Meshes/subMesh";
 import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { _ShaderImportLoader } from "core/Misc/shaderImportLoader";
 import { type IAnimatable } from "core/Animations/animatable.interface";
 
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
@@ -84,7 +84,10 @@ export class FireMaterial extends PushMaterial {
 
     private _scaledDiffuse = new Color3();
     private _lastTime: number = 0;
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new _ShaderImportLoader(
+        () => [import("./fire.vertex"), import("./fire.fragment")],
+        () => [import("./wgsl/fire.vertex"), import("./wgsl/fire.fragment")]
+    );
 
     /**
      * Instantiates a Fire Material in the given scene
@@ -234,17 +237,7 @@ export class FireMaterial extends PushMaterial {
                         maxSimultaneousLights: 4,
                         transformFeedbackVaryings: null,
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("./wgsl/fire.vertex"), import("./wgsl/fire.fragment")]);
-                                  } else {
-                                      await Promise.all([import("./fire.vertex"), import("./fire.fragment")]);
-                                  }
-
-                                  this._shadersLoaded = true;
-                              },
+                        extraInitializationsAsync: FireMaterial._ShaderLoader.getLoadCallback(this._shaderLanguage),
                     },
                     engine
                 ),
