@@ -55,13 +55,73 @@ jobs:
     # deployment token and no GitHub service connection. Its only output is a
     # set of immutable pipeline artifacts.
     #
-    # `GitHubPAT` is still required here for changelog generation. It is mapped
-    # into that single step only, and scripts/versionUtils.js +
-    # scripts/generateChangelog.js strip it from the environment of every child
-    # process they spawn.
+    # It holds no credential of any kind. The changelog and release notes that
+    # used to require `GitHubPAT` in this job are now produced by the
+    # FetchReleaseNotes job above and consumed here as a pipeline artifact, so a
+    # dependency lifecycle script or a process left running by `npm ci` has
+    # nothing to steal and no later step to wait for.
     # ========================================================================
+    # ========================================================================
+    # 0. Fetch release notes (the only job that holds the GitHub token)
+    #
+    # Checks the repository out but deliberately never runs `npm ci`, so no
+    # dependency lifecycle script, and no third-party package code, ever runs
+    # while GitHubPAT is in this agent's environment. scripts/fetchReleaseNotes.js
+    # and everything it requires use Node built-ins only.
+    #
+    # The result is handed to the build job as an immutable pipeline artifact,
+    # so that job never needs the token at all.
+    # ========================================================================
+    - job: FetchReleaseNotes
+      displayName: "Fetch release notes (credential-only)"
+      timeoutInMinutes: 30
+      steps:
+          - checkout: self
+            clean: true
+            fetchDepth: 0
+            fetchTags: true
+            persistCredentials: false
+
+          - task: UseNode@1
+            displayName: "Use Node 24.x"
+            inputs:
+                version: "24.x"
+
+          - bash: |
+                set -euo pipefail
+                if [ -d node_modules ]; then
+                    echo "node_modules must not exist in this job" >&2
+                    exit 1
+                fi
+                node ./scripts/fetchReleaseNotes.js
+            displayName: "Fetch release notes"
+            env:
+                GITHUBPAT: $(GitHubPAT)
+
+          - bash: |
+                set -euo pipefail
+                OUT="$(Build.ArtifactStagingDirectory)/release-notes"
+                mkdir -p "$OUT"
+                cp .build/changelog.json "$OUT/changelog.json"
+                cp .build/release-notes.md "$OUT/release-notes.md"
+
+                # Defence in depth: refuse to publish an artifact that captured a
+                # credential, so a mistake here cannot leak into the build job.
+                if grep -qiE '(ghp_|github_pat_|GITHUBPAT)' "$OUT/changelog.json" "$OUT/release-notes.md"; then
+                    echo "Refusing to publish release notes containing credential-like text" >&2
+                    exit 1
+                fi
+            displayName: "Stage release notes"
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish release notes"
+            inputs:
+                targetPath: "$(Build.ArtifactStagingDirectory)/release-notes"
+                artifactName: "release-notes"
+
     - job: BuildRelease
       displayName: "Build and package release"
+      dependsOn: FetchReleaseNotes
       timeoutInMinutes: 120
       steps:
           - checkout: self
@@ -98,10 +158,23 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
+          - task: DownloadPipelineArtifact@2
+            displayName: "Download release notes"
+            inputs:
+                artifact: "release-notes"
+                path: "$(Pipeline.Workspace)/release-notes"
+
+          - bash: |
+                set -euo pipefail
+                cp "$(Pipeline.Workspace)/release-notes/changelog.json" .build/changelog.json
+                cp "$(Pipeline.Workspace)/release-notes/release-notes.md" .build/release-notes.md
+            displayName: "Restore pre-fetched release notes"
+
+          # No GITHUBPAT here. The changelog and the release notes were fetched
+          # by the FetchReleaseNotes job and restored above, so the updater runs
+          # entirely offline. generateChangelog() short-circuits without a token.
           - bash: node ./scripts/updateVersion.js $(Build.SourceBranchName)
             displayName: "run updater"
-            env:
-                GITHUBPAT: $(GitHubPAT)
 
           - bash: npm install
             displayName: "Update package-lock.json"

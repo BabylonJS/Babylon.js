@@ -42,7 +42,32 @@ function getCurrentVersion() {
     return version;
 }
 
+/**
+ * Compute the version the next release will carry.
+ *
+ * This is shared by scripts/fetchReleaseNotes.js and scripts/updateVersion.js so the
+ * credential-only changelog job and the credential-free build job always agree on the
+ * version, without either of them having to pass it to the other.
+ * @returns {string} the next version string
+ */
+function getNextVersion() {
+    const config = require(path.join(baseDirectory, ".build", "config.json"));
+    let [major, minor, revision] = getCurrentVersion().split(".");
+    if (config.versionDefinition === "major") {
+        major++;
+        minor = 0;
+        revision = 0;
+    } else if (config.versionDefinition === "minor") {
+        minor++;
+        revision = 0;
+    } else {
+        revision++;
+    }
+    return [major, minor, revision].join(".");
+}
+
 module.exports = {
     runCommand,
     getCurrentVersion,
+    getNextVersion,
 };

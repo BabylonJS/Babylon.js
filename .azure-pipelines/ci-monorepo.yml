@@ -30,21 +30,6 @@
 #    gated on a trusted branch plus a trusted build reason.
 # =============================================================================
 
-parameters:
-    # BrowserStack is the one credential that pull-request-controlled code must
-    # be able to reach: the Playwright config, the specs, and browserstack-wait.sh
-    # all run as pull-request code, so the credentials cannot be moved into a
-    # `checkout: none` job without deleting cross-browser coverage on PRs.
-    #
-    # Every *other* credential has been removed from those jobs, so a malicious
-    # pull request can now only obtain the BrowserStack account. Set this to
-    # `false` to drop cross-browser coverage from pull-request builds entirely
-    # (scheduled and branch builds keep it). See VARIABLE-GROUPS.md for the
-    # recommended mitigation: a restricted, PR-only BrowserStack sub-account.
-    - name: runBrowserStackOnPullRequests
-      type: boolean
-      default: true
-
 trigger:
     batch: true
     branches:
@@ -86,8 +71,14 @@ resources:
 
 variables:
     - group: BabylonJS-CI-Infrastructure
-    - group: Browserstack-Opensource
     - group: BabylonJS-Deployment
+    # BrowserStack credentials are requested only for runs that are not pull
+    # request validations. On a pull request this group is never linked, so the
+    # secrets are not materialised in the run at all - not merely withheld from
+    # individual steps. Cross-browser visualization and performance coverage
+    # therefore comes from trusted (branch and scheduled) runs.
+    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+          - group: Browserstack-Opensource
     # `readonly` so pull-request code cannot repoint upload destinations by
     # emitting `##vso[task.setvariable variable=BuildName]...`.
     - name: BuildName
@@ -270,13 +261,14 @@ jobs:
 
           - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "ES6 visualization tests (BrowserStack)"
+            condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
             env:
                 CI: "true"
                 BSTACK_TEST_TYPE: "es6vis"
                 BSTACK_BUILD_NAME: "ES6 Visualization Tests"
                 BROWSERSTACK_LOCAL: "true"
                 BROWSERSTACK_LOCAL_IDENTIFIER: "es6vis-$(Build.BuildId)-$(System.JobAttempt)"
-                ${{ if or(parameters.runBrowserStackOnPullRequests, ne(variables['Build.Reason'], 'PullRequest')) }}:
+                ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
                     BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                     BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
 
@@ -569,9 +561,10 @@ jobs:
             retryCountOnTaskFailure: 1
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
-                ${{ if or(parameters.runBrowserStackOnPullRequests, ne(variables['Build.Reason'], 'PullRequest')) }}:
-                    BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
-                    BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
+                # No BrowserStack credentials: `npm run test:interactions` runs
+                # `playwright test -c ./playwright.config.ts --project=interaction`,
+                # which drives local browsers. The credentials that used to be
+                # mapped here were never read.
                 CI: "true"
 
           # Credential-free: the report is staged as a pipeline artifact and
@@ -722,7 +715,7 @@ jobs:
 
           - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "WebGL2 BStack"
-            condition: ne(variables['AFFECTED_TAGS'], 'NONE')
+            condition: and(ne(variables['AFFECTED_TAGS'], 'NONE'), ne(variables['Build.Reason'], 'PullRequest'))
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
                 CI: "true"
@@ -730,7 +723,7 @@ jobs:
                 BSTACK_TEST_TYPE: "webgl2"
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGL2"
                 TIMEOUT: "27500"
-                ${{ if or(parameters.runBrowserStackOnPullRequests, ne(variables['Build.Reason'], 'PullRequest')) }}:
+                ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
                     BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                     BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
@@ -791,7 +784,7 @@ jobs:
 
           - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "WebGPU BStack"
-            condition: ne(variables['AFFECTED_TAGS'], 'NONE')
+            condition: and(ne(variables['AFFECTED_TAGS'], 'NONE'), ne(variables['Build.Reason'], 'PullRequest'))
             retryCountOnTaskFailure: 1
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
@@ -800,7 +793,7 @@ jobs:
                 BSTACK_TEST_TYPE: "webgpu"
                 BSTACK_BUILD_NAME: "Visualization Tests - WebGPU"
                 TIMEOUT: "27500"
-                ${{ if or(parameters.runBrowserStackOnPullRequests, ne(variables['Build.Reason'], 'PullRequest')) }}:
+                ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
                     BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                     BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
@@ -967,6 +960,7 @@ jobs:
 
           - bash: .azure-pipelines/browserstack-wait.sh npx playwright test --config ./playwright.browserstack.config.ts
             displayName: "Run performance tests (BStack)"
+            condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
             continueOnError: true
             env:
                 CDN_BASE_URL: "$(SNAPSHOT_CDN_URL)/$(BuildName)"
@@ -978,7 +972,7 @@ jobs:
                 CIWORKERS: "$(CIWORKERS)"
                 TIMEOUT: "300000"
                 PERF_COMMENT_FILE: "$(Build.ArtifactStagingDirectory)/perf-comment.md"
-                ${{ if or(parameters.runBrowserStackOnPullRequests, ne(variables['Build.Reason'], 'PullRequest')) }}:
+                ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
                     BROWSERSTACK_USERNAME: $(BROWSERSTACK_USERNAME)
                     BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
