@@ -40,78 +40,6 @@ const PlanckianLocusTable: ReadonlyArray<readonly [number, number, number, numbe
     [600, 0.33724, 0.36051, -116.45],
 ];
 
-// `Matrix.FromArray` reads values column-major, so each 3x3 matrix below is written column-by-column, not row-by-row.
-
-/**
- * The Bradford cone-response matrix used for chromatic adaptation.
- */
-// prettier-ignore
-const BradfordMatrix = Matrix.FromArray([
-    0.8951, -0.7502, 0.0389, 0,
-    0.2664, 1.7135, -0.0685, 0,
-    -0.1614, 0.0367, 1.0296, 0,
-    0, 0, 0, 1,
-]);
-
-const InverseBradfordMatrix = Matrix.Invert(BradfordMatrix);
-
-/**
- * The sRGB / Rec.709 (D65) linear RGB to CIE XYZ matrix.
- */
-// prettier-ignore
-const RgbToXyzD65 = Matrix.FromArray([
-    0.4124564, 0.2126729, 0.0193339, 0,
-    0.3575761, 0.7151522, 0.119192, 0,
-    0.1804375, 0.072175, 0.9503041, 0,
-    0, 0, 0, 1,
-]);
-
-/**
- * The CIE XYZ to sRGB / Rec.709 (D65) linear RGB matrix.
- */
-// prettier-ignore
-const XyzToRgbD65 = Matrix.FromArray([
-    3.2404542, -0.969266, 0.0556434, 0,
-    -1.5371385, 1.8760108, -0.2040259, 0,
-    -0.4985314, 0.041556, 1.0572252, 0,
-    0, 0, 0, 1,
-]);
-
-/**
- * Computes a per-channel Bradford adaptation ratio, clamped to avoid extreme temperature/tint combinations
- * blowing up the resulting matrix when a cone-response component approaches zero.
- * @param destComponent The destination white's cone-response component
- * @param sourceComponent The source white's cone-response component
- * @returns The ratio to use for this channel, clamped to [0.1, 10]
- */
-function ClampedAdaptationRatio(destComponent: number, sourceComponent: number): number {
-    const ratio = sourceComponent > 0 ? destComponent / sourceComponent : 10;
-    return Clamp(ratio, 0.1, 10);
-}
-
-/**
- * Computes the Bradford chromatic-adaptation matrix that maps CIE XYZ values from `sourceWhiteXYZ` to `destWhiteXYZ`.
- * @param sourceWhiteXYZ The CIE XYZ (Y = 1) coordinates of the source reference white
- * @param destWhiteXYZ The CIE XYZ (Y = 1) coordinates of the destination reference white
- * @returns A matrix mapping source-referenced XYZ to destination-referenced XYZ
- */
-function BradfordAdapt(sourceWhiteXYZ: Vector3, destWhiteXYZ: Vector3): Matrix {
-    const sourceLMS = Vector3.TransformNormal(sourceWhiteXYZ, BradfordMatrix);
-    const destLMS = Vector3.TransformNormal(destWhiteXYZ, BradfordMatrix);
-
-    // prettier-ignore
-    const scale = Matrix.FromArray([
-        ClampedAdaptationRatio(destLMS.x, sourceLMS.x), 0, 0, 0,
-        0, ClampedAdaptationRatio(destLMS.y, sourceLMS.y), 0, 0,
-        0, 0, ClampedAdaptationRatio(destLMS.z, sourceLMS.z), 0,
-        0, 0, 0, 1,
-    ]);
-
-    // adapt = InverseBradfordMatrix * scale * BradfordMatrix, written back-to-front since `A.multiply(B)` computes `B x A`.
-    const scaledByBradford = BradfordMatrix.multiply(scale);
-    return scaledByBradford.multiply(InverseBradfordMatrix);
-}
-
 /**
  * Converts a correlated color temperature and tint offset into the CIE XYZ (Y = 1) coordinates of the
  * corresponding illuminant white point, using a tabulated approximation of the Planckian locus in CIE 1960 UCS
@@ -157,17 +85,97 @@ export function TemperatureTintToXyz(temperatureKelvin: number, tint: number): V
     return new Vector3(x / y, 1, (1 - x - y) / y);
 }
 
+// `Matrix.FromArray` reads values column-major, so each 3x3 matrix below is written column-by-column, not row-by-row.
+
 /**
- * The working color space's reference white, in CIE XYZ (Y = 1), derived from what neutral (1, 1, 1) linear RGB
- * maps to through {@link RgbToXyzD65}. This ensures a fully white-balanced neutral patch round-trips back to
- * exactly (1, 1, 1) for any input illuminant - the standard correctness guarantee used by chromatic-adaptation
- * code in many well-known color-managed image processing software, where the adaptation target is always tied
- * directly to whatever the working color space itself already treats as neutral, rather than to a separately
- * computed point.
+ * The Bradford cone-response matrix used for chromatic adaptation.
+ */
+// prettier-ignore
+const BradfordMatrix = Matrix.FromArray([
+    0.8951, -0.7502, 0.0389, 0,
+    0.2664, 1.7135, -0.0685, 0,
+    -0.1614, 0.0367, 1.0296, 0,
+    0, 0, 0, 1,
+]);
+
+const InverseBradfordMatrix = Matrix.Invert(BradfordMatrix);
+
+/**
+ * Computes a per-channel Bradford adaptation ratio, clamped to avoid extreme temperature/tint combinations
+ * blowing up the resulting matrix when a cone-response component approaches zero.
+ * @param destComponent The destination white's cone-response component
+ * @param sourceComponent The source white's cone-response component
+ * @returns The ratio to use for this channel, clamped to [0.1, 10]
+ */
+function ClampedAdaptationRatio(destComponent: number, sourceComponent: number): number {
+    const ratio = sourceComponent > 0 ? destComponent / sourceComponent : 10;
+    return Clamp(ratio, 0.1, 10);
+}
+
+/**
+ * Computes the Bradford chromatic-adaptation matrix that maps CIE XYZ values from `sourceWhiteXYZ` to `destWhiteXYZ`.
+ * @param sourceWhiteXYZ The CIE XYZ (Y = 1) coordinates of the source reference white
+ * @param destWhiteXYZ The CIE XYZ (Y = 1) coordinates of the destination reference white
+ * @returns A matrix mapping source-referenced XYZ to destination-referenced XYZ
+ */
+function BradfordAdapt(sourceWhiteXYZ: Vector3, destWhiteXYZ: Vector3): Matrix {
+    const sourceLMS = Vector3.TransformNormal(sourceWhiteXYZ, BradfordMatrix);
+    const destLMS = Vector3.TransformNormal(destWhiteXYZ, BradfordMatrix);
+
+    // prettier-ignore
+    const scale = Matrix.FromArray([
+        ClampedAdaptationRatio(destLMS.x, sourceLMS.x), 0, 0, 0,
+        0, ClampedAdaptationRatio(destLMS.y, sourceLMS.y), 0, 0,
+        0, 0, ClampedAdaptationRatio(destLMS.z, sourceLMS.z), 0,
+        0, 0, 0, 1,
+    ]);
+
+    // adapt = InverseBradfordMatrix * scale * BradfordMatrix, written back-to-front since `A.multiply(B)` computes `B x A`.
+    const scaledByBradford = BradfordMatrix.multiply(scale);
+    return scaledByBradford.multiply(InverseBradfordMatrix);
+}
+
+/**
+ * The standard CIE Illuminant D65 white point, in CIE XYZ (Y = 1).
+ */
+const StandardD65Xyz = new Vector3(0.95047, 1.0, 1.08883);
+
+/**
+ * The standard sRGB / Rec.709 linear RGB to CIE XYZ matrix, calibrated to the externally-standardized CIE
+ * Illuminant D65 chromaticity - i.e. `StandardRgbToXyzD65 * (1, 1, 1) = StandardD65Xyz` exactly.
+ */
+// prettier-ignore
+const StandardRgbToXyzD65 = Matrix.FromArray([
+    0.4124564, 0.2126729, 0.0193339, 0,
+    0.3575761, 0.7151522, 0.119192, 0,
+    0.1804375, 0.072175, 0.9503041, 0,
+    0, 0, 0, 1,
+]);
+
+/**
+ * The linear RGB to CIE XYZ matrix actually used by {@link GetWhiteBalanceMatrix}, recalibrated from
+ * {@link StandardRgbToXyzD65} via a single Bradford adaptation step so that neutral (1, 1, 1) maps exactly onto
+ * this module's own Planckian-locus approximation of 6500 K (see {@link TemperatureTintToXyz}) instead of the
+ * externally-standardized CIE D65 chromaticity (which sits close to, but not exactly on, the Planckian locus).
  *
- * One consequence: a 6500 K blackbody illuminant is close to, but not exactly, this working space's reference
- * white, so `GetWhiteBalanceMatrix(6500, 0)` is only approximately - not exactly - the identity matrix.
- * But this is deliberate with the reason stated above.
+ * This is what lets `GetWhiteBalanceMatrix(6500, 0)` be exactly the identity matrix - the default "no adjustment"
+ * temperature/tint are a true no-op - without needing to special-case that one input: the reverse adaptation is
+ * applied once, here, to the matrix itself, rather than to every call's result.
+ */
+const RgbToXyzD65 = StandardRgbToXyzD65.multiply(BradfordAdapt(StandardD65Xyz, TemperatureTintToXyz(6500, 0)));
+
+/**
+ * The CIE XYZ to linear RGB matrix, the inverse of {@link RgbToXyzD65}.
+ */
+const XyzToRgbD65 = Matrix.Invert(RgbToXyzD65);
+
+/**
+ * The working color space's reference white, in CIE XYZ (Y = 1) - what neutral (1, 1, 1) linear RGB maps to
+ * through {@link RgbToXyzD65}. Since that matrix is itself calibrated to this module's own 6500 K point (see
+ * above), this is exactly `TemperatureTintToXyz(6500, 0)`. Deriving it as "whatever (1, 1, 1) maps to" (rather
+ * than calling `TemperatureTintToXyz` a second time) keeps the invariant self-documenting: a fully white-balanced
+ * neutral patch round-trips back to exactly (1, 1, 1) for any input illuminant, because the adaptation target is
+ * always tied directly to whatever the working color space itself already treats as neutral.
  */
 const ReferenceWhiteXyz = Vector3.TransformNormal(new Vector3(1, 1, 1), RgbToXyzD65);
 

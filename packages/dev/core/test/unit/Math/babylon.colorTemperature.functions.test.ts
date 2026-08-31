@@ -1,15 +1,50 @@
 import { Matrix, Vector3 } from "../../../src/Maths/math.vector.pure";
 import { GetWhiteBalanceMatrix, TemperatureTintToXyz } from "../../../src/Maths/colorTemperature.functions";
 
-// Independent copy of the sRGB / Rec.709 (D65) CIE XYZ to linear RGB matrix used internally by
-// colorTemperature.functions.ts, so the test below isn't tautological with the code it's checking.
+// Independent reimplementation of the sRGB / Rec.709 (D65) CIE XYZ <-> linear RGB matrices used internally by
+// colorTemperature.functions.ts, so the round-trip test below isn't tautological with the code it's checking. The
+// production code recalibrates the standard D65-referenced matrix so that (1,1,1) maps exactly onto
+// TemperatureTintToXyz(6500, 0) instead of the externally-standardized D65 chromaticity (which is close to, but
+// not exactly on, the Planckian locus); this reimplements that same recalibration independently, reusing only the
+// already-separately-tested TemperatureTintToXyz.
+const StandardD65Xyz = new Vector3(0.95047, 1.0, 1.08883);
 // prettier-ignore
-const XyzToRgbD65 = Matrix.FromArray([
-    3.2404542, -0.969266, 0.0556434, 0,
-    -1.5371385, 1.8760108, -0.2040259, 0,
-    -0.4985314, 0.041556, 1.0572252, 0,
+const StandardRgbToXyzD65 = Matrix.FromArray([
+    0.4124564, 0.2126729, 0.0193339, 0,
+    0.3575761, 0.7151522, 0.119192, 0,
+    0.1804375, 0.072175, 0.9503041, 0,
     0, 0, 0, 1,
 ]);
+// prettier-ignore
+const BradfordMatrix = Matrix.FromArray([
+    0.8951, -0.7502, 0.0389, 0,
+    0.2664, 1.7135, -0.0685, 0,
+    -0.1614, 0.0367, 1.0296, 0,
+    0, 0, 0, 1,
+]);
+const InverseBradfordMatrix = Matrix.Invert(BradfordMatrix);
+
+function clampedAdaptationRatio(dest: number, source: number): number {
+    const ratio = source > 0 ? dest / source : 10;
+    return Math.min(10, Math.max(0.1, ratio));
+}
+
+function bradfordAdapt(sourceXyz: Vector3, destXyz: Vector3): Matrix {
+    const sourceLMS = Vector3.TransformNormal(sourceXyz, BradfordMatrix);
+    const destLMS = Vector3.TransformNormal(destXyz, BradfordMatrix);
+    // prettier-ignore
+    const scale = Matrix.FromArray([
+        clampedAdaptationRatio(destLMS.x, sourceLMS.x), 0, 0, 0,
+        0, clampedAdaptationRatio(destLMS.y, sourceLMS.y), 0, 0,
+        0, 0, clampedAdaptationRatio(destLMS.z, sourceLMS.z), 0,
+        0, 0, 0, 1,
+    ]);
+    return BradfordMatrix.multiply(scale).multiply(InverseBradfordMatrix);
+}
+
+const recalibration = bradfordAdapt(StandardD65Xyz, TemperatureTintToXyz(6500, 0));
+const rgbToXyzD65 = StandardRgbToXyzD65.multiply(recalibration);
+const xyzToRgbD65 = Matrix.Invert(rgbToXyzD65);
 
 function applyColumnMajor(m: Float32Array, rgb: Vector3): Vector3 {
     return new Vector3(m[0] * rgb.x + m[3] * rgb.y + m[6] * rgb.z, m[1] * rgb.x + m[4] * rgb.y + m[7] * rgb.z, m[2] * rgb.x + m[5] * rgb.y + m[8] * rgb.z);
@@ -28,7 +63,7 @@ describe("Color temperature function tests", () => {
             // Defining correctness property of white balance: a surface that was the color of the illuminant
             // itself must read as neutral gray once corrected, regardless of which illuminant it started as.
             const illuminantXYZ = TemperatureTintToXyz(temperatureKelvin, tint);
-            const illuminantAsRgb = Vector3.TransformNormal(illuminantXYZ, XyzToRgbD65);
+            const illuminantAsRgb = Vector3.TransformNormal(illuminantXYZ, xyzToRgbD65);
 
             const m = GetWhiteBalanceMatrix(temperatureKelvin, tint);
             const corrected = applyColumnMajor(m, illuminantAsRgb);
