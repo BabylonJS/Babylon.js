@@ -27,6 +27,7 @@ let StoredEnvironmentTexture: Nullable<BaseTexture>;
 export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: Scene }> = (props) => {
     const { scene } = props;
     const imageProcessing = scene.imageProcessingConfiguration;
+    const whiteBalanceEnabled = useProperty(imageProcessing, "whiteBalanceEnabled");
 
     return (
         <>
@@ -57,7 +58,7 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
                 propertyKey="whiteBalanceEnabled"
                 propertyPath="imageProcessingConfiguration.whiteBalanceEnabled"
             />
-            <Collapse visible={imageProcessing.whiteBalanceEnabled}>
+            <Collapse visible={whiteBalanceEnabled}>
                 <BoundProperty
                     component={SyncedSliderPropertyLine}
                     label="Temperature"
