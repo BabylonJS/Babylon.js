@@ -65,12 +65,11 @@ jobs:
                 command: custom
                 customCommand: "ci"
 
-          # DISABLED in classic pipeline:
-          # - task: Npm@1
-          #   displayName: 'npm update-version (for smart filters)'
-          #   inputs:
-          #     command: custom
-          #     customCommand: 'run update-version -w @dev/smart-filters'
+          - task: Npm@1
+            displayName: "update smart filters version"
+            inputs:
+                command: custom
+                customCommand: "run update-version -w @dev/smart-filters"
 
           - task: Npm@1
             displayName: "build dev"
