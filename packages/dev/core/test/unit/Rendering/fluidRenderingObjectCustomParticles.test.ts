@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { type Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { Vector3 } from "core/Maths/math.vector";
 
 import "core/Rendering/fluidRenderer/fluidRenderer";
 import "core/Shaders/fluidRenderingParticleDepth.vertex";
@@ -27,6 +29,10 @@ describe("FluidRenderingObjectCustomParticles", () => {
             lockstepMaxSteps: 1,
         });
         scene = new Scene(engine);
+        const camera = new ArcRotateCamera("camera", 0, 0, 10, Vector3.Zero(), scene);
+        scene.activeCamera = camera;
+        // getViewMatrix() is undefined until this is called at least once.
+        scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix());
     });
 
     afterEach(() => {
@@ -41,6 +47,17 @@ describe("FluidRenderingObjectCustomParticles", () => {
             size: new Float32Array([0.1, 0.1, 0.2, 0.2]),
             color: new Float32Array([1, 0, 0, 1, 0, 1, 0, 1]),
         };
+    }
+
+    // NullEngine compiles shaders asynchronously; poll until isReady() settles.
+    async function pollIsReady(object: FluidRenderingObjectCustomParticles): Promise<boolean> {
+        for (let i = 0; i < 20; i++) {
+            if (object.isReady()) {
+                return true;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+        return false;
     }
 
     it("accepts a per-particle size buffer without throwing", () => {
@@ -74,5 +91,31 @@ describe("FluidRenderingObjectCustomParticles", () => {
         expect((object as any)._usesPerParticleSizeAttribute).toBe(false);
         expect(diffuseEffect.getAttributesNames()).not.toContain("size");
         expect(diffuseEffect.defines).not.toContain("FLUIDRENDERING_PER_PARTICLE_SIZE");
+    });
+
+    it("renders depth, thickness, and diffuse passes once ready with per-particle sizing enabled", async () => {
+        FluidRenderingObject.UsePerParticleSizeAttribute = true;
+
+        const fluidRenderer = scene.enableFluidRenderer()!;
+        const { object } = fluidRenderer.addCustomParticles(makeBuffers(), 2, true) as { object: FluidRenderingObjectCustomParticles };
+
+        expect(await pollIsReady(object)).toBe(true);
+
+        expect(() => object.renderDepthTexture()).not.toThrow();
+        expect(() => object.renderThicknessTexture()).not.toThrow();
+        expect(() => object.renderDiffuseTexture()).not.toThrow();
+    });
+
+    it("renders depth, thickness, and diffuse passes once ready with the uniform size fallback", async () => {
+        FluidRenderingObject.UsePerParticleSizeAttribute = false;
+
+        const fluidRenderer = scene.enableFluidRenderer()!;
+        const { object } = fluidRenderer.addCustomParticles(makeBuffers(), 2, true) as { object: FluidRenderingObjectCustomParticles };
+
+        expect(await pollIsReady(object)).toBe(true);
+
+        expect(() => object.renderDepthTexture()).not.toThrow();
+        expect(() => object.renderThicknessTexture()).not.toThrow();
+        expect(() => object.renderDiffuseTexture()).not.toThrow();
     });
 });
