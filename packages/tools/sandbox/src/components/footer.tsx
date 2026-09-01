@@ -8,6 +8,7 @@ import { AnimationBar } from "./animationBar";
 import { type Nullable } from "core/types";
 import { type KHR_materials_variants } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 import { type Mesh } from "core/Meshes/mesh";
+import { ActivateCamera } from "../tools/cameraTools";
 
 import "../scss/footer.scss";
 import babylonIdentity from "../img/babylon-identity.svg";
@@ -55,11 +56,7 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
         const camera = this.props.globalState.currentScene.cameras[index];
 
         if (camera) {
-            if (this.props.globalState.currentScene.activeCamera) {
-                this.props.globalState.currentScene.activeCamera.detachControl();
-            }
-            this.props.globalState.currentScene.activeCamera = camera;
-            camera.attachControl();
+            ActivateCamera(this.props.globalState.currentScene, camera);
         }
     }
 
