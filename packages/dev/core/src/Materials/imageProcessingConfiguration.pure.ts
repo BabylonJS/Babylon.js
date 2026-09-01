@@ -265,7 +265,7 @@ export class ImageProcessingConfiguration {
      * Clamped to the tabulated range (roughly 1667 K and above) - the getter reflects the clamped value. Default is 6500.
      */
     public set temperature(value: number) {
-        value = Math.max(value, MinTemperatureKelvin);
+        value = Number.isNaN(value) ? MinTemperatureKelvin : Math.max(value, MinTemperatureKelvin);
 
         if (this._temperature === value) {
             return;

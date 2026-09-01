@@ -48,6 +48,12 @@ describe("ImageProcessingConfiguration white balance setters", () => {
         configuration.temperature = 100000;
         expect(configuration.temperature).toBe(100000);
     });
+
+    it("clamps a NaN temperature to the minimum supported value instead of storing NaN", () => {
+        const configuration = new ImageProcessingConfiguration();
+        configuration.temperature = NaN;
+        expect(configuration.temperature).toBe(MinTemperatureKelvin);
+    });
 });
 
 describe("ImageProcessingConfiguration white balance clone/parse", () => {

@@ -61,7 +61,11 @@ export const MaxTintMagnitude = 150;
  * @returns The CIE XYZ (Y = 1) coordinates of the illuminant white point
  */
 export function TemperatureTintToXyz(temperatureKelvin: number, tint: number): Vector3 {
-    const mired = Clamp(1e6 / temperatureKelvin, PlanckianLocusTable[0][0], PlanckianLocusTable[PlanckianLocusTable.length - 1][0]);
+    // Clamp before taking the reciprocal: a non-positive or NaN Kelvin value has no valid reciprocal-mired
+    // representation, and taking 1e6 / temperatureKelvin first (before clamping the result) would map negative
+    // inputs to the *hottest* end of the table instead of the coldest/minimum one.
+    const safeTemperatureKelvin = Number.isNaN(temperatureKelvin) ? MinTemperatureKelvin : Math.max(temperatureKelvin, MinTemperatureKelvin);
+    const mired = Clamp(1e6 / safeTemperatureKelvin, PlanckianLocusTable[0][0], PlanckianLocusTable[PlanckianLocusTable.length - 1][0]);
 
     // Binary search for the table row pair bracketing `mired` (the table is sorted ascending by mired).
     let low = 0;

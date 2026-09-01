@@ -1,5 +1,5 @@
 import { Matrix, Vector3 } from "../../../src/Maths/math.vector.pure";
-import { GetWhiteBalanceMatrix, TemperatureTintToXyz } from "../../../src/Maths/colorTemperature.functions";
+import { GetWhiteBalanceMatrix, MinTemperatureKelvin, TemperatureTintToXyz } from "../../../src/Maths/colorTemperature.functions";
 
 // Independent reimplementation of the sRGB / Rec.709 (D65) CIE XYZ <-> linear RGB matrices used internally by
 // colorTemperature.functions.ts, so the round-trip test below isn't tautological with the code it's checking. The
@@ -127,6 +127,25 @@ describe("Color temperature function tests", () => {
         it("should clamp temperature to the tabulated range without throwing", () => {
             expect(() => TemperatureTintToXyz(1, 0)).not.toThrow();
             expect(() => TemperatureTintToXyz(1000000, 0)).not.toThrow();
+        });
+
+        it("should clamp non-positive, negative, and non-finite Kelvin values to the minimum supported temperature (not the hottest end)", () => {
+            // Regression test: taking the reciprocal (1e6 / temperatureKelvin) before clamping the result mapped
+            // negative Kelvin values to mired 0 (the hottest end of the table) instead of the coldest/minimum
+            // supported temperature, since 1e6 / negative is itself negative and gets clamped up to 0.
+            const atMinimum = TemperatureTintToXyz(MinTemperatureKelvin, 0);
+
+            for (const invalidTemperature of [-5000, -0, NaN, -Infinity]) {
+                const result = TemperatureTintToXyz(invalidTemperature, 0);
+                expect(result.x).toBeCloseTo(atMinimum.x, 5);
+                expect(result.y).toBeCloseTo(atMinimum.y, 5);
+                expect(result.z).toBeCloseTo(atMinimum.z, 5);
+            }
+
+            // A genuinely infinite (hot) temperature is meaningful and should still clamp to the hottest end,
+            // not be treated as invalid.
+            const hottest = TemperatureTintToXyz(Infinity, 0);
+            expect(hottest.x).not.toBeCloseTo(atMinimum.x, 2);
         });
 
         it("should clamp tint to +/-150", () => {
