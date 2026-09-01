@@ -48,6 +48,7 @@ These are Azure Front Door endpoint names used in CDN cache purge calls.
 | `CDN_ENDPOINT_GUIEDITOR`   | GUI Editor endpoint               |
 | `CDN_ENDPOINT_NPE`         | Node Particle Editor endpoint     |
 | `CDN_ENDPOINT_FGE`         | Flow Graph Editor endpoint        |
+| `CDN_ENDPOINT_SFE`         | Smart Filters Editor endpoint     |
 | `CDN_ENDPOINT_DOCS`        | Documentation site endpoint       |
 
 ### CDN Purge Profiles
