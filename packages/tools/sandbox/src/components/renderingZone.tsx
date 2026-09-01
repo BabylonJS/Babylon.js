@@ -55,6 +55,7 @@ function IsProjectAsset(extension: string): boolean {
 }
 
 interface ICameraWithMovementKeys extends Camera {
+    speed: number;
     keysUp: number[];
     keysDown: number[];
     keysLeft: number[];
@@ -64,6 +65,7 @@ interface ICameraWithMovementKeys extends Camera {
 function HasMovementKeys(camera: Camera): camera is ICameraWithMovementKeys {
     const cameraWithMovementKeys = camera as Partial<ICameraWithMovementKeys>;
     return (
+        typeof cameraWithMovementKeys.speed === "number" &&
         Array.isArray(cameraWithMovementKeys.keysUp) &&
         Array.isArray(cameraWithMovementKeys.keysDown) &&
         Array.isArray(cameraWithMovementKeys.keysLeft) &&
@@ -280,8 +282,9 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         return camera;
     }
 
-    private _addMovementKeys(camera: Camera): void {
+    private _configureMovementControls(camera: Camera, speed: number): void {
         if (HasMovementKeys(camera)) {
+            camera.speed = speed;
             camera.keysUp.push(90); // Z
             camera.keysUp.push(87); // W
             camera.keysDown.push(83); // S
@@ -292,7 +295,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         }
     }
 
-    handleErrors(preparedCamera: Camera) {
+    handleErrors(preparedCamera: ArcRotateCamera) {
         // In case of error during loading, meshes will be empty and clearColor is set to red
         if (this._scene.meshes.length === 0 && this._scene.clearColor.r === 1 && this._scene.clearColor.g === 0 && this._scene.clearColor.b === 0) {
             this._canvas.style.opacity = "0";
@@ -302,9 +305,9 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this.props.globalState.onError.notifyObservers({ scene: this._scene, message: "Scene loaded but several errors were found" });
             }
             //    this._canvas.style.opacity = "1";
-            this._addMovementKeys(preparedCamera);
+            this._configureMovementControls(preparedCamera, preparedCamera.speed);
             if (this._scene.activeCamera && this._scene.activeCamera !== preparedCamera) {
-                this._addMovementKeys(this._scene.activeCamera);
+                this._configureMovementControls(this._scene.activeCamera, preparedCamera.speed);
             }
         }
     }

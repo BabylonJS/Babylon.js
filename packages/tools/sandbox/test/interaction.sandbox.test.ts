@@ -3,6 +3,7 @@ import { readFileSync } from "fs";
 import { getGlobalConfig } from "@tools/test-tools";
 import { type Scene } from "core/scene";
 import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { type FreeCamera } from "core/Cameras/freeCamera";
 
 test.beforeAll(async () => {
     // Set timeout for this hook.
@@ -199,7 +200,16 @@ test("moving a free camera loaded from query parameters", async ({ page }) => {
     const canvas = page.locator("#renderCanvas");
     const scene = await getSandboxScene(page);
     const getActiveCameraPosition = () => scene.evaluate((scene) => scene.activeCamera!.position.asArray());
+    const cameraSpeeds = await scene.evaluate((scene) => {
+        const activeCamera = scene.activeCamera as FreeCamera;
+        const defaultCamera = scene.cameras.find((camera) => camera.name === "default camera") as ArcRotateCamera | undefined;
+        if (!defaultCamera) {
+            throw new Error("The default camera was not found");
+        }
+        return { active: activeCamera.speed, sceneRelative: defaultCamera.speed };
+    });
 
+    expect(cameraSpeeds.active).toBeCloseTo(cameraSpeeds.sceneRelative);
     const before = await getActiveCameraPosition();
     await canvas.click({ force: true });
     await page.keyboard.down("w");
