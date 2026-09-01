@@ -3229,6 +3229,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         MaterialHelperGeometryRendering.PrepareDefines(engine.currentRenderPassId, mesh, defines);
 
+        const retroreflectionTexture = this._specularRetroreflectivityTexture.value;
+        if (retroreflectionTexture) {
+            const directUV =
+                retroreflectionTexture.optimizeUVAllocation && retroreflectionTexture.getTextureMatrix().isIdentityAs3x2() ? retroreflectionTexture.coordinatesIndex + 1 : 0;
+            if (defines.SPECULAR_RETROREFLECTIVITYDIRECTUV !== directUV) {
+                defines.markAsTexturesDirty();
+            }
+        }
+
         // Textures
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
@@ -3353,7 +3362,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             defines.SPECULARAA = engine.getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
         }
 
-        const retroreflectionTexture = this._specularRetroreflectivityTexture.value;
         if (retroreflectionTexture) {
             const matrix = retroreflectionTexture.getTextureMatrix().m;
             const matrixChanged =

@@ -206,6 +206,25 @@ describe("OpenPBRMaterial", () => {
             expect(defines.SPECULAR_RETROREFLECTIVITY_MATRIX_2).toBe(texture.getTextureMatrix().m[8]);
         });
 
+        it("switches from direct UVs when the texture becomes transformed", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const texture = new RawTexture(new Uint8Array([255, 0, 0, 255]), 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+            material.specularRetroreflectivity = 1;
+            material.specularRetroreflectivityTexture = texture;
+
+            const mesh = new Mesh("testMesh", scene);
+            const defines = new OpenPBRMaterialDefines();
+            (material as any)._prepareDefines(mesh, mesh, defines);
+            expect(defines.SPECULAR_RETROREFLECTIVITYDIRECTUV).toBe(1);
+            defines.markAsProcessed();
+
+            texture.uOffset = 0.4;
+            (material as any)._prepareDefines(mesh, mesh, defines);
+
+            expect(defines.isDirty).toBe(true);
+            expect(defines.SPECULAR_RETROREFLECTIVITYDIRECTUV).toBe(0);
+        });
+
         it.each([
             ["GLSL", openpbrVertexShaderGLSL.shader, "uv3"],
             ["WGSL", openpbrVertexShaderWGSL.shader, "vertexInputs.uv3"],
