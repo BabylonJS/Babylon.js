@@ -60,6 +60,9 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
                 case "velocity":
                     stride = 3;
                     break;
+                case "size":
+                    stride = 2;
+                    break;
                 case "offset":
                     instanced = false;
                     break;
