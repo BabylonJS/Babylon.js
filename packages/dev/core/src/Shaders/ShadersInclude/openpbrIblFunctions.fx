@@ -254,7 +254,6 @@
             // the tangent direction from -tangent to +tangent.
             const int samples = 16;
             vec4 radianceSample = vec4(0.0);
-            vec3 reflectionCoords = vec3(0.0);
             float sample_weight = 0.0;
             float total_weight = 0.0;
             float step = 1.0 / float(max(samples-1, 1));
@@ -287,15 +286,34 @@
                     bentNormal = normalW;
                 }
                 
-                if (isRefraction) {
-                    reflectionCoords = double_refract(-viewDirectionW, bentNormal, ior);
-                } else {
-                    reflectionCoords = reflect(-viewDirectionW, bentNormal);
-                }
-                // Use this new normal to calculate a reflection vector to sample from.
-                reflectionCoords = vec3(reflectionMatrix * vec4(reflectionCoords, 0));
-                #ifdef REFLECTIONMAP_OPPOSITEZ
-                    reflectionCoords.z *= -1.0;
+                #ifdef REFLECTIONMAP_3D
+                    vec3 reflectionCoords;
+                    if (isRefraction) {
+                        reflectionCoords = double_refract(-viewDirectionW, bentNormal, ior);
+                    } else {
+                        reflectionCoords = reflect(-viewDirectionW, bentNormal);
+                    }
+                    reflectionCoords = vec3(reflectionMatrix * vec4(reflectionCoords, 0));
+                    #ifdef REFLECTIONMAP_OPPOSITEZ
+                        reflectionCoords.z *= -1.0;
+                    #endif
+                #else
+                    vec3 sampleDirection;
+                    if (isRefraction) {
+                        sampleDirection = double_refract(-viewDirectionW, bentNormal, ior);
+                    } else {
+                        sampleDirection = reflect(-viewDirectionW, bentNormal);
+                    }
+                    vec3 originalViewDirectionW = normalize(vEyePosition.xyz - positionW);
+                    vec3 mappingNormalCandidate = originalViewDirectionW + sampleDirection;
+                    vec3 mappingNormal;
+                    if (dot(mappingNormalCandidate, mappingNormalCandidate) > Epsilon) {
+                        mappingNormal = normalize(mappingNormalCandidate);
+                    } else {
+                        vec3 perpendicularAxis = abs(originalViewDirectionW.x) < 0.9 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+                        mappingNormal = normalize(cross(originalViewDirectionW, perpendicularAxis));
+                    }
+                    vec2 reflectionCoords = createReflectionCoords(positionW, mappingNormal);
                 #endif
                 radianceSample = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
                 #ifdef RGBDREFLECTION
