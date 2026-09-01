@@ -16,6 +16,7 @@ import { useProperty } from "../../hooks/compoundPropertyHooks";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
+import { MaxTintMagnitude, MinTemperatureKelvin } from "core/Maths/colorTemperature.functions";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
@@ -49,6 +50,35 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
                 propertyKey="exposure"
                 propertyPath="imageProcessingConfiguration.exposure"
             />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="White Balance"
+                target={imageProcessing}
+                propertyKey="whiteBalanceEnabled"
+                propertyPath="imageProcessingConfiguration.whiteBalanceEnabled"
+            />
+            <Collapse visible={imageProcessing.whiteBalanceEnabled}>
+                <BoundProperty
+                    component={SyncedSliderPropertyLine}
+                    label="Temperature"
+                    min={MinTemperatureKelvin}
+                    max={12000}
+                    step={10}
+                    target={imageProcessing}
+                    propertyKey="temperature"
+                    propertyPath="imageProcessingConfiguration.temperature"
+                />
+                <BoundProperty
+                    component={SyncedSliderPropertyLine}
+                    label="Tint"
+                    min={-MaxTintMagnitude}
+                    max={MaxTintMagnitude}
+                    step={1}
+                    target={imageProcessing}
+                    propertyKey="tint"
+                    propertyPath="imageProcessingConfiguration.tint"
+                />
+            </Collapse>
             <BoundProperty
                 component={SwitchPropertyLine}
                 label="Tone Mapping"
