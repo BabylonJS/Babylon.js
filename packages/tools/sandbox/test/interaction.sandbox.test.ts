@@ -114,13 +114,36 @@ test("selecting the default camera after loading a camera from query parameters"
     await page.goto(url + (snapshot ? "&" : "?") + query, {
         waitUntil: "load",
     });
+    await page.setViewportSize({
+        width: 1920,
+        height: 1080,
+    });
+    await waitForSandboxReady(page);
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+
+    await page.evaluate(async () => {
+        const scene = (globalThis as any).BABYLON?.EngineStore.LastCreatedScene ?? (await ((await import("/src/sandbox.tsx")).Sandbox as any)._SceneLoadedDeferred.promise);
+        const defaultCamera = scene.cameras.find((camera: { name: string }) => camera.name === "default camera");
+        defaultCamera.panningSensibility = 0;
+        defaultCamera.speed = 0;
+    });
 
     await page.getByTitle("Select camera").click();
     await page.locator(".dropup-content-line", { hasText: "default camera" }).click();
     await page.getByTitle("Select camera").click();
 
     await expect(page.locator(".dropup-content-line", { hasText: "default camera" }).locator("div")).toHaveCSS("opacity", "1");
+    await expect
+        .poll(() =>
+            page.evaluate(async () => {
+                const scene = (globalThis as any).BABYLON?.EngineStore.LastCreatedScene ?? (await ((await import("/src/sandbox.tsx")).Sandbox as any)._SceneLoadedDeferred.promise);
+                const camera = scene.activeCamera;
+                return (
+                    camera.name === "default camera" && Math.abs(camera.panningSensibility - 5000 / camera.radius) < 0.001 && Math.abs(camera.speed - camera.radius * 0.2) < 0.001
+                );
+            })
+        )
+        .toBe(true);
 });
 
 test("moving a free camera loaded from query parameters", async ({ page }) => {
@@ -130,6 +153,11 @@ test("moving a free camera loaded from query parameters", async ({ page }) => {
     await page.goto(url + (snapshot ? "&" : "?") + query, {
         waitUntil: "load",
     });
+    await page.setViewportSize({
+        width: 1920,
+        height: 1080,
+    });
+    await waitForSandboxReady(page);
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
     await page.waitForLoadState("networkidle");
 
