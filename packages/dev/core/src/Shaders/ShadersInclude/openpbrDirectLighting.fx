@@ -35,7 +35,13 @@
 
     // Specular Lobe
     #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-        slab_glossy = computeAreaSpecularLighting(preInfo{X}, light{X}.vLightSpecular.rgb, baseConductorReflectance.F0, baseConductorReflectance.F90);
+        slab_glossy = computeOpenPBRAreaSpecularLighting(
+            preInfo{X},
+            light{X}.vLightSpecular.rgb,
+            baseDielectricReflectance.coloredF0,
+            baseDielectricReflectance.coloredF90
+        );
+        specularFresnel = computeOpenPBRAreaFresnel(preInfo{X}, baseDielectricReflectance.F0, baseDielectricReflectance.F90);
     #else
         {
             #ifdef ANISOTROPIC_BASE
@@ -216,7 +222,12 @@
 
     // Metal Lobe
     #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-        slab_metal = computeAreaSpecularLighting(preInfo{X}, light{X}.vLightSpecular.rgb, baseConductorReflectance.F0, baseConductorReflectance.F90);
+        slab_metal = computeOpenPBRAreaSpecularLighting(
+            preInfo{X},
+            light{X}.vLightSpecular.rgb,
+            baseConductorReflectance.coloredF0,
+            baseConductorReflectance.coloredF90
+        );
     #else
         {
             // For OpenPBR, we use the F82 specular model for metallic materials and mix with the
@@ -321,7 +332,11 @@
         total_direct_diffuse += slab_diffuse;
     #endif
     vec3 material_dielectric_base = mix(slab_diffuse * base_color.rgb, slab_translucent, surface_translucency_weight);
-    vec3 material_dielectric_gloss = material_dielectric_base * (1.0 - specularFresnel) + slab_glossy * specularColoredFresnel;
+    #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+        vec3 material_dielectric_gloss = material_dielectric_base * (1.0 - specularFresnel) + slab_glossy;
+    #else
+        vec3 material_dielectric_gloss = material_dielectric_base * (1.0 - specularFresnel) + slab_glossy * specularColoredFresnel;
+    #endif
     vec3 material_base_substrate = mix(material_dielectric_gloss, slab_metal, base_metalness);
     vec3 material_coated_base = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3(1.0));
     material_surface_direct += layer(material_coated_base, slab_fuzz, fuzzFresnel * fuzz_weight, vec3(1.0), fuzz_color);

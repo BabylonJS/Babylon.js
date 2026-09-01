@@ -124,6 +124,15 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
             vec3 fresnel = specularColor * info.areaLightFresnel.x * reflectance0 + ( vec3( 1.0 ) - specularColor ) * info.areaLightFresnel.y * reflectance90;
 	        return specularColor * fresnel * info.areaLightSpecular;
         }
+
+        vec3 computeOpenPBRAreaSpecularLighting(preLightingInfo info, vec3 lightColor, vec3 reflectance0, vec3 reflectance90) {
+            vec3 fresnel = reflectance0 * info.areaLightFresnel.x + (reflectance90 - reflectance0) * info.areaLightFresnel.y;
+            return lightColor * fresnel * info.areaLightSpecular;
+        }
+
+        float computeOpenPBRAreaFresnel(preLightingInfo info, float reflectance0, float reflectance90) {
+            return reflectance0 * info.areaLightFresnel.x + (reflectance90 - reflectance0) * info.areaLightFresnel.y;
+        }
     #endif
 
 #endif

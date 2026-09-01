@@ -127,6 +127,15 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
             var fresnel:vec3f  = reflectance0 * specularColor * info.areaLightFresnel.x + ( vec3f( 1.0 ) - specularColor ) * info.areaLightFresnel.y * reflectance90;
             return specularColor * fresnel * info.areaLightSpecular;
         }
+
+        fn computeOpenPBRAreaSpecularLighting(info: preLightingInfo, lightColor: vec3f, reflectance0: vec3f, reflectance90: vec3f) -> vec3f {
+            let fresnel: vec3f = reflectance0 * info.areaLightFresnel.x + (reflectance90 - reflectance0) * info.areaLightFresnel.y;
+            return lightColor * fresnel * info.areaLightSpecular;
+        }
+
+        fn computeOpenPBRAreaFresnel(info: preLightingInfo, reflectance0: f32, reflectance90: f32) -> f32 {
+            return reflectance0 * info.areaLightFresnel.x + (reflectance90 - reflectance0) * info.areaLightFresnel.y;
+        }
     #endif
 #endif
 
