@@ -75,8 +75,9 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
     protected override _createEffects(): void {
         super._createEffects();
 
-        const uniformNames = ["view", "projection", "size"];
-        const attributeNames = ["position", "offset", "color"];
+        const uniformNames = this._usesPerParticleSizeAttribute ? ["view", "projection"] : ["view", "projection", "size"];
+        const attributeNames = this._usesPerParticleSizeAttribute ? ["position", "offset", "color", "size"] : ["position", "offset", "color"];
+        const defines = this._usesPerParticleSizeAttribute ? ["#define FLUIDRENDERING_PER_PARTICLE_SIZE"] : [];
 
         this._diffuseEffectWrapper = new EffectWrapper({
             engine: this._engine,
@@ -86,6 +87,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
             attributeNames,
             uniformNames,
             samplerNames: [],
+            defines,
             shaderLanguage: this._shaderLanguage,
             extraInitializationsAsync: async () => {
                 if (this._shaderLanguage === ShaderLanguage.WGSL) {
@@ -143,7 +145,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
 
         diffuseEffect.setMatrix("view", this._scene.getViewMatrix());
         diffuseEffect.setMatrix("projection", this._scene.getProjectionMatrix());
-        if (this._particleSize !== null) {
+        if (!this._usesPerParticleSizeAttribute) {
             diffuseEffect.setFloat2("size", this._particleSize, this._particleSize);
         }
 

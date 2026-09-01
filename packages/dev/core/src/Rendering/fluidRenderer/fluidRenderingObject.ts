@@ -18,7 +18,7 @@ export abstract class FluidRenderingObject {
      * of a single uniform size for all particles (default: false, opt-in).
      */
     public static UsePerParticleSizeAttribute = false;
-    private _usesPerParticleSizeAttribute = false;
+    protected _usesPerParticleSizeAttribute = false;
 
     protected _scene: Scene;
     protected _engine: AbstractEngine;
