@@ -337,14 +337,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             this._scene.animationGroups[0].start(true);
         }
 
-        let camera = this.prepareCamera();
-        const requestedCamera = this.props.globalState.cameraIndex === undefined ? undefined : this._scene.cameras[this.props.globalState.cameraIndex];
-        if (requestedCamera && requestedCamera !== camera) {
-            camera.detachControl();
-            this._scene.activeCamera = requestedCamera;
-            requestedCamera.attachControl();
-            camera = requestedCamera as ArcRotateCamera;
-        }
+        const camera = this.prepareCamera();
         this.prepareLighting();
         this.handleErrors();
 

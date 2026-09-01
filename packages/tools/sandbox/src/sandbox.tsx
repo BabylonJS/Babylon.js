@@ -89,6 +89,7 @@ export class Sandbox extends React.Component<
     private _dropTextRef: React.RefObject<HTMLDivElement>;
     private _clickInterceptorRef: React.RefObject<HTMLDivElement>;
     private _clearColor?: string;
+    private _camera?: number;
     private _engine?: AbstractEngine;
 
     // Stores files from Launch Queue until filesInput is ready
@@ -173,6 +174,10 @@ export class Sandbox extends React.Component<
             if (canvasParentDom) {
                 //Add a chessboard-style class
                 canvasParentDom.classList.add("checkerboard");
+            }
+
+            if (this._camera != undefined) {
+                info.scene.activeCamera = info.scene.cameras[this._camera];
             }
 
             Sandbox._SceneLoadedDeferred.resolve(info.scene);
@@ -324,7 +329,7 @@ export class Sandbox extends React.Component<
                         break;
                     }
                     case "camera": {
-                        this._globalState.cameraIndex = +value;
+                        this._camera = +value;
                         break;
                     }
                     case "cameraposition": {

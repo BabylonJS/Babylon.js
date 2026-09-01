@@ -22,7 +22,6 @@ export class GlobalState {
 
     public assetUrl?: string;
     public autoRotate = false;
-    public cameraIndex?: number;
     public cameraPosition?: Vector3;
     public skybox = true;
     public environmentEnabled = true;

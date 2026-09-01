@@ -58,11 +58,6 @@ class Reflector {
             case "load": {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises, @typescript-eslint/no-deprecated, github/no-then
                 SceneLoader.LoadAsync("", `data:${payload}`, this._engine).then((scene) => {
-                    const requestedCamera = this._globalState.cameraIndex === undefined ? undefined : scene.cameras[this._globalState.cameraIndex];
-                    if (requestedCamera) {
-                        scene.activeCamera = requestedCamera;
-                    }
-
                     if (scene.activeCamera) {
                         scene.activeCamera.attachControl();
 
