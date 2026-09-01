@@ -122,7 +122,11 @@ test("selecting the default camera after loading a camera from query parameters"
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
 
     await page.evaluate(async () => {
-        const scene = (globalThis as any).BABYLON?.EngineStore.LastCreatedScene ?? (await ((await import("/src/sandbox.tsx")).Sandbox as any)._SceneLoadedDeferred.promise);
+        const engineStore = (globalThis as any).BABYLON?.EngineStore;
+        const scene =
+            engineStore?.Instances.flatMap((engine: { scenes: any[] }) => engine.scenes).find(
+                (scene: { getEngine: () => { getRenderingCanvas: () => HTMLCanvasElement | null } }) => scene.getEngine().getRenderingCanvas()?.id === "renderCanvas"
+            ) ?? (await ((await import("/src/sandbox.tsx")).Sandbox as any)._SceneLoadedDeferred.promise);
         const defaultCamera = scene.cameras.find((camera: { name: string }) => camera.name === "default camera");
         defaultCamera.panningSensibility = 0;
         defaultCamera.speed = 0;
@@ -136,7 +140,11 @@ test("selecting the default camera after loading a camera from query parameters"
     await expect
         .poll(() =>
             page.evaluate(async () => {
-                const scene = (globalThis as any).BABYLON?.EngineStore.LastCreatedScene ?? (await ((await import("/src/sandbox.tsx")).Sandbox as any)._SceneLoadedDeferred.promise);
+                const engineStore = (globalThis as any).BABYLON?.EngineStore;
+                const scene =
+                    engineStore?.Instances.flatMap((engine: { scenes: any[] }) => engine.scenes).find(
+                        (scene: { getEngine: () => { getRenderingCanvas: () => HTMLCanvasElement | null } }) => scene.getEngine().getRenderingCanvas()?.id === "renderCanvas"
+                    ) ?? (await ((await import("/src/sandbox.tsx")).Sandbox as any)._SceneLoadedDeferred.promise);
                 const camera = scene.activeCamera;
                 return (
                     camera.name === "default camera" && Math.abs(camera.panningSensibility - 5000 / camera.radius) < 0.001 && Math.abs(camera.speed - camera.radius * 0.2) < 0.001
@@ -162,27 +170,26 @@ test("moving a free camera loaded from query parameters", async ({ page }) => {
     await page.waitForLoadState("networkidle");
 
     const canvas = page.locator("#renderCanvas");
-    const captureStableScreenshot = async () => {
-        let previous = await canvas.screenshot();
-        for (let attempt = 0; attempt < 10; attempt++) {
-            await page.waitForTimeout(100);
-            const current = await canvas.screenshot();
-            if (current.equals(previous)) {
-                return current;
-            }
-            previous = current;
-        }
-        throw new Error("The render canvas did not stabilize");
-    };
+    const getActiveCameraPosition = () =>
+        page.evaluate(async () => {
+            const engineStore = (globalThis as any).BABYLON?.EngineStore;
+            const scene =
+                engineStore?.Instances.flatMap((engine: { scenes: any[] }) => engine.scenes).find(
+                    (scene: { getEngine: () => { getRenderingCanvas: () => HTMLCanvasElement | null } }) => scene.getEngine().getRenderingCanvas()?.id === "renderCanvas"
+                ) ?? (await ((await import("/src/sandbox.tsx")).Sandbox as any)._SceneLoadedDeferred.promise);
+            return scene.activeCamera.position.asArray() as number[];
+        });
 
-    const before = await captureStableScreenshot();
-    await canvas.click();
+    const before = await getActiveCameraPosition();
+    await canvas.click({ force: true });
     await page.keyboard.down("ArrowUp");
-    await page.waitForTimeout(500);
+    await expect
+        .poll(async () => {
+            const position = await getActiveCameraPosition();
+            return position.every(Number.isFinite) && position.some((value, index) => value !== before[index]);
+        })
+        .toBe(true);
     await page.keyboard.up("ArrowUp");
-    const after = await captureStableScreenshot();
-
-    expect(after.equals(before)).toBe(false);
 });
 
 test("inspector is opened when clicking on the button", async ({ page }) => {
