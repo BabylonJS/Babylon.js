@@ -413,7 +413,7 @@
         },
         {
             "title": "OpenPBR Anisotropic 2D Environment",
-            "playgroundId": "#U5RKIH#0",
+            "playgroundId": "#6N05SO#0",
             "referenceImage": "openpbr_anisotropic_2d_environment.png",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Loaders", "Meshes", "PBR", "Textures", "glTF"],
