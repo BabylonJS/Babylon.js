@@ -18,6 +18,7 @@ export abstract class FluidRenderingObject {
      * of a single uniform size for all particles (default: false, opt-in).
      */
     public static UsePerParticleSizeAttribute = false;
+    private _usesPerParticleSizeAttribute = false;
 
     protected _scene: Scene;
     protected _engine: AbstractEngine;
@@ -121,6 +122,7 @@ export abstract class FluidRenderingObject {
     protected _createEffects(): void {
         // "size" is a uniform, or a per-particle attribute when UsePerParticleSizeAttribute is set.
         const perParticleSize = FluidRenderingObject.UsePerParticleSizeAttribute;
+        this._usesPerParticleSizeAttribute = perParticleSize;
 
         const baseAttributeNames = perParticleSize ? ["position", "offset", "size"] : ["position", "offset"];
         const baseUniformNames = perParticleSize ? ["view", "projection", "particleRadius"] : ["view", "projection", "particleRadius", "size"];
@@ -222,7 +224,7 @@ export abstract class FluidRenderingObject {
 
         depthEffect.setMatrix("view", this._scene.getViewMatrix());
         depthEffect.setMatrix("projection", this._scene.getProjectionMatrix());
-        if (!FluidRenderingObject.UsePerParticleSizeAttribute) {
+        if (!this._usesPerParticleSizeAttribute) {
             depthEffect.setFloat2("size", this._particleSize, this._particleSize);
         }
         depthEffect.setFloat("particleRadius", this._particleSize / 2);
@@ -256,7 +258,7 @@ export abstract class FluidRenderingObject {
         thicknessEffect.setMatrix("view", this._scene.getViewMatrix());
         thicknessEffect.setMatrix("projection", this._scene.getProjectionMatrix());
         thicknessEffect.setFloat("particleAlpha", this.particleThicknessAlpha);
-        if (!FluidRenderingObject.UsePerParticleSizeAttribute) {
+        if (!this._usesPerParticleSizeAttribute) {
             thicknessEffect.setFloat2("size", this._particleSize, this._particleSize);
         }
 
