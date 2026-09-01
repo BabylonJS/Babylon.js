@@ -119,9 +119,14 @@ export abstract class FluidRenderingObject {
         this._shaderLanguage = shaderLanguage ?? (this._engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
     }
 
+    /** Override to return false if this object's buffers have an incompatible "size" layout. */
+    protected _supportsPerParticleSizeAttribute(): boolean {
+        return true;
+    }
+
     protected _createEffects(): void {
-        // "size" is a uniform, or a per-particle attribute when UsePerParticleSizeAttribute is set.
-        const perParticleSize = FluidRenderingObject.UsePerParticleSizeAttribute;
+        // "size" is a uniform, or a per-particle attribute when UsePerParticleSizeAttribute is set (and supported).
+        const perParticleSize = FluidRenderingObject.UsePerParticleSizeAttribute && this._supportsPerParticleSizeAttribute();
         this._usesPerParticleSizeAttribute = perParticleSize;
 
         const baseAttributeNames = perParticleSize ? ["position", "offset", "size"] : ["position", "offset"];
