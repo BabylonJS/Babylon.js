@@ -404,6 +404,22 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "OpenPBR Metallic Area Light Edge Tint",
+            "playgroundId": "#PXK9Y5#0",
+            "referenceImage": "openpbr_metallic_area_light_edge_tint.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "OpenPBR Anisotropic 2D Environment",
+            "playgroundId": "#U5RKIH#0",
+            "referenceImage": "openpbr_anisotropic_2d_environment.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Loaders", "Meshes", "PBR", "Textures", "glTF"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "OpenPBR Base Diffuse Roughness Analytical Lights",
             "playgroundId": "#MXACV7#30",
             "referenceImage": "openpbr_base_diffuse_roughness.png",

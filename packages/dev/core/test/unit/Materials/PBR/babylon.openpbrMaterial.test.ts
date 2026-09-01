@@ -144,7 +144,8 @@ describe("OpenPBRMaterial", () => {
             ["WGSL", openpbrDirectLightingWGSL.shader],
         ])("applies OpenPBR area-light Fresnel once in %s", (_language, shader) => {
             expect(shader).toContain("slab_glossy=computeOpenPBRAreaSpecularLighting(");
-            expect(shader).toContain("slab_metal=computeOpenPBRAreaSpecularLighting(");
+            expect(shader).toContain("slab_metal=computeOpenPBRAreaConductorSpecularLighting(");
+            expect(shader).toContain("slab_coat=computeOpenPBRAreaSpecularLighting(");
             expect(shader).toContain("baseDielectricReflectance.coloredF0");
             expect(shader).toContain("baseConductorReflectance.coloredF0");
             expect(shader).toMatch(/material_dielectric_gloss(?:: vec3f)?\s*=\s*material_dielectric_base\s*\*\s*\(1\.0f?\s*-\s*specularFresnel\)\s*\+\s*slab_glossy\s*;/);
@@ -161,6 +162,15 @@ describe("OpenPBRMaterial", () => {
             expect(shader).toMatch(/return reflectance0\s*\*\s*info\.areaLightFresnel\.x\s*\+\s*\(reflectance90\s*-\s*reflectance0\)\s*\*\s*info\.areaLightFresnel\.y/);
         });
 
+        it.each([
+            ["GLSL", pbrDirectLightingFunctionsGLSL.shader],
+            ["WGSL", pbrDirectLightingFunctionsWGSL.shader],
+        ])("preserves white F90 in the OpenPBR conductor area-light approximation in %s", (_language, shader) => {
+            expect(shader).toContain("computeOpenPBRAreaConductorSpecularLighting");
+            expect(shader).toContain("getF82B(reflectance0,edgeTint)");
+            expect(shader).toMatch(/fresnel(?:: vec3f)?=reflectance0\*info\.areaLightFresnel\.x\+\(vec3f?\(1\.0f?\)-reflectance0\)\*info\.areaLightFresnel\.y-b\*f82DipMoment/);
+        });
+
         it("preserves the GLSL vec4 area-light data argument", () => {
             expect(openpbrDirectLightingInitGLSL.shader).toContain("light{X}.vLightData,light{X}.vLightWidth.xyz");
         });
@@ -173,11 +183,11 @@ describe("OpenPBRMaterial", () => {
         });
 
         it.each([
-            ["GLSL", openpbrIblFunctionsGLSL.shader, "vec2 reflectionCoords=createReflectionCoords(positionW,mappingNormal)"],
-            ["WGSL", openpbrIblFunctionsWGSL.shader, "let reflectionCoords: vec2f=createReflectionCoords(positionW,mappingNormal)"],
-        ])("converts anisotropic non-cube rays to 2D coordinates in %s", (_language, shader, expected) => {
-            expect(shader).toContain(expected);
-            expect(shader).toMatch(/originalViewDirectionW(?:: vec3f)?=normalize\((?:uniforms\.)?vEyePosition\.xyz-positionW\)/);
+            ["GLSL", openpbrIblFunctionsGLSL.shader, "vec2 reflectionCoords=createReflectionCoords(positionW,mappingNormal)", "normalize(vEyePosition.xyz-positionW)"],
+            ["WGSL", openpbrIblFunctionsWGSL.shader, "let reflectionCoords: vec2f=createReflectionCoords(positionW,mappingNormal)", "normalize(scene.vEyePosition.xyz-positionW)"],
+        ])("converts anisotropic non-cube rays to 2D coordinates in %s", (_language, shader, expectedCoordinates, expectedEyePosition) => {
+            expect(shader).toContain(expectedCoordinates);
+            expect(shader).toContain(expectedEyePosition);
             expect(shader).toMatch(/mappingNormalCandidate(?:: vec3f)?=originalViewDirectionW\+sampleDirection/);
             expect(shader).toContain("dot(mappingNormalCandidate,mappingNormalCandidate)>Epsilon");
             expect(shader).toContain("mappingNormal=normalize(cross(originalViewDirectionW,perpendicularAxis))");
