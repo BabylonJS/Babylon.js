@@ -316,8 +316,9 @@ export class IblCdfGenerator {
             "iblScaledLuminance",
             this._scene,
             // This texture is trilinear-filtered and mip-mapped, so it must use a filterable format.
-            // r32float (used by the other CDF textures) is only filterable when the optional WebGPU
-            // `float32-filterable` feature is present; r16float is filterable everywhere.
+            // r16float is filterable everywhere (no optional feature required) and is sufficient here:
+            // the value only ever feeds a ratio (pixelLuminance / normalization) used as an
+            // importance-sampling weight, well within r16float's range and precision.
             { ...cdfOptions, type: Constants.TEXTURETYPE_HALF_FLOAT, samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, generateMipMaps: true },
             true,
             false
