@@ -699,13 +699,19 @@ export class MultiTexture extends BaseTexture {
                 this._reuploadSlot(j);
             }
 
+            // The splice moved every live entry down one slot, so the highest GPU slot (== the new
+            // layerCount) is now vacated but still holds the removed layer's pixels. Clear it, or a
+            // later addLayerAsync that lands there with a failed load would resurrect the stale
+            // layer, and SUBTRACT (which samples layer 0 unconditionally) would show leftover pixel
+            // data once the last layer is removed.
+            this._clearLayerSlot(this._arrayTexture, this._layerCount);
+
             this.composite.setInt("uLayerCount", this._layerCount);
             this._renderComposite();
         } finally {
             this._generateArrayMips();
         }
     }
-
     /**
      * Disposes the texture: stops the watch poller, closes every retained bitmap, disposes the layer
      * array and releases the composite render target through the standard procedural-texture path.
@@ -814,6 +820,15 @@ export class MultiTexture extends BaseTexture {
         // Straight layers decode at native size and let _uploadToLayer resize via the 2D canvas
         // (which preserves straight RGBA); only premultiplied storage resizes here. "strict" fit
         // checks the native size.
+        //
+        // Memory tradeoff (deliberate): the native-resolution bitmap is retained on each entry for
+        // the texture's lifetime so insert/remove shifts re-upload via the same 2D-canvas resize
+        // that guarantees straight bytes on both backends. createImageBitmap's resize option is not
+        // used here because Chromium premultiplies a resized straight decode, which would silently
+        // corrupt the alpha after the first mutation. A straight 1024^2 source targeting 128^2 thus
+        // holds ~4 MB per layer instead of ~64 KB; use options.fit "resize" together with
+        // premultiplyAlpha:true if per-layer memory must shrink (premultiplied storage resizes at
+        // decode). Retaining the native bitmap is what keeps the WebGL2/WebGPU byte parity intact.
         const options: ImageBitmapOptions = { premultiplyAlpha: this._mtOptions.premultiplyAlpha ? "premultiply" : "none" };
         if (this._mtOptions.fit === "resize" && this._mtOptions.premultiplyAlpha) {
             options.resizeWidth = this._mtOptions.width;

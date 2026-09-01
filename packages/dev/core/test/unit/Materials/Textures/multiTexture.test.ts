@@ -322,6 +322,9 @@ beforeEach(() => {
     mockState.urlBehaviors = {};
     mockState.headers = {};
     mockState.engineExtMissing = false;
+    // A test that flips the pseudo-ProceduralTexture's readiness (e.g. the isReady/getInternalTexture
+    // forwarding case) must not leak `false` into later cases: reset to the default-ready state.
+    mockState.ptReady = true;
     // Default upload spy mirrors the engine extension: whenever the array's generateMipMaps flag
     // is on, the upload itself regenerates the whole mip chain (see engine.texture2DArrayImageSource.
     // pure, which calls gl.generateMipmap when texture.generateMipMaps is set). Modelling that lets
@@ -658,9 +661,10 @@ describe("MultiTexture", () => {
 
         mipmapObservations.length = 0;
         mockState.generateMipmaps.mockClear();
-        // Remove index 1 (the inserted "x.png"): layers 2,3 shift down (2 uploads).
+        // Remove index 1 (the inserted "x.png"): layers 2,3 shift down (2 uploads) plus the vacated
+        // top slot (layerCount, now 3) is cleared (1 upload). All three uploads stay mip-suppressed.
         await mt.removeLayerAsync(1);
-        expect(mipmapObservations).toHaveLength(2);
+        expect(mipmapObservations).toHaveLength(3);
         expect(mipmapObservations.every((v) => v === false)).toBe(true);
         expect(mockState.generateMipmaps).toHaveBeenCalledTimes(1);
         expect(mt.arrayTexture.getInternalTexture()!.generateMipMaps).toBe(true);
@@ -822,6 +826,47 @@ describe("MultiTexture", () => {
 
         await expect(mt.removeLayerAsync(9)).rejects.toThrow(RangeError);
         await expect(mt.removeLayerAsync(9)).rejects.toThrow("MultiTexture: layer index 9 out of range [0, 3).");
+    });
+
+    it("removeLayerAsync clears the vacated top GPU slot so a later failed add cannot resurrect stale pixels", async () => {
+        const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8, maxLayers: 2 });
+
+        // Keep the initial uploads (a -> slot 0, b -> slot 1) separate from the mutation's.
+        mockState.upload.mockClear();
+
+        await mt.removeLayerAsync(1);
+
+        expect(mt.layerCount).toBe(1);
+        // The removed layer vacated slot 1 (== layerCount after the decrement). Its GPU slot must be
+        // cleared to transparent, otherwise a later addLayerAsync that fails to load would leave the
+        // stale "b" pixels sampling-visible again (uLayerCount would rise back over them).
+        const clearedSlot1 = (mockState.upload.mock.calls as unknown as Array<[unknown, { url?: string }, number]>).filter(
+            (call) => call[2] === 1 && typeof call[1].url === "undefined"
+        );
+        expect(clearedSlot1.length).toBeGreaterThan(0);
+    });
+
+    it("removeLayerAsync removes every layer and clears slot 0 so SUBTRACT never samples stale layer-0 pixels", async () => {
+        // Tag decoded bitmaps with their url so a re-upload of a live layer (url present) is
+        // distinguishable from a transparent clear (the shared canvas, url absent): the default
+        // bitmap mock has no url, which would hide the difference.
+        mockState.decodeImpl = (source: any) => {
+            return { width: 8, height: 8, close: vi.fn(), url: source.__url };
+        };
+        const { mt } = await createLoaded(["a.png", "b.png"], { width: 8, height: 8 });
+
+        mockState.upload.mockClear();
+
+        await mt.removeLayerAsync(0);
+        await mt.removeLayerAsync(0);
+
+        expect(mt.layerCount).toBe(0);
+        // The SUBTRACT shader samples layer 0 unconditionally (it cannot be skipped by uLayerCount),
+        // so when every layer is removed slot 0 must be cleared rather than retaining the old layer.
+        const clearedSlot0 = (mockState.upload.mock.calls as unknown as Array<[unknown, { url?: string }, number]>).filter(
+            (call) => call[2] === 0 && typeof call[1].url === "undefined"
+        );
+        expect(clearedSlot0.length).toBeGreaterThan(0);
     });
 
     it("blendMode swap swaps the fragment, rewrites defines and triggers one re-composite", async () => {
@@ -1570,8 +1615,14 @@ describe("MultiTexture mid-flight array growth and watch races", () => {
         await poll;
         await tick();
 
-        // Only the initial upload ever happened; the reload's bitmap was dropped.
-        expect(mockState.upload.mock.calls).toHaveLength(1);
+        // The only decoded-bitmap upload is the initial "a.png"; the reload's bitmap was dropped.
+        // (removeLayerAsync also issues one cleared-slot upload of the shared canvas — no url — so
+        // count only bitmap uploads here.)
+        // upload.mock.calls is under-typed (the stub declares only `internal`); cast to the real
+        // (internal, source, index) call shape so the source url is reachable.
+        const uploadCalls = mockState.upload.mock.calls as unknown as Array<[unknown, { url?: string }, number]>;
+        const bitmapUploads = uploadCalls.filter((call) => typeof call[1]?.url === "string");
+        expect(bitmapUploads).toHaveLength(1);
         expect(bitmaps).toHaveLength(2);
         expect(bitmaps[1].close).toHaveBeenCalledTimes(1);
         expect(mt.layerCount).toBe(0);

@@ -61,9 +61,9 @@ let page: Page;
  * the presented frame with page.screenshot() — the same capture path the visualization
  * suite uses, proven on both WebGL2 and WebGPU — and decodes its PNG bytes.
  */
-const evaluateRenderComposite = async (blendMode: number, layer0: RGBA, layer1: RGBA, premultiplyAlpha = false) => {
+const evaluateRenderComposite = async (blendMode: number, layer0: RGBA, layer1: RGBA, premultiplyAlpha = false, sourceSize = 8) => {
     return page.evaluate(
-        async ({ blendMode, layer0, layer1, premultiplyAlpha }) => {
+        async ({ blendMode, layer0, layer1, premultiplyAlpha, sourceSize }) => {
             const scene = (window as any).scene;
             const engine = (window as any).engine;
             const B = (window as any).BABYLON;
@@ -72,13 +72,13 @@ const evaluateRenderComposite = async (blendMode: number, layer0: RGBA, layer1: 
             // alpha; the MultiTexture upload path decodes it per premultiplyAlpha (createImageBitmap
             // with premultiplyAlpha "none" by default, "premultiply" when premultiplyAlpha is true),
             // so the sampled layers carry the requested alpha mode.
-            const makeSolidPng = (r: number, g: number, b: number, a: number) => {
+            const makeSolidPng = (r: number, g: number, b: number, a: number, size = sourceSize) => {
                 const canvas = document.createElement("canvas");
-                canvas.width = 8;
-                canvas.height = 8;
+                canvas.width = size;
+                canvas.height = size;
                 const ctx = canvas.getContext("2d")!;
                 ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a / 255})`;
-                ctx.fillRect(0, 0, 8, 8);
+                ctx.fillRect(0, 0, size, size);
                 return canvas.toDataURL("image/png");
             };
 
@@ -169,7 +169,7 @@ const evaluateRenderComposite = async (blendMode: number, layer0: RGBA, layer1: 
             }
             return { compileErr, compositeRGBA };
         },
-        { blendMode, layer0, layer1, premultiplyAlpha }
+        { blendMode, layer0, layer1, premultiplyAlpha, sourceSize }
     );
 };
 
@@ -216,8 +216,16 @@ const decodeCenterPixels = async (screenshotBase64: string): Promise<number[][]>
  * math including alpha (e.g. ALPHA_BLEND's alpha, MULTIPLY's absorbed alpha, SUBTRACT's zeroed
  * alpha) that presentation alone cannot observe.
  */
-const assertCompositePixels = async (engineName: string, blendMode: number, expected: RGBA, layer0: RGBA, layer1: RGBA, premultiplyAlpha = false): Promise<void> => {
-    const { compileErr, compositeRGBA } = (await evaluateRenderComposite(blendMode, layer0, layer1, premultiplyAlpha)) as unknown as {
+const assertCompositePixels = async (
+    engineName: string,
+    blendMode: number,
+    expected: RGBA,
+    layer0: RGBA,
+    layer1: RGBA,
+    premultiplyAlpha = false,
+    sourceSize = 8
+): Promise<void> => {
+    const { compileErr, compositeRGBA } = (await evaluateRenderComposite(blendMode, layer0, layer1, premultiplyAlpha, sourceSize)) as unknown as {
         compileErr: string;
         compositeRGBA: number[];
     };
@@ -327,9 +335,13 @@ export const evaluateMultiTextureTests = (engineName: string) => {
         // WebGL2 previously corrupted the ALPHA channel of straight-alpha (translucent) pixels on
         // layer upload: the image-source texSubImage3D path premultiplied by default and the driver's
         // unpremultiply rounded the recovered alpha up (MULTIPLY absorbed alpha read back as 112
-        // instead of 96). The engine's updateTextureArrayLayerFromImageSourceExact now reads the
-        // source's straight bytes and uploads them verbatim, so WebGL2 asserts the same canonical
-        // output as WebGPU below.
+        // instead of 96). The fix keeps straight layers byte-identical across both backends by NOT
+        // resizing through createImageBitmap (Chromium premultiplies a resized straight decode):
+        // MultiTexture decodes each layer at native size and uploads it by drawing it into a
+        // target-sized 2D canvas first (see _bitmapOptions/_uploadToLayer in multiTexture.pure.ts),
+        // which preserves straight RGBA on both WebGL2 and WebGPU. These assertions run against
+        // native-sized sources, so both engines must produce the same canonical translucent output
+        // below.
         const translucentExpectations: Array<{
             mode: number;
             label: string;
@@ -347,6 +359,13 @@ export const evaluateMultiTextureTests = (engineName: string) => {
                 await assertCompositePixels(engineName, mode, expected, translucent0, translucent1);
             });
         }
+        // Canonical oversized-source assertion: an 8x8 target whose sources are 64x64 exercises the
+        // native-size decode + 2D-canvas resize upload path (the one that preserves straight bytes
+        // on both backends). It must still yield the same canonical ALPHA_BLEND pixel as the
+        // native-sized sources above, proving the resize does not corrupt straight alpha.
+        test(`composites ALPHA_BLEND translucent layers from 64x64 sources into the 8x8 target at the canonical RGBA (${engineName})`, async () => {
+            await assertCompositePixels(engineName, BABYLON_ALPHA_BLEND, [107, 91, 111, 223], translucent0, translucent1, false, 64);
+        });
         // premultiplyAlpha:true stores the layers premultiplied; the composite must still output the
         // SAME straight source-over pixel as straight storage ([107,91,111,223]) — the un-premultiply
         // is unconditional — so a material consuming the composite sees identical colors regardless
