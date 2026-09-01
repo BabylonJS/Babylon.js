@@ -9,6 +9,7 @@ import { SceneLoader } from "core/Loading/sceneLoader";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Scene } from "core/scene";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { type Camera } from "core/Cameras/camera";
 import { type FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { EnvironmentTools } from "../tools/environmentTools";
 import { Tools } from "core/Misc/tools";
@@ -51,6 +52,23 @@ function IsTextureAsset(extension: string): boolean {
 
 function IsProjectAsset(extension: string): boolean {
     return extension.toLowerCase() === "babylonproj";
+}
+
+interface ICameraWithMovementKeys extends Camera {
+    keysUp: number[];
+    keysDown: number[];
+    keysLeft: number[];
+    keysRight: number[];
+}
+
+function HasMovementKeys(camera: Camera): camera is ICameraWithMovementKeys {
+    const cameraWithMovementKeys = camera as Partial<ICameraWithMovementKeys>;
+    return (
+        Array.isArray(cameraWithMovementKeys.keysUp) &&
+        Array.isArray(cameraWithMovementKeys.keysDown) &&
+        Array.isArray(cameraWithMovementKeys.keysLeft) &&
+        Array.isArray(cameraWithMovementKeys.keysRight)
+    );
 }
 
 interface IRenderingZoneProps {
@@ -262,7 +280,19 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         return camera;
     }
 
-    handleErrors() {
+    private _addMovementKeys(camera: Camera): void {
+        if (HasMovementKeys(camera)) {
+            camera.keysUp.push(90); // Z
+            camera.keysUp.push(87); // W
+            camera.keysDown.push(83); // S
+            camera.keysLeft.push(65); // A
+            camera.keysLeft.push(81); // Q
+            camera.keysRight.push(69); // E
+            camera.keysRight.push(68); // D
+        }
+    }
+
+    handleErrors(preparedCamera: Camera) {
         // In case of error during loading, meshes will be empty and clearColor is set to red
         if (this._scene.meshes.length === 0 && this._scene.clearColor.r === 1 && this._scene.clearColor.g === 0 && this._scene.clearColor.b === 0) {
             this._canvas.style.opacity = "0";
@@ -272,15 +302,9 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this.props.globalState.onError.notifyObservers({ scene: this._scene, message: "Scene loaded but several errors were found" });
             }
             //    this._canvas.style.opacity = "1";
-            const camera = this._scene.activeCamera! as ArcRotateCamera;
-            if (camera.keysUp) {
-                camera.keysUp.push(90); // Z
-                camera.keysUp.push(87); // W
-                camera.keysDown.push(83); // S
-                camera.keysLeft.push(65); // A
-                camera.keysLeft.push(81); // Q
-                camera.keysRight.push(69); // E
-                camera.keysRight.push(68); // D
+            this._addMovementKeys(preparedCamera);
+            if (this._scene.activeCamera && this._scene.activeCamera !== preparedCamera) {
+                this._addMovementKeys(this._scene.activeCamera);
             }
         }
     }
@@ -340,7 +364,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             requestedCamera.attachControl();
         }
         this.prepareLighting();
-        this.handleErrors();
+        this.handleErrors(camera);
 
         if (this._restoreInspector) {
             this._restoreInspector = false;

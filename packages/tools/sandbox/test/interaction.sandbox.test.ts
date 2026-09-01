@@ -1,6 +1,8 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type JSHandle, type Page } from "@playwright/test";
 import { readFileSync } from "fs";
 import { getGlobalConfig } from "@tools/test-tools";
+import { type Scene } from "core/scene";
+import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
 test.beforeAll(async () => {
     // Set timeout for this hook.
@@ -18,11 +20,36 @@ const url = (process.env.SANDBOX_BASE_URL || getGlobalConfig().baseUrl.replace(c
  * CSS may not be applied when the "load" event fires, so we explicitly wait for
  * the app DOM, stylesheets, and fonts before interacting or taking screenshots.
  */
-async function waitForSandboxReady(page: import("@playwright/test").Page) {
+async function waitForSandboxReady(page: Page) {
     // Wait for the sandbox React app to render
     await page.waitForSelector("#canvasZone", { state: "visible" });
     // Ensure all stylesheets and fonts are loaded (prevents FOUC in screenshots)
     await page.evaluate(() => document.fonts.ready);
+}
+
+async function getSandboxScene(page: Page): Promise<JSHandle<Scene>> {
+    return await page.evaluateHandle(async () => {
+        const babylonGlobal = globalThis as typeof globalThis & {
+            BABYLON?: {
+                EngineStore: typeof import("core/Engines/engineStore").EngineStore;
+            };
+        };
+        const findScene = (engineStore: typeof import("core/Engines/engineStore").EngineStore | undefined) =>
+            engineStore?.Instances.flatMap((engine) => engine.scenes).find((scene) => scene.getEngine().getRenderingCanvas()?.id === "renderCanvas");
+
+        let scene = findScene(babylonGlobal.BABYLON?.EngineStore);
+        if (!scene) {
+            const engineStoreModuleUrl = performance.getEntriesByType("resource").find((entry) => entry.name.includes("/core/dist/Engines/engineStore.js"))?.name;
+            if (engineStoreModuleUrl) {
+                const engineStoreModule = (await import(engineStoreModuleUrl)) as typeof import("core/Engines/engineStore");
+                scene = findScene(engineStoreModule.EngineStore);
+            }
+        }
+        if (!scene) {
+            throw new Error("The Sandbox scene was not found");
+        }
+        return scene;
+    });
 }
 
 test("Sandbox is loaded (Desktop)", async ({ page }) => {
@@ -121,13 +148,12 @@ test("selecting the default camera after loading a camera from query parameters"
     await waitForSandboxReady(page);
     await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
 
-    await page.evaluate(async () => {
-        const engineStore = (globalThis as any).BABYLON?.EngineStore;
-        const scene =
-            engineStore?.Instances.flatMap((engine: { scenes: any[] }) => engine.scenes).find(
-                (scene: { getEngine: () => { getRenderingCanvas: () => HTMLCanvasElement | null } }) => scene.getEngine().getRenderingCanvas()?.id === "renderCanvas"
-            ) ?? (await ((await import("/src/sandbox.tsx")).Sandbox as any)._SceneLoadedDeferred.promise);
-        const defaultCamera = scene.cameras.find((camera: { name: string }) => camera.name === "default camera");
+    const scene = await getSandboxScene(page);
+    await scene.evaluate((scene) => {
+        const defaultCamera = scene.cameras.find((camera) => camera.name === "default camera") as ArcRotateCamera | undefined;
+        if (!defaultCamera) {
+            throw new Error("The default camera was not found");
+        }
         defaultCamera.panningSensibility = 0;
         defaultCamera.speed = 0;
     });
@@ -139,15 +165,16 @@ test("selecting the default camera after loading a camera from query parameters"
     await expect(page.locator(".dropup-content-line", { hasText: "default camera" }).locator("div")).toHaveCSS("opacity", "1");
     await expect
         .poll(() =>
-            page.evaluate(async () => {
-                const engineStore = (globalThis as any).BABYLON?.EngineStore;
-                const scene =
-                    engineStore?.Instances.flatMap((engine: { scenes: any[] }) => engine.scenes).find(
-                        (scene: { getEngine: () => { getRenderingCanvas: () => HTMLCanvasElement | null } }) => scene.getEngine().getRenderingCanvas()?.id === "renderCanvas"
-                    ) ?? (await ((await import("/src/sandbox.tsx")).Sandbox as any)._SceneLoadedDeferred.promise);
-                const camera = scene.activeCamera;
+            scene.evaluate((scene) => {
+                const camera = scene.activeCamera as ArcRotateCamera;
                 return (
-                    camera.name === "default camera" && Math.abs(camera.panningSensibility - 5000 / camera.radius) < 0.001 && Math.abs(camera.speed - camera.radius * 0.2) < 0.001
+                    camera.name === "default camera" &&
+                    Math.abs(camera.panningSensibility - 5000 / camera.radius) < 0.001 &&
+                    Math.abs(camera.speed - camera.radius * 0.2) < 0.001 &&
+                    camera.keysUp.includes(87) &&
+                    camera.keysDown.includes(83) &&
+                    camera.keysLeft.includes(65) &&
+                    camera.keysRight.includes(68)
                 );
             })
         )
@@ -170,26 +197,19 @@ test("moving a free camera loaded from query parameters", async ({ page }) => {
     await page.waitForLoadState("networkidle");
 
     const canvas = page.locator("#renderCanvas");
-    const getActiveCameraPosition = () =>
-        page.evaluate(async () => {
-            const engineStore = (globalThis as any).BABYLON?.EngineStore;
-            const scene =
-                engineStore?.Instances.flatMap((engine: { scenes: any[] }) => engine.scenes).find(
-                    (scene: { getEngine: () => { getRenderingCanvas: () => HTMLCanvasElement | null } }) => scene.getEngine().getRenderingCanvas()?.id === "renderCanvas"
-                ) ?? (await ((await import("/src/sandbox.tsx")).Sandbox as any)._SceneLoadedDeferred.promise);
-            return scene.activeCamera.position.asArray() as number[];
-        });
+    const scene = await getSandboxScene(page);
+    const getActiveCameraPosition = () => scene.evaluate((scene) => scene.activeCamera!.position.asArray());
 
     const before = await getActiveCameraPosition();
     await canvas.click({ force: true });
-    await page.keyboard.down("ArrowUp");
+    await page.keyboard.down("w");
     await expect
         .poll(async () => {
             const position = await getActiveCameraPosition();
             return position.every(Number.isFinite) && position.some((value, index) => value !== before[index]);
         })
         .toBe(true);
-    await page.keyboard.up("ArrowUp");
+    await page.keyboard.up("w");
 });
 
 test("inspector is opened when clicking on the button", async ({ page }) => {
