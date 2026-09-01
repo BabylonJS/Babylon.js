@@ -405,8 +405,8 @@
         },
         {
             "title": "OpenPBR Metallic Area Light Edge Tint",
-            "playgroundId": "#PXK9Y5#0",
-            "referenceImage": "openpbr_metallic_area_light_edge_tint.png",
+            "playgroundId": "#UVZI6U#0",
+            "referenceImage": "openpbr-metallic-area-light-edge-tint.png",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Lights", "PBR", "Textures"],
             "excludeFromPerformance": true
@@ -414,7 +414,7 @@
         {
             "title": "OpenPBR Anisotropic 2D Environment",
             "playgroundId": "#6N05SO#0",
-            "referenceImage": "openpbr_anisotropic_2d_environment.png",
+            "referenceImage": "openpbr-anisotropic-2d-environment.png",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Loaders", "Meshes", "PBR", "Textures", "glTF"],
             "excludeFromPerformance": true
