@@ -41,7 +41,6 @@
         "**/index.js",
         "**/*compression.js",
         "**/*transmission.js",
-        "**/*types.js",
         "**/glTFLoader.js",
         "glTF/2.0/Extensions/*coat.js",
         "glTF/2.0/Extensions/*data.js",

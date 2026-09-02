@@ -36,7 +36,13 @@
     "license": "Apache-2.0",
     "esnext": "index.js",
     "type": "module",
-    "sideEffects": true,
+    "sideEffects": [
+        "**/index.js",
+        "atmosphere/Shaders/**",
+        "atmosphere/ShadersWGSL/**",
+        "msdfText/shaders/**",
+        "msdfText/shadersWGSL/**"
+    ],
     "homepage": "https://www.babylonjs.com",
     "repository": {
         "type": "git",

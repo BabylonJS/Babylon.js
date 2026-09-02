@@ -11,7 +11,7 @@ import { FreeCamera } from "core/Cameras/freeCamera.pure";
 import { type Animation } from "core/Animations/animation";
 import { type IAnimatable } from "core/Animations/animatable.interface";
 import { type IAnimationKey, AnimationKeyInterpolation } from "core/Animations/animationKey";
-import { type AnimationGroup } from "core/Animations/animationGroup";
+import { type AnimationGroup } from "core/Animations/animationGroup.pure";
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { Material } from "core/Materials/material";
