@@ -149,8 +149,8 @@ test("loading a model using query parameters", async ({ page }) => {
 });
 
 test("selecting the default camera after loading a camera from query parameters", async ({ page }) => {
-    const toyCarUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/ToyCar/glTF/ToyCar.gltf";
-    const query = [`assetUrl=${toyCarUrl}`, "camera=0"].join("&");
+    const camerasUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Cameras/glTF/Cameras.gltf";
+    const query = [`assetUrl=${camerasUrl}`, "camera=0"].join("&");
 
     await page.goto(url + (snapshot ? "&" : "?") + query, {
         waitUntil: "load",
@@ -173,7 +173,6 @@ test("selecting the default camera after loading a camera from query parameters"
     });
 
     await page.getByTitle("Select camera").click();
-    await page.getByPlaceholder("Search camera").fill("default camera");
     await page.locator(".dropup-content-line", { hasText: "default camera" }).click();
     await page.getByTitle("Select camera").click();
 
