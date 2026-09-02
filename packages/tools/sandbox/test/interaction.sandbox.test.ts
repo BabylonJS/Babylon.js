@@ -228,6 +228,7 @@ test("moving a free camera loaded from query parameters", async ({ page }) => {
         return { active: activeCamera.speed, sceneRelative: defaultCamera.speed };
     });
 
+    expect(cameraSpeeds.sceneRelative).not.toBeCloseTo(2);
     expect(cameraSpeeds.active).toBeCloseTo(cameraSpeeds.sceneRelative);
     const before = await getActiveCameraPosition();
     await canvas.click({ force: true });
