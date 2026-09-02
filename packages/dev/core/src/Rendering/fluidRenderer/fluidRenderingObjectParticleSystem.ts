@@ -100,7 +100,10 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
         this.useTrueRenderingForDiffuseTexture = false;
     }
 
-    /** GPUParticleSystem's "size" buffer layout (baseSize, scaleX, scaleY) is incompatible with this feature. */
+    /**
+     * GPUParticleSystem's "size" buffer layout (baseSize, scaleX, scaleY) is incompatible with this feature.
+     * @returns true if the per-particle size attribute is supported
+     */
     protected override _supportsPerParticleSizeAttribute(): boolean {
         if (this._particleSystem.getClassName() === "GPUParticleSystem") {
             Logger.Warn("UsePerParticleSizeAttribute is not supported with GPUParticleSystem; falling back to uniform size.");

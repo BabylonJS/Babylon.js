@@ -119,7 +119,10 @@ export abstract class FluidRenderingObject {
         this._shaderLanguage = shaderLanguage ?? (this._engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL);
     }
 
-    /** Override to return false if this object's buffers have an incompatible "size" layout. */
+    /**
+     * Override to return false if this object's buffers have an incompatible "size" layout.
+     * @returns true if the per-particle size attribute is supported
+     */
     protected _supportsPerParticleSizeAttribute(): boolean {
         return true;
     }
