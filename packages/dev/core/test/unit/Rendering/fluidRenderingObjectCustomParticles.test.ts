@@ -49,6 +49,13 @@ describe("FluidRenderingObjectCustomParticles", () => {
         };
     }
 
+    function makeBuffersWithoutSize() {
+        return {
+            position: new Float32Array([0, 0, 0, 1, 1, 1]),
+            color: new Float32Array([1, 0, 0, 1, 0, 1, 0, 1]),
+        };
+    }
+
     // NullEngine compiles shaders asynchronously; poll until isReady() settles.
     async function pollIsReady(object: FluidRenderingObjectCustomParticles): Promise<boolean> {
         for (let i = 0; i < 20; i++) {
@@ -117,5 +124,37 @@ describe("FluidRenderingObjectCustomParticles", () => {
         expect(() => object.renderDepthTexture()).not.toThrow();
         expect(() => object.renderThicknessTexture()).not.toThrow();
         expect(() => object.renderDiffuseTexture()).not.toThrow();
+    });
+
+    it("falls back to a uniform size when no size buffer was supplied, even with per-particle sizing enabled", async () => {
+        FluidRenderingObject.UsePerParticleSizeAttribute = true;
+
+        const fluidRenderer = scene.enableFluidRenderer()!;
+        const { object } = fluidRenderer.addCustomParticles(makeBuffersWithoutSize(), 2, true) as { object: FluidRenderingObjectCustomParticles };
+
+        expect(await pollIsReady(object)).toBe(true);
+
+        expect((object as any)._usesPerParticleSizeAttribute).toBe(false);
+        expect((object as any)._diffuseEffectWrapper.effect.getAttributesNames()).not.toContain("size");
+
+        expect(() => object.renderDepthTexture()).not.toThrow();
+        expect(() => object.renderThicknessTexture()).not.toThrow();
+        expect(() => object.renderDiffuseTexture()).not.toThrow();
+    });
+
+    it("switches to the per-particle size attribute once a size buffer is added later", async () => {
+        FluidRenderingObject.UsePerParticleSizeAttribute = true;
+
+        const fluidRenderer = scene.enableFluidRenderer()!;
+        const { object } = fluidRenderer.addCustomParticles(makeBuffersWithoutSize(), 2, true) as { object: FluidRenderingObjectCustomParticles };
+
+        expect(await pollIsReady(object)).toBe(true);
+        expect((object as any)._usesPerParticleSizeAttribute).toBe(false);
+
+        object.addBuffers({ size: new Float32Array([0.1, 0.1, 0.2, 0.2]) });
+
+        expect(await pollIsReady(object)).toBe(true);
+        expect((object as any)._usesPerParticleSizeAttribute).toBe(true);
+        expect((object as any)._diffuseEffectWrapper.effect.getAttributesNames()).toContain("size");
     });
 });
