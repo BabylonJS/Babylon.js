@@ -2755,6 +2755,23 @@
             "dependsOn": ["Audio", "Behaviors", "CSG", "Cameras", "Collisions", "GUI", "Loaders", "Meshes", "PBR", "PostProcesses", "Textures"]
         },
         {
+            "title": "Fluid rendering custom particles per-particle size",
+            "playgroundId": "#DBSRBB#1",
+            "referenceImage": "fluidCustomParticlesPerParticleSize.png",
+            "renderCount": 10,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering custom particles uniform size fallback",
+            "playgroundId": "#DBSRBB#1",
+            "replace": "var withSizeBuffer = true, var withSizeBuffer = false",
+            "referenceImage": "fluidCustomParticlesUniformSizeFallback.png",
+            "renderCount": 10,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
             "title": "Export GLTF Extension KHR_texture_transform",
             "playgroundId": "#20OAV9#15148",
             "referenceImage": "exportGltfKHRTextureTransform.png",
