@@ -263,10 +263,9 @@ export class IblCdfGenerator {
         const isWebGPU = this._engine.isWebGPU;
         // r32float mip generation requires filtered sampling. On WebGPU this hard-fails bind group
         // validation (and drops the whole command buffer) when the optional `float32-filterable` adapter
-        // feature is absent, so fall back to r16float there. WebGL2/Native are not gated here even though
-        // they also depend on an extension (OES_texture_float_linear) for float32 filtering: when it's
-        // missing they silently degrade to nearest sampling instead of hard-failing, which is pre-existing,
-        // unrelated behavior this fix doesn't need to change.
+        // feature is absent, so fall back to r16float there. WebGL2/Native also depend on an extension
+        // (OES_texture_float_linear) for float32 filtering, but when it's missing they silently degrade
+        // to nearest sampling instead of hard-failing, so no fallback is needed there.
         const scaledLuminanceType = isWebGPU && !this._engine.getCaps().textureFloatLinearFiltering ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
         // Create CDF maps (Cumulative Distribution Function) to assist in importance sampling
         const cdfOptions: IProceduralTextureCreationOptions = {
