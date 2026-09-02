@@ -116,12 +116,9 @@ const useStyles = makeStyles({
         minHeight: CustomTokens.lineHeightSmall,
         maxHeight: CustomTokens.lineHeightSmall,
     },
-    // Use tighter indentation than the default (16px instead of 24px per level)
-    treeItemLayoutBranch: {
+    // Use tighter indentation than the default (16px instead of 24px per level).
+    treeItemLayout: {
         paddingLeft: `calc((var(${treeItemLevelToken}, 1) - 1) * ${tokens.spacingHorizontalL})`,
-    },
-    treeItemLayoutLeaf: {
-        paddingLeft: `calc(var(${treeItemLevelToken}, 1) * ${tokens.spacingHorizontalL} + ${tokens.spacingHorizontalS})`,
     },
     treeItemDragging: {
         opacity: 0.5,
@@ -441,9 +438,7 @@ const GroupTreeItem: FunctionComponent<
                 >
                     <TreeItemLayout
                         iconBefore={Icon && node.entity ? <Icon entity={node.entity} /> : undefined}
-                        // Leaf groups must use leaf indentation so their content lines up with sibling
-                        // branch groups (which reserve space for their expand/collapse chevron).
-                        className={mergeClasses(hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf, compactMode ? classes.treeItemLayoutCompact : undefined)}
+                        className={mergeClasses(classes.treeItemLayout, compactMode ? classes.treeItemLayoutCompact : undefined)}
                         style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                     >
                         <Body1Strong wrap={false} truncate>
@@ -640,11 +635,7 @@ const ItemTreeItem: FunctionComponent<
                                 <Icon entity={entity} />
                             ) : null
                         }
-                        className={mergeClasses(
-                            hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf,
-                            compactMode ? classes.treeItemLayoutCompact : undefined,
-                            isDropTarget && classes.treeItemDropTarget
-                        )}
+                        className={mergeClasses(classes.treeItemLayout, compactMode ? classes.treeItemLayoutCompact : undefined, isDropTarget && classes.treeItemDropTarget)}
                         style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                         actions={actions}
                         aside={{
