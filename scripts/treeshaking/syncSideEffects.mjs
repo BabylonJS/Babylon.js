@@ -17,8 +17,7 @@
  *
  *   2. For files outside those directories, use simple `*`/`**` globs where
  *      the generated glob matches side-effectful files and no side-effect-free
- *      sibling files:
- *      "Animations/*types.js".
+ *      sibling files.
  *
  *   3. For files that cannot be safely grouped with a portable glob, emit the
  *      explicit path:
@@ -400,7 +399,9 @@ function main() {
 
     // Read manifest
     const manifest = readSideEffectsManifest(MANIFEST_PATH);
-    const seFiles = manifest.manifest.map((r) => toPosixPath(r.file));
+    // Type-only module augmentations affect TypeScript's declaration graph but emit
+    // no runtime behavior, so they must not be marked as side-effectful in package.json.
+    const seFiles = manifest.manifest.filter((entry) => entry.sideEffects.some((sideEffect) => sideEffect.type !== "declare-module")).map((entry) => toPosixPath(entry.file));
 
     // Count side-effectful files per top-level directory
     const seByTopDir = {};
