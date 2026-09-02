@@ -54,7 +54,7 @@ import { MaterialPluginEvent } from "../materialPluginEvent";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 import { PrePassConfiguration } from "../prePassConfiguration";
 import { type IMaterialCompilationOptions, type ICustomShaderNameResolveOptions } from "../../Materials/material.pure";
-import { ShaderLanguage } from "../shaderLanguage";
+import { _ShaderImportLoader } from "../../Misc/shaderImportLoader";
 import { MaterialFlags } from "../materialFlags";
 import { type SubMesh } from "../../Meshes/subMesh.pure";
 import { Logger } from "core/Misc/logger";
@@ -1932,7 +1932,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
     private _debugMode = 0;
 
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new _ShaderImportLoader(
+        () => [import("../../Shaders/openpbr.vertex"), import("../../Shaders/openpbr.fragment")],
+        () => [import("../../ShadersWGSL/openpbr.vertex"), import("../../ShadersWGSL/openpbr.fragment")]
+    );
     private _breakShaderLoadedCheck = false;
     private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
@@ -3181,17 +3184,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 processCodeAfterIncludes: this._eventInfo.customCode,
                 multiTarget: defines.PREPASS,
                 shaderLanguage: this._shaderLanguage,
-                extraInitializationsAsync: this._shadersLoaded
-                    ? undefined
-                    : async () => {
-                          if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                              await Promise.all([import("../../ShadersWGSL/openpbr.vertex"), import("../../ShadersWGSL/openpbr.fragment")]);
-                          } else {
-                              await Promise.all([import("../../Shaders/openpbr.vertex"), import("../../Shaders/openpbr.fragment")]);
-                          }
-
-                          this._shadersLoaded = true;
-                      },
+                extraInitializationsAsync: OpenPBRMaterial._ShaderLoader.getLoadCallback(this._shaderLanguage),
             },
             engine
         );

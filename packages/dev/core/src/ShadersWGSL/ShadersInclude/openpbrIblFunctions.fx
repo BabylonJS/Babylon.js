@@ -311,7 +311,7 @@
                     } else {
                         sampleDirection = reflect(-viewDirectionW, bentNormal);
                     }
-                    let originalViewDirectionW: vec3f = normalize(uniforms.vEyePosition.xyz - positionW);
+                    let originalViewDirectionW: vec3f = normalize(scene.vEyePosition.xyz - positionW);
                     let mappingNormalCandidate: vec3f = originalViewDirectionW + sampleDirection;
                     var mappingNormal: vec3f;
                     if (dot(mappingNormalCandidate, mappingNormalCandidate) > Epsilon) {

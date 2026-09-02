@@ -52,17 +52,17 @@ export class KHR_node_selectability implements IGLTFLoaderExtension {
     }
 }
 
-let _Registered = false;
+let _RuntimeRegistered = false;
 /**
- * Registers the KHR_node_selectability glTF loader extension.
- * Safe to call multiple times; only the first call has an effect.
+ * @internal
+ * Registers KHR_node_selectability runtime dependencies without changing the extension registry.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function RegisterKHR_node_selectability(): void {
-    if (_Registered) {
+export function _RegisterKHRNodeSelectabilityRuntime(): void {
+    if (_RuntimeRegistered) {
         return;
     }
-    _Registered = true;
+    _RuntimeRegistered = true;
 
     addNewInteractivityFlowGraphMapping("event/onSelect", NAME, {
         // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
@@ -154,6 +154,21 @@ export function RegisterKHR_node_selectability(): void {
         getPropertyName: [() => "isPickable"],
         type: "boolean",
     });
+}
+
+let _Registered = false;
+/**
+ * Registers the KHR_node_selectability glTF loader extension.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function RegisterKHR_node_selectability(): void {
+    if (_Registered) {
+        return;
+    }
+    _Registered = true;
+
+    _RegisterKHRNodeSelectabilityRuntime();
 
     unregisterGLTFExtension(NAME);
 

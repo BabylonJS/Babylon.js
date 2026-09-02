@@ -299,12 +299,21 @@
 
     // Metal Lobe
     #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-        slab_metal = computeOpenPBRAreaSpecularLighting(
-            preInfo{X},
-            light{X}.vLightSpecular.rgb,
-            baseConductorReflectance.coloredF0,
-            baseConductorReflectance.coloredF90
-        );
+        #if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR
+            slab_metal = computeOpenPBRAreaConductorSpecularLighting(
+                preInfo{X},
+                light{X}.vLightSpecular.rgb,
+                baseConductorReflectance.coloredF0,
+                baseConductorReflectance.coloredF90
+            );
+        #else
+            slab_metal = computeOpenPBRAreaSpecularLighting(
+                preInfo{X},
+                light{X}.vLightSpecular.rgb,
+                baseConductorReflectance.coloredF0,
+                baseConductorReflectance.coloredF90
+            );
+        #endif
     #else
         {
             // For OpenPBR, we use the F82 specular model for metallic materials and mix with the
@@ -412,7 +421,12 @@
 
     // Coat Lobe
     #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-        slab_coat = computeAreaSpecularLighting(preInfoCoat{X}, light{X}.vLightSpecular.rgb, coatReflectance.F0, coatReflectance.F90);
+        slab_coat = computeOpenPBRAreaSpecularLighting(
+            preInfoCoat{X},
+            light{X}.vLightSpecular.rgb,
+            vec3(coatReflectance.F0),
+            vec3(coatReflectance.F90)
+        );
     #else
         {
             #ifdef ANISOTROPIC_COAT

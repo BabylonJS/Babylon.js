@@ -122,6 +122,60 @@ test.describe("Babylon Scene Loader", function () {
             expect(assertionData.lights).toBe(1);
         });
 
+        test("glTF URL preprocessing can resolve parent resource paths", async () => {
+            const routePattern = "**/gltf-parent-uri/**";
+            await page.route(routePattern, async (route) => {
+                await route.fulfill({
+                    body: Buffer.from(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]).buffer),
+                    contentType: "application/octet-stream",
+                });
+            });
+
+            try {
+                const rootUrl = `${getGlobalConfig().baseUrl}/gltf-parent-uri/models/nested/`;
+                const assertionData = await page.evaluate(async (rootUrl) => {
+                    const preprocessCalls = new Array<[string, string | undefined]>();
+                    const gltf = {
+                        asset: { version: "2.0" },
+                        scene: 0,
+                        scenes: [{ nodes: [0] }],
+                        nodes: [{ mesh: 0 }],
+                        meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
+                        accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", max: [1, 1, 0], min: [0, 0, 0] }],
+                        bufferViews: [{ buffer: 0, byteLength: 36 }],
+                        buffers: [{ byteLength: 36, uri: "../shared/mesh.bin" }],
+                    };
+                    let defaultError: string | undefined;
+                    try {
+                        await BABYLON.ImportMeshAsync(`data:${JSON.stringify(gltf)}`, window.scene!, { rootUrl });
+                    } catch (error) {
+                        defaultError = error instanceof Error ? error.message : String(error);
+                    }
+
+                    const gltfOptions = {
+                        preprocessUrlAsync: (url: string, assetRootUrl?: string) => {
+                            preprocessCalls.push([url, assetRootUrl]);
+                            return Promise.resolve(url);
+                        },
+                    } satisfies GLTFOptions;
+                    const result = await BABYLON.ImportMeshAsync(`data:${JSON.stringify(gltf)}`, window.scene!, {
+                        rootUrl,
+                        pluginOptions: { gltf: gltfOptions },
+                    });
+                    return {
+                        defaultError,
+                        hasTriangle: result.meshes.some((mesh) => mesh.getTotalVertices() === 3),
+                        preprocessCalls,
+                    };
+                }, rootUrl);
+                expect(assertionData.defaultError).toContain("'../shared/mesh.bin' is invalid");
+                expect(assertionData.hasTriangle).toBe(true);
+                expect(assertionData.preprocessCalls).toEqual([[`${rootUrl}../shared/mesh.bin`, rootUrl]]);
+            } finally {
+                await page.unroute(routePattern);
+            }
+        });
+
         test("Load BoomBox with ImportMesh", async () => {
             const assertionData = await page.evaluate(() => {
                 return BABYLON.SceneLoader.ImportMeshAsync(null, "https://playground.babylonjs.com/scenes/BoomBox/", "BoomBox.gltf", window.scene).then((result) => {

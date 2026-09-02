@@ -27,6 +27,10 @@ import { StandardMaterial } from "core/Materials/standardMaterial.pure";
  */
 export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
     /**
+     * Defines the character encoding used to decode OBJ and MTL files.
+     */
+    public static ENCODING = "auto";
+    /**
      * Defines if UVs are optimized by default during load.
      */
     public static OPTIMIZE_WITH_UV = true;
@@ -103,6 +107,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
     private static get _DefaultLoadingOptions(): OBJLoadingOptions {
         return {
+            encoding: OBJFileLoader.ENCODING,
             computeNormals: OBJFileLoader.COMPUTE_NORMALS,
             optimizeNormals: OBJFileLoader.OPTIMIZE_NORMALS,
             importVertexColors: OBJFileLoader.IMPORT_VERTEX_COLORS,
@@ -138,9 +143,34 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         const pathOfFile = rootUrl + url;
 
         // Loads through the babylon tools to allow fileInput search.
-        Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, false, (request?: WebRequest, exception?: any) => {
+        Tools.LoadFile(pathOfFile, onSuccess, undefined, undefined, true, (request?: WebRequest, exception?: any) => {
             onFailure(pathOfFile, exception);
         });
+    }
+
+    private _decode(data: string | ArrayBuffer): string {
+        if (typeof data === "string") {
+            return data;
+        }
+
+        const bytes = new Uint8Array(data);
+        const encoding = this._loadingOptions.encoding ?? "auto";
+        if (encoding !== "auto") {
+            return new TextDecoder(encoding).decode(bytes);
+        }
+
+        if (bytes[0] === 0xff && bytes[1] === 0xfe) {
+            return new TextDecoder("utf-16le").decode(bytes);
+        }
+        if (bytes[0] === 0xfe && bytes[1] === 0xff) {
+            return new TextDecoder("utf-16be").decode(bytes);
+        }
+
+        try {
+            return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+        } catch {
+            return new TextDecoder("gb18030").decode(bytes);
+        }
     }
 
     /** @internal */
@@ -190,7 +220,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @returns a promise which completes when objects have been loaded to the scene
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadAsync(scene: Scene, data: string, rootUrl: string): Promise<void> {
+    public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string): Promise<void> {
         //Get the 3D model
         // eslint-disable-next-line github/no-then
         return this.importMeshAsync(null, scene, data, rootUrl).then(() => {
@@ -206,7 +236,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @returns The loaded asset container
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string): Promise<AssetContainer> {
+    public loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string): Promise<AssetContainer> {
         const container = new AssetContainer(scene);
         this._assetContainer = container;
 
@@ -254,11 +284,13 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @returns the list of loaded meshes
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    private _parseSolidAsync(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
+    private _parseSolidAsync(meshesNames: any, scene: Scene, data: string | ArrayBuffer, rootUrl: string): Promise<Array<AbstractMesh>> {
         let fileToLoad: string = ""; //The name of the mtlFile to load
         const materialsFromMTLFile: MTLFileLoader = new MTLFileLoader();
         const materialToUse: string[] = [];
         const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
+
+        data = this._decode(data);
 
         // Sanitize data
         data = data.replace(/#.*$/gm, "").trim();
@@ -283,7 +315,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                         (dataLoaded) => {
                             try {
                                 //Create materials thanks MTLLoader function
-                                materialsFromMTLFile.parseMTL(scene, dataLoaded, rootUrl, this._assetContainer);
+                                materialsFromMTLFile.parseMTL(scene, this._decode(dataLoaded), rootUrl, this._assetContainer);
                                 //Look at each material loaded in the mtl file
                                 for (let n = 0; n < materialsFromMTLFile.materials.length; n++) {
                                     //Three variables to get all meshes with the same material

@@ -15,7 +15,7 @@ Then open `http://localhost:1338`.
 
 ## Scenarios
 
-Currently this dev host supports two scenarios that you can access by adding the `exp` QSP to the URL.
+The dev host supports multiple scenarios that you can access by adding the `exp` QSP to the URL.
 
 ### exp=lottie
 
@@ -37,3 +37,9 @@ This experience renders a small scene using ES6 imports by default, which makes 
 It supports the following params:
 
 - `useTS=boolean` Whether to use the `createScene.ts` or `createSceneJS.js` files. Defaults to true (`createScene.ts`) if not used.
+
+### exp=webxrOverWebGPU
+
+This committed example creates an XR-compatible `WebGPUEngine`, enables the required WebXR Layers feature, and uses `WebXRDefaultExperience` for the standard entry UI, controller models, pointer selection, teleportation, near interaction, and hand tracking. It also displays WebGPU-XR capability and session-state diagnostics.
+
+Run the dev host and open `http://localhost:1338/?exp=webxrOverWebGPU`. In a headset, use the standard XR button in the lower-right corner, then verify stereo geometry, controller appearance, pointer selection, teleportation, exit, and re-entry. On unsupported browsers or devices, the status panel displays the WebGPU-XR capability failure.

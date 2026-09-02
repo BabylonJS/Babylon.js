@@ -137,7 +137,7 @@ jobs:
                 snapshotPath: "$(BuildName)"
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Clear snapshot"
             condition: and(succeeded(), eq(variables['SNAPSHOTEXISTS'], 'true'), not(eq(variables['Build.SourceBranchName'], 'master')))
 
@@ -191,8 +191,8 @@ jobs:
                 nx: true
                 nxCacheKey: build
 
-          - script: npm install
-            displayName: "npm install"
+          - script: npm ci
+            displayName: "npm ci"
             retryCountOnTaskFailure: 1
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
@@ -226,7 +226,6 @@ jobs:
 
           - task: Npm@1
             displayName: "Test es version of UMD packages"
-            continueOnError: true
             inputs:
                 command: custom
                 customCommand: "run test:escheck"
@@ -248,7 +247,7 @@ jobs:
                 zip -r ../snapshot.zip *
                 cd ..
 
-                curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
                   -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=$(BuildName)" \
@@ -324,8 +323,8 @@ jobs:
                 nx: true
                 nxCacheKey: es6
 
-          - script: npm install
-            displayName: "npm install"
+          - script: npm ci
+            displayName: "npm ci"
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
@@ -353,7 +352,7 @@ jobs:
                 BROWSERSTACK_ACCESS_KEY: $(BROWSERSTACK_ACCESS_KEY)
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/es6visplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/es6visplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete ES6 visualization test results"
             continueOnError: true
             condition: eq(variables['SNAPSHOTEXISTS'], 'true')
@@ -405,8 +404,8 @@ jobs:
                 nx: true
                 nxCacheKey: es6-tools
 
-          - script: npm install
-            displayName: "npm install"
+          - script: npm ci
+            displayName: "npm ci"
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
@@ -420,7 +419,6 @@ jobs:
           - bash: |
                 npx nx run-many --target=prepublishOnly --all
             displayName: "Make sure es6 packages are ready"
-            continueOnError: true
 
           - task: Npm@1
             displayName: "Test ES6 packages"
@@ -445,7 +443,7 @@ jobs:
                 zip ../../../../snapshot.zip fileSizes.json
                 cd ../../../..
 
-                curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
                   -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=$(BuildName)" \
@@ -472,8 +470,8 @@ jobs:
 
           - template: templates/cache-steps.yml
 
-          - script: npm install
-            displayName: "npm install"
+          - script: npm ci
+            displayName: "npm ci"
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
@@ -511,8 +509,8 @@ jobs:
 
           - template: templates/cache-steps.yml
 
-          - script: npm install
-            displayName: "npm install"
+          - script: npm ci
+            displayName: "npm ci"
             retryCountOnTaskFailure: 1
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
@@ -563,10 +561,11 @@ jobs:
           - template: templates/cache-steps.yml
 
           - task: Npm@1
-            displayName: "npm install"
+            displayName: "npm ci"
             retryCountOnTaskFailure: 1
             inputs:
-                command: install
+                command: custom
+                customCommand: "ci"
 
           - script: npm run test:unit
             displayName: "unit tests"
@@ -635,9 +634,9 @@ jobs:
                 playwright: true
 
           - script: |
-                npm install
+                npm ci
                 npx playwright install --with-deps
-            displayName: "npm install && playwright install"
+            displayName: "npm ci && playwright install"
             retryCountOnTaskFailure: 1
 
           - script: npm run test:interactions
@@ -650,7 +649,7 @@ jobs:
                 CI: "true"
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/interactionplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/interactionplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete test results"
             continueOnError: true
             condition: eq(variables['SNAPSHOTEXISTS'], 'true')
@@ -737,9 +736,9 @@ jobs:
                 path: $(KHR_ASSETS_CACHE)
 
           - script: |
-                npm install
+                npm ci
                 npx playwright install --with-deps chromium
-            displayName: "npm install && playwright install"
+            displayName: "npm ci && playwright install"
             retryCountOnTaskFailure: 1
 
           - script: node ./scripts/runKHRInteractivityAssetTests.mjs
@@ -802,8 +801,8 @@ jobs:
           - template: templates/cache-steps.yml
 
           - script: |
-                npm install
-            displayName: "npm install"
+                npm ci
+            displayName: "npm ci"
             retryCountOnTaskFailure: 1
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
@@ -828,7 +827,7 @@ jobs:
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl2playwright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgl2playwright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete test results"
             continueOnError: true
             condition: eq(variables['SNAPSHOTEXISTS'], 'true')
@@ -887,8 +886,8 @@ jobs:
           - template: templates/cache-steps.yml
 
           - script: |
-                npm install
-            displayName: "npm install"
+                npm ci
+            displayName: "npm ci"
             retryCountOnTaskFailure: 1
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
@@ -914,7 +913,7 @@ jobs:
                 AFFECTED_TAGS: $(AFFECTED_TAGS)
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgpuplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(BuildName)/testResults/webgpuplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete test results"
             continueOnError: true
             condition: eq(variables['SNAPSHOTEXISTS'], 'true')
@@ -980,7 +979,8 @@ jobs:
             displayName: "Disable JIT Debugging for Script"
 
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=$(BuildName)&fileTocheck=cdnSnapshot.zip" -o ./tmp.json -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_SNAPSHOT_CHECK)?buildNumber=$(BuildName)&fileTocheck=cdnSnapshot.zip" -o ./tmp.json -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                if errorlevel 1 exit /b %errorlevel%
                 findstr "true" .\tmp.json >nul 2>&1
                 if %errorlevel% equ 0 (
                    echo snapshot exists
@@ -988,44 +988,35 @@ jobs:
                     echo snapshot does not exist
                 )
 
-                curl "$(SNAPSHOT_CDN_URL)/$(BuildName)/cdnSnapshot.zip" -o snapshot.zip
+                curl --fail-with-body --silent --show-error "$(SNAPSHOT_CDN_URL)/$(BuildName)/cdnSnapshot.zip" -o snapshot.zip
                 if errorlevel 1 exit /b %errorlevel%
 
+                setlocal EnableDelayedExpansion
                 set destDir=..\BabylonNativeNightlyUnitTests\RelWithDebInfo\Assets
                 for /f %%i in ('dir /b %destDir%\babylon*') do (
-                  unzip -p snapshot.zip "**%%i" > %destDir%\%%i
+                  set sourceName=%%i
+                  if /i "!sourceName:~-3!"==".js" (
+                    set sourceName=!sourceName:.max.js=.es5.js!
+                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.min.js=.es5.js!
+                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.js=.es5.js!
+                  )
+                  unzip -p snapshot.zip "**!sourceName!" > %destDir%\%%i
                   if errorlevel 1 exit /b !errorlevel!
                 )
 
                 set destDir=..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts
                 for /f %%i in ('dir /b %destDir%\babylon*') do (
-                  unzip -p snapshot.zip "**%%i" > %destDir%\%%i
+                  set sourceName=%%i
+                  if /i "!sourceName:~-3!"==".js" (
+                    set sourceName=!sourceName:.max.js=.es5.js!
+                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.min.js=.es5.js!
+                    if "!sourceName!"=="%%i" set sourceName=!sourceName:.js=.es5.js!
+                  )
+                  unzip -p snapshot.zip "**!sourceName!" > %destDir%\%%i
                   if errorlevel 1 exit /b !errorlevel!
                 )
-            displayName: "Update scripts from snapshot"
+            displayName: "Update scripts from snapshot (ES5)"
             retryCountOnTaskFailure: 5
-
-          - script: npm install
-            displayName: "npm install"
-            retryCountOnTaskFailure: 1
-            env:
-                PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
-                PUPPETEER_SKIP_DOWNLOAD: "true"
-
-          # Babylon Native runs on Chakra, which consumes ES5-level script. The TC39 decorator
-          # migration forces the core UMD bundle to an ES2015 target (the `accessor` keyword requires
-          # it), so it must be downleveled to ES5 for BOTH the unit tests and the playground before
-          # either is executed.
-          #
-          # The directory is passed rather than a single file. The step above refills every
-          # `babylon*` file in these directories from the CDN snapshot, so naming one file makes the
-          # downlevel an allowlist of one: a bundle added to the Native script set later is refilled
-          # from the snapshot but never downleveled, and fails at parse time on Chakra with nothing
-          # pointing at the cause. `downlevelNativeScripts.mjs` walks a directory and selects
-          # `babylon*.js` itself, which is the same set the refill loop uses.
-          - script: |
-                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyUnitTests\RelWithDebInfo\Assets
-            displayName: "Downlevel scripts for Native (unit tests)"
 
           - script: |
                 cd
@@ -1033,10 +1024,6 @@ jobs:
                 UnitTests.exe
             displayName: "Run unit tests"
             retryCountOnTaskFailure: 3
-
-          - script: |
-                npm run downlevel:native-scripts -- ..\BabylonNativeNightlyPlayground\RelWithDebInfo\Scripts
-            displayName: "Downlevel scripts for Native (visualization)"
 
           - script: |
                 cd
@@ -1096,8 +1083,8 @@ jobs:
 
           - template: templates/cache-steps.yml
 
-          - script: npm install
-            displayName: "npm install"
+          - script: npm ci
+            displayName: "npm ci"
             retryCountOnTaskFailure: 1
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
@@ -1205,10 +1192,11 @@ jobs:
                 playwright: true
 
           - task: Npm@1
-            displayName: "npm install"
+            displayName: "npm ci"
             retryCountOnTaskFailure: 1
             inputs:
-                command: install
+                command: custom
+                customCommand: "ci"
 
           - task: Npm@1
             displayName: "npm build"
@@ -1267,20 +1255,22 @@ jobs:
             displayName: "Prepare download directory"
 
           - script: |
-                curl "$(SNAPSHOT_CDN_URL)/$(BuildName)/cdnSnapshot.zip" -o snapshot.zip
+                set -euo pipefail
 
-                curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                curl --fail-with-body --silent --show-error "$(SNAPSHOT_CDN_URL)/$(BuildName)/cdnSnapshot.zip" -o snapshot.zip
+
+                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
                   -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/$(Build.SourceBranchName)" \
                   -F "storageAccount=$(SNAPSHOTS_STORAGE_ACCOUNT)" \
                   -F "zip=@snapshot.zip"
 
-                curl "$(SNAPSHOT_CDN_URL)/$(BuildName)/fileSizes.json" -o fileSizes.json
+                curl --fail-with-body --silent --show-error "$(SNAPSHOT_CDN_URL)/$(BuildName)/fileSizes.json" -o fileSizes.json
 
                 zip ./fileSize.zip fileSizes.json
 
-                curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
                   -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/$(Build.SourceBranchName)" \
@@ -1289,8 +1279,10 @@ jobs:
             displayName: "Update CDN"
 
           - script: |
-                # Async purge: don't block CI on the CDN purge completing.
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                set -euo pipefail
 
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                # Omitting wait selects the deployment server's non-blocking path.
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Purge CDN"

@@ -476,7 +476,7 @@ export async function LoadSmartAssetMapAsync(scene: Scene, source: string | File
     let resolvedRootUrl = rootUrl ?? "";
 
     if (typeof source === "string" && !rootUrl) {
-        const { Tools } = await import("../Misc/tools");
+        const { Tools } = await import("../Misc/tools.pure");
         resolvedRootUrl = Tools.GetFolderPath(source);
     }
 

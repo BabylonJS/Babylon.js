@@ -9,10 +9,10 @@
 # Variable groups:
 #   - BabylonJS-CI-Infrastructure
 #   - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
+#   - NPM_Publish (NPM_TOKEN)
 #
 # Secret variables (configure in pipeline UI):
 #   - GitHubPAT
-#   - NPM_TOKEN
 # =============================================================================
 
 trigger:
@@ -29,6 +29,7 @@ pr: none
 variables:
     - group: BabylonJS-CI-Infrastructure
     - group: BabylonJS-Deployment
+    - group: NPM_Publish
 
 pool:
     vmImage: ubuntu-latest
@@ -56,8 +57,8 @@ jobs:
                 git checkout $(Build.SourceBranchName)
             displayName: "prepare git"
 
-          - bash: npm install
-            displayName: "npm install"
+          - bash: npm ci
+            displayName: "npm ci"
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
@@ -150,7 +151,7 @@ jobs:
                 zip -r ../snapshot.zip *
                 cd ..
 
-                curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
                   -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/master/v$(PackageVersion)" \
@@ -177,7 +178,7 @@ jobs:
                 zip ../../../../fileSize.zip fileSizes.json
                 cd ../../../..
 
-                curl $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
+                curl --fail-with-body --silent --show-error $(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_UPLOAD) -i -X POST \
                   -H "Content-Type: multipart/form-data" \
                   -H "Authorization: Bearer $(DEPLOY_TOKEN)" \
                   -F "path=cdn/master/v$(PackageVersion)" \

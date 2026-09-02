@@ -22,3 +22,4 @@ import "./WebGPU/Extensions/engine.renderTarget";
 import "./WebGPU/Extensions/engine.renderTargetTexture";
 import "./WebGPU/Extensions/engine.renderTargetCube";
 import "./WebGPU/Extensions/engine.query";
+import "./WebGPU/Extensions/engine.dynamicTexture";

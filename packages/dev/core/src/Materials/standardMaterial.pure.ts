@@ -59,7 +59,7 @@ import {
     AreLightsTexturesReady,
 } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { ShaderLanguage } from "./shaderLanguage";
+import { _ShaderImportLoader } from "../Misc/shaderImportLoader";
 import { MaterialHelperGeometryRendering } from "./materialHelper.geometryrendering";
 import { UVDefinesMixin } from "./uv.defines";
 import { PrepassDefinesMixin } from "./prepass.defines";
@@ -566,7 +566,10 @@ export class StandardMaterial extends StandardMaterialBase {
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
     public accessor applyDecalMapAfterDetailMap: boolean;
 
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new _ShaderImportLoader(
+        () => [import("../Shaders/default.vertex"), import("../Shaders/default.fragment")],
+        () => [import("../ShadersWGSL/default.vertex"), import("../ShadersWGSL/default.fragment")]
+    );
     private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
     /**
@@ -1268,16 +1271,7 @@ export class StandardMaterial extends StandardMaterialBase {
                     processCodeAfterIncludes: this._eventInfo.customCode,
                     multiTarget: defines.PREPASS,
                     shaderLanguage: this._shaderLanguage,
-                    extraInitializationsAsync: this._shadersLoaded
-                        ? undefined
-                        : async () => {
-                              if (this._shaderLanguage === ShaderLanguage.WGSL) {
-                                  await Promise.all([import("../ShadersWGSL/default.vertex"), import("../ShadersWGSL/default.fragment")]);
-                              } else {
-                                  await Promise.all([import("../Shaders/default.vertex"), import("../Shaders/default.fragment")]);
-                              }
-                              this._shadersLoaded = true;
-                          },
+                    extraInitializationsAsync: StandardMaterial._ShaderLoader.getLoadCallback(this._shaderLanguage),
                 },
                 engine
             );
