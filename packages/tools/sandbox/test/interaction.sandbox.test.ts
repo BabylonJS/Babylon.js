@@ -35,21 +35,34 @@ async function getSandboxScene(page: Page): Promise<JSHandle<Scene>> {
                 EngineStore: typeof import("core/Engines/engineStore").EngineStore;
             };
         };
-        const findScene = (engineStore: typeof import("core/Engines/engineStore").EngineStore | undefined) =>
-            engineStore?.Instances.flatMap((engine) => engine.scenes).find((scene) => scene.getEngine().getRenderingCanvas()?.id === "renderCanvas");
-
-        let scene = findScene(babylonGlobal.BABYLON?.EngineStore);
-        if (!scene) {
-            const engineStoreModuleUrl = performance.getEntriesByType("resource").find((entry) => entry.name.includes("/core/dist/Engines/engineStore.js"))?.name;
-            if (engineStoreModuleUrl) {
-                const engineStoreModule = (await import(engineStoreModuleUrl)) as typeof import("core/Engines/engineStore");
-                scene = findScene(engineStoreModule.EngineStore);
+        const findScene = (engineStore: typeof import("core/Engines/engineStore").EngineStore | undefined) => {
+            const scenes = engineStore?.Instances.flatMap((engine) => engine.scenes) ?? [];
+            for (let index = scenes.length - 1; index >= 0; index--) {
+                if (scenes[index].getEngine().getRenderingCanvas()?.id === "renderCanvas") {
+                    return scenes[index];
+                }
             }
+            return undefined;
+        };
+
+        let engineStore = babylonGlobal.BABYLON?.EngineStore;
+        for (let attempt = 0; attempt < 100; attempt++) {
+            if (!engineStore) {
+                const engineStoreModuleUrl = performance.getEntriesByType("resource").find((entry) => entry.name.includes("/core/dist/Engines/engineStore.js"))?.name;
+                if (engineStoreModuleUrl) {
+                    const engineStoreModule = (await import(engineStoreModuleUrl)) as typeof import("core/Engines/engineStore");
+                    engineStore = engineStoreModule.EngineStore;
+                }
+            }
+
+            const scene = findScene(engineStore);
+            if (scene?.cameras.some((camera) => camera.name === "default camera")) {
+                return scene;
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 100));
         }
-        if (!scene) {
-            throw new Error("The Sandbox scene was not found");
-        }
-        return scene;
+        throw new Error("The Sandbox scene was not found");
     });
 }
 
@@ -136,8 +149,8 @@ test("loading a model using query parameters", async ({ page }) => {
 });
 
 test("selecting the default camera after loading a camera from query parameters", async ({ page }) => {
-    const camerasUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Cameras/glTF/Cameras.gltf";
-    const query = [`assetUrl=${camerasUrl}`, "camera=0"].join("&");
+    const toyCarUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/ToyCar/glTF/ToyCar.gltf";
+    const query = [`assetUrl=${toyCarUrl}`, "camera=0"].join("&");
 
     await page.goto(url + (snapshot ? "&" : "?") + query, {
         waitUntil: "load",
@@ -168,10 +181,16 @@ test("selecting the default camera after loading a camera from query parameters"
         .poll(() =>
             scene.evaluate((scene) => {
                 const camera = scene.activeCamera as ArcRotateCamera;
+                const skybox = scene.getMeshByName("hdrSkyBox");
+                const skyboxExtent = skybox?.getBoundingInfo().boundingBox.extendSizeWorld.z;
                 return (
                     camera.name === "default camera" &&
                     Math.abs(camera.panningSensibility - 5000 / camera.radius) < 0.001 &&
                     Math.abs(camera.speed - camera.radius * 0.2) < 0.001 &&
+                    skyboxExtent !== undefined &&
+                    Math.abs(skyboxExtent - (camera.maxZ - camera.minZ) / 4) < 0.001 &&
+                    camera.upperRadiusLimit !== null &&
+                    skyboxExtent > camera.upperRadiusLimit &&
                     camera.keysUp.includes(87) &&
                     camera.keysDown.includes(83) &&
                     camera.keysLeft.includes(65) &&

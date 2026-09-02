@@ -319,7 +319,16 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             }
 
             if (this._scene.environmentTexture && this.props.globalState.skybox) {
-                this._scene.createDefaultSkybox(this._scene.environmentTexture, true, (this._scene.activeCamera!.maxZ - this._scene.activeCamera!.minZ) / 2, 0.3, false);
+                const camera = this._scene.activeCamera!;
+                const skyboxSize = (camera.maxZ - camera.minZ) / 2;
+                const skybox = this._scene.createDefaultSkybox(this._scene.environmentTexture, true, skyboxSize, 0.3, false);
+                if (skybox) {
+                    this._scene.onActiveCameraChanged.add((scene) => {
+                        if (scene.activeCamera) {
+                            skybox.scaling.setAll((scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 / skyboxSize);
+                        }
+                    });
+                }
             }
         } else {
             let pbrPresent = false;
