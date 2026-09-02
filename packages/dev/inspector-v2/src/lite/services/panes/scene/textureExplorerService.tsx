@@ -1,4 +1,6 @@
 import { type Texture2D } from "@babylonjs/lite";
+import { tokens } from "@fluentui/react-components";
+import { ImageRegular } from "@fluentui/react-icons";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
 import { type IEngineExplorerService, EngineExplorerServiceIdentity } from "../../../engineExplorerService";
@@ -16,7 +18,11 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [IEngineExp
         engineExplorerService.addRenderingContextNodeProvider({
             order: 200,
             predicate: IsSceneContext,
-            getNodes: (scene) => [CreateSceneExplorerSectionNode("textures", "Textures", GetSceneTextures(scene), GetTextureDisplayName)],
+            getNodes: (scene) => [
+                CreateSceneExplorerSectionNode("textures", "Textures", GetSceneTextures(scene), GetTextureDisplayName, () => (
+                    <ImageRegular color={tokens.colorPaletteGrapeForeground2} />
+                )),
+            ],
             getSnapshot: GetSceneTextures,
         }),
 };

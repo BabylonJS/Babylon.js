@@ -404,6 +404,8 @@ const GroupTreeItem: FunctionComponent<
 
     const displayInfo = useNodeDisplayInfo(node);
     const name = useObservableState(() => displayInfo.name, displayInfo.onChange);
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const Icon = node.icon;
 
     // Get the commands that apply to this group.
     const commands = useResource(
@@ -438,6 +440,7 @@ const GroupTreeItem: FunctionComponent<
                     {...dropProps}
                 >
                     <TreeItemLayout
+                        iconBefore={Icon && node.entity ? <Icon entity={node.entity} /> : undefined}
                         // Leaf groups must use leaf indentation so their content lines up with sibling
                         // branch groups (which reserve space for their expand/collapse chevron).
                         className={mergeClasses(hasChildren ? classes.treeItemLayoutBranch : classes.treeItemLayoutLeaf, compactMode ? classes.treeItemLayoutCompact : undefined)}

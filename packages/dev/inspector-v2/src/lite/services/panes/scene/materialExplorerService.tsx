@@ -1,5 +1,7 @@
 import { getMaterialFamily, type Material } from "@babylonjs/lite";
+import { tokens } from "@fluentui/react-components";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
+import { MaterialIcon } from "shared-ui-components/fluent/icons";
 
 import { type IEngineExplorerService, EngineExplorerServiceIdentity } from "../../../engineExplorerService";
 import { CreateSceneExplorerSectionNode, IsSceneContext } from "./sceneExplorerSection";
@@ -17,7 +19,11 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [IEngineEx
         engineExplorerService.addRenderingContextNodeProvider({
             order: 100,
             predicate: IsSceneContext,
-            getNodes: (scene) => [CreateSceneExplorerSectionNode("materials", "Materials", GetSceneMaterials(scene), GetMaterialDisplayName)],
+            getNodes: (scene) => [
+                CreateSceneExplorerSectionNode("materials", "Materials", GetSceneMaterials(scene), GetMaterialDisplayName, () => (
+                    <MaterialIcon color={tokens.colorPaletteMarigoldForeground2} />
+                )),
+            ],
             getSnapshot: GetSceneMaterials,
         }),
 };

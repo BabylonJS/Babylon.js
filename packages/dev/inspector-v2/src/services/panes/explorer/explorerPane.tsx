@@ -1,6 +1,6 @@
 import { type IDisposable, type IReadonlyObservable, type Nullable } from "core/index";
 
-import { type FunctionComponent, useCallback, useEffect, useState } from "react";
+import { type ComponentType, type FunctionComponent, useCallback, useEffect, useState } from "react";
 
 import { type ExplorerCommandProvider, type ExplorerNodeDescription } from "../../../components/explorer/explorerModel";
 import { Explorer } from "../../../components/explorer/explorer";
@@ -41,6 +41,11 @@ export type ExplorerPaneOptions = Readonly<{
      * The name displayed for the root node (e.g. "Scene" or "Engine").
      */
     rootLabel: string;
+
+    /**
+     * An optional icon component to render for the root node.
+     */
+    rootIcon?: ComponentType<{ entity: object }>;
 
     /**
      * An optional observable that notifies when the object returned by `getRoot` changes. Products
@@ -93,6 +98,7 @@ type ExplorerPaneProps = Readonly<{
     selectionService: ISelectionService;
     getRoot: () => Nullable<object>;
     rootLabel: string;
+    rootIcon?: ComponentType<{ entity: object }>;
     onRootChanged?: IReadonlyObservable<unknown>;
     getNodes: () => readonly ExplorerNodeDescription[];
     onNodesChanged?: IReadonlyObservable<void>;
@@ -101,7 +107,7 @@ type ExplorerPaneProps = Readonly<{
 }>;
 
 const ExplorerPane: FunctionComponent<ExplorerPaneProps> = (props) => {
-    const { selectionService, getRoot, rootLabel, onRootChanged, getNodes, onNodesChanged, itemCommandProviders, groupCommandProviders } = props;
+    const { selectionService, getRoot, rootLabel, rootIcon, onRootChanged, getNodes, onNodesChanged, itemCommandProviders, groupCommandProviders } = props;
 
     const itemCommands = useOrderedObservableCollection(itemCommandProviders);
     const groupCommands = useOrderedObservableCollection(groupCommandProviders);
@@ -123,11 +129,12 @@ const ExplorerPane: FunctionComponent<ExplorerPaneProps> = (props) => {
             id: "root",
             kind: "root",
             entity: root,
+            icon: rootIcon,
             getDisplayInfo: () => ({ name: rootLabel }),
         };
 
         return [rootNode, ...getNodes()];
-    }, [rootLabel, getNodes, nodesVersion, root]);
+    }, [rootLabel, rootIcon, getNodes, nodesVersion, root]);
 
     return (
         <>
@@ -153,7 +160,7 @@ const ExplorerPane: FunctionComponent<ExplorerPaneProps> = (props) => {
  * @internal
  */
 export function CreateExplorerPaneRegistration(shellService: IShellService, selectionService: ISelectionService, options: ExplorerPaneOptions): IDisposable {
-    const { key, title, getRoot, rootLabel, onRootChanged, getNodes, onNodesChanged } = options;
+    const { key, title, getRoot, rootLabel, rootIcon, onRootChanged, getNodes, onNodesChanged } = options;
 
     // These are created once per pane so the identities passed to the hooks below are stable.
     const itemCommandProviders = options.itemCommandProviders ?? new ObservableCollection<ExplorerCommandProvider<object>>();
@@ -172,6 +179,7 @@ export function CreateExplorerPaneRegistration(shellService: IShellService, sele
                 selectionService={selectionService}
                 getRoot={getRoot}
                 rootLabel={rootLabel}
+                rootIcon={rootIcon}
                 onRootChanged={onRootChanged}
                 getNodes={getNodes}
                 onNodesChanged={onNodesChanged}

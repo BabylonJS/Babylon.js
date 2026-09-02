@@ -1,4 +1,5 @@
 import { getRenderingContextKind, type RenderingContext, type SceneContext } from "@babylonjs/lite";
+import { type ComponentType } from "react";
 
 import { type ExplorerNodeDescription, GetEntityId } from "../../../../components/explorer/explorerModel";
 
@@ -17,13 +18,15 @@ export function IsSceneContext(context: RenderingContext): context is SceneConte
  * @param displayName The section's display name.
  * @param entities The entities displayed by the section.
  * @param getEntityDisplayName Gets the display name for an entity.
+ * @param entityIcon The optional icon component for the entities.
  * @returns The Explorer node description for the section.
  */
 export function CreateSceneExplorerSectionNode<T extends object>(
     id: string,
     displayName: string,
     entities: readonly T[],
-    getEntityDisplayName: (entity: T, index: number) => string
+    getEntityDisplayName: (entity: T, index: number) => string,
+    entityIcon?: ComponentType<{ entity: object }>
 ): ExplorerNodeDescription {
     return {
         id,
@@ -34,6 +37,7 @@ export function CreateSceneExplorerSectionNode<T extends object>(
                 id: GetEntityId(entity).toString(),
                 kind: "item",
                 entity,
+                icon: entityIcon,
                 getDisplayInfo: () => ({ name: getEntityDisplayName(entity, index) }),
             })),
     };

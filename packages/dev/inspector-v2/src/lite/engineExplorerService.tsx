@@ -1,4 +1,7 @@
 import { getRenderingContextKind, getRenderingContexts, type EngineContext, type RenderingContext, type SurfaceContext } from "@babylonjs/lite";
+import { tokens } from "@fluentui/react-components";
+import { EngineRegular, GlobeRegular, PersonSquareRegular, TextFieldRegular, WindowRegular } from "@fluentui/react-icons";
+import { type FunctionComponent } from "react";
 
 import { type IDisposable } from "core/index";
 import { Observable } from "core/Misc/observable";
@@ -59,6 +62,12 @@ const RenderingContextDisplayNames = new Map<string, string>([
     ["text-renderer", "Text Renderer"],
 ]);
 
+const EngineIcon: FunctionComponent = () => <EngineRegular />;
+const SceneIcon: FunctionComponent = () => <GlobeRegular />;
+const SpriteRendererIcon: FunctionComponent = () => <PersonSquareRegular color={tokens.colorPalettePeachForeground2} />;
+const TextRendererIcon: FunctionComponent = () => <TextFieldRegular />;
+const SurfaceIcon: FunctionComponent = () => <WindowRegular />;
+
 const NodeIds = new WeakMap<object, number>();
 let NextNodeId = 0;
 
@@ -80,6 +89,19 @@ function GetRenderingContextDisplayName(context: RenderingContext): string {
     return RenderingContextDisplayNames.get(kind) ?? kind;
 }
 
+function GetRenderingContextIcon(context: RenderingContext): FunctionComponent | undefined {
+    switch (getRenderingContextKind(context)) {
+        case "scene":
+            return SceneIcon;
+        case "sprite-renderer":
+            return SpriteRendererIcon;
+        case "text-renderer":
+            return TextRendererIcon;
+        default:
+            return undefined;
+    }
+}
+
 function GetApplicableProviders(context: RenderingContext, providers: readonly UntypedRenderingContextNodeProvider[]): readonly UntypedRenderingContextNodeProvider[] {
     return providers.filter((provider) => provider.predicate(context)).sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
 }
@@ -89,6 +111,7 @@ function CreateRenderingContextNode(context: RenderingContext, providers: readon
         id: `rendering-context-${GetNodeId(context)}`,
         kind: "item",
         entity: context,
+        icon: GetRenderingContextIcon(context),
         getDisplayInfo: () => ({ name: GetRenderingContextDisplayName(context) }),
         getChildren: () => GetApplicableProviders(context, providers).flatMap((provider) => provider.getNodes(context)),
     };
@@ -99,6 +122,7 @@ function CreateSurfaceNode(engine: EngineContext, surface: SurfaceContext, provi
         id: `surface-${GetNodeId(surface)}`,
         kind: "group",
         entity: surface,
+        icon: SurfaceIcon,
         getDisplayInfo: () => ({ name: `Surface ${engine.surfaces.indexOf(surface) + 1}` }),
         getChildren: () => getRenderingContexts(surface).map((context) => CreateRenderingContextNode(context, providers)),
     };
@@ -148,6 +172,7 @@ export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorer
             title: "Explorer",
             getRoot: () => engine,
             rootLabel: "Engine",
+            rootIcon: EngineIcon,
             getNodes: () => CreateEngineNodes(engine, nodeProviders.items),
             onNodesChanged,
         });

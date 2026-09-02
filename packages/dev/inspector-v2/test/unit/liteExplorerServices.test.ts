@@ -89,6 +89,9 @@ describe("Babylon Lite scene resource explorer services", () => {
         expect(tree.nodes[0].children[0].entity).toBe(redMesh);
         expect(tree.nodes[1].children[0].entity).toBe(standardMaterial);
         expect(tree.nodes[2].children[0].entity).toBe(redTexture);
+        expect(tree.nodes[0].children[0].icon).toBeDefined();
+        expect(tree.nodes[1].children[0].icon).toBeDefined();
+        expect(tree.nodes[2].children[0].icon).toBeDefined();
 
         registrations.forEach((registration) => registration?.dispose?.());
         expect(dispose).toHaveBeenCalledTimes(3);
