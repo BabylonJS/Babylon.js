@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
@@ -53,6 +54,11 @@ describe("KHR_materials_retroreflection", () => {
     afterEach(() => {
         scene.dispose();
         engine.dispose();
+    });
+
+    it("loads the pure extension implementation from the dynamic registry", () => {
+        const dynamicRegistry = readFileSync(new URL("../../../src/glTF/2.0/Extensions/dynamic.ts", import.meta.url), "utf8");
+        expect(dynamicRegistry).toContain('import("./KHR_materials_retroreflection.pure")');
     });
 
     it("loads extension materials through OpenPBR without changing ordinary materials", async () => {

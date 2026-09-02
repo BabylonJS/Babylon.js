@@ -143,7 +143,7 @@ export function registerBuiltInGLTFExtensions() {
 
     unregisterGLTFExtension("KHR_materials_retroreflection");
     registerGLTFExtension("KHR_materials_retroreflection", true, async (loader) => {
-        const { KHR_materials_retroreflection } = await import("./KHR_materials_retroreflection");
+        const { KHR_materials_retroreflection } = await import("./KHR_materials_retroreflection.pure");
         return new KHR_materials_retroreflection(loader);
     });
 
