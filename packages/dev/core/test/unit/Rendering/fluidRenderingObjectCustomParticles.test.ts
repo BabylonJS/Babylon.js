@@ -72,54 +72,40 @@ describe("FluidRenderingObjectCustomParticles", () => {
         expect(() => fluidRenderer.addCustomParticles(makeBuffers(), 2, true)).not.toThrow();
     });
 
-    it("builds the diffuse effect with the size attribute when per-particle sizing is enabled", () => {
-        FluidRenderingObject.UsePerParticleSizeAttribute = true;
-
-        const fluidRenderer = scene.enableFluidRenderer()!;
-        const { object } = fluidRenderer.addCustomParticles(makeBuffers(), 2, true) as { object: FluidRenderingObjectCustomParticles };
-        (object as any)._createEffects();
-
-        const diffuseEffect = (object as any)._diffuseEffectWrapper.effect;
-
-        expect((object as any)._usesPerParticleSizeAttribute).toBe(true);
-        expect(diffuseEffect.getAttributesNames()).toContain("size");
-        expect(diffuseEffect.defines).toContain("FLUIDRENDERING_PER_PARTICLE_SIZE");
-    });
-
-    it("builds the diffuse effect with a uniform size when per-particle sizing is disabled", () => {
-        FluidRenderingObject.UsePerParticleSizeAttribute = false;
-
-        const fluidRenderer = scene.enableFluidRenderer()!;
-        const { object } = fluidRenderer.addCustomParticles(makeBuffers(), 2, true) as { object: FluidRenderingObjectCustomParticles };
-        (object as any)._createEffects();
-
-        const diffuseEffect = (object as any)._diffuseEffectWrapper.effect;
-
-        expect((object as any)._usesPerParticleSizeAttribute).toBe(false);
-        expect(diffuseEffect.getAttributesNames()).not.toContain("size");
-        expect(diffuseEffect.defines).not.toContain("FLUIDRENDERING_PER_PARTICLE_SIZE");
-    });
-
-    it("renders depth, thickness, and diffuse passes once ready with per-particle sizing enabled", async () => {
+    it("binds size as a per-particle attribute across all passes when enabled", async () => {
         FluidRenderingObject.UsePerParticleSizeAttribute = true;
 
         const fluidRenderer = scene.enableFluidRenderer()!;
         const { object } = fluidRenderer.addCustomParticles(makeBuffers(), 2, true) as { object: FluidRenderingObjectCustomParticles };
 
         expect(await pollIsReady(object)).toBe(true);
+        expect((object as any)._usesPerParticleSizeAttribute).toBe(true);
+
+        for (const wrapper of ["_depthEffectWrapper", "_thicknessEffectWrapper", "_diffuseEffectWrapper"]) {
+            const effect = (object as any)[wrapper].effect;
+            expect(effect.getAttributesNames()).toContain("size");
+            expect(effect.defines).toContain("FLUIDRENDERING_PER_PARTICLE_SIZE");
+        }
 
         expect(() => object.renderDepthTexture()).not.toThrow();
         expect(() => object.renderThicknessTexture()).not.toThrow();
         expect(() => object.renderDiffuseTexture()).not.toThrow();
     });
 
-    it("renders depth, thickness, and diffuse passes once ready with the uniform size fallback", async () => {
+    it("binds size as a uniform across all passes when disabled", async () => {
         FluidRenderingObject.UsePerParticleSizeAttribute = false;
 
         const fluidRenderer = scene.enableFluidRenderer()!;
         const { object } = fluidRenderer.addCustomParticles(makeBuffers(), 2, true) as { object: FluidRenderingObjectCustomParticles };
 
         expect(await pollIsReady(object)).toBe(true);
+        expect((object as any)._usesPerParticleSizeAttribute).toBe(false);
+
+        for (const wrapper of ["_depthEffectWrapper", "_thicknessEffectWrapper", "_diffuseEffectWrapper"]) {
+            const effect = (object as any)[wrapper].effect;
+            expect(effect.getAttributesNames()).not.toContain("size");
+            expect(effect.defines).not.toContain("FLUIDRENDERING_PER_PARTICLE_SIZE");
+        }
 
         expect(() => object.renderDepthTexture()).not.toThrow();
         expect(() => object.renderThicknessTexture()).not.toThrow();
