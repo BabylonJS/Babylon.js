@@ -448,28 +448,30 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         }
 
         const suffix = state.fSuffix;
+        const uniformPrefix = state.shaderLanguage === ShaderLanguage.WGSL ? "uniforms." : "";
+        const mat2 = state.shaderLanguage === ShaderLanguage.WGSL ? "mat2x2f" : "mat2";
 
         state.compilationString += `
             // apply rotation
             {
-            float cosAngle = cos(${this._textureInfoName}.y);
-            float sinAngle = sin(${this._textureInfoName}.y);
-            ${uvx} = mat2${suffix}(cosAngle, -sinAngle, sinAngle, cosAngle) * ${uvx};
-            cosAngle = cos(${this._textureInfoName}.z);
-            sinAngle = sin(${this._textureInfoName}.z);
-            ${uvy} = mat2${suffix}(cosAngle, sinAngle, -sinAngle, cosAngle) * ${uvy};
-            cosAngle = cos(${this._textureInfoName}.w);
-            sinAngle = sin(${this._textureInfoName}.w);
-            ${uvz} = mat2${suffix}(cosAngle, -sinAngle, sinAngle, cosAngle) * ${uvz};
+            ${state._declareLocalVar("cosAngle", NodeMaterialBlockConnectionPointTypes.Float)} = cos(${uniformPrefix}${this._textureInfoName}.y);
+            ${state._declareLocalVar("sinAngle", NodeMaterialBlockConnectionPointTypes.Float)} = sin(${uniformPrefix}${this._textureInfoName}.y);
+            ${uvx} = ${mat2}(cosAngle, -sinAngle, sinAngle, cosAngle) * ${uvx};
+            cosAngle = cos(${uniformPrefix}${this._textureInfoName}.z);
+            sinAngle = sin(${uniformPrefix}${this._textureInfoName}.z);
+            ${uvy} = ${mat2}(cosAngle, sinAngle, -sinAngle, cosAngle) * ${uvy};
+            cosAngle = cos(${uniformPrefix}${this._textureInfoName}.w);
+            sinAngle = sin(${uniformPrefix}${this._textureInfoName}.w);
+            ${uvz} = ${mat2}(cosAngle, -sinAngle, sinAngle, cosAngle) * ${uvz};
 
             // apply scaling
-            vec2${suffix} uvScale = vec2${suffix}(${this._textureInfoName2}.z, ${this._textureInfoName2}.w);
+            ${state._declareLocalVar("uvScale", NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${suffix}(${uniformPrefix}${this._textureInfoName2}.z, ${uniformPrefix}${this._textureInfoName2}.w);
             ${uvx} = ${uvx} * uvScale;
             ${uvy} = ${uvy} * uvScale;
             ${uvz} = ${uvz} * uvScale;
 
             // apply offset
-            vec2${suffix} offset = vec2${suffix}(${this._textureInfoName2}.x, ${this._textureInfoName2}.y);
+            ${state._declareLocalVar("offset", NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${suffix}(${uniformPrefix}${this._textureInfoName2}.x, ${uniformPrefix}${this._textureInfoName2}.y);
             ${uvx} = ${uvx} + offset;
             ${uvy} = ${uvy} + offset;
             ${uvz} = ${uvz} + offset;
