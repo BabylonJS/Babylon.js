@@ -401,7 +401,10 @@ function main() {
     const manifest = readSideEffectsManifest(MANIFEST_PATH);
     // Type-only module augmentations affect TypeScript's declaration graph but emit
     // no runtime behavior, so they must not be marked as side-effectful in package.json.
-    const seFiles = manifest.manifest.filter((entry) => entry.sideEffects.some((sideEffect) => sideEffect.type !== "declare-module")).map((entry) => toPosixPath(entry.file));
+    // Empty diagnostics come from legacy manifests and remain conservatively side-effectful.
+    const seFiles = manifest.manifest
+        .filter((entry) => entry.sideEffects.length === 0 || entry.sideEffects.some((sideEffect) => sideEffect.type !== "declare-module"))
+        .map((entry) => toPosixPath(entry.file));
 
     // Count side-effectful files per top-level directory
     const seByTopDir = {};
