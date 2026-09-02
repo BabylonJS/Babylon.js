@@ -86,7 +86,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
      */
     public get textureZ(): Nullable<Texture> {
         if (this.sourceZ?.isConnected) {
-            return (this.sourceY.connectedPoint?.ownerBlock as ImageSourceBlock).texture;
+            return (this.sourceZ.connectedPoint?.ownerBlock as ImageSourceBlock).texture;
         }
         return null;
     }

@@ -1,8 +1,10 @@
 import { type NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { NodeMaterialBuildState } from "core/Materials/Node/nodeMaterialBuildState";
 import { NodeMaterialBuildStateSharedData } from "core/Materials/Node/nodeMaterialBuildStateSharedData";
+import { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
 import { TriPlanarBlock } from "core/Materials/Node/Blocks/triPlanarBlock";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { type Texture } from "core/Materials/Textures/texture";
 
 class TestableTriPlanarBlock extends TriPlanarBlock {
     public generateTextureLookup(state: NodeMaterialBuildState): void {
@@ -29,6 +31,31 @@ function generateTextureLookup(shaderLanguage: ShaderLanguage): string {
 }
 
 describe("TriPlanarBlock", () => {
+    it("returns the texture connected to sourceZ instead of the sourceY texture", () => {
+        const block = new TriPlanarBlock("triPlanar");
+        const sourceY = new ImageSourceBlock("sourceY");
+        const sourceZ = new ImageSourceBlock("sourceZ");
+        const textureY = { getScene: () => null } as Texture;
+        const textureZ = { getScene: () => null } as Texture;
+        sourceY.texture = textureY;
+        sourceZ.texture = textureZ;
+        sourceY.source.connectTo(block.sourceY);
+        sourceZ.source.connectTo(block.sourceZ!);
+
+        expect(block.textureY).toBe(textureY);
+        expect(block.textureZ).toBe(textureZ);
+    });
+
+    it("returns the sourceZ texture when sourceY is not connected", () => {
+        const block = new TriPlanarBlock("triPlanar");
+        const sourceZ = new ImageSourceBlock("sourceZ");
+        const textureZ = { getScene: () => null } as Texture;
+        sourceZ.texture = textureZ;
+        sourceZ.source.connectTo(block.sourceZ!);
+
+        expect(block.textureZ).toBe(textureZ);
+    });
+
     it("generates native WGSL declarations, uniform references, and matrix constructors", () => {
         const shader = generateTextureLookup(ShaderLanguage.WGSL);
 
