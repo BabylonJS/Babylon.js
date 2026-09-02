@@ -788,6 +788,12 @@
             "dependsOn": ["Lights", "Loaders", "PostProcesses"]
         },
         {
+            "title": "White balance post-process",
+            "playgroundId": "#N55Q2M#11",
+            "referenceImage": "white-balance-post-process.png",
+            "dependsOn": ["Lights", "Loaders", "Materials", "PostProcesses"]
+        },
+        {
             "title": "Sprite maps",
             "playgroundId": "#ARLADE#23",
             "referenceImage": "sprite-maps.png",

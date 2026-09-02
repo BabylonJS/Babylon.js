@@ -237,6 +237,19 @@ const CORE_TEST_CASES = [
         description: "Import + call of registration function should bundle correctly (sanity check)",
     },
     {
+        name: "texture-loaders-registration-pure-bare",
+        entryCode: `import "${CORE_DIST}/Engines/AbstractEngine/abstractEngine.textureLoaders.pure.js";\n`,
+        maxBundleSizeBytes: 500,
+        description: "Bare import of the texture loader registration module should produce a near-empty bundle",
+    },
+    {
+        name: "texture-loaders-registration-pure-named-call",
+        entryCode: `import { RegisterAbstractEngineTextureLoaders } from "${CORE_DIST}/Engines/AbstractEngine/abstractEngine.textureLoaders.pure.js";\nRegisterAbstractEngineTextureLoaders();\n`,
+        maxBundleSizeBytes: Infinity,
+        minBundleSizeBytes: 100,
+        description: "Import + call of the texture loader registration function should retain its implementation",
+    },
+    {
         name: "registration-types-only",
         entryCode: `import "${CORE_DIST}/Buffers/buffer.align.types.js";\n`,
         maxBundleSizeBytes: 500,
@@ -284,6 +297,28 @@ const TEST_CASES_BY_PACKAGE = {
             maxBundleSizeBytes: Infinity,
             minBundleSizeBytes: 100,
             description: "Named import of AdvancedDynamicTexture should retain the class (sanity check)",
+        },
+    ],
+    loaders: [
+        {
+            name: "loaders-gltf1-pure-barrel-bare",
+            entryCode: `import "${PKG_DIST}/glTF/1.0/pure.js";\n`,
+            maxBundleSizeBytes: 500,
+            description: "Bare import of the glTF 1.0 pure barrel should produce a near-empty bundle",
+        },
+        {
+            name: "loaders-gltf1-loader-register",
+            entryCode: `import { RegisterGLTF1Loader } from "${PKG_DIST}/glTF/1.0/glTFLoader.pure.js";\nRegisterGLTF1Loader();\n`,
+            maxBundleSizeBytes: Infinity,
+            minBundleSizeBytes: 100,
+            description: "Import + call of the glTF 1.0 loader registration function should retain its implementation",
+        },
+        {
+            name: "loaders-gltf1-extensions-register",
+            entryCode: `import { RegisterGLTFBinaryExtension } from "${PKG_DIST}/glTF/1.0/glTFBinaryExtension.pure.js";\nimport { RegisterGLTFMaterialsCommonExtension } from "${PKG_DIST}/glTF/1.0/glTFMaterialsCommonExtension.pure.js";\nRegisterGLTFBinaryExtension();\nRegisterGLTFMaterialsCommonExtension();\n`,
+            maxBundleSizeBytes: Infinity,
+            minBundleSizeBytes: 100,
+            description: "Import + call of the glTF 1.0 extension registration functions should retain their implementations",
         },
     ],
     serializers: [

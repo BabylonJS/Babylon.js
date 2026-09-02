@@ -1,9 +1,9 @@
 {
     "version": 1,
     "files": {
-        "glTF/1.0/glTFBinaryExtension.ts": ["top-level-call"],
-        "glTF/1.0/glTFLoader.ts": ["static-property-assignment"],
-        "glTF/1.0/glTFMaterialsCommonExtension.ts": ["top-level-call"],
+        "glTF/1.0/glTFBinaryExtension.ts": ["bare-import", "top-level-call"],
+        "glTF/1.0/glTFLoader.ts": ["top-level-call"],
+        "glTF/1.0/glTFMaterialsCommonExtension.ts": ["bare-import", "top-level-call"],
         "glTF/2.0/Extensions/EXT_lights_area.ts": ["top-level-call"],
         "glTF/2.0/Extensions/EXT_lights_area.types.ts": ["declare-module"],
         "glTF/2.0/Extensions/EXT_lights_ies.ts": ["top-level-call"],

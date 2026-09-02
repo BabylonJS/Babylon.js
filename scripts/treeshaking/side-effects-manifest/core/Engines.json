@@ -22,7 +22,7 @@
         "Engines/AbstractEngine/abstractEngine.stencil.types.ts": ["declare-module"],
         "Engines/AbstractEngine/abstractEngine.texture.ts": ["top-level-call"],
         "Engines/AbstractEngine/abstractEngine.texture.types.ts": ["declare-module"],
-        "Engines/AbstractEngine/abstractEngine.textureLoaders.ts": ["static-property-assignment"],
+        "Engines/AbstractEngine/abstractEngine.textureLoaders.ts": ["top-level-call"],
         "Engines/AbstractEngine/abstractEngine.textureSelector.ts": ["top-level-call"],
         "Engines/AbstractEngine/abstractEngine.textureSelector.types.ts": ["declare-module"],
         "Engines/AbstractEngine/abstractEngine.timeQuery.ts": ["top-level-call"],

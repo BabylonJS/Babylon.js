@@ -29,6 +29,49 @@ export interface ThinImageProcessingPostProcessOptions extends EffectWrapperCrea
      * If not provided, the last created scene will be used.
      */
     scene?: Nullable<Scene>;
+
+    /**
+     * The correlated color temperature, in Kelvin, of the illuminant to neutralize via white balance, applied to
+     * the resolved image processing configuration - see `ImageProcessingConfiguration.temperature`. Providing
+     * this (or `tint`) also enables white balance. Defaults to 6500 K.
+     */
+    temperature?: number;
+
+    /**
+     * The white balance tint offset to apply, on the green/magenta axis, to the resolved image processing
+     * configuration - see `ImageProcessingConfiguration.tint`. Providing this (or `temperature`) also enables
+     * white balance. Defaults to 0 (no tint offset).
+     */
+    tint?: number;
+}
+
+/**
+ * Applies the `temperature`/`tint` white balance options (if provided) to an image processing configuration,
+ * enabling white balance if either was supplied. Exported (but internal) so it can be applied uniformly
+ * regardless of how the configuration was resolved - in particular, `ImageProcessingPostProcess` also calls this
+ * directly on `this.imageProcessingConfiguration` after construction, since a caller-supplied `effectWrapper`
+ * bypasses `ThinImageProcessingPostProcess`'s own constructor (and thus its own call to this function) entirely.
+ * @param configuration the image processing configuration to update
+ * @param options the options object that may contain `temperature`/`tint`, or a plain size number (ignored)
+ * @internal
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function _ApplyWhiteBalanceOptions(configuration: ImageProcessingConfiguration, options?: { temperature?: number; tint?: number } | number): void {
+    if (!options || typeof options === "number") {
+        return;
+    }
+
+    if (options.temperature === undefined && options.tint === undefined) {
+        return;
+    }
+
+    if (options.temperature !== undefined) {
+        configuration.temperature = options.temperature;
+    }
+    if (options.tint !== undefined) {
+        configuration.tint = options.tint;
+    }
+    configuration.whiteBalanceEnabled = true;
 }
 
 /**
@@ -231,6 +274,45 @@ export class ThinImageProcessingPostProcess extends EffectWrapper {
      */
     public set contrast(value: number) {
         this.imageProcessingConfiguration.contrast = value;
+    }
+
+    /**
+     * Gets whether the white balance effect is enabled.
+     */
+    public get whiteBalanceEnabled(): boolean {
+        return this.imageProcessingConfiguration.whiteBalanceEnabled;
+    }
+    /**
+     * Sets whether the white balance effect is enabled.
+     */
+    public set whiteBalanceEnabled(value: boolean) {
+        this.imageProcessingConfiguration.whiteBalanceEnabled = value;
+    }
+
+    /**
+     * Gets the white balance correlated color temperature, in Kelvin, used in the effect.
+     */
+    public get temperature(): number {
+        return this.imageProcessingConfiguration.temperature;
+    }
+    /**
+     * Sets the white balance correlated color temperature, in Kelvin, used in the effect.
+     */
+    public set temperature(value: number) {
+        this.imageProcessingConfiguration.temperature = value;
+    }
+
+    /**
+     * Gets the white balance tint offset used in the effect.
+     */
+    public get tint(): number {
+        return this.imageProcessingConfiguration.tint;
+    }
+    /**
+     * Sets the white balance tint offset used in the effect.
+     */
+    public set tint(value: number) {
+        this.imageProcessingConfiguration.tint = value;
     }
 
     /**
@@ -446,6 +528,7 @@ export class ThinImageProcessingPostProcess extends EffectWrapper {
      */
     private _defines: IImageProcessingConfigurationDefines & { FROMLINEARSPACE: boolean } = {
         IMAGEPROCESSING: false,
+        WHITEBALANCE: false,
         VIGNETTE: false,
         VIGNETTEBLENDMODEMULTIPLY: false,
         VIGNETTEBLENDMODEOPAQUE: false,
@@ -488,12 +571,14 @@ export class ThinImageProcessingPostProcess extends EffectWrapper {
         if (imageProcessingConfiguration) {
             imageProcessingConfiguration.applyByPostProcess = true;
             this._attachImageProcessingConfiguration(imageProcessingConfiguration, true);
+            _ApplyWhiteBalanceOptions(this.imageProcessingConfiguration, options);
             // This will cause the shader to be compiled
             this._updateParameters();
         }
         // Setup the default processing configuration to the scene.
         else {
             this._attachImageProcessingConfiguration(null, true);
+            _ApplyWhiteBalanceOptions(this.imageProcessingConfiguration, options);
             this.imageProcessingConfiguration.applyByPostProcess = true;
         }
     }
