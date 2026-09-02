@@ -9,7 +9,6 @@ import { type IEffectCreationOptions } from "core/Materials/effect";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginEvent } from "core/Materials/materialPluginEvent";
 import { PushMaterial } from "core/Materials/pushMaterial";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
@@ -83,19 +82,18 @@ export class ShadowOnlyMaterial extends PushMaterial {
      * Force the material uniform buffer into "no UBO" (individual uniform) mode so that any attached
      * material plugin (e.g. IBLShadowsPluginMaterial) binds its uniforms directly on the effect. This
      * lets ShadowOnlyMaterial host plugins without declaring a dedicated "Material" uniform block in its
-     * shaders (its own uniforms - alpha/shadowColor/... - stay individual uniforms). This mirrors what the
-     * base implementation already does on WebGPU ("leftovers UBO").
+     * shaders (its own uniforms - alpha/shadowColor/... - stay individual uniforms). The base class only
+     * does this on WebGPU ("leftovers UBO"); we extend it to every backend.
      */
     public override _createUniformBuffer(): void {
-        this._uniformBuffer?.dispose();
-
-        const engine = this.getScene().getEngine();
-        this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
-        if (engine.isWebGPU && !this._forceGLSL) {
-            this._shaderLanguage = ShaderLanguage.WGSL;
+        super._createUniformBuffer();
+        // The base leaves a real UBO in place on WebGL2 (useUbo === true); re-create it as no-UBO so
+        // the plugin's uniforms are set individually on the effect (no shader-side "Material" block).
+        if (this._uniformBuffer.useUbo) {
+            this._uniformBuffer.dispose();
+            this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, this.name, true);
+            this._uniformBufferLayoutBuilt = false;
         }
-
-        this._uniformBufferLayoutBuilt = false;
     }
 
     public shadowColor = Color3.Black();
