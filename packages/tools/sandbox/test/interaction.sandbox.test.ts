@@ -35,15 +35,8 @@ async function getSandboxScene(page: Page): Promise<JSHandle<Scene>> {
                 EngineStore: typeof import("core/Engines/engineStore").EngineStore;
             };
         };
-        const findScene = (engineStore: typeof import("core/Engines/engineStore").EngineStore | undefined) => {
-            const scenes = engineStore?.Instances.flatMap((engine) => engine.scenes) ?? [];
-            for (let index = scenes.length - 1; index >= 0; index--) {
-                if (scenes[index].getEngine().getRenderingCanvas()?.id === "renderCanvas") {
-                    return scenes[index];
-                }
-            }
-            return undefined;
-        };
+        const findScene = (engineStore: typeof import("core/Engines/engineStore").EngineStore | undefined) =>
+            engineStore?.Instances.flatMap((engine) => engine.scenes).find((scene) => scene.getEngine().getRenderingCanvas()?.id === "renderCanvas");
 
         let scene = findScene(babylonGlobal.BABYLON?.EngineStore);
         if (!scene) {
@@ -175,18 +168,10 @@ test("selecting the default camera after loading a camera from query parameters"
         .poll(() =>
             scene.evaluate((scene) => {
                 const camera = scene.activeCamera as ArcRotateCamera;
-                const worldExtends = scene.getWorldExtends((mesh) => mesh.isVisible && mesh.isEnabled() && !mesh.infiniteDistance);
-                const sceneDistance = worldExtends.max.subtract(worldExtends.min).length() * 1.5;
-                const pick = scene.pickWithRay(
-                    camera.getForwardRay(Math.max(sceneDistance, camera.maxZ), camera.getWorldMatrix(), camera.globalPosition),
-                    (mesh) => mesh.isPickable && mesh.isVisible && mesh.isEnabled() && !mesh.infiniteDistance
-                );
-                const pickedDistance = pick?.hit && Number.isFinite(pick.distance) && pick.distance > 0 ? Math.max(pick.distance, camera.minZ) : sceneDistance;
-                const controlDistance = Math.min(camera.radius, sceneDistance, pickedDistance);
                 return (
                     camera.name === "default camera" &&
-                    Math.abs(camera.panningSensibility - 5000 / controlDistance) < 0.001 &&
-                    Math.abs(camera.speed - controlDistance * 0.2) < 0.001 &&
+                    Math.abs(camera.panningSensibility - 5000 / camera.radius) < 0.001 &&
+                    Math.abs(camera.speed - camera.radius * 0.2) < 0.001 &&
                     camera.keysUp.includes(87) &&
                     camera.keysDown.includes(83) &&
                     camera.keysLeft.includes(65) &&
@@ -215,48 +200,16 @@ test("moving a free camera loaded from query parameters", async ({ page }) => {
     const canvas = page.locator("#renderCanvas");
     const scene = await getSandboxScene(page);
     const getActiveCameraPosition = () => scene.evaluate((scene) => scene.activeCamera!.position.asArray());
-    const cameraSetup = await scene.evaluate((scene) => {
+    const cameraSpeeds = await scene.evaluate((scene) => {
         const activeCamera = scene.activeCamera as FreeCamera;
         const defaultCamera = scene.cameras.find((camera) => camera.name === "default camera") as ArcRotateCamera | undefined;
         if (!defaultCamera) {
             throw new Error("The default camera was not found");
         }
-        const modelMesh = scene.meshes.find((mesh) => mesh.getTotalVertices() > 0);
-        if (!modelMesh) {
-            throw new Error("The model mesh was not found");
-        }
-        const modelCenter = modelMesh.getBoundingInfo().boundingSphere.centerWorld;
-        activeCamera.parent = null;
-        activeCamera.position.copyFrom(modelCenter);
-        activeCamera.position.z += 0.2;
-        activeCamera.setTarget(modelCenter);
-        activeCamera.computeWorldMatrix(true);
-
-        const worldExtends = scene.getWorldExtends((mesh) => mesh.isVisible && mesh.isEnabled() && !mesh.infiniteDistance);
-        const sceneDistance = worldExtends.max.subtract(worldExtends.min).length() * 1.5;
-        const pick = scene.pickWithRay(
-            activeCamera.getForwardRay(Math.max(sceneDistance, activeCamera.maxZ), activeCamera.getWorldMatrix(), activeCamera.globalPosition),
-            (mesh) => mesh.isPickable && mesh.isVisible && mesh.isEnabled() && !mesh.infiniteDistance
-        );
-        if (!pick?.hit) {
-            throw new Error("The close-up camera did not hit the model");
-        }
-
-        return {
-            cameraName: activeCamera.name,
-            pickedDistance: Math.max(pick.distance, activeCamera.minZ),
-            sceneDistance,
-        };
+        return { active: activeCamera.speed, sceneRelative: defaultCamera.speed };
     });
 
-    expect(cameraSetup.pickedDistance).toBeLessThan(cameraSetup.sceneDistance);
-
-    await page.getByTitle("Select camera").click();
-    await page.locator(".dropup-content-line", { hasText: "default camera" }).click();
-    await page.getByTitle("Select camera").click();
-    await page.locator(".dropup-content-line", { hasText: cameraSetup.cameraName }).first().click();
-
-    await expect.poll(() => scene.evaluate((scene) => (scene.activeCamera as FreeCamera).speed)).toBeCloseTo(cameraSetup.pickedDistance * 0.2);
+    expect(cameraSpeeds.active).toBeCloseTo(cameraSpeeds.sceneRelative);
     const before = await getActiveCameraPosition();
     await canvas.click({ force: true });
     await page.keyboard.down("w");

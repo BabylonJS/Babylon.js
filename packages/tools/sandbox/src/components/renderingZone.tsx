@@ -8,7 +8,7 @@ import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Scene } from "core/scene";
-import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { type Camera } from "core/Cameras/camera";
 import { type FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { EnvironmentTools } from "../tools/environmentTools";
@@ -30,7 +30,6 @@ import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compa
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { LoadProjectFileAsync } from "shared-ui-components/projects/projectFile";
 import { DataStorage } from "core/Misc/dataStorage";
-import { ActivateCamera, ConfigureCameraControls, UpdateCameraControls } from "../tools/cameraTools";
 
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
@@ -55,6 +54,25 @@ function IsProjectAsset(extension: string): boolean {
     return extension.toLowerCase() === "babylonproj";
 }
 
+interface ICameraWithMovementKeys extends Camera {
+    speed: number;
+    keysUp: number[];
+    keysDown: number[];
+    keysLeft: number[];
+    keysRight: number[];
+}
+
+function HasMovementKeys(camera: Camera): camera is ICameraWithMovementKeys {
+    const cameraWithMovementKeys = camera as Partial<ICameraWithMovementKeys>;
+    return (
+        typeof cameraWithMovementKeys.speed === "number" &&
+        Array.isArray(cameraWithMovementKeys.keysUp) &&
+        Array.isArray(cameraWithMovementKeys.keysDown) &&
+        Array.isArray(cameraWithMovementKeys.keysLeft) &&
+        Array.isArray(cameraWithMovementKeys.keysRight)
+    );
+}
+
 interface IRenderingZoneProps {
     globalState: GlobalState;
     expanded: boolean;
@@ -70,7 +88,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     private _scene: Scene;
     private _canvas: HTMLCanvasElement;
     private _restoreInspector = false;
-    private _activeCamera?: Camera;
 
     public constructor(props: IRenderingZoneProps) {
         super(props);
@@ -265,7 +282,20 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         return camera;
     }
 
-    handleErrors() {
+    private _configureMovementControls(camera: Camera, speed: number): void {
+        if (HasMovementKeys(camera)) {
+            camera.speed = speed;
+            camera.keysUp.push(90); // Z
+            camera.keysUp.push(87); // W
+            camera.keysDown.push(83); // S
+            camera.keysLeft.push(65); // A
+            camera.keysLeft.push(81); // Q
+            camera.keysRight.push(69); // E
+            camera.keysRight.push(68); // D
+        }
+    }
+
+    handleErrors(preparedCamera: ArcRotateCamera) {
         // In case of error during loading, meshes will be empty and clearColor is set to red
         if (this._scene.meshes.length === 0 && this._scene.clearColor.r === 1 && this._scene.clearColor.g === 0 && this._scene.clearColor.b === 0) {
             this._canvas.style.opacity = "0";
@@ -275,6 +305,10 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this.props.globalState.onError.notifyObservers({ scene: this._scene, message: "Scene loaded but several errors were found" });
             }
             //    this._canvas.style.opacity = "1";
+            this._configureMovementControls(preparedCamera, preparedCamera.speed);
+            if (this._scene.activeCamera && this._scene.activeCamera !== preparedCamera) {
+                this._configureMovementControls(this._scene.activeCamera, preparedCamera.speed);
+            }
         }
     }
 
@@ -328,14 +362,12 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         const camera = this.prepareCamera();
         const requestedCamera = this.props.globalState.cameraIndex === undefined ? undefined : this._scene.cameras[this.props.globalState.cameraIndex];
         if (requestedCamera && requestedCamera !== camera) {
-            ActivateCamera(this._scene, requestedCamera);
+            camera.detachControl();
+            this._scene.activeCamera = requestedCamera;
+            requestedCamera.attachControl();
         }
-        if (this._scene.activeCamera) {
-            ConfigureCameraControls(this._scene, this._scene.activeCamera);
-        }
-        this._activeCamera = this._scene.activeCamera ?? undefined;
         this.prepareLighting();
-        this.handleErrors();
+        this.handleErrors(camera);
 
         if (this._restoreInspector) {
             this._restoreInspector = false;
@@ -345,14 +377,14 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         this._scene.executeWhenReady(() => {
             this._engine.runRenderLoop(() => {
                 const activeCamera = this._scene.activeCamera;
-                if (activeCamera !== this._activeCamera) {
-                    if (activeCamera) {
-                        ConfigureCameraControls(this._scene, activeCamera);
-                    }
-                    this._activeCamera = activeCamera ?? undefined;
-                }
-                if (activeCamera) {
-                    UpdateCameraControls(activeCamera);
+                if (activeCamera instanceof ArcRotateCamera) {
+                    // NOTE: this logic to adjust camera parameters based on radius is copied in viewer.ts.
+                    // Please keep them in sync.
+                    // Adapt the camera sensibility based on the distance to the object
+                    activeCamera.panningSensibility = 5000 / activeCamera.radius;
+                    // Update the camera speed based on the distance from the target.
+                    // TODO: This makes mouse wheel zooming behave well, but makes mouse based rotation a bit worse.
+                    activeCamera.speed = activeCamera.radius * 0.2;
                 }
                 this._scene.render();
             });

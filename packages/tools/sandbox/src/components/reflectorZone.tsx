@@ -4,7 +4,6 @@ import { type GlobalState } from "../globalState";
 import { Engine } from "core/Engines/engine";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { Logger } from "core/Misc/logger";
-import { ActivateCamera, ConfigureCameraControls } from "../tools/cameraTools";
 
 // use the same scss as renderingZone
 import "../scss/renderingZone.scss";
@@ -65,8 +64,7 @@ class Reflector {
                     }
 
                     if (scene.activeCamera) {
-                        ActivateCamera(scene, scene.activeCamera);
-                        ConfigureCameraControls(scene, scene.activeCamera);
+                        scene.activeCamera.attachControl();
 
                         this._engine.runRenderLoop(() => {
                             scene.render();
