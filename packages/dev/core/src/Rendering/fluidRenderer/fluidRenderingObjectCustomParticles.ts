@@ -62,6 +62,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
                     break;
                 case "size":
                     stride = 2;
+                    this._effectsAreDirty = true;
                     break;
                 case "offset":
                     instanced = false;
@@ -70,6 +71,14 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
 
             this._vertexBuffers[name] = new VertexBuffer(this._engine, buffers[name], name, true, false, stride, instanced);
         }
+    }
+
+    /**
+     * Per-particle sizing needs an actual "size" buffer; custom buffers are optional.
+     * @returns true if a "size" buffer was supplied
+     */
+    protected override _supportsPerParticleSizeAttribute(): boolean {
+        return !!this._vertexBuffers["size"];
     }
 
     protected override _createEffects(): void {
