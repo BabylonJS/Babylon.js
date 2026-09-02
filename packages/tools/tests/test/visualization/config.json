@@ -230,6 +230,14 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Gaussian Splatting IBL on Shadow Only Ground",
+            "playgroundId": "#DAID4Q#21",
+            "renderCount": 15,
+            "referenceImage": "gsplat-ibl-shadow-only-ground.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting LOD SH and IBL Shadows",
             "playgroundId": "#DAID4Q#11",
             "renderCount": 15,
