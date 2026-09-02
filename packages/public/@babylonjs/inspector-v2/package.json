@@ -10,6 +10,10 @@
             "types": "./lib/index.d.ts",
             "default": "./lib/index.js"
         },
+        "./lite": {
+            "types": "./lib/lite/index.d.ts",
+            "default": "./lib/lite/index.js"
+        },
         "./package.json": "./package.json"
     },
     "bin": {
@@ -37,6 +41,7 @@
         "@babylonjs/gui": "^9.0.0",
         "@babylonjs/gui-editor": "^9.0.0",
         "@babylonjs/loaders": "^9.0.0",
+        "@babylonjs/lite": "^1.24.0",
         "@babylonjs/materials": "^9.0.0",
         "@babylonjs/node-editor": "^9.0.0",
         "@babylonjs/node-geometry-editor": "^9.0.0",
@@ -53,7 +58,13 @@
         "react-dom": ">=16.14.0 <20.0.0",
         "usehooks-ts": "^3.1.1"
     },
+    "peerDependenciesMeta": {
+        "@babylonjs/lite": {
+            "optional": true
+        }
+    },
     "devDependencies": {
+        "@babylonjs/lite": "1.24.0",
         "@dev/build-tools": "^1.0.0",
         "@dev/inspector": "1.0.0",
         "@rollup/plugin-alias": "^5.1.0",

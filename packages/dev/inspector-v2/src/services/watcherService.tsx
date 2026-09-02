@@ -40,6 +40,18 @@ const WatcherSettingDescriptor: SettingDescriptor<WatcherSettings> = {
     },
 };
 
+type WatcherServiceOptions = {
+    /**
+     * The watcher settings used when no settings have been persisted.
+     */
+    defaultSettings?: WatcherSettings;
+
+    /**
+     * The watcher modes supported by this Inspector target.
+     */
+    supportedModes?: readonly WatcherSettings["mode"][];
+};
+
 /**
  * The unique identity symbol for the watcher service.
  */
@@ -72,58 +84,98 @@ export interface IWatcherService extends IService<typeof WatcherServiceIdentity>
     watchProperty<T extends object>(target: T, propertyKey: keyof T, onChanged: (value: unknown) => void): IDisposable;
 
     /**
+     * Watches a computed value and calls the callback whenever it changes during a polling or manual refresh.
+     * @param getValue A function that returns the current value.
+     * @param onChanged A callback that is called with the new value when it changes.
+     * @param equals An optional equality comparison. Defaults to {@link Object.is}.
+     * @returns A disposable that stops watching when disposed.
+     */
+    watchValue<T>(getValue: () => T, onChanged: (value: T) => void, equals?: (left: T, right: T) => boolean): IDisposable;
+
+    /**
      * Manually triggers a refresh of all watched properties.
      */
     refresh(): void;
 }
 
-export const WatcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISettingsStore, IReactContextService]> = {
-    friendlyName: "Watcher Service",
-    produces: [WatcherServiceIdentity],
-    consumes: [SettingsStoreIdentity, ReactContextServiceIdentity],
-    factory: (settingsStore, reactContextService) => {
-        let refreshObservable: Nullable<Observable<void>> = null;
-        let pollingHandle: Nullable<number> = null;
+const AllWatchModes = [
+    { label: "Interception", value: "intercept" },
+    { label: "Polling", value: "polling" },
+    { label: "Manual", value: "manual" },
+] as const satisfies DropdownOption<WatcherSettings["mode"]>[];
 
-        const applySettings = () => {
-            const settings = settingsStore.readSetting(WatcherSettingDescriptor);
+/**
+ * Creates the watcher services for a specific Inspector target.
+ * @param options Options that control the default and supported watcher modes.
+ * @returns Service definitions for watching values, configuring the watcher, and manually refreshing it.
+ */
+export function MakeWatcherServiceDefinitions(options: WatcherServiceOptions = {}) {
+    const supportedModes = options.supportedModes ?? AllWatchModes.map((option) => option.value);
+    const defaultSettings = options.defaultSettings ?? WatcherSettingDescriptor.defaultValue;
+    const settingDescriptor: SettingDescriptor<WatcherSettings> = {
+        key: WatcherSettingDescriptor.key,
+        defaultValue: defaultSettings,
+    };
+    const normalizeSettings = (settings: WatcherSettings) => (supportedModes.includes(settings.mode) ? settings : defaultSettings);
 
-            if (pollingHandle !== null) {
-                clearInterval(pollingHandle);
-                pollingHandle = null;
-            }
+    const watcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISettingsStore, IReactContextService]> = {
+        friendlyName: "Watcher Service",
+        produces: [WatcherServiceIdentity],
+        consumes: [SettingsStoreIdentity, ReactContextServiceIdentity],
+        factory: (settingsStore, reactContextService) => {
+            const refreshObservable = new Observable<void>();
+            let pollingHandle: Nullable<number> = null;
 
-            if (settings.mode === "intercept") {
-                if (refreshObservable) {
-                    refreshObservable.clear();
-                    refreshObservable = null;
+            const applySettings = () => {
+                const settings = normalizeSettings(settingsStore.readSetting(settingDescriptor));
+
+                if (pollingHandle !== null) {
+                    clearInterval(pollingHandle);
+                    pollingHandle = null;
                 }
-            } else {
-                const pollingObservable = refreshObservable ?? (refreshObservable = new Observable<void>());
 
                 if (settings.mode === "polling") {
                     pollingHandle = window.setInterval(() => {
-                        pollingObservable.notifyObservers();
+                        refreshObservable.notifyObservers();
                     }, settings.interval);
                 }
-            }
-        };
+            };
 
-        const settingsStoreObserver = settingsStore.onChanged.add((key: string) => {
-            if (key === WatcherSettingDescriptor.key) {
-                applySettings();
-            }
-        });
+            const settingsStoreObserver = settingsStore.onChanged.add((key: string) => {
+                if (key === settingDescriptor.key) {
+                    applySettings();
+                }
+            });
 
-        applySettings();
+            applySettings();
 
-        const watcherService: IWatcherService & Partial<IDisposable> = {
-            watchProperty<T extends object>(target: T, propertyKey: keyof T, onChanged: (value: unknown) => void): IDisposable {
-                if (refreshObservable) {
-                    let previousValue = target[propertyKey];
+            const watcherService: IWatcherService & Partial<IDisposable> = {
+                watchProperty<T extends object>(target: T, propertyKey: keyof T, onChanged: (value: unknown) => void): IDisposable {
+                    const settings = normalizeSettings(settingsStore.readSetting(settingDescriptor));
+                    if (settings.mode !== "intercept") {
+                        let previousValue = target[propertyKey];
+                        const observer = refreshObservable.add(() => {
+                            const currentValue = target[propertyKey];
+                            if (!Object.is(previousValue, currentValue)) {
+                                previousValue = currentValue;
+                                onChanged(currentValue);
+                            }
+                        });
+
+                        return {
+                            dispose: () => observer.remove(),
+                        };
+                    } else {
+                        return InterceptProperty(target, propertyKey, {
+                            afterSet: (value) => onChanged(value),
+                        });
+                    }
+                },
+                watchValue<T>(getValue: () => T, onChanged: (value: T) => void, equals: (left: T, right: T) => boolean = Object.is): IDisposable {
+                    let previousValue = getValue();
                     const observer = refreshObservable.add(() => {
-                        const currentValue = target[propertyKey];
-                        if (!Object.is(previousValue, currentValue)) {
+                        const currentValue = getValue();
+                        if (!equals(previousValue, currentValue)) {
                             previousValue = currentValue;
                             onChanged(currentValue);
                         }
@@ -132,148 +184,146 @@ export const WatcherServiceDefinition: ServiceDefinition<[IWatcherService], [ISe
                     return {
                         dispose: () => observer.remove(),
                     };
-                } else {
-                    return InterceptProperty(target, propertyKey, {
-                        afterSet: (value) => onChanged(value),
-                    });
-                }
-            },
-            refresh: () => {
-                refreshObservable?.notifyObservers();
-            },
-            dispose: () => {
-                contextHandle.dispose();
+                },
+                refresh: () => {
+                    refreshObservable.notifyObservers();
+                },
+                dispose: () => {
+                    contextHandle.dispose();
 
-                if (pollingHandle !== null) {
-                    clearInterval(pollingHandle);
-                    pollingHandle = null;
-                }
+                    if (pollingHandle !== null) {
+                        clearInterval(pollingHandle);
+                        pollingHandle = null;
+                    }
 
-                refreshObservable?.clear();
-                refreshObservable = null;
-                settingsStoreObserver.remove();
-            },
-        };
+                    refreshObservable.clear();
+                    settingsStoreObserver.remove();
+                },
+            };
 
-        // Register the WatcherContext provider so React components can access the watcher service.
-        const contextHandle: ReactContextHandle<IWatcherService> = reactContextService.addContext(WatcherContext.Provider, watcherService);
+            // Register the WatcherContext provider so React components can access the watcher service.
+            const contextHandle: ReactContextHandle<IWatcherService> = reactContextService.addContext(WatcherContext.Provider, watcherService);
 
-        return watcherService;
-    },
-};
+            return watcherService;
+        },
+    };
 
-const WatchModes = [
-    { label: "Interception", value: "intercept" },
-    { label: "Polling", value: "polling" },
-    { label: "Manual", value: "manual" },
-] as const satisfies DropdownOption<WatcherSettings["mode"]>[];
+    const watchModes = AllWatchModes.filter((option) => supportedModes.includes(option.value));
 
-export const WatcherSettingsServiceDefinition: ServiceDefinition<[], [ISettingsService]> = {
-    friendlyName: "Watcher Settings Service",
-    consumes: [SettingsServiceIdentity],
-    factory: (settingsService) => {
-        const settingsRegistration = settingsService.addSectionContent({
-            key: "watcherSettings",
-            section: "UI",
-            component: () => {
-                const [watcherSettings, setWatcherSettings] = useSetting(WatcherSettingDescriptor);
+    const watcherSettingsServiceDefinition: ServiceDefinition<[], [ISettingsService]> = {
+        friendlyName: "Watcher Settings Service",
+        consumes: [SettingsServiceIdentity],
+        factory: (settingsService) => {
+            const settingsRegistration = settingsService.addSectionContent({
+                key: "watcherSettings",
+                section: "UI",
+                component: () => {
+                    const [storedWatcherSettings, setWatcherSettings] = useSetting(settingDescriptor);
+                    const watcherSettings = normalizeSettings(storedWatcherSettings);
 
-                return (
-                    <>
-                        <DropdownPropertyLine
-                            label="Property Watch Mode"
-                            description={`Specifies how Inspector watches entity properties for changes. "Interception" sees changes instantly, but for complex scenes can impact performance. "Polling" has less performance impact on complex scenes, but changes are only detected at the specified interval. "Manual" requires the "Refresh" button in the toolbar to be pressed.`}
-                            options={WatchModes}
-                            value={watcherSettings.mode}
-                            onChange={(value) =>
-                                setWatcherSettings((prev) => {
-                                    return { interval: 250, ...prev, mode: value } as WatcherSettings;
-                                })
-                            }
-                        />
-                        <Collapse visible={watcherSettings.mode === "polling"}>
-                            <SyncedSliderPropertyLine
-                                label="Polling Interval"
-                                description="A smaller polling interval will detect changes faster but may impact performance more."
-                                min={30}
-                                max={1000}
-                                step={10}
-                                unit="ms"
-                                value={watcherSettings.mode === "polling" ? watcherSettings.interval : NaN}
+                    return (
+                        <>
+                            <DropdownPropertyLine
+                                label="Property Watch Mode"
+                                description={`Specifies how Inspector watches entity properties for changes. "Interception" sees changes instantly, but for complex scenes can impact performance. "Polling" has less performance impact on complex scenes, but changes are only detected at the specified interval. "Manual" requires the "Refresh" button in the toolbar to be pressed.`}
+                                options={watchModes}
+                                value={watcherSettings.mode}
                                 onChange={(value) =>
                                     setWatcherSettings((prev) => {
-                                        return { ...prev, interval: value };
+                                        return { interval: 250, ...prev, mode: value } as WatcherSettings;
                                     })
                                 }
                             />
-                        </Collapse>
-                    </>
-                );
-            },
-        });
-
-        return {
-            dispose: () => {
-                settingsRegistration.dispose();
-            },
-        };
-    },
-};
-
-export const WatcherRefreshToolbarServiceDefinition: ServiceDefinition<[], [IWatcherService, ISettingsStore, IShellService]> = {
-    friendlyName: "Watcher Refresh Toolbar Service",
-    consumes: [WatcherServiceIdentity, SettingsStoreIdentity, ShellServiceIdentity],
-    factory: (watcherService, settingsStore, shellService) => {
-        let toolbarItemRegistration: Nullable<IDisposable> = null;
-
-        const updateToolbar = () => {
-            const settings = settingsStore.readSetting(WatcherSettingDescriptor);
-
-            if (settings.mode === "manual") {
-                if (!toolbarItemRegistration) {
-                    toolbarItemRegistration = shellService.addToolbarItem({
-                        key: "Watcher Refresh",
-                        displayName: "Refresh Properties",
-                        verticalLocation: "bottom",
-                        horizontalLocation: "right",
-                        order: DefaultToolbarItemOrder.RefreshProperties,
-                        teachingMoment: {
-                            title: "Refresh Properties",
-                            description:
-                                "Press this button to manually refresh all UI bound to scene state. This is only available when Property Watch Mode is set to Manual in the settings pane.",
-                        },
-                        component: () => {
-                            return (
-                                <Button
-                                    appearance="subtle"
-                                    icon={ArrowClockwiseRegular}
-                                    title="Update all UI (e.g. Scene Explorer, Properties, etc.) bound to properties of entities (Meshes, Materials, etc.)"
-                                    onClick={() => watcherService.refresh()}
+                            <Collapse visible={watcherSettings.mode === "polling"}>
+                                <SyncedSliderPropertyLine
+                                    label="Polling Interval"
+                                    description="A smaller polling interval will detect changes faster but may impact performance more."
+                                    min={30}
+                                    max={1000}
+                                    step={10}
+                                    unit="ms"
+                                    value={watcherSettings.mode === "polling" ? watcherSettings.interval : NaN}
+                                    onChange={(value) =>
+                                        setWatcherSettings((prev) => {
+                                            return { ...prev, interval: value };
+                                        })
+                                    }
                                 />
-                            );
-                        },
-                    });
+                            </Collapse>
+                        </>
+                    );
+                },
+            });
+
+            return {
+                dispose: () => {
+                    settingsRegistration.dispose();
+                },
+            };
+        },
+    };
+
+    const watcherRefreshToolbarServiceDefinition: ServiceDefinition<[], [IWatcherService, ISettingsStore, IShellService]> = {
+        friendlyName: "Watcher Refresh Toolbar Service",
+        consumes: [WatcherServiceIdentity, SettingsStoreIdentity, ShellServiceIdentity],
+        factory: (watcherService, settingsStore, shellService) => {
+            let toolbarItemRegistration: Nullable<IDisposable> = null;
+
+            const updateToolbar = () => {
+                const settings = normalizeSettings(settingsStore.readSetting(settingDescriptor));
+
+                if (settings.mode === "manual") {
+                    if (!toolbarItemRegistration) {
+                        toolbarItemRegistration = shellService.addToolbarItem({
+                            key: "Watcher Refresh",
+                            displayName: "Refresh Properties",
+                            verticalLocation: "bottom",
+                            horizontalLocation: "right",
+                            order: DefaultToolbarItemOrder.RefreshProperties,
+                            teachingMoment: {
+                                title: "Refresh Properties",
+                                description:
+                                    "Press this button to manually refresh all UI bound to scene state. This is only available when Property Watch Mode is set to Manual in the settings pane.",
+                            },
+                            component: () => {
+                                return (
+                                    <Button
+                                        appearance="subtle"
+                                        icon={ArrowClockwiseRegular}
+                                        title="Update all UI (e.g. Scene Explorer, Properties, etc.) bound to properties of entities (Meshes, Materials, etc.)"
+                                        onClick={() => watcherService.refresh()}
+                                    />
+                                );
+                            },
+                        });
+                    }
+                } else {
+                    toolbarItemRegistration?.dispose();
+                    toolbarItemRegistration = null;
                 }
-            } else {
-                toolbarItemRegistration?.dispose();
-                toolbarItemRegistration = null;
-            }
-        };
+            };
 
-        updateToolbar();
+            updateToolbar();
 
-        const settingsStoreObserver = settingsStore.onChanged.add((key: string) => {
-            if (key === WatcherSettingDescriptor.key) {
-                updateToolbar();
-            }
-        });
+            const settingsStoreObserver = settingsStore.onChanged.add((key: string) => {
+                if (key === settingDescriptor.key) {
+                    updateToolbar();
+                }
+            });
 
-        return {
-            dispose: () => {
-                toolbarItemRegistration?.dispose();
-                toolbarItemRegistration = null;
-                settingsStoreObserver.remove();
-            },
-        };
-    },
-};
+            return {
+                dispose: () => {
+                    toolbarItemRegistration?.dispose();
+                    toolbarItemRegistration = null;
+                    settingsStoreObserver.remove();
+                },
+            };
+        },
+    };
+
+    return {
+        watcherServiceDefinition,
+        watcherSettingsServiceDefinition,
+        watcherRefreshToolbarServiceDefinition,
+    } as const;
+}
