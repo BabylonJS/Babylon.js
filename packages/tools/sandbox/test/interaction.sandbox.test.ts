@@ -173,6 +173,7 @@ test("selecting the default camera after loading a camera from query parameters"
     });
 
     await page.getByTitle("Select camera").click();
+    await page.getByPlaceholder("Search camera").fill("default camera");
     await page.locator(".dropup-content-line", { hasText: "default camera" }).click();
     await page.getByTitle("Select camera").click();
 
