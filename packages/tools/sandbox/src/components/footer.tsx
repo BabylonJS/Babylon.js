@@ -1,5 +1,5 @@
 import * as React from "react";
-import { type GlobalState } from "../globalState";
+import { type GlobalState, type SandboxSceneLoadedInfo, type SandboxSceneLoadKind } from "../globalState";
 import { FooterButton } from "./footerButton";
 import { DropUpButton } from "./dropUpButton";
 import { EnvironmentTools } from "../tools/environmentTools";
@@ -8,6 +8,9 @@ import { AnimationBar } from "./animationBar";
 import { type Nullable } from "core/types";
 import { type KHR_materials_variants } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
 import { type Mesh } from "core/Meshes/mesh";
+import { type Camera } from "core/Cameras/camera";
+import { type Observer } from "core/Misc/observable";
+import { DefaultCameraPresetOption } from "../tools/cameraPresetManager";
 
 import "../scss/footer.scss";
 import babylonIdentity from "../img/babylon-identity.svg";
@@ -15,6 +18,7 @@ import iconEdit from "../img/icon-edit.svg";
 import iconOpen from "../img/icon-open.svg";
 import iconIBL from "../img/icon-ibl.svg";
 import iconCameras from "../img/icon-cameras.svg";
+import iconCameraPreset from "../img/icon-camera-preset.svg";
 import iconVariants from "../img/icon-variants.svg";
 
 interface IFooterProps {
@@ -27,18 +31,39 @@ interface IFooterState {}
  * Footer
  */
 export class Footer extends React.Component<IFooterProps, IFooterState> {
-    private _cameraNames: string[] = [];
+    private _cameras: Camera[] = [];
+    private _sceneHadCameras = false;
+    private _sceneLoadKind: SandboxSceneLoadKind = "scene";
+    private readonly _onSceneLoadedObserver: Nullable<Observer<SandboxSceneLoadedInfo>>;
+    private readonly _onCameraChangedObserver: Nullable<Observer<Camera>>;
+    private readonly _onCameraPresetChangedObserver: Nullable<Observer<void>>;
 
     public constructor(props: IFooterProps) {
         super(props);
-        props.globalState.onSceneLoaded.add(() => {
-            this._updateCameraNames();
+        this._onSceneLoadedObserver = props.globalState.onSceneLoaded.add((info) => {
+            this._sceneHadCameras = info.scene.cameras.length > 0;
+            this._sceneLoadKind = info.loadKind;
+            this._updateCameras(info.scene);
+            this.forceUpdate();
+        });
+        this._onCameraChangedObserver = props.globalState.onCameraChanged.add(() => {
+            this._updateCameras();
+            this.forceUpdate();
+        });
+        this._onCameraPresetChangedObserver = props.globalState.cameraPresetManager.onChanged.add(() => {
             this.forceUpdate();
         });
         if (props.globalState.currentScene) {
-            this._updateCameraNames();
-            this.forceUpdate();
+            this._sceneHadCameras = props.globalState.currentSceneHadCameras;
+            this._sceneLoadKind = props.globalState.currentSceneLoadKind;
+            this._updateCameras(props.globalState.currentScene);
         }
+    }
+
+    override componentWillUnmount() {
+        this._onSceneLoadedObserver?.remove();
+        this._onCameraChangedObserver?.remove();
+        this._onCameraPresetChangedObserver?.remove();
     }
 
     showInspector() {
@@ -52,22 +77,42 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
     }
 
     switchCamera(index: number) {
-        const camera = this.props.globalState.currentScene.cameras[index];
+        const scene = this.props.globalState.currentScene;
+        const camera = this._cameras[index];
 
-        if (camera) {
-            if (this.props.globalState.currentScene.activeCamera) {
-                this.props.globalState.currentScene.activeCamera.detachControl();
+        if (scene && camera) {
+            const activeCamera = this.props.globalState.cameraPresetManager.deactivatePreset(scene, camera);
+            if (activeCamera) {
+                this.props.globalState.onCameraChanged.notifyObservers(activeCamera);
             }
-            this.props.globalState.currentScene.activeCamera = camera;
-            camera.attachControl();
         }
     }
 
-    private _updateCameraNames(): void {
-        if (!!this.props.globalState.currentScene && this.props.globalState.currentScene.cameras.length > 0) {
-            this._cameraNames = this.props.globalState.currentScene.cameras.map((c) => c.name);
-            this._cameraNames.push("default camera");
+    switchCameraPreset(index: number) {
+        const scene = this.props.globalState.currentScene;
+        if (!scene) {
+            return;
         }
+
+        if (index === 0) {
+            const camera = this.props.globalState.cameraPresetManager.deactivatePreset(scene);
+            if (camera) {
+                this.props.globalState.onCameraChanged.notifyObservers(camera);
+            }
+            return;
+        }
+
+        const preset = this.props.globalState.cameraPresetManager.presets[index - 1];
+        if (preset && this._sceneLoadKind === "scene") {
+            const camera = this.props.globalState.cameraPresetManager.activatePreset(preset.id, scene);
+            if (camera) {
+                this.props.globalState.onCameraChanged.notifyObservers(camera);
+            }
+        }
+    }
+
+    private _updateCameras(scene = this.props.globalState.currentScene): void {
+        this._cameras = scene ? scene.cameras.filter((camera) => !this.props.globalState.cameraPresetManager.isPresetCamera(camera)) : [];
     }
 
     private _getVariantsExtension(): Nullable<KHR_materials_variants> {
@@ -114,13 +159,21 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
             }
         }
 
-        const hasCameras = this._cameraNames.length > 1;
+        const cameraNames = this._cameras.map((camera) => camera.name);
+        const cameraPresets = this.props.globalState.cameraPresetManager.presets;
+        const cameraPresetNames = [DefaultCameraPresetOption, ...cameraPresets.map((preset) => preset.name)];
+        // A scene that arrived with one embedded camera historically showed this control; a camera-less scene with one generated camera did not.
+        const hasCameras = cameraNames.length > 1 || (cameraNames.length === 1 && this._sceneHadCameras);
+        const hasCameraPresets = !!this.props.globalState.currentScene && cameraPresets.length > 0 && this._sceneLoadKind === "scene";
 
         // Determine footer class based on which controls are present
         let footerClass = "footer";
-        if (hasCameras && hasVariants) {
+        const optionalControlCount = Number(hasCameras) + Number(hasCameraPresets) + Number(hasVariants);
+        if (optionalControlCount === 3) {
+            footerClass += " longest";
+        } else if (optionalControlCount === 2) {
             footerClass += " longer";
-        } else if (hasCameras || hasVariants) {
+        } else if (optionalControlCount === 1) {
             footerClass += " long";
         }
 
@@ -162,11 +215,27 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
                         globalState={this.props.globalState}
                         icon={iconCameras}
                         label="Select camera"
-                        options={this._cameraNames}
+                        options={cameraNames}
                         activeEntry={() => this.props.globalState.currentScene?.activeCamera?.name || ""}
                         onOptionPicked={(option, index) => this.switchCamera(index)}
-                        enabled={this._cameraNames.length > 1}
+                        enabled={hasCameras}
                         searchPlaceholder="Search camera"
+                    />
+                    <DropUpButton
+                        globalState={this.props.globalState}
+                        icon={iconCameraPreset}
+                        label="Select camera preset"
+                        options={cameraPresetNames}
+                        activeEntry={() => {
+                            const activeCamera = this.props.globalState.currentScene?.activeCamera;
+                            return activeCamera && this.props.globalState.cameraPresetManager.isPresetCamera(activeCamera)
+                                ? (this.props.globalState.cameraPresetManager.activePreset?.name ?? DefaultCameraPresetOption)
+                                : DefaultCameraPresetOption;
+                        }}
+                        onOptionPicked={(option, index) => this.switchCameraPreset(index)}
+                        enabled={hasCameraPresets}
+                        searchPlaceholder="Search camera preset"
+                        dynamicWidth={true}
                     />
                     <DropUpButton
                         globalState={this.props.globalState}

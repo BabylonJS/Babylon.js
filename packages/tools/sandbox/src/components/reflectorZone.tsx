@@ -66,7 +66,7 @@ class Reflector {
                         });
                     }
 
-                    this._globalState.onSceneLoaded.notifyObservers({ scene: scene, filename: "Reflector scene" });
+                    this._globalState.onSceneLoaded.notifyObservers({ scene: scene, filename: "Reflector scene", loadKind: "scene" });
 
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this._globalState.showDebugLayer();
