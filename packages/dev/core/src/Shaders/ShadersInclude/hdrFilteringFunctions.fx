@@ -2,9 +2,13 @@
     #if NUM_SAMPLES > 0
 
     #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+        // Some drivers (e.g. certain Android/Adreno implementations) default fragment-shader int/uint
+        // precision to mediump, which silently corrupts the 32-bit bit manipulation below.
+        precision highp int;
+
         // https://learnopengl.com/PBR/IBL/Specular-IBL
         // Hammersley
-        float radicalInverse_VdC(uint bits) 
+        float radicalInverse_VdC(uint bits)
         {
             bits = (bits << 16u) | (bits >> 16u);
             bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
