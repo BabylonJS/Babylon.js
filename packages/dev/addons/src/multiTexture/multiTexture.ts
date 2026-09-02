@@ -1,20 +1,34 @@
-/** This file must only contain pure code and pure imports */
+/**
+ * MultiTexture: composes an array of image files into a single TEXTURE_2D_ARRAY that can be
+ * assigned to a material slot like any other texture.
+ *
+ * Lives in @babylonjs/addons (not core) because it is an application-oriented, optional feature
+ * with WebGL2/WebGPU requirements, URL polling, and a non-trivial memory footprint.
+ */
 
-import { type ThinEngine } from "../../Engines/thinEngine.pure";
-import { Constants } from "../../Engines/constants";
-import { Logger } from "../../Misc/logger";
-import { ShaderLanguage } from "../../Materials/shaderLanguage";
-import { type Nullable } from "../../types";
-import { type InternalTexture } from "./internalTexture";
-import { type Scene } from "../../scene.pure";
-import { Observable } from "../../Misc/observable";
-import { BaseTexture } from "./baseTexture.pure";
-import { type ISize } from "../../Maths/math.size";
-import { type IProceduralTextureCreationOptions, ProceduralTexture } from "./Procedurals/proceduralTexture.pure";
-import { RawTexture2DArray } from "./rawTexture2DArray";
-import { UploadImageToTexture2DArrayLayer } from "./rawTexture2DArray.functions";
-import { Texture } from "./texture.pure";
-import { RegisterClass } from "../../Misc/typeStore";
+// Register the 2D-array upload extensions for both engines by patching the shared engine
+// prototypes directly. In the addons UMD build every `core/*` import is externalized to the
+// BABYLON global, so core's pure registration functions for this opt-in extension are not
+// reachable (core deliberately keeps it out of the global bundle), and side-effect imports are
+// externalized too and never execute. So MultiTexture patches the concrete engine classes that
+// ARE exported on the global itself, mirroring core's engine.texture2DArrayImageSource module.
+import { ThinEngine } from "core/Engines/thinEngine.pure";
+import { WebGPUEngine } from "core/Engines/webgpuEngine";
+import { type WebGPUHardwareTexture } from "core/Engines/WebGPU/webgpuHardwareTexture";
+import { Constants } from "core/Engines/constants";
+import { Logger } from "core/Misc/logger";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { type Nullable, type ImageSource } from "core/types";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type Scene } from "core/scene.pure";
+import { Observable } from "core/Misc/observable";
+import { BaseTexture } from "core/Materials/Textures/baseTexture.pure";
+import { type ISize } from "core/Maths/math.size";
+import { type IProceduralTextureCreationOptions, ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture.pure";
+import { RawTexture2DArray } from "core/Materials/Textures/rawTexture2DArray";
+import { UploadImageToTexture2DArrayLayer } from "core/Materials/Textures/rawTexture2DArray.functions";
+import { Texture } from "core/Materials/Textures/texture.pure";
+import { RegisterClass } from "core/Misc/typeStore";
 /**
  * Options for creating a MultiTexture.
  */
@@ -85,8 +99,74 @@ interface ILayerEntry {
 }
 
 let _Registered = false;
+/** Signature of the engine method patched in below (mirrors AbstractEngine.updateTextureArrayLayerFromImageSource). */
+type EngineTextureArrayUpload = (texture: InternalTexture, source: ImageSource, layer: number, invertY?: boolean, premultiplyAlpha?: boolean) => void;
+/** An engine prototype carrying the (opt-in) updateTextureArrayLayerFromImageSource method. */
+type EngineWithTextureArrayUpload = { updateTextureArrayLayerFromImageSource: EngineTextureArrayUpload };
+
 /**
- * Register side effects for action.
+ * Patches updateTextureArrayLayerFromImageSource onto both the WebGL2 and WebGPU engine
+ * prototypes so MultiTexture can upload decoded image sources into 2D array texture layers.
+ * Mirrors core's opt-in engine.texture2DArrayImageSource extension; see the imports above for
+ * why MultiTexture registers the concrete engine prototypes directly instead of importing core's
+ * pure registration functions (they are not exported on the BABYLON UMD global).
+ */
+function RegisterTexture2DArrayImageSourceExtensions(): void {
+    // The augmentation declaring updateTextureArrayLayerFromImageSource on AbstractEngine is not
+    // part of this package's compilation, so cast the known prototype to the typed surface.
+    const thinEnginePrototype = ThinEngine.prototype as unknown as EngineWithTextureArrayUpload;
+    thinEnginePrototype.updateTextureArrayLayerFromImageSource = function (
+        this: ThinEngine,
+        texture: InternalTexture,
+        source: ImageSource,
+        layer: number,
+        invertY: boolean = false,
+        premultiplyAlpha: boolean = false
+    ): void {
+        if (this.webGLVersion < 2) {
+            Logger.Error("updateTextureArrayLayerFromImageSource is only supported in WebGL2.");
+            return;
+        }
+        const gl = this._gl as WebGL2RenderingContext;
+        const target = gl.TEXTURE_2D_ARRAY;
+        const textureType = this._getWebGLTextureType(texture.type);
+        const glFormat = this._getInternalFormat(texture.format);
+        this._bindTextureDirectly(target, texture, true);
+        this._unpackFlipY(invertY);
+        if (premultiplyAlpha) {
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
+        }
+        gl.texSubImage3D(target, 0, 0, 0, layer, texture.width, texture.height, 1, glFormat, textureType, source as TexImageSource);
+        if (texture.generateMipMaps) {
+            gl.generateMipmap(target);
+        }
+        if (premultiplyAlpha) {
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+        }
+        this._bindTextureDirectly(target, null);
+        texture.isReady = true;
+    };
+
+    const webgpuEnginePrototype = WebGPUEngine.prototype as unknown as EngineWithTextureArrayUpload;
+    webgpuEnginePrototype.updateTextureArrayLayerFromImageSource = function (
+        this: WebGPUEngine,
+        texture: InternalTexture,
+        source: ImageSource,
+        layer: number,
+        invertY: boolean = false,
+        premultiplyAlpha: boolean = false
+    ): void {
+        const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
+        this._textureHelper.updateTexture(source, texture, texture.width, texture.height, 1, gpuTextureWrapper.format, layer, 0, invertY, premultiplyAlpha, 0, 0);
+        if (texture.generateMipMaps) {
+            this._generateMipmaps(texture, this._uploadEncoder);
+        }
+        texture.isReady = true;
+    };
+}
+
+/**
+ * Register side effects for MultiTexture.
  * Safe to call multiple times; only the first call has an effect.
  */
 export function RegisterMultiTexture(): void {
@@ -94,6 +174,8 @@ export function RegisterMultiTexture(): void {
         return;
     }
     _Registered = true;
+
+    RegisterTexture2DArrayImageSourceExtensions();
 
     RegisterClass("BABYLON.MultiTexture", MultiTexture);
 }
@@ -396,21 +478,21 @@ export class MultiTexture extends BaseTexture {
                 // finds its source in the store. Static import list - do not build dynamic import paths from variables.
                 if (shaderLanguage === ShaderLanguage.WGSL) {
                     await Promise.all([
-                        import("../../ShadersWGSL/multiTextureCompositeAlphaBlend.fragment"),
-                        import("../../ShadersWGSL/multiTextureCompositeAlphaMax.fragment"),
-                        import("../../ShadersWGSL/multiTextureCompositeAdd.fragment"),
-                        import("../../ShadersWGSL/multiTextureCompositeMultiply.fragment"),
-                        import("../../ShadersWGSL/multiTextureCompositeSubtract.fragment"),
-                        import("../../ShadersWGSL/multiTextureCompositeScreen.fragment"),
+                        import("./ShadersWGSL/multiTextureCompositeAlphaBlend.fragment"),
+                        import("./ShadersWGSL/multiTextureCompositeAlphaMax.fragment"),
+                        import("./ShadersWGSL/multiTextureCompositeAdd.fragment"),
+                        import("./ShadersWGSL/multiTextureCompositeMultiply.fragment"),
+                        import("./ShadersWGSL/multiTextureCompositeSubtract.fragment"),
+                        import("./ShadersWGSL/multiTextureCompositeScreen.fragment"),
                     ]);
                 } else {
                     await Promise.all([
-                        import("../../Shaders/multiTextureCompositeAlphaBlend.fragment"),
-                        import("../../Shaders/multiTextureCompositeAlphaMax.fragment"),
-                        import("../../Shaders/multiTextureCompositeAdd.fragment"),
-                        import("../../Shaders/multiTextureCompositeMultiply.fragment"),
-                        import("../../Shaders/multiTextureCompositeSubtract.fragment"),
-                        import("../../Shaders/multiTextureCompositeScreen.fragment"),
+                        import("./Shaders/multiTextureCompositeAlphaBlend.fragment"),
+                        import("./Shaders/multiTextureCompositeAlphaMax.fragment"),
+                        import("./Shaders/multiTextureCompositeAdd.fragment"),
+                        import("./Shaders/multiTextureCompositeMultiply.fragment"),
+                        import("./Shaders/multiTextureCompositeSubtract.fragment"),
+                        import("./Shaders/multiTextureCompositeScreen.fragment"),
                     ]);
                 }
             };
@@ -1253,3 +1335,4 @@ export enum MultiBlendMode {
     /** Screens all layers per channel. */
     SCREEN = 5,
 }
+RegisterMultiTexture();

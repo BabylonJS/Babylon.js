@@ -17,6 +17,7 @@ test.describe("MultiTexture layered ops equivalence", () => {
         await page.goto(getGlobalConfig().baseUrl + `/empty.html`, { waitUntil: "load", timeout: 0 });
         await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
         await page.waitForFunction(() => (window as any).BABYLON);
+        await page.waitForFunction(() => (window as any).ADDONS?.MultiTexture);
         page.setDefaultTimeout(0);
     });
 
@@ -120,7 +121,7 @@ test.describe("MultiTexture layered ops equivalence", () => {
                     const build = (name: string, urls: string[], options: any = {}, tolerant = false) =>
                         new Promise<any>((resolve, reject) => {
                             try {
-                                const mt = new B.MultiTexture(name, urls, scene, {
+                                const mt = new (window as any).ADDONS.MultiTexture(name, urls, scene, {
                                     width: TEX,
                                     height: TEX,
                                     ...options,

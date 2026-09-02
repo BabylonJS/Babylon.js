@@ -87,7 +87,7 @@ const evaluateRenderComposite = async (blendMode: number, layer0: RGBA, layer1: 
             // keep a direct handle to the instance.
             let mt: any;
             const onLoad = new Promise<void>((resolve) => {
-                mt = new B.MultiTexture("multi", [makeSolidPng(...layer0), makeSolidPng(...layer1)], scene, {
+                mt = new (window as any).ADDONS.MultiTexture("multi", [makeSolidPng(...layer0), makeSolidPng(...layer1)], scene, {
                     width: 8,
                     height: 8,
                     blendMode,
@@ -280,6 +280,7 @@ export const evaluateMultiTextureTests = (engineName: string) => {
             await page.goto(getGlobalConfig().baseUrl + `/empty.html`, { waitUntil: "load", timeout: 0 });
             await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
             await page.waitForFunction(() => (window as any).BABYLON);
+            await page.waitForFunction(() => (window as any).ADDONS?.MultiTexture);
             page.setDefaultTimeout(0);
             await page.evaluate(evaluateInitEngine, { engineName });
             await page.evaluate(evaluateCreateScene);

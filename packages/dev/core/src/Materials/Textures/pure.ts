@@ -17,7 +17,6 @@ export * from "./internalTexture";
 export * from "./Loaders/pure";
 export * from "./mirrorTexture.pure";
 export * from "./multiRenderTarget.pure";
-export * from "./multiTexture.pure";
 export * from "./Packer/pure";
 export * from "./Procedurals/pure";
 export * from "./rawCubeTexture";
