@@ -1124,7 +1124,12 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     protected _addShadowSupportToMaterial(material: Material) {
-        if (!(material instanceof PBRBaseMaterial) && !(material instanceof StandardMaterial) && !(material instanceof OpenPBRMaterial)) {
+        if (
+            !(material instanceof PBRBaseMaterial) &&
+            !(material instanceof StandardMaterial) &&
+            !(material instanceof OpenPBRMaterial) &&
+            material.getClassName() !== "ShadowOnlyMaterial"
+        ) {
             return;
         }
         let plugin = material.pluginManager?.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name);

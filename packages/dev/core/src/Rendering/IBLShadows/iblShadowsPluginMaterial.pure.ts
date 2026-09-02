@@ -97,6 +97,10 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
         return this._material.getClassName() === "OpenPBRMaterial";
     }
 
+    private _isShadowOnlyMaterial(): boolean {
+        return this._material.getClassName() === "ShadowOnlyMaterial";
+    }
+
     public override prepareDefines(defines: MaterialIBLShadowsRenderDefines) {
         defines.RENDER_WITH_IBL_SHADOWS = this._isEnabled;
         defines.COLORED_IBL_SHADOWS = this.isColored;
@@ -218,6 +222,20 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                     #endif
                 #endif
             `;
+            } else if (this._isShadowOnlyMaterial()) {
+                // ShadowOnlyMaterial encodes shadow strength in the alpha channel via the `shadow` scalar,
+                // so modulate `shadow` directly rather than color.rgb (which is the -typically black- shadowColor).
+                frag["CUSTOM_FRAGMENT_BEFORE_LIGHT_COMPOSITION"] = `
+                #ifdef RENDER_WITH_IBL_SHADOWS
+                    #ifdef COLORED_IBL_SHADOWS
+                        var shadowValue: vec3f = computeIndirectShadow();
+                        shadow *= clamp(dot(shadowValue, vec3f(0.3333f)), 0.0f, 1.0f);
+                    #else
+                        var shadowValue: vec2f = computeIndirectShadow();
+                        shadow *= clamp(shadowValue.x, 0.0f, 1.0f);
+                    #endif
+                #endif
+            `;
             } else {
                 frag["CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
@@ -292,6 +310,20 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                         #endif
                     #else
                         ambient_occlusion = min(ambient_occlusion, vec3(computeIndirectShadow().x));
+                    #endif
+                #endif
+            `;
+            } else if (this._isShadowOnlyMaterial()) {
+                // ShadowOnlyMaterial encodes shadow strength in the alpha channel via the `shadow` scalar,
+                // so modulate `shadow` directly rather than color.rgb (which is the -typically black- shadowColor).
+                frag["CUSTOM_FRAGMENT_BEFORE_LIGHT_COMPOSITION"] = `
+                #ifdef RENDER_WITH_IBL_SHADOWS
+                    #ifdef COLORED_IBL_SHADOWS
+                        vec3 shadowValue = computeIndirectShadow();
+                        shadow *= clamp(dot(shadowValue, vec3(0.3333)), 0.0, 1.0);
+                    #else
+                        vec2 shadowValue = computeIndirectShadow();
+                        shadow *= clamp(shadowValue.x, 0.0, 1.0);
                     #endif
                 #endif
             `;

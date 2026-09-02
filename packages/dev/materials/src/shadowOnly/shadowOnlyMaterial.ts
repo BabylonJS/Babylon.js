@@ -7,7 +7,10 @@ import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type IShadowLight } from "core/Lights/shadowLight";
 import { type IEffectCreationOptions } from "core/Materials/effect";
 import { MaterialDefines } from "core/Materials/materialDefines";
+import { MaterialPluginEvent } from "core/Materials/materialPluginEvent";
 import { PushMaterial } from "core/Materials/pushMaterial";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { type SubMesh } from "core/Meshes/subMesh";
@@ -51,8 +54,8 @@ class ShadowOnlyMaterialDefines extends MaterialDefines {
     public SKIPFINALCOLORCLAMP = false;
     public LOGARITHMICDEPTH = false;
 
-    constructor() {
-        super();
+    constructor(externalProperties?: { [name: string]: { type: string; default: any } }) {
+        super(externalProperties);
         this.rebuild();
     }
 }
@@ -73,6 +76,26 @@ export class ShadowOnlyMaterial extends PushMaterial {
      */
     constructor(name: string, scene?: Scene, forceGLSL = false) {
         super(name, scene, undefined, forceGLSL);
+    }
+
+    /**
+     * @internal
+     * Force the material uniform buffer into "no UBO" (individual uniform) mode so that any attached
+     * material plugin (e.g. IBLShadowsPluginMaterial) binds its uniforms directly on the effect. This
+     * lets ShadowOnlyMaterial host plugins without declaring a dedicated "Material" uniform block in its
+     * shaders (its own uniforms - alpha/shadowColor/... - stay individual uniforms). This mirrors what the
+     * base implementation already does on WebGPU ("leftovers UBO").
+     */
+    public override _createUniformBuffer(): void {
+        this._uniformBuffer?.dispose();
+
+        const engine = this.getScene().getEngine();
+        this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
+        if (engine.isWebGPU && !this._forceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        }
+
+        this._uniformBufferLayoutBuilt = false;
     }
 
     public shadowColor = Color3.Black();
@@ -108,6 +131,10 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
     // Methods
     public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+        if (!this._uniformBufferLayoutBuilt) {
+            this.buildUniformLayout();
+        }
+
         const drawWrapper = subMesh._drawWrapper;
 
         if (this.isFrozen) {
@@ -117,7 +144,8 @@ export class ShadowOnlyMaterial extends PushMaterial {
         }
 
         if (!subMesh.materialDefines) {
-            subMesh.materialDefines = new ShadowOnlyMaterialDefines();
+            this._callbackPluginEventGeneric(MaterialPluginEvent.GetDefineNames, this._eventInfo);
+            subMesh.materialDefines = new ShadowOnlyMaterialDefines(this._eventInfo.defineNames);
         }
 
         const defines = <ShadowOnlyMaterialDefines>subMesh.materialDefines;
@@ -176,8 +204,25 @@ export class ShadowOnlyMaterial extends PushMaterial {
             this._needAlphaBlending = !csg.autoCalcDepthBounds;
         }
 
+        // External config
+        this._eventInfo.defines = defines;
+        this._eventInfo.mesh = mesh;
+        this._callbackPluginEventPrepareDefinesBeforeAttributes(this._eventInfo);
+
         // Attribs
         PrepareDefinesForAttributes(mesh, defines, false, true);
+
+        // External config
+        this._callbackPluginEventPrepareDefines(this._eventInfo);
+
+        // Plugin readiness
+        this._eventInfo.isReadyForSubMesh = true;
+        this._eventInfo.defines = defines;
+        this._eventInfo.subMesh = subMesh;
+        this._callbackPluginEventIsReadyForSubMesh(this._eventInfo);
+        if (!this._eventInfo.isReadyForSubMesh) {
+            return false;
+        }
 
         // Get correct effect
         if (defines.isDirty) {
@@ -227,7 +272,9 @@ export class ShadowOnlyMaterial extends PushMaterial {
             ];
             const samplers: string[] = [];
 
-            const uniformBuffers: string[] = ["Scene"];
+            const uniformBuffers: string[] = ["Scene", "Material"];
+
+            const indexParameters = { maxSimultaneousLights: 1 };
 
             AddClipPlaneUniforms(uniforms);
             PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
@@ -238,6 +285,19 @@ export class ShadowOnlyMaterial extends PushMaterial {
                 maxSimultaneousLights: 1,
                 shaderLanguage: this._shaderLanguage,
             });
+
+            // External config
+            this._eventInfo.fallbacks = fallbacks;
+            this._eventInfo.fallbackRank = 0;
+            this._eventInfo.defines = defines;
+            this._eventInfo.uniforms = uniforms;
+            this._eventInfo.attributes = attribs;
+            this._eventInfo.samplers = samplers;
+            this._eventInfo.uniformBuffersNames = uniformBuffers;
+            this._eventInfo.customCode = undefined;
+            this._eventInfo.mesh = mesh;
+            this._eventInfo.indexParameters = indexParameters;
+            this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
             subMesh.setEffect(
                 scene.getEngine().createEffect(
@@ -251,7 +311,8 @@ export class ShadowOnlyMaterial extends PushMaterial {
                         fallbacks: fallbacks,
                         onCompiled: this.onCompiled,
                         onError: this.onError,
-                        indexParameters: { maxSimultaneousLights: 1 },
+                        indexParameters,
+                        processCodeAfterIncludes: this._eventInfo.customCode,
                         shaderLanguage: this._shaderLanguage,
                         extraInitializationsAsync: ShadowOnlyMaterial._ShaderLoader.getLoadCallback(this._shaderLanguage),
                     },
@@ -286,9 +347,15 @@ export class ShadowOnlyMaterial extends PushMaterial {
         }
         this._activeEffect = effect;
 
+        // Binding unconditionally
+        this._uniformBuffer.bindToEffect(effect, "Material");
+
         // Matrices
         this.bindOnlyWorldMatrix(world);
         this.bindViewProjection(effect);
+
+        this._eventInfo.subMesh = subMesh;
+        this._callbackPluginEventHardBindForSubMesh(this._eventInfo);
 
         // Bones
         BindBonesParameters(mesh, this._activeEffect);
@@ -311,6 +378,9 @@ export class ShadowOnlyMaterial extends PushMaterial {
             }
 
             scene.bindEyePosition(effect);
+
+            this._eventInfo.subMesh = subMesh;
+            this._callbackPluginEventBindForSubMesh(this._eventInfo);
         }
 
         // Lights
@@ -338,6 +408,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
         BindFogParameters(scene, mesh, this._activeEffect);
 
         this._afterBind(mesh, this._activeEffect, subMesh);
+        this._uniformBuffer.update();
     }
 
     public override clone(name: string): ShadowOnlyMaterial {
