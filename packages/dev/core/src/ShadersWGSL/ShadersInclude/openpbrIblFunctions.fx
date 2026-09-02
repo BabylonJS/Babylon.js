@@ -264,6 +264,7 @@
         , noise: vec3f
         , isRefraction: bool
         , ior: f32
+        , useDirectionMapping: bool
     #ifdef REFLECTIONMAP_3D
         , reflectionSampler: texture_cube<f32>
         , reflectionSamplerSampler: sampler
@@ -355,15 +356,36 @@
                 } else {
                     sampleDirection = reflect(-viewDirectionW, bentNormal);
                 }
-                if (dot(sampleDirection, sampleDirection) <= Epsilon) {
-                    let perpendicularAxis: vec3f = select(vec3f(0.0f, 1.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), abs(viewDirectionW.x) < 0.9f);
-                    sampleDirection = normalize(cross(viewDirectionW, perpendicularAxis));
-                }
                 #ifdef REFLECTIONMAP_3D
-                    let reflectionCoords: vec3f = createReflectionCoordsFromDirection(positionW, sampleDirection);
+                    var reflectionCoords: vec3f;
                 #else
-                    let reflectionCoords: vec2f = createReflectionCoordsFromDirection(positionW, sampleDirection);
+                    var reflectionCoords: vec2f;
                 #endif
+                if (useDirectionMapping) {
+                    if (dot(sampleDirection, sampleDirection) <= Epsilon) {
+                        let perpendicularAxis: vec3f = select(vec3f(0.0f, 1.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), abs(viewDirectionW.x) < 0.9f);
+                        sampleDirection = normalize(cross(viewDirectionW, perpendicularAxis));
+                    }
+                    reflectionCoords = createReflectionCoordsFromDirection(positionW, sampleDirection);
+                } else {
+                    #ifdef REFLECTIONMAP_3D
+                        reflectionCoords = (uniforms.reflectionMatrix * vec4f(sampleDirection, 0.0f)).xyz;
+                        #ifdef REFLECTIONMAP_OPPOSITEZ
+                            reflectionCoords.z *= -1.0f;
+                        #endif
+                    #else
+                        let originalViewDirectionW: vec3f = normalize(scene.vEyePosition.xyz - positionW);
+                        let mappingNormalCandidate: vec3f = originalViewDirectionW + sampleDirection;
+                        var mappingNormal: vec3f;
+                        if (dot(mappingNormalCandidate, mappingNormalCandidate) > Epsilon) {
+                            mappingNormal = normalize(mappingNormalCandidate);
+                        } else {
+                            let perpendicularAxis: vec3f = select(vec3f(0.0f, 1.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), abs(originalViewDirectionW.x) < 0.9f);
+                            mappingNormal = normalize(cross(originalViewDirectionW, perpendicularAxis));
+                        }
+                        reflectionCoords = createReflectionCoords(positionW, mappingNormal);
+                    #endif
+                }
                 radianceSample = textureSampleLevel(reflectionSampler, reflectionSamplerSampler, reflectionCoords, reflectionLOD);
                 #ifdef RGBDREFLECTION
                     accumulatedRadiance += vec3f(sample_weight) * fromRGBD(radianceSample);

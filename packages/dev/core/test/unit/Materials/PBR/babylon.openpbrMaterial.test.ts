@@ -251,6 +251,7 @@ describe("OpenPBRMaterial", () => {
             ["WGSL", openpbrDirectLightingWGSL.shader],
         ])("recomputes area-light data from the retro view direction in %s", (_language, shader) => {
             expect(shader).toContain("preInfoRetro=computeAreaPreLightingInfo(");
+            expect(shader).toContain("preInfoRetro=computeAreaPreLightingInfoWithTexture(");
             expect(shader).toContain("slab_glossy_retro=computeOpenPBRAreaSpecularLighting(");
             expect(shader).toContain("slab_metal_retro=computeOpenPBRAreaConductorSpecularLighting(");
             expect(shader.match(/baseDielectricReflectance\.coloredF0/g)).toHaveLength(2);
@@ -313,14 +314,25 @@ describe("OpenPBRMaterial", () => {
         });
 
         it.each([
-            ["GLSL", openpbrIblFunctionsGLSL.shader, "vec2 reflectionCoords=createReflectionCoordsFromDirection(positionW,sampleDirection)"],
-            ["WGSL", openpbrIblFunctionsWGSL.shader, "let reflectionCoords: vec2f=createReflectionCoordsFromDirection(positionW,sampleDirection)"],
-        ])("maps anisotropic reflection directions for 2D environments in %s", (_language, shader, expectedCoordinates) => {
-            expect(shader).toContain(expectedCoordinates);
+            ["GLSL", openpbrIblFunctionsGLSL.shader],
+            ["WGSL", openpbrIblFunctionsWGSL.shader],
+        ])("maps anisotropic reflection directions for 2D environments in %s", (_language, shader) => {
+            expect(shader).toContain("createReflectionCoordsFromDirection(positionW,sampleDirection)");
             expect(shader).toContain("computeFixedEquirectangularCoords");
             expect(shader).toContain("computeSkyBoxCoords(direction");
+            expect(shader).toMatch(/if\s*\(useDirectionMapping\)/);
             expect(shader).toContain("dot(sampleDirection,sampleDirection)<=Epsilon");
             expect(shader).toContain("sampleDirection=normalize(cross(viewDirectionW,perpendicularAxis))");
+            expect(shader).toContain("reflectionCoords=createReflectionCoords(positionW,mappingNormal)");
+        });
+
+        it.each([
+            ["GLSL", openpbrEnvironmentLightingGLSL.shader, "1.0", "1.0"],
+            ["WGSL", openpbrEnvironmentLightingWGSL.shader, "1.0", "1.0f"],
+        ])("uses direct environment mapping only for the retro anisotropic branch in %s", (_language, shader, ordinaryOne, retroOne) => {
+            const normalizedShader = shader.replace(/\s/g, "");
+            expect(normalizedShader).toContain(`false,${ordinaryOne},false,reflectionSampler`);
+            expect(normalizedShader).toContain(`false,${retroOne},true,reflectionSampler`);
         });
 
         it("uses the same precomputed conductor Fresnel input in GLSL and WGSL", () => {

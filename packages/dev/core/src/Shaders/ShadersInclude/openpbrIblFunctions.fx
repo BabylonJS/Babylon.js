@@ -268,6 +268,7 @@
         , const vec3 noise
         , bool isRefraction
         , float ior
+        , bool useDirectionMapping
     #ifdef REFLECTIONMAP_3D
         , in samplerCube reflectionSampler
     #else
@@ -352,15 +353,35 @@
                 } else {
                     sampleDirection = reflect(-viewDirectionW, bentNormal);
                 }
-                if (dot(sampleDirection, sampleDirection) <= Epsilon) {
-                    vec3 perpendicularAxis = abs(viewDirectionW.x) < 0.9 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
-                    sampleDirection = normalize(cross(viewDirectionW, perpendicularAxis));
+                if (useDirectionMapping) {
+                    if (dot(sampleDirection, sampleDirection) <= Epsilon) {
+                        vec3 perpendicularAxis = abs(viewDirectionW.x) < 0.9 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+                        sampleDirection = normalize(cross(viewDirectionW, perpendicularAxis));
+                    }
+                    #ifdef REFLECTIONMAP_3D
+                        vec3 reflectionCoords = createReflectionCoordsFromDirection(positionW, sampleDirection);
+                    #else
+                        vec2 reflectionCoords = createReflectionCoordsFromDirection(positionW, sampleDirection);
+                    #endif
+                } else {
+                    #ifdef REFLECTIONMAP_3D
+                        vec3 reflectionCoords = vec3(reflectionMatrix * vec4(sampleDirection, 0.0));
+                        #ifdef REFLECTIONMAP_OPPOSITEZ
+                            reflectionCoords.z *= -1.0;
+                        #endif
+                    #else
+                        vec3 originalViewDirectionW = normalize(vEyePosition.xyz - positionW);
+                        vec3 mappingNormalCandidate = originalViewDirectionW + sampleDirection;
+                        vec3 mappingNormal;
+                        if (dot(mappingNormalCandidate, mappingNormalCandidate) > Epsilon) {
+                            mappingNormal = normalize(mappingNormalCandidate);
+                        } else {
+                            vec3 perpendicularAxis = abs(originalViewDirectionW.x) < 0.9 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+                            mappingNormal = normalize(cross(originalViewDirectionW, perpendicularAxis));
+                        }
+                        vec2 reflectionCoords = createReflectionCoords(positionW, mappingNormal);
+                    #endif
                 }
-                #ifdef REFLECTIONMAP_3D
-                    vec3 reflectionCoords = createReflectionCoordsFromDirection(positionW, sampleDirection);
-                #else
-                    vec2 reflectionCoords = createReflectionCoordsFromDirection(positionW, sampleDirection);
-                #endif
                 radianceSample = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
                 #ifdef RGBDREFLECTION
                     environmentRadiance.rgb += sample_weight * fromRGBD(radianceSample);

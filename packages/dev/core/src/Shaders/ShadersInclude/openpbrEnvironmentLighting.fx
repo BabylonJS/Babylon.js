@@ -95,6 +95,7 @@
             , noise
             , false // isRefraction
             , 1.0 // ior (not used for reflection)
+            , false // useDirectionMapping
             , reflectionSampler
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
@@ -142,6 +143,7 @@
                 noise,
                 false,
                 1.0,
+                true,
                 reflectionSampler
                 #ifdef REALTIME_FILTERING
                     , vReflectionFilteringInfo
@@ -195,6 +197,7 @@
                 , noise
                 , false // isRefraction
                 , 1.0 // ior (not used for reflection)
+                , false // useDirectionMapping
                 , reflectionSampler
                 #ifdef REALTIME_FILTERING
                     , vReflectionFilteringInfo
@@ -431,6 +434,7 @@
                 #else
                     , specular_ior // Used for refraction
                 #endif
+                , false // useDirectionMapping
                 , reflectionSampler
                 #ifdef REALTIME_FILTERING
                     , vReflectionFilteringInfo

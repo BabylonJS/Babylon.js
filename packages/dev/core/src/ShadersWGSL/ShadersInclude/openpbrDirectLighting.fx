@@ -45,19 +45,37 @@
         let retroViewDirectionW: vec3f = normalize(reflect(-viewDirectionW, normalW));
         var preInfoRetro: preLightingInfo = preInfo{X};
         #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-            preInfoRetro = computeAreaPreLightingInfo(
-                areaLightsLTC1Sampler,
-                areaLightsLTC1SamplerSampler,
-                areaLightsLTC2Sampler,
-                areaLightsLTC2SamplerSampler,
-                retroViewDirectionW,
-                normalW,
-                fragmentInputs.vPositionW,
-                light{X}.vLightData.xyz,
-                light{X}.vLightWidth.xyz,
-                light{X}.vLightHeight.xyz,
-                specular_roughness
-            );
+            #if defined(RECTAREALIGHTEMISSIONTEXTURE{X})
+                preInfoRetro = computeAreaPreLightingInfoWithTexture(
+                    areaLightsLTC1Sampler,
+                    areaLightsLTC1SamplerSampler,
+                    areaLightsLTC2Sampler,
+                    areaLightsLTC2SamplerSampler,
+                    rectAreaLightEmissionTexture{X},
+                    rectAreaLightEmissionTexture{X}Sampler,
+                    retroViewDirectionW,
+                    normalW,
+                    fragmentInputs.vPositionW,
+                    light{X}.vLightData.xyz,
+                    light{X}.vLightWidth.xyz,
+                    light{X}.vLightHeight.xyz,
+                    specular_roughness
+                );
+            #else
+                preInfoRetro = computeAreaPreLightingInfo(
+                    areaLightsLTC1Sampler,
+                    areaLightsLTC1SamplerSampler,
+                    areaLightsLTC2Sampler,
+                    areaLightsLTC2SamplerSampler,
+                    retroViewDirectionW,
+                    normalW,
+                    fragmentInputs.vPositionW,
+                    light{X}.vLightData.xyz,
+                    light{X}.vLightWidth.xyz,
+                    light{X}.vLightHeight.xyz,
+                    specular_roughness
+                );
+            #endif
             preInfoRetro.NdotV = baseGeoInfo.NdotV;
         #else
             preInfoRetro.H = normalize(preInfoRetro.L + retroViewDirectionW);

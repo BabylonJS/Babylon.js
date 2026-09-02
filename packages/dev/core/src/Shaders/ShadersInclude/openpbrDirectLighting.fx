@@ -43,17 +43,32 @@
         vec3 retroViewDirectionW = normalize(reflect(-viewDirectionW, normalW));
         preLightingInfo preInfoRetro = preInfo{X};
         #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-            preInfoRetro = computeAreaPreLightingInfo(
-                areaLightsLTC1Sampler,
-                areaLightsLTC2Sampler,
-                retroViewDirectionW,
-                normalW,
-                vPositionW,
-                light{X}.vLightData,
-                light{X}.vLightWidth.xyz,
-                light{X}.vLightHeight.xyz,
-                specular_roughness
-            );
+            #if defined(RECTAREALIGHTEMISSIONTEXTURE{X})
+                preInfoRetro = computeAreaPreLightingInfoWithTexture(
+                    areaLightsLTC1Sampler,
+                    areaLightsLTC2Sampler,
+                    rectAreaLightEmissionTexture{X},
+                    retroViewDirectionW,
+                    normalW,
+                    vPositionW,
+                    light{X}.vLightData,
+                    light{X}.vLightWidth.xyz,
+                    light{X}.vLightHeight.xyz,
+                    specular_roughness
+                );
+            #else
+                preInfoRetro = computeAreaPreLightingInfo(
+                    areaLightsLTC1Sampler,
+                    areaLightsLTC2Sampler,
+                    retroViewDirectionW,
+                    normalW,
+                    vPositionW,
+                    light{X}.vLightData,
+                    light{X}.vLightWidth.xyz,
+                    light{X}.vLightHeight.xyz,
+                    specular_roughness
+                );
+            #endif
             preInfoRetro.NdotV = baseGeoInfo.NdotV;
         #else
             preInfoRetro.H = normalize(preInfoRetro.L + retroViewDirectionW);
