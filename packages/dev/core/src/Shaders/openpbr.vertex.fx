@@ -265,12 +265,12 @@ void main(void) {
     #endif
     #ifdef NATIVE
         vSpecularRetroreflectivityUV = vec2(
-            SPECULAR_RETROREFLECTIVITY_MATRIX_0 * specularRetroreflectivityUVSource.x +
-                SPECULAR_RETROREFLECTIVITY_MATRIX_1 * specularRetroreflectivityUVSource.y +
-                SPECULAR_RETROREFLECTIVITY_MATRIX_2,
-            SPECULAR_RETROREFLECTIVITY_MATRIX_3 * specularRetroreflectivityUVSource.x +
-                SPECULAR_RETROREFLECTIVITY_MATRIX_4 * specularRetroreflectivityUVSource.y +
-                SPECULAR_RETROREFLECTIVITY_MATRIX_5
+            float(SPECULAR_RETROREFLECTIVITY_MATRIX_0) * specularRetroreflectivityUVSource.x +
+                float(SPECULAR_RETROREFLECTIVITY_MATRIX_1) * specularRetroreflectivityUVSource.y +
+                float(SPECULAR_RETROREFLECTIVITY_MATRIX_2),
+            float(SPECULAR_RETROREFLECTIVITY_MATRIX_3) * specularRetroreflectivityUVSource.x +
+                float(SPECULAR_RETROREFLECTIVITY_MATRIX_4) * specularRetroreflectivityUVSource.y +
+                float(SPECULAR_RETROREFLECTIVITY_MATRIX_5)
         );
     #else
         vSpecularRetroreflectivityUV = vec2(specularRetroreflectivityMatrix * vec4(specularRetroreflectivityUVSource, 1.0, 0.0));

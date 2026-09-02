@@ -155,50 +155,22 @@
             );
         #else
             #ifdef REFLECTIONMAP_3D
-                var retroReflectionCoords: vec3f = viewDirectionW;
-                #ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
-                    retroReflectionCoords = parallaxCorrectNormal(
-                        fragmentInputs.vPositionW,
-                        retroReflectionCoords,
-                        uniforms.vReflectionSize,
-                        uniforms.vReflectionPosition
-                    );
-                #endif
-                retroReflectionCoords = (uniforms.reflectionMatrix * vec4f(retroReflectionCoords, 0.0f)).xyz;
-                #ifdef INVERTCUBICMAP
-                    retroReflectionCoords.y *= -1.0f;
-                #endif
-                #ifdef REFLECTIONMAP_OPPOSITEZ
-                    retroReflectionCoords.z *= -1.0f;
-                #endif
-                baseSpecularEnvironmentLightRetro = sampleRadiance(
-                    specularAlphaG,
-                    uniforms.vReflectionMicrosurfaceInfos.rgb,
-                    uniforms.vReflectionInfos,
-                    baseGeoInfo,
-                    reflectionSampler,
-                    reflectionSamplerSampler,
-                    retroReflectionCoords
-                    #ifdef REALTIME_FILTERING
-                        , uniforms.vReflectionFilteringInfo
-                    #endif
-                );
+                let retroReflectionCoords: vec3f = createReflectionCoordsFromDirection(fragmentInputs.vPositionW, viewDirectionW);
             #else
-                // Passing V as the reflection normal maps the original incident direction -V back to V.
-                let retroReflectionCoords: vec2f = createReflectionCoords(fragmentInputs.vPositionW, viewDirectionW);
-                baseSpecularEnvironmentLightRetro = sampleRadiance(
-                    specularAlphaG,
-                    uniforms.vReflectionMicrosurfaceInfos.rgb,
-                    uniforms.vReflectionInfos,
-                    baseGeoInfo,
-                    reflectionSampler,
-                    reflectionSamplerSampler,
-                    retroReflectionCoords
-                    #ifdef REALTIME_FILTERING
-                        , uniforms.vReflectionFilteringInfo
-                    #endif
-                );
+                let retroReflectionCoords: vec2f = createReflectionCoordsFromDirection(fragmentInputs.vPositionW, viewDirectionW);
             #endif
+            baseSpecularEnvironmentLightRetro = sampleRadiance(
+                specularAlphaG,
+                uniforms.vReflectionMicrosurfaceInfos.rgb,
+                uniforms.vReflectionInfos,
+                baseGeoInfo,
+                reflectionSampler,
+                reflectionSamplerSampler,
+                retroReflectionCoords
+                #ifdef REALTIME_FILTERING
+                    , uniforms.vReflectionFilteringInfo
+                #endif
+            );
         #endif
 
         #ifdef ANISOTROPIC_BASE

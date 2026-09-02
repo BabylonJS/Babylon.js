@@ -21,6 +21,7 @@ import { openpbrIblFunctions as openpbrIblFunctionsGLSL } from "core/Shaders/Sha
 import { openpbrIblFunctionsWGSL } from "core/ShadersWGSL/ShadersInclude/openpbrIblFunctions";
 import { openpbrDirectLightingInit as openpbrDirectLightingInitGLSL } from "core/Shaders/ShadersInclude/openpbrDirectLightingInit";
 import { openpbrDirectLightingInitWGSL } from "core/ShadersWGSL/ShadersInclude/openpbrDirectLightingInit";
+import { openpbrVertexDeclaration } from "core/Shaders/ShadersInclude/openpbrVertexDeclaration";
 
 describe("OpenPBRMaterial", () => {
     let engine: Engine;
@@ -236,6 +237,15 @@ describe("OpenPBRMaterial", () => {
             );
         });
 
+        it("declares the transformed retroreflection matrix without UBOs", () => {
+            expect(openpbrVertexDeclaration.shader).toContain("uniform mat4 specularRetroreflectivityMatrix");
+        });
+
+        it("casts Native retroreflection matrix defines to floats", () => {
+            expect(openpbrVertexShaderGLSL.shader).toContain("float(SPECULAR_RETROREFLECTIVITY_MATRIX_0)*specularRetroreflectivityUVSource.x");
+            expect(openpbrVertexShaderGLSL.shader).toContain("float(SPECULAR_RETROREFLECTIVITY_MATRIX_5)");
+        });
+
         it.each([
             ["GLSL", openpbrDirectLightingGLSL.shader],
             ["WGSL", openpbrDirectLightingWGSL.shader],
@@ -297,18 +307,20 @@ describe("OpenPBRMaterial", () => {
             ["GLSL", openpbrEnvironmentLightingGLSL.shader, "vPositionW"],
             ["WGSL", openpbrEnvironmentLightingWGSL.shader, "fragmentInputs.vPositionW"],
         ])("computes non-cube environment coordinates for the retro view in %s", (_language, shader, positionExpression) => {
-            expect(shader).toMatch(new RegExp(`retroReflectionCoords(?::\\s*vec2f)?=createReflectionCoords\\(${positionExpression.replace(".", "\\.")},viewDirectionW\\)`));
+            expect(shader).toMatch(
+                new RegExp(`retroReflectionCoords(?::\\s*vec[23]f)?=createReflectionCoordsFromDirection\\(${positionExpression.replace(".", "\\.")},viewDirectionW\\)`)
+            );
         });
 
         it.each([
-            ["GLSL", openpbrIblFunctionsGLSL.shader, "vec2 reflectionCoords=createReflectionCoords(positionW,mappingNormal)", "normalize(vEyePosition.xyz-positionW)"],
-            ["WGSL", openpbrIblFunctionsWGSL.shader, "let reflectionCoords: vec2f=createReflectionCoords(positionW,mappingNormal)", "normalize(scene.vEyePosition.xyz-positionW)"],
-        ])("converts anisotropic non-cube rays to 2D coordinates in %s", (_language, shader, expectedCoordinates, expectedEyePosition) => {
+            ["GLSL", openpbrIblFunctionsGLSL.shader, "vec2 reflectionCoords=createReflectionCoordsFromDirection(positionW,sampleDirection)"],
+            ["WGSL", openpbrIblFunctionsWGSL.shader, "let reflectionCoords: vec2f=createReflectionCoordsFromDirection(positionW,sampleDirection)"],
+        ])("maps anisotropic reflection directions for 2D environments in %s", (_language, shader, expectedCoordinates) => {
             expect(shader).toContain(expectedCoordinates);
-            expect(shader).toContain(expectedEyePosition);
-            expect(shader).toMatch(/mappingNormalCandidate(?:: vec3f)?=originalViewDirectionW\+sampleDirection/);
-            expect(shader).toContain("dot(mappingNormalCandidate,mappingNormalCandidate)>Epsilon");
-            expect(shader).toContain("mappingNormal=normalize(cross(originalViewDirectionW,perpendicularAxis))");
+            expect(shader).toContain("computeFixedEquirectangularCoords");
+            expect(shader).toContain("computeSkyBoxCoords(direction");
+            expect(shader).toContain("dot(sampleDirection,sampleDirection)<=Epsilon");
+            expect(shader).toContain("sampleDirection=normalize(cross(viewDirectionW,perpendicularAxis))");
         });
 
         it("uses the same precomputed conductor Fresnel input in GLSL and WGSL", () => {

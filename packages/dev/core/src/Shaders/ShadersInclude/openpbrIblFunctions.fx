@@ -144,6 +144,66 @@
     }
 
     #define pbr_inline
+    #ifdef REFLECTIONMAP_3D
+        vec3 createReflectionCoordsFromDirection(
+    #else
+        vec2 createReflectionCoordsFromDirection(
+    #endif
+        in vec3 vPositionW
+        , in vec3 directionW
+    )
+    {
+        vec3 direction = normalize(directionW);
+        vec3 reflectionVector;
+
+        #if defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
+            reflectionVector = computeMirroredFixedEquirectangularCoords(vec4(vPositionW, 1.0), vec3(0.0), direction);
+        #elif defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED)
+            reflectionVector = computeFixedEquirectangularCoords(vec4(vPositionW, 1.0), vec3(0.0), direction);
+        #elif defined(REFLECTIONMAP_EQUIRECTANGULAR)
+            direction = normalize(vec3(reflectionMatrix * vec4(direction, 0.0)));
+            reflectionVector = computeFixedEquirectangularCoords(vec4(vPositionW, 1.0), vec3(0.0), direction);
+        #elif defined(REFLECTIONMAP_SPHERICAL)
+            reflectionVector = normalize(vec3(view * vec4(direction, 0.0)));
+            reflectionVector = vec3(reflectionMatrix * vec4(reflectionVector, 0.0));
+            reflectionVector.z -= 1.0;
+            float reflectionLength = 2.0 * length(reflectionVector);
+            reflectionVector = vec3(reflectionVector.x / reflectionLength + 0.5, 1.0 - reflectionVector.y / reflectionLength - 0.5, 0.0);
+        #elif defined(REFLECTIONMAP_PLANAR)
+            reflectionVector = vec3(reflectionMatrix * vec4(direction, 1.0));
+        #elif defined(REFLECTIONMAP_CUBIC)
+            #ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
+                direction = parallaxCorrectNormal(vPositionW, direction, vReflectionSize, vReflectionPosition);
+            #endif
+            reflectionVector = vec3(reflectionMatrix * vec4(direction, 0.0));
+            #ifdef INVERTCUBICMAP
+                reflectionVector.y *= -1.0;
+            #endif
+        #elif defined(REFLECTIONMAP_PROJECTION)
+            reflectionVector = computeProjectionCoords(vec4(vPositionW, 1.0), view, reflectionMatrix);
+        #elif defined(REFLECTIONMAP_SKYBOX)
+            reflectionVector = computeSkyBoxCoords(direction, reflectionMatrix);
+        #else
+            reflectionVector = vec3(0.0);
+        #endif
+
+        #ifdef REFLECTIONMAP_OPPOSITEZ
+            reflectionVector.z *= -1.0;
+        #endif
+
+        #ifdef REFLECTIONMAP_3D
+            return reflectionVector;
+        #else
+            vec2 reflectionCoords = reflectionVector.xy;
+            #ifdef REFLECTIONMAP_PROJECTION
+                reflectionCoords /= reflectionVector.z;
+            #endif
+            reflectionCoords.y = 1.0 - reflectionCoords.y;
+            return reflectionCoords;
+        #endif
+    }
+
+    #define pbr_inline
     #define inline
     vec3 sampleRadiance(
         in float alphaG
@@ -286,34 +346,20 @@
                     bentNormal = normalW;
                 }
                 
+                vec3 sampleDirection;
+                if (isRefraction) {
+                    sampleDirection = double_refract(-viewDirectionW, bentNormal, ior);
+                } else {
+                    sampleDirection = reflect(-viewDirectionW, bentNormal);
+                }
+                if (dot(sampleDirection, sampleDirection) <= Epsilon) {
+                    vec3 perpendicularAxis = abs(viewDirectionW.x) < 0.9 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+                    sampleDirection = normalize(cross(viewDirectionW, perpendicularAxis));
+                }
                 #ifdef REFLECTIONMAP_3D
-                    vec3 reflectionCoords;
-                    if (isRefraction) {
-                        reflectionCoords = double_refract(-viewDirectionW, bentNormal, ior);
-                    } else {
-                        reflectionCoords = reflect(-viewDirectionW, bentNormal);
-                    }
-                    reflectionCoords = vec3(reflectionMatrix * vec4(reflectionCoords, 0));
-                    #ifdef REFLECTIONMAP_OPPOSITEZ
-                        reflectionCoords.z *= -1.0;
-                    #endif
+                    vec3 reflectionCoords = createReflectionCoordsFromDirection(positionW, sampleDirection);
                 #else
-                    vec3 sampleDirection;
-                    if (isRefraction) {
-                        sampleDirection = double_refract(-viewDirectionW, bentNormal, ior);
-                    } else {
-                        sampleDirection = reflect(-viewDirectionW, bentNormal);
-                    }
-                    vec3 originalViewDirectionW = normalize(vEyePosition.xyz - positionW);
-                    vec3 mappingNormalCandidate = originalViewDirectionW + sampleDirection;
-                    vec3 mappingNormal;
-                    if (dot(mappingNormalCandidate, mappingNormalCandidate) > Epsilon) {
-                        mappingNormal = normalize(mappingNormalCandidate);
-                    } else {
-                        vec3 perpendicularAxis = abs(originalViewDirectionW.x) < 0.9 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
-                        mappingNormal = normalize(cross(originalViewDirectionW, perpendicularAxis));
-                    }
-                    vec2 reflectionCoords = createReflectionCoords(positionW, mappingNormal);
+                    vec2 reflectionCoords = createReflectionCoordsFromDirection(positionW, sampleDirection);
                 #endif
                 radianceSample = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
                 #ifdef RGBDREFLECTION

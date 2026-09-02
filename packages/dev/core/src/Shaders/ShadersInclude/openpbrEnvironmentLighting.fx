@@ -149,43 +149,21 @@
             );
         #else
             #ifdef REFLECTIONMAP_3D
-                vec3 retroReflectionCoords = viewDirectionW;
-                #ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
-                    retroReflectionCoords = parallaxCorrectNormal(vPositionW, retroReflectionCoords, vReflectionSize, vReflectionPosition);
-                #endif
-                retroReflectionCoords = vec3(reflectionMatrix * vec4(retroReflectionCoords, 0.0));
-                #ifdef INVERTCUBICMAP
-                    retroReflectionCoords.y *= -1.0;
-                #endif
-                #ifdef REFLECTIONMAP_OPPOSITEZ
-                    retroReflectionCoords.z *= -1.0;
-                #endif
-                baseSpecularEnvironmentLightRetro = sampleRadiance(
-                    specularAlphaG,
-                    vReflectionMicrosurfaceInfos.rgb,
-                    vReflectionInfos,
-                    baseGeoInfo,
-                    reflectionSampler,
-                    retroReflectionCoords
-                    #ifdef REALTIME_FILTERING
-                        , vReflectionFilteringInfo
-                    #endif
-                );
+                vec3 retroReflectionCoords = createReflectionCoordsFromDirection(vPositionW, viewDirectionW);
             #else
-                // Passing V as the reflection normal maps the original incident direction -V back to V.
-                vec2 retroReflectionCoords = createReflectionCoords(vPositionW, viewDirectionW);
-                baseSpecularEnvironmentLightRetro = sampleRadiance(
-                    specularAlphaG,
-                    vReflectionMicrosurfaceInfos.rgb,
-                    vReflectionInfos,
-                    baseGeoInfo,
-                    reflectionSampler,
-                    retroReflectionCoords
-                    #ifdef REALTIME_FILTERING
-                        , vReflectionFilteringInfo
-                    #endif
-                );
+                vec2 retroReflectionCoords = createReflectionCoordsFromDirection(vPositionW, viewDirectionW);
             #endif
+            baseSpecularEnvironmentLightRetro = sampleRadiance(
+                specularAlphaG,
+                vReflectionMicrosurfaceInfos.rgb,
+                vReflectionInfos,
+                baseGeoInfo,
+                reflectionSampler,
+                retroReflectionCoords
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                #endif
+            );
         #endif
 
         #ifdef ANISOTROPIC_BASE
