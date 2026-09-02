@@ -261,6 +261,13 @@ export class IblCdfGenerator {
         }
 
         const isWebGPU = this._engine.isWebGPU;
+        // r32float mip generation requires filtered sampling. On WebGPU this hard-fails bind group
+        // validation (and drops the whole command buffer) when the optional `float32-filterable` adapter
+        // feature is absent, so fall back to r16float there. WebGL2/Native are not gated here even though
+        // they also depend on an extension (OES_texture_float_linear) for float32 filtering: when it's
+        // missing they silently degrade to nearest sampling instead of hard-failing, which is pre-existing,
+        // unrelated behavior this fix doesn't need to change.
+        const scaledLuminanceType = isWebGPU && !this._engine.getCaps().textureFloatLinearFiltering ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_FLOAT;
         // Create CDF maps (Cumulative Distribution Function) to assist in importance sampling
         const cdfOptions: IProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
@@ -315,11 +322,9 @@ export class IblCdfGenerator {
             { width: size.width, height: size.height },
             "iblScaledLuminance",
             this._scene,
-            // This texture is trilinear-filtered and mip-mapped, so it must use a filterable format.
-            // r16float is filterable everywhere (no optional feature required) and is sufficient here:
-            // the value only ever feeds a ratio (pixelLuminance / normalization) used as an
-            // importance-sampling weight, well within r16float's range and precision.
-            { ...cdfOptions, type: Constants.TEXTURETYPE_HALF_FLOAT, samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, generateMipMaps: true },
+            // This texture is trilinear-filtered and mip-mapped, so it must use a filterable format;
+            // see scaledLuminanceType above for why r16float is only used as a WebGPU fallback.
+            { ...cdfOptions, type: scaledLuminanceType, samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, generateMipMaps: true },
             true,
             false
         );
