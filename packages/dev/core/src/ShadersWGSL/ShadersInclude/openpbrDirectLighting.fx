@@ -362,12 +362,21 @@
         slab_metal_retro = slab_metal;
 
         #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-            slab_metal_retro = computeOpenPBRAreaSpecularLighting(
-                preInfoRetro,
-                light{X}.vLightSpecular.rgb,
-                baseConductorReflectance.coloredF0,
-                baseConductorReflectance.coloredF90
-            );
+            #if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR
+                slab_metal_retro = computeOpenPBRAreaConductorSpecularLighting(
+                    preInfoRetro,
+                    light{X}.vLightSpecular.rgb,
+                    baseConductorReflectance.coloredF0,
+                    baseConductorReflectance.coloredF90
+                );
+            #else
+                slab_metal_retro = computeOpenPBRAreaSpecularLighting(
+                    preInfoRetro,
+                    light{X}.vLightSpecular.rgb,
+                    baseConductorReflectance.coloredF0,
+                    baseConductorReflectance.coloredF90
+                );
+            #endif
         #else
         {
             #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)

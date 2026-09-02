@@ -242,7 +242,7 @@ describe("OpenPBRMaterial", () => {
         ])("recomputes area-light data from the retro view direction in %s", (_language, shader) => {
             expect(shader).toContain("preInfoRetro=computeAreaPreLightingInfo(");
             expect(shader).toContain("slab_glossy_retro=computeOpenPBRAreaSpecularLighting(");
-            expect(shader).toContain("slab_metal_retro=computeOpenPBRAreaSpecularLighting(");
+            expect(shader).toContain("slab_metal_retro=computeOpenPBRAreaConductorSpecularLighting(");
             expect(shader.match(/baseDielectricReflectance\.coloredF0/g)).toHaveLength(2);
             expect(shader.match(/baseConductorReflectance\.coloredF0/g)?.length).toBeGreaterThanOrEqual(4);
             expect(shader).toMatch(
