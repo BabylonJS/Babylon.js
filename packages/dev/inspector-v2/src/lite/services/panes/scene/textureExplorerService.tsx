@@ -19,9 +19,13 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [IEngineExp
             order: 200,
             predicate: IsSceneContext,
             getNodes: (scene) => [
-                CreateSceneExplorerSectionNode("textures", "Textures", GetSceneTextures(scene), GetTextureDisplayName, () => (
-                    <ImageRegular color={tokens.colorPaletteGrapeForeground2} />
-                )),
+                CreateSceneExplorerSectionNode(
+                    "textures",
+                    "Textures",
+                    GetSceneTextures(scene),
+                    (texture, index) => ({ name: GetTextureDisplayName(texture, index) }),
+                    () => <ImageRegular color={tokens.colorPaletteGrapeForeground2} />
+                ),
             ],
             getSnapshot: GetSceneTextures,
         }),

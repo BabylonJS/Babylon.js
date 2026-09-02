@@ -19,6 +19,7 @@ import {
 import { MaterialExplorerServiceDefinition } from "../../src/lite/services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "../../src/lite/services/panes/scene/meshExplorerService";
 import { TextureExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textureExplorerService";
+import { type IWatcherService, WatcherServiceIdentity } from "../../src/services/watcherService";
 
 function CreateMaterial(family: string, name: string, texture?: Texture2D): Material {
     return Object.assign(
@@ -38,14 +39,19 @@ function CreateMesh(name: string, material: Material): Mesh {
 }
 
 function GetNames(nodes: readonly ExplorerNode[]): string[] {
-    return nodes.map((node) => node.getDisplayInfo().name);
+    return nodes.map((node) => {
+        const displayInfo = node.getDisplayInfo();
+        const name = displayInfo.name;
+        displayInfo.dispose?.();
+        return name;
+    });
 }
 
 describe("Babylon Lite scene resource explorer services", () => {
     it("registers product-specific providers with the engine explorer", () => {
         expect(EngineExplorerServiceDefinition.produces).toEqual([EngineExplorerServiceIdentity]);
-        expect(MeshExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity]);
-        expect(MaterialExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity]);
+        expect(MeshExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity]);
+        expect(MaterialExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity]);
         expect(TextureExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity]);
     });
 
@@ -58,10 +64,21 @@ describe("Babylon Lite scene resource explorer services", () => {
                 return { dispose };
             },
         } as IEngineExplorerService;
+        const nameChangedCallbacks = new Map<object, () => void>();
+        const watcherDisposals = new Map<object, () => void>();
+        const watcherService = {
+            watchProperty: vi.fn((entity: { name?: string }, propertyKey: "name", onChanged: (value: string) => void) => {
+                const dispose = vi.fn();
+                expect(propertyKey).toBe("name");
+                nameChangedCallbacks.set(entity, () => onChanged(entity.name ?? ""));
+                watcherDisposals.set(entity, dispose);
+                return { dispose };
+            }),
+        } as unknown as IWatcherService;
 
         const registrations = [
-            MeshExplorerServiceDefinition.factory(engineExplorerService),
-            MaterialExplorerServiceDefinition.factory(engineExplorerService),
+            MeshExplorerServiceDefinition.factory(engineExplorerService, watcherService),
+            MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService),
             TextureExplorerServiceDefinition.factory(engineExplorerService),
         ];
 
@@ -92,6 +109,29 @@ describe("Babylon Lite scene resource explorer services", () => {
         expect(tree.nodes[0].children[0].icon).toBeDefined();
         expect(tree.nodes[1].children[0].icon).toBeDefined();
         expect(tree.nodes[2].children[0].icon).toBeDefined();
+        expect(watcherService.watchProperty).toHaveBeenCalledTimes(5);
+
+        const meshDisplayInfo = tree.nodes[0].children[0].getDisplayInfo();
+        const materialDisplayInfo = tree.nodes[1].children[0].getDisplayInfo();
+        const meshDisplayChanged = vi.fn();
+        const materialDisplayChanged = vi.fn();
+        meshDisplayInfo.onChange?.add(meshDisplayChanged);
+        materialDisplayInfo.onChange?.add(materialDisplayChanged);
+
+        redMesh.name = "Renamed Box";
+        standardMaterial.name = "Renamed Material";
+        nameChangedCallbacks.get(redMesh)?.();
+        nameChangedCallbacks.get(standardMaterial)?.();
+
+        expect(meshDisplayInfo.name).toBe("Renamed Box");
+        expect(materialDisplayInfo.name).toBe("Renamed Material");
+        expect(meshDisplayChanged).toHaveBeenCalledOnce();
+        expect(materialDisplayChanged).toHaveBeenCalledOnce();
+
+        meshDisplayInfo.dispose?.();
+        materialDisplayInfo.dispose?.();
+        expect(watcherDisposals.get(redMesh)).toHaveBeenCalledOnce();
+        expect(watcherDisposals.get(standardMaterial)).toHaveBeenCalledOnce();
 
         registrations.forEach((registration) => registration?.dispose?.());
         expect(dispose).toHaveBeenCalledTimes(3);
@@ -105,8 +145,11 @@ describe("Babylon Lite scene resource explorer services", () => {
                 return { dispose: () => {} };
             },
         } as IEngineExplorerService;
+        const watcherService = {
+            watchProperty: vi.fn(() => ({ dispose: vi.fn() })),
+        } as unknown as IWatcherService;
 
-        MeshExplorerServiceDefinition.factory(engineExplorerService);
+        MeshExplorerServiceDefinition.factory(engineExplorerService, watcherService);
         const effectRenderer = { _kind: "effect-renderer" } as RenderingContext;
 
         expect(providers[0].predicate(effectRenderer)).toBe(false);

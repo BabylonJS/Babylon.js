@@ -4,12 +4,13 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 import { MeshIcon } from "shared-ui-components/fluent/icons";
 
 import { type IEngineExplorerService, EngineExplorerServiceIdentity } from "../../../engineExplorerService";
-import { CreateSceneExplorerSectionNode, IsSceneContext } from "./sceneExplorerSection";
+import { type IWatcherService, WatcherServiceIdentity } from "../../../../services/watcherService";
+import { CreateSceneExplorerSectionNode, CreateWatchedNameDisplayInfo, IsSceneContext } from "./sceneExplorerSection";
 
-export const MeshExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplorerService]> = {
+export const MeshExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplorerService, IWatcherService]> = {
     friendlyName: "Babylon Lite Mesh Explorer",
-    consumes: [EngineExplorerServiceIdentity],
-    factory: (engineExplorerService) =>
+    consumes: [EngineExplorerServiceIdentity, WatcherServiceIdentity],
+    factory: (engineExplorerService, watcherService) =>
         engineExplorerService.addRenderingContextNodeProvider({
             order: 0,
             predicate: IsSceneContext,
@@ -18,7 +19,7 @@ export const MeshExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplor
                     "meshes",
                     "Meshes",
                     scene.meshes,
-                    (mesh: Mesh) => mesh.name,
+                    (mesh: Mesh) => CreateWatchedNameDisplayInfo(watcherService, mesh, () => mesh.name),
                     () => <MeshIcon color={tokens.colorPaletteBlueForeground2} />
                 ),
             ],
