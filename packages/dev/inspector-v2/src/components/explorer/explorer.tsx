@@ -3,6 +3,7 @@ import {
     type MenuCheckedValueChangeData,
     type MenuCheckedValueChangeEvent,
     type TreeItemValue,
+    type TreeItemLayoutProps,
     type TreeOpenChangeData,
     type TreeOpenChangeEvent,
     Body1,
@@ -25,18 +26,21 @@ import {
     TreeItemLayout,
     treeItemLevelToken,
     typographyStyles,
+    useFluent,
 } from "@fluentui/react-components";
 import {
     type FluentIcon,
     ArrowCollapseAllRegular,
     ArrowExpandAllRegular,
+    ChevronRightRegular,
     createFluentIcon,
     FilterRegular,
     GlobeRegular,
     TextSortAscendingRegular,
     WarningRegular,
 } from "@fluentui/react-icons";
-import { type FunctionComponent, type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fade } from "@fluentui/react-motion-components-preview";
+import { type FocusEvent, type FunctionComponent, type KeyboardEvent, type PointerEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { type IDisposable, type Nullable } from "core/index";
 import {
@@ -116,9 +120,43 @@ const useStyles = makeStyles({
         minHeight: CustomTokens.lineHeightSmall,
         maxHeight: CustomTokens.lineHeightSmall,
     },
-    // Use tighter indentation than the default (16px instead of 24px per level).
+    // RootTreeItem supplies the visual root; all other node depths are relative to it.
     treeItemLayout: {
-        paddingLeft: `calc((var(${treeItemLevelToken}, 1) - 1) * ${tokens.spacingHorizontalL})`,
+        paddingLeft: `calc(var(${treeItemLevelToken}, 1) * ${tokens.spacingHorizontalL})`,
+    },
+    leadingSlot: {
+        width: tokens.spacingHorizontalXXL,
+        minWidth: tokens.spacingHorizontalXXL,
+        maxWidth: tokens.spacingHorizontalXXL,
+        height: tokens.spacingVerticalXXL,
+        minHeight: tokens.spacingVerticalXXL,
+        maxHeight: tokens.spacingVerticalXXL,
+        padding: 0,
+        position: "relative",
+    },
+    leadingLayer: {
+        position: "absolute",
+        inset: 0,
+    },
+    leadingIcon: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: tokens.colorNeutralForeground2,
+        fontSize: tokens.fontSizeBase500,
+        lineHeight: tokens.lineHeightBase500,
+    },
+    leadingChevron: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: tokens.fontSizeBase200,
+    },
+    leadingChevronOpen: {
+        transform: "rotate(90deg)",
+    },
+    leadingChevronClosedRtl: {
+        transform: "rotate(180deg)",
     },
     treeItemDragging: {
         opacity: 0.5,
@@ -128,6 +166,110 @@ const useStyles = makeStyles({
         outlineOffset: `-${tokens.strokeWidthThick}`,
     },
 });
+
+const LeadingIconFadeDuration = 50;
+const LeadingIconFadeDelay = 25;
+
+function useBranchIconInteraction(enabled: boolean) {
+    const [isPointerHovered, setIsPointerHovered] = useState(false);
+    const [isKeyboardFocusVisible, setIsKeyboardFocusVisible] = useState(false);
+
+    const onPointerEnter = useCallback(
+        (_event: PointerEvent<HTMLDivElement>) => {
+            if (enabled) {
+                setIsPointerHovered(true);
+            }
+        },
+        [enabled]
+    );
+    const onPointerLeave = useCallback(
+        (_event: PointerEvent<HTMLDivElement>) => {
+            if (enabled) {
+                setIsPointerHovered(false);
+            }
+        },
+        [enabled]
+    );
+    const onFocus = useCallback(
+        (event: FocusEvent<HTMLDivElement>) => {
+            if (enabled && event.currentTarget === event.target) {
+                setIsKeyboardFocusVisible(event.currentTarget.matches(":focus-visible") || event.currentTarget.hasAttribute("data-fui-focus-visible"));
+            }
+        },
+        [enabled]
+    );
+    const onBlur = useCallback(
+        (event: FocusEvent<HTMLDivElement>) => {
+            if (enabled && event.currentTarget === event.target) {
+                setIsKeyboardFocusVisible(false);
+            }
+        },
+        [enabled]
+    );
+
+    return {
+        showChevron: enabled && (isPointerHovered || isKeyboardFocusVisible),
+        treeItemInteractionProps: {
+            onPointerEnter,
+            onPointerLeave,
+            onFocus,
+            onBlur,
+        },
+    };
+}
+
+type ExplorerTreeItemLayoutProps = Omit<TreeItemLayoutProps, "expandIcon"> & {
+    isBranch: boolean;
+    isOpen: boolean;
+    icon?: ReactNode;
+    showChevron: boolean;
+    select?: () => void;
+};
+
+const ExplorerTreeItemLayout: FunctionComponent<ExplorerTreeItemLayoutProps> = (props) => {
+    const { isBranch, isOpen, icon, showChevron, select, ...layoutProps } = props;
+    const classes = useStyles();
+    const { dir } = useFluent();
+    const hasIcon = !!icon;
+    const chevron = (
+        <div className={mergeClasses(classes.leadingChevron, isOpen ? classes.leadingChevronOpen : dir === "rtl" && classes.leadingChevronClosedRtl)}>
+            <ChevronRightRegular />
+        </div>
+    );
+
+    return (
+        <TreeItemLayout
+            {...layoutProps}
+            expandIcon={{
+                className: classes.leadingSlot,
+                onClick: isBranch ? undefined : select,
+                children:
+                    isBranch && hasIcon ? (
+                        <>
+                            <Fade visible={!showChevron} duration={LeadingIconFadeDuration} delay={LeadingIconFadeDelay} exitDelay={0} easing="linear">
+                                <div className={mergeClasses(classes.leadingLayer, classes.leadingIcon)}>{icon}</div>
+                            </Fade>
+                            <Fade visible={showChevron} duration={LeadingIconFadeDuration} delay={LeadingIconFadeDelay} exitDelay={0} easing="linear">
+                                <div
+                                    className={mergeClasses(
+                                        classes.leadingLayer,
+                                        classes.leadingChevron,
+                                        isOpen ? classes.leadingChevronOpen : dir === "rtl" && classes.leadingChevronClosedRtl
+                                    )}
+                                >
+                                    <ChevronRightRegular />
+                                </div>
+                            </Fade>
+                        </>
+                    ) : hasIcon ? (
+                        <div className={classes.leadingIcon}>{icon}</div>
+                    ) : isBranch ? (
+                        chevron
+                    ) : undefined,
+            }}
+        />
+    );
+};
 
 function GetCommandHotKeyDescription(command: ExplorerCommand): string {
     if (!command.hotKey) {
@@ -341,10 +483,11 @@ function useNodeDisplayInfo(node: ExplorerNode) {
 const RootTreeItem: FunctionComponent<{
     node: ExplorerNode;
     isSelected: boolean;
+    isOpen: boolean;
     select?: () => void;
     isFiltering: boolean;
 }> = (props) => {
-    const { node, isSelected, select, isFiltering } = props;
+    const { node, isSelected, isOpen, select, isFiltering } = props;
 
     const classes = useStyles();
     const [compactMode] = useSetting(CompactModeSettingDescriptor);
@@ -353,8 +496,11 @@ const RootTreeItem: FunctionComponent<{
     const displayInfo = useNodeDisplayInfo(node);
     const name = useObservableState(() => displayInfo.name, displayInfo.onChange);
     const hasChildren = node.children.length > 0;
+    const isBranch = !isFiltering && hasChildren;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const Icon = node.icon;
+    const icon = Icon && node.entity ? <Icon entity={node.entity} /> : <GlobeRegular />;
+    const { showChevron, treeItemInteractionProps } = useBranchIconInteraction(isBranch && !!icon);
 
     return (
         <FlatTreeItem
@@ -362,22 +508,27 @@ const RootTreeItem: FunctionComponent<{
             key={node.value}
             value={node.value}
             // Disable manual expand/collapse when a filter is active.
-            itemType={!isFiltering && hasChildren ? "branch" : "leaf"}
+            itemType={isBranch ? "branch" : "leaf"}
             parentValue={node.parent?.value}
             aria-level={node.depth}
             aria-setsize={1}
             aria-posinset={1}
             onClick={select}
+            {...treeItemInteractionProps}
         >
-            <TreeItemLayout
-                iconBefore={Icon && node.entity ? <Icon entity={node.entity} /> : <GlobeRegular />}
+            <ExplorerTreeItemLayout
+                isBranch={isBranch}
+                isOpen={isOpen}
+                icon={icon}
+                showChevron={showChevron}
+                select={select}
                 className={treeItemLayoutClass}
                 style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
             >
                 <Body1Strong wrap={false} truncate>
                     {name}
                 </Body1Strong>
-            </TreeItemLayout>
+            </ExplorerTreeItemLayout>
         </FlatTreeItem>
     );
 };
@@ -390,11 +541,12 @@ const GroupTreeItem: FunctionComponent<
         expandAll: () => void;
         collapseAll: () => void;
         isSelected: boolean;
+        isOpen: boolean;
         select?: () => void;
         isDropTarget: boolean;
     } & DropProps
 > = (props) => {
-    const { node, isFiltering, commandProviders, expandAll, collapseAll, isSelected, select, isDropTarget, ...dropProps } = props;
+    const { node, isFiltering, commandProviders, expandAll, collapseAll, isSelected, isOpen, select, isDropTarget, ...dropProps } = props;
 
     const classes = useStyles();
     const [compactMode] = useSetting(CompactModeSettingDescriptor);
@@ -416,6 +568,9 @@ const GroupTreeItem: FunctionComponent<
     );
 
     const hasChildren = node.children.length > 0;
+    const isBranch = !isFiltering && hasChildren;
+    const icon = Icon && node.entity ? <Icon entity={node.entity} /> : undefined;
+    const { showChevron, treeItemInteractionProps } = useBranchIconInteraction(isBranch && !!icon);
 
     const [checkedContextMenuItems, onContextMenuCheckedValueChange, contextMenuItems] = useCommandContextMenuState(commands);
 
@@ -427,7 +582,7 @@ const GroupTreeItem: FunctionComponent<
                     key={node.value}
                     value={node.value}
                     // Disable manual expand/collapse when a filter is active.
-                    itemType={!isFiltering && hasChildren ? "branch" : "leaf"}
+                    itemType={isBranch ? "branch" : "leaf"}
                     parentValue={node.parent?.value}
                     aria-level={node.depth}
                     aria-setsize={1}
@@ -435,16 +590,21 @@ const GroupTreeItem: FunctionComponent<
                     onClick={select}
                     style={{ [treeItemLevelToken]: node.depth }}
                     {...dropProps}
+                    {...treeItemInteractionProps}
                 >
-                    <TreeItemLayout
-                        iconBefore={Icon && node.entity ? <Icon entity={node.entity} /> : undefined}
+                    <ExplorerTreeItemLayout
+                        isBranch={isBranch}
+                        isOpen={isOpen}
+                        icon={icon}
+                        showChevron={showChevron}
+                        select={select}
                         className={mergeClasses(classes.treeItemLayout, compactMode ? classes.treeItemLayoutCompact : undefined)}
                         style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                     >
                         <Body1Strong wrap={false} truncate>
                             {name.substring(0, 100)}
                         </Body1Strong>
-                    </TreeItemLayout>
+                    </ExplorerTreeItemLayout>
                 </FlatTreeItem>
             </MenuTrigger>
             <MenuPopover hidden={!hasChildren && commands.length === 0}>
@@ -479,14 +639,16 @@ const ItemTreeItem: FunctionComponent<
         collapseAll: () => void;
         isDragging: boolean;
         isDropTarget: boolean;
+        isOpen: boolean;
     } & DragDropProps
 > = (props) => {
-    const { node, entity, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll, isDragging, isDropTarget, ...dragProps } = props;
+    const { node, entity, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll, isDragging, isDropTarget, isOpen, ...dragProps } = props;
 
     const classes = useStyles();
     const [compactMode] = useSetting(CompactModeSettingDescriptor);
 
     const hasChildren = node.children.length > 0;
+    const isBranch = !isFiltering && hasChildren;
 
     const displayInfo = useNodeDisplayInfo(node);
 
@@ -606,6 +768,14 @@ const ItemTreeItem: FunctionComponent<
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const Icon = node.icon;
+    const icon = displayInfo.validationError ? (
+        <Tooltip content={displayInfo.validationError} relationship="description">
+            <WarningRegular />
+        </Tooltip>
+    ) : Icon ? (
+        <Icon entity={entity} />
+    ) : null;
+    const { showChevron, treeItemInteractionProps } = useBranchIconInteraction(isBranch && !!icon);
 
     return (
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
@@ -615,7 +785,7 @@ const ItemTreeItem: FunctionComponent<
                     key={node.value}
                     value={node.value}
                     // Disable manual expand/collapse when a filter is active.
-                    itemType={!isFiltering && hasChildren ? "branch" : "leaf"}
+                    itemType={isBranch ? "branch" : "leaf"}
                     parentValue={node.parent?.value}
                     aria-level={node.depth}
                     aria-setsize={1}
@@ -624,17 +794,14 @@ const ItemTreeItem: FunctionComponent<
                     onKeyDown={onKeyDown}
                     style={{ [treeItemLevelToken]: node.depth }}
                     {...dragProps}
+                    {...treeItemInteractionProps}
                 >
-                    <TreeItemLayout
-                        iconBefore={
-                            displayInfo.validationError ? (
-                                <Tooltip content={displayInfo.validationError} relationship="description">
-                                    <WarningRegular />
-                                </Tooltip>
-                            ) : Icon ? (
-                                <Icon entity={entity} />
-                            ) : null
-                        }
+                    <ExplorerTreeItemLayout
+                        isBranch={isBranch}
+                        isOpen={isOpen}
+                        icon={icon}
+                        showChevron={showChevron}
+                        select={select}
                         className={mergeClasses(classes.treeItemLayout, compactMode ? classes.treeItemLayoutCompact : undefined, isDropTarget && classes.treeItemDropTarget)}
                         style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                         actions={actions}
@@ -649,7 +816,7 @@ const ItemTreeItem: FunctionComponent<
                         }}
                     >
                         <TruncatingBody1 text={name} />
-                    </TreeItemLayout>
+                    </ExplorerTreeItemLayout>
                 </FlatTreeItem>
             </MenuTrigger>
             <MenuPopover hidden={!hasChildren && contextMenuCommands.length === 0}>
@@ -896,6 +1063,7 @@ export const Explorer: FunctionComponent<{
                                     key={node.value}
                                     node={node}
                                     isSelected={!!entity && selectedEntity === entity}
+                                    isOpen={openItems.has(node.value)}
                                     select={entity ? () => setSelectedEntity(entity) : undefined}
                                     isFiltering={!!itemsFilter}
                                 />
@@ -922,6 +1090,7 @@ export const Explorer: FunctionComponent<{
                                     collapseAll={() => collapseAll(node)}
                                     isDragging={draggedEntity === entity}
                                     isDropTarget={dropTarget === entity}
+                                    isOpen={openItems.has(node.value)}
                                     {...dragProps}
                                 />
                             );
@@ -935,6 +1104,7 @@ export const Explorer: FunctionComponent<{
                                     expandAll={() => expandAll(node)}
                                     collapseAll={() => collapseAll(node)}
                                     isSelected={!!entity && selectedEntity === entity}
+                                    isOpen={openItems.has(node.value)}
                                     select={entity ? () => setSelectedEntity(entity) : undefined}
                                     isDropTarget={dropTargetIsRoot && !!node.dragDropConfig}
                                     {...createGroupDropProps(node.dragDropConfig)}
