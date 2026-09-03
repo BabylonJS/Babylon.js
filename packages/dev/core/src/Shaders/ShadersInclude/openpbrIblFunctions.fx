@@ -353,19 +353,20 @@
                 } else {
                     sampleDirection = reflect(-viewDirectionW, bentNormal);
                 }
+                #ifdef REFLECTIONMAP_3D
+                    vec3 reflectionCoords;
+                #else
+                    vec2 reflectionCoords;
+                #endif
                 if (useDirectionMapping) {
                     if (dot(sampleDirection, sampleDirection) <= Epsilon) {
                         vec3 perpendicularAxis = abs(viewDirectionW.x) < 0.9 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
                         sampleDirection = normalize(cross(viewDirectionW, perpendicularAxis));
                     }
-                    #ifdef REFLECTIONMAP_3D
-                        vec3 reflectionCoords = createReflectionCoordsFromDirection(positionW, sampleDirection);
-                    #else
-                        vec2 reflectionCoords = createReflectionCoordsFromDirection(positionW, sampleDirection);
-                    #endif
+                    reflectionCoords = createReflectionCoordsFromDirection(positionW, sampleDirection);
                 } else {
                     #ifdef REFLECTIONMAP_3D
-                        vec3 reflectionCoords = vec3(reflectionMatrix * vec4(sampleDirection, 0.0));
+                        reflectionCoords = vec3(reflectionMatrix * vec4(sampleDirection, 0.0));
                         #ifdef REFLECTIONMAP_OPPOSITEZ
                             reflectionCoords.z *= -1.0;
                         #endif
@@ -379,7 +380,7 @@
                             vec3 perpendicularAxis = abs(originalViewDirectionW.x) < 0.9 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
                             mappingNormal = normalize(cross(originalViewDirectionW, perpendicularAxis));
                         }
-                        vec2 reflectionCoords = createReflectionCoords(positionW, mappingNormal);
+                        reflectionCoords = createReflectionCoords(positionW, mappingNormal);
                     #endif
                 }
                 radianceSample = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
