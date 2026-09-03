@@ -1,6 +1,7 @@
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISelectionService, SelectionServiceIdentity } from "../../selectionService";
 import { type IPropertiesService, PropertiesServiceIdentity } from "./propertiesService";
+import { type IGizmoService, GizmoServiceIdentity } from "../../gizmoService";
 
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
@@ -19,10 +20,10 @@ import { GaussianSplattingDisplayProperties } from "../../../components/properti
 import { MeshDisplayProperties, MeshGeneralProperties, MeshMorphTargetsProperties } from "../../../components/properties/nodes/meshProperties";
 import { NodeGeneralProperties } from "../../../components/properties/nodes/nodeProperties";
 
-export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
+export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService, IGizmoService]> = {
     friendlyName: "Mesh Properties",
-    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
-    factory: (propertiesService, selectionService) => {
+    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity, GizmoServiceIdentity],
+    factory: (propertiesService, selectionService, gizmoService) => {
         const nodeContentRegistration = propertiesService.addSectionContent({
             key: "Node Properties",
             predicate: (entity: unknown) => entity instanceof Node,
@@ -70,14 +71,21 @@ export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IProperties
             ],
         });
 
+        const meshGeneralContentRegistration = propertiesService.addSectionContent({
+            key: "Mesh General Properties",
+            predicate: (entity: unknown): entity is Mesh => entity instanceof Mesh,
+            content: [
+                {
+                    section: "General",
+                    component: ({ context }) => <MeshGeneralProperties mesh={context} gizmoService={gizmoService} />,
+                },
+            ],
+        });
+
         const meshContentRegistration = propertiesService.addSectionContent({
             key: "Mesh Properties",
             predicate: (entity: unknown): entity is Mesh => entity instanceof Mesh && entity.getTotalVertices() > 0,
             content: [
-                {
-                    section: "General",
-                    component: ({ context }) => <MeshGeneralProperties mesh={context} />,
-                },
                 {
                     section: "Display",
                     component: ({ context }) => <MeshDisplayProperties mesh={context} />,
@@ -104,6 +112,7 @@ export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IProperties
             dispose: () => {
                 nodeContentRegistration.dispose();
                 abstractMeshContentRegistration.dispose();
+                meshGeneralContentRegistration.dispose();
                 meshContentRegistration.dispose();
                 gaussianSplattingContentRegistration.dispose();
             },
