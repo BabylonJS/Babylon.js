@@ -16,9 +16,11 @@ import { EnginePropertiesServiceDefinition } from "./services/panes/properties/e
 import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
 import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
 import { RenderingContextPropertiesServiceDefinition } from "./services/panes/properties/renderingContextPropertiesService";
+import { TextLayerPropertiesServiceDefinition } from "./services/panes/properties/textLayerPropertiesService";
 import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "./services/panes/scene/meshExplorerService";
+import { TextLayerExplorerServiceDefinition } from "./services/panes/scene/textLayerExplorerService";
 import { TextureExplorerServiceDefinition } from "./services/panes/scene/textureExplorerService";
 
 /**
@@ -63,12 +65,14 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 MeshExplorerServiceDefinition,
                 MaterialExplorerServiceDefinition,
                 TextureExplorerServiceDefinition,
+                TextLayerExplorerServiceDefinition,
                 PropertiesServiceDefinition,
                 EnginePropertiesServiceDefinition,
                 RenderingContextPropertiesServiceDefinition,
                 MeshPropertiesServiceDefinition,
                 MaterialPropertiesServiceDefinition,
                 TexturePropertiesServiceDefinition,
+                TextLayerPropertiesServiceDefinition,
                 SettingsServiceDefinition,
                 watcherSettingsServiceDefinition,
                 ShellSettingsServiceDefinition,

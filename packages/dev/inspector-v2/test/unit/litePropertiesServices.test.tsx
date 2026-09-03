@@ -5,9 +5,11 @@ import {
     type SceneContext,
     type SpriteRenderer,
     type SurfaceContext,
+    type TextLayer,
     type TextRenderer,
     type Texture2D,
 } from "@babylonjs/lite";
+import { Children, isValidElement, type FunctionComponent, type ReactElement, type ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.hoisted(() => {
@@ -18,9 +20,11 @@ vi.hoisted(() => {
 });
 
 import { EngineContextIdentity, type IEngineContext } from "../../src/lite/engineContext";
+import { BoundProperty } from "../../src/components/properties/boundProperty";
 import { EnginePropertiesServiceDefinition } from "../../src/lite/services/panes/properties/enginePropertiesService";
 import { MaterialPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/materialPropertiesService";
 import { RenderingContextPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/renderingContextPropertiesService";
+import { TextLayerPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/textLayerPropertiesService";
 import { TexturePropertiesServiceDefinition } from "../../src/lite/services/panes/properties/texturePropertiesService";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../src/services/panes/properties/propertiesService";
 
@@ -36,7 +40,23 @@ describe("Babylon Lite properties services", () => {
             shadowGenerators: [],
             fixedDeltaMs: 0,
         } as unknown as SceneContext;
-        const textRenderer = { _kind: "text-renderer", layers: [] } as unknown as TextRenderer;
+        const textLayer = {
+            data: {
+                runs: [
+                    {
+                        glyphs: [{}, {}],
+                    },
+                ],
+            },
+            positionPx: { x: 10, y: 20 },
+            rotationRad: 0,
+            scale: 1,
+            order: 0,
+            opacity: 1,
+            coverageGamma: 2,
+            visible: true,
+        } as unknown as TextLayer;
+        const textRenderer = { _kind: "text-renderer", layers: [textLayer] } as unknown as TextRenderer;
         const spriteRenderer = { _kind: "sprite-renderer", layers: [] } as unknown as SpriteRenderer;
         const auxiliarySurface = {
             canvas: { width: 320, height: 200 },
@@ -89,13 +109,15 @@ describe("Babylon Lite properties services", () => {
             RenderingContextPropertiesServiceDefinition.factory(propertiesService, engineContext),
             MaterialPropertiesServiceDefinition.factory(propertiesService),
             TexturePropertiesServiceDefinition.factory(propertiesService),
+            TextLayerPropertiesServiceDefinition.factory(propertiesService, engineContext),
         ];
 
         expect(EnginePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(RenderingContextPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(MaterialPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity]);
         expect(TexturePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity]);
-        expect(registrations.size).toBe(7);
+        expect(TextLayerPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
+        expect(registrations.size).toBe(8);
 
         expect(registrations.get("Babylon Lite Engine Properties")?.predicate(engine)).toBe(true);
         expect(registrations.get("Babylon Lite Engine Properties")?.predicate(auxiliarySurface)).toBe(false);
@@ -106,14 +128,32 @@ describe("Babylon Lite properties services", () => {
         expect(registrations.get("Babylon Lite Sprite Renderer Properties")?.predicate(spriteRenderer)).toBe(true);
         expect(registrations.get("Babylon Lite Material Properties")?.predicate(material)).toBe(true);
         expect(registrations.get("Babylon Lite Texture Properties")?.predicate(texture)).toBe(true);
+        expect(registrations.get("Babylon Lite Text Layer Properties")?.predicate(textLayer)).toBe(true);
+
+        const textLayerContent = registrations.get("Babylon Lite Text Layer Properties")?.content[0];
+        const textLayerElement = textLayerContent?.component({ context: textLayer });
+        if (!isValidElement<{ layer: TextLayer }>(textLayerElement) || typeof textLayerElement.type !== "function") {
+            throw new Error("Expected the text layer property provider to render a function component.");
+        }
+        const textLayerProperties = (textLayerElement.type as FunctionComponent<{ layer: TextLayer }>)(textLayerElement.props);
+        if (!isValidElement<{ children?: ReactNode }>(textLayerProperties)) {
+            throw new Error("Expected the text layer properties component to render property lines.");
+        }
+        const boundProperties = Children.toArray(textLayerProperties.props.children).filter(
+            (child): child is ReactElement<{ propertyKey: string; target: object; propertyPath?: string }> => isValidElement(child) && child.type === BoundProperty
+        );
+        expect(boundProperties.map((property) => property.props.propertyKey)).toEqual(["visible", "x", "y", "rotationRad", "scale", "order", "opacity", "coverageGamma"]);
+        expect(boundProperties[1].props).toMatchObject({ target: textLayer.positionPx, propertyPath: "positionPx.x" });
+        expect(boundProperties[6].props).toMatchObject({ target: textLayer, min: 0, max: 1 });
 
         const unregisteredScene = { ...scene } as RenderingContext;
         expect(registrations.get("Babylon Lite Scene Properties")?.predicate(unregisteredScene)).toBe(false);
         expect(registrations.get("Babylon Lite Material Properties")?.predicate({ name: "Not a material" })).toBe(false);
         expect(registrations.get("Babylon Lite Texture Properties")?.predicate({ width: 16, height: 8 })).toBe(false);
+        expect(registrations.get("Babylon Lite Text Layer Properties")?.predicate({ ...textLayer })).toBe(false);
 
         services.forEach((service) => service?.dispose?.());
-        expect(disposals).toHaveLength(7);
+        expect(disposals).toHaveLength(8);
         disposals.forEach((dispose) => expect(dispose).toHaveBeenCalledOnce());
     });
 });

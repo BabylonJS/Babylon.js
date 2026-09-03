@@ -1,4 +1,4 @@
-import { type Material, type Mesh, type RenderingContext, type SceneContext, type Texture2D } from "@babylonjs/lite";
+import { type Material, type Mesh, type RenderingContext, type SceneContext, type TextLayer, type TextRenderer, type Texture2D } from "@babylonjs/lite";
 import { describe, expect, it, vi } from "vitest";
 
 vi.hoisted(() => {
@@ -18,6 +18,7 @@ import {
 } from "../../src/lite/engineExplorerService";
 import { MaterialExplorerServiceDefinition } from "../../src/lite/services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "../../src/lite/services/panes/scene/meshExplorerService";
+import { TextLayerExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textLayerExplorerService";
 import { TextureExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textureExplorerService";
 import { type IWatcherService, WatcherServiceIdentity } from "../../src/services/watcherService";
 
@@ -53,6 +54,7 @@ describe("Babylon Lite scene resource explorer services", () => {
         expect(MeshExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity]);
         expect(MaterialExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity]);
         expect(TextureExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity]);
+        expect(TextLayerExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity]);
     });
 
     it("contributes selectable mesh, material, and texture sections beneath scene contexts", () => {
@@ -80,6 +82,7 @@ describe("Babylon Lite scene resource explorer services", () => {
             MeshExplorerServiceDefinition.factory(engineExplorerService, watcherService),
             MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService),
             TextureExplorerServiceDefinition.factory(engineExplorerService),
+            TextLayerExplorerServiceDefinition.factory(engineExplorerService),
         ];
 
         const redTexture = { width: 1, height: 1 } as Texture2D;
@@ -134,7 +137,44 @@ describe("Babylon Lite scene resource explorer services", () => {
         expect(watcherDisposals.get(standardMaterial)).toHaveBeenCalledOnce();
 
         registrations.forEach((registration) => registration?.dispose?.());
-        expect(dispose).toHaveBeenCalledTimes(3);
+        expect(dispose).toHaveBeenCalledTimes(4);
+    });
+
+    it("contributes stable text layer children and snapshots beneath text renderers", () => {
+        const providers: RenderingContextNodeProvider<RenderingContext>[] = [];
+        const engineExplorerService = {
+            addRenderingContextNodeProvider: (provider: RenderingContextNodeProvider<RenderingContext>) => {
+                providers.push(provider);
+                return { dispose: () => {} };
+            },
+        } as IEngineExplorerService;
+        TextLayerExplorerServiceDefinition.factory(engineExplorerService);
+
+        const firstLayer = { data: { runs: [] } } as unknown as TextLayer;
+        const secondLayer = { data: { runs: [] } } as unknown as TextLayer;
+        const layers = [firstLayer];
+        const renderer = { _kind: "text-renderer", layers } as unknown as TextRenderer;
+        const provider = providers[0];
+
+        expect(provider.predicate(renderer)).toBe(true);
+        expect(provider.predicate({ _kind: "sprite-renderer" } as RenderingContext)).toBe(false);
+
+        const firstDescriptions = provider.getNodes(renderer);
+        const firstTree = BuildExplorerTree(firstDescriptions);
+        expect(GetNames(firstTree.nodes)).toEqual(["Layer 1"]);
+        expect(firstTree.nodes[0].entity).toBe(firstLayer);
+        expect(firstTree.nodes[0].icon).toBeDefined();
+
+        layers.push(secondLayer);
+        const addedDescriptions = provider.getNodes(renderer);
+        expect(GetNames(BuildExplorerTree(addedDescriptions).nodes)).toEqual(["Layer 1", "Layer 2"]);
+        expect(provider.getSnapshot(renderer)).toEqual([firstLayer, secondLayer]);
+
+        layers.shift();
+        const removedDescriptions = provider.getNodes(renderer);
+        expect(removedDescriptions[0].id).toBe(addedDescriptions[1].id);
+        expect(GetNames(BuildExplorerTree(removedDescriptions).nodes)).toEqual(["Layer 1"]);
+        expect(provider.getSnapshot(renderer)).toEqual([secondLayer]);
     });
 
     it("does not contribute scene resources beneath other rendering contexts", () => {
