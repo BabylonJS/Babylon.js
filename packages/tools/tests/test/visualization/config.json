@@ -2213,6 +2213,13 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Object ID texture - Geometry buffer renderer",
+            "playgroundId": "#REC26C#0",
+            "referenceImage": "object-id-texture-geometry-buffer.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
             "title": "Shadows and LODs",
             "playgroundId": "#F7KZ7C#9",
             "referenceImage": "shadowsandlod.png",
@@ -3618,6 +3625,13 @@
             "title": "FrameGraph multi-render targets",
             "playgroundId": "#XSNYAU#165",
             "dependsOn": ["FrameGraph", "Materials", "Particles", "Textures"]
+        },
+        {
+            "title": "Object ID texture - FrameGraph geometry renderer",
+            "playgroundId": "#TVXLYA#0",
+            "referenceImage": "object-id-texture-framegraph.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
         },
         {
             "title": "FrameGraph selection outline",

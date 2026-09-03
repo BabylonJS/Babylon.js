@@ -3,6 +3,25 @@ import { Constants } from "core/Engines/constants";
 import { Matrix } from "core/Maths/math.vector.pure";
 
 /**
+ * Provides the object ID written by geometry rendering for a mesh.
+ *
+ * IDs must be unsigned integers supported by the object ID texture format. ID 0 is reserved for background or excluded meshes.
+ * RGBA textures support IDs up to 0xFFFFFF, while RED textures support IDs up to 0xFF.
+ */
+export type GeometryRenderingObjectIdProvider = (mesh: AbstractMesh) => number;
+
+/** @internal */
+export function _GetGeometryRenderingObjectId(mesh: AbstractMesh, provider?: GeometryRenderingObjectIdProvider, maxObjectId = 0xffffff): number {
+    const objectId = provider ? provider(mesh) : mesh.uniqueId;
+
+    if (!Number.isInteger(objectId) || objectId < 0 || objectId > maxObjectId) {
+        throw new Error(`Invalid geometry object ID ${objectId} for mesh "${mesh.name}". Object IDs must be integers between 0 and 0x${maxObjectId.toString(16).toUpperCase()}.`);
+    }
+
+    return objectId;
+}
+
+/**
  * Type of clear operation to perform on a geometry texture.
  */
 export const enum GeometryRenderingTextureClearType {
@@ -71,6 +90,16 @@ export type GeometryRenderingConfiguration = {
      * Whether to reverse culling for the geometry rendering (meaning, if back faces should be culled, front faces are culled instead, and the other way around).
      */
     reverseCulling: boolean;
+
+    /**
+     * Provides the object ID written for each rendered mesh.
+     */
+    objectIdProvider?: GeometryRenderingObjectIdProvider;
+
+    /**
+     * Whether the object ID texture uses the RED format.
+     */
+    objectIdIsRedFormat: boolean;
 };
 
 /**
@@ -186,6 +215,13 @@ export class MaterialHelperGeometryRendering {
             define: "PREPASS_IRRADIANCE",
             defineIndex: "PREPASS_IRRADIANCE_INDEX",
         },
+        {
+            type: Constants.PREPASS_OBJECT_ID_TEXTURE_TYPE,
+            name: "ObjectId",
+            clearType: GeometryRenderingTextureClearType.Zero,
+            define: "PREPASS_OBJECT_ID",
+            defineIndex: "PREPASS_OBJECT_ID_INDEX",
+        },
     ];
 
     private static _Configurations: { [renderPassId: number]: GeometryRenderingConfiguration } = {};
@@ -205,6 +241,7 @@ export class MaterialHelperGeometryRendering {
             lastUpdateFrameId: -1,
             excludedSkinnedMesh: [],
             reverseCulling: false,
+            objectIdIsRedFormat: false,
         };
         return MaterialHelperGeometryRendering._Configurations[renderPassId];
     }
@@ -232,7 +269,7 @@ export class MaterialHelperGeometryRendering {
      * @param _samplers The array of samplers to add to.
      */
     public static AddUniformsAndSamplers(uniforms: string[], _samplers: string[]) {
-        uniforms.push("previousWorld", "previousViewProjection", "mPreviousBones");
+        uniforms.push("previousWorld", "previousViewProjection", "mPreviousBones", "objectId");
     }
 
     /**
@@ -288,6 +325,7 @@ export class MaterialHelperGeometryRendering {
             }
         }
 
+        defines["PREPASS_OBJECT_ID_R8"] = configuration.objectIdIsRedFormat;
         defines["SCENE_MRT_COUNT"] = numMRT;
 
         defines["BONES_VELOCITY_ENABLED"] =
@@ -313,6 +351,11 @@ export class MaterialHelperGeometryRendering {
 
         if (configuration.reverseCulling) {
             engine.setStateCullFaceType(scene._mirroredCameraPosition ? material.cullBackFaces : !material.cullBackFaces);
+        }
+
+        if (configuration.defines["PREPASS_OBJECT_ID_INDEX"] !== undefined) {
+            const maxObjectId = configuration.objectIdIsRedFormat ? 0xff : 0xffffff;
+            effect.setFloat("objectId", _GetGeometryRenderingObjectId(mesh, configuration.objectIdProvider, maxObjectId));
         }
 
         if (configuration.defines["PREPASS_VELOCITY_INDEX"] !== undefined || configuration.defines["PREPASS_VELOCITY_LINEAR_INDEX"] !== undefined) {

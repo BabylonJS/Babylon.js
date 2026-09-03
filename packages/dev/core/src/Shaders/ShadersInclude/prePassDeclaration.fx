@@ -15,5 +15,9 @@ highp vec4 gl_FragColor;
     varying highp vec4 vCurrentPosition;
     varying highp vec4 vPreviousPosition;
 #endif
+#ifdef PREPASS_OBJECT_ID
+    uniform highp float objectId;
+    #include<objectIdFunctions>
+#endif
 
 #endif

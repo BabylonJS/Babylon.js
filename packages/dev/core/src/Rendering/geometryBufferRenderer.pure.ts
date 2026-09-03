@@ -32,6 +32,7 @@ import { type OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial.pure";
 import { type IblShadowsRenderPipeline } from "./IBLShadows/iblShadowsRenderPipeline.pure";
 import { RegisterGeometryBufferRendererSceneComponent } from "./geometryBufferRendererSceneComponent.pure";
 import { IsGaussianSplattingClassName } from "../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { _GetGeometryRenderingObjectId, type GeometryRenderingObjectIdProvider } from "../Materials/materialHelper.geometryrendering";
 
 /** @internal */
 interface ISavedTransformationMatrix {
@@ -94,6 +95,7 @@ export const Uniforms = [
     "morphTargetTextureInfo",
     "morphTargetTextureIndices",
     "boneTextureInfo",
+    "objectId",
 ];
 
 /**
@@ -150,6 +152,12 @@ export class GeometryBufferRenderer {
     public static readonly IRRADIANCE_TEXTURE_TYPE = 7;
 
     /**
+     * Constant used to retrieve the object ID texture index in the G-Buffer textures array.
+     * Object IDs are stored as 24-bit unsigned integers encoded in the RGB channels.
+     */
+    public static readonly OBJECT_ID_TEXTURE_TYPE = 8;
+
+    /**
      * Dictionary used to store the previous transformation matrices of each rendered mesh
      * in order to compute objects velocities when enableVelocity is set to "true"
      * @internal
@@ -169,6 +177,15 @@ export class GeometryBufferRenderer {
 
     /** Gets or sets a boolean indicating if transparent meshes should be rendered */
     public renderTransparentMeshes = true;
+
+    /**
+     * Provides the object ID written for each rendered mesh.
+     *
+     * IDs must be integers between 0 and 0xFFFFFF. ID 0 is reserved for background or excluded meshes.
+     * Instances use the ID of their source mesh. The default is the mesh unique ID.
+     * @see https://playground.babylonjs.com/#REC26C#0
+     */
+    public objectIdProvider?: GeometryRenderingObjectIdProvider;
 
     /**
      * Gets or sets a boolean indicating if normals should be generated in world space (default: false, meaning normals are generated in view space)
@@ -197,6 +214,7 @@ export class GeometryBufferRenderer {
     private _enableReflectivity: boolean = false;
     private _enableScreenspaceDepth: boolean = false;
     private _enableIrradiance: boolean = false;
+    private _enableObjectId: boolean = false;
     private _depthFormat: number;
     private _clearColor = new Color4(0, 0, 0, 0);
     private _clearDepthColor = new Color4(0, 0, 0, 1); // sets an invalid value by default - depth in the depth texture is view.z, so 0 is not possible because view.z can't be less than camera.minZ
@@ -209,6 +227,7 @@ export class GeometryBufferRenderer {
     private _normalIndex: number = -1;
     private _screenspaceDepthIndex: number = -1;
     private _irradianceIndex: number = -1;
+    private _objectIdIndex: number = -1;
 
     private _linkedWithPrePass: boolean = false;
     private _prePassRenderer: PrePassRenderer;
@@ -258,6 +277,7 @@ export class GeometryBufferRenderer {
         this._enableVelocityLinear = false;
         this._enableScreenspaceDepth = false;
         this._enableIrradiance = false;
+        this._enableObjectId = false;
         this._attachmentsFromPrePass = [];
     }
 
@@ -291,6 +311,9 @@ export class GeometryBufferRenderer {
         } else if (geometryBufferType === GeometryBufferRenderer.IRRADIANCE_TEXTURE_TYPE) {
             this._irradianceIndex = index;
             this._enableIrradiance = true;
+        } else if (geometryBufferType === GeometryBufferRenderer.OBJECT_ID_TEXTURE_TYPE) {
+            this._objectIdIndex = index;
+            this._enableObjectId = true;
         }
     }
 
@@ -357,6 +380,8 @@ export class GeometryBufferRenderer {
                 return this._screenspaceDepthIndex;
             case GeometryBufferRenderer.IRRADIANCE_TEXTURE_TYPE:
                 return this._irradianceIndex;
+            case GeometryBufferRenderer.OBJECT_ID_TEXTURE_TYPE:
+                return this._objectIdIndex;
             default:
                 return -1;
         }
@@ -515,6 +540,44 @@ export class GeometryBufferRenderer {
      */
     public set enableIrradiance(enable: boolean) {
         this._enableIrradiance = enable;
+
+        if (!this._linkedWithPrePass) {
+            this.dispose();
+            this._createRenderTargets();
+        }
+    }
+
+    /**
+     * Gets whether object IDs are enabled for the G buffer.
+     */
+    public get enableObjectId(): boolean {
+        return this._enableObjectId;
+    }
+
+    /**
+     * Sets whether object IDs are enabled for the G buffer.
+     *
+     * Object ID rendering currently requires a single-sample G buffer.
+     * @see https://playground.babylonjs.com/#REC26C#0
+     */
+    public set enableObjectId(enable: boolean) {
+        if (enable && this.samples !== 1) {
+            throw new Error("GeometryBufferRenderer: object ID textures currently require samples to be 1");
+        }
+
+        if (enable && !this._enableObjectId && !this._linkedWithPrePass) {
+            const engine = this._scene.getEngine();
+            const maxDrawBuffers = Math.min(engine.getCaps().maxDrawBuffers ?? 1, 8);
+            const attachmentCount = this._assignRenderTargetIndices()[0] + 1;
+            if (engine.getCaps().drawBuffersExtension && attachmentCount > maxDrawBuffers) {
+                throw new Error(`GeometryBufferRenderer: ${attachmentCount} color attachments were requested, but this engine supports at most ${maxDrawBuffers}`);
+            }
+        }
+
+        this._enableObjectId = enable;
+        if (!enable) {
+            this._objectIdIndex = -1;
+        }
 
         if (!this._linkedWithPrePass) {
             this.dispose();
@@ -947,6 +1010,11 @@ export class GeometryBufferRenderer {
             }
         }
 
+        if (this._enableObjectId) {
+            defines.push("#define OBJECT_ID");
+            defines.push("#define OBJECT_ID_INDEX " + this._objectIdIndex);
+        }
+
         if (this.generateNormalsInWorldSpace) {
             defines.push("#define NORMAL_WORLDSPACE");
         }
@@ -1055,6 +1123,10 @@ export class GeometryBufferRenderer {
      * Sets the number of samples used to render the buffer (anti aliasing).
      */
     public set samples(value: number) {
+        if (this._enableObjectId && value !== 1) {
+            throw new Error("GeometryBufferRenderer: object ID textures currently require samples to be 1");
+        }
+
         this._multiRenderTarget.samples = value;
     }
 
@@ -1134,12 +1206,28 @@ export class GeometryBufferRenderer {
             textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.IRRADIANCE_TEXTURE_TYPE]);
         }
 
+        if (this._enableObjectId) {
+            this._objectIdIndex = count;
+            count++;
+            textureNames.push("gBuffer_ObjectId");
+            textureTypesAndFormats.push({
+                textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                textureFormat: Constants.TEXTUREFORMAT_RGBA,
+                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            });
+        }
+
         return [count, textureNames, textureTypesAndFormats];
     }
 
     protected _createRenderTargets(): void {
         const engine = this._scene.getEngine();
         const [count, textureNames, textureTypesAndFormat] = this._assignRenderTargetIndices();
+
+        const maxDrawBuffers = Math.min(engine.getCaps().maxDrawBuffers ?? 1, 8);
+        if (engine.getCaps().drawBuffersExtension && count > maxDrawBuffers) {
+            throw new Error(`GeometryBufferRenderer: ${count} color attachments were requested, but this engine supports at most ${maxDrawBuffers}`);
+        }
 
         let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (engine._caps.textureFloat && engine._caps.textureFloatLinearFiltering) {
@@ -1535,6 +1623,10 @@ export class GeometryBufferRenderer {
                 if (this._enableVelocity || this._enableVelocityLinear) {
                     effect.setMatrix("previousWorld", this._previousTransformationMatrices[effectiveMesh.uniqueId].world);
                     effect.setMatrix("previousViewProjection", this._previousTransformationMatrices[effectiveMesh.uniqueId].viewProjection);
+                }
+
+                if (this._enableObjectId) {
+                    effect.setFloat("objectId", _GetGeometryRenderingObjectId(renderingMesh, this.objectIdProvider));
                 }
 
                 if (hardwareInstancedRendering && renderingMesh.hasThinInstances) {

@@ -69,6 +69,11 @@ var diffuseSamplerSampler: sampler;
 var diffuseSampler: texture_2d<f32>;
 #endif
 
+#ifdef OBJECT_ID
+uniform objectId: f32;
+#include<objectIdFunctions>
+#endif
+
 #include<clipPlaneFragmentDeclaration>
 
 #include<bumpFragmentMainFunctions>
@@ -153,6 +158,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     #ifdef POSITION
         fragData[POSITION_INDEX] =  vec4f(input.vPositionW, 1.0);
+    #endif
+
+    #ifdef OBJECT_ID
+        fragData[OBJECT_ID_INDEX] = encodeObjectId(uniforms.objectId);
     #endif
 
     #ifdef VELOCITY
