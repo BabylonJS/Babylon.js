@@ -106,6 +106,10 @@ export class ShadowOnlyMaterial extends PushMaterial {
         }
     }
 
+    /**
+     * The color the shadow is rendered with (black by default). Only its RGB is used; shadow
+     * strength is written to the material's alpha channel.
+     */
     public shadowColor = Color3.Black();
 
     public override needAlphaBlending(): boolean {
@@ -434,6 +438,13 @@ export class ShadowOnlyMaterial extends PushMaterial {
     }
 
     // Statics
+    /**
+     * Creates a ShadowOnly material from parsed material data.
+     * @param source defines the JSON representation of the material
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a new ShadowOnly material
+     */
     public static override Parse(source: any, scene: Scene, rootUrl: string): ShadowOnlyMaterial {
         return SerializationHelper.Parse(() => new ShadowOnlyMaterial(source.name, scene), source, scene, rootUrl);
     }
