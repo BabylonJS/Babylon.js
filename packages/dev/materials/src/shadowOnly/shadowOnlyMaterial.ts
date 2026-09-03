@@ -59,6 +59,16 @@ class ShadowOnlyMaterialDefines extends MaterialDefines {
     }
 }
 
+/**
+ * A transparent "shadow catcher" material: it renders only shadow strength into its alpha channel
+ * (over {@link ShadowOnlyMaterial.shadowColor | shadowColor}, black by default), so shadows can be
+ * composited over an arbitrary background.
+ *
+ * It can receive IBL shadows (via `IblShadowsRenderPipeline.addShadowReceivingMaterial` /
+ * the Frame Graph IBL shadows task). Because the material has a single alpha output channel, IBL
+ * shadows are received as **monochrome**: a colored IBL shadow is reduced to its luminance rather
+ * than preserving per-channel hue.
+ */
 export class ShadowOnlyMaterial extends PushMaterial {
     private _activeLight: IShadowLight;
     private _needAlphaBlending = true;
