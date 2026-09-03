@@ -28,11 +28,15 @@ function ApplySphericalPolynomialFromNative(texture: InternalTexture, sphericalP
     texture._sphericalPolynomial = sp;
 }
 
-function SyncCubeTextureSizeFromNative(engine: ThinNativeEngine, texture: InternalTexture, fallbackSize?: number): void {
+function SyncCubeTextureSizeFromNative(
+    nativeEngine: { getTextureWidth(texture: unknown): number; getTextureHeight(texture: unknown): number },
+    texture: InternalTexture,
+    fallbackSize?: number
+): void {
     const hardware = texture._hardwareTexture?.underlyingResource;
     if (hardware) {
-        const width = engine._engine.getTextureWidth(hardware);
-        const height = engine._engine.getTextureHeight(hardware);
+        const width = nativeEngine.getTextureWidth(hardware);
+        const height = nativeEngine.getTextureHeight(hardware);
         if (width > 0 && height > 0) {
             texture.width = width;
             texture.height = height;
@@ -136,7 +140,7 @@ export function RegisterNativeEngineCubeTexture(): void {
                     false,
                     texture._useSRGBBuffer,
                     () => {
-                        SyncCubeTextureSizeFromNative(this, texture, info.width);
+                        SyncCubeTextureSizeFromNative(this._engine, texture, info.width);
                         NotifyCubeTextureLoaded(texture, onLoad);
                     },
                     () => {
@@ -189,7 +193,7 @@ export function RegisterNativeEngineCubeTexture(): void {
                 // eslint-disable-next-line github/no-then
                 .then(
                     () => {
-                        SyncCubeTextureSizeFromNative(this, texture);
+                        SyncCubeTextureSizeFromNative(this._engine, texture);
                         NotifyCubeTextureLoaded(texture, onLoad);
                     },
                     (error) => {
@@ -205,9 +209,9 @@ export function RegisterNativeEngineCubeTexture(): void {
             const singleUrl = files && files.length > 0 ? files[0] : rootUrl;
             const sourceLabel = buffer ? rootUrl || singleUrl : singleUrl;
 
-            const loadContainerBuffer = (data: ArrayBufferView) => {
+            const loadContainerBuffer = async (data: ArrayBufferView) => {
                 const view = data instanceof Uint8Array ? data : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-                return new Promise<void>((resolve, reject) => {
+                await new Promise<void>((resolve, reject) => {
                     this._engine.loadCubeTexture(
                         texture._hardwareTexture!.underlyingResource,
                         [view],
@@ -235,7 +239,7 @@ export function RegisterNativeEngineCubeTexture(): void {
             // eslint-disable-next-line github/no-then
             loadPromise.then(
                 () => {
-                    SyncCubeTextureSizeFromNative(this, texture);
+                    SyncCubeTextureSizeFromNative(this._engine, texture);
                     NotifyCubeTextureLoaded(texture, onLoad);
                 },
                 (error) => {
