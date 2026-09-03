@@ -105,6 +105,10 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
 
     /** Prepass **/
     public PREPASS = false;
+    /** Prepass color */
+    public PREPASS_COLOR = false;
+    /** Prepass color index */
+    public PREPASS_COLOR_INDEX = -1;
     /** Prepass normal */
     public PREPASS_NORMAL = false;
     /** Prepass normal index */
@@ -141,6 +145,12 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
     public PREPASS_VELOCITY_LINEAR = false;
     /** Velocity linear index */
     public PREPASS_VELOCITY_LINEAR_INDEX = -1;
+    /** Object ID */
+    public PREPASS_OBJECT_ID = false;
+    /** Object ID index */
+    public PREPASS_OBJECT_ID_INDEX = -1;
+    /** Whether object IDs use the RED texture format */
+    public PREPASS_OBJECT_ID_R8 = false;
     /** Scene MRT count */
     public SCENE_MRT_COUNT = 0;
 
@@ -1905,6 +1915,8 @@ export class NodeMaterial extends NodeMaterialBase {
 
         // Matrices
         this.bindOnlyWorldMatrix(world);
+
+        MaterialHelperGeometryRendering.Bind(scene.getEngine().currentRenderPassId, effect, mesh, world, this);
 
         const mustRebind = this._mustRebind(scene, effect, subMesh, mesh.visibility);
         const sharedData = this._sharedData;

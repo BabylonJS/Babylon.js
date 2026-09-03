@@ -80,7 +80,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         state.reverseCulling = this.reverseCulling;
         state.dontRenderWhenMaterialDepthWriteIsDisabled = this.dontRenderWhenMaterialDepthWriteIsDisabled;
         state.disableDepthPrePass = this.disableDepthPrePass;
-        state.objectIdFormat = this.objectIdFormat;
     }
 
     protected override _restoreState(state: { [key: string]: any }) {
@@ -104,7 +103,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         this.reverseCulling = state.reverseCulling;
         this.dontRenderWhenMaterialDepthWriteIsDisabled = state.dontRenderWhenMaterialDepthWriteIsDisabled;
         this.disableDepthPrePass = state.disableDepthPrePass;
-        this.objectIdFormat = state.objectIdFormat ?? Constants.TEXTUREFORMAT_RGBA;
     }
 
     /** Width of the geometry texture */
@@ -285,16 +283,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
     @editableInPropertyPage("Type", PropertyTypeForEdition.TextureType, "OUTPUT - LINEAR VELOCITY")
     public linearVelocityType = Constants.TEXTURETYPE_HALF_FLOAT;
 
-    // Object ID
-    /** The format of the object ID output texture. RGBA stores 24-bit IDs and RED stores 8-bit IDs. */
-    @editableInPropertyPage("Format", PropertyTypeForEdition.List, "OUTPUT - OBJECT ID", {
-        options: [
-            { label: "rgba", value: Constants.TEXTUREFORMAT_RGBA },
-            { label: "r", value: Constants.TEXTUREFORMAT_RED },
-        ],
-    })
-    public objectIdFormat = Constants.TEXTUREFORMAT_RGBA;
-
     /**
      * Gets the current class name
      * @returns the class name
@@ -442,7 +430,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
             this.reflectivityFormat,
             this.velocityFormat,
             this.linearVelocityFormat,
-            this.objectIdFormat,
+            Constants.TEXTUREFORMAT_RGBA,
         ];
         const textureTypes = [
             this.irradianceType,
@@ -518,7 +506,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         codes.push(`${this._codeVariableName}.velocityType = ${this.velocityType};`);
         codes.push(`${this._codeVariableName}.linearVelocityFormat = ${this.linearVelocityFormat};`);
         codes.push(`${this._codeVariableName}.linearVelocityType = ${this.linearVelocityType};`);
-        codes.push(`${this._codeVariableName}.objectIdFormat = ${this.objectIdFormat};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -559,7 +546,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         serializationObject.velocityType = this.velocityType;
         serializationObject.linearVelocityFormat = this.linearVelocityFormat;
         serializationObject.linearVelocityType = this.linearVelocityType;
-        serializationObject.objectIdFormat = this.objectIdFormat;
         return serializationObject;
     }
 
@@ -596,7 +582,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         this.velocityType = serializationObject.velocityType;
         this.linearVelocityFormat = serializationObject.linearVelocityFormat;
         this.linearVelocityType = serializationObject.linearVelocityType;
-        this.objectIdFormat = serializationObject.objectIdFormat ?? Constants.TEXTUREFORMAT_RGBA;
     }
 }
 

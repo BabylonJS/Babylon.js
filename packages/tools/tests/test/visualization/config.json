@@ -3628,10 +3628,10 @@
         },
         {
             "title": "Object ID texture - FrameGraph geometry renderer",
-            "playgroundId": "#TVXLYA#0",
+            "playgroundId": "#00T6WJ#0",
             "referenceImage": "object-id-texture-framegraph.png",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["FrameGraph", "Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "NodeMaterial", "PBR", "Rendering", "Shaders", "Textures"]
         },
         {
             "title": "FrameGraph selection outline",

@@ -183,6 +183,8 @@ export class GeometryBufferRenderer {
      *
      * IDs must be integers between 0 and 0xFFFFFF. ID 0 is reserved for background or excluded meshes.
      * Instances use the ID of their source mesh. The default is the mesh unique ID.
+     * Default IDs are only stable for the lifetime of the current scene and should not be persisted.
+     * The provider runs in the render hot path and may be called multiple times for the same mesh in a frame.
      * @see https://playground.babylonjs.com/#REC26C#0
      */
     public objectIdProvider?: GeometryRenderingObjectIdProvider;
@@ -558,9 +560,14 @@ export class GeometryBufferRenderer {
      * Sets whether object IDs are enabled for the G buffer.
      *
      * Object ID rendering currently requires a single-sample G buffer.
+     * Object ID rendering is not supported when the G buffer is linked to the PrePassRenderer.
      * @see https://playground.babylonjs.com/#REC26C#0
      */
     public set enableObjectId(enable: boolean) {
+        if (enable && this._linkedWithPrePass) {
+            throw new Error("GeometryBufferRenderer: object ID textures are not supported when linked to the PrePassRenderer");
+        }
+
         if (enable && this.samples !== 1) {
             throw new Error("GeometryBufferRenderer: object ID textures currently require samples to be 1");
         }
@@ -1626,7 +1633,13 @@ export class GeometryBufferRenderer {
                 }
 
                 if (this._enableObjectId) {
-                    effect.setFloat("objectId", _GetGeometryRenderingObjectId(renderingMesh, this.objectIdProvider));
+                    let objectId = renderingMesh.uniqueId;
+                    if (this.objectIdProvider) {
+                        objectId = _GetGeometryRenderingObjectId(renderingMesh, this.objectIdProvider);
+                    } else if (objectId > 0xffffff) {
+                        throw new Error(`Invalid geometry object ID ${objectId} for mesh "${renderingMesh.name}". Object IDs must be integers between 0 and 0xFFFFFF.`);
+                    }
+                    effect.setFloat("objectId", objectId);
                 }
 
                 if (hardwareInstancedRendering && renderingMesh.hasThinInstances) {

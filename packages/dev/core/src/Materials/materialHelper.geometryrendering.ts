@@ -7,12 +7,14 @@ import { Matrix } from "core/Maths/math.vector.pure";
  *
  * IDs must be unsigned integers supported by the object ID texture format. ID 0 is reserved for background or excluded meshes.
  * RGBA textures support IDs up to 0xFFFFFF, while RED textures support IDs up to 0xFF.
+ * This callback runs in the render hot path and may be called multiple times for the same mesh in a frame.
+ * It should avoid allocations and return a consistent value for a mesh during a render.
  */
 export type GeometryRenderingObjectIdProvider = (mesh: AbstractMesh) => number;
 
 /** @internal */
-export function _GetGeometryRenderingObjectId(mesh: AbstractMesh, provider?: GeometryRenderingObjectIdProvider, maxObjectId = 0xffffff): number {
-    const objectId = provider ? provider(mesh) : mesh.uniqueId;
+export function _GetGeometryRenderingObjectId(mesh: AbstractMesh, provider: GeometryRenderingObjectIdProvider, maxObjectId = 0xffffff): number {
+    const objectId = provider(mesh);
 
     if (!Number.isInteger(objectId) || objectId < 0 || objectId > maxObjectId) {
         throw new Error(`Invalid geometry object ID ${objectId} for mesh "${mesh.name}". Object IDs must be integers between 0 and 0x${maxObjectId.toString(16).toUpperCase()}.`);
@@ -355,7 +357,15 @@ export class MaterialHelperGeometryRendering {
 
         if (configuration.defines["PREPASS_OBJECT_ID_INDEX"] !== undefined) {
             const maxObjectId = configuration.objectIdIsRedFormat ? 0xff : 0xffffff;
-            effect.setFloat("objectId", _GetGeometryRenderingObjectId(mesh, configuration.objectIdProvider, maxObjectId));
+            let objectId = mesh.uniqueId;
+            if (configuration.objectIdProvider) {
+                objectId = _GetGeometryRenderingObjectId(mesh, configuration.objectIdProvider, maxObjectId);
+            } else if (objectId > maxObjectId) {
+                throw new Error(
+                    `Invalid geometry object ID ${objectId} for mesh "${mesh.name}". Object IDs must be integers between 0 and 0x${maxObjectId.toString(16).toUpperCase()}.`
+                );
+            }
+            effect.setFloat("objectId", objectId);
         }
 
         if (configuration.defines["PREPASS_VELOCITY_INDEX"] !== undefined || configuration.defines["PREPASS_VELOCITY_LINEAR_INDEX"] !== undefined) {

@@ -104,8 +104,10 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
      * IDs must be integers between 0 and 0xFFFFFF for RGBA textures, or between 0 and 0xFF for RED textures.
      * ID 0 is reserved for background or excluded meshes.
      * By default, meshes use their unique ID.
+     * Instances use the ID of their source mesh. Default IDs are only stable for the lifetime of the current scene and should not be persisted.
      * When using a RED texture, provide a custom ID if mesh unique IDs can exceed 0xFF.
-     * @see https://playground.babylonjs.com/#TVXLYA#0
+     * The provider runs in the render hot path and may be called multiple times for the same mesh in a frame.
+     * @see https://playground.babylonjs.com/#00T6WJ#0
      */
     public objectIdProvider?: GeometryRenderingObjectIdProvider;
 

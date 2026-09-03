@@ -25,7 +25,7 @@
  *   TextureLinearVelocity                  – linear velocity buffer
  *   TextureIrradiance                      – irradiance buffer
  *   TextureAlbedoSqrt                      – sqrt-encoded albedo buffer
- *   TextureObjectId                        – 8-bit RED or 24-bit RGBA object ID buffer
+ *   TextureObjectId                        – 24-bit RGBA object ID buffer
  *
  * Non-texture types:
  *   Camera       – a Babylon.js Camera object (provided by an InputBlock)
@@ -268,7 +268,6 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             height: "number – G-buffer height",
             sizeInPercentage: "boolean – use width/height as screen percentage (default: true)",
             samples: "number – MSAA sample count (default: 1)",
-            objectIdFormat: "number – object ID texture format: TEXTUREFORMAT_RGBA for 24-bit IDs or TEXTUREFORMAT_RED for 8-bit IDs (default: TEXTUREFORMAT_RGBA)",
         },
         defaultAdditionalConstructionParameters: [true, true],
     },
