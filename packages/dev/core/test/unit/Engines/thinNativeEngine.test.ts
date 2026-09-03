@@ -1,5 +1,7 @@
 import { ThinNativeEngine } from "core/Engines/thinNativeEngine";
-import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { RegisterNativeEngineCubeTexture } from "core/Engines/Native/Extensions/nativeEngine.cubeTexture.pure";
+import { InternalTextureSource, type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type IHardwareTextureWrapper } from "core/Materials/Textures/hardwareTextureWrapper";
 import { describe, expect, it, vi } from "vitest";
 
 type NativeFrameRequester = {
@@ -147,6 +149,114 @@ describe("ThinNativeEngine", () => {
             engine._wrapSceneRenderWithCommandScope(scene);
 
             expect(() => scene.render()).toThrow(submitError);
+        });
+    });
+
+    describe("cube textures", () => {
+        type NativeCubeEngine = ThinNativeEngine & {
+            _engine: {
+                loadCubeTexture: ReturnType<typeof vi.fn>;
+                getTextureWidth: (texture: unknown) => number;
+                getTextureHeight: (texture: unknown) => number;
+            };
+            _internalTexturesCache: InternalTexture[];
+            _getUseSRGBBuffer: (useSRGBBuffer: boolean, noMipmap: boolean) => boolean;
+            _doNotHandleContextLost: boolean;
+            _createHardwareTexture: () => IHardwareTextureWrapper;
+            _loadFileAsync: (url: string, scene?: unknown, useArrayBuffer?: boolean) => Promise<ArrayBuffer>;
+            createCubeTexture: ThinNativeEngine["createCubeTexture"];
+            createPrefilteredCubeTexture: ThinNativeEngine["createPrefilteredCubeTexture"];
+        };
+
+        const createCubeEngine = (textureSize = 128) => {
+            RegisterNativeEngineCubeTexture();
+
+            const hardwareResource = { id: "native-cube" };
+            const engine = Object.create(ThinNativeEngine.prototype) as NativeCubeEngine;
+            engine._internalTexturesCache = [];
+            engine._doNotHandleContextLost = true;
+            engine._getUseSRGBBuffer = () => false;
+            engine._createHardwareTexture = () =>
+                ({
+                    underlyingResource: hardwareResource,
+                    setUsage() {},
+                    set() {},
+                    reset() {},
+                    release() {},
+                }) as IHardwareTextureWrapper;
+            engine._engine = {
+                loadCubeTexture: vi.fn((_texture, _data, _generateMipMaps, _invertY, _srgb, onSuccess: (sp?: ArrayLike<number>) => void) => {
+                    onSuccess(undefined);
+                }),
+                getTextureWidth: () => textureSize,
+                getTextureHeight: () => textureSize,
+            };
+            engine._loadFileAsync = vi.fn(async () => new ArrayBuffer(8));
+
+            return engine;
+        };
+
+        const flushAsync = async () => {
+            // Nested native load paths chain thenables (_loadFileAsync -> container parse -> onLoad).
+            for (let i = 0; i < 10; i++) {
+                await Promise.resolve();
+            }
+        };
+
+        it("syncs width/height/base sizes and notifies onLoadedObservable for a buffer cube load", async () => {
+            const engine = createCubeEngine(256);
+            const onLoad = vi.fn();
+            let loadedObserverCalls = 0;
+
+            const texture = engine.createCubeTexture(
+                "container.ktx2",
+                null,
+                null,
+                true,
+                onLoad,
+                null,
+                undefined,
+                null,
+                false,
+                0,
+                0,
+                null,
+                undefined,
+                false,
+                new Uint8Array([1, 2, 3, 4])
+            );
+
+            texture.onLoadedObservable.add(() => {
+                loadedObserverCalls++;
+            });
+
+            await flushAsync();
+
+            expect(engine._engine.loadCubeTexture).toHaveBeenCalledTimes(1);
+            expect(engine._loadFileAsync).not.toHaveBeenCalled();
+            expect(texture.width).toBe(256);
+            expect(texture.height).toBe(256);
+            expect(texture.baseWidth).toBe(256);
+            expect(texture.baseHeight).toBe(256);
+            expect(texture.isReady).toBe(true);
+            expect(onLoad).toHaveBeenCalledTimes(1);
+            expect(loadedObserverCalls).toBe(1);
+            expect(texture.onLoadedObservable.hasObservers()).toBe(false);
+        });
+
+        it("createPrefilteredCubeTexture sets CubePrefiltered and empty SP when createPolynomials is false", async () => {
+            const engine = createCubeEngine(64);
+            const onLoad = vi.fn();
+
+            const texture = engine.createPrefilteredCubeTexture("prefiltered.ktx2", null, 0.8, 0, onLoad, null, undefined, null, false);
+
+            await flushAsync();
+
+            expect(texture._source).toBe(InternalTextureSource.CubePrefiltered);
+            expect(texture._sphericalPolynomial).toBeTruthy();
+            expect(onLoad).toHaveBeenCalledWith(texture);
+            expect(texture.width).toBe(64);
+            expect(texture.baseWidth).toBe(64);
         });
     });
 });
