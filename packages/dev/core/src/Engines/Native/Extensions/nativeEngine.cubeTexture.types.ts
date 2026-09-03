@@ -42,5 +42,23 @@ declare module "../../../Engines/thinNativeEngine.pure" {
             useSRGBBuffer?: boolean,
             buffer?: Nullable<ArrayBufferView>
         ): InternalTexture;
+
+        /**
+         * Creates a prefiltered cube texture suitable for IBL (Native).
+         * Completes the same load contract as the Web engines: onLoad receives the
+         * InternalTexture, `_source` is CubePrefiltered, and an empty spherical
+         * polynomial is installed when createPolynomials is false.
+         */
+        createPrefilteredCubeTexture(
+            rootUrl: string,
+            scene: Nullable<Scene>,
+            lodScale: number,
+            lodOffset: number,
+            onLoad?: Nullable<(internalTexture: Nullable<InternalTexture>) => void>,
+            onError?: Nullable<(message?: string, exception?: any) => void>,
+            format?: number,
+            forcedExtension?: any,
+            createPolynomials?: boolean
+        ): InternalTexture;
     }
 }
