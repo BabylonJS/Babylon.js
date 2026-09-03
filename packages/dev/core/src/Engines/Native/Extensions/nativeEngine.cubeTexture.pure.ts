@@ -10,7 +10,6 @@ import { SphericalPolynomial } from "../../../Maths/sphericalPolynomial.pure";
 import { Constants } from "../../constants";
 import { ThinNativeEngine } from "../../thinNativeEngine.pure";
 
-
 function ApplySphericalPolynomialFromNative(texture: InternalTexture, sphericalPolynomial: ArrayLike<number> | undefined): void {
     if (!sphericalPolynomial || sphericalPolynomial.length < 27) {
         return;
