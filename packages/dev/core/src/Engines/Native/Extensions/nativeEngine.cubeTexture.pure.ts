@@ -209,7 +209,7 @@ export function RegisterNativeEngineCubeTexture(): void {
             const singleUrl = files && files.length > 0 ? files[0] : rootUrl;
             const sourceLabel = buffer ? rootUrl || singleUrl : singleUrl;
 
-            const loadContainerBuffer = async (data: ArrayBufferView) => {
+            const loadContainerBufferAsync = async (data: ArrayBufferView) => {
                 const view = data instanceof Uint8Array ? data : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
                 await new Promise<void>((resolve, reject) => {
                     this._engine.loadCubeTexture(
@@ -230,10 +230,10 @@ export function RegisterNativeEngineCubeTexture(): void {
             };
 
             const loadPromise = buffer
-                ? loadContainerBuffer(buffer)
+                ? loadContainerBufferAsync(buffer)
                 : // eslint-disable-next-line github/no-then
                   this._loadFileAsync(singleUrl, undefined, true).then(async (data) => {
-                      await loadContainerBuffer(new Uint8Array(data, 0, data.byteLength));
+                      await loadContainerBufferAsync(new Uint8Array(data, 0, data.byteLength));
                   });
 
             // eslint-disable-next-line github/no-then
