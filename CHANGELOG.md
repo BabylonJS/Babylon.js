@@ -1,5 +1,108 @@
 # Changelog
 
+## 9.24.0
+
+### Core
+
+- Fluid renderer: add opt-in per-particle size support - by [tini2n](https://github.com/tini2n) ([#18863](https://github.com/BabylonJS/Babylon.js/pull/18863))
+- Feat: Add white balance (Kelvin temperature + tint) to image processing - by [raymondyfei](https://github.com/raymondyfei) ([#18855](https://github.com/BabylonJS/Babylon.js/pull/18855))
+- Fix: IBL Shadows silent failure on Adreno mobile GPUs - by [raymondyfei](https://github.com/raymondyfei) ([#18865](https://github.com/BabylonJS/Babylon.js/pull/18865))
+- Fix wgsl output for PowBlock and TriPlanarBlock - by [BarthPaleologue](https://github.com/BarthPaleologue) ([#18869](https://github.com/BabylonJS/Babylon.js/pull/18869))
+- Fix OpenPBR backend consistency - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#18861](https://github.com/BabylonJS/Babylon.js/pull/18861))
+- Harden experimental WebXR support for WebGPU - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18858](https://github.com/BabylonJS/Babylon.js/pull/18858))
+- Fix late notifications for Observable<void> - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#18856](https://github.com/BabylonJS/Babylon.js/pull/18856))
+- Add dynamic WebXR viewport scaling - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18851](https://github.com/BabylonJS/Babylon.js/pull/18851))
+- Respect XRInputSource skipRendering - by [RaananW](https://github.com/RaananW) ([#18849](https://github.com/BabylonJS/Babylon.js/pull/18849))
+- Add WebXR composition layer controls and limits - by [RaananW](https://github.com/RaananW) ([#18848](https://github.com/BabylonJS/Babylon.js/pull/18848))
+- Add WebXR tracked sources support - by [RaananW](https://github.com/RaananW) ([#18844](https://github.com/BabylonJS/Babylon.js/pull/18844))
+- Add WebXR depth sensing lifecycle controls - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18842](https://github.com/BabylonJS/Babylon.js/pull/18842))
+- Add advanced WebXR controller haptics - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18843](https://github.com/BabylonJS/Babylon.js/pull/18843))
+
+### Inspector
+
+- Feat: Add white balance (Kelvin temperature + tint) to image processing - by [raymondyfei](https://github.com/raymondyfei) ([#18855](https://github.com/BabylonJS/Babylon.js/pull/18855))
+
+### Loaders
+
+- Allow URL preprocessing to handle parent-relative glTF resources - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#18854](https://github.com/BabylonJS/Babylon.js/pull/18854))
+
+### Materials
+
+- Feat: Add white balance (Kelvin temperature + tint) to image processing - by [raymondyfei](https://github.com/raymondyfei) ([#18855](https://github.com/BabylonJS/Babylon.js/pull/18855))
+
+### Sandbox
+
+- Fix Sandbox camera query controls - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#18860](https://github.com/BabylonJS/Babylon.js/pull/18860))
+
+### Smart Filters
+
+- Ensure SFE preview grid returns after solid backgrounds - [_Bug Fix_] by [AmoebaChant](https://github.com/AmoebaChant) ([#18852](https://github.com/BabylonJS/Babylon.js/pull/18852))
+
+## 9.23.0
+
+### Core
+
+- Add WebXR persistent anchor lifecycle support - by [RaananW](https://github.com/RaananW) ([#18840](https://github.com/BabylonJS/Babylon.js/pull/18840))
+- Add WebXR room capture support - by [RaananW](https://github.com/RaananW) ([#18841](https://github.com/BabylonJS/Babylon.js/pull/18841))
+- Feat: Budget-driven and multi-camera-aware LOD for streaming Gaussian Splatting - by [raymondyfei](https://github.com/raymondyfei) ([#18834](https://github.com/BabylonJS/Babylon.js/pull/18834))
+- Share shader loading state across material instances - by [sebavan](https://github.com/sebavan) ([#18830](https://github.com/BabylonJS/Babylon.js/pull/18830))
+- Expose WebXR plane and mesh semantic labels - by [RaananW](https://github.com/RaananW) ([#18839](https://github.com/BabylonJS/Babylon.js/pull/18839))
+- Preserve WebXR light estimation on WebGPU - by [RaananW](https://github.com/RaananW) ([#18837](https://github.com/BabylonJS/Babylon.js/pull/18837))
+- Fix IES candela profile normalization - by [sebavan](https://github.com/sebavan) ([#18833](https://github.com/BabylonJS/Babylon.js/pull/18833))
+- Fix Gaussian splat readiness regression - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#18836](https://github.com/BabylonJS/Babylon.js/pull/18836))
+- Fix Gaussian splat transform and proxy visibility updates - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18831](https://github.com/BabylonJS/Babylon.js/pull/18831))
+- Use pure targets for dynamic imports - by [RaananW](https://github.com/RaananW) ([#18827](https://github.com/BabylonJS/Babylon.js/pull/18827))
+- Feat: Non-binary voxel opacity + trace-time roulette for GSplat IBL shadows - by [raymondyfei](https://github.com/raymondyfei) ([#18815](https://github.com/BabylonJS/Babylon.js/pull/18815))
+- Fix overlay texture bindings leaking into shared PBR materials - by [sebavan](https://github.com/sebavan) ([#18828](https://github.com/BabylonJS/Babylon.js/pull/18828))
+- Fix wgsl in TBN Block - by [sebavan](https://github.com/sebavan) ([#18826](https://github.com/BabylonJS/Babylon.js/pull/18826))
+
+### GUI
+
+- Share shader loading state across material instances - by [sebavan](https://github.com/sebavan) ([#18830](https://github.com/BabylonJS/Babylon.js/pull/18830))
+
+### Loaders
+
+- Feat: Budget-driven and multi-camera-aware LOD for streaming Gaussian Splatting - by [raymondyfei](https://github.com/raymondyfei) ([#18834](https://github.com/BabylonJS/Babylon.js/pull/18834))
+- Use pure targets for dynamic imports - by [RaananW](https://github.com/RaananW) ([#18827](https://github.com/BabylonJS/Babylon.js/pull/18827))
+- Fix text encoding detection for OBJ and MTL files - by [Jeggery](https://github.com/Jeggery) ([#18817](https://github.com/BabylonJS/Babylon.js/pull/18817))
+
+### Materials
+
+- Share shader loading state across material instances - by [sebavan](https://github.com/sebavan) ([#18830](https://github.com/BabylonJS/Babylon.js/pull/18830))
+
+### Sandbox
+
+- Fix text encoding detection for OBJ and MTL files - by [Jeggery](https://github.com/Jeggery) ([#18817](https://github.com/BabylonJS/Babylon.js/pull/18817))
+
+## 9.22.2
+
+### Core
+
+- Load single-file prefiltered cube containers and implement setStateCullFaceType - by [bkaradzic-microsoft](https://github.com/bkaradzic-microsoft) ([#18806](https://github.com/BabylonJS/Babylon.js/pull/18806))
+- Feat: Add 16-bit (half-float) support for Gaussian Splatting PLY properties - by [raymondyfei](https://github.com/raymondyfei) ([#18816](https://github.com/BabylonJS/Babylon.js/pull/18816))
+- Fix shared material alpha mode state after parsing - [_Bug Fix_] by [alexchuber](https://github.com/alexchuber) ([#18818](https://github.com/BabylonJS/Babylon.js/pull/18818))
+- fix(core): 43 correctness bugs found by a systematic core scan - by [RaananW](https://github.com/RaananW) ([#18775](https://github.com/BabylonJS/Babylon.js/pull/18775))
+
+### Inspector
+
+- feat(inspector): add unused UV export option - by [Jeggery](https://github.com/Jeggery) ([#18811](https://github.com/BabylonJS/Babylon.js/pull/18811))
+
+### Loaders
+
+- Feat: Add 16-bit (half-float) support for Gaussian Splatting PLY properties - by [raymondyfei](https://github.com/raymondyfei) ([#18816](https://github.com/BabylonJS/Babylon.js/pull/18816))
+
+### Viewer
+
+- Suspend rendering in the Lite Viewer while offscreen - by [ryantrem](https://github.com/ryantrem) ([#18820](https://github.com/BabylonJS/Babylon.js/pull/18820))
+
+## 9.22.1
+
+### Viewer
+
+- fix: improve Viewer Lite compatibility - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#18814](https://github.com/BabylonJS/Babylon.js/pull/18814))
+
+## 9.22.0
+
 ## 9.21.2
 
 ### Core

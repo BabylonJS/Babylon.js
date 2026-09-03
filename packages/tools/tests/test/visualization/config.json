@@ -143,6 +143,13 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Gaussian Splatting PLY 16 Bit",
+            "playgroundId": "#XSNFXP#26",
+            "referenceImage": "gsplat-ply-16-bit.png",
+            "dependsOn": ["Loaders", "SPLATLoader"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting Update Data",
             "playgroundId": "#Q0LBM8#2",
             "referenceImage": "gsplat-update-data.png",
@@ -394,6 +401,22 @@
             "playgroundId": "#DT1XPP#4",
             "referenceImage": "openpbr_base_weight.png",
             "dependsOn": ["Lights", "PBR", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "OpenPBR Metallic Area Light Edge Tint",
+            "playgroundId": "#UVZI6U#0",
+            "referenceImage": "openpbr-metallic-area-light-edge-tint.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "OpenPBR Anisotropic 2D Environment",
+            "playgroundId": "#6N05SO#0",
+            "referenceImage": "openpbr-anisotropic-2d-environment.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Loaders", "Meshes", "PBR", "Textures", "glTF"],
             "excludeFromPerformance": true
         },
         {
@@ -763,6 +786,12 @@
             "playgroundId": "#N55Q2M#0",
             "referenceImage": "bwpp.png",
             "dependsOn": ["Lights", "Loaders", "PostProcesses"]
+        },
+        {
+            "title": "White balance post-process",
+            "playgroundId": "#N55Q2M#11",
+            "referenceImage": "white-balance-post-process.png",
+            "dependsOn": ["Lights", "Loaders", "Materials", "PostProcesses"]
         },
         {
             "title": "Sprite maps",
@@ -2746,6 +2775,23 @@
             "renderCount": 120,
             "excludedEngines": ["webgl1", "webgpu"],
             "dependsOn": ["Audio", "Behaviors", "CSG", "Cameras", "Collisions", "GUI", "Loaders", "Meshes", "PBR", "PostProcesses", "Textures"]
+        },
+        {
+            "title": "Fluid rendering custom particles per-particle size",
+            "playgroundId": "#DBSRBB#1",
+            "referenceImage": "fluidCustomParticlesPerParticleSize.png",
+            "renderCount": 10,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering custom particles uniform size fallback",
+            "playgroundId": "#DBSRBB#1",
+            "replace": "var withSizeBuffer = true, var withSizeBuffer = false",
+            "referenceImage": "fluidCustomParticlesUniformSizeFallback.png",
+            "renderCount": 10,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
         },
         {
             "title": "Export GLTF Extension KHR_texture_transform",

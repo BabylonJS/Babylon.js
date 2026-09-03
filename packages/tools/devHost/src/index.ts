@@ -19,6 +19,10 @@ switch (ExpQsp) {
         ImportPromise = import("./flowgraph/main");
         break;
     }
+    case "webxrOverWebGPU": {
+        ImportPromise = import("./webxrOverWebGPU/main");
+        break;
+    }
     case "testscene":
     default: {
         ImportPromise = import("./testScene/main");

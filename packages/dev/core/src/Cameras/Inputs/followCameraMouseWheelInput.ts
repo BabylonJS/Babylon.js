@@ -69,7 +69,7 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
 
             const wheelDelta = Math.max(-1, Math.min(1, event.deltaY));
             if (this.wheelDeltaPercentage) {
-                if (+this.axisControlRadius + +this.axisControlHeight + +this.axisControlRotation) {
+                if (+this.axisControlRadius + +this.axisControlHeight + +this.axisControlRotation > 1) {
                     Logger.Warn(
                         "wheelDeltaPercentage only usable when mouse wheel " +
                             "controls ONE axis. " +
@@ -130,7 +130,7 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
      * @returns the class name
      */
     public getClassName(): string {
-        return "ArcRotateCameraMouseWheelInput";
+        return "FollowCameraMouseWheelInput";
     }
 
     /**

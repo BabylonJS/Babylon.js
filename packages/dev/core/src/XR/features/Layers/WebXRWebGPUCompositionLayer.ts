@@ -2,7 +2,7 @@ import { type RenderTargetTexture } from "core/Materials/Textures/renderTargetTe
 import { type Viewport } from "core/Maths/math.viewport";
 import { Observable } from "core/Misc/observable";
 import { type WebXRLayerRenderTargetTexture } from "core/XR/webXRLayerRenderTargetTexture";
-import { type WebXRLayerType } from "core/XR/webXRLayerWrapper";
+import { type WebXRLayerType, type WebXRSupportedLayerType } from "core/XR/webXRLayerWrapper";
 import { type WebXRLayerRenderTargetTextureProvider } from "core/XR/webXRRenderTargetTextureProvider";
 import { WebXRWebGPURenderTargetTextureProvider } from "core/XR/webXRWebGPURenderTargetTextureProvider";
 import { type WebXRSessionManager } from "core/XR/webXRSessionManager";
@@ -33,7 +33,9 @@ export class WebXRWebGPUCompositionLayerWrapper extends WebXRCompositionLayerWra
  * {@link XRGPUSubImage} GPUTextures instead of WebGL textures.
  * @internal
  */
-export class WebXRWebGPUCompositionLayerRenderTargetTextureProvider extends WebXRWebGPURenderTargetTextureProvider {
+export class WebXRWebGPUCompositionLayerRenderTargetTextureProvider<
+    LayerTypeT extends WebXRSupportedLayerType = WebXRLayerType,
+> extends WebXRWebGPURenderTargetTextureProvider<LayerTypeT> {
     protected _lastSubImages = new Map<XREye, XRGPUSubImage>();
     /**
      * Per-eye render targets, indexed by eye (0 = left/none, 1 = right). Kept separate from the base
@@ -52,7 +54,7 @@ export class WebXRWebGPUCompositionLayerRenderTargetTextureProvider extends WebX
     constructor(
         _xrSessionManager: WebXRSessionManager,
         protected readonly _xrGPUBinding: XRGPUBinding,
-        public override readonly layerWrapper: WebXRWebGPUCompositionLayerWrapper,
+        public override readonly layerWrapper: WebXRCompositionLayerWrapper<XRCompositionLayer, LayerTypeT>,
         protected readonly _depthStencilFormat?: GPUTextureFormat
     ) {
         super(_xrSessionManager, layerWrapper);

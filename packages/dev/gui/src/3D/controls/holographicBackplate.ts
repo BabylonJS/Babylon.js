@@ -1,12 +1,12 @@
 import { type TransformNode } from "core/Meshes/transformNode";
 import { type Mesh } from "core/Meshes/mesh";
-import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder.pure";
 import { type Scene } from "core/scene";
 import { FluentBackplateMaterial } from "../materials/fluentBackplate/fluentBackplateMaterial.pure";
 import { Control3D } from "./control3D";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
-import { Tools } from "core/Misc/tools";
+import { Tools } from "core/Misc/tools.pure";
 
 /**
  * Class used to create a holographic backplate in 3D

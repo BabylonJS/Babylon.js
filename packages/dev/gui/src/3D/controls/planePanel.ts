@@ -1,4 +1,4 @@
-import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { TmpVectors, Vector3 } from "core/Maths/math.vector.pure";
 
 import { Container3D } from "./container3D";
 import { type Control3D } from "./control3D";

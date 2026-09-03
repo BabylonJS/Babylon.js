@@ -16,11 +16,12 @@
  */
 
 import { writeFileSync, mkdirSync, readFileSync, rmSync, statSync } from "fs";
-import { join, resolve, dirname } from "path";
+import { join, resolve, dirname, relative } from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
 import { spawnSync } from "child_process";
-import { resolvePackageFromArgv, SUPPORTED_PACKAGES, packageArgs } from "./packageConfig.mjs";
+import { resolvePackageFromArgv, SUPPORTED_PACKAGES, packageArgs, getPackageConfig } from "./packageConfig.mjs";
+import { readSideEffectsManifest } from "./sideEffectsManifest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -29,11 +30,60 @@ const PACKAGE = resolvePackageFromArgv();
 const TMP_DIR = join(REPO_ROOT, "scripts/treeshaking/.tmp");
 const CORE_DIST = join(REPO_ROOT, "packages/dev/core/dist");
 const SERIALIZERS_DIST = join(REPO_ROOT, "packages/dev/serializers/dist");
-// Dist of the package under test. Bundler config treats this as "internal"
-// (bundleable) and externalizes everything else (e.g. `core/...` imports from a
-// secondary package), so the test measures only the package's own tree-shaking.
+// Dist of the package under test. GUI tests also bundle Core to validate purity
+// across that package boundary; other secondary package dependencies stay external.
 const PKG_DIST = join(REPO_ROOT, "packages/dev", PACKAGE, "dist");
 const IS_ADO = !!process.env.TF_BUILD;
+
+function toPosixPath(filePath) {
+    return filePath.split(/[/\\]+/).join("/");
+}
+
+function createBundlePackageContext(packageName, distRoot) {
+    const packageConfig = getPackageConfig(packageName);
+    const sideEffectFiles = new Set(
+        readSideEffectsManifest(packageConfig.manifestDir)
+            .manifest.filter((entry) => entry.sideEffects.some((sideEffect) => sideEffect.type !== "declare-module"))
+            .map((entry) => toPosixPath(entry.file))
+    );
+
+    return { distRoot, sideEffectFiles };
+}
+
+const bundlePackageContexts = [createBundlePackageContext(PACKAGE, PKG_DIST)];
+if (PACKAGE === "gui") {
+    bundlePackageContexts.push(createBundlePackageContext("core", CORE_DIST));
+}
+
+function getBundledModuleSideEffects(id) {
+    const cleanId = id.split("?")[0];
+    for (const context of bundlePackageContexts) {
+        const relPath = toPosixPath(relative(context.distRoot, cleanId));
+        if (relPath === ".." || relPath.startsWith("../") || !relPath.endsWith(".js")) {
+            continue;
+        }
+
+        const sourcePath = relPath.slice(0, -".js".length) + ".ts";
+        return sourcePath === "index.ts" || sourcePath.endsWith("/index.ts") || context.sideEffectFiles.has(sourcePath);
+    }
+
+    return null;
+}
+
+function resolveCoreImport(source) {
+    if (PACKAGE !== "gui") {
+        return null;
+    }
+    if (source === "core") {
+        return join(CORE_DIST, "index.js");
+    }
+    if (!source.startsWith("core/")) {
+        return null;
+    }
+
+    const subpath = source.substring("core/".length);
+    return join(CORE_DIST, subpath.endsWith(".js") ? subpath : `${subpath}.js`);
+}
 
 function adoError(msg) {
     if (IS_ADO) {
@@ -187,6 +237,19 @@ const CORE_TEST_CASES = [
         description: "Import + call of registration function should bundle correctly (sanity check)",
     },
     {
+        name: "texture-loaders-registration-pure-bare",
+        entryCode: `import "${CORE_DIST}/Engines/AbstractEngine/abstractEngine.textureLoaders.pure.js";\n`,
+        maxBundleSizeBytes: 500,
+        description: "Bare import of the texture loader registration module should produce a near-empty bundle",
+    },
+    {
+        name: "texture-loaders-registration-pure-named-call",
+        entryCode: `import { RegisterAbstractEngineTextureLoaders } from "${CORE_DIST}/Engines/AbstractEngine/abstractEngine.textureLoaders.pure.js";\nRegisterAbstractEngineTextureLoaders();\n`,
+        maxBundleSizeBytes: Infinity,
+        minBundleSizeBytes: 100,
+        description: "Import + call of the texture loader registration function should retain its implementation",
+    },
+    {
         name: "registration-types-only",
         entryCode: `import "${CORE_DIST}/Buffers/buffer.align.types.js";\n`,
         maxBundleSizeBytes: 500,
@@ -215,6 +278,49 @@ const CORE_TEST_CASES = [
  */
 const TEST_CASES_BY_PACKAGE = {
     core: CORE_TEST_CASES,
+    gui: [
+        {
+            name: "gui-root-pure-barrel-bare",
+            entryCode: `import "${PKG_DIST}/pure.js";\n`,
+            maxBundleSizeBytes: 500,
+            description: "Bare import of the GUI pure barrel, including Core dependencies, should produce a near-empty bundle",
+        },
+        {
+            name: "gui-advanced-dynamic-texture-bare",
+            entryCode: `import "${PKG_DIST}/2D/advancedDynamicTexture.js";\n`,
+            maxBundleSizeBytes: 500,
+            description: "Bare import of AdvancedDynamicTexture, including Core dependencies, should produce a near-empty bundle",
+        },
+        {
+            name: "gui-advanced-dynamic-texture-named",
+            entryCode: `import { AdvancedDynamicTexture } from "${PKG_DIST}/2D/advancedDynamicTexture.js";\nconsole.log(AdvancedDynamicTexture);\n`,
+            maxBundleSizeBytes: Infinity,
+            minBundleSizeBytes: 100,
+            description: "Named import of AdvancedDynamicTexture should retain the class (sanity check)",
+        },
+    ],
+    loaders: [
+        {
+            name: "loaders-gltf1-pure-barrel-bare",
+            entryCode: `import "${PKG_DIST}/glTF/1.0/pure.js";\n`,
+            maxBundleSizeBytes: 500,
+            description: "Bare import of the glTF 1.0 pure barrel should produce a near-empty bundle",
+        },
+        {
+            name: "loaders-gltf1-loader-register",
+            entryCode: `import { RegisterGLTF1Loader } from "${PKG_DIST}/glTF/1.0/glTFLoader.pure.js";\nRegisterGLTF1Loader();\n`,
+            maxBundleSizeBytes: Infinity,
+            minBundleSizeBytes: 100,
+            description: "Import + call of the glTF 1.0 loader registration function should retain its implementation",
+        },
+        {
+            name: "loaders-gltf1-extensions-register",
+            entryCode: `import { RegisterGLTFBinaryExtension } from "${PKG_DIST}/glTF/1.0/glTFBinaryExtension.pure.js";\nimport { RegisterGLTFMaterialsCommonExtension } from "${PKG_DIST}/glTF/1.0/glTFMaterialsCommonExtension.pure.js";\nRegisterGLTFBinaryExtension();\nRegisterGLTFMaterialsCommonExtension();\n`,
+            maxBundleSizeBytes: Infinity,
+            minBundleSizeBytes: 100,
+            description: "Import + call of the glTF 1.0 extension registration functions should retain their implementations",
+        },
+    ],
     serializers: [
         {
             name: "serializers-extension-pure-bare",
@@ -255,33 +361,28 @@ async function testWithRollup(testCase) {
     try {
         const bundle = await rollup({
             input: entryPath,
-            // Treat everything outside the entry and the package dist as external
+            plugins: [
+                {
+                    name: "resolve-core-package",
+                    resolveId: resolveCoreImport,
+                },
+            ],
+            // GUI bundles Core too so its pure surface is verified across package boundaries.
             external: (id) => {
                 if (id === entryPath) {
                     return false;
                 }
-                if (id.startsWith(PKG_DIST)) {
+                if (resolveCoreImport(id) !== null) {
+                    return false;
+                }
+                if (getBundledModuleSideEffects(id) !== null) {
                     return false;
                 }
                 return true;
             },
             treeshake: {
                 moduleSideEffects: (id) => {
-                    // Mirror what package.json sideEffects says:
-                    // Everything in core has side effects EXCEPT ThinMaths, .pure files, and pure barrels
-                    if (id.includes("/Maths/ThinMaths/")) {
-                        return false;
-                    }
-                    if (id.endsWith(".pure.js")) {
-                        return false;
-                    }
-                    if (id.endsWith("/pure.js")) {
-                        return false;
-                    }
-                    if (id.endsWith(".functions.js")) {
-                        return false;
-                    }
-                    return true;
+                    return getBundledModuleSideEffects(id) ?? true;
                 },
             },
             logLevel: "silent",
@@ -349,23 +450,15 @@ async function testWithWebpack(testCase) {
                     core: CORE_DIST,
                 },
             },
-            // Tell webpack that ThinMaths files, .pure files, and pure barrels have no side effects
+            // Mirror the package manifests, including Core when testing GUI.
             module: {
                 rules: [
                     {
-                        test: /Maths[\\/]ThinMaths/,
-                        sideEffects: false,
+                        test: (resource) => getBundledModuleSideEffects(resource) === true,
+                        sideEffects: true,
                     },
                     {
-                        test: /\.pure\.js$/,
-                        sideEffects: false,
-                    },
-                    {
-                        test: /[\\/]pure\.js$/,
-                        sideEffects: false,
-                    },
-                    {
-                        test: /\.functions\.js$/,
+                        test: (resource) => getBundledModuleSideEffects(resource) === false,
                         sideEffects: false,
                     },
                 ],

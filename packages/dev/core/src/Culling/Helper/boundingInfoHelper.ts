@@ -27,11 +27,15 @@ export class BoundingInfoHelper {
     private async _initializePlatformAsync() {
         if (!this._platform) {
             if (this._engine.getCaps().supportComputeShaders) {
-                const module = await import("./computeShaderBoundingHelper");
-                this._platform = new module.ComputeShaderBoundingHelper(this._engine);
+                const [{ ComputeShaderBoundingHelper }] = await Promise.all([import("./computeShaderBoundingHelper.pure"), import("../../ShadersWGSL/boundingInfo.compute")]);
+                this._platform = new ComputeShaderBoundingHelper(this._engine);
             } else if (this._engine.getCaps().supportTransformFeedbacks) {
-                const module = await import("./transformFeedbackBoundingHelper");
-                this._platform = new module.TransformFeedbackBoundingHelper(this._engine as ThinEngine);
+                const [{ TransformFeedbackBoundingHelper }] = await Promise.all([
+                    import("./transformFeedbackBoundingHelper.pure"),
+                    import("../../Shaders/gpuTransform.vertex"),
+                    import("../../Shaders/gpuTransform.fragment"),
+                ]);
+                this._platform = new TransformFeedbackBoundingHelper(this._engine as ThinEngine);
             } else {
                 throw new Error("Your engine does not support Compute Shaders or Transform Feedbacks");
             }
@@ -64,7 +68,7 @@ export class BoundingInfoHelper {
      * If called multiple times, the second, third, etc calls will perform a union of the bounding boxes calculated in the previous calls
      */
     public batchProcess(): void {
-        if (this._platform === null) {
+        if (!this._platform) {
             Logger.Warn("Helper is not initialized. Skipping batch.");
             return;
         }

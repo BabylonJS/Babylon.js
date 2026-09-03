@@ -1,4 +1,4 @@
-import { type FlowGraphBlock } from "../flowGraphBlock";
+import { FlowGraphBlock } from "../flowGraphBlock";
 import { FlowGraphBlockNames } from "./flowGraphBlockNames";
 
 /**
@@ -24,6 +24,36 @@ export function addToBlockFactory(module: string, blockName: string, factory: ()
     ShortNameToFullKey[blockName] = fullKey;
 }
 
+function _IsFlowGraphBlockConstructor(value: unknown): value is typeof FlowGraphBlock {
+    return typeof value === "function" && value.prototype instanceof FlowGraphBlock;
+}
+
+async function _LoadBlock(modulePromise: Promise<object>, blockName: string): Promise<typeof FlowGraphBlock> {
+    const module = await modulePromise;
+    let block: typeof FlowGraphBlock | undefined;
+    let register: (() => void) | undefined;
+
+    for (const [exportName, value] of Object.entries(module)) {
+        if (exportName === blockName && _IsFlowGraphBlockConstructor(value)) {
+            block = value;
+        } else if (exportName.startsWith("RegisterFlowGraph") && typeof value === "function") {
+            register = value;
+        }
+    }
+
+    if (!block || !register) {
+        throw new Error(`Invalid FlowGraph block module for ${blockName}`);
+    }
+
+    register();
+    if (blockName === "FlowGraphPlayAnimationBlock") {
+        const { RegisterAnimationGroup } = await import("../../Animations/animationGroup.pure");
+        RegisterAnimationGroup();
+    }
+
+    return block;
+}
+
 /**
  * a function to get a factory function for a block.
  * @param blockName the block name to initialize. If the block comes from an external module, the name should be in the format "module/blockName"
@@ -33,354 +63,354 @@ export function addToBlockFactory(module: string, blockName: string, factory: ()
 export function blockFactory(blockName: FlowGraphBlockNames | string): () => Promise<typeof FlowGraphBlock> {
     switch (blockName) {
         case FlowGraphBlockNames.PlayAnimation:
-            return async () => (await import("./Execution/Animation/flowGraphPlayAnimationBlock")).FlowGraphPlayAnimationBlock;
+            return async () => await _LoadBlock(import("./Execution/Animation/flowGraphPlayAnimationBlock.pure"), "FlowGraphPlayAnimationBlock");
         case FlowGraphBlockNames.StopAnimation:
-            return async () => (await import("./Execution/Animation/flowGraphStopAnimationBlock")).FlowGraphStopAnimationBlock;
+            return async () => await _LoadBlock(import("./Execution/Animation/flowGraphStopAnimationBlock.pure"), "FlowGraphStopAnimationBlock");
         case FlowGraphBlockNames.PauseAnimation:
-            return async () => (await import("./Execution/Animation/flowGraphPauseAnimationBlock")).FlowGraphPauseAnimationBlock;
+            return async () => await _LoadBlock(import("./Execution/Animation/flowGraphPauseAnimationBlock.pure"), "FlowGraphPauseAnimationBlock");
         case FlowGraphBlockNames.ValueInterpolation:
-            return async () => (await import("./Execution/Animation/flowGraphInterpolationBlock")).FlowGraphInterpolationBlock;
+            return async () => await _LoadBlock(import("./Execution/Animation/flowGraphInterpolationBlock.pure"), "FlowGraphInterpolationBlock");
         case FlowGraphBlockNames.SceneReadyEvent:
-            return async () => (await import("./Event/flowGraphSceneReadyEventBlock")).FlowGraphSceneReadyEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphSceneReadyEventBlock.pure"), "FlowGraphSceneReadyEventBlock");
         case FlowGraphBlockNames.SceneTickEvent:
-            return async () => (await import("./Event/flowGraphSceneTickEventBlock")).FlowGraphSceneTickEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphSceneTickEventBlock.pure"), "FlowGraphSceneTickEventBlock");
         case FlowGraphBlockNames.SendCustomEvent:
-            return async () => (await import("./Event/flowGraphSendCustomEventBlock")).FlowGraphSendCustomEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphSendCustomEventBlock.pure"), "FlowGraphSendCustomEventBlock");
         case FlowGraphBlockNames.ReceiveCustomEvent:
-            return async () => (await import("./Event/flowGraphReceiveCustomEventBlock")).FlowGraphReceiveCustomEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphReceiveCustomEventBlock.pure"), "FlowGraphReceiveCustomEventBlock");
         case FlowGraphBlockNames.StopEventPropagation:
-            return async () => (await import("./Event/flowGraphStopEventPropagationBlock")).FlowGraphStopEventPropagationBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphStopEventPropagationBlock.pure"), "FlowGraphStopEventPropagationBlock");
         case FlowGraphBlockNames.MeshPickEvent:
-            return async () => (await import("./Event/flowGraphMeshPickEventBlock")).FlowGraphMeshPickEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphMeshPickEventBlock.pure"), "FlowGraphMeshPickEventBlock");
         case FlowGraphBlockNames.E:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphEBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphEBlock");
         case FlowGraphBlockNames.PI:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphPiBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphPiBlock");
         case FlowGraphBlockNames.Tau:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTauBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphTauBlock");
         case FlowGraphBlockNames.Inf:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphInfBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphInfBlock");
         case FlowGraphBlockNames.NaN:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphNaNBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphNaNBlock");
         case FlowGraphBlockNames.Random:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphRandomBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphRandomBlock");
         case FlowGraphBlockNames.Add:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphAddBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphAddBlock");
         case FlowGraphBlockNames.Subtract:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphSubtractBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphSubtractBlock");
         case FlowGraphBlockNames.Multiply:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMultiplyBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphMultiplyBlock");
         case FlowGraphBlockNames.Divide:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphDivideBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphDivideBlock");
         case FlowGraphBlockNames.Abs:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphAbsBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphAbsBlock");
         case FlowGraphBlockNames.Sign:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphSignBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphSignBlock");
         case FlowGraphBlockNames.Trunc:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTruncBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphTruncBlock");
         case FlowGraphBlockNames.Floor:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphFloorBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphFloorBlock");
         case FlowGraphBlockNames.Ceil:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphCeilBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphCeilBlock");
         case FlowGraphBlockNames.Round:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphRoundBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphRoundBlock");
         case FlowGraphBlockNames.Fraction:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphFractionBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphFractionBlock");
         case FlowGraphBlockNames.Negation:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphNegationBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphNegationBlock");
         case FlowGraphBlockNames.Modulo:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphModuloBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphModuloBlock");
         case FlowGraphBlockNames.Min:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMinBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphMinBlock");
         case FlowGraphBlockNames.Max:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMaxBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphMaxBlock");
         case FlowGraphBlockNames.Clamp:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphClampBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphClampBlock");
         case FlowGraphBlockNames.Saturate:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphSaturateBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphSaturateBlock");
         case FlowGraphBlockNames.MathInterpolation:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMathInterpolationBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphMathInterpolationBlock");
         case FlowGraphBlockNames.MathSlerp:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMathSlerpBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphMathSlerpBlock");
         case FlowGraphBlockNames.SmoothStep:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphMathSmoothStepBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphMathSmoothStepBlock");
         case FlowGraphBlockNames.RGBToOkLCh:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphRGBToOkLChBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphRGBToOkLChBlock");
         case FlowGraphBlockNames.RGBFromOkLCh:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphRGBFromOkLChBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphRGBFromOkLChBlock");
         case FlowGraphBlockNames.Equality:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphEqualityBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphEqualityBlock");
         case FlowGraphBlockNames.LessThan:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphLessThanBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphLessThanBlock");
         case FlowGraphBlockNames.LessThanOrEqual:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphLessThanOrEqualBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphLessThanOrEqualBlock");
         case FlowGraphBlockNames.GreaterThan:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphGreaterThanBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphGreaterThanBlock");
         case FlowGraphBlockNames.GreaterThanOrEqual:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphGreaterThanOrEqualBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphGreaterThanOrEqualBlock");
         case FlowGraphBlockNames.IsNaN:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphIsNanBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphIsNanBlock");
         case FlowGraphBlockNames.IsInfinity:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphIsInfinityBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphIsInfinityBlock");
         case FlowGraphBlockNames.DegToRad:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphDegToRadBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphDegToRadBlock");
         case FlowGraphBlockNames.RadToDeg:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphRadToDegBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphRadToDegBlock");
         case FlowGraphBlockNames.Sin:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphSinBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphSinBlock");
         case FlowGraphBlockNames.Cos:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphCosBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphCosBlock");
         case FlowGraphBlockNames.Tan:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTanBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphTanBlock");
         case FlowGraphBlockNames.Asin:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphAsinBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphAsinBlock");
         case FlowGraphBlockNames.Acos:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphAcosBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphAcosBlock");
         case FlowGraphBlockNames.Atan:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphAtanBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphAtanBlock");
         case FlowGraphBlockNames.Atan2:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphAtan2Block;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphAtan2Block");
         case FlowGraphBlockNames.Sinh:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphSinhBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphSinhBlock");
         case FlowGraphBlockNames.Cosh:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphCoshBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphCoshBlock");
         case FlowGraphBlockNames.Tanh:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTanhBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphTanhBlock");
         case FlowGraphBlockNames.Asinh:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphAsinhBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphAsinhBlock");
         case FlowGraphBlockNames.Acosh:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphAcoshBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphAcoshBlock");
         case FlowGraphBlockNames.Atanh:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphAtanhBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphAtanhBlock");
         case FlowGraphBlockNames.Exponential:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphExpBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphExpBlock");
         case FlowGraphBlockNames.Log:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphLogBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphLogBlock");
         case FlowGraphBlockNames.Log2:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphLog2Block;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphLog2Block");
         case FlowGraphBlockNames.Log10:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphLog10Block;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphLog10Block");
         case FlowGraphBlockNames.SquareRoot:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphSquareRootBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphSquareRootBlock");
         case FlowGraphBlockNames.Power:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphPowerBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphPowerBlock");
         case FlowGraphBlockNames.CubeRoot:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphCubeRootBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphCubeRootBlock");
         case FlowGraphBlockNames.BitwiseAnd:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphBitwiseAndBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphBitwiseAndBlock");
         case FlowGraphBlockNames.BitwiseOr:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphBitwiseOrBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphBitwiseOrBlock");
         case FlowGraphBlockNames.BitwiseNot:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphBitwiseNotBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphBitwiseNotBlock");
         case FlowGraphBlockNames.BitwiseXor:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphBitwiseXorBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphBitwiseXorBlock");
         case FlowGraphBlockNames.BitwiseLeftShift:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphBitwiseLeftShiftBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphBitwiseLeftShiftBlock");
         case FlowGraphBlockNames.BitwiseRightShift:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphBitwiseRightShiftBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphBitwiseRightShiftBlock");
         case FlowGraphBlockNames.Length:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphLengthBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphLengthBlock");
         case FlowGraphBlockNames.Normalize:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphNormalizeBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphNormalizeBlock");
         case FlowGraphBlockNames.Dot:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphDotBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphDotBlock");
         case FlowGraphBlockNames.Cross:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphCrossBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphCrossBlock");
         case FlowGraphBlockNames.Rotate2D:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphRotate2DBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphRotate2DBlock");
         case FlowGraphBlockNames.Rotate3D:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphRotate3DBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphRotate3DBlock");
         case FlowGraphBlockNames.Transpose:
-            return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphTransposeBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMatrixMathBlocks.pure"), "FlowGraphTransposeBlock");
         case FlowGraphBlockNames.Determinant:
-            return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphDeterminantBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMatrixMathBlocks.pure"), "FlowGraphDeterminantBlock");
         case FlowGraphBlockNames.InvertMatrix:
-            return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphInvertMatrixBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMatrixMathBlocks.pure"), "FlowGraphInvertMatrixBlock");
         case FlowGraphBlockNames.MatrixMultiplication:
-            return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphMatrixMultiplicationBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMatrixMathBlocks.pure"), "FlowGraphMatrixMultiplicationBlock");
         case FlowGraphBlockNames.Branch:
-            return async () => (await import("./Execution/ControlFlow/flowGraphBranchBlock")).FlowGraphBranchBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphBranchBlock.pure"), "FlowGraphBranchBlock");
         case FlowGraphBlockNames.SetDelay:
-            return async () => (await import("./Execution/ControlFlow/flowGraphSetDelayBlock")).FlowGraphSetDelayBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphSetDelayBlock.pure"), "FlowGraphSetDelayBlock");
         case FlowGraphBlockNames.CancelDelay:
-            return async () => (await import("./Execution/ControlFlow/flowGraphCancelDelayBlock")).FlowGraphCancelDelayBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphCancelDelayBlock.pure"), "FlowGraphCancelDelayBlock");
         case FlowGraphBlockNames.CallCounter:
-            return async () => (await import("./Execution/ControlFlow/flowGraphCounterBlock")).FlowGraphCallCounterBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphCounterBlock.pure"), "FlowGraphCallCounterBlock");
         case FlowGraphBlockNames.Debounce:
-            return async () => (await import("./Execution/ControlFlow/flowGraphDebounceBlock")).FlowGraphDebounceBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphDebounceBlock.pure"), "FlowGraphDebounceBlock");
         case FlowGraphBlockNames.Throttle:
-            return async () => (await import("./Execution/ControlFlow/flowGraphThrottleBlock")).FlowGraphThrottleBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphThrottleBlock.pure"), "FlowGraphThrottleBlock");
         case FlowGraphBlockNames.DoN:
-            return async () => (await import("./Execution/ControlFlow/flowGraphDoNBlock")).FlowGraphDoNBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphDoNBlock.pure"), "FlowGraphDoNBlock");
         case FlowGraphBlockNames.FlipFlop:
-            return async () => (await import("./Execution/ControlFlow/flowGraphFlipFlopBlock")).FlowGraphFlipFlopBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphFlipFlopBlock.pure"), "FlowGraphFlipFlopBlock");
         case FlowGraphBlockNames.ForLoop:
-            return async () => (await import("./Execution/ControlFlow/flowGraphForLoopBlock")).FlowGraphForLoopBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphForLoopBlock.pure"), "FlowGraphForLoopBlock");
         case FlowGraphBlockNames.MultiGate:
-            return async () => (await import("./Execution/ControlFlow/flowGraphMultiGateBlock")).FlowGraphMultiGateBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphMultiGateBlock.pure"), "FlowGraphMultiGateBlock");
         case FlowGraphBlockNames.Sequence:
-            return async () => (await import("./Execution/ControlFlow/flowGraphSequenceBlock")).FlowGraphSequenceBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphSequenceBlock.pure"), "FlowGraphSequenceBlock");
         case FlowGraphBlockNames.Switch:
-            return async () => (await import("./Execution/ControlFlow/flowGraphSwitchBlock")).FlowGraphSwitchBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphSwitchBlock.pure"), "FlowGraphSwitchBlock");
         case FlowGraphBlockNames.WaitAll:
-            return async () => (await import("./Execution/ControlFlow/flowGraphWaitAllBlock")).FlowGraphWaitAllBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphWaitAllBlock.pure"), "FlowGraphWaitAllBlock");
         case FlowGraphBlockNames.WhileLoop:
-            return async () => (await import("./Execution/ControlFlow/flowGraphWhileLoopBlock")).FlowGraphWhileLoopBlock;
+            return async () => await _LoadBlock(import("./Execution/ControlFlow/flowGraphWhileLoopBlock.pure"), "FlowGraphWhileLoopBlock");
         case FlowGraphBlockNames.ConsoleLog:
-            return async () => (await import("./Execution/flowGraphConsoleLogBlock")).FlowGraphConsoleLogBlock;
+            return async () => await _LoadBlock(import("./Execution/flowGraphConsoleLogBlock.pure"), "FlowGraphConsoleLogBlock");
         case FlowGraphBlockNames.Conditional:
-            return async () => (await import("./Data/flowGraphConditionalDataBlock")).FlowGraphConditionalDataBlock;
+            return async () => await _LoadBlock(import("./Data/flowGraphConditionalDataBlock.pure"), "FlowGraphConditionalDataBlock");
         case FlowGraphBlockNames.Constant:
-            return async () => (await import("./Data/flowGraphConstantBlock")).FlowGraphConstantBlock;
+            return async () => await _LoadBlock(import("./Data/flowGraphConstantBlock.pure"), "FlowGraphConstantBlock");
         case FlowGraphBlockNames.TransformCoordinatesSystem:
-            return async () => (await import("./Data/flowGraphTransformCoordinatesSystemBlock")).FlowGraphTransformCoordinatesSystemBlock;
+            return async () => await _LoadBlock(import("./Data/flowGraphTransformCoordinatesSystemBlock.pure"), "FlowGraphTransformCoordinatesSystemBlock");
         case FlowGraphBlockNames.GetAsset:
-            return async () => (await import("./Data/flowGraphGetAssetBlock")).FlowGraphGetAssetBlock;
+            return async () => await _LoadBlock(import("./Data/flowGraphGetAssetBlock.pure"), "FlowGraphGetAssetBlock");
         case FlowGraphBlockNames.GetProperty:
-            return async () => (await import("./Data/flowGraphGetPropertyBlock")).FlowGraphGetPropertyBlock;
+            return async () => await _LoadBlock(import("./Data/flowGraphGetPropertyBlock.pure"), "FlowGraphGetPropertyBlock");
         case FlowGraphBlockNames.SetProperty:
-            return async () => (await import("./Execution/flowGraphSetPropertyBlock")).FlowGraphSetPropertyBlock;
+            return async () => await _LoadBlock(import("./Execution/flowGraphSetPropertyBlock.pure"), "FlowGraphSetPropertyBlock");
         case FlowGraphBlockNames.GetVariable:
-            return async () => (await import("./Data/flowGraphGetVariableBlock")).FlowGraphGetVariableBlock;
+            return async () => await _LoadBlock(import("./Data/flowGraphGetVariableBlock.pure"), "FlowGraphGetVariableBlock");
         case FlowGraphBlockNames.SetVariable:
-            return async () => (await import("./Execution/flowGraphSetVariableBlock")).FlowGraphSetVariableBlock;
+            return async () => await _LoadBlock(import("./Execution/flowGraphSetVariableBlock.pure"), "FlowGraphSetVariableBlock");
         case FlowGraphBlockNames.JsonPointerParser:
-            return async () => (await import("./Data/Transformers/flowGraphJsonPointerParserBlock")).FlowGraphJsonPointerParserBlock;
+            return async () => await _LoadBlock(import("./Data/Transformers/flowGraphJsonPointerParserBlock.pure"), "FlowGraphJsonPointerParserBlock");
         case FlowGraphBlockNames.LeadingZeros:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphLeadingZerosBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphLeadingZerosBlock");
         case FlowGraphBlockNames.TrailingZeros:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphTrailingZerosBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphTrailingZerosBlock");
         case FlowGraphBlockNames.OneBitsCounter:
-            return async () => (await import("./Data/Math/flowGraphMathBlocks")).FlowGraphOneBitsCounterBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathBlocks.pure"), "FlowGraphOneBitsCounterBlock");
         case FlowGraphBlockNames.CombineVector2:
-            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineVector2Block;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathCombineExtractBlocks.pure"), "FlowGraphCombineVector2Block");
         case FlowGraphBlockNames.CombineVector3:
-            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineVector3Block;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathCombineExtractBlocks.pure"), "FlowGraphCombineVector3Block");
         case FlowGraphBlockNames.CombineVector4:
-            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineVector4Block;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathCombineExtractBlocks.pure"), "FlowGraphCombineVector4Block");
         case FlowGraphBlockNames.CombineMatrix:
-            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineMatrixBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathCombineExtractBlocks.pure"), "FlowGraphCombineMatrixBlock");
         case FlowGraphBlockNames.CombineMatrix2D:
-            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineMatrix2DBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathCombineExtractBlocks.pure"), "FlowGraphCombineMatrix2DBlock");
         case FlowGraphBlockNames.CombineMatrix3D:
-            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphCombineMatrix3DBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathCombineExtractBlocks.pure"), "FlowGraphCombineMatrix3DBlock");
         case FlowGraphBlockNames.ExtractVector2:
-            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractVector2Block;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathCombineExtractBlocks.pure"), "FlowGraphExtractVector2Block");
         case FlowGraphBlockNames.ExtractVector3:
-            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractVector3Block;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathCombineExtractBlocks.pure"), "FlowGraphExtractVector3Block");
         case FlowGraphBlockNames.ExtractVector4:
-            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractVector4Block;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathCombineExtractBlocks.pure"), "FlowGraphExtractVector4Block");
         case FlowGraphBlockNames.ExtractMatrix:
-            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractMatrixBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathCombineExtractBlocks.pure"), "FlowGraphExtractMatrixBlock");
         case FlowGraphBlockNames.ExtractMatrix2D:
-            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractMatrix2DBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathCombineExtractBlocks.pure"), "FlowGraphExtractMatrix2DBlock");
         case FlowGraphBlockNames.ExtractMatrix3D:
-            return async () => (await import("./Data/Math/flowGraphMathCombineExtractBlocks")).FlowGraphExtractMatrix3DBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMathCombineExtractBlocks.pure"), "FlowGraphExtractMatrix3DBlock");
         case FlowGraphBlockNames.TransformVector:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphTransformBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphTransformBlock");
         case FlowGraphBlockNames.TransformCoordinates:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphTransformCoordinatesBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphTransformCoordinatesBlock");
         case FlowGraphBlockNames.Conjugate:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphConjugateBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphConjugateBlock");
         case FlowGraphBlockNames.AngleBetween:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphAngleBetweenBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphAngleBetweenBlock");
         case FlowGraphBlockNames.QuaternionFromAxisAngle:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphQuaternionFromAxisAngleBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphQuaternionFromAxisAngleBlock");
         case FlowGraphBlockNames.AxisAngleFromQuaternion:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphAxisAngleFromQuaternionBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphAxisAngleFromQuaternionBlock");
         case FlowGraphBlockNames.QuaternionFromDirections:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphQuaternionFromDirectionsBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphQuaternionFromDirectionsBlock");
         case FlowGraphBlockNames.QuaternionFromUpForward:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphQuaternionFromUpForwardBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphQuaternionFromUpForwardBlock");
         case FlowGraphBlockNames.QuaternionFromAngles:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphQuaternionFromAnglesBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphQuaternionFromAnglesBlock");
         case FlowGraphBlockNames.VectorSlerp:
-            return async () => (await import("./Data/Math/flowGraphVectorMathBlocks")).FlowGraphVectorSlerpBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphVectorMathBlocks.pure"), "FlowGraphVectorSlerpBlock");
         case FlowGraphBlockNames.MatrixDecompose:
-            return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphMatrixDecomposeBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMatrixMathBlocks.pure"), "FlowGraphMatrixDecomposeBlock");
         case FlowGraphBlockNames.MatrixCompose:
-            return async () => (await import("./Data/Math/flowGraphMatrixMathBlocks")).FlowGraphMatrixComposeBlock;
+            return async () => await _LoadBlock(import("./Data/Math/flowGraphMatrixMathBlocks.pure"), "FlowGraphMatrixComposeBlock");
         case FlowGraphBlockNames.BooleanToFloat:
-            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlocks")).FlowGraphBooleanToFloat;
+            return async () => await _LoadBlock(import("./Data/Transformers/flowGraphTypeToTypeBlocks.pure"), "FlowGraphBooleanToFloat");
         case FlowGraphBlockNames.BooleanToInt:
-            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlocks")).FlowGraphBooleanToInt;
+            return async () => await _LoadBlock(import("./Data/Transformers/flowGraphTypeToTypeBlocks.pure"), "FlowGraphBooleanToInt");
         case FlowGraphBlockNames.FloatToBoolean:
-            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlocks")).FlowGraphFloatToBoolean;
+            return async () => await _LoadBlock(import("./Data/Transformers/flowGraphTypeToTypeBlocks.pure"), "FlowGraphFloatToBoolean");
         case FlowGraphBlockNames.IntToBoolean:
-            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlocks")).FlowGraphIntToBoolean;
+            return async () => await _LoadBlock(import("./Data/Transformers/flowGraphTypeToTypeBlocks.pure"), "FlowGraphIntToBoolean");
         case FlowGraphBlockNames.IntToFloat:
-            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlocks")).FlowGraphIntToFloat;
+            return async () => await _LoadBlock(import("./Data/Transformers/flowGraphTypeToTypeBlocks.pure"), "FlowGraphIntToFloat");
         case FlowGraphBlockNames.FloatToInt:
-            return async () => (await import("./Data/Transformers/flowGraphTypeToTypeBlocks")).FlowGraphFloatToInt;
+            return async () => await _LoadBlock(import("./Data/Transformers/flowGraphTypeToTypeBlocks.pure"), "FlowGraphFloatToInt");
         case FlowGraphBlockNames.Easing:
-            return async () => (await import("./Execution/Animation/flowGraphEasingBlock")).FlowGraphEasingBlock;
+            return async () => await _LoadBlock(import("./Execution/Animation/flowGraphEasingBlock.pure"), "FlowGraphEasingBlock");
         case FlowGraphBlockNames.BezierCurveEasing:
-            return async () => (await import("./Execution/Animation/flowGraphBezierCurveEasingBlock")).FlowGraphBezierCurveEasingBlock;
+            return async () => await _LoadBlock(import("./Execution/Animation/flowGraphBezierCurveEasingBlock.pure"), "FlowGraphBezierCurveEasingBlock");
         case FlowGraphBlockNames.PointerOverEvent:
-            return async () => (await import("./Event/flowGraphPointerOverEventBlock")).FlowGraphPointerOverEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphPointerOverEventBlock.pure"), "FlowGraphPointerOverEventBlock");
         case FlowGraphBlockNames.PointerOutEvent:
-            return async () => (await import("./Event/flowGraphPointerOutEventBlock")).FlowGraphPointerOutEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphPointerOutEventBlock.pure"), "FlowGraphPointerOutEventBlock");
         case FlowGraphBlockNames.PointerDownEvent:
-            return async () => (await import("./Event/flowGraphPointerDownEventBlock")).FlowGraphPointerDownEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphPointerDownEventBlock.pure"), "FlowGraphPointerDownEventBlock");
         case FlowGraphBlockNames.PointerUpEvent:
-            return async () => (await import("./Event/flowGraphPointerUpEventBlock")).FlowGraphPointerUpEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphPointerUpEventBlock.pure"), "FlowGraphPointerUpEventBlock");
         case FlowGraphBlockNames.PointerMoveEvent:
-            return async () => (await import("./Event/flowGraphPointerMoveEventBlock")).FlowGraphPointerMoveEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphPointerMoveEventBlock.pure"), "FlowGraphPointerMoveEventBlock");
         // Keyboard
         case FlowGraphBlockNames.KeyDownEvent:
-            return async () => (await import("./Event/flowGraphKeyDownEventBlock")).FlowGraphKeyDownEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphKeyDownEventBlock.pure"), "FlowGraphKeyDownEventBlock");
         case FlowGraphBlockNames.KeyUpEvent:
-            return async () => (await import("./Event/flowGraphKeyUpEventBlock")).FlowGraphKeyUpEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphKeyUpEventBlock.pure"), "FlowGraphKeyUpEventBlock");
         case FlowGraphBlockNames.IsKeyPressed:
-            return async () => (await import("./Data/flowGraphIsKeyPressedBlock")).FlowGraphIsKeyPressedBlock;
+            return async () => await _LoadBlock(import("./Data/flowGraphIsKeyPressedBlock.pure"), "FlowGraphIsKeyPressedBlock");
         case FlowGraphBlockNames.Context:
-            return async () => (await import("./Data/Utils/flowGraphContextBlock")).FlowGraphContextBlock;
+            return async () => await _LoadBlock(import("./Data/Utils/flowGraphContextBlock.pure"), "FlowGraphContextBlock");
         case FlowGraphBlockNames.ArrayIndex:
-            return async () => (await import("./Data/Utils/flowGraphArrayIndexBlock")).FlowGraphArrayIndexBlock;
+            return async () => await _LoadBlock(import("./Data/Utils/flowGraphArrayIndexBlock.pure"), "FlowGraphArrayIndexBlock");
         case FlowGraphBlockNames.CodeExecution:
             return async () => (await import("./Data/Utils/flowGraphCodeExecutionBlock")).FlowGraphCodeExecutionBlock;
         case FlowGraphBlockNames.IndexOf:
-            return async () => (await import("./Data/Utils/flowGraphIndexOfBlock")).FlowGraphIndexOfBlock;
+            return async () => await _LoadBlock(import("./Data/Utils/flowGraphIndexOfBlock.pure"), "FlowGraphIndexOfBlock");
         case FlowGraphBlockNames.FunctionReference:
-            return async () => (await import("./Data/Utils/flowGraphFunctionReferenceBlock")).FlowGraphFunctionReferenceBlock;
+            return async () => await _LoadBlock(import("./Data/Utils/flowGraphFunctionReferenceBlock.pure"), "FlowGraphFunctionReferenceBlock");
         case FlowGraphBlockNames.DataSwitch:
-            return async () => (await import("./Data/flowGraphDataSwitchBlock")).FlowGraphDataSwitchBlock;
+            return async () => await _LoadBlock(import("./Data/flowGraphDataSwitchBlock.pure"), "FlowGraphDataSwitchBlock");
         case FlowGraphBlockNames.DebugBlock:
-            return async () => (await import("./Data/flowGraphDebugBlock")).FlowGraphDebugBlock;
+            return async () => await _LoadBlock(import("./Data/flowGraphDebugBlock.pure"), "FlowGraphDebugBlock");
         // Physics
         case FlowGraphBlockNames.PhysicsCollisionEvent:
-            return async () => (await import("./Event/flowGraphPhysicsCollisionEventBlock")).FlowGraphPhysicsCollisionEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphPhysicsCollisionEventBlock.pure"), "FlowGraphPhysicsCollisionEventBlock");
         case FlowGraphBlockNames.PhysicsApplyForce:
-            return async () => (await import("./Execution/Physics/flowGraphApplyForceBlock")).FlowGraphApplyForceBlock;
+            return async () => await _LoadBlock(import("./Execution/Physics/flowGraphApplyForceBlock.pure"), "FlowGraphApplyForceBlock");
         case FlowGraphBlockNames.PhysicsApplyImpulse:
-            return async () => (await import("./Execution/Physics/flowGraphApplyImpulseBlock")).FlowGraphApplyImpulseBlock;
+            return async () => await _LoadBlock(import("./Execution/Physics/flowGraphApplyImpulseBlock.pure"), "FlowGraphApplyImpulseBlock");
         case FlowGraphBlockNames.PhysicsSetLinearVelocity:
-            return async () => (await import("./Execution/Physics/flowGraphSetLinearVelocityBlock")).FlowGraphSetLinearVelocityBlock;
+            return async () => await _LoadBlock(import("./Execution/Physics/flowGraphSetLinearVelocityBlock.pure"), "FlowGraphSetLinearVelocityBlock");
         case FlowGraphBlockNames.PhysicsSetAngularVelocity:
-            return async () => (await import("./Execution/Physics/flowGraphSetAngularVelocityBlock")).FlowGraphSetAngularVelocityBlock;
+            return async () => await _LoadBlock(import("./Execution/Physics/flowGraphSetAngularVelocityBlock.pure"), "FlowGraphSetAngularVelocityBlock");
         case FlowGraphBlockNames.PhysicsSetMotionType:
-            return async () => (await import("./Execution/Physics/flowGraphSetPhysicsMotionTypeBlock")).FlowGraphSetPhysicsMotionTypeBlock;
+            return async () => await _LoadBlock(import("./Execution/Physics/flowGraphSetPhysicsMotionTypeBlock.pure"), "FlowGraphSetPhysicsMotionTypeBlock");
         case FlowGraphBlockNames.PhysicsGetLinearVelocity:
-            return async () => (await import("./Data/Physics/flowGraphGetLinearVelocityBlock")).FlowGraphGetLinearVelocityBlock;
+            return async () => await _LoadBlock(import("./Data/Physics/flowGraphGetLinearVelocityBlock.pure"), "FlowGraphGetLinearVelocityBlock");
         case FlowGraphBlockNames.PhysicsGetAngularVelocity:
-            return async () => (await import("./Data/Physics/flowGraphGetAngularVelocityBlock")).FlowGraphGetAngularVelocityBlock;
+            return async () => await _LoadBlock(import("./Data/Physics/flowGraphGetAngularVelocityBlock.pure"), "FlowGraphGetAngularVelocityBlock");
         case FlowGraphBlockNames.PhysicsGetMassProperties:
-            return async () => (await import("./Data/Physics/flowGraphGetPhysicsMassPropertiesBlock")).FlowGraphGetPhysicsMassPropertiesBlock;
+            return async () => await _LoadBlock(import("./Data/Physics/flowGraphGetPhysicsMassPropertiesBlock.pure"), "FlowGraphGetPhysicsMassPropertiesBlock");
         // Audio
         case FlowGraphBlockNames.AudioPlaySound:
-            return async () => (await import("./Execution/Audio/flowGraphPlaySoundBlock")).FlowGraphPlaySoundBlock;
+            return async () => await _LoadBlock(import("./Execution/Audio/flowGraphPlaySoundBlock.pure"), "FlowGraphPlaySoundBlock");
         case FlowGraphBlockNames.AudioStopSound:
-            return async () => (await import("./Execution/Audio/flowGraphStopSoundBlock")).FlowGraphStopSoundBlock;
+            return async () => await _LoadBlock(import("./Execution/Audio/flowGraphStopSoundBlock.pure"), "FlowGraphStopSoundBlock");
         case FlowGraphBlockNames.AudioPauseSound:
-            return async () => (await import("./Execution/Audio/flowGraphPauseSoundBlock")).FlowGraphPauseSoundBlock;
+            return async () => await _LoadBlock(import("./Execution/Audio/flowGraphPauseSoundBlock.pure"), "FlowGraphPauseSoundBlock");
         case FlowGraphBlockNames.AudioSetVolume:
-            return async () => (await import("./Execution/Audio/flowGraphSetSoundVolumeBlock")).FlowGraphSetSoundVolumeBlock;
+            return async () => await _LoadBlock(import("./Execution/Audio/flowGraphSetSoundVolumeBlock.pure"), "FlowGraphSetSoundVolumeBlock");
         case FlowGraphBlockNames.AudioSoundEndedEvent:
-            return async () => (await import("./Event/flowGraphSoundEndedEventBlock")).FlowGraphSoundEndedEventBlock;
+            return async () => await _LoadBlock(import("./Event/flowGraphSoundEndedEventBlock.pure"), "FlowGraphSoundEndedEventBlock");
         case FlowGraphBlockNames.AudioGetVolume:
-            return async () => (await import("./Data/Audio/flowGraphGetSoundVolumeBlock")).FlowGraphGetSoundVolumeBlock;
+            return async () => await _LoadBlock(import("./Data/Audio/flowGraphGetSoundVolumeBlock.pure"), "FlowGraphGetSoundVolumeBlock");
         case FlowGraphBlockNames.AudioIsSoundPlaying:
-            return async () => (await import("./Data/Audio/flowGraphIsSoundPlayingBlock")).FlowGraphIsSoundPlayingBlock;
+            return async () => await _LoadBlock(import("./Data/Audio/flowGraphIsSoundPlayingBlock.pure"), "FlowGraphIsSoundPlayingBlock");
         default:
             // check if the block is a custom block
             if (CustomBlocks[blockName]) {

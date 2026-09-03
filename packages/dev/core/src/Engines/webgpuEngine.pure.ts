@@ -161,6 +161,7 @@ export interface WebGPUEngineOptions extends AbstractEngineOptions, GPURequestAd
      * created (adapter-request time): WebGPU has no post-hoc "make XR compatible" step, so it cannot
      * be toggled on later. Leave unset/false for the default non-XR path.
      * Default: false
+     * @experimental WebGPU-XR support is experimental and may change.
      */
     xrCompatible?: boolean;
 

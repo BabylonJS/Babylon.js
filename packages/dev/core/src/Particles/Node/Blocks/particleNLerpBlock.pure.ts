@@ -1,6 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
-import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector.pure";
+import { Vector2, Vector3 } from "core/Maths/math.vector.pure";
+import { Color4 } from "../../../Maths/math.color.pure";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
@@ -101,8 +102,12 @@ export class ParticleNLerpBlock extends NodeParticleBlock {
                     return result;
                 }
                 case NodeParticleBlockConnectionPointTypes.Color4: {
-                    const result = new Vector4(func(gradient, left.r, right.r), func(gradient, left.g, right.g), func(gradient, left.b, right.b), func(gradient, left.a, right.a));
-                    result.normalize();
+                    const result = new Color4(func(gradient, left.r, right.r), func(gradient, left.g, right.g), func(gradient, left.b, right.b), func(gradient, left.a, right.a));
+                    // Color4 has no normalize(), so normalize in place to match the other cases
+                    const len = Math.sqrt(result.r * result.r + result.g * result.g + result.b * result.b + result.a * result.a);
+                    if (len !== 0) {
+                        result.scaleInPlace(1 / len);
+                    }
 
                     return result;
                 }

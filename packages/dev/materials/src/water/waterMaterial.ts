@@ -24,7 +24,7 @@ import { type Mesh } from "core/Meshes/mesh";
 import { type Camera } from "core/Cameras/camera";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { _ShaderImportLoader } from "core/Misc/shaderImportLoader";
 
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { CreateGround } from "core/Meshes/Builders/groundBuilder";
@@ -79,6 +79,7 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public USE_WORLD_COORDINATES = false;
 
     public IMAGEPROCESSING = false;
+    public WHITEBALANCE = false;
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;
@@ -240,7 +241,10 @@ export class WaterMaterial extends PushMaterial {
     private _offsetMirror: Matrix = Matrix.Zero();
     private _tempPlane: Plane = new Plane(0, 0, 0, 0);
     private _lastTime: number = 0;
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new _ShaderImportLoader(
+        () => [import("./water.vertex"), import("./water.fragment")],
+        () => [import("./wgsl/water.vertex"), import("./wgsl/water.fragment")]
+    );
     private _lastDeltaTime: number = 0;
 
     private _waitingRenderList: Nullable<string[]>;
@@ -565,17 +569,7 @@ export class WaterMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights },
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("./wgsl/water.vertex"), import("./wgsl/water.fragment")]);
-                                  } else {
-                                      await Promise.all([import("./water.vertex"), import("./water.fragment")]);
-                                  }
-
-                                  this._shadersLoaded = true;
-                              },
+                        extraInitializationsAsync: WaterMaterial._ShaderLoader.getLoadCallback(this._shaderLanguage),
                     },
                     engine
                 ),

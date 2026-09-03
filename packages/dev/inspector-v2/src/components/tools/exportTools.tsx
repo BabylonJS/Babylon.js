@@ -114,6 +114,7 @@ interface IGltfExportOptionsState {
     exportSkyboxes: boolean;
     exportCameras: boolean;
     exportLights: boolean;
+    exportUnusedUVs: boolean;
     dracoCompression: boolean;
 }
 
@@ -128,6 +129,7 @@ export const ExportGltfTools = MakeLazyComponent(async () => {
             exportSkyboxes: false,
             exportCameras: false,
             exportLights: false,
+            exportUnusedUVs: false,
             dracoCompression: false,
         });
 
@@ -171,6 +173,7 @@ export const ExportGltfTools = MakeLazyComponent(async () => {
             try {
                 const glb = await GLTF2Export.GLBAsync(props.scene, "scene", {
                     meshCompressionMethod: gltfExportOptions.dracoCompression ? "Draco" : undefined,
+                    exportUnusedUVs: gltfExportOptions.exportUnusedUVs,
                     shouldExportNode: (node) => shouldExport(node),
                 });
                 glb.downloadFiles();
@@ -211,6 +214,13 @@ export const ExportGltfTools = MakeLazyComponent(async () => {
                     description="Whether to export lights in the scene."
                     value={gltfExportOptions.exportLights}
                     onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, exportLights: checked })}
+                />
+                <SwitchPropertyLine
+                    key="GLTFExportUnusedUVs"
+                    label="Export Unused UVs"
+                    description="Whether to export vertex UVs that are not used by a material."
+                    value={gltfExportOptions.exportUnusedUVs}
+                    onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, exportUnusedUVs: checked })}
                 />
                 <SwitchPropertyLine
                     key="GLTFDracoCompression"

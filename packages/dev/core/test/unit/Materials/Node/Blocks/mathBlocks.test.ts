@@ -1,6 +1,67 @@
-import { InputBlock, MultiplyBlock, NodeMaterialBlockConnectionPointTypes, NodeMaterialBlockTargets } from "core/Materials";
+import { InputBlock, MultiplyBlock, NodeMaterialBlockConnectionPointTypes, NodeMaterialBlockTargets, PowBlock } from "core/Materials";
+import { type NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import { NodeMaterialBuildState } from "core/Materials/Node/nodeMaterialBuildState";
+import { NodeMaterialBuildStateSharedData } from "core/Materials/Node/nodeMaterialBuildStateSharedData";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+
+class TestablePowBlock extends PowBlock {
+    public build(state: NodeMaterialBuildState) {
+        return this._buildBlock(state);
+    }
+}
+
+function createBuildState(shaderLanguage: ShaderLanguage): NodeMaterialBuildState {
+    const state = new NodeMaterialBuildState();
+    state.sharedData = new NodeMaterialBuildStateSharedData();
+    state.sharedData.nodeMaterial = { shaderLanguage } as NodeMaterial;
+    return state;
+}
 
 describe("NME Math Blocks", () => {
+    describe("PowBlock", () => {
+        it.each([
+            [NodeMaterialBlockConnectionPointTypes.Float, "f32"],
+            [NodeMaterialBlockConnectionPointTypes.Vector2, "vec2f"],
+            [NodeMaterialBlockConnectionPointTypes.Vector3, "vec3f"],
+            [NodeMaterialBlockConnectionPointTypes.Vector4, "vec4f"],
+        ])("emits a typed WGSL zero for %s inputs", (type, shaderType) => {
+            const value = new InputBlock("value", NodeMaterialBlockTargets.Fragment, type);
+            const power = new InputBlock("power", NodeMaterialBlockTargets.Fragment, type);
+            const pow = new TestablePowBlock("pow");
+            value.output.connectTo(pow.value);
+            power.output.connectTo(pow.power);
+            value.associatedVariableName = "value";
+            power.associatedVariableName = "power";
+            pow.output.associatedVariableName = "output";
+
+            const state = createBuildState(ShaderLanguage.WGSL);
+            pow.build(state);
+
+            expect(state.compilationString).toBe(`var output: ${shaderType} = pow(max(value, ${shaderType}(0.)), power);\n`);
+        });
+
+        it.each([
+            [NodeMaterialBlockConnectionPointTypes.Float, "float"],
+            [NodeMaterialBlockConnectionPointTypes.Vector2, "vec2"],
+            [NodeMaterialBlockConnectionPointTypes.Vector3, "vec3"],
+            [NodeMaterialBlockConnectionPointTypes.Vector4, "vec4"],
+        ])("preserves valid GLSL generation for %s inputs", (type, shaderType) => {
+            const value = new InputBlock("value", NodeMaterialBlockTargets.Fragment, type);
+            const power = new InputBlock("power", NodeMaterialBlockTargets.Fragment, type);
+            const pow = new TestablePowBlock("pow");
+            value.output.connectTo(pow.value);
+            power.output.connectTo(pow.power);
+            value.associatedVariableName = "value";
+            power.associatedVariableName = "power";
+            pow.output.associatedVariableName = "output";
+
+            const state = createBuildState(ShaderLanguage.GLSL);
+            pow.build(state);
+
+            expect(state.compilationString).toBe(`${shaderType} output = pow(max(value, ${shaderType}(0.)), power);\n`);
+        });
+    });
+
     describe("Dynamic Updates", () => {
         it("invalid input type combinations throw", async () => {
             const validatePair = (leftType: NodeMaterialBlockConnectionPointTypes, rightType: NodeMaterialBlockConnectionPointTypes) => {

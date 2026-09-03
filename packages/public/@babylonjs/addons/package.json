@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/addons",
-    "version": "9.21.2",
+    "version": "9.24.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -19,7 +19,7 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "9.21.2",
+        "@babylonjs/core": "9.24.0",
         "@dev/addons": "^1.0.0",
         "@dev/build-tools": "^1.0.0"
     },
@@ -36,7 +36,13 @@
     "license": "Apache-2.0",
     "esnext": "index.js",
     "type": "module",
-    "sideEffects": true,
+    "sideEffects": [
+        "**/index.js",
+        "atmosphere/Shaders/**",
+        "atmosphere/ShadersWGSL/**",
+        "msdfText/shaders/**",
+        "msdfText/shadersWGSL/**"
+    ],
     "homepage": "https://www.babylonjs.com",
     "repository": {
         "type": "git",

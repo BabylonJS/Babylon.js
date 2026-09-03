@@ -21,6 +21,8 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
     private _minimum: Vector3;
     private _maximum: Vector3;
 
+    private _disabledVisibility: Nullable<number> = null;
+
     /**
      * The index of the part in the compound mesh (internal storage)
      */
@@ -101,6 +103,15 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
         // Update the compound mesh's part matrix when this proxy's world matrix changes.
         this.onAfterWorldMatrixUpdateObservable.add(() => {
             this.compoundSplatMesh.setWorldMatrixForPart(this.partIndex, this.getWorldMatrix());
+        });
+        this.onEffectiveEnabledStateChangedObservable.add((isEnabled) => {
+            if (isEnabled) {
+                this.compoundSplatMesh.setPartVisibility(this.partIndex, this._disabledVisibility ?? this.compoundSplatMesh.getPartVisibility(this.partIndex));
+                this._disabledVisibility = null;
+            } else {
+                this._disabledVisibility = this.compoundSplatMesh.getPartVisibility(this.partIndex);
+                this.compoundSplatMesh.setPartVisibility(this.partIndex, 0);
+            }
         });
     }
 
@@ -183,31 +194,36 @@ export class GaussianSplattingPartProxyMesh extends Mesh {
     }
 
     /**
-     * Gets whether the part is visible
+     * Gets whether the part should be visible when this proxy is enabled
      */
     public override get isVisible(): boolean {
-        return this.compoundSplatMesh.getPartVisibility(this.partIndex) > 0;
+        return this.visibility > 0;
     }
 
     /**
-     * Sets whether the part is visible
+     * Sets whether the part should be visible when this proxy is enabled
      */
     public override set isVisible(value: boolean) {
-        this.compoundSplatMesh.setPartVisibility(this.partIndex, value ? 1.0 : 0.0);
+        this.visibility = value ? 1.0 : 0.0;
     }
 
     /**
-     * Gets the visibility of the part (0.0 to 1.0)
+     * Gets the visibility applied to the part while this proxy is enabled (0.0 to 1.0)
      */
     public override get visibility(): number {
-        return this.compoundSplatMesh.getPartVisibility(this.partIndex);
+        return this._disabledVisibility ?? this.compoundSplatMesh.getPartVisibility(this.partIndex);
     }
 
     /**
-     * Sets the visibility of the part (0.0 to 1.0)
+     * Sets the visibility to apply to the part while this proxy is enabled (0.0 to 1.0)
      */
     public override set visibility(value: number) {
-        this.compoundSplatMesh.setPartVisibility(this.partIndex, value);
+        const visibility = Math.max(0.0, Math.min(1.0, value));
+        if (this.isEnabled()) {
+            this.compoundSplatMesh.setPartVisibility(this.partIndex, visibility);
+        } else {
+            this._disabledVisibility = visibility;
+        }
     }
 
     /**

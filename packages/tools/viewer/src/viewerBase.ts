@@ -339,6 +339,9 @@ export type ViewerBaseOptions = Partial<{
      * When enabled, rendering will be suspended when no scene state driven by the Viewer has changed.
      * This can reduce resource CPU/GPU pressure when the scene is static.
      * Enabled by default.
+     * @remarks
+     * Only honored by the full Viewer; the Lite Viewer has no scene-mutation tracking and ignores this
+     * option. Both flavors suspend rendering while the canvas is offscreen regardless of this setting.
      */
     autoSuspendRendering: boolean;
 

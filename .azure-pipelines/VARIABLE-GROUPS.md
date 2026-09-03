@@ -48,6 +48,7 @@ These are Azure Front Door endpoint names used in CDN cache purge calls.
 | `CDN_ENDPOINT_GUIEDITOR`   | GUI Editor endpoint               |
 | `CDN_ENDPOINT_NPE`         | Node Particle Editor endpoint     |
 | `CDN_ENDPOINT_FGE`         | Flow Graph Editor endpoint        |
+| `CDN_ENDPOINT_SFE`         | Smart Filters Editor endpoint     |
 | `CDN_ENDPOINT_DOCS`        | Documentation site endpoint       |
 
 ### CDN Purge Profiles
@@ -114,6 +115,16 @@ deploy tools.
 
 Linked by: ci-monorepo, ci-playground-sandbox, ci-graph-tools, cd-publish, cd-tools.
 
+## Variable Group: `NPM_Publish`
+
+npm registry credentials used to publish packages.
+
+| Variable    | Description                            |
+| ----------- | -------------------------------------- |
+| `NPM_TOKEN` | npm registry auth token for publishing |
+
+Linked by: cd-publish.
+
 ### Secret Variables (per-pipeline)
 
 These must be configured as **secret variables** on each pipeline (not in the
@@ -122,7 +133,6 @@ variable group) because they contain credentials:
 | Variable     | Used By          | Description                                                   |
 | ------------ | ---------------- | ------------------------------------------------------------- |
 | `GitHubPAT`  | cd-publish       | GitHub Personal Access Token for git push and version scripts |
-| `NPM_TOKEN`  | cd-publish       | npm registry auth token for publishing                        |
 | `SEARCH_KEY` | ci-documentation | Search API key for documentation builds                       |
 
 ### Manual YAML Configuration
@@ -150,8 +160,9 @@ variables:
 ```
 
 After creating a new YAML pipeline, go to **Pipeline → Edit → Variables →
-Variable groups** and link `BabylonJS-CI-Infrastructure`. The pipeline must be
-authorized to access the group.
+Variable groups** and link every variable group referenced by its YAML. The
+pipeline must be authorized to access each group. In particular, `cd-publish`
+must link and authorize `NPM_Publish`.
 
 > **Note:** The `GITHUB_SERVICE_CONNECTION` variable is used in `GitHubComment@0`
 > and `GitHubRelease@1` task inputs. After linking the variable group, you may

@@ -22,6 +22,7 @@ import { type IWebXRNearInteractionOptions, type WebXRNearInteraction } from "./
 import { type IWebXRPlaneDetectorOptions, type WebXRPlaneDetector } from "./features/WebXRPlaneDetector";
 import { type IWebXRRawCameraAccessOptions, type WebXRRawCameraAccess } from "./features/WebXRRawCameraAccess";
 import { type WebXRSpaceWarp } from "./features/WebXRSpaceWarp";
+import { type WebXRTrackedSources } from "./features/WebXRTrackedSources";
 import { type IWebXRWalkingLocomotionOptions, type WebXRWalkingLocomotion } from "./features/WebXRWalkingLocomotion";
 import { _ConsumeWebXRFeatureSpecificDisableWarning } from "./webXRFeatureWarningRegistry";
 import { type WebXRSessionManager } from "./webXRSessionManager";
@@ -190,6 +191,10 @@ export class WebXRFeatureName {
      * The name of the body tracking feature
      */
     public static readonly BODY_TRACKING = "xr-body-tracking" as const;
+    /**
+     * The name of the tracked sources feature
+     */
+    public static readonly TRACKED_SOURCES = "xr-tracked-sources" as const;
 }
 
 export type WebXRFeatureNameType = (typeof WebXRFeatureName)[Exclude<keyof typeof WebXRFeatureName, "prototype">];
@@ -242,6 +247,8 @@ export interface IWebXRFeatureNameTypeMap {
     [WebXRFeatureName.WALKING_LOCOMOTION]: WebXRWalkingLocomotion;
     /** Body tracking feature implementation. */
     [WebXRFeatureName.BODY_TRACKING]: WebXRBodyTracking;
+    /** Tracked sources feature implementation. */
+    [WebXRFeatureName.TRACKED_SOURCES]: WebXRTrackedSources;
 }
 
 /**
@@ -292,6 +299,8 @@ export interface IWebXRFeatureNameOptionsMap {
     [WebXRFeatureName.WALKING_LOCOMOTION]: IWebXRWalkingLocomotionOptions;
     /** Body tracking feature options. */
     [WebXRFeatureName.BODY_TRACKING]: IWebXRBodyTrackingOptions;
+    /** Tracked sources feature options. */
+    [WebXRFeatureName.TRACKED_SOURCES]: undefined;
 }
 
 /**

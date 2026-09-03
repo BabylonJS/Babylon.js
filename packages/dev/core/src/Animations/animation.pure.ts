@@ -1157,7 +1157,7 @@ export function AnimationMakeAnimationAdditive(
 
     // There's only one key, so use it
     if (updatedKeys.length === 1) {
-        const value = animation._getKeyValue(updatedKeys[0]);
+        const value = animation._getKeyValue(updatedKeys[0].value);
         valueStore.referenceValue = value.clone ? value.clone() : value;
     }
 
@@ -1549,7 +1549,7 @@ export function AnimationParse(parsedAnimation: any): Animation {
                     outTangent = Color4.FromArray(key.values[5]);
                 }
                 if (key.values[6]) {
-                    interpolation = Color4.FromArray(key.values[6]);
+                    interpolation = key.values[6];
                 }
                 break;
             case Animation.ANIMATIONTYPE_VECTOR3:

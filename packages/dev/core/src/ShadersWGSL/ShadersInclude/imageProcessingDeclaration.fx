@@ -6,6 +6,10 @@
 	uniform contrast: f32;
 #endif
 
+#ifdef WHITEBALANCE
+	uniform whiteBalanceMatrix: mat3x3f;
+#endif
+
 #if defined(VIGNETTE) || defined(DITHER)
 	uniform vInverseScreenSize: vec2f;
 #endif
