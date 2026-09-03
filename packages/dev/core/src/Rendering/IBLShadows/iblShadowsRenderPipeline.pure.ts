@@ -25,11 +25,9 @@ import { RegisterIblCdfGeneratorSceneComponent } from "core/Rendering/iblCdfGene
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
 import { IBLShadowsPluginMaterial } from "./iblShadowsPluginMaterial.pure";
-import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial.pure";
-import { StandardMaterial } from "core/Materials/standardMaterial.pure";
+import { IsIBLShadowsReceiverCompatible } from "./iblShadowsMaterialCompatibility.pure";
 import { type Material } from "core/Materials/material.pure";
 import { Observable } from "core/Misc/observable.pure";
-import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
 import { Tools } from "../../Misc/tools.pure";
 
 interface IIblShadowsSettings {
@@ -1124,12 +1122,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     protected _addShadowSupportToMaterial(material: Material) {
-        if (
-            !(material instanceof PBRBaseMaterial) &&
-            !(material instanceof StandardMaterial) &&
-            !(material instanceof OpenPBRMaterial) &&
-            material.getClassName() !== "ShadowOnlyMaterial"
-        ) {
+        if (!IsIBLShadowsReceiverCompatible(material)) {
             return;
         }
         let plugin = material.pluginManager?.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name);

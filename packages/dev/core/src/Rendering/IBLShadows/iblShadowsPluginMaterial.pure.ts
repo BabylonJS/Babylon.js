@@ -223,13 +223,16 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                 #endif
             `;
             } else if (this._isShadowOnlyMaterial()) {
-                // ShadowOnlyMaterial encodes shadow strength in the alpha channel via the `shadow` scalar,
-                // so modulate `shadow` directly rather than color.rgb (which is the -typically black- shadowColor).
+                // ShadowOnlyMaterial encodes shadow strength in a single alpha channel via the `shadow`
+                // scalar, so modulate `shadow` directly rather than color.rgb (which is the -typically
+                // black- shadowColor). Because there is only one output channel, IBL shadows on this
+                // material are monochrome by contract: a colored shadow value is reduced to its Rec.709
+                // luminance rather than preserving per-channel hue (which an alpha-only catcher cannot do).
                 frag["CUSTOM_FRAGMENT_BEFORE_LIGHT_COMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
                     #ifdef COLORED_IBL_SHADOWS
                         var shadowValue: vec3f = computeIndirectShadow();
-                        shadow *= clamp(dot(shadowValue, vec3f(0.3333f)), 0.0f, 1.0f);
+                        shadow *= clamp(dot(shadowValue, vec3f(0.2126f, 0.7152f, 0.0722f)), 0.0f, 1.0f);
                     #else
                         var shadowValue: vec2f = computeIndirectShadow();
                         shadow *= clamp(shadowValue.x, 0.0f, 1.0f);
@@ -314,13 +317,16 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                 #endif
             `;
             } else if (this._isShadowOnlyMaterial()) {
-                // ShadowOnlyMaterial encodes shadow strength in the alpha channel via the `shadow` scalar,
-                // so modulate `shadow` directly rather than color.rgb (which is the -typically black- shadowColor).
+                // ShadowOnlyMaterial encodes shadow strength in a single alpha channel via the `shadow`
+                // scalar, so modulate `shadow` directly rather than color.rgb (which is the -typically
+                // black- shadowColor). Because there is only one output channel, IBL shadows on this
+                // material are monochrome by contract: a colored shadow value is reduced to its Rec.709
+                // luminance rather than preserving per-channel hue (which an alpha-only catcher cannot do).
                 frag["CUSTOM_FRAGMENT_BEFORE_LIGHT_COMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
                     #ifdef COLORED_IBL_SHADOWS
                         vec3 shadowValue = computeIndirectShadow();
-                        shadow *= clamp(dot(shadowValue, vec3(0.3333)), 0.0, 1.0);
+                        shadow *= clamp(dot(shadowValue, vec3(0.2126, 0.7152, 0.0722)), 0.0, 1.0);
                     #else
                         vec2 shadowValue = computeIndirectShadow();
                         shadow *= clamp(shadowValue.x, 0.0, 1.0);
