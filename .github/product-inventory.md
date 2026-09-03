@@ -4,30 +4,29 @@ This document catalogs all public npm packages published under the `@babylonjs` 
 
 ## Package Map
 
-| Public Package | npm Name | Implementation Package | Path |
-|---|---|---|---|
-| Core | `@babylonjs/core` | `@dev/core` | `packages/dev/core` |
-| GUI | `@babylonjs/gui` | `@dev/gui` | `packages/dev/gui` |
-| Loaders | `@babylonjs/loaders` | `@dev/loaders` | `packages/dev/loaders` |
-| Materials | `@babylonjs/materials` | `@dev/materials` | `packages/dev/materials` |
-| Serializers | `@babylonjs/serializers` | `@dev/serializers` | `packages/dev/serializers` |
-| Post-Processes | `@babylonjs/post-processes` | `@dev/post-processes` | `packages/dev/postProcesses` |
-| Procedural Textures | `@babylonjs/procedural-textures` | `@dev/procedural-textures` | `packages/dev/proceduralTextures` |
-| Addons | `@babylonjs/addons` | `@dev/addons` | `packages/dev/addons` |
-| Smart Filters | `@babylonjs/smart-filters` | `@dev/smart-filters` | `packages/dev/smartFilters` |
-| Smart Filters Blocks | `@babylonjs/smart-filters-blocks` | `@dev/smart-filters-blocks` | `packages/dev/smartFilterBlocks` |
-| Lottie Player | `@babylonjs/lottie-player` | `@dev/lottie-player` | `packages/dev/lottiePlayer` |
-| Inspector | `@babylonjs/inspector` | `@dev/inspector` | `packages/dev/inspector-v2` |
-| Inspector (Legacy) | `@babylonjs/inspector-legacy` | `@dev/inspector-legacy` | `packages/dev/inspector` |
-| Viewer | `@babylonjs/viewer` | `@tools/viewer` | `packages/tools/viewer` |
-| Node Editor | `@babylonjs/node-editor` | `@tools/node-editor` | `packages/tools/nodeEditor` |
-| Node Geometry Editor | `@babylonjs/node-geometry-editor` | `@tools/node-geometry-editor` | `packages/tools/nodeGeometryEditor` |
-| Node Particle Editor | `@babylonjs/node-particle-editor` | `@tools/node-particle-editor` | `packages/tools/nodeParticleEditor` |
+| Public Package           | npm Name                              | Implementation Package            | Path                                   |
+| ------------------------ | ------------------------------------- | --------------------------------- | -------------------------------------- |
+| Core                     | `@babylonjs/core`                     | `@dev/core`                       | `packages/dev/core`                    |
+| GUI                      | `@babylonjs/gui`                      | `@dev/gui`                        | `packages/dev/gui`                     |
+| Loaders                  | `@babylonjs/loaders`                  | `@dev/loaders`                    | `packages/dev/loaders`                 |
+| Materials                | `@babylonjs/materials`                | `@dev/materials`                  | `packages/dev/materials`               |
+| Serializers              | `@babylonjs/serializers`              | `@dev/serializers`                | `packages/dev/serializers`             |
+| Post-Processes           | `@babylonjs/post-processes`           | `@dev/post-processes`             | `packages/dev/postProcesses`           |
+| Procedural Textures      | `@babylonjs/procedural-textures`      | `@dev/procedural-textures`        | `packages/dev/proceduralTextures`      |
+| Addons                   | `@babylonjs/addons`                   | `@dev/addons`                     | `packages/dev/addons`                  |
+| Smart Filters            | `@babylonjs/smart-filters`            | `@dev/smart-filters`              | `packages/dev/smartFilters`            |
+| Smart Filters Blocks     | `@babylonjs/smart-filters-blocks`     | `@dev/smart-filters-blocks`       | `packages/dev/smartFilterBlocks`       |
+| Inspector                | `@babylonjs/inspector`                | `@dev/inspector`                  | `packages/dev/inspector-v2`            |
+| Inspector (Legacy)       | `@babylonjs/inspector-legacy`         | `@dev/inspector-legacy`           | `packages/dev/inspector`               |
+| Viewer                   | `@babylonjs/viewer`                   | `@tools/viewer`                   | `packages/tools/viewer`                |
+| Node Editor              | `@babylonjs/node-editor`              | `@tools/node-editor`              | `packages/tools/nodeEditor`            |
+| Node Geometry Editor     | `@babylonjs/node-geometry-editor`     | `@tools/node-geometry-editor`     | `packages/tools/nodeGeometryEditor`    |
+| Node Particle Editor     | `@babylonjs/node-particle-editor`     | `@tools/node-particle-editor`     | `packages/tools/nodeParticleEditor`    |
 | Node Render Graph Editor | `@babylonjs/node-render-graph-editor` | `@tools/node-render-graph-editor` | `packages/tools/nodeRenderGraphEditor` |
-| GUI Editor | `@babylonjs/gui-editor` | `@tools/gui-editor` | `packages/tools/guiEditor` |
-| KTX2 Decoder | `@babylonjs/ktx2decoder` | `@tools/ktx2decoder` | `packages/tools/ktx2Decoder` |
-| Accessibility | `@babylonjs/accessibility` | `@tools/accessibility` | `packages/tools/accessibility` |
-| Shared UI Components | `@babylonjs/shared-ui-components` | `@dev/shared-ui-components` | `packages/dev/sharedUiComponents` |
+| GUI Editor               | `@babylonjs/gui-editor`               | `@tools/gui-editor`               | `packages/tools/guiEditor`             |
+| KTX2 Decoder             | `@babylonjs/ktx2decoder`              | `@tools/ktx2decoder`              | `packages/tools/ktx2Decoder`           |
+| Accessibility            | `@babylonjs/accessibility`            | `@tools/accessibility`            | `packages/tools/accessibility`         |
+| Shared UI Components     | `@babylonjs/shared-ui-components`     | `@dev/shared-ui-components`       | `packages/dev/sharedUiComponents`      |
 
 ## Product Categories
 
@@ -54,8 +53,6 @@ These packages are used directly in applications at runtime.
 - **Smart Filters** (`@babylonjs/smart-filters`) — Graph-based smart filter engine for composing GPU image-processing pipelines. Provides the block/connection-point model, runtime execution, serialization, and optimization.
 
 - **Smart Filters Blocks** (`@babylonjs/smart-filters-blocks`) — Built-in block library for Smart Filters: pixelate, blur, exposure, contrast, green screen, glitch, composition, tint, and many more effects.
-
-- **Lottie Player** (`@babylonjs/lottie-player`) — Runtime player for Lottie animations within Babylon.js, with its own parsing, node model, math utilities, and rendering pipeline.
 
 - **KTX2 Decoder** (`@babylonjs/ktx2decoder`) — Texture transcoding support for KTX2 compressed textures, with multiple transcoder backends.
 
@@ -103,7 +100,6 @@ packages/
 │   ├── addons/
 │   ├── smartFilters/
 │   ├── smartFilterBlocks/
-│   ├── lottiePlayer/
 │   ├── inspector/
 │   ├── inspector-v2/
 │   └── sharedUiComponents/
@@ -137,7 +133,7 @@ For detailed architecture information about each product, see the files in [arch
 - [Procedural Textures](architecture/procedural-textures.md)
 - [Addons](architecture/addons.md)
 - [Smart Filters](architecture/smart-filters.md)
-- [Lottie Player](architecture/lottie-player.md)
+- [Lottie Player migration](architecture/lottie-player.md)
 - [Inspector](architecture/inspector.md)
 - [Viewer](architecture/viewer.md)
 - [Node Editors](architecture/node-editors.md)

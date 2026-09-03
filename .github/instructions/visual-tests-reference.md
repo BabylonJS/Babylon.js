@@ -42,7 +42,7 @@ Tests usually run against both WebGL2 and WebGPU, sharing the `ReferenceImages/`
 
 ## Devhost-based visual tests
 
-For tool tests (not Playground snippets), use the appropriate devhost config (e.g. `config.lottie.json`) with `devHostQsps` instead of `playgroundId`. Use `readySelector` and `screenshotDelayMs` when the page needs explicit readiness handling.
+For tool tests (not Playground snippets), use the appropriate tool-specific devhost config with `devHostQsps` instead of `playgroundId`. Use `readySelector` and `screenshotDelayMs` when the page needs explicit readiness handling.
 
 ## Common issues
 
