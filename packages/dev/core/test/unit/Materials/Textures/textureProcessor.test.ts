@@ -125,6 +125,7 @@ function _makeFakePTClass() {
         setTexture(_name: string, _tex: unknown) {}
         setColor4(_name: string, _val: unknown) {}
         setMatrix(_name: string, _mat: unknown) {}
+        setFloat(_name: string, _val: number) {}
 
         /**
          * Parse the #define block into a plain string array for convenient assertions.
@@ -406,6 +407,32 @@ describe("TextureProcessor", () => {
             const multi = new Color4(0.1, 0.42, 0.87, 1);
             const single = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(multi), scene);
             const roundTrip = await SingleScatterToMultiScatterAlbedoAsync("t", CreateFactorOperand(single.factor!), scene);
+
+            expect(roundTrip.factor?.r).toBeCloseTo(multi.r, 3);
+            expect(roundTrip.factor?.g).toBeCloseTo(multi.g, 3);
+            expect(roundTrip.factor?.b).toBeCloseTo(multi.b, 3);
+        });
+
+        it("MultiScatterToSingleScatterAlbedo: anisotropy divides by (1 - aniso*s^2)", async () => {
+            const multi = new Color4(0.3, 0.3, 0.3, 1);
+            const iso = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(multi), scene);
+            const aniso = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(multi), scene, 0.5);
+
+            // rho_ss = 1 - s^2 (isotropic); the anisotropic result is that divided by (1 - aniso*s^2),
+            // so with s^2 = 1 - iso: aniso_result = iso / (1 - 0.5*(1 - iso)).
+            const s2 = 1 - iso.factor!.r;
+            const expected = iso.factor!.r / (1 - 0.5 * s2);
+            expect(aniso.factor?.r).toBeCloseTo(expected, 6);
+            // aniso = 0 must match the isotropic overload exactly.
+            const aniso0 = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(multi), scene, 0);
+            expect(aniso0.factor?.r).toBeCloseTo(iso.factor!.r, 6);
+        });
+
+        it("SingleScatterToMultiScatterAlbedo: is the inverse of MultiScatterToSingleScatterAlbedo with anisotropy", async () => {
+            const multi = new Color4(0.1, 0.42, 0.87, 1);
+            const aniso = -0.3;
+            const single = await MultiScatterToSingleScatterAlbedoAsync("t", CreateFactorOperand(multi), scene, aniso);
+            const roundTrip = await SingleScatterToMultiScatterAlbedoAsync("t", CreateFactorOperand(single.factor!), scene, aniso);
 
             expect(roundTrip.factor?.r).toBeCloseTo(multi.r, 3);
             expect(roundTrip.factor?.g).toBeCloseTo(multi.g, 3);

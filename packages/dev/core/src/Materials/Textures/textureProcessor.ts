@@ -218,20 +218,20 @@ function _LerpConstants(a: Color4, b: Color4, t: Color4): Color4 {
 }
 
 /** @internal */
-function _MultiScatterToSingleScatterAlbedoConstant(multiScatter: Color4): Color4 {
+function _MultiScatterToSingleScatterAlbedoConstant(multiScatter: Color4, aniso: number): Color4 {
     const convert = (value: number) => {
         const rhoMs = Math.min(Math.max(value, 0), 1);
         const s = 4.09712 + 4.20863 * rhoMs - Math.sqrt(9.59217 + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
-        return 1 - s * s;
+        return (1 - s * s) / Math.max(1 - aniso * s * s, 0.0000001);
     };
     return new Color4(convert(multiScatter.r), convert(multiScatter.g), convert(multiScatter.b), multiScatter.a);
 }
 
 /** @internal */
-function _SingleScatterToMultiScatterAlbedoConstant(singleScatter: Color4): Color4 {
+function _SingleScatterToMultiScatterAlbedoConstant(singleScatter: Color4, aniso: number): Color4 {
     const convert = (value: number) => {
         const ssAlbedo = Math.min(Math.max(value, 0), 1);
-        const s = Math.sqrt(1 - ssAlbedo);
+        const s = Math.sqrt(Math.max((1 - ssAlbedo) / Math.max(1 - aniso * ssAlbedo, 0.0000001), 0));
         return ((1 - s) * (1 - 0.139 * s)) / (1 + 1.17 * s);
     };
     return new Color4(convert(singleScatter.r), convert(singleScatter.g), convert(singleScatter.b), singleScatter.a);
@@ -1059,16 +1059,19 @@ export async function ExtractChannelAsync(
  * @param name - Name for the resulting procedural texture (used only when a GPU pass is needed)
  * @param input - Multi-scatter albedo operand to convert
  * @param scene - Scene to create the texture in (used only when a GPU pass is needed)
+ * @param aniso - Scattering anisotropy in `[-1, 1]`. `0` (default) is isotropic; positive values are
+ *   forward-scattering. Matches `multiScatterToSingleScatterAlbedo(rho_ms, aniso)` in helperFunctions.
  * @returns An operand containing the converted single-scatter albedo
  */
-export async function MultiScatterToSingleScatterAlbedoAsync(name: string, input: ITextureProcessOperand, scene: Scene): Promise<ITextureProcessOperand> {
+export async function MultiScatterToSingleScatterAlbedoAsync(name: string, input: ITextureProcessOperand, scene: Scene, aniso: number = 0): Promise<ITextureProcessOperand> {
     if (!input.texture) {
-        return { texture: null, factor: _MultiScatterToSingleScatterAlbedoConstant(_EvalConstant(input)) };
+        return { texture: null, factor: _MultiScatterToSingleScatterAlbedoConstant(_EvalConstant(input), aniso) };
     }
 
     const defines = [..._BuildOperandDefines(input, "A", false), "OP_MULTI_SCATTER_TO_SINGLE_SCATTER"];
     const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([input]), scene);
     _SetOperandUniforms(pt, input, "textureA", "factorA", false);
+    pt.setFloat("scatterAniso", aniso);
     try {
         await _RenderAsync(pt);
     } catch (error) {
@@ -1095,16 +1098,20 @@ export async function MultiScatterToSingleScatterAlbedoAsync(name: string, input
  * @param name - Name for the resulting procedural texture (used only when a GPU pass is needed)
  * @param input - Single-scatter albedo operand to convert
  * @param scene - Scene to create the texture in (used only when a GPU pass is needed)
+ * @param aniso - Scattering anisotropy in `[-1, 1]`. `0` (default) is isotropic; positive values are
+ *   forward-scattering. This inverts the anisotropic multi→single mapping: `s^2 = (1 - rho_ss) /
+ *   (1 - aniso * rho_ss)`, then `rho_ms = (1 - s)(1 - 0.139 s)/(1 + 1.17 s)`.
  * @returns An operand containing the converted multi-scatter albedo
  */
-export async function SingleScatterToMultiScatterAlbedoAsync(name: string, input: ITextureProcessOperand, scene: Scene): Promise<ITextureProcessOperand> {
+export async function SingleScatterToMultiScatterAlbedoAsync(name: string, input: ITextureProcessOperand, scene: Scene, aniso: number = 0): Promise<ITextureProcessOperand> {
     if (!input.texture) {
-        return { texture: null, factor: _SingleScatterToMultiScatterAlbedoConstant(_EvalConstant(input)) };
+        return { texture: null, factor: _SingleScatterToMultiScatterAlbedoConstant(_EvalConstant(input), aniso) };
     }
 
     const defines = [..._BuildOperandDefines(input, "A", false), "OP_SINGLE_SCATTER_TO_MULTI_SCATTER"];
     const pt = _CreateProcessorTexture(name, defines, _ResolveOutputSize([input]), scene);
     _SetOperandUniforms(pt, input, "textureA", "factorA", false);
+    pt.setFloat("scatterAniso", aniso);
     try {
         await _RenderAsync(pt);
     } catch (error) {
@@ -1158,6 +1165,8 @@ export async function ThinWalledScatterWeightsAsync(
         const transW = transmissionFactor * (1.0 - scatterStrength);
         const denom = 1.0 - transW;
         const ssW = denom > 0.00001 ? (transmissionFactor * scatterStrength) / denom : 0.0;
+        transmission.dispose?.();
+        scatter.dispose?.();
         return {
             transmission: { texture: null, factor: new Color4(transW, transW, transW, 1.0) },
             subsurface: { texture: null, factor: new Color4(ssW, ssW, ssW, 1.0) },
@@ -1170,13 +1179,21 @@ export async function ThinWalledScatterWeightsAsync(
     //   3. tTimesS      = T * S                         (multiply)
     //   4. oneMinusTransW = 1 - transW                  (invert, no-dispose ref so transW survives)
     //   5. ssW          = T*S / (1 - transW)            (divide)
-    // transmission and scatter have no dispose, so they can safely be reused across passes.
-    const invertedS = await InvertTextureAsync(`${name}/1-S`, scatter, scene);
-    const transW = await MultiplyTexturesAsync(`${name}_transWeight`, transmission, invertedS, scene);
-    const tTimesS = await MultiplyTexturesAsync(`${name}/T*S`, transmission, scatter, scene);
+    // T and S are each consumed by two passes, so feed the passes no-dispose copies and release the
+    // real inputs only after every pass has run — otherwise an input that is itself a processor result
+    // (i.e. carries a dispose) would be freed by the first pass and sampled disposed by a later one.
+    const transmissionIn: ITextureProcessOperand = { ...transmission, dispose: undefined };
+    const scatterIn: ITextureProcessOperand = { ...scatter, dispose: undefined };
+
+    const invertedS = await InvertTextureAsync(`${name}/1-S`, scatterIn, scene);
+    const transW = await MultiplyTexturesAsync(`${name}_transWeight`, transmissionIn, invertedS, scene);
+    const tTimesS = await MultiplyTexturesAsync(`${name}/T*S`, transmissionIn, scatterIn, scene);
     // Pass transW without its dispose so transW.texture survives for the return value.
     const oneMinusTransW = await InvertTextureAsync(`${name}/1-transW`, { texture: transW.texture }, scene);
     const ssW = await DivideTexturesAsync(`${name}_subWeight`, tTimesS, oneMinusTransW, scene);
+
+    transmission.dispose?.();
+    scatter.dispose?.();
 
     return { transmission: transW, subsurface: ssW };
 }

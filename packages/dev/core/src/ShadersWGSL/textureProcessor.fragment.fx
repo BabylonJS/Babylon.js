@@ -34,6 +34,9 @@ uniform factorB: vec4f;
 #if defined(OP_LERP) && (!defined(LERP_T_TEXTURE) || defined(LERP_T_FACTOR))
 uniform factorT: vec4f;
 #endif
+#if defined(OP_MULTI_SCATTER_TO_SINGLE_SCATTER) || defined(OP_SINGLE_SCATTER_TO_MULTI_SCATTER)
+uniform scatterAniso: f32;
+#endif
 
 varying vUV: vec2f;
 
@@ -97,10 +100,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #ifdef OP_MULTI_SCATTER_TO_SINGLE_SCATTER
     let rhoMs: vec3f = clamp(a.rgb, vec3f(0.0), vec3f(1.0));
     let s: vec3f = vec3f(4.09712) + 4.20863 * rhoMs - sqrt(vec3f(9.59217) + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
-    var result: vec4f = vec4f(vec3f(1.0) - s * s, a.a);
+    var result: vec4f = vec4f((vec3f(1.0) - s * s) / max(vec3f(1.0) - uniforms.scatterAniso * s * s, vec3f(0.0000001)), a.a);
     #elif defined(OP_SINGLE_SCATTER_TO_MULTI_SCATTER)
     let ssAlbedo: vec3f = clamp(a.rgb, vec3f(0.0), vec3f(1.0));
-    let sq: vec3f = sqrt(vec3f(1.0) - ssAlbedo);
+    let s2: vec3f = (vec3f(1.0) - ssAlbedo) / max(vec3f(1.0) - uniforms.scatterAniso * ssAlbedo, vec3f(0.0000001));
+    let sq: vec3f = sqrt(max(s2, vec3f(0.0)));
     var result: vec4f = vec4f((vec3f(1.0) - sq) * (vec3f(1.0) - 0.139 * sq) / (vec3f(1.0) + 1.17 * sq), a.a);
     #elif defined(OP_CHANNEL_MAX)
     var _cmax: f32 = max(max(a.r, a.g), a.b);

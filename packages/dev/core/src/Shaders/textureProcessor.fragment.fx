@@ -24,8 +24,8 @@
 //   INVERT_B               - invert the blue channel (used with OP_INVERT)
 //   INVERT_A               - invert the alpha channel (used with OP_INVERT)
 //   OP_CHANNEL_MAX         - unary: broadcast max(r,g,b[,a]) of operand A to all output channels
-//   OP_MULTI_SCATTER_TO_SINGLE_SCATTER - unary: convert multi-scatter albedo A.rgb to single-scatter albedo
-//   OP_SINGLE_SCATTER_TO_MULTI_SCATTER - unary: convert single-scatter albedo A.rgb to multi-scatter albedo (inverse of the above)
+//   OP_MULTI_SCATTER_TO_SINGLE_SCATTER - unary: convert multi-scatter albedo A.rgb to single-scatter albedo (uses scatterAniso uniform)
+//   OP_SINGLE_SCATTER_TO_MULTI_SCATTER - unary: convert single-scatter albedo A.rgb to multi-scatter albedo (inverse of the above; uses scatterAniso uniform)
 //   CHANNEL_MAX_INCLUDE_ALPHA - include alpha in the max computation and broadcast to all four channels
 //   LERP_T_TEXTURE         - t operand has a texture
 //   LERP_T_FACTOR          - t operand has a constant vec4 factor (combined with texture when both are set)
@@ -72,6 +72,9 @@ uniform vec4 factorB;
 #endif
 #if defined(OP_LERP) && (!defined(LERP_T_TEXTURE) || defined(LERP_T_FACTOR))
 uniform vec4 factorT;
+#endif
+#if defined(OP_MULTI_SCATTER_TO_SINGLE_SCATTER) || defined(OP_SINGLE_SCATTER_TO_MULTI_SCATTER)
+uniform float scatterAniso;
 #endif
 
 varying vec2 vUV;
@@ -135,10 +138,11 @@ void main() {
     #ifdef OP_MULTI_SCATTER_TO_SINGLE_SCATTER
     vec3 rhoMs = clamp(a.rgb, vec3(0.0), vec3(1.0));
     vec3 s = vec3(4.09712) + 4.20863 * rhoMs - sqrt(vec3(9.59217) + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
-    vec4 result = vec4(vec3(1.0) - s * s, a.a);
+    vec4 result = vec4((vec3(1.0) - s * s) / max(vec3(1.0) - scatterAniso * s * s, vec3(0.0000001)), a.a);
     #elif defined(OP_SINGLE_SCATTER_TO_MULTI_SCATTER)
     vec3 ssAlbedo = clamp(a.rgb, vec3(0.0), vec3(1.0));
-    vec3 sq = sqrt(vec3(1.0) - ssAlbedo);
+    vec3 s2 = (vec3(1.0) - ssAlbedo) / max(vec3(1.0) - scatterAniso * ssAlbedo, vec3(0.0000001));
+    vec3 sq = sqrt(max(s2, vec3(0.0)));
     vec4 result = vec4((vec3(1.0) - sq) * (vec3(1.0) - 0.139 * sq) / (vec3(1.0) + 1.17 * sq), a.a);
     #elif defined(OP_CHANNEL_MAX)
     float _cmax = max(max(a.r, a.g), a.b);

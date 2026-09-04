@@ -1292,7 +1292,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         // KHR_materials_scatter). Compute final transmission_weight = T*(1-S) and
         // subsurface_weight = T*S/(1-T*(1-S)) now that all textures are loaded.
         // This must run before the diffuse-transmission-tint block which reads subsurfaceWeight.
-        if (this.geometryThinWalled && this.subsurfaceWeight > 0) {
+        if (this.geometryThinWalled && this.subsurfaceWeight > 0 && !this._diffuseTransmissionTint) {
             const transmissionFactor = this.transmissionWeight;
             const transmissionTex = this.transmissionWeightTexture;
             const scatterStrength = this.subsurfaceWeight;
