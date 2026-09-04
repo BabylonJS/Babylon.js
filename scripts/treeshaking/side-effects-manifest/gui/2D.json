@@ -9,6 +9,7 @@
         "2D/controls/control.ts": ["top-level-call"],
         "2D/controls/displayGrid.ts": ["top-level-call"],
         "2D/controls/ellipse.ts": ["top-level-call"],
+        "2D/controls/flexPanel.ts": ["top-level-call"],
         "2D/controls/focusableButton.ts": ["top-level-call"],
         "2D/controls/gradient/LinearGradient.ts": ["top-level-call"],
         "2D/controls/gradient/RadialGradient.ts": ["top-level-call"],

@@ -247,7 +247,7 @@ export class StackPanel extends Container {
             return true;
         }
 
-        return this.getDimension(dim).isPixel || this._getAdaptDimTo(dim);
+        return !this.getDimension(dim).isPercentage || this._getAdaptDimTo(dim);
     }
 
     /**

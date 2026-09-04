@@ -51,6 +51,7 @@
         "2D/controls/control.js",
         "2D/controls/displayGrid.js",
         "2D/controls/ellipse.js",
+        "2D/controls/flexPanel.js",
         "2D/controls/focusableButton.js",
         "2D/controls/gradient/LinearGradient.js",
         "2D/controls/gradient/RadialGradient.js",
