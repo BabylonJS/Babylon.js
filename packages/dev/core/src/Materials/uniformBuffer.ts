@@ -7,6 +7,16 @@ import { type DataBuffer } from "../Buffers/dataBuffer";
 import { type InternalTexture } from "./Textures/internalTexture";
 import { Tools } from "../Misc/tools.pure";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type IDrawContext } from "../Engines/IDrawContext";
+
+/**
+ * A draw context that owns a slot in one or more tracked uniform buffers (see UniformBuffer.update).
+ * A buffer registers itself here when it assigns a slot to the context, so that the slot can be released when the context is disposed.
+ */
+export interface IUniformBufferSlotOwner extends IDrawContext {
+    /** @internal */
+    _uniformBuffersWithOwnedSlot?: UniformBuffer[];
+}
 
 /**
  * Uniform buffer objects.
@@ -40,6 +50,12 @@ export class UniformBuffer {
     private _name: string;
     private _currentFrameId: number;
     private _trackUBOsInFrame: boolean;
+    // Owner-keyed slots (trackUBOsInFrame only): draw context -> index in _buffers, last frame each slot was flushed in,
+    // number of live owners, and slots no longer owned (released by a disposed context, or created for a same-frame overflow)
+    private _slotByOwner: WeakMap<IUniformBufferSlotOwner, number>;
+    private _slotFrameId: number[];
+    private _ownerCount: number;
+    private _freeSlots: number[];
 
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
@@ -260,6 +276,7 @@ export class UniformBuffer {
             this._createBufferOnWrite = false;
             this._currentFrameId = 0;
             this._trackUBOsInFrame = true;
+            this._resetOwnerSlots();
         }
 
         if (this._noUBO) {
@@ -615,8 +632,16 @@ export class UniformBuffer {
         if (this._trackUBOsInFrame) {
             this._buffers = [];
             this._currentFrameId = 0;
+            this._resetOwnerSlots();
         }
         this._rebuild();
+    }
+
+    private _resetOwnerSlots(): void {
+        this._slotByOwner = new WeakMap();
+        this._slotFrameId = [];
+        this._ownerCount = 0;
+        this._freeSlots = [];
     }
 
     /** @internal */
@@ -662,9 +687,17 @@ export class UniformBuffer {
      * Updates the WebGL Uniform Buffer on the GPU.
      * If the `dynamic` flag is set to true, no cache comparison is done.
      * Otherwise, the buffer will be updated only if the cache differs.
+     * @param owner When the buffer tracks its GPU buffers per frame (WebGPU), the draw context on behalf of which the update is done.
+     * The context then always flushes to the same GPU buffer (its slot), instead of the next unused buffer in draw order, so the buffer
+     * bound by a given draw call does not change when the draw order changes and the bind group cache stays bounded.
      */
-    public update(): void {
+    public update(owner?: IUniformBufferSlotOwner): void {
         if (this._noUBO) {
+            return;
+        }
+
+        if (owner && this._trackUBOsInFrame) {
+            this._updateOwnerKeyed(owner);
             return;
         }
 
@@ -696,6 +729,98 @@ export class UniformBuffer {
 
         this._needSync = false;
         this._createBufferOnWrite = this._trackUBOsInFrame;
+    }
+
+    /**
+     * Flushes the current uniform values into the GPU buffer owned by the draw context.
+     * Invariant: `_buffers[i][1]` (the CPU shadow) always holds what the GPU buffer of slot i contains.
+     * @param owner the draw context on behalf of which the update is done
+     */
+    private _updateOwnerKeyed(owner: IUniformBufferSlotOwner): void {
+        if (!this._buffer) {
+            this.create(); // _rebuild pushes slot 0, created from _bufferData, with a shadow copy of it
+        }
+
+        this._checkNewFrame();
+
+        let idx = this._slotByOwner.get(owner);
+        if (idx === undefined) {
+            if (this._ownerCount === 0 && this._buffers.length === 1) {
+                idx = 0; // the slot create() made: hand it to the first owner instead of leaving it unused
+            } else {
+                idx = this._takeFreeSlot(true);
+            }
+            this._slotByOwner.set(owner, idx);
+            this._ownerCount++;
+            if (!owner._uniformBuffersWithOwnedSlot) {
+                owner._uniformBuffersWithOwnedSlot = [];
+            }
+            owner._uniformBuffersWithOwnedSlot.push(this);
+        }
+
+        const owned = this._buffers[idx][1];
+        if (this._slotFrameId[idx] === this._currentFrameId && owned && !this._buffersEqual(this._bufferData, owned)) {
+            // The same context flushes a second time in the same frame with different values: the GPU has not consumed the
+            // first values yet, so they must not be overwritten. Use a slot nobody owns for this flush.
+            idx = this._takeFreeSlot(false);
+        }
+
+        this._bufferIndex = idx;
+        this._buffer = this._buffers[idx][0];
+        this.bindUniformBuffer();
+
+        const shadow = this._buffers[idx][1];
+        if (!shadow || !this._buffersEqual(this._bufferData, shadow)) {
+            if (shadow) {
+                this._copyBuffer(this._bufferData, shadow);
+            }
+            this._bufferUpdatedLastFrame = true;
+            this._engine.updateUniformBuffer(this._buffer, this._bufferData);
+        }
+
+        this._slotFrameId[idx] = this._currentFrameId;
+        this._needSync = false;
+        this._createBufferOnWrite = false; // slots are keyed on the owner, the updateXXX methods must never switch buffer
+    }
+
+    /**
+     * Gets a slot that is not owned by any draw context and has not been flushed in the current frame, creating one if needed.
+     * @param takeOwnership true to remove the slot from the free list (it is going to be owned by a context)
+     * @returns the slot index
+     */
+    private _takeFreeSlot(takeOwnership: boolean): number {
+        for (let i = 0; i < this._freeSlots.length; ++i) {
+            const idx = this._freeSlots[i];
+            if (this._slotFrameId[idx] !== this._currentFrameId) {
+                if (takeOwnership) {
+                    this._freeSlots[i] = this._freeSlots[this._freeSlots.length - 1];
+                    this._freeSlots.pop();
+                }
+                return idx;
+            }
+        }
+
+        this._rebuild();
+        const idx = this._buffers.length - 1;
+        if (!takeOwnership) {
+            this._freeSlots.push(idx);
+        }
+        return idx;
+    }
+
+    /**
+     * Releases the slot owned by a draw context (called when the context is disposed), so that another context can reuse it.
+     * @param owner the draw context
+     * @internal
+     */
+    public _releaseOwnerSlot(owner: IUniformBufferSlotOwner): void {
+        const idx = this._slotByOwner?.get(owner);
+        if (idx === undefined) {
+            return;
+        }
+        this._slotByOwner.delete(owner);
+        this._ownerCount--;
+        this._freeSlots.push(idx);
     }
 
     private _createNewBuffer() {

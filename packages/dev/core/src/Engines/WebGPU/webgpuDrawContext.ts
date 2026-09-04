@@ -5,6 +5,7 @@ import { type Nullable } from "../../types";
 import { type IDrawContext } from "../IDrawContext";
 import { type WebGPUBufferManager } from "./webgpuBufferManager";
 import { type WebGPUPipelineContext } from "./webgpuPipelineContext";
+import { type UniformBuffer } from "../../Materials/uniformBuffer";
 import * as WebGPUConstants from "./webgpuConstants";
 
 /**
@@ -47,6 +48,12 @@ export class WebGPUDrawContext implements IDrawContext {
     private _isDirty: boolean;
     private _enableIndirectDraw: boolean;
     private _vertexPullingEnabled: boolean;
+
+    /**
+     * Uniform buffers in which this context owns a slot (see UniformBuffer.update). Filled by the buffers themselves.
+     * @internal
+     */
+    public _uniformBuffersWithOwnedSlot?: UniformBuffer[];
 
     /**
      * Checks if the draw context is dirty.
@@ -237,5 +244,11 @@ export class WebGPUDrawContext implements IDrawContext {
         this.bindGroups = undefined;
         this.buffers = undefined as any;
         this._enableIndirectDraw = false;
+        if (this._uniformBuffersWithOwnedSlot) {
+            for (const uniformBuffer of this._uniformBuffersWithOwnedSlot) {
+                uniformBuffer._releaseOwnerSlot(this);
+            }
+            this._uniformBuffersWithOwnedSlot = undefined;
+        }
     }
 }
