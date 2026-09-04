@@ -1,4 +1,4 @@
-import { type FunctionComponent, useCallback } from "react";
+import { type FunctionComponent } from "react";
 
 import { type Mesh, type MorphTarget } from "core/index";
 
@@ -9,59 +9,15 @@ import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
-import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { EditNodeGeometry, GetNodeGeometry } from "../../../misc/nodeGeometryEditor";
-import { type IGizmoService } from "../../../services/gizmoService";
 import { BoundProperty } from "../boundProperty";
 
-export const MeshGeneralProperties: FunctionComponent<{ mesh: Mesh; gizmoService: IGizmoService }> = (props) => {
-    const { mesh, gizmoService } = props;
+export const MeshGeneralProperties: FunctionComponent<{ mesh: Mesh }> = (props) => {
+    const { mesh } = props;
 
     const nodeGeometry = GetNodeGeometry(mesh);
-    const gizmoMode = useObservableState(() => gizmoService.gizmoMode, gizmoService.onGizmoModeChanged);
-    const boundingBoxSize = useObservableState(
-        useCallback(() => {
-            const boundingBox = mesh.getBoundingInfo().boundingBox;
-            let minX = boundingBox.minimumWorld.x;
-            let minY = boundingBox.minimumWorld.y;
-            let minZ = boundingBox.minimumWorld.z;
-            let maxX = boundingBox.maximumWorld.x;
-            let maxY = boundingBox.maximumWorld.y;
-            let maxZ = boundingBox.maximumWorld.z;
 
-            for (const childMesh of mesh.getChildMeshes()) {
-                if (childMesh.getTotalVertices() === 0) {
-                    continue;
-                }
-
-                const childBoundingBox = childMesh.getBoundingInfo().boundingBox;
-                minX = Math.min(minX, childBoundingBox.minimumWorld.x);
-                minY = Math.min(minY, childBoundingBox.minimumWorld.y);
-                minZ = Math.min(minZ, childBoundingBox.minimumWorld.z);
-                maxX = Math.max(maxX, childBoundingBox.maximumWorld.x);
-                maxY = Math.max(maxY, childBoundingBox.maximumWorld.y);
-                maxZ = Math.max(maxZ, childBoundingBox.maximumWorld.z);
-            }
-
-            return `[${(maxX - minX).toFixed(2)}, ${(maxY - minY).toFixed(2)}, ${(maxZ - minZ).toFixed(2)}]`;
-        }, [mesh]),
-        gizmoMode === "boundingBox" ? mesh.onAfterWorldMatrixUpdateObservable : null
-    );
-
-    return (
-        <>
-            {nodeGeometry && <ButtonLine label="Edit" icon={EditRegular} onClick={async () => await EditNodeGeometry(nodeGeometry, mesh.getScene())} />}
-            {gizmoMode === "boundingBox" && (
-                <TextPropertyLine
-                    label="Bounding Box Size"
-                    description="The world-space dimensions of the mesh's bounding box, in X, Y, Z order."
-                    value={boundingBoxSize}
-                    title={boundingBoxSize}
-                />
-            )}
-        </>
-    );
+    return <>{nodeGeometry && <ButtonLine label="Edit" icon={EditRegular} onClick={async () => await EditNodeGeometry(nodeGeometry, mesh.getScene())} />}</>;
 };
 
 export const MeshDisplayProperties: FunctionComponent<{ mesh: Mesh }> = (props) => {
