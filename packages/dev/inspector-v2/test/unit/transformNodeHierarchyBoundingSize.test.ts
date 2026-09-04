@@ -106,19 +106,22 @@ describe("transform node hierarchy bounding size", () => {
         expect(FormatTransformNodeHierarchyBoundingSize(null)).toBe("N/A");
     });
 
-    it("tracks geometry added to and removed from the observed hierarchy", () => {
+    it("tracks an existing mesh reparented into and out of the observed hierarchy", () => {
         let now = 0;
         vi.spyOn(Date, "now").mockImplementation(() => now);
 
         const root = new TransformNode("root", scene);
+        const child = CreateBox("child", { size: 2 }, scene);
         const onSizeChanged = vi.fn();
         const observer = ObserveTransformNodeHierarchyBoundingSize(root, onSizeChanged);
         expect(onSizeChanged).toHaveBeenCalledTimes(1);
         expect(onSizeChanged).toHaveBeenLastCalledWith(null);
 
-        const child = CreateBox("child", { size: 2 }, scene);
         child.parent = root;
-        scene.onNewMeshAddedObservable.notifyObservers(child);
+        now = 99;
+        scene.onAfterRenderObservable.notifyObservers(scene);
+        expect(onSizeChanged).toHaveBeenCalledTimes(1);
+
         now = 100;
         scene.onAfterRenderObservable.notifyObservers(scene);
         expect(onSizeChanged).toHaveBeenCalledTimes(2);
@@ -131,11 +134,48 @@ describe("transform node hierarchy bounding size", () => {
         expect(onSizeChanged).toHaveBeenCalledTimes(3);
         expectSize(onSizeChanged.mock.calls[2][0], 4, 2, 2);
 
-        child.dispose();
+        child.parent = null;
         now = 300;
         scene.onAfterRenderObservable.notifyObservers(scene);
         expect(onSizeChanged).toHaveBeenCalledTimes(4);
         expect(onSizeChanged).toHaveBeenLastCalledWith(null);
+
+        observer.dispose();
+    });
+
+    it("resynchronizes observers when an existing transform node subtree is reparented", () => {
+        let now = 0;
+        vi.spyOn(Date, "now").mockImplementation(() => now);
+
+        const root = new TransformNode("root", scene);
+        const group = new TransformNode("group", scene);
+        const child = CreateBox("child", { size: 2 }, scene);
+        child.parent = group;
+
+        const groupObserverCount = getActiveObserverCount(group.onAfterWorldMatrixUpdateObservable);
+        const childObserverCount = getActiveObserverCount(child.onAfterWorldMatrixUpdateObservable);
+        const onSizeChanged = vi.fn();
+        const observer = ObserveTransformNodeHierarchyBoundingSize(root, onSizeChanged);
+
+        expect(onSizeChanged).toHaveBeenLastCalledWith(null);
+        expect(getActiveObserverCount(group.onAfterWorldMatrixUpdateObservable)).toBe(groupObserverCount);
+        expect(getActiveObserverCount(child.onAfterWorldMatrixUpdateObservable)).toBe(childObserverCount);
+
+        group.parent = root;
+        now = 100;
+        scene.onAfterRenderObservable.notifyObservers(scene);
+        expect(onSizeChanged).toHaveBeenCalledTimes(2);
+        expectSize(onSizeChanged.mock.calls[1][0], 2, 2, 2);
+        expect(getActiveObserverCount(group.onAfterWorldMatrixUpdateObservable)).toBe(groupObserverCount + 1);
+        expect(getActiveObserverCount(child.onAfterWorldMatrixUpdateObservable)).toBe(childObserverCount + 1);
+
+        group.parent = null;
+        now = 200;
+        scene.onAfterRenderObservable.notifyObservers(scene);
+        expect(onSizeChanged).toHaveBeenCalledTimes(3);
+        expect(onSizeChanged).toHaveBeenLastCalledWith(null);
+        expect(getActiveObserverCount(group.onAfterWorldMatrixUpdateObservable)).toBe(groupObserverCount);
+        expect(getActiveObserverCount(child.onAfterWorldMatrixUpdateObservable)).toBe(childObserverCount);
 
         observer.dispose();
     });

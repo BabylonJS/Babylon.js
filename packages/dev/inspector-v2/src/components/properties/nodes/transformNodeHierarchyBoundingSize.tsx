@@ -82,6 +82,7 @@ class TransformNodeHierarchyBoundingSizeObserver implements IDisposable {
     private _isDirty = true;
     private _isRefreshing = false;
     private _lastRefreshTime = 0;
+    private _lastHierarchySyncTime = 0;
 
     public constructor(node: TransformNode, onSizeChanged: (size: Vector3 | null) => void) {
         this._node = node;
@@ -94,7 +95,6 @@ class TransformNodeHierarchyBoundingSizeObserver implements IDisposable {
         this._newTransformNodeObserver = scene.onNewTransformNodeAddedObservable.add(() => this._markDirty());
         this._removedTransformNodeObserver = scene.onTransformNodeRemovedObservable.add(() => this._markDirty());
 
-        this._syncWorldMatrixObservers();
         this._refresh();
     }
 
@@ -119,14 +119,28 @@ class TransformNodeHierarchyBoundingSizeObserver implements IDisposable {
     }
 
     private _refreshIfNeeded(): void {
-        if (!this._isDirty || Date.now() - this._lastRefreshTime < RefreshInterval) {
+        if (this._node.isDisposed()) {
             return;
         }
 
-        this._refresh();
+        const currentTime = Date.now();
+        // Reparenting has no scene observable, so poll hierarchy membership at the display refresh rate.
+        const shouldSyncHierarchy = currentTime - this._lastHierarchySyncTime >= RefreshInterval;
+        if (shouldSyncHierarchy) {
+            this._lastHierarchySyncTime = currentTime;
+            if (this._syncWorldMatrixObservers()) {
+                this._isDirty = true;
+            }
+        }
+
+        if (!this._isDirty || currentTime - this._lastRefreshTime < RefreshInterval) {
+            return;
+        }
+
+        this._refresh(shouldSyncHierarchy);
     }
 
-    private _refresh(): void {
+    private _refresh(hierarchyAlreadySynchronized = false): void {
         if (this._node.isDisposed()) {
             return;
         }
@@ -135,20 +149,23 @@ class TransformNodeHierarchyBoundingSizeObserver implements IDisposable {
         this._isRefreshing = true;
 
         try {
-            this._syncWorldMatrixObservers();
+            if (!hierarchyAlreadySynchronized) {
+                this._syncWorldMatrixObservers();
+            }
             const size = GetTransformNodeHierarchyBoundingSize(this._node);
             const sizeChanged = size === null ? this._size !== null : !this._size?.equals(size);
             if (sizeChanged) {
                 this._size = size;
                 this._onSizeChanged(size);
             }
-            this._lastRefreshTime = Date.now();
+            this._lastRefreshTime = this._lastHierarchySyncTime = Date.now();
         } finally {
             this._isRefreshing = false;
         }
     }
 
-    private _syncWorldMatrixObservers(): void {
+    private _syncWorldMatrixObservers(): boolean {
+        let hierarchyChanged = false;
         const hierarchyNodes = new Set<TransformNode>([this._node]);
         for (const descendant of this._node.getDescendants(false)) {
             if (descendant instanceof TransformNode) {
@@ -160,17 +177,21 @@ class TransformNodeHierarchyBoundingSizeObserver implements IDisposable {
             if (!hierarchyNodes.has(node)) {
                 node.onAfterWorldMatrixUpdateObservable.remove(observer);
                 this._worldMatrixObservers.delete(node);
+                hierarchyChanged = true;
             }
         }
 
         for (const node of hierarchyNodes) {
             if (!this._worldMatrixObservers.has(node)) {
+                hierarchyChanged = true;
                 this._worldMatrixObservers.set(
                     node,
                     node.onAfterWorldMatrixUpdateObservable.add(() => this._markDirty())
                 );
             }
         }
+
+        return hierarchyChanged;
     }
 }
 
