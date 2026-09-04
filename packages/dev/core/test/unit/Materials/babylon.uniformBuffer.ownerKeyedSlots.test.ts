@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { UniformBuffer, type IUniformBufferSlotOwner } from "core/Materials/uniformBuffer";
 
 /**
@@ -197,6 +197,36 @@ describe("UniformBuffer owner-keyed slots", () => {
         ubo.update(owners[1]);
         expect(ubo.getBuffer()).toBe(slot0);
         expect((slot0 as unknown as MockGpuBuffer).gpu[0]).toBe(2);
+    });
+
+    it("does not compare the block when the values have not changed since the slot was last flushed (many meshes, one material)", () => {
+        // Every owner writes the SAME values (the common case: many meshes sharing a material write identical
+        // leftover uniforms), so after the first frame nothing changes the staging data between flushes.
+        const order = owners.map((_, i) => i);
+        const drawSame = (o: number[]) => {
+            for (const i of o) {
+                ubo.updateFloat4("color", 0.5, 0.25, 0.125, 1);
+                ubo.updateFloat("scalar", 0.75);
+                ubo.update(owners[i]);
+            }
+        };
+        engine.frameId = 1;
+        drawSame(order); // first sight: each owner's slot is filled here
+        const spy = vi.spyOn(ubo as any, "_buffersEqual");
+        for (let frame = 2; frame <= 5; ++frame) {
+            engine.frameId = frame;
+            drawSame(shuffle(order));
+        }
+        expect(spy).not.toHaveBeenCalled(); // one integer compare per draw instead of a block compare
+        spy.mockRestore();
+
+        // a real change is still seen and reaches the GPU
+        const uploadsBefore = engine.uploads.length;
+        engine.frameId = 6;
+        ubo.updateFloat4("color", 100, 200, 300, 1);
+        ubo.update(owners[7]);
+        expect(engine.uploads.length).toBe(uploadsBefore + 1);
+        expect((ubo.getBuffer() as unknown as MockGpuBuffer).gpu[0]).toBe(100);
     });
 
     it("keeps the draw-order behavior when no owner is given", () => {

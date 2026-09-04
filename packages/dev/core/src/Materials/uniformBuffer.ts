@@ -56,6 +56,11 @@ export class UniformBuffer {
     private _slotFrameId: number[];
     private _ownerCount: number;
     private _freeSlots: number[];
+    // Generation of the staging data (_bufferData): bumped on every write that changes it. Each owner-keyed slot
+    // remembers the generation it was last flushed with, so a draw whose values did not change since that flush
+    // costs one integer compare instead of a full compare of the block against the slot's shadow.
+    private _dataGeneration: number;
+    private _slotGeneration: number[];
 
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
@@ -267,6 +272,7 @@ export class UniformBuffer {
         this._uniformArraySizes = {};
         this._uniformLocationPointer = 0;
         this._needSync = false;
+        this._dataGeneration = 0;
         this._trackUBOsInFrame = false;
 
         if ((trackUBOsInFrame === undefined && this._engine._features.trackUbosInFrame) || trackUBOsInFrame === true) {
@@ -586,6 +592,7 @@ export class UniformBuffer {
         // See spec, alignment must be filled as a vec4
         this._fillAlignment(4);
         this._bufferData = new Float32Array(this._data);
+        this._dataGeneration++;
 
         this._rebuild();
 
@@ -642,6 +649,7 @@ export class UniformBuffer {
         this._slotFrameId = [];
         this._ownerCount = 0;
         this._freeSlots = [];
+        this._slotGeneration = [];
     }
 
     /** @internal */
@@ -760,6 +768,18 @@ export class UniformBuffer {
             owner._uniformBuffersWithOwnedSlot.push(this);
         }
 
+        if (this._slotGeneration[idx] === this._dataGeneration) {
+            // The slot was last flushed with exactly the current data and nothing has been written since: nothing to
+            // compare, nothing to upload, and no same-frame conflict is possible either (same bytes).
+            this._bufferIndex = idx;
+            this._buffer = this._buffers[idx][0];
+            this.bindUniformBuffer();
+            this._slotFrameId[idx] = this._currentFrameId;
+            this._needSync = false;
+            this._createBufferOnWrite = false;
+            return;
+        }
+
         const owned = this._buffers[idx][1];
         if (this._slotFrameId[idx] === this._currentFrameId && owned && !this._buffersEqual(this._bufferData, owned)) {
             // The same context flushes a second time in the same frame with different values: the GPU has not consumed the
@@ -781,6 +801,7 @@ export class UniformBuffer {
         }
 
         this._slotFrameId[idx] = this._currentFrameId;
+        this._slotGeneration[idx] = this._dataGeneration;
         this._needSync = false;
         this._createBufferOnWrite = false; // slots are keyed on the owner, the updateXXX methods must never switch buffer
     }
@@ -895,11 +916,15 @@ export class UniformBuffer {
             }
 
             this._needSync = this._needSync || changed;
+            if (changed) {
+                this._dataGeneration++;
+            }
         } else {
             // No cache for dynamic
             for (let i = 0; i < size; i++) {
                 this._bufferData[location + i] = data[i];
             }
+            this._dataGeneration++;
         }
     }
 
@@ -948,11 +973,15 @@ export class UniformBuffer {
             }
 
             this._needSync = this._needSync || changed;
+            if (changed) {
+                this._dataGeneration++;
+            }
         } else {
             // No cache for dynamic
             for (let i = 0; i < size; i++) {
                 this._bufferData[location + i] = data[i];
             }
+            this._dataGeneration++;
         }
     }
 
@@ -1339,6 +1368,7 @@ export class UniformBuffer {
                 // Note that if _buffers.length == 1, we don't copy _bufferData into _buffers[_bufferIndex][1] (see the update() method), and _bufferData already contains the right data
                 if (this._buffers.length > 1 && this._buffers[b][1]) {
                     this._bufferData.set(this._buffers[b][1]!);
+                    this._dataGeneration++;
                 }
                 this._valueCache = {};
                 // The following line prevents the current buffer (_buffer / _bufferIndex) from being updated during subsequent calls to updateXXX() due to a call to _checkNewFrame()
