@@ -828,6 +828,12 @@ export class Constants {
      */
     public static readonly PREPASS_IRRADIANCE_TEXTURE_TYPE = 14;
 
+    /**
+     * Constant used to retrieve the object ID texture index in geometry rendering textures.
+     * Object IDs are stored as 24-bit RGB values or 8-bit RED values, depending on the texture format.
+     */
+    public static readonly PREPASS_OBJECT_ID_TEXTURE_TYPE = 15;
+
     /** Flag to create a readable buffer (the buffer can be the source of a copy) */
     public static readonly BUFFER_CREATIONFLAG_READ = 1;
     /** Flag to create a writable buffer (the buffer can be the destination of a copy) */

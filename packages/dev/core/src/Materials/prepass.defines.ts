@@ -38,6 +38,9 @@ export function PrepassDefinesMixin<Tbase extends PrepassDefinesMixinConstructor
         public PREPASS_VELOCITY_LINEAR_INDEX = -1;
         public PREPASS_REFLECTIVITY = false;
         public PREPASS_REFLECTIVITY_INDEX = -1;
+        public PREPASS_OBJECT_ID = false;
+        public PREPASS_OBJECT_ID_INDEX = -1;
+        public PREPASS_OBJECT_ID_R8 = false;
         public SCENE_MRT_COUNT = 0;
     };
 }

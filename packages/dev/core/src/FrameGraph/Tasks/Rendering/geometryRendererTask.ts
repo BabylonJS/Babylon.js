@@ -9,7 +9,7 @@ import {
     type ObjectRenderer,
 } from "core/index";
 import { Color4 } from "core/Maths/math.color.pure";
-import { MaterialHelperGeometryRendering, GeometryRenderingTextureClearType } from "core/Materials/materialHelper.geometryrendering";
+import { MaterialHelperGeometryRendering, GeometryRenderingTextureClearType, type GeometryRenderingObjectIdProvider } from "core/Materials/materialHelper.geometryrendering";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphObjectRendererTask } from "./objectRendererTask";
 
@@ -99,6 +99,19 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
     public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
 
     /**
+     * Provides the object ID written for each rendered mesh.
+     *
+     * IDs must be integers between 0 and 0xFFFFFF for RGBA textures, or between 0 and 0xFF for RED textures.
+     * ID 0 is reserved for background or excluded meshes.
+     * By default, meshes use their unique ID.
+     * Instances use the ID of their source mesh. Default IDs are only stable for the lifetime of the current scene and should not be persisted.
+     * When using a RED texture, provide a custom ID if mesh unique IDs can exceed 0xFF.
+     * The provider runs in the render hot path and may be called multiple times for the same mesh in a frame.
+     * @see https://playground.babylonjs.com/#00T6WJ#0
+     */
+    public objectIdProvider?: GeometryRenderingObjectIdProvider;
+
+    /**
      * The irradiance output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
      */
     public readonly geometryIrradianceTexture: FrameGraphTextureHandle;
@@ -158,6 +171,13 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
      * The linear velocity output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
      */
     public readonly geometryLinearVelocityTexture: FrameGraphTextureHandle;
+
+    /**
+     * The object ID output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     * RGBA unsigned byte textures store 24-bit IDs, while RED unsigned byte textures store 8-bit IDs.
+     * Decode RED values with `round(value * 255.0)`.
+     */
+    public readonly geometryObjectIdTexture: FrameGraphTextureHandle;
 
     /**
      * Gets or sets the name of the task.
@@ -222,6 +242,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         this.geometryReflectivityTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryVelocityTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryLinearVelocityTexture = this._frameGraph.textureManager.createDanglingHandle();
+        this.geometryObjectIdTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     /**
@@ -326,6 +347,9 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
                     this._frameGraph.textureManager.resolveDanglingHandle(this.geometryLinearVelocityTexture, handle);
                     needPreviousWorldMatrices = true;
                     break;
+                case Constants.PREPASS_OBJECT_ID_TEXTURE_TYPE:
+                    this._frameGraph.textureManager.resolveDanglingHandle(this.geometryObjectIdTexture, handle);
+                    break;
             }
         }
 
@@ -353,6 +377,25 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
     protected override _checkParameters() {
         if (this.objectList === undefined || this.camera === undefined) {
             throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object list and camera must be provided`);
+        }
+
+        const objectIdDescription = this.textureDescriptions.find((description) => description.type === Constants.PREPASS_OBJECT_ID_TEXTURE_TYPE);
+        if (objectIdDescription) {
+            if (this.samples !== 1) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object ID textures currently require samples to be 1`);
+            }
+
+            const isSupportedFormat = objectIdDescription.textureFormat === Constants.TEXTUREFORMAT_RGBA || objectIdDescription.textureFormat === Constants.TEXTUREFORMAT_RED;
+            if (objectIdDescription.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE || !isSupportedFormat) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object ID textures must use TEXTURETYPE_UNSIGNED_BYTE with TEXTUREFORMAT_RGBA or TEXTUREFORMAT_RED`);
+            }
+        }
+
+        const targetTextureCount = this.targetTexture === undefined ? 0 : Array.isArray(this.targetTexture) ? this.targetTexture.length : 1;
+        const attachmentCount = this.textureDescriptions.length + targetTextureCount;
+        const maxDrawBuffers = Math.min(this._engine.getCaps().maxDrawBuffers ?? 1, 8);
+        if (attachmentCount > maxDrawBuffers) {
+            throw new Error(`FrameGraphGeometryRendererTask ${this.name}: ${attachmentCount} color attachments were requested, but this engine supports at most ${maxDrawBuffers}`);
         }
     }
 
@@ -528,6 +571,9 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
 
             configuration.defines[geometryDescription.defineIndex] = i;
+            if (description.type === Constants.PREPASS_OBJECT_ID_TEXTURE_TYPE) {
+                configuration.objectIdIsRedFormat = description.textureFormat === Constants.TEXTUREFORMAT_RED;
+            }
         }
 
         if (this.targetTexture !== undefined) {
@@ -535,5 +581,6 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         }
 
         configuration.reverseCulling = this.reverseCulling;
+        configuration.objectIdProvider = this.objectIdProvider;
     }
 }
