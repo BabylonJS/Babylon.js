@@ -398,7 +398,7 @@ export class TextBlock extends Control {
         if (this._resizeToFit) {
             if (this._textWrapping === TextWrapping.Clip || this._forceResizeWidth) {
                 const newWidth = Math.ceil(this._paddingLeftInPixels) + Math.ceil(this._paddingRightInPixels) + Math.ceil(maxLineWidth);
-                if (newWidth !== this._width.getValueInPixel(this._host, this._tempParentMeasure.width)) {
+                if (newWidth !== this._getValueInPixel(this._width, this._tempParentMeasure.width)) {
                     this._width.updateInPlace(newWidth, ValueAndUnit.UNITMODE_PIXEL);
                     this._rebuildLayout = true;
                 }
@@ -407,10 +407,10 @@ export class TextBlock extends Control {
 
             if (this._lines.length > 0 && this._lineSpacing.internalValue !== 0) {
                 let lineSpacing: number;
-                if (this._lineSpacing.isPixel) {
-                    lineSpacing = this._lineSpacing.getValue(this._host);
+                if (!this._lineSpacing.isPercentage) {
+                    lineSpacing = this._getValueInPixel(this._lineSpacing, 1);
                 } else {
-                    lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
+                    lineSpacing = this._getValueInPixel(this._lineSpacing, 1) * this._getValueInPixel(this._height, this._cachedParentMeasure.height);
                 }
 
                 newHeight += (this._lines.length - 1) * lineSpacing;
@@ -693,10 +693,10 @@ export class TextBlock extends Control {
             const line = this._lines[i];
 
             if (i !== 0 && this._lineSpacing.internalValue !== 0) {
-                if (this._lineSpacing.isPixel) {
-                    rootY += this._lineSpacing.getValue(this._host);
+                if (!this._lineSpacing.isPercentage) {
+                    rootY += this._getValueInPixel(this._lineSpacing, 1);
                 } else {
-                    rootY = rootY + this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
+                    rootY = rootY + this._getValueInPixel(this._lineSpacing, 1) * this._getValueInPixel(this._height, this._cachedParentMeasure.height);
                 }
             }
 
@@ -710,10 +710,10 @@ export class TextBlock extends Control {
 
         if (lineCount > 0 && this._lineSpacing.internalValue !== 0) {
             let lineSpacing: number;
-            if (this._lineSpacing.isPixel) {
-                lineSpacing = this._lineSpacing.getValue(this._host);
+            if (!this._lineSpacing.isPercentage) {
+                lineSpacing = this._getValueInPixel(this._lineSpacing, 1);
             } else {
-                lineSpacing = this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
+                lineSpacing = this._getValueInPixel(this._lineSpacing, 1) * this._getValueInPixel(this._height, this._cachedParentMeasure.height);
             }
 
             newHeight += (lineCount - 1) * lineSpacing;

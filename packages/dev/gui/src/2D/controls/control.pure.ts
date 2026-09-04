@@ -52,6 +52,7 @@ export class Control implements IAnimatable, IFocusableControl {
     private _fontFamily = "";
     private _fontStyle = "";
     private _fontWeight = "";
+    private static readonly _DefaultFontSize = /*#__PURE__*/ new ValueAndUnit(18);
     private _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
     private _font: string;
     /** @internal */
@@ -676,7 +677,7 @@ export class Control implements IAnimatable, IFocusableControl {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get widthInPixels(): number {
-        return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        return this._getValueInPixel(this._width, this._cachedParentMeasure.width);
     }
 
     public set widthInPixels(value: number) {
@@ -713,7 +714,7 @@ export class Control implements IAnimatable, IFocusableControl {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get heightInPixels(): number {
-        return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        return this._getValueInPixel(this._height, this._cachedParentMeasure.height);
     }
 
     public set heightInPixels(value: number) {
@@ -803,11 +804,14 @@ export class Control implements IAnimatable, IFocusableControl {
     public get fontSizeInPixels(): number {
         const fontSizeToUse = this._style ? this._style._fontSize : this._fontSize;
 
-        if (fontSizeToUse.isPixel) {
-            return fontSizeToUse.getValue(this._host);
+        if (fontSizeToUse.unit !== ValueAndUnit.UNITMODE_EM && fontSizeToUse.unit !== ValueAndUnit.UNITMODE_REM) {
+            return fontSizeToUse.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height);
         }
-
-        return fontSizeToUse.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height);
+        const root: Control | undefined = this._host?.rootContainer;
+        const defaultSize = Control._DefaultFontSize.getValue(this._host);
+        const rootSize = root && root !== this ? root.fontSizeInPixels : defaultSize;
+        const parentSize = this.parent ? this.parent.fontSizeInPixels : defaultSize;
+        return fontSizeToUse.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height, parentSize, rootSize);
     }
 
     public set fontSizeInPixels(value: number) {
@@ -817,7 +821,11 @@ export class Control implements IAnimatable, IFocusableControl {
         this.fontSize = value + "px";
     }
 
-    /** Gets or sets font size */
+    /**
+     * Gets or sets the font size in px, percent of parent height, em, or rem.
+     * For font declarations, em uses the parent font and rem uses the GUI root font.
+     * Relative font sizes on the root use the default 18px font, including adaptive scaling.
+     */
     public get fontSize(): string | number {
         return this._fontSize.toString(this._host);
     }
@@ -963,7 +971,7 @@ export class Control implements IAnimatable, IFocusableControl {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get paddingLeftInPixels(): number {
-        return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        return this._getValueInPixel(this._paddingLeft, this._cachedParentMeasure.width);
     }
 
     public set paddingLeftInPixels(value: number) {
@@ -1002,7 +1010,7 @@ export class Control implements IAnimatable, IFocusableControl {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get paddingRightInPixels(): number {
-        return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        return this._getValueInPixel(this._paddingRight, this._cachedParentMeasure.width);
     }
 
     public set paddingRightInPixels(value: number) {
@@ -1041,7 +1049,7 @@ export class Control implements IAnimatable, IFocusableControl {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get paddingTopInPixels(): number {
-        return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        return this._getValueInPixel(this._paddingTop, this._cachedParentMeasure.height);
     }
 
     public set paddingTopInPixels(value: number) {
@@ -1080,7 +1088,7 @@ export class Control implements IAnimatable, IFocusableControl {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get paddingBottomInPixels(): number {
-        return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        return this._getValueInPixel(this._paddingBottom, this._cachedParentMeasure.height);
     }
 
     public set paddingBottomInPixels(value: number) {
@@ -1119,7 +1127,7 @@ export class Control implements IAnimatable, IFocusableControl {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get leftInPixels(): number {
-        return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        return this._getValueInPixel(this._left, this._cachedParentMeasure.width);
     }
 
     public set leftInPixels(value: number) {
@@ -1149,7 +1157,7 @@ export class Control implements IAnimatable, IFocusableControl {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#position-and-size
      */
     public get topInPixels(): number {
-        return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        return this._getValueInPixel(this._top, this._cachedParentMeasure.height);
     }
 
     public set topInPixels(value: number) {
@@ -1179,7 +1187,7 @@ export class Control implements IAnimatable, IFocusableControl {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#tracking-positions
      */
     public get linkOffsetXInPixels(): number {
-        return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        return this._getValueInPixel(this._linkOffsetX, this._cachedParentMeasure.width);
     }
 
     public set linkOffsetXInPixels(value: number) {
@@ -1209,7 +1217,7 @@ export class Control implements IAnimatable, IFocusableControl {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#tracking-positions
      */
     public get linkOffsetYInPixels(): number {
-        return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        return this._getValueInPixel(this._linkOffsetY, this._cachedParentMeasure.height);
     }
 
     public set linkOffsetYInPixels(value: number) {
@@ -1398,6 +1406,46 @@ export class Control implements IAnimatable, IFocusableControl {
             this.onEnterPressedObservable.notifyObservers(this);
         }
         this.onKeyboardEventProcessedObservable.notifyObservers(evt, -1, this);
+    }
+
+    private _flexGrow = 0;
+
+    /**
+     * Gets or sets the nonnegative share of free main-axis space in a FlexPanel.
+     */
+    @serialize()
+    public get flexGrow(): number {
+        return this._flexGrow;
+    }
+
+    public set flexGrow(value: number) {
+        if (!Number.isFinite(value) || value < 0) {
+            throw new RangeError("flexGrow must be finite and nonnegative");
+        }
+        if (this._flexGrow !== value) {
+            this._flexGrow = value;
+            this._markAsDirty();
+        }
+    }
+
+    private _flexShrink = 1;
+
+    /**
+     * Gets or sets the nonnegative shrink factor in a FlexPanel, weighted by the declared main-axis size.
+     */
+    @serialize()
+    public get flexShrink(): number {
+        return this._flexShrink;
+    }
+
+    public set flexShrink(value: number) {
+        if (!Number.isFinite(value) || value < 0) {
+            throw new RangeError("flexShrink must be finite and nonnegative");
+        }
+        if (this._flexShrink !== value) {
+            this._flexShrink = value;
+            this._markAsDirty();
+        }
     }
 
     // Functions
@@ -1634,16 +1682,16 @@ export class Control implements IAnimatable, IFocusableControl {
      * @internal
      */
     public _moveToProjectedPosition(projectedPosition: Vector3): void {
-        const oldLeft = this._left.getValue(this._host);
-        const oldTop = this._top.getValue(this._host);
+        const oldLeft = this._getValueInPixel(this._left, 1);
+        const oldTop = this._getValueInPixel(this._top, 1);
 
         const parentMeasure = this.parent?._currentMeasure;
         if (parentMeasure) {
             this._processMeasures(parentMeasure, this._host.getContext());
         }
 
-        let newLeft = projectedPosition.x + this._linkOffsetX.getValue(this._host) - this._currentMeasure.width / 2;
-        let newTop = projectedPosition.y + this._linkOffsetY.getValue(this._host) - this._currentMeasure.height / 2;
+        let newLeft = projectedPosition.x + this._getValueInPixel(this._linkOffsetX, 1) - this._currentMeasure.width / 2;
+        let newTop = projectedPosition.y + this._getValueInPixel(this._linkOffsetY, 1) - this._currentMeasure.height / 2;
 
         if (this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling) {
             if (Math.abs(newLeft - oldLeft) < 0.5) {
@@ -1967,9 +2015,17 @@ export class Control implements IAnimatable, IFocusableControl {
 
         this._measure();
 
-        // Let children take some post-measurement actions
+        const flexMeasure = this.parent?._getLayoutMeasureForChild(this);
+        if (flexMeasure) {
+            this._currentMeasure.width = flexMeasure.width;
+            this._currentMeasure.height = flexMeasure.height;
+        }
+        // Text wrapping must use the allocated flex width rather than the declared basis.
         this._postMeasure(this._tempPaddingMeasure, context);
-
+        if (flexMeasure) {
+            this._currentMeasure.width = flexMeasure.width;
+            this._currentMeasure.height = flexMeasure.height;
+        }
         this._computeAlignment(this._tempPaddingMeasure, context);
 
         // Let children add more features
@@ -2016,20 +2072,24 @@ export class Control implements IAnimatable, IFocusableControl {
         this._isClipped = false;
     }
 
+    /**
+     * Resolves a GUI dimension using this control's computed font size.
+     * @param value defines the dimension to resolve
+     * @param reference defines the reference size for percentages
+     * @returns the dimension in pixels
+     * @internal
+     */
+    public _getValueInPixel(value: ValueAndUnit, reference: number): number {
+        if (value.unit === ValueAndUnit.UNITMODE_EM || value.unit === ValueAndUnit.UNITMODE_REM) {
+            return value.getValueInPixel(this._host, reference, this.fontSizeInPixels, this._host?.rootContainer.fontSizeInPixels);
+        }
+        return value.getValueInPixel(this._host, reference);
+    }
+
     /** @internal */
     public _measure(): void {
-        // Width / Height
-        if (this._width.isPixel) {
-            this._currentMeasure.width = this._width.getValue(this._host);
-        } else {
-            this._currentMeasure.width *= this._width.getValue(this._host);
-        }
-
-        if (this._height.isPixel) {
-            this._currentMeasure.height = this._height.getValue(this._host);
-        } else {
-            this._currentMeasure.height *= this._height.getValue(this._host);
-        }
+        this._currentMeasure.width = this._getValueInPixel(this._width, this._currentMeasure.width);
+        this._currentMeasure.height = this._getValueInPixel(this._height, this._currentMeasure.height);
 
         if (this._fixedRatio !== 0) {
             if (this._fixedRatioMasterIsWidth) {
@@ -2079,45 +2139,21 @@ export class Control implements IAnimatable, IFocusableControl {
         }
 
         if (!this.descendantsOnlyPadding) {
-            if (this._paddingLeft.isPixel) {
-                this._currentMeasure.left += this._paddingLeft.getValue(this._host);
-                this._currentMeasure.width -= this._paddingLeft.getValue(this._host);
-            } else {
-                this._currentMeasure.left += parentWidth * this._paddingLeft.getValue(this._host);
-                this._currentMeasure.width -= parentWidth * this._paddingLeft.getValue(this._host);
-            }
-
-            if (this._paddingRight.isPixel) {
-                this._currentMeasure.width -= this._paddingRight.getValue(this._host);
-            } else {
-                this._currentMeasure.width -= parentWidth * this._paddingRight.getValue(this._host);
-            }
-
-            if (this._paddingTop.isPixel) {
-                this._currentMeasure.top += this._paddingTop.getValue(this._host);
-                this._currentMeasure.height -= this._paddingTop.getValue(this._host);
-            } else {
-                this._currentMeasure.top += parentHeight * this._paddingTop.getValue(this._host);
-                this._currentMeasure.height -= parentHeight * this._paddingTop.getValue(this._host);
-            }
-
-            if (this._paddingBottom.isPixel) {
-                this._currentMeasure.height -= this._paddingBottom.getValue(this._host);
-            } else {
-                this._currentMeasure.height -= parentHeight * this._paddingBottom.getValue(this._host);
-            }
+            const left = this._getValueInPixel(this._paddingLeft, parentWidth);
+            const top = this._getValueInPixel(this._paddingTop, parentHeight);
+            this._currentMeasure.left += left;
+            this._currentMeasure.top += top;
+            this._currentMeasure.width -= left + this._getValueInPixel(this._paddingRight, parentWidth);
+            this._currentMeasure.height -= top + this._getValueInPixel(this._paddingBottom, parentHeight);
         }
 
-        if (this._left.isPixel) {
-            this._currentMeasure.left += this._left.getValue(this._host);
+        const flexMeasure = this.parent?._getLayoutMeasureForChild(this);
+        if (flexMeasure) {
+            x = flexMeasure.left;
+            y = flexMeasure.top;
         } else {
-            this._currentMeasure.left += parentWidth * this._left.getValue(this._host);
-        }
-
-        if (this._top.isPixel) {
-            this._currentMeasure.top += this._top.getValue(this._host);
-        } else {
-            this._currentMeasure.top += parentHeight * this._top.getValue(this._host);
+            this._currentMeasure.left += this._getValueInPixel(this._left, parentWidth);
+            this._currentMeasure.top += this._getValueInPixel(this._top, parentHeight);
         }
 
         this._currentMeasure.left += x;
@@ -2578,7 +2614,7 @@ export class Control implements IAnimatable, IFocusableControl {
      * @returns if the dimension is fully defined
      */
     public isDimensionFullyDefined(dim: "width" | "height"): boolean {
-        return this.getDimension(dim).isPixel;
+        return !this.getDimension(dim).isPercentage;
     }
 
     /**
