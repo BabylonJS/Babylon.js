@@ -171,6 +171,34 @@ describe("UniformBuffer owner-keyed slots", () => {
         expect(ubo._numBuffers).toBe(3);
     });
 
+    it("never lets two live owners share a slot after the sole owner is released", () => {
+        // owner A is the only owner: it gets the slot create() made (slot 0)
+        engine.frameId = 1;
+        ubo.updateFloat4("color", 1, 1, 1, 1);
+        ubo.update(owners[0]);
+        const slot0 = ubo.getBuffer();
+        ubo._releaseOwnerSlot(owners[0]); // A's context is disposed; slot 0 is now in the free list
+
+        // B arrives: it must take slot 0 THROUGH the free list (so the entry is consumed), not via the first-owner shortcut
+        engine.frameId = 2;
+        ubo.updateFloat4("color", 2, 2, 2, 2);
+        ubo.update(owners[1]);
+        expect(ubo.getBuffer()).toBe(slot0);
+
+        // C arrives next frame: the free list must be empty, so C gets a NEW slot instead of B's
+        engine.frameId = 3;
+        ubo.updateFloat4("color", 3, 3, 3, 3);
+        ubo.update(owners[2]);
+        expect(ubo.getBuffer()).not.toBe(slot0);
+        expect(ubo._numBuffers).toBe(2);
+
+        // and B still reads back its own values from its own slot
+        ubo.updateFloat4("color", 2, 2, 2, 2);
+        ubo.update(owners[1]);
+        expect(ubo.getBuffer()).toBe(slot0);
+        expect((slot0 as unknown as MockGpuBuffer).gpu[0]).toBe(2);
+    });
+
     it("keeps the draw-order behavior when no owner is given", () => {
         const order = owners.map((_, i) => i);
         engine.frameId = 1;

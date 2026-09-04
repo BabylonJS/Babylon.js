@@ -745,8 +745,10 @@ export class UniformBuffer {
 
         let idx = this._slotByOwner.get(owner);
         if (idx === undefined) {
-            if (this._ownerCount === 0 && this._buffers.length === 1) {
-                idx = 0; // the slot create() made: hand it to the first owner instead of leaving it unused
+            if (this._ownerCount === 0 && this._buffers.length === 1 && this._freeSlots.length === 0) {
+                // the slot create() made and nobody has owned yet: hand it to the first owner instead of leaving it unused.
+                // (Once an owner has released it, it is in _freeSlots and must be taken from there, or two owners could share it.)
+                idx = 0;
             } else {
                 idx = this._takeFreeSlot(true);
             }
