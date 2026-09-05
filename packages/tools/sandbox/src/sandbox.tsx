@@ -340,7 +340,11 @@ export class Sandbox extends React.Component<
                         break;
                     }
                     case "environment": {
-                        EnvironmentTools.SkyboxPath = value;
+                        if (value.toLowerCase() === "none") {
+                            this._globalState.environmentEnabled = false;
+                        } else {
+                            EnvironmentTools.SkyboxPath = value;
+                        }
                         break;
                     }
                     case "kiosk": {

@@ -70,6 +70,7 @@
         "glTF/2.0/Extensions/KHR_materials_ior.js",
         "glTF/2.0/Extensions/KHR_materials_iridescence.js",
         "glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.js",
+        "glTF/2.0/Extensions/KHR_materials_retroreflection.js",
         "glTF/2.0/Extensions/KHR_materials_sheen.js",
         "glTF/2.0/Extensions/KHR_materials_specular.js",
         "glTF/2.0/Extensions/KHR_materials_unlit.js",

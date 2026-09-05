@@ -313,8 +313,13 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
     }
 
     prepareLighting() {
+        if (!this.props.globalState.environmentEnabled && this._scene.environmentTexture) {
+            this._scene.environmentTexture.dispose();
+            this._scene.environmentTexture = null;
+        }
+
         if (this._currentPluginName === "gltf") {
-            if (!this._scene.environmentTexture) {
+            if (this.props.globalState.environmentEnabled && !this._scene.environmentTexture) {
                 this._scene.environmentTexture = EnvironmentTools.LoadSkyboxPathTexture(this._scene);
             }
 
@@ -340,7 +345,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             }
 
             if (pbrPresent) {
-                if (!this._scene.environmentTexture) {
+                if (this.props.globalState.environmentEnabled && !this._scene.environmentTexture) {
                     this._scene.environmentTexture = EnvironmentTools.LoadSkyboxPathTexture(this._scene);
                 }
             } else {
