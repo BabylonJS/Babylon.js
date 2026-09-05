@@ -5565,6 +5565,18 @@
             "dependsOn": ["Loaders", "Meshes"]
         },
         {
+            "title": "USD loader - analytic primitives",
+            "playgroundId": "#5U2LR9#3",
+            "referenceImage": "usd-loader-analytic-primitives.png",
+            "dependsOn": ["Loaders", "Materials", "Meshes"]
+        },
+        {
+            "title": "USD loader - PBR materials",
+            "playgroundId": "#A8YCW3#3",
+            "referenceImage": "usd-loader-pbr-materials.png",
+            "dependsOn": ["Loaders", "Materials", "Meshes", "PBR"]
+        },
+        {
             "title": "CSG2 Right-Handed glTF winding",
             "playgroundId": "#1HYT9N#0",
             "referenceImage": "csg2-righthanded-gltf-winding.png",
