@@ -4,6 +4,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Logger } from "core/Misc/logger";
 import { MultiTexture, MultiBlendMode } from "../../../src/multiTexture/multiTexture";
 import { type Scene } from "core/scene";
+import { RegisterEnginesExtensionsEngineTexture2DArrayImageSource } from "core/Engines/Extensions/engine.texture2DArrayImageSource.pure";
 
 /** MultiTexture's internal (mocked) ProceduralTexture composite exposes call-recording props. */
 interface MockComposite {
@@ -221,6 +222,9 @@ vi.mock("core/Materials/Textures/Procedurals/proceduralTexture", () => ({
 }));
 vi.mock("core/Materials/Textures/Procedurals/proceduralTexture.pure", () => ({
     ProceduralTexture: mockState.ptMock,
+}));
+vi.mock("core/Engines/Extensions/engine.texture2DArrayImageSource.pure", () => ({
+    RegisterEnginesExtensionsEngineTexture2DArrayImageSource: vi.fn(),
 }));
 
 // ---------------------------------------------------------------------------
@@ -1831,5 +1835,37 @@ describe("MultiTexture serialize", () => {
         expect(() => mt.serialize()).toThrow(/MultiTexture/);
         expect(() => mt.serialize()).toThrow(/not supported/);
         expect(() => mt.serialize(true)).toThrow(/not supported/);
+    });
+});
+
+describe("MultiTexture lazy registration", () => {
+    it("does not call the core registration function at import time", async () => {
+        // Dynamic import is intentional: resetModules reloads the addon module so we can observe
+        // import behavior in isolation (no `_Registered` set yet, no prior construction).
+        vi.resetModules();
+        vi.mocked(RegisterEnginesExtensionsEngineTexture2DArrayImageSource).mockClear();
+
+        await import("../../../src/multiTexture/multiTexture");
+
+        expect(vi.mocked(RegisterEnginesExtensionsEngineTexture2DArrayImageSource)).not.toHaveBeenCalled();
+    });
+
+    it("calls the core registration function on first construction", async () => {
+        // Dynamic import is intentional: resetModules reloads the addon module so its module-level
+        // `_Registered` guard is false again, letting the constructor's lazy registration be
+        // observed exactly once (the static import's guard was already consumed by earlier suites).
+        vi.resetModules();
+        vi.mocked(RegisterEnginesExtensionsEngineTexture2DArrayImageSource).mockClear();
+
+        const { MultiTexture: ReloadedMultiTexture } = await import("../../../src/multiTexture/multiTexture");
+        const scene = makeScene();
+        let resolveLoad!: () => void;
+        const loaded = new Promise<void>((resolve) => (resolveLoad = resolve));
+        const mt = new ReloadedMultiTexture("mt", ["a.png"], scene, { width: 8, height: 8, onLoad: () => resolveLoad() }) as MockMultiTexture;
+        vi.spyOn(mt.onLoadObservable, "notifyObservers").mockImplementation(() => true);
+        await loaded;
+
+        expect(vi.mocked(RegisterEnginesExtensionsEngineTexture2DArrayImageSource)).toHaveBeenCalledTimes(1);
+        mt.dispose();
     });
 });

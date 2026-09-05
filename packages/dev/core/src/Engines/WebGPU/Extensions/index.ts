@@ -12,4 +12,5 @@ import "./engine.readTexture";
 import "./engine.renderTarget";
 import "./engine.renderTargetCube";
 import "./engine.renderTargetTexture";
+import "./engine.texture2DArrayImageSource";
 import "./engine.videoTexture";

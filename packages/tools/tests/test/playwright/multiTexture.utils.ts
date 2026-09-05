@@ -27,7 +27,7 @@ const PIXEL_TOLERANCE = 6;
 /** A straight-alpha RGBA byte color. */
 type RGBA = [number, number, number, number];
 
-// Numeric MultiBlendMode values (mirror MultiBlendMode in multiTexture.pure.ts) so the
+// Numeric MultiBlendMode values (mirror MultiBlendMode in multiTexture.ts) so the
 // Node-side runner can pass the mode into the browser without importing the pure module.
 const BABYLON_ALPHA_BLEND = 0;
 const BABYLON_ALPHA_MAX = 1;
@@ -339,7 +339,7 @@ export const evaluateMultiTextureTests = (engineName: string) => {
         // instead of 96). The fix keeps straight layers byte-identical across both backends by NOT
         // resizing through createImageBitmap (Chromium premultiplies a resized straight decode):
         // MultiTexture decodes each layer at native size and uploads it by drawing it into a
-        // target-sized 2D canvas first (see _bitmapOptions/_uploadToLayer in multiTexture.pure.ts),
+        // target-sized 2D canvas first (see _bitmapOptions/_uploadToLayer in multiTexture.ts),
         // which preserves straight RGBA on both WebGL2 and WebGPU. These assertions run against
         // native-sized sources, so both engines must produce the same canonical translucent output
         // below.

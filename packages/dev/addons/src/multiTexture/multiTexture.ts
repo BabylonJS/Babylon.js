@@ -6,20 +6,13 @@
  * with WebGL2/WebGPU requirements, URL polling, and a non-trivial memory footprint.
  */
 
-// Register the 2D-array upload extensions for both engines by patching the shared engine
-// prototypes directly. In the addons UMD build every `core/*` import is externalized to the
-// BABYLON global, so core's pure registration functions for this opt-in extension are not
-// reachable (core deliberately keeps it out of the global bundle), and side-effect imports are
-// externalized too and never execute. So MultiTexture patches the concrete engine classes that
-// ARE exported on the global itself, mirroring core's engine.texture2DArrayImageSource module.
-import { ThinEngine } from "core/Engines/thinEngine.pure";
-import { WebGPUEngine } from "core/Engines/webgpuEngine";
-import { type WebGPUHardwareTexture } from "core/Engines/WebGPU/webgpuHardwareTexture";
 import { Constants } from "core/Engines/constants";
+import { RegisterEnginesExtensionsEngineTexture2DArrayImageSource } from "core/Engines/Extensions/engine.texture2DArrayImageSource.pure";
 import { Logger } from "core/Misc/logger";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { type Nullable, type ImageSource } from "core/types";
+import { type Nullable } from "core/types";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { type ThinEngine } from "core/Engines/thinEngine.pure";
 import { type Scene } from "core/scene.pure";
 import { Observable } from "core/Misc/observable";
 import { BaseTexture } from "core/Materials/Textures/baseTexture.pure";
@@ -28,7 +21,6 @@ import { type IProceduralTextureCreationOptions, ProceduralTexture } from "core/
 import { RawTexture2DArray } from "core/Materials/Textures/rawTexture2DArray";
 import { UploadImageToTexture2DArrayLayer } from "core/Materials/Textures/rawTexture2DArray.functions";
 import { Texture } from "core/Materials/Textures/texture.pure";
-import { RegisterClass } from "core/Misc/typeStore";
 /**
  * Options for creating a MultiTexture.
  */
@@ -99,74 +91,11 @@ interface ILayerEntry {
 }
 
 let _Registered = false;
-/** Signature of the engine method patched in below (mirrors AbstractEngine.updateTextureArrayLayerFromImageSource). */
-type EngineTextureArrayUpload = (texture: InternalTexture, source: ImageSource, layer: number, invertY?: boolean, premultiplyAlpha?: boolean) => void;
-/** An engine prototype carrying the (opt-in) updateTextureArrayLayerFromImageSource method. */
-type EngineWithTextureArrayUpload = { updateTextureArrayLayerFromImageSource: EngineTextureArrayUpload };
-
-/**
- * Patches updateTextureArrayLayerFromImageSource onto both the WebGL2 and WebGPU engine
- * prototypes so MultiTexture can upload decoded image sources into 2D array texture layers.
- * Mirrors core's opt-in engine.texture2DArrayImageSource extension; see the imports above for
- * why MultiTexture registers the concrete engine prototypes directly instead of importing core's
- * pure registration functions (they are not exported on the BABYLON UMD global).
- */
-function RegisterTexture2DArrayImageSourceExtensions(): void {
-    // The augmentation declaring updateTextureArrayLayerFromImageSource on AbstractEngine is not
-    // part of this package's compilation, so cast the known prototype to the typed surface.
-    const thinEnginePrototype = ThinEngine.prototype as unknown as EngineWithTextureArrayUpload;
-    thinEnginePrototype.updateTextureArrayLayerFromImageSource = function (
-        this: ThinEngine,
-        texture: InternalTexture,
-        source: ImageSource,
-        layer: number,
-        invertY: boolean = false,
-        premultiplyAlpha: boolean = false
-    ): void {
-        if (this.webGLVersion < 2) {
-            Logger.Error("updateTextureArrayLayerFromImageSource is only supported in WebGL2.");
-            return;
-        }
-        const gl = this._gl as WebGL2RenderingContext;
-        const target = gl.TEXTURE_2D_ARRAY;
-        const textureType = this._getWebGLTextureType(texture.type);
-        const glFormat = this._getInternalFormat(texture.format);
-        this._bindTextureDirectly(target, texture, true);
-        this._unpackFlipY(invertY);
-        if (premultiplyAlpha) {
-            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
-        }
-        gl.texSubImage3D(target, 0, 0, 0, layer, texture.width, texture.height, 1, glFormat, textureType, source as TexImageSource);
-        if (texture.generateMipMaps) {
-            gl.generateMipmap(target);
-        }
-        if (premultiplyAlpha) {
-            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
-        }
-        this._bindTextureDirectly(target, null);
-        texture.isReady = true;
-    };
-
-    const webgpuEnginePrototype = WebGPUEngine.prototype as unknown as EngineWithTextureArrayUpload;
-    webgpuEnginePrototype.updateTextureArrayLayerFromImageSource = function (
-        this: WebGPUEngine,
-        texture: InternalTexture,
-        source: ImageSource,
-        layer: number,
-        invertY: boolean = false,
-        premultiplyAlpha: boolean = false
-    ): void {
-        const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
-        this._textureHelper.updateTexture(source, texture, texture.width, texture.height, 1, gpuTextureWrapper.format, layer, 0, invertY, premultiplyAlpha, 0, 0);
-        if (texture.generateMipMaps) {
-            this._generateMipmaps(texture, this._uploadEncoder);
-        }
-        texture.isReady = true;
-    };
-}
 
 /**
  * Register side effects for MultiTexture.
+ * Registers the core 2D-array image-source extension (engine.texture2DArrayImageSource)
+ * lazily at first use, matching the Atmosphere addon's convention.
  * Safe to call multiple times; only the first call has an effect.
  */
 export function RegisterMultiTexture(): void {
@@ -175,9 +104,7 @@ export function RegisterMultiTexture(): void {
     }
     _Registered = true;
 
-    RegisterTexture2DArrayImageSourceExtensions();
-
-    RegisterClass("BABYLON.MultiTexture", MultiTexture);
+    RegisterEnginesExtensionsEngineTexture2DArrayImageSource();
 }
 
 /**
@@ -225,12 +152,9 @@ export function RegisterMultiTexture(): void {
  *   affects the output but only mip-0 filtering applies (no mip-level selection) and `rttScale`
  *   rescale is filtered at mip 0. The `_arrayTexture` sampler that materials use to read the
  *   per-layer array is unaffected by this backend difference.
- * - The non-pure `multiTexture` entry imports both the WebGL2 and WebGPU 2D-array upload
- *   extensions automatically, so `MultiTexture` works on either engine out of the box. If you
- *   import only the side-effect-free `multiTexture.pure` module directly, you must import the
- *   upload extension for your backend yourself:
- *   `import "core/Engines/Extensions/engine.texture2DArrayImageSource";` (WebGL2) or
- *   `import "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource";` (WebGPU).
+ * - `MultiTexture` lives in `@babylonjs/addons` and lazily registers the core 2D-array
+ *   image-source extension (`engine.texture2DArrayImageSource`) on first construction, matching
+ *   the `Atmosphere` addon's convention. No engine mutation occurs at addons import time.
  * - The allocated array depth (options.maxLayers ?? urls.length) must be a positive integer and no
  *   larger than the device limit getCaps().texture2DArrayMaxLayerCount. Empty urls are only accepted
  *   together with an explicit options.maxLayers. addLayerAsync/insertLayerAsync double the depth when it is
@@ -430,6 +354,7 @@ export class MultiTexture extends BaseTexture {
      */
     constructor(name: string, urls: string[], scene: Scene, options: IMultiTextureOptions) {
         super(scene);
+        RegisterMultiTexture();
         // The two child GPU resources are allocated mid-construction and must be released if the
         // constructor throws (see the catch below): without them a failure after allocation leaves
         // scene-registered textures whose GPU memory is never freed.
@@ -1335,4 +1260,3 @@ export enum MultiBlendMode {
     /** Screens all layers per channel. */
     SCREEN = 5,
 }
-RegisterMultiTexture();
