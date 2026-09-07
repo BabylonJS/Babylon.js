@@ -98,6 +98,8 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
      */
     public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
 
+    private _objectIdProvider?: GeometryRenderingObjectIdProvider;
+
     /**
      * Provides the object ID written for each rendered mesh.
      *
@@ -109,7 +111,18 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
      * The provider runs in the render hot path and may be called multiple times for the same mesh in a frame.
      * @see https://playground.babylonjs.com/#00T6WJ#0
      */
-    public objectIdProvider?: GeometryRenderingObjectIdProvider;
+    public get objectIdProvider(): GeometryRenderingObjectIdProvider | undefined {
+        return this._objectIdProvider;
+    }
+
+    public set objectIdProvider(value: GeometryRenderingObjectIdProvider | undefined) {
+        this._objectIdProvider = value;
+
+        const configuration = MaterialHelperGeometryRendering.GetConfiguration(this._renderer.renderPassId);
+        if (configuration) {
+            configuration.objectIdProvider = value;
+        }
+    }
 
     /**
      * The irradiance output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
