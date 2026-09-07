@@ -15,6 +15,8 @@ import "loaders/glTF/2.0";
 import "loaders/FBX/fbxFileLoader";
 // Register the OBJ loader explicitly so local drag-and-drop uses the dev loader implementation.
 import "loaders/OBJ/objFileLoader";
+// Register the USD loader for local files, related file sets, and dropped folders.
+import { USDFileLoader } from "loaders/USD/usdFileLoader";
 // Register Scene animation extensions (e.g. getAllAnimatablesByTarget) used by the Inspector's animation panel.
 import "core/Animations/animatable";
 // glTF scenes can reference a single mesh from multiple nodes, which the loader
@@ -26,6 +28,16 @@ import { Sandbox } from "./sandbox";
 const HostElement = document.getElementById("host-element") as HTMLElement;
 
 if (import.meta.env.DEV) {
+    const defaultWorkerUrl = new URL(USDFileLoader.DefaultConfiguration.workerUrl);
+    const importerPath = defaultWorkerUrl.pathname.slice(0, defaultWorkerUrl.pathname.lastIndexOf("/") + 1);
+    const importerRoot = `${location.protocol}//${location.hostname}:1337${importerPath}`;
+    USDFileLoader.DefaultConfiguration = {
+        glueUrl: `${importerRoot}babylon-usd-importer.js`,
+        wasmUrl: `${importerRoot}babylon-usd-importer.wasm`,
+        dataUrl: `${importerRoot}babylon-usd-importer.data`,
+        workerUrl: `${importerRoot}babylon-usd-importer.worker.js`,
+    };
+
     // Dev mode — register the Inspector v2 debug layer (production gets it from the CDN bundle),
     // then show immediately. The inspector index attaches Scene.debugLayer as a side effect.
     // eslint-disable-next-line @typescript-eslint/no-floating-promises

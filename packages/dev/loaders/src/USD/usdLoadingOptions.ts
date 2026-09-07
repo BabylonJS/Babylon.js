@@ -31,7 +31,14 @@ export interface USDLoadProgress {
  */
 export interface USDFileLoaderOptions {
     /**
-     * Supporting layers, payloads, and textures keyed by virtual path.
+     * Virtual path used to stage the root layer. Set this when supporting files need
+     * to resolve relative to a directory hierarchy.
+     */
+    rootFileName?: string;
+
+    /**
+     * Supporting layers, payloads, and textures keyed by virtual path in the same
+     * virtual file system as `rootFileName`.
      */
     files?: USDVirtualFiles;
 

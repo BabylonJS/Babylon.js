@@ -15,7 +15,7 @@ import { createUSDTestBuffers } from "./usdTestUtils";
 class MockWorker {
     public static readonly Instances: MockWorker[] = [];
 
-    public readonly messages: Array<{ requestId: number; asset?: { fileName?: string } }> = [];
+    public readonly messages: Array<{ requestId: number; asset?: { fileName?: string; files?: Record<string, Uint8Array> } }> = [];
     public terminated = false;
 
     private readonly _listeners = new Map<string, Set<(event: MessageEvent<WorkerResponse>) => void>>();
@@ -216,6 +216,42 @@ describe("USDFileLoader", () => {
         const container = await loader.loadAssetContainerAsync(scene, zipHeader.buffer, "", undefined, "raw-buffer-guid");
 
         expect(MockWorker.Instances[0].messages[0].asset?.fileName).toBe("scene.usdz");
+
+        container.dispose();
+        loader.dispose();
+    });
+
+    it("preserves a virtual root path shared with supporting files", async () => {
+        vi.stubGlobal("Worker", MockWorker);
+        const loader = new USDFileLoader({
+            workerUrl: "mock-worker.js",
+            rootFileName: "Package/Scenes/Main.usda",
+            files: {
+                "Package/Layers/Geometry.usdc": new Uint8Array([4, 5, 6]),
+                "Package/Textures/Albedo.PNG": new Uint8Array([7, 8, 9]),
+            },
+        });
+
+        const container = await loader.loadAssetContainerAsync(scene, new Uint8Array([1, 2, 3]).buffer, "", undefined, "Main.usda");
+        const request = MockWorker.Instances[0].messages[0];
+
+        expect(request.asset?.fileName).toBe("Package/Scenes/Main.usda");
+        expect(Object.keys(request.asset?.files ?? {})).toEqual(["Package/Layers/Geometry.usdc", "Package/Textures/Albedo.PNG"]);
+
+        container.dispose();
+        loader.dispose();
+    });
+
+    it("preserves URL-significant characters in an explicit virtual root path", async () => {
+        vi.stubGlobal("Worker", MockWorker);
+        const loader = new USDFileLoader({
+            workerUrl: "mock-worker.js",
+            rootFileName: "Package#1/Scene?Variant.usda",
+        });
+
+        const container = await loader.loadAssetContainerAsync(scene, new Uint8Array([1, 2, 3]).buffer, "", undefined, "Scene.usda");
+
+        expect(MockWorker.Instances[0].messages[0].asset?.fileName).toBe("Package#1/Scene?Variant.usda");
 
         container.dispose();
         loader.dispose();

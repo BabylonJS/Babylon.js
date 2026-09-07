@@ -5,7 +5,7 @@ import { type GlobalState } from "../globalState";
 
 import { Engine } from "core/Engines/engine";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
-import { SceneLoader } from "core/Loading/sceneLoader";
+import { LoadSceneAsync, SceneLoader } from "core/Loading/sceneLoader";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Scene } from "core/scene";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
@@ -30,6 +30,7 @@ import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compa
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { LoadProjectFileAsync } from "shared-ui-components/projects/projectFile";
 import { DataStorage } from "core/Misc/dataStorage";
+import { CreateUsdFileLoaderOptionsAsync, GetInputFilePath, GetUsdRootCandidates, IsUsdSceneFile, type IUsdInputFile } from "../tools/usdFileInput";
 
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
@@ -79,18 +80,26 @@ interface IRenderingZoneProps {
     onEngineCreated?: (engine: AbstractEngine) => void;
 }
 
+interface IRenderingZoneState {
+    usdRootCandidates: IUsdInputFile[];
+}
+
 /**
  * RenderingZone component
  */
-export class RenderingZone extends React.Component<IRenderingZoneProps> {
+export class RenderingZone extends React.Component<IRenderingZoneProps, IRenderingZoneState> {
     private _currentPluginName?: string;
     private _engine: AbstractEngine;
     private _scene: Scene;
     private _canvas: HTMLCanvasElement;
     private _restoreInspector = false;
+    private _currentInputFiles: File[] = [];
+    private _filesInput?: FilesInput;
+    private _setSceneFileToLoad?: (sceneFile: File) => void;
 
     public constructor(props: IRenderingZoneProps) {
         super(props);
+        this.state = { usdRootCandidates: [] };
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -138,7 +147,10 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             null,
             null,
             null,
-            () => {
+            (files = []) => {
+                this._currentInputFiles = files;
+                this._setSceneFileToLoad = undefined;
+                this.setState({ usdRootCandidates: [] });
                 Tools.ClearLogCache();
                 if (this._scene) {
                     if (this.props.globalState.isDebugLayerEnabled) {
@@ -148,10 +160,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 }
             },
             () => {
-                // Ensure we stop any existing render loop when reloading, because if there was a previous scene loaded from the URL
-                // the filesInput will not know about it, and so it won't call stopRenderLoop.
-                this._engine.stopRenderLoop();
-                filesInput.reload();
+                this._requestFilesInputReload();
             },
             (file, scene, message) => {
                 this.props.globalState.onError.notifyObservers({ message: message });
@@ -159,8 +168,10 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             false,
             true
         );
+        this._filesInput = filesInput;
 
         filesInput.onProcessFileCallback = (file, name, extension, setSceneFileToLoad) => {
+            this._setSceneFileToLoad = setSceneFileToLoad;
             if (filesInput.filesToLoad && filesInput.filesToLoad.length === 1 && extension) {
                 switch (extension.toLowerCase()) {
                     case "dds":
@@ -186,7 +197,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         };
 
         filesInput.loadAsync = async (sceneFile, onProgress) => {
-            const sceneFileName = ((sceneFile as any).correctName as string | undefined) ?? sceneFile.name;
+            const sceneFileName = GetInputFilePath(sceneFile);
             const sceneFileExtension = GetFileExtension(sceneFileName);
             if (IsProjectAsset(sceneFileExtension)) {
                 const scene = new Scene(this._engine);
@@ -210,6 +221,14 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
             this._engine.clearInternalTexturesCache();
 
+            if (IsUsdSceneFile(sceneFileName)) {
+                const usdOptions = await CreateUsdFileLoaderOptionsAsync(this._currentInputFiles, sceneFile);
+                return await LoadSceneAsync(sceneFile, this._engine, {
+                    onProgress: onProgress ?? undefined,
+                    pluginOptions: { usd: usdOptions },
+                });
+            }
+
             return await SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
         };
 
@@ -220,7 +239,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
         window.addEventListener("keydown", (event) => {
             // Press R to reload
-            if (event.keyCode === 82 && event.target && (event.target as HTMLElement).nodeName !== "INPUT" && this._scene) {
+            if (event.keyCode === 82 && event.target && (event.target as HTMLElement).nodeName !== "INPUT" && this._scene && this.state.usdRootCandidates.length === 0) {
                 if (this.props.globalState.assetUrl) {
                     this.loadAssetFromUrl(this.props.globalState.assetUrl);
                 } else {
@@ -228,6 +247,38 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 }
             }
         });
+    }
+
+    private _requestFilesInputReload(): void {
+        const usdRootCandidates = GetUsdRootCandidates(this._currentInputFiles);
+        if (usdRootCandidates.length > 1) {
+            this.setState({ usdRootCandidates });
+            return;
+        }
+
+        this._reloadFilesInput(usdRootCandidates[0]?.file);
+    }
+
+    private _reloadFilesInput(usdRootFile?: File): void {
+        if (usdRootFile) {
+            this._setSceneFileToLoad?.(usdRootFile);
+        }
+        this.setState({ usdRootCandidates: [] });
+
+        // FilesInput does not know about scenes loaded from a URL, so stop their render loop explicitly.
+        this._engine.stopRenderLoop();
+        this._filesInput?.reload();
+    }
+
+    private _cancelUsdRootSelection(): void {
+        this._currentInputFiles = [];
+        this._setSceneFileToLoad = undefined;
+        this._filesInput?.clearFileSelection(false);
+        this.setState({ usdRootCandidates: [] });
+        if (this._restoreInspector) {
+            this._restoreInspector = false;
+            this.props.globalState.showDebugLayer();
+        }
     }
 
     prepareCamera() {
@@ -553,8 +604,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         this.initEngine();
     }
 
-    override shouldComponentUpdate(nextProps: IRenderingZoneProps) {
-        if (nextProps.expanded !== this.props.expanded) {
+    override shouldComponentUpdate(nextProps: IRenderingZoneProps, nextState: IRenderingZoneState) {
+        if (nextProps.expanded !== this.props.expanded || nextState.usdRootCandidates !== this.state.usdRootCandidates) {
             setTimeout(() => this._engine.resize());
             return true;
         }
@@ -565,6 +616,28 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         return (
             <div id="canvasZone" className={this.props.expanded ? "expanded" : ""}>
                 <canvas id="renderCanvas" touch-action="none" onContextMenu={(evt) => evt.preventDefault()}></canvas>
+                {this.state.usdRootCandidates.length > 1 && (
+                    <div id="usdRootSelectionPrompt">
+                        <div className="prompt-content">
+                            <p>
+                                <strong>Select the root USD layer</strong>
+                            </p>
+                            <p>This file set contains multiple USD layers. Select the layer that should be opened as the scene.</p>
+                            <div className="prompt-file-list">
+                                {this.state.usdRootCandidates.map((candidate) => (
+                                    <button type="button" key={candidate.path} onClick={() => this._reloadFilesInput(candidate.file)}>
+                                        {candidate.path}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="prompt-buttons">
+                                <button type="button" onClick={() => this._cancelUsdRootSelection()}>
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }

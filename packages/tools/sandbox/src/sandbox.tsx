@@ -25,6 +25,7 @@ import "core/Engines/AbstractEngine/abstractEngine.loadingScreen";
 import fullScreenLogo from "./img/logo-fullscreen.svg";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
+import { GetInputFilePath, IsUsdSceneFile, SetInputFilePath } from "./tools/usdFileInput";
 
 declare const BABYLON: typeof import("core/index");
 
@@ -404,7 +405,7 @@ export class Sandbox extends React.Component<
      * @returns A formatted string of supported extensions like "gltf, glb, obj or babylon"
      */
     private _getSupportedExtensions(): string {
-        const fallbackExtensions = "babylon, babylonproj, gltf, glb, fbx, obj, ply, sog, splat, spz or stl";
+        const fallbackExtensions = "babylon, babylonproj, gltf, glb, fbx, obj, ply, sog, splat, spz, stl, usd, usda, usdc or usdz";
 
         try {
             const plugins = BABYLON.GetRegisteredSceneLoaderPluginMetadata();
@@ -431,7 +432,7 @@ export class Sandbox extends React.Component<
         // In overlay mode, the titlebar shows the full title because the system only shows window controls, not the app name
         const titleBarText = this.state.currentFileName
             ? `Babylon.js Sandbox - ${this.state.currentFileName}`
-            : "Babylon.js Sandbox - View glTF, glb, obj, babylon and babylonproj files";
+            : "Babylon.js Sandbox - View glTF, glb, obj, USD, babylon and babylonproj files";
 
         return (
             <div id="root">
@@ -513,6 +514,7 @@ export class Sandbox extends React.Component<
             return;
         }
 
+        let folderFiles: File[] = [];
         if (grantAccess) {
             try {
                 // Start the directory picker in the same folder as the file
@@ -530,9 +532,11 @@ export class Sandbox extends React.Component<
                     for await (const entry of entries) {
                         if (entry.kind === "file") {
                             const entryFile = await (entry as FileSystemFileHandle).getFile();
+                            SetInputFilePath(entryFile, relativePath + entryFile.name);
+                            folderFiles.push(entryFile);
                             // Register file directly in FilesInputStore with its relative path
                             // This is how the loaders will look it up
-                            const filePath = (relativePath + entryFile.name).toLowerCase();
+                            const filePath = GetInputFilePath(entryFile).toLowerCase();
                             FilesInputStore.FilesToLoad[filePath] = entryFile;
                         } else if (entry.kind === "directory") {
                             await collectFilesAsync(entry as FileSystemDirectoryHandle, relativePath + entry.name + "/");
@@ -543,6 +547,13 @@ export class Sandbox extends React.Component<
             } catch {
                 // User cancelled - proceed with just the original file
             }
+        }
+
+        if (IsUsdSceneFile(file.name) && folderFiles.length > 0) {
+            const rootFile = folderFiles.find((entry) => entry.name === file.name) ?? file;
+            folderFiles = [rootFile, ...folderFiles.filter((entry) => entry !== rootFile)];
+            this._loadFileWhenReady(folderFiles);
+            return;
         }
 
         // Only pass the main file to load - dependencies are already registered in FilesInputStore
@@ -565,12 +576,18 @@ export class Sandbox extends React.Component<
                 return;
             }
 
+            const launchedFiles = await Promise.all(launchParams.files.map(async (handle) => await handle.getFile()));
             const fileHandle = launchParams.files[0];
-            const file = await fileHandle.getFile();
+            const file = launchedFiles[0];
             const extension = file.name.split(".").pop()?.toLowerCase();
 
+            if (launchedFiles.length > 1 && launchedFiles.some((launchedFile) => IsUsdSceneFile(launchedFile.name))) {
+                this._loadFileWhenReady(launchedFiles);
+                return;
+            }
+
             // File types that may have external dependencies (textures, .bin files, etc.)
-            const typesWithDependencies = ["gltf", "obj", "babylon"];
+            const typesWithDependencies = ["gltf", "obj", "babylon", "usd", "usda", "usdc", "usdz"];
 
             // If file type may have dependencies, show prompt for folder access
             if (extension && typesWithDependencies.includes(extension) && "showDirectoryPicker" in window) {
@@ -624,7 +641,7 @@ export class Sandbox extends React.Component<
      * @param filename current filename
      */
     private _updateDocumentTitle(filename: string) {
-        const defaultDescription = "View glTF, glb, obj, babylon and babylonproj files";
+        const defaultDescription = "View glTF, glb, obj, USD, babylon and babylonproj files";
         const isOverlay = window.matchMedia("(display-mode: window-controls-overlay)").matches;
         const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
 

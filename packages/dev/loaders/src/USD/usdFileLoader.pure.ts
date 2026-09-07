@@ -68,9 +68,10 @@ function _normalizeFiles(files?: USDVirtualFiles): Record<string, Uint8Array> | 
 }
 
 function _stagedFileName(fileName: string | undefined, bytes: Uint8Array): string {
-    const cleanFileName = fileName?.split(/[?#]/, 1)[0].replace(/\\/g, "/").split("/").pop();
-    if (cleanFileName && _SupportedExtension.test(cleanFileName)) {
-        return cleanFileName;
+    const cleanFileName = fileName?.replace(/\\/g, "/").replace(/^\.\/+/, "");
+    const pathParts = cleanFileName?.split("/").filter(Boolean);
+    if (cleanFileName && !cleanFileName.startsWith("/") && pathParts?.length && !pathParts.includes("..") && _SupportedExtension.test(cleanFileName)) {
+        return pathParts.join("/");
     }
     const isZip = bytes.length >= 4 && bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04;
     return isZip ? "scene.usdz" : "scene.usd";
@@ -234,7 +235,7 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             asset: {
                 bytes,
                 files,
-                fileName: _stagedFileName(fileName, bytes),
+                fileName: _stagedFileName(this._options.rootFileName ?? fileName, bytes),
                 resolveByFileName: this._options.resolveByFileName ?? true,
                 glueUrl: this._options.glueUrl,
                 wasmUrl: this._options.wasmUrl,

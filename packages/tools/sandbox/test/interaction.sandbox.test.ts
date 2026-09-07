@@ -66,6 +66,20 @@ async function getSandboxScene(page: Page): Promise<JSHandle<Scene>> {
     });
 }
 
+async function dropTextFiles(page: Page, files: Array<{ name: string; path: string; contents: string }>): Promise<void> {
+    const dataTransfer = await page.evaluateHandle((fileDefinitions) => {
+        const transfer = new DataTransfer();
+        for (const definition of fileDefinitions) {
+            const file = new File([definition.contents], definition.name, { type: "model/vnd.usd" });
+            Object.defineProperty(file, "webkitRelativePath", { value: definition.path });
+            transfer.items.add(file);
+        }
+        return transfer;
+    }, files);
+
+    await page.dispatchEvent("#renderCanvas", "drop", { dataTransfer });
+}
+
 test("Sandbox is loaded (Desktop)", async ({ page }) => {
     await page.goto(url, {
         waitUntil: "load",
@@ -94,7 +108,7 @@ test("Sandbox exposes the render canvas and main controls without page errors", 
 
     await expect(page.locator("#renderCanvas")).toBeVisible();
     await expect(page.locator("#droptext")).toBeVisible();
-    await expect(page.getByTitle("Open your scene from your hard drive (.babylon, .babylonproj, .gltf, .glb, .fbx, .obj)")).toBeVisible();
+    await expect(page.getByTitle("Open your scene from your hard drive (.babylon, .babylonproj, .gltf, .glb, .fbx, .obj, .usd, .usda, .usdc, .usdz)")).toBeVisible();
     expect(pageErrors).toHaveLength(0);
 });
 
@@ -129,6 +143,139 @@ test("dropping an image to the sandbox", async ({ page }) => {
     await expect(page.locator("#renderCanvas")).toHaveScreenshot({ maxDiffPixels: 3000 });
     // but still check that the inspector is displayed
     await expect(page.locator("#babylon-inspector-container")).toBeVisible();
+});
+
+test("dropping a USD file to the sandbox", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(url, { waitUntil: "load" });
+    await waitForSandboxReady(page);
+
+    await dropTextFiles(page, [
+        {
+            name: "scene.usd",
+            path: "scene.usd",
+            contents: `#usda 1.0
+(
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+def Xform "World"
+{
+    def Cube "SandboxCube"
+    {
+        double size = 2
+    }
+}
+`,
+        },
+    ]);
+
+    const scene = await getSandboxScene(page);
+    await expect.poll(async () => await scene.evaluate((loadedScene) => loadedScene.meshes.some((mesh) => mesh.name === "SandboxCube"))).toBe(true);
+});
+
+test("dropping a composed USD folder preserves paths and allows root selection", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(url, { waitUntil: "load" });
+    await waitForSandboxReady(page);
+
+    await dropTextFiles(page, [
+        {
+            name: "Main.usda",
+            path: "Package/Main.usda",
+            contents: `#usda 1.0
+(
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+def Xform "World"
+{
+    def Xform "ReferencedModel" (
+        prepend references = @./Layers/Geometry.usda@
+    )
+    {
+    }
+}
+`,
+        },
+        {
+            name: "Geometry.usda",
+            path: "Package/Layers/Geometry.usda",
+            contents: `#usda 1.0
+(
+    defaultPrim = "ReferencedModel"
+)
+def Xform "ReferencedModel"
+{
+    def Sphere "NestedSphere"
+    {
+        double radius = 1
+    }
+}
+`,
+        },
+    ]);
+
+    await expect(page.locator("#usdRootSelectionPrompt")).toBeVisible();
+    await page.locator("#usdRootSelectionPrompt .prompt-file-list button", { hasText: "Package/Main.usda" }).click();
+
+    const scene = await getSandboxScene(page);
+    await expect.poll(async () => await scene.evaluate((loadedScene) => loadedScene.meshes.some((mesh) => mesh.name === "NestedSphere"))).toBe(true);
+});
+
+test("canceling USD root selection does not replace the current scene", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(url, { waitUntil: "load" });
+    await waitForSandboxReady(page);
+
+    await dropTextFiles(page, [
+        {
+            name: "current.usda",
+            path: "current.usda",
+            contents: `#usda 1.0
+def Xform "World"
+{
+    def Cube "CurrentCube"
+    {
+    }
+}
+`,
+        },
+    ]);
+    const currentScene = await getSandboxScene(page);
+    await expect.poll(async () => await currentScene.evaluate((scene) => scene.meshes.some((mesh) => mesh.name === "CurrentCube"))).toBe(true);
+
+    await dropTextFiles(page, [
+        {
+            name: "First.usda",
+            path: "Package/First.usda",
+            contents: `#usda 1.0
+def Sphere "FirstSphere"
+{
+}
+`,
+        },
+        {
+            name: "Second.usda",
+            path: "Package/Second.usda",
+            contents: `#usda 1.0
+def Sphere "SecondSphere"
+{
+}
+`,
+        },
+    ]);
+
+    await expect(page.locator("#usdRootSelectionPrompt")).toBeVisible();
+    await page.getByRole("button", { name: "Cancel" }).click();
+    await expect(page.locator("#usdRootSelectionPrompt")).toBeHidden();
+    await page.keyboard.press("r");
+    await page.waitForTimeout(500);
+
+    expect(await currentScene.evaluate((scene) => scene.meshes.map((mesh) => mesh.name))).toContain("CurrentCube");
+    expect(await currentScene.evaluate((scene) => scene.meshes.some((mesh) => mesh.name === "FirstSphere" || mesh.name === "SecondSphere"))).toBe(false);
 });
 
 test("loading a model using query parameters", async ({ page }) => {
