@@ -34,6 +34,11 @@ export interface IWebAudioEngineOptions extends IAudioEngineV2Options {
      */
     disableDefaultUI?: boolean;
     /**
+     * Set to `true` to disable the silent HTML audio element used to allow WebAudio playback when the iOS ringer switch is off.
+     * When this option is enabled, WebAudio may be muted by the ringer switch on iOS. Defaults to `false`.
+     */
+    disableIOSRingerSwitchWorkaround?: boolean;
+    /**
      * Set to `true` to automatically resume the audio context when the user interacts with the page. Defaults to `true`.
      */
     resumeOnInteraction: boolean;
@@ -75,6 +80,7 @@ const FormatMimeTypes: { [key: string]: string } = {
 export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContextStarted = false;
     private _destinationNode: Nullable<AudioNode> = null;
+    private readonly _disableIOSRingerSwitchWorkaround: boolean;
     private _invalidFormats = new Set<string>();
     private _isUpdating = false;
     private _listener: Nullable<_SpatialAudioListener> = null;
@@ -122,6 +128,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
             this._listenerMinUpdateTime = options.listenerMinUpdateTime;
         }
 
+        this._disableIOSRingerSwitchWorkaround = options.disableIOSRingerSwitchWorkaround ?? false;
         this._volume = options.volume ?? 1;
 
         if (options.audioContext) {
@@ -505,7 +512,7 @@ export class _WebAudioEngine extends AudioEngineV2 {
         // The element is activated during a user gesture so it can be played/paused programmatically
         // later. It is immediately paused to avoid triggering iOS Safari's "now playing" detection,
         // which throttles the page to 30 FPS.
-        if (!this._silentHtmlAudio) {
+        if (!this._disableIOSRingerSwitchWorkaround && !this._silentHtmlAudio) {
             this._silentHtmlAudio = document.createElement("audio");
 
             const audio = this._silentHtmlAudio;
