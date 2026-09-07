@@ -23,6 +23,7 @@ const ShDegreeOptions = [
 const SplatCountDescription = "Number of padded splat indices currently used for instanced rendering. Updates when a completed depth sort is applied.";
 const RenderedSplatCountDescription =
     "Number of source splats in the active LOD ranges selected for rendering. May temporarily differ from Splat Count while depth sorting completes.";
+const SplatBudgetDescription = "Resolved maximum number of splats kept resident in the streaming work buffer. Disabled means no residency cap is configured.";
 const Lod0SplatCountDescription = "Total number of splats in the stream's finest-detail (LOD 0) source data.";
 
 // GaussianSplattingStream (from the loaders package) adds a real-time max-detail-LOD cap. Detected by class
@@ -35,9 +36,8 @@ type GaussianSplattingStreamLike = GaussianSplattingMesh & {
     lod0SplatCount: { status: "pending" } | { status: "available"; count: number } | { status: "unavailable" };
 };
 
-const GaussianSplattingStreamDiagnostics: FunctionComponent<{ stream: GaussianSplattingStreamLike }> = (props) => {
-    const { stream } = props;
-    const tickObservable = usePollingObservable(100);
+const GaussianSplattingStreamDiagnostics: FunctionComponent<{ stream: GaussianSplattingStreamLike; tickObservable: ReturnType<typeof usePollingObservable> }> = (props) => {
+    const { stream, tickObservable } = props;
     const visibleSplatCount = useObservableState(
         useCallback(() => stream.renderedSplatCount, [stream]),
         tickObservable
@@ -55,9 +55,9 @@ const GaussianSplattingStreamDiagnostics: FunctionComponent<{ stream: GaussianSp
         <>
             <StringifiedPropertyLine label="Visible Splats" description={RenderedSplatCountDescription} value={visibleSplatCount} />
             {residentSplatBudget > 0 ? (
-                <StringifiedPropertyLine label="Splat Budget" value={residentSplatBudget} />
+                <StringifiedPropertyLine label="Splat Budget" description={SplatBudgetDescription} value={residentSplatBudget} />
             ) : (
-                <TextPropertyLine label="Splat Budget" value="Disabled (unlimited)" />
+                <TextPropertyLine label="Splat Budget" description={SplatBudgetDescription} value="Disabled (unlimited)" />
             )}
             {lod0SplatCount.status === "available" ? (
                 <StringifiedPropertyLine label="LOD 0 Splats" description={Lod0SplatCountDescription} value={lod0SplatCount.count} />
@@ -96,7 +96,7 @@ export const GaussianSplattingDisplayProperties: FunctionComponent<{ mesh: Gauss
             />
             {stream && (
                 <>
-                    <GaussianSplattingStreamDiagnostics stream={stream} />
+                    <GaussianSplattingStreamDiagnostics stream={stream} tickObservable={tickObservable} />
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
                         label="Max Detail LOD"
