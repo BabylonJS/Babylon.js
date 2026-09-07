@@ -50,7 +50,7 @@ export class WebGPUDrawContext implements IDrawContext {
     private _vertexPullingEnabled: boolean;
 
     /**
-     * Uniform buffers in which this context owns a slot (see UniformBuffer.update). Filled by the buffers themselves.
+     * Uniform buffers in which this context owns a slot. Filled by the buffers themselves.
      * @internal
      */
     public _uniformBuffersWithOwnedSlot?: UniformBuffer[];
@@ -142,6 +142,7 @@ export class WebGPUDrawContext implements IDrawContext {
     }
 
     public reset(): void {
+        this._releaseUniformBufferSlots();
         this.buffers = {};
         this._isDirty = true;
         this._materialContextUpdateId = 0;
@@ -235,6 +236,7 @@ export class WebGPUDrawContext implements IDrawContext {
     }
 
     public dispose(): void {
+        this._releaseUniformBufferSlots();
         if (this.indirectDrawBuffer) {
             this._bufferManager.releaseBuffer(this.indirectDrawBuffer);
             this.indirectDrawBuffer = undefined;
@@ -244,11 +246,19 @@ export class WebGPUDrawContext implements IDrawContext {
         this.bindGroups = undefined;
         this.buffers = undefined as any;
         this._enableIndirectDraw = false;
-        if (this._uniformBuffersWithOwnedSlot) {
-            for (const uniformBuffer of this._uniformBuffersWithOwnedSlot) {
-                uniformBuffer._releaseOwnerSlot(this);
-            }
-            this._uniformBuffersWithOwnedSlot = undefined;
+    }
+
+    /** @internal */
+    public _releaseUniformBufferSlots(): void {
+        const buffers = this._uniformBuffersWithOwnedSlot;
+        if (!buffers) {
+            return;
         }
+        // _releaseOwnerSlot removes its reciprocal entry; pop first to avoid skipping
+        // entries when several buffers were registered on this context.
+        while (buffers.length) {
+            buffers.pop()!._releaseOwnerSlot(this);
+        }
+        this._uniformBuffersWithOwnedSlot = undefined;
     }
 }

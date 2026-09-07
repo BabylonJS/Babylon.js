@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { UniformBuffer, type IUniformBufferSlotOwner } from "core/Materials/uniformBuffer";
+import { UniformBuffer } from "core/Materials/uniformBuffer";
+import { WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext";
 
 /**
  * A minimal engine that tracks its uniform buffers per frame the way WebGPUEngine does
@@ -36,15 +37,8 @@ function createEngine() {
     return engine;
 }
 
-function createOwner(id: number): IUniformBufferSlotOwner {
-    return {
-        uniqueId: id,
-        useInstancing: false,
-        enableIndirectDraw: false,
-        setIndirectData: () => {},
-        reset: () => {},
-        dispose: () => {},
-    };
+function createOwner(_id: number): WebGPUDrawContext {
+    return new WebGPUDrawContext({} as any, {} as any);
 }
 
 function shuffle<T>(array: T[]): T[] {
@@ -59,7 +53,7 @@ function shuffle<T>(array: T[]): T[] {
 describe("UniformBuffer owner-keyed slots", () => {
     let engine: ReturnType<typeof createEngine>;
     let ubo: UniformBuffer;
-    let owners: IUniformBufferSlotOwner[];
+    let owners: WebGPUDrawContext[];
     const OWNERS = 40;
 
     // Each owner writes its own values (as each material does into the effect's leftover UBO), then flushes on its own behalf.
@@ -67,7 +61,7 @@ describe("UniformBuffer owner-keyed slots", () => {
         for (const i of order) {
             ubo.updateFloat4("color", i, i * 2, i * 3, 1);
             ubo.updateFloat("scalar", i / 10);
-            ubo.update(owners[i]);
+            ubo._updateOwnerKeyed(owners[i]);
             const gpu = (ubo.getBuffer() as unknown as MockGpuBuffer).gpu;
             expect([gpu[0], gpu[1], gpu[2], gpu[4]]).toEqual([i, i * 2, i * 3, Math.fround(i / 10)]);
         }
@@ -110,14 +104,14 @@ describe("UniformBuffer owner-keyed slots", () => {
         for (const i of order) {
             ubo.updateFloat4("color", i, i * 2, i * 3, 1);
             ubo.updateFloat("scalar", i / 10);
-            ubo.update(owners[i]);
+            ubo._updateOwnerKeyed(owners[i]);
             bufferOf.set(i, ubo.getBuffer());
         }
         engine.frameId = 2;
         for (const i of shuffle(order)) {
             ubo.updateFloat4("color", i, i * 2, i * 3, 1);
             ubo.updateFloat("scalar", i / 10);
-            ubo.update(owners[i]);
+            ubo._updateOwnerKeyed(owners[i]);
             expect(ubo.getBuffer()).toBe(bufferOf.get(i));
         }
     });
@@ -125,11 +119,11 @@ describe("UniformBuffer owner-keyed slots", () => {
     it("does not overwrite a slot the GPU has not consumed yet when the same owner flushes twice in a frame with different values", () => {
         engine.frameId = 1;
         ubo.updateFloat4("color", 7, 7, 7, 7);
-        ubo.update(owners[3]);
+        ubo._updateOwnerKeyed(owners[3]);
         const firstBuffer = ubo.getBuffer() as unknown as MockGpuBuffer;
 
         ubo.updateFloat4("color", 8, 8, 8, 8);
-        ubo.update(owners[3]);
+        ubo._updateOwnerKeyed(owners[3]);
         const secondBuffer = ubo.getBuffer() as unknown as MockGpuBuffer;
 
         expect(secondBuffer).not.toBe(firstBuffer);
@@ -139,10 +133,10 @@ describe("UniformBuffer owner-keyed slots", () => {
         // next frame: the owner is back on its own slot, and the spill slot is reusable
         engine.frameId = 2;
         ubo.updateFloat4("color", 3, 3, 3, 3);
-        ubo.update(owners[3]);
+        ubo._updateOwnerKeyed(owners[3]);
         expect(ubo.getBuffer()).toBe(firstBuffer);
         ubo.updateFloat4("color", 9, 9, 9, 9);
-        ubo.update(owners[3]);
+        ubo._updateOwnerKeyed(owners[3]);
         expect(ubo.getBuffer()).toBe(secondBuffer);
         expect(ubo._numBuffers).toBe(2);
     });
@@ -151,13 +145,13 @@ describe("UniformBuffer owner-keyed slots", () => {
         engine.frameId = 1;
         for (let i = 0; i < 3; ++i) {
             ubo.updateFloat4("color", i, i, i, i);
-            ubo.update(owners[i]);
+            ubo._updateOwnerKeyed(owners[i]);
         }
         expect(ubo._numBuffers).toBe(3);
         expect(owners[1]._uniformBuffersWithOwnedSlot).toEqual([ubo]);
         const releasedBuffer = (() => {
             ubo.updateFloat4("color", 1, 1, 1, 1);
-            ubo.update(owners[1]);
+            ubo._updateOwnerKeyed(owners[1]);
             return ubo.getBuffer();
         })();
 
@@ -166,7 +160,7 @@ describe("UniformBuffer owner-keyed slots", () => {
 
         engine.frameId = 2;
         ubo.updateFloat4("color", 5, 5, 5, 5);
-        ubo.update(owners[10]);
+        ubo._updateOwnerKeyed(owners[10]);
         expect(ubo.getBuffer()).toBe(releasedBuffer);
         expect(ubo._numBuffers).toBe(3);
     });
@@ -175,26 +169,26 @@ describe("UniformBuffer owner-keyed slots", () => {
         // owner A is the only owner: it gets the slot create() made (slot 0)
         engine.frameId = 1;
         ubo.updateFloat4("color", 1, 1, 1, 1);
-        ubo.update(owners[0]);
+        ubo._updateOwnerKeyed(owners[0]);
         const slot0 = ubo.getBuffer();
         ubo._releaseOwnerSlot(owners[0]); // A's context is disposed; slot 0 is now in the free list
 
         // B arrives: it must take slot 0 THROUGH the free list (so the entry is consumed), not via the first-owner shortcut
         engine.frameId = 2;
         ubo.updateFloat4("color", 2, 2, 2, 2);
-        ubo.update(owners[1]);
+        ubo._updateOwnerKeyed(owners[1]);
         expect(ubo.getBuffer()).toBe(slot0);
 
         // C arrives next frame: the free list must be empty, so C gets a NEW slot instead of B's
         engine.frameId = 3;
         ubo.updateFloat4("color", 3, 3, 3, 3);
-        ubo.update(owners[2]);
+        ubo._updateOwnerKeyed(owners[2]);
         expect(ubo.getBuffer()).not.toBe(slot0);
         expect(ubo._numBuffers).toBe(2);
 
         // and B still reads back its own values from its own slot
         ubo.updateFloat4("color", 2, 2, 2, 2);
-        ubo.update(owners[1]);
+        ubo._updateOwnerKeyed(owners[1]);
         expect(ubo.getBuffer()).toBe(slot0);
         expect((slot0 as unknown as MockGpuBuffer).gpu[0]).toBe(2);
     });
@@ -207,7 +201,7 @@ describe("UniformBuffer owner-keyed slots", () => {
             for (const i of o) {
                 ubo.updateFloat4("color", 0.5, 0.25, 0.125, 1);
                 ubo.updateFloat("scalar", 0.75);
-                ubo.update(owners[i]);
+                ubo._updateOwnerKeyed(owners[i]);
             }
         };
         engine.frameId = 1;
@@ -224,7 +218,7 @@ describe("UniformBuffer owner-keyed slots", () => {
         const uploadsBefore = engine.uploads.length;
         engine.frameId = 6;
         ubo.updateFloat4("color", 100, 200, 300, 1);
-        ubo.update(owners[7]);
+        ubo._updateOwnerKeyed(owners[7]);
         expect(engine.uploads.length).toBe(uploadsBefore + 1);
         expect((ubo.getBuffer() as unknown as MockGpuBuffer).gpu[0]).toBe(100);
     });

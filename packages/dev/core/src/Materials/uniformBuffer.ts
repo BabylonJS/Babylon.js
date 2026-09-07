@@ -7,16 +7,7 @@ import { type DataBuffer } from "../Buffers/dataBuffer";
 import { type InternalTexture } from "./Textures/internalTexture";
 import { Tools } from "../Misc/tools.pure";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
-import { type IDrawContext } from "../Engines/IDrawContext";
-
-/**
- * A draw context that owns a slot in one or more tracked uniform buffers (see UniformBuffer.update).
- * A buffer registers itself here when it assigns a slot to the context, so that the slot can be released when the context is disposed.
- */
-export interface IUniformBufferSlotOwner extends IDrawContext {
-    /** @internal */
-    _uniformBuffersWithOwnedSlot?: UniformBuffer[];
-}
+import { type WebGPUDrawContext } from "../Engines/WebGPU/webgpuDrawContext";
 
 /**
  * Uniform buffer objects.
@@ -52,7 +43,10 @@ export class UniformBuffer {
     private _trackUBOsInFrame: boolean;
     // Owner-keyed slots (trackUBOsInFrame only): draw context -> index in _buffers, last frame each slot was flushed in,
     // number of live owners, and slots no longer owned (released by a disposed context, or created for a same-frame overflow)
-    private _slotByOwner: WeakMap<IUniformBufferSlotOwner, number>;
+    private _slotByOwner: WeakMap<WebGPUDrawContext, number>;
+    // Reverse registrations hold the backlink arrays, not their draw contexts. This allows
+    // eager reciprocal teardown without making the weak owner keys strongly reachable.
+    private _ownerListsBySlot: Map<number, UniformBuffer[]>;
     private _slotFrameId: number[];
     private _ownerCount: number;
     private _freeSlots: number[];
@@ -645,6 +639,12 @@ export class UniformBuffer {
     }
 
     private _resetOwnerSlots(): void {
+        if (this._ownerListsBySlot) {
+            for (const list of this._ownerListsBySlot.values()) {
+                this._removeOwnerBacklink(list);
+            }
+        }
+        this._ownerListsBySlot = new Map();
         this._slotByOwner = new WeakMap();
         this._slotFrameId = [];
         this._ownerCount = 0;
@@ -695,17 +695,9 @@ export class UniformBuffer {
      * Updates the WebGL Uniform Buffer on the GPU.
      * If the `dynamic` flag is set to true, no cache comparison is done.
      * Otherwise, the buffer will be updated only if the cache differs.
-     * @param owner When the buffer tracks its GPU buffers per frame (WebGPU), the draw context on behalf of which the update is done.
-     * The context then always flushes to the same GPU buffer (its slot), instead of the next unused buffer in draw order, so the buffer
-     * bound by a given draw call does not change when the draw order changes and the bind group cache stays bounded.
      */
-    public update(owner?: IUniformBufferSlotOwner): void {
+    public update(): void {
         if (this._noUBO) {
-            return;
-        }
-
-        if (owner && this._trackUBOsInFrame) {
-            this._updateOwnerKeyed(owner);
             return;
         }
 
@@ -743,8 +735,13 @@ export class UniformBuffer {
      * Flushes the current uniform values into the GPU buffer owned by the draw context.
      * Invariant: `_buffers[i][1]` (the CPU shadow) always holds what the GPU buffer of slot i contains.
      * @param owner the draw context on behalf of which the update is done
+     * @internal
      */
-    private _updateOwnerKeyed(owner: IUniformBufferSlotOwner): void {
+    public _updateOwnerKeyed(owner: WebGPUDrawContext): void {
+        if (this._noUBO || !this._trackUBOsInFrame) {
+            this.update();
+            return;
+        }
         if (!this._buffer) {
             this.create(); // _rebuild pushes slot 0, created from _bufferData, with a shadow copy of it
         }
@@ -766,6 +763,7 @@ export class UniformBuffer {
                 owner._uniformBuffersWithOwnedSlot = [];
             }
             owner._uniformBuffersWithOwnedSlot.push(this);
+            this._ownerListsBySlot.set(idx, owner._uniformBuffersWithOwnedSlot);
         }
 
         if (this._slotGeneration[idx] === this._dataGeneration) {
@@ -836,14 +834,28 @@ export class UniformBuffer {
      * @param owner the draw context
      * @internal
      */
-    public _releaseOwnerSlot(owner: IUniformBufferSlotOwner): void {
+    public _releaseOwnerSlot(owner: WebGPUDrawContext): void {
         const idx = this._slotByOwner?.get(owner);
         if (idx === undefined) {
             return;
         }
         this._slotByOwner.delete(owner);
+        const list = this._ownerListsBySlot.get(idx);
+        if (list) {
+            this._removeOwnerBacklink(list);
+            this._ownerListsBySlot.delete(idx);
+        }
         this._ownerCount--;
+        // Keep _slotFrameId: a draw encoded earlier this frame may still need these bytes.
         this._freeSlots.push(idx);
+    }
+
+    private _removeOwnerBacklink(list: UniformBuffer[]): void {
+        const index = list.indexOf(this);
+        if (index !== -1) {
+            list[index] = list[list.length - 1];
+            list.pop();
+        }
     }
 
     private _createNewBuffer() {
@@ -1407,10 +1419,14 @@ export class UniformBuffer {
         }
 
         if (this._trackUBOsInFrame && this._buffers) {
+            this._resetOwnerSlots();
             for (let i = 0; i < this._buffers.length; ++i) {
                 const buffer = this._buffers[i][0];
                 this._engine._releaseBuffer(buffer);
             }
+            this._buffers = [];
+            this._buffer = null;
+            this._bufferIndex = -1;
         } else if (this._buffer && this._engine._releaseBuffer(this._buffer)) {
             this._buffer = null;
         }
