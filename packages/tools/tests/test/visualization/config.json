@@ -2214,7 +2214,7 @@
         },
         {
             "title": "Object ID texture - Geometry buffer renderer",
-            "playgroundId": "#REC26C#0",
+            "playgroundId": "#SQXZ3X#0",
             "referenceImage": "object-id-texture-geometry-buffer.png",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
