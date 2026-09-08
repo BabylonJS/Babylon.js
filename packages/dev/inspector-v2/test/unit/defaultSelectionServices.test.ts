@@ -18,7 +18,7 @@ import { EngineSelectionServiceDefinition } from "../../src/lite/engineSelection
 
 import { type EngineContext } from "@babylonjs/lite";
 
-// This test intentionally validates the public "@babylonjs/inspector/lite" entry point, so it imports the barrel directly.
+// This test validates the Lite source barrel, consistent with the Full Inspector tests.
 // eslint-disable-next-line babylonjs/no-directory-barrel-imports, import/no-internal-modules
 import * as LitePublicApi from "../../src/lite/index";
 
@@ -98,7 +98,7 @@ describe("EngineSelectionService", () => {
     });
 });
 
-describe("Babylon Lite public API", () => {
+describe("Babylon Lite source barrel", () => {
     it("exposes the engine context contract", () => {
         expect(LitePublicApi.EngineContextIdentity).toBe(EngineContextIdentity);
         expect(LitePublicApi.EngineExplorerServiceIdentity).toBe(EngineExplorerServiceIdentity);

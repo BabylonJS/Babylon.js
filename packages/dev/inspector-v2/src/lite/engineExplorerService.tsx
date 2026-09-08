@@ -146,7 +146,7 @@ function CreateSurfaceNode(
 
 function CreateEngineNodes(engine: EngineContext, providers: readonly UntypedRenderingContextNodeProvider[], watcherService: IWatcherService): readonly ExplorerNodeDescription[] {
     // The engine itself is the primary surface, and it is already represented by the Explorer root node,
-    // so its rendering contexts are contributed as siblings of the root.
+    // so its rendering contexts are contributed as children of the root.
     const nodes: ExplorerNodeDescription[] = getRenderingContexts(engine).map((context) => CreateRenderingContextNode(context, providers, watcherService));
 
     if (engine.surfaces.length > 1) {
