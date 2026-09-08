@@ -405,8 +405,9 @@ export class SkyMaterial extends PushMaterial {
             this._activeEffect.setMatrix("view", scene.getViewMatrix());
         }
 
-        // Fog
-        BindFogParameters(scene, mesh, this._activeEffect);
+        // Fog. In raw-HDR mode the shader output is linear scene-referred color, so the gamma-space
+        // scene.fogColor must be converted to linear before it is mixed in (linearSpace = true).
+        BindFogParameters(scene, mesh, this._activeEffect, this.rawHdrOutput);
 
         // Sky
         const camera = scene.activeCamera;
@@ -422,7 +423,10 @@ export class SkyMaterial extends PushMaterial {
 
         this._activeEffect.setVector3("up", this.up);
 
-        if (this.luminance > 0) {
+        // In raw-HDR mode `luminance` is a linear gain, so 0 is valid and must be uploaded (it
+        // produces black). The tonemapped path uses `luminance` as a divisor (0.1 / luminance,
+        // log2(2 / luminance^4)), where 0 is invalid — keep the guard that skips uploading it there.
+        if (this.rawHdrOutput || this.luminance > 0) {
             this._activeEffect.setFloat("luminance", this.luminance);
         }
 

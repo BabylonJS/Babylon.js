@@ -50,11 +50,17 @@ describe("SkyMaterial HDR output + cloudiness", () => {
         // fragment source always contains both branches, so only the resolved define proves which
         // path is compiled. Awaiting isReadyForSubMesh lets the effect's async shader-include load
         // settle before the scene is torn down (otherwise the abandoned compile errors on teardown).
+        // It throws if the effect never becomes ready, so a compilation failure fails the test rather
+        // than passing on the define that was written before compilation was attempted.
         const settle = async (material: SkyMaterial, mesh: ReturnType<typeof CreateBox>): Promise<void> => {
             const subMesh = mesh.subMeshes[0];
-            for (let i = 0; i < 100 && !material.isReadyForSubMesh(mesh, subMesh); i++) {
-                await new Promise((resolve) => setTimeout(resolve, 2));
+            for (let i = 0; i < 200; i++) {
+                if (material.isReadyForSubMesh(mesh, subMesh)) {
+                    return;
+                }
+                await new Promise((resolve) => setTimeout(resolve, 5));
             }
+            throw new Error("SkyMaterial effect never became ready (shader compilation likely failed)");
         };
 
         it("tracks the rawHdrOutput property in both directions", async () => {
