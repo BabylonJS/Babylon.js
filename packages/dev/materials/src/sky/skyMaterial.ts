@@ -46,12 +46,17 @@ class SkyMaterialDefines extends MaterialDefines {
     }
 }
 
-// Max value the shader may write before the bound render target stores it as +Inf (which would
-// corrupt anything reading the texture back, e.g. an IBL CDF). Derived from the RT's texture type:
-// half-float caps at its 65504 ceiling; float is effectively unbounded (a huge finite +Inf guard);
-// anything else (8-bit LDR, or the default framebuffer when no RT is bound) is [0,1]. Only used
-// when `rawHdrOutput` is enabled.
-function maxColorValueForRenderTarget(textureType: number | undefined): number {
+/**
+ * Max value the sky shader may write before the bound render target stores it as +Inf (which would
+ * corrupt anything reading the texture back, e.g. an IBL CDF). Derived from the RT's texture type:
+ * half-float caps at its 65504 ceiling; float is effectively unbounded (a huge finite +Inf guard);
+ * anything else (8-bit LDR, or the default framebuffer when no RT is bound) is [0,1]. Only used when
+ * `rawHdrOutput` is enabled.
+ * @param textureType the bound render target's texture type (Constants.TEXTURETYPE_*), or undefined
+ * @returns the maximum color value that can be stored without overflowing to +Inf
+ * @internal
+ */
+export function _MaxColorValueForRenderTarget(textureType: number | undefined): number {
     switch (textureType) {
         case Constants.TEXTURETYPE_HALF_FLOAT:
             return MaxHalfFloat;
@@ -155,18 +160,23 @@ export class SkyMaterial extends PushMaterial {
      * gain (no filmic tonemap), the output is clamped to the bound render target's max representable
      * value rather than [0, 1] (so a bright sun cannot overflow to +Inf), and no sRGB encode is
      * applied. Enable this to bake the sky into an HDR (float / half-float) render target — e.g. an
-     * IBL environment cube — where the full dynamic range of the sun disc must be preserved. When
-     * disabled, the material produces tonemapped, display-referred output for direct viewing.
+     * IBL environment cube — where the full dynamic range of the sun disc must be preserved. The
+     * clamp ceiling follows whatever target is bound at draw time (65504 for half-float, effectively
+     * unbounded for float); if the sky is drawn to an LDR target or the default framebuffer it falls
+     * back to [0, 1], so this flag is only meaningful when rendering into a float/half-float target.
+     * When disabled, the material produces tonemapped, display-referred output for direct viewing.
      */
     @serialize()
     public rawHdrOutput: boolean = false;
 
     /**
-     * Overcast amount in [0, 1] (0 = clear direct sun, default; 1 = fully overcast). At 0 the sun is
-     * a sharp solar disc. Above 0 a physically-based single-scattering cloud model spreads the sun
-     * into a dual-lobe Henyey–Greenstein aureole whose energy is conserved as it broadens (thin cloud
-     * → tight silver lining; full overcast → broad, directionless glow). See the sun-disc branch in
-     * sky.fragment for the model + references.
+     * Cloud cover over the sun in [0, 1] (0 = clear direct sun, default; 1 = sun fully hidden). This
+     * softens only the *sun disc* — the sky dome color itself is unchanged (there is no overcast
+     * graying or whitening of the sky). At 0 the sun is a sharp solar disc; above 0 a physically-
+     * based single-scattering cloud model attenuates the direct beam (Beer–Lambert) and redistributes
+     * the removed energy into a dual-lobe Henyey–Greenstein aureole, energy-conserving as it broadens
+     * (thin cloud → tight silver lining; heavy cloud → broad, directionless glow). See the sun-disc
+     * branch in sky.fragment for the model + references.
      */
     @serialize()
     public cloudiness: number = 0;
@@ -426,7 +436,7 @@ export class SkyMaterial extends PushMaterial {
             // Match the clamp ceiling to the render target the sky is drawn into (read at bind time,
             // since the same material may bake into a half-float cube yet also draw to an LDR view).
             const currentRenderTarget = scene.getEngine()._currentRenderTarget;
-            this._activeEffect.setFloat("maxColorValue", maxColorValueForRenderTarget(currentRenderTarget?.texture?.type));
+            this._activeEffect.setFloat("maxColorValue", _MaxColorValueForRenderTarget(currentRenderTarget?.texture?.type));
         }
 
         if (!this.useSunPosition) {
