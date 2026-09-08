@@ -348,36 +348,33 @@ export function ShouldDisplayNode(node: { readonly entity?: object; readonly chi
 }
 
 /**
- * Gets the children of a node in display order. Group nodes always precede item nodes (and retain the
- * order in which they were described), while item nodes are optionally sorted alphabetically.
+ * Gets the children of a node in display order. The declared order is preserved unless alphabetical
+ * sorting is enabled, in which case item nodes are sorted without moving structural nodes.
  * @param node The node whose children should be ordered.
  * @param sortItems Whether item nodes should be sorted alphabetically by display name.
  * @returns The ordered children of the node.
  */
 export function GetOrderedChildren(node: ExplorerNode, sortItems: boolean): readonly ExplorerNode[] {
-    const groups: ExplorerNode[] = [];
-    const items: ExplorerNode[] = [];
-
-    for (const child of node.children) {
-        if (child.kind === "item") {
-            items.push(child);
-        } else {
-            groups.push(child);
-        }
+    if (!sortItems) {
+        return node.children;
     }
 
-    if (sortItems) {
-        items.sort((left, right) => {
-            const leftDisplayInfo = left.getDisplayInfo();
-            const rightDisplayInfo = right.getDisplayInfo();
-            const comparison = leftDisplayInfo.name.localeCompare(rightDisplayInfo.name);
-            leftDisplayInfo.dispose?.();
-            rightDisplayInfo.dispose?.();
-            return comparison;
-        });
+    const sortedItems = node.children.filter((child) => child.kind === "item");
+    if (sortedItems.length < 2) {
+        return node.children;
     }
 
-    return groups.length === 0 ? items : [...groups, ...items];
+    sortedItems.sort((left, right) => {
+        const leftDisplayInfo = left.getDisplayInfo();
+        const rightDisplayInfo = right.getDisplayInfo();
+        const comparison = leftDisplayInfo.name.localeCompare(rightDisplayInfo.name);
+        leftDisplayInfo.dispose?.();
+        rightDisplayInfo.dispose?.();
+        return comparison;
+    });
+
+    let itemIndex = 0;
+    return node.children.map((child) => (child.kind === "item" ? sortedItems[itemIndex++] : child));
 }
 
 /**

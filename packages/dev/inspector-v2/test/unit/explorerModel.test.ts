@@ -146,7 +146,25 @@ describe("ShouldDisplayNode", () => {
 });
 
 describe("GetOrderedChildren", () => {
-    it("places group nodes before item nodes and optionally sorts item nodes", () => {
+    it("preserves the declared child order when alphabetical sorting is disabled", () => {
+        const tree = BuildExplorerTree([
+            MakeNode("parent", {
+                kind: "group",
+                getChildren: () => [
+                    MakeNode("scene", { kind: "item", entity: {} }),
+                    MakeNode("auxiliarySurfaces", {
+                        kind: "group",
+                        getChildren: () => [MakeNode("surface", { kind: "item", entity: {} })],
+                    }),
+                    MakeNode("textRenderer", { kind: "item", entity: {} }),
+                ],
+            }),
+        ]);
+
+        expect(GetNames(GetOrderedChildren(tree.nodes[0], false) as ExplorerNode[])).toEqual(["scene", "auxiliarySurfaces", "textRenderer"]);
+    });
+
+    it("sorts item nodes without moving structural nodes", () => {
         const tree = BuildExplorerTree([
             MakeNode("root", {
                 kind: "group",
@@ -159,8 +177,7 @@ describe("GetOrderedChildren", () => {
             }),
         ]);
 
-        expect(GetNames(GetOrderedChildren(tree.nodes[0], false) as ExplorerNode[])).toEqual(["groupB", "groupA", "zeta", "alpha"]);
-        expect(GetNames(GetOrderedChildren(tree.nodes[0], true) as ExplorerNode[])).toEqual(["groupB", "groupA", "alpha", "zeta"]);
+        expect(GetNames(GetOrderedChildren(tree.nodes[0], true) as ExplorerNode[])).toEqual(["alpha", "groupB", "zeta", "groupA"]);
     });
 });
 

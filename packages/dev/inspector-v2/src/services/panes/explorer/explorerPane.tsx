@@ -123,17 +123,17 @@ const ExplorerPane: FunctionComponent<ExplorerPaneProps> = (props) => {
             return [];
         }
 
-        // The root node represents the object being inspected (e.g. a Scene or an Engine). It is a sibling
-        // (not an ancestor) of the top level nodes, which keeps indentation flat and shallow.
+        // The root node represents the object being inspected (e.g. a Scene or an Engine).
         const rootNode: ExplorerNodeDescription = {
             id: "root",
             kind: "root",
             entity: root,
             icon: rootIcon,
             getDisplayInfo: () => ({ name: rootLabel }),
+            getChildren: getNodes,
         };
 
-        return [rootNode, ...getNodes()];
+        return [rootNode];
     }, [rootLabel, rootIcon, getNodes, nodesVersion, root]);
 
     return (

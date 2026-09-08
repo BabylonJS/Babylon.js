@@ -120,9 +120,9 @@ const useStyles = makeStyles({
         minHeight: CustomTokens.lineHeightSmall,
         maxHeight: CustomTokens.lineHeightSmall,
     },
-    // RootTreeItem supplies the visual root; all other node depths are relative to it.
+    // RootTreeItem supplies the visual root, so its children begin at one indentation level.
     treeItemLayout: {
-        paddingLeft: `calc(var(${treeItemLevelToken}, 1) * ${tokens.spacingHorizontalL})`,
+        paddingLeft: `calc((var(${treeItemLevelToken}, 1) - 1) * ${tokens.spacingHorizontalL})`,
     },
     leadingSlot: {
         width: tokens.spacingHorizontalXXL,
@@ -486,8 +486,10 @@ const RootTreeItem: FunctionComponent<{
     isOpen: boolean;
     select?: () => void;
     isFiltering: boolean;
+    expandAll: () => void;
+    collapseAll: () => void;
 }> = (props) => {
-    const { node, isSelected, isOpen, select, isFiltering } = props;
+    const { node, isSelected, isOpen, select, isFiltering, expandAll, collapseAll } = props;
 
     const classes = useStyles();
     const [compactMode] = useSetting(CompactModeSettingDescriptor);
@@ -501,35 +503,67 @@ const RootTreeItem: FunctionComponent<{
     const Icon = node.icon;
     const icon = Icon && node.entity ? <Icon entity={node.entity} /> : <GlobeRegular />;
     const { showChevron, treeItemInteractionProps } = useBranchIconInteraction(isBranch && !!icon);
+    const actions = useMemo(
+        () =>
+            hasChildren
+                ? [
+                      MakeInlineCommandElement(
+                          {
+                              type: "action",
+                              displayName: "Expand All",
+                              icon: () => <ArrowExpandAllRegular />,
+                              execute: expandAll,
+                          },
+                          false
+                      ),
+                  ]
+                : [],
+        [hasChildren, expandAll]
+    );
 
     return (
-        <FlatTreeItem
-            className={classes.treeItem}
-            key={node.value}
-            value={node.value}
-            // Disable manual expand/collapse when a filter is active.
-            itemType={isBranch ? "branch" : "leaf"}
-            parentValue={node.parent?.value}
-            aria-level={node.depth}
-            aria-setsize={1}
-            aria-posinset={1}
-            onClick={select}
-            {...treeItemInteractionProps}
-        >
-            <ExplorerTreeItemLayout
-                isBranch={isBranch}
-                isOpen={isOpen}
-                icon={icon}
-                showChevron={showChevron}
-                select={select}
-                className={treeItemLayoutClass}
-                style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
-            >
-                <Body1Strong wrap={false} truncate>
-                    {name}
-                </Body1Strong>
-            </ExplorerTreeItemLayout>
-        </FlatTreeItem>
+        <Menu openOnContext>
+            <MenuTrigger disableButtonEnhancement>
+                <FlatTreeItem
+                    className={classes.treeItem}
+                    key={node.value}
+                    value={node.value}
+                    // Disable manual expand/collapse when a filter is active.
+                    itemType={isBranch ? "branch" : "leaf"}
+                    parentValue={node.parent?.value}
+                    aria-level={node.depth}
+                    aria-setsize={1}
+                    aria-posinset={1}
+                    onClick={select}
+                    {...treeItemInteractionProps}
+                >
+                    <ExplorerTreeItemLayout
+                        isBranch={isBranch}
+                        isOpen={isOpen}
+                        icon={icon}
+                        showChevron={showChevron}
+                        select={select}
+                        className={treeItemLayoutClass}
+                        style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+                        actions={{ children: actions }}
+                    >
+                        <Body1Strong wrap={false} truncate>
+                            {name}
+                        </Body1Strong>
+                    </ExplorerTreeItemLayout>
+                </FlatTreeItem>
+            </MenuTrigger>
+            <MenuPopover hidden={!hasChildren}>
+                <MenuList>
+                    <MenuItem icon={<ArrowExpandAllRegular />} onClick={expandAll}>
+                        <Body1>Expand All</Body1>
+                    </MenuItem>
+                    <MenuItem icon={<ArrowCollapseAllRegular />} onClick={collapseAll}>
+                        <Body1>Collapse All</Body1>
+                    </MenuItem>
+                </MenuList>
+            </MenuPopover>
+        </Menu>
     );
 };
 
@@ -885,8 +919,11 @@ export const Explorer: FunctionComponent<{
 
     const { getNodes, itemCommandProviders, groupCommandProviders, selectedEntity = null, ariaLabel = "Scene Explorer Tree" } = props;
 
-    const [openItems, setOpenItems] = useState(new Set<TreeItemValue>());
     const [treeVersion, setTreeVersion] = useState(0);
+    const tree = useMemo(() => BuildExplorerTree(getNodes()), [getNodes, treeVersion]);
+    const initialRootValues = tree.nodes.filter((node) => node.kind === "root").map((node) => node.value);
+    const initializedRootValues = useRef(new Set(initialRootValues));
+    const [openItems, setOpenItems] = useState(new Set<TreeItemValue>(initialRootValues));
     const scrollViewRef = useRef<ScrollToInterface>(null);
     // We only want to scroll to the selected item if it was externally selected (outside of the Explorer).
     const previousSelectedEntity = useRef(selectedEntity);
@@ -918,7 +955,19 @@ export const Explorer: FunctionComponent<{
         },
     });
 
-    const tree = useMemo(() => BuildExplorerTree(getNodes()), [getNodes, treeVersion]);
+    useEffect(() => {
+        setOpenItems((currentOpenItems) => {
+            let updatedOpenItems: Set<TreeItemValue> | undefined;
+            for (const node of tree.nodes) {
+                if (node.kind === "root" && !initializedRootValues.current.has(node.value)) {
+                    initializedRootValues.current.add(node.value);
+                    updatedOpenItems ??= new Set(currentOpenItems);
+                    updatedOpenItems.add(node.value);
+                }
+            }
+            return updatedOpenItems ?? currentOpenItems;
+        });
+    }, [tree]);
 
     useEffect(() => {
         const onItemAdded = () => {
@@ -1066,6 +1115,8 @@ export const Explorer: FunctionComponent<{
                                     isOpen={openItems.has(node.value)}
                                     select={entity ? () => setSelectedEntity(entity) : undefined}
                                     isFiltering={!!itemsFilter}
+                                    expandAll={() => expandAll(node)}
+                                    collapseAll={() => collapseAll(node)}
                                 />
                             );
                         } else if (node.kind === "item" && entity) {
