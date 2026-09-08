@@ -124,20 +124,26 @@ export function MakeWatcherServiceDefinitions(options: WatcherServiceOptions = {
         consumes: [SettingsStoreIdentity, ReactContextServiceIdentity],
         factory: (settingsStore, reactContextService) => {
             const refreshObservable = new Observable<void>();
+            const propertyWatchers = new Set<{ setMode: (mode: WatcherSettings["mode"]) => void; dispose: () => void }>();
             let pollingHandle: Nullable<number> = null;
+            let currentSettings = normalizeSettings(settingsStore.readSetting(settingDescriptor));
 
             const applySettings = () => {
-                const settings = normalizeSettings(settingsStore.readSetting(settingDescriptor));
+                currentSettings = normalizeSettings(settingsStore.readSetting(settingDescriptor));
 
                 if (pollingHandle !== null) {
                     clearInterval(pollingHandle);
                     pollingHandle = null;
                 }
 
-                if (settings.mode === "polling") {
+                if (currentSettings.mode === "polling") {
                     pollingHandle = window.setInterval(() => {
                         refreshObservable.notifyObservers();
-                    }, settings.interval);
+                    }, currentSettings.interval);
+                }
+
+                for (const watcher of propertyWatchers) {
+                    watcher.setMode(currentSettings.mode);
                 }
             };
 
@@ -151,25 +157,59 @@ export function MakeWatcherServiceDefinitions(options: WatcherServiceOptions = {
 
             const watcherService: IWatcherService & Partial<IDisposable> = {
                 watchProperty<T extends object>(target: T, propertyKey: keyof T, onChanged: (value: unknown) => void): IDisposable {
-                    const settings = normalizeSettings(settingsStore.readSetting(settingDescriptor));
-                    if (settings.mode !== "intercept") {
-                        let previousValue = target[propertyKey];
-                        const observer = refreshObservable.add(() => {
-                            const currentValue = target[propertyKey];
-                            if (!Object.is(previousValue, currentValue)) {
-                                previousValue = currentValue;
-                                onChanged(currentValue);
-                            }
-                        });
+                    let previousValue: unknown = target[propertyKey];
+                    let interceptToken: Nullable<IDisposable> = null;
+                    let refreshObserver: Nullable<ReturnType<typeof refreshObservable.add>> = null;
+                    let isIntercepting: Nullable<boolean> = null;
+                    let isDisposed = false;
 
-                        return {
-                            dispose: () => observer.remove(),
-                        };
-                    } else {
-                        return InterceptProperty(target, propertyKey, {
-                            afterSet: (value) => onChanged(value),
-                        });
-                    }
+                    const notifyIfChanged = () => {
+                        const currentValue = target[propertyKey];
+                        if (!Object.is(previousValue, currentValue)) {
+                            previousValue = currentValue;
+                            onChanged(currentValue);
+                        }
+                    };
+
+                    const propertyWatcher = {
+                        setMode: (mode: WatcherSettings["mode"]) => {
+                            const shouldIntercept = mode === "intercept";
+                            if (shouldIntercept === isIntercepting) {
+                                return;
+                            }
+
+                            interceptToken?.dispose();
+                            interceptToken = null;
+                            refreshObserver?.remove();
+                            refreshObserver = null;
+
+                            if (shouldIntercept) {
+                                notifyIfChanged();
+                                interceptToken = InterceptProperty(target, propertyKey, {
+                                    afterSet: (value) => {
+                                        previousValue = value;
+                                        onChanged(value);
+                                    },
+                                });
+                            } else {
+                                refreshObserver = refreshObservable.add(notifyIfChanged);
+                            }
+                            isIntercepting = shouldIntercept;
+                        },
+                        dispose: () => {
+                            if (!isDisposed) {
+                                interceptToken?.dispose();
+                                refreshObserver?.remove();
+                                propertyWatchers.delete(propertyWatcher);
+                                isDisposed = true;
+                            }
+                        },
+                    };
+
+                    propertyWatcher.setMode(currentSettings.mode);
+                    propertyWatchers.add(propertyWatcher);
+
+                    return propertyWatcher;
                 },
                 watchValue<T>(getValue: () => T, onChanged: (value: T) => void, equals: (left: T, right: T) => boolean = Object.is): IDisposable {
                     let previousValue = getValue();
@@ -190,6 +230,10 @@ export function MakeWatcherServiceDefinitions(options: WatcherServiceOptions = {
                 },
                 dispose: () => {
                     contextHandle.dispose();
+
+                    for (const watcher of [...propertyWatchers]) {
+                        watcher.dispose();
+                    }
 
                     if (pollingHandle !== null) {
                         clearInterval(pollingHandle);

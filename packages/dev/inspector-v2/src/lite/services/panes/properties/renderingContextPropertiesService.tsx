@@ -24,11 +24,6 @@ function IsRegisteredRenderingContext(engine: EngineContext, entity: unknown): e
 const SceneProperties: FunctionComponent<{ scene: SceneContext }> = (props) => {
     const { scene } = props;
 
-    // BoundProperty requires a property descriptor to determine whether the optional name is writable.
-    if (!("name" in scene)) {
-        scene.name = undefined;
-    }
-
     return (
         <>
             <BoundProperty component={TextInputPropertyLine} label="Name" target={scene} propertyKey="name" ignoreNullable defaultValue="" />

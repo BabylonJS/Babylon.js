@@ -87,7 +87,7 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
 
             const onChange = useMemo(() => {
                 const propertyDescriptor = GetPropertyDescriptor(target, propertyKey)?.[1];
-                if (propertyDescriptor && (propertyDescriptor.set || propertyDescriptor.writable)) {
+                if ((propertyDescriptor && (propertyDescriptor.set || propertyDescriptor.writable)) || (!propertyDescriptor && Object.isExtensible(target))) {
                     return (val: TargetT[PropertyKeyT]) => {
                         const oldValue = target[propertyKey];
                         const newValue = convertFrom ? convertFrom(val) : val;

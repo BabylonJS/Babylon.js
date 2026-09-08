@@ -95,4 +95,58 @@ describe("WatcherService", () => {
         registration.dispose();
         watcher.dispose?.();
     });
+
+    it("updates existing property watchers when the watch mode changes", () => {
+        vi.useFakeTimers();
+        const settingsStore = new TestSettingsStore();
+        const definitions = MakeWatcherServiceDefinitions({
+            defaultSettings: { mode: "manual" },
+        });
+        const watcher = definitions.watcherServiceDefinition.factory(settingsStore, new TestReactContextService());
+        const settingsDescriptor: SettingDescriptor<{ mode: "intercept" } | { mode: "polling"; interval: number } | { mode: "manual" }> = {
+            key: "WatcherSettings",
+            defaultValue: { mode: "manual" },
+        };
+        const target = { value: 0 };
+        const onChanged = vi.fn();
+        const secondOnChanged = vi.fn();
+        const registration = watcher.watchProperty(target, "value", onChanged);
+        const secondRegistration = watcher.watchProperty(target, "value", secondOnChanged);
+
+        target.value = 1;
+        expect(onChanged).not.toHaveBeenCalled();
+        expect(secondOnChanged).not.toHaveBeenCalled();
+        watcher.refresh();
+        expect(onChanged).toHaveBeenLastCalledWith(1);
+        expect(secondOnChanged).toHaveBeenLastCalledWith(1);
+
+        settingsStore.writeSetting(settingsDescriptor, { mode: "polling", interval: 100 });
+        target.value = 2;
+        vi.advanceTimersByTime(99);
+        expect(onChanged).toHaveBeenCalledTimes(1);
+        vi.advanceTimersByTime(1);
+        expect(onChanged).toHaveBeenLastCalledWith(2);
+        expect(secondOnChanged).toHaveBeenLastCalledWith(2);
+
+        settingsStore.writeSetting(settingsDescriptor, { mode: "intercept" });
+        target.value = 3;
+        expect(onChanged).toHaveBeenLastCalledWith(3);
+        expect(secondOnChanged).toHaveBeenLastCalledWith(3);
+        expect(vi.getTimerCount()).toBe(0);
+
+        settingsStore.writeSetting(settingsDescriptor, { mode: "manual" });
+        target.value = 4;
+        expect(onChanged).toHaveBeenCalledTimes(3);
+        expect(secondOnChanged).toHaveBeenCalledTimes(3);
+        watcher.refresh();
+        expect(onChanged).toHaveBeenLastCalledWith(4);
+        expect(secondOnChanged).toHaveBeenLastCalledWith(4);
+
+        watcher.dispose?.();
+        target.value = 5;
+        expect(onChanged).toHaveBeenCalledTimes(4);
+        expect(secondOnChanged).toHaveBeenCalledTimes(4);
+        registration.dispose();
+        secondRegistration.dispose();
+    });
 });

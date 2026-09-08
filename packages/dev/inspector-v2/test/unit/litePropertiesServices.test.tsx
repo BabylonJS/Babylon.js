@@ -40,6 +40,7 @@ describe("Babylon Lite properties services", () => {
             shadowGenerators: [],
             fixedDeltaMs: 0,
         } as unknown as SceneContext;
+        Object.preventExtensions(scene);
         const textLayer = {
             data: {
                 runs: [
@@ -136,7 +137,7 @@ describe("Babylon Lite properties services", () => {
             throw new Error("Expected the scene property provider to render a function component.");
         }
         const sceneProperties = (sceneElement.type as FunctionComponent<{ scene: SceneContext }>)(sceneElement.props);
-        expect("name" in scene).toBe(true);
+        expect("name" in scene).toBe(false);
         if (!isValidElement<{ children?: ReactNode }>(sceneProperties)) {
             throw new Error("Expected the scene properties component to render property lines.");
         }
