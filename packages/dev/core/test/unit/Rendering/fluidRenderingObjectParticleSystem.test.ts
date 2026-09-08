@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { type Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
@@ -6,7 +6,6 @@ import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Vector3 } from "core/Maths/math.vector";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
-import { Logger } from "core/Misc/logger";
 
 import "core/Rendering/fluidRenderer/fluidRenderer";
 import "core/Particles/webgl2ParticleSystem";
@@ -42,34 +41,45 @@ describe("FluidRenderingObjectParticleSystem", () => {
         engine.dispose();
     });
 
-    it("uses the per-particle size attribute when wrapping a CPU ParticleSystem", () => {
+    it("uses a vec2 per-particle size attribute when wrapping a CPU ParticleSystem", () => {
         FluidRenderingObject.UsePerParticleSizeAttribute = true;
 
         const ps = new ParticleSystem("test", 100, scene);
         const fluidRenderer = scene.enableFluidRenderer()!;
         const { object } = fluidRenderer.addParticleSystem(ps, false) as { object: FluidRenderingObjectParticleSystem };
 
-        expect((object as any)._supportsPerParticleSizeAttribute()).toBe(true);
-
         (object as any)._createEffects();
-        const depthEffect = (object as any)._depthEffectWrapper.effect;
 
         expect((object as any)._usesPerParticleSizeAttribute).toBe(true);
-        expect(depthEffect.getAttributesNames()).toContain("size");
-        expect(depthEffect.defines).toContain("FLUIDRENDERING_PER_PARTICLE_SIZE");
+        for (const wrapper of ["_depthEffectWrapper", "_thicknessEffectWrapper"]) {
+            const effect = (object as any)[wrapper].effect;
+            expect(effect.getAttributesNames()).toContain("size");
+            expect(effect.defines).toContain("FLUIDRENDERING_PER_PARTICLE_SIZE");
+            expect(effect.defines).not.toContain("FLUIDRENDERING_PER_PARTICLE_SIZE_VEC3");
+        }
     });
 
-    it("falls back to a uniform size and warns when wrapping a GPUParticleSystem", () => {
+    it("uses a vec3 per-particle size attribute when wrapping a GPUParticleSystem", () => {
         FluidRenderingObject.UsePerParticleSizeAttribute = true;
-
-        const warnSpy = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
 
         const ps = new GPUParticleSystem("test", { capacity: 100 }, scene);
         const fluidRenderer = scene.enableFluidRenderer()!;
         const { object } = fluidRenderer.addParticleSystem(ps, false) as { object: FluidRenderingObjectParticleSystem };
 
-        expect((object as any)._supportsPerParticleSizeAttribute()).toBe(false);
-        expect(warnSpy).toHaveBeenCalled();
+        (object as any)._createEffects();
+
+        expect((object as any)._usesPerParticleSizeAttribute).toBe(true);
+        for (const wrapper of ["_depthEffectWrapper", "_thicknessEffectWrapper"]) {
+            const effect = (object as any)[wrapper].effect;
+            expect(effect.getAttributesNames()).toContain("size");
+            expect(effect.defines).toContain("FLUIDRENDERING_PER_PARTICLE_SIZE_VEC3");
+        }
+    });
+
+    it("keeps size as a uniform for a GPUParticleSystem when the feature is disabled", () => {
+        const ps = new GPUParticleSystem("test", { capacity: 100 }, scene);
+        const fluidRenderer = scene.enableFluidRenderer()!;
+        const { object } = fluidRenderer.addParticleSystem(ps, false) as { object: FluidRenderingObjectParticleSystem };
 
         (object as any)._createEffects();
         const depthEffect = (object as any)._depthEffectWrapper.effect;
@@ -77,7 +87,5 @@ describe("FluidRenderingObjectParticleSystem", () => {
         expect((object as any)._usesPerParticleSizeAttribute).toBe(false);
         expect(depthEffect.getAttributesNames()).not.toContain("size");
         expect(depthEffect.defines).not.toContain("FLUIDRENDERING_PER_PARTICLE_SIZE");
-
-        warnSpy.mockRestore();
     });
 });

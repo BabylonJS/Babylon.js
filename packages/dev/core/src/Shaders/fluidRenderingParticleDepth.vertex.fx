@@ -5,7 +5,11 @@ uniform mat4 view;
 uniform mat4 projection;
 
 #ifdef FLUIDRENDERING_PER_PARTICLE_SIZE
-    attribute vec2 size;
+    #ifdef FLUIDRENDERING_PER_PARTICLE_SIZE_VEC3
+        attribute vec3 size;
+    #else
+        attribute vec2 size;
+    #endif
 #else
     uniform vec2 size;
 #endif
@@ -20,8 +24,13 @@ varying float sphereRadius;
 #endif
 
 void main(void) {
+#ifdef FLUIDRENDERING_PER_PARTICLE_SIZE_VEC3
+    vec2 particleSize = size.yz * size.x;
+#else
+    vec2 particleSize = size;
+#endif
     vec3 cornerPos;
-    cornerPos.xy = vec2(offset.x - 0.5, offset.y - 0.5) * size;
+    cornerPos.xy = vec2(offset.x - 0.5, offset.y - 0.5) * particleSize;
     cornerPos.z = 0.0;
 
     viewPos = (view * vec4(position, 1.0)).xyz;
@@ -29,7 +38,7 @@ void main(void) {
     gl_Position = projection * vec4(viewPos + cornerPos, 1.0);
 
     uv = offset;
-    sphereRadius = size.x / 2.0;
+    sphereRadius = particleSize.x / 2.0;
 #ifdef FLUIDRENDERING_VELOCITY
     velocityNorm = length(velocity);
 #endif

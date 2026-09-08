@@ -5,7 +5,11 @@ uniform view: mat4x4f;
 uniform projection: mat4x4f;
 
 #ifdef FLUIDRENDERING_PER_PARTICLE_SIZE
-    attribute size: vec2f;
+    #ifdef FLUIDRENDERING_PER_PARTICLE_SIZE_VEC3
+        attribute size: vec3f;
+    #else
+        attribute size: vec2f;
+    #endif
 #else
     uniform size: vec2f;
 #endif
@@ -22,7 +26,11 @@ varying sphereRadius: f32;
 @vertex
 fn main(input: VertexInputs) -> FragmentInputs {
 #ifdef FLUIDRENDERING_PER_PARTICLE_SIZE
-    var particleSize: vec2f = vertexInputs.size;
+    #ifdef FLUIDRENDERING_PER_PARTICLE_SIZE_VEC3
+        var particleSize: vec2f = vertexInputs.size.yz * vertexInputs.size.x;
+    #else
+        var particleSize: vec2f = vertexInputs.size;
+    #endif
 #else
     var particleSize: vec2f = uniforms.size;
 #endif
