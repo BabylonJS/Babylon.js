@@ -9,7 +9,7 @@ import {
 } from "@babylonjs/lite";
 import { type FunctionComponent } from "react";
 
-import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { NumberInputPropertyLine, TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
@@ -24,8 +24,14 @@ function IsRegisteredRenderingContext(engine: EngineContext, entity: unknown): e
 const SceneProperties: FunctionComponent<{ scene: SceneContext }> = (props) => {
     const { scene } = props;
 
+    // BoundProperty requires a property descriptor to determine whether the optional name is writable.
+    if (!("name" in scene)) {
+        scene.name = undefined;
+    }
+
     return (
         <>
+            <BoundProperty component={TextInputPropertyLine} label="Name" target={scene} propertyKey="name" ignoreNullable defaultValue="" />
             <StringifiedPropertyLine label="Mesh Count" value={scene.meshes.length} />
             <StringifiedPropertyLine label="Light Count" value={scene.lights.length} />
             <StringifiedPropertyLine label="Animation Group Count" value={scene.animationGroups.length} />
@@ -58,8 +64,7 @@ export const RenderingContextPropertiesServiceDefinition: ServiceDefinition<[], 
                 if (!IsRegisteredRenderingContext(engine, entity)) {
                     return false;
                 }
-                const kind = getRenderingContextKind(entity);
-                return kind === "scene" || kind === "utility-layer";
+                return getRenderingContextKind(entity) === "scene";
             },
             content: [
                 {

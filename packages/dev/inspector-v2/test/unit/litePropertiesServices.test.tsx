@@ -130,6 +130,23 @@ describe("Babylon Lite properties services", () => {
         expect(registrations.get("Babylon Lite Texture Properties")?.predicate(texture)).toBe(true);
         expect(registrations.get("Babylon Lite Text Layer Properties")?.predicate(textLayer)).toBe(true);
 
+        const sceneContent = registrations.get("Babylon Lite Scene Properties")?.content[0];
+        const sceneElement = sceneContent?.component({ context: scene });
+        if (!isValidElement<{ scene: SceneContext }>(sceneElement) || typeof sceneElement.type !== "function") {
+            throw new Error("Expected the scene property provider to render a function component.");
+        }
+        const sceneProperties = (sceneElement.type as FunctionComponent<{ scene: SceneContext }>)(sceneElement.props);
+        expect("name" in scene).toBe(true);
+        if (!isValidElement<{ children?: ReactNode }>(sceneProperties)) {
+            throw new Error("Expected the scene properties component to render property lines.");
+        }
+        const sceneBoundProperties = Children.toArray(sceneProperties.props.children).filter(
+            (child): child is ReactElement<{ propertyKey: string; target: object; defaultValue?: string; ignoreNullable?: boolean }> =>
+                isValidElement(child) && child.type === BoundProperty
+        );
+        expect(sceneBoundProperties.map((property) => property.props.propertyKey)).toEqual(["name", "fixedDeltaMs"]);
+        expect(sceneBoundProperties[0].props).toMatchObject({ target: scene, defaultValue: "", ignoreNullable: true });
+
         const textLayerContent = registrations.get("Babylon Lite Text Layer Properties")?.content[0];
         const textLayerElement = textLayerContent?.component({ context: textLayer });
         if (!isValidElement<{ layer: TextLayer }>(textLayerElement) || typeof textLayerElement.type !== "function") {
@@ -147,7 +164,10 @@ describe("Babylon Lite properties services", () => {
         expect(boundProperties[6].props).toMatchObject({ target: textLayer, min: 0, max: 1 });
 
         const unregisteredScene = { ...scene } as RenderingContext;
+        const legacyUtilityLayer = { _kind: "utility-layer" } as RenderingContext;
+        (engine._renderingContexts as RenderingContext[]).push(legacyUtilityLayer);
         expect(registrations.get("Babylon Lite Scene Properties")?.predicate(unregisteredScene)).toBe(false);
+        expect(registrations.get("Babylon Lite Scene Properties")?.predicate(legacyUtilityLayer)).toBe(false);
         expect(registrations.get("Babylon Lite Material Properties")?.predicate({ name: "Not a material" })).toBe(false);
         expect(registrations.get("Babylon Lite Texture Properties")?.predicate({ width: 16, height: 8 })).toBe(false);
         expect(registrations.get("Babylon Lite Text Layer Properties")?.predicate({ ...textLayer })).toBe(false);

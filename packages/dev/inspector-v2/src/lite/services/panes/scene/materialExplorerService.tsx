@@ -4,8 +4,9 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 import { MaterialIcon } from "shared-ui-components/fluent/icons";
 
 import { type IEngineExplorerService, EngineExplorerServiceIdentity } from "../../../engineExplorerService";
+import { CreateWatchedNameDisplayInfo } from "../../../explorerDisplayInfo";
 import { type IWatcherService, WatcherServiceIdentity } from "../../../../services/watcherService";
-import { CreateSceneExplorerSectionNode, CreateWatchedNameDisplayInfo, IsSceneContext } from "./sceneExplorerSection";
+import { CreateSceneExplorerSectionNode, IsSceneContext } from "./sceneExplorerSection";
 import { GetSceneMaterials } from "./sceneResources";
 
 function GetMaterialDisplayName(material: Material): string {

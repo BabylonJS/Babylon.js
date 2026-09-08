@@ -1,4 +1,4 @@
-import { getRenderingContextKind, getRenderingContexts, type EngineContext, type RenderingContext, type SurfaceContext } from "@babylonjs/lite";
+import { getRenderingContextKind, getRenderingContexts, type EngineContext, type RenderingContext, type SceneContext, type SurfaceContext } from "@babylonjs/lite";
 import { tokens } from "@fluentui/react-components";
 import { EngineRegular, GlobeRegular, PersonSquareRegular, TextFieldRegular, WindowRegular } from "@fluentui/react-icons";
 import { type FunctionComponent } from "react";
@@ -15,6 +15,7 @@ import { CreateExplorerPaneRegistration } from "../services/panes/explorer/explo
 import { type ISelectionService, SelectionServiceIdentity } from "../services/selectionService";
 import { type IWatcherService, WatcherServiceIdentity } from "../services/watcherService";
 import { type IEngineContext, EngineContextIdentity } from "./engineContext";
+import { CreateWatchedNameDisplayInfo } from "./explorerDisplayInfo";
 
 /**
  * The unique identity symbol for the Babylon Lite engine explorer service.
@@ -55,7 +56,6 @@ function UntypeRenderingContextNodeProvider<T extends RenderingContext>(provider
 
 const RenderingContextDisplayNames = new Map<string, string>([
     ["scene", "Scene"],
-    ["utility-layer", "Utility Layer"],
     ["frame-graph-context", "Frame Graph"],
     ["effect-renderer", "Effect Renderer"],
     ["sprite-renderer", "Sprite Renderer"],
@@ -86,6 +86,9 @@ function AreTopologySnapshotsEqual(left: readonly object[], right: readonly obje
 
 function GetRenderingContextDisplayName(context: RenderingContext): string {
     const kind = getRenderingContextKind(context);
+    if (kind === "scene") {
+        return (context as SceneContext).name || "Scene";
+    }
     return RenderingContextDisplayNames.get(kind) ?? kind;
 }
 
@@ -106,39 +109,52 @@ function GetApplicableProviders(context: RenderingContext, providers: readonly U
     return providers.filter((provider) => provider.predicate(context)).sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
 }
 
-function CreateRenderingContextNode(context: RenderingContext, providers: readonly UntypedRenderingContextNodeProvider[]): ExplorerNodeDescription {
+function CreateRenderingContextNode(
+    context: RenderingContext,
+    providers: readonly UntypedRenderingContextNodeProvider[],
+    watcherService: IWatcherService
+): ExplorerNodeDescription {
+    const isScene = getRenderingContextKind(context) === "scene";
     return {
         id: `rendering-context-${GetNodeId(context)}`,
         kind: "item",
         entity: context,
         icon: GetRenderingContextIcon(context),
-        getDisplayInfo: () => ({ name: GetRenderingContextDisplayName(context) }),
+        getDisplayInfo: () =>
+            isScene
+                ? CreateWatchedNameDisplayInfo(watcherService, context as SceneContext, () => GetRenderingContextDisplayName(context))
+                : { name: GetRenderingContextDisplayName(context) },
         getChildren: () => GetApplicableProviders(context, providers).flatMap((provider) => provider.getNodes(context)),
     };
 }
 
-function CreateSurfaceNode(engine: EngineContext, surface: SurfaceContext, providers: readonly UntypedRenderingContextNodeProvider[]): ExplorerNodeDescription {
+function CreateSurfaceNode(
+    engine: EngineContext,
+    surface: SurfaceContext,
+    providers: readonly UntypedRenderingContextNodeProvider[],
+    watcherService: IWatcherService
+): ExplorerNodeDescription {
     return {
         id: `surface-${GetNodeId(surface)}`,
-        kind: "group",
+        kind: "item",
         entity: surface,
         icon: SurfaceIcon,
         getDisplayInfo: () => ({ name: `Surface ${engine.surfaces.indexOf(surface) + 1}` }),
-        getChildren: () => getRenderingContexts(surface).map((context) => CreateRenderingContextNode(context, providers)),
+        getChildren: () => getRenderingContexts(surface).map((context) => CreateRenderingContextNode(context, providers, watcherService)),
     };
 }
 
-function CreateEngineNodes(engine: EngineContext, providers: readonly UntypedRenderingContextNodeProvider[]): readonly ExplorerNodeDescription[] {
+function CreateEngineNodes(engine: EngineContext, providers: readonly UntypedRenderingContextNodeProvider[], watcherService: IWatcherService): readonly ExplorerNodeDescription[] {
     // The engine itself is the primary surface, and it is already represented by the Explorer root node,
     // so its rendering contexts are contributed as siblings of the root.
-    const nodes: ExplorerNodeDescription[] = getRenderingContexts(engine).map((context) => CreateRenderingContextNode(context, providers));
+    const nodes: ExplorerNodeDescription[] = getRenderingContexts(engine).map((context) => CreateRenderingContextNode(context, providers, watcherService));
 
     if (engine.surfaces.length > 1) {
         nodes.push({
             id: "auxiliary-surfaces",
             kind: "group",
             getDisplayInfo: () => ({ name: "Auxiliary Surfaces" }),
-            getChildren: () => engine.surfaces.slice(1).map((surface) => CreateSurfaceNode(engine, surface, providers)),
+            getChildren: () => engine.surfaces.slice(1).map((surface) => CreateSurfaceNode(engine, surface, providers, watcherService)),
         });
     }
 
@@ -173,7 +189,7 @@ export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorer
             getRoot: () => engine,
             rootLabel: "Engine",
             rootIcon: EngineIcon,
-            getNodes: () => CreateEngineNodes(engine, nodeProviders.items),
+            getNodes: () => CreateEngineNodes(engine, nodeProviders.items, watcherService),
             onNodesChanged,
         });
 
