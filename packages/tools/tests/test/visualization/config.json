@@ -2802,6 +2802,23 @@
             "dependsOn": ["Rendering", "Particles"]
         },
         {
+            "title": "Fluid rendering GPU particle system per-particle size",
+            "playgroundId": "#M9FSIH#1",
+            "referenceImage": "fluidGpuParticleSystemPerParticleSize.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system uniform size",
+            "playgroundId": "#M9FSIH#1",
+            "replace": "UsePerParticleSizeAttribute = true;, UsePerParticleSizeAttribute = false;",
+            "referenceImage": "fluidGpuParticleSystemUniformSize.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
             "title": "Export GLTF Extension KHR_texture_transform",
             "playgroundId": "#20OAV9#15148",
             "referenceImage": "exportGltfKHRTextureTransform.png",
