@@ -481,6 +481,16 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     }
 
     /**
+     * When true (default), the "leftover" uniform buffer of an effect (the buffer that holds the uniforms not declared in a named
+     * uniform block) keeps one GPU buffer per draw context, so a given draw call always binds the same buffer for a given effect.
+     * When false, the GPU buffers are assigned in draw order: the buffer bound by a draw call then changes with the order in which
+     * meshes are drawn, and every new (draw context, buffer) pair is a new entry in the bind group cache.
+     * Change it before rendering the first frame. You should set it to false only for testing purpose!
+     * @internal
+     */
+    public _useOwnerKeyedUniformBufferSlots = true;
+
+    /**
      * Sets this to true to disable the cache for the bind groups. You should do it only for testing purpose!
      */
     public get disableCacheBindGroups(): boolean {
@@ -3777,7 +3787,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         );
 
         if (webgpuPipelineContext.uniformBuffer) {
-            webgpuPipelineContext.uniformBuffer.update();
+            if (this._useOwnerKeyedUniformBufferSlots) {
+                webgpuPipelineContext.uniformBuffer._updateOwnerKeyed(this._currentDrawContext);
+            } else {
+                webgpuPipelineContext.uniformBuffer.update();
+            }
             this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, WebGPUShaderProcessor.LeftOvertUBOName);
         }
 
