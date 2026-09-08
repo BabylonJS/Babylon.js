@@ -110,6 +110,20 @@ describe("USDFileLoader", () => {
         ]);
     });
 
+    it("keeps default runtime URLs when an option is explicitly undefined", () => {
+        const loader = new USDFileLoader({
+            glueUrl: undefined,
+            wasmUrl: undefined,
+            dataUrl: undefined,
+            workerUrl: undefined,
+        });
+        const options = (loader as unknown as { _options: { glueUrl?: string; wasmUrl?: string; dataUrl?: string; workerUrl?: string | URL } })._options;
+
+        expect(options).toMatchObject(USDFileLoader.DefaultConfiguration);
+
+        loader.dispose();
+    });
+
     it("materializes analytic primitives, full affine transforms, and instances", async () => {
         const buffers = createUSDTestBuffers();
         const result = await materializeCommandBuffers(scene, buffers.commands, buffers.data, false);

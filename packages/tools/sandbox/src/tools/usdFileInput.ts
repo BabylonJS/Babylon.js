@@ -1,4 +1,5 @@
 import { type USDFileLoaderOptions, type USDVirtualFiles } from "loaders/USD/usdLoadingOptions";
+import { Tools } from "core/Misc/tools";
 
 interface IFileWithInputPath extends File {
     correctName?: string;
@@ -77,8 +78,24 @@ export async function CreateUsdFileLoaderOptionsAsync(files: readonly File[], ro
         virtualFiles[path] = bytes;
     }
 
+    const scriptBaseUrl = Tools.ScriptBaseUrl;
+    const currentLocation = globalThis.location;
+    const importerBaseUrl = scriptBaseUrl
+        ? `${scriptBaseUrl.replace(/\/$/, "")}/babylonUsdImporter/4/`
+        : currentLocation && (currentLocation.hostname === "localhost" || currentLocation.hostname === "127.0.0.1")
+          ? `${currentLocation.protocol}//${currentLocation.hostname}:1337/babylonUsdImporter/4/`
+          : undefined;
+
     return {
         rootFileName,
         files: virtualFiles satisfies USDVirtualFiles,
+        ...(importerBaseUrl
+            ? {
+                  glueUrl: `${importerBaseUrl}babylon-usd-importer.js`,
+                  wasmUrl: `${importerBaseUrl}babylon-usd-importer.wasm`,
+                  dataUrl: `${importerBaseUrl}babylon-usd-importer.data`,
+                  workerUrl: `${importerBaseUrl}babylon-usd-importer.worker.js`,
+              }
+            : {}),
     };
 }

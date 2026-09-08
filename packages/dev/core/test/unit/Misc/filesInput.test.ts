@@ -120,6 +120,44 @@ describe("FilesInput", () => {
         expect(onReload).toHaveBeenCalledWith(currentRoot);
     });
 
+    it("does not supersede a valid folder traversal for an empty drop", () => {
+        const onReload = vi.fn();
+        const filesInput = CreateFilesInput(() => {}, onReload);
+        const root = new File(["root"], "Main.usda");
+        const readCallbacks: Array<(entries: unknown[]) => void> = [];
+        const folder = {
+            isDirectory: true,
+            fullPath: "/Package",
+            createReader: () => ({
+                readEntries: (success: (entries: unknown[]) => void) => readCallbacks.push(success),
+            }),
+        };
+        filesInput.onProcessFileCallback = (processedFile, _name, extension, setSceneFileToLoad) => {
+            if (extension === "usda") {
+                setSceneFileToLoad(processedFile);
+            }
+            return false;
+        };
+
+        filesInput.loadFiles({
+            dataTransfer: {
+                files: [],
+                items: [{ kind: "file", webkitGetAsEntry: () => folder }],
+            },
+        });
+        filesInput.loadFiles({
+            dataTransfer: {
+                files: [],
+                items: [{ kind: "string", getAsString: () => {} }],
+            },
+        });
+        readCallbacks.shift()?.([{ isFile: true, fullPath: "/Package/Main.usda", file: (success: (file: File) => void) => success(root) }]);
+        readCallbacks.shift()?.([]);
+
+        expect(filesInput.filesToLoad).toEqual([root]);
+        expect(onReload).toHaveBeenCalledWith(root);
+    });
+
     it("clears a pending scene selection", () => {
         const onReload = vi.fn();
         const filesInput = CreateFilesInput(() => {}, onReload);
@@ -270,6 +308,159 @@ describe("FilesInput", () => {
 
         expect(sceneLoaded).toHaveBeenCalledWith(file, loadedScene);
         expect(loadedScene.dispose).not.toHaveBeenCalled();
+    });
+
+    it("invalidates an active replacement load after a valid folder is accepted", async () => {
+        const sceneLoaded = vi.fn();
+        const engine = {
+            displayLoadingUI: vi.fn(),
+            hideLoadingUI: vi.fn(),
+            stopRenderLoop: vi.fn(),
+            runRenderLoop: vi.fn(),
+        } as unknown as AbstractEngine;
+        const filesInput = new FilesInput(engine, null, sceneLoaded, null, null, null, null, null, null, false, true);
+        filesInput.displayLoadingUI = false;
+        filesInput.onProcessFileCallback = (file, _name, extension, setSceneFileToLoad) => {
+            if (extension === "usda") {
+                setSceneFileToLoad(file);
+            }
+            return false;
+        };
+        const staleScene = { dispose: vi.fn(), executeWhenReady: (callback: () => void) => callback() } as unknown as Scene;
+        const resolvers: Array<(scene: Scene) => void> = [];
+        filesInput.loadAsync = () => new Promise<Scene>((resolve) => resolvers.push(resolve));
+        filesInput.loadFiles({ target: { files: [new File(["stale"], "Stale.usda")] } });
+
+        const root = new File(["root"], "Main.usda");
+        const readCallbacks: Array<(entries: unknown[]) => void> = [];
+        const folder = {
+            isDirectory: true,
+            fullPath: "/Package",
+            createReader: () => ({
+                readEntries: (success: (entries: unknown[]) => void) => readCallbacks.push(success),
+            }),
+        };
+        filesInput.loadFiles({
+            dataTransfer: {
+                files: [],
+                items: [{ kind: "file", webkitGetAsEntry: () => folder }],
+            },
+        });
+        resolvers[0](staleScene);
+        await vi.waitFor(() => expect(staleScene.dispose).toHaveBeenCalledTimes(1));
+        readCallbacks.shift()?.([{ isFile: true, fullPath: "/Package/Main.usda", file: (success: (file: File) => void) => success(root) }]);
+        readCallbacks.shift()?.([]);
+
+        expect(sceneLoaded).not.toHaveBeenCalled();
+        expect(filesInput.filesToLoad).toEqual([root]);
+    });
+
+    it("restores rendering when an accepted folder contains no readable files", async () => {
+        const currentScene = {
+            render: vi.fn(),
+            getWaitingItemsCount: () => 0,
+        } as unknown as Scene;
+        const engine = {
+            displayLoadingUI: vi.fn(),
+            hideLoadingUI: vi.fn(),
+            stopRenderLoop: vi.fn(),
+            runRenderLoop: vi.fn(),
+        } as unknown as AbstractEngine;
+        const filesInput = new FilesInput(engine, currentScene, null, null, null, null, null, null, null, false, false);
+        let resolveLoad!: (scene: Scene) => void;
+        const staleScene = { dispose: vi.fn(), executeWhenReady: (callback: () => void) => callback() } as unknown as Scene;
+        filesInput.loadAsync = () => new Promise<Scene>((resolve) => (resolveLoad = resolve));
+        filesInput.onProcessFileCallback = (file, _name, _extension, setSceneFileToLoad) => {
+            setSceneFileToLoad(file);
+            return false;
+        };
+        filesInput.loadFiles({ target: { files: [new File(["stale"], "Stale.usda")] } });
+
+        const folder = {
+            isDirectory: true,
+            fullPath: "/Empty",
+            createReader: () => ({
+                readEntries: (success: (entries: unknown[]) => void) => success([]),
+            }),
+        };
+        filesInput.loadFiles({
+            dataTransfer: {
+                files: [],
+                items: [{ kind: "file", webkitGetAsEntry: () => folder }],
+            },
+        });
+        resolveLoad(staleScene);
+        await vi.waitFor(() => expect(staleScene.dispose).toHaveBeenCalledTimes(1));
+
+        expect(engine.hideLoadingUI).toHaveBeenCalled();
+        expect(engine.runRenderLoop).toHaveBeenCalledTimes(1);
+    });
+
+    it("reuses the render callback when an empty folder needs no restart", async () => {
+        const currentScene = {
+            dispose: vi.fn(),
+            executeWhenReady: (callback: () => void) => callback(),
+            render: vi.fn(),
+            getWaitingItemsCount: () => 0,
+        } as unknown as Scene;
+        const runRenderLoop = vi.fn();
+        const engine = {
+            displayLoadingUI: vi.fn(),
+            hideLoadingUI: vi.fn(),
+            stopRenderLoop: vi.fn(),
+            runRenderLoop,
+        } as unknown as AbstractEngine;
+        const filesInput = new FilesInput(engine, null, null, null, null, null, null, null, null, false, false);
+        filesInput.displayLoadingUI = false;
+        filesInput.loadAsync = async () => currentScene;
+        filesInput.onProcessFileCallback = (file, _name, _extension, setSceneFileToLoad) => {
+            setSceneFileToLoad(file);
+            return false;
+        };
+        filesInput.loadFiles({ target: { files: [new File(["scene"], "Scene.usda")] } });
+        await vi.waitFor(() => expect(runRenderLoop).toHaveBeenCalledTimes(1));
+
+        const folder = {
+            isDirectory: true,
+            fullPath: "/Empty",
+            createReader: () => ({
+                readEntries: (success: (entries: unknown[]) => void) => success([]),
+            }),
+        };
+        filesInput.loadFiles({
+            dataTransfer: {
+                files: [],
+                items: [{ kind: "file", webkitGetAsEntry: () => folder }],
+            },
+        });
+
+        expect(runRenderLoop).toHaveBeenCalledTimes(2);
+        expect(runRenderLoop.mock.calls[0][0]).toBe(runRenderLoop.mock.calls[1][0]);
+    });
+
+    it("restores rendering when a nonempty selection has no scene loader", async () => {
+        const currentScene = {
+            render: vi.fn(),
+            getWaitingItemsCount: () => 0,
+        } as unknown as Scene;
+        const engine = {
+            displayLoadingUI: vi.fn(),
+            hideLoadingUI: vi.fn(),
+            stopRenderLoop: vi.fn(),
+            runRenderLoop: vi.fn(),
+        } as unknown as AbstractEngine;
+        const filesInput = new FilesInput(engine, currentScene, null, null, null, null, null, null, null, false, false);
+        const errorSpy = vi.spyOn(Logger, "Error").mockImplementation(() => {});
+        const processError = vi.fn();
+        filesInput.onProcessFilesErrorCallback = processError;
+
+        const file = new File(["unsupported"], "Scene.unsupported");
+        filesInput.loadFiles({ target: { files: [file] } });
+
+        expect(engine.hideLoadingUI).toHaveBeenCalled();
+        expect(engine.runRenderLoop).toHaveBeenCalledTimes(1);
+        expect(processError).toHaveBeenCalledWith([file]);
+        expect(errorSpy).toHaveBeenCalledWith("Please provide a valid .babylon file.");
     });
 
     it("can clear a pending selection without canceling the active load", async () => {

@@ -26,6 +26,11 @@ export class FilesInput {
     };
 
     /**
+     * Callback called when an accepted file selection does not contain a loadable scene.
+     */
+    public onProcessFilesErrorCallback: (files: File[]) => void = () => {};
+
+    /**
      * If a loading UI should be displayed while loading a file
      */
     public displayLoadingUI: boolean = true;
@@ -56,6 +61,9 @@ export class FilesInput {
     private _filesToLoad: File[] = [];
     private _fileSelectionGeneration = 0;
     private _reloadGeneration = 0;
+    private readonly _renderLoop = () => {
+        this._renderFunction();
+    };
 
     /**
      * Creates a new FilesInput
@@ -174,6 +182,15 @@ export class FilesInput {
         }
     }
 
+    private _restoreCurrentScene(): void {
+        if (this.displayLoadingUI) {
+            this._engine.hideLoadingUI();
+        }
+        if (!this.dontInjectRenderLoop && this._currentScene) {
+            this._engine.runRenderLoop(this._renderLoop);
+        }
+    }
+
     private _drag(e: DragEvent): void {
         e.stopPropagation();
         e.preventDefault();
@@ -259,20 +276,20 @@ export class FilesInput {
      * @param event defines the drop event to use as source
      */
     public loadFiles(event: any): void {
-        const fileSelectionGeneration = ++this._fileSelectionGeneration;
         const dataTransferItems = event?.dataTransfer?.items;
+        let filesToLoad: File[] = [];
 
         // Handling data transfer via drag'n'drop
         if (event && event.dataTransfer && event.dataTransfer.files) {
-            this._filesToLoad = Array.from(event.dataTransfer.files);
+            filesToLoad = Array.from(event.dataTransfer.files);
         }
 
         // Handling files from input files
         if (event && event.target && event.target.files) {
-            this._filesToLoad = Array.from(event.target.files);
+            filesToLoad = Array.from(event.target.files);
         }
 
-        if ((!this._filesToLoad || this._filesToLoad.length === 0) && (!dataTransferItems || dataTransferItems.length === 0)) {
+        if (filesToLoad.length === 0 && (!dataTransferItems || dataTransferItems.length === 0)) {
             return;
         }
 
@@ -298,13 +315,22 @@ export class FilesInput {
             }
         }
         if (files.length === 0 && folders.length === 0) {
-            for (let i = 0; i < this._filesToLoad.length; i++) {
-                const fileToLoad = this._filesToLoad[i] as File & { correctName?: string };
+            for (let i = 0; i < filesToLoad.length; i++) {
+                const fileToLoad = filesToLoad[i] as File & { correctName?: string };
                 const relativePath = fileToLoad.correctName || fileToLoad.webkitRelativePath || fileToLoad.name;
                 fileToLoad.correctName = relativePath.replace(/\\/g, "/").replace(/^\/+/, "");
                 files.push(fileToLoad);
             }
         }
+        if (files.length === 0 && folders.length === 0) {
+            return;
+        }
+
+        const fileSelectionGeneration = ++this._fileSelectionGeneration;
+        if (!this.useAppend) {
+            this._reloadGeneration++;
+        }
+        this._sceneFileToLoad = null;
 
         if (folders.length === 0) {
             this._processLoadedFiles(files, fileSelectionGeneration);
@@ -321,13 +347,22 @@ export class FilesInput {
     }
 
     private _processLoadedFiles(files: File[], fileSelectionGeneration: number): void {
-        if (fileSelectionGeneration !== this._fileSelectionGeneration || files.length === 0) {
+        if (fileSelectionGeneration !== this._fileSelectionGeneration) {
+            return;
+        }
+        if (files.length === 0) {
+            this._restoreCurrentScene();
+            this.onProcessFilesErrorCallback(files);
             return;
         }
         this._sceneFileToLoad = null;
         this._filesToLoad = files;
         this._startingProcessingFilesCallback?.(files);
         this._processFiles(files);
+        if (!this._sceneFileToLoad) {
+            this._restoreCurrentScene();
+            this.onProcessFilesErrorCallback(files);
+        }
         this._processReload();
     }
 
@@ -383,9 +418,7 @@ export class FilesInput {
                                 this._engine.hideLoadingUI();
                             }
                             if (!this.dontInjectRenderLoop) {
-                                this._engine.runRenderLoop(() => {
-                                    this._renderFunction();
-                                });
+                                this._engine.runRenderLoop(this._renderLoop);
                             }
                         });
                     } else {

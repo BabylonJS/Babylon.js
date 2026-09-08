@@ -67,8 +67,9 @@ function _normalizeFiles(files?: USDVirtualFiles): Record<string, Uint8Array> | 
     return normalized;
 }
 
-function _stagedFileName(fileName: string | undefined, bytes: Uint8Array): string {
-    const cleanFileName = fileName?.replace(/\\/g, "/").replace(/^\.\/+/, "");
+function _stagedFileName(fileName: string | undefined, bytes: Uint8Array, preserveUrlCharacters: boolean): string {
+    const normalizedFileName = fileName?.replace(/\\/g, "/").replace(/^\.\/+/, "");
+    const cleanFileName = preserveUrlCharacters ? normalizedFileName : normalizedFileName?.split(/[?#]/, 1)[0];
     const pathParts = cleanFileName?.split("/").filter(Boolean);
     if (cleanFileName && !cleanFileName.startsWith("/") && pathParts?.length && !pathParts.includes("..") && _SupportedExtension.test(cleanFileName)) {
         return pathParts.join("/");
@@ -127,12 +128,12 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      */
     public constructor(options: Partial<USDFileLoaderOptions> = {}) {
         this._options = {
-            resolveByFileName: true,
-            glueUrl: USDFileLoader.DefaultConfiguration.glueUrl,
-            wasmUrl: USDFileLoader.DefaultConfiguration.wasmUrl,
-            dataUrl: USDFileLoader.DefaultConfiguration.dataUrl,
-            workerUrl: USDFileLoader.DefaultConfiguration.workerUrl,
             ...options,
+            resolveByFileName: options.resolveByFileName ?? true,
+            glueUrl: options.glueUrl ?? USDFileLoader.DefaultConfiguration.glueUrl,
+            wasmUrl: options.wasmUrl ?? USDFileLoader.DefaultConfiguration.wasmUrl,
+            dataUrl: options.dataUrl ?? USDFileLoader.DefaultConfiguration.dataUrl,
+            workerUrl: options.workerUrl ?? USDFileLoader.DefaultConfiguration.workerUrl,
         };
     }
 
@@ -235,7 +236,7 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             asset: {
                 bytes,
                 files,
-                fileName: _stagedFileName(this._options.rootFileName ?? fileName, bytes),
+                fileName: _stagedFileName(this._options.rootFileName ?? fileName, bytes, this._options.rootFileName !== undefined),
                 resolveByFileName: this._options.resolveByFileName ?? true,
                 glueUrl: this._options.glueUrl,
                 wasmUrl: this._options.wasmUrl,

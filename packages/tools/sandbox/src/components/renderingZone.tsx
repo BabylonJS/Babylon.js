@@ -96,6 +96,16 @@ export class RenderingZone extends React.Component<IRenderingZoneProps, IRenderi
     private _currentInputFiles: File[] = [];
     private _filesInput?: FilesInput;
     private _setSceneFileToLoad?: (sceneFile: File) => void;
+    private readonly _renderScene = () => {
+        const activeCamera = this._scene.activeCamera;
+        if (activeCamera instanceof ArcRotateCamera) {
+            // NOTE: this logic to adjust camera parameters based on radius is copied in viewer.ts.
+            // Please keep them in sync.
+            activeCamera.panningSensibility = 5000 / activeCamera.radius;
+            activeCamera.speed = activeCamera.radius * 0.2;
+        }
+        this._scene.render();
+    };
 
     public constructor(props: IRenderingZoneProps) {
         super(props);
@@ -148,7 +158,19 @@ export class RenderingZone extends React.Component<IRenderingZoneProps, IRenderi
             null,
             null,
             (files = []) => {
-                this._currentInputFiles = files;
+                const inputFiles = Array.from(files);
+                if (inputFiles.length === 0) {
+                    this._engine.hideLoadingUI();
+                    if (this._scene && !this._scene.isDisposed) {
+                        this._engine.runRenderLoop(this._renderScene);
+                    }
+                    if (this._restoreInspector) {
+                        this._restoreInspector = false;
+                        this.props.globalState.showDebugLayer();
+                    }
+                    return;
+                }
+                this._currentInputFiles = inputFiles;
                 this._setSceneFileToLoad = undefined;
                 this.setState({ usdRootCandidates: [] });
                 Tools.ClearLogCache();
@@ -169,6 +191,9 @@ export class RenderingZone extends React.Component<IRenderingZoneProps, IRenderi
             true
         );
         this._filesInput = filesInput;
+        filesInput.onProcessFilesErrorCallback = () => {
+            this._cancelUsdRootSelection();
+        };
 
         filesInput.onProcessFileCallback = (file, name, extension, setSceneFileToLoad) => {
             this._setSceneFileToLoad = setSceneFileToLoad;
@@ -251,7 +276,12 @@ export class RenderingZone extends React.Component<IRenderingZoneProps, IRenderi
 
     private _requestFilesInputReload(): void {
         const usdRootCandidates = GetUsdRootCandidates(this._currentInputFiles);
+        if (usdRootCandidates.length > 0 && !SceneLoader.IsPluginForExtensionAvailable(".usd")) {
+            this._cancelUsdRootSelection();
+            return;
+        }
         if (usdRootCandidates.length > 1) {
+            this._restoreCurrentSceneRendering();
             this.setState({ usdRootCandidates });
             return;
         }
@@ -270,11 +300,19 @@ export class RenderingZone extends React.Component<IRenderingZoneProps, IRenderi
         this._filesInput?.reload();
     }
 
+    private _restoreCurrentSceneRendering(): void {
+        this._engine.hideLoadingUI();
+        if (this._scene && !this._scene.isDisposed) {
+            this._engine.runRenderLoop(this._renderScene);
+        }
+    }
+
     private _cancelUsdRootSelection(): void {
         this._currentInputFiles = [];
         this._setSceneFileToLoad = undefined;
-        this._filesInput?.clearFileSelection(false);
+        (this._filesInput as (FilesInput & { clearFileSelection?: (cancelActiveLoad?: boolean) => void }) | undefined)?.clearFileSelection?.(false);
         this.setState({ usdRootCandidates: [] });
+        this._restoreCurrentSceneRendering();
         if (this._restoreInspector) {
             this._restoreInspector = false;
             this.props.globalState.showDebugLayer();
@@ -435,19 +473,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps, IRenderi
         }
 
         this._scene.executeWhenReady(() => {
-            this._engine.runRenderLoop(() => {
-                const activeCamera = this._scene.activeCamera;
-                if (activeCamera instanceof ArcRotateCamera) {
-                    // NOTE: this logic to adjust camera parameters based on radius is copied in viewer.ts.
-                    // Please keep them in sync.
-                    // Adapt the camera sensibility based on the distance to the object
-                    activeCamera.panningSensibility = 5000 / activeCamera.radius;
-                    // Update the camera speed based on the distance from the target.
-                    // TODO: This makes mouse wheel zooming behave well, but makes mouse based rotation a bit worse.
-                    activeCamera.speed = activeCamera.radius * 0.2;
-                }
-                this._scene.render();
-            });
+            this._engine.runRenderLoop(this._renderScene);
         });
 
         delete this._currentPluginName;
