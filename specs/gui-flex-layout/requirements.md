@@ -29,6 +29,8 @@ The panel has a declared width and height, as other GUI containers do. It arrang
 
 The child's declared width (row) or height (column) supplies the flex basis. Cross-axis size comes from its other declared dimension. `alignItems = "stretch"` explicitly fills the line's cross-axis extent. The panel uses existing child order.
 
+Shrinking freezes items that would become negative at zero, then redistributes the remaining deficit among the unfrozen items. As in [CSS flexible-length resolution](https://www.w3.org/TR/css-flexbox-1/#resolve-flexible-lengths), flex factors totaling less than one request only that fraction of the initial free space. For example, two 100px children with `flexShrink = 0.2` in a 100px row each become 80px; their overflow is intentional.
+
 This is a canvas GUI layout container, not a complete CSS formatting engine. It does not add CSS intrinsic/min-content sizing, baseline alignment, CSS margins, `order`, `alignSelf`, or a separate `flexBasis` property. Existing GUI padding semantics still apply. Give flex children explicit dimensions; avoid child auto-size modes such as `resizeToFit` or `autoStretchWidth` when the panel controls that dimension.
 
 FlexPanel controls child positions and final dimensions during layout. It preserves child width, height, left, top, and alignment properties. Removing a child restores its normal declared layout. The panel's `adaptWidthToChildren` / `adaptHeightToChildren` modes should remain disabled; panel size defines the available space.

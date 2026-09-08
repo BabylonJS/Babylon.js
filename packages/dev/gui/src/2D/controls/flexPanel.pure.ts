@@ -26,7 +26,7 @@ export type FlexAlignment = "flex-start" | "flex-end" | "center" | "stretch";
  */
 export type FlexContentAlignment = FlexJustification | "stretch";
 
-type FlexItem = { control: Control; basis: number; cross: number; size: number };
+type FlexItem = { control: Control; basis: number; cross: number; size: number; frozen: boolean };
 type FlexLine = { start: number; end: number; basis: number; cross: number };
 
 /**
@@ -140,6 +140,19 @@ export class FlexPanel extends Container {
         return "FlexPanel";
     }
 
+    /**
+     * Removes a control and releases its cached layout data.
+     * @param control defines the control to remove
+     * @returns the current panel
+     */
+    public override removeControl(control: Control): FlexPanel {
+        this._boxes.delete(control);
+        this._items.length = 0;
+        this._lines.length = 0;
+        super.removeControl(control);
+        return this;
+    }
+
     /** @internal */
     public override _getLayoutMeasureForChild(child: Control): Measure | null {
         return this._boxes.get(child) ?? null;
@@ -176,6 +189,42 @@ export class FlexPanel extends Container {
         }
     }
 
+    private _resolveFlexibleLengths(line: FlexLine, main: number): void {
+        const free = main - line.basis;
+        let remaining = free;
+        let frozeItem: boolean;
+        do {
+            let weight = 0;
+            let factorSum = 0;
+            for (let i = line.start; i < line.end; i++) {
+                const entry = this._items[i];
+                if (entry.frozen) {
+                    continue;
+                }
+                const factor = free >= 0 ? entry.control.flexGrow : entry.control.flexShrink;
+                weight += free >= 0 ? factor : factor * entry.basis;
+                factorSum += factor;
+            }
+            // Fractional factors limit distribution using the initial free space, even after freezing.
+            const distributable = free >= 0 ? Math.min(remaining, free * factorSum) : Math.max(remaining, free * factorSum);
+            frozeItem = false;
+            for (let i = line.start; i < line.end; i++) {
+                const entry = this._items[i];
+                if (entry.frozen) {
+                    continue;
+                }
+                const share = free >= 0 ? entry.control.flexGrow : entry.control.flexShrink * entry.basis;
+                const size = entry.basis + (weight ? distributable * (share / weight) : 0);
+                entry.size = Math.max(0, size);
+                if (size < 0) {
+                    entry.frozen = true;
+                    remaining += entry.basis;
+                    frozeItem = true;
+                }
+            }
+        } while (frozeItem);
+    }
+
     protected override _beforeChildLayout(): void {
         const row = this._flexDirection === "row" || this._flexDirection === "row-reverse";
         const reverse = this._flexDirection === "row-reverse" || this._flexDirection === "column-reverse";
@@ -208,11 +257,12 @@ export class FlexPanel extends Container {
             line.end++;
             const entry = this._items[count];
             if (!entry) {
-                this._items[count] = { control: child, basis, cross: crossSize, size: basis };
+                this._items[count] = { control: child, basis, cross: crossSize, size: basis, frozen: false };
             } else {
                 entry.control = child;
                 entry.basis = entry.size = basis;
                 entry.cross = crossSize;
+                entry.frozen = false;
             }
             count++;
         }
@@ -231,22 +281,10 @@ export class FlexPanel extends Container {
         let crossPosition = this._flexWrap === "nowrap" ? 0 : this._offset(this._alignContent, crossFree, lineSpacing);
         for (const current of this._lines) {
             current.cross += stretch;
-            const free = main - current.basis;
-            let weight = 0;
-            let factorSum = 0;
-            for (let i = current.start; i < current.end; i++) {
-                const entry = this._items[i];
-                const factor = free >= 0 ? entry.control.flexGrow : entry.control.flexShrink;
-                weight += free >= 0 ? factor : factor * entry.basis;
-                factorSum += factor;
-            }
-            const distributable = free * Math.min(1, factorSum);
+            this._resolveFlexibleLengths(current, main);
             let used = Math.max(0, current.end - current.start - 1) * gap;
             for (let i = current.start; i < current.end; i++) {
-                const entry = this._items[i];
-                const share = free >= 0 ? entry.control.flexGrow : entry.control.flexShrink * entry.basis;
-                entry.size = Math.max(0, entry.basis + (weight ? (distributable * share) / weight : 0));
-                used += entry.size;
+                used += this._items[i].size;
             }
             const remaining = main - used;
             const spacing = this._spacing(this._justifyContent, remaining, current.end - current.start);

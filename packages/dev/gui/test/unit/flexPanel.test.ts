@@ -77,6 +77,63 @@ describe("FlexPanel", () => {
         expect(a._currentMeasure.width).toBeCloseTo(50);
         expect(b._currentMeasure.width).toBeCloseTo(100);
     });
+    it.each(["row", "column"] as const)("redistributes shrink after an item reaches zero in a %s", (direction) => {
+        const { panel, layout } = setup(50, 50);
+        panel.flexDirection = direction;
+        const a = item("10px", "10px");
+        const b = item("100px", "100px");
+        a.flexShrink = 10;
+        panel.addControl(a).addControl(b);
+        layout();
+        const dimension = direction === "row" ? "width" : "height";
+        expect(a._currentMeasure[dimension]).toBe(0);
+        expect(b._currentMeasure[dimension]).toBe(50);
+        layout(220, 220);
+        expect(a._currentMeasure[dimension]).toBe(10);
+        expect(b._currentMeasure[dimension]).toBe(100);
+    });
+    it("redistributes across successive zero-size freezes and preserves fixed items and gaps", () => {
+        const { panel, layout } = setup(80);
+        panel.gap = "10px";
+        const fixed = item("20px");
+        fixed.flexShrink = 0;
+        const a = item("10px");
+        a.flexShrink = 100;
+        const b = item("20px");
+        b.flexShrink = 10;
+        const c = item("100px");
+        panel.addControl(fixed).addControl(a).addControl(b).addControl(c);
+        layout();
+        expect([fixed, a, b, c].map((child) => child._currentMeasure.width)).toEqual([20, 0, 0, 30]);
+        expect(c._currentMeasure.left).toBe(50);
+    });
+    it("allows partial shrink when the remaining factors total less than one", () => {
+        const { panel, layout } = setup(100);
+        const a = item();
+        const b = item();
+        a.flexShrink = b.flexShrink = 0.2;
+        panel.addControl(a).addControl(b);
+        layout();
+        expect(a._currentMeasure.width).toBe(80);
+        expect(b._currentMeasure.width).toBe(80);
+
+        a.width = "10px";
+        a.flexShrink = 10;
+        layout(50);
+        expect(a._currentMeasure.width).toBe(0);
+        expect(b._currentMeasure.width).toBe(88);
+    });
+    it("finishes shrinking when only gaps can overflow", () => {
+        const { panel, layout } = setup(5);
+        panel.gap = "10px";
+        const a = item();
+        const b = item();
+        panel.addControl(a).addControl(b);
+        layout();
+        expect(a._currentMeasure.width).toBe(0);
+        expect(b._currentMeasure.width).toBe(0);
+        expect(b._currentMeasure.left).toBe(10);
+    });
     it("wraps at the available width, with gaps and hidden children excluded", () => {
         const { panel, layout } = setup(220, 100);
         panel.flexWrap = "wrap";
@@ -118,9 +175,25 @@ describe("FlexPanel", () => {
         layout();
         expect(b._currentMeasure.left).toBe(150);
         panel.removeControl(b);
+        expect(panel._getLayoutMeasureForChild(b)).toBeNull();
         root.addControl(b);
         layout();
         expect(b._currentMeasure.left).toBe(100);
+    });
+    it("releases allocated boxes when children are cleared or disposed", () => {
+        const { panel, layout } = setup();
+        const a = item();
+        const b = item();
+        panel.addControl(a).addControl(b);
+        layout();
+        a.dispose();
+        expect(panel._getLayoutMeasureForChild(a)).toBeNull();
+        panel.clearControls();
+        expect(panel._getLayoutMeasureForChild(b)).toBeNull();
+        b.width = "50px";
+        panel.addControl(b);
+        layout();
+        expect(b._currentMeasure.width).toBe(50);
     });
     it("lays out nested panels using allocated space", () => {
         const { panel, layout } = setup(300, 100);
