@@ -2,7 +2,6 @@ import { type Scene } from "core/scene";
 import { Engine } from "core/Engines/engine";
 
 import { createScene as createSceneTs } from "./createScene";
-import { createScene as createSceneJs } from "./createSceneJS.js";
 
 /**
  * Main entry point for the default scene for the devhost
@@ -19,13 +18,12 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     const useTsParam = searchParams.get("usets");
     const useTs = useTsParam !== "false"; // Default to true if not specified
 
-    // Setup the engine and create the scene
     const engine = new Engine(canvas, true);
-
     let scene: Scene | undefined = undefined;
     if (useTs) {
         scene = await createSceneTs(engine, canvas);
     } else {
+        const { createScene: createSceneJs } = await import("./createSceneJS.js");
         scene = await createSceneJs(engine, canvas);
     }
 

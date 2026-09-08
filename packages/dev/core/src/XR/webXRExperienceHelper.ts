@@ -6,6 +6,7 @@ import { WebXRSessionManager } from "./webXRSessionManager";
 import { WebXRCamera } from "./webXRCamera";
 import { type WebXRRenderTarget, WebXRState } from "./webXRTypes";
 import { WebXRFeatureName, WebXRFeaturesManager } from "./webXRFeaturesManager";
+import { IsWebGPUXREngineCompatible, WebGPUXREngineNotCompatibleErrorMessage, WebGPUXRNotSupportedErrorMessage } from "./webXRGraphicsBinding";
 import { Logger } from "../Misc/logger";
 import { UniversalCamera } from "../Cameras/universalCamera.pure";
 import { Quaternion, Vector3 } from "../Maths/math.vector.pure";
@@ -75,6 +76,11 @@ export class WebXRExperienceHelper implements IDisposable {
         this.sessionManager = new WebXRSessionManager(_scene);
         this.camera = new WebXRCamera("webxr", _scene, this.sessionManager);
         this.featuresManager = new WebXRFeaturesManager(this.sessionManager);
+        this.sessionManager.onXRSessionInit.add(() => {
+            if (this._scene.getEngine().isWebGPU && !this.featuresManager.getEnabledFeature(WebXRFeatureName.LAYERS)?.attached) {
+                throw new Error("WebGPU XR could not attach the required WebXR Layers feature.");
+            }
+        });
 
         _scene.onDisposeObservable.addOnce(() => {
             this.dispose();
@@ -131,23 +137,90 @@ export class WebXRExperienceHelper implements IDisposable {
     public async enterXRAsync(
         sessionMode: XRSessionMode,
         referenceSpaceType: XRReferenceSpaceType,
-        renderTarget: WebXRRenderTarget = this.sessionManager.getWebXRRenderTarget(),
+        renderTarget?: WebXRRenderTarget,
         sessionCreationOptions: XRSessionInit = {}
     ): Promise<WebXRSessionManager> {
         if (!this._supported) {
             // eslint-disable-next-line no-throw-literal
             throw "WebXR not supported in this browser or environment";
         }
+        if (this._scene.getEngine().isWebGPU) {
+            if (!IsWebGPUXREngineCompatible(this._scene.getEngine())) {
+                throw new Error(WebGPUXREngineNotCompatibleErrorMessage);
+            }
+            if (!WebXRSessionManager.IsWebGPUXRSupported) {
+                throw new Error(WebGPUXRNotSupportedErrorMessage);
+            }
+            if (!this.featuresManager.getEnabledFeature(WebXRFeatureName.LAYERS)) {
+                throw new Error("WebGPU XR requires the WebXR Layers feature. Import and enable WebXRLayers before calling enterXRAsync.");
+            }
+            sessionCreationOptions = {
+                ...sessionCreationOptions,
+                requiredFeatures: sessionCreationOptions.requiredFeatures ? [...sessionCreationOptions.requiredFeatures] : undefined,
+                optionalFeatures: sessionCreationOptions.optionalFeatures ? [...sessionCreationOptions.optionalFeatures] : undefined,
+            };
+        }
+        renderTarget ??= this.sessionManager.getWebXRRenderTarget();
         this._setState(WebXRState.ENTERING_XR);
         if (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") {
             sessionCreationOptions.optionalFeatures = sessionCreationOptions.optionalFeatures || [];
             sessionCreationOptions.optionalFeatures.push(referenceSpaceType);
         }
         sessionCreationOptions = await this.featuresManager._extendXRSessionInitObject(sessionCreationOptions);
+        if (this._scene.getEngine().isWebGPU) {
+            const requiredFeatures = sessionCreationOptions.requiredFeatures ? [...sessionCreationOptions.requiredFeatures] : [];
+            if (!requiredFeatures.includes("layers")) {
+                requiredFeatures.push("layers");
+            }
+            sessionCreationOptions = {
+                ...sessionCreationOptions,
+                requiredFeatures,
+                optionalFeatures: sessionCreationOptions.optionalFeatures?.filter((feature) => feature !== "layers"),
+            };
+        }
         // we currently recommend "unbounded" space in AR (#7959)
         if (sessionMode === "immersive-ar" && referenceSpaceType !== "unbounded") {
             Logger.Warn("We recommend using 'unbounded' reference space type when using 'immersive-ar' session mode");
         }
+        this._originalSceneAutoClear = this._scene.autoClear;
+        this._nonVRCamera = this._scene.activeCamera;
+        this._attachedToElement = !!this._nonVRCamera?.inputs?.attachedToElement;
+        let sceneStateChanged = false;
+        const sessionEndedObserver = this.sessionManager.onXRSessionEnded.add(
+            () => {
+                // when using the back button and not the exit button (default on mobile), the session is ending but the EXITING state was not set
+                if (this.state !== WebXRState.EXITING_XR) {
+                    this._setState(WebXRState.EXITING_XR);
+                }
+                if (sceneStateChanged) {
+                    // Reset camera rigs output render target to ensure sessions render target is not drawn after it ends
+                    for (const c of this.camera.rigCameras) {
+                        c.outputRenderTarget = null;
+                    }
+
+                    // Restore scene settings
+                    this._scene.autoClear = this._originalSceneAutoClear;
+                    this._scene.activeCamera = this._nonVRCamera;
+                    if (this._attachedToElement && this._nonVRCamera) {
+                        this._nonVRCamera.attachControl(!!this._nonVRCamera.inputs.noPreventDefault);
+                    }
+                    if (sessionMode !== "immersive-ar" && this.camera.compensateOnFirstFrame) {
+                        if ((<any>this._nonVRCamera).setPosition) {
+                            (<any>this._nonVRCamera).setPosition(this.camera.position);
+                        } else {
+                            this._nonVRCamera!.position.copyFrom(this.camera.position);
+                        }
+                    }
+                }
+
+                this._setState(WebXRState.NOT_IN_XR);
+            },
+            undefined,
+            // Restore the scene before feature observers in case one of them throws during teardown.
+            true,
+            undefined,
+            true
+        );
         // make sure that the session mode is supported
         try {
             await this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
@@ -159,16 +232,8 @@ export class WebXRExperienceHelper implements IDisposable {
                 depthNear: this.camera.minZ,
             };
 
-            // The layers feature will have already initialized the xr session's layers on session init.
-            // A WebGPU-compatible XR session is layers-only (per the WebXR/WebGPU binding spec): the
-            // baseLayer/XRWebGLLayer path cannot be used. The WebGPU XRProjectionLayer is wired up in a
-            // later phase, so a WebGPU XR session currently enters with no layer and renders nothing yet.
-            // Because no layer is attached, the session receives no requestAnimationFrame callbacks, so
-            // onXRFrameObservable never fires and WebXRState stays at ENTERING_XR (it does NOT reach
-            // IN_XR, which is gated on the first frame below) until the later-phase projection layer
-            // produces that first frame. This is the expected Phase 1 end-state, not a regression, and
-            // has been confirmed on Quest hardware as well as at the raw-browser level (a no-layer WebXR
-            // session gets zero rAF callbacks). The session still ends cleanly via its native "end" path.
+            // The layers feature will have already initialized the XR session's layers on session init.
+            // WebGPU-XR is layers-only, while WebGL can continue to use the legacy base-layer path.
             if (!this._scene.getEngine().isWebGPU && !this.featuresManager.getEnabledFeature(WebXRFeatureName.LAYERS)) {
                 const baseLayer = await renderTarget.initializeXRLayerAsync(this.sessionManager.session);
                 xrRenderState.baseLayer = baseLayer;
@@ -177,10 +242,8 @@ export class WebXRExperienceHelper implements IDisposable {
             this.sessionManager.updateRenderState(xrRenderState);
             // run the render loop
             this.sessionManager.runXRRenderLoop();
-            // Cache pre xr scene settings
-            this._originalSceneAutoClear = this._scene.autoClear;
-            this._nonVRCamera = this._scene.activeCamera;
-            this._attachedToElement = !!this._nonVRCamera?.inputs?.attachedToElement;
+            // Switch the scene to the XR camera.
+            sceneStateChanged = true;
             this._nonVRCamera?.detachControl();
 
             this._scene.activeCamera = this.camera;
@@ -200,42 +263,21 @@ export class WebXRExperienceHelper implements IDisposable {
             // Vision Pro suspends the audio context when entering XR, so we resume it here if needed.
             AbstractEngine.audioEngine?._resumeAudioContextOnStateChange();
 
-            this.sessionManager.onXRSessionEnded.addOnce(() => {
-                // when using the back button and not the exit button (default on mobile), the session is ending but the EXITING state was not set
-                if (this.state !== WebXRState.EXITING_XR) {
-                    this._setState(WebXRState.EXITING_XR);
-                }
-                // Reset camera rigs output render target to ensure sessions render target is not drawn after it ends
-                for (const c of this.camera.rigCameras) {
-                    c.outputRenderTarget = null;
-                }
-
-                // Restore scene settings
-                this._scene.autoClear = this._originalSceneAutoClear;
-                this._scene.activeCamera = this._nonVRCamera;
-                if (this._attachedToElement && this._nonVRCamera) {
-                    this._nonVRCamera.attachControl(!!this._nonVRCamera.inputs.noPreventDefault);
-                }
-                if (sessionMode !== "immersive-ar" && this.camera.compensateOnFirstFrame) {
-                    if ((<any>this._nonVRCamera).setPosition) {
-                        (<any>this._nonVRCamera).setPosition(this.camera.position);
-                    } else {
-                        this._nonVRCamera!.position.copyFrom(this.camera.position);
-                    }
-                }
-
-                this._setState(WebXRState.NOT_IN_XR);
-            });
-
             // Wait until the first frame arrives before setting state to in xr
             this.sessionManager.onXRFrameObservable.addOnce(() => {
                 this._setState(WebXRState.IN_XR);
             });
             return this.sessionManager;
         } catch (e) {
+            if (this.sessionManager.inXRSession) {
+                await this.sessionManager.exitXRAsync();
+            }
+            if (!this.sessionManager.inXRSession) {
+                this.sessionManager.onXRSessionEnded.remove(sessionEndedObserver);
+            }
             Logger.Log(e);
             Logger.Log(e.message);
-            this._setState(WebXRState.NOT_IN_XR);
+            this._setState(this.sessionManager.inXRSession ? WebXRState.ENTERING_XR : WebXRState.NOT_IN_XR);
             throw e;
         }
     }
@@ -245,12 +287,16 @@ export class WebXRExperienceHelper implements IDisposable {
      * @returns promise that resolves after xr mode has exited
      */
     public async exitXRAsync() {
-        // only exit if state is IN_XR
-        if (this.state !== WebXRState.IN_XR) {
+        const isSessionStarting = this.state === WebXRState.ENTERING_XR && this.sessionManager.inXRSession;
+        if (this.state !== WebXRState.IN_XR && !isSessionStarting) {
             return;
         }
+        const previousState = this.state;
         this._setState(WebXRState.EXITING_XR);
-        return await this.sessionManager.exitXRAsync();
+        await this.sessionManager.exitXRAsync();
+        if (this.sessionManager.inXRSession) {
+            this._setState(previousState);
+        }
     }
 
     /**

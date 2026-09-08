@@ -2,6 +2,7 @@ import { type VertexBuffer } from "core/Buffers/buffer";
 import { type DataBuffer } from "core/Buffers/dataBuffer";
 import { Constants } from "core/Engines/constants";
 import { type Effect } from "core/Materials/effect";
+import { Logger } from "core/Misc/logger";
 import { type Observer } from "core/Misc/observable";
 import { type IParticleSystem } from "core/Particles/IParticleSystem";
 import { type Scene } from "core/scene";
@@ -97,6 +98,18 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
         this.particleSize = (ps.minSize + ps.maxSize) / 2;
 
         this.useTrueRenderingForDiffuseTexture = false;
+    }
+
+    /**
+     * GPUParticleSystem's "size" buffer layout (baseSize, scaleX, scaleY) is incompatible with this feature.
+     * @returns true if the per-particle size attribute is supported
+     */
+    protected override _supportsPerParticleSizeAttribute(): boolean {
+        if (this._particleSystem.getClassName() === "GPUParticleSystem") {
+            Logger.Warn("UsePerParticleSizeAttribute is not supported with GPUParticleSystem; falling back to uniform size.");
+            return false;
+        }
+        return true;
     }
 
     /**

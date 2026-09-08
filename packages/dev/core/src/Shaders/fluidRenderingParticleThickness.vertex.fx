@@ -3,7 +3,12 @@ attribute vec2 offset;
 
 uniform mat4 view;
 uniform mat4 projection;
-uniform vec2 size;
+
+#ifdef FLUIDRENDERING_PER_PARTICLE_SIZE
+    attribute vec2 size;
+#else
+    uniform vec2 size;
+#endif
 
 varying vec2 uv;
 

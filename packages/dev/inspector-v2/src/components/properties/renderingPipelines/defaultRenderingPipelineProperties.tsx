@@ -3,6 +3,7 @@ import { type FunctionComponent } from "react";
 import { type DefaultRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
 import { DepthOfFieldEffectBlurLevel } from "core/PostProcesses/depthOfFieldEffect";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
+import { MaxTintMagnitude, MinTemperatureKelvin } from "core/Maths/colorTemperature.functions";
 
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
@@ -199,6 +200,7 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
     const imageProcessing = pipeline.imageProcessing;
 
     const vignetteEnabled = useProperty(imageProcessing, "vignetteEnabled");
+    const whiteBalanceEnabled = useProperty(imageProcessing, "whiteBalanceEnabled");
 
     return (
         <>
@@ -234,6 +236,35 @@ export const DefaultRenderingPipelineImageProcessingProperties: FunctionComponen
                     min={0}
                     step={0.1}
                 />
+                <BoundProperty
+                    component={SwitchPropertyLine}
+                    label="White Balance Enabled"
+                    target={imageProcessing}
+                    propertyKey="whiteBalanceEnabled"
+                    propertyPath="imageProcessing.whiteBalanceEnabled"
+                />
+                <Collapse visible={!!whiteBalanceEnabled}>
+                    <BoundProperty
+                        component={SyncedSliderPropertyLine}
+                        label="Temperature"
+                        target={imageProcessing}
+                        propertyKey="temperature"
+                        propertyPath="imageProcessing.temperature"
+                        min={MinTemperatureKelvin}
+                        max={12000}
+                        step={10}
+                    />
+                    <BoundProperty
+                        component={SyncedSliderPropertyLine}
+                        label="Tint"
+                        target={imageProcessing}
+                        propertyKey="tint"
+                        propertyPath="imageProcessing.tint"
+                        min={-MaxTintMagnitude}
+                        max={MaxTintMagnitude}
+                        step={1}
+                    />
+                </Collapse>
                 <BoundProperty
                     component={SwitchPropertyLine}
                     label="Tone Mapping Enabled"

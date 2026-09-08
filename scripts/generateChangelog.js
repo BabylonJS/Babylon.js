@@ -33,7 +33,6 @@ const friendlyNames = {
     addons: "Addons",
     smartFilters: "Smart Filters",
     smartFilterBlocks: "Smart Filters",
-    lottiePlayer: "Lottie Player",
     // packages/tools (published to npm or deployed as public web apps)
     nodeEditor: "Node Editor",
     nodeGeometryEditor: "Node Geometry Editor",

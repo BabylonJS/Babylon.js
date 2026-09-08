@@ -15,7 +15,7 @@ import { PhysicsMotionType, PhysicsShapeType } from "../../Physics/v2/IPhysicsEn
 import { type IDisposable, type Scene } from "../../scene.pure";
 import { Observable } from "../../Misc/observable.pure";
 import { type Observer } from "../../Misc/observable";
-import { type InstancedMesh } from "../../Meshes/instancedMesh.pure";
+import { type InstancedMesh, RegisterInstancedMesh } from "../../Meshes/instancedMesh.pure";
 import { SceneLoader, type ISceneLoaderAsyncResult } from "../../Loading/sceneLoader";
 
 import { Color3 } from "../../Maths/math.color.pure";
@@ -1105,6 +1105,8 @@ export function RegisterWebXRHandTracking(): void {
         return;
     }
     _Registered = true;
+
+    RegisterInstancedMesh();
 
     //register the plugin
     WebXRFeaturesManager.AddWebXRFeature(

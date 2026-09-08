@@ -11,16 +11,16 @@ const ExpQsp = SearchParams.get("exp");
 // Sanitize the input to only allow certain strings
 let ImportPromise: Promise<any> | undefined;
 switch (ExpQsp) {
-    case "lottie": {
-        ImportPromise = import("./lottie/main");
-        break;
-    }
     case "bodytracking": {
         ImportPromise = import("./bodyTracking/main");
         break;
     }
     case "flowgraph": {
         ImportPromise = import("./flowgraph/main");
+        break;
+    }
+    case "webxrOverWebGPU": {
+        ImportPromise = import("./webxrOverWebGPU/main");
         break;
     }
     case "testscene":

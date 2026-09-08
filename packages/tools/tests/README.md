@@ -96,7 +96,6 @@ CDN_BASE_URL="http://localhost:1337" BSTACK_TEST_TYPE=webgl2 \
 | --------------------------------------------- | ------------------------------------------------------------ |
 | `playwright.config.ts`                        | Main config for local and legacy CDP-based BrowserStack runs |
 | `playwright.browserstack.config.ts`           | Config for BrowserStack CDP runs (all pipelines)             |
-| `playwright.devhost.config.ts`                | Config for dev host tests (lottie, etc.)                     |
 | `packages/tools/tests/playwright.utils.ts`    | Shared project definitions and browser setup                 |
 | `packages/tools/tests/browserstack.config.ts` | Legacy CDP endpoint configuration                            |
 

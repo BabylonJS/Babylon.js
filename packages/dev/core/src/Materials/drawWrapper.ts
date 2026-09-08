@@ -78,6 +78,9 @@ export class DrawWrapper {
      * @param resetContext If true, resets the draw context (default is true).
      */
     public setEffect(effect: Nullable<Effect>, defines?: Nullable<string | MaterialDefines>, resetContext = true): void {
+        if (!resetContext && this.effect !== effect) {
+            this.drawContext?._releaseUniformBufferSlots?.();
+        }
         this.effect = effect;
         if (defines !== undefined) {
             this.defines = defines;

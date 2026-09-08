@@ -117,16 +117,6 @@ export function getBabylonServerTestsList() {
     ];
 }
 
-export function getDevHostTestsList() {
-    return [
-        {
-            name: "lottie",
-            testMatch: "**/*lottie.test.ts",
-            use: getUseDefinition("Lottie"),
-        },
-    ];
-}
-
 function getUseDefinition(title: string, browser = browserType, noBrowserStack = false, forceChromeInsteadOfChromium = forceChrome) {
     const args = browser === "Chrome" ? ["--use-angle=default", "--js-flags=--expose-gc"] : browser === "Firefox" ? ["-wait-for-browser"] : [];
     args.push(...customFlags);

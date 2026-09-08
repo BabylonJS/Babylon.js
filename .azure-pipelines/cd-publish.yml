@@ -9,10 +9,10 @@
 # Variable groups:
 #   - BabylonJS-CI-Infrastructure
 #   - BabylonJS-Deployment (DEPLOY_TOKEN, DEPLOYMENT_SERVER)
+#   - NPM_Publish (NPM_TOKEN)
 #
 # Secret variables (configure in pipeline UI):
 #   - GitHubPAT
-#   - NPM_TOKEN
 # =============================================================================
 
 trigger:
@@ -29,6 +29,7 @@ pr: none
 variables:
     - group: BabylonJS-CI-Infrastructure
     - group: BabylonJS-Deployment
+    - group: NPM_Publish
 
 pool:
     vmImage: ubuntu-latest

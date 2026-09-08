@@ -5,13 +5,21 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { WebXRSessionManager } from "core/XR/webXRSessionManager";
-import { WebXRGraphicsBindingType, WebXRWebGLGraphicsBinding, WebXRWebGPUGraphicsBinding } from "core/XR/webXRGraphicsBinding";
+import {
+    WebGPUXREngineNotCompatibleErrorMessage,
+    WebGPUXRNotSupportedErrorMessage,
+    WebGPUXRSessionNotSupportedErrorMessage,
+    WebXRGraphicsBindingType,
+    WebXRWebGLGraphicsBinding,
+    WebXRWebGPUGraphicsBinding,
+} from "core/XR/webXRGraphicsBinding";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 
 describe("WebXRSessionManager", () => {
     let engine: NullEngine;
     let scene: Scene;
     let sessionManager: WebXRSessionManager;
+    let originalGPUSubImage: unknown;
 
     beforeEach(() => {
         engine = new NullEngine({
@@ -23,11 +31,16 @@ describe("WebXRSessionManager", () => {
         });
         scene = new Scene(engine);
         sessionManager = new WebXRSessionManager(scene);
+        originalGPUSubImage = (globalThis as any).XRGPUSubImage;
+        const subImage = vi.fn();
+        subImage.prototype.getViewDescriptor = vi.fn();
+        (globalThis as any).XRGPUSubImage = subImage;
     });
 
     afterEach(() => {
         scene.dispose();
         engine.dispose();
+        (globalThis as any).XRGPUSubImage = originalGPUSubImage;
     });
 
     describe("construction", () => {
@@ -323,13 +336,134 @@ describe("WebXRSessionManager", () => {
         });
     });
 
+    describe("IsWebGPUXRSupported", () => {
+        let originalGPUBinding: unknown;
+
+        beforeEach(() => {
+            originalGPUBinding = (globalThis as any).XRGPUBinding;
+        });
+
+        afterEach(() => {
+            (globalThis as any).XRGPUBinding = originalGPUBinding;
+        });
+
+        function installCompatibleBinding(): void {
+            const binding = vi.fn();
+            binding.prototype.createProjectionLayer = vi.fn();
+            binding.prototype.getViewSubImage = vi.fn();
+            binding.prototype.getPreferredColorFormat = vi.fn();
+            (globalThis as any).XRGPUBinding = binding;
+        }
+
+        it("returns false when XRGPUBinding is unavailable", () => {
+            delete (globalThis as any).XRGPUBinding;
+
+            expect(WebXRSessionManager.IsWebGPUXRSupported).toBe(false);
+        });
+
+        it("returns false when XRGPUBinding is not a constructor", () => {
+            (globalThis as any).XRGPUBinding = {};
+
+            expect(WebXRSessionManager.IsWebGPUXRSupported).toBe(false);
+        });
+
+        it("returns false when XRGPUSubImage is unavailable", () => {
+            installCompatibleBinding();
+            delete (globalThis as any).XRGPUSubImage;
+
+            expect(WebXRSessionManager.IsWebGPUXRSupported).toBe(false);
+        });
+
+        it("returns false when XRGPUSubImage.getViewDescriptor is unavailable", () => {
+            installCompatibleBinding();
+            delete (globalThis as any).XRGPUSubImage.prototype.getViewDescriptor;
+
+            expect(WebXRSessionManager.IsWebGPUXRSupported).toBe(false);
+        });
+
+        it.each(["createProjectionLayer", "getViewSubImage", "getPreferredColorFormat"])("returns false when XRGPUBinding.%s is unavailable", (methodName) => {
+            installCompatibleBinding();
+            delete (globalThis as any).XRGPUBinding.prototype[methodName];
+
+            expect(WebXRSessionManager.IsWebGPUXRSupported).toBe(false);
+        });
+
+        it("returns true when the required projection APIs are exposed", () => {
+            installCompatibleBinding();
+
+            expect(WebXRSessionManager.IsWebGPUXRSupported).toBe(true);
+        });
+    });
+
     describe("initializeSessionAsync webgpu feature descriptor", () => {
         const fakeSession = { addEventListener: vi.fn() } as unknown as XRSession;
         let requestSession: ReturnType<typeof vi.fn>;
+        let originalGPUBinding: unknown;
 
         beforeEach(() => {
+            originalGPUBinding = (globalThis as any).XRGPUBinding;
+            const binding = vi.fn();
+            binding.prototype.createProjectionLayer = vi.fn();
+            binding.prototype.getViewSubImage = vi.fn();
+            binding.prototype.getPreferredColorFormat = vi.fn();
+            (globalThis as any).XRGPUBinding = binding;
             requestSession = vi.fn().mockResolvedValue(fakeSession);
             (sessionManager as any)._xrNavigator = { xr: { requestSession } };
+            (engine as any)._options = { xrCompatible: true };
+        });
+
+        afterEach(() => {
+            (globalThis as any).XRGPUBinding = originalGPUBinding;
+        });
+
+        it("rejects an unsupported WebGPU runtime before requesting a session", async () => {
+            delete (globalThis as any).XRGPUBinding;
+            (engine as any)._isWebGPU = true;
+
+            await expect(sessionManager.initializeSessionAsync("immersive-vr", {})).rejects.toThrow(WebGPUXRNotSupportedErrorMessage);
+
+            expect(requestSession).not.toHaveBeenCalled();
+            expect(sessionManager.inXRSession).toBe(false);
+        });
+
+        it("rejects a WebGPU engine created without XR compatibility before requesting a session", async () => {
+            (engine as any)._isWebGPU = true;
+            (engine as any)._options.xrCompatible = false;
+
+            await expect(sessionManager.initializeSessionAsync("immersive-vr", {})).rejects.toThrow(WebGPUXREngineNotCompatibleErrorMessage);
+
+            expect(requestSession).not.toHaveBeenCalled();
+            expect(sessionManager.inXRSession).toBe(false);
+        });
+
+        it("wraps a WebGPU session NotSupportedError with actionable fallback guidance", async () => {
+            const notSupportedError = new DOMException("webgpu feature rejected", "NotSupportedError");
+            requestSession.mockRejectedValue(notSupportedError);
+            (engine as any)._isWebGPU = true;
+
+            await expect(sessionManager.initializeSessionAsync("immersive-vr", {})).rejects.toMatchObject({
+                message: WebGPUXRSessionNotSupportedErrorMessage,
+                cause: notSupportedError,
+            });
+        });
+
+        it("wraps a cross-realm-shaped WebGPU session NotSupportedError", async () => {
+            const notSupportedError = { name: "NotSupportedError", message: "webgpu feature rejected" };
+            requestSession.mockRejectedValue(notSupportedError);
+            (engine as any)._isWebGPU = true;
+
+            await expect(sessionManager.initializeSessionAsync("immersive-vr", {})).rejects.toMatchObject({
+                message: WebGPUXRSessionNotSupportedErrorMessage,
+                cause: notSupportedError,
+            });
+        });
+
+        it("preserves unrelated WebGPU session errors", async () => {
+            const securityError = new DOMException("user gesture required", "SecurityError");
+            requestSession.mockRejectedValue(securityError);
+            (engine as any)._isWebGPU = true;
+
+            await expect(sessionManager.initializeSessionAsync("immersive-vr", {})).rejects.toBe(securityError);
         });
 
         it("adds the 'webgpu' required feature for a WebGPU engine", async () => {
@@ -357,10 +491,45 @@ describe("WebXRSessionManager", () => {
 
             expect(requestSession.mock.calls[0][1].requiredFeatures).toEqual(["local-floor", "webgpu"]);
         });
+
+        it("ends and cleans up a negotiated session when graphics-binding initialization fails", async () => {
+            const bindingError = new Error("XRGPUBinding rejected the device");
+            class FailingXRGPUBinding {
+                constructor() {
+                    throw bindingError;
+                }
+
+                public createProjectionLayer() {}
+
+                public getViewSubImage() {}
+
+                public getPreferredColorFormat() {}
+            }
+            (globalThis as any).XRGPUBinding = FailingXRGPUBinding;
+            const end = vi.fn().mockResolvedValue(undefined);
+            const endedObserver = vi.fn(() => {
+                expect(end).toHaveBeenCalledTimes(1);
+            });
+            requestSession.mockResolvedValue({
+                addEventListener: vi.fn(),
+                end,
+            } as unknown as XRSession);
+            (engine as any)._isWebGPU = true;
+            (engine as any)._device = {};
+            sessionManager.onXRSessionEnded.add(endedObserver);
+            sessionManager.onXRSessionInit.add(() => (sessionManager as any)._getGraphicsBinding());
+
+            await expect(sessionManager.initializeSessionAsync("immersive-vr", {})).rejects.toBe(bindingError);
+
+            expect(end).toHaveBeenCalledTimes(1);
+            expect(endedObserver).toHaveBeenCalledTimes(1);
+            expect(sessionManager.inXRSession).toBe(false);
+            expect((sessionManager as any)._graphicsBinding).toBeNull();
+        });
     });
 
     describe("updateRenderState", () => {
-        it("does not throw when neither baseLayer nor layers is provided (WebGPU Phase 1 state)", () => {
+        it("does not throw when neither baseLayer nor layers is provided", () => {
             const updateRenderState = vi.fn();
             (sessionManager as any).session = { updateRenderState };
 
@@ -371,24 +540,37 @@ describe("WebXRSessionManager", () => {
 
     describe("native session end cleanup", () => {
         let endHandler: (() => void) | undefined;
+        let end: ReturnType<typeof vi.fn>;
         let requestSession: ReturnType<typeof vi.fn>;
+        let originalGPUBinding: unknown;
 
         beforeEach(() => {
+            originalGPUBinding = (globalThis as any).XRGPUBinding;
+            const binding = vi.fn();
+            binding.prototype.createProjectionLayer = vi.fn();
+            binding.prototype.getViewSubImage = vi.fn();
+            binding.prototype.getPreferredColorFormat = vi.fn();
+            (globalThis as any).XRGPUBinding = binding;
             endHandler = undefined;
+            end = vi.fn().mockResolvedValue(undefined);
             const fakeSession = {
                 addEventListener: (type: string, cb: () => void) => {
                     if (type === "end") {
                         endHandler = cb;
                     }
                 },
+                end,
             } as unknown as XRSession;
             requestSession = vi.fn().mockResolvedValue(fakeSession);
             (sessionManager as any)._xrNavigator = { xr: { requestSession } };
+            (engine as any)._options = { xrCompatible: true };
         });
 
-        // A WebGPU Phase 1 session stalls with no layer/no frame; ending it (e.g. the headset
-        // system menu) must still clean up regardless of whether a frame ever arrived.
-        it("cleans up when the session ends before any frame arrives (WebGPU no-frame path)", async () => {
+        afterEach(() => {
+            (globalThis as any).XRGPUBinding = originalGPUBinding;
+        });
+
+        it("cleans up when the session ends before any frame arrives", async () => {
             (engine as any)._isWebGPU = true;
             const endedObserver = vi.fn();
             sessionManager.onXRSessionEnded.add(endedObserver);
@@ -405,6 +587,38 @@ describe("WebXRSessionManager", () => {
 
             expect(sessionManager.inXRSession).toBe(false);
             expect(endedObserver).toHaveBeenCalledTimes(1);
+            expect((sessionManager as any)._graphicsBinding).toBeNull();
+        });
+
+        it("cleans up when ending the session rejects", async () => {
+            end.mockRejectedValue(new Error("end failed"));
+            const endedObserver = vi.fn();
+            sessionManager.onXRSessionEnded.add(endedObserver);
+
+            await sessionManager.initializeSessionAsync("immersive-vr", {});
+            (sessionManager as any)._graphicsBinding = {};
+
+            await expect(sessionManager.exitXRAsync()).resolves.toBeUndefined();
+
+            expect(end).toHaveBeenCalledTimes(1);
+            expect(sessionManager.inXRSession).toBe(false);
+            expect(endedObserver).toHaveBeenCalledTimes(1);
+            expect((sessionManager as any)._graphicsBinding).toBeNull();
+        });
+
+        it("restores engine state and releases bindings when an end observer throws", async () => {
+            const observerError = new Error("observer failed");
+            const restoreDefaultFramebuffer = vi.spyOn(engine, "restoreDefaultFramebuffer");
+            sessionManager.onXRSessionEnded.add(() => {
+                throw observerError;
+            });
+
+            await sessionManager.initializeSessionAsync("immersive-vr", {});
+            (sessionManager as any)._graphicsBinding = {};
+
+            expect(() => endHandler!()).toThrow(observerError);
+            expect(restoreDefaultFramebuffer).toHaveBeenCalledTimes(1);
+            expect(sessionManager.inXRSession).toBe(false);
             expect((sessionManager as any)._graphicsBinding).toBeNull();
         });
     });

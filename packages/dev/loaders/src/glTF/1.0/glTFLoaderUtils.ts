@@ -10,11 +10,11 @@
 } from "./glTFLoaderInterfaces";
 
 import { type Nullable } from "core/types";
-import { Vector2, Vector3, Vector4, Matrix } from "core/Maths/math.vector";
-import { Color4 } from "core/Maths/math.color";
-import { Effect } from "core/Materials/effect";
-import { ShaderMaterial } from "core/Materials/shaderMaterial";
-import { Texture } from "core/Materials/Textures/texture";
+import { Vector2, Vector3, Vector4, Matrix } from "core/Maths/math.vector.pure";
+import { Color4 } from "core/Maths/math.color.pure";
+import { Effect } from "core/Materials/effect.pure";
+import { ShaderMaterial } from "core/Materials/shaderMaterial.pure";
+import { Texture } from "core/Materials/Textures/texture.pure";
 import { type Node } from "core/node";
 import { type Scene } from "core/scene";
 

@@ -127,6 +127,28 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
             var fresnel:vec3f  = reflectance0 * specularColor * info.areaLightFresnel.x + ( vec3f( 1.0 ) - specularColor ) * info.areaLightFresnel.y * reflectance90;
             return specularColor * fresnel * info.areaLightSpecular;
         }
+
+        fn computeOpenPBRAreaSpecularLighting(info: preLightingInfo, lightColor: vec3f, reflectance0: vec3f, reflectance90: vec3f) -> vec3f {
+            let fresnel: vec3f = reflectance0 * info.areaLightFresnel.x + (reflectance90 - reflectance0) * info.areaLightFresnel.y;
+            return lightColor * fresnel * info.areaLightSpecular;
+        }
+
+        #if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR
+            fn computeOpenPBRAreaConductorSpecularLighting(info: preLightingInfo, lightColor: vec3f, reflectance0: vec3f, edgeTint: vec3f) -> vec3f {
+                let b: vec3f = getF82B(reflectance0, edgeTint);
+                let normalizedSchlickMoment: f32 = clamp(info.areaLightFresnel.y / max(info.areaLightFresnel.x, Epsilon), 0.0f, 1.0f);
+                let representativeOneMinusCosTheta: f32 = pow(normalizedSchlickMoment, 0.2f);
+                // Reconstruct the missing F82 dip moment from the two LTC moments by matching them
+                // to a representative angle. This retains the edge tint while preserving F90 = 1.
+                let f82DipMoment: f32 = info.areaLightFresnel.y * representativeOneMinusCosTheta * (1.0f - representativeOneMinusCosTheta);
+                let fresnel: vec3f = reflectance0 * info.areaLightFresnel.x + (vec3f(1.0f) - reflectance0) * info.areaLightFresnel.y - b * f82DipMoment;
+                return lightColor * clamp(fresnel, vec3f(0.0f), vec3f(info.areaLightFresnel.x)) * info.areaLightSpecular;
+            }
+        #endif
+
+        fn computeOpenPBRAreaFresnel(info: preLightingInfo, reflectance0: f32, reflectance90: f32) -> f32 {
+            return reflectance0 * info.areaLightFresnel.x + (reflectance90 - reflectance0) * info.areaLightFresnel.y;
+        }
     #endif
 #endif
 

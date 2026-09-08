@@ -60,6 +60,7 @@ export * from "../../Shaders/ShadersInclude/hdrFilteringFunctions";
 
 // Intersection & LTC helper functions (needed by external packages)
 export * from "../../ShadersWGSL/ShadersInclude/clusteredLightingFunctions";
+export * from "../../ShadersWGSL/ShadersInclude/clusteredLightingCompute";
 export * from "../../ShadersWGSL/ShadersInclude/intersectionFunctions";
 export * from "../../ShadersWGSL/ShadersInclude/ltcHelperFunctions";
 export * from "../../Shaders/ShadersInclude/clusteredLightingFunctions";
