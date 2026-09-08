@@ -11,7 +11,7 @@ const NAME = "KHR_materials_retroreflection";
 
 /**
  * Loads the draft KHR_materials_retroreflection extension.
- * [Specification](https://github.com/KhronosGroup/glTF/blob/bfb9d65397d19cf630a36a3d1f95cb86a2f671c4/extensions/2.0/Khronos/KHR_materials_retroreflection/README.md)
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/8d0b94e47630cbedb12ff365822658792da27d44/extensions/2.0/Khronos/KHR_materials_retroreflection/README.md)
  * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
