@@ -1,6 +1,8 @@
 import { Engine } from "core/Engines/engine";
 import { ThinEngine } from "core/Engines/thinEngine";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Color4 } from "core/Maths/math.color";
+import "core/Engines/Extensions/engine.multiRender";
 
 type RenderFrameCallback = (timestamp: number) => void;
 
@@ -83,7 +85,8 @@ describe("ThinEngine", () => {
         });
 
         it("gets tex image parameters for WebGL 1", () => {
-            test(
+            expect.hasAssertions();
+            checkFormats(
                 ["TEXTUREFORMAT_ALPHA", "TEXTUREFORMAT_LUMINANCE", "TEXTUREFORMAT_LUMINANCE_ALPHA", "TEXTUREFORMAT_RGB", "TEXTUREFORMAT_RGBA"],
                 `
 Babylon format                SRGB  Int. format     Format          Type
@@ -102,8 +105,9 @@ TEXTUREFORMAT_RGBA            true  SRGB8_ALPHA8    SRGB8_ALPHA8    UNSIGNED_BYT
         });
 
         it("gets tex image parameters for WebGL 2", () => {
+            expect.hasAssertions();
             thinEngine._webGLVersion = 2;
-            test(
+            checkFormats(
                 [
                     "TEXTUREFORMAT_ALPHA",
                     "TEXTUREFORMAT_LUMINANCE",
@@ -151,7 +155,7 @@ TEXTUREFORMAT_RGBA_INTEGER    true  RGBA8UI         RGBA_INTEGER    UNSIGNED_BYT
             );
         });
 
-        function test(formatStrs: string[], expected: string) {
+        function checkFormats(formatStrs: string[], expected: string) {
             const results = [
                 "Babylon format                SRGB  Int. format     Format          Type",
                 "==============                ====  ===========     ======          ====",
@@ -171,5 +175,53 @@ TEXTUREFORMAT_RGBA_INTEGER    true  RGBA8UI         RGBA_INTEGER    UNSIGNED_BYT
             }
             expect(results.join("\n")).toEqual(expected);
         }
+    });
+
+    describe("clearColorAttachment", () => {
+        it("uses an unsigned integer clear for R8UI attachments", () => {
+            const thinEngine = new ThinEngine(null);
+            const clearBufferuiv = vi.fn();
+            thinEngine._gl = {
+                COLOR: 0x1800,
+                clearBufferuiv,
+            } as unknown as WebGLRenderingContext;
+
+            thinEngine._clearColorAttachment(3, new Color4(7, 0, 0, 0), Engine.TEXTUREFORMAT_RED_INTEGER, Engine.TEXTURETYPE_UNSIGNED_BYTE);
+
+            expect(clearBufferuiv).toHaveBeenCalledOnce();
+            expect(clearBufferuiv.mock.calls[0][0]).toBe(0x1800);
+            expect(clearBufferuiv.mock.calls[0][1]).toBe(3);
+            expect(Array.from(clearBufferuiv.mock.calls[0][2] as Uint32Array)).toEqual([7, 0, 0, 0]);
+        });
+
+        it("clears mixed MRT attachments according to each texture format", () => {
+            const thinEngine = new ThinEngine(null);
+            const clearBufferfv = vi.fn();
+            const clearBufferuiv = vi.fn();
+            const drawBuffers = vi.fn();
+            thinEngine._gl = {
+                COLOR: 0x1800,
+                NONE: 0,
+                clearBufferfv,
+                clearBufferuiv,
+                drawBuffers,
+            } as unknown as WebGLRenderingContext;
+            thinEngine._currentRenderTarget = {
+                textures: [
+                    { format: Engine.TEXTUREFORMAT_RGBA, type: Engine.TEXTURETYPE_UNSIGNED_BYTE },
+                    { format: Engine.TEXTUREFORMAT_RED_INTEGER, type: Engine.TEXTURETYPE_UNSIGNED_BYTE },
+                ],
+            } as any;
+            vi.spyOn(thinEngine, "applyStates").mockImplementation(() => {});
+
+            thinEngine.clearAttachments(new Color4(1, 0, 0, 0), [1, 2], true, false);
+
+            expect(drawBuffers).toHaveBeenCalledWith([1, 2]);
+            expect(clearBufferfv).toHaveBeenCalledOnce();
+            expect(clearBufferfv.mock.calls[0][1]).toBe(0);
+            expect(clearBufferuiv).toHaveBeenCalledOnce();
+            expect(clearBufferuiv.mock.calls[0][1]).toBe(1);
+            expect(Array.from(clearBufferuiv.mock.calls[0][2] as Uint32Array)).toEqual([255, 0, 0, 0]);
+        });
     });
 });

@@ -10,8 +10,13 @@ import { type RenderTargetWrapper } from "../renderTargetWrapper";
 import { type WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import { type WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
 import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { type IColor4Like } from "../../Maths/math.like";
+import { Color4 } from "../../Maths/math.color.pure";
+import { IsIntegerTextureFormat } from "../../Materials/Textures/textureHelper.functions";
 
 let _Registered = false;
+const _UnsignedIntegerClearColor = /*#__PURE__*/ new Color4();
+const _SignedIntegerClearColor = /*#__PURE__*/ new Color4();
 /**
  * Register side effects for enginesExtensionsEngineMultiRender.
  * Safe to call multiple times; only the first call has an effect.
@@ -58,6 +63,47 @@ export function RegisterEnginesExtensionsEngineMultiRender(): void {
         const gl = this._gl;
 
         gl.drawBuffers(attachments);
+    };
+
+    ThinEngine.prototype.clearAttachments = function (
+        color: Nullable<IColor4Like>,
+        attachments: number[],
+        clearColor: boolean,
+        clearDepth: boolean,
+        clearStencil = false,
+        stencilClearValue = 0
+    ): void {
+        const textures = this._currentRenderTarget?.textures;
+        if (!clearColor || !color || !textures) {
+            this.bindAttachments(attachments);
+            this.clear(color, clearColor, clearDepth, clearStencil, stencilClearValue);
+            return;
+        }
+
+        this.bindAttachments(attachments);
+        this.applyStates();
+        for (let index = 0; index < attachments.length; index++) {
+            const texture = textures[index];
+            if (attachments[index] !== this._gl.NONE && texture) {
+                let clearValue = color;
+                if (IsIntegerTextureFormat(texture.format)) {
+                    const unsigned =
+                        texture.type === Constants.TEXTURETYPE_UNSIGNED_BYTE ||
+                        texture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT ||
+                        texture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER;
+                    clearValue = unsigned ? _UnsignedIntegerClearColor : _SignedIntegerClearColor;
+                    const scale = unsigned ? 255 : 1;
+                    clearValue.r = Math.round(color.r * scale);
+                    clearValue.g = Math.round(color.g * scale);
+                    clearValue.b = Math.round(color.b * scale);
+                    clearValue.a = Math.round(color.a * scale);
+                }
+                this._clearColorAttachment(index, clearValue, texture.format, texture.type);
+            }
+        }
+        if (clearDepth || clearStencil) {
+            this.clear(null, false, clearDepth, clearStencil, stencilClearValue);
+        }
     };
 
     ThinEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (

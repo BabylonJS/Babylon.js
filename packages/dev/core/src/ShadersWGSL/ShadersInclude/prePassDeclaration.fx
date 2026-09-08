@@ -16,4 +16,7 @@ varying vPosition : vec3f;
     uniform objectId: f32;
     #include<objectIdFunctions>
 #endif
+#ifdef PREPASS_MESH_BLEND_TAG
+    uniform meshBlendTag: i32;
+#endif
 #endif

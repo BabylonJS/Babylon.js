@@ -7,6 +7,8 @@ import {
     type FrameGraphRenderContext,
     type FrameGraphRenderPass,
     type ObjectRenderer,
+    type GeometryRenderingMeshBlendTagProvider,
+    type ThinEngine,
 } from "core/index";
 import { Color4 } from "core/Maths/math.color.pure";
 import { MaterialHelperGeometryRendering, GeometryRenderingTextureClearType, type GeometryRenderingObjectIdProvider } from "core/Materials/materialHelper.geometryrendering";
@@ -107,9 +109,44 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
      * Instances use the ID of their source mesh. Default IDs are only stable for the lifetime of the current scene and should not be persisted.
      * When using a RED texture, provide a custom ID if mesh unique IDs can exceed 0xFF.
      * The provider runs in the render hot path and may be called multiple times for the same mesh in a frame.
-     * @see https://playground.babylonjs.com/#00T6WJ#0
+     * @see https://playground.babylonjs.com/?version=preview#00T6WJ#0
      */
-    public objectIdProvider?: GeometryRenderingObjectIdProvider;
+    public get objectIdProvider(): GeometryRenderingObjectIdProvider | undefined {
+        return this._objectIdProvider;
+    }
+
+    public set objectIdProvider(value: GeometryRenderingObjectIdProvider | undefined) {
+        this._objectIdProvider = value;
+
+        const configuration = MaterialHelperGeometryRendering.GetConfiguration(this._renderer.renderPassId);
+        if (configuration) {
+            configuration.objectIdProvider = value;
+        }
+    }
+
+    private _objectIdProvider?: GeometryRenderingObjectIdProvider;
+    private _meshBlendTagProvider?: GeometryRenderingMeshBlendTagProvider;
+
+    /**
+     * Provides the packed mesh-blending tag written for each rendered mesh.
+     *
+     * Tags must be 0 or contain a group ID between 1 and 63 in their low six bits. Tag 0 disables mesh blending.
+     * By default, meshes use their `meshBlendingTag` property. Instances and thin instances use the source mesh tag.
+     * The provider runs in the render hot path and receives the source mesh for instanced draws.
+     * It should avoid allocations and return a consistent value for a mesh during a render.
+     */
+    public get meshBlendTagProvider(): GeometryRenderingMeshBlendTagProvider | undefined {
+        return this._meshBlendTagProvider;
+    }
+
+    public set meshBlendTagProvider(value: GeometryRenderingMeshBlendTagProvider | undefined) {
+        this._meshBlendTagProvider = value;
+
+        const configuration = MaterialHelperGeometryRendering.GetConfiguration(this._renderer.renderPassId);
+        if (configuration) {
+            configuration.meshBlendTagProvider = value;
+        }
+    }
 
     /**
      * The irradiance output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
@@ -138,7 +175,8 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
     public readonly geometryViewNormalTexture: FrameGraphTextureHandle;
 
     /**
-     * The normal (in world space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     * The normal (in world space, encoded from [-1, 1] to [0, 1]) output texture.
+     * Will point to a valid texture only if that texture has been requested in textureDescriptions!
      */
     public readonly geometryWorldNormalTexture: FrameGraphTextureHandle;
 
@@ -178,6 +216,13 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
      * Decode RED values with `round(value * 255.0)`.
      */
     public readonly geometryObjectIdTexture: FrameGraphTextureHandle;
+
+    /**
+     * The packed, single-sample R8UI mesh-blending tag output texture for WebGL2 and WebGPU.
+     *
+     * Opaque, alpha-tested, and caller-selected transparent meshes are supported.
+     */
+    public readonly geometryMeshBlendTagTexture: FrameGraphTextureHandle;
 
     /**
      * Gets or sets the name of the task.
@@ -243,6 +288,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         this.geometryVelocityTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryLinearVelocityTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryObjectIdTexture = this._frameGraph.textureManager.createDanglingHandle();
+        this.geometryMeshBlendTagTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     /**
@@ -350,6 +396,9 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
                 case Constants.PREPASS_OBJECT_ID_TEXTURE_TYPE:
                     this._frameGraph.textureManager.resolveDanglingHandle(this.geometryObjectIdTexture, handle);
                     break;
+                case Constants.PREPASS_MESH_BLEND_TAG_TEXTURE_TYPE:
+                    this._frameGraph.textureManager.resolveDanglingHandle(this.geometryMeshBlendTagTexture, handle);
+                    break;
             }
         }
 
@@ -388,6 +437,21 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             const isSupportedFormat = objectIdDescription.textureFormat === Constants.TEXTUREFORMAT_RGBA || objectIdDescription.textureFormat === Constants.TEXTUREFORMAT_RED;
             if (objectIdDescription.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE || !isSupportedFormat) {
                 throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object ID textures must use TEXTURETYPE_UNSIGNED_BYTE with TEXTUREFORMAT_RGBA or TEXTUREFORMAT_RED`);
+            }
+        }
+
+        const meshBlendTagIndex = this.textureDescriptions.findIndex((description) => description.type === Constants.PREPASS_MESH_BLEND_TAG_TEXTURE_TYPE);
+        if (meshBlendTagIndex !== -1) {
+            const description = this.textureDescriptions[meshBlendTagIndex];
+            const engine = this._engine as ThinEngine;
+            if (!engine.isWebGPU && engine.webGLVersion !== 2) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: mesh-blending tag textures require WebGL2 or WebGPU`);
+            }
+            if (this.samples !== 1) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: mesh-blending tag textures require samples to be 1`);
+            }
+            if (description.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE || description.textureFormat !== Constants.TEXTUREFORMAT_RED_INTEGER) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: mesh-blending tag textures must use TEXTURETYPE_UNSIGNED_BYTE with TEXTUREFORMAT_RED_INTEGER`);
             }
         }
 
@@ -535,22 +599,13 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         }
 
         if (this.targetTexture !== undefined) {
-            // We don't clear the target texture, but we need to add a layout for it in clearAttachmentsLayout to be able to use clearColorAttachments with the correct number of attachments in _prepareRendering.
-            // We also need to add a value in allAttachmentsLayout for the target texture.
-            let layout = clearAttachmentsLayout.get(GeometryRenderingTextureClearType.Zero);
-            if (layout === undefined) {
-                layout = [];
-                clearAttachmentsLayout.set(GeometryRenderingTextureClearType.Zero, layout);
-                for (let j = 0; j < this.textureDescriptions.length - 1; j++) {
-                    layout[j] = false;
-                }
+            const targetTextureCount = Array.isArray(this.targetTexture) ? this.targetTexture.length : 1;
+            for (let index = 0; index < targetTextureCount; index++) {
+                clearAttachmentsLayout.forEach((layout) => {
+                    layout.push(false);
+                });
+                allAttachmentsLayout.push(true);
             }
-
-            clearAttachmentsLayout.forEach((layout) => {
-                layout.push(false);
-            });
-
-            allAttachmentsLayout.push(true);
         }
 
         this._clearAttachmentsLayout = new Map();
@@ -573,6 +628,8 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             configuration.defines[geometryDescription.defineIndex] = i;
             if (description.type === Constants.PREPASS_OBJECT_ID_TEXTURE_TYPE) {
                 configuration.objectIdIsRedFormat = description.textureFormat === Constants.TEXTUREFORMAT_RED;
+            } else if (description.type === Constants.PREPASS_MESH_BLEND_TAG_TEXTURE_TYPE) {
+                configuration.meshBlendTagProvider = this.meshBlendTagProvider;
             }
         }
 

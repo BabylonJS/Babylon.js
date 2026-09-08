@@ -786,6 +786,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.metadata = source.metadata;
         }
         this._internalMetadata = source._internalMetadata;
+        this.meshBlendingTag = source.meshBlendingTag;
 
         // Tags
         if (Tags && Tags.HasTags(source)) {
@@ -4214,6 +4215,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (this.metadata) {
             serializationObject.metadata = this.metadata;
         }
+        if (this.meshBlendingTag !== 0) {
+            serializationObject.meshBlendingTag = this.meshBlendingTag;
+        }
 
         // Instances
         serializationObject.instances = [];
@@ -4531,6 +4535,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (parsedMesh.metadata !== undefined) {
             mesh.metadata = parsedMesh.metadata;
+        }
+        if (parsedMesh.meshBlendingTag !== undefined) {
+            mesh.meshBlendingTag = parsedMesh.meshBlendingTag;
         }
 
         if (parsedMesh.rotationQuaternion) {

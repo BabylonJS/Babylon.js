@@ -324,6 +324,7 @@ class _InternalAbstractMeshDataInfo {
     public _collisionRetryCount: number = 3;
     public _morphTargetManager: Nullable<MorphTargetManager> = null;
     public _renderingGroupId = 0;
+    public _meshBlendingTag = 0;
     public _bakedVertexAnimationManager: Nullable<IBakedVertexAnimationManager> = null;
     public _material: Nullable<Material> = null;
     public _materialForRenderPass: Array<Material | undefined>; // map a render pass id (index in the array) to a Material
@@ -723,6 +724,25 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
 
     public set renderingGroupId(value: number) {
         this._internalAbstractMeshDataInfo._renderingGroupId = value;
+    }
+
+    /**
+     * Gets or sets the packed mesh-blending tag for this mesh.
+     *
+     * Group ID occupies bits 0..5 and radius class occupies bits 6..7. Use PackMeshBlendingTag
+     * to construct the value. Group 0 disables blending; valid participating groups are 1..63.
+     * Meshes in the same nonzero group are treated as one logical surface and do not blend together.
+     * This visual-only property does not alter geometry, collision queries, depth, normals, or shadows.
+     */
+    public get meshBlendingTag(): number {
+        return this._internalAbstractMeshDataInfo._meshBlendingTag;
+    }
+
+    public set meshBlendingTag(value: number) {
+        if (!Number.isInteger(value) || value < 0 || value > 0xff || (value !== 0 && (value & 0x3f) === 0)) {
+            throw new RangeError("Mesh-blending tag must be 0 or contain a group ID between 1 and 63.");
+        }
+        this._internalAbstractMeshDataInfo._meshBlendingTag = value;
     }
 
     /** Gets or sets current material */

@@ -18,6 +18,21 @@ export function IsDepthTexture(format: number): boolean {
 }
 
 /**
+ * Checks if a given format stores integer color components.
+ * @param format Format to check
+ * @returns True if the format is an integer color format
+ * @internal
+ */
+export function IsIntegerTextureFormat(format: number): boolean {
+    return (
+        format === Constants.TEXTUREFORMAT_RED_INTEGER ||
+        format === Constants.TEXTUREFORMAT_RG_INTEGER ||
+        format === Constants.TEXTUREFORMAT_RGB_INTEGER ||
+        format === Constants.TEXTUREFORMAT_RGBA_INTEGER
+    );
+}
+
+/**
  * Gets the type of a depth texture for a given format
  * @param format Format of the texture
  * @returns The type of the depth texture

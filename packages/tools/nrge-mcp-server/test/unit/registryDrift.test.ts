@@ -147,4 +147,32 @@ describe("Node Render Graph MCP Server – Registry Drift", () => {
 
         expect(problems, `Registry drift detected:\n${problems.join("\n")}`).toEqual([]);
     });
+
+    it("keeps mesh-blending defaults and debug values explicit in MCP metadata", () => {
+        const metadata = BlockRegistry.NodeRenderGraphMeshBlendingPostProcessBlock;
+
+        expect(Object.keys(metadata.properties)).toEqual([
+            "quality",
+            "smallWorldRadius",
+            "smallMinimumProjectedRadius",
+            "mediumWorldRadius",
+            "mediumMinimumProjectedRadius",
+            "largeWorldRadius",
+            "largeMinimumProjectedRadius",
+            "extraLargeWorldRadius",
+            "extraLargeMinimumProjectedRadius",
+            "slopeFactor",
+            "noiseFactor",
+            "noiseFade",
+            "noiseOffset",
+            "noiseTileSize",
+            "debugMode",
+        ]);
+        expect(metadata.properties.quality).toContain("default: 1");
+        expect(metadata.properties.debugMode).toContain("2=CandidateDirectionDistance");
+        expect(metadata.properties.debugMode).toContain("3=SeamFade");
+        expect(metadata.properties.debugMode).toContain("4=RejectionReason");
+        expect(metadata.properties.debugMode).toContain("5=StageWork");
+        expect(metadata.properties.debugMode).toContain("default: 0");
+    });
 });

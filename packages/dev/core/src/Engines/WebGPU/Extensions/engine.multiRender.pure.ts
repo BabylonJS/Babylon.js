@@ -296,6 +296,11 @@ export function RegisterEnginesWebGPUExtensionsEngineMultiRender(): void {
         }
     };
 
+    WebGPUEngine.prototype.clearAttachments = function (color, attachments, clearColor, clearDepth, clearStencil = false, stencilClearValue = 0): void {
+        this.bindAttachments(attachments);
+        this.clear(color, clearColor, clearDepth, clearStencil, stencilClearValue);
+    };
+
     WebGPUEngine.prototype.buildTextureLayout = function (textureStatus: boolean[], backBufferLayout = false): number[] {
         const result = [];
 
