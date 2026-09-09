@@ -26,8 +26,8 @@ This browser extension is intended to aid in the development of web applications
     - Click "Load Unpacked"
     - Browse to packages/tools/smartFiltersDebugger/dist
 1. Update the web application you are debugging to set these globals:
-    - window.currentSmartFilter to the current SmartFilter instance
-    - window.thinEngine to the ThinEngine instance used when creating your SmartFilter
+    - window.currentSmartFilter to the current full or Lite SmartFilter instance
+    - window.thinEngine to the ThinEngine or GLEngineContext used when creating your SmartFilter
 1. Browse to the web application you want to debug, and click the Smart Filter Debugger button in the Extensions menu (consider pinning it to make it easier to get to)
 1. A popup will appear with the Editor in it
 1. You can modify the values of input blocks and see the results in real time in your web application
