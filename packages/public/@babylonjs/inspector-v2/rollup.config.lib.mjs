@@ -23,7 +23,6 @@ const devPackageMap = {
 };
 
 const commonConfig = {
-    input: "../../../dev/inspector-v2/src/index.ts",
     external: (id) => {
         // Check for @babylonjs packages (transformed by TypeScript) - these should be external
         if (/^@babylonjs\//.test(id)) {
@@ -49,10 +48,11 @@ const commonConfig = {
     },
 };
 
-const jsConfig = {
+const createJsConfig = (input, dir) => ({
     ...commonConfig,
+    input,
     output: {
-        dir: "lib",
+        dir,
         sourcemap: true,
         format: "es",
         exports: "named",
@@ -61,14 +61,14 @@ const jsConfig = {
     plugins: [
         rewriteDevImports(devPackageMap),
         alias({ entries: [{ find: "shared-ui-components", replacement: path.resolve("../../../dev/sharedUiComponents/src") }] }),
-        typescript({ tsconfig: "tsconfig.build.lib.json" }),
+        typescript({ tsconfig: "tsconfig.build.lib.json", compilerOptions: { outDir: dir } }),
         nodeResolve({ mainFields: ["browser", "module", "main"] }),
         commonjs(),
     ],
-    onwarn(warning, warn) {
-        // Treat all other warnings as errors.
+    onwarn(warning) {
+        // Treat all warnings as errors.
         throw new Error(warning.message);
     },
-};
+});
 
-export default [jsConfig];
+export default [createJsConfig("../../../dev/inspector-v2/src/index.ts", "lib"), createJsConfig("../../../dev/inspector-v2/src/lite/index.ts", "lib/lite")];

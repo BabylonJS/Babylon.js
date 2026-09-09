@@ -1,7 +1,6 @@
 import { type IDisposable, type IReadonlyObservable, type Nullable } from "core/index";
 import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISettingsService, SettingsServiceIdentity } from "shared-ui-components/modularTool/services/settingsService";
-import { type ISceneContext, SceneContextIdentity } from "./sceneContext";
 import { type ISettingsStore, type SettingDescriptor, SettingsStoreIdentity } from "shared-ui-components/modularTool/services/settingsStore";
 import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
@@ -35,11 +34,15 @@ const ShowPropertiesOnSelectionSettingDescriptor: SettingDescriptor<boolean> = {
     defaultValue: true,
 };
 
-export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], [IShellService, ISettingsStore, ISettingsService, ISceneContext]> = {
+/**
+ * Tracks the currently selected entity. This service is product agnostic: it starts with no selection,
+ * and each product decides which entity (if any) is selected by default.
+ */
+export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], [IShellService, ISettingsStore, ISettingsService]> = {
     friendlyName: "Selection Service",
     produces: [SelectionServiceIdentity],
-    consumes: [ShellServiceIdentity, SettingsStoreIdentity, SettingsServiceIdentity, SceneContextIdentity],
-    factory: (shellService, settingsStore, settingsService, sceneContext) => {
+    consumes: [ShellServiceIdentity, SettingsStoreIdentity, SettingsServiceIdentity],
+    factory: (shellService, settingsStore, settingsService) => {
         settingsService.addSectionContent({
             key: "Selection Service Settings",
             section: "UI",
@@ -87,9 +90,6 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
                 }
             }
         };
-
-        // Set the scene as the default selected entity.
-        setSelectedItem(sceneContext.currentScene);
 
         return {
             get selectedEntity() {
