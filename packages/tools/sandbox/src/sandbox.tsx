@@ -405,12 +405,13 @@ export class Sandbox extends React.Component<
      * @returns A formatted string of supported extensions like "gltf, glb, obj or babylon"
      */
     private _getSupportedExtensions(): string {
-        const fallbackExtensions = "babylon, babylonproj, gltf, glb, fbx, obj, ply, sog, splat, spz, stl, usd, usda, usdc or usdz";
+        const fallbackExtensions = "babylon, babylonproj, gltf, glb, fbx, obj, ply, sog, splat, spz or stl";
 
         try {
             const plugins = BABYLON.GetRegisteredSceneLoaderPluginMetadata();
             let extensions = plugins.flatMap((plugin) => plugin.extensions.map((ext) => ext.extension.replace(".", "").toLowerCase())).sort();
-            extensions = extensions.filter((ext) => ext !== "json"); // The splat loader registers .json, but that is covered by the sog format and json files are too generic
+            // Keep the legacy prompt stable; the footer advertises USD support explicitly.
+            extensions = extensions.filter((ext) => !["json", "usd", "usda", "usdc", "usdz"].includes(ext));
             extensions = [...new Set([...extensions, "babylonproj"])];
             extensions.sort();
 
