@@ -1,6 +1,6 @@
 import { type IDisposable } from "core/index";
 
-import { type ExplorerCommandProvider, type ExplorerNodeDescription, GetEntityId } from "../../../components/explorer/explorerModel";
+import { type ExplorerNodeDescription, GetEntityId } from "../../../components/explorer/explorerModel";
 import { type SceneExplorerCommandProvider, type SceneExplorerSection } from "../../../components/scene/sceneExplorer";
 import { type IService, type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 import { type ISceneContext, SceneContextIdentity } from "../../sceneContext";
@@ -8,7 +8,7 @@ import { type ISelectionService, SelectionServiceIdentity } from "../../selectio
 import { type IShellService, ShellServiceIdentity } from "shared-ui-components/modularTool/services/shellService";
 
 import { CreateExplorerPaneRegistration } from "../explorer/explorerPane";
-import { ObservableCollection } from "shared-ui-components/modularTool/misc/observableCollection";
+import { CreateExplorerService, type IExplorerService, ExplorerServiceIdentity } from "../explorer/explorerService";
 
 /**
  * The unique identity symbol for the scene explorer service.
@@ -17,6 +17,9 @@ export const SceneExplorerServiceIdentity = Symbol("SceneExplorer");
 
 /**
  * Allows new sections or commands to be added to the scene explorer pane.
+ *
+ * Entity and section commands are Full Inspector conveniences over the product-neutral item and group command APIs.
+ * They remain scene-specific so other Explorer products do not have to model their groups as scene sections.
  */
 export interface ISceneExplorerService extends IService<typeof SceneExplorerServiceIdentity> {
     /**
@@ -88,14 +91,12 @@ function CreateSectionNode(section: SceneExplorerSection<object>): ExplorerNodeD
  * Adapts the Babylon.js scene section/entity model onto the generic Explorer, and owns the "Scene Explorer"
  * pane that enables browsing the scene graph and executing commands on entities.
  */
-export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerService], [ISceneContext, IShellService, ISelectionService]> = {
+export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerService, IExplorerService], [ISceneContext, IShellService, ISelectionService]> = {
     friendlyName: "Scene Explorer",
-    produces: [SceneExplorerServiceIdentity],
+    produces: [SceneExplorerServiceIdentity, ExplorerServiceIdentity],
     consumes: [SceneContextIdentity, ShellServiceIdentity, SelectionServiceIdentity],
     factory: (sceneContext, shellService, selectionService) => {
-        const sectionsCollection = new ObservableCollection<SceneExplorerSection<object>>();
-        const entityCommandsCollection = new ObservableCollection<ExplorerCommandProvider<object>>();
-        const sectionCommandsCollection = new ObservableCollection<ExplorerCommandProvider<string, "contextMenu">>();
+        const explorerService = CreateExplorerService();
 
         const paneRegistration = CreateExplorerPaneRegistration(shellService, selectionService, {
             key: "Scene Explorer",
@@ -103,17 +104,32 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
             getRoot: () => sceneContext.currentScene,
             rootLabel: "Scene",
             onRootChanged: sceneContext.currentSceneObservable,
-            getNodes: () => [...sectionsCollection.items].sort((left, right) => (left.order ?? 0) - (right.order ?? 0)).map(CreateSectionNode),
-            onNodesChanged: sectionsCollection.observable,
-            itemCommandProviders: entityCommandsCollection,
-            groupCommandProviders: sectionCommandsCollection,
+            getNodes: () => [],
+            nodeProviders: explorerService.nodeProviders,
+            itemCommandProviders: explorerService.itemCommandProviders,
+            groupCommandProviders: explorerService.groupCommandProviders,
         });
 
+        // Preserve the Full Inspector's entity/section vocabulary while adapting its sections and commands
+        // onto the product-neutral service consumed by extensions that support Full and Lite.
         return {
-            addSection: (section) => sectionsCollection.add(section as unknown as SceneExplorerSection<object>),
-            addEntityCommand: (command) => entityCommandsCollection.add(command as unknown as ExplorerCommandProvider<object>),
-            addSectionCommand: (command) => sectionCommandsCollection.add(command as unknown as ExplorerCommandProvider<string, "contextMenu">),
-            dispose: () => paneRegistration.dispose(),
+            addSection: (section) => {
+                const untypedSection = section as unknown as SceneExplorerSection<object>;
+                return explorerService.addNodeProvider({
+                    order: section.order,
+                    predicate: (parent): parent is object => parent === sceneContext.currentScene,
+                    getNodes: () => [CreateSectionNode(untypedSection)],
+                });
+            },
+            addEntityCommand: explorerService.addItemCommand,
+            addSectionCommand: explorerService.addGroupCommand,
+            addNodeProvider: explorerService.addNodeProvider,
+            addItemCommand: explorerService.addItemCommand,
+            addGroupCommand: explorerService.addGroupCommand,
+            dispose: () => {
+                explorerService.dispose();
+                paneRegistration.dispose();
+            },
         };
     },
 };
