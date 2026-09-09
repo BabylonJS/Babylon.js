@@ -5,6 +5,7 @@ import { Logger } from "core/Misc/logger";
 import { MultiTexture, MultiBlendMode } from "../../../src/multiTexture/multiTexture";
 import { type Scene } from "core/scene";
 import { RegisterEnginesExtensionsEngineTexture2DArrayImageSource } from "core/Engines/Extensions/engine.texture2DArrayImageSource.pure";
+import { RegisterEnginesWebGPUExtensionsEngineTexture2DArrayImageSource } from "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource.pure";
 
 /** MultiTexture's internal (mocked) ProceduralTexture composite exposes call-recording props. */
 interface MockComposite {
@@ -225,6 +226,9 @@ vi.mock("core/Materials/Textures/Procedurals/proceduralTexture.pure", () => ({
 }));
 vi.mock("core/Engines/Extensions/engine.texture2DArrayImageSource.pure", () => ({
     RegisterEnginesExtensionsEngineTexture2DArrayImageSource: vi.fn(),
+}));
+vi.mock("core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource.pure", () => ({
+    RegisterEnginesWebGPUExtensionsEngineTexture2DArrayImageSource: vi.fn(),
 }));
 
 // ---------------------------------------------------------------------------
@@ -1866,6 +1870,30 @@ describe("MultiTexture lazy registration", () => {
         await loaded;
 
         expect(vi.mocked(RegisterEnginesExtensionsEngineTexture2DArrayImageSource)).toHaveBeenCalledTimes(1);
+        mt.dispose();
+    });
+
+    it("registers only the WebGL2 extension on a WebGPU scene (the WebGPU counterpart is the core barrel's job)", async () => {
+        // Dynamic import is intentional: resetModules reloads the addon module so its module-level
+        // `_Registered` guard is false again, letting the constructor's lazy registration be
+        // observed in isolation.
+        vi.resetModules();
+        vi.mocked(RegisterEnginesExtensionsEngineTexture2DArrayImageSource).mockClear();
+        vi.mocked(RegisterEnginesWebGPUExtensionsEngineTexture2DArrayImageSource).mockClear();
+
+        const { MultiTexture: ReloadedMultiTexture } = await import("../../../src/multiTexture/multiTexture");
+        const scene = makeScene({ isWebGPU: true, webglVersion: 1 });
+        let resolveLoad!: () => void;
+        const loaded = new Promise<void>((resolve) => (resolveLoad = resolve));
+        const mt = new ReloadedMultiTexture("mt", ["a.png"], scene, { width: 8, height: 8, onLoad: () => resolveLoad() }) as MockMultiTexture;
+        vi.spyOn(mt.onLoadObservable, "notifyObservers").mockImplementation(() => true);
+        await loaded;
+
+        // The addon only ever registers the WebGL2 (ThinEngine) extension lazily. On WebGPU the
+        // matching extension must come from the core engine bundle (WebGPU/Extensions barrel in
+        // full builds, or an explicit side-effect import in pure builds) - not from the addon.
+        expect(vi.mocked(RegisterEnginesExtensionsEngineTexture2DArrayImageSource)).toHaveBeenCalledTimes(1);
+        expect(vi.mocked(RegisterEnginesWebGPUExtensionsEngineTexture2DArrayImageSource)).not.toHaveBeenCalled();
         mt.dispose();
     });
 });
