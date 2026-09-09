@@ -2,7 +2,8 @@ import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { Vector3 } from "core/Maths";
-import { Mesh } from "core/Meshes";
+import { Ray } from "core/Culling/ray";
+import { Mesh, TransformNode } from "core/Meshes";
 import { PickingInfo } from "core/Collisions";
 import { PointerEventTypes, PointerInfo } from "core/Events";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
@@ -13,7 +14,14 @@ import "loaders/glTF/2.0/glTFLoaderAnimation";
 import "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data";
 import "loaders/glTF/2.0/Extensions/KHR_interactivity";
 import "loaders/glTF/2.0/Extensions/KHR_node_selectability";
+import "loaders/glTF/2.0/Extensions/KHR_node_hoverability";
 import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
+import { InteractivityHostResolver } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityHostResolver";
+import { GetEventReference } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityReferences";
+import { CreateKHRInteractivityGraphModel } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphModel";
+import { FlowGraphObjectReferenceBlock } from "loaders/glTF/2.0/Extensions/KHR_interactivity/flowGraphObjectReferenceBlock";
+import { FlowGraphEventReferenceBlock } from "loaders/glTF/2.0/Extensions/KHR_interactivity/flowGraphEventReferenceBlock";
+import { GetInteractivityNodeState, InitializeInteractivityNodeState, SetInteractivityNodeState } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityNodeState";
 import {
     IKHRInteractivity_Declaration,
     IKHRInteractivity_Event,
@@ -192,6 +200,232 @@ describe("Interactivity event nodes", () => {
         scene.onPointerObservable.notifyObservers(new PointerInfo(PointerEventTypes.POINTERPICK, {} as any, pickInfo));
 
         expect(log).not.toHaveBeenCalledWith({ value: 7 });
+    });
+
+    it.each([undefined, -1, 9])("event/onSelect does not fire with defaulted nodeIndex %s", async (nodeIndex) => {
+        const mesh = new Mesh("target", scene);
+        const gltf: any = { nodes: [{ _babylonTransformNode: mesh }] };
+        const graph: IKHRInteractivity_Graph = {
+            declarations: [
+                { op: "event/onSelect", extension: "KHR_node_selectability" },
+                { op: "flow/log", extension: "BABYLON" },
+            ],
+            types: [{ signature: "int" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: nodeIndex === undefined ? undefined : { nodeIndex: { value: [nodeIndex] } },
+                    flows: { out: { node: 1 } },
+                },
+                { declaration: 1, values: { message: { type: 0, value: [9] } } },
+            ],
+        };
+        const parser = new InteractivityGraphToFlowGraphParser(graph, gltf);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        await ParseFlowGraphAsync(parser.serializeToFlowGraph(), { coordinator, pathConverter: GetPathToObjectConverter(gltf) });
+        coordinator.start();
+
+        const pickInfo = new PickingInfo();
+        pickInfo.hit = true;
+        pickInfo.pickedMesh = mesh;
+        scene.onPointerObservable.notifyObservers(new PointerInfo(PointerEventTypes.POINTERPICK, { pointerId: 1 } as any, pickInfo));
+
+        expect(log).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        ["event/onSelect", "KHR_node_selectability", "selectedNode", "select"],
+        ["event/onHoverIn", "KHR_node_hoverability", "hoveredNode", "hoverIn"],
+        ["event/onHoverOut", "KHR_node_hoverability", "hoveredNode", "hoverOut"],
+    ] as const)("%s exposes node, controller, and event references before firing", async (operation, extension, nodeSocket, trigger) => {
+        const mesh = new Mesh("interactive", scene);
+        (mesh as any)._internalMetadata = { gltf: { pointers: ["/nodes/0"] } };
+        const gltf: any = { nodes: [{ _babylonTransformNode: mesh, _primitiveBabylonMeshes: [mesh] }] };
+        const isSelect = operation === "event/onSelect";
+        const outputValueSockets = isSelect
+            ? {
+                  selectedNode: { type: 1 },
+                  selectionRayOrigin: { type: 2 },
+                  selectionPoint: { type: 2 },
+                  controllerIndex: { type: 0 },
+                  event: { type: 1 },
+              }
+            : {
+                  hoveredNode: { type: 1 },
+                  controllerIndex: { type: 0 },
+                  event: { type: 1 },
+              };
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }, { signature: "ref" }, { signature: "float3" }],
+            declarations: [{ op: operation, extension, inputValueSockets: {}, outputValueSockets }, { op: "flow/sequence" }, { op: "flow/log", extension: "BABYLON" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { nodeIndex: { value: [0] } },
+                    flows: { out: { node: 1 } },
+                },
+                {
+                    declaration: 1,
+                    flows: {
+                        "000": { node: 2 },
+                        "001": { node: 3 },
+                        "002": { node: 4 },
+                    },
+                },
+                { declaration: 2, values: { message: { node: 0, socket: nodeSocket, type: 1 } } },
+                { declaration: 2, values: { message: { node: 0, socket: "controllerIndex", type: 0 } } },
+                { declaration: 2, values: { message: { node: 0, socket: "event", type: 1 } } },
+            ],
+        };
+        const model = CreateKHRInteractivityGraphModel(graph);
+        const parser = new InteractivityGraphToFlowGraphParser(graph, gltf, 60, 0, undefined, model.declarations);
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+        const runtimeGraph = await ParseFlowGraphAsync(parser.serializeToFlowGraph(), { coordinator, pathConverter: GetPathToObjectConverter(gltf) });
+        const context = runtimeGraph.getContext(0);
+        const eventStateBlock = runtimeGraph.getAllBlocks().find((block) => block.getClassName() === "FlowGraphEventReferenceBlock")!;
+        expect(eventStateBlock.getDataOutput("nodeReference")!.getValue(context)).toBe("");
+        expect(eventStateBlock.getDataOutput("controllerIndex")!.getValue(context)).toBe(-1);
+        expect(eventStateBlock.getDataOutput("selectionPoint")!.getValue(context).asArray().every(Number.isNaN)).toBe(true);
+        expect(eventStateBlock.getDataOutput("selectionRayOrigin")!.getValue(context).asArray().every(Number.isNaN)).toBe(true);
+        coordinator.start();
+
+        if (trigger === "select") {
+            const pickInfo = new PickingInfo();
+            pickInfo.hit = true;
+            pickInfo.pickedMesh = mesh;
+            scene.onPointerObservable.notifyObservers(new PointerInfo(PointerEventTypes.POINTERPICK, { pointerId: 7 } as any, pickInfo));
+        } else {
+            scene.setPointerOverMesh(mesh, 7);
+            if (trigger === "hoverOut") {
+                scene.setPointerOverMesh(null, 7);
+            }
+        }
+
+        expect(log).toHaveBeenCalledWith("/nodes/0");
+        expect(log).toHaveBeenCalledWith(0);
+        expect(log).toHaveBeenCalledWith(GetEventReference(`${extension}:${operation}:0`));
+        if (isSelect) {
+            expect(eventStateBlock.getDataOutput("selectionPoint")!.getValue(context).asArray().every(Number.isNaN)).toBe(true);
+            expect(eventStateBlock.getDataOutput("selectionRayOrigin")!.getValue(context).asArray().every(Number.isNaN)).toBe(true);
+        }
+    });
+
+    it("encodes a picked primitive as its owning glTF node reference", () => {
+        const owner = new TransformNode("owner", scene);
+        (owner as any)._internalMetadata = { gltf: { pointers: ["/nodes/4"] } };
+        const primitive = new Mesh("primitive", scene);
+        primitive.parent = owner;
+        (primitive as any)._internalMetadata = { gltf: { pointers: ["/meshes/2/primitives/1"] } };
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+        const context = coordinator.createGraph().createContext();
+        const block = new FlowGraphObjectReferenceBlock();
+        block.object.setValue(primitive, context);
+
+        expect(block.value.getValue(context)).toBe("/nodes/4");
+    });
+
+    it("keeps event references null until the event flow executes", () => {
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+        const context = coordinator.createGraph().createContext();
+        const block = new FlowGraphEventReferenceBlock({ eventKey: "event-key" });
+
+        expect(block.value.getValue(context)).toBe("");
+        block._execute(context);
+        expect(block.value.getValue(context)).toBe(GetEventReference("event-key"));
+    });
+
+    it.each([
+        ["immediate", true],
+        ["transitive", false],
+    ] as const)("event/onSelect supports %s propagation cancellation", async (_name, stopImmediate) => {
+        const parent = new Mesh("parent", scene);
+        const child = stopImmediate ? parent : new Mesh("child", scene);
+        if (child !== parent) {
+            child.parent = parent;
+        }
+        const gltf: any = {
+            nodes: [
+                { _babylonTransformNode: parent, _primitiveBabylonMeshes: [parent] },
+                { _babylonTransformNode: child, _primitiveBabylonMeshes: [child] },
+            ],
+        };
+        const outputValueSockets = {
+            selectedNode: { type: 2 },
+            selectionRayOrigin: { type: 3 },
+            selectionPoint: { type: 3 },
+            controllerIndex: { type: 1 },
+            event: { type: 2 },
+        };
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "bool" }, { signature: "int" }, { signature: "ref" }, { signature: "float3" }],
+            declarations: [
+                { op: "event/onSelect", extension: "KHR_node_selectability", inputValueSockets: {}, outputValueSockets },
+                { op: "event/stopPropagation" },
+                { op: "flow/log", extension: "BABYLON" },
+            ],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { nodeIndex: { value: [stopImmediate ? 0 : 1] } },
+                    flows: { out: { node: 2 } },
+                },
+                {
+                    declaration: 0,
+                    configuration: { nodeIndex: { value: [0] } },
+                    flows: { out: { node: 3 } },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        event: { node: 0, socket: "event", type: 2 },
+                        stopImmediate: { type: 0, value: [stopImmediate] },
+                    },
+                },
+                { declaration: 2, values: { message: { type: 1, value: [99] } } },
+            ],
+        };
+        const model = CreateKHRInteractivityGraphModel(graph, 0, undefined, gltf.nodes.length);
+        const parser = new InteractivityGraphToFlowGraphParser(graph, gltf, 60, 0, undefined, model.declarations);
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+        await ParseFlowGraphAsync(parser.serializeToFlowGraph(), { coordinator, pathConverter: GetPathToObjectConverter(gltf) });
+        coordinator.start();
+
+        const pickInfo = new PickingInfo();
+        pickInfo.hit = true;
+        pickInfo.pickedMesh = child;
+        pickInfo.pickedPoint = Vector3.Zero();
+        pickInfo.ray = new Ray(Vector3.Zero(), Vector3.Forward());
+        scene.onPointerObservable.notifyObservers(new PointerInfo(PointerEventTypes.POINTERPICK, { pointerId: 1 } as any, pickInfo));
+
+        expect(log).not.toHaveBeenCalled();
+    });
+
+    it.each(["selectable", "hoverable"] as const)("%s state applies to own primitives and respects inherited false values", (state) => {
+        const parentMesh = new Mesh("parent", scene);
+        const childMesh = new Mesh("child", scene);
+        const parent: any = { _babylonTransformNode: parentMesh, _primitiveBabylonMeshes: [parentMesh] };
+        const child: any = { parent, _babylonTransformNode: childMesh, _primitiveBabylonMeshes: [childMesh] };
+
+        InitializeInteractivityNodeState([parent, child], state, (node) => node === parent);
+        expect(GetInteractivityNodeState(parent, state)).toBe(true);
+        expect(GetInteractivityNodeState(child, state)).toBe(false);
+        if (state === "selectable") {
+            expect(parentMesh.isPickable).toBe(true);
+            expect(childMesh.isPickable).toBe(false);
+        } else {
+            expect(parentMesh.pointerOverDisableMeshTesting).toBe(false);
+            expect(childMesh.pointerOverDisableMeshTesting).toBe(true);
+        }
+
+        SetInteractivityNodeState(child, state, true);
+        SetInteractivityNodeState(parent, state, false);
+        if (state === "selectable") {
+            expect(parentMesh.isPickable).toBe(false);
+            expect(childMesh.isPickable).toBe(false);
+        } else {
+            expect(parentMesh.pointerOverDisableMeshTesting).toBe(true);
+            expect(childMesh.pointerOverDisableMeshTesting).toBe(true);
+        }
     });
 
     it("should send an event with id", async () => {

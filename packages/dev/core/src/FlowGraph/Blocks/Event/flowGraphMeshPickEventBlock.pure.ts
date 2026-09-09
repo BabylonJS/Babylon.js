@@ -10,7 +10,7 @@ import { _IsDescendantOf } from "../../utils";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
 import { RichTypeAny, RichTypeNumber, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes.pure";
-import { type Vector3 } from "core/Maths/math.vector.pure";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import { RegisterClass } from "../../../Misc/typeStore";
 /**
@@ -26,6 +26,14 @@ export interface IFlowGraphMeshPickEventBlockConfiguration extends IFlowGraphBlo
      * The mesh to listen to. Can also be set by the asset input.
      */
     targetMesh?: AbstractMesh;
+    /**
+     * Whether unavailable selection vectors use NaN components.
+     */
+    useNaNDefaults?: boolean;
+    /**
+     * Initial pointer/controller id.
+     */
+    pointerIdDefault?: number;
 }
 /**
  * A block that activates when a mesh is picked.
@@ -73,10 +81,11 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         public override config?: IFlowGraphMeshPickEventBlockConfiguration
     ) {
         super(config);
+        const vectorDefault = config?.useNaNDefaults ? new Vector3(NaN, NaN, NaN) : undefined;
         this.asset = this.registerDataInput("asset", RichTypeAny, config?.targetMesh);
-        this.pickedPoint = this.registerDataOutput("pickedPoint", RichTypeVector3);
-        this.pickOrigin = this.registerDataOutput("pickOrigin", RichTypeVector3);
-        this.pointerId = this.registerDataOutput("pointerId", RichTypeNumber);
+        this.pickedPoint = this.registerDataOutput("pickedPoint", RichTypeVector3, vectorDefault);
+        this.pickOrigin = this.registerDataOutput("pickOrigin", RichTypeVector3, vectorDefault);
+        this.pointerId = this.registerDataOutput("pointerId", RichTypeNumber, config?.pointerIdDefault);
         this.pickedMesh = this.registerDataOutput("pickedMesh", RichTypeAny);
         this.pointerType = this.registerDataInput("pointerType", RichTypeAny, PointerEventTypes.POINTERPICK);
     }

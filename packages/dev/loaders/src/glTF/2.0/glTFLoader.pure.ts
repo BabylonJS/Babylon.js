@@ -3045,13 +3045,12 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private async _extensionsOnReadyAsync(): Promise<void> {
-        const promises: Promise<void>[] = [];
-        this._forEachExtensions((extension) => {
-            if (extension.onReady) {
-                promises.push(Promise.resolve(extension.onReady()));
+        for (const extension of this._extensions) {
+            if (extension.enabled && extension.onReady) {
+                // eslint-disable-next-line no-await-in-loop -- extension order can define readiness dependencies
+                await extension.onReady();
             }
-        });
-        await Promise.all(promises);
+        }
     }
 
     private _extensionsLoadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {

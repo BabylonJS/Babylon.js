@@ -19,6 +19,11 @@ declare module "../../glTFFileLoader" {
              * Defaults to false.
              */
             parseOnly?: boolean;
+            /**
+             * Whether to enforce the ratified graph validation rules.
+             * Defaults to true. Set to false only for pre-ratification assets.
+             */
+            strictValidation?: boolean;
         };
     }
 }

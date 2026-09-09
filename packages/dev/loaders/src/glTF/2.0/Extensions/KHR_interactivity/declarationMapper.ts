@@ -75,6 +75,56 @@ export interface IGLTFToFlowGraphMappingObject {
      * be fed by a `pointer/get` (e.g. the read-only `maxTime` animation pointer).
      */
     convertConnectedTimeToFrames?: boolean;
+
+    /**
+     * KHR configuration value type used by canonical validation.
+     */
+    configurationType?: "bool" | "int" | "int[]" | "string";
+
+    /**
+     * Whether this configuration entry exists only for canonical validation.
+     */
+    validationOnly?: boolean;
+
+    /**
+     * Whether an operation without a complete default configuration requires this property.
+     */
+    required?: boolean;
+
+    /**
+     * Graph array referenced by an integer configuration value.
+     */
+    indexSource?: "types" | "variables" | "events" | "nodes" | "assetNodes";
+
+    /**
+     * Minimum number of values required for an array configuration.
+     */
+    minItems?: number;
+
+    /**
+     * Whether the configured indices generate required input value sockets.
+     */
+    generatesInputValueSockets?: boolean;
+
+    /**
+     * Whether integer case values generate required input value sockets.
+     */
+    generatesCaseInputValueSockets?: boolean;
+
+    /**
+     * Whether this string configuration generates JSON Pointer Template sockets.
+     */
+    pointerTemplate?: boolean;
+
+    /**
+     * Whether an invalid value falls back to the operation's default configuration.
+     */
+    invalidUsesDefault?: boolean;
+
+    /**
+     * Allowed KHR type signatures for a type-index configuration.
+     */
+    allowedSignatures?: readonly ("bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "ref" | "custom")[];
 }
 
 /**
@@ -90,6 +140,14 @@ export interface IGLTFToFlowGraphMapping {
      * When adding blocks defined in this module use the KHR_interactivity prefix.
      */
     blocks: (FlowGraphBlockNames | string)[];
+
+    /**
+     * Exact value socket contract for an operation supplied by another extension.
+     */
+    declarationSchema?: {
+        inputValueSockets: Record<string, "bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "ref" | "custom">;
+        outputValueSockets: Record<string, "bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "ref" | "custom">;
+    };
     /**
      * The inputs of the glTF node mapped to the FlowGraph block.
      */
@@ -398,11 +456,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
-    "math/E": getSimpleInputMapping(FlowGraphBlockNames.E),
-    "math/Pi": getSimpleInputMapping(FlowGraphBlockNames.PI),
-    "math/Tau": getSimpleInputMapping(FlowGraphBlockNames.Tau),
-    "math/Inf": getSimpleInputMapping(FlowGraphBlockNames.Inf),
-    "math/NaN": getSimpleInputMapping(FlowGraphBlockNames.NaN),
+    "math/E": getSimpleInputMapping(FlowGraphBlockNames.E, []),
+    "math/Pi": getSimpleInputMapping(FlowGraphBlockNames.PI, []),
+    "math/Tau": getSimpleInputMapping(FlowGraphBlockNames.Tau, []),
+    "math/Inf": getSimpleInputMapping(FlowGraphBlockNames.Inf, []),
+    "math/NaN": getSimpleInputMapping(FlowGraphBlockNames.NaN, []),
     "math/abs": getSimpleInputMapping(FlowGraphBlockNames.Abs),
     "math/sign": getSimpleInputMapping(FlowGraphBlockNames.Sign),
     "math/trunc": getSimpleInputMapping(FlowGraphBlockNames.Trunc),
@@ -571,7 +629,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/cbrt": getSimpleInputMapping(FlowGraphBlockNames.CubeRoot),
     "math/pow": getSimpleInputMapping(FlowGraphBlockNames.Power, ["a", "b"]),
     "math/length": getSimpleInputMapping(FlowGraphBlockNames.Length),
-    "math/normalize": getSimpleInputMapping(FlowGraphBlockNames.Normalize),
+    "math/normalize": {
+        ...getSimpleInputMapping(FlowGraphBlockNames.Normalize),
+        outputs: {
+            values: {
+                value: { name: "value" },
+                isValid: { name: "isValid", gltfType: "bool" },
+            },
+        },
+    },
     "math/dot": getSimpleInputMapping(FlowGraphBlockNames.Dot, ["a", "b"]),
     "math/cross": getSimpleInputMapping(FlowGraphBlockNames.Cross, ["a", "b"]),
     "math/rotate2D": {
@@ -710,7 +776,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "math/transpose": getSimpleInputMapping(FlowGraphBlockNames.Transpose),
     "math/determinant": getSimpleInputMapping(FlowGraphBlockNames.Determinant),
-    "math/inverse": getSimpleInputMapping(FlowGraphBlockNames.InvertMatrix),
+    "math/inverse": {
+        ...getSimpleInputMapping(FlowGraphBlockNames.InvertMatrix),
+        outputs: {
+            values: {
+                value: { name: "value" },
+                isValid: { name: "isValid", gltfType: "bool" },
+            },
+        },
+    },
     "math/matMul": getSimpleInputMapping(FlowGraphBlockNames.MatrixMultiplication, ["a", "b"]),
     "math/matCompose": {
         blocks: [FlowGraphBlockNames.MatrixCompose],
@@ -798,7 +872,20 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
-    "math/quatToAxisAngle": getSimpleInputMapping(FlowGraphBlockNames.AxisAngleFromQuaternion, ["a"]),
+    "math/quatToAxisAngle": {
+        blocks: [FlowGraphBlockNames.AxisAngleFromQuaternion],
+        inputs: {
+            values: {
+                a: { name: "a", gltfType: "float4" },
+            },
+        },
+        outputs: {
+            values: {
+                axis: { name: "axis", gltfType: "float3" },
+                angle: { name: "angle", gltfType: "float" },
+            },
+        },
+    },
     "math/quatFromDirections": getSimpleInputMapping(FlowGraphBlockNames.QuaternionFromDirections, ["a", "b"]),
     "math/quatFromUpForward": {
         blocks: [FlowGraphBlockNames.QuaternionFromUpForward],
@@ -1183,6 +1270,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 n: { name: "maxExecutions", gltfType: "number" },
             },
+            flows: {
+                reset: { name: "reset" },
+            },
         },
         outputs: {
             values: {
@@ -1192,6 +1282,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "flow/multiGate": {
         blocks: [FlowGraphBlockNames.MultiGate],
+        inputs: {
+            flows: {
+                reset: { name: "reset" },
+            },
+        },
         configuration: {
             isRandom: { name: "isRandom", gltfType: "boolean", inOptions: true, defaultValue: false },
             isLoop: { name: "isLoop", gltfType: "boolean", inOptions: true, defaultValue: false },
@@ -1233,6 +1328,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "flow/throttle": {
         blocks: [FlowGraphBlockNames.Throttle],
+        inputs: {
+            flows: {
+                reset: { name: "reset" },
+            },
+        },
         outputs: {
             flows: {
                 err: { name: "error" },
@@ -1241,6 +1341,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "flow/setDelay": {
         blocks: [FlowGraphBlockNames.SetDelay],
+        inputs: {
+            flows: {
+                cancel: { name: "cancel" },
+            },
+        },
         outputs: {
             flows: {
                 err: { name: "error" },
@@ -1275,12 +1380,20 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             variable: {
                 name: "variable",
                 gltfType: "number",
+                configurationType: "int",
+                required: true,
+                indexSource: "variables",
                 flowGraphType: "string",
                 inOptions: true,
                 isVariable: true,
                 dataTransformer(index, parser) {
                     return parser.getVariableName(index);
                 },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
             },
         },
     },
@@ -1290,6 +1403,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             variables: {
                 name: "variables",
                 gltfType: "number",
+                configurationType: "int[]",
+                required: true,
+                indexSource: "variables",
+                minItems: 1,
+                generatesInputValueSockets: true,
                 flowGraphType: "string",
                 inOptions: true,
                 isArray: true,
@@ -1319,6 +1437,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {
             variable: {
                 name: "propertyName",
+                configurationType: "int",
+                required: true,
+                indexSource: "variables",
                 inOptions: true,
                 isVariable: true,
                 dataTransformer(index, parser) {
@@ -1327,8 +1448,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
             useSlerp: {
                 name: "animationType",
+                configurationType: "bool",
+                required: true,
                 inOptions: true,
-                defaultValue: false,
                 dataTransformer(value) {
                     return value === true ? FlowGraphTypes.Quaternion : undefined;
                 },
@@ -1409,13 +1531,26 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "pointer/get": {
         blocks: [FlowGraphBlockNames.GetProperty, FlowGraphBlockNames.JsonPointerParser],
-        validation: ValidateJsonPointerTemplate,
+        validation: (node) => ValidateJsonPointerTemplate(node),
         configuration: {
-            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
+            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser, configurationType: "string", required: true, pointerTemplate: true },
+            type: {
+                name: "type",
+                configurationType: "int",
+                required: true,
+                validationOnly: true,
+                indexSource: "types",
+            },
         },
         inputs: {
             values: {
                 "[segment]": { name: "$1", toBlock: FlowGraphBlockNames.JsonPointerParser },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+                isValid: { name: "isValid", gltfType: "bool" },
             },
         },
         interBlockConnectors: [
@@ -1454,9 +1589,16 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "pointer/set": {
         blocks: [FlowGraphBlockNames.SetProperty, FlowGraphBlockNames.JsonPointerParser],
-        validation: ValidateJsonPointerTemplate,
+        validation: (node) => ValidateJsonPointerTemplate(node, new Set(["value"])),
         configuration: {
-            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
+            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser, configurationType: "string", required: true, pointerTemplate: true },
+            type: {
+                name: "type",
+                configurationType: "int",
+                required: true,
+                validationOnly: true,
+                indexSource: "types",
+            },
         },
         inputs: {
             values: {
@@ -1507,9 +1649,17 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "pointer/interpolate": {
         // interpolate, parse the pointer and play the animation generated. 3 blocks!
         blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.BezierCurveEasing],
-        validation: ValidateJsonPointerTemplate,
+        validation: (node) => ValidateJsonPointerTemplate(node, new Set(["value", "duration", "p1", "p2"])),
         configuration: {
-            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
+            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser, configurationType: "string", required: true, pointerTemplate: true },
+            type: {
+                name: "type",
+                configurationType: "int",
+                required: true,
+                validationOnly: true,
+                indexSource: "types",
+                allowedSignatures: ["float", "float2", "float3", "float4", "float2x2", "float3x3", "float4x4"],
+            },
         },
         inputs: {
             values: {
@@ -1728,11 +1878,17 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/switch": {
         blocks: [FlowGraphBlockNames.DataSwitch],
         configuration: {
-            cases: { name: "cases", isArray: true, inOptions: true, defaultValue: [] },
+            cases: { name: "cases", isArray: true, inOptions: true, defaultValue: [], configurationType: "int[]", generatesCaseInputValueSockets: true },
         },
         inputs: {
             values: {
-                selection: { name: "case" },
+                selection: { name: "case", gltfType: "int" },
+                default: { name: "default" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
             },
         },
         validation(gltfBlock) {
@@ -1864,9 +2020,10 @@ function HasOddBracketRun(segment: string): boolean {
  * a template such as `/materials/{materialRef}pbrMetallicRoughness/...` is a syntax error, and the specification
  * requires the whole behavior graph to be rejected.
  * @param gltfBlock the glTF interactivity node
+ * @param reservedSocketIds input ids owned by the operation rather than template parameters
  * @returns the validation result
  */
-function ValidateJsonPointerTemplate(gltfBlock: IKHRInteractivity_Node): { valid: boolean; error?: string } {
+function ValidateJsonPointerTemplate(gltfBlock: IKHRInteractivity_Node, reservedSocketIds: ReadonlySet<string> = new Set()): { valid: boolean; error?: string } {
     const pointer = gltfBlock.configuration?.pointer?.value?.[0];
     if (typeof pointer !== "string") {
         return { valid: false, error: "A pointer operation requires a string `pointer` configuration value" };
@@ -1879,6 +2036,9 @@ function ValidateJsonPointerTemplate(gltfBlock: IKHRInteractivity_Node): { valid
     const invalid = (reason: string) => ({ valid: false, error: `The JSON Pointer Template "${pointer}" is invalid: ${reason}` });
     const socketIds = new Set<string>();
     for (const segment of pointer.split("/")) {
+        if (/~(?:[^01]|$)/.test(segment)) {
+            return invalid(`the path segment "${segment}" contains an invalid RFC 6901 escape`);
+        }
         const isIntegerParameter = segment[0] === "[" && segment[1] !== "[";
         const isReferenceParameter = segment[0] === "{" && segment[1] !== "{";
         if (!isIntegerParameter && !isReferenceParameter) {
@@ -1895,6 +2055,9 @@ function ValidateJsonPointerTemplate(gltfBlock: IKHRInteractivity_Node): { valid
         }
 
         const socketId = body.replace(/~1/g, "/").replace(/~0/g, "~");
+        if (reservedSocketIds.has(socketId)) {
+            return invalid(`the template parameter "${socketId}" uses a reserved input socket id`);
+        }
         if (socketIds.has(socketId)) {
             return invalid(`the template parameter "${socketId}" is used more than once`);
         }

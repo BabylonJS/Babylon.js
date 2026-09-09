@@ -65,7 +65,8 @@ export class InteractivityGraphToFlowGraphParser {
         private _gltf: IGLTF,
         public _animationTargetFps: number = 60,
         private _graphIndex: number = 0,
-        private _supportedExtensions?: ReadonlySet<string>
+        private _supportedExtensions?: ReadonlySet<string>,
+        private _declarationModels?: readonly IKHRInteractivityDeclarationModel[]
     ) {
         this._interactivityGraph = CloneKHRInteractivityGraph(interactivityGraph);
         // start with types
@@ -104,8 +105,10 @@ export class InteractivityGraphToFlowGraphParser {
         }
         for (let index = 0; index < this._interactivityGraph.declarations.length; index++) {
             const declaration = this._interactivityGraph.declarations[index];
+            const declarationModel = this._declarationModels?.[index];
             const extensionEnabled = !declaration.extension || !this._supportedExtensions || this._supportedExtensions.has(declaration.extension);
-            const supportedMapping = extensionEnabled ? getMappingForDeclaration(declaration, false) : undefined;
+            const supportedMapping =
+                declarationModel?.support === "unsupported-extension" ? undefined : extensionEnabled ? getMappingForDeclaration(declaration, false) : undefined;
             if (!supportedMapping && !declaration.extension) {
                 throw new Error(`Unknown core KHR_interactivity operation "${declaration.op}".`);
             }
@@ -117,12 +120,14 @@ export class InteractivityGraphToFlowGraphParser {
             this._mappings.push({
                 flowGraphMapping: mapping,
                 fullOperationName: declaration.extension ? declaration.op + ":" + declaration.extension : declaration.op,
-                declaration: {
-                    index,
-                    operation: declaration.extension ? `${declaration.op}:${declaration.extension}` : declaration.op,
-                    support: supportedMapping ? (declaration.extension ? "extension" : "core") : "unsupported-extension",
-                    source: declaration,
-                },
+                declaration:
+                    declarationModel ??
+                    ({
+                        index,
+                        operation: declaration.extension ? `${declaration.op}:${declaration.extension}` : declaration.op,
+                        support: supportedMapping ? (declaration.extension ? "extension" : "core") : "unsupported-extension",
+                        source: declaration,
+                    } satisfies IKHRInteractivityDeclarationModel),
             });
         }
     }
@@ -346,6 +351,9 @@ export class InteractivityGraphToFlowGraphParser {
                 }
 
                 const propertyMapping = nodeMapping.configuration?.[key];
+                if (propertyMapping?.validationOnly) {
+                    continue;
+                }
                 const belongsToBlock = propertyMapping && propertyMapping.toBlock ? propertyMapping.toBlock === blockType : nodeMapping.blocks.indexOf(blockType) === 0;
                 if (belongsToBlock) {
                     let value = propertyMapping?.defaultValue;

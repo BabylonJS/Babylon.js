@@ -84,6 +84,8 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      * The name of this extension.
      */
     public readonly name = NAME;
+    /** Runs after extensions that contribute interactivity operations and object state. */
+    public readonly order = 200;
     /**
      * Defines whether this extension is enabled.
      */
@@ -142,7 +144,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
 
         // Update object model with new pointers
         if (scene) {
-            _AddInteractivityObjectModel(scene);
+            _AddInteractivityObjectModel(scene, this._loader.parent.targetFps);
         }
     }
 
@@ -166,10 +168,11 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         const supportedExtensions = new Set(
             (this._loader.gltf.extensionsUsed ?? []).filter((extensionName) => this._loader.parent.extensionOptions[extensionName]?.enabled !== false)
         );
-        const document = CreateKHRInteractivityDocument(interactivityDefinition, supportedExtensions);
+        const document = CreateKHRInteractivityDocument(interactivityDefinition, supportedExtensions, this._loader.gltf.nodes?.length ?? 0);
         const options = this._loader.parent.extensionOptions[NAME];
         const autoStart = options?.autoStart ?? true;
         const parseOnly = options?.parseOnly ?? false;
+        const strictValidation = options?.strictValidation ?? true;
         const result: IKHRInteractivityImportResult = {
             document,
             graphs: [],
@@ -186,7 +189,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                     diagnostics: graphModel.diagnostics.slice(),
                 };
                 result.graphs[graphModel.index] = graphResult;
-                if (!graphModel.valid) {
+                if (!graphModel.valid && strictValidation) {
                     Logger.Error(`KHR_interactivity: rejecting behavior graph #${graphModel.index}: ${graphModel.diagnostics.map((diagnostic) => diagnostic.message).join("; ")}`);
                     return;
                 }
@@ -196,7 +199,8 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                         this._loader.gltf,
                         this._loader.parent.targetFps,
                         graphModel.index,
-                        supportedExtensions
+                        supportedExtensions,
+                        strictValidation ? graphModel.declarations : undefined
                     );
                     const serializedFlowGraph = parser.serializeToFlowGraph();
                     graphResult.serializedFlowGraph = serializedFlowGraph;
@@ -232,7 +236,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
  * @internal
  * populates the object model with the interactivity extension
  */
-export function _AddInteractivityObjectModel(scene: Scene) {
+export function _AddInteractivityObjectModel(scene: Scene, targetFps: number = 60) {
     // Note - all of those are read-only, as per the specs!
 
     // active camera rotation
@@ -351,6 +355,8 @@ export function _AddInteractivityObjectModel(scene: Scene) {
         getTarget: () => scene.activeCamera,
     });
 
+    const getAnimationFps = (animation: IAnimation): number => animation._babylonAnimationGroup?.targetedAnimations?.[0]?.animation.framePerSecond ?? targetFps;
+
     // /animations/{} pointers:
     AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/isPlaying", {
         get: (animation: IAnimation) => {
@@ -363,7 +369,7 @@ export function _AddInteractivityObjectModel(scene: Scene) {
     });
     AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/minTime", {
         get: (animation: IAnimation) => {
-            return (animation._babylonAnimationGroup?.from ?? 0) / 60; // fixed factor for duration-to-frames conversion
+            return (animation._babylonAnimationGroup?.from ?? 0) / getAnimationFps(animation);
         },
         type: "number",
         getTarget: (animation: IAnimation) => {
@@ -372,7 +378,7 @@ export function _AddInteractivityObjectModel(scene: Scene) {
     });
     AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/maxTime", {
         get: (animation: IAnimation) => {
-            return (animation._babylonAnimationGroup?.to ?? 0) / 60; // fixed factor for duration-to-frames conversion
+            return (animation._babylonAnimationGroup?.to ?? 0) / getAnimationFps(animation);
         },
         type: "number",
         getTarget: (animation: IAnimation) => {
@@ -382,7 +388,7 @@ export function _AddInteractivityObjectModel(scene: Scene) {
     // playhead
     AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/playhead", {
         get: (animation: IAnimation) => {
-            return (animation._babylonAnimationGroup?.getCurrentFrame() ?? 0) / 60; // fixed factor for duration-to-frames conversion
+            return (animation._babylonAnimationGroup?.getRetainedCurrentFrame() ?? 0) / getAnimationFps(animation);
         },
         type: "number",
         getTarget: (animation: IAnimation) => {
@@ -391,7 +397,7 @@ export function _AddInteractivityObjectModel(scene: Scene) {
     });
     AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/virtualPlayhead", {
         get: (animation: IAnimation) => {
-            return (animation._babylonAnimationGroup?.getVirtualCurrentFrame() ?? 0) / 60; // fixed factor for duration-to-frames conversion
+            return (animation._babylonAnimationGroup?.getVirtualCurrentFrame() ?? 0) / getAnimationFps(animation);
         },
         type: "number",
         getTarget: (animation: IAnimation) => {
@@ -419,6 +425,9 @@ export function _RegisterKHRInteractivityRuntime(): void {
     });
     addToBlockFactory(NAME, "FlowGraphObjectReferenceBlock", async () => {
         return (await import("./KHR_interactivity/flowGraphObjectReferenceBlock")).FlowGraphObjectReferenceBlock;
+    });
+    addToBlockFactory(NAME, "FlowGraphEventReferenceBlock", async () => {
+        return (await import("./KHR_interactivity/flowGraphEventReferenceBlock")).FlowGraphEventReferenceBlock;
     });
 }
 

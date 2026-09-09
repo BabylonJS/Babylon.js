@@ -93,4 +93,40 @@ describe("KHR_interactivity loader lifecycle", () => {
         expect(result.graphs[1].flowGraph?.state).toBe(FlowGraphState.Stopped);
         expect(result.graphs[2].flowGraph).toBeUndefined();
     });
+
+    it("defaults to ratified validation but can parse pre-ratification assets explicitly", async () => {
+        const legacyAsset = JSON.stringify({
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [] }],
+            extensionsUsed: ["KHR_interactivity"],
+            extensions: {
+                KHR_interactivity: {
+                    graphs: [
+                        {
+                            types: [{ signature: "float" }],
+                            variables: [{ type: 0, value: ["1"] }],
+                        },
+                    ],
+                },
+            },
+        });
+        await AppendSceneAsync(`data:${legacyAsset}`, scene);
+        expect(GetKHRInteractivityImportResult(scene)!.graphs[0].serializedFlowGraph).toBeUndefined();
+
+        const compatibilityScene = new Scene(engine);
+        await AppendSceneAsync(`data:${legacyAsset}`, compatibilityScene, {
+            pluginOptions: {
+                gltf: {
+                    extensionOptions: {
+                        KHR_interactivity: {
+                            strictValidation: false,
+                        },
+                    },
+                },
+            },
+        });
+        expect(GetKHRInteractivityImportResult(compatibilityScene)!.graphs[0].serializedFlowGraph).toBeDefined();
+        compatibilityScene.dispose();
+    });
 });

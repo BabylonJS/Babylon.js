@@ -39,10 +39,19 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
             [] as {
                 uniqueId: number;
                 stopAtFrame: number;
+                block: FlowGraphStopAnimationBlock;
             }[]
         );
-        // add the animation to the list
-        pendingStopAnimations.push({ uniqueId: animationToStopValue.uniqueId, stopAtFrame });
+        const existing = pendingStopAnimations.find((entry) => entry.uniqueId === animationToStopValue.uniqueId);
+        if (existing) {
+            if (existing.block !== this) {
+                context._removePendingBlock(existing.block);
+            }
+            existing.stopAtFrame = stopAtFrame;
+            existing.block = this;
+        } else {
+            pendingStopAnimations.push({ uniqueId: animationToStopValue.uniqueId, stopAtFrame, block: this });
+        }
         // set the global context variable
         context._setGlobalContextVariable("pendingStopAnimations", pendingStopAnimations);
     }
@@ -54,10 +63,11 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
             [] as {
                 uniqueId: number;
                 stopAtFrame: number;
+                block: FlowGraphStopAnimationBlock;
             }[]
         );
         for (let i = 0; i < pendingStopAnimations.length; i++) {
-            if (pendingStopAnimations[i].uniqueId === animationToStopValue.uniqueId) {
+            if (pendingStopAnimations[i].uniqueId === animationToStopValue.uniqueId && pendingStopAnimations[i].block === this) {
                 pendingStopAnimations.splice(i, 1);
                 // set the global context variable
                 context._setGlobalContextVariable("pendingStopAnimations", pendingStopAnimations);
@@ -77,31 +87,51 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
         if (isNaN(stopTime)) {
             return this._reportError(context, "Invalid stop time.");
         }
-        if (stopTime > 0) {
-            this._startPendingTasks(context);
+        const hasScheduledStop = this.stopAtFrame.isConnected() || context._hasConnectionValue(this.stopAtFrame);
+        let activateDone = false;
+        if (hasScheduledStop) {
+            if (animationToStopValue.isValidVirtualStopFrame(stopTime) && animationToStopValue.isVirtualFrameReached(stopTime)) {
+                this._stopAnimation(animationToStopValue, context, stopTime);
+                activateDone = true;
+            } else {
+                this._startPendingTasks(context);
+            }
         } else {
             this._stopAnimation(animationToStopValue, context);
         }
         // note that out will not be triggered in case of an error
         this.out._activateSignal(context);
+        if (activateDone) {
+            this.done._activateSignal(context);
+        }
     }
 
     public override _executeOnTick(context: FlowGraphContext): void {
         const animationToStopValue = this.animationGroup.getValue(context);
         // check each frame if any animation should be stopped
-        const pendingStopAnimations = context._getGlobalContextVariable("pendingStopAnimations", [] as { uniqueId: number; stopAtFrame: number }[]);
+        const pendingStopAnimations = context._getGlobalContextVariable(
+            "pendingStopAnimations",
+            [] as { uniqueId: number; stopAtFrame: number; block: FlowGraphStopAnimationBlock }[]
+        );
         for (let i = 0; i < pendingStopAnimations.length; i++) {
             // compare the uniqueId to the animation to stop
-            if (pendingStopAnimations[i].uniqueId === animationToStopValue.uniqueId) {
-                // check if the current frame is AFTER the stopAtFrame
-                if (animationToStopValue.getCurrentFrame() >= pendingStopAnimations[i].stopAtFrame) {
+            if (pendingStopAnimations[i].uniqueId === animationToStopValue.uniqueId && pendingStopAnimations[i].block === this) {
+                if (
+                    animationToStopValue.isValidVirtualStopFrame(pendingStopAnimations[i].stopAtFrame) &&
+                    animationToStopValue.isVirtualFrameReached(pendingStopAnimations[i].stopAtFrame)
+                ) {
                     // stop the animation
-                    this._stopAnimation(animationToStopValue, context);
+                    this._stopAnimation(animationToStopValue, context, pendingStopAnimations[i].stopAtFrame);
                     // remove the animation from the list
                     pendingStopAnimations.splice(i, 1);
                     // set the global context variable
                     context._setGlobalContextVariable("pendingStopAnimations", pendingStopAnimations);
                     this.done._activateSignal(context);
+                    context._removePendingBlock(this);
+                    break;
+                } else if (!animationToStopValue.isPlaying) {
+                    pendingStopAnimations.splice(i, 1);
+                    context._setGlobalContextVariable("pendingStopAnimations", pendingStopAnimations);
                     context._removePendingBlock(this);
                     break;
                 }
@@ -116,10 +146,13 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
         return FlowGraphBlockNames.StopAnimation;
     }
 
-    private _stopAnimation(animationGroup: AnimationGroup, context: FlowGraphContext): void {
+    private _stopAnimation(animationGroup: AnimationGroup, context: FlowGraphContext, virtualStopFrame?: number): void {
         const currentlyRunning = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
         const index = currentlyRunning.indexOf(animationGroup.uniqueId);
         if (index !== -1) {
+            if (virtualStopFrame !== undefined) {
+                animationGroup.setVirtualCurrentFrame(virtualStopFrame);
+            }
             // Skip the animation-end observable so that stopping does not activate the originating
             // starting block's `done` flow. When an animation is
             // stopped (animation/stop or animation/stopAt) the previously associated `done` flows MUST NOT be

@@ -110,7 +110,7 @@ export class FlowGraphCoordinator {
      * dispatching, e.g. an event handler synchronously sending another event.
      * @internal
      */
-    public _eventDispatchStack: { eventId: string; state: EventState }[] = [];
+    public _eventDispatchStack: { eventId: string; state: EventState; propagationStopped: boolean }[] = [];
 
     public constructor(
         /**
@@ -282,7 +282,7 @@ export class FlowGraphCoordinator {
      * @param state the Observable EventState for this dispatch
      */
     public _beginEventDispatch(eventId: string, state: EventState): void {
-        this._eventDispatchStack.push({ eventId, state });
+        this._eventDispatchStack.push({ eventId, state, propagationStopped: false });
     }
 
     /**
@@ -290,8 +290,8 @@ export class FlowGraphCoordinator {
      * Marks the end of the most recent custom-event dispatch started with
      * {@link _beginEventDispatch}.
      */
-    public _endEventDispatch(): void {
-        this._eventDispatchStack.pop();
+    public _endEventDispatch(): { eventId: string; state: EventState; propagationStopped: boolean } | undefined {
+        return this._eventDispatchStack.pop();
     }
 
     /**
@@ -309,7 +309,7 @@ export class FlowGraphCoordinator {
      * @param stopImmediate whether to also stop remaining immediate handlers
      */
     public stopEventPropagation(event: string, stopImmediate: boolean): void {
-        if (typeof event !== "string" || !stopImmediate) {
+        if (typeof event !== "string") {
             return;
         }
         const decode = this.config.hostResolver?.decodeEventReference ?? GetDefaultEventReferenceKey;
@@ -320,7 +320,10 @@ export class FlowGraphCoordinator {
         // Find the most recent matching in-flight dispatch and skip its remaining observers.
         for (let i = this._eventDispatchStack.length - 1; i >= 0; i--) {
             if (this._eventDispatchStack[i].eventId === eventId) {
-                this._eventDispatchStack[i].state.skipNextObservers = true;
+                this._eventDispatchStack[i].propagationStopped = true;
+                if (stopImmediate) {
+                    this._eventDispatchStack[i].state.skipNextObservers = true;
+                }
                 return;
             }
         }

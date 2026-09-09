@@ -174,6 +174,57 @@ describe("glTF interactivity Object Model", () => {
         expect(isPlaying.info.get(isPlaying.object)).toBe(true);
     });
 
+    it("uses the loader target FPS for all KHR_interactivity animation time properties", () => {
+        _AddInteractivityObjectModel(scene, 30);
+        const converter = GetPathToObjectConverter({
+            animations: [
+                {
+                    _babylonAnimationGroup: {
+                        from: 30,
+                        to: 120,
+                        getRetainedCurrentFrame: () => 90,
+                        getVirtualCurrentFrame: () => 150,
+                    },
+                },
+            ],
+        } as any);
+
+        expect(
+            converter.convert("/animations/0/extensions/KHR_interactivity/minTime").info.get(converter.convert("/animations/0/extensions/KHR_interactivity/minTime").object)
+        ).toBe(1);
+        expect(
+            converter.convert("/animations/0/extensions/KHR_interactivity/maxTime").info.get(converter.convert("/animations/0/extensions/KHR_interactivity/maxTime").object)
+        ).toBe(4);
+        expect(
+            converter.convert("/animations/0/extensions/KHR_interactivity/playhead").info.get(converter.convert("/animations/0/extensions/KHR_interactivity/playhead").object)
+        ).toBe(3);
+        expect(
+            converter
+                .convert("/animations/0/extensions/KHR_interactivity/virtualPlayhead")
+                .info.get(converter.convert("/animations/0/extensions/KHR_interactivity/virtualPlayhead").object)
+        ).toBe(5);
+    });
+
+    it("prefers the animation timeline FPS over the loader fallback", () => {
+        _AddInteractivityObjectModel(scene, 30);
+        const converter = GetPathToObjectConverter({
+            animations: [
+                {
+                    _babylonAnimationGroup: {
+                        from: 24,
+                        to: 72,
+                        targetedAnimations: [{ animation: { framePerSecond: 24 } }],
+                    },
+                },
+            ],
+        } as any);
+        const minTime = converter.convert("/animations/0/extensions/KHR_interactivity/minTime");
+        const maxTime = converter.convert("/animations/0/extensions/KHR_interactivity/maxTime");
+
+        expect(minTime.info.get(minTime.object)).toBe(1);
+        expect(maxTime.info.get(maxTime.object)).toBe(3);
+    });
+
     it("should find a node's translation", async () => {
         const mesh = new Mesh("mesh", scene);
         mesh.position.set(1, 2, 3);
