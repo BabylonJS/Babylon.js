@@ -125,6 +125,11 @@ export interface IGLTFToFlowGraphMappingObject {
      * Allowed KHR type signatures for a type-index configuration.
      */
     allowedSignatures?: readonly ("bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "ref" | "custom")[];
+
+    /**
+     * Input socket whose effective type determines this output socket type.
+     */
+    typeSourceInput?: string;
 }
 
 /**
@@ -368,10 +373,20 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "event/send": {
         blocks: [FlowGraphBlockNames.SendCustomEvent],
+        inputs: {
+            values: {
+                "[segment]": { name: "$1" },
+            },
+        },
+        outputs: {
+            flows: {
+                out: { name: "out" },
+            },
+        },
         extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
             // set eventId and eventData. The configuration object of the glTF should have a single object.
             // validate that we are running it on the right block.
-            if (declaration.op !== "event/send" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
+            if (declaration.op !== "event/send" || !gltfBlock.configuration?.event) {
                 throw new Error("Receive event should have a single configuration object, the event itself");
             }
             const eventConfiguration = gltfBlock.configuration["event"];
@@ -393,6 +408,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 // KHR_interactivity `ref event` output (the event reference).
                 event: { name: "event" },
+                "[segment]": { name: "$1" },
             },
             flows: {
                 out: { name: "done" },
@@ -423,7 +439,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
             // set eventId and eventData. The configuration object of the glTF should have a single object.
             // validate that we are running it on the right block.
-            if (declaration.op !== "event/receive" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
+            if (declaration.op !== "event/receive" || !gltfBlock.configuration?.event) {
                 throw new Error("Receive event should have a single configuration object, the event itself");
             }
             const eventConfiguration = gltfBlock.configuration["event"];
@@ -596,7 +612,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "output" },
+                value: { name: "output", typeSourceInput: "a" },
             },
         },
     },
@@ -797,7 +813,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", gltfType: "float4x4" },
             },
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects, context) {
@@ -1162,6 +1178,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     // flows
     "flow/sequence": {
         blocks: [FlowGraphBlockNames.Sequence],
+        outputs: {
+            flows: {
+                "[segment]": { name: "$1" },
+            },
+        },
         extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
             const serializedObject = serializedObjects[0];
             serializedObject.config ||= {};
@@ -1190,6 +1211,12 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 selection: { name: "case" },
                 default: { name: "default" },
+            },
+        },
+        outputs: {
+            flows: {
+                default: { name: "default" },
+                "[segment]": { name: "$1" },
             },
         },
         validation(gltfBlock) {
@@ -1290,6 +1317,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {
             isRandom: { name: "isRandom", gltfType: "boolean", inOptions: true, defaultValue: false },
             isLoop: { name: "isLoop", gltfType: "boolean", inOptions: true, defaultValue: false },
+        },
+        outputs: {
+            flows: {
+                "[segment]": { name: "$1" },
+            },
         },
         extraProcessor(gltfBlock, declaration, _mapping, _arrays, serializedObjects) {
             if (declaration.op !== "flow/multiGate" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
@@ -1399,6 +1431,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "variable/set": {
         blocks: [FlowGraphBlockNames.SetVariable],
+        inputs: {
+            values: {
+                "[segment]": { name: "$1" },
+            },
+        },
         configuration: {
             variables: {
                 name: "variables",
@@ -1943,7 +1980,7 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", typeSourceInput: inputs[0] },
             },
         },
         extraProcessor(gltfBlock, _declaration, _mapping, _parser, serializedObjects) {

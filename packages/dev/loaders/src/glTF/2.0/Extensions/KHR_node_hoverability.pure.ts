@@ -164,7 +164,6 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
             const eventKey = `${NAME}:event/onHoverIn:${nodeIndex}`;
             serializedObjects[0].config.eventKey = eventKey;
             serializedObjects[4].config.eventKey = eventKey;
-            serializedObjects[4].config.normalizeControllerIndex = true;
             return serializedObjects;
         },
     });
@@ -268,7 +267,6 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
             const eventKey = `${NAME}:event/onHoverOut:${nodeIndex}`;
             serializedObjects[0].config.eventKey = eventKey;
             serializedObjects[4].config.eventKey = eventKey;
-            serializedObjects[4].config.normalizeControllerIndex = true;
             return serializedObjects;
         },
     });

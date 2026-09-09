@@ -341,7 +341,6 @@ describe("KHR_interactivity canonical import model", () => {
             nodes: [
                 {
                     declaration: 0,
-                    configuration: { cases: { value: [] } },
                     values: {
                         selection: { type: 0, value: [0] },
                         default: { type: 1, value: [1] },
@@ -353,6 +352,214 @@ describe("KHR_interactivity canonical import model", () => {
 
         expect(variableGraph.valid).toBe(true);
         expect(switchGraph.valid).toBe(true);
+    });
+
+    it("validates explicit core output type assertions independently", () => {
+        const model = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "float" }, { signature: "int" }],
+            declarations: [{ op: "math/abs" }, { op: "math/abs" }],
+            nodes: [
+                { declaration: 0, values: { a: { type: 0, value: [1] } } },
+                { declaration: 1, values: { a: { node: 0, type: 1 } } },
+            ],
+        });
+
+        expect(model.diagnostics).toContainEqual(
+            expect.objectContaining({
+                path: expect.stringContaining("/nodes/1/values/a/type"),
+                message: 'Type assertion does not match output socket "value".',
+            })
+        );
+    });
+
+    it("keeps spec-allowed extra sockets and configuration out of strict lowering", () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "float" }],
+            declarations: [{ op: "event/onStart" }, { op: "math/abs" }],
+            nodes: [
+                { declaration: 0, flows: { extra: { node: 1, socket: "unknown" } } },
+                {
+                    declaration: 1,
+                    configuration: { unknown: { value: ["ignored"] } },
+                    values: {
+                        a: { type: 0, value: [1] },
+                        extra: { type: 0, value: [2] },
+                    },
+                },
+            ],
+        };
+        const model = CreateKHRInteractivityGraphModel(graph);
+        const serialized = new InteractivityGraphToFlowGraphParser(graph, {}, 60, 0, undefined, model.declarations).serializeToFlowGraph();
+        const start = serialized.allBlocks.find((block) => block.className === "FlowGraphSceneReadyEventBlock")!;
+        const absolute = serialized.allBlocks.find((block) => block.className === "FlowGraphAbsBlock")!;
+
+        expect(model.valid).toBe(true);
+        expect(start.signalOutputs.some((socket) => socket.name === "extra")).toBe(false);
+        expect(absolute.dataInputs.map((socket) => socket.name)).toEqual(["a"]);
+        expect(absolute.config.unknown).toBeUndefined();
+
+        const compatibility = new InteractivityGraphToFlowGraphParser(graph, {}).serializeToFlowGraph();
+        const compatibilityAbsolute = compatibility.allBlocks.find((block) => block.className === "FlowGraphAbsBlock")!;
+        expect(compatibilityAbsolute.config.unknown.value).toBe("ignored");
+    });
+
+    it("ignores unknown configuration while lowering custom event operations", () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }],
+            events: [{ id: "external", values: { payload: { type: 0 } } }],
+            declarations: [{ op: "event/send" }, { op: "flow/log", extension: "BABYLON" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: {
+                        event: { value: [0] },
+                        unknown: { value: ["ignored"] },
+                    },
+                    values: {
+                        payload: { type: 0, value: [7] },
+                        extra: { type: 0, value: [8] },
+                    },
+                    flows: { out: { node: 1 } },
+                },
+                { declaration: 1, values: { message: { type: 0, value: [1] } } },
+            ],
+        };
+        const model = CreateKHRInteractivityGraphModel(graph);
+        const serialized = new InteractivityGraphToFlowGraphParser(graph, {}, 60, 0, undefined, model.declarations).serializeToFlowGraph();
+        const send = serialized.allBlocks[0];
+
+        expect(send.config.eventId).toBe("external");
+        expect(send.config.unknown).toBeUndefined();
+        expect(send.dataInputs.map((socket) => socket.name)).toContain("payload");
+        expect(send.dataInputs.map((socket) => socket.name)).not.toContain("extra");
+        expect(send.signalOutputs.find((socket) => socket.name === "out")?.connectedPointIds).toHaveLength(1);
+    });
+
+    it("enforces schema non-empty arrays and objects when present", () => {
+        const emptyArrays = CreateKHRInteractivityGraphModel({
+            types: [],
+            variables: [],
+            events: [],
+            declarations: [],
+            nodes: [],
+        });
+        const emptyObjects = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "float" }],
+            events: [{ values: {} }],
+            declarations: [{ op: "vendor/op", extension: "EXT_vendor", inputValueSockets: {}, outputValueSockets: {} }],
+            nodes: [
+                { declaration: 0, configuration: {}, values: {}, flows: {} },
+                { declaration: 0, configuration: { unknown: { value: [] } } },
+            ],
+        });
+
+        expect(emptyArrays.diagnostics).toHaveLength(5);
+        expect(emptyObjects.diagnostics.map((diagnostic) => diagnostic.path)).toEqual(
+            expect.arrayContaining([
+                expect.stringContaining("/events/0/values"),
+                expect.stringContaining("/declarations/0/inputValueSockets"),
+                expect.stringContaining("/declarations/0/outputValueSockets"),
+                expect.stringContaining("/nodes/0/configuration"),
+                expect.stringContaining("/nodes/0/values"),
+                expect.stringContaining("/nodes/0/flows"),
+                expect.stringContaining("/nodes/1/configuration/unknown/value"),
+            ])
+        );
+    });
+
+    it("derives fixed core output types for assertions", () => {
+        const valid = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "float" }, { signature: "bool" }],
+            declarations: [{ op: "math/eq" }, { op: "math/not" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    values: {
+                        a: { type: 0, value: [1] },
+                        b: { type: 0, value: [1] },
+                    },
+                },
+                { declaration: 1, values: { a: { node: 0, type: 1 } } },
+            ],
+        });
+        const invalid = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "float" }, { signature: "bool" }],
+            declarations: [{ op: "math/eq" }, { op: "math/abs" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    values: {
+                        a: { type: 0, value: [1] },
+                        b: { type: 0, value: [1] },
+                    },
+                },
+                { declaration: 1, values: { a: { node: 0, type: 0 } } },
+            ],
+        });
+
+        expect(valid.valid).toBe(true);
+        expect(invalid.diagnostics).toContainEqual(expect.objectContaining({ message: 'Type assertion does not match output socket "value".' }));
+    });
+
+    it("derives shape-changing and non-leading polymorphic output assertions", () => {
+        const composed = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "float3" }, { signature: "float4" }, { signature: "float4x4" }],
+            declarations: [{ op: "math/matCompose" }, { op: "math/transpose" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    values: {
+                        translation: { type: 0, value: [0, 0, 0] },
+                        rotation: { type: 1, value: [0, 0, 0, 1] },
+                        scale: { type: 0, value: [1, 1, 1] },
+                    },
+                },
+                { declaration: 1, values: { a: { node: 0, type: 2 } } },
+            ],
+        });
+        const selected = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "bool" }, { signature: "float3" }],
+            declarations: [{ op: "math/select" }, { op: "math/length" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    values: {
+                        condition: { type: 0, value: [true] },
+                        a: { type: 1, value: [1, 2, 3] },
+                        b: { type: 1, value: [4, 5, 6] },
+                    },
+                },
+                { declaration: 1, values: { a: { node: 0, type: 1 } } },
+            ],
+        });
+
+        expect(composed.valid).toBe(true);
+        expect(selected.valid).toBe(true);
+    });
+
+    it("rejects wrong assertions on fixed named output sockets", () => {
+        const model = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "float" }, { signature: "int" }],
+            declarations: [{ op: "math/rgbToOkLCh" }, { op: "math/abs" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    values: {
+                        r: { type: 0, value: [1] },
+                        g: { type: 0, value: [0] },
+                        b: { type: 0, value: [0] },
+                    },
+                },
+                { declaration: 1, values: { a: { node: 0, socket: "l", type: 1 } } },
+            ],
+        });
+
+        expect(model.diagnostics).toContainEqual(
+            expect.objectContaining({
+                path: expect.stringContaining("/nodes/1/values/a/type"),
+                message: 'Type assertion does not match output socket "l".',
+            })
+        );
     });
 
     it("accepts constant operations without synthetic inputs", () => {
@@ -400,7 +607,6 @@ describe("KHR_interactivity canonical import model", () => {
         const validDeclaration = {
             op: "event/onSelect",
             extension: "KHR_node_selectability",
-            inputValueSockets: {},
             outputValueSockets: {
                 selectedNode: { type: 1 },
                 selectionRayOrigin: { type: 2 },
@@ -435,7 +641,6 @@ describe("KHR_interactivity canonical import model", () => {
         const declaration = {
             op: "event/onSelect",
             extension: "KHR_node_selectability",
-            inputValueSockets: {},
             outputValueSockets: {
                 selectedNode: { type: 1 },
                 selectionRayOrigin: { type: 2 },

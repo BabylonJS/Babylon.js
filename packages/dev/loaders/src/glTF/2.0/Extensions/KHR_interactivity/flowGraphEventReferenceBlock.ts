@@ -13,8 +13,6 @@ import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalCo
 export interface IFlowGraphEventReferenceBlockConfiguration extends IFlowGraphBlockConfiguration {
     /** Stable key shared by equivalent event operations. */
     eventKey: string;
-    /** Whether non-negative pointer ids map to the single controller index zero. */
-    normalizeControllerIndex?: boolean;
 }
 
 /**
@@ -60,8 +58,19 @@ export class FlowGraphEventReferenceBlock extends FlowGraphExecutionBlock {
     /** @internal */
     public override _execute(context: FlowGraphContext): void {
         this.nodeReference.setValue(GetInteractivityObjectReference(context, this.node.getValue(context)), context);
-        const controllerIndex = this.controllerIndexInput.getValue(context);
-        this.controllerIndex.setValue(this.config.normalizeControllerIndex && controllerIndex >= 0 ? 0 : controllerIndex, context);
+        const pointerId = this.controllerIndexInput.getValue(context);
+        if (pointerId < 0) {
+            this.controllerIndex.setValue(-1, context);
+        } else {
+            const controllerIndices = context._getGlobalContextVariable("khrInteractivityControllerIndices", new Map<number, number>()) as Map<number, number>;
+            let controllerIndex = controllerIndices.get(pointerId);
+            if (controllerIndex === undefined) {
+                controllerIndex = controllerIndices.size;
+                controllerIndices.set(pointerId, controllerIndex);
+                context._setGlobalContextVariable("khrInteractivityControllerIndices", controllerIndices);
+            }
+            this.controllerIndex.setValue(controllerIndex, context);
+        }
         this.selectionPoint.setValue(this.selectionPointInput.getValue(context), context);
         this.selectionRayOrigin.setValue(this.selectionRayOriginInput.getValue(context), context);
         this.value.setValue(context.getEventReference(this.config.eventKey), context);

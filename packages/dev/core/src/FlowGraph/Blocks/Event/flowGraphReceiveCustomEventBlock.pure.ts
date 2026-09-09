@@ -42,6 +42,11 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
      */
     public readonly eventRef: FlowGraphDataConnection<string>;
 
+    /** @returns the configured custom event id */
+    public override get eventKey(): string {
+        return this.config.eventId;
+    }
+
     constructor(
         /**
          * the configuration of the block

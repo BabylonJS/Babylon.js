@@ -80,6 +80,56 @@ export class InteractivityGraphToFlowGraphParser {
 
     private _interactivityGraph: IKHRInteractivity_Graph;
 
+    private get _strictValidation(): boolean {
+        return !!this._declarationModels;
+    }
+
+    private _hasDefaultFlowInput(operation: string): boolean {
+        return (
+            operation.startsWith("flow/") ||
+            operation.startsWith("animation/") ||
+            operation === "pointer/set" ||
+            operation === "pointer/interpolate" ||
+            operation === "variable/set" ||
+            operation === "variable/interpolate" ||
+            operation === "event/send" ||
+            operation === "event/stopPropagation" ||
+            operation === "flow/log:BABYLON"
+        );
+    }
+
+    private _getAllowedDynamicValueSockets(operation: string, node: IKHRInteractivity_Node, direction: "input" | "output"): ReadonlySet<string> | undefined {
+        if ((operation === "event/send" && direction === "input") || (operation === "event/receive" && direction === "output")) {
+            const eventIndex = node.configuration?.event?.value?.[0];
+            if (typeof eventIndex === "number") {
+                return new Set(Object.keys(this._interactivityGraph.events?.[eventIndex]?.values ?? {}));
+            }
+        }
+        if (operation === "variable/set" && direction === "input") {
+            return new Set((node.configuration?.variables?.value ?? []).map(String));
+        }
+        if (operation === "math/switch" && direction === "input") {
+            return new Set((node.configuration?.cases?.value ?? []).map(String));
+        }
+        if ((operation === "pointer/get" || operation === "pointer/set" || operation === "pointer/interpolate") && direction === "input") {
+            const pointer = node.configuration?.pointer?.value?.[0];
+            if (typeof pointer === "string") {
+                return new Set(
+                    pointer
+                        .split("/")
+                        .filter((segment) => (segment.startsWith("[") && !segment.startsWith("[[")) || (segment.startsWith("{") && !segment.startsWith("{{")))
+                        .map((segment) =>
+                            segment
+                                .substring(1, segment.length - 1)
+                                .replace(/~1/g, "/")
+                                .replace(/~0/g, "~")
+                        )
+                );
+            }
+        }
+        return undefined;
+    }
+
     public get arrays() {
         return {
             types: this._types,
@@ -351,6 +401,9 @@ export class InteractivityGraphToFlowGraphParser {
                 }
 
                 const propertyMapping = nodeMapping.configuration?.[key];
+                if (!propertyMapping && this._strictValidation) {
+                    continue;
+                }
                 if (propertyMapping?.validationOnly) {
                     continue;
                 }
@@ -416,8 +469,21 @@ export class InteractivityGraphToFlowGraphParser {
             // connect the flows
             for (const flowKey of flowsKeys) {
                 const flow = flowsFromGLTF[flowKey];
-                const flowMapping = outputMapper.flowGraphMapping.outputs?.flows?.[flowKey];
-                const socketOutName = flowMapping?.name || flowKey;
+                let flowMapping = outputMapper.flowGraphMapping.outputs?.flows?.[flowKey];
+                let outputArrayMapping = false;
+                if (!flowMapping) {
+                    for (const key in outputMapper.flowGraphMapping.outputs?.flows) {
+                        if (key.startsWith("[") && key.endsWith("]")) {
+                            outputArrayMapping = true;
+                            flowMapping = outputMapper.flowGraphMapping.outputs?.flows?.[key];
+                            break;
+                        }
+                    }
+                }
+                if (this._strictValidation && !flowMapping) {
+                    continue;
+                }
+                const socketOutName = flowMapping ? (outputArrayMapping ? flowMapping.name.replace("$1", flowKey) : flowMapping.name) : flowKey;
                 // get the input node of this block
                 const inputNodeId = flow.node;
                 const nodeIn = this._nodes[inputNodeId];
@@ -453,6 +519,12 @@ export class InteractivityGraphToFlowGraphParser {
                             flowInMapping = inputMapper.inputs?.flows?.[key];
                         }
                     }
+                    if (!flowInMapping && (flow.socket ?? "in") === "in" && this._hasDefaultFlowInput(nodeIn.fullOperationName)) {
+                        flowInMapping = { name: "in" };
+                    }
+                    if (this._strictValidation && !flowInMapping) {
+                        continue;
+                    }
                 }
                 const nodeInSocketName = flowInMapping ? (arrayMapping ? flowInMapping.name.replace("$1", flow.socket || "") : flowInMapping.name) : flow.socket || "in";
                 const inputBlock = (flowInMapping && flowInMapping.toBlock && nodeIn.blocks.find((b) => b.className === flowInMapping.toBlock)) || nodeIn.blocks[0];
@@ -481,6 +553,10 @@ export class InteractivityGraphToFlowGraphParser {
                             valueMapping = outputMapper.flowGraphMapping.inputs?.values?.[key];
                         }
                     }
+                }
+                const allowedDynamicInputs = arrayMapping ? this._getAllowedDynamicValueSockets(outputMapper.fullOperationName, gltfNode, "input") : undefined;
+                if (this._strictValidation && (!valueMapping || (allowedDynamicInputs && !allowedDynamicInputs.has(valueKey)))) {
+                    continue;
                 }
                 const socketInName = valueMapping ? (arrayMapping ? valueMapping.name.replace("$1", valueKey) : valueMapping.name) : valueKey;
                 // create a serialized socket
@@ -529,6 +605,12 @@ export class InteractivityGraphToFlowGraphParser {
                                 arrayMapping = true;
                                 valueMapping = outputMapper.outputs?.values?.[key];
                             }
+                        }
+                        const allowedDynamicOutputs = arrayMapping
+                            ? this._getAllowedDynamicValueSockets(nodeOut.fullOperationName, this._interactivityGraph.nodes![nodeOutId], "output")
+                            : undefined;
+                        if (this._strictValidation && (!valueMapping || (allowedDynamicOutputs && !allowedDynamicOutputs.has(nodeOutSocketName)))) {
+                            continue;
                         }
                     }
                     const socketOutName = valueMapping ? (arrayMapping ? valueMapping.name.replace("$1", nodeOutSocketName) : valueMapping?.name) : nodeOutSocketName;

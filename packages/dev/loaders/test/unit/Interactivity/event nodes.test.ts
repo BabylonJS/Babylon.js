@@ -8,7 +8,7 @@ import { PickingInfo } from "core/Collisions";
 import { PointerEventTypes, PointerInfo } from "core/Events";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Logger } from "core/Misc";
-import { ParseFlowGraphAsync } from "core/FlowGraph";
+import { FlowGraphSceneReadyEventBlock, ParseFlowGraphAsync } from "core/FlowGraph";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
 import "loaders/glTF/2.0/glTFLoaderAnimation";
 import "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data";
@@ -257,7 +257,7 @@ describe("Interactivity event nodes", () => {
               };
         const graph: IKHRInteractivity_Graph = {
             types: [{ signature: "int" }, { signature: "ref" }, { signature: "float3" }],
-            declarations: [{ op: operation, extension, inputValueSockets: {}, outputValueSockets }, { op: "flow/sequence" }, { op: "flow/log", extension: "BABYLON" }],
+            declarations: [{ op: operation, extension, outputValueSockets }, { op: "flow/sequence" }, { op: "flow/log", extension: "BABYLON" }],
             nodes: [
                 {
                     declaration: 0,
@@ -280,7 +280,8 @@ describe("Interactivity event nodes", () => {
         const model = CreateKHRInteractivityGraphModel(graph);
         const parser = new InteractivityGraphToFlowGraphParser(graph, gltf, 60, 0, undefined, model.declarations);
         const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
-        const runtimeGraph = await ParseFlowGraphAsync(parser.serializeToFlowGraph(), { coordinator, pathConverter: GetPathToObjectConverter(gltf) });
+        const serializedGraph = parser.serializeToFlowGraph();
+        const runtimeGraph = await ParseFlowGraphAsync(serializedGraph, { coordinator, pathConverter: GetPathToObjectConverter(gltf) });
         const context = runtimeGraph.getContext(0);
         const eventStateBlock = runtimeGraph.getAllBlocks().find((block) => block.getClassName() === "FlowGraphEventReferenceBlock")!;
         expect(eventStateBlock.getDataOutput("nodeReference")!.getValue(context)).toBe("");
@@ -359,7 +360,7 @@ describe("Interactivity event nodes", () => {
         const graph: IKHRInteractivity_Graph = {
             types: [{ signature: "bool" }, { signature: "int" }, { signature: "ref" }, { signature: "float3" }],
             declarations: [
-                { op: "event/onSelect", extension: "KHR_node_selectability", inputValueSockets: {}, outputValueSockets },
+                { op: "event/onSelect", extension: "KHR_node_selectability", outputValueSockets },
                 { op: "event/stopPropagation" },
                 { op: "flow/log", extension: "BABYLON" },
             ],
@@ -398,6 +399,124 @@ describe("Interactivity event nodes", () => {
         scene.onPointerObservable.notifyObservers(new PointerInfo(PointerEventTypes.POINTERPICK, { pointerId: 1 } as any, pickInfo));
 
         expect(log).not.toHaveBeenCalled();
+    });
+
+    it.each(["event/onStart", "event/onTick"] as const)("%s stopImmediate suppresses later lifecycle handlers", async (operation) => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "bool" }, { signature: "ref" }, { signature: "int" }],
+            declarations: [{ op: operation }, { op: operation }, { op: "event/stopPropagation" }, { op: "flow/log", extension: "BABYLON" }],
+            nodes: [
+                { declaration: 0, flows: { out: { node: 2 } } },
+                { declaration: 1, flows: { out: { node: 3 } } },
+                {
+                    declaration: 2,
+                    values: {
+                        event: { node: 0, socket: "event", type: 1 },
+                        stopImmediate: { type: 0, value: [true] },
+                    },
+                },
+                { declaration: 3, values: { message: { type: 2, value: [42] } } },
+            ],
+        };
+        const parser = new InteractivityGraphToFlowGraphParser(graph, {});
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+        await ParseFlowGraphAsync(parser.serializeToFlowGraph(), { coordinator });
+
+        coordinator.start();
+        if (operation === "event/onTick") {
+            scene.render();
+        }
+
+        expect(log).not.toHaveBeenCalled();
+    });
+
+    it("assigns stable distinct controller indices for multiple pointer ids", () => {
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+        const context = coordinator.createGraph().createContext();
+        const block = new FlowGraphEventReferenceBlock({ eventKey: "pointer" });
+
+        block.controllerIndexInput.setValue(7, context);
+        block._execute(context);
+        expect(block.controllerIndex.getValue(context)).toBe(0);
+        block.controllerIndexInput.setValue(8, context);
+        block._execute(context);
+        expect(block.controllerIndex.getValue(context)).toBe(1);
+        block.controllerIndexInput.setValue(7, context);
+        block._execute(context);
+        expect(block.controllerIndex.getValue(context)).toBe(0);
+    });
+
+    it("cleans lifecycle dispatch state when an event handler throws", () => {
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+        const graph = coordinator.createGraph();
+        graph.createContext();
+        const event = new FlowGraphSceneReadyEventBlock();
+        graph.addEventBlock(event);
+        vi.spyOn(event, "_executeEvent").mockImplementation(() => {
+            throw new Error("event failure");
+        });
+
+        expect(() => coordinator.start()).toThrow("event failure");
+        expect(coordinator._eventDispatchStack).toHaveLength(0);
+    });
+
+    it.each([
+        ["event/onSelect", "KHR_node_selectability", "select"],
+        ["event/onHoverIn", "KHR_node_hoverability", "hover"],
+    ] as const)("%s assigns distinct indices to two pointer controllers", async (operation, extension, trigger) => {
+        const mesh = new Mesh("interactive", scene);
+        (mesh as any)._internalMetadata = { gltf: { pointers: ["/nodes/0"] } };
+        const gltf: any = { nodes: [{ _babylonTransformNode: mesh, _primitiveBabylonMeshes: [mesh] }] };
+        const outputValueSockets =
+            trigger === "select"
+                ? {
+                      selectedNode: { type: 1 },
+                      selectionRayOrigin: { type: 2 },
+                      selectionPoint: { type: 2 },
+                      controllerIndex: { type: 0 },
+                      event: { type: 1 },
+                  }
+                : {
+                      hoveredNode: { type: 1 },
+                      controllerIndex: { type: 0 },
+                      event: { type: 1 },
+                  };
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }, { signature: "ref" }, { signature: "float3" }],
+            declarations: [
+                { op: operation, extension, outputValueSockets },
+                { op: "flow/log", extension: "BABYLON" },
+            ],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { nodeIndex: { value: [0] } },
+                    flows: { out: { node: 1 } },
+                },
+                { declaration: 1, values: { message: { node: 0, socket: "controllerIndex", type: 0 } } },
+            ],
+        };
+        const model = CreateKHRInteractivityGraphModel(graph, 0, undefined, 1);
+        const parser = new InteractivityGraphToFlowGraphParser(graph, gltf, 60, 0, undefined, model.declarations);
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+        await ParseFlowGraphAsync(parser.serializeToFlowGraph(), { coordinator, pathConverter: GetPathToObjectConverter(gltf) });
+        coordinator.start();
+
+        if (trigger === "select") {
+            for (const pointerId of [7, 8]) {
+                const pickInfo = new PickingInfo();
+                pickInfo.hit = true;
+                pickInfo.pickedMesh = mesh;
+                scene.onPointerObservable.notifyObservers(new PointerInfo(PointerEventTypes.POINTERPICK, { pointerId } as any, pickInfo));
+            }
+        } else {
+            scene.setPointerOverMesh(mesh, 7);
+            scene.setPointerOverMesh(null, 7);
+            scene.setPointerOverMesh(mesh, 8);
+        }
+
+        expect(log).toHaveBeenCalledWith(0);
+        expect(log).toHaveBeenCalledWith(1);
     });
 
     it.each(["selectable", "hoverable"] as const)("%s state applies to own primitives and respects inherited false values", (state) => {

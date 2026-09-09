@@ -256,19 +256,21 @@ export class FlowGraph {
                 const order = this._getContextualOrder(event.type, context);
                 for (const block of order) {
                     const eventBlock = block as FlowGraphEventBlock & {
-                        config?: { eventKey?: string };
                         _getReferencedMesh?: (context: FlowGraphContext) => AbstractMesh | undefined;
                     };
                     const target = eventBlock._getReferencedMesh?.(context);
                     if (source && target && propagationStops.some((stoppedTarget) => stoppedTarget !== target && _IsDescendantOf(source, target))) {
                         continue;
                     }
-                    const eventKey = eventBlock.config?.eventKey;
-                    if (eventKey) {
-                        this._coordinator._beginEventDispatch(eventKey, eventState);
+                    const eventKey = eventBlock.eventKey;
+                    this._coordinator._beginEventDispatch(eventKey, eventState);
+                    let shouldContinue: boolean;
+                    let dispatch: ReturnType<FlowGraphCoordinator["_endEventDispatch"]>;
+                    try {
+                        shouldContinue = block._executeEvent(context, event.payload);
+                    } finally {
+                        dispatch = this._coordinator._endEventDispatch();
                     }
-                    const shouldContinue = block._executeEvent(context, event.payload);
-                    const dispatch = eventKey ? this._coordinator._endEventDispatch() : undefined;
                     if (dispatch?.propagationStopped && target) {
                         propagationStops.push(target);
                     }

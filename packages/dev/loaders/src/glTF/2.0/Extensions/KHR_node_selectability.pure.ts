@@ -185,7 +185,6 @@ export function _RegisterKHRNodeSelectabilityRuntime(): void {
             serializedObjects[0].config.useNaNDefaults = true;
             serializedObjects[0].config.pointerIdDefault = -1;
             serializedObjects[4].config.eventKey = eventKey;
-            serializedObjects[4].config.normalizeControllerIndex = true;
             return serializedObjects;
         },
     });

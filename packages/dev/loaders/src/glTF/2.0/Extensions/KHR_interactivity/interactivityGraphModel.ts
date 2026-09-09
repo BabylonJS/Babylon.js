@@ -299,35 +299,115 @@ function _getPointerTemplateSockets(pointer: string): { name: string; signature:
 function _resolveValueTypeIndex(
     value: IKHRInteractivity_Variable | { node: number; socket?: string; type?: number },
     graph: IKHRInteractivity_Graph,
-    declarations: readonly IKHRInteractivityDeclarationModel[]
+    declarations: readonly IKHRInteractivityDeclarationModel[],
+    visited: Set<string> = new Set()
 ): number | undefined {
-    if (value.type !== undefined) {
-        return value.type;
+    if ("node" in value) {
+        return _resolveOutputTypeIndex(value.node, value.socket ?? "value", graph, declarations, visited);
     }
-    if (!("node" in value) || !_isValidIndex(value.node, graph.nodes?.length ?? 0)) {
+    return value.type;
+}
+
+function _resolveOutputTypeIndex(
+    nodeIndex: number,
+    socket: string,
+    graph: IKHRInteractivity_Graph,
+    declarations: readonly IKHRInteractivityDeclarationModel[],
+    visited: Set<string> = new Set()
+): number | undefined {
+    const key = `${nodeIndex}:${socket}`;
+    if (visited.has(key)) {
         return undefined;
     }
-    const sourceNode = graph.nodes![value.node];
+    visited.add(key);
+    if (!_isValidIndex(nodeIndex, graph.nodes?.length ?? 0)) {
+        return undefined;
+    }
+    const sourceNode = graph.nodes![nodeIndex];
     if (!_isValidIndex(sourceNode.declaration, declarations.length)) {
         return undefined;
     }
     const declaration = declarations[sourceNode.declaration];
-    const socket = value.socket ?? "value";
     const declaredType = declaration.source.outputValueSockets?.[socket]?.type;
     if (declaredType !== undefined) {
         return declaredType;
     }
+    const booleanType = () => graph.types?.findIndex((type) => type.signature === "bool");
     if (socket === "isValid") {
-        return graph.types?.findIndex((type) => type.signature === "bool");
+        return booleanType();
+    }
+    if (declaration.operation === "pointer/get" && socket === "value") {
+        const configuredType = sourceNode.configuration?.type?.value?.[0];
+        return typeof configuredType === "number" ? configuredType : undefined;
+    }
+    if (declaration.operation === "variable/get" && socket === "value") {
+        const variableIndex = sourceNode.configuration?.variable?.value?.[0];
+        return typeof variableIndex === "number" ? graph.variables?.[variableIndex]?.type : undefined;
+    }
+    if (declaration.operation === "math/switch" && socket === "value") {
+        const defaultInput = sourceNode.values?.default;
+        return defaultInput ? _resolveValueTypeIndex(defaultInput, graph, declarations, visited) : undefined;
+    }
+    const fixedSignature = _getFixedOutputSignature(declaration.operation, socket);
+    if (fixedSignature) {
+        return graph.types?.findIndex((type) => type.signature === fixedSignature);
     }
     const mapping = getMappingForDeclaration(declaration.source, false);
-    const mappedType = mapping?.outputs?.values?.[socket]?.gltfType;
+    const outputMapping = mapping?.outputs?.values?.[socket];
+    const mappedType = outputMapping?.gltfType;
     const signature = mappedType === "number" ? "float" : mappedType === "boolean" ? "bool" : mappedType;
     if (signature && signature in gltfTypeToBabylonType) {
         return graph.types?.findIndex((type) => type.signature === signature);
     }
-    const firstInput = Object.values(sourceNode.values ?? {})[0];
-    return firstInput ? _resolveValueTypeIndex(firstInput, graph, declarations) : undefined;
+    const typeSource = outputMapping?.typeSourceInput ? sourceNode.values?.[outputMapping.typeSourceInput] : undefined;
+    return typeSource ? _resolveValueTypeIndex(typeSource, graph, declarations, visited) : undefined;
+}
+
+function _getFixedOutputSignature(operation: string, socket: string): keyof typeof gltfTypeToBabylonType | undefined {
+    if (socket !== "value") {
+        if (
+            (operation === "math/rgbToOkLCh" && ["l", "c", "h"].includes(socket)) ||
+            (operation === "math/rgbFromOkLCh" && ["r", "g", "b"].includes(socket)) ||
+            operation.startsWith("math/extract")
+        ) {
+            return "float";
+        }
+        if (operation === "math/matDecompose") {
+            return socket === "rotation" ? "float4" : socket === "translation" || socket === "scale" ? "float3" : undefined;
+        }
+        if (operation === "math/quatToAxisAngle") {
+            return socket === "axis" ? "float3" : socket === "angle" ? "float" : undefined;
+        }
+        if ((operation === "flow/doN" && socket === "currentCount") || (operation === "flow/for" && socket === "index")) {
+            return "int";
+        }
+        if (operation === "flow/setDelay" && socket === "lastDelay") {
+            return "ref";
+        }
+        if (operation === "flow/throttle" && socket === "lastRemainingTime") {
+            return "float";
+        }
+        if ((operation === "event/onStart" || operation === "event/onTick" || operation === "event/receive") && socket === "event") {
+            return "ref";
+        }
+        if (operation === "event/onTick" && socket === "timeSinceLastTick") {
+            return "float";
+        }
+        return undefined;
+    }
+    if (["math/E", "math/Pi", "math/Tau", "math/Inf", "math/NaN", "math/random", "math/length", "math/dot", "math/determinant", "math/quatAngleBetween"].includes(operation)) {
+        return "float";
+    }
+    if (["math/eq", "ref/eq", "math/lt", "math/le", "math/gt", "math/ge", "math/isNaN", "math/isInf", "type/intToBool", "type/floatToBool"].includes(operation)) {
+        return "bool";
+    }
+    if (["math/clz", "math/ctz", "math/popcnt", "type/boolToInt", "type/floatToInt"].includes(operation)) {
+        return "int";
+    }
+    if (["type/boolToFloat", "type/intToFloat"].includes(operation)) {
+        return "float";
+    }
+    return undefined;
 }
 
 function _validateNode(
@@ -359,6 +439,11 @@ function _validateNode(
             _addError(diagnostics, issuePath, message);
         }
     };
+    for (const [key, configuration] of Object.entries(node.configuration ?? {})) {
+        if (configuration.value && configuration.value.length === 0) {
+            _addError(diagnostics, `${path}/configuration/${key}/value`, "Configuration value arrays must contain at least one item when present.");
+        }
+    }
     for (const [key, property] of Object.entries(mapping.configuration ?? {})) {
         const configuration = node.configuration?.[key];
         const isConfigurationValid = !!configuration && _validateConfigurationValue(configuration.value, property.configurationType);
@@ -486,7 +571,8 @@ function _validateNode(
                     _addError(diagnostics, `${path}/values/${key}/socket`, `Output value socket "${sourceSocket}" does not exist on node ${value.node}.`);
                 }
                 const declaredOutputType = sourceDeclaration.source.outputValueSockets?.[sourceSocket]?.type;
-                if (value.type !== undefined && declaredOutputType !== undefined && value.type !== declaredOutputType) {
+                const effectiveOutputType = declaredOutputType ?? _resolveOutputTypeIndex(value.node, sourceSocket, graph, declarations);
+                if (value.type !== undefined && effectiveOutputType !== undefined && value.type !== effectiveOutputType) {
                     _addError(diagnostics, `${path}/values/${key}/type`, `Type assertion does not match output socket "${sourceSocket}".`);
                 }
             }
@@ -523,6 +609,32 @@ export function CreateKHRInteractivityGraphModel(
     graph = CloneKHRInteractivityGraph(graph);
     const diagnostics: IKHRInteractivityDiagnostic[] = [];
     const path = `/extensions/KHR_interactivity/graphs/${index}`;
+    for (const key of ["types", "variables", "events", "declarations", "nodes"] as const) {
+        if (graph[key] && graph[key]!.length === 0) {
+            _addError(diagnostics, `${path}/${key}`, `"${key}" must contain at least one item when present.`);
+        }
+    }
+    for (let eventIndex = 0; eventIndex < (graph.events?.length ?? 0); eventIndex++) {
+        if (graph.events![eventIndex].values && Object.keys(graph.events![eventIndex].values!).length === 0) {
+            _addError(diagnostics, `${path}/events/${eventIndex}/values`, '"values" must contain at least one property when present.');
+        }
+    }
+    for (let declarationIndex = 0; declarationIndex < (graph.declarations?.length ?? 0); declarationIndex++) {
+        const declaration = graph.declarations![declarationIndex];
+        for (const key of ["inputValueSockets", "outputValueSockets"] as const) {
+            if (declaration[key] && Object.keys(declaration[key]!).length === 0) {
+                _addError(diagnostics, `${path}/declarations/${declarationIndex}/${key}`, `"${key}" must contain at least one property when present.`);
+            }
+        }
+    }
+    for (let nodeIndex = 0; nodeIndex < (graph.nodes?.length ?? 0); nodeIndex++) {
+        const node = graph.nodes![nodeIndex];
+        for (const key of ["configuration", "values", "flows"] as const) {
+            if (node[key] && Object.keys(node[key]!).length === 0) {
+                _addError(diagnostics, `${path}/nodes/${nodeIndex}/${key}`, `"${key}" must contain at least one property when present.`);
+            }
+        }
+    }
     const declarationKeys = new Set<string>();
     const declarations = (graph.declarations ?? []).map((declaration, declarationIndex) => {
         const inputSockets = Object.keys(declaration.inputValueSockets ?? {})
