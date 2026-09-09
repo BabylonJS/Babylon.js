@@ -154,6 +154,7 @@ server.registerResource("enums", "nrg://enums", {}, async (uri) => ({
                 "| TextureLocalPosition | 0x00001000 | 4096 | Local/object-space position |",
                 "| TextureWorldNormal | 0x00002000 | 8192 | World-space normal |",
                 "| TextureAlbedoSqrt | 0x00004000 | 16384 | Sqrt-mapped albedo for IBL |",
+                "| TextureObjectId | 0x00020000 | 131072 | 24-bit RGBA object ID texture |",
                 "| ResourceContainer | 0x00100000 | 1048576 | Shared GPU resource container |",
                 "| ShadowGenerator | 0x00200000 | 2097152 | Shadow generator output |",
                 "| ShadowLight | 0x00400000 | 4194304 | Directional/spot/point light for shadow casting |",

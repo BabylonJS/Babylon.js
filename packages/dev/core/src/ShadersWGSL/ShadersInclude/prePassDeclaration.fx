@@ -12,4 +12,8 @@ varying vPosition : vec3f;
     varying vCurrentPosition: vec4f;
     varying vPreviousPosition: vec4f;
 #endif
+#ifdef PREPASS_OBJECT_ID
+    uniform objectId: f32;
+    #include<objectIdFunctions>
+#endif
 #endif
