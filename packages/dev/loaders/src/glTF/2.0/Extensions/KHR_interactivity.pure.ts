@@ -389,10 +389,9 @@ export function _AddInteractivityObjectModel(scene: Scene) {
             return animation._babylonAnimationGroup;
         },
     });
-    //virtualPlayhead - TODO, do we support this property in our animations? getCurrentFrame  is the only method we have for this.
     AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/virtualPlayhead", {
         get: (animation: IAnimation) => {
-            return (animation._babylonAnimationGroup?.getCurrentFrame() ?? 0) / 60; // fixed factor for duration-to-frames conversion
+            return (animation._babylonAnimationGroup?.getVirtualCurrentFrame() ?? 0) / 60; // fixed factor for duration-to-frames conversion
         },
         type: "number",
         getTarget: (animation: IAnimation) => {

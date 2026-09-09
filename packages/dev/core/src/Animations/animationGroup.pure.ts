@@ -90,6 +90,11 @@ export class AnimationGroup implements IDisposable {
     private _isPaused: boolean;
     private _speedRatio = 1;
     private _loopAnimation = false;
+    private _virtualFrame = 0;
+    private _virtualFrameStart = 0;
+    private _virtualFrameStartTime = 0;
+    private _virtualFrameRate = 60;
+    private _virtualFrameDirection = 1;
     private _isAdditive = false;
     private _weight = -1;
     private _playOrder = 0;
@@ -289,7 +294,10 @@ export class AnimationGroup implements IDisposable {
             return;
         }
 
+        this._updateVirtualFrame();
         this._speedRatio = value;
+        this._virtualFrameStart = this._virtualFrame;
+        this._virtualFrameStartTime = this._scene._animationTime;
 
         for (let index = 0; index < this._animatables.length; index++) {
             const animatable = this._animatables[index];
@@ -626,6 +634,13 @@ export class AnimationGroup implements IDisposable {
         }
 
         this._loopAnimation = loop;
+        const effectiveFrom = from ?? this._from;
+        const effectiveTo = to ?? this._to;
+        this._virtualFrame = effectiveFrom;
+        this._virtualFrameStart = effectiveFrom;
+        this._virtualFrameStartTime = this._scene._animationTime;
+        this._virtualFrameRate = this._targetedAnimations[0]?.animation.framePerSecond ?? 60;
+        this._virtualFrameDirection = effectiveTo < effectiveFrom ? -1 : 1;
 
         this._shouldStart = false;
         this._animationLoopCount = 0;
@@ -678,6 +693,7 @@ export class AnimationGroup implements IDisposable {
             return this;
         }
 
+        this._updateVirtualFrame();
         this._isPaused = true;
 
         for (let index = 0; index < this._animatables.length; index++) {
@@ -727,6 +743,9 @@ export class AnimationGroup implements IDisposable {
             const animatable = this._animatables[index];
             animatable.reset();
         }
+        this._virtualFrame = this._animatables[0]?.fromFrame ?? 0;
+        this._virtualFrameStart = this._virtualFrame;
+        this._virtualFrameStartTime = this._scene._animationTime;
 
         return this;
     }
@@ -747,6 +766,8 @@ export class AnimationGroup implements IDisposable {
 
         this.syncWithMask();
 
+        this._virtualFrameStart = this._virtualFrame;
+        this._virtualFrameStartTime = this._scene._animationTime;
         this._isPaused = false;
 
         this.onAnimationGroupPlayObservable.notifyObservers(this);
@@ -764,6 +785,7 @@ export class AnimationGroup implements IDisposable {
             return this;
         }
 
+        this._updateVirtualFrame();
         const list = this._animatables.slice();
         for (let index = 0; index < list.length; index++) {
             list[index].stop(undefined, undefined, true, skipOnAnimationEnd);
@@ -851,6 +873,25 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets the current frame on the unbounded timeline requested by the caller.
+     * Unlike {@link getCurrentFrame}, this value is not clamped or wrapped by the
+     * animation's keyframe range and is retained after the group stops.
+     * @returns the current virtual animation frame
+     */
+    public getVirtualCurrentFrame(): number {
+        this._updateVirtualFrame();
+        return this._virtualFrame;
+    }
+
+    private _updateVirtualFrame(): void {
+        if (!this._isStarted || this._isPaused) {
+            return;
+        }
+        const elapsedSeconds = (this._scene._animationTime - this._virtualFrameStartTime) / 1000;
+        this._virtualFrame = this._virtualFrameStart + elapsedSeconds * this._virtualFrameRate * this._speedRatio * this._virtualFrameDirection;
+    }
+
+    /**
      * Dispose all associated resources
      */
     public dispose(): void {
@@ -880,6 +921,7 @@ export class AnimationGroup implements IDisposable {
     }
 
     private _checkAnimationGroupEnded(animatable: Animatable, skipOnAnimationEnd = false) {
+        this._updateVirtualFrame();
         // animatable should be taken out of the array
         const idx = this._animatables.indexOf(animatable);
         if (idx > -1) {

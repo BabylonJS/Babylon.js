@@ -62,5 +62,33 @@ describe("Babylon Animation Group", function () {
             expect(animationGroup.animatables).toHaveLength(0);
             expect(scene.animatables).toHaveLength(0);
         });
+
+        it("tracks and retains the unbounded requested frame", () => {
+            const scene = new Scene(subject);
+            const node = new TransformNode("node0", scene);
+            const animation = new Animation("animation", "position.x", 60, Animation.ANIMATIONTYPE_FLOAT);
+            animation.setKeys([
+                { frame: 0, value: 0 },
+                { frame: 600, value: 1 },
+            ]);
+            const animationGroup = new AnimationGroup("animationGroup0", scene);
+            animationGroup.addTargetedAnimation(animation, node);
+
+            animationGroup.start(true, 2, 120, 600);
+            scene._animationTime = 500;
+            expect(animationGroup.getVirtualCurrentFrame()).toBe(180);
+
+            animationGroup.pause();
+            scene._animationTime = 1000;
+            expect(animationGroup.getVirtualCurrentFrame()).toBe(180);
+
+            animationGroup.restart();
+            scene._animationTime = 1250;
+            expect(animationGroup.getVirtualCurrentFrame()).toBe(210);
+
+            animationGroup.stop();
+            scene._animationTime = 2000;
+            expect(animationGroup.getVirtualCurrentFrame()).toBe(210);
+        });
     });
 });
