@@ -127,8 +127,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
             addItemCommand: explorerService.addItemCommand,
             addGroupCommand: explorerService.addGroupCommand,
             dispose: () => {
-                explorerService.dispose();
                 paneRegistration.dispose();
+                explorerService.dispose();
             },
         };
     },

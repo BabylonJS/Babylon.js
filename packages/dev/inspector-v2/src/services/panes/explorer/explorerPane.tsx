@@ -10,7 +10,7 @@ import { type IShellService } from "shared-ui-components/modularTool/services/sh
 
 import { CubeTreeRegular } from "@fluentui/react-icons";
 
-import { useObservableState, useOrderedObservableCollection } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "shared-ui-components/modularTool/hooks/observableHooks";
 import { type IReadonlyObservableCollection, ObservableCollection } from "shared-ui-components/modularTool/misc/observableCollection";
 
 /**
@@ -135,7 +135,7 @@ type ExplorerPaneProps = Readonly<{
 const ExplorerPane: FunctionComponent<ExplorerPaneProps> = (props) => {
     const { selectionService, getRoot, rootLabel, rootIcon, onRootChanged, getNodes, onNodesChanged, nodeProviders, itemCommandProviders, groupCommandProviders } = props;
 
-    const orderedNodeProviders = useOrderedObservableCollection(nodeProviders);
+    const currentNodeProviders = useObservableCollection(nodeProviders);
     const itemCommands = useOrderedObservableCollection(itemCommandProviders);
     const groupCommands = useOrderedObservableCollection(groupCommandProviders);
     const nodesVersion = useNodesVersion(onNodesChanged);
@@ -158,11 +158,11 @@ const ExplorerPane: FunctionComponent<ExplorerPaneProps> = (props) => {
             entity: root,
             icon: rootIcon,
             getDisplayInfo: () => ({ name: rootLabel }),
-            getChildren: () => GetExplorerNodeChildren(root, getNodes(), orderedNodeProviders),
+            getChildren: () => GetExplorerNodeChildren(root, getNodes(), currentNodeProviders),
         };
 
         return [rootNode];
-    }, [rootLabel, rootIcon, getNodes, nodesVersion, nodeProvidersVersion, orderedNodeProviders, root]);
+    }, [rootLabel, rootIcon, getNodes, nodesVersion, nodeProvidersVersion, currentNodeProviders, root]);
 
     return (
         <>
