@@ -59,7 +59,7 @@ export interface IGLTFToFlowGraphMappingObject {
      * This is used if we generate more than one block for a single glTF node.
      * Defaults to the first block in the mapping.
      */
-    toBlock?: FlowGraphBlockNames;
+    toBlock?: FlowGraphBlockNames | string;
 
     /**
      * Used in configuration values. If defined, this will be the default value, if no value is provided.
@@ -205,34 +205,43 @@ export function getMappingForDeclaration(declaration: IKHRInteractivity_Declarat
     if (!mapping) {
         if (returnNoOpIfNotAvailable) {
             Logger.Warn(`No mapping found for operation ${declaration.op} and extension ${declaration.extension || "KHR_interactivity"}`);
-            const inputs: IGLTFToFlowGraphMapping["inputs"] = {};
-            const outputs: IGLTFToFlowGraphMapping["outputs"] = {
-                flows: {},
-            };
-            if (declaration.inputValueSockets) {
-                inputs.values = {};
-                for (const key in declaration.inputValueSockets) {
-                    inputs.values[key] = {
-                        name: key,
-                    };
-                }
-            }
-            if (declaration.outputValueSockets) {
-                outputs.values = {};
-                Object.keys(declaration.outputValueSockets).forEach((key) => {
-                    outputs.values![key] = {
-                        name: key,
-                    };
-                });
-            }
-            return {
-                blocks: [], // no blocks, just mapping
-                inputs,
-                outputs,
-            };
+            return getNoOpMappingForDeclaration(declaration);
         }
     }
     return mapping;
+}
+
+/**
+ * Creates the typed no-op mapping required for an unsupported extension declaration.
+ * @param declaration unsupported extension declaration
+ * @returns a mapping that preserves the declared value sockets
+ */
+export function getNoOpMappingForDeclaration(declaration: IKHRInteractivity_Declaration): IGLTFToFlowGraphMapping {
+    const inputs: IGLTFToFlowGraphMapping["inputs"] = {};
+    const outputs: IGLTFToFlowGraphMapping["outputs"] = {
+        flows: {},
+    };
+    if (declaration.inputValueSockets) {
+        inputs.values = {};
+        for (const key in declaration.inputValueSockets) {
+            inputs.values[key] = {
+                name: key,
+            };
+        }
+    }
+    if (declaration.outputValueSockets) {
+        outputs.values = {};
+        Object.keys(declaration.outputValueSockets).forEach((key) => {
+            outputs.values![key] = {
+                name: key,
+            };
+        });
+    }
+    return {
+        blocks: [],
+        inputs,
+        outputs,
+    };
 }
 
 /**

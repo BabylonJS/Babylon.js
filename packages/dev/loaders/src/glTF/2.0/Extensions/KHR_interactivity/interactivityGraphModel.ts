@@ -6,7 +6,7 @@ import {
     type IKHRInteractivity_Node,
     type IKHRInteractivity_Variable,
 } from "babylonjs-gltf2interface";
-import { getMappingForDeclaration, type IGLTFToFlowGraphMapping, type IGLTFToFlowGraphMappingObject } from "./declarationMapper";
+import { getMappingForDeclaration, getNoOpMappingForDeclaration, type IGLTFToFlowGraphMapping, type IGLTFToFlowGraphMappingObject } from "./declarationMapper";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 
 /**
@@ -159,13 +159,50 @@ function _validateValue(value: IKHRInteractivity_Variable, graph: IKHRInteractiv
     if (runtimeType && value.value.length !== runtimeType.length) {
         _addError(diagnostics, `${path}/value`, `Expected ${runtimeType.length} value component(s) for type "${type.signature}", received ${value.value.length}.`);
     }
+    for (let componentIndex = 0; componentIndex < value.value.length; componentIndex++) {
+        const component = value.value[componentIndex];
+        let valid = true;
+        switch (type.signature) {
+            case "bool":
+                valid = typeof component === "boolean";
+                break;
+            case "int":
+                valid =
+                    (typeof component === "number" || (typeof component === "string" && component.trim() !== "")) &&
+                    Number.isInteger(Number(component)) &&
+                    Number(component) >= -2147483648 &&
+                    Number(component) <= 2147483647;
+                break;
+            case "float":
+            case "float2":
+            case "float3":
+            case "float4":
+            case "float2x2":
+            case "float3x3":
+            case "float4x4":
+                valid = typeof component === "number" || (typeof component === "string" && component.trim() !== "" && !Number.isNaN(Number(component))) || component === "NaN";
+                break;
+            case "ref":
+                valid = typeof component === "string" && (component === "" || component.startsWith("/"));
+                break;
+            default:
+                break;
+        }
+        if (!valid) {
+            _addError(diagnostics, `${path}/value/${componentIndex}`, `Value component is invalid for type "${type.signature}".`);
+        }
+    }
 }
 
-function _getDeclarationMapping(declaration: IKHRInteractivity_Declaration): {
+function _getDeclarationMapping(
+    declaration: IKHRInteractivity_Declaration,
+    supportedExtensions?: ReadonlySet<string>
+): {
     mapping: IGLTFToFlowGraphMapping | undefined;
     support: KHRInteractivityDeclarationSupport;
 } {
-    const mapping = getMappingForDeclaration(declaration, false);
+    const extensionEnabled = !declaration.extension || !supportedExtensions || supportedExtensions.has(declaration.extension);
+    const mapping = extensionEnabled ? getMappingForDeclaration(declaration, false) : undefined;
     if (mapping) {
         return { mapping, support: declaration.extension ? "extension" : "core" };
     }
@@ -190,22 +227,17 @@ function _validateNode(
     }
 
     const declarationModel = declarations[node.declaration];
-    const mapping = getMappingForDeclaration(declarationModel.source, declarationModel.support === "unsupported-extension");
+    const mapping =
+        declarationModel.support === "unsupported-extension" ? getNoOpMappingForDeclaration(declarationModel.source) : getMappingForDeclaration(declarationModel.source, false);
     if (declarationModel.support === "unknown-core" || !mapping) {
         return;
     }
 
     for (const [key, configuration] of Object.entries(node.configuration ?? {})) {
-        if (!configuration.value?.length) {
+        if (configuration.value === undefined || (!configuration.value.length && !mapping.configuration?.[key]?.isArray)) {
             _addError(diagnostics, `${path}/configuration/${key}/value`, "Configuration values must contain at least one item.");
         }
     }
-    for (const [key, property] of Object.entries(mapping.configuration ?? {})) {
-        if (property.defaultValue === undefined && !node.configuration?.[key]) {
-            _addError(diagnostics, `${path}/configuration/${key}`, `Required configuration "${key}" is missing.`);
-        }
-    }
-
     for (const [key, value] of Object.entries(node.values ?? {})) {
         if (declarationModel.support === "unsupported-extension" && !declarationModel.source.inputValueSockets?.[key]) {
             _addError(diagnostics, `${path}/values/${key}`, `Input value socket "${key}" is not defined by operation "${declarationModel.operation}".`);
@@ -221,15 +253,17 @@ function _validateNode(
             const sourceNode = graph.nodes![value.node];
             if (_isValidIndex(sourceNode.declaration, declarations.length)) {
                 const sourceDeclaration = declarations[sourceNode.declaration];
-                const sourceMapping = getMappingForDeclaration(sourceDeclaration.source, sourceDeclaration.support === "unsupported-extension");
+                const sourceMapping =
+                    sourceDeclaration.support === "unsupported-extension"
+                        ? getNoOpMappingForDeclaration(sourceDeclaration.source)
+                        : getMappingForDeclaration(sourceDeclaration.source, false);
                 const sourceSocket = value.socket ?? "value";
-                if (
-                    sourceDeclaration.support === "unsupported-extension" &&
-                    sourceMapping &&
-                    !_matchesSocket(sourceMapping.outputs?.values, sourceSocket, "value") &&
-                    !sourceDeclaration.source.outputValueSockets?.[sourceSocket]
-                ) {
+                if (sourceDeclaration.support === "unsupported-extension" && sourceMapping && !_matchesSocket(sourceMapping.outputs?.values, sourceSocket, "value")) {
                     _addError(diagnostics, `${path}/values/${key}/socket`, `Output value socket "${sourceSocket}" does not exist on node ${value.node}.`);
+                }
+                const declaredOutputType = sourceDeclaration.source.outputValueSockets?.[sourceSocket]?.type;
+                if (value.type !== undefined && declaredOutputType !== undefined && value.type !== declaredOutputType) {
+                    _addError(diagnostics, `${path}/values/${key}/type`, `Type assertion does not match output socket "${sourceSocket}".`);
                 }
             }
         } else {
@@ -245,7 +279,10 @@ function _validateNode(
         const targetNode = graph.nodes![flow.node];
         if (_isValidIndex(targetNode.declaration, declarations.length)) {
             const targetDeclaration = declarations[targetNode.declaration];
-            const targetMapping = getMappingForDeclaration(targetDeclaration.source, targetDeclaration.support === "unsupported-extension");
+            const targetMapping =
+                targetDeclaration.support === "unsupported-extension"
+                    ? getNoOpMappingForDeclaration(targetDeclaration.source)
+                    : getMappingForDeclaration(targetDeclaration.source, false);
             const targetSocket = flow.socket ?? "in";
             if (targetDeclaration.support === "unsupported-extension" && targetMapping && !_matchesSocket(targetMapping.inputs?.flows, targetSocket, "in")) {
                 _addError(diagnostics, `${path}/flows/${key}/socket`, `Input flow socket "${targetSocket}" does not exist on node ${flow.node}.`);
@@ -258,14 +295,15 @@ function _validateNode(
  * Creates and validates a canonical copy of one KHR_interactivity graph.
  * @param graph source graph
  * @param index graph index in the root extension
+ * @param supportedExtensions enabled extensions that may provide executable operations
  * @returns the canonical graph model
  */
-export function CreateKHRInteractivityGraphModel(graph: IKHRInteractivity_Graph, index: number = 0): IKHRInteractivityGraphModel {
+export function CreateKHRInteractivityGraphModel(graph: IKHRInteractivity_Graph, index: number = 0, supportedExtensions?: ReadonlySet<string>): IKHRInteractivityGraphModel {
     graph = CloneKHRInteractivityGraph(graph);
     const diagnostics: IKHRInteractivityDiagnostic[] = [];
     const path = `/extensions/KHR_interactivity/graphs/${index}`;
     const declarations = (graph.declarations ?? []).map((declaration, declarationIndex) => {
-        const { support } = _getDeclarationMapping(declaration);
+        const { support } = _getDeclarationMapping(declaration, supportedExtensions);
         if (support === "unknown-core") {
             _addError(diagnostics, `${path}/declarations/${declarationIndex}/op`, `Unknown core operation "${declaration.op}".`);
         }
@@ -324,9 +362,10 @@ export function CreateKHRInteractivityGraphModel(graph: IKHRInteractivity_Graph,
 /**
  * Creates an immutable canonical KHR_interactivity document and validates all graph-local references.
  * @param extension source extension object from the glTF document
+ * @param supportedExtensions enabled extensions that may provide executable operations
  * @returns the canonical document
  */
-export function CreateKHRInteractivityDocument(extension: IKHRInteractivity): IKHRInteractivityDocument {
+export function CreateKHRInteractivityDocument(extension: IKHRInteractivity, supportedExtensions?: ReadonlySet<string>): IKHRInteractivityDocument {
     const source = _cloneJson(extension);
     const diagnostics: IKHRInteractivityDiagnostic[] = [];
     if (!source.graphs?.length) {
@@ -342,7 +381,7 @@ export function CreateKHRInteractivityDocument(extension: IKHRInteractivity): IK
         specificationCommit: KHR_INTERACTIVITY_SPECIFICATION_COMMIT,
         source,
         defaultGraphIndex,
-        graphs: (source.graphs ?? []).map(CreateKHRInteractivityGraphModel),
+        graphs: (source.graphs ?? []).map((graph, index) => CreateKHRInteractivityGraphModel(graph, index, supportedExtensions)),
         diagnostics,
     };
 }

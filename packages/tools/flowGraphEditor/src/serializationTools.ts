@@ -3,13 +3,23 @@ import { type Nullable } from "core/types";
 import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { type FlowGraph } from "core/FlowGraph/flowGraph";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
-import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { FlowGraphCoordinator, type IFlowGraphCoordinatorConfiguration } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { type Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
 import { Constants } from "core/Engines/constants";
 import { type ISerializedFlowGraph } from "core/FlowGraph/typeDefinitions";
 import { FetchSnippet, type ISnippetServerResponse } from "@tools/snippet-loader";
+
+/**
+ * Runtime settings used when deserializing graphs into an editor coordinator.
+ */
+export interface IFlowGraphEditorDeserializeOptions {
+    /** Coordinator configuration supplied by the graph's host format. */
+    coordinatorConfig?: Omit<IFlowGraphCoordinatorConfiguration, "scene">;
+    /** Whether custom events are dispatched synchronously. */
+    dispatchEventsSynchronously?: boolean;
+}
 
 /**
  * Provides serialization and deserialization utilities for the flow graph editor.
@@ -136,12 +146,20 @@ export class SerializationTools {
      * @param globalState - the editor's global state
      * @param scene - optional scene to use instead of globalState.scene
      * @param pathConverter - optional path converter for JSON pointer blocks
+     * @param options - optional host runtime settings
      */
-    public static async DeserializeAsync(serializationObject: any, globalState: GlobalState, scene?: Scene, pathConverter?: any): Promise<void> {
+    public static async DeserializeAsync(
+        serializationObject: any,
+        globalState: GlobalState,
+        scene?: Scene,
+        pathConverter?: any,
+        options?: IFlowGraphEditorDeserializeOptions
+    ): Promise<void> {
         globalState.onIsLoadingChanged.notifyObservers(true);
         try {
             const targetScene = scene ?? globalState.scene;
-            const coordinator = new FlowGraphCoordinator({ scene: targetScene });
+            const coordinator = new FlowGraphCoordinator({ scene: targetScene, ...options?.coordinatorConfig });
+            coordinator.dispatchEventsSynchronously = options?.dispatchEventsSynchronously ?? coordinator.dispatchEventsSynchronously;
 
             // Detect format: coordinator-level vs legacy single-graph
             let graphDataList: ISerializedFlowGraph[];

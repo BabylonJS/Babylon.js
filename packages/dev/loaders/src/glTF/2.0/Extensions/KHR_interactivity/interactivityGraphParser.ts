@@ -1,6 +1,6 @@
 import { type IKHRInteractivity_Graph, type IKHRInteractivity_Node, type IKHRInteractivity_OutputSocketReference, type IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import { type IGLTF } from "../../glTFLoaderInterfaces";
-import { type IGLTFToFlowGraphMapping, getMappingForDeclaration, getMappingForFullOperationName } from "./declarationMapper";
+import { type IGLTFToFlowGraphMapping, getMappingForDeclaration, getNoOpMappingForDeclaration } from "./declarationMapper";
 import { Logger } from "core/Misc/logger";
 import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphConnection, type ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc/guid";
@@ -64,7 +64,8 @@ export class InteractivityGraphToFlowGraphParser {
         interactivityGraph: IKHRInteractivity_Graph,
         private _gltf: IGLTF,
         public _animationTargetFps: number = 60,
-        private _graphIndex: number = 0
+        private _graphIndex: number = 0,
+        private _supportedExtensions?: ReadonlySet<string>
     ) {
         this._interactivityGraph = CloneKHRInteractivityGraph(interactivityGraph);
         // start with types
@@ -103,11 +104,12 @@ export class InteractivityGraphToFlowGraphParser {
         }
         for (let index = 0; index < this._interactivityGraph.declarations.length; index++) {
             const declaration = this._interactivityGraph.declarations[index];
-            const supportedMapping = getMappingForDeclaration(declaration, false);
+            const extensionEnabled = !declaration.extension || !this._supportedExtensions || this._supportedExtensions.has(declaration.extension);
+            const supportedMapping = extensionEnabled ? getMappingForDeclaration(declaration, false) : undefined;
             if (!supportedMapping && !declaration.extension) {
                 throw new Error(`Unknown core KHR_interactivity operation "${declaration.op}".`);
             }
-            const mapping = supportedMapping ?? getMappingForDeclaration(declaration);
+            const mapping = supportedMapping ?? (declaration.extension ? getNoOpMappingForDeclaration(declaration) : undefined);
             if (!mapping) {
                 Logger.Error(["No mapping found for declaration", declaration]);
                 throw new Error("Error parsing declarations");
@@ -310,6 +312,7 @@ export class InteractivityGraphToFlowGraphParser {
             Object.entries(sockets ?? {}).map(([name, definition]) => ({
                 name,
                 type: this._types[definition.type]?.flowGraphType,
+                signature: this._interactivityGraph.types?.[definition.type]?.signature,
             }));
         block.config = {
             operation: mapping.fullOperationName,
@@ -428,7 +431,7 @@ export class InteractivityGraphToFlowGraphParser {
                     block.signalOutputs.push(socketOut);
                 }
                 // get the mapper for the input node - in case it mapped to multiple blocks
-                const inputMapper = getMappingForFullOperationName(nodeIn.fullOperationName);
+                const inputMapper = this._mappings[this._interactivityGraph.nodes![inputNodeId].declaration]?.flowGraphMapping;
                 if (!inputMapper) {
                     Logger.Error(["No mapping found for input node", nodeIn]);
                     throw new Error("Error parsing node connections");
@@ -503,7 +506,7 @@ export class InteractivityGraphToFlowGraphParser {
                         );
                         continue;
                     }
-                    const outputMapper = getMappingForFullOperationName(nodeOut.fullOperationName);
+                    const outputMapper = this._mappings[this._interactivityGraph.nodes![nodeOutId].declaration]?.flowGraphMapping;
                     if (!outputMapper) {
                         Logger.Error(["No mapping found for output socket reference", value]);
                         throw new Error("Error parsing node connections");
@@ -530,7 +533,7 @@ export class InteractivityGraphToFlowGraphParser {
                     }
                     // connect the sockets
                     if (convertConnectedTimeToFrames) {
-                        this._connectWithSecondsToFramesConversion(context, socketOut, socketIn);
+                        this._connectWithSecondsToFramesConversion(context, socketOut, socketIn, i, gltfNode.declaration);
                     } else {
                         socketIn.connectedPointIds.push(socketOut.uniqueId);
                         socketOut.connectedPointIds.push(socketIn.uniqueId);
@@ -588,13 +591,17 @@ export class InteractivityGraphToFlowGraphParser {
      * @param context the serialized flow graph context that stores literal socket values
      * @param upstreamOutput the data output socket providing the time value (in seconds)
      * @param downstreamInput the data input socket that expects the time in frames
+     * @param nodeIndex source node receiving the converted value
+     * @param declarationIndex source declaration used by the receiving node
      */
     private _connectWithSecondsToFramesConversion(
         context: ISerializedFlowGraphContext,
         upstreamOutput: ISerializedFlowGraphConnection,
-        downstreamInput: ISerializedFlowGraphConnection
+        downstreamInput: ISerializedFlowGraphConnection,
+        nodeIndex: number,
+        declarationIndex: number
     ): void {
-        const multiplyBlock = this._getEmptyBlock(FlowGraphBlockNames.Multiply, FlowGraphBlockNames.Multiply);
+        const multiplyBlock = this._getEmptyBlock(FlowGraphBlockNames.Multiply, FlowGraphBlockNames.Multiply, nodeIndex, declarationIndex, -1);
         // Scalar (float) multiply; matches how the `math/mul` mapping configures the block.
         multiplyBlock.config = { type: FlowGraphTypes.Number };
         const inputA = this._createNewSocketConnection("a");

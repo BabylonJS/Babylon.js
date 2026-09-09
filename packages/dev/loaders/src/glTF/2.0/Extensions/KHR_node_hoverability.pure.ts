@@ -69,7 +69,13 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
 
     addNewInteractivityFlowGraphMapping("event/onHoverIn", NAME, {
         // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
-        blocks: [FlowGraphBlockNames.PointerOverEvent, FlowGraphBlockNames.GetVariable, FlowGraphBlockNames.IndexOf, "KHR_interactivity/FlowGraphGLTFDataProvider"],
+        blocks: [
+            FlowGraphBlockNames.PointerOverEvent,
+            FlowGraphBlockNames.GetVariable,
+            FlowGraphBlockNames.IndexOf,
+            "KHR_interactivity/FlowGraphGLTFDataProvider",
+            "KHR_interactivity/FlowGraphObjectReferenceBlock",
+        ],
         configuration: {
             stopPropagation: { name: "stopPropagation" },
             nodeIndex: {
@@ -86,7 +92,7 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
                 // `hoveredNode` is the new ref-typed output from the Opaque-Reference
                 // spec update — the picked Babylon mesh itself, available directly
                 // from FlowGraphPointerOverEventBlock.meshUnderPointer (no IndexOf).
-                hoveredNode: { name: "meshUnderPointer", toBlock: FlowGraphBlockNames.PointerOverEvent },
+                hoveredNode: { name: "value", toBlock: "KHR_interactivity/FlowGraphObjectReferenceBlock" },
                 controllerIndex: { name: "pointerId" },
             },
             flows: {
@@ -115,6 +121,13 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
                 outputBlockIndex: 0,
                 isVariable: true,
             },
+            {
+                input: "object",
+                output: "meshUnderPointer",
+                inputBlockIndex: 4,
+                outputBlockIndex: 0,
+                isVariable: true,
+            },
         ],
         extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects, context, globalGLTF) {
             // add the glTF to the configuration of the last serialized object
@@ -140,7 +153,13 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
 
     addNewInteractivityFlowGraphMapping("event/onHoverOut", NAME, {
         // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
-        blocks: [FlowGraphBlockNames.PointerOutEvent, FlowGraphBlockNames.GetVariable, FlowGraphBlockNames.IndexOf, "KHR_interactivity/FlowGraphGLTFDataProvider"],
+        blocks: [
+            FlowGraphBlockNames.PointerOutEvent,
+            FlowGraphBlockNames.GetVariable,
+            FlowGraphBlockNames.IndexOf,
+            "KHR_interactivity/FlowGraphGLTFDataProvider",
+            "KHR_interactivity/FlowGraphObjectReferenceBlock",
+        ],
         configuration: {
             stopPropagation: { name: "stopPropagation" },
             nodeIndex: {
@@ -155,7 +174,7 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
             values: {
                 hoverNodeIndex: { name: "index", toBlock: FlowGraphBlockNames.IndexOf },
                 // Ref-typed output: the mesh that the pointer just left.
-                hoveredNode: { name: "meshOutOfPointer", toBlock: FlowGraphBlockNames.PointerOutEvent },
+                hoveredNode: { name: "value", toBlock: "KHR_interactivity/FlowGraphObjectReferenceBlock" },
                 controllerIndex: { name: "pointerId" },
             },
             flows: {
@@ -181,6 +200,13 @@ export function _RegisterKHRNodeHoverabilityRuntime(): void {
                 input: "object",
                 output: "meshOutOfPointer",
                 inputBlockIndex: 2,
+                outputBlockIndex: 0,
+                isVariable: true,
+            },
+            {
+                input: "object",
+                output: "meshOutOfPointer",
+                inputBlockIndex: 4,
                 outputBlockIndex: 0,
                 isVariable: true,
             },

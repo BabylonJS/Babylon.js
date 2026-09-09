@@ -134,7 +134,9 @@ async function GetContextSnapshot(page: Page): Promise<{ selectedContextIndex: n
     });
 }
 
-async function GetCoordinatorSnapshot(page: Page): Promise<{ activeGraphIndex: number; graphs: { name: string; blockClassNames: string[]; totalConnections: number }[] }> {
+async function GetCoordinatorSnapshot(
+    page: Page
+): Promise<{ activeGraphIndex: number; dispatchEventsSynchronously: boolean; hasHostResolver: boolean; graphs: { name: string; blockClassNames: string[]; totalConnections: number }[] }> {
     return await page.evaluate(() => {
         const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
         const coordinator = state?.coordinator;
@@ -157,6 +159,8 @@ async function GetCoordinatorSnapshot(page: Page): Promise<{ activeGraphIndex: n
 
         return {
             activeGraphIndex: state.activeGraphIndex,
+            dispatchEventsSynchronously: coordinator.dispatchEventsSynchronously,
+            hasHostResolver: !!coordinator.config.hostResolver,
             graphs: coordinator.flowGraphs.map((graph: any) => {
                 const serializedGraph: any = {};
                 graph.serialize(serializedGraph);
@@ -1272,6 +1276,10 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await fge.addGraphTab();
         await RenameGraphTab(page, (await fge.getGraphNames())[1], "Scratch Graph");
         await expect.poll(async () => (await GetCoordinatorSnapshot(page)).activeGraphIndex).toBe(1);
+        await expect.poll(async () => await GetCoordinatorSnapshot(page)).toMatchObject({
+            dispatchEventsSynchronously: false,
+            hasHostResolver: true,
+        });
         await fge.addBlockFromPalette("Constant");
         await expect.poll(async () => await fge.getNodeCount()).toBe(1);
 
@@ -1414,6 +1422,18 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                             nodes: [{ declaration: 0, values: { amount: { type: 0, value: [2] } } }],
                         },
                         {
+                            name: "Composite",
+                            types: [{ signature: "float3" }],
+                            declarations: [{ op: "event/onStart" }, { op: "pointer/get" }],
+                            nodes: [
+                                { declaration: 0 },
+                                {
+                                    declaration: 1,
+                                    configuration: { pointer: { value: ["/nodes/0/translation"] }, type: { value: [0] } },
+                                },
+                            ],
+                        },
+                        {
                             name: "Invalid core graph",
                             declarations: [{ op: "core/doesNotExist" }],
                             nodes: [{ declaration: 0 }],
@@ -1430,10 +1450,26 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             target.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
         }, graphGltf);
 
-        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Startup", "Vendor behavior", "Invalid core graph"]);
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Startup", "Vendor behavior", "Composite", "Invalid core graph"]);
         await expect.poll(async () => (await GetCoordinatorSnapshot(page)).activeGraphIndex).toBe(1);
-        await expect(fge.nodeOnCanvas("FlowGraphUnsupportedInteractivityBlock")).toBeVisible();
+        const unsupportedNode = fge.nodeOnCanvas("FlowGraphUnsupportedInteractivityBlock");
+        await expect(unsupportedNode).toBeVisible();
+        await expect(unsupportedNode).toContainText("amount");
+        await expect(unsupportedNode).toContainText("result");
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Unknown core operation "core/doesNotExist"');
+
+        await fge.selectGraphTab("Composite");
+        await expect(page.getByText("pointer/get · node 1", { exact: true })).toBeVisible();
+
+        await fge.selectGraphTab("Startup");
+        await page.getByRole("button", { name: "Enable Debug Mode" }).click();
+        await expect.poll(async () => (await GetDebugSnapshot(page)).isDebugMode).toBe(true);
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await ClickGraphControl(page, "Stop");
+        await WaitForGraphState(page, "Stopped");
+        await ClickGraphControl(page, "Reset");
+        await WaitForGraphState(page, "Stopped");
 
         await fge.selectGraphTab("Invalid core graph");
         await expect.poll(async () => await fge.getNodeCount()).toBe(0);

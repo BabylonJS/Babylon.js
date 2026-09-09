@@ -66,7 +66,13 @@ export function _RegisterKHRNodeSelectabilityRuntime(): void {
 
     addNewInteractivityFlowGraphMapping("event/onSelect", NAME, {
         // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
-        blocks: [FlowGraphBlockNames.MeshPickEvent, FlowGraphBlockNames.GetVariable, FlowGraphBlockNames.IndexOf, "KHR_interactivity/FlowGraphGLTFDataProvider"],
+        blocks: [
+            FlowGraphBlockNames.MeshPickEvent,
+            FlowGraphBlockNames.GetVariable,
+            FlowGraphBlockNames.IndexOf,
+            "KHR_interactivity/FlowGraphGLTFDataProvider",
+            "KHR_interactivity/FlowGraphObjectReferenceBlock",
+        ],
         configuration: {
             stopPropagation: { name: "stopPropagation" },
             nodeIndex: {
@@ -83,7 +89,7 @@ export function _RegisterKHRNodeSelectabilityRuntime(): void {
                 // `selectedNode` is the new ref-typed output from the Opaque-Reference
                 // spec update. It's the picked Babylon mesh itself, available directly
                 // from FlowGraphMeshPickEventBlock.pickedMesh — no IndexOf lookup needed.
-                selectedNode: { name: "pickedMesh", toBlock: FlowGraphBlockNames.MeshPickEvent },
+                selectedNode: { name: "value", toBlock: "KHR_interactivity/FlowGraphObjectReferenceBlock" },
                 controllerIndex: { name: "pointerId" },
                 selectionPoint: { name: "pickedPoint" },
                 selectionRayOrigin: { name: "pickOrigin" },
@@ -111,6 +117,13 @@ export function _RegisterKHRNodeSelectabilityRuntime(): void {
                 input: "object",
                 output: "pickedMesh",
                 inputBlockIndex: 2,
+                outputBlockIndex: 0,
+                isVariable: true,
+            },
+            {
+                input: "object",
+                output: "pickedMesh",
+                inputBlockIndex: 4,
                 outputBlockIndex: 0,
                 isVariable: true,
             },

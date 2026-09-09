@@ -494,7 +494,11 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             },
             this.props.globalState,
             scene,
-            importResult.pathConverter
+            importResult.pathConverter,
+            {
+                coordinatorConfig: { hostResolver: importResult.hostResolver },
+                dispatchEventsSynchronously: false,
+            }
         );
 
         this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);

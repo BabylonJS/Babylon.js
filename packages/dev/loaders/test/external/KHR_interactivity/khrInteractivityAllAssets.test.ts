@@ -17,12 +17,52 @@ interface ITestDescriptor {
     glbFileName: string;
     tests?: {
         entryPoints?: { delayedExecutionTime?: number }[];
+        requiredInteractions?: {
+            type: "hover" | "select";
+            expectation: "mustFire" | "mustNotFire";
+            targetNodeId: number;
+            targetNodeName: string;
+        }[];
         subTests?: {
             name: string;
             successResultVarId?: number;
             successResultVarName?: string;
         }[];
     }[];
+}
+
+async function _performRequiredInteractions(page: Page, descriptor: ITestDescriptor | undefined): Promise<void> {
+    const interactions = (descriptor?.tests ?? []).flatMap((test) => test.requiredInteractions ?? []).filter((interaction) => interaction.expectation === "mustFire");
+    if (!interactions.length) {
+        return;
+    }
+
+    await page.evaluate(async (requiredInteractions) => {
+        const scene = window.scene!;
+        const importResult = (BABYLON as any).GLTF2.Loader.Extensions.GetKHRInteractivityImportResult(scene);
+        for (const interaction of requiredInteractions) {
+            const transformNode = importResult?.glTF.nodes?.[interaction.targetNodeId]?._babylonTransformNode;
+            const mesh = transformNode?.getChildMeshes?.()[0] ?? transformNode;
+            if (!mesh) {
+                throw new Error(`Required interaction target "${interaction.targetNodeName}" (node ${interaction.targetNodeId}) was not loaded.`);
+            }
+
+            if (interaction.type === "hover") {
+                scene.setPointerOverMesh(mesh, 1);
+                await new Promise<void>((resolve) => setTimeout(resolve, 0));
+                scene.setPointerOverMesh(null, 1);
+            } else {
+                const pickInfo = new BABYLON.PickingInfo();
+                pickInfo.hit = true;
+                pickInfo.pickedMesh = mesh;
+                pickInfo.pickedPoint = BABYLON.Vector3.Zero();
+                pickInfo.ray = new BABYLON.Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.Forward());
+                const pointerInfo = new BABYLON.PointerInfo(BABYLON.PointerEventTypes.POINTERPICK, { pointerId: 1 } as PointerEvent, pickInfo);
+                scene.onPointerObservable.notifyObservers(pointerInfo, BABYLON.PointerEventTypes.POINTERPICK);
+            }
+            await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        }
+    }, interactions);
 }
 
 interface IConsoleEntry {
@@ -379,6 +419,7 @@ test.describe("KHR_Interactivity all assets", () => {
                 expect(pageCrashed, `${asset.relativePath} crashed the renderer process while loading`).toBe(false);
                 expect(loadResult.success, `${asset.relativePath} failed to load:\n${loadResult.error ?? "Unknown load failure"}`).toBe(true);
 
+                await _performRequiredInteractions(page, asset.descriptor);
                 const renderError = await _runFrames(page, _getRunDurationMs(asset));
                 expect(renderError, `${asset.relativePath} failed while rendering`).toBeUndefined();
 

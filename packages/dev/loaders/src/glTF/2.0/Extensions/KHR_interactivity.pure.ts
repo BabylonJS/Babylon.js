@@ -61,6 +61,8 @@ export interface IKHRInteractivityImportResult {
     pathConverter: CompositePathToObjectConverter<IObjectAccessor>;
     /** Live glTF loader data used by glTF data-provider blocks. */
     glTF: GLTFLoader["gltf"];
+    /** Host resolver that supplies KHR reference semantics to executable graphs. */
+    hostResolver: InteractivityHostResolver;
 }
 
 const _ImportResults = /*#__PURE__*/ new WeakMap<Scene, IKHRInteractivityImportResult>();
@@ -161,7 +163,10 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             return;
         }
 
-        const document = CreateKHRInteractivityDocument(interactivityDefinition);
+        const supportedExtensions = new Set(
+            (this._loader.gltf.extensionsUsed ?? []).filter((extensionName) => this._loader.parent.extensionOptions[extensionName]?.enabled !== false)
+        );
+        const document = CreateKHRInteractivityDocument(interactivityDefinition, supportedExtensions);
         const options = this._loader.parent.extensionOptions[NAME];
         const autoStart = options?.autoStart ?? true;
         const parseOnly = options?.parseOnly ?? false;
@@ -170,6 +175,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             graphs: [],
             pathConverter: this._pathConverter,
             glTF: this._loader.gltf,
+            hostResolver: new InteractivityHostResolver(),
         };
         _ImportResults.set(scene, result);
 
@@ -185,13 +191,19 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                     return;
                 }
                 try {
-                    const parser = new InteractivityGraphToFlowGraphParser(graphModel.source, this._loader.gltf, this._loader.parent.targetFps, graphModel.index);
+                    const parser = new InteractivityGraphToFlowGraphParser(
+                        graphModel.source,
+                        this._loader.gltf,
+                        this._loader.parent.targetFps,
+                        graphModel.index,
+                        supportedExtensions
+                    );
                     const serializedFlowGraph = parser.serializeToFlowGraph();
                     graphResult.serializedFlowGraph = serializedFlowGraph;
                     if (parseOnly) {
                         return;
                     }
-                    const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+                    const coordinator = new FlowGraphCoordinator({ scene, hostResolver: result.hostResolver });
                     coordinator.dispatchEventsSynchronously = false;
                     graphResult.coordinator = coordinator;
                     graphResult.flowGraph = await ParseFlowGraphAsync(serializedFlowGraph, { coordinator, pathConverter: this._pathConverter });
@@ -405,6 +417,9 @@ export function _RegisterKHRInteractivityRuntime(): void {
     });
     addToBlockFactory(NAME, "FlowGraphUnsupportedInteractivityBlock", async () => {
         return (await import("./KHR_interactivity/flowGraphUnsupportedInteractivityBlock")).FlowGraphUnsupportedInteractivityBlock;
+    });
+    addToBlockFactory(NAME, "FlowGraphObjectReferenceBlock", async () => {
+        return (await import("./KHR_interactivity/flowGraphObjectReferenceBlock")).FlowGraphObjectReferenceBlock;
     });
 }
 

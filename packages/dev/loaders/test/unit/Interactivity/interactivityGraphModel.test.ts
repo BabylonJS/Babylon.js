@@ -6,6 +6,8 @@ import {
     KHR_INTERACTIVITY_SPECIFICATION_COMMIT,
 } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphModel";
 import { InteractivityGraphToFlowGraphParser } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
+import { FlowGraphUnsupportedInteractivityBlock } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/flowGraphUnsupportedInteractivityBlock";
+import { _RegisterKHRNodeSelectabilityRuntime } from "../../../src/glTF/2.0/Extensions/KHR_node_selectability.pure";
 
 describe("KHR_interactivity canonical import model", () => {
     it("preserves graph names, extensions, extras, and the selected default graph", () => {
@@ -106,6 +108,51 @@ describe("KHR_interactivity canonical import model", () => {
         );
     });
 
+    it("validates literal component types", () => {
+        const model = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "bool" }, { signature: "int" }, { signature: "ref" }],
+            declarations: [{ op: "math/not" }, { op: "flow/branch" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    values: { a: { type: 0, value: [1] } },
+                    flows: { out: { node: 0 } },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        condition: { type: 1, value: [1.5] },
+                        invalidReference: { type: 2, value: ["not-a-pointer"] },
+                        futureValue: { node: 1 },
+                    },
+                },
+            ],
+        });
+
+        expect(model.valid).toBe(false);
+        expect(model.diagnostics.map((diagnostic) => diagnostic.message)).toEqual(
+            expect.arrayContaining([
+                'Value component is invalid for type "bool".',
+                'Value component is invalid for type "int".',
+                'Value component is invalid for type "ref".',
+            ])
+        );
+    });
+
+    it("treats globally registered mappings as unsupported when their extension is disabled", () => {
+        _RegisterKHRNodeSelectabilityRuntime();
+        const graph: IKHRInteractivity_Graph = {
+            declarations: [{ op: "event/onSelect", extension: "KHR_node_selectability" }],
+            nodes: [{ declaration: 0 }],
+        };
+
+        const model = CreateKHRInteractivityGraphModel(graph, 0, new Set());
+        const serialized = new InteractivityGraphToFlowGraphParser(graph, {} as any, 60, 0, new Set()).serializeToFlowGraph();
+
+        expect(model.declarations[0].support).toBe("unsupported-extension");
+        expect(serialized.allBlocks[0].className).toBe("KHR_interactivity/FlowGraphUnsupportedInteractivityBlock");
+    });
+
     it("does not mutate source data and attaches stable source provenance to generated blocks", () => {
         const graph: IKHRInteractivity_Graph = {
             name: "Named graph",
@@ -140,16 +187,38 @@ describe("KHR_interactivity canonical import model", () => {
                     outputValueSockets: { result: { type: 0 } },
                 },
             ],
-            nodes: [{ declaration: 0, values: { amount: { type: 0, value: [2] } }, flows: { done: { node: 0, socket: "again" } } }],
+            nodes: [
+                { declaration: 0, values: { amount: { type: 0, value: [2] } }, flows: { done: { node: 1, socket: "again" } } },
+                { declaration: 0 },
+            ],
         };
 
         const serialized = new InteractivityGraphToFlowGraphParser(graph, {} as any).serializeToFlowGraph();
         const block = serialized.allBlocks[0];
+        const targetBlock = serialized.allBlocks[1];
 
         expect(block.className).toBe("KHR_interactivity/FlowGraphUnsupportedInteractivityBlock");
         expect(block.dataInputs.map((socket) => socket.name)).toEqual(["amount"]);
         expect(block.dataOutputs.map((socket) => socket.name)).toEqual(["result"]);
-        expect(block.signalInputs.map((socket) => socket.name)).toEqual(["again"]);
+        expect(targetBlock.signalInputs.map((socket) => socket.name)).toEqual(["again"]);
         expect(block.signalOutputs.map((socket) => socket.name)).toEqual(["done"]);
+    });
+
+    it("uses KHR defaults for unsupported extension output sockets", () => {
+        const block = new FlowGraphUnsupportedInteractivityBlock({
+            operation: "vendor/defaults",
+            inputValueSockets: [],
+            outputValueSockets: [
+                { name: "floatValue", type: "number", signature: "float" },
+                { name: "boolValue", type: "boolean", signature: "bool" },
+                { name: "refValue", type: "string", signature: "ref" },
+            ],
+            inputFlowSockets: [],
+            outputFlowSockets: [],
+        });
+
+        expect((block.getDataOutput("floatValue") as any)._defaultValue).toBeNaN();
+        expect((block.getDataOutput("boolValue") as any)._defaultValue).toBe(false);
+        expect((block.getDataOutput("refValue") as any)._defaultValue).toBe("");
     });
 });
