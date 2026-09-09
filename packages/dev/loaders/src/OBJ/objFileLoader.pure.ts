@@ -51,6 +51,12 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     }
 
     /**
+     * Wait for referenced textures to finish loading before completing the OBJ load.
+     * Defaults to false for backwards compatibility.
+     */
+    public static WAIT_FOR_TEXTURES = false;
+
+    /**
      * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
      */
     public static IMPORT_VERTEX_COLORS = false;
@@ -114,6 +120,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             importVertexColors: OBJFileLoader.IMPORT_VERTEX_COLORS,
             invertY: OBJFileLoader.INVERT_Y,
             invertTextureY: OBJFileLoader.INVERT_TEXTURE_Y,
+            waitForTextures: OBJFileLoader.WAIT_FOR_TEXTURES,
             // eslint-disable-next-line @typescript-eslint/naming-convention
             UVScaling: OBJFileLoader.UV_SCALING,
             materialLoadingFailsSilently: OBJFileLoader.MATERIAL_LOADING_FAILS_SILENTLY,
@@ -315,7 +322,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         const mtlPromises: Array<Promise<void>> = [];
         // Check if we have a file to load
         if (fileToLoad !== "" && !this._loadingOptions.skipMaterials) {
-            // Load the MTL and wait for the textures used by the selected meshes.
+            // Load the MTL and optionally wait for the textures used by the selected meshes.
             mtlPromises.push(
                 new Promise((resolve, reject) => {
                     this._loadMTL(
@@ -331,7 +338,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                                     this._assetContainer,
                                     this._loadingOptions.invertTextureY,
                                     new Set(materialToUse),
-                                    true
+                                    this._loadingOptions.waitForTextures
                                 );
                                 // Parsing creates the selected materials synchronously; only their textures are pending.
                                 for (let n = 0; n < materialsFromMTLFile.materials.length; ++n) {
@@ -346,7 +353,9 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                                         }
                                     }
                                 }
-                                await Promise.all(textureLoadPromises);
+                                if (this._loadingOptions.waitForTextures) {
+                                    await Promise.all(textureLoadPromises);
+                                }
                                 resolve();
                             } catch (e) {
                                 Tools.Warn(`Error processing MTL file: '${fileToLoad}'`);
