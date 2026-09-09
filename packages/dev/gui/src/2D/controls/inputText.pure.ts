@@ -112,7 +112,7 @@ export class InputText extends Control {
 
     /** Gets the maximum width allowed by the control in pixels */
     public get maxWidthInPixels(): number {
-        return this._maxWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        return this._getValueInPixel(this._maxWidth, this._cachedParentMeasure.width);
     }
 
     public set maxWidth(value: string | number) {
@@ -191,7 +191,7 @@ export class InputText extends Control {
 
     /** Gets control margin in pixels */
     public get marginInPixels(): number {
-        return this._margin.getValueInPixel(this._host, this._cachedParentMeasure.width);
+        return this._getValueInPixel(this._margin, this._cachedParentMeasure.width);
     }
 
     public set margin(value: string) {
@@ -929,7 +929,7 @@ export class InputText extends Control {
         }
 
         // Text
-        const clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._tempParentMeasure.width);
+        const clipTextLeft = this._currentMeasure.left + this._getValueInPixel(this._margin, this._tempParentMeasure.width);
         if (this.color) {
             context.fillStyle = this.color;
         }
@@ -946,14 +946,15 @@ export class InputText extends Control {
         }
 
         this._textWidth = context.measureText(text.text).width;
-        const marginWidth = this._margin.getValueInPixel(this._host, this._tempParentMeasure.width) * 2;
+        const marginWidth = this._getValueInPixel(this._margin, this._tempParentMeasure.width) * 2;
         if (this._autoStretchWidth) {
-            this.width = Math.min(this._maxWidth.getValueInPixel(this._host, this._tempParentMeasure.width), this._textWidth + marginWidth) + "px";
+            this.width = Math.min(this._getValueInPixel(this._maxWidth, this._tempParentMeasure.width), this._textWidth + marginWidth) + "px";
             this._autoStretchWidth = true; // setting the width will have reset _autoStretchWidth to false!
         }
 
         const rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
-        const availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
+        const allocatedWidth = this.parent?._getLayoutMeasureForChild(this)?.width;
+        const availableWidth = (allocatedWidth ?? this._getValueInPixel(this._width, this._tempParentMeasure.width)) - marginWidth;
 
         context.save();
         context.beginPath();
