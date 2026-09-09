@@ -10,10 +10,13 @@ import { USDFileLoaderMetadata } from "loaders/USD/usdFileLoader.metadata";
 import { materializeCommandBuffers } from "loaders/USD/usdSceneMaterializer";
 import { type WorkerResponse } from "loaders/USD/usdWorkerMessages";
 
-import { createUSDTestBuffers } from "./usdTestUtils";
+import { createUSDMeshTestBuffers, createUSDTestBuffers } from "./usdTestUtils";
+import { deferUSDTextureLoads } from "./usdTextureTestUtils";
+import { GetEnvironmentBRDFTexture } from "core/Misc/brdfTextureTools";
 
 class MockWorker {
     public static readonly Instances: MockWorker[] = [];
+    public static CreateBuffers = createUSDTestBuffers;
 
     public readonly messages: Array<{ requestId: number; asset?: { fileName?: string; files?: Record<string, Uint8Array> } }> = [];
     public terminated = false;
@@ -32,7 +35,7 @@ class MockWorker {
 
     public postMessage(message: { requestId: number }): void {
         this.messages.push(message);
-        const buffers = createUSDTestBuffers();
+        const buffers = MockWorker.CreateBuffers();
         queueMicrotask(() => {
             this._emit({
                 type: "progress",
@@ -85,6 +88,7 @@ describe("USDFileLoader", () => {
 
     beforeEach(() => {
         MockWorker.Instances.length = 0;
+        MockWorker.CreateBuffers = createUSDTestBuffers;
         _RegisterUSDLoaderDependencies();
         engine = new NullEngine();
         scene = new Scene(engine);
@@ -94,6 +98,7 @@ describe("USDFileLoader", () => {
         vi.unstubAllGlobals();
         scene.dispose();
         engine.dispose();
+        vi.restoreAllMocks();
     });
 
     it("registers all USD extensions for binary loading", async () => {
@@ -267,6 +272,101 @@ describe("USDFileLoader", () => {
 
         expect(MockWorker.Instances[0].messages[0].asset?.fileName).toBe("Package#1/Scene?Variant.usda");
 
+        container.dispose();
+        loader.dispose();
+    });
+
+    it.each([true, false])("cancels and rolls back texture materialization (addToScene=%s)", async (addToScene) => {
+        vi.stubGlobal("Worker", MockWorker);
+        MockWorker.CreateBuffers = () => createUSDMeshTestBuffers(true);
+        const existingTexture = GetEnvironmentBRDFTexture(scene);
+        const loads = deferUSDTextureLoads(engine);
+        const revokeUrl = vi.spyOn(URL, "revokeObjectURL");
+        const onComplete = vi.fn();
+        const loader = new USDFileLoader({ workerUrl: "mock-worker.js", onComplete });
+        const data = new Uint8Array([1, 2, 3]).buffer;
+        const loading = addToScene ? loader.loadAsync(scene, data, "") : loader.loadAssetContainerAsync(scene, data, "");
+        await vi.waitFor(() => expect(loads).toHaveLength(3));
+
+        const rejected = expect(loading).rejects.toThrow("USDFileLoader was disposed.");
+        loader.dispose();
+        await rejected;
+        expect(onComplete).not.toHaveBeenCalled();
+        expect(MockWorker.Instances[0].terminated).toBe(true);
+        expect(scene.meshes).toHaveLength(0);
+        expect(scene.transformNodes).toHaveLength(0);
+        expect(scene.materials).toHaveLength(0);
+        expect(scene.multiMaterials).toHaveLength(0);
+        expect(scene.geometries).toHaveLength(0);
+        expect(scene.skeletons).toHaveLength(0);
+        expect(scene.animationGroups).toHaveLength(0);
+        expect(scene.textures).toEqual([existingTexture]);
+        expect(new Set(revokeUrl.mock.calls.map(([url]) => url)).size).toBe(3);
+
+        // Neither late decode completion nor a late error can resurrect disposed assets.
+        loads[0].succeed();
+        loads[1].fail();
+        loads[2].succeed();
+        await Promise.resolve();
+        expect(onComplete).not.toHaveBeenCalled();
+        expect(scene.meshes).toHaveLength(0);
+    });
+
+    it("cancels before creating assets when disposed in materializing progress", async () => {
+        vi.stubGlobal("Worker", MockWorker);
+        const onComplete = vi.fn();
+        const loader = new USDFileLoader({
+            workerUrl: "mock-worker.js",
+            onComplete,
+            onProgress: ({ phase }) => {
+                if (phase === "materializing") {
+                    loader.dispose();
+                }
+            },
+        });
+
+        await expect(loader.loadAsync(scene, new Uint8Array([1]).buffer, "")).rejects.toThrow("USDFileLoader was disposed.");
+        expect(onComplete).not.toHaveBeenCalled();
+        expect(scene.meshes).toHaveLength(0);
+    });
+
+    it("still rejects an extraction canceled before the worker returns", async () => {
+        vi.stubGlobal("Worker", MockWorker);
+        const loader = new USDFileLoader({ workerUrl: "mock-worker.js" });
+        const loading = loader.loadAsync(scene, new Uint8Array([1]).buffer, "");
+        const rejected = expect(loading).rejects.toThrow("USDFileLoader was disposed.");
+        loader.dispose();
+        await rejected;
+        expect(scene.meshes).toHaveLength(0);
+    });
+
+    it("rolls back when disposed by the completion callback", async () => {
+        vi.stubGlobal("Worker", MockWorker);
+        const loader = new USDFileLoader({ workerUrl: "mock-worker.js", onComplete: () => loader.dispose() });
+        await expect(loader.loadAsync(scene, new Uint8Array([1]).buffer, "")).rejects.toThrow("USDFileLoader was disposed.");
+        expect(scene.meshes).toHaveLength(0);
+        expect(scene.transformNodes).toHaveLength(0);
+        expect(scene.materials).toHaveLength(0);
+    });
+
+    it("disposes all concurrent materializations but permits a fresh load afterwards", async () => {
+        vi.stubGlobal("Worker", MockWorker);
+        MockWorker.CreateBuffers = () => createUSDMeshTestBuffers(true);
+        const existingTexture = GetEnvironmentBRDFTexture(scene);
+        const loads = deferUSDTextureLoads(engine);
+        const loader = new USDFileLoader({ workerUrl: "mock-worker.js" });
+        const first = loader.loadAsync(scene, new Uint8Array([1]).buffer, "");
+        const second = loader.loadAssetContainerAsync(scene, new Uint8Array([2]).buffer, "");
+        await vi.waitFor(() => expect(loads).toHaveLength(6));
+        const rejected = Promise.all([expect(first).rejects.toThrow("disposed"), expect(second).rejects.toThrow("disposed")]);
+        loader.dispose();
+        await rejected;
+        expect(scene.meshes).toHaveLength(0);
+        expect(scene.textures).toEqual([existingTexture]);
+
+        MockWorker.CreateBuffers = createUSDTestBuffers;
+        const container = await loader.loadAssetContainerAsync(scene, new Uint8Array([3]).buffer, "");
+        expect(container.meshes).toHaveLength(5);
         container.dispose();
         loader.dispose();
     });

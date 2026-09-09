@@ -121,6 +121,7 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     private _workerBlobUrl: string | undefined;
     private _nextRequestId = 1;
     private readonly _pending = new Map<number, PendingRequest>();
+    private readonly _activeLoads = new Set<AbortController>();
 
     /**
      * Creates a USD loader.
@@ -210,6 +211,9 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     public dispose(): void {
         this._terminateWorker();
         const error = new Error("USDFileLoader was disposed.");
+        for (const controller of this._activeLoads) {
+            controller.abort(error);
+        }
         for (const request of this._pending.values()) {
             request.reject(error);
         }
@@ -244,6 +248,9 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             },
         };
         const transfer = [...new Set([bytes.buffer, ...Object.values(files ?? {}).map((file) => file.buffer)])];
+        const controller = new AbortController();
+        const signal = controller.signal;
+        this._activeLoads.add(controller);
         try {
             const worker = this._getWorker(this._options.workerUrl);
             const response = await new Promise<Extract<WorkerResponse, { type: "result" }>>((resolve, reject) => {
@@ -274,7 +281,8 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             } as const;
             this._options.onProgress?.(materializingProgress);
             onProgress?.({ lengthComputable: false, loaded: 4, total: 4 });
-            const materialized = await materializeCommandBuffers(scene, response.commands, response.data, addToScene);
+            signal.throwIfAborted();
+            const materialized = await materializeCommandBuffers(scene, response.commands, response.data, addToScene, signal);
             const result = {
                 container: materialized.container,
                 timings: {
@@ -285,17 +293,20 @@ export class USDFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 missingAssets: response.missingAssets,
             };
             try {
+                signal.throwIfAborted();
                 this._options.onComplete?.({
                     timings: result.timings,
                     statistics: result.statistics,
                     missingAssets: result.missingAssets,
                 } satisfies USDImportDiagnostics);
+                signal.throwIfAborted();
             } catch (error) {
                 materialized.container.dispose();
                 throw error;
             }
             return result;
         } finally {
+            this._activeLoads.delete(controller);
             if (this._pending.size === 0) {
                 this._terminateWorker();
             }

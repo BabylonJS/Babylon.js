@@ -1,4 +1,4 @@
-import { AnalyticPrimitiveType, Command, MISSING_OFFSET, PrimitiveAxis } from "loaders/USD/usdCommandProtocol";
+import { AnalyticPrimitiveType, AnimationProperty, AnimationTarget, Command, GeometryFlags, MaterialFlags, MISSING_OFFSET, PrimitiveAxis } from "loaders/USD/usdCommandProtocol";
 
 class BufferWriter {
     public readonly bytes: number[] = [];
@@ -39,6 +39,20 @@ class BufferWriter {
         const offset = this.size;
         this.bytes.push(...encoded);
         return { offset, length: encoded.length };
+    }
+
+    public floats(values: readonly number[]): number {
+        this.align();
+        const offset = this.size;
+        values.forEach((value) => this.f32(value));
+        return offset;
+    }
+
+    public uints(values: readonly number[], width: 2 | 4 = 4): number {
+        this.align();
+        const offset = this.size;
+        values.forEach((value) => (width === 2 ? this.u16(value) : this.u32(value)));
+        return offset;
     }
 
     public toArrayBuffer(): ArrayBuffer {
@@ -118,7 +132,99 @@ export function createUSDTestBuffers(): USDTestBuffers {
             writer.u32(MISSING_OFFSET);
         }
     });
+    addUSDTestPrimitives(commands, data);
+    return { commands: commands.finish(), data: data.toArrayBuffer() };
+}
+export function createUSDMeshTestBuffers(withTextures = false): USDTestBuffers {
+    const commands = new CommandWriter();
+    const data = new BufferWriter();
+    const name = data.appendString("Skinned quad");
+    const identityOffset = data.floats(_identity);
+    const childMatrix = [..._identity];
+    childMatrix[13] = 1;
+    const childOffset = data.floats(childMatrix);
 
+    commands.command(Command.Scene, (writer) => {
+        writer.u32(0);
+        writer.f32(1);
+        writer.f32(24);
+    });
+    commands.command(Command.TransformNode, (writer) => {
+        [1, MISSING_OFFSET, name.offset, name.length, identityOffset].forEach((value) => writer.u32(value));
+    });
+
+    if (withTextures) {
+        // Encoded PNG bytes; unit tests control decoding at the engine boundary.
+        const png = Uint8Array.from(Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=", "base64"));
+        const imageOffset = data.size;
+        data.bytes.push(...png);
+        const transformOffset = data.floats([2, 3, 0.1, 0.2, Math.PI / 4]);
+        for (let id = 1; id <= 3; ++id) {
+            commands.command(Command.Texture, (writer) => {
+                [id, name.offset, name.length, 1, imageOffset, png.length, 0, transformOffset, 1, 2].forEach((value) => writer.u32(value));
+            });
+        }
+    }
+
+    const baseOffset = data.floats([0.2, 0.6, 0.9, 0.8]);
+    const emissiveOffset = data.floats([0.1, 0.2, 0.3]);
+    for (let id = 1; id <= 2; ++id) {
+        commands.command(Command.Material, (writer) => {
+            [id, name.offset, name.length, baseOffset, emissiveOffset].forEach((value) => writer.u32(value));
+            [0.4, 0.6, 0.7, id === 2 ? 0.5 : 0].forEach((value) => writer.f32(value));
+            writer.u32(id === 1 ? MaterialFlags.AlphaBlend : MaterialFlags.DoubleSided | MaterialFlags.Unlit);
+            const textureSlots = withTextures ? [1, id === 2 ? 1 : MISSING_OFFSET, 2, 3, 1, 3, 1, 2, 0] : Array<number>(9).fill(MISSING_OFFSET);
+            textureSlots.forEach((value) => writer.u32(value));
+        });
+    }
+
+    const jointsOffset = data.uints([MISSING_OFFSET, 10, name.offset, name.length, identityOffset, 0, 11, name.offset, name.length, childOffset]);
+    commands.command(Command.Skeleton, (writer) => {
+        [1, name.offset, name.length, 2, jointsOffset].forEach((value) => writer.u32(value));
+    });
+
+    const positions = data.floats([0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0]);
+    const normals = data.floats(Array(4).fill([0, 0, 1]).flat());
+    const tangents = data.floats(Array(4).fill([1, 0, 0, 1]).flat());
+    const uv0 = data.floats([0, 0, 1, 0, 1, 1, 0, 1]);
+    const colors = data.floats(Array(4).fill([1, 0.5, 0.25, 1]).flat());
+    const joints0 = data.uints(Array(4).fill([0, 1, 0, 1]).flat(), 2);
+    const weights0 = data.floats(Array(4).fill([0.5, 0.1, 0.1, 0.1]).flat());
+    const joints1 = data.uints(Array(4).fill([1, 0, 1, 0]).flat(), 2);
+    const weights1 = data.floats(Array(4).fill([0.05, 0.05, 0.05, 0.05]).flat());
+    const indices = data.uints([0, 1, 2, 0, 2, 3]);
+    const subsets = data.uints([1, 0, 3, 0, 4, 2, 3, 3, 0, 4]);
+    commands.command(Command.Geometry, (writer) => {
+        const flags = GeometryFlags.Normals | GeometryFlags.Tangents | GeometryFlags.Uv0 | GeometryFlags.Colors | GeometryFlags.Skin0 | GeometryFlags.Skin1;
+        [1, 4, 6, flags, positions, normals, tangents, uv0, colors, joints0, weights0, joints1, weights1, indices, 8].forEach((value) => writer.u32(value));
+    });
+    commands.command(Command.Mesh, (writer) => {
+        [1, 1, 1, MISSING_OFFSET, name.offset, name.length, 0, 1, subsets, 2].forEach((value) => writer.u32(value));
+    });
+    commands.command(Command.Instance, (writer) => {
+        [1, 1, name.offset, name.length].forEach((value) => writer.u32(value));
+    });
+
+    const times = data.floats([0, 24]);
+    const movedMatrix = [..._identity];
+    movedMatrix[12] = 2;
+    const nodeMatrices = data.floats([..._identity, ...movedMatrix]);
+    const movedChild = [...childMatrix];
+    movedChild[13] = 3;
+    const boneMatrices = data.floats([...childMatrix, ...movedChild]);
+    for (const [kind, target, values] of [
+        [AnimationTarget.Node, 1, nodeMatrices],
+        [AnimationTarget.Bone, 11, boneMatrices],
+    ]) {
+        commands.command(Command.Animation, (writer) => {
+            [kind, target, AnimationProperty.Matrix, 0, 2, times, values, 16].forEach((value) => writer.u32(value));
+        });
+    }
+
+    return { commands: commands.finish(), data: data.toArrayBuffer() };
+}
+
+function addUSDTestPrimitives(commands: CommandWriter, data: BufferWriter): void {
     const nodeNames = ["CubeNode", "SphereNode", "CylinderNode", "ConeNode", "InstanceNode"];
     nodeNames.forEach((name, index) => {
         const nodeName = data.appendString(name);
@@ -167,6 +273,4 @@ export function createUSDTestBuffers(): USDTestBuffers {
         writer.u32(instanceName.offset);
         writer.u32(instanceName.length);
     });
-
-    return { commands: commands.finish(), data: data.toArrayBuffer() };
 }

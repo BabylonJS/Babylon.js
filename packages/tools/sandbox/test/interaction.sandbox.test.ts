@@ -175,6 +175,46 @@ def Xform "World"
     await expect.poll(async () => await scene.evaluate((loadedScene) => loadedScene.meshes.some((mesh) => mesh.name === "SandboxCube"))).toBe(true);
 });
 
+for (const extension of ["usda", "usdc", "usdz"]) {
+    test(`dropping real ${extension.toUpperCase()} preserves USD prototype instances`, async ({ page }) => {
+        test.setTimeout(60000);
+        await page.goto(url, { waitUntil: "load" });
+        await waitForSandboxReady(page);
+
+        const buffer = readFileSync(`${__dirname}/../../babylonServer/public/babylonUsdImporter/testAssets/instances.${extension}`);
+        const dataTransfer = await page.evaluateHandle(
+            ({ bytes, extension }) => {
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([new Uint8Array(bytes)], `instances.${extension}`));
+                return transfer;
+            },
+            { bytes: [...buffer], extension }
+        );
+        await page.dispatchEvent("#renderCanvas", "drop", { dataTransfer });
+
+        const scene = await getSandboxScene(page);
+        const result = await scene.evaluate((loadedScene) => {
+            const meshes = loadedScene.meshes.filter((mesh) => mesh.getTotalVertices() > 0);
+            meshes.forEach((mesh) => mesh.computeWorldMatrix(true));
+            return {
+                meshes: meshes.length,
+                instances: meshes.filter((mesh) => mesh.getClassName() === "InstancedMesh").length,
+                sharedGeometry: meshes.length === 2 && meshes[0].geometry === meshes[1].geometry,
+                vertices: meshes.map((mesh) => mesh.getTotalVertices()),
+                indices: meshes.map((mesh) => Array.from(mesh.getIndices() ?? [])),
+                translations: meshes.map((mesh) => mesh.getWorldMatrix().m[12]).sort((a, b) => a - b),
+            };
+        });
+        expect(result.meshes).toBe(2);
+        expect(result.instances).toBe(1);
+        expect(result.sharedGeometry).toBe(true);
+        expect(result.vertices).toEqual([3, 3]);
+        expect(result.indices[0]).toHaveLength(3);
+        expect(result.indices[1]).toEqual(result.indices[0]);
+        expect(result.translations).toEqual([0, 2]);
+    });
+}
+
 test("dropping a composed USD folder preserves paths and allows root selection", async ({ page }) => {
     test.setTimeout(60000);
     await page.goto(url, { waitUntil: "load" });

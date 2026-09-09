@@ -157,7 +157,14 @@ function wrapMode(value: number): number {
     }
 }
 
-export async function materializeCommandBuffers(scene: Scene, commandBuffer: ArrayBuffer, dataBuffer: ArrayBuffer, addToScene: boolean): Promise<MaterializationResult> {
+export async function materializeCommandBuffers(
+    scene: Scene,
+    commandBuffer: ArrayBuffer,
+    dataBuffer: ArrayBuffer,
+    addToScene: boolean,
+    signal?: AbortSignal
+): Promise<MaterializationResult> {
+    signal?.throwIfAborted();
     const started = performance.now();
     const commands = readCommands(commandBuffer);
     const container = addToScene ? new DirectAssetContainer() : new AssetContainer(scene);
@@ -172,6 +179,7 @@ export async function materializeCommandBuffers(scene: Scene, commandBuffer: Arr
     const meshes = new Map<number, Mesh>();
     const animationGroups = new Map<number, AnimationGroup>();
     const textureLoads: Promise<void>[] = [];
+    const textureUrls = new Set<string>();
     const assetContainer = container instanceof AssetContainer ? container : undefined;
     let root: TransformNode | undefined;
     let timeCodesPerSecond = 24;
@@ -244,18 +252,20 @@ export async function materializeCommandBuffers(scene: Scene, commandBuffer: Arr
                         const transform = new Float32Array(dataBuffer, transformOffset, 5);
                         const bytes = new Uint8Array(dataBuffer, imageOffset, imageLength);
                         const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
+                        textureUrls.add(url);
                         let resolveLoad!: () => void;
                         let rejectLoad!: (error: Error) => void;
                         const loaded = new Promise<void>((resolve, reject) => {
                             resolveLoad = resolve;
                             rejectLoad = reject;
                         });
+                        textureLoads.push(loaded);
                         const texture = new Texture(url, scene, false, false, Texture.TRILINEAR_SAMPLINGMODE, resolveLoad, (message, exception) => {
                             URL.revokeObjectURL(url);
                             rejectLoad(exception instanceof Error ? exception : new Error(message || `Could not load texture '${url}'.`));
                         });
                         trackAsset(container.textures, texture);
-                        textureLoads.push(loaded);
+                        texture.onDisposeObservable.addOnce(() => URL.revokeObjectURL(url));
                         texture.name = stringAt(dataBuffer, nameOffset, nameLength);
                         texture.coordinatesIndex = coordinatesIndex;
                         texture.uScale = transform[0];
@@ -267,7 +277,6 @@ export async function materializeCommandBuffers(scene: Scene, commandBuffer: Arr
                         texture.wAng = -transform[4];
                         texture.wrapU = wrapMode(wrapU);
                         texture.wrapV = wrapMode(wrapV);
-                        texture.onDisposeObservable.addOnce(() => URL.revokeObjectURL(url));
                         textures.set(id, texture);
                         break;
                     }
@@ -693,13 +702,40 @@ export async function materializeCommandBuffers(scene: Scene, commandBuffer: Arr
             }
         }
 
-        await Promise.all(textureLoads);
+        const texturesLoaded = Promise.all(textureLoads);
+        if (signal) {
+            let onAbort: (() => void) | undefined;
+            const aborted = new Promise<never>((_resolve, reject) => {
+                onAbort = () => reject(signal.reason instanceof Error ? signal.reason : new Error("USD materialization was aborted."));
+                if (signal.aborted) {
+                    onAbort();
+                } else {
+                    signal.addEventListener("abort", onAbort, { once: true });
+                }
+            });
+            try {
+                await Promise.race([texturesLoaded, aborted]);
+                signal.throwIfAborted();
+            } finally {
+                if (onAbort) {
+                    signal.removeEventListener("abort", onAbort);
+                }
+            }
+        } else {
+            await texturesLoaded;
+        }
         for (const { node, parentId } of pendingParents) {
             node.parent = nodes.get(parentId) ?? root ?? null;
         }
         return { container, materializeMs: performance.now() - started };
     } catch (error) {
+        // Decode callbacks can arrive after rollback; observe their rejections without
+        // delaying cancellation on an image load that may never finish.
+        void Promise.allSettled(textureLoads);
         container.dispose();
+        for (const url of textureUrls) {
+            URL.revokeObjectURL(url);
+        }
         throw error;
     }
 }
