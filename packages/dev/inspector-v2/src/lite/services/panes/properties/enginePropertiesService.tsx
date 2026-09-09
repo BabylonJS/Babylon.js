@@ -6,16 +6,23 @@ import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propert
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
-import { BoundProperty } from "../../../../components/properties/boundProperty";
+import { BoundProperty, ComputedProperty } from "../../../../components/properties/boundProperty";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../services/panes/properties/propertiesService";
 import { type IEngineContext, EngineContextIdentity } from "../../../engineContext";
+
+const GetSurfaceCount = (engine: EngineContext) => engine.surfaces.length;
+const GetCanvasWidth = (surface: SurfaceContext) => surface.canvas.width;
+const GetCanvasHeight = (surface: SurfaceContext) => surface.canvas.height;
+const GetFormat = (surface: SurfaceContext) => surface.format;
+const GetMsaaSamples = (surface: SurfaceContext) => surface.msaaSamples;
+const GetMaxDevicePixelRatio = (surface: SurfaceContext) => (Number.isFinite(surface.maxDevicePixelRatio) ? surface.maxDevicePixelRatio.toLocaleString() : "Unbounded");
 
 const EngineProperties: FunctionComponent<{ engine: EngineContext }> = (props) => {
     const { engine } = props;
 
     return (
         <>
-            <StringifiedPropertyLine label="Surface Count" value={engine.surfaces.length} />
+            <ComputedProperty component={StringifiedPropertyLine} label="Surface Count" target={engine} getValue={GetSurfaceCount} />
             <BoundProperty component={StringifiedPropertyLine} label="Draw Calls" target={engine} propertyKey="drawCallCount" />
             <BoundProperty component={StringifiedPropertyLine} label="GPU Frame Time" target={engine} propertyKey="gpuFrameTimeMs" precision={2} units="ms" />
             <BoundProperty component={BooleanBadgePropertyLine} label="High Precision Matrices" target={engine} propertyKey="useHighPrecisionMatrix" />
@@ -26,15 +33,14 @@ const EngineProperties: FunctionComponent<{ engine: EngineContext }> = (props) =
 
 const SurfaceProperties: FunctionComponent<{ surface: SurfaceContext }> = (props) => {
     const { surface } = props;
-    const maxDevicePixelRatio = Number.isFinite(surface.maxDevicePixelRatio) ? surface.maxDevicePixelRatio.toLocaleString() : "Unbounded";
 
     return (
         <>
-            <StringifiedPropertyLine label="Canvas Width" value={surface.canvas.width} units="px" />
-            <StringifiedPropertyLine label="Canvas Height" value={surface.canvas.height} units="px" />
-            <TextPropertyLine label="Format" value={surface.format} />
-            <StringifiedPropertyLine label="MSAA Samples" value={surface.msaaSamples} />
-            <TextPropertyLine label="Max Device Pixel Ratio" value={maxDevicePixelRatio} />
+            <ComputedProperty component={StringifiedPropertyLine} label="Canvas Width" target={surface} getValue={GetCanvasWidth} units="px" />
+            <ComputedProperty component={StringifiedPropertyLine} label="Canvas Height" target={surface} getValue={GetCanvasHeight} units="px" />
+            <ComputedProperty component={TextPropertyLine} label="Format" target={surface} getValue={GetFormat} />
+            <ComputedProperty component={StringifiedPropertyLine} label="MSAA Samples" target={surface} getValue={GetMsaaSamples} />
+            <ComputedProperty component={TextPropertyLine} label="Max Device Pixel Ratio" target={surface} getValue={GetMaxDevicePixelRatio} />
         </>
     );
 };

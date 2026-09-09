@@ -1,6 +1,11 @@
+/**
+ * @vitest-environment jsdom
+ */
+
 import {
     type EngineContext,
     type Material,
+    type Mesh,
     type RenderingContext,
     type SceneContext,
     type SpriteRenderer,
@@ -9,28 +14,71 @@ import {
     type TextRenderer,
     type Texture2D,
 } from "@babylonjs/lite";
-import { Children, isValidElement, type FunctionComponent, type ReactElement, type ReactNode } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { FluentProvider, webLightTheme } from "@fluentui/react-components";
+import { act, Children, isValidElement, type Context, type FunctionComponent, type ReactElement, type ReactNode } from "react";
+import { createRoot } from "react-dom/client";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.hoisted(() => {
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     vi.stubGlobal(
         "matchMedia",
         vi.fn(() => ({ matches: false }))
     );
 });
 
-import { EngineContextIdentity, type IEngineContext } from "../../src/lite/engineContext";
+import { Observable } from "core/Misc/observable";
+import { type IReactContextService, type ReactContextHandle } from "shared-ui-components/modularTool/services/reactContextService";
+import { type ISettingsStore, type SettingDescriptor } from "shared-ui-components/modularTool/services/settingsStore";
 import { BoundProperty } from "../../src/components/properties/boundProperty";
+import { WatcherContext } from "../../src/contexts/watcherContext";
+import { EngineContextIdentity, type IEngineContext } from "../../src/lite/engineContext";
 import { EnginePropertiesServiceDefinition } from "../../src/lite/services/panes/properties/enginePropertiesService";
 import { MaterialPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/materialPropertiesService";
 import { RenderingContextPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/renderingContextPropertiesService";
 import { TextLayerPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/textLayerPropertiesService";
 import { TexturePropertiesServiceDefinition } from "../../src/lite/services/panes/properties/texturePropertiesService";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../src/services/panes/properties/propertiesService";
+import { MakeWatcherServiceDefinitions } from "../../src/services/watcherService";
 
 type RegisteredContent = Parameters<IPropertiesService["addSectionContent"]>[0];
 
+class TestSettingsStore implements ISettingsStore {
+    private readonly _onChanged = new Observable<string>();
+    private readonly _values = new Map<string, unknown>();
+
+    public get onChanged() {
+        return this._onChanged;
+    }
+
+    public readSetting<T>(descriptor: SettingDescriptor<T>): T {
+        return this._values.has(descriptor.key) ? (this._values.get(descriptor.key) as T) : descriptor.defaultValue;
+    }
+
+    public writeSetting<T>(descriptor: SettingDescriptor<T>, value: T): void {
+        this._values.set(descriptor.key, value);
+        this._onChanged.notifyObservers(descriptor.key);
+    }
+}
+
+class TestReactContextService implements IReactContextService {
+    public addContext<T>(_provider: Context<T>["Provider"], _initialValue: T): ReactContextHandle<T> {
+        return {
+            updateValue: () => {},
+            dispose: () => {},
+        };
+    }
+}
+
+function GetNormalizedText(container: HTMLElement): string {
+    return container.textContent?.replace(/\s/g, "") ?? "";
+}
+
 describe("Babylon Lite properties services", () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     it("registers applicable content for every non-mesh Explorer entity", () => {
         const scene = {
             _kind: "scene",
@@ -176,5 +224,118 @@ describe("Babylon Lite properties services", () => {
         services.forEach((service) => service?.dispose?.());
         expect(disposals).toHaveLength(8);
         disposals.forEach((dispose) => expect(dispose).toHaveBeenCalledOnce());
+    });
+
+    it("updates computed counts and dimensions in manual and polling watch modes", () => {
+        vi.useFakeTimers();
+        const sceneMeshes: Mesh[] = [];
+        const scene = {
+            _kind: "scene",
+            meshes: sceneMeshes,
+            lights: [],
+            animationGroups: [],
+            shadowGenerators: [],
+            fixedDeltaMs: 0,
+        } as unknown as SceneContext;
+        const rendererLayers: TextLayer[] = [];
+        const textRenderer = { _kind: "text-renderer", layers: rendererLayers } as unknown as TextRenderer;
+        const auxiliarySurface = {
+            canvas: { width: 320, height: 200 },
+            format: "bgra8unorm",
+            msaaSamples: 4,
+            maxDevicePixelRatio: 2,
+            _renderingContexts: [textRenderer],
+        } as unknown as SurfaceContext;
+        const surfaces: SurfaceContext[] = [];
+        const engine = {
+            surfaces,
+            canvas: { width: 640, height: 480 },
+            format: "bgra8unorm",
+            msaaSamples: 4,
+            maxDevicePixelRatio: Infinity,
+            drawCallCount: 3,
+            gpuFrameTimeMs: 1.5,
+            useHighPrecisionMatrix: false,
+            useFloatingOrigin: false,
+            _renderingContexts: [scene],
+        } as unknown as EngineContext;
+        surfaces.push(engine, auxiliarySurface);
+
+        const registrations = new Map<string, RegisteredContent>();
+        const propertiesService = {
+            addSectionContent: vi.fn((content: RegisteredContent) => {
+                registrations.set(content.key, content);
+                return { dispose: () => {} };
+            }),
+        } as unknown as IPropertiesService;
+        const engineContext = { engine } as IEngineContext;
+        const services = [
+            EnginePropertiesServiceDefinition.factory(propertiesService, engineContext),
+            RenderingContextPropertiesServiceDefinition.factory(propertiesService, engineContext),
+        ];
+        const settingsStore = new TestSettingsStore();
+        const watcherDefinitions = MakeWatcherServiceDefinitions({ defaultSettings: { mode: "manual" } });
+        const watcher = watcherDefinitions.watcherServiceDefinition.factory(settingsStore, new TestReactContextService());
+        const watcherSettingsDescriptor: SettingDescriptor<{ mode: "intercept" } | { mode: "polling"; interval: number } | { mode: "manual" }> = {
+            key: "WatcherSettings",
+            defaultValue: { mode: "manual" },
+        };
+        const content = [
+            registrations.get("Babylon Lite Engine Properties")!.content[0].component({ context: engine }),
+            registrations.get("Babylon Lite Surface Properties")!.content[0].component({ context: auxiliarySurface }),
+            registrations.get("Babylon Lite Scene Properties")!.content[0].component({ context: scene }),
+            registrations.get("Babylon Lite Text Renderer Properties")!.content[0].component({ context: textRenderer }),
+        ];
+        const container = document.createElement("div");
+        document.body.appendChild(container);
+        const root = createRoot(container);
+
+        act(() =>
+            root.render(
+                <FluentProvider theme={webLightTheme}>
+                    <WatcherContext.Provider value={watcher}>
+                        {content.map((item, index) => (
+                            <div key={index}>{item}</div>
+                        ))}
+                    </WatcherContext.Provider>
+                </FluentProvider>
+            )
+        );
+        expect(GetNormalizedText(container)).toContain("SurfaceCount2");
+        expect(GetNormalizedText(container)).toContain("CanvasWidth320px");
+        expect(GetNormalizedText(container)).toContain("MeshCount0");
+        expect(GetNormalizedText(container)).toContain("LayerCount0");
+
+        surfaces.push({} as SurfaceContext);
+        auxiliarySurface.canvas.width = 640;
+        sceneMeshes.push({} as Mesh);
+        rendererLayers.push({} as TextLayer);
+        act(() => watcher.refresh());
+        expect(GetNormalizedText(container)).toContain("SurfaceCount3");
+        expect(GetNormalizedText(container)).toContain("CanvasWidth640px");
+        expect(GetNormalizedText(container)).toContain("MeshCount1");
+        expect(GetNormalizedText(container)).toContain("LayerCount1");
+
+        act(() => settingsStore.writeSetting(watcherSettingsDescriptor, { mode: "polling", interval: 100 }));
+        surfaces.push({} as SurfaceContext);
+        auxiliarySurface.canvas.width = 800;
+        sceneMeshes.push({} as Mesh);
+        rendererLayers.push({} as TextLayer);
+        act(() => vi.advanceTimersByTime(99));
+        expect(GetNormalizedText(container)).toContain("SurfaceCount3");
+        expect(GetNormalizedText(container)).toContain("CanvasWidth640px");
+        expect(GetNormalizedText(container)).toContain("MeshCount1");
+        expect(GetNormalizedText(container)).toContain("LayerCount1");
+
+        act(() => vi.advanceTimersByTime(1));
+        expect(GetNormalizedText(container)).toContain("SurfaceCount4");
+        expect(GetNormalizedText(container)).toContain("CanvasWidth800px");
+        expect(GetNormalizedText(container)).toContain("MeshCount2");
+        expect(GetNormalizedText(container)).toContain("LayerCount2");
+
+        act(() => root.unmount());
+        container.remove();
+        watcher.dispose?.();
+        services.forEach((service) => service?.dispose?.());
     });
 });

@@ -7,7 +7,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { type IDisposable } from "core/index";
-import { BoundProperty } from "../../src/components/properties/boundProperty";
+import { BoundProperty, ComputedProperty } from "../../src/components/properties/boundProperty";
 import { WatcherContext } from "../../src/contexts/watcherContext";
 import { type IWatcherService } from "../../src/services/watcherService";
 
@@ -31,9 +31,14 @@ const NoOpDisposable: IDisposable = {
 
 const TestWatcher: IWatcherService = {
     watchProperty: () => NoOpDisposable,
-    watchValue: () => NoOpDisposable,
+    watchValue: (getValue, onChanged) => {
+        refreshComputedValue = () => onChanged(getValue());
+        return NoOpDisposable;
+    },
     refresh: () => {},
 };
+
+let refreshComputedValue = () => {};
 
 describe("BoundProperty", () => {
     let container: HTMLDivElement;
@@ -60,6 +65,7 @@ describe("BoundProperty", () => {
         document.body.appendChild(container);
         root = createRoot(container);
         inputProps = undefined;
+        refreshComputedValue = () => {};
     });
 
     afterEach(() => {
@@ -83,5 +89,35 @@ describe("BoundProperty", () => {
         render(target);
         expect(inputProps?.onChange).toBeUndefined();
         expect("name" in target).toBe(false);
+    });
+});
+
+describe("ComputedProperty", () => {
+    it("passes a watcher-backed computed value to the property-line component", () => {
+        const container = document.createElement("div");
+        document.body.appendChild(container);
+        const root = createRoot(container);
+        const target = { values: [1] };
+        let value: number | undefined;
+        const TestOutput: FunctionComponent<{ value: number }> = (props) => {
+            value = props.value;
+            return null;
+        };
+
+        act(() =>
+            root.render(
+                <WatcherContext.Provider value={TestWatcher}>
+                    <ComputedProperty component={TestOutput} target={target} getValue={(currentTarget) => currentTarget.values.length} />
+                </WatcherContext.Provider>
+            )
+        );
+        expect(value).toBe(1);
+
+        target.values.push(2);
+        act(() => refreshComputedValue());
+        expect(value).toBe(2);
+
+        act(() => root.unmount());
+        container.remove();
     });
 });

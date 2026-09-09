@@ -301,9 +301,10 @@ export type ExplorerTree = {
     readonly nodesByValue: ReadonlyMap<ExplorerNodeValue, ExplorerNode>;
 
     /**
-     * All visible nodes that represent an entity, keyed by that entity.
+     * All visible nodes that represent an entity, keyed by that entity. An entity can occur in
+     * multiple branches, so each value contains every occurrence in tree order.
      */
-    readonly nodesByEntity: ReadonlyMap<object, ExplorerNode>;
+    readonly nodesByEntity: ReadonlyMap<object, readonly ExplorerNode[]>;
 
     /**
      * The observables (gathered from every described node, including nodes that are not currently visible)
@@ -314,6 +315,11 @@ export type ExplorerTree = {
         readonly removed: readonly IReadonlyObservable<object>[];
         readonly moved: readonly IReadonlyObservable<unknown>[];
     };
+};
+
+type MaterializedExplorerNode = Omit<ExplorerNode, "value" | "children"> & {
+    value: ExplorerNodeValue;
+    children: MaterializedExplorerNode[];
 };
 
 const SyntheticEntityIds = new WeakMap<object, number>();
@@ -388,14 +394,15 @@ export function GetOrderedChildren(node: ExplorerNode, sortItems: boolean): read
  * @returns The materialized tree, along with lookup maps and the gathered change observables.
  */
 export function BuildExplorerTree(descriptions: readonly ExplorerNodeDescription[]): ExplorerTree {
-    const nodes: ExplorerNode[] = [];
-    const nodesByValue = new Map<ExplorerNodeValue, ExplorerNode>();
-    const nodesByEntity = new Map<object, ExplorerNode>();
+    const nodes: MaterializedExplorerNode[] = [];
+    const nodesByValue = new Map<ExplorerNodeValue, MaterializedExplorerNode>();
+    const nodesByEntity = new Map<object, MaterializedExplorerNode[]>();
+    const nodePaths = new Map<MaterializedExplorerNode, string>();
     const added: IReadonlyObservable<unknown>[] = [];
     const removed: IReadonlyObservable<object>[] = [];
     const moved: IReadonlyObservable<unknown>[] = [];
 
-    const buildNode = (description: ExplorerNodeDescription, parent: ExplorerNode | undefined, parentPath: string): ExplorerNode | undefined => {
+    const buildNode = (description: ExplorerNodeDescription, parent: MaterializedExplorerNode | undefined, parentPath: string): MaterializedExplorerNode | undefined => {
         // Change observables are gathered even for nodes that end up hidden so that a hidden node
         // (e.g. an empty section) can become visible as soon as it gains a child.
         added.push(...(description.getAddedObservables?.() ?? []));
@@ -403,10 +410,10 @@ export function BuildExplorerTree(descriptions: readonly ExplorerNodeDescription
         moved.push(...(description.getMovedObservables?.() ?? []));
 
         const path = parentPath ? `${parentPath}/${description.id}` : description.id;
-        const node: ExplorerNode = {
+        const node: MaterializedExplorerNode = {
             kind: description.kind ?? "item",
-            // Entity backed nodes are keyed by entity identity so expansion state survives re-parenting and reordering.
-            value: description.entity ? GetEntityId(description.entity) : path,
+            // Values for entity-backed nodes are finalized after all occurrences have been counted.
+            value: path,
             depth: (parent?.depth ?? 0) + 1,
             parent,
             children: [],
@@ -427,9 +434,14 @@ export function BuildExplorerTree(descriptions: readonly ExplorerNodeDescription
             return undefined;
         }
 
-        nodesByValue.set(node.value, node);
+        nodePaths.set(node, path);
         if (node.entity) {
-            nodesByEntity.set(node.entity, node);
+            const entityNodes = nodesByEntity.get(node.entity);
+            if (entityNodes) {
+                entityNodes.push(node);
+            } else {
+                nodesByEntity.set(node.entity, [node]);
+            }
         }
 
         return node;
@@ -441,6 +453,22 @@ export function BuildExplorerTree(descriptions: readonly ExplorerNodeDescription
             nodes.push(node);
         }
     }
+
+    const registerNode = (node: MaterializedExplorerNode) => {
+        const path = nodePaths.get(node)!;
+        const entityNodes = node.entity ? nodesByEntity.get(node.entity)! : undefined;
+        const preferredValue = node.entity ? (entityNodes!.length === 1 ? GetEntityId(node.entity) : `${GetEntityId(node.entity)}:${path}`) : path;
+        let value: ExplorerNodeValue = preferredValue;
+        let suffix = 2;
+        while (nodesByValue.has(value)) {
+            value = `${preferredValue}#${suffix++}`;
+        }
+
+        node.value = value;
+        nodesByValue.set(value, node);
+        node.children.forEach(registerNode);
+    };
+    nodes.forEach(registerNode);
 
     return { nodes, nodesByValue, nodesByEntity, changeObservables: { added, removed, moved } };
 }
@@ -551,8 +579,14 @@ export function ExpandOrCollapseAll(node: ExplorerNode, open: boolean, openItems
  */
 export function GetAncestorValues(tree: ExplorerTree, entity: object): readonly ExplorerNodeValue[] {
     const values: ExplorerNodeValue[] = [];
-    for (let node = tree.nodesByEntity.get(entity)?.parent; node; node = node.parent) {
-        values.push(node.value);
+    const seenValues = new Set<ExplorerNodeValue>();
+    for (const occurrence of tree.nodesByEntity.get(entity) ?? []) {
+        for (let node = occurrence.parent; node; node = node.parent) {
+            if (!seenValues.has(node.value)) {
+                seenValues.add(node.value);
+                values.push(node.value);
+            }
+        }
     }
     return values;
 }

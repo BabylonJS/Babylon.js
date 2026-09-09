@@ -51,7 +51,6 @@ import {
     BuildExplorerTree,
     ExpandOrCollapseAll,
     GetAncestorValues,
-    GetEntityId,
     GetVisibleExplorerNodes,
 } from "./explorerModel";
 import { type DragDropProps, type DropProps, useExplorerDragDrop } from "./explorerDragDrop";
@@ -921,20 +920,20 @@ export const Explorer: FunctionComponent<{
 
     const [treeVersion, setTreeVersion] = useState(0);
     const tree = useMemo(() => BuildExplorerTree(getNodes()), [getNodes, treeVersion]);
+    const previousTreeRef = useRef(tree);
     const initialRootValues = tree.nodes.filter((node) => node.kind === "root").map((node) => node.value);
     const initializedRootValues = useRef(new Set(initialRootValues));
     const [openItems, setOpenItems] = useState(new Set<TreeItemValue>(initialRootValues));
     const scrollViewRef = useRef<ScrollToInterface>(null);
     // We only want to scroll to the selected item if it was externally selected (outside of the Explorer).
     const previousSelectedEntity = useRef(selectedEntity);
-    const setSelectedEntity = (entity: Nullable<object>) => {
-        previousSelectedEntity.current = entity;
-        props.setSelectedEntity?.(entity);
-    };
-
-    // Used by the change observable handlers, which should not resubscribe just because the selection changed.
-    const selectedEntityRef = useRef(selectedEntity);
-    selectedEntityRef.current = selectedEntity;
+    const setSelectedEntity = useCallback(
+        (entity: Nullable<object>) => {
+            previousSelectedEntity.current = entity;
+            props.setSelectedEntity?.(entity);
+        },
+        [props.setSelectedEntity]
+    );
 
     const [itemsFilter, setItemsFilter] = useState("");
     const [isSorted, setIsSorted] = useSetting({ key: "SceneExplorer/IsSorted", defaultValue: false });
@@ -946,7 +945,9 @@ export const Explorer: FunctionComponent<{
             if (targetEntity) {
                 setOpenItems((prev) => {
                     const next = new Set(prev);
-                    next.add(GetEntityId(targetEntity));
+                    for (const node of tree.nodesByEntity.get(targetEntity) ?? []) {
+                        next.add(node.value);
+                    }
                     return next;
                 });
             }
@@ -954,6 +955,14 @@ export const Explorer: FunctionComponent<{
             setSelectedEntity(draggedEntity);
         },
     });
+
+    useEffect(() => {
+        const previousTree = previousTreeRef.current;
+        previousTreeRef.current = tree;
+        if (selectedEntity && previousTree?.nodesByEntity.has(selectedEntity) && !tree.nodesByEntity.has(selectedEntity)) {
+            setSelectedEntity(null);
+        }
+    }, [tree, selectedEntity, setSelectedEntity]);
 
     useEffect(() => {
         setOpenItems((currentOpenItems) => {
@@ -977,12 +986,9 @@ export const Explorer: FunctionComponent<{
         const onItemRemoved = (item: object) => {
             setTreeVersion((version) => version + 1);
 
-            if (openItems.delete(GetEntityId(item))) {
+            const itemNodes = tree.nodesByEntity.get(item);
+            if (itemNodes?.length === 1 && openItems.delete(itemNodes[0].value)) {
                 setOpenItems(new Set(openItems));
-            }
-
-            if (item === selectedEntityRef.current) {
-                props.setSelectedEntity?.(null);
             }
         };
 

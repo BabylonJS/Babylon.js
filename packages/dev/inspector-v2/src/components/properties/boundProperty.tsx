@@ -2,6 +2,7 @@ import { type ComponentProps, type ComponentType, forwardRef, useMemo } from "re
 
 import { ErrorBoundary } from "shared-ui-components/modularTool/components/errorBoundary";
 import { usePropertyChangedNotifier } from "../../contexts/propertyContext";
+import { useWatchedValue } from "../../contexts/watcherContext";
 import { MakePropertyHook, useProperty } from "../../hooks/compoundPropertyHooks";
 import { GetPropertyDescriptor } from "../../instrumentation/propertyInstrumentation";
 import { getClassNameWithNamespace } from "shared-ui-components/copyCommandToClipboard";
@@ -161,6 +162,33 @@ function CreateGenericForwardRef<T extends (...args: any[]) => any>(render: T) {
  * @returns JSX element
  */
 export const BoundProperty = CreateGenericForwardRef(BoundPropertyImpl);
+
+type ComponentValue<ComponentT extends ComponentType<any>> = ComponentProps<ComponentT> extends { value: infer ValueT } ? ValueT : never;
+
+export type ComputedPropertyProps<TargetT extends object, ComponentT extends ComponentType<any>> = Omit<ComponentProps<ComponentT>, "value" | "onChange"> & {
+    component: ComponentT;
+    target: TargetT;
+    getValue: (target: TargetT) => ComponentValue<ComponentT>;
+};
+
+/**
+ * Renders a read-only property-line component with a computed value that follows the Preferred
+ * Watch Mode. Use {@link BoundProperty} instead for an editable `target[propertyKey]`.
+ * @param props The target, computed getter, and property-line component props.
+ * @returns The property-line component with its current computed value.
+ */
+export function ComputedProperty<TargetT extends object, ComponentT extends ComponentType<any>>(props: ComputedPropertyProps<TargetT, ComponentT>) {
+    const {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        component: Component,
+        target,
+        getValue,
+        ...rest
+    } = props;
+    const value = useWatchedValue(target, getValue);
+
+    return <Component {...({ ...rest, value } as ComponentProps<ComponentT>)} />;
+}
 
 /**
  * Mutually exclusive propertyPath or functionPath - one required

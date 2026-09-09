@@ -73,7 +73,7 @@ describe("BuildExplorerTree", () => {
         expect(contextNode.depth).toBe(3);
         expect(contextNode.entity).toBe(context);
 
-        expect(tree.nodesByEntity.get(context)).toBe(contextNode);
+        expect(tree.nodesByEntity.get(context)).toEqual([contextNode]);
         expect(tree.nodesByValue.get("group")).toBe(group);
     });
 
@@ -134,6 +134,39 @@ describe("BuildExplorerTree", () => {
         const child = tree.nodes[0].children[0];
         expect(child.dragDropConfig).toBe(dragDropConfig);
         expect(child.children[0].dragDropConfig).toBe(dragDropConfig);
+    });
+
+    it("keeps every occurrence of a shared entity addressable with a unique tree value", () => {
+        const sharedEntity = {};
+        const firstParent = {};
+        const secondParent = {};
+        const tree = BuildExplorerTree([
+            MakeNode("first", {
+                entity: firstParent,
+                getChildren: () => [MakeNode("shared", { entity: sharedEntity })],
+            }),
+            MakeNode("second", {
+                entity: secondParent,
+                getChildren: () => [MakeNode("shared", { entity: sharedEntity })],
+            }),
+        ]);
+        const firstOccurrence = tree.nodes[0].children[0];
+        const secondOccurrence = tree.nodes[1].children[0];
+
+        expect(firstOccurrence.value).not.toBe(secondOccurrence.value);
+        expect(tree.nodesByValue.get(firstOccurrence.value)).toBe(firstOccurrence);
+        expect(tree.nodesByValue.get(secondOccurrence.value)).toBe(secondOccurrence);
+        expect(tree.nodesByEntity.get(sharedEntity)).toEqual([firstOccurrence, secondOccurrence]);
+        expect(GetAncestorValues(tree, sharedEntity)).toEqual([GetEntityId(firstParent), GetEntityId(secondParent)]);
+    });
+
+    it("preserves an entity value when its only occurrence is reparented", () => {
+        const entity = {};
+        const firstTree = BuildExplorerTree([MakeNode("first", { entity: {}, getChildren: () => [MakeNode("entity", { entity })] })]);
+        const secondTree = BuildExplorerTree([MakeNode("second", { entity: {}, getChildren: () => [MakeNode("entity", { entity })] })]);
+
+        expect(firstTree.nodes[0].children[0].value).toBe(GetEntityId(entity));
+        expect(secondTree.nodes[0].children[0].value).toBe(GetEntityId(entity));
     });
 });
 

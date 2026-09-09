@@ -115,6 +115,16 @@ const TestExplorer: FunctionComponent = () => (
     </FluentProvider>
 );
 
+function RenderSelectionExplorer(root: Root, nodes: readonly ExplorerNodeDescription[], selectedEntity: object, setSelectedEntity: (entity: object | null) => void): void {
+    act(() =>
+        root.render(
+            <FluentProvider theme={webLightTheme}>
+                <Explorer getNodes={() => nodes} itemCommandProviders={[]} groupCommandProviders={[]} selectedEntity={selectedEntity} setSelectedEntity={setSelectedEntity} />
+            </FluentProvider>
+        )
+    );
+}
+
 describe("Explorer root node", () => {
     let container: HTMLDivElement;
     let root: Root;
@@ -159,5 +169,43 @@ describe("Explorer root node", () => {
 
         PressKey(rootItem, "ArrowRight", { shiftKey: true });
         expect(GetTreeItem(container, "Leaf")).toBeTruthy();
+    });
+
+    it("clears a selected entity only after its last represented occurrence disappears", () => {
+        const selectedEntity = {};
+        const firstParent = {};
+        const secondParent = {};
+        const setSelectedEntity = vi.fn();
+        const makeNodes = (includeFirst: boolean, includeSecond: boolean): readonly ExplorerNodeDescription[] => [
+            {
+                id: "first",
+                entity: firstParent,
+                getDisplayInfo: () => ({ name: "First" }),
+                getChildren: () => (includeFirst ? [{ id: "selected", entity: selectedEntity, getDisplayInfo: () => ({ name: "Selected" }) }] : []),
+            },
+            {
+                id: "second",
+                entity: secondParent,
+                getDisplayInfo: () => ({ name: "Second" }),
+                getChildren: () => (includeSecond ? [{ id: "selected", entity: selectedEntity, getDisplayInfo: () => ({ name: "Selected" }) }] : []),
+            },
+        ];
+
+        RenderSelectionExplorer(root, makeNodes(true, false), selectedEntity, setSelectedEntity);
+        RenderSelectionExplorer(root, makeNodes(false, true), selectedEntity, setSelectedEntity);
+        expect(setSelectedEntity).not.toHaveBeenCalled();
+
+        RenderSelectionExplorer(root, makeNodes(false, false), selectedEntity, setSelectedEntity);
+        expect(setSelectedEntity).toHaveBeenCalledExactlyOnceWith(null);
+    });
+
+    it("does not clear a selected entity that was never represented by the Explorer", () => {
+        const customSelection = {};
+        const setSelectedEntity = vi.fn();
+
+        RenderSelectionExplorer(root, [GetNodes()[0]], customSelection, setSelectedEntity);
+        RenderSelectionExplorer(root, [], customSelection, setSelectedEntity);
+
+        expect(setSelectedEntity).not.toHaveBeenCalled();
     });
 });

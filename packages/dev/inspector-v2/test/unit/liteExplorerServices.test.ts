@@ -136,6 +136,52 @@ describe("Babylon Lite engine explorer service", () => {
         expect(topologyWatcherDispose).toHaveBeenCalledOnce();
         expect(registration.dispose).toHaveBeenCalledOnce();
     });
+
+    it("detects resources transferred between scene contexts", () => {
+        PaneRegistrations.length = 0;
+        const mesh = {} as Mesh;
+        const firstSceneMeshes = [mesh];
+        const secondSceneMeshes: Mesh[] = [];
+        const firstScene = { _kind: "scene", meshes: firstSceneMeshes } as SceneContext;
+        const secondScene = { _kind: "scene", meshes: secondSceneMeshes } as SceneContext;
+        const engine = {
+            surfaces: [] as unknown as EngineContext["surfaces"],
+            _renderingContexts: [firstScene, secondScene],
+        } as unknown as EngineContext;
+        (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine];
+
+        let getTopologySnapshot: (() => readonly object[]) | undefined;
+        let areTopologySnapshotsEqual: ((left: readonly object[], right: readonly object[]) => boolean) | undefined;
+        const watcherService = {
+            watchValue: vi.fn(
+                (getValue: () => readonly object[], _onChanged: (value: readonly object[]) => void, equals: (left: readonly object[], right: readonly object[]) => boolean) => {
+                    getTopologySnapshot = getValue;
+                    areTopologySnapshotsEqual = equals;
+                    return { dispose: vi.fn() };
+                }
+            ),
+        } as unknown as IWatcherService;
+        const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, {} as ISelectionService, watcherService)!;
+        const providerRegistration = service.addRenderingContextNodeProvider({
+            predicate: (context): context is SceneContext => context === firstScene || context === secondScene,
+            getNodes: () => [],
+            getSnapshot: (scene) => scene.meshes,
+        });
+
+        if (!getTopologySnapshot || !areTopologySnapshotsEqual) {
+            throw new Error("Expected the topology watcher to be registered.");
+        }
+
+        const beforeTransfer = getTopologySnapshot();
+        firstSceneMeshes.splice(0, 1);
+        secondSceneMeshes.push(mesh);
+        const afterTransfer = getTopologySnapshot();
+
+        expect(areTopologySnapshotsEqual(beforeTransfer, afterTransfer)).toBe(false);
+
+        providerRegistration.dispose();
+        service.dispose?.();
+    });
 });
 
 describe("Babylon Lite scene resource explorer services", () => {

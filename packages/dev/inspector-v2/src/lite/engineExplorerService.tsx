@@ -80,8 +80,59 @@ function GetNodeId(context: object): string {
     return id.toString();
 }
 
-function AreTopologySnapshotsEqual(left: readonly object[], right: readonly object[]) {
-    return left.length === right.length && left.every((entity, index) => entity === right[index]);
+type ProviderTopologySnapshot = Readonly<{
+    provider: UntypedRenderingContextNodeProvider;
+    entities: readonly object[];
+}>;
+
+type RenderingContextTopologySnapshot = Readonly<{
+    context: RenderingContext;
+    providers: readonly ProviderTopologySnapshot[];
+}>;
+
+type SurfaceTopologySnapshot = Readonly<{
+    readonly surface: SurfaceContext;
+    readonly renderingContexts: readonly RenderingContextTopologySnapshot[];
+}>;
+
+type TopologySnapshot = readonly SurfaceTopologySnapshot[];
+
+function AreTopologySnapshotsEqual(left: TopologySnapshot, right: TopologySnapshot): boolean {
+    if (left.length !== right.length) {
+        return false;
+    }
+
+    for (let surfaceIndex = 0; surfaceIndex < left.length; surfaceIndex++) {
+        const leftSurface = left[surfaceIndex];
+        const rightSurface = right[surfaceIndex];
+        if (leftSurface.surface !== rightSurface.surface || leftSurface.renderingContexts.length !== rightSurface.renderingContexts.length) {
+            return false;
+        }
+
+        for (let contextIndex = 0; contextIndex < leftSurface.renderingContexts.length; contextIndex++) {
+            const leftContext = leftSurface.renderingContexts[contextIndex];
+            const rightContext = rightSurface.renderingContexts[contextIndex];
+            if (leftContext.context !== rightContext.context || leftContext.providers.length !== rightContext.providers.length) {
+                return false;
+            }
+
+            for (let providerIndex = 0; providerIndex < leftContext.providers.length; providerIndex++) {
+                const leftProvider = leftContext.providers[providerIndex];
+                const rightProvider = rightContext.providers[providerIndex];
+                if (leftProvider.provider !== rightProvider.provider || leftProvider.entities.length !== rightProvider.entities.length) {
+                    return false;
+                }
+
+                for (let entityIndex = 0; entityIndex < leftProvider.entities.length; entityIndex++) {
+                    if (leftProvider.entities[entityIndex] !== rightProvider.entities[entityIndex]) {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+
+    return true;
 }
 
 function GetRenderingContextDisplayName(context: RenderingContext): string {
@@ -172,15 +223,17 @@ export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorer
     factory: (engineContext, shellService, selectionService, watcherService) => {
         const engine = engineContext.engine;
         const nodeProviders = new ObservableCollection<UntypedRenderingContextNodeProvider>();
-        const getRenderingContextsSnapshot = () => engine.surfaces.flatMap((surface) => getRenderingContexts(surface));
-        const getTopologySnapshot = (): readonly object[] => {
-            const renderingContexts = getRenderingContextsSnapshot();
-            return [
-                ...engine.surfaces,
-                ...renderingContexts,
-                ...renderingContexts.flatMap((context) => GetApplicableProviders(context, nodeProviders.items).flatMap((provider) => provider.getSnapshot(context))),
-            ];
-        };
+        const getTopologySnapshot = (): TopologySnapshot =>
+            engine.surfaces.map((surface) => ({
+                surface,
+                renderingContexts: getRenderingContexts(surface).map((context) => ({
+                    context,
+                    providers: GetApplicableProviders(context, nodeProviders.items).map((provider) => ({
+                        provider,
+                        entities: [...provider.getSnapshot(context)],
+                    })),
+                })),
+            }));
 
         const onNodesChanged = new Observable<void>();
         const paneRegistration = CreateExplorerPaneRegistration(shellService, selectionService, {

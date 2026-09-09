@@ -96,6 +96,31 @@ describe("WatcherService", () => {
         watcher.dispose?.();
     });
 
+    it("polls computed values as a fallback in interception mode only while they are watched", () => {
+        vi.useFakeTimers();
+        const definitions = MakeWatcherServiceDefinitions({
+            defaultSettings: { mode: "intercept" },
+            computedValuePollingInterval: 100,
+        });
+        const watcher = definitions.watcherServiceDefinition.factory(new TestSettingsStore(), new TestReactContextService());
+        let value = 0;
+        const onChanged = vi.fn();
+
+        expect(vi.getTimerCount()).toBe(0);
+        const registration = watcher.watchValue(() => value, onChanged);
+        expect(vi.getTimerCount()).toBe(1);
+
+        value = 1;
+        vi.advanceTimersByTime(99);
+        expect(onChanged).not.toHaveBeenCalled();
+        vi.advanceTimersByTime(1);
+        expect(onChanged).toHaveBeenCalledExactlyOnceWith(1);
+
+        registration.dispose();
+        expect(vi.getTimerCount()).toBe(0);
+        watcher.dispose?.();
+    });
+
     it("updates existing property watchers when the watch mode changes", () => {
         vi.useFakeTimers();
         const settingsStore = new TestSettingsStore();

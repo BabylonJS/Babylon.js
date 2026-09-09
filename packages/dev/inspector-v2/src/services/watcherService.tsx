@@ -50,6 +50,11 @@ type WatcherServiceOptions = {
      * The watcher modes supported by this Inspector target.
      */
     supportedModes?: readonly WatcherSettings["mode"][];
+
+    /**
+     * The fallback interval for computed values when interception is the preferred mode.
+     */
+    computedValuePollingInterval?: number;
 };
 
 /**
@@ -84,7 +89,9 @@ export interface IWatcherService extends IService<typeof WatcherServiceIdentity>
     watchProperty<T extends object>(target: T, propertyKey: keyof T, onChanged: (value: unknown) => void): IDisposable;
 
     /**
-     * Watches a computed value and calls the callback whenever it changes during a polling or manual refresh.
+     * Watches a computed value and calls the callback whenever it changes. Computed values use fallback
+     * polling when interception is preferred, the configured interval in polling mode, and explicit
+     * refreshes in manual mode.
      * @param getValue A function that returns the current value.
      * @param onChanged A callback that is called with the new value when it changes.
      * @param equals An optional equality comparison. Defaults to {@link Object.is}.
@@ -112,6 +119,7 @@ const AllWatchModes = [
 export function MakeWatcherServiceDefinitions(options: WatcherServiceOptions = {}) {
     const supportedModes = options.supportedModes ?? AllWatchModes.map((option) => option.value);
     const defaultSettings = options.defaultSettings ?? WatcherSettingDescriptor.defaultValue;
+    const computedValuePollingInterval = options.computedValuePollingInterval ?? 250;
     const settingDescriptor: SettingDescriptor<WatcherSettings> = {
         key: WatcherSettingDescriptor.key,
         defaultValue: defaultSettings,
@@ -125,22 +133,41 @@ export function MakeWatcherServiceDefinitions(options: WatcherServiceOptions = {
         factory: (settingsStore, reactContextService) => {
             const refreshObservable = new Observable<void>();
             const propertyWatchers = new Set<{ setMode: (mode: WatcherSettings["mode"]) => void; dispose: () => void }>();
+            const computedValueWatchers = new Set<IDisposable>();
             let pollingHandle: Nullable<number> = null;
+            let activePollingInterval: Nullable<number> = null;
+            let isDisposed = false;
             let currentSettings = normalizeSettings(settingsStore.readSetting(settingDescriptor));
 
-            const applySettings = () => {
-                currentSettings = normalizeSettings(settingsStore.readSetting(settingDescriptor));
+            const updatePolling = () => {
+                let desiredPollingInterval: Nullable<number> = null;
+                if (!isDisposed) {
+                    if (currentSettings.mode === "polling") {
+                        desiredPollingInterval = currentSettings.interval;
+                    } else if (currentSettings.mode === "intercept" && computedValueWatchers.size > 0) {
+                        desiredPollingInterval = computedValuePollingInterval;
+                    }
+                }
 
+                if (desiredPollingInterval === activePollingInterval) {
+                    return;
+                }
                 if (pollingHandle !== null) {
                     clearInterval(pollingHandle);
                     pollingHandle = null;
                 }
 
-                if (currentSettings.mode === "polling") {
+                if (desiredPollingInterval !== null) {
                     pollingHandle = window.setInterval(() => {
                         refreshObservable.notifyObservers();
-                    }, currentSettings.interval);
+                    }, desiredPollingInterval);
                 }
+                activePollingInterval = desiredPollingInterval;
+            };
+
+            const applySettings = () => {
+                currentSettings = normalizeSettings(settingsStore.readSetting(settingDescriptor));
+                updatePolling();
 
                 for (const watcher of propertyWatchers) {
                     watcher.setMode(currentSettings.mode);
@@ -220,18 +247,33 @@ export function MakeWatcherServiceDefinitions(options: WatcherServiceOptions = {
                             onChanged(currentValue);
                         }
                     });
-
-                    return {
-                        dispose: () => observer.remove(),
+                    let isWatcherDisposed = false;
+                    const computedValueWatcher = {
+                        dispose: () => {
+                            if (!isWatcherDisposed) {
+                                observer.remove();
+                                computedValueWatchers.delete(computedValueWatcher);
+                                updatePolling();
+                                isWatcherDisposed = true;
+                            }
+                        },
                     };
+                    computedValueWatchers.add(computedValueWatcher);
+                    updatePolling();
+
+                    return computedValueWatcher;
                 },
                 refresh: () => {
                     refreshObservable.notifyObservers();
                 },
                 dispose: () => {
+                    isDisposed = true;
                     contextHandle.dispose();
 
                     for (const watcher of [...propertyWatchers]) {
+                        watcher.dispose();
+                    }
+                    for (const watcher of [...computedValueWatchers]) {
                         watcher.dispose();
                     }
 
@@ -239,6 +281,7 @@ export function MakeWatcherServiceDefinitions(options: WatcherServiceOptions = {
                         clearInterval(pollingHandle);
                         pollingHandle = null;
                     }
+                    activePollingInterval = null;
 
                     refreshObservable.clear();
                     settingsStoreObserver.remove();
@@ -268,8 +311,8 @@ export function MakeWatcherServiceDefinitions(options: WatcherServiceOptions = {
                     return (
                         <>
                             <DropdownPropertyLine
-                                label="Property Watch Mode"
-                                description={`Specifies how Inspector watches entity properties for changes. "Interception" sees changes instantly, but for complex scenes can impact performance. "Polling" has less performance impact on complex scenes, but changes are only detected at the specified interval. "Manual" requires the "Refresh" button in the toolbar to be pressed.`}
+                                label="Preferred Watch Mode"
+                                description={`Specifies how Inspector prefers to watch values for changes. "Interception" sees interceptable property changes instantly and uses polling as a fallback for computed values. "Polling" has less performance impact on complex scenes, but changes are only detected at the specified interval. "Manual" requires the "Refresh" button in the toolbar to be pressed.`}
                                 options={watchModes}
                                 value={watcherSettings.mode}
                                 onChange={(value) =>
