@@ -1,12 +1,23 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { NullEngine } from "core/Engines/nullEngine";
 import { FilesInput } from "core/Misc/filesInput";
 import { Logger } from "core/Misc/logger";
 import { type Scene } from "core/scene";
 
 function CreateFilesInput(onStart: (files?: File[]) => void, onReload: (sceneFile: File) => void): FilesInput {
     return new FilesInput({} as AbstractEngine, null, null, null, null, null, onStart, onReload, null);
+}
+
+function CreateDeferredScene() {
+    let resolve!: (scene: Scene) => void;
+    let reject!: (error: Error) => void;
+    const promise = new Promise<Scene>((resolvePromise, rejectPromise) => {
+        resolve = resolvePromise;
+        reject = rejectPromise;
+    });
+    return { promise, resolve, reject };
 }
 
 describe("FilesInput", () => {
@@ -489,5 +500,262 @@ describe("FilesInput", () => {
 
         expect(sceneLoaded).toHaveBeenCalledWith(file, loadedScene);
         expect(loadedScene.dispose).not.toHaveBeenCalled();
+    });
+
+    describe("loading and render-loop ownership", () => {
+        let engine: NullEngine;
+        let currentScene: Scene;
+
+        beforeEach(() => {
+            vi.useFakeTimers();
+            engine = new NullEngine();
+            vi.spyOn(engine, "displayLoadingUI").mockImplementation(() => {});
+            vi.spyOn(engine, "hideLoadingUI").mockImplementation(() => {});
+            currentScene = {
+                dispose: vi.fn(),
+                executeWhenReady: (callback: () => void) => callback(),
+                render: vi.fn(),
+            } as unknown as Scene;
+        });
+
+        afterEach(() => {
+            engine.dispose();
+            vi.useRealTimers();
+            vi.restoreAllMocks();
+        });
+
+        it.each([
+            ["resolve", false],
+            ["reject", false],
+            ["resolve", true],
+            ["reject", true],
+        ] as const)("restores a canceled replacement before late %s (newer load: %s)", async (completion, startNewerLoad) => {
+            const sceneLoaded = vi.fn();
+            const onError = vi.fn();
+            const filesInput = new FilesInput(engine, null, sceneLoaded, null, null, null, null, null, onError);
+            filesInput.onProcessFileCallback = (file, _name, _extension, setSceneFileToLoad) => {
+                setSceneFileToLoad(file);
+                return false;
+            };
+            filesInput.loadAsync = async () => currentScene;
+            filesInput.loadFiles({ target: { files: [new File(["initial"], "Initial.usda")] } });
+            await Promise.resolve();
+            const renderLoop = engine.activeRenderLoops[0];
+            expect(renderLoop).toBeTypeOf("function");
+            vi.mocked(engine.hideLoadingUI).mockClear();
+            sceneLoaded.mockClear();
+
+            const staleLoad = CreateDeferredScene();
+            const staleScene = { dispose: vi.fn() } as unknown as Scene;
+            filesInput.loadAsync = () => staleLoad.promise;
+            filesInput.loadFiles({ target: { files: [new File(["stale"], "Stale.usda")] } });
+            expect(engine.activeRenderLoops).toHaveLength(0);
+
+            filesInput.clearFileSelection();
+
+            expect(filesInput.filesToLoad).toEqual([]);
+            expect(engine.hideLoadingUI).toHaveBeenCalledTimes(1);
+            expect(engine.activeRenderLoops).toEqual([renderLoop]);
+            renderLoop();
+            expect(currentScene.render).toHaveBeenCalledTimes(1);
+            expect(currentScene.dispose).not.toHaveBeenCalled();
+            filesInput.clearFileSelection();
+            expect(engine.hideLoadingUI).toHaveBeenCalledTimes(1);
+
+            const newerLoad = CreateDeferredScene();
+            const newerScene = { dispose: vi.fn(), executeWhenReady: (callback: () => void) => callback() } as unknown as Scene;
+            const newerFile = new File(["newer"], "Newer.usda");
+            if (startNewerLoad) {
+                filesInput.loadAsync = () => newerLoad.promise;
+                filesInput.loadFiles({ target: { files: [newerFile] } });
+            }
+            expect(engine.activeRenderLoops).toEqual(startNewerLoad ? [] : [renderLoop]);
+
+            if (completion === "resolve") {
+                staleLoad.resolve(staleScene);
+            } else {
+                staleLoad.reject(new Error("Canceled load failed"));
+            }
+            await staleLoad.promise.catch(() => {});
+            await Promise.resolve();
+
+            expect(staleScene.dispose).toHaveBeenCalledTimes(completion === "resolve" ? 1 : 0);
+            expect(currentScene.dispose).not.toHaveBeenCalled();
+            expect(sceneLoaded).not.toHaveBeenCalled();
+            expect(onError).not.toHaveBeenCalled();
+            expect(engine.hideLoadingUI).toHaveBeenCalledTimes(1);
+            expect(engine.activeRenderLoops).toEqual(startNewerLoad ? [] : [renderLoop]);
+
+            if (startNewerLoad) {
+                newerLoad.resolve(newerScene);
+                await newerLoad.promise;
+            }
+            expect(sceneLoaded.mock.calls).toEqual(startNewerLoad ? [[newerFile, newerScene]] : []);
+            expect(currentScene.dispose).toHaveBeenCalledTimes(startNewerLoad ? 1 : 0);
+            expect(engine.hideLoadingUI).toHaveBeenCalledTimes(startNewerLoad ? 2 : 1);
+            expect(engine.activeRenderLoops).toEqual([renderLoop]);
+        });
+
+        it.each([
+            [false, false],
+            [true, true],
+            [false, true],
+        ])("honors loading UI (%s) and disabled render injection (%s) when canceling", async (displayLoadingUI, dontInjectRenderLoop) => {
+            const filesInput = new FilesInput(engine, currentScene, null, null, null, null, null, null, null, false, dontInjectRenderLoop);
+            filesInput.displayLoadingUI = displayLoadingUI;
+            filesInput.onProcessFileCallback = (file, _name, _extension, setSceneFileToLoad) => {
+                setSceneFileToLoad(file);
+                return false;
+            };
+            const load = CreateDeferredScene();
+            filesInput.loadAsync = () => load.promise;
+            filesInput.loadFiles({ target: { files: [new File(["scene"], "Scene.usda")] } });
+            filesInput.clearFileSelection();
+            load.reject(new Error("Canceled"));
+            await load.promise.catch(() => {});
+            await Promise.resolve();
+
+            expect(engine.hideLoadingUI).toHaveBeenCalledTimes(displayLoadingUI ? 1 : 0);
+            expect(engine.activeRenderLoops).toHaveLength(dontInjectRenderLoop ? 0 : 1);
+        });
+
+        it("leaves a custom reload handler's loading UI and render loop alone", () => {
+            const renderLoop = vi.fn();
+            const onReload = vi.fn();
+            engine.runRenderLoop(renderLoop);
+            const filesInput = new FilesInput(engine, currentScene, null, null, null, null, null, onReload, null);
+            filesInput.onProcessFileCallback = (file, _name, _extension, setSceneFileToLoad) => {
+                setSceneFileToLoad(file);
+                return false;
+            };
+            filesInput.loadFiles({ target: { files: [new File(["scene"], "Scene.usda")] } });
+
+            filesInput.clearFileSelection();
+
+            expect(onReload).toHaveBeenCalledTimes(1);
+            expect(engine.displayLoadingUI).not.toHaveBeenCalled();
+            expect(engine.hideLoadingUI).not.toHaveBeenCalled();
+            expect(engine.activeRenderLoops).toEqual([renderLoop]);
+        });
+
+        it("does not restore UI or rendering when clearing without canceling the load", async () => {
+            const sceneLoaded = vi.fn();
+            const filesInput = new FilesInput(engine, currentScene, sceneLoaded, null, null, null, null, null, null);
+            filesInput.onProcessFileCallback = (file, _name, _extension, setSceneFileToLoad) => {
+                setSceneFileToLoad(file);
+                return false;
+            };
+            const load = CreateDeferredScene();
+            const loadedScene = { dispose: vi.fn(), executeWhenReady: (callback: () => void) => callback() } as unknown as Scene;
+            filesInput.loadAsync = () => load.promise;
+            const file = new File(["scene"], "Scene.usda");
+            filesInput.loadFiles({ target: { files: [file] } });
+            filesInput.clearFileSelection(false);
+
+            expect(filesInput.filesToLoad).toEqual([]);
+            expect(engine.hideLoadingUI).not.toHaveBeenCalled();
+            expect(engine.activeRenderLoops).toHaveLength(0);
+
+            load.resolve(loadedScene);
+            await load.promise;
+
+            expect(sceneLoaded).toHaveBeenCalledWith(file, loadedScene);
+            expect(engine.hideLoadingUI).toHaveBeenCalledTimes(1);
+            expect(engine.activeRenderLoops).toHaveLength(1);
+            expect(loadedScene.dispose).not.toHaveBeenCalled();
+        });
+
+        it("does not let a superseded scene readiness callback interrupt a newer load", async () => {
+            const filesInput = new FilesInput(engine, currentScene, null, null, null, null, null, null, null);
+            filesInput.onProcessFileCallback = (file, _name, _extension, setSceneFileToLoad) => {
+                setSceneFileToLoad(file);
+                return false;
+            };
+            let ready!: () => void;
+            const firstScene = {
+                dispose: vi.fn(),
+                executeWhenReady: (callback: () => void) => (ready = callback),
+            } as unknown as Scene;
+            filesInput.loadAsync = async () => firstScene;
+            filesInput.loadFiles({ target: { files: [new File(["first"], "First.usda")] } });
+            await Promise.resolve();
+            filesInput.clearFileSelection();
+            expect(engine.hideLoadingUI).toHaveBeenCalledTimes(1);
+
+            const newerLoad = CreateDeferredScene();
+            filesInput.loadAsync = () => newerLoad.promise;
+            filesInput.loadFiles({ target: { files: [new File(["newer"], "Newer.usda")] } });
+            ready();
+
+            expect(engine.hideLoadingUI).toHaveBeenCalledTimes(1);
+            expect(engine.activeRenderLoops).toHaveLength(0);
+            newerLoad.resolve({ dispose: vi.fn(), executeWhenReady: (callback: () => void) => callback() } as unknown as Scene);
+            await newerLoad.promise;
+            expect(engine.hideLoadingUI).toHaveBeenCalledTimes(2);
+            expect(engine.activeRenderLoops).toHaveLength(1);
+        });
+
+        it.each(["empty", "unreadable", "unsupported"])("preserves a caller-owned append render loop for an %s selection", (selection) => {
+            const renderLoop = vi.fn();
+            engine.runRenderLoop(renderLoop);
+            const runRenderLoop = vi.spyOn(engine, "runRenderLoop");
+            const filesInput = new FilesInput(engine, currentScene, null, null, null, null, null, null, null, true);
+            const processError = vi.fn();
+            filesInput.onProcessFilesErrorCallback = processError;
+            vi.spyOn(Logger, "Error").mockImplementation(() => {});
+            const file = new File(["unsupported"], "Scene.unsupported");
+
+            if (selection === "unsupported") {
+                filesInput.loadFiles({ target: { files: [file] } });
+            } else {
+                const folder = {
+                    isDirectory: true,
+                    fullPath: "/Folder",
+                    createReader: () => ({
+                        readEntries: (success: (entries: unknown[]) => void, error: (reason: Error) => void) => {
+                            if (selection === "unreadable") {
+                                error(new Error("Unreadable directory"));
+                            } else {
+                                success([]);
+                            }
+                        },
+                    }),
+                };
+                filesInput.loadFiles({ dataTransfer: { files: [], items: [{ kind: "file", webkitGetAsEntry: () => folder }] } });
+            }
+
+            expect(processError).toHaveBeenCalledWith(selection === "unsupported" ? [file] : []);
+            expect(engine.activeRenderLoops).toEqual([renderLoop]);
+            expect(runRenderLoop).not.toHaveBeenCalled();
+            engine.activeRenderLoops[0]();
+            expect(renderLoop).toHaveBeenCalledTimes(1);
+            expect(currentScene.render).not.toHaveBeenCalled();
+        });
+
+        it("does not cancel an append load or restore its caller-owned loop when clearing", async () => {
+            const renderLoop = vi.fn();
+            engine.runRenderLoop(renderLoop);
+            const sceneLoaded = vi.fn();
+            const filesInput = new FilesInput(engine, currentScene, sceneLoaded, null, null, null, null, null, null, true);
+            filesInput.onProcessFileCallback = (file, _name, _extension, setSceneFileToLoad) => {
+                setSceneFileToLoad(file);
+                return false;
+            };
+            const load = CreateDeferredScene();
+            filesInput.loadAsync = () => load.promise;
+            const file = new File(["scene"], "Scene.usda");
+            filesInput.loadFiles({ target: { files: [file] } });
+            filesInput.clearFileSelection();
+
+            expect(engine.hideLoadingUI).not.toHaveBeenCalled();
+            expect(engine.activeRenderLoops).toEqual([renderLoop]);
+            load.resolve(currentScene);
+            await load.promise;
+
+            expect(sceneLoaded).toHaveBeenCalledWith(file, currentScene);
+            expect(engine.hideLoadingUI).toHaveBeenCalledTimes(1);
+            expect(currentScene.dispose).not.toHaveBeenCalled();
+            expect(engine.activeRenderLoops).toEqual([renderLoop]);
+        });
     });
 });

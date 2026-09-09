@@ -61,6 +61,7 @@ export class FilesInput {
     private _filesToLoad: File[] = [];
     private _fileSelectionGeneration = 0;
     private _reloadGeneration = 0;
+    private _isLoading = false;
     private readonly _renderLoop = () => {
         this._renderFunction();
     };
@@ -141,7 +142,7 @@ export class FilesInput {
 
     /**
      * Clears the files and scene selection associated with the current load.
-     * @param cancelActiveLoad whether an in-progress replacement load should be canceled
+     * @param cancelActiveLoad whether an in-progress replacement load should be canceled, restoring FilesInput-managed loading UI and rendering
      */
     public clearFileSelection(cancelActiveLoad = true): void {
         this._fileSelectionGeneration++;
@@ -150,6 +151,9 @@ export class FilesInput {
         }
         this._sceneFileToLoad = null;
         this._filesToLoad = [];
+        if (cancelActiveLoad && this._isLoading) {
+            this._restoreCurrentScene();
+        }
     }
 
     /**
@@ -183,10 +187,11 @@ export class FilesInput {
     }
 
     private _restoreCurrentScene(): void {
+        this._isLoading = false;
         if (this.displayLoadingUI) {
             this._engine.hideLoadingUI();
         }
-        if (!this.dontInjectRenderLoop && this._currentScene) {
+        if (!this.useAppend && !this.dontInjectRenderLoop && this._currentScene) {
             this._engine.runRenderLoop(this._renderLoop);
         }
     }
@@ -383,6 +388,7 @@ export class FilesInput {
             const sceneFileToLoad = this._sceneFileToLoad;
             const reloadGeneration = ++this._reloadGeneration;
             if (!this.useAppend) {
+                this._isLoading = true;
                 if (this._currentScene) {
                     if (Logger.errorsCount > 0) {
                         Logger.ClearLogCache();
@@ -414,11 +420,8 @@ export class FilesInput {
 
                         // Wait for textures and shaders to be ready
                         this._currentScene.executeWhenReady(() => {
-                            if (this.displayLoadingUI) {
-                                this._engine.hideLoadingUI();
-                            }
-                            if (!this.dontInjectRenderLoop) {
-                                this._engine.runRenderLoop(this._renderLoop);
+                            if (reloadGeneration === this._reloadGeneration) {
+                                this._restoreCurrentScene();
                             }
                         });
                     } else {
@@ -435,6 +438,7 @@ export class FilesInput {
                     if (!this.useAppend && reloadGeneration !== this._reloadGeneration) {
                         return;
                     }
+                    this._isLoading = false;
                     if (this.displayLoadingUI) {
                         this._engine.hideLoadingUI();
                     }
