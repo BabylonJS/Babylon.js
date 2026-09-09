@@ -78,18 +78,20 @@ export interface IControlTypeInfo {
  */
 export const BaseControlProperties: Record<string, IPropertyInfo> = {
     // Size & position
-    width: { description: "Width as a string ('200px', '50%') or number", type: "string", defaultValue: "100%" },
-    height: { description: "Height as a string ('40px', '50%') or number", type: "string", defaultValue: "100%" },
-    left: { description: "Horizontal offset from alignment anchor", type: "string", defaultValue: "0px" },
-    top: { description: "Vertical offset from alignment anchor", type: "string", defaultValue: "0px" },
+    width: { description: "Width as a string ('200px', '50%', '10em', '10rem') or number; em uses the control font, rem the GUI root font", type: "string", defaultValue: "100%" },
+    height: { description: "Height as a string ('40px', '50%', '2em', '2rem') or number; em uses the control font, rem the GUI root font", type: "string", defaultValue: "100%" },
+    left: { description: "Horizontal offset from alignment anchor in px, %, em, or rem", type: "string", defaultValue: "0px" },
+    top: { description: "Vertical offset from alignment anchor in px, %, em, or rem", type: "string", defaultValue: "0px" },
     // Alignment
     horizontalAlignment: { description: "0 = LEFT, 1 = RIGHT, 2 = CENTER", type: "number", defaultValue: 2 },
     verticalAlignment: { description: "0 = TOP, 1 = BOTTOM, 2 = CENTER", type: "number", defaultValue: 2 },
+    flexGrow: { description: "Nonnegative share of extra main-axis space in a FlexPanel", type: "number", defaultValue: 0 },
+    flexShrink: { description: "Nonnegative shrink factor in a FlexPanel, weighted by the declared main-axis size; 0 disables shrinking", type: "number", defaultValue: 1 },
     // Padding
-    paddingLeft: { description: "Left padding (e.g. '10px')", type: "string", defaultValue: "0px" },
-    paddingRight: { description: "Right padding", type: "string", defaultValue: "0px" },
-    paddingTop: { description: "Top padding", type: "string", defaultValue: "0px" },
-    paddingBottom: { description: "Bottom padding", type: "string", defaultValue: "0px" },
+    paddingLeft: { description: "Left padding in px, %, em, or rem", type: "string", defaultValue: "0px" },
+    paddingRight: { description: "Right padding in px, %, em, or rem", type: "string", defaultValue: "0px" },
+    paddingTop: { description: "Top padding in px, %, em, or rem", type: "string", defaultValue: "0px" },
+    paddingBottom: { description: "Bottom padding in px, %, em, or rem", type: "string", defaultValue: "0px" },
     // Appearance
     color: { description: "Foreground / text color (CSS color string)", type: "string", defaultValue: "white" },
     alpha: { description: "Opacity (0 = transparent, 1 = opaque)", type: "number", defaultValue: 1 },
@@ -100,7 +102,7 @@ export const BaseControlProperties: Record<string, IPropertyInfo> = {
     scaleY: { description: "Vertical scale factor", type: "number", defaultValue: 1 },
     // Font
     fontFamily: { description: "CSS font family", type: "string" },
-    fontSize: { description: "Font size (e.g. '24px' or 24)", type: "string", defaultValue: "18px" },
+    fontSize: { description: "Font size ('24px', '1.5em', '1rem', or 24); em uses the parent font, rem the GUI root font", type: "string", defaultValue: "18px" },
     fontWeight: { description: "CSS font weight (normal, bold, 600, etc.)", type: "string" },
     fontStyle: { description: "CSS font style (normal, italic)", type: "string" },
     // Shadow
@@ -181,6 +183,34 @@ export const ControlRegistry: Record<string, IControlTypeInfo> = {
             spacing: { description: "Pixels of space between each child", type: "number", defaultValue: 0 },
             adaptWidthToChildren: { description: "Auto-resize width to fit children", type: "boolean", defaultValue: false },
             adaptHeightToChildren: { description: "Auto-resize height to fit children", type: "boolean", defaultValue: false },
+        },
+    },
+
+    FlexPanel: {
+        className: "FlexPanel",
+        category: "Layout",
+        description:
+            "Arranges children in flexible rows or columns with wrapping, gaps, alignment, growth, and weighted shrinking. " +
+            "Uses declared child dimensions as the basis and preserves them during layout. Keep panel adapt-to-children and child auto-size modes disabled on flex-controlled axes.",
+        isContainer: true,
+        properties: {
+            background: { description: "Background fill color", type: "string" },
+            flexDirection: { description: "Main-axis direction: row, row-reverse, column, or column-reverse", type: "string", defaultValue: "row" },
+            flexWrap: { description: "Line wrapping: nowrap, wrap, or wrap-reverse", type: "string", defaultValue: "nowrap" },
+            justifyContent: {
+                description: "Remaining main-axis space: flex-start, flex-end, center, space-between, space-around, or space-evenly",
+                type: "string",
+                defaultValue: "flex-start",
+            },
+            alignItems: { description: "Cross-axis item alignment: flex-start, flex-end, center, or stretch", type: "string", defaultValue: "flex-start" },
+            alignContent: {
+                description: "Wrapped-line distribution: flex-start, flex-end, center, space-between, space-around, space-evenly, or stretch",
+                type: "string",
+                defaultValue: "stretch",
+            },
+            gap: { description: "Space between items and lines in px, em, rem, or percent of the main-axis size", type: "string", defaultValue: "0px" },
+            adaptWidthToChildren: { description: "Keep disabled: panel width defines the available layout space", type: "boolean", defaultValue: false },
+            adaptHeightToChildren: { description: "Keep disabled: panel height defines the available layout space", type: "boolean", defaultValue: false },
         },
     },
 

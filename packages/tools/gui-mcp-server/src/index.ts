@@ -97,8 +97,8 @@ const server = new McpServer(
     {
         instructions: [
             "You build Babylon.js 2D GUI layouts (AdvancedDynamicTexture). Workflow: create_gui → add controls (containers first, then leaf controls inside them) → set properties → validate_gui → export_gui_json.",
-            "All controls must have a parent. The root container is created automatically. Use Grid for complex layouts, StackPanel for linear layouts.",
-            "Sizes accept '200px', '50%', or a number. Output JSON can be consumed by the Scene MCP via attach_gui.",
+            "All controls must have a parent. The root container is created automatically. Use Grid for complex layouts, StackPanel for linear layouts, and FlexPanel for flexible rows or columns.",
+            "Sizes accept '200px', '50%', '2em', '2rem', or a number. em uses the control font and rem the GUI root font. Output JSON can be consumed by the Scene MCP via attach_gui.",
         ].join(" "),
     }
 );
@@ -917,9 +917,10 @@ server.registerTool(
         }
 
         lines.push("\n### Base Properties (available on all controls):");
-        lines.push("  width, height, left, top, color, alpha, fontSize, fontFamily, fontWeight,");
-        lines.push("  horizontalAlignment, verticalAlignment, paddingLeft/Right/Top/Bottom,");
-        lines.push("  isVisible, isEnabled, zIndex, rotation, scaleX, scaleY, shadow*, clipChildren, clipContent");
+        for (const [k, v] of Object.entries(BaseControlProperties)) {
+            const def = v.defaultValue !== undefined ? ` [default: ${JSON.stringify(v.defaultValue)}]` : "";
+            lines.push(`  • ${k} (${v.type}): ${v.description}${def}`);
+        }
 
         return { content: [{ type: "text", text: lines.join("\n") }] };
     }
