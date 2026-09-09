@@ -354,7 +354,11 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                                     }
                                 }
                                 if (this._loadingOptions.waitForTextures) {
-                                    await Promise.all(textureLoadPromises);
+                                    const results = await Promise.allSettled(textureLoadPromises);
+                                    const rejected = results.find((result) => result.status === "rejected");
+                                    if (rejected) {
+                                        throw rejected.reason;
+                                    }
                                 }
                                 resolve();
                             } catch (e) {

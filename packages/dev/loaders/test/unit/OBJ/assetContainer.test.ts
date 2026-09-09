@@ -263,14 +263,20 @@ describe("OBJ asset containers and texture loading", () => {
         container.dispose();
     });
 
-    it("rejects texture failures when materialLoadingFailsSilently is false", async () => {
-        mockMTL();
+    it.each(["complete", "fail"] as const)("waits for remaining textures to %s before rejecting when materialLoadingFailsSilently is false", async (settle) => {
+        mockMTL(TexturedMaterial + "map_Ks specular.png\n");
         const pending = holdTextureRequests();
         const loading = new OBJFileLoader({ waitForTextures: true, materialLoadingFailsSilently: false }).loadAssetContainerAsync(scene, TexturedTriangle, "/assets/");
         const rejection = expect(loading).rejects.toThrow("/assets/color.png: 404 Not Found");
+        const onRejected = vi.fn();
+        void loading.catch(onRejected);
 
-        await vi.waitFor(() => expect(pending).toHaveLength(1));
+        await vi.waitFor(() => expect(pending).toHaveLength(2));
         pending[0].fail();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(onRejected).not.toHaveBeenCalled();
+        pending[1][settle]();
+
         await rejection;
         expect(scene._blockEntityCollection).toBe(false);
     });
@@ -284,6 +290,30 @@ describe("OBJ asset containers and texture loading", () => {
         pending[0].fail();
         const container = await loading;
         expect(container.textures[0].loadingError).toBe(true);
+        container.dispose();
+    });
+
+    it.each(["complete", "fail"] as const)("waits for remaining textures to %s after a silent texture failure", async (settle) => {
+        mockMTL(TexturedMaterial + "map_Ks specular.png\n");
+        const pending = holdTextureRequests();
+        let settled = false;
+        const loading = new OBJFileLoader({ waitForTextures: true }).loadAssetContainerAsync(scene, TexturedTriangle, "/assets/").then((container) => {
+            settled = true;
+            return container;
+        });
+
+        await vi.waitFor(() => expect(pending).toHaveLength(2));
+        pending[0].fail();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(settled).toBe(false);
+        pending[1][settle]();
+
+        const container = await loading;
+        expect(container.textures).toHaveLength(2);
+        const material = container.meshes[0].material as StandardMaterial;
+        expect(material.diffuseTexture!.loadingError).toBe(true);
+        expect(material.specularTexture!.isReady()).toBe(settle === "complete");
+        expect(material.specularTexture!.loadingError).toBe(settle === "fail");
         container.dispose();
     });
 
