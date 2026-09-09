@@ -2819,6 +2819,23 @@
             "dependsOn": ["Rendering", "Particles"]
         },
         {
+            "title": "Fluid rendering GPU particle system per-particle size with asymmetric scale",
+            "playgroundId": "#M9FSIH#4",
+            "referenceImage": "fluidGpuParticleSystemPerParticleSizeAsymmetricScale.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system uniform size with asymmetric scale",
+            "playgroundId": "#M9FSIH#4",
+            "replace": "UsePerParticleSizeAttribute = true;, UsePerParticleSizeAttribute = false;",
+            "referenceImage": "fluidGpuParticleSystemUniformSizeAsymmetricScale.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
             "title": "Export GLTF Extension KHR_texture_transform",
             "playgroundId": "#20OAV9#15148",
             "referenceImage": "exportGltfKHRTextureTransform.png",
