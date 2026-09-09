@@ -29,15 +29,20 @@ void main(void) {
 #else
     vec2 particleSize = size;
 #endif
+#ifdef FLUIDRENDERING_CENTERED_OFFSET
+    vec2 fluidOffset = offset + vec2(0.5);
+#else
+    vec2 fluidOffset = offset;
+#endif
     vec3 cornerPos;
-    cornerPos.xy = vec2(offset.x - 0.5, offset.y - 0.5) * particleSize;
+    cornerPos.xy = (fluidOffset - vec2(0.5)) * particleSize;
     cornerPos.z = 0.0;
 
     viewPos = (view * vec4(position, 1.0)).xyz;
 
     gl_Position = projection * vec4(viewPos + cornerPos, 1.0);
 
-    uv = offset;
+    uv = fluidOffset;
     sphereRadius = particleSize.x / 2.0;
 #ifdef FLUIDRENDERING_VELOCITY
     velocityNorm = length(velocity);

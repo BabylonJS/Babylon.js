@@ -1,4 +1,4 @@
-import { VertexBuffer } from "core/Buffers/buffer";
+import { type VertexBuffer } from "core/Buffers/buffer";
 import { type DataBuffer } from "core/Buffers/dataBuffer";
 import { Constants } from "core/Engines/constants";
 import { type Effect } from "core/Materials/effect";
@@ -19,8 +19,6 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     private _blendMode: number;
     private _onBeforeDrawParticleObserver: Nullable<Observer<Nullable<Effect>>>;
     private _updateInAnimate: boolean;
-    private _offsetBuffer: Nullable<VertexBuffer>;
-    private _vertexBuffersWithOffset: WeakMap<object, { [key: string]: VertexBuffer }>;
 
     /** Gets the particle system */
     public get particleSystem() {
@@ -68,25 +66,7 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
      * Gets the vertex buffers
      */
     public get vertexBuffers(): { [key: string]: VertexBuffer } {
-        const buffers = this._particleSystem.vertexBuffers as { [key: string]: VertexBuffer };
-
-        if (!buffers || !this._isGPUParticleSystem) {
-            return buffers;
-        }
-
-        // GPUParticleSystem's "offset" quad is centered ([-0.5, 0.5]) while the fluid shaders expect [0, 1]: substitute our own quad.
-        let patched = this._vertexBuffersWithOffset.get(buffers);
-        if (!patched) {
-            this._offsetBuffer ??= new VertexBuffer(this._engine, [0, 0, 1, 0, 0, 1, 1, 1], "offset", false, false, 2);
-            patched = { ...buffers, offset: this._offsetBuffer };
-            this._vertexBuffersWithOffset.set(buffers, patched);
-        }
-
-        return patched;
-    }
-
-    private get _isGPUParticleSystem(): boolean {
-        return this._particleSystem.getClassName() === "GPUParticleSystem";
+        return this._particleSystem.vertexBuffers as { [key: string]: VertexBuffer };
     }
 
     /**
@@ -110,8 +90,6 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
         this._originalRender = ps.render.bind(ps);
         this._blendMode = ps.blendMode;
         this._onBeforeDrawParticleObserver = null;
-        this._offsetBuffer = null;
-        this._vertexBuffersWithOffset = new WeakMap();
         this._updateInAnimate = this._particleSystem.updateInAnimate;
         this._particleSystem.updateInAnimate = true;
         this._particleSystem.render = () => 0;
@@ -127,6 +105,18 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
      */
     protected override _getPerParticleSizeAttributeSize(): number {
         return this._isGPUParticleSystem ? 3 : 2;
+    }
+
+    /**
+     * GPUParticleSystem's "offset" quad is centered ([-0.5, 0.5]); ParticleSystem's is in [0, 1].
+     * @returns true if the "offset" attribute is centered
+     */
+    protected override _usesCenteredOffsetAttribute(): boolean {
+        return this._isGPUParticleSystem;
+    }
+
+    private get _isGPUParticleSystem(): boolean {
+        return this._particleSystem.getClassName() === "GPUParticleSystem";
     }
 
     /**
@@ -152,20 +142,11 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
         this._originalRender();
     }
 
-    /** @internal */
-    public _rebuild(): void {
-        this._offsetBuffer?._rebuild();
-        this._vertexBuffersWithOffset = new WeakMap();
-    }
-
     /**
      * Releases the resources used by the class
      */
     public override dispose() {
         super.dispose();
-
-        this._offsetBuffer?.dispose();
-        this._offsetBuffer = null;
 
         this._particleSystem.onBeforeDrawParticlesObservable.remove(this._onBeforeDrawParticleObserver);
         this._onBeforeDrawParticleObserver = null;

@@ -22,13 +22,18 @@ void main(void) {
 #else
     vec2 particleSize = size;
 #endif
+#ifdef FLUIDRENDERING_CENTERED_OFFSET
+    vec2 fluidOffset = offset + vec2(0.5);
+#else
+    vec2 fluidOffset = offset;
+#endif
     vec3 cornerPos;
-    cornerPos.xy = vec2(offset.x - 0.5, offset.y - 0.5) * particleSize;
+    cornerPos.xy = (fluidOffset - vec2(0.5)) * particleSize;
     cornerPos.z = 0.0;
 
     vec3 viewPos = (view * vec4(position, 1.0)).xyz + cornerPos;
 
     gl_Position = projection * vec4(viewPos, 1.0);
 
-    uv = offset;
+    uv = fluidOffset;
 }

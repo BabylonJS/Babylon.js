@@ -90,8 +90,6 @@ export class FluidRendererSceneComponent implements ISceneComponent {
                 for (const name in vbuffers) {
                     buffers.add(vbuffers[name].getWrapperBuffer());
                 }
-            } else if (IsParticleSystemObject(obj)) {
-                obj._rebuild();
             }
         }
 

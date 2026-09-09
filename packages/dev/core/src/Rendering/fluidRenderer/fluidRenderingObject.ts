@@ -135,6 +135,14 @@ export abstract class FluidRenderingObject {
         return 2;
     }
 
+    /**
+     * Override to return true if the "offset" attribute is centered ([-0.5, 0.5]) instead of laid out in [0, 1].
+     * @returns true if the "offset" attribute is centered
+     */
+    protected _usesCenteredOffsetAttribute(): boolean {
+        return false;
+    }
+
     protected _createEffects(): void {
         // "size" is a uniform, or a per-particle attribute when UsePerParticleSizeAttribute is set (and supported).
         const perParticleSize = FluidRenderingObject.UsePerParticleSizeAttribute && this._supportsPerParticleSizeAttribute();
@@ -146,6 +154,10 @@ export abstract class FluidRenderingObject {
 
         if (perParticleSize && this._getPerParticleSizeAttributeSize() === 3) {
             defines.push("#define FLUIDRENDERING_PER_PARTICLE_SIZE_VEC3");
+        }
+
+        if (this._usesCenteredOffsetAttribute()) {
+            defines.push("#define FLUIDRENDERING_CENTERED_OFFSET");
         }
 
         this._effectsAreDirty = false;

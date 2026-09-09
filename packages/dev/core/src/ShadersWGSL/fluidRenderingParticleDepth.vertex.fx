@@ -35,8 +35,13 @@ fn main(input: VertexInputs) -> FragmentInputs {
     var particleSize: vec2f = uniforms.size;
 #endif
 
+#ifdef FLUIDRENDERING_CENTERED_OFFSET
+    let fluidOffset: vec2f = vertexInputs.offset + vec2f(0.5);
+#else
+    let fluidOffset: vec2f = vertexInputs.offset;
+#endif
     var cornerPos: vec3f = vec3f(
-        vec2f(vertexInputs.offset.x - 0.5, vertexInputs.offset.y - 0.5) * particleSize,
+        (fluidOffset - vec2f(0.5)) * particleSize,
         0.0
     );
 
@@ -44,7 +49,7 @@ fn main(input: VertexInputs) -> FragmentInputs {
 
     vertexOutputs.position = uniforms.projection * vec4f(vertexOutputs.viewPos + cornerPos, 1.0);
 
-    vertexOutputs.uv = vertexInputs.offset;
+    vertexOutputs.uv = fluidOffset;
     vertexOutputs.sphereRadius = particleSize.x / 2.0;
 #ifdef FLUIDRENDERING_VELOCITY
     vertexOutputs.velocityNorm = length(velocity);
