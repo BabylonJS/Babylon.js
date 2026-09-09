@@ -152,6 +152,12 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
         this._originalRender();
     }
 
+    /** @internal */
+    public _rebuild(): void {
+        this._offsetBuffer?._rebuild();
+        this._vertexBuffersWithOffset = new WeakMap();
+    }
+
     /**
      * Releases the resources used by the class
      */

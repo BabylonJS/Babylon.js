@@ -6,6 +6,7 @@ import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Vector3 } from "core/Maths/math.vector";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
+import { VertexBuffer } from "core/Buffers/buffer";
 
 import "core/Rendering/fluidRenderer/fluidRenderer";
 import "core/Particles/webgl2ParticleSystem";
@@ -88,4 +89,44 @@ describe("FluidRenderingObjectParticleSystem", () => {
         expect(depthEffect.getAttributesNames()).not.toContain("size");
         expect(depthEffect.defines).not.toContain("FLUIDRENDERING_PER_PARTICLE_SIZE");
     });
+
+    for (const perParticleSize of [true, false]) {
+        it(`recreates the GPUParticleSystem offset buffer after a context restoration (per-particle size ${perParticleSize ? "on" : "off"})`, () => {
+            FluidRenderingObject.UsePerParticleSizeAttribute = perParticleSize;
+
+            const ps = new GPUParticleSystem("test", { capacity: 100 }, scene);
+            // NullEngine cannot build the GPU particle VAOs, so emulate the buffers the system exposes after a (re)initialization
+            const makeBuffers = () => ({
+                offset: new VertexBuffer(engine, [0.5, 0.5, 1, 1, -0.5, 0.5, 0, 1, -0.5, -0.5, 0, 0, 0.5, -0.5, 1, 0], "offset", false, false, 4),
+                position: new VertexBuffer(engine, new Float32Array(300), "position", false, false, 3),
+                size: new VertexBuffer(engine, new Float32Array(300), "size", false, false, 3),
+            });
+            let systemBuffers = makeBuffers();
+            Object.defineProperty(ps, "vertexBuffers", { get: () => systemBuffers });
+            ps.rebuild = () => {
+                systemBuffers = makeBuffers();
+            };
+
+            const fluidRenderer = scene.enableFluidRenderer()!;
+            const { object } = fluidRenderer.addParticleSystem(ps, false) as { object: FluidRenderingObjectParticleSystem };
+
+            const buffersBefore = object.vertexBuffers;
+            const offsetBefore = buffersBefore.offset;
+            const handleBefore = offsetBefore.getBuffer();
+
+            expect(offsetBefore).not.toBe(systemBuffers.offset);
+            expect(buffersBefore.position).toBe(systemBuffers.position);
+            expect(handleBefore).not.toBeNull();
+
+            scene._rebuildGeometries();
+
+            const buffersAfter = object.vertexBuffers;
+
+            expect(buffersAfter).not.toBe(buffersBefore);
+            expect(buffersAfter.position).toBe(systemBuffers.position);
+            expect(buffersAfter.offset).toBe(offsetBefore);
+            expect(buffersAfter.offset.getBuffer()).not.toBe(handleBefore);
+            expect(buffersAfter.offset.getBuffer()).not.toBeNull();
+        });
+    }
 });
