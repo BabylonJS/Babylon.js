@@ -100,6 +100,9 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
      */
     public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
 
+    private _objectIdProvider?: GeometryRenderingObjectIdProvider;
+    private _meshBlendTagProvider?: GeometryRenderingMeshBlendTagProvider;
+
     /**
      * Provides the object ID written for each rendered mesh.
      *
@@ -123,9 +126,6 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             configuration.objectIdProvider = value;
         }
     }
-
-    private _objectIdProvider?: GeometryRenderingObjectIdProvider;
-    private _meshBlendTagProvider?: GeometryRenderingMeshBlendTagProvider;
 
     /**
      * Provides the packed mesh-blending tag written for each rendered mesh.

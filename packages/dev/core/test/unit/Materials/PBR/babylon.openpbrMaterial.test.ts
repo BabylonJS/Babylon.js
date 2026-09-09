@@ -6,6 +6,14 @@ import { SubMesh } from "core/Meshes/subMesh";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
 import { Scene } from "core/scene";
+import { openpbrDirectLighting as openpbrDirectLightingGLSL } from "core/Shaders/ShadersInclude/openpbrDirectLighting";
+import { openpbrDirectLightingWGSL } from "core/ShadersWGSL/ShadersInclude/openpbrDirectLighting";
+import { pbrDirectLightingFunctions as pbrDirectLightingFunctionsGLSL } from "core/Shaders/ShadersInclude/pbrDirectLightingFunctions";
+import { pbrDirectLightingFunctionsWGSL } from "core/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions";
+import { openpbrIblFunctions as openpbrIblFunctionsGLSL } from "core/Shaders/ShadersInclude/openpbrIblFunctions";
+import { openpbrIblFunctionsWGSL } from "core/ShadersWGSL/ShadersInclude/openpbrIblFunctions";
+import { openpbrDirectLightingInit as openpbrDirectLightingInitGLSL } from "core/Shaders/ShadersInclude/openpbrDirectLightingInit";
+import { openpbrDirectLightingInitWGSL } from "core/ShadersWGSL/ShadersInclude/openpbrDirectLightingInit";
 
 describe("OpenPBRMaterial", () => {
     let engine: Engine;
@@ -127,6 +135,71 @@ describe("OpenPBRMaterial", () => {
             // scene.isReady() is false so _checkIsReady would not notify the observable
             expect(scene.isReady()).toBe(false);
             expect(readyCallback).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("Shader backend consistency", () => {
+        it.each([
+            ["GLSL", openpbrDirectLightingGLSL.shader],
+            ["WGSL", openpbrDirectLightingWGSL.shader],
+        ])("applies OpenPBR area-light Fresnel once in %s", (_language, shader) => {
+            expect(shader).toContain("slab_glossy=computeOpenPBRAreaSpecularLighting(");
+            expect(shader).toContain("slab_metal=computeOpenPBRAreaConductorSpecularLighting(");
+            expect(shader).toContain("slab_coat=computeOpenPBRAreaSpecularLighting(");
+            expect(shader).toContain("baseDielectricReflectance.coloredF0");
+            expect(shader).toContain("baseConductorReflectance.coloredF0");
+            expect(shader).toMatch(/material_dielectric_gloss(?:: vec3f)?\s*=\s*material_dielectric_base\s*\*\s*\(1\.0f?\s*-\s*specularFresnel\)\s*\+\s*slab_glossy\s*;/);
+        });
+
+        it.each([
+            ["GLSL", pbrDirectLightingFunctionsGLSL.shader],
+            ["WGSL", pbrDirectLightingFunctionsWGSL.shader],
+        ])("computes OpenPBR area-light Fresnel independently of light color in %s", (_language, shader) => {
+            expect(shader).toMatch(
+                /fresnel(?:: vec3f)?\s*=\s*reflectance0\s*\*\s*info\.areaLightFresnel\.x\s*\+\s*\(reflectance90\s*-\s*reflectance0\)\s*\*\s*info\.areaLightFresnel\.y/
+            );
+            expect(shader).toMatch(/return lightColor\s*\*\s*fresnel\s*\*\s*info\.areaLightSpecular/);
+            expect(shader).toMatch(/return reflectance0\s*\*\s*info\.areaLightFresnel\.x\s*\+\s*\(reflectance90\s*-\s*reflectance0\)\s*\*\s*info\.areaLightFresnel\.y/);
+        });
+
+        it.each([
+            ["GLSL", pbrDirectLightingFunctionsGLSL.shader],
+            ["WGSL", pbrDirectLightingFunctionsWGSL.shader],
+        ])("preserves white F90 in the OpenPBR conductor area-light approximation in %s", (_language, shader) => {
+            expect(shader).toContain("computeOpenPBRAreaConductorSpecularLighting");
+            expect(shader).toContain("getF82B(reflectance0,edgeTint)");
+            expect(shader).toMatch(/fresnel(?:: vec3f)?=reflectance0\*info\.areaLightFresnel\.x\+\(vec3f?\(1\.0f?\)-reflectance0\)\*info\.areaLightFresnel\.y-b\*f82DipMoment/);
+        });
+
+        it("preserves the GLSL vec4 area-light data argument", () => {
+            expect(openpbrDirectLightingInitGLSL.shader).toContain("light{X}.vLightData,light{X}.vLightWidth.xyz");
+        });
+
+        it("passes WGSL area-light textures, samplers, and center explicitly", () => {
+            expect(openpbrDirectLightingInitWGSL.shader).toContain(
+                "computeAreaPreLightingInfo(areaLightsLTC1Sampler,areaLightsLTC1SamplerSampler,areaLightsLTC2Sampler,areaLightsLTC2SamplerSampler"
+            );
+            expect(openpbrDirectLightingInitWGSL.shader).toContain("light{X}.vLightData.xyz");
+        });
+
+        it.each([
+            ["GLSL", openpbrIblFunctionsGLSL.shader, "vec2 reflectionCoords=createReflectionCoords(positionW,mappingNormal)", "normalize(vEyePosition.xyz-positionW)"],
+            ["WGSL", openpbrIblFunctionsWGSL.shader, "let reflectionCoords: vec2f=createReflectionCoords(positionW,mappingNormal)", "normalize(scene.vEyePosition.xyz-positionW)"],
+        ])("converts anisotropic non-cube rays to 2D coordinates in %s", (_language, shader, expectedCoordinates, expectedEyePosition) => {
+            expect(shader).toContain(expectedCoordinates);
+            expect(shader).toContain(expectedEyePosition);
+            expect(shader).toMatch(/mappingNormalCandidate(?:: vec3f)?=originalViewDirectionW\+sampleDirection/);
+            expect(shader).toContain("dot(mappingNormalCandidate,mappingNormalCandidate)>Epsilon");
+            expect(shader).toContain("mappingNormal=normalize(cross(originalViewDirectionW,perpendicularAxis))");
+        });
+
+        it("uses the same precomputed conductor Fresnel input in GLSL and WGSL", () => {
+            expect(openpbrDirectLightingGLSL.shader).toContain(
+                "slab_metal=computeSpecularLighting(preInfo{X},normalW,vec3(1.0),coloredFresnel,specular_roughness,lightColor{X}.rgb)"
+            );
+            expect(openpbrDirectLightingWGSL.shader).toContain(
+                "slab_metal=computeSpecularLighting(preInfo{X},normalW,vec3f(1.0f),coloredFresnel,specular_roughness,lightColor{X}.rgb)"
+            );
         });
     });
 

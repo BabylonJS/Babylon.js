@@ -1281,8 +1281,8 @@ jobs:
           - script: |
                 set -euo pipefail
 
-                # Async purge: don't block CI on the CDN purge completing.
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                # Omitting wait selects the deployment server's non-blocking path.
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_CDN)&profileName=$(CDN_PROFILE_CDN)" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
 
-                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)&wait=false" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_PURGE)?endpoint=$(CDN_ENDPOINT_PREVIEW_CDN)&profileName=$(CDN_PROFILE_CDN)" -i -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Purge CDN"

@@ -18,6 +18,7 @@
         "babylon-inspector": "node --no-warnings dist/cli/cli.js --bridge-script dist/cli/bridge.js"
     },
     "devDependencies": {
+        "@babylonjs/lite": "1.27.0",
         "@dev/addons": "1.0.0",
         "@dev/core": "1.0.0",
         "@dev/gui": "1.0.0",
@@ -28,6 +29,7 @@
         "@fluentui-contrib/react-virtualizer": "^1.0.0",
         "@fluentui/react-components": "^9.70.0",
         "@fluentui/react-icons": "^2.0.310",
+        "@fluentui/react-motion-components-preview": "^0.15.2",
         "@tools/gui-editor": "1.0.0",
         "@tools/node-editor": "1.0.0",
         "@tools/node-geometry-editor": "1.0.0",

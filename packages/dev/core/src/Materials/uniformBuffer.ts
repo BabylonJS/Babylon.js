@@ -7,6 +7,7 @@ import { type DataBuffer } from "../Buffers/dataBuffer";
 import { type InternalTexture } from "./Textures/internalTexture";
 import { Tools } from "../Misc/tools.pure";
 import { type AbstractEngine } from "core/Engines/abstractEngine";
+import { type WebGPUDrawContext } from "../Engines/WebGPU/webgpuDrawContext";
 
 /**
  * Uniform buffer objects.
@@ -40,6 +41,20 @@ export class UniformBuffer {
     private _name: string;
     private _currentFrameId: number;
     private _trackUBOsInFrame: boolean;
+    // Owner-keyed slots (trackUBOsInFrame only): draw context -> index in _buffers, last frame each slot was flushed in,
+    // number of live owners, and slots no longer owned (released by a disposed context, or created for a same-frame overflow)
+    private _slotByOwner: WeakMap<WebGPUDrawContext, number>;
+    // Reverse registrations hold the backlink arrays, not their draw contexts. This allows
+    // eager reciprocal teardown without making the weak owner keys strongly reachable.
+    private _ownerListsBySlot: Map<number, UniformBuffer[]>;
+    private _slotFrameId: number[];
+    private _ownerCount: number;
+    private _freeSlots: number[];
+    // Generation of the staging data (_bufferData): bumped on every write that changes it. Each owner-keyed slot
+    // remembers the generation it was last flushed with, so a draw whose values did not change since that flush
+    // costs one integer compare instead of a full compare of the block against the slot's shadow.
+    private _dataGeneration: number;
+    private _slotGeneration: number[];
 
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
@@ -251,6 +266,7 @@ export class UniformBuffer {
         this._uniformArraySizes = {};
         this._uniformLocationPointer = 0;
         this._needSync = false;
+        this._dataGeneration = 0;
         this._trackUBOsInFrame = false;
 
         if ((trackUBOsInFrame === undefined && this._engine._features.trackUbosInFrame) || trackUBOsInFrame === true) {
@@ -260,6 +276,7 @@ export class UniformBuffer {
             this._createBufferOnWrite = false;
             this._currentFrameId = 0;
             this._trackUBOsInFrame = true;
+            this._resetOwnerSlots();
         }
 
         if (this._noUBO) {
@@ -569,6 +586,7 @@ export class UniformBuffer {
         // See spec, alignment must be filled as a vec4
         this._fillAlignment(4);
         this._bufferData = new Float32Array(this._data);
+        this._dataGeneration++;
 
         this._rebuild();
 
@@ -615,8 +633,23 @@ export class UniformBuffer {
         if (this._trackUBOsInFrame) {
             this._buffers = [];
             this._currentFrameId = 0;
+            this._resetOwnerSlots();
         }
         this._rebuild();
+    }
+
+    private _resetOwnerSlots(): void {
+        if (this._ownerListsBySlot) {
+            for (const list of this._ownerListsBySlot.values()) {
+                this._removeOwnerBacklink(list);
+            }
+        }
+        this._ownerListsBySlot = new Map();
+        this._slotByOwner = new WeakMap();
+        this._slotFrameId = [];
+        this._ownerCount = 0;
+        this._freeSlots = [];
+        this._slotGeneration = [];
     }
 
     /** @internal */
@@ -698,6 +731,133 @@ export class UniformBuffer {
         this._createBufferOnWrite = this._trackUBOsInFrame;
     }
 
+    /**
+     * Flushes the current uniform values into the GPU buffer owned by the draw context.
+     * Invariant: `_buffers[i][1]` (the CPU shadow) always holds what the GPU buffer of slot i contains.
+     * @param owner the draw context on behalf of which the update is done
+     * @internal
+     */
+    public _updateOwnerKeyed(owner: WebGPUDrawContext): void {
+        if (this._noUBO || !this._trackUBOsInFrame) {
+            this.update();
+            return;
+        }
+        if (!this._buffer) {
+            this.create(); // _rebuild pushes slot 0, created from _bufferData, with a shadow copy of it
+        }
+
+        this._checkNewFrame();
+
+        let idx = this._slotByOwner.get(owner);
+        if (idx === undefined) {
+            if (this._ownerCount === 0 && this._buffers.length === 1 && this._freeSlots.length === 0) {
+                // the slot create() made and nobody has owned yet: hand it to the first owner instead of leaving it unused.
+                // (Once an owner has released it, it is in _freeSlots and must be taken from there, or two owners could share it.)
+                idx = 0;
+            } else {
+                idx = this._takeFreeSlot(true);
+            }
+            this._slotByOwner.set(owner, idx);
+            this._ownerCount++;
+            if (!owner._uniformBuffersWithOwnedSlot) {
+                owner._uniformBuffersWithOwnedSlot = [];
+            }
+            owner._uniformBuffersWithOwnedSlot.push(this);
+            this._ownerListsBySlot.set(idx, owner._uniformBuffersWithOwnedSlot);
+        }
+
+        if (this._slotGeneration[idx] === this._dataGeneration) {
+            // The slot was last flushed with exactly the current data and nothing has been written since: nothing to
+            // compare, nothing to upload, and no same-frame conflict is possible either (same bytes).
+            this._bufferIndex = idx;
+            this._buffer = this._buffers[idx][0];
+            this.bindUniformBuffer();
+            this._slotFrameId[idx] = this._currentFrameId;
+            this._needSync = false;
+            this._createBufferOnWrite = false;
+            return;
+        }
+
+        const owned = this._buffers[idx][1];
+        if (this._slotFrameId[idx] === this._currentFrameId && owned && !this._buffersEqual(this._bufferData, owned)) {
+            // The same context flushes a second time in the same frame with different values: the GPU has not consumed the
+            // first values yet, so they must not be overwritten. Use a slot nobody owns for this flush.
+            idx = this._takeFreeSlot(false);
+        }
+
+        this._bufferIndex = idx;
+        this._buffer = this._buffers[idx][0];
+        this.bindUniformBuffer();
+
+        const shadow = this._buffers[idx][1];
+        if (!shadow || !this._buffersEqual(this._bufferData, shadow)) {
+            if (shadow) {
+                this._copyBuffer(this._bufferData, shadow);
+            }
+            this._bufferUpdatedLastFrame = true;
+            this._engine.updateUniformBuffer(this._buffer, this._bufferData);
+        }
+
+        this._slotFrameId[idx] = this._currentFrameId;
+        this._slotGeneration[idx] = this._dataGeneration;
+        this._needSync = false;
+        this._createBufferOnWrite = false; // slots are keyed on the owner, the updateXXX methods must never switch buffer
+    }
+
+    /**
+     * Gets a slot that is not owned by any draw context and has not been flushed in the current frame, creating one if needed.
+     * @param takeOwnership true to remove the slot from the free list (it is going to be owned by a context)
+     * @returns the slot index
+     */
+    private _takeFreeSlot(takeOwnership: boolean): number {
+        for (let i = 0; i < this._freeSlots.length; ++i) {
+            const idx = this._freeSlots[i];
+            if (this._slotFrameId[idx] !== this._currentFrameId) {
+                if (takeOwnership) {
+                    this._freeSlots[i] = this._freeSlots[this._freeSlots.length - 1];
+                    this._freeSlots.pop();
+                }
+                return idx;
+            }
+        }
+
+        this._rebuild();
+        const idx = this._buffers.length - 1;
+        if (!takeOwnership) {
+            this._freeSlots.push(idx);
+        }
+        return idx;
+    }
+
+    /**
+     * Releases the slot owned by a draw context (called when the context is disposed), so that another context can reuse it.
+     * @param owner the draw context
+     * @internal
+     */
+    public _releaseOwnerSlot(owner: WebGPUDrawContext): void {
+        const idx = this._slotByOwner?.get(owner);
+        if (idx === undefined) {
+            return;
+        }
+        this._slotByOwner.delete(owner);
+        const list = this._ownerListsBySlot.get(idx);
+        if (list) {
+            this._removeOwnerBacklink(list);
+            this._ownerListsBySlot.delete(idx);
+        }
+        this._ownerCount--;
+        // Keep _slotFrameId: a draw encoded earlier this frame may still need these bytes.
+        this._freeSlots.push(idx);
+    }
+
+    private _removeOwnerBacklink(list: UniformBuffer[]): void {
+        const index = list.indexOf(this);
+        if (index !== -1) {
+            list[index] = list[list.length - 1];
+            list.pop();
+        }
+    }
+
     private _createNewBuffer() {
         if (this._bufferIndex + 1 < this._buffers.length) {
             this._bufferIndex++;
@@ -768,11 +928,15 @@ export class UniformBuffer {
             }
 
             this._needSync = this._needSync || changed;
+            if (changed) {
+                this._dataGeneration++;
+            }
         } else {
             // No cache for dynamic
             for (let i = 0; i < size; i++) {
                 this._bufferData[location + i] = data[i];
             }
+            this._dataGeneration++;
         }
     }
 
@@ -821,11 +985,15 @@ export class UniformBuffer {
             }
 
             this._needSync = this._needSync || changed;
+            if (changed) {
+                this._dataGeneration++;
+            }
         } else {
             // No cache for dynamic
             for (let i = 0; i < size; i++) {
                 this._bufferData[location + i] = data[i];
             }
+            this._dataGeneration++;
         }
     }
 
@@ -1212,6 +1380,7 @@ export class UniformBuffer {
                 // Note that if _buffers.length == 1, we don't copy _bufferData into _buffers[_bufferIndex][1] (see the update() method), and _bufferData already contains the right data
                 if (this._buffers.length > 1 && this._buffers[b][1]) {
                     this._bufferData.set(this._buffers[b][1]!);
+                    this._dataGeneration++;
                 }
                 this._valueCache = {};
                 // The following line prevents the current buffer (_buffer / _bufferIndex) from being updated during subsequent calls to updateXXX() due to a call to _checkNewFrame()
@@ -1250,10 +1419,14 @@ export class UniformBuffer {
         }
 
         if (this._trackUBOsInFrame && this._buffers) {
+            this._resetOwnerSlots();
             for (let i = 0; i < this._buffers.length; ++i) {
                 const buffer = this._buffers[i][0];
                 this._engine._releaseBuffer(buffer);
             }
+            this._buffers = [];
+            this._buffer = null;
+            this._bufferIndex = -1;
         } else if (this._buffer && this._engine._releaseBuffer(this._buffer)) {
             this._buffer = null;
         }

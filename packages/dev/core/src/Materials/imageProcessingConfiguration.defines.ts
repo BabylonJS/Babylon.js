@@ -6,6 +6,7 @@ import { MaterialDefines } from "./materialDefines";
  */
 export interface IImageProcessingConfigurationDefines {
     IMAGEPROCESSING: boolean;
+    WHITEBALANCE: boolean;
     VIGNETTE: boolean;
     VIGNETTEBLENDMODEMULTIPLY: boolean;
     VIGNETTEBLENDMODEOPAQUE: boolean;
@@ -32,6 +33,7 @@ export function ImageProcessingDefinesMixin<Tbase extends ImageProcessingDefines
     return class extends base implements IImageProcessingConfigurationDefines {
         // Implement all members of IImageProcessingConfigurationDefines here
         public IMAGEPROCESSING = false;
+        public WHITEBALANCE = false;
         public VIGNETTE = false;
         public VIGNETTEBLENDMODEMULTIPLY = false;
         public VIGNETTEBLENDMODEOPAQUE = false;
@@ -54,6 +56,7 @@ export function ImageProcessingDefinesMixin<Tbase extends ImageProcessingDefines
  */
 export class ImageProcessingConfigurationDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public IMAGEPROCESSING = false;
+    public WHITEBALANCE = false;
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;

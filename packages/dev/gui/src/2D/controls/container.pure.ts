@@ -453,15 +453,16 @@ export class Container extends Control {
             this._processMeasures(parentMeasure, context);
 
             if (!this._isClipped) {
+                this._beforeChildLayout();
                 for (const child of this._children) {
                     child._tempParentMeasure.copyFrom(this._measureForChildren);
 
                     if (child._layout(this._measureForChildren, context)) {
                         if (child.isVisible && !child.notRenderable) {
-                            if (this.adaptWidthToChildren && child._width.isPixel) {
+                            if (this.adaptWidthToChildren && !child._width.isPercentage) {
                                 computedWidth = Math.max(computedWidth, child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels);
                             }
-                            if (this.adaptHeightToChildren && child._height.isPixel) {
+                            if (this.adaptHeightToChildren && !child._height.isPercentage) {
                                 computedHeight = Math.max(computedHeight, child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels);
                             }
                         }
@@ -507,6 +508,19 @@ export class Container extends Control {
         }
 
         return true;
+    }
+
+    /** @internal */
+    protected _beforeChildLayout(): void {}
+
+    /**
+     * Gets an optional parent-controlled layout box, relative to the content origin.
+     * @param _child defines the child to lay out
+     * @returns the layout box, or null for the child's own layout
+     * @internal
+     */
+    public _getLayoutMeasureForChild(_child: Control): Nullable<Measure> {
+        return null;
     }
 
     protected override _postMeasure() {

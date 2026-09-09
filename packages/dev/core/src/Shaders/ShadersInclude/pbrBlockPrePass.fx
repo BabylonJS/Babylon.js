@@ -17,6 +17,10 @@
     meshBlendTagOutput = writeGeometryInfo > 0.0 ? uvec4(uint(meshBlendTag), 0u, 0u, 0u) : uvec4(0u);
 #endif
 
+#ifdef PREPASS_OBJECT_ID
+    gl_FragData[PREPASS_OBJECT_ID_INDEX] = encodeObjectId(objectId) * writeGeometryInfo;
+#endif
+
 #ifdef PREPASS_LOCAL_POSITION
     WRITE_GEOMETRY_FRAGMENT_OUTPUT(PREPASS_LOCAL_POSITION_INDEX, vec4(vPosition, writeGeometryInfo));
 #endif

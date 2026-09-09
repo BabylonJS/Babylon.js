@@ -74,6 +74,15 @@ fn applyImageProcessing(result: vec4f) -> vec4f {
 
 	var rgb = result.rgb;;
 
+#ifdef WHITEBALANCE
+	// White balance: a Bradford chromatic-adaptation matrix neutralizing the configured illuminant.
+	rgb = uniforms.whiteBalanceMatrix * rgb;
+	// The adaptation matrix can produce negative channels for saturated colors under extreme illuminants;
+	// clamp before any further processing, since gamma encoding uses fractional pow() and is undefined for
+	// negative inputs.
+	rgb = max(rgb, vec3f(0.0));
+#endif
+
 #ifdef EXPOSURE
 	rgb *= uniforms.exposureLinear;
 #endif

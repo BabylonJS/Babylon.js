@@ -30,7 +30,6 @@ describe("FrameGraphGeometryRendererTask object IDs", () => {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
-
         engine.getCaps().drawBuffersExtension = true;
         engine.getCaps().maxDrawBuffers = 8;
         vi.spyOn(engine, "buildTextureLayout").mockImplementation((textureStatus) => textureStatus.map((enabled, index) => (enabled ? index + 1 : 0)));
@@ -123,10 +122,13 @@ describe("FrameGraphGeometryRendererTask object IDs", () => {
         await expect(frameGraph.buildAsync(false)).rejects.toThrow("2 color attachments were requested, but this engine supports at most 1");
     });
 
-    it("updates the active object ID provider after the graph is built", async () => {
-        const { frameGraph, task } = createTask();
+    it("updates the object ID provider after the frame graph is built", async () => {
+        const mesh = new Mesh("mesh", scene);
         const initialProvider = vi.fn(() => 1);
         const updatedProvider = vi.fn(() => 2);
+        const { frameGraph, task } = createTask();
+
+        task.objectList.meshes = [mesh];
         task.objectIdProvider = initialProvider;
         task.textureDescriptions = [
             {
@@ -135,13 +137,19 @@ describe("FrameGraphGeometryRendererTask object IDs", () => {
                 textureFormat: Constants.TEXTUREFORMAT_RGBA,
             },
         ];
+        vi.spyOn(frameGraph.textureManager, "_allocateTextures").mockImplementation(() => {});
+        vi.spyOn(task, "_initializePasses").mockImplementation(() => {});
 
-        vi.spyOn(frameGraph.textureManager as any, "_allocateTextures").mockImplementation(() => {});
-        vi.spyOn(task as any, "_initializePasses").mockImplementation(() => {});
         await frameGraph.buildAsync(false);
+
+        const configuration = MaterialHelperGeometryRendering.GetConfiguration(task.objectRenderer.renderPassId);
+        expect(_GetGeometryRenderingObjectId(mesh, configuration.objectIdProvider, 0xffffff)).toBe(1);
+
         task.objectIdProvider = updatedProvider;
 
-        expect(MaterialHelperGeometryRendering.GetConfiguration(task.objectRenderer.renderPassId).objectIdProvider).toBe(updatedProvider);
+        expect(_GetGeometryRenderingObjectId(mesh, configuration.objectIdProvider, 0xffffff)).toBe(2);
+        expect(initialProvider).toHaveBeenCalledExactlyOnceWith(mesh);
+        expect(updatedProvider).toHaveBeenCalledExactlyOnceWith(mesh);
     });
 
     it.each(["instances", "thin instances"] as const)("uses the source mesh ID for %s", async (instanceType) => {

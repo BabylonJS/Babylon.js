@@ -20,5 +20,6 @@ export * from "./ThinMaths/pure";
 export * from "./math.scalar.functions";
 export * from "./math.geospatial";
 export * from "./math.geospatial.functions";
+export * from "./colorTemperature.functions";
 export * from "./math.color.pure";
 export * from "./math.vector.pure";

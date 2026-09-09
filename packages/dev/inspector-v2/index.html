@@ -16,6 +16,24 @@
                 margin: 0;
                 overflow: hidden;
             }
+
+            #container {
+                position: relative;
+            }
+
+            #spriteCanvas {
+                position: absolute;
+                left: 50%;
+                bottom: 16px;
+                width: 200px;
+                height: 140px;
+                border: 2px solid white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
+                pointer-events: none;
+                transform: translateX(-50%);
+                z-index: 2;
+            }
         </style>
     </head>
     <body>

@@ -1,6 +1,9 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type JSHandle, type Page } from "@playwright/test";
 import { readFileSync } from "fs";
 import { getGlobalConfig } from "@tools/test-tools";
+import { type Scene } from "core/scene";
+import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { type FreeCamera } from "core/Cameras/freeCamera";
 
 test.beforeAll(async () => {
     // Set timeout for this hook.
@@ -18,11 +21,49 @@ const url = (process.env.SANDBOX_BASE_URL || getGlobalConfig().baseUrl.replace(c
  * CSS may not be applied when the "load" event fires, so we explicitly wait for
  * the app DOM, stylesheets, and fonts before interacting or taking screenshots.
  */
-async function waitForSandboxReady(page: import("@playwright/test").Page) {
+async function waitForSandboxReady(page: Page) {
     // Wait for the sandbox React app to render
     await page.waitForSelector("#canvasZone", { state: "visible" });
     // Ensure all stylesheets and fonts are loaded (prevents FOUC in screenshots)
     await page.evaluate(() => document.fonts.ready);
+}
+
+async function getSandboxScene(page: Page): Promise<JSHandle<Scene>> {
+    return await page.evaluateHandle(async () => {
+        const babylonGlobal = globalThis as typeof globalThis & {
+            BABYLON?: {
+                EngineStore: typeof import("core/Engines/engineStore").EngineStore;
+            };
+        };
+        const findScene = (engineStore: typeof import("core/Engines/engineStore").EngineStore | undefined) => {
+            const scenes = engineStore?.Instances.flatMap((engine) => engine.scenes) ?? [];
+            for (let index = scenes.length - 1; index >= 0; index--) {
+                if (scenes[index].getEngine().getRenderingCanvas()?.id === "renderCanvas") {
+                    return scenes[index];
+                }
+            }
+            return undefined;
+        };
+
+        let engineStore = babylonGlobal.BABYLON?.EngineStore;
+        for (let attempt = 0; attempt < 100; attempt++) {
+            if (!engineStore) {
+                const engineStoreModuleUrl = performance.getEntriesByType("resource").find((entry) => entry.name.includes("/core/dist/Engines/engineStore.js"))?.name;
+                if (engineStoreModuleUrl) {
+                    const engineStoreModule = (await import(engineStoreModuleUrl)) as typeof import("core/Engines/engineStore");
+                    engineStore = engineStoreModule.EngineStore;
+                }
+            }
+
+            const scene = findScene(engineStore);
+            if (scene?.cameras.some((camera) => camera.name === "default camera")) {
+                return scene;
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        throw new Error("The Sandbox scene was not found");
+    });
 }
 
 test("Sandbox is loaded (Desktop)", async ({ page }) => {
@@ -105,6 +146,100 @@ test("loading a model using query parameters", async ({ page }) => {
     await page.evaluate(() => document.fonts.ready);
     // check snapshot of the page
     await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
+});
+
+test("selecting the default camera after loading a camera from query parameters", async ({ page }) => {
+    const camerasUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Cameras/glTF/Cameras.gltf";
+    const query = [`assetUrl=${camerasUrl}`, "camera=0"].join("&");
+
+    await page.goto(url + (snapshot ? "&" : "?") + query, {
+        waitUntil: "load",
+    });
+    await page.setViewportSize({
+        width: 1920,
+        height: 1080,
+    });
+    await waitForSandboxReady(page);
+    await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+
+    const scene = await getSandboxScene(page);
+    await scene.evaluate((scene) => {
+        const defaultCamera = scene.cameras.find((camera) => camera.name === "default camera") as ArcRotateCamera | undefined;
+        if (!defaultCamera) {
+            throw new Error("The default camera was not found");
+        }
+        defaultCamera.panningSensibility = 0;
+        defaultCamera.speed = 0;
+    });
+
+    await page.getByTitle("Select camera").click();
+    await page.locator(".dropup-content-line", { hasText: "default camera" }).click();
+    await page.getByTitle("Select camera").click();
+
+    await expect(page.locator(".dropup-content-line", { hasText: "default camera" }).locator("div")).toHaveCSS("opacity", "1");
+    await expect
+        .poll(() =>
+            scene.evaluate((scene) => {
+                const camera = scene.activeCamera as ArcRotateCamera;
+                const skybox = scene.getMeshByName("hdrSkyBox");
+                const skyboxExtent = skybox?.getBoundingInfo().boundingBox.extendSizeWorld.z;
+                return (
+                    camera.name === "default camera" &&
+                    Math.abs(camera.panningSensibility - 5000 / camera.radius) < 0.001 &&
+                    Math.abs(camera.speed - camera.radius * 0.2) < 0.001 &&
+                    skyboxExtent !== undefined &&
+                    Math.abs(skyboxExtent - (camera.maxZ - camera.minZ) / 4) < 0.001 &&
+                    camera.upperRadiusLimit !== null &&
+                    skyboxExtent > camera.upperRadiusLimit &&
+                    camera.keysUp.includes(87) &&
+                    camera.keysDown.includes(83) &&
+                    camera.keysLeft.includes(65) &&
+                    camera.keysRight.includes(68)
+                );
+            })
+        )
+        .toBe(true);
+});
+
+test("moving a free camera loaded from query parameters", async ({ page }) => {
+    const camerasUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Cameras/glTF/Cameras.gltf";
+    const query = [`assetUrl=${camerasUrl}`, "camera=0"].join("&");
+
+    await page.goto(url + (snapshot ? "&" : "?") + query, {
+        waitUntil: "load",
+    });
+    await page.setViewportSize({
+        width: 1920,
+        height: 1080,
+    });
+    await waitForSandboxReady(page);
+    await page.waitForSelector("#babylonjsLoadingDiv", { state: "detached" });
+    await page.waitForLoadState("networkidle");
+
+    const canvas = page.locator("#renderCanvas");
+    const scene = await getSandboxScene(page);
+    const getActiveCameraPosition = () => scene.evaluate((scene) => scene.activeCamera!.position.asArray());
+    const cameraSpeeds = await scene.evaluate((scene) => {
+        const activeCamera = scene.activeCamera as FreeCamera;
+        const defaultCamera = scene.cameras.find((camera) => camera.name === "default camera") as ArcRotateCamera | undefined;
+        if (!defaultCamera) {
+            throw new Error("The default camera was not found");
+        }
+        return { active: activeCamera.speed, sceneRelative: defaultCamera.speed };
+    });
+
+    expect(cameraSpeeds.sceneRelative).not.toBeCloseTo(2);
+    expect(cameraSpeeds.active).toBeCloseTo(cameraSpeeds.sceneRelative);
+    const before = await getActiveCameraPosition();
+    await canvas.click({ force: true });
+    await page.keyboard.down("w");
+    await expect
+        .poll(async () => {
+            const position = await getActiveCameraPosition();
+            return position.every(Number.isFinite) && position.some((value, index) => value !== before[index]);
+        })
+        .toBe(true);
+    await page.keyboard.up("w");
 });
 
 test("inspector is opened when clicking on the button", async ({ page }) => {
