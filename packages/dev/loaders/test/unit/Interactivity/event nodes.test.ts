@@ -18,7 +18,7 @@ import "loaders/glTF/2.0/Extensions/KHR_node_hoverability";
 import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { InteractivityHostResolver } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityHostResolver";
 import { GetEventReference } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityReferences";
-import { CreateKHRInteractivityGraphModel } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphModel";
+import { CloneKHRInteractivityGraph, CreateKHRInteractivityGraphModel } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphModel";
 import { FlowGraphObjectReferenceBlock } from "loaders/glTF/2.0/Extensions/KHR_interactivity/flowGraphObjectReferenceBlock";
 import { FlowGraphEventReferenceBlock } from "loaders/glTF/2.0/Extensions/KHR_interactivity/flowGraphEventReferenceBlock";
 import { GetInteractivityNodeState, InitializeInteractivityNodeState, SetInteractivityNodeState } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityNodeState";
@@ -428,6 +428,34 @@ describe("Interactivity event nodes", () => {
         }
 
         expect(log).not.toHaveBeenCalled();
+    });
+
+    it("event/onTick exposes typed timeSinceStart at runtime", async () => {
+        clearInterval(renderInterval);
+        vi.spyOn(engine, "getDeltaTime").mockReturnValue(250);
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "float" }, { signature: "int" }],
+            declarations: [{ op: "event/onTick" }, { op: "flow/log", extension: "BABYLON" }],
+            nodes: [
+                { declaration: 0, flows: { out: { node: 1 } } },
+                { declaration: 1, values: { message: { node: 0, socket: "timeSinceStart", type: 0 } } },
+            ],
+        };
+        const model = CreateKHRInteractivityGraphModel(graph);
+        expect(model.valid).toBe(true);
+        const invalidGraph = CloneKHRInteractivityGraph(graph);
+        invalidGraph.nodes![1].values!.message.type = 1;
+        expect(CreateKHRInteractivityGraphModel(invalidGraph).valid).toBe(false);
+        const parser = new InteractivityGraphToFlowGraphParser(graph, {}, 60, 0, undefined, model.declarations);
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+        await ParseFlowGraphAsync(parser.serializeToFlowGraph(), { coordinator });
+
+        coordinator.start();
+        scene.render();
+        scene.render();
+
+        const elapsedValues = log.mock.calls.map(([value]) => value).filter((value) => typeof value === "number");
+        expect(elapsedValues).toEqual([0, 0.25]);
     });
 
     it("assigns stable distinct controller indices for multiple pointer ids", () => {

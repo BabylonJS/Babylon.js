@@ -130,6 +130,22 @@ export interface IGLTFToFlowGraphMappingObject {
      * Input socket whose effective type determines this output socket type.
      */
     typeSourceInput?: string;
+
+    /**
+     * Inclusive numeric bounds for an integer configuration value.
+     */
+    minimum?: number;
+    maximum?: number;
+
+    /**
+     * Whether this configuration value generates numbered input flow sockets.
+     */
+    generatesInputFlowSockets?: boolean;
+
+    /**
+     * Whether this configuration array generates output flow sockets.
+     */
+    generatesOutputFlowSockets?: boolean;
 }
 
 /**
@@ -362,6 +378,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         inputs: {},
         outputs: {
             values: {
+                timeSinceStart: { name: "timeSinceStart", gltfType: "number" },
                 timeSinceLastTick: { name: "deltaTime", gltfType: "number" /*, dataTransformer: (time: number) => time / 1000*/ },
                 // KHR_interactivity `ref event` output (the event reference).
                 event: { name: "event" },
@@ -1205,7 +1222,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "flow/switch": {
         blocks: [FlowGraphBlockNames.Switch],
         configuration: {
-            cases: { name: "cases", isArray: true, inOptions: true, defaultValue: [] },
+            cases: {
+                name: "cases",
+                isArray: true,
+                inOptions: true,
+                defaultValue: [],
+                configurationType: "int[]",
+                invalidUsesDefault: true,
+                generatesOutputFlowSockets: true,
+            },
         },
         inputs: {
             values: {
@@ -1222,10 +1247,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         validation(gltfBlock) {
             const cases = gltfBlock.configuration?.cases;
             if (cases && cases.value) {
-                const onlyIntegers = cases.value.every((caseValue) => {
-                    // case value should be an integer. Since Number.isInteger(1.0) is true, we need to check if toString has only digits.
-                    return typeof caseValue === "number" && /^-?\d+$/.test(caseValue.toString());
-                });
+                const onlyIntegers = cases.value.every(
+                    (caseValue) => typeof caseValue === "number" && Number.isInteger(caseValue) && caseValue >= -2147483648 && caseValue <= 2147483647
+                );
                 if (!onlyIntegers) {
                     Logger.Warn("Switch cases should be integers. Using empty array instead.");
                     cases.value = [] as number[];
@@ -1339,7 +1363,17 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "flow/waitAll": {
         blocks: [FlowGraphBlockNames.WaitAll],
         configuration: {
-            inputFlows: { name: "inputSignalCount", gltfType: "number", inOptions: true, defaultValue: 0 },
+            inputFlows: {
+                name: "inputSignalCount",
+                gltfType: "number",
+                inOptions: true,
+                defaultValue: [0],
+                configurationType: "int",
+                invalidUsesDefault: true,
+                minimum: 0,
+                maximum: 64,
+                generatesInputFlowSockets: true,
+            },
         },
         inputs: {
             flows: {
@@ -1347,9 +1381,19 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 "[segment]": { name: "in_$1" },
             },
         },
+        outputs: {
+            flows: {
+                out: { name: "out" },
+                completed: { name: "completed" },
+            },
+            values: {
+                remainingInputs: { name: "remainingInputs", gltfType: "int" },
+            },
+        },
         validation(gltfBlock) {
-            // check that the configuration value is an integer
-            if (typeof gltfBlock.configuration?.inputFlows?.value?.[0] !== "number") {
+            const inputFlowsConfiguration = gltfBlock.configuration?.inputFlows?.value;
+            const inputFlows = inputFlowsConfiguration?.[0];
+            if (inputFlowsConfiguration?.length !== 1 || typeof inputFlows !== "number" || !Number.isInteger(inputFlows) || inputFlows < 0 || inputFlows > 64) {
                 gltfBlock.configuration = gltfBlock.configuration || {
                     inputFlows: { value: [0] },
                 };

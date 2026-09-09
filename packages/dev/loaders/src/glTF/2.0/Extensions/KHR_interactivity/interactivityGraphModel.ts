@@ -393,6 +393,9 @@ function _getFixedOutputSignature(operation: string, socket: string): keyof type
         if (operation === "event/onTick" && socket === "timeSinceLastTick") {
             return "float";
         }
+        if (operation === "event/onTick" && socket === "timeSinceStart") {
+            return "float";
+        }
         return undefined;
     }
     if (["math/E", "math/Pi", "math/Tau", "math/Inf", "math/NaN", "math/random", "math/length", "math/dot", "math/determinant", "math/quatAngleBetween"].includes(operation)) {
@@ -468,6 +471,16 @@ function _validateNode(
             const signature = typeof typeIndex === "number" ? graph.types?.[typeIndex]?.signature : undefined;
             if (!signature || !property.allowedSignatures.includes(signature)) {
                 reportConfigurationIssue(property, `${path}/configuration/${key}/value/0`, `Type "${String(signature)}" is not supported by this operation.`);
+            }
+        }
+        if (isConfigurationValid && configuration.value && (property.minimum !== undefined || property.maximum !== undefined)) {
+            const numericValue = configuration.value[0] as number;
+            if ((property.minimum !== undefined && numericValue < property.minimum) || (property.maximum !== undefined && numericValue > property.maximum)) {
+                reportConfigurationIssue(
+                    property,
+                    `${path}/configuration/${key}/value/0`,
+                    `Configuration "${key}" must be between ${String(property.minimum)} and ${String(property.maximum)}.`
+                );
             }
         }
         if (isConfigurationValid && configuration.value && property.generatesInputValueSockets) {

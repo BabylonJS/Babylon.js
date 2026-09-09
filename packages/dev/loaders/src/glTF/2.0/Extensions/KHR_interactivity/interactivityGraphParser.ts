@@ -130,6 +130,30 @@ export class InteractivityGraphToFlowGraphParser {
         return undefined;
     }
 
+    private _getAllowedDynamicFlowSockets(node: IKHRInteractivity_Node, mapping: IGLTFToFlowGraphMapping, direction: "input" | "output"): ReadonlySet<string> | undefined {
+        for (const [key, property] of Object.entries(mapping.configuration ?? {})) {
+            const generatesSockets = direction === "input" ? property.generatesInputFlowSockets : property.generatesOutputFlowSockets;
+            if (!generatesSockets) {
+                continue;
+            }
+            const configuredValues = node.configuration?.[key]?.value;
+            const validValues =
+                configuredValues &&
+                configuredValues.length > 0 &&
+                (property.configurationType !== "int" || configuredValues.length === 1) &&
+                configuredValues.every(
+                    (value) => typeof value === "number" && Number.isInteger(value) && value >= (property.minimum ?? -2147483648) && value <= (property.maximum ?? 2147483647)
+                );
+            const values = validValues ? configuredValues : property.defaultValue;
+            if (direction === "input") {
+                const count = Array.isArray(values) && typeof values[0] === "number" ? values[0] : 0;
+                return new Set(Array.from({ length: count }, (_, index) => String(index)));
+            }
+            return new Set(Array.isArray(values) ? values.map(String) : []);
+        }
+        return undefined;
+    }
+
     public get arrays() {
         return {
             types: this._types,
@@ -480,6 +504,10 @@ export class InteractivityGraphToFlowGraphParser {
                         }
                     }
                 }
+                const allowedDynamicOutputs = outputArrayMapping ? this._getAllowedDynamicFlowSockets(gltfNode, outputMapper.flowGraphMapping, "output") : undefined;
+                if (this._strictValidation && allowedDynamicOutputs && !allowedDynamicOutputs.has(flowKey)) {
+                    flowMapping = undefined;
+                }
                 if (this._strictValidation && !flowMapping) {
                     continue;
                 }
@@ -518,6 +546,10 @@ export class InteractivityGraphToFlowGraphParser {
                             arrayMapping = true;
                             flowInMapping = inputMapper.inputs?.flows?.[key];
                         }
+                    }
+                    const allowedDynamicInputs = arrayMapping ? this._getAllowedDynamicFlowSockets(this._interactivityGraph.nodes![inputNodeId], inputMapper, "input") : undefined;
+                    if (this._strictValidation && allowedDynamicInputs && !allowedDynamicInputs.has(flow.socket ?? "in")) {
+                        flowInMapping = undefined;
                     }
                     if (!flowInMapping && (flow.socket ?? "in") === "in" && this._hasDefaultFlowInput(nodeIn.fullOperationName)) {
                         flowInMapping = { name: "in" };

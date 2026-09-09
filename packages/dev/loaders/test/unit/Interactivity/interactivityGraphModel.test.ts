@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { type IKHRInteractivity, type IKHRInteractivity_Graph } from "babylonjs-gltf2interface";
 import {
+    CloneKHRInteractivityGraph,
     CreateKHRInteractivityDocument,
     CreateKHRInteractivityGraphModel,
     KHR_INTERACTIVITY_SPECIFICATION_COMMIT,
@@ -465,6 +466,89 @@ describe("KHR_interactivity canonical import model", () => {
                 expect.stringContaining("/nodes/1/configuration/unknown/value"),
             ])
         );
+    });
+
+    it("bounds configuration-derived waitAll input flow sockets", () => {
+        const create = (inputFlows: number | undefined, socket: string) => {
+            const graph: IKHRInteractivity_Graph = {
+                declarations: [{ op: "event/onStart" }, { op: "flow/waitAll" }],
+                nodes: [
+                    { declaration: 0, flows: { out: { node: 1, socket } } },
+                    {
+                        declaration: 1,
+                        configuration: inputFlows === undefined ? undefined : { inputFlows: { value: [inputFlows] } },
+                    },
+                ],
+            };
+            const model = CreateKHRInteractivityGraphModel(graph);
+            const serialized = new InteractivityGraphToFlowGraphParser(graph, {}, 60, 0, undefined, model.declarations).serializeToFlowGraph();
+            return { model, block: serialized.allBlocks.find((block) => block.className === "FlowGraphWaitAllBlock")! };
+        };
+
+        const bounded = create(2, "9");
+        expect(bounded.model.valid).toBe(true);
+        expect(bounded.block.signalInputs.some((socket) => socket.name === "in_9")).toBe(false);
+        expect(bounded.block.config.inputSignalCount.value).toBe(2);
+
+        for (const socket of ["0", "1"]) {
+            expect(create(2, socket).block.signalInputs.some((input) => input.name === `in_${socket}`)).toBe(true);
+        }
+
+        const zero = create(0, "0");
+        expect(zero.block.config.inputSignalCount.value).toBe(0);
+        expect(zero.block.signalInputs.some((socket) => socket.name === "in_0")).toBe(false);
+
+        const boundary = create(64, "63");
+        expect(boundary.block.signalInputs.some((socket) => socket.name === "in_63")).toBe(true);
+
+        const defaulted = create(undefined, "0");
+        expect(defaulted.block.signalInputs.some((socket) => socket.name === "in_0")).toBe(false);
+
+        for (const invalid of [-1, 1.5, 1_000_000]) {
+            const fallback = create(invalid, "0");
+            expect(fallback.model.diagnostics).toContainEqual(expect.objectContaining({ severity: "warning", path: expect.stringContaining("/configuration/inputFlows") }));
+            expect(fallback.block.config.inputSignalCount.value).toBe(0);
+            expect(fallback.block.signalInputs.some((socket) => socket.name === "in_0")).toBe(false);
+        }
+    });
+
+    it("filters flow/switch outputs to effective configured cases", () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }],
+            declarations: [{ op: "flow/switch" }, { op: "flow/sequence" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { cases: { value: [1, 2] } },
+                    values: {
+                        selection: { type: 0, value: [1] },
+                        default: { type: 0, value: [0] },
+                    },
+                    flows: {
+                        "1": { node: 1 },
+                        "9": { node: 2 },
+                        default: { node: 3 },
+                    },
+                },
+                { declaration: 1 },
+                { declaration: 1 },
+                { declaration: 1 },
+            ],
+        };
+        const model = CreateKHRInteractivityGraphModel(graph);
+        const serialized = new InteractivityGraphToFlowGraphParser(graph, {}, 60, 0, undefined, model.declarations).serializeToFlowGraph();
+        const block = serialized.allBlocks.find((candidate) => candidate.className === "FlowGraphSwitchBlock")!;
+
+        expect(block.signalOutputs.map((socket) => socket.name)).toEqual(expect.arrayContaining(["out_1", "default"]));
+        expect(block.signalOutputs.some((socket) => socket.name === "out_9")).toBe(false);
+
+        const invalidGraph = CloneKHRInteractivityGraph(graph);
+        invalidGraph.nodes![0].configuration!.cases!.value = [2147483648];
+        const invalidModel = CreateKHRInteractivityGraphModel(invalidGraph);
+        const invalidSerialized = new InteractivityGraphToFlowGraphParser(invalidGraph, {}, 60, 0, undefined, invalidModel.declarations).serializeToFlowGraph();
+        const invalidBlock = invalidSerialized.allBlocks.find((candidate) => candidate.className === "FlowGraphSwitchBlock")!;
+        expect(invalidModel.diagnostics).toContainEqual(expect.objectContaining({ severity: "warning", path: expect.stringContaining("/configuration/cases") }));
+        expect(invalidBlock.signalOutputs.map((socket) => socket.name)).toEqual(["default"]);
     });
 
     it("derives fixed core output types for assertions", () => {
