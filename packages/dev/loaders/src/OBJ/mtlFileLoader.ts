@@ -33,8 +33,8 @@ export class MTLFileLoader {
      * @param assetContainer defines the asset container to store the material in (can be null)
      * @param invertTextureY defines whether referenced textures are inverted on the Y axis
      * @param materialNames defines which materials to load, or all materials if omitted
-     * @param textureLoadPromises collects texture loading promises and starts delayed textures when provided; null or undefined preserves delayed loading
-     * @returns a promise that waits for textureLoadPromises, or null when textureLoadPromises is null or undefined
+     * @param trackTextureLoading collects texture loading promises and starts delayed textures when true; defaults to false
+     * @returns the texture loading promises, or an empty array when trackTextureLoading is false
      */
     public parseMTL(
         scene: Scene,
@@ -43,11 +43,11 @@ export class MTLFileLoader {
         assetContainer: Nullable<AssetContainer>,
         invertTextureY = MTLFileLoader.INVERT_TEXTURE_Y,
         materialNames?: ReadonlySet<string>,
-        textureLoadPromises?: Nullable<Promise<void>[]>
-    ): Nullable<Promise<void>> {
+        trackTextureLoading = false
+    ): Promise<void>[] {
+        const textureLoadPromises: Nullable<Promise<void>[]> = trackTextureLoading ? [] : null;
         if (data instanceof ArrayBuffer) {
-            // eslint-disable-next-line github/no-then
-            return textureLoadPromises ? Promise.all(textureLoadPromises).then(() => undefined) : null;
+            return textureLoadPromises ?? [];
         }
 
         //Split the lines from the file
@@ -205,8 +205,7 @@ export class MTLFileLoader {
             this.materials.push(material);
         }
 
-        // eslint-disable-next-line github/no-then
-        return textureLoadPromises ? Promise.all(textureLoadPromises).then(() => undefined) : null;
+        return textureLoadPromises ?? [];
     }
 
     /**
@@ -256,6 +255,9 @@ export class MTLFileLoader {
 
         const deferred = textureLoadPromises ? new Deferred<void>() : null;
         if (deferred) {
+            // Parsing may throw before returning the array. Observe rejection without changing the original promise returned to the caller.
+            // eslint-disable-next-line github/no-then
+            void deferred.promise.catch(() => undefined);
             textureLoadPromises!.push(deferred.promise);
         }
 

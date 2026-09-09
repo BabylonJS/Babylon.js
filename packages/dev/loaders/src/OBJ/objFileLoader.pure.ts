@@ -324,14 +324,14 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                         async (dataLoaded) => {
                             try {
                                 //Create materials thanks MTLLoader function
-                                const materialLoadingPromise = materialsFromMTLFile.parseMTL(
+                                const textureLoadPromises = materialsFromMTLFile.parseMTL(
                                     scene,
                                     this._decode(dataLoaded),
                                     rootUrl,
                                     this._assetContainer,
                                     this._loadingOptions.invertTextureY,
                                     new Set(materialToUse),
-                                    []
+                                    true
                                 );
                                 // Parsing creates the selected materials synchronously; only their textures are pending.
                                 for (let n = 0; n < materialsFromMTLFile.materials.length; ++n) {
@@ -346,7 +346,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                                         }
                                     }
                                 }
-                                await materialLoadingPromise;
+                                await Promise.all(textureLoadPromises);
                                 resolve();
                             } catch (e) {
                                 Tools.Warn(`Error processing MTL file: '${fileToLoad}'`);
