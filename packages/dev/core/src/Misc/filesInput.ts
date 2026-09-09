@@ -26,6 +26,11 @@ export class FilesInput {
     };
 
     /**
+     * Callback called when an accepted file selection does not contain a loadable scene.
+     */
+    public onProcessFilesErrorCallback: (files: File[]) => void = () => {};
+
+    /**
      * If a loading UI should be displayed while loading a file
      */
     public displayLoadingUI: boolean = true;
@@ -52,8 +57,14 @@ export class FilesInput {
     private _errorCallback: Nullable<(sceneFile: File, scene: Nullable<Scene>, message: string) => void>;
     private _elementToMonitor: HTMLElement;
 
-    private _sceneFileToLoad: File;
-    private _filesToLoad: File[];
+    private _sceneFileToLoad: Nullable<File> = null;
+    private _filesToLoad: File[] = [];
+    private _fileSelectionGeneration = 0;
+    private _reloadGeneration = 0;
+    private _isLoading = false;
+    private readonly _renderLoop = () => {
+        this._renderFunction();
+    };
 
     /**
      * Creates a new FilesInput
@@ -130,6 +141,22 @@ export class FilesInput {
     }
 
     /**
+     * Clears the files and scene selection associated with the current load.
+     * @param cancelActiveLoad whether an in-progress replacement load should be canceled, restoring FilesInput-managed loading UI and rendering
+     */
+    public clearFileSelection(cancelActiveLoad = true): void {
+        this._fileSelectionGeneration++;
+        if (cancelActiveLoad) {
+            this._reloadGeneration++;
+        }
+        this._sceneFileToLoad = null;
+        this._filesToLoad = [];
+        if (cancelActiveLoad && this._isLoading) {
+            this._restoreCurrentScene();
+        }
+    }
+
+    /**
      * Release all associated resources
      */
     public dispose() {
@@ -159,6 +186,16 @@ export class FilesInput {
         }
     }
 
+    private _restoreCurrentScene(): void {
+        this._isLoading = false;
+        if (this.displayLoadingUI) {
+            this._engine.hideLoadingUI();
+        }
+        if (!this.useAppend && !this.dontInjectRenderLoop && this._currentScene) {
+            this._engine.runRenderLoop(this._renderLoop);
+        }
+    }
+
     private _drag(e: DragEvent): void {
         e.stopPropagation();
         e.preventDefault();
@@ -174,32 +211,57 @@ export class FilesInput {
     private _traverseFolder(folder: any, files: Array<any>, remaining: { count: number }, callback: () => void) {
         const reader = folder.createReader();
         const relativePath = folder.fullPath.replace(/^\//, "").replace(/(.+?)\/?$/, "$1/");
-        reader.readEntries((entries: any) => {
-            remaining.count += entries.length;
-            for (const entry of entries) {
-                if (entry.isFile) {
-                    entry.file((file: any) => {
-                        file.correctName = relativePath + file.name;
-                        files.push(file);
 
-                        if (--remaining.count === 0) {
-                            callback();
-                        }
-                    });
-                } else if (entry.isDirectory) {
-                    this._traverseFolder(entry, files, remaining, callback);
-                }
-            }
-
+        const completeEntry = () => {
             if (--remaining.count === 0) {
                 callback();
             }
-        });
+        };
+        const readNextBatch = () => {
+            reader.readEntries(
+                (entries: any[]) => {
+                    if (entries.length === 0) {
+                        completeEntry();
+                        return;
+                    }
+
+                    remaining.count += entries.length;
+                    for (const entry of entries) {
+                        if (entry.isFile) {
+                            entry.file(
+                                (file: any) => {
+                                    file.correctName = relativePath + file.name;
+                                    files.push(file);
+                                    completeEntry();
+                                },
+                                (error: DOMException) => {
+                                    Logger.Error(`Unable to read dropped file '${entry.fullPath}': ${error.message}`);
+                                    completeEntry();
+                                }
+                            );
+                        } else if (entry.isDirectory) {
+                            this._traverseFolder(entry, files, remaining, callback);
+                        } else {
+                            completeEntry();
+                        }
+                    }
+
+                    // DirectoryReader may return large folders in several batches.
+                    readNextBatch();
+                },
+                (error: DOMException) => {
+                    Logger.Error(`Unable to read dropped folder '${folder.fullPath}': ${error.message}`);
+                    completeEntry();
+                }
+            );
+        };
+
+        readNextBatch();
     }
 
     private _processFiles(files: Array<any>): void {
         for (let i = 0; i < files.length; i++) {
-            const name = files[i].correctName.toLowerCase();
+            const name = (files[i].correctName || files[i].webkitRelativePath || files[i].name).replace(/\\/g, "/").replace(/^\/+/, "").toLowerCase();
             const extension = name.split(".").pop();
 
             if (!this.onProcessFileCallback(files[i], name, extension, (sceneFile) => (this._sceneFileToLoad = sceneFile))) {
@@ -219,76 +281,98 @@ export class FilesInput {
      * @param event defines the drop event to use as source
      */
     public loadFiles(event: any): void {
+        const dataTransferItems = event?.dataTransfer?.items;
+        let filesToLoad: File[] = [];
+
         // Handling data transfer via drag'n'drop
         if (event && event.dataTransfer && event.dataTransfer.files) {
-            this._filesToLoad = event.dataTransfer.files;
+            filesToLoad = Array.from(event.dataTransfer.files);
         }
 
         // Handling files from input files
         if (event && event.target && event.target.files) {
-            this._filesToLoad = event.target.files;
+            filesToLoad = Array.from(event.target.files);
         }
 
-        if (!this._filesToLoad || this._filesToLoad.length === 0) {
+        if (filesToLoad.length === 0 && (!dataTransferItems || dataTransferItems.length === 0)) {
             return;
         }
 
-        if (this._startingProcessingFilesCallback) {
-            this._startingProcessingFilesCallback(this._filesToLoad);
-        }
-
-        if (this._filesToLoad && this._filesToLoad.length > 0) {
-            const files: File[] = [];
-            const folders = [];
-            const items = event.dataTransfer ? event.dataTransfer.items : null;
-
-            for (let i = 0; i < this._filesToLoad.length; i++) {
-                const fileToLoad: any = this._filesToLoad[i];
-                const name = fileToLoad.name.toLowerCase();
-                let entry;
-
-                fileToLoad.correctName = name;
-
-                if (items) {
-                    const item = items[i];
-                    if (item.getAsEntry) {
-                        entry = item.getAsEntry();
-                    } else if (item.webkitGetAsEntry) {
-                        entry = item.webkitGetAsEntry();
-                    }
+        const files: File[] = [];
+        const folders = [];
+        if (dataTransferItems?.length) {
+            for (let index = 0; index < dataTransferItems.length; index++) {
+                const item = dataTransferItems[index];
+                if (item.kind && item.kind !== "file") {
+                    continue;
                 }
-
-                if (!entry) {
-                    files.push(fileToLoad);
-                } else {
-                    if (entry.isDirectory) {
-                        folders.push(entry);
-                    } else {
-                        files.push(fileToLoad);
-                    }
+                const entry = item.getAsEntry?.() ?? item.webkitGetAsEntry?.();
+                if (entry?.isDirectory) {
+                    folders.push(entry);
+                    continue;
+                }
+                const file = item.getAsFile?.();
+                if (file) {
+                    const fileWithPath = file as File & { correctName?: string };
+                    fileWithPath.correctName = (entry?.fullPath || file.webkitRelativePath || file.name).replace(/\\/g, "/").replace(/^\/+/, "");
+                    files.push(file);
                 }
             }
+        }
+        if (files.length === 0 && folders.length === 0) {
+            for (let i = 0; i < filesToLoad.length; i++) {
+                const fileToLoad = filesToLoad[i] as File & { correctName?: string };
+                const relativePath = fileToLoad.correctName || fileToLoad.webkitRelativePath || fileToLoad.name;
+                fileToLoad.correctName = relativePath.replace(/\\/g, "/").replace(/^\/+/, "");
+                files.push(fileToLoad);
+            }
+        }
+        if (files.length === 0 && folders.length === 0) {
+            return;
+        }
 
-            if (folders.length === 0) {
-                this._processFiles(files);
-                this._processReload();
-            } else {
-                const remaining = { count: folders.length };
-                for (const folder of folders) {
-                    this._traverseFolder(folder, files, remaining, () => {
-                        this._processFiles(files);
+        const fileSelectionGeneration = ++this._fileSelectionGeneration;
+        if (!this.useAppend) {
+            this._reloadGeneration++;
+        }
+        this._sceneFileToLoad = null;
 
-                        if (remaining.count === 0) {
-                            this._processReload();
-                        }
-                    });
-                }
+        if (folders.length === 0) {
+            this._processLoadedFiles(files, fileSelectionGeneration);
+        } else {
+            const remaining = { count: folders.length };
+            for (const folder of folders) {
+                this._traverseFolder(folder, files, remaining, () => {
+                    if (remaining.count === 0) {
+                        this._processLoadedFiles(files, fileSelectionGeneration);
+                    }
+                });
             }
         }
     }
 
+    private _processLoadedFiles(files: File[], fileSelectionGeneration: number): void {
+        if (fileSelectionGeneration !== this._fileSelectionGeneration) {
+            return;
+        }
+        if (files.length === 0) {
+            this._restoreCurrentScene();
+            this.onProcessFilesErrorCallback(files);
+            return;
+        }
+        this._sceneFileToLoad = null;
+        this._filesToLoad = files;
+        this._startingProcessingFilesCallback?.(files);
+        this._processFiles(files);
+        if (!this._sceneFileToLoad) {
+            this._restoreCurrentScene();
+            this.onProcessFilesErrorCallback(files);
+        }
+        this._processReload();
+    }
+
     private _processReload() {
-        if (this._onReloadCallback) {
+        if (this._onReloadCallback && this._sceneFileToLoad) {
             this._onReloadCallback(this._sceneFileToLoad);
         } else {
             this.reload();
@@ -301,7 +385,10 @@ export class FilesInput {
     public reload() {
         // If a scene file has been provided
         if (this._sceneFileToLoad) {
+            const sceneFileToLoad = this._sceneFileToLoad;
+            const reloadGeneration = ++this._reloadGeneration;
             if (!this.useAppend) {
+                this._isLoading = true;
                 if (this._currentScene) {
                     if (Logger.errorsCount > 0) {
                         Logger.ClearLogCache();
@@ -315,9 +402,14 @@ export class FilesInput {
                 this._engine.displayLoadingUI();
             }
 
-            this.loadAsync(this._sceneFileToLoad, this._progressCallback)
+            this.loadAsync(sceneFileToLoad, this._progressCallback)
                 // eslint-disable-next-line github/no-then
                 .then((scene) => {
+                    if (!this.useAppend && reloadGeneration !== this._reloadGeneration) {
+                        scene.dispose();
+                        return;
+                    }
+
                     // if appending do nothing
                     if (!this.useAppend) {
                         if (this._currentScene) {
@@ -328,13 +420,8 @@ export class FilesInput {
 
                         // Wait for textures and shaders to be ready
                         this._currentScene.executeWhenReady(() => {
-                            if (this.displayLoadingUI) {
-                                this._engine.hideLoadingUI();
-                            }
-                            if (!this.dontInjectRenderLoop) {
-                                this._engine.runRenderLoop(() => {
-                                    this._renderFunction();
-                                });
+                            if (reloadGeneration === this._reloadGeneration) {
+                                this._restoreCurrentScene();
                             }
                         });
                     } else {
@@ -343,16 +430,20 @@ export class FilesInput {
                         }
                     }
                     if (this._sceneLoadedCallback && this._currentScene) {
-                        this._sceneLoadedCallback(this._sceneFileToLoad, this._currentScene);
+                        this._sceneLoadedCallback(sceneFileToLoad, this._currentScene);
                     }
                 })
                 // eslint-disable-next-line github/no-then
                 .catch((error) => {
+                    if (!this.useAppend && reloadGeneration !== this._reloadGeneration) {
+                        return;
+                    }
+                    this._isLoading = false;
                     if (this.displayLoadingUI) {
                         this._engine.hideLoadingUI();
                     }
                     if (this._errorCallback) {
-                        this._errorCallback(this._sceneFileToLoad, this._currentScene, error.message);
+                        this._errorCallback(sceneFileToLoad, this._currentScene, error.message);
                     }
                 });
         } else {
