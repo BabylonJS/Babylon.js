@@ -3055,6 +3055,24 @@
             "dependsOn": ["LibMaterials", "Materials", "Meshes"]
         },
         {
+            "title": "Simple Sky Material",
+            "playgroundId": "#VBTSKJ#2",
+            "referenceImage": "simple-sky-material.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
+        },
+        {
+            "title": "Overcast Sky Material",
+            "playgroundId": "#VBTSKJ#3",
+            "referenceImage": "overcast-sky-material.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
+        },
+        {
+            "title": "HDR Sky Material as IBL",
+            "playgroundId": "#VBTSKJ#6",
+            "referenceImage": "hdr-sky-material-as-ibl.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes", "Probes", "PBR", "Textures", "Loaders", "glTF"]
+        },
+        {
             "title": "water-material",
             "playgroundId": "#EUH2VL#1",
             "dependsOn": ["LibMaterials", "Materials", "Textures"],

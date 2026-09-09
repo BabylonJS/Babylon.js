@@ -8,7 +8,6 @@ import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { Constants } from "core/Engines/constants";
-import { MaxHalfFloat } from "core/Misc/halfFloat";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { type SubMesh } from "core/Meshes/subMesh";
@@ -59,7 +58,10 @@ class SkyMaterialDefines extends MaterialDefines {
 export function _MaxColorValueForRenderTarget(textureType: number | undefined): number {
     switch (textureType) {
         case Constants.TEXTURETYPE_HALF_FLOAT:
-            return MaxHalfFloat;
+            // IEEE-754 half-float max (core's `MaxHalfFloat`). Inlined, not imported: it's not on
+            // the public `BABYLON` namespace, so the materials UMD build resolves the import to
+            // `undefined` at runtime (→ NaN clamp ceiling).
+            return 65504;
         case Constants.TEXTURETYPE_FLOAT:
             return 3.0e38;
         default:
