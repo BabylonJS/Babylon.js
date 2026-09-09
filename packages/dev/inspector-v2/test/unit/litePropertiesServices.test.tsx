@@ -239,6 +239,14 @@ describe("Babylon Lite properties services", () => {
         } as unknown as SceneContext;
         const rendererLayers: TextLayer[] = [];
         const textRenderer = { _kind: "text-renderer", layers: rendererLayers } as unknown as TextRenderer;
+        const textLayerRuns = [
+            {
+                glyphs: [{}, {}],
+            },
+        ];
+        const textLayer = {
+            data: { runs: textLayerRuns },
+        } as unknown as TextLayer;
         const auxiliarySurface = {
             canvas: { width: 320, height: 200 },
             format: "bgra8unorm",
@@ -272,6 +280,7 @@ describe("Babylon Lite properties services", () => {
         const services = [
             EnginePropertiesServiceDefinition.factory(propertiesService, engineContext),
             RenderingContextPropertiesServiceDefinition.factory(propertiesService, engineContext),
+            TextLayerPropertiesServiceDefinition.factory(propertiesService, engineContext),
         ];
         const settingsStore = new TestSettingsStore();
         const watcherDefinitions = MakeWatcherServiceDefinitions({ defaultSettings: { mode: "manual" } });
@@ -285,6 +294,7 @@ describe("Babylon Lite properties services", () => {
             registrations.get("Babylon Lite Surface Properties")!.content[0].component({ context: auxiliarySurface }),
             registrations.get("Babylon Lite Scene Properties")!.content[0].component({ context: scene }),
             registrations.get("Babylon Lite Text Renderer Properties")!.content[0].component({ context: textRenderer }),
+            registrations.get("Babylon Lite Text Layer Properties")!.content[0].component({ context: textLayer }),
         ];
         const container = document.createElement("div");
         document.body.appendChild(container);
@@ -305,33 +315,45 @@ describe("Babylon Lite properties services", () => {
         expect(GetNormalizedText(container)).toContain("CanvasWidth320px");
         expect(GetNormalizedText(container)).toContain("MeshCount0");
         expect(GetNormalizedText(container)).toContain("LayerCount0");
+        expect(GetNormalizedText(container)).toContain("RunCount1");
+        expect(GetNormalizedText(container)).toContain("GlyphCount2");
 
         surfaces.push({} as SurfaceContext);
         auxiliarySurface.canvas.width = 640;
         sceneMeshes.push({} as Mesh);
         rendererLayers.push({} as TextLayer);
+        textLayerRuns[0].glyphs.push({});
+        textLayerRuns.push({ glyphs: [{}, {}] });
         act(() => watcher.refresh());
         expect(GetNormalizedText(container)).toContain("SurfaceCount3");
         expect(GetNormalizedText(container)).toContain("CanvasWidth640px");
         expect(GetNormalizedText(container)).toContain("MeshCount1");
         expect(GetNormalizedText(container)).toContain("LayerCount1");
+        expect(GetNormalizedText(container)).toContain("RunCount2");
+        expect(GetNormalizedText(container)).toContain("GlyphCount5");
 
         act(() => settingsStore.writeSetting(watcherSettingsDescriptor, { mode: "polling", interval: 100 }));
         surfaces.push({} as SurfaceContext);
         auxiliarySurface.canvas.width = 800;
         sceneMeshes.push({} as Mesh);
         rendererLayers.push({} as TextLayer);
+        textLayerRuns[1].glyphs.push({});
+        textLayerRuns.push({ glyphs: [{}] });
         act(() => vi.advanceTimersByTime(99));
         expect(GetNormalizedText(container)).toContain("SurfaceCount3");
         expect(GetNormalizedText(container)).toContain("CanvasWidth640px");
         expect(GetNormalizedText(container)).toContain("MeshCount1");
         expect(GetNormalizedText(container)).toContain("LayerCount1");
+        expect(GetNormalizedText(container)).toContain("RunCount2");
+        expect(GetNormalizedText(container)).toContain("GlyphCount5");
 
         act(() => vi.advanceTimersByTime(1));
         expect(GetNormalizedText(container)).toContain("SurfaceCount4");
         expect(GetNormalizedText(container)).toContain("CanvasWidth800px");
         expect(GetNormalizedText(container)).toContain("MeshCount2");
         expect(GetNormalizedText(container)).toContain("LayerCount2");
+        expect(GetNormalizedText(container)).toContain("RunCount3");
+        expect(GetNormalizedText(container)).toContain("GlyphCount7");
 
         act(() => root.unmount());
         container.remove();

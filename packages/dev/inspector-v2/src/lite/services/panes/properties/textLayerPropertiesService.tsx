@@ -6,9 +6,17 @@ import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propert
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
-import { BoundProperty } from "../../../../components/properties/boundProperty";
+import { BoundProperty, ComputedProperty } from "../../../../components/properties/boundProperty";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../services/panes/properties/propertiesService";
 import { type IEngineContext, EngineContextIdentity } from "../../../engineContext";
+
+function GetRunCount(layer: TextLayer): number {
+    return layer.data.runs.length;
+}
+
+function GetGlyphCount(layer: TextLayer): number {
+    return layer.data.runs.reduce((count, run) => count + run.glyphs.length, 0);
+}
 
 function IsRegisteredTextLayer(engine: EngineContext, entity: unknown): entity is TextLayer {
     if (typeof entity !== "object" || entity === null) {
@@ -22,7 +30,6 @@ function IsRegisteredTextLayer(engine: EngineContext, entity: unknown): entity i
 
 const TextLayerProperties: FunctionComponent<{ layer: TextLayer }> = (props) => {
     const { layer } = props;
-    const glyphCount = layer.data.runs.reduce((count, run) => count + run.glyphs.length, 0);
 
     return (
         <>
@@ -34,8 +41,8 @@ const TextLayerProperties: FunctionComponent<{ layer: TextLayer }> = (props) => 
             <BoundProperty component={NumberInputPropertyLine} label="Order" target={layer} propertyKey="order" />
             <BoundProperty component={NumberInputPropertyLine} label="Opacity" target={layer} propertyKey="opacity" min={0} max={1} step={0.01} />
             <BoundProperty component={NumberInputPropertyLine} label="Coverage Gamma" target={layer} propertyKey="coverageGamma" step={0.1} />
-            <StringifiedPropertyLine label="Run Count" value={layer.data.runs.length} />
-            <StringifiedPropertyLine label="Glyph Count" value={glyphCount} />
+            <ComputedProperty component={StringifiedPropertyLine} label="Run Count" target={layer} getValue={GetRunCount} />
+            <ComputedProperty component={StringifiedPropertyLine} label="Glyph Count" target={layer} getValue={GetGlyphCount} />
         </>
     );
 };
