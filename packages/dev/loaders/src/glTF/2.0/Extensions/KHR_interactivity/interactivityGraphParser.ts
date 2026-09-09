@@ -7,6 +7,7 @@ import { RandomGUID } from "core/Misc/guid";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
+import { CloneKHRInteractivityGraph, gltfTypeToBabylonType, type IKHRInteractivityDeclarationModel } from "./interactivityGraphModel";
 
 /**
  * Description of a KHR_interactivity custom event, as parsed from the
@@ -30,24 +31,7 @@ export interface InteractivityEvent {
         value?: any;
     }[];
 }
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const gltfTypeToBabylonType: {
-    [key: string]: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" | "string" };
-} = {
-    float: { length: 1, flowGraphType: FlowGraphTypes.Number, elementType: "number" },
-    bool: { length: 1, flowGraphType: FlowGraphTypes.Boolean, elementType: "boolean" },
-    float2: { length: 2, flowGraphType: FlowGraphTypes.Vector2, elementType: "number" },
-    float3: { length: 3, flowGraphType: FlowGraphTypes.Vector3, elementType: "number" },
-    float4: { length: 4, flowGraphType: FlowGraphTypes.Vector4, elementType: "number" },
-    float4x4: { length: 16, flowGraphType: FlowGraphTypes.Matrix, elementType: "number" },
-    float2x2: { length: 4, flowGraphType: FlowGraphTypes.Matrix2D, elementType: "number" },
-    float3x3: { length: 9, flowGraphType: FlowGraphTypes.Matrix3D, elementType: "number" },
-    int: { length: 1, flowGraphType: FlowGraphTypes.Integer, elementType: "number" },
-    // KHR_interactivity opaque reference type. Represented as a JSON Pointer string
-    // (e.g. "/nodes/17/") that addresses a glTF object. The empty string is the
-    // canonical "null reference" sentinel used by the parser.
-    ref: { length: 1, flowGraphType: FlowGraphTypes.String, elementType: "string" },
-};
+export { gltfTypeToBabylonType } from "./interactivityGraphModel";
 
 /**
  * Parses a KHR_interactivity graph definition (the raw glTF JSON object) into
@@ -62,8 +46,8 @@ export class InteractivityGraphToFlowGraphParser {
      * Note - the graph should be rejected if the same type is defined twice.
      * We currently don't validate that.
      */
-    private _types: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" | "string" }[] = [];
-    private _mappings: { flowGraphMapping: IGLTFToFlowGraphMapping; fullOperationName: string }[] = [];
+    private _types: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" | "string" | "any" }[] = [];
+    private _mappings: { flowGraphMapping: IGLTFToFlowGraphMapping; fullOperationName: string; declaration: IKHRInteractivityDeclarationModel }[] = [];
     private _staticVariables: { type: FlowGraphTypes; value: any[] }[] = [];
     private _events: InteractivityEvent[] = [];
     private _internalEventsCounter: number = 0;
@@ -77,10 +61,12 @@ export class InteractivityGraphToFlowGraphParser {
     private _insertedBlocks: ISerializedFlowGraphBlock[] = [];
 
     constructor(
-        private _interactivityGraph: IKHRInteractivity_Graph,
+        interactivityGraph: IKHRInteractivity_Graph,
         private _gltf: IGLTF,
-        public _animationTargetFps: number = 60
+        public _animationTargetFps: number = 60,
+        private _graphIndex: number = 0
     ) {
+        this._interactivityGraph = CloneKHRInteractivityGraph(interactivityGraph);
         // start with types
         this._parseTypes();
         // continue with declarations
@@ -89,6 +75,8 @@ export class InteractivityGraphToFlowGraphParser {
         this._parseEvents();
         this._parseNodes();
     }
+
+    private _interactivityGraph: IKHRInteractivity_Graph;
 
     public get arrays() {
         return {
@@ -113,10 +101,13 @@ export class InteractivityGraphToFlowGraphParser {
         if (!this._interactivityGraph.declarations) {
             return;
         }
-        for (const declaration of this._interactivityGraph.declarations) {
-            // make sure we have the mapping for this operation
-            const mapping = getMappingForDeclaration(declaration);
-            // mapping is defined, because we generate an empty mapping if it's not found
+        for (let index = 0; index < this._interactivityGraph.declarations.length; index++) {
+            const declaration = this._interactivityGraph.declarations[index];
+            const supportedMapping = getMappingForDeclaration(declaration, false);
+            if (!supportedMapping && !declaration.extension) {
+                throw new Error(`Unknown core KHR_interactivity operation "${declaration.op}".`);
+            }
+            const mapping = supportedMapping ?? getMappingForDeclaration(declaration);
             if (!mapping) {
                 Logger.Error(["No mapping found for declaration", declaration]);
                 throw new Error("Error parsing declarations");
@@ -124,6 +115,12 @@ export class InteractivityGraphToFlowGraphParser {
             this._mappings.push({
                 flowGraphMapping: mapping,
                 fullOperationName: declaration.extension ? declaration.op + ":" + declaration.extension : declaration.op,
+                declaration: {
+                    index,
+                    operation: declaration.extension ? `${declaration.op}:${declaration.extension}` : declaration.op,
+                    support: supportedMapping ? (declaration.extension ? "extension" : "core") : "unsupported-extension",
+                    source: declaration,
+                },
             });
         }
     }
@@ -151,7 +148,7 @@ export class InteractivityGraphToFlowGraphParser {
                 throw new Error("Error parsing variables");
             }
         }
-        const value = variable.value || [];
+        const value = variable.value ? variable.value.slice() : [];
         if (!value.length) {
             switch (type.flowGraphType) {
                 case FlowGraphTypes.Boolean:
@@ -176,13 +173,17 @@ export class InteractivityGraphToFlowGraphParser {
                 case FlowGraphTypes.Vector4:
                 case FlowGraphTypes.Matrix2D:
                 case FlowGraphTypes.Quaternion:
-                    value.fill(NaN, 0, 4);
+                    value.push(NaN, NaN, NaN, NaN);
                     break;
                 case FlowGraphTypes.Matrix:
-                    value.fill(NaN, 0, 16);
+                    for (let i = 0; i < 16; i++) {
+                        value.push(NaN);
+                    }
                     break;
                 case FlowGraphTypes.Matrix3D:
-                    value.fill(NaN, 0, 9);
+                    for (let i = 0; i < 9; i++) {
+                        value.push(NaN);
+                    }
                     break;
                 default:
                     break;
@@ -232,7 +233,8 @@ export class InteractivityGraphToFlowGraphParser {
         if (!this._interactivityGraph.nodes) {
             return;
         }
-        for (const node of this._interactivityGraph.nodes) {
+        for (let nodeIndex = 0; nodeIndex < this._interactivityGraph.nodes.length; nodeIndex++) {
+            const node = this._interactivityGraph.nodes[nodeIndex];
             // some validation
             if (typeof node.declaration !== "number") {
                 Logger.Error(["No declaration found for node", node]);
@@ -250,9 +252,13 @@ export class InteractivityGraphToFlowGraphParser {
                 }
             }
             const blocks: ISerializedFlowGraphBlock[] = [];
+            if (mapping.declaration.support === "unsupported-extension") {
+                blocks.push(this._createUnsupportedExtensionBlock(node, nodeIndex, mapping));
+            }
             // create block(s) for this node using the mapping
-            for (const blockType of mapping.flowGraphMapping.blocks) {
-                const block = this._getEmptyBlock(blockType, mapping.fullOperationName);
+            for (let role = 0; role < mapping.flowGraphMapping.blocks.length; role++) {
+                const blockType = mapping.flowGraphMapping.blocks[role];
+                const block = this._getEmptyBlock(blockType, mapping.fullOperationName, nodeIndex, node.declaration, role);
                 this._parseNodeConfiguration(node, block, mapping.flowGraphMapping, blockType);
                 blocks.push(block);
             }
@@ -260,7 +266,7 @@ export class InteractivityGraphToFlowGraphParser {
         }
     }
 
-    private _getEmptyBlock(className: string, type: string): ISerializedFlowGraphBlock {
+    private _getEmptyBlock(className: string, type: string, nodeIndex?: number, declarationIndex?: number, role?: number): ISerializedFlowGraphBlock {
         return {
             uniqueId: RandomGUID(),
             className,
@@ -270,8 +276,61 @@ export class InteractivityGraphToFlowGraphParser {
             signalOutputs: [],
             config: {},
             type,
-            metadata: {},
+            metadata:
+                nodeIndex === undefined
+                    ? {}
+                    : {
+                          khrInteractivity: {
+                              graphIndex: this._graphIndex,
+                              nodeIndex,
+                              declarationIndex,
+                              operation: type,
+                              role: role ?? 0,
+                              sourcePath: `/extensions/KHR_interactivity/graphs/${this._graphIndex}/nodes/${nodeIndex}`,
+                          },
+                      },
         };
+    }
+
+    private _createUnsupportedExtensionBlock(
+        node: IKHRInteractivity_Node,
+        nodeIndex: number,
+        mapping: { flowGraphMapping: IGLTFToFlowGraphMapping; fullOperationName: string; declaration: IKHRInteractivityDeclarationModel }
+    ): ISerializedFlowGraphBlock {
+        const block = this._getEmptyBlock("KHR_interactivity/FlowGraphUnsupportedInteractivityBlock", mapping.fullOperationName, nodeIndex, node.declaration, 0);
+        const inputFlowSockets = new Set<string>();
+        for (const sourceNode of this._interactivityGraph.nodes ?? []) {
+            for (const flow of Object.values(sourceNode.flows ?? {})) {
+                if (flow.node === nodeIndex) {
+                    inputFlowSockets.add(flow.socket ?? "in");
+                }
+            }
+        }
+        const toSockets = (sockets: typeof mapping.declaration.source.inputValueSockets) =>
+            Object.entries(sockets ?? {}).map(([name, definition]) => ({
+                name,
+                type: this._types[definition.type]?.flowGraphType,
+            }));
+        block.config = {
+            operation: mapping.fullOperationName,
+            inputValueSockets: toSockets(mapping.declaration.source.inputValueSockets),
+            outputValueSockets: toSockets(mapping.declaration.source.outputValueSockets),
+            inputFlowSockets: Array.from(inputFlowSockets).sort(),
+            outputFlowSockets: Object.keys(node.flows ?? {}).sort(),
+        };
+        for (const socket of block.config.inputValueSockets) {
+            block.dataInputs.push(this._createNewSocketConnection(socket.name));
+        }
+        for (const socket of block.config.outputValueSockets) {
+            block.dataOutputs.push(this._createNewSocketConnection(socket.name, true));
+        }
+        for (const socket of block.config.inputFlowSockets) {
+            block.signalInputs.push(this._createNewSocketConnection(socket));
+        }
+        for (const socket of block.config.outputFlowSockets) {
+            block.signalOutputs.push(this._createNewSocketConnection(socket, true));
+        }
+        return block;
     }
 
     private _parseNodeConfiguration(node: IKHRInteractivity_Node, block: ISerializedFlowGraphBlock, nodeMapping: IGLTFToFlowGraphMapping, blockType: FlowGraphBlockNames | string) {
@@ -363,9 +422,11 @@ export class InteractivityGraphToFlowGraphParser {
                     continue;
                 }
                 // create a serialized socket
-                const socketOut = this._createNewSocketConnection(socketOutName, true);
                 const block = (flowMapping && flowMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === flowMapping.toBlock)) || flowGraphBlocks.blocks[0];
-                block.signalOutputs.push(socketOut);
+                const socketOut = block.signalOutputs.find((socket) => socket.name === socketOutName) ?? this._createNewSocketConnection(socketOutName, true);
+                if (!block.signalOutputs.includes(socketOut)) {
+                    block.signalOutputs.push(socketOut);
+                }
                 // get the mapper for the input node - in case it mapped to multiple blocks
                 const inputMapper = getMappingForFullOperationName(nodeIn.fullOperationName);
                 if (!inputMapper) {
@@ -412,9 +473,11 @@ export class InteractivityGraphToFlowGraphParser {
                 }
                 const socketInName = valueMapping ? (arrayMapping ? valueMapping.name.replace("$1", valueKey) : valueMapping.name) : valueKey;
                 // create a serialized socket
-                const socketIn = this._createNewSocketConnection(socketInName);
                 const block = (valueMapping && valueMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === valueMapping.toBlock)) || flowGraphBlocks.blocks[0];
-                block.dataInputs.push(socketIn);
+                const socketIn = block.dataInputs.find((socket) => socket.name === socketInName) ?? this._createNewSocketConnection(socketInName);
+                if (!block.dataInputs.includes(socketIn)) {
+                    block.dataInputs.push(socketIn);
+                }
                 // Captured before the connected branch below shadows `valueMapping`. When set and the
                 // value is supplied by a connection, the seconds→frames `dataTransformer` cannot run
                 // (it is parse-time only), so the raw connected value is scaled by a runtime multiply.
@@ -600,6 +663,7 @@ export class InteractivityGraphToFlowGraphParser {
         const allBlocks = this._nodes.reduce((acc, val) => acc.concat(val.blocks), [] as ISerializedFlowGraphBlock[]).concat(this._insertedBlocks);
 
         return {
+            name: this._interactivityGraph.name ?? `Graph ${this._graphIndex + 1}`,
             rightHanded: true,
             allBlocks,
             executionContexts: [context],

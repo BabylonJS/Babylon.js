@@ -571,7 +571,7 @@ export class GLTFLoader implements IGLTFLoader {
                     promises.push(this._compileShadowGeneratorsAsync());
                 }
 
-                const resultPromise = Promise.all(promises).then(() => {
+                const resultPromise = Promise.all(promises).then(async () => {
                     if (this._rootBabylonMesh && this._rootBabylonMesh !== this._parent.customRootNode) {
                         this._rootBabylonMesh.setEnabled(true);
                     }
@@ -592,7 +592,7 @@ export class GLTFLoader implements IGLTFLoader {
                         this._completePromises.push(adapter.finalizeAsync(this));
                     }
 
-                    this._extensionsOnReady();
+                    await this._extensionsOnReadyAsync();
                     this._parent._setState(GLTFLoaderState.READY);
                     if (!this._skipStartAnimationStep) {
                         this._startAnimations();
@@ -3044,8 +3044,14 @@ export class GLTFLoader implements IGLTFLoader {
         this._forEachExtensions((extension) => extension.onLoading && extension.onLoading());
     }
 
-    private _extensionsOnReady(): void {
-        this._forEachExtensions((extension) => extension.onReady && extension.onReady());
+    private async _extensionsOnReadyAsync(): Promise<void> {
+        const promises: Promise<void>[] = [];
+        this._forEachExtensions((extension) => {
+            if (extension.onReady) {
+                promises.push(Promise.resolve(extension.onReady()));
+            }
+        });
+        await Promise.all(promises);
     }
 
     private _extensionsLoadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {

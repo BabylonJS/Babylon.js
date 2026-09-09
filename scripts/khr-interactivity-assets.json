@@ -1,5 +1,5 @@
 {
     "$comment": "Pinned revision of the Khronos KHR_interactivity conformance assets. Read by scripts/runKHRInteractivityAssetTests.mjs (to fetch them) and by the CI pipeline (as a cache key), so both always agree. Bump this when syncing new assets from upstream.",
     "repository": "https://github.com/KhronosGroup/glTF-Test-Assets-Interactivity.git",
-    "revision": "06d97879f6302cd3f735a5f25f624d10c4b3e092"
+    "revision": "0f24a49f2d861ac666652ce5b8e4181803db9c1f"
 }

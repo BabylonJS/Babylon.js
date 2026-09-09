@@ -20,11 +20,59 @@ import { InteractivityRefPathToObjectConverter } from "./interactivityRefPathToO
 import { InteractivityAssetPathToObjectConverter, InteractivityAssetCapabilitiesPrefix, InteractivityLimitsPrefix } from "./interactivityAssetPathToObjectConverter";
 import { EventReferencePrefix, DelayReferencePrefix } from "./KHR_interactivity/interactivityReferences";
 import { InteractivityHostResolver } from "./KHR_interactivity/interactivityHostResolver";
-import { type IObjectAccessor } from "core/FlowGraph/typeDefinitions";
+import { type IObjectAccessor, type ISerializedFlowGraph } from "core/FlowGraph/typeDefinitions";
 import { type IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 import { Logger } from "core/Misc/logger";
+import {
+    CreateKHRInteractivityDocument,
+    type IKHRInteractivityDiagnostic,
+    type IKHRInteractivityDocument,
+    type IKHRInteractivityGraphModel,
+} from "./KHR_interactivity/interactivityGraphModel";
+import { type FlowGraph } from "core/FlowGraph/flowGraph";
 
 const NAME = "KHR_interactivity";
+
+/**
+ * Runtime projection of one canonical KHR_interactivity graph.
+ */
+export interface IKHRInteractivityGraphImportResult {
+    /** Canonical source graph and diagnostics. */
+    graph: IKHRInteractivityGraphModel;
+    /** Executable FlowGraph serialization when lowering succeeded. */
+    serializedFlowGraph?: ISerializedFlowGraph;
+    /** Runtime FlowGraph when runtime construction was requested. */
+    flowGraph?: FlowGraph;
+    /** Coordinator that owns the runtime FlowGraph. */
+    coordinator?: FlowGraphCoordinator;
+    /** Additional lowering/runtime diagnostics. */
+    diagnostics: IKHRInteractivityDiagnostic[];
+}
+
+/**
+ * Completed KHR_interactivity import result associated with a loaded scene.
+ */
+export interface IKHRInteractivityImportResult {
+    /** Canonical, lossless source document. */
+    document: IKHRInteractivityDocument;
+    /** Graph import results in source order. */
+    graphs: IKHRInteractivityGraphImportResult[];
+    /** Shared path converter required by pointer blocks. */
+    pathConverter: CompositePathToObjectConverter<IObjectAccessor>;
+    /** Live glTF loader data used by glTF data-provider blocks. */
+    glTF: GLTFLoader["gltf"];
+}
+
+const _ImportResults = /*#__PURE__*/ new WeakMap<Scene, IKHRInteractivityImportResult>();
+
+/**
+ * Gets the completed KHR_interactivity import result for a loaded scene.
+ * @param scene scene loaded from the glTF asset
+ * @returns the import result, or undefined when the scene has no KHR_interactivity data
+ */
+export function GetKHRInteractivityImportResult(scene: Scene): IKHRInteractivityImportResult | undefined {
+    return _ImportResults.get(scene);
+}
 
 /**
  * Loader extension for KHR_interactivity
@@ -102,7 +150,6 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         delete this._pathConverter;
     }
 
-    // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/no-misused-promises
     public async onReady(): Promise<void> {
         if (!this._loader.babylonScene || !this._pathConverter) {
             return;
@@ -114,24 +161,55 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             return;
         }
 
-        // The specification requires an invalid behavior graph to be rejected. Parse each graph into its
-        // own coordinator so a graph that throws part-way can be disposed without leaving a half-built graph
-        // registered — a shared coordinator's start() would otherwise run that partial graph. A scene
-        // supports many coordinators, and glTF behavior graphs are independent of one another.
+        const document = CreateKHRInteractivityDocument(interactivityDefinition);
+        const options = this._loader.parent.extensionOptions[NAME];
+        const autoStart = options?.autoStart ?? true;
+        const parseOnly = options?.parseOnly ?? false;
+        const result: IKHRInteractivityImportResult = {
+            document,
+            graphs: [],
+            pathConverter: this._pathConverter,
+            glTF: this._loader.gltf,
+        };
+        _ImportResults.set(scene, result);
+
         await Promise.all(
-            interactivityDefinition.graphs.map(async (graph, index) => {
-                const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
-                coordinator.dispatchEventsSynchronously = false; // glTF interactivity dispatches events asynchronously
+            document.graphs.map(async (graphModel) => {
+                const graphResult: IKHRInteractivityGraphImportResult = {
+                    graph: graphModel,
+                    diagnostics: graphModel.diagnostics.slice(),
+                };
+                result.graphs[graphModel.index] = graphResult;
+                if (!graphModel.valid) {
+                    Logger.Error(`KHR_interactivity: rejecting behavior graph #${graphModel.index}: ${graphModel.diagnostics.map((diagnostic) => diagnostic.message).join("; ")}`);
+                    return;
+                }
                 try {
-                    const parser = new InteractivityGraphToFlowGraphParser(graph, this._loader.gltf, this._loader.parent.targetFps);
-                    await ParseFlowGraphAsync(parser.serializeToFlowGraph(), { coordinator, pathConverter: this._pathConverter });
-                    // Only start graphs that parsed cleanly; keep loading the rest of the asset either way.
-                    coordinator.start();
+                    const parser = new InteractivityGraphToFlowGraphParser(graphModel.source, this._loader.gltf, this._loader.parent.targetFps, graphModel.index);
+                    const serializedFlowGraph = parser.serializeToFlowGraph();
+                    graphResult.serializedFlowGraph = serializedFlowGraph;
+                    if (parseOnly) {
+                        return;
+                    }
+                    const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+                    coordinator.dispatchEventsSynchronously = false;
+                    graphResult.coordinator = coordinator;
+                    graphResult.flowGraph = await ParseFlowGraphAsync(serializedFlowGraph, { coordinator, pathConverter: this._pathConverter });
+                    if (autoStart && graphModel.index === document.defaultGraphIndex) {
+                        coordinator.start();
+                    }
                 } catch (error) {
-                    Logger.Error(`KHR_interactivity: rejecting behavior graph #${index}: ${(error as Error)?.message ?? error}`);
-                    // Dispose the coordinator (and the partially-built graph it holds) so nothing from the
-                    // rejected graph stays registered or running.
-                    coordinator.dispose();
+                    const message = (error as Error)?.message ?? String(error);
+                    graphResult.diagnostics.push({
+                        path: graphModel.path,
+                        message,
+                        severity: "error",
+                    });
+                    Logger.Error(`KHR_interactivity: rejecting behavior graph #${graphModel.index}: ${message}`);
+                    graphResult.coordinator?.dispose();
+                    delete graphResult.coordinator;
+                    delete graphResult.flowGraph;
+                    delete graphResult.serializedFlowGraph;
                 }
             })
         );
@@ -324,6 +402,9 @@ export function _RegisterKHRInteractivityRuntime(): void {
 
     addToBlockFactory(NAME, "FlowGraphGLTFDataProvider", async () => {
         return (await import("./KHR_interactivity/flowGraphGLTFDataProvider")).FlowGraphGLTFDataProvider;
+    });
+    addToBlockFactory(NAME, "FlowGraphUnsupportedInteractivityBlock", async () => {
+        return (await import("./KHR_interactivity/flowGraphUnsupportedInteractivityBlock")).FlowGraphUnsupportedInteractivityBlock;
     });
 }
 

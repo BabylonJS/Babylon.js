@@ -1382,6 +1382,62 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("No BABYLON_flow_graph extension found in this file");
         expect(await fge.getGraphTopology()).toEqual(topologyBeforeMissingExtension);
     });
+
+    test("imports every KHR_interactivity graph, selects the default, and preserves unsupported operations", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+
+        const graphGltf = {
+            asset: { version: "2.0", generator: "FGE KHR_interactivity Phase 1 test" },
+            extensionsUsed: ["KHR_interactivity", "EXT_vendor_interactivity"],
+            extensions: {
+                KHR_interactivity: {
+                    graph: 1,
+                    graphs: [
+                        {
+                            name: "Startup",
+                            declarations: [{ op: "event/onStart" }],
+                            nodes: [{ declaration: 0 }],
+                        },
+                        {
+                            name: "Vendor behavior",
+                            types: [{ signature: "float" }],
+                            declarations: [
+                                {
+                                    op: "vendor/doThing",
+                                    extension: "EXT_vendor_interactivity",
+                                    inputValueSockets: { amount: { type: 0 } },
+                                    outputValueSockets: { result: { type: 0 } },
+                                },
+                            ],
+                            nodes: [{ declaration: 0, values: { amount: { type: 0, value: [2] } } }],
+                        },
+                        {
+                            name: "Invalid core graph",
+                            declarations: [{ op: "core/doesNotExist" }],
+                            nodes: [{ declaration: 0 }],
+                        },
+                    ],
+                },
+            },
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "khrInteractivityPhaseOne.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            const target = document.querySelector("canvas") ?? document.body;
+            target.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, graphGltf);
+
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Startup", "Vendor behavior", "Invalid core graph"]);
+        await expect.poll(async () => (await GetCoordinatorSnapshot(page)).activeGraphIndex).toBe(1);
+        await expect(fge.nodeOnCanvas("FlowGraphUnsupportedInteractivityBlock")).toBeVisible();
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Unknown core operation "core/doesNotExist"');
+
+        await fge.selectGraphTab("Invalid core graph");
+        await expect.poll(async () => await fge.getNodeCount()).toBe(0);
+    });
 });
 
 test.describe("Flow Graph Editor — Graph Construction", () => {

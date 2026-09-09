@@ -7,6 +7,18 @@ declare module "../../glTFFileLoader" {
          * Defines options for the KHR_interactivity extension.
          */
         // NOTE: Don't use NAME here as it will break the UMD type declarations.
-        ["KHR_interactivity"]: {};
+        ["KHR_interactivity"]: {
+            /**
+             * Whether the selected default graph starts automatically after import.
+             * Defaults to true.
+             */
+            autoStart?: boolean;
+            /**
+             * Whether to retain only the canonical source model and executable
+             * FlowGraph serialization without constructing runtime graphs.
+             * Defaults to false.
+             */
+            parseOnly?: boolean;
+        };
     }
 }

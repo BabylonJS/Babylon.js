@@ -15,7 +15,7 @@ import { FlowGraphTypes, getAnimationTypeByFlowGraphType } from "core/FlowGraph/
 // block via the flow/for extraProcessor rather than by mutating the shared static.
 const InteractivityForLoopMaxIterations = 20000;
 
-interface IGLTFToFlowGraphMappingObject {
+export interface IGLTFToFlowGraphMappingObject {
     /**
      * The name of the property in the FlowGraph block.
      */
@@ -203,8 +203,8 @@ export function getMappingForFullOperationName(fullOperationName: string) {
 export function getMappingForDeclaration(declaration: IKHRInteractivity_Declaration, returnNoOpIfNotAvailable: boolean = true): IGLTFToFlowGraphMapping | undefined {
     const mapping = declaration.extension ? gltfExtensionsToFlowGraphMapping[declaration.extension]?.[declaration.op] : gltfToFlowGraphMapping[declaration.op];
     if (!mapping) {
-        Logger.Warn(`No mapping found for operation ${declaration.op} and extension ${declaration.extension || "KHR_interactivity"}`);
         if (returnNoOpIfNotAvailable) {
+            Logger.Warn(`No mapping found for operation ${declaration.op} and extension ${declaration.extension || "KHR_interactivity"}`);
             const inputs: IGLTFToFlowGraphMapping["inputs"] = {};
             const outputs: IGLTFToFlowGraphMapping["outputs"] = {
                 flows: {},

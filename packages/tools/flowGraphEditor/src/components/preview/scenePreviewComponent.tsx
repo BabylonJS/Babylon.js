@@ -5,7 +5,7 @@ import { type Observer } from "core/Misc/observable";
 import { type Scene } from "core/scene";
 import "core/Helpers/sceneHelpers";
 import { type Engine } from "core/Engines/engine";
-import { type FlowGraph } from "core/FlowGraph/flowGraph";
+import { type IKHRInteractivityImportResult } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 import { SceneContext } from "../../sceneContext";
 import { SerializationTools } from "../../serializationTools";
 import { LogEntry } from "../log/logComponent";
@@ -420,109 +420,93 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     }
 
     /**
-     * After loading a glTF file, check whether the scene has flow graphs loaded
-     * from KHR_interactivity (or any coordinator). If found, serialize the first
-     * graph and load it into the editor, replacing the current graph.
+     * Imports every canonical KHR_interactivity graph into the editor after the
+     * glTF loader has completed its awaited parse-only pass.
      * @param scene - the loaded scene
      * @param fileName - the original file name (for log messages)
      * @returns true if a flow graph was found and imported
      */
     private async _importFlowGraphsFromSceneAsync(scene: Scene, fileName: string): Promise<boolean> {
-        const { FlowGraphCoordinator } = await import("core/FlowGraph/flowGraphCoordinator");
-        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(scene);
-        if (!coordinators || coordinators.length === 0) {
+        const getImportResult = (globalThis as any).BABYLON?.GLTF2?.Loader?.Extensions?.GetKHRInteractivityImportResult as
+            ((scene: Scene) => IKHRInteractivityImportResult | undefined) | undefined;
+        const importResult = getImportResult?.(scene);
+        if (!importResult) {
             return false;
         }
 
-        // Find the first coordinator that has at least one flow graph.
-        const findGraph = (): { graph: FlowGraph; coordinator: (typeof coordinators)[0] } | null => {
-            for (const coordinator of coordinators) {
-                if (coordinator.flowGraphs.length > 0) {
-                    return { graph: coordinator.flowGraphs[0], coordinator };
+        const serializedGraphs = importResult.graphs.map((graphResult) => {
+            const serializedFlowGraph = graphResult.serializedFlowGraph ?? {
+                name: graphResult.graph.name,
+                rightHanded: true,
+                allBlocks: [],
+                executionContexts: [],
+            };
+            const sourceNodeGroups = new Map<number, typeof serializedFlowGraph.allBlocks>();
+            for (const block of serializedFlowGraph.allBlocks) {
+                const sourceNodeIndex = block.metadata?.khrInteractivity?.nodeIndex;
+                if (typeof sourceNodeIndex === "number") {
+                    const group = sourceNodeGroups.get(sourceNodeIndex) ?? [];
+                    group.push(block);
+                    sourceNodeGroups.set(sourceNodeIndex, group);
                 }
             }
-            return null;
-        };
-
-        // KHR_interactivity's onReady() is async and may not have finished
-        // parsing yet (the glTF loader does not await extension onReady
-        // promises).  Retry with short delays to let the parse microtasks
-        // complete.
-        let found = findGraph();
-        if (!found) {
-            for (let attempt = 0; attempt < 10; attempt++) {
-                // eslint-disable-next-line no-await-in-loop
-                await new Promise<void>((resolve) => setTimeout(resolve, 50));
-                found = findGraph();
-                if (found) {
-                    break;
+            const locations: { blockId: string; x: number; y: number; isCollapsed: boolean }[] = [];
+            const frames: any[] = [];
+            for (const [sourceNodeIndex, blocks] of sourceNodeGroups) {
+                const row = sourceNodeIndex * 220;
+                for (let role = 0; role < blocks.length; role++) {
+                    locations.push({
+                        blockId: blocks[role].uniqueId,
+                        x: role * 260,
+                        y: row,
+                        isCollapsed: false,
+                    });
+                }
+                if (blocks.length > 1) {
+                    const provenance = blocks[0].metadata.khrInteractivity;
+                    frames.push({
+                        x: -24,
+                        y: row - 36,
+                        width: blocks.length * 260 + 24,
+                        height: 190,
+                        color: [0.18, 0.36, 0.55],
+                        name: `${provenance.operation} · node ${sourceNodeIndex}`,
+                        isCollapsed: true,
+                        blocks: blocks.map((block) => block.uniqueId),
+                        comments: provenance.sourcePath,
+                    });
                 }
             }
-        }
-
-        if (!found) {
-            return false;
-        }
-
-        const { graph: targetGraph, coordinator: targetCoordinator } = found;
-
-        // Extract the pathConverter from a JsonPointerParser block before serializing.
-        // KHR_interactivity injects a GLTFPathToObjectConverter into every such block.
-        // This object is not serializable (contains closures), so we must pass it
-        // through directly to the re-parse step.
-        let pathConverter: any = null;
-        // Also extract glTF config from GLTFDataProvider blocks — the glTF object
-        // contains _babylonTransformNode / _babylonAnimationGroup references that
-        // are NOT serializable.  After re-parse, GLTFDataProvider blocks end up
-        // with empty nodes/animationGroups arrays.  We stash the live glTF here
-        // and re-inject it after deserialization.
-        let liveGLTF: any = null;
-        for (const block of targetGraph.getAllBlocks()) {
-            if (!pathConverter && block.getClassName() === "FlowGraphJsonPointerParserBlock" && (block.config as any)?.pathConverter) {
-                pathConverter = (block.config as any).pathConverter;
-            }
-            if (!liveGLTF && block.getClassName() === "FlowGraphGLTFDataProvider" && (block.config as any)?.glTF) {
-                liveGLTF = (block.config as any).glTF;
-            }
-            if (pathConverter && liveGLTF) {
-                break;
-            }
-        }
-        // Serialize the loaded graph, then deserialize it into the editor
-        const serialized: any = {};
-        targetGraph.serialize(serialized);
-
-        // Stop the coordinator so its graphs don't keep running in the background
-        targetCoordinator.dispose();
-
-        await SerializationTools.DeserializeAsync(serialized, this.props.globalState, scene, pathConverter);
-
-        // Re-inject the live glTF into GLTFDataProvider blocks so their nodes
-        // and animationGroups outputs contain the actual Babylon objects rather
-        // than empty arrays from the non-serializable config.
-        if (liveGLTF && this.props.globalState.flowGraph) {
-            for (const block of this.props.globalState.flowGraph.getAllBlocks()) {
-                if (block.getClassName() === "FlowGraphGLTFDataProvider") {
-                    (block.config as any).glTF = liveGLTF;
-                    // Re-compute outputs from the live glTF data
-                    const nodes = liveGLTF.nodes?.map((n: any) => n._babylonTransformNode) || [];
-                    const animationGroups = liveGLTF.animations?.map((a: any) => a._babylonAnimationGroup) || [];
-                    const nodesOutput = block.getDataOutput("nodes");
-                    const agOutput = block.getDataOutput("animationGroups");
-                    if (nodesOutput) {
-                        (nodesOutput as any)._defaultValue = nodes;
-                    }
-                    if (agOutput) {
-                        (agOutput as any)._defaultValue = animationGroups;
-                    }
-                }
-            }
-        }
+            (serializedFlowGraph as any).editorData = {
+                locations,
+                frames,
+                x: 0,
+                y: 0,
+                zoom: 1,
+            };
+            return serializedFlowGraph;
+        });
+        this.props.globalState.coordinator?.dispose();
+        await SerializationTools.DeserializeAsync(
+            {
+                _flowGraphs: serializedGraphs,
+                activeGraphIndex: importResult.document.defaultGraphIndex < 0 ? 0 : importResult.document.defaultGraphIndex,
+            },
+            this.props.globalState,
+            scene,
+            importResult.pathConverter
+        );
 
         this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
         this.props.globalState.onClearUndoStack.notifyObservers();
+        for (const diagnostic of [...importResult.document.diagnostics, ...importResult.graphs.flatMap((graph) => graph.diagnostics)]) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(
+                new LogEntry(`KHR_interactivity ${diagnostic.severity}: ${diagnostic.path}: ${diagnostic.message}`, diagnostic.severity === "error")
+            );
+        }
+        const executableGraphCount = importResult.graphs.filter((graph) => graph.serializedFlowGraph).length;
         this.props.globalState.onLogRequiredObservable.notifyObservers(
-            new LogEntry(`Imported flow graph from "${fileName}" (KHR_interactivity: ${targetGraph.getAllBlocks().length} blocks)`, false)
+            new LogEntry(`Imported ${importResult.graphs.length} KHR_interactivity graph(s) from "${fileName}" (${executableGraphCount} executable)`, false)
         );
         return true;
     }
@@ -541,7 +525,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const registeredFiles: string[] = [];
         try {
             const { Engine } = await import("core/Engines/engine");
-            const { SceneLoader } = await import("core/Loading/sceneLoader");
+            const { LoadSceneAsync } = await import("core/Loading/sceneLoader");
             const { FilesInputStore } = await import("core/Misc/filesInputStore");
 
             const canvas = this._canvasRef.current;
@@ -565,7 +549,19 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 }
             }
 
-            const scene = await SceneLoader.LoadAsync("file:", file.name, engine);
+            const scene = await LoadSceneAsync(file.name, engine, {
+                rootUrl: "file:",
+                pluginOptions: {
+                    gltf: {
+                        extensionOptions: {
+                            ["KHR_interactivity"]: {
+                                autoStart: false,
+                                parseOnly: true,
+                            },
+                        },
+                    },
+                },
+            });
 
             if (!scene || !scene.render) {
                 throw new Error("Failed to load scene from file");
