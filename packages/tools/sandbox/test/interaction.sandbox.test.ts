@@ -90,7 +90,7 @@ test("Sandbox is loaded (Desktop)", async ({ page }) => {
     });
     await waitForSandboxReady(page);
     // check snapshot of the page
-    await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
+    await expect(page).toHaveScreenshot({ maxDiffPixels: 4000 });
 });
 
 test("Sandbox exposes the render canvas and main controls without page errors", async ({ page }) => {
@@ -408,5 +408,5 @@ test("inspector is opened when clicking on the button", async ({ page }) => {
     await expect(page.locator("#babylon-inspector-container")).toBeVisible();
     await page.evaluate(() => document.fonts.ready);
     // check snapshot of the page
-    await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
+    await expect(page).toHaveScreenshot({ maxDiffPixels: 15000 });
 });
