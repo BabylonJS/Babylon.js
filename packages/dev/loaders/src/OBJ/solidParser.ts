@@ -921,7 +921,10 @@ export class SolidParser {
 
                 if (!this._materialNameFromObj) {
                     // Create a material with point cloud on
+                    scene._blockEntityCollection = !!assetContainer;
                     newMaterial = new StandardMaterial(Geometry.RandomId(), scene);
+                    newMaterial._parentContainer = assetContainer;
+                    scene._blockEntityCollection = false;
 
                     newMaterial.pointsCloud = true;
 
@@ -1019,7 +1022,14 @@ export class SolidParser {
                 vertexData.colors = this._handledMesh.colors;
             }
             //Set the data from the VertexBuffer to the current Mesh
-            vertexData.applyToMesh(babylonMesh);
+            const blockEntityCollection = scene._blockEntityCollection;
+            scene._blockEntityCollection = !!assetContainer;
+            try {
+                vertexData.applyToMesh(babylonMesh);
+                babylonMesh.geometry!._parentContainer = assetContainer;
+            } finally {
+                scene._blockEntityCollection = blockEntityCollection;
+            }
             if (this._loadingOptions.invertY) {
                 babylonMesh.scaling.y *= -1;
             }

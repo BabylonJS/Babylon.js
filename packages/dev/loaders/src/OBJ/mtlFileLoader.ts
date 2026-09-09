@@ -2,6 +2,8 @@ import { type Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { Texture } from "core/Materials/Textures/texture";
 import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Constants } from "core/Engines/constants";
+import { Deferred } from "core/Misc/deferred";
 
 import { type Scene } from "core/scene";
 import { type AssetContainer } from "core/assetContainer";
@@ -29,10 +31,23 @@ export class MTLFileLoader {
      * @param data defines the mtl data to parse
      * @param rootUrl defines the rooturl to use in order to load relative dependencies
      * @param assetContainer defines the asset container to store the material in (can be null)
+     * @param invertTextureY defines whether referenced textures are inverted on the Y axis
+     * @param materialNames defines which materials to load, or all materials if omitted
+     * @param textureLoadPromises collects texture loading promises and starts delayed textures when provided; null or undefined preserves delayed loading
+     * @returns a promise that waits for textureLoadPromises, or null when textureLoadPromises is null or undefined
      */
-    public parseMTL(scene: Scene, data: string | ArrayBuffer, rootUrl: string, assetContainer: Nullable<AssetContainer>): void {
+    public parseMTL(
+        scene: Scene,
+        data: string | ArrayBuffer,
+        rootUrl: string,
+        assetContainer: Nullable<AssetContainer>,
+        invertTextureY = MTLFileLoader.INVERT_TEXTURE_Y,
+        materialNames?: ReadonlySet<string>,
+        textureLoadPromises?: Nullable<Promise<void>[]>
+    ): Nullable<Promise<void>> {
         if (data instanceof ArrayBuffer) {
-            return;
+            // eslint-disable-next-line github/no-then
+            return textureLoadPromises ? Promise.all(textureLoadPromises).then(() => undefined) : null;
         }
 
         //Split the lines from the file
@@ -68,6 +83,10 @@ export class MTLFileLoader {
                 if (material) {
                     //Add the previous material in the material array.
                     this.materials.push(material);
+                }
+                if (materialNames && !materialNames.has(value)) {
+                    material = null;
+                    continue;
                 }
                 //Create a new material.
                 // value is the name of the material read in the mtl file
@@ -116,14 +135,14 @@ export class MTLFileLoader {
             } else if (key === "map_ka" && material) {
                 // ambient texture map with a loaded image
                 //We must first get the folder of the image
-                material.ambientTexture = MTLFileLoader._GetTexture(rootUrl, value, scene);
+                material.ambientTexture = MTLFileLoader._GetTexture(rootUrl, value, scene, assetContainer, invertTextureY, textureLoadPromises);
             } else if (key === "map_kd" && material) {
                 // Diffuse texture map with a loaded image
-                material.diffuseTexture = MTLFileLoader._GetTexture(rootUrl, value, scene);
+                material.diffuseTexture = MTLFileLoader._GetTexture(rootUrl, value, scene, assetContainer, invertTextureY, textureLoadPromises);
             } else if (key === "map_ks" && material) {
                 // Specular texture map with a loaded image
                 //We must first get the folder of the image
-                material.specularTexture = MTLFileLoader._GetTexture(rootUrl, value, scene);
+                material.specularTexture = MTLFileLoader._GetTexture(rootUrl, value, scene, assetContainer, invertTextureY, textureLoadPromises);
             } else if (key === "map_ns") {
                 //Specular
                 //Specular highlight component
@@ -143,13 +162,13 @@ export class MTLFileLoader {
                     values.splice(bumpMultiplierIndex, 2); // remove
                 }
 
-                material.bumpTexture = MTLFileLoader._GetTexture(rootUrl, values.join(" "), scene);
+                material.bumpTexture = MTLFileLoader._GetTexture(rootUrl, values.join(" "), scene, assetContainer, invertTextureY, textureLoadPromises);
                 if (material.bumpTexture && bumpMultiplier !== null) {
                     material.bumpTexture.level = parseFloat(bumpMultiplier);
                 }
             } else if (key === "map_d" && material) {
                 // The dissolve of the material
-                material.opacityTexture = MTLFileLoader._GetTexture(rootUrl, value, scene);
+                material.opacityTexture = MTLFileLoader._GetTexture(rootUrl, value, scene, assetContainer, invertTextureY, textureLoadPromises);
 
                 //Options for illumination
             } else if (key === "illum") {
@@ -185,6 +204,9 @@ export class MTLFileLoader {
         if (material) {
             this.materials.push(material);
         }
+
+        // eslint-disable-next-line github/no-then
+        return textureLoadPromises ? Promise.all(textureLoadPromises).then(() => undefined) : null;
     }
 
     /**
@@ -196,9 +218,19 @@ export class MTLFileLoader {
      * @param rootUrl The root url to load from
      * @param value The value stored in the mtl
      * @param scene
+     * @param assetContainer The asset container to store the texture in
+     * @param invertTextureY Whether to invert the texture on the Y axis
+     * @param textureLoadPromises The promises to wait for when loading asynchronously
      * @returns The Texture
      */
-    private static _GetTexture(rootUrl: string, value: string, scene: Scene): Nullable<Texture> {
+    private static _GetTexture(
+        rootUrl: string,
+        value: string,
+        scene: Scene,
+        assetContainer: Nullable<AssetContainer>,
+        invertTextureY: boolean,
+        textureLoadPromises?: Nullable<Promise<void>[]>
+    ): Nullable<Texture> {
         if (!value) {
             return null;
         }
@@ -222,6 +254,29 @@ export class MTLFileLoader {
             url += value;
         }
 
-        return new Texture(url, scene, false, MTLFileLoader.INVERT_TEXTURE_Y);
+        const deferred = textureLoadPromises ? new Deferred<void>() : null;
+        if (deferred) {
+            textureLoadPromises!.push(deferred.promise);
+        }
+
+        const blockEntityCollection = scene._blockEntityCollection;
+        scene._blockEntityCollection = !!assetContainer;
+        let texture: Texture;
+        try {
+            texture = new Texture(url, scene, {
+                invertY: invertTextureY,
+                onLoad: deferred?.resolve,
+                onError: deferred ? (message, exception) => deferred.reject(new Error(`${url}: ${exception?.message || message || "Failed to load texture"}`)) : undefined,
+            });
+            texture._parentContainer = assetContainer;
+        } finally {
+            scene._blockEntityCollection = blockEntityCollection;
+        }
+
+        // A container is not rendered yet, so delayed loading cannot wait for a material bind.
+        if (deferred && texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
+            texture.delayLoad();
+        }
+        return texture;
     }
 }
