@@ -257,10 +257,8 @@ export function RegisterNativeEngineCubeTexture(): void {
         return texture;
     };
 
-    // Native does not use the WebGL DDS loadData path that Web createPrefilteredCubeTexture expects.
-    // Wire the prefiltered contract onto createCubeTexture so onLoad receives the texture, _source is
-    // CubePrefiltered, and an empty polynomial is installed when createPolynomials is false (avoids
-    // later unsupported Native cube-face readback).
+    // Native has no WebGL DDS loadData. Initialize prefiltered state before loading so observers
+    // cannot trigger unsupported cube-face readback when polynomial generation is disabled.
     ThinNativeEngine.prototype.createPrefilteredCubeTexture = function (
         rootUrl: string,
         scene: Nullable<Scene>,
@@ -272,16 +270,17 @@ export function RegisterNativeEngineCubeTexture(): void {
         forcedExtension: any = null,
         createPolynomials: boolean = true
     ): InternalTexture {
-        const texture = this.createCubeTexture(
+        const texture = new InternalTexture(this, InternalTextureSource.CubePrefiltered);
+        if (!createPolynomials) {
+            texture._sphericalPolynomial = new SphericalPolynomial();
+        }
+
+        return this.createCubeTexture(
             rootUrl,
             scene,
             null,
             false,
             () => {
-                if (!createPolynomials) {
-                    texture._sphericalPolynomial = texture._sphericalPolynomial ?? new SphericalPolynomial();
-                }
-                texture._source = InternalTextureSource.CubePrefiltered;
                 if (onLoad) {
                     onLoad(texture);
                 }
@@ -291,9 +290,8 @@ export function RegisterNativeEngineCubeTexture(): void {
             forcedExtension,
             createPolynomials,
             lodScale,
-            lodOffset
+            lodOffset,
+            texture
         );
-
-        return texture;
     };
 }
