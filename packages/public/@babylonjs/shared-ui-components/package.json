@@ -4,6 +4,17 @@
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
+    "exports": {
+        "./lite": {
+            "types": "./lite/index.d.ts",
+            "default": "./lite/index.js"
+        },
+        "./*": {
+            "types": "./*.d.ts",
+            "default": "./*.js"
+        },
+        "./package.json": "./package.json"
+    },
     "files": [
         "**/*.js",
         "**/*.d.ts",
@@ -21,16 +32,23 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
+        "@babylonjs/lite": "1.27.0",
         "@dev/build-tools": "^1.0.0",
         "@dev/shared-ui-components": "^1.0.0"
     },
     "peerDependencies": {
+        "@babylonjs/lite": "^1.27.0",
         "@types/dagre": "^0.7.47",
         "dagre": "^0.8.5",
         "react": "^18.2.0",
         "react-dnd": "15.0.1",
         "react-dnd-touch-backend": "15.0.1",
         "react-dom": "^18.2.0"
+    },
+    "peerDependenciesMeta": {
+        "@babylonjs/lite": {
+            "optional": true
+        }
     },
     "keywords": [
         "3D",

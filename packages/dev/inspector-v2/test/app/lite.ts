@@ -4,19 +4,24 @@ import {
     createBox,
     createDefaultTextData,
     createDefaultCamera,
+    createDirectionalLight,
     createEngine,
     createGridSpriteAtlas,
     createHemisphericLight,
+    createPcfDirectionalShadowGenerator,
     createPbrMaterial,
+    createPointLight,
     createSceneContext,
     createSolidTexture2D,
     createSphere,
     createSprite2DLayer,
     createSpriteRenderer,
     createStandardMaterial,
+    createSpotLight,
     createSurface,
     createTextLayer,
     createTextRenderer,
+    createTransformNode,
     disposeDefaultTextData,
     disposeEngine,
     disposeScene,
@@ -27,6 +32,7 @@ import {
     registerScene,
     registerSpriteRenderer,
     registerTextRenderer,
+    setShadowTaskCasterMeshes,
     startEngine,
     stopEngine,
 } from "@babylonjs/lite";
@@ -73,13 +79,33 @@ sphere.position.x = 0.75;
 const smallBox = createBox(engine, 0.5);
 smallBox.name = "Small Red Box";
 smallBox.material = standardMaterial;
-smallBox.position.set(-0.75, 1, 0);
+smallBox.position.set(0, 1, 0);
 
 addToScene(primaryScene, box);
 addToScene(primaryScene, sphere);
-addToScene(primaryScene, smallBox);
-addToScene(primaryScene, createHemisphericLight([0, 1, 0], 0.9));
-createDefaultCamera(primaryScene);
+const boxGroup = createTransformNode("Box Group", -0.75);
+boxGroup.children.push(smallBox);
+smallBox.parent = boxGroup;
+addToScene(primaryScene, boxGroup);
+
+const hemisphericLight = createHemisphericLight([0, 1, 0], 0.55);
+const directionalLight = createDirectionalLight([-0.5, -1, 0.25], 0.45);
+directionalLight.position.set(4, 6, -3);
+const pointLight = createPointLight([0, 2, -2], 0.15);
+const spotLight = createSpotLight([0, 4, -4], [0, -0.5, 1], Math.PI / 3, 2, 0.15);
+addToScene(primaryScene, hemisphericLight);
+addToScene(primaryScene, directionalLight);
+addToScene(primaryScene, pointLight);
+addToScene(primaryScene, spotLight);
+
+const shadowGenerator = createPcfDirectionalShadowGenerator(engine, directionalLight, { mapSize: 512 });
+directionalLight.shadowGenerator = shadowGenerator;
+primaryScene.shadowGenerators.push(shadowGenerator);
+setShadowTaskCasterMeshes(shadowGenerator, [box, sphere, smallBox]);
+sphere.receiveShadows = true;
+
+const camera = createDefaultCamera(primaryScene);
+camera.name = "Main Camera";
 
 await registerScene(primaryScene);
 
@@ -129,6 +155,7 @@ Object.assign(globalThis, {
     liteEngine: engine,
     liteMaterials: [standardMaterial, pbrMaterial],
     liteMeshes: [box, sphere, smallBox],
+    liteLights: [hemisphericLight, directionalLight, pointLight, spotLight],
     litePrimaryScene: primaryScene,
     liteRegisterScene: registerScene,
     liteSecondarySurface: secondarySurface,
@@ -137,6 +164,8 @@ Object.assign(globalThis, {
     liteTextRenderer: textRenderer,
     liteTextRendererLayer: overlayTextLayer,
     liteTextures: [redTexture, blueTexture],
+    liteTransformNode: boxGroup,
+    liteShadowGenerator: shadowGenerator,
 });
 
 window.addEventListener(
