@@ -1896,4 +1896,38 @@ describe("MultiTexture lazy registration", () => {
         expect(vi.mocked(RegisterEnginesWebGPUExtensionsEngineTexture2DArrayImageSource)).toHaveBeenCalledTimes(1);
         mt.dispose();
     });
+
+    it("gives a pure ThinWebGPUEngine the image-source method on first construction", async () => {
+        // Un-mock the two .pure registration modules and reload the addon from a fresh module
+        // registry, so this test exercises the REAL tree-shaken-core path: nothing is registered
+        // at import time, and a pure WebGPU engine only receives
+        // updateTextureArrayLayerFromImageSource once MultiTexture is constructed.
+        vi.doUnmock("core/Engines/Extensions/engine.texture2DArrayImageSource.pure");
+        vi.doUnmock("core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource.pure");
+        vi.resetModules();
+
+        // Dynamic import on purpose: both bindings must come from the same fresh registry so the
+        // registration patches the very class we assert on.
+        const { ThinWebGPUEngine } = await import("core/Engines/thinWebGPUEngine");
+        const { MultiTexture: PureMultiTexture } = await import("../../../src/multiTexture/multiTexture");
+
+        Reflect.deleteProperty(ThinWebGPUEngine.prototype, "updateTextureArrayLayerFromImageSource");
+        try {
+            // Import alone must be inert: a pure build has no import-time engine mutation.
+            expect(typeof ThinWebGPUEngine.prototype.updateTextureArrayLayerFromImageSource).toBe("undefined");
+
+            const scene = makeScene({ isWebGPU: true });
+            let resolveLoad!: () => void;
+            const loaded = new Promise<void>((resolve) => (resolveLoad = resolve));
+            const mt = new PureMultiTexture("mt", ["a.png"], scene, { width: 8, height: 8, onLoad: () => resolveLoad() }) as MockMultiTexture;
+            vi.spyOn(mt.onLoadObservable, "notifyObservers").mockImplementation(() => true);
+            await loaded;
+
+            // First construction lazily patches the pure engine, no side-effect import required.
+            expect(typeof ThinWebGPUEngine.prototype.updateTextureArrayLayerFromImageSource).toBe("function");
+            mt.dispose();
+        } finally {
+            Reflect.deleteProperty(ThinWebGPUEngine.prototype, "updateTextureArrayLayerFromImageSource");
+        }
+    });
 });
