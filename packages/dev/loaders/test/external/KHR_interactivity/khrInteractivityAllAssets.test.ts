@@ -47,15 +47,24 @@ async function _performRequiredInteractions(page: Page, descriptor: ITestDescrip
             if (!mesh) {
                 throw new Error(`Required interaction target "${interaction.targetNodeName}" (node ${interaction.targetNodeId}) was not loaded.`);
             }
+            if (interaction.expectation === "mustNotFire") {
+                if (interaction.type === "hover" && !mesh.pointerOverDisableMeshTesting) {
+                    throw new Error(`Expected hover target "${interaction.targetNodeName}" to be excluded from hover testing.`);
+                }
+                if (interaction.type === "select" && mesh.isPickable) {
+                    throw new Error(`Expected select target "${interaction.targetNodeName}" to be non-pickable.`);
+                }
+                continue;
+            }
 
             if (interaction.type === "hover") {
-                scene.setPointerOverMesh(mesh.pointerOverDisableMeshTesting ? null : mesh, 1);
+                scene.setPointerOverMesh(mesh, 1);
                 await new Promise<void>((resolve) => setTimeout(resolve, 0));
                 scene.setPointerOverMesh(null, 1);
             } else {
                 const pickInfo = new BABYLON.PickingInfo();
-                pickInfo.hit = mesh.isPickable;
-                pickInfo.pickedMesh = mesh.isPickable ? mesh : null;
+                pickInfo.hit = true;
+                pickInfo.pickedMesh = mesh;
                 pickInfo.pickedPoint = BABYLON.Vector3.Zero();
                 pickInfo.ray = new BABYLON.Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.Forward());
                 const pointerInfo = new BABYLON.PointerInfo(BABYLON.PointerEventTypes.POINTERPICK, { pointerId: 1 } as PointerEvent, pickInfo);
@@ -387,7 +396,7 @@ const KnownFailingAssets: Record<string, string> = {
         "Pre-dates the importer work: it reproduces on the commit before it, and the standalone animation/start and pointer/interpolate assets both pass.",
 };
 
-test.describe("KHR_Interactivity all assets", () => {
+test.describe("Pinned Khronos pre-ratification KHR_interactivity compatibility corpus", () => {
     test.describe.configure({ mode: "parallel" });
     test.setTimeout(120000);
     test.skip(!HasAssetRepository, "Run `npm run test:khr-interactivity` to fetch and test the pinned Khronos assets.");

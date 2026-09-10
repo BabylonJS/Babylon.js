@@ -82,6 +82,10 @@ describe("Node Render Graph MCP Server – Registry Drift", () => {
         capturedInputs = [];
         capturedOutputs = [];
 
+        const originalCreateEffect = engine.createEffect;
+        engine.createEffect = (() => {
+            throw new Error("GPU effect creation disabled by registry drift guard");
+        }) as typeof engine.createEffect;
         const savedDescriptors = new Map<string, PropertyDescriptor | undefined>();
         for (const method of TASK_CREATION_METHODS) {
             savedDescriptors.set(method, Object.getOwnPropertyDescriptor(ctor.prototype, method));
@@ -94,6 +98,7 @@ describe("Node Render Graph MCP Server – Registry Drift", () => {
         } catch {
             // Inline task creation may still throw after all ports are registered; ports are already captured.
         } finally {
+            engine.createEffect = originalCreateEffect;
             for (const method of TASK_CREATION_METHODS) {
                 const descriptor = savedDescriptors.get(method);
                 if (descriptor) {
