@@ -579,9 +579,29 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
         this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
         this.props.globalState.onClearUndoStack.notifyObservers();
-        for (const diagnostic of [...importResult.document.diagnostics, ...importResult.graphs.flatMap((graph) => graph.diagnostics)]) {
+        for (const diagnostic of importResult.document.diagnostics) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(
                 new LogEntry(`KHR_interactivity ${diagnostic.severity}: ${diagnostic.path}: ${diagnostic.message}`, diagnostic.severity === "error")
+            );
+        }
+        let compatibilityDiagnosticCount = 0;
+        for (const graphResult of importResult.graphs) {
+            if (graphResult.serializedFlowGraph) {
+                compatibilityDiagnosticCount += graphResult.diagnostics.length;
+                continue;
+            }
+            for (const diagnostic of graphResult.diagnostics) {
+                this.props.globalState.onLogRequiredObservable.notifyObservers(
+                    new LogEntry(`KHR_interactivity ${diagnostic.severity}: ${diagnostic.path}: ${diagnostic.message}`, diagnostic.severity === "error")
+                );
+            }
+        }
+        if (compatibilityDiagnosticCount > 0) {
+            this.props.globalState.onLogRequiredObservable.notifyObservers(
+                new LogEntry(
+                    `KHR_interactivity compatibility mode ignored ${compatibilityDiagnosticCount} non-blocking source conformance issue(s) while importing executable graphs.`,
+                    false
+                )
             );
         }
         const executableGraphCount = importResult.graphs.filter((graph) => graph.serializedFlowGraph).length;

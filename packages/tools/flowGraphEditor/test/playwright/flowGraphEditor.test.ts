@@ -1477,7 +1477,8 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect(unsupportedNode).toContainText("result");
         await expect(unsupportedNode).toContainText("glTF");
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Unknown core operation "core/doesNotExist"');
-        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('"values" must contain at least one property when present');
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("KHR_interactivity compatibility mode ignored 1 non-blocking source conformance issue(s)");
+        await expect(page.getByRole("log", { name: "Flow graph log" })).not.toContainText('"values" must contain at least one property when present');
 
         await fge.selectGraphTab("Composite");
         const pointerFrameTitle = page.getByText("pointer/get · glTF node 1", { exact: true });
