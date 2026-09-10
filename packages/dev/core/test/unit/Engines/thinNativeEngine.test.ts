@@ -1,8 +1,12 @@
 import { ThinNativeEngine } from "core/Engines/thinNativeEngine";
 import { RegisterNativeEngineCubeTexture } from "core/Engines/Native/Extensions/nativeEngine.cubeTexture.pure";
+import { CubeTexture } from "core/Materials/Textures/cubeTexture";
+import "core/Materials/Textures/baseTexture.polynomial";
 import { InternalTextureSource, type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { type IHardwareTextureWrapper } from "core/Materials/Textures/hardwareTextureWrapper";
-import { describe, expect, it, vi } from "vitest";
+import { SphericalPolynomial } from "core/Maths/sphericalPolynomial";
+import { CubeMapToSphericalPolynomialTools } from "core/Misc/HighDynamicRange/cubemapToSphericalPolynomial";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 type NativeFrameRequester = {
     requestAnimationFrame: (callback: () => void) => number;
@@ -153,6 +157,10 @@ describe("ThinNativeEngine", () => {
     });
 
     describe("cube textures", () => {
+        afterEach(() => {
+            vi.restoreAllMocks();
+        });
+
         type NativeCubeEngine = ThinNativeEngine & {
             _engine: {
                 loadCubeTexture: ReturnType<typeof vi.fn>;
@@ -257,6 +265,47 @@ describe("ThinNativeEngine", () => {
             expect(onLoad).toHaveBeenCalledWith(texture);
             expect(texture.width).toBe(64);
             expect(texture.baseWidth).toBe(64);
+        });
+
+        it.each([false, true])("exposes complete prefiltered state to load observers (createPolynomials=%s)", async (createPolynomials) => {
+            const engine = createCubeEngine(64);
+            const coefficients = Array.from({ length: 27 }, (_, index) => index + 1);
+            engine._engine.loadCubeTexture.mockImplementation((_texture, _data, _generateMipMaps, _invertY, _srgb, onSuccess: (sp: ArrayLike<number>) => void) => {
+                onSuccess(coefficients);
+            });
+            const computePolynomial = vi.spyOn(CubeMapToSphericalPolynomialTools, "ConvertCubeMapTextureToSphericalPolynomial").mockReturnValue(null);
+            const onLoad = vi.fn();
+            const cube = new CubeTexture("prefiltered.ktx2", engine, { prefiltered: true, createPolynomials, onLoad });
+            const texture = cube.getInternalTexture()!;
+            const observer = vi.fn((loadedCube: CubeTexture) => ({
+                source: loadedCube.getInternalTexture()?._source,
+                ready: loadedCube.getInternalTexture()?.isReady,
+                polynomial: loadedCube.sphericalPolynomial,
+            }));
+            cube.onLoadObservable.add(observer);
+
+            await flushAsync();
+
+            expect(observer).toHaveBeenCalledTimes(1);
+            expect(observer.mock.calls[0][0]).toBe(cube);
+            const observed = observer.mock.results[0].value;
+            expect(observed).toEqual({
+                source: InternalTextureSource.CubePrefiltered,
+                ready: true,
+                polynomial: expect.any(SphericalPolynomial),
+            });
+            if (createPolynomials) {
+                expect(observed.polynomial?.x.asArray()).toEqual([1, 2, 3]);
+            } else {
+                expect(observed.polynomial).toEqual(new SphericalPolynomial());
+            }
+            expect(computePolynomial).not.toHaveBeenCalled();
+            expect(texture._sphericalPolynomialPromise).toBeNull();
+            expect(onLoad).toHaveBeenCalledTimes(1);
+            expect(onLoad).toHaveBeenCalledWith(texture);
+            expect(observer.mock.invocationCallOrder[0]).toBeLessThan(onLoad.mock.invocationCallOrder[0]);
+            expect(texture.onLoadedObservable.hasObservers()).toBe(false);
+            expect(engine._internalTexturesCache).toEqual([texture]);
         });
     });
 });
