@@ -431,6 +431,31 @@ describe("Babylon Animation Group", function () {
             expect((context._getGlobalContextVariable("animationGroupObserverSets", new Map()) as Map<number, unknown>).has(animationGroup.uniqueId)).toBe(false);
         });
 
+        it("preserves the originating done flow for a generic stop block", () => {
+            const scene = new Scene(subject);
+            const node = new TransformNode("node0", scene);
+            const animation = new Animation("animation", "position.x", 60, Animation.ANIMATIONTYPE_FLOAT);
+            animation.setKeys([
+                { frame: 0, value: 0 },
+                { frame: 60, value: 1 },
+            ]);
+            const animationGroup = new AnimationGroup("animationGroup0", scene);
+            animationGroup.addTargetedAnimation(animation, node);
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const context = coordinator.createGraph().createContext();
+            const play = new FlowGraphPlayAnimationBlock();
+            play.animationGroup.setValue(animationGroup, context);
+            const done = vi.spyOn(play.done, "_activateSignal");
+            play._execute(context);
+            const stop = new FlowGraphStopAnimationBlock();
+            stop.animationGroup.setValue(animationGroup, context);
+
+            stop._execute(context);
+
+            expect(done).toHaveBeenCalledTimes(1);
+            expect(context.hasPendingBlocks).toBe(false);
+        });
+
         it("keeps other running animations tracked when one animation is stopped", () => {
             const scene = new Scene(subject);
             const coordinator = new FlowGraphCoordinator({ scene });

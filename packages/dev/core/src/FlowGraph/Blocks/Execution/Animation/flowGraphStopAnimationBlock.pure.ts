@@ -177,7 +177,8 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
         const currentlyRunning = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
         const index = currentlyRunning.indexOf(animationGroup.uniqueId);
         if (index !== -1) {
-            const owner = RemoveFlowGraphAnimationGroupObservers(context, animationGroup);
+            const suppressAnimationEnd = !!this.config?.skipOnAnimationEnd;
+            const owner = suppressAnimationEnd ? RemoveFlowGraphAnimationGroupObservers(context, animationGroup) : undefined;
             owner?._cleanupAfterExternalStop(context, animationGroup);
             if (virtualStopFrame !== undefined) {
                 animationGroup.setVirtualCurrentFrame(virtualStopFrame);
@@ -186,13 +187,14 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
             // starting block's `done` flow. When an animation is
             // stopped (animation/stop or animation/stopAt) the previously associated `done` flows MUST NOT be
             // activated; only animation/stopAt's own `done` flow (fired from _executeOnTick) should run.
-            if (this.config?.skipOnAnimationEnd) {
+            if (suppressAnimationEnd) {
                 animationGroup.stop(true);
             } else {
                 animationGroup.stop();
             }
-            if (!owner) {
-                currentlyRunning.splice(index, 1);
+            const remainingIndex = currentlyRunning.indexOf(animationGroup.uniqueId);
+            if (remainingIndex !== -1) {
+                currentlyRunning.splice(remainingIndex, 1);
                 context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunning);
             }
         } else {
