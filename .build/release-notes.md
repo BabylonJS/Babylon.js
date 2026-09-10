@@ -1,36 +1,37 @@
 
 ### Core
 
-- Fluid renderer: add opt-in per-particle size support - by [tini2n](https://github.com/tini2n) ([#18863](https://github.com/BabylonJS/Babylon.js/pull/18863))
-- Feat: Add white balance (Kelvin temperature + tint) to image processing - by [raymondyfei](https://github.com/raymondyfei) ([#18855](https://github.com/BabylonJS/Babylon.js/pull/18855))
-- Fix: IBL Shadows silent failure on Adreno mobile GPUs - by [raymondyfei](https://github.com/raymondyfei) ([#18865](https://github.com/BabylonJS/Babylon.js/pull/18865))
-- Fix wgsl output for PowBlock and TriPlanarBlock - by [BarthPaleologue](https://github.com/BarthPaleologue) ([#18869](https://github.com/BabylonJS/Babylon.js/pull/18869))
-- Fix OpenPBR backend consistency - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#18861](https://github.com/BabylonJS/Babylon.js/pull/18861))
-- Harden experimental WebXR support for WebGPU - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18858](https://github.com/BabylonJS/Babylon.js/pull/18858))
-- Fix late notifications for Observable<void> - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#18856](https://github.com/BabylonJS/Babylon.js/pull/18856))
-- Add dynamic WebXR viewport scaling - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18851](https://github.com/BabylonJS/Babylon.js/pull/18851))
-- Respect XRInputSource skipRendering - by [RaananW](https://github.com/RaananW) ([#18849](https://github.com/BabylonJS/Babylon.js/pull/18849))
-- Add WebXR composition layer controls and limits - by [RaananW](https://github.com/RaananW) ([#18848](https://github.com/BabylonJS/Babylon.js/pull/18848))
-- Add WebXR tracked sources support - by [RaananW](https://github.com/RaananW) ([#18844](https://github.com/BabylonJS/Babylon.js/pull/18844))
-- Add WebXR depth sensing lifecycle controls - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18842](https://github.com/BabylonJS/Babylon.js/pull/18842))
-- Add advanced WebXR controller haptics - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18843](https://github.com/BabylonJS/Babylon.js/pull/18843))
+- Add OpenUSD WebAssembly scene loader - [_New Feature_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18882](https://github.com/BabylonJS/Babylon.js/pull/18882))
+- Add object ID geometry textures - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18879](https://github.com/BabylonJS/Babylon.js/pull/18879))
+- Add opt-out for iOS ringer switch audio workaround - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18886](https://github.com/BabylonJS/Babylon.js/pull/18886))
+- WebGPU: key the leftover uniform buffer slots on the draw context, not on draw order - by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18880](https://github.com/BabylonJS/Babylon.js/pull/18880))
+- Feat: Add IBL Shadows support to ShadowOnlyMaterial - [_New Feature_] by [raymondyfei](https://github.com/raymondyfei) ([#18873](https://github.com/BabylonJS/Babylon.js/pull/18873))
+
+### GUI
+
+- fixes Bounty #9: Add FlexPanel and em/rem GUI units - by [Yabuku-xD](https://github.com/Yabuku-xD) ([#18881](https://github.com/BabylonJS/Babylon.js/pull/18881))
 
 ### Inspector
 
-- Feat: Add white balance (Kelvin temperature + tint) to image processing - by [raymondyfei](https://github.com/raymondyfei) ([#18855](https://github.com/BabylonJS/Babylon.js/pull/18855))
+- Add Gaussian splatting stream diagnostics to Inspector V2 - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18885](https://github.com/BabylonJS/Babylon.js/pull/18885))
+- Feat: HDR output & cloudiness for SkyMaterial - by [raymondyfei](https://github.com/raymondyfei) ([#18897](https://github.com/BabylonJS/Babylon.js/pull/18897))
+- Add Inspector v2 Explorer contribution APIs - by [ryantrem](https://github.com/ryantrem) ([#18898](https://github.com/BabylonJS/Babylon.js/pull/18898))
+- Add initial Babylon Lite support to Inspector v2 - [_New Feature_] by [ryantrem](https://github.com/ryantrem) ([#18889](https://github.com/BabylonJS/Babylon.js/pull/18889))
 
 ### Loaders
 
-- Allow URL preprocessing to handle parent-relative glTF resources - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#18854](https://github.com/BabylonJS/Babylon.js/pull/18854))
+- Add Gaussian splatting stream diagnostics to Inspector V2 - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18885](https://github.com/BabylonJS/Babylon.js/pull/18885))
+- Add OpenUSD WebAssembly scene loader - [_New Feature_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18882](https://github.com/BabylonJS/Babylon.js/pull/18882))
 
 ### Materials
 
-- Feat: Add white balance (Kelvin temperature + tint) to image processing - by [raymondyfei](https://github.com/raymondyfei) ([#18855](https://github.com/BabylonJS/Babylon.js/pull/18855))
+- Feat: HDR output & cloudiness for SkyMaterial - by [raymondyfei](https://github.com/raymondyfei) ([#18897](https://github.com/BabylonJS/Babylon.js/pull/18897))
+- Feat: Add IBL Shadows support to ShadowOnlyMaterial - [_New Feature_] by [raymondyfei](https://github.com/raymondyfei) ([#18873](https://github.com/BabylonJS/Babylon.js/pull/18873))
+
+### Node Render Graph Editor
+
+- Add object ID geometry textures - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18879](https://github.com/BabylonJS/Babylon.js/pull/18879))
 
 ### Sandbox
 
-- Fix Sandbox camera query controls - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#18860](https://github.com/BabylonJS/Babylon.js/pull/18860))
-
-### Smart Filters
-
-- Ensure SFE preview grid returns after solid backgrounds - [_Bug Fix_] by [AmoebaChant](https://github.com/AmoebaChant) ([#18852](https://github.com/BabylonJS/Babylon.js/pull/18852))
+- Add OpenUSD WebAssembly scene loader - [_New Feature_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18882](https://github.com/BabylonJS/Babylon.js/pull/18882))
