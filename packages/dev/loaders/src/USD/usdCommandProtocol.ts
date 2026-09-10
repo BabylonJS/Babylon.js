@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 export const COMMAND_MAGIC = 0x42445355;
-export const PROTOCOL_VERSION = 4;
+export const PROTOCOL_VERSION = 5;
 export const MISSING_OFFSET = 0xffffffff;
 
 export const enum Command {
@@ -48,6 +48,20 @@ export const enum MaterialFlags {
     AlphaBlend = 1 << 2,
 }
 
+export const enum TextureOutputChannel {
+    R = 0,
+    G = 1,
+    B = 2,
+    A = 3,
+    RGB = 4,
+}
+
+export const enum USDTextureColorSpace {
+    Auto = 0,
+    Raw = 1,
+    SRGB = 2,
+}
+
 export const enum MeshFlags {
     DoubleSided = 1 << 0,
     LeftHanded = 1 << 1,
@@ -74,9 +88,9 @@ function expectedPayloadLength(opcode: Command): number {
         case Command.Scene:
             return 12;
         case Command.Texture:
-            return 40;
+            return 48;
         case Command.Material:
-            return 76;
+            return 96;
         case Command.TransformNode:
         case Command.Skeleton:
             return 20;

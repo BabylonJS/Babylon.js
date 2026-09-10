@@ -1,0 +1,111 @@
+#usda 1.0
+(
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+
+def Xform "World"
+{
+    def Scope "Materials"
+    {
+        def Material "Packed"
+        {
+            token outputs:surface.connect = </World/Materials/Packed/Surface.outputs:surface>
+
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                float inputs:metallic = 0.2
+                float inputs:metallic.connect = </World/Materials/Packed/Texture.outputs:b>
+                float inputs:roughness = 0.3
+                float inputs:roughness.connect = </World/Materials/Packed/Texture.outputs:g>
+                token outputs:surface
+            }
+
+            def Shader "Texture"
+            {
+                uniform token info:id = "UsdUVTexture"
+                asset inputs:file = @texture.png@
+                token inputs:sourceColorSpace = "sRGB"
+                float4 inputs:scale = (0.25, 0.5, 0.75, 1)
+                float4 inputs:bias = (0, 0, 0, 0)
+                token inputs:wrapS = "repeat"
+                token inputs:wrapT = "mirror"
+                float outputs:b
+                float outputs:g
+            }
+        }
+
+        def Material "Separate"
+        {
+            token outputs:surface.connect = </World/Materials/Separate/Surface.outputs:surface>
+
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                float inputs:metallic = 0.1
+                float inputs:metallic.connect = </World/Materials/Separate/Metal.outputs:r>
+                float inputs:roughness = 0.2
+                float inputs:roughness.connect = </World/Materials/Separate/Rough.outputs:r>
+                float inputs:occlusion.connect = </World/Materials/Separate/AO.outputs:r>
+                token outputs:surface
+            }
+
+            def Shader "Metal"
+            {
+                uniform token info:id = "UsdUVTexture"
+                asset inputs:file = @texture.png@
+                token inputs:sourceColorSpace = "raw"
+                float4 inputs:scale = (0.2, 1, 1, 1)
+                float4 inputs:bias = (0, 0, 0, 0)
+                float outputs:r
+            }
+
+            def Shader "Rough"
+            {
+                uniform token info:id = "UsdUVTexture"
+                asset inputs:file = @texture.png@
+                token inputs:sourceColorSpace = "raw"
+                float4 inputs:scale = (0.3, 1, 1, 1)
+                float4 inputs:bias = (0.1, 0, 0, 0)
+                float outputs:r
+            }
+
+            def Shader "AO"
+            {
+                uniform token info:id = "UsdUVTexture"
+                asset inputs:file = @texture.png@
+                float4 inputs:scale = (0.4, 1, 1, 1)
+                float4 inputs:bias = (0, 0, 0, 0)
+                float outputs:r
+            }
+        }
+    }
+
+    def Mesh "PackedMesh" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        int[] faceVertexCounts = [4]
+        int[] faceVertexIndices = [0, 1, 2, 3]
+        point3f[] points = [(-1, 0, 0), (0, 0, 0), (0, 1, 0), (-1, 1, 0)]
+        texCoord2f[] primvars:st = [(0, 0), (1, 0), (1, 1), (0, 1)] (
+            interpolation = "faceVarying"
+        )
+        rel material:binding = </World/Materials/Packed>
+    }
+
+    def Mesh "SeparateMesh" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        int[] faceVertexCounts = [4]
+        int[] faceVertexIndices = [0, 1, 2, 3]
+        point3f[] points = [(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0)]
+        texCoord2f[] primvars:st = [(0, 0), (1, 0), (1, 1), (0, 1)] (
+            interpolation = "faceVarying"
+        )
+        rel material:binding = </World/Materials/Separate>
+    }
+}

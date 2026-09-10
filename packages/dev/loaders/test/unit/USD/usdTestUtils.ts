@@ -1,4 +1,15 @@
-import { AnalyticPrimitiveType, AnimationProperty, AnimationTarget, Command, GeometryFlags, MaterialFlags, MISSING_OFFSET, PrimitiveAxis } from "loaders/USD/usdCommandProtocol";
+import {
+    AnalyticPrimitiveType,
+    AnimationProperty,
+    AnimationTarget,
+    Command,
+    GeometryFlags,
+    MaterialFlags,
+    MISSING_OFFSET,
+    PrimitiveAxis,
+    TextureOutputChannel,
+    USDTextureColorSpace,
+} from "loaders/USD/usdCommandProtocol";
 
 class BufferWriter {
     public readonly bytes: number[] = [];
@@ -66,7 +77,7 @@ class CommandWriter {
 
     public constructor() {
         this._writer.u32(0x42445355);
-        this._writer.u16(4);
+        this._writer.u16(5);
         this._writer.u16(0);
         this._writer.u32(0);
         this._writer.u32(0);
@@ -128,14 +139,14 @@ export function createUSDTestBuffers(): USDTestBuffers {
         writer.f32(1);
         writer.f32(0);
         writer.u32(0);
-        for (let index = 0; index < 9; ++index) {
+        for (let index = 0; index < 14; ++index) {
             writer.u32(MISSING_OFFSET);
         }
     });
     addUSDTestPrimitives(commands, data);
     return { commands: commands.finish(), data: data.toArrayBuffer() };
 }
-export function createUSDMeshTestBuffers(withTextures = false): USDTestBuffers {
+export function createUSDMeshTestBuffers(withTextures = false, separateMaterialTextures = false, processedMaterialTextures = false): USDTestBuffers {
     const commands = new CommandWriter();
     const data = new BufferWriter();
     const name = data.appendString("Skinned quad");
@@ -159,9 +170,42 @@ export function createUSDMeshTestBuffers(withTextures = false): USDTestBuffers {
         const imageOffset = data.size;
         data.bytes.push(...png);
         const transformOffset = data.floats([2, 3, 0.1, 0.2, Math.PI / 4]);
-        for (let id = 1; id <= 3; ++id) {
+        const valueTransformOffset = data.floats([1, 1, 1, 1, 0, 0, 0, 0]);
+        const normalValueTransformOffset = data.floats([2, 2, 2, 1, -1, -1, -1, 0]);
+        const metallicValueTransformOffset = data.floats([0.75, 1, 1, 1, 0, 0, 0, 0]);
+        const roughnessValueTransformOffset = data.floats([0.5, 1, 1, 1, 0, 0, 0, 0]);
+        const processedMetallicTransformOffset = data.floats([1, 0.6, 1, 1, 0, 0.2, 0, 0]);
+        const processedRoughnessTransformOffset = data.floats([1, 1, 0.5, 1, 0, 0, 0.1, 0]);
+        const processedOcclusionTransformOffset = data.floats([1, 1, 1, 0.8, 0, 0, 0, 0.1]);
+        const textureCount = separateMaterialTextures ? 5 : 3;
+        for (let id = 1; id <= textureCount; ++id) {
             commands.command(Command.Texture, (writer) => {
-                [id, name.offset, name.length, 1, imageOffset, png.length, 0, transformOffset, 1, 2].forEach((value) => writer.u32(value));
+                [
+                    id,
+                    name.offset,
+                    name.length,
+                    1,
+                    imageOffset,
+                    png.length,
+                    0,
+                    transformOffset,
+                    1,
+                    2,
+                    id === 1 ? USDTextureColorSpace.SRGB : USDTextureColorSpace.Raw,
+                    id === 2
+                        ? normalValueTransformOffset
+                        : separateMaterialTextures && id === 3
+                          ? processedMaterialTextures
+                              ? processedMetallicTransformOffset
+                              : metallicValueTransformOffset
+                          : separateMaterialTextures && id === 4
+                            ? processedMaterialTextures
+                                ? processedRoughnessTransformOffset
+                                : roughnessValueTransformOffset
+                            : separateMaterialTextures && id === 5 && processedMaterialTextures
+                              ? processedOcclusionTransformOffset
+                              : valueTransformOffset,
+                ].forEach((value) => writer.u32(value));
             });
         }
     }
@@ -171,10 +215,26 @@ export function createUSDMeshTestBuffers(withTextures = false): USDTestBuffers {
     for (let id = 1; id <= 2; ++id) {
         commands.command(Command.Material, (writer) => {
             [id, name.offset, name.length, baseOffset, emissiveOffset].forEach((value) => writer.u32(value));
-            [0.4, 0.6, 0.7, id === 2 ? 0.5 : 0].forEach((value) => writer.f32(value));
+            [withTextures ? 1 : 0.4, withTextures ? 1 : 0.6, 0.7, id === 2 ? 0.5 : 0].forEach((value) => writer.f32(value));
             writer.u32(id === 1 ? MaterialFlags.AlphaBlend : MaterialFlags.DoubleSided | MaterialFlags.Unlit);
-            const textureSlots = withTextures ? [1, id === 2 ? 1 : MISSING_OFFSET, 2, 3, 1, 3, 1, 2, 0] : Array<number>(9).fill(MISSING_OFFSET);
-            textureSlots.forEach((value) => writer.u32(value));
+            const textureIds = withTextures
+                ? separateMaterialTextures
+                    ? [1, id === 2 ? 1 : MISSING_OFFSET, 2, 3, 4, 5, 1]
+                    : [1, id === 2 ? 1 : MISSING_OFFSET, 2, 3, 3, 3, 1]
+                : Array<number>(7).fill(MISSING_OFFSET);
+            textureIds.forEach((value) => writer.u32(value));
+            const channels = withTextures
+                ? [
+                      TextureOutputChannel.RGB,
+                      id === 2 ? TextureOutputChannel.A : MISSING_OFFSET,
+                      TextureOutputChannel.RGB,
+                      separateMaterialTextures ? (processedMaterialTextures ? TextureOutputChannel.G : TextureOutputChannel.R) : TextureOutputChannel.B,
+                      separateMaterialTextures ? (processedMaterialTextures ? TextureOutputChannel.B : TextureOutputChannel.R) : TextureOutputChannel.G,
+                      processedMaterialTextures ? TextureOutputChannel.A : TextureOutputChannel.R,
+                      TextureOutputChannel.RGB,
+                  ]
+                : Array<number>(7).fill(MISSING_OFFSET);
+            channels.forEach((value) => writer.u32(value));
         });
     }
 
@@ -222,6 +282,14 @@ export function createUSDMeshTestBuffers(withTextures = false): USDTestBuffers {
     }
 
     return { commands: commands.finish(), data: data.toArrayBuffer() };
+}
+
+export function createUSDSeparateMaterialTestBuffers(): USDTestBuffers {
+    return createUSDMeshTestBuffers(true, true);
+}
+
+export function createUSDProcessedMaterialTestBuffers(): USDTestBuffers {
+    return createUSDMeshTestBuffers(true, true, true);
 }
 
 function addUSDTestPrimitives(commands: CommandWriter, data: BufferWriter): void {

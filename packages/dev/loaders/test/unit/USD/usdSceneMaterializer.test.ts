@@ -11,14 +11,45 @@ import { Animation } from "core/Animations/animation";
 import { Command, readCommands } from "loaders/USD/usdCommandProtocol";
 import { _RegisterUSDLoaderDependencies } from "loaders/USD/usdFileLoader.pure";
 import { materializeCommandBuffers } from "loaders/USD/usdSceneMaterializer";
-import { createUSDMeshTestBuffers } from "./usdTestUtils";
+import { createUSDMeshTestBuffers, createUSDProcessedMaterialTestBuffers, createUSDSeparateMaterialTestBuffers } from "./usdTestUtils";
 import { deferUSDTextureLoads } from "./usdTextureTestUtils";
 import { GetEnvironmentBRDFTexture } from "core/Misc/brdfTextureTools";
+import { TextureChannel, type ITextureProcessOperand } from "core/Materials/Textures/textureProcessor";
+
+const textureProcessorCalls = vi.hoisted(() => [] as unknown[][]);
+const textureProcessorState = vi.hoisted(() => ({
+    defer: false,
+    pending: [] as Array<() => void>,
+    textures: [] as Array<{ dispose: ReturnType<typeof vi.fn> }>,
+}));
+vi.mock("core/Materials/Textures/textureProcessor", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("core/Materials/Textures/textureProcessor")>();
+    const { Texture: MockTexture } = await import("core/Materials/Textures/texture.pure");
+    return {
+        ...actual,
+        LerpTexturesAsync: vi.fn(async (...args: unknown[]) => {
+            textureProcessorCalls.push(args);
+            const targetScene = args[4] as Scene;
+            const texture = new MockTexture(null, targetScene);
+            textureProcessorState.textures.push(texture as unknown as { dispose: ReturnType<typeof vi.fn> });
+            const dispose = vi.spyOn(texture, "dispose");
+            textureProcessorState.textures[textureProcessorState.textures.length - 1] = { dispose };
+            if (textureProcessorState.defer) {
+                await new Promise<void>((resolve) => textureProcessorState.pending.push(resolve));
+            }
+            return { texture, dispose: () => texture.dispose() };
+        }),
+    };
+});
 
 describe("USD scene materializer protocol", () => {
     let engine: NullEngine;
     let scene: Scene;
     beforeEach(() => {
+        textureProcessorCalls.length = 0;
+        textureProcessorState.defer = false;
+        textureProcessorState.pending.length = 0;
+        textureProcessorState.textures.length = 0;
         _RegisterUSDLoaderDependencies();
         engine = new NullEngine();
         scene = new Scene(engine);
@@ -112,13 +143,16 @@ describe("USD scene materializer protocol", () => {
         expect(material.bumpTexture).toBe(container.textures[1]);
         expect(material.metallicTexture).toBe(container.textures[2]);
         expect(material.emissiveTexture).toBe(texture);
-        expect(material.useAlphaFromAlbedoTexture).toBe(true);
-        expect(masked.opacityTexture).toBe(texture);
+        expect(material.useAlphaFromAlbedoTexture).toBe(false);
+        expect(material.alpha).toBeCloseTo(0.8);
+        expect(masked.albedoTexture).toBe(texture);
+        expect(masked.useAlphaFromAlbedoTexture).toBe(true);
+        expect(masked.opacityTexture).toBeNull();
         expect(masked.alphaCutOff).toBeCloseTo(0.5);
         expect(masked.backFaceCulling).toBe(false);
         expect(masked.unlit).toBe(true);
-        expect(material.metallic).toBeCloseTo(0.4);
-        expect(material.roughness).toBeCloseTo(0.6);
+        expect(material.metallic).toBe(1);
+        expect(material.roughness).toBe(1);
         expect(material.bumpTexture!.level).toBeCloseTo(0.7);
         expect(material.useRoughnessFromMetallicTextureGreen).toBe(true);
         expect(material.useMetallnessFromMetallicTextureBlue).toBe(true);
@@ -131,6 +165,97 @@ describe("USD scene materializer protocol", () => {
         expect(texture.wrapU).toBe(Texture.WRAP_ADDRESSMODE);
         expect(texture.wrapV).toBe(Texture.MIRROR_ADDRESSMODE);
         container.dispose();
+    });
+
+    it("preserves separate metallic, roughness, and occlusion textures", async () => {
+        GetEnvironmentBRDFTexture(scene);
+        const loads = deferUSDTextureLoads(engine);
+        const buffers = createUSDSeparateMaterialTestBuffers();
+        const loading = materializeCommandBuffers(scene, buffers.commands, buffers.data, false);
+        expect(loads).toHaveLength(5);
+        loads.forEach((load) => load.succeed());
+        const { container } = await loading;
+        const material = container.materials[0];
+        if (!(material instanceof PBRMaterial)) {
+            throw new Error("Expected PBR material");
+        }
+        expect(material.metallicTexture).toBe(container.textures[2]);
+        expect(material.microSurfaceTexture).toBe(container.textures[3]);
+        expect(material.ambientTexture).toBe(container.textures[4]);
+        expect(material.metallicTexture).not.toBe(material.microSurfaceTexture);
+        expect(material.microSurfaceTexture).not.toBe(material.ambientTexture);
+        expect(material.useRoughnessFromMetallicTextureAlpha).toBe(false);
+        expect(material.useRoughnessFromMetallicTextureGreen).toBe(false);
+        expect(material.useMetallnessFromMetallicTextureBlue).toBe(false);
+        expect(material.useAmbientOcclusionFromMetallicTextureRed).toBe(false);
+        expect(material.useAmbientInGrayScale).toBe(true);
+        expect(material.metallic).toBeCloseTo(0.75);
+        expect(material.roughness).toBeCloseTo(0.5);
+        expect(material.metallicTexture!.gammaSpace).toBe(false);
+        expect(material.albedoTexture!.gammaSpace).toBe(true);
+        container.dispose();
+    });
+
+    it("extracts arbitrary scalar channels and bakes scale and bias once", async () => {
+        const existingTexture = GetEnvironmentBRDFTexture(scene);
+        const loads = deferUSDTextureLoads(engine);
+        const buffers = createUSDProcessedMaterialTestBuffers();
+        const loading = materializeCommandBuffers(scene, buffers.commands, buffers.data, false);
+        loads.forEach((load) => load.succeed());
+        const { container } = await loading;
+        const material = container.materials[0];
+        if (!(material instanceof PBRMaterial)) {
+            throw new Error("Expected PBR material");
+        }
+        expect(container.textures).toHaveLength(8);
+        expect(material.metallicTexture).toBe(container.textures[5]);
+        expect(material.microSurfaceTexture).toBe(container.textures[6]);
+        expect(material.ambientTexture).toBe(container.textures[7]);
+        expect(material.metallic).toBe(1);
+        expect(material.roughness).toBe(1);
+        expect(material.metallicTexture!.gammaSpace).toBe(false);
+        expect(material.microSurfaceTexture!.gammaSpace).toBe(false);
+        expect(material.ambientTexture!.gammaSpace).toBe(false);
+        expect((material.metallicTexture as Texture).uRotationCenter).toBe(0);
+        expect((material.metallicTexture as Texture).vRotationCenter).toBe(0);
+        expect(textureProcessorCalls).toHaveLength(3);
+        expect(scene.textures).toEqual([existingTexture]);
+        if (!(container instanceof AssetContainer)) {
+            throw new Error("Expected detached AssetContainer");
+        }
+        container.addAllToScene();
+        expect(scene.textures).toHaveLength(9);
+        expect(new Set(scene.textures).size).toBe(9);
+        const processed = textureProcessorCalls.map((call) => ({
+            bias: (call[1] as ITextureProcessOperand).factor!.r,
+            end: (call[2] as ITextureProcessOperand).factor!.r,
+            channel: (call[3] as ITextureProcessOperand).channel,
+        }));
+        expect(processed).toEqual([
+            { bias: expect.closeTo(0.2), end: expect.closeTo(0.8), channel: TextureChannel.G },
+            { bias: expect.closeTo(0.1), end: expect.closeTo(0.6), channel: TextureChannel.B },
+            { bias: expect.closeTo(0.1), end: expect.closeTo(0.9), channel: TextureChannel.A },
+        ]);
+        container.dispose();
+    });
+
+    it("cancels texture processing without publishing or resurrecting processed textures", async () => {
+        const existingTexture = GetEnvironmentBRDFTexture(scene);
+        const loads = deferUSDTextureLoads(engine);
+        textureProcessorState.defer = true;
+        const controller = new AbortController();
+        const buffers = createUSDProcessedMaterialTestBuffers();
+        const loading = materializeCommandBuffers(scene, buffers.commands, buffers.data, false, controller.signal);
+        loads.forEach((load) => load.succeed());
+        await vi.waitFor(() => expect(textureProcessorState.pending).toHaveLength(1));
+
+        controller.abort(new Error("Canceled during texture processing"));
+        await expect(loading).rejects.toThrow("Canceled during texture processing");
+        expect(scene.textures).toEqual([existingTexture]);
+
+        textureProcessorState.pending.forEach((resolve) => resolve());
+        await vi.waitFor(() => expect(textureProcessorState.textures.every(({ dispose }) => dispose.mock.calls.length === 1)).toBe(true));
+        expect(scene.textures).toEqual([existingTexture]);
     });
 
     it("rolls back all created assets when image decoding fails", async () => {
@@ -152,6 +277,7 @@ describe("USD scene materializer protocol", () => {
 
     it.each([
         [Command.Texture, 20, "texture image"],
+        [Command.Texture, 44, "texture value transform"],
         [Command.Geometry, 16, "positions"],
         [Command.Skeleton, 16, "skeleton joints"],
         [Command.Animation, 28, "animation value stride"],

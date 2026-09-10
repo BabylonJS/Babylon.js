@@ -215,6 +215,61 @@ for (const extension of ["usda", "usdc", "usdz"]) {
     });
 }
 
+test("loading a real USDZ preserves packed and separate material textures", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(url, { waitUntil: "load" });
+    await waitForSandboxReady(page);
+
+    const buffer = readFileSync(`${__dirname}/../../babylonServer/public/babylonUsdImporter/testAssets/material-textures.usdz`);
+    const dataTransfer = await page.evaluateHandle(
+        (bytes) => {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File([new Uint8Array(bytes)], "material-textures.usdz"));
+            return transfer;
+        },
+        [...buffer]
+    );
+    await page.dispatchEvent("#renderCanvas", "drop", { dataTransfer });
+
+    const scene = await getSandboxScene(page);
+    await expect.poll(async () => await scene.evaluate((loadedScene) => loadedScene.materials.some((material) => material.name === "Separate"))).toBe(true);
+    const result = await scene.evaluate((loadedScene) => {
+        const materials = loadedScene.materials as Array<
+            import("core/Materials/material").Material & {
+                metallic?: number;
+                roughness?: number;
+                metallicTexture?: import("core/Materials/Textures/baseTexture").BaseTexture | null;
+                microSurfaceTexture?: import("core/Materials/Textures/baseTexture").BaseTexture | null;
+                ambientTexture?: import("core/Materials/Textures/baseTexture").BaseTexture | null;
+            }
+        >;
+        const packed = materials.find((material) => material.name === "Packed");
+        const separate = materials.find((material) => material.name === "Separate");
+        return {
+            packed: {
+                metallic: packed?.metallic,
+                roughness: packed?.roughness,
+                metallicTexture: !!packed?.metallicTexture,
+                roughnessTexture: !!packed?.microSurfaceTexture,
+            },
+            separate: {
+                metallic: separate?.metallic,
+                roughness: separate?.roughness,
+                metallicTexture: !!separate?.metallicTexture,
+                roughnessTexture: !!separate?.microSurfaceTexture,
+                occlusionTexture: !!separate?.ambientTexture,
+                distinct:
+                    separate?.metallicTexture !== separate?.microSurfaceTexture &&
+                    separate?.metallicTexture !== separate?.ambientTexture &&
+                    separate?.microSurfaceTexture !== separate?.ambientTexture,
+            },
+        };
+    });
+    expect(result.packed).toEqual({ metallic: 1, roughness: 1, metallicTexture: true, roughnessTexture: true });
+    expect(result.separate.metallic).toBeCloseTo(0.2);
+    expect(result.separate).toMatchObject({ roughness: 1, metallicTexture: true, roughnessTexture: true, occlusionTexture: true, distinct: true });
+});
+
 test("dropping a composed USD folder preserves paths and allows root selection", async ({ page }) => {
     test.setTimeout(60000);
     await page.goto(url, { waitUntil: "load" });

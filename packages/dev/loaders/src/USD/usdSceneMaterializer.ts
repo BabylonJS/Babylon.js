@@ -5,12 +5,21 @@ import { AnimationGroup } from "core/Animations/animationGroup.pure";
 import { AbstractAssetContainer, AssetContainer } from "core/assetContainer";
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
-import { Color3 } from "core/Maths/math.color.pure";
+import { Color3, Color4 } from "core/Maths/math.color.pure";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { Material } from "core/Materials/material.pure";
 import { MultiMaterial } from "core/Materials/multiMaterial.pure";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial.pure";
 import { Texture } from "core/Materials/Textures/texture.pure";
+import {
+    CreateFactorOperand,
+    CreateTextureOperand,
+    LerpTexturesAsync,
+    TextureChannel,
+    TextureColorSpace,
+    type ITextureProcessOperand,
+} from "core/Materials/Textures/textureProcessor";
+import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder.pure";
 import { CreateCylinder } from "core/Meshes/Builders/cylinderBuilder.pure";
 import { CreateSphere } from "core/Meshes/Builders/sphereBuilder.pure";
@@ -32,6 +41,8 @@ import {
     MISSING_OFFSET,
     PayloadReader,
     PrimitiveAxis,
+    TextureOutputChannel,
+    USDTextureColorSpace,
     readCommands,
 } from "./usdCommandProtocol";
 
@@ -50,6 +61,32 @@ interface GeometryDescriptor {
     weights1: number;
     indices: number;
     influences: number;
+}
+
+interface TextureDescriptor {
+    id: number;
+    texture: Texture;
+    sourceColorSpace: USDTextureColorSpace;
+    scale: Float32Array;
+    bias: Float32Array;
+}
+
+interface TextureBinding {
+    descriptor: TextureDescriptor;
+    channel: TextureOutputChannel;
+}
+
+interface MaterialTextureBindings {
+    id: number;
+    material: PBRMaterial;
+    normalScale: number;
+    base?: TextureBinding;
+    opacity?: TextureBinding;
+    normal?: TextureBinding;
+    metallic?: TextureBinding;
+    roughness?: TextureBinding;
+    occlusion?: TextureBinding;
+    emissive?: TextureBinding;
 }
 
 class DirectAssetContainer extends AbstractAssetContainer {
@@ -157,6 +194,27 @@ function wrapMode(value: number): number {
     }
 }
 
+async function awaitAbortableAsync<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+    if (!signal) {
+        return await promise;
+    }
+    let onAbort: (() => void) | undefined;
+    const aborted = new Promise<never>((_resolve, reject) => {
+        onAbort = () => reject(signal.reason instanceof Error ? signal.reason : new Error("USD materialization was aborted."));
+        signal.addEventListener("abort", onAbort, { once: true });
+        if (signal.aborted) {
+            onAbort();
+        }
+    });
+    try {
+        return await Promise.race([promise, aborted]);
+    } finally {
+        if (onAbort) {
+            signal.removeEventListener("abort", onAbort);
+        }
+    }
+}
+
 export async function materializeCommandBuffers(
     scene: Scene,
     commandBuffer: ArrayBuffer,
@@ -170,7 +228,7 @@ export async function materializeCommandBuffers(
     const container = addToScene ? new DirectAssetContainer() : new AssetContainer(scene);
     const nodes = new Map<number, TransformNode>();
     const pendingParents: Array<{ node: TransformNode; parentId: number }> = [];
-    const textures = new Map<number, Texture>();
+    const textures = new Map<number, TextureDescriptor>();
     const materials = new Map<number, PBRMaterial>();
     const doubleSidedMaterials = new Map<number, PBRMaterial>();
     const skeletons = new Map<number, Skeleton>();
@@ -180,9 +238,12 @@ export async function materializeCommandBuffers(
     const animationGroups = new Map<number, AnimationGroup>();
     const textureLoads: Promise<void>[] = [];
     const textureUrls = new Set<string>();
+    const materialTextureBindings: MaterialTextureBindings[] = [];
+    const processedTextures = new Map<string, Promise<BaseTexture>>();
     const assetContainer = container instanceof AssetContainer ? container : undefined;
     let root: TransformNode | undefined;
     let timeCodesPerSecond = 24;
+    let rollingBack = false;
 
     const trackAsset = <T extends { _parentContainer: IAssetContainer | null }>(assets: T[], asset: T): void => {
         assets.push(asset);
@@ -208,6 +269,252 @@ export async function materializeCommandBuffers(
             doubleSidedMaterials.set(id, variant);
         }
         return variant;
+    };
+    const binding = (textureId: number, channel: number, label: string): TextureBinding | undefined => {
+        if (textureId === MISSING_OFFSET) {
+            if (channel !== MISSING_OFFSET) {
+                throw new Error(`USD ${label} binding has a channel without a texture.`);
+            }
+            return undefined;
+        }
+        const descriptor = textures.get(textureId);
+        if (!descriptor) {
+            throw new Error(`USD ${label} binding references missing texture ${textureId}.`);
+        }
+        if (channel < TextureOutputChannel.R || channel > TextureOutputChannel.RGB) {
+            throw new Error(`USD ${label} binding has invalid output channel ${channel}.`);
+        }
+        return { descriptor, channel };
+    };
+    const channelIndex = (channel: TextureOutputChannel): number => {
+        if (channel === TextureOutputChannel.RGB) {
+            throw new Error("A scalar USD texture binding cannot use the RGB output.");
+        }
+        return channel;
+    };
+    const processorChannel = (channel: TextureOutputChannel): TextureChannel => {
+        switch (channel) {
+            case TextureOutputChannel.R:
+                return TextureChannel.R;
+            case TextureOutputChannel.G:
+                return TextureChannel.G;
+            case TextureOutputChannel.B:
+                return TextureChannel.B;
+            case TextureOutputChannel.A:
+                return TextureChannel.A;
+            default:
+                return TextureChannel.RGBA;
+        }
+    };
+    const processorColorSpace = (descriptor: TextureDescriptor): TextureColorSpace =>
+        descriptor.sourceColorSpace === USDTextureColorSpace.Raw ? TextureColorSpace.Linear : TextureColorSpace.SRGB;
+    const scalarTextureIsLinear = (binding: TextureBinding): boolean => binding.descriptor.sourceColorSpace === USDTextureColorSpace.Raw;
+    const valueTransformIs = (descriptor: TextureDescriptor, scale: readonly number[] | Float32Array, bias: readonly number[] | Float32Array): boolean =>
+        scale.every((value, index) => descriptor.scale[index] === value) && bias.every((value, index) => descriptor.bias[index] === value);
+    const trackProcessedTexture = (texture: BaseTexture): BaseTexture => {
+        trackAsset(container.textures, texture);
+        return texture;
+    };
+    const processTextureAsync = async (
+        name: string,
+        binding: TextureBinding,
+        scale: readonly number[] | Float32Array,
+        bias: readonly number[] | Float32Array,
+        channel = binding.channel
+    ): Promise<BaseTexture> => {
+        const source = binding.descriptor;
+        const key = `${source.id}:${channel}:${scale.join(",")}:${bias.join(",")}`;
+        const cached = processedTextures.get(key);
+        if (cached) {
+            return await cached;
+        }
+        const processing = (async () => {
+            const a = new Color4(bias[0], bias[1], bias[2], bias[3]);
+            const b = new Color4(bias[0] + scale[0], bias[1] + scale[1], bias[2] + scale[2], bias[3] + scale[3]);
+            const previousBlockEntityCollection = scene._blockEntityCollection;
+            scene._blockEntityCollection = true;
+            let processingPromise: Promise<ITextureProcessOperand>;
+            try {
+                processingPromise = LerpTexturesAsync(
+                    name,
+                    CreateFactorOperand(a),
+                    CreateFactorOperand(b),
+                    CreateTextureOperand(source.texture, processorChannel(channel), processorColorSpace(source)),
+                    scene,
+                    TextureColorSpace.Linear
+                );
+            } finally {
+                scene._blockEntityCollection = previousBlockEntityCollection;
+            }
+            const processed = await processingPromise;
+            if (!processed.texture) {
+                throw new Error(`USD texture processing for '${name}' did not produce a texture.`);
+            }
+            if (rollingBack || signal?.aborted) {
+                processed.dispose?.();
+                if (signal?.aborted) {
+                    signal.throwIfAborted();
+                }
+                throw new Error("USD materialization was rolled back.");
+            }
+            if (!assetContainer) {
+                scene.addTexture(processed.texture);
+            }
+            const texture = trackProcessedTexture(processed.texture);
+            texture.gammaSpace = false;
+            const transformedTexture = texture as Texture;
+            transformedTexture.uRotationCenter = source.texture.uRotationCenter;
+            transformedTexture.vRotationCenter = source.texture.vRotationCenter;
+            transformedTexture.wRotationCenter = source.texture.wRotationCenter;
+            transformedTexture.homogeneousRotationInUVTransform = source.texture.homogeneousRotationInUVTransform;
+            return texture;
+        })();
+        processedTextures.set(key, processing);
+        try {
+            return await processing;
+        } catch (error) {
+            processedTextures.delete(key);
+            throw error;
+        }
+    };
+    const processScalarTextureAsync = async (name: string, binding: TextureBinding): Promise<BaseTexture> => {
+        const index = channelIndex(binding.channel);
+        const scale = binding.descriptor.scale[index];
+        const bias = binding.descriptor.bias[index];
+        return await processTextureAsync(name, binding, [scale, scale, scale, 1], [bias, bias, bias, 0], binding.channel);
+    };
+    const applyMaterialTextureBindingsAsync = async (bindings: MaterialTextureBindings): Promise<void> => {
+        const { material, normalScale, base, opacity, normal, metallic, roughness, occlusion, emissive } = bindings;
+        if (base) {
+            if (base.channel !== TextureOutputChannel.RGB) {
+                throw new Error("A USD base-color texture must use the RGB output.");
+            }
+            material.albedoColor = Color3.White();
+            material.albedoTexture = valueTransformIs(base.descriptor, [1, 1, 1, 1], [0, 0, 0, 0])
+                ? base.descriptor.texture
+                : await processTextureAsync(`${material.name} base color`, base, base.descriptor.scale, base.descriptor.bias);
+        }
+        if (emissive) {
+            if (emissive.channel !== TextureOutputChannel.RGB) {
+                throw new Error("A USD emissive texture must use the RGB output.");
+            }
+            material.emissiveColor = Color3.White();
+            material.emissiveTexture = valueTransformIs(emissive.descriptor, [1, 1, 1, 1], [0, 0, 0, 0])
+                ? emissive.descriptor.texture
+                : await processTextureAsync(`${material.name} emissive`, emissive, emissive.descriptor.scale, emissive.descriptor.bias);
+        }
+        if (normal) {
+            if (normal.channel !== TextureOutputChannel.RGB) {
+                throw new Error("A USD normal texture must use the RGB output.");
+            }
+            const canonicalNormal = normal.descriptor.sourceColorSpace === USDTextureColorSpace.Raw && valueTransformIs(normal.descriptor, [2, 2, 2, 1], [-1, -1, -1, 0]);
+            if (canonicalNormal) {
+                material.bumpTexture = normal.descriptor.texture;
+            } else {
+                const scale = Array.from(normal.descriptor.scale, (value) => value * 0.5);
+                const bias = Array.from(normal.descriptor.bias, (value, index) => (index < 3 ? (value + 1) * 0.5 : value));
+                material.bumpTexture = await processTextureAsync(`${material.name} normal`, normal, scale, bias);
+            }
+            material.bumpTexture.gammaSpace = false;
+            material.bumpTexture.level = normalScale;
+        }
+
+        const packedMetallicRoughness =
+            metallic &&
+            roughness &&
+            metallic.descriptor === roughness.descriptor &&
+            (metallic.channel === TextureOutputChannel.R || metallic.channel === TextureOutputChannel.B) &&
+            (roughness.channel === TextureOutputChannel.G || roughness.channel === TextureOutputChannel.A) &&
+            scalarTextureIsLinear(metallic) &&
+            metallic.descriptor.bias[channelIndex(metallic.channel)] === 0 &&
+            roughness.descriptor.bias[channelIndex(roughness.channel)] === 0;
+        let packedOcclusion = false;
+        if (packedMetallicRoughness) {
+            const descriptor = metallic.descriptor;
+            material.metallicTexture = descriptor.texture;
+            material.metallic = (material.metallic ?? 1) * descriptor.scale[channelIndex(metallic.channel)];
+            material.roughness = (material.roughness ?? 1) * descriptor.scale[channelIndex(roughness.channel)];
+            material.useRoughnessFromMetallicTextureAlpha = roughness.channel === TextureOutputChannel.A;
+            material.useRoughnessFromMetallicTextureGreen = roughness.channel === TextureOutputChannel.G;
+            material.useMetallnessFromMetallicTextureBlue = metallic.channel === TextureOutputChannel.B;
+            packedOcclusion =
+                occlusion?.descriptor === descriptor &&
+                occlusion.channel === TextureOutputChannel.R &&
+                descriptor.scale[TextureOutputChannel.R] === 1 &&
+                descriptor.bias[TextureOutputChannel.R] === 0;
+            material.useAmbientOcclusionFromMetallicTextureRed = packedOcclusion;
+        } else {
+            if (metallic) {
+                const index = channelIndex(metallic.channel);
+                const direct =
+                    scalarTextureIsLinear(metallic) &&
+                    (metallic.channel === TextureOutputChannel.R || metallic.channel === TextureOutputChannel.B) &&
+                    metallic.descriptor.bias[index] === 0;
+                material.metallicTexture = direct ? metallic.descriptor.texture : await processScalarTextureAsync(`${material.name} metallic`, metallic);
+                material.useRoughnessFromMetallicTextureAlpha = false;
+                material.useRoughnessFromMetallicTextureGreen = false;
+                material.useMetallnessFromMetallicTextureBlue = direct && metallic.channel === TextureOutputChannel.B;
+                material.metallic = direct ? (material.metallic ?? 1) * metallic.descriptor.scale[index] : 1;
+            }
+            if (roughness) {
+                const index = channelIndex(roughness.channel);
+                const direct = scalarTextureIsLinear(roughness) && roughness.channel === TextureOutputChannel.R && roughness.descriptor.bias[index] === 0;
+                material.microSurfaceTexture = direct ? roughness.descriptor.texture : await processScalarTextureAsync(`${material.name} roughness`, roughness);
+                material.microSurfaceTexture.gammaSpace = direct ? roughness.descriptor.texture.gammaSpace : false;
+                material.roughness = direct ? (material.roughness ?? 1) * roughness.descriptor.scale[index] : 1;
+            }
+        }
+        if (occlusion && !packedOcclusion) {
+            const index = channelIndex(occlusion.channel);
+            const direct =
+                scalarTextureIsLinear(occlusion) &&
+                occlusion.channel === TextureOutputChannel.R &&
+                occlusion.descriptor.scale[index] === 1 &&
+                occlusion.descriptor.bias[index] === 0;
+            material.ambientTexture = direct ? occlusion.descriptor.texture : await processScalarTextureAsync(`${material.name} occlusion`, occlusion);
+            material.useAmbientInGrayScale = true;
+        }
+        if (opacity) {
+            material.alpha = 1;
+            if (
+                base &&
+                material.albedoTexture &&
+                opacity.descriptor === base.descriptor &&
+                opacity.channel === TextureOutputChannel.A &&
+                opacity.descriptor.scale[TextureOutputChannel.A] === 1 &&
+                opacity.descriptor.bias[TextureOutputChannel.A] === 0
+            ) {
+                material.albedoTexture.hasAlpha = true;
+                material.useAlphaFromAlbedoTexture = true;
+            } else {
+                const direct =
+                    opacity.channel === TextureOutputChannel.A && opacity.descriptor.scale[TextureOutputChannel.A] === 1 && opacity.descriptor.bias[TextureOutputChannel.A] === 0;
+                material.opacityTexture = direct ? opacity.descriptor.texture : await processScalarTextureAsync(`${material.name} opacity`, opacity);
+                material.opacityTexture.gammaSpace = direct ? opacity.descriptor.texture.gammaSpace : false;
+                material.opacityTexture.getAlphaFromRGB = !direct;
+            }
+        }
+        const doubleSidedVariant = doubleSidedMaterials.get(bindings.id);
+        if (doubleSidedVariant) {
+            doubleSidedVariant.albedoColor.copyFrom(material.albedoColor);
+            doubleSidedVariant.albedoTexture = material.albedoTexture;
+            doubleSidedVariant.emissiveColor.copyFrom(material.emissiveColor);
+            doubleSidedVariant.emissiveTexture = material.emissiveTexture;
+            doubleSidedVariant.bumpTexture = material.bumpTexture;
+            doubleSidedVariant.metallic = material.metallic;
+            doubleSidedVariant.roughness = material.roughness;
+            doubleSidedVariant.metallicTexture = material.metallicTexture;
+            doubleSidedVariant.microSurfaceTexture = material.microSurfaceTexture;
+            doubleSidedVariant.ambientTexture = material.ambientTexture;
+            doubleSidedVariant.opacityTexture = material.opacityTexture;
+            doubleSidedVariant.alpha = material.alpha;
+            doubleSidedVariant.useAlphaFromAlbedoTexture = material.useAlphaFromAlbedoTexture;
+            doubleSidedVariant.useRoughnessFromMetallicTextureAlpha = material.useRoughnessFromMetallicTextureAlpha;
+            doubleSidedVariant.useRoughnessFromMetallicTextureGreen = material.useRoughnessFromMetallicTextureGreen;
+            doubleSidedVariant.useMetallnessFromMetallicTextureBlue = material.useMetallnessFromMetallicTextureBlue;
+            doubleSidedVariant.useAmbientOcclusionFromMetallicTextureRed = material.useAmbientOcclusionFromMetallicTextureRed;
+            doubleSidedVariant.useAmbientInGrayScale = material.useAmbientInGrayScale;
+        }
     };
 
     try {
@@ -238,6 +545,9 @@ export async function materializeCommandBuffers(
                     }
                     case Command.Texture: {
                         const id = payload.u32();
+                        if (textures.has(id)) {
+                            throw new Error(`Duplicate USD texture ${id}.`);
+                        }
                         const nameOffset = payload.u32();
                         const nameLength = payload.u32();
                         const mime = mimeType(payload.u32());
@@ -247,9 +557,19 @@ export async function materializeCommandBuffers(
                         const transformOffset = payload.u32();
                         const wrapU = payload.u32();
                         const wrapV = payload.u32();
+                        const sourceColorSpace = payload.u32();
+                        const valueTransformOffset = payload.u32();
                         assertRange(dataBuffer, transformOffset, 5, 4, "texture transform");
+                        assertRange(dataBuffer, valueTransformOffset, 8, 4, "texture value transform");
                         assertRange(dataBuffer, imageOffset, imageLength, 1, "texture image");
+                        if (sourceColorSpace < USDTextureColorSpace.Auto || sourceColorSpace > USDTextureColorSpace.SRGB) {
+                            throw new Error(`Invalid USD texture color space ${sourceColorSpace}.`);
+                        }
                         const transform = new Float32Array(dataBuffer, transformOffset, 5);
+                        const valueTransform = new Float32Array(dataBuffer, valueTransformOffset, 8);
+                        if (![...transform, ...valueTransform].every(Number.isFinite)) {
+                            throw new Error(`USD texture ${id} has a non-finite transform.`);
+                        }
                         const bytes = new Uint8Array(dataBuffer, imageOffset, imageLength);
                         const url = URL.createObjectURL(new Blob([bytes], { type: mime }));
                         textureUrls.add(url);
@@ -277,7 +597,14 @@ export async function materializeCommandBuffers(
                         texture.wAng = -transform[4];
                         texture.wrapU = wrapMode(wrapU);
                         texture.wrapV = wrapMode(wrapV);
-                        textures.set(id, texture);
+                        texture.gammaSpace = sourceColorSpace !== USDTextureColorSpace.Raw;
+                        textures.set(id, {
+                            id,
+                            texture,
+                            sourceColorSpace,
+                            scale: valueTransform.subarray(0, 4),
+                            bias: valueTransform.subarray(4, 8),
+                        });
                         break;
                     }
                     case Command.Material: {
@@ -291,15 +618,8 @@ export async function materializeCommandBuffers(
                         const normalScale = payload.f32();
                         const alphaCutoff = payload.f32();
                         const flags = payload.u32();
-                        const baseTexture = payload.u32();
-                        const opacityTexture = payload.u32();
-                        const normalTexture = payload.u32();
-                        const ormTexture = payload.u32();
-                        const emissiveTexture = payload.u32();
-                        const opacityChannel = payload.u32();
-                        const roughnessChannel = payload.u32();
-                        const metallicChannel = payload.u32();
-                        const occlusionChannel = payload.u32();
+                        const textureIds = Array.from({ length: 7 }, () => payload.u32());
+                        const textureChannels = Array.from({ length: 7 }, () => payload.u32());
                         assertRange(dataBuffer, baseOffset, 4, 4, "material base color");
                         assertRange(dataBuffer, emissiveOffset, 3, 4, "material emissive color");
                         const base = new Float32Array(dataBuffer, baseOffset, 4);
@@ -323,40 +643,18 @@ export async function materializeCommandBuffers(
                             material.transparencyMode = 1;
                             material.alphaCutOff = alphaCutoff;
                         }
-                        if (baseTexture !== MISSING_OFFSET) {
-                            material.albedoTexture = textures.get(baseTexture) ?? null;
-                            if (material.albedoTexture && opacityTexture === MISSING_OFFSET && flags & MaterialFlags.AlphaBlend) {
-                                material.albedoTexture.hasAlpha = true;
-                                material.useAlphaFromAlbedoTexture = true;
-                            }
-                        }
-                        if (opacityTexture !== MISSING_OFFSET) {
-                            material.opacityTexture = textures.get(opacityTexture) ?? null;
-                            if (material.opacityTexture) {
-                                material.opacityTexture.gammaSpace = false;
-                                material.opacityTexture.getAlphaFromRGB = opacityChannel !== 3;
-                            }
-                        }
-                        if (normalTexture !== MISSING_OFFSET) {
-                            material.bumpTexture = textures.get(normalTexture) ?? null;
-                            if (material.bumpTexture) {
-                                material.bumpTexture.gammaSpace = false;
-                                material.bumpTexture.level = normalScale;
-                            }
-                        }
-                        if (ormTexture !== MISSING_OFFSET) {
-                            material.metallicTexture = textures.get(ormTexture) ?? null;
-                            if (material.metallicTexture) {
-                                material.metallicTexture.gammaSpace = false;
-                                material.useRoughnessFromMetallicTextureAlpha = roughnessChannel === 3;
-                                material.useRoughnessFromMetallicTextureGreen = roughnessChannel === 1;
-                                material.useMetallnessFromMetallicTextureBlue = metallicChannel === 2;
-                                material.useAmbientOcclusionFromMetallicTextureRed = occlusionChannel === 0;
-                            }
-                        }
-                        if (emissiveTexture !== MISSING_OFFSET) {
-                            material.emissiveTexture = textures.get(emissiveTexture) ?? null;
-                        }
+                        materialTextureBindings.push({
+                            id,
+                            material,
+                            normalScale,
+                            base: binding(textureIds[0], textureChannels[0], "base-color texture"),
+                            opacity: binding(textureIds[1], textureChannels[1], "opacity texture"),
+                            normal: binding(textureIds[2], textureChannels[2], "normal texture"),
+                            metallic: binding(textureIds[3], textureChannels[3], "metallic texture"),
+                            roughness: binding(textureIds[4], textureChannels[4], "roughness texture"),
+                            occlusion: binding(textureIds[5], textureChannels[5], "occlusion texture"),
+                            emissive: binding(textureIds[6], textureChannels[6], "emissive texture"),
+                        });
                         materials.set(id, material);
                         break;
                     }
@@ -702,36 +1000,25 @@ export async function materializeCommandBuffers(
             }
         }
 
-        const texturesLoaded = Promise.all(textureLoads);
-        if (signal) {
-            let onAbort: (() => void) | undefined;
-            const aborted = new Promise<never>((_resolve, reject) => {
-                onAbort = () => reject(signal.reason instanceof Error ? signal.reason : new Error("USD materialization was aborted."));
-                if (signal.aborted) {
-                    onAbort();
-                } else {
-                    signal.addEventListener("abort", onAbort, { once: true });
-                }
-            });
-            try {
-                await Promise.race([texturesLoaded, aborted]);
-                signal.throwIfAborted();
-            } finally {
-                if (onAbort) {
-                    signal.removeEventListener("abort", onAbort);
-                }
-            }
-        } else {
-            await texturesLoaded;
-        }
+        await awaitAbortableAsync(Promise.all(textureLoads), signal);
+        await awaitAbortableAsync(
+            Promise.all(
+                materialTextureBindings.map(async (bindings) => {
+                    await applyMaterialTextureBindingsAsync(bindings);
+                })
+            ),
+            signal
+        );
         for (const { node, parentId } of pendingParents) {
             node.parent = nodes.get(parentId) ?? root ?? null;
         }
         return { container, materializeMs: performance.now() - started };
     } catch (error) {
+        rollingBack = true;
         // Decode callbacks can arrive after rollback; observe their rejections without
         // delaying cancellation on an image load that may never finish.
         void Promise.allSettled(textureLoads);
+        void Promise.allSettled(processedTextures.values());
         container.dispose();
         for (const url of textureUrls) {
             URL.revokeObjectURL(url);
