@@ -1873,7 +1873,7 @@ describe("MultiTexture lazy registration", () => {
         mt.dispose();
     });
 
-    it("registers only the WebGL2 extension on a WebGPU scene (the WebGPU counterpart is the core barrel's job)", async () => {
+    it("registers both the WebGL2 and WebGPU extensions on first construction", async () => {
         // Dynamic import is intentional: resetModules reloads the addon module so its module-level
         // `_Registered` guard is false again, letting the constructor's lazy registration be
         // observed in isolation.
@@ -1882,18 +1882,18 @@ describe("MultiTexture lazy registration", () => {
         vi.mocked(RegisterEnginesWebGPUExtensionsEngineTexture2DArrayImageSource).mockClear();
 
         const { MultiTexture: ReloadedMultiTexture } = await import("../../../src/multiTexture/multiTexture");
-        const scene = makeScene({ isWebGPU: true, webglVersion: 1 });
+        const scene = makeScene({ isWebGPU: true });
         let resolveLoad!: () => void;
         const loaded = new Promise<void>((resolve) => (resolveLoad = resolve));
         const mt = new ReloadedMultiTexture("mt", ["a.png"], scene, { width: 8, height: 8, onLoad: () => resolveLoad() }) as MockMultiTexture;
         vi.spyOn(mt.onLoadObservable, "notifyObservers").mockImplementation(() => true);
         await loaded;
 
-        // The addon only ever registers the WebGL2 (ThinEngine) extension lazily. On WebGPU the
-        // matching extension must come from the core engine bundle (WebGPU/Extensions barrel in
-        // full builds, or an explicit side-effect import in pure builds) - not from the addon.
+        // The addon registers both the WebGL2 (ThinEngine) and WebGPU (ThinWebGPUEngine) 2D-array
+        // image-source extensions lazily on first construction, so a pure/tree-shaken WebGPU build
+        // gets `updateTextureArrayLayerFromImageSource` without any extra consumer import.
         expect(vi.mocked(RegisterEnginesExtensionsEngineTexture2DArrayImageSource)).toHaveBeenCalledTimes(1);
-        expect(vi.mocked(RegisterEnginesWebGPUExtensionsEngineTexture2DArrayImageSource)).not.toHaveBeenCalled();
+        expect(vi.mocked(RegisterEnginesWebGPUExtensionsEngineTexture2DArrayImageSource)).toHaveBeenCalledTimes(1);
         mt.dispose();
     });
 });

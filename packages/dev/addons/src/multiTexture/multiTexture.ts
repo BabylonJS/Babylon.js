@@ -7,7 +7,12 @@
  */
 
 import { Constants } from "core/Engines/constants";
+// Import the side-effect-free registration functions (the .pure variants), not the non-pure
+// wrappers: a wrapper runs its top-level registration at module load, which would eagerly mutate
+// the engine prototypes for every @babylonjs/addons consumer and double-register with the lazy
+// call below. RegisterMultiTexture() invokes them lazily on first MultiTexture construction.
 import { RegisterEnginesExtensionsEngineTexture2DArrayImageSource } from "core/Engines/Extensions/engine.texture2DArrayImageSource.pure";
+import { RegisterEnginesWebGPUExtensionsEngineTexture2DArrayImageSource } from "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource.pure";
 import { Logger } from "core/Misc/logger";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type Nullable } from "core/types";
@@ -94,9 +99,9 @@ let _Registered = false;
 
 /**
  * Register side effects for MultiTexture.
- * Registers the core 2D-array image-source extension (engine.texture2DArrayImageSource)
- * lazily at first use, matching the Atmosphere addon's convention.
- * Safe to call multiple times; only the first call has an effect.
+ * Registers the core 2D-array image-source extensions for both backends (the WebGL2
+ * `engine.texture2DArrayImageSource` and its WebGPU counterpart) lazily at first use, matching
+ * the Atmosphere addon's convention. Safe to call multiple times; only the first call has an effect.
  */
 export function RegisterMultiTexture(): void {
     if (_Registered) {
@@ -105,6 +110,7 @@ export function RegisterMultiTexture(): void {
     _Registered = true;
 
     RegisterEnginesExtensionsEngineTexture2DArrayImageSource();
+    RegisterEnginesWebGPUExtensionsEngineTexture2DArrayImageSource();
 }
 
 /**
@@ -152,12 +158,11 @@ export function RegisterMultiTexture(): void {
  *   affects the output but only mip-0 filtering applies (no mip-level selection) and `rttScale`
  *   rescale is filtered at mip 0. The `_arrayTexture` sampler that materials use to read the
  *   per-layer array is unaffected by this backend difference.
- * - `MultiTexture` lives in `@babylonjs/addons` and lazily registers the core WebGL2 2D-array
- *   image-source extension (`engine.texture2DArrayImageSource`) on first construction, matching
- *   the `Atmosphere` addon's convention. No engine mutation occurs at addons import time. The
- *   WebGPU counterpart is not registered by the addon: full core builds register it at load time
- *   (WebGPU/Extensions barrel); with a side-effect-free (pure) core build on WebGPU, import
- *   `core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource` yourself.
+ * - `MultiTexture` lives in `@babylonjs/addons` and lazily registers the core 2D-array
+ *   image-source extensions on first construction, matching the `Atmosphere` addon's convention.
+ *   No engine mutation occurs at addons import time. `RegisterMultiTexture()` calls both the WebGL2
+ *   (`engine.texture2DArrayImageSource`) and WebGPU pure registration functions, so a pure/tree-shaken
+ *   WebGPU build receives `updateTextureArrayLayerFromImageSource` without any extra consumer import.
  * - The allocated array depth (options.maxLayers ?? urls.length) must be a positive integer and no
  *   larger than the device limit getCaps().texture2DArrayMaxLayerCount. Empty urls are only accepted
  *   together with an explicit options.maxLayers. addLayerAsync/insertLayerAsync double the depth when it is
