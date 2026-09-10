@@ -136,7 +136,12 @@ async function GetContextSnapshot(page: Page): Promise<{ selectedContextIndex: n
 
 async function GetCoordinatorSnapshot(
     page: Page
-): Promise<{ activeGraphIndex: number; dispatchEventsSynchronously: boolean; hasHostResolver: boolean; graphs: { name: string; blockClassNames: string[]; totalConnections: number }[] }> {
+): Promise<{
+    activeGraphIndex: number;
+    dispatchEventsSynchronously: boolean;
+    hasHostResolver: boolean;
+    graphs: { name: string; blockClassNames: string[]; totalConnections: number }[];
+}> {
     return await page.evaluate(() => {
         const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
         const coordinator = state?.coordinator;
@@ -1276,10 +1281,12 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await fge.addGraphTab();
         await RenameGraphTab(page, (await fge.getGraphNames())[1], "Scratch Graph");
         await expect.poll(async () => (await GetCoordinatorSnapshot(page)).activeGraphIndex).toBe(1);
-        await expect.poll(async () => await GetCoordinatorSnapshot(page)).toMatchObject({
-            dispatchEventsSynchronously: false,
-            hasHostResolver: true,
-        });
+        await expect
+            .poll(async () => await GetCoordinatorSnapshot(page))
+            .toMatchObject({
+                dispatchEventsSynchronously: false,
+                hasHostResolver: true,
+            });
         await fge.addBlockFromPalette("Constant");
         await expect.poll(async () => await fge.getNodeCount()).toBe(1);
 
@@ -1406,7 +1413,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                         {
                             name: "Startup",
                             declarations: [{ op: "event/onStart" }],
-                            nodes: [{ declaration: 0 }],
+                            nodes: [{ declaration: 0, values: {}, flows: {} }],
                         },
                         {
                             name: "Vendor behavior",
@@ -1457,6 +1464,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect(unsupportedNode).toContainText("amount");
         await expect(unsupportedNode).toContainText("result");
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Unknown core operation "core/doesNotExist"');
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('"values" must contain at least one property when present');
 
         await fge.selectGraphTab("Composite");
         await expect(page.getByText("pointer/get · node 1", { exact: true })).toBeVisible();

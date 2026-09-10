@@ -561,6 +561,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                             ["KHR_interactivity"]: {
                                 autoStart: false,
                                 parseOnly: true,
+                                // The editor must preserve and inspect pre-ratification graphs even
+                                // when production strict validation reports conformance errors.
+                                strictValidation: false,
                             },
                         },
                     },
