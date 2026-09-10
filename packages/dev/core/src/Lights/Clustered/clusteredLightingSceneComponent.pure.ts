@@ -30,7 +30,9 @@ export class ClusteredLightingSceneComponent implements ISceneComponent {
     /**
      * Disposes the component and the associated resources.
      */
-    public dispose(): void {}
+    public dispose(): void {
+        this.scene.removeIsReadyCheck(this);
+    }
 
     /**
      * Rebuilds the elements related to this component in case of
@@ -42,11 +44,31 @@ export class ClusteredLightingSceneComponent implements ISceneComponent {
      * Register the component to one instance of a scene.
      */
     public register(): void {
+        this.scene.addIsReadyCheck(this);
         this.scene._gatherActiveCameraRenderTargetsStage.registerStep(
             SceneComponentConstants.STEP_GATHERACTIVECAMERARENDERTARGETS_CLUSTEREDLIGHTING,
             this,
             this._gatherActiveCameraRenderTargets
         );
+    }
+
+    /**
+     * Checks that enabled clustered lights have prepared their proxy shaders.
+     * @returns true when every supported, enabled container is ready
+     */
+    public isReady(): boolean {
+        if (!this.scene.lightsEnabled) {
+            return true;
+        }
+
+        // Proxy meshes are outside scene.meshes, and cached material readiness can skip their checks.
+        let ready = true;
+        for (const light of this.scene.lights) {
+            if (light.getTypeID() === LightConstants.LIGHTTYPEID_CLUSTERED_CONTAINER && (<ClusteredLightContainer>light).isSupported && light.isEnabled() && !light._isReady()) {
+                ready = false;
+            }
+        }
+        return ready;
     }
 
     private _gatherActiveCameraRenderTargets: RenderTargetsStageAction = (renderTargets) => {
