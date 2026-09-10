@@ -1480,7 +1480,17 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('"values" must contain at least one property when present');
 
         await fge.selectGraphTab("Composite");
-        await expect(page.getByText("pointer/get · glTF node 1", { exact: true })).toBeVisible();
+        const pointerFrameTitle = page.getByText("pointer/get · glTF node 1", { exact: true });
+        await expect(pointerFrameTitle).toBeVisible();
+        const pointerFrameComment = pointerFrameTitle.locator("..").locator("..").locator("[class*='frame-comments']");
+        await expect(pointerFrameComment).toContainText("/extensions/KHR_interactivity/graphs/2/nodes/1");
+        expect(
+            await pointerFrameComment.evaluate((comment) => {
+                const frameBounds = comment.parentElement!.getBoundingClientRect();
+                const commentBounds = comment.getBoundingClientRect();
+                return commentBounds.left >= frameBounds.left && commentBounds.right <= frameBounds.right;
+            })
+        ).toBe(true);
         await expect(page.locator("#graph-canvas-container .FlowGraphGetPropertyBlock[class*='hidden']")).toHaveCount(1);
         await expect(page.locator("#graph-canvas-container .FlowGraphJsonPointerParserBlock[class*='hidden']")).toHaveCount(1);
         await expect(fge.nodeOnCanvas("FlowGraphAbsBlock")).toBeVisible();
