@@ -125,7 +125,8 @@ class Uniform {
                 return;
             }
             if (typeof prop.value === "number") {
-                Uniform._tmpArray[prop.targetUniformComponentOffset] = prop.value;
+                const textureLevel = prop.textureLevelSampler?.value?.level ?? 1;
+                Uniform._tmpArray[prop.targetUniformComponentOffset] = prop.value * textureLevel;
             } else {
                 prop.value.toArray(Uniform._tmpArray, prop.targetUniformComponentOffset);
             }
@@ -157,6 +158,8 @@ class Property<T extends PropertyType> {
      */
     public targetUniformComponentNum: number = 4; // Default to vec4
     public targetUniformComponentOffset: number = 0;
+    /** Optional sampler whose texture level scales this property during uniform binding. */
+    public textureLevelSampler?: Sampler;
     /**
      * Optional define name. If set, the per-frame bind loop will skip pushing
      * the owning uniform to the UBO unless this define is active. All
@@ -240,12 +243,16 @@ class Sampler {
      * @param samplerPrefix The prefix used for the name of the sampler in the shader
      * @param textureDefine The define used in the shader for this sampler
      * @param useLooseMatrixUniform Whether to bind the texture matrix outside the material uniform buffer
+     * @param textureLevelProperty Optional property multiplied by this texture's level during uniform binding
      */
-    constructor(name: string, samplerPrefix: string, textureDefine: string, useLooseMatrixUniform: boolean = false) {
+    constructor(name: string, samplerPrefix: string, textureDefine: string, useLooseMatrixUniform: boolean = false, textureLevelProperty?: Property<number>) {
         this.name = name;
         this.samplerPrefix = samplerPrefix;
         this.textureDefine = textureDefine;
         this.useLooseMatrixUniform = useLooseMatrixUniform;
+        if (textureLevelProperty) {
+            textureLevelProperty.textureLevelSampler = this;
+        }
     }
 }
 
@@ -698,7 +705,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
     accessor specularRetroreflectivityTexture: Nullable<BaseTexture>;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _specularRetroreflectivityTexture: Sampler = new Sampler("specular_retroreflectivity", "specularRetroreflectivity", "SPECULAR_RETROREFLECTIVITY", true);
+    private _specularRetroreflectivityTexture: Sampler = new Sampler(
+        "specular_retroreflectivity",
+        "specularRetroreflectivity",
+        "SPECULAR_RETROREFLECTIVITY",
+        true,
+        this._specularRetroreflectivity
+    );
 
     /**
      * IOR of the specular lobe.
@@ -2683,9 +2696,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     // If the property actually defines a uniform, update it.
                     if (uniform.numComponents === 4) {
                         uniform.populateVectorFromLinkedProperties(TmpVectors.Vector4[0]);
-                        if (uniform.name === "vSpecularColor" && this.specularRetroreflectivityTexture) {
-                            TmpVectors.Vector4[0].w *= this.specularRetroreflectivityTexture.level;
-                        }
                         ubo.updateVector4(uniform.name, TmpVectors.Vector4[0]);
                     } else if (uniform.numComponents === 3) {
                         uniform.populateVectorFromLinkedProperties(TmpVectors.Vector3[0]);
@@ -3355,7 +3365,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             defines.SPECULARAA = engine.getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
         }
 
-        if (retroreflectionTexture) {
+        if (retroreflectionTexture && engine.shaderPlatformName === "NATIVE") {
             const matrix = retroreflectionTexture.getTextureMatrix().m;
             const matrixChanged =
                 defines.SPECULAR_RETROREFLECTIVITY_MATRIX_0 !== matrix[0] ||
@@ -3365,7 +3375,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines.SPECULAR_RETROREFLECTIVITY_MATRIX_4 !== matrix[5] ||
                 defines.SPECULAR_RETROREFLECTIVITY_MATRIX_5 !== matrix[9];
 
-            if (engine.shaderPlatformName === "NATIVE" && matrixChanged) {
+            if (matrixChanged) {
                 defines.markAsUnprocessed();
             }
 

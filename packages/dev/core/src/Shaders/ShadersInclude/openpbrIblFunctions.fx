@@ -180,7 +180,7 @@
                 reflectionVector.y *= -1.0;
             #endif
         #elif defined(REFLECTIONMAP_PROJECTION)
-            reflectionVector = computeProjectionCoords(vec4(vPositionW, 1.0), view, reflectionMatrix);
+            reflectionVector = computeProjectionCoords(vec4(direction, 0.0), view, reflectionMatrix);
         #elif defined(REFLECTIONMAP_SKYBOX)
             reflectionVector = computeSkyBoxCoords(direction, reflectionMatrix);
         #else

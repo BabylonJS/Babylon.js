@@ -9,6 +9,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
 import { Scene } from "core/scene";
+import { Vector4 } from "core/Maths/math.vector";
 import { openpbrVertexShader as openpbrVertexShaderGLSL } from "core/Shaders/openpbr.vertex";
 import { openpbrVertexShaderWGSL } from "core/ShadersWGSL/openpbr.vertex";
 import { openpbrDirectLighting as openpbrDirectLightingGLSL } from "core/Shaders/ShadersInclude/openpbrDirectLighting";
@@ -160,7 +161,22 @@ describe("OpenPBRMaterial", () => {
             expect(samplers._specularRetroreflectivityTexture.useLooseMatrixUniform).toBe(true);
         });
 
+        it("applies the retroreflection texture level through sampler metadata", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const texture = new RawTexture(new Uint8Array([255, 0, 0, 255]), 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+            texture.level = 0.25;
+            material.specularRetroreflectivity = 0.5;
+            material.specularRetroreflectivityTexture = texture;
+
+            const uniform = (material as any)._uniformsArray.find((entry: { name: string }) => entry.name === "vSpecularColor");
+            const value = new Vector4();
+            uniform.populateVectorFromLinkedProperties(value);
+
+            expect(value.w).toBe(0.125);
+        });
+
         it("stores transformed texture coordinates in Native-compatible defines", () => {
+            (engine as any)._shaderPlatformName = "NATIVE";
             const material = new OpenPBRMaterial("mat", scene);
             const texture = new RawTexture(new Uint8Array([255, 0, 0, 255]), 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Texture.NEAREST_SAMPLINGMODE);
             texture.coordinatesIndex = 1;
@@ -185,6 +201,27 @@ describe("OpenPBRMaterial", () => {
                 defines.SPECULAR_RETROREFLECTIVITY_MATRIX_4,
                 defines.SPECULAR_RETROREFLECTIVITY_MATRIX_5,
             ]).toEqual([matrix[0], matrix[4], matrix[8], matrix[1], matrix[5], matrix[9]]);
+        });
+
+        it("leaves Native-only matrix defines unchanged on other shader platforms", () => {
+            const material = new OpenPBRMaterial("mat", scene);
+            const texture = new RawTexture(new Uint8Array([255, 0, 0, 255]), 1, 1, Constants.TEXTUREFORMAT_RGBA, scene, false, false, Texture.NEAREST_SAMPLINGMODE);
+            texture.uOffset = 0.2;
+            material.specularRetroreflectivity = 1;
+            material.specularRetroreflectivityTexture = texture;
+
+            const mesh = new Mesh("testMesh", scene);
+            const defines = new OpenPBRMaterialDefines();
+            (material as any)._prepareDefines(mesh, mesh, defines);
+
+            expect([
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_0,
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_1,
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_2,
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_3,
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_4,
+                defines.SPECULAR_RETROREFLECTIVITY_MATRIX_5,
+            ]).toEqual([1, 0, 0, 0, 1, 0]);
         });
 
         it("rebuilds the Native shader when the texture transform changes", () => {
@@ -324,6 +361,13 @@ describe("OpenPBRMaterial", () => {
             expect(shader).toContain("dot(sampleDirection,sampleDirection)<=Epsilon");
             expect(shader).toContain("sampleDirection=normalize(cross(viewDirectionW,perpendicularAxis))");
             expect(shader).toContain("reflectionCoords=createReflectionCoords(positionW,mappingNormal)");
+        });
+
+        it.each([
+            ["GLSL", openpbrIblFunctionsGLSL.shader, "computeProjectionCoords(vec4(direction,0.0),view,reflectionMatrix)"],
+            ["WGSL", openpbrIblFunctionsWGSL.shader, "computeProjectionCoords(vec4f(direction,0.0f),scene.view,uniforms.reflectionMatrix)"],
+        ])("maps projection environments from the requested direction in %s", (_language, shader, expectedCall) => {
+            expect(shader).toContain(expectedCall);
         });
 
         it.each([

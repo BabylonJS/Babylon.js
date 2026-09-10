@@ -176,7 +176,7 @@
                 reflectionVector.y *= -1.0f;
             #endif
         #elif defined(REFLECTIONMAP_PROJECTION)
-            reflectionVector = computeProjectionCoords(vec4f(vPositionW, 1.0f), scene.view, uniforms.reflectionMatrix);
+            reflectionVector = computeProjectionCoords(vec4f(direction, 0.0f), scene.view, uniforms.reflectionMatrix);
         #elif defined(REFLECTIONMAP_SKYBOX)
             reflectionVector = computeSkyBoxCoords(direction, uniforms.reflectionMatrix);
         #else
