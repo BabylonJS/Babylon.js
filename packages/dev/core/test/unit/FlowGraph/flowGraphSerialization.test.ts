@@ -15,6 +15,7 @@ import {
     FlowGraphSceneReadyEventBlock,
     FlowGraphSetPropertyBlock,
     FlowGraphSubtractBlock,
+    FlowGraphStopAnimationBlock,
     RichTypeNumber,
     RichTypeVector3,
     ParseGraphDataConnection,
@@ -37,7 +38,7 @@ import { Mesh } from "core/Meshes";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
-import { afterEach, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
 function MockFlowGraphSnippet(serializedFlowGraph: any) {
@@ -147,6 +148,20 @@ describe("Flow Graph Serialization", () => {
         multiGateBlock.serialize(serialized2);
         const parsed2 = ParseFlowGraphBlockWithClassType(serialized2, { scene }, FlowGraphMultiGateBlock) as any;
         expect(parsed2.outputSignals.length).toEqual(3);
+    });
+
+    it.each([
+        [undefined, false],
+        [{ useVirtualStopAt: true }, true],
+    ])("preserves stop-animation mode through serialization", (config, expectedVirtualMode) => {
+        const block = new FlowGraphStopAnimationBlock(config);
+        const serialized: any = {};
+        block.serialize(serialized);
+
+        const parsed = ParseFlowGraphBlockWithClassType(serialized, { scene }, FlowGraphStopAnimationBlock) as FlowGraphStopAnimationBlock;
+
+        expect(serialized.config.useVirtualStopAt).toBe(expectedVirtualMode ? true : undefined);
+        expect(parsed.config?.useVirtualStopAt).toBe(expectedVirtualMode ? true : undefined);
     });
 
     it("Serializes and parses a context", () => {

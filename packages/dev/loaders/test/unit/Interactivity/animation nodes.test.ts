@@ -9,6 +9,7 @@ import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions
 import "loaders/glTF/2.0/glTFLoaderAnimation";
 import "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data";
 import "loaders/glTF/2.0/Extensions/KHR_interactivity";
+import { _AddInteractivityObjectModel } from "loaders/glTF/2.0/Extensions/KHR_interactivity";
 import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_Type, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import { AnimationGroup } from "core/Animations/animationGroup";
@@ -88,6 +89,7 @@ describe("Interactivity/animation nodes", () => {
     beforeEach(() => {
         engine = new NullEngine();
         scene = new Scene(engine);
+        _AddInteractivityObjectModel(scene, 60);
         new ArcRotateCamera("", 0, 0, 0, new Vector3(0, 0, 0));
         log.mockClear();
         errorLog.mockClear();
@@ -211,7 +213,13 @@ describe("Interactivity/animation nodes", () => {
     // converted to Babylon frames. Without it the animation plays a tiny fraction of its range.
     test("animation/start converts a connected endTime (maxTime pointer) from seconds to frames", async () => {
         const ag = new AnimationGroup("test");
-        ag.to = 600; // 600 frames == 10 seconds at 60 fps; maxTime therefore reads 10 (seconds)
+        const animation = new Animation("test", "value", 60, Constants.ANIMATIONTYPE_FLOAT);
+        animation.setKeys([
+            { frame: 0, value: 0 },
+            { frame: 600, value: 1 },
+        ]);
+        ag.addTargetedAnimation(animation, { value: 0 });
+        ag.to = 600;
         const startSpy = vi.spyOn(ag, "start");
         const gltf = {
             animations: [
@@ -219,6 +227,8 @@ describe("Interactivity/animation nodes", () => {
                 { _babylonAnimationGroup: ag },
             ],
         };
+        const maxTime = GetPathToObjectConverter(gltf as any).convert("/animations/1/extensions/KHR_interactivity/maxTime");
+        expect(maxTime.info.get(maxTime.object)).toBe(10);
 
         await generateSimpleNodeGraph(
             gltf,

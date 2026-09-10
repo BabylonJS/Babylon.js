@@ -30,7 +30,7 @@ function _ApplyMeshState(mesh: AbstractMesh, state: InteractivityNodeState, valu
     if (state === "selectable") {
         mesh.isPickable = value;
     } else {
-        mesh.pointerOverDisableMeshTesting = !value;
+        mesh._isPointerMovePickable = value;
     }
 }
 

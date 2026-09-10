@@ -6,7 +6,7 @@ import { type Animation, AnimationMakeAnimationAdditive, AnimationParse, type IM
 import { type IAnimationKey } from "./animationKey";
 
 import { type Scene, type IDisposable } from "../scene.pure";
-import { Observable } from "../Misc/observable.pure";
+import { Observable, type Observer } from "../Misc/observable.pure";
 import { type Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 
@@ -97,6 +97,8 @@ export class AnimationGroup implements IDisposable {
     private _virtualFrameDirection = 1;
     private _virtualFrameInitial = 0;
     private _virtualFrameEnd = 0;
+    private _virtualSamplingObserver: Nullable<Observer<Scene>> = null;
+    private _usesVirtualSampling = false;
     private _retainedCurrentFrame = 0;
     private _isStopping = false;
     private _isAdditive = false;
@@ -650,7 +652,12 @@ export class AnimationGroup implements IDisposable {
         this._virtualFrameDirection = effectiveTo < effectiveFrom ? -1 : 1;
         this._virtualFrameInitial = effectiveFrom;
         this._virtualFrameEnd = effectiveTo;
-        this._retainedCurrentFrame = this._mapVirtualFrame(effectiveFrom);
+        const effectiveSamplingFrom = this._mapVirtualFrame(effectiveFrom);
+        const effectiveSamplingTo = Number.isFinite(effectiveTo) ? this._mapVirtualFrame(effectiveTo) : effectiveTo < effectiveFrom ? 0 : this._to;
+        this._retainedCurrentFrame = effectiveSamplingFrom;
+        this._usesVirtualSampling = effectiveSamplingFrom !== effectiveFrom || effectiveSamplingTo !== effectiveTo;
+        const samplingFrom = this._usesVirtualSampling ? (this._virtualFrameDirection > 0 ? 0 : this._to) : effectiveSamplingFrom;
+        const samplingTo = this._usesVirtualSampling ? (this._virtualFrameDirection > 0 ? this._to : 0) : effectiveSamplingTo;
 
         this._shouldStart = false;
         this._animationLoopCount = 0;
@@ -661,9 +668,9 @@ export class AnimationGroup implements IDisposable {
             const animatable = this._scene.beginDirectAnimation(
                 targetedAnimation.target,
                 [targetedAnimation.animation],
-                from !== undefined ? from : this._from,
-                to !== undefined ? to : this._to,
-                loop,
+                samplingFrom,
+                samplingTo,
+                this._usesVirtualSampling || loop,
                 speedRatio,
                 undefined,
                 undefined,
@@ -678,6 +685,9 @@ export class AnimationGroup implements IDisposable {
 
             this._processLoop(animatable, targetedAnimation, index);
             this._animatables.push(animatable);
+            if (this._usesVirtualSampling) {
+                animatable.goToFrame(effectiveSamplingFrom);
+            }
         }
 
         this.syncWithMask();
@@ -688,6 +698,12 @@ export class AnimationGroup implements IDisposable {
 
         this._isStarted = true;
         this._isPaused = false;
+
+        if (this._usesVirtualSampling) {
+            this._virtualSamplingObserver = this._scene.onAfterAnimationsObservable.add(() => {
+                this._sampleVirtualTimeline();
+            });
+        }
 
         this.onAnimationGroupPlayObservable.notifyObservers(this);
 
@@ -753,9 +769,13 @@ export class AnimationGroup implements IDisposable {
             const animatable = this._animatables[index];
             animatable.reset();
         }
-        this._virtualFrame = this._animatables[0]?.fromFrame ?? 0;
+        this._virtualFrame = this._usesVirtualSampling ? this._virtualFrameInitial : (this._animatables[0]?.fromFrame ?? 0);
         this._virtualFrameStart = this._virtualFrame;
         this._virtualFrameStartTime = this._scene._animationTime;
+        if (this._usesVirtualSampling) {
+            this._retainedCurrentFrame = this._mapVirtualFrame(this._virtualFrame);
+            this.goToFrame(this._retainedCurrentFrame);
+        }
 
         return this;
     }
@@ -799,6 +819,7 @@ export class AnimationGroup implements IDisposable {
             this._retainedCurrentFrame = this._animatables[0].masterFrame;
         }
         this._updateVirtualFrame();
+        this._removeVirtualSamplingObserver();
         this._isStopping = true;
         const list = this._animatables.slice();
         for (let index = 0; index < list.length; index++) {
@@ -822,6 +843,7 @@ export class AnimationGroup implements IDisposable {
 
         this._isStarted = false;
         this._isStopping = false;
+        this._usesVirtualSampling = false;
 
         return this;
     }
@@ -952,6 +974,30 @@ export class AnimationGroup implements IDisposable {
         this._virtualFrame = this._virtualFrameStart + elapsedSeconds * this._virtualFrameRate * this._speedRatio * this._virtualFrameDirection;
     }
 
+    private _sampleVirtualTimeline(): void {
+        this._updateVirtualFrame();
+        const reachedEnd =
+            !this._loopAnimation &&
+            Number.isFinite(this._virtualFrameEnd) &&
+            (this._virtualFrameDirection > 0 ? this._virtualFrame >= this._virtualFrameEnd : this._virtualFrame <= this._virtualFrameEnd);
+        if (reachedEnd) {
+            this.setVirtualCurrentFrame(this._virtualFrameEnd);
+            this._removeVirtualSamplingObserver();
+            this.stop();
+            return;
+        }
+
+        this._retainedCurrentFrame = this._mapVirtualFrame(this._virtualFrame);
+        this.goToFrame(this._retainedCurrentFrame);
+    }
+
+    private _removeVirtualSamplingObserver(): void {
+        if (this._virtualSamplingObserver) {
+            this._scene.onAfterAnimationsObservable.remove(this._virtualSamplingObserver);
+            this._virtualSamplingObserver = null;
+        }
+    }
+
     private _mapVirtualFrame(frame: number): number {
         const maximum = this._to;
         if (maximum === 0) {
@@ -995,7 +1041,7 @@ export class AnimationGroup implements IDisposable {
 
     private _checkAnimationGroupEnded(animatable: Animatable, skipOnAnimationEnd = false) {
         this._updateVirtualFrame();
-        if (!skipOnAnimationEnd) {
+        if (!skipOnAnimationEnd && !this._isStopping) {
             this._retainedCurrentFrame = animatable.masterFrame;
         }
         // animatable should be taken out of the array

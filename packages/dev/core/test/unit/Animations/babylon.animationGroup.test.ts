@@ -6,6 +6,9 @@ import { Scene } from "core/scene";
 import { Animation } from "core/Animations/animation";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { FlowGraphStopAnimationBlock } from "core/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock";
+import { FlowGraphPlayAnimationBlock } from "core/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock";
+import { FlowGraphConstantBlock } from "core/FlowGraph/Blocks/Data/flowGraphConstantBlock";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * Describes the test suite.
@@ -94,6 +97,85 @@ describe("Babylon Animation Group", function () {
         });
 
         it.each([
+            [-30, 30],
+            [90, 30],
+            [150, 30],
+        ])("starts requested frame %i at effective frame %i", (requestedFrom, effectiveFrom) => {
+            const scene = new Scene(subject);
+            const target = { value: -1 };
+            const animation = new Animation("animation", "value", 60, Animation.ANIMATIONTYPE_FLOAT);
+            animation.setKeys([
+                { frame: 0, value: 0 },
+                { frame: 60, value: 60 },
+            ]);
+            const animationGroup = new AnimationGroup("animationGroup0", scene);
+            animationGroup.addTargetedAnimation(animation, target);
+
+            animationGroup.start(false, 1, requestedFrom, requestedFrom + 30);
+
+            expect(animationGroup.getVirtualCurrentFrame()).toBe(requestedFrom);
+            expect(animationGroup.getRetainedCurrentFrame()).toBe(effectiveFrom);
+            expect(target.value).toBe(effectiveFrom);
+        });
+
+        it.each([
+            [-30, 30, 0, 0, 30],
+            [90, 150, 120, 60, 30],
+            [90, 30, 60, 60, 30],
+        ])("samples finite requested interval %i to %i through effective frame %i", (from, to, requestedHalfway, effectiveHalfway, effectiveEnd) => {
+            const scene = new Scene(subject);
+            const target = { value: -1 };
+            const animation = new Animation("animation", "value", 60, Animation.ANIMATIONTYPE_FLOAT);
+            animation.setKeys([
+                { frame: 0, value: 0 },
+                { frame: 60, value: 60 },
+            ]);
+            const animationGroup = new AnimationGroup("animationGroup0", scene);
+            animationGroup.addTargetedAnimation(animation, target);
+            animationGroup.start(false, 1, from, to);
+
+            scene._animate(500);
+            scene.onAfterAnimationsObservable.notifyObservers(scene);
+
+            expect(animationGroup.getVirtualCurrentFrame()).toBe(requestedHalfway);
+            expect(animationGroup.getRetainedCurrentFrame()).toBe(effectiveHalfway);
+            expect(target.value).toBe(effectiveHalfway);
+
+            scene._animate(500);
+            scene.onAfterAnimationsObservable.notifyObservers(scene);
+
+            expect(animationGroup.getVirtualCurrentFrame()).toBe(to);
+            expect(animationGroup.getRetainedCurrentFrame()).toBe(effectiveEnd);
+            expect(animationGroup.isPlaying).toBe(false);
+        });
+
+        it("passes an explicitly connected zero end frame to reverse playback", () => {
+            const scene = new Scene(subject);
+            const node = new TransformNode("node0", scene);
+            const animation = new Animation("animation", "position.x", 60, Animation.ANIMATIONTYPE_FLOAT);
+            animation.setKeys([
+                { frame: 0, value: 0 },
+                { frame: 60, value: 1 },
+            ]);
+            const animationGroup = new AnimationGroup("animationGroup0", scene);
+            animationGroup.addTargetedAnimation(animation, node);
+            const startSpy = vi.spyOn(animationGroup, "start");
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const context = coordinator.createGraph().createContext();
+            const zero = new FlowGraphConstantBlock({ value: 0 });
+            const playBlock = new FlowGraphPlayAnimationBlock();
+            zero.output.connectTo(playBlock.to);
+            playBlock.animationGroup.setValue(animationGroup, context);
+            playBlock.from.setValue(60, context);
+
+            playBlock._execute(context);
+
+            expect(startSpy).toHaveBeenCalledWith(false, 1, 60, 0);
+            expect(animationGroup.animatables[0].fromFrame).toBe(60);
+            expect(animationGroup.animatables[0].toFrame).toBe(0);
+        });
+
+        it.each([
             [0, 60, 60],
             [60, 0, 0],
         ])("snaps natural completion from %i to the exact %i endpoint", (from, to, expected) => {
@@ -135,7 +217,7 @@ describe("Babylon Animation Group", function () {
             const coordinator = new FlowGraphCoordinator({ scene });
             const context = coordinator.createGraph().createContext();
             context._setGlobalContextVariable("currentlyRunningAnimationGroups", [animationGroup.uniqueId]);
-            const stopBlock = new FlowGraphStopAnimationBlock();
+            const stopBlock = new FlowGraphStopAnimationBlock({ useVirtualStopAt: true });
             stopBlock.animationGroup.setValue(animationGroup, context);
             stopBlock.stopAtFrame.setValue(stopAt, context);
             const activationOrder: string[] = [];
@@ -165,11 +247,11 @@ describe("Babylon Animation Group", function () {
             const coordinator = new FlowGraphCoordinator({ scene });
             const context = coordinator.createGraph().createContext();
             context._setGlobalContextVariable("currentlyRunningAnimationGroups", [animationGroup.uniqueId]);
-            const firstStop = new FlowGraphStopAnimationBlock();
+            const firstStop = new FlowGraphStopAnimationBlock({ useVirtualStopAt: true });
             firstStop.animationGroup.setValue(animationGroup, context);
             firstStop.stopAtFrame.setValue(120, context);
             firstStop._execute(context);
-            const replacementStop = new FlowGraphStopAnimationBlock();
+            const replacementStop = new FlowGraphStopAnimationBlock({ useVirtualStopAt: true });
             replacementStop.animationGroup.setValue(animationGroup, context);
             replacementStop.stopAtFrame.setValue(180, context);
             replacementStop._execute(context);
@@ -178,6 +260,56 @@ describe("Babylon Animation Group", function () {
             replacementStop._executeOnTick(context);
 
             expect(animationGroup.getVirtualCurrentFrame()).toBe(180);
+            expect(animationGroup.isPlaying).toBe(false);
+        });
+
+        it("uses legacy positive-frame scheduling without virtual stop mode", () => {
+            const scene = new Scene(subject);
+            const node = new TransformNode("node0", scene);
+            const animation = new Animation("animation", "position.x", 60, Animation.ANIMATIONTYPE_FLOAT);
+            animation.setKeys([
+                { frame: 0, value: 0 },
+                { frame: 60, value: 1 },
+            ]);
+            const animationGroup = new AnimationGroup("animationGroup0", scene);
+            animationGroup.addTargetedAnimation(animation, node);
+            animationGroup.start(true, 1, 0, 60);
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const context = coordinator.createGraph().createContext();
+            context._setGlobalContextVariable("currentlyRunningAnimationGroups", [animationGroup.uniqueId]);
+            const stopBlock = new FlowGraphStopAnimationBlock();
+            stopBlock.animationGroup.setValue(animationGroup, context);
+            stopBlock.stopAtFrame.setValue(30, context);
+
+            stopBlock._execute(context);
+            expect(animationGroup.isPlaying).toBe(true);
+
+            animationGroup.animatables[0].goToFrame(30);
+            stopBlock._executeOnTick(context);
+
+            expect(animationGroup.isPlaying).toBe(false);
+        });
+
+        it.each([0, -1])("stops immediately at legacy connected frame %i", (stopAtFrame) => {
+            const scene = new Scene(subject);
+            const node = new TransformNode("node0", scene);
+            const animation = new Animation("animation", "position.x", 60, Animation.ANIMATIONTYPE_FLOAT);
+            animation.setKeys([
+                { frame: 0, value: 0 },
+                { frame: 60, value: 1 },
+            ]);
+            const animationGroup = new AnimationGroup("animationGroup0", scene);
+            animationGroup.addTargetedAnimation(animation, node);
+            animationGroup.start(true, 1, 0, 60);
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const context = coordinator.createGraph().createContext();
+            context._setGlobalContextVariable("currentlyRunningAnimationGroups", [animationGroup.uniqueId]);
+            const stopBlock = new FlowGraphStopAnimationBlock();
+            stopBlock.animationGroup.setValue(animationGroup, context);
+            stopBlock.stopAtFrame.setValue(stopAtFrame, context);
+
+            stopBlock._execute(context);
+
             expect(animationGroup.isPlaying).toBe(false);
         });
 

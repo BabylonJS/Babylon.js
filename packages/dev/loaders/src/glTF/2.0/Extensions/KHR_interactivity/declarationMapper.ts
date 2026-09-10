@@ -1947,6 +1947,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
+            const stopAnimationBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.StopAnimation);
+            if (stopAnimationBlock) {
+                stopAnimationBlock.config.useVirtualStopAt = true;
+            }
             const arrayIndexBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.ArrayIndex);
             if (arrayIndexBlock) {
                 arrayIndexBlock.config.referenceCollection = "animations";

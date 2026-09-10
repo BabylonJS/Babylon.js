@@ -105,11 +105,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         const pickedMesh = pickedInfo.pickInfo?.pickedMesh;
         // When no target mesh is configured, fire for any picked mesh.
         // When a target is configured, require an exact match or descendant match.
-        // Match by reference first, then by descendant, then by stable name/id as a
-        // fallback for scene reloads where the object reference changes but the mesh
-        // identity (name) is preserved (uniqueId increments monotonically and is NOT
-        // stable across reloads).
-        const meshMatches = !mesh ? !!pickedMesh : !!(pickedMesh && (pickedMesh === mesh || _IsDescendantOf(pickedMesh, mesh) || pickedMesh.name === mesh.name));
+        const meshMatches = !mesh ? !!pickedMesh : !!(pickedMesh && (pickedMesh === mesh || _IsDescendantOf(pickedMesh, mesh)));
         if (meshMatches && pickedMesh) {
             this.pointerId.setValue((pickedInfo.event as IPointerEvent).pointerId, context);
             this.pickOrigin.setValue(pickedInfo.pickInfo!.ray?.origin!, context);

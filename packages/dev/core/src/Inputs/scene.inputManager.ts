@@ -124,6 +124,7 @@ export class InputManager {
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
     private _meshUnderPointerId: { [pointerId: number]: Nullable<AbstractMesh> } = {};
     private _movePointerInfo: Nullable<PointerInfo> = null;
+    private _latestPointerMoveEvents = new Map<number, IPointerEvent>();
     private _cameraObserverCount = 0;
     private _delayedClicks: Array<Nullable<_IClickEvent>> = [null, null, null, null, null];
 
@@ -324,6 +325,37 @@ export class InputManager {
         this._setCursorAndPointerOverMesh(pickResult, evt, scene);
 
         return pickResult;
+    }
+
+    /** @internal */
+    public _updateMeshUnderPointer(): void {
+        const scene = this._scene;
+        if (
+            !scene.constantlyUpdateMeshUnderPointer ||
+            this._latestPointerMoveEvents.size === 0 ||
+            scene.skipPointerMovePicking ||
+            (!scene.cameraToUseForPointers && !scene.activeCamera)
+        ) {
+            return;
+        }
+        this._ensurePointerMovePredicate();
+        for (const evt of this._latestPointerMoveEvents.values()) {
+            this._pickMove(evt);
+        }
+    }
+
+    private _ensurePointerMovePredicate(): void {
+        const scene = this._scene;
+        if (!scene.pointerMovePredicate) {
+            scene.pointerMovePredicate = (mesh: AbstractMesh): boolean =>
+                mesh._isPointerMovePickable &&
+                mesh.isPickable &&
+                mesh.isVisible &&
+                mesh.isReady() &&
+                mesh.isEnabled() &&
+                (mesh.enablePointerMoveEvents || scene.constantlyUpdateMeshUnderPointer || mesh._getActionManagerForTrigger() !== null) &&
+                (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
+        }
     }
 
     private _setCursorAndPointerOverMesh(pickResult: Nullable<PickingInfo>, evt: IPointerEvent, scene: Scene) {
@@ -779,6 +811,7 @@ export class InputManager {
 
         this._onPointerMove = (evt: IMouseEvent) => {
             this._updatePointerPosition(evt as IPointerEvent);
+            this._latestPointerMoveEvents.set((evt as IPointerEvent).pointerId, evt as IPointerEvent);
 
             // Check if pointer leaves DragMovementThreshold range to determine if swipe is occurring
             if (!this._isSwiping && this._swipeButtonPressed !== -1) {
@@ -813,15 +846,7 @@ export class InputManager {
                 return;
             }
 
-            if (!scene.pointerMovePredicate) {
-                scene.pointerMovePredicate = (mesh: AbstractMesh): boolean =>
-                    mesh.isPickable &&
-                    mesh.isVisible &&
-                    mesh.isReady() &&
-                    mesh.isEnabled() &&
-                    (mesh.enablePointerMoveEvents || scene.constantlyUpdateMeshUnderPointer || mesh._getActionManagerForTrigger() !== null) &&
-                    (!scene.cameraToUseForPointers || (scene.cameraToUseForPointers.layerMask & mesh.layerMask) !== 0);
-            }
+            this._ensurePointerMovePredicate();
 
             const pickResult = scene._registeredActions > 0 || scene.constantlyUpdateMeshUnderPointer ? this._pickMove(evt as IPointerEvent) : null;
             this._processPointerMove(pickResult, evt as IPointerEvent);
@@ -1144,6 +1169,7 @@ export class InputManager {
 
             this._alreadyAttached = false;
             this._alreadyAttachedTo = null;
+            this._latestPointerMoveEvents.clear();
         }
     }
 

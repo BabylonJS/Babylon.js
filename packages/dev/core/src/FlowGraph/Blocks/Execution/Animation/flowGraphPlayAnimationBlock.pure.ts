@@ -160,8 +160,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             // Read the raw end time before it is defaulted to the animation group's natural end, so that an
             // explicitly provided NaN end time can still be detected by the animation/start validation below.
             const rawTo = this.to.getValue(context);
-            // not accepting 0
-            const to = rawTo || animationGroupToUse.to;
+            const hasTo = this.to.isConnected() || context._hasConnectionValue(this.to);
+            const to = hasTo ? rawTo : animationGroupToUse.to;
 
             // Input validation. Only applies to animation-group playback
             // (animation/start); interpolation uses the `animation` input and has its own validation below.

@@ -9,6 +9,18 @@ import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { Logger } from "core/Misc/logger";
 import { FlowGraphAsyncExecutionBlock } from "core/FlowGraph/flowGraphAsyncExecutionBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
+
+/**
+ * Configuration for stopping an animation.
+ */
+export interface IFlowGraphStopAnimationBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * Whether stopAtFrame uses the unbounded KHR_interactivity timeline.
+     * When false, the block retains its legacy positive-frame scheduling behavior.
+     */
+    useVirtualStopAt?: boolean;
+}
+
 /**
  * @experimental
  * Block that stops a running animation
@@ -24,7 +36,7 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
      */
     public readonly stopAtFrame: FlowGraphDataConnection<number>;
 
-    constructor(config?: IFlowGraphBlockConfiguration) {
+    constructor(config?: IFlowGraphStopAnimationBlockConfiguration) {
         super(config);
         this.animationGroup = this.registerDataInput("animationGroup", RichTypeAny);
         this.stopAtFrame = this.registerDataInput("stopAtFrame", RichTypeNumber, -1);
@@ -40,17 +52,22 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
                 uniqueId: number;
                 stopAtFrame: number;
                 block: FlowGraphStopAnimationBlock;
+                useVirtualStopAt: boolean;
             }[]
         );
-        const existing = pendingStopAnimations.find((entry) => entry.uniqueId === animationToStopValue.uniqueId);
-        if (existing) {
-            if (existing.block !== this) {
-                context._removePendingBlock(existing.block);
+        if (this.config?.useVirtualStopAt) {
+            const existing = pendingStopAnimations.find((entry) => entry.uniqueId === animationToStopValue.uniqueId && entry.useVirtualStopAt);
+            if (existing) {
+                if (existing.block !== this) {
+                    context._removePendingBlock(existing.block);
+                }
+                existing.stopAtFrame = stopAtFrame;
+                existing.block = this;
+            } else {
+                pendingStopAnimations.push({ uniqueId: animationToStopValue.uniqueId, stopAtFrame, block: this, useVirtualStopAt: true });
             }
-            existing.stopAtFrame = stopAtFrame;
-            existing.block = this;
         } else {
-            pendingStopAnimations.push({ uniqueId: animationToStopValue.uniqueId, stopAtFrame, block: this });
+            pendingStopAnimations.push({ uniqueId: animationToStopValue.uniqueId, stopAtFrame, block: this, useVirtualStopAt: false });
         }
         // set the global context variable
         context._setGlobalContextVariable("pendingStopAnimations", pendingStopAnimations);
@@ -64,6 +81,7 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
                 uniqueId: number;
                 stopAtFrame: number;
                 block: FlowGraphStopAnimationBlock;
+                useVirtualStopAt: boolean;
             }[]
         );
         for (let i = 0; i < pendingStopAnimations.length; i++) {
@@ -87,10 +105,11 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
         if (isNaN(stopTime)) {
             return this._reportError(context, "Invalid stop time.");
         }
-        const hasScheduledStop = this.stopAtFrame.isConnected() || context._hasConnectionValue(this.stopAtFrame);
+        const useVirtualStopAt = !!this.config?.useVirtualStopAt;
+        const hasScheduledStop = useVirtualStopAt ? this.stopAtFrame.isConnected() || context._hasConnectionValue(this.stopAtFrame) : stopTime > 0;
         let activateDone = false;
         if (hasScheduledStop) {
-            if (animationToStopValue.isValidVirtualStopFrame(stopTime) && animationToStopValue.isVirtualFrameReached(stopTime)) {
+            if (useVirtualStopAt && animationToStopValue.isValidVirtualStopFrame(stopTime) && animationToStopValue.isVirtualFrameReached(stopTime)) {
                 this._stopAnimation(animationToStopValue, context, stopTime);
                 activateDone = true;
             } else {
@@ -111,17 +130,19 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
         // check each frame if any animation should be stopped
         const pendingStopAnimations = context._getGlobalContextVariable(
             "pendingStopAnimations",
-            [] as { uniqueId: number; stopAtFrame: number; block: FlowGraphStopAnimationBlock }[]
+            [] as { uniqueId: number; stopAtFrame: number; block: FlowGraphStopAnimationBlock; useVirtualStopAt: boolean }[]
         );
         for (let i = 0; i < pendingStopAnimations.length; i++) {
             // compare the uniqueId to the animation to stop
             if (pendingStopAnimations[i].uniqueId === animationToStopValue.uniqueId && pendingStopAnimations[i].block === this) {
-                if (
-                    animationToStopValue.isValidVirtualStopFrame(pendingStopAnimations[i].stopAtFrame) &&
-                    animationToStopValue.isVirtualFrameReached(pendingStopAnimations[i].stopAtFrame)
-                ) {
+                const useVirtualStopAt = pendingStopAnimations[i].useVirtualStopAt;
+                const shouldStop = useVirtualStopAt
+                    ? animationToStopValue.isValidVirtualStopFrame(pendingStopAnimations[i].stopAtFrame) &&
+                      animationToStopValue.isVirtualFrameReached(pendingStopAnimations[i].stopAtFrame)
+                    : animationToStopValue.getCurrentFrame() >= pendingStopAnimations[i].stopAtFrame;
+                if (shouldStop) {
                     // stop the animation
-                    this._stopAnimation(animationToStopValue, context, pendingStopAnimations[i].stopAtFrame);
+                    this._stopAnimation(animationToStopValue, context, useVirtualStopAt ? pendingStopAnimations[i].stopAtFrame : undefined);
                     // remove the animation from the list
                     pendingStopAnimations.splice(i, 1);
                     // set the global context variable

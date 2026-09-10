@@ -226,6 +226,32 @@ describe("Flow Graph Event Nodes", () => {
         expect(Logger.Log).toHaveBeenNthCalledWith(2, "Mesh 1 was picked");
     });
 
+    it("Mesh Pick Event ignores unrelated meshes with duplicate names", () => {
+        const graph = flowGraphCoordinator.createGraph();
+        const context = graph.createContext();
+        const meshA = new Mesh("duplicate", scene);
+        const meshB = new Mesh("duplicate", scene);
+        const pickA = new FlowGraphMeshPickEventBlock({ targetMesh: meshA });
+        const pickB = new FlowGraphMeshPickEventBlock({ targetMesh: meshB });
+        const logA = new FlowGraphConsoleLogBlock();
+        const logB = new FlowGraphConsoleLogBlock();
+        pickA.done.connectTo(logA.in);
+        pickB.done.connectTo(logB.in);
+        logA.message.setValue("A", context);
+        logB.message.setValue("B", context);
+        graph.addEventBlock(pickA);
+        graph.addEventBlock(pickB);
+        graph.start();
+
+        const pickInfo = new PickingInfo();
+        pickInfo.hit = true;
+        pickInfo.pickedMesh = meshA;
+        scene.onPointerObservable.notifyObservers(new PointerInfo(PointerEventTypes.POINTERPICK, {} as any, pickInfo));
+
+        expect(Logger.Log).toHaveBeenCalledWith("A");
+        expect(Logger.Log).not.toHaveBeenCalledWith("B");
+    });
+
     it("Event blocks fire both done and out signals", () => {
         const graph = flowGraphCoordinator.createGraph();
         const context = graph.createContext();

@@ -560,8 +560,8 @@ describe("Interactivity event nodes", () => {
             expect(parentMesh.isPickable).toBe(true);
             expect(childMesh.isPickable).toBe(false);
         } else {
-            expect(parentMesh.pointerOverDisableMeshTesting).toBe(false);
-            expect(childMesh.pointerOverDisableMeshTesting).toBe(true);
+            expect(parentMesh._isPointerMovePickable).toBe(true);
+            expect(childMesh._isPointerMovePickable).toBe(false);
         }
 
         SetInteractivityNodeState(child, state, true);
@@ -570,8 +570,8 @@ describe("Interactivity event nodes", () => {
             expect(parentMesh.isPickable).toBe(false);
             expect(childMesh.isPickable).toBe(false);
         } else {
-            expect(parentMesh.pointerOverDisableMeshTesting).toBe(true);
-            expect(childMesh.pointerOverDisableMeshTesting).toBe(true);
+            expect(parentMesh._isPointerMovePickable).toBe(false);
+            expect(childMesh._isPointerMovePickable).toBe(false);
         }
     });
 

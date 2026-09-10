@@ -47,28 +47,34 @@ async function _performRequiredInteractions(page: Page, descriptor: ITestDescrip
             if (!mesh) {
                 throw new Error(`Required interaction target "${interaction.targetNodeName}" (node ${interaction.targetNodeId}) was not loaded.`);
             }
+            mesh.computeWorldMatrix(true);
+            const target = mesh.getBoundingInfo().boundingSphere.centerWorld;
+            const origin = scene.activeCamera?.globalPosition ?? target.subtract(BABYLON.Vector3.Forward());
+            const ray = new BABYLON.Ray(origin, target.subtract(origin).normalize());
+            const targetPredicate = (candidate: BABYLON.AbstractMesh) => candidate === mesh || candidate.isDescendantOf(mesh);
+            const pickInfo = scene.pickWithRay(
+                ray,
+                interaction.type === "hover"
+                    ? (candidate) => targetPredicate(candidate) && candidate._isPointerMovePickable && candidate.isPickable
+                    : (candidate) => targetPredicate(candidate) && candidate.isPickable
+            );
             if (interaction.expectation === "mustNotFire") {
-                if (interaction.type === "hover" && !mesh.pointerOverDisableMeshTesting) {
-                    throw new Error(`Expected hover target "${interaction.targetNodeName}" to be excluded from hover testing.`);
-                }
-                if (interaction.type === "select" && mesh.isPickable) {
-                    throw new Error(`Expected select target "${interaction.targetNodeName}" to be non-pickable.`);
+                if (pickInfo?.hit) {
+                    throw new Error(`Expected ${interaction.type} target "${interaction.targetNodeName}" to be excluded from real ray picking.`);
                 }
                 continue;
             }
+            if (!pickInfo?.hit || !pickInfo.pickedMesh) {
+                throw new Error(`Expected ${interaction.type} target "${interaction.targetNodeName}" to be hit by real ray picking.`);
+            }
 
             if (interaction.type === "hover") {
-                scene.setPointerOverMesh(mesh, 1);
+                scene.simulatePointerMove(pickInfo, { pointerId: 1 });
                 await new Promise<void>((resolve) => setTimeout(resolve, 0));
-                scene.setPointerOverMesh(null, 1);
+                scene.simulatePointerMove(new BABYLON.PickingInfo(), { pointerId: 1 });
             } else {
-                const pickInfo = new BABYLON.PickingInfo();
-                pickInfo.hit = true;
-                pickInfo.pickedMesh = mesh;
-                pickInfo.pickedPoint = BABYLON.Vector3.Zero();
-                pickInfo.ray = new BABYLON.Ray(BABYLON.Vector3.Zero(), BABYLON.Vector3.Forward());
-                const pointerInfo = new BABYLON.PointerInfo(BABYLON.PointerEventTypes.POINTERPICK, { pointerId: 1 } as PointerEvent, pickInfo);
-                scene.onPointerObservable.notifyObservers(pointerInfo, BABYLON.PointerEventTypes.POINTERPICK);
+                scene.simulatePointerDown(pickInfo, { pointerId: 1 });
+                scene.simulatePointerUp(pickInfo, { pointerId: 1 });
             }
             await new Promise<void>((resolve) => setTimeout(resolve, 0));
         }
