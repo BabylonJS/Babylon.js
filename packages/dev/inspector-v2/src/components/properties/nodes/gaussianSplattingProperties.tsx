@@ -1,7 +1,6 @@
-import { type FunctionComponent, useCallback } from "react";
+import { type FunctionComponent } from "react";
 
 import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 import { type GaussianSplattingMesh } from "core/index";
 
@@ -10,8 +9,7 @@ import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { BoundProperty } from "../boundProperty";
-import { usePollingObservable } from "../../../hooks/pollingHooks";
+import { BoundProperty, ComputedProperty } from "../boundProperty";
 
 const ShDegreeOptions = [
     { label: "None (0)", value: 0 },
@@ -36,50 +34,54 @@ type GaussianSplattingStreamLike = GaussianSplattingMesh & {
     lod0SplatCount: { status: "pending" } | { status: "available"; count: number } | { status: "unavailable" };
 };
 
-const GaussianSplattingStreamDiagnostics: FunctionComponent<{ stream: GaussianSplattingStreamLike; tickObservable: ReturnType<typeof usePollingObservable> }> = (props) => {
-    const { stream, tickObservable } = props;
-    const visibleSplatCount = useObservableState(
-        useCallback(() => stream.renderedSplatCount, [stream]),
-        tickObservable
+const GetSplatCount = (mesh: GaussianSplattingMesh) => mesh.splatCount ?? 0;
+const GetRenderedSplatCount = (stream: GaussianSplattingStreamLike) => stream.renderedSplatCount;
+const GetResidentSplatBudget = (stream: GaussianSplattingStreamLike) => stream.residentSplatBudget;
+const GetLod0SplatCount = (stream: GaussianSplattingStreamLike) => stream.lod0SplatCount;
+
+const SplatBudgetPropertyLine: FunctionComponent<{ value: number }> = (props) => {
+    const { value } = props;
+    return value > 0 ? (
+        <StringifiedPropertyLine label="Splat Budget" description={SplatBudgetDescription} value={value} />
+    ) : (
+        <TextPropertyLine label="Splat Budget" description={SplatBudgetDescription} value="Disabled (unlimited)" />
     );
-    const residentSplatBudget = useObservableState(
-        useCallback(() => stream.residentSplatBudget, [stream]),
-        tickObservable
+};
+
+const Lod0SplatCountPropertyLine: FunctionComponent<{ value: GaussianSplattingStreamLike["lod0SplatCount"] }> = (props) => {
+    const { value } = props;
+    return value.status === "available" ? (
+        <StringifiedPropertyLine label="LOD 0 Splats" description={Lod0SplatCountDescription} value={value.count} />
+    ) : (
+        <TextPropertyLine label="LOD 0 Splats" description={Lod0SplatCountDescription} value={value.status === "pending" ? "Loading…" : "Unavailable"} />
     );
-    const lod0SplatCount = useObservableState(
-        useCallback(() => stream.lod0SplatCount, [stream]),
-        tickObservable
-    );
+};
+
+const GaussianSplattingStreamDiagnostics: FunctionComponent<{ stream: GaussianSplattingStreamLike }> = (props) => {
+    const { stream } = props;
 
     return (
         <>
-            <StringifiedPropertyLine label="Visible Splats" description={RenderedSplatCountDescription} value={visibleSplatCount} />
-            {residentSplatBudget > 0 ? (
-                <StringifiedPropertyLine label="Splat Budget" description={SplatBudgetDescription} value={residentSplatBudget} />
-            ) : (
-                <TextPropertyLine label="Splat Budget" description={SplatBudgetDescription} value="Disabled (unlimited)" />
-            )}
-            {lod0SplatCount.status === "available" ? (
-                <StringifiedPropertyLine label="LOD 0 Splats" description={Lod0SplatCountDescription} value={lod0SplatCount.count} />
-            ) : (
-                <TextPropertyLine label="LOD 0 Splats" description={Lod0SplatCountDescription} value={lod0SplatCount.status === "pending" ? "Loading…" : "Unavailable"} />
-            )}
+            <ComputedProperty
+                component={StringifiedPropertyLine}
+                label="Visible Splats"
+                description={RenderedSplatCountDescription}
+                target={stream}
+                getValue={GetRenderedSplatCount}
+            />
+            <ComputedProperty component={SplatBudgetPropertyLine} target={stream} getValue={GetResidentSplatBudget} />
+            <ComputedProperty component={Lod0SplatCountPropertyLine} target={stream} getValue={GetLod0SplatCount} />
         </>
     );
 };
 
 export const GaussianSplattingDisplayProperties: FunctionComponent<{ mesh: GaussianSplattingMesh }> = (props) => {
     const { mesh } = props;
-    const tickObservable = usePollingObservable(100);
-    const splatCount = useObservableState(
-        useCallback(() => mesh.splatCount ?? 0, [mesh]),
-        tickObservable
-    );
     const stream = mesh.getClassName() === "GaussianSplattingStream" ? (mesh as GaussianSplattingStreamLike) : null;
 
     return (
         <>
-            <StringifiedPropertyLine label="Splat Count" description={SplatCountDescription} value={splatCount} />
+            <ComputedProperty component={StringifiedPropertyLine} label="Splat Count" description={SplatCountDescription} target={mesh} getValue={GetSplatCount} />
             <BoundProperty component={NumberDropdownPropertyLine} label="SH Degree" options={ShDegreeOptions} target={mesh} propertyKey="shDegree" />
             <StringifiedPropertyLine label="Max SH Degree" value={mesh.maxShDegree} />
             <BooleanBadgePropertyLine label="Has Compensation" value={mesh.compensation} />
@@ -96,7 +98,7 @@ export const GaussianSplattingDisplayProperties: FunctionComponent<{ mesh: Gauss
             />
             {stream && (
                 <>
-                    <GaussianSplattingStreamDiagnostics stream={stream} tickObservable={tickObservable} />
+                    <GaussianSplattingStreamDiagnostics stream={stream} />
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
                         label="Max Detail LOD"
