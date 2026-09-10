@@ -154,6 +154,9 @@ export function createUSDMeshTestBuffers(withTextures = false, separateMaterialT
     const childMatrix = [..._identity];
     childMatrix[13] = 1;
     const childOffset = data.floats(childMatrix);
+    const childBindMatrix = [..._identity];
+    childBindMatrix[13] = 2;
+    const childBindOffset = data.floats(childBindMatrix);
 
     commands.command(Command.Scene, (writer) => {
         writer.u32(0);
@@ -238,7 +241,20 @@ export function createUSDMeshTestBuffers(withTextures = false, separateMaterialT
         });
     }
 
-    const jointsOffset = data.uints([MISSING_OFFSET, 10, name.offset, name.length, identityOffset, 0, 11, name.offset, name.length, childOffset]);
+    const jointsOffset = data.uints([
+        MISSING_OFFSET,
+        10,
+        name.offset,
+        name.length,
+        identityOffset,
+        identityOffset,
+        0,
+        11,
+        name.offset,
+        name.length,
+        childOffset,
+        childBindOffset,
+    ]);
     commands.command(Command.Skeleton, (writer) => {
         [1, name.offset, name.length, 2, jointsOffset].forEach((value) => writer.u32(value));
     });

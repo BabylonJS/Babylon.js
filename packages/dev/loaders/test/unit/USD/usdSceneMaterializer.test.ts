@@ -95,6 +95,7 @@ describe("USD scene materializer protocol", () => {
         expect(skeleton.bones).toHaveLength(2);
         expect(skeleton.bones[1].getParent()).toBe(skeleton.bones[0]);
         expect(skeleton.bones[1].getRestMatrix().m[13]).toBeCloseTo(1);
+        expect(skeleton.bones[1].getBindMatrix().m[13]).toBeCloseTo(2);
         const tracks = container.animationGroups[0].targetedAnimations;
         expect(tracks).toHaveLength(2);
         expect(tracks[0].target).toBe(mesh.parent);
