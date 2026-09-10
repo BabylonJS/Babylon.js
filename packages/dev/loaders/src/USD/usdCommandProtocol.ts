@@ -15,6 +15,7 @@ export const enum Command {
     Instance = 8,
     Animation = 9,
     AnalyticPrimitive = 10,
+    ThinInstances = 11,
 }
 
 export const enum AnalyticPrimitiveType {
@@ -104,6 +105,8 @@ function expectedPayloadLength(opcode: Command): number {
             return 32;
         case Command.AnalyticPrimitive:
             return 44;
+        case Command.ThinInstances:
+            return 12;
         default:
             throw new Error(`Unknown OpenUSD Babylon command opcode ${opcode}.`);
     }

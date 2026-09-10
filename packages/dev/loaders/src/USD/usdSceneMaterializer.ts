@@ -235,6 +235,8 @@ export async function materializeCommandBuffers(
     const bones = new Map<number, Bone>();
     const geometries = new Map<number, GeometryDescriptor>();
     const meshes = new Map<number, Mesh>();
+    const classicInstanceSources = new Set<number>();
+    const thinInstanceSources = new Set<number>();
     const animationGroups = new Map<number, AnimationGroup>();
     const textureLoads: Promise<void>[] = [];
     const textureUrls = new Set<string>();
@@ -920,9 +922,30 @@ export async function materializeCommandBuffers(
                         if (!source) {
                             throw new Error(`Instance references missing mesh ${sourceId}.`);
                         }
+                        if (thinInstanceSources.has(sourceId)) {
+                            throw new Error(`Mesh ${sourceId} cannot mix classic and thin instances.`);
+                        }
+                        classicInstanceSources.add(sourceId);
                         const instance = source.createInstance(stringAt(dataBuffer, nameOffset, nameLength));
                         trackAsset(container.meshes, instance);
                         instance.parent = nodes.get(nodeId) ?? root ?? null;
+                        break;
+                    }
+                    case Command.ThinInstances: {
+                        const sourceId = payload.u32();
+                        const transformsOffset = payload.u32();
+                        const instanceCount = payload.u32();
+                        const source = meshes.get(sourceId);
+                        if (!source) {
+                            throw new Error(`Thin instances reference missing mesh ${sourceId}.`);
+                        }
+                        if (thinInstanceSources.has(sourceId) || classicInstanceSources.has(sourceId)) {
+                            throw new Error(`Mesh ${sourceId} has duplicate or mixed thin instances.`);
+                        }
+                        assertRange(dataBuffer, transformsOffset, instanceCount * 16, 4, "thin instance transforms");
+                        source.thinInstanceSetBuffer("matrix", new Float32Array(dataBuffer, transformsOffset, instanceCount * 16), 16, true);
+                        source.thinInstanceEnablePicking = true;
+                        thinInstanceSources.add(sourceId);
                         break;
                     }
                     case Command.Animation: {

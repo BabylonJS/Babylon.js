@@ -146,7 +146,7 @@ export function createUSDTestBuffers(): USDTestBuffers {
     addUSDTestPrimitives(commands, data);
     return { commands: commands.finish(), data: data.toArrayBuffer() };
 }
-export function createUSDMeshTestBuffers(withTextures = false, separateMaterialTextures = false, processedMaterialTextures = false): USDTestBuffers {
+export function createUSDMeshTestBuffers(withTextures = false, separateMaterialTextures = false, processedMaterialTextures = false, withThinInstances = false): USDTestBuffers {
     const commands = new CommandWriter();
     const data = new BufferWriter();
     const name = data.appendString("Skinned quad");
@@ -241,20 +241,7 @@ export function createUSDMeshTestBuffers(withTextures = false, separateMaterialT
         });
     }
 
-    const jointsOffset = data.uints([
-        MISSING_OFFSET,
-        10,
-        name.offset,
-        name.length,
-        identityOffset,
-        identityOffset,
-        0,
-        11,
-        name.offset,
-        name.length,
-        childOffset,
-        childBindOffset,
-    ]);
+    const jointsOffset = data.uints([MISSING_OFFSET, 10, name.offset, name.length, identityOffset, identityOffset, 0, 11, name.offset, name.length, childOffset, childBindOffset]);
     commands.command(Command.Skeleton, (writer) => {
         [1, name.offset, name.length, 2, jointsOffset].forEach((value) => writer.u32(value));
     });
@@ -277,9 +264,21 @@ export function createUSDMeshTestBuffers(withTextures = false, separateMaterialT
     commands.command(Command.Mesh, (writer) => {
         [1, 1, 1, MISSING_OFFSET, name.offset, name.length, 0, 1, subsets, 2].forEach((value) => writer.u32(value));
     });
-    commands.command(Command.Instance, (writer) => {
-        [1, 1, name.offset, name.length].forEach((value) => writer.u32(value));
-    });
+    if (!withThinInstances) {
+        commands.command(Command.Instance, (writer) => {
+            [1, 1, name.offset, name.length].forEach((value) => writer.u32(value));
+        });
+    }
+    if (withThinInstances) {
+        const first = [..._identity];
+        first[12] = 4;
+        const second = [..._identity];
+        second[12] = 8;
+        const transforms = data.floats([...first, ...second]);
+        commands.command(Command.ThinInstances, (writer) => {
+            [1, transforms, 2].forEach((value) => writer.u32(value));
+        });
+    }
 
     const times = data.floats([0, 24]);
     const movedMatrix = [..._identity];
@@ -306,6 +305,10 @@ export function createUSDSeparateMaterialTestBuffers(): USDTestBuffers {
 
 export function createUSDProcessedMaterialTestBuffers(): USDTestBuffers {
     return createUSDMeshTestBuffers(true, true, true);
+}
+
+export function createUSDThinInstanceTestBuffers(): USDTestBuffers {
+    return createUSDMeshTestBuffers(false, false, false, true);
 }
 
 function addUSDTestPrimitives(commands: CommandWriter, data: BufferWriter): void {

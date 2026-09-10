@@ -11,7 +11,7 @@ import { Animation } from "core/Animations/animation";
 import { Command, readCommands } from "loaders/USD/usdCommandProtocol";
 import { _RegisterUSDLoaderDependencies } from "loaders/USD/usdFileLoader.pure";
 import { materializeCommandBuffers } from "loaders/USD/usdSceneMaterializer";
-import { createUSDMeshTestBuffers, createUSDProcessedMaterialTestBuffers, createUSDSeparateMaterialTestBuffers } from "./usdTestUtils";
+import { createUSDMeshTestBuffers, createUSDProcessedMaterialTestBuffers, createUSDSeparateMaterialTestBuffers, createUSDThinInstanceTestBuffers } from "./usdTestUtils";
 import { deferUSDTextureLoads } from "./usdTextureTestUtils";
 import { GetEnvironmentBRDFTexture } from "core/Misc/brdfTextureTools";
 import { TextureChannel, type ITextureProcessOperand } from "core/Materials/Textures/textureProcessor";
@@ -120,6 +120,19 @@ describe("USD scene materializer protocol", () => {
         expect(scene.meshes).toHaveLength(2);
         container.dispose();
         expect(scene.meshes).toHaveLength(0);
+    });
+
+    it("binds point-instancer matrices as one thin-instance buffer", async () => {
+        const buffers = createUSDThinInstanceTestBuffers();
+        const { container } = await materializeCommandBuffers(scene, buffers.commands, buffers.data, true);
+        const source = container.meshes[0];
+        if (!(source instanceof Mesh)) {
+            throw new Error("Expected thin-instance source mesh");
+        }
+        expect(source.thinInstanceCount).toBe(2);
+        expect(source.thinInstanceEnablePicking).toBe(true);
+        expect(source.thinInstanceGetWorldMatrices().map((matrix) => matrix.m[12])).toEqual([4, 8]);
+        expect(container.meshes).toHaveLength(1);
     });
 
     it("waits for textures and applies PBR slots, alpha and UV transforms", async () => {
@@ -303,6 +316,14 @@ describe("USD scene materializer protocol", () => {
         await expect(materializeCommandBuffers(scene, buffers.commands, buffers.data, false)).rejects.toThrow("invalid parent joint index");
         expect(scene.skeletons).toHaveLength(0);
         expect(scene._blockEntityCollection).toBe(false);
+    });
+
+    it("rejects an invalid thin-instance transform range", async () => {
+        const buffers = createUSDThinInstanceTestBuffers();
+        const command = readCommands(buffers.commands).find((record) => record.opcode === Command.ThinInstances)!;
+        new DataView(buffers.commands).setUint32(command.payloadOffset + 4, 0xfffffffc, true);
+        await expect(materializeCommandBuffers(scene, buffers.commands, buffers.data, false)).rejects.toThrow("thin instance transforms");
+        expect(scene.meshes).toHaveLength(0);
     });
 
     it("observes late image errors after synchronous protocol rollback", async () => {
