@@ -9,6 +9,7 @@ import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { Logger } from "core/Misc/logger";
 import { FlowGraphAsyncExecutionBlock } from "core/FlowGraph/flowGraphAsyncExecutionBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { RemoveFlowGraphAnimationGroupObservers } from "./flowGraphPlayAnimationBlock.pure";
 
 /**
  * Configuration for stopping an animation.
@@ -176,6 +177,8 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
         const currentlyRunning = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
         const index = currentlyRunning.indexOf(animationGroup.uniqueId);
         if (index !== -1) {
+            const owner = RemoveFlowGraphAnimationGroupObservers(context, animationGroup);
+            owner?._cleanupAfterExternalStop(context, animationGroup);
             if (virtualStopFrame !== undefined) {
                 animationGroup.setVirtualCurrentFrame(virtualStopFrame);
             }

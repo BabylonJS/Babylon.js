@@ -401,5 +401,34 @@ describe("Babylon Animation Group", function () {
             expect(firstDone).not.toHaveBeenCalled();
             expect(secondDone).toHaveBeenCalledTimes(1);
         });
+
+        it("cleans the originating play block when a stop block ends its animation", () => {
+            const scene = new Scene(subject);
+            const node = new TransformNode("node0", scene);
+            const animation = new Animation("animation", "position.x", 60, Animation.ANIMATIONTYPE_FLOAT);
+            animation.setKeys([
+                { frame: 0, value: 0 },
+                { frame: 60, value: 1 },
+            ]);
+            const animationGroup = new AnimationGroup("animationGroup0", scene);
+            animationGroup.addTargetedAnimation(animation, node);
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const context = coordinator.createGraph().createContext();
+            const first = new FlowGraphPlayAnimationBlock({ useVirtualTimeline: true });
+            first.animationGroup.setValue(animationGroup, context);
+            first.speed.setValue(1, context);
+            first.to.setValue(60, context);
+            const firstDone = vi.spyOn(first.done, "_activateSignal");
+            first._execute(context);
+            expect(context.hasPendingBlocks).toBe(true);
+
+            const stop = new FlowGraphStopAnimationBlock({ skipOnAnimationEnd: true });
+            stop.animationGroup.setValue(animationGroup, context);
+            stop._execute(context);
+
+            expect(context.hasPendingBlocks).toBe(false);
+            expect(firstDone).not.toHaveBeenCalled();
+            expect((context._getGlobalContextVariable("animationGroupObserverSets", new Map()) as Map<number, unknown>).has(animationGroup.uniqueId)).toBe(false);
+        });
     });
 });

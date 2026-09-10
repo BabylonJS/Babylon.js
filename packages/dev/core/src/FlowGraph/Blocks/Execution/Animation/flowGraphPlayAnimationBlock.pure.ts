@@ -30,6 +30,27 @@ type AnimationObserverSet = {
 };
 
 /**
+ * Removes observers owned by the play block that started an animation group.
+ * @param context active FlowGraph context
+ * @param animationGroup animation group being replaced or stopped
+ * @returns the owning play block, when one was registered
+ */
+export function RemoveFlowGraphAnimationGroupObservers(context: FlowGraphContext, animationGroup: AnimationGroup): FlowGraphPlayAnimationBlock | undefined {
+    const observerSets = context._getGlobalContextVariable("animationGroupObserverSets", new Map<number, AnimationObserverSet>()) as Map<number, AnimationObserverSet>;
+    const observers = observerSets.get(animationGroup.uniqueId);
+    if (!observers) {
+        return undefined;
+    }
+    animationGroup.onAnimationGroupEndObservable.remove(observers.groupEnd);
+    animationGroup.onAnimationEndObservable.remove(observers.animationEnd);
+    animationGroup.onAnimationLoopObservable.remove(observers.animationLoop);
+    animationGroup.onAnimationGroupLoopObservable.remove(observers.groupLoop);
+    observerSets.delete(animationGroup.uniqueId);
+    context._setGlobalContextVariable("animationGroupObserverSets", observerSets);
+    return observers.block;
+}
+
+/**
  * @experimental
  * A block that plays an animation on an animatable object.
  */
@@ -305,7 +326,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     private _onAnimationGroupEnd(context: FlowGraphContext, animationGroup: AnimationGroup) {
-        this._removeAnimationObservers(context, animationGroup);
+        RemoveFlowGraphAnimationGroupObservers(context, animationGroup);
         this._removeFromCurrentlyRunning(context, animationGroup);
         this._resetAfterCanceled(context);
         this.done._activateSignal(context);
@@ -334,7 +355,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     private _stopAnimationGroup(context: FlowGraphContext, animationGroup: AnimationGroup) {
-        this._removeAnimationObservers(context, animationGroup);
+        const owner = RemoveFlowGraphAnimationGroupObservers(context, animationGroup);
+        owner?._cleanupAfterExternalStop(context, animationGroup);
         // stop, while skipping the on AnimationEndObservable to avoid the "done" signal
         animationGroup.stop(true);
         // Only dispose animation groups that were internally created by this block
@@ -347,18 +369,11 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         this._removeFromCurrentlyRunning(context, animationGroup);
     }
 
-    private _removeAnimationObservers(context: FlowGraphContext, animationGroup: AnimationGroup): void {
-        const observerSets = context._getGlobalContextVariable("animationGroupObserverSets", new Map<number, AnimationObserverSet>()) as Map<number, AnimationObserverSet>;
-        const observers = observerSets.get(animationGroup.uniqueId);
-        if (!observers) {
-            return;
-        }
-        animationGroup.onAnimationGroupEndObservable.remove(observers.groupEnd);
-        animationGroup.onAnimationEndObservable.remove(observers.animationEnd);
-        animationGroup.onAnimationLoopObservable.remove(observers.animationLoop);
-        animationGroup.onAnimationGroupLoopObservable.remove(observers.groupLoop);
-        observerSets.delete(animationGroup.uniqueId);
-        context._setGlobalContextVariable("animationGroupObserverSets", observerSets);
+    /** @internal */
+    public _cleanupAfterExternalStop(context: FlowGraphContext, animationGroup: AnimationGroup): void {
+        this._removeFromCurrentlyRunning(context, animationGroup);
+        this._resetAfterCanceled(context);
+        context._removePendingBlock(this);
     }
 
     private _removeFromCurrentlyRunning(context: FlowGraphContext, animationGroup: AnimationGroup) {
