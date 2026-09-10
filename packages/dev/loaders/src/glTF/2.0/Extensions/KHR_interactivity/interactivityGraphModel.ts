@@ -77,6 +77,8 @@ export interface IKHRInteractivityGraphModel {
     name: string;
     /** Exact source graph, including extension and extras payloads. */
     source: IKHRInteractivity_Graph;
+    /** Executable graph with specification defaults and fallbacks applied. */
+    effectiveSource: IKHRInteractivity_Graph;
     /** Canonical declarations in source order. */
     declarations: IKHRInteractivityDeclarationModel[];
     /** Validation diagnostics for this graph. */
@@ -279,6 +281,88 @@ function _getIndexedArrayLength(graph: IKHRInteractivity_Graph, source: IGLTFToF
         default:
             return 0;
     }
+}
+
+function _isEffectiveConfigurationValue(
+    configuration: { value?: unknown[] } | undefined,
+    property: IGLTFToFlowGraphMappingObject,
+    graph: IKHRInteractivity_Graph,
+    assetNodeCount?: number
+): boolean {
+    if (!configuration || !_validateConfigurationValue(configuration.value, property.configurationType) || !configuration.value) {
+        return false;
+    }
+    if (property.minItems !== undefined && configuration.value.length < property.minItems) {
+        return false;
+    }
+    if (property.minimum !== undefined && configuration.value.some((value) => typeof value !== "number" || value < property.minimum!)) {
+        return false;
+    }
+    if (property.maximum !== undefined && configuration.value.some((value) => typeof value !== "number" || value > property.maximum!)) {
+        return false;
+    }
+    if (property.indexSource) {
+        const length = _getIndexedArrayLength(graph, property.indexSource, assetNodeCount);
+        if (configuration.value.some((value) => !_isValidIndex(value, length))) {
+            return false;
+        }
+    }
+    if (property.allowedSignatures) {
+        const typeIndex = configuration.value[0];
+        const signature = typeof typeIndex === "number" ? graph.types?.[typeIndex]?.signature : undefined;
+        if (!signature || !property.allowedSignatures.includes(signature)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * Creates the executable graph view with all ratified configuration defaults and fallback rules
+ * applied without modifying the lossless source graph.
+ * @param graph source graph
+ * @param declarations canonical declarations
+ * @param assetNodeCount number of glTF nodes in the containing asset
+ * @returns normalized executable graph
+ */
+export function CreateEffectiveKHRInteractivityGraph(
+    graph: IKHRInteractivity_Graph,
+    declarations: readonly IKHRInteractivityDeclarationModel[],
+    assetNodeCount?: number
+): IKHRInteractivity_Graph {
+    const effective = CloneKHRInteractivityGraph(graph);
+    for (let nodeIndex = 0; nodeIndex < (effective.nodes?.length ?? 0); nodeIndex++) {
+        const node = effective.nodes![nodeIndex];
+        const declaration = declarations[node.declaration];
+        if (!declaration || declaration.support === "unknown-core" || declaration.support === "unsupported-extension") {
+            continue;
+        }
+        const mapping = getMappingForDeclaration(declaration.source, false);
+        if (!mapping?.configuration) {
+            continue;
+        }
+        const groupedValidity = new Map<string, boolean>();
+        for (const [key, property] of Object.entries(mapping.configuration)) {
+            if (property.configurationGroup) {
+                const valid = _isEffectiveConfigurationValue(node.configuration?.[key], property, effective, assetNodeCount);
+                groupedValidity.set(property.configurationGroup, (groupedValidity.get(property.configurationGroup) ?? true) && valid);
+            }
+        }
+        for (const [key, property] of Object.entries(mapping.configuration)) {
+            const valid =
+                (!property.configurationGroup || groupedValidity.get(property.configurationGroup) === true) &&
+                _isEffectiveConfigurationValue(node.configuration?.[key], property, effective, assetNodeCount);
+            if (!valid && property.defaultValue !== undefined) {
+                node.configuration ??= {};
+                node.configuration[key] = {
+                    value: Array.isArray(property.defaultValue) ? _cloneJson(property.defaultValue) : [property.defaultValue],
+                };
+            } else if (valid && property.uniqueValues && node.configuration?.[key]?.value) {
+                node.configuration[key].value = Array.from(new Set(node.configuration[key].value));
+            }
+        }
+    }
+    return effective;
 }
 
 function _getPointerTemplateSockets(pointer: string): { name: string; signature: "int" | "ref" }[] {
@@ -525,7 +609,7 @@ function _validateNode(
     }
 
     for (const [key, property] of Object.entries(mapping.inputs?.values ?? {})) {
-        if (!key.startsWith("[") && !node.values?.[key]) {
+        if (!key.startsWith("[") && !property.optional && !node.values?.[key]) {
             _addError(diagnostics, `${path}/values/${key}`, `Required input value socket "${key}" is missing.`);
         }
         const expectedSignature = property.gltfType === "number" ? "float" : property.gltfType === "boolean" ? "bool" : property.gltfType;
@@ -700,6 +784,9 @@ export function CreateKHRInteractivityGraphModel(
         if (eventId !== undefined && graph.events!.slice(0, eventIndex).some((event) => event.id === eventId)) {
             _addError(diagnostics, `${path}/events/${eventIndex}/id`, `Duplicate event id "${eventId}".`);
         }
+        if (graph.events![eventIndex].values && Object.prototype.hasOwnProperty.call(graph.events![eventIndex].values, "event")) {
+            _addError(diagnostics, `${path}/events/${eventIndex}/values/event`, 'Custom event value socket id "event" is reserved.');
+        }
         for (const [socket, value] of Object.entries(graph.events![eventIndex].values ?? {})) {
             _validateValue(value, graph, diagnostics, `${path}/events/${eventIndex}/values/${socket}`);
         }
@@ -713,6 +800,7 @@ export function CreateKHRInteractivityGraphModel(
         path,
         name: graph.name ?? `Graph ${index + 1}`,
         source: graph,
+        effectiveSource: CreateEffectiveKHRInteractivityGraph(graph, declarations, assetNodeCount),
         declarations,
         diagnostics,
         valid: !diagnostics.some((diagnostic) => diagnostic.severity === "error"),

@@ -551,6 +551,164 @@ describe("KHR_interactivity canonical import model", () => {
         expect(invalidBlock.signalOutputs.map((socket) => socket.name)).toEqual(["default"]);
     });
 
+    it("lowers every ratified same-name control-flow socket in strict mode", () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "bool" }, { signature: "int" }, { signature: "float" }, { signature: "ref" }],
+            declarations: [
+                { op: "event/onStart" },
+                { op: "flow/branch" },
+                { op: "flow/while" },
+                { op: "flow/for" },
+                { op: "flow/doN" },
+                { op: "flow/throttle" },
+                { op: "flow/setDelay" },
+                { op: "flow/cancelDelay" },
+                { op: "math/abs" },
+                { op: "flow/sequence" },
+            ],
+            nodes: [
+                { declaration: 0, flows: { out: { node: 1 } } },
+                {
+                    declaration: 1,
+                    values: { condition: { type: 0, value: [true] } },
+                    flows: { true: { node: 2 }, false: { node: 9 } },
+                },
+                {
+                    declaration: 2,
+                    values: { condition: { type: 0, value: [false] } },
+                    flows: { loopBody: { node: 9 }, completed: { node: 3 } },
+                },
+                {
+                    declaration: 3,
+                    values: { startIndex: { type: 1, value: [0] }, endIndex: { type: 1, value: [1] } },
+                    flows: { loopBody: { node: 9 }, completed: { node: 4 } },
+                },
+                { declaration: 4, values: { n: { type: 1, value: [1] } }, flows: { out: { node: 5 } } },
+                { declaration: 5, values: { duration: { type: 2, value: [0] } }, flows: { out: { node: 6 } } },
+                {
+                    declaration: 6,
+                    values: { duration: { type: 2, value: [0] } },
+                    flows: { out: { node: 9 }, done: { node: 7 } },
+                },
+                {
+                    declaration: 7,
+                    values: { delay: { node: 6, socket: "lastDelay", type: 3 } },
+                    flows: { out: { node: 9 } },
+                },
+                { declaration: 8, values: { a: { node: 5, socket: "lastRemainingTime", type: 2 } } },
+                { declaration: 9 },
+            ],
+        };
+        const model = CreateKHRInteractivityGraphModel(graph);
+        expect(model.valid, model.diagnostics.map((diagnostic) => diagnostic.message).join("\n")).toBe(true);
+        const serialized = new InteractivityGraphToFlowGraphParser(model.effectiveSource, {}, 60, 0, undefined, model.declarations).serializeToFlowGraph();
+        const block = (className: string) => serialized.allBlocks.find((candidate) => candidate.className === className)!;
+
+        expect(block("FlowGraphBranchBlock").dataInputs.map((socket) => socket.name)).toContain("condition");
+        expect(block("FlowGraphWhileLoopBlock").signalOutputs.map((socket) => socket.name)).toContain("completed");
+        expect(block("FlowGraphForLoopBlock").signalOutputs.map((socket) => socket.name)).toContain("completed");
+        expect(block("FlowGraphForLoopBlock").config.initialIndex.value).toBe(0);
+        expect(block("FlowGraphDoNBlock").signalOutputs.map((socket) => socket.name)).toContain("out");
+        expect(block("FlowGraphThrottleBlock").dataInputs.map((socket) => socket.name)).toContain("duration");
+        expect(block("FlowGraphThrottleBlock").dataOutputs.map((socket) => socket.name)).toContain("lastRemainingTime");
+        expect(block("FlowGraphSetDelayBlock").signalOutputs.map((socket) => socket.name)).toEqual(expect.arrayContaining(["out", "done"]));
+        expect(block("FlowGraphCancelDelayBlock").signalOutputs.map((socket) => socket.name)).toContain("out");
+    });
+
+    it("requires ratified integer input types for for and doN", () => {
+        const model = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "float" }, { signature: "int" }],
+            declarations: [{ op: "flow/for" }, { op: "flow/doN" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    values: { startIndex: { type: 0, value: [0] }, endIndex: { type: 1, value: [1] } },
+                },
+                { declaration: 1, values: { n: { type: 0, value: [1] } } },
+            ],
+        });
+
+        expect(model.diagnostics.map((diagnostic) => diagnostic.path)).toEqual(
+            expect.arrayContaining([expect.stringContaining("/nodes/0/values/startIndex/type"), expect.stringContaining("/nodes/1/values/n/type")])
+        );
+    });
+
+    it("normalizes all-or-default configurations before lowering", () => {
+        const model = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "int" }, { signature: "float" }],
+            declarations: [{ op: "flow/for" }, { op: "flow/multiGate" }, { op: "math/switch" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { initialIndex: { value: [0.5] } },
+                    values: { startIndex: { type: 0, value: [0] }, endIndex: { type: 0, value: [1] } },
+                },
+                { declaration: 1, configuration: { isRandom: { value: [true] } } },
+                {
+                    declaration: 2,
+                    configuration: { cases: { value: [2147483648] } },
+                    values: { selection: { type: 0, value: [0] }, default: { type: 1, value: [1] } },
+                },
+            ],
+        });
+
+        expect(model.valid).toBe(true);
+        expect(model.effectiveSource.nodes![0].configuration!.initialIndex.value).toEqual([0]);
+        expect(model.effectiveSource.nodes![1].configuration).toMatchObject({ isRandom: { value: [false] }, isLoop: { value: [false] } });
+        expect(model.effectiveSource.nodes![2].configuration!.cases.value).toEqual([]);
+    });
+
+    it("allows zero-output multiGate and exposes lastIndex", () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }],
+            declarations: [{ op: "flow/multiGate" }, { op: "math/abs" }],
+            nodes: [{ declaration: 0 }, { declaration: 1, values: { a: { node: 0, socket: "lastIndex", type: 0 } } }],
+        };
+        const model = CreateKHRInteractivityGraphModel(graph);
+        expect(model.valid).toBe(true);
+        const serialized = new InteractivityGraphToFlowGraphParser(model.effectiveSource, {}, 60, 0, undefined, model.declarations).serializeToFlowGraph();
+        const multiGate = serialized.allBlocks.find((block) => block.className === "FlowGraphMultiGateBlock")!;
+
+        expect(multiGate.config.outputSignalCount).toBe(0);
+        expect(multiGate.signalOutputs).toEqual([]);
+        expect(multiGate.dataOutputs.map((socket) => socket.name)).toContain("lastIndex");
+    });
+
+    it("null-normalizes unresolved and fabricated static references", () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "ref" }],
+            variables: [
+                { type: 0, value: ["/nodes/0"] },
+                { type: 0, value: ["/nodes/999"] },
+                { type: 0, value: ["/extensions/KHR_interactivity/events/fabricated"] },
+            ],
+        };
+        const model = CreateKHRInteractivityGraphModel(graph);
+        const serialized = new InteractivityGraphToFlowGraphParser(model.effectiveSource, { nodes: [{}] } as any, 60, 0, undefined, model.declarations).serializeToFlowGraph();
+        const values = Object.values(serialized.executionContexts[0]._userVariables).map((entry) => entry.value[0]);
+
+        expect(values).toEqual(["/nodes/0", "", ""]);
+    });
+
+    it("preserves empty custom event ids and avoids generated-key collisions", () => {
+        const graph: IKHRInteractivity_Graph = {
+            events: [{ id: "" }, { id: "__babylon_khr_internal_0_0" }, {}],
+        };
+        const model = CreateKHRInteractivityGraphModel(graph);
+        const parser = new InteractivityGraphToFlowGraphParser(model.effectiveSource, {}, 60, 0, undefined, model.declarations);
+
+        expect(parser.arrays.events.map((event) => event.eventId)).toEqual(["", "__babylon_khr_internal_0_0", "__babylon_khr_internal_0_1"]);
+    });
+
+    it("rejects the reserved custom event value socket", () => {
+        const model = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "int" }],
+            events: [{ values: { event: { type: 0, value: [1] } } }],
+        });
+
+        expect(model.diagnostics).toContainEqual(expect.objectContaining({ path: expect.stringContaining("/events/0/values/event"), severity: "error" }));
+    });
+
     it("derives fixed core output types for assertions", () => {
         const valid = CreateKHRInteractivityGraphModel({
             types: [{ signature: "float" }, { signature: "bool" }],

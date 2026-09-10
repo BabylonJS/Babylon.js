@@ -129,4 +129,59 @@ describe("KHR_interactivity loader lifecycle", () => {
         expect(GetKHRInteractivityImportResult(compatibilityScene)!.graphs[0].serializedFlowGraph).toBeDefined();
         compatibilityScene.dispose();
     });
+
+    it("uses production strict contracts and effective configuration during loader lowering", async () => {
+        const asset = JSON.stringify({
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [] }],
+            extensionsUsed: ["KHR_interactivity"],
+            extensions: {
+                KHR_interactivity: {
+                    graphs: [
+                        {
+                            types: [{ signature: "bool" }, { signature: "int" }],
+                            declarations: [{ op: "event/onStart" }, { op: "flow/branch" }, { op: "flow/for" }, { op: "flow/sequence" }],
+                            nodes: [
+                                { declaration: 0, flows: { out: { node: 1 } } },
+                                {
+                                    declaration: 1,
+                                    values: { condition: { type: 0, value: [true] } },
+                                    flows: { true: { node: 2 }, false: { node: 3 } },
+                                },
+                                {
+                                    declaration: 2,
+                                    configuration: { initialIndex: { value: [0.5] } },
+                                    values: { startIndex: { type: 1, value: [0] }, endIndex: { type: 1, value: [1] } },
+                                    flows: { loopBody: { node: 3 }, completed: { node: 3 } },
+                                },
+                                { declaration: 3 },
+                            ],
+                        },
+                    ],
+                },
+            },
+        });
+
+        await AppendSceneAsync(`data:${asset}`, scene, {
+            pluginOptions: {
+                gltf: {
+                    extensionOptions: {
+                        KHR_interactivity: {
+                            parseOnly: true,
+                        },
+                    },
+                },
+            },
+        });
+
+        const result = GetKHRInteractivityImportResult(scene)!.graphs[0];
+        expect(result.graph.valid).toBe(true);
+        expect(result.diagnostics).toContainEqual(expect.objectContaining({ severity: "warning", path: expect.stringContaining("/configuration/initialIndex") }));
+        const branch = result.serializedFlowGraph!.allBlocks.find((block) => block.className === "FlowGraphBranchBlock")!;
+        const forLoop = result.serializedFlowGraph!.allBlocks.find((block) => block.className === "FlowGraphForLoopBlock")!;
+        expect(branch.dataInputs.map((socket) => socket.name)).toContain("condition");
+        expect(forLoop.signalOutputs.map((socket) => socket.name)).toContain("completed");
+        expect(forLoop.config.initialIndex.value).toBe(0);
+    });
 });

@@ -195,7 +195,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                 }
                 try {
                     const parser = new InteractivityGraphToFlowGraphParser(
-                        graphModel.source,
+                        graphModel.effectiveSource,
                         this._loader.gltf,
                         this._loader.parent.targetFps,
                         graphModel.index,

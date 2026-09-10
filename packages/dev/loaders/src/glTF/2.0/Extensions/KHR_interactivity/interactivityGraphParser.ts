@@ -7,7 +7,8 @@ import { RandomGUID } from "core/Misc/guid";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
-import { CloneKHRInteractivityGraph, gltfTypeToBabylonType, type IKHRInteractivityDeclarationModel } from "./interactivityGraphModel";
+import { CloneKHRInteractivityGraph, CreateEffectiveKHRInteractivityGraph, gltfTypeToBabylonType, type IKHRInteractivityDeclarationModel } from "./interactivityGraphModel";
+import { DelayReferencePrefix, EventReferencePrefix } from "./interactivityReferences";
 
 /**
  * Description of a KHR_interactivity custom event, as parsed from the
@@ -68,7 +69,9 @@ export class InteractivityGraphToFlowGraphParser {
         private _supportedExtensions?: ReadonlySet<string>,
         private _declarationModels?: readonly IKHRInteractivityDeclarationModel[]
     ) {
-        this._interactivityGraph = CloneKHRInteractivityGraph(interactivityGraph);
+        this._interactivityGraph = this._declarationModels
+            ? CreateEffectiveKHRInteractivityGraph(interactivityGraph, this._declarationModels, this._gltf.nodes?.length ?? 0)
+            : CloneKHRInteractivityGraph(interactivityGraph);
         // start with types
         this._parseTypes();
         // continue with declarations
@@ -273,17 +276,52 @@ export class InteractivityGraphToFlowGraphParser {
         // in case of NaN, Infinity, we need to parse the string to the object itself
         if (type.elementType === "number" && typeof value[0] === "string") {
             value[0] = parseFloat(value[0]);
+        } else if (type.flowGraphType === FlowGraphTypes.String && typeof value[0] === "string") {
+            value[0] = this._normalizeStaticReference(value[0]);
         }
         return { type: type.flowGraphType, value: dataTransform ? dataTransform(value, this) : value };
+    }
+
+    private _normalizeStaticReference(reference: string): string {
+        if (!reference || reference.startsWith(EventReferencePrefix) || reference.startsWith(DelayReferencePrefix)) {
+            return "";
+        }
+        if (!reference.startsWith("/")) {
+            return "";
+        }
+        let current: unknown = this._gltf;
+        for (const rawSegment of reference.substring(1).split("/")) {
+            const segment = rawSegment.replace(/~1/g, "/").replace(/~0/g, "~");
+            if (Array.isArray(current)) {
+                if (!/^(0|[1-9]\d*)$/.test(segment)) {
+                    return "";
+                }
+                current = current[parseInt(segment, 10)];
+            } else if (current !== null && typeof current === "object" && Object.prototype.hasOwnProperty.call(current, segment)) {
+                current = (current as Record<string, unknown>)[segment];
+            } else {
+                return "";
+            }
+        }
+        return current !== null && typeof current === "object" ? reference : "";
     }
 
     private _parseEvents() {
         if (!this._interactivityGraph.events) {
             return;
         }
+        const eventIds = new Set(this._interactivityGraph.events.flatMap((event) => (event.id === undefined ? [] : [event.id])));
+        const internalPrefix = `__babylon_khr_internal_${this._graphIndex}_`;
         for (const event of this._interactivityGraph.events) {
+            let generatedEventId: string | undefined;
+            if (event.id === undefined) {
+                do {
+                    generatedEventId = internalPrefix + this._internalEventsCounter++;
+                } while (eventIds.has(generatedEventId));
+                eventIds.add(generatedEventId);
+            }
             const converted: InteractivityEvent = {
-                eventId: event.id || "internalEvent_" + this._internalEventsCounter++,
+                eventId: event.id ?? generatedEventId!,
             };
             if (event.values) {
                 converted.eventData = Object.keys(event.values).map((key) => {

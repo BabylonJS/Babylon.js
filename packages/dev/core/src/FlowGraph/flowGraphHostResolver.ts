@@ -62,7 +62,7 @@ export interface IFlowGraphHostResolver {
      * @param reference the reference to decode
      * @returns the index the reference denotes, or `undefined` when it does not denote one
      */
-    decodeIndexReference?(reference: string): number | undefined;
+    decodeIndexReference?(reference: string, collection?: string): number | undefined;
 
     /**
      * Maps a runtime object to the reference the host addresses it by, for example the JSON

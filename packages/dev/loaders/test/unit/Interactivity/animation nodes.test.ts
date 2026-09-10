@@ -13,6 +13,8 @@ import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectMode
 import { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_Type, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import { Animation } from "core/Animations/animation";
+import { CreateKHRInteractivityGraphModel } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphModel";
+import { InteractivityHostResolver } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityHostResolver";
 
 describe("Interactivity/animation nodes", () => {
     let engine: NullEngine;
@@ -26,30 +28,51 @@ describe("Interactivity/animation nodes", () => {
         declarations: IKHRInteractivity_Declaration[],
         nodes: IKHRInteractivity_Node[],
         types: IKHRInteractivity_Type[] = [],
-        variables: IKHRInteractivity_Variable[] = []
+        variables: IKHRInteractivity_Variable[] = [],
+        entryNodeIndex: number = 0,
+        strictValidation: boolean = true
     ) {
+        const shiftedNodes = nodes.map((node) => ({
+            ...node,
+            declaration: node.declaration + 1,
+            values: node.values
+                ? Object.fromEntries(Object.entries(node.values).map(([key, value]) => [key, "node" in value ? { ...value, node: value.node + 1 } : value]))
+                : undefined,
+            flows: node.flows ? Object.fromEntries(Object.entries(node.flows).map(([key, flow]) => [key, { ...flow, node: flow.node + 1 }])) : undefined,
+        }));
         const ig: IKHRInteractivity_Graph = {
-            declarations: [...declarations, { op: "event/onStart" }],
+            declarations: [{ op: "event/onStart" }, ...declarations],
             types,
             nodes: [
-                ...nodes,
                 {
-                    declaration: declarations.length,
+                    declaration: 0,
                     flows: {
                         out: {
-                            node: 0, // first node provided should be the flow node tested
+                            node: entryNodeIndex + 1,
                             socket: "in",
                         },
                     },
                 },
+                ...shiftedNodes,
             ],
-            variables,
+            variables: variables.length ? variables : undefined,
         };
 
         const pathConverter = GetPathToObjectConverter(mockGltf);
-        const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf);
+        const model = CreateKHRInteractivityGraphModel(ig);
+        if (strictValidation) {
+            expect(model.valid, model.diagnostics.map((diagnostic) => `${diagnostic.path}: ${diagnostic.message}`).join("\n")).toBe(true);
+        }
+        const i2fg = new InteractivityGraphToFlowGraphParser(
+            strictValidation ? model.effectiveSource : ig,
+            mockGltf,
+            60,
+            0,
+            undefined,
+            strictValidation ? model.declarations : undefined
+        );
         const json = i2fg.serializeToFlowGraph();
-        const coordinator = new FlowGraphCoordinator({ scene });
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
         const graph = await ParseFlowGraphAsync(json, { coordinator, pathConverter });
         graph.getContext(0).enableLogging = true;
         graph.getContext(0).logger!.logToConsole = false;
@@ -102,13 +125,13 @@ describe("Interactivity/animation nodes", () => {
                     declaration: 0,
                     values: {
                         animation: {
-                            value: [1], // index in the animation array
+                            value: ["/animations/1"],
                             type: 0,
                         },
                     },
                 },
             ],
-            [{ signature: "int" }]
+            [{ signature: "ref" }]
         );
 
         expect(startSpy).toHaveBeenCalledTimes(1);
@@ -142,7 +165,7 @@ describe("Interactivity/animation nodes", () => {
                     declaration: 0,
                     values: {
                         animation: {
-                            value: [1], // index in the animation array
+                            value: ["/animations/1"],
                             type: 0,
                         },
                         speed: {
@@ -160,13 +183,26 @@ describe("Interactivity/animation nodes", () => {
                     },
                 },
             ],
-            [{ signature: "int" }, { signature: "float" }]
+            [{ signature: "ref" }, { signature: "float" }]
         );
 
         expect(startSpy).toHaveBeenCalledTimes(1);
         // expect the variables sent to start to be the custom values
         expect(startSpy).toHaveBeenCalledWith(false, 2.4, 60, 180);
         expect(stopSpy).not.toHaveBeenCalled();
+    });
+
+    test.each(["/animations/999", "/nodes/0"])("animation/start rejects a non-animation reference in strict mode: %s", async (reference) => {
+        const ag = new AnimationGroup("test");
+        const startSpy = vi.spyOn(ag, "start");
+        await generateSimpleNodeGraph(
+            { animations: [{ _babylonAnimationGroup: ag }], nodes: [{}] },
+            [{ op: "animation/start" }],
+            [{ declaration: 0, values: { animation: { value: [reference], type: 0 } } }],
+            [{ signature: "ref" }]
+        );
+
+        expect(startSpy).not.toHaveBeenCalled();
     });
 
     // Regression (WhackAMole): when endTime is supplied by a connection (here the read-only `maxTime`
@@ -189,22 +225,24 @@ describe("Interactivity/animation nodes", () => {
             [{ op: "animation/start" }, { op: "pointer/get" }],
             [
                 {
-                    declaration: 0,
-                    values: {
-                        animation: { value: [1], type: 0 },
-                        // endTime is fed by the pointer/get output rather than a literal.
-                        endTime: { node: 1, socket: "value" },
-                    },
-                },
-                {
                     declaration: 1,
                     configuration: {
                         pointer: { value: ["/animations/1/extensions/KHR_interactivity/maxTime"] },
                         type: { value: [1] }, // float
                     },
                 },
+                {
+                    declaration: 0,
+                    values: {
+                        animation: { value: ["/animations/1"], type: 0 },
+                        // endTime is fed by the pointer/get output rather than a literal.
+                        endTime: { node: 0, socket: "value" },
+                    },
+                },
             ],
-            [{ signature: "int" }, { signature: "float" }]
+            [{ signature: "ref" }, { signature: "float" }],
+            [],
+            1
         );
 
         expect(startSpy).toHaveBeenCalledTimes(1);
@@ -237,7 +275,7 @@ describe("Interactivity/animation nodes", () => {
                 {
                     declaration: 0,
                     values: {
-                        animation: { value: [1], type: 0 },
+                        animation: { value: ["/animations/1"], type: 0 },
                         speed: { value: [1], type: 1 },
                         startTime: { value: [0], type: 1 },
                         endTime: { value: [2], type: 1 },
@@ -245,7 +283,10 @@ describe("Interactivity/animation nodes", () => {
                     },
                 },
             ],
-            [{ signature: "int" }, { signature: "float" }]
+            [{ signature: "ref" }, { signature: "float" }],
+            [],
+            0,
+            false
         );
 
         expect(startSpy).not.toHaveBeenCalled();
@@ -266,7 +307,7 @@ describe("Interactivity/animation nodes", () => {
                 {
                     declaration: 0,
                     values: {
-                        animation: { value: [1], type: 0 },
+                        animation: { value: ["/animations/1"], type: 0 },
                         speed: { value: [1], type: 1 },
                         startTime: { value: [0], type: 1 },
                         // Per the KHR spec only a NaN or infinite START time errors; an infinite END time is valid
@@ -275,7 +316,10 @@ describe("Interactivity/animation nodes", () => {
                     },
                 },
             ],
-            [{ signature: "int" }, { signature: "float" }]
+            [{ signature: "ref" }, { signature: "float" }],
+            [],
+            0,
+            false
         );
 
         // The animation must still start (with loop = true because the end time is infinite).
@@ -303,35 +347,25 @@ describe("Interactivity/animation nodes", () => {
 
         await generateSimpleNodeGraph(
             gltf,
-            [{ op: "animation/start" }, { op: "animation/stop" }, { op: "flow/setDelay" }],
+            [{ op: "animation/start" }, { op: "flow/setDelay" }, { op: "animation/stop" }],
             [
                 {
                     declaration: 0,
                     values: {
                         animation: {
-                            value: [1], // index in the animation array
+                            value: ["/animations/1"],
                             type: 0,
                         },
                     },
                     flows: {
                         out: {
-                            node: 2, // delay node
+                            node: 1,
                             socket: "in",
                         },
                     },
                 },
                 {
                     declaration: 1,
-                    values: {
-                        animation: {
-                            value: [1], // index in the animation array
-                            type: 0,
-                        },
-                    },
-                },
-                // delay 0.5 seconds and run stop
-                {
-                    declaration: 2,
                     values: {
                         duration: {
                             value: [0.5],
@@ -340,13 +374,22 @@ describe("Interactivity/animation nodes", () => {
                     },
                     flows: {
                         done: {
-                            node: 1, // stop node
+                            node: 2,
                             socket: "in",
                         },
                     },
                 },
+                {
+                    declaration: 2,
+                    values: {
+                        animation: {
+                            value: ["/animations/1"],
+                            type: 0,
+                        },
+                    },
+                },
             ],
-            [{ signature: "int" }, { signature: "float" }]
+            [{ signature: "ref" }, { signature: "float" }]
         );
 
         // wait a second for the delay to pass
@@ -394,7 +437,7 @@ describe("Interactivity/animation nodes", () => {
                     declaration: 0,
                     values: {
                         animation: {
-                            value: [0], // index in the animation array
+                            value: ["/animations/0"],
                             type: 0,
                         },
                     },
@@ -409,7 +452,7 @@ describe("Interactivity/animation nodes", () => {
                     declaration: 1,
                     values: {
                         animation: {
-                            value: [0], // index in the animation array
+                            value: ["/animations/0"],
                             type: 0,
                         },
                         stopTime: {
@@ -419,7 +462,7 @@ describe("Interactivity/animation nodes", () => {
                     },
                 },
             ],
-            [{ signature: "int" }, { signature: "float" }]
+            [{ signature: "ref" }, { signature: "float" }]
         );
 
         // wait 400 MSFT_audio_emitter, check that stop has NOT been triggered
