@@ -82,6 +82,7 @@ describe("Interactivity/animation nodes", () => {
 
         return {
             graph,
+            serialized: json,
             logger: graph.getContext(0).logger!,
         };
     }
@@ -130,10 +131,13 @@ describe("Interactivity/animation nodes", () => {
                             value: ["/animations/1"],
                             type: 0,
                         },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        endTime: { value: [10 / 60], type: 1 },
                     },
                 },
             ],
-            [{ signature: "ref" }]
+            [{ signature: "ref" }, { signature: "float" }]
         );
 
         expect(startSpy).toHaveBeenCalledTimes(1);
@@ -200,8 +204,18 @@ describe("Interactivity/animation nodes", () => {
         await generateSimpleNodeGraph(
             { animations: [{ _babylonAnimationGroup: ag }], nodes: [{}] },
             [{ op: "animation/start" }],
-            [{ declaration: 0, values: { animation: { value: [reference], type: 0 } } }],
-            [{ signature: "ref" }]
+            [
+                {
+                    declaration: 0,
+                    values: {
+                        animation: { value: [reference], type: 0 },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        endTime: { value: [1], type: 1 },
+                    },
+                },
+            ],
+            [{ signature: "ref" }, { signature: "float" }]
         );
 
         expect(startSpy).not.toHaveBeenCalled();
@@ -245,6 +259,8 @@ describe("Interactivity/animation nodes", () => {
                     declaration: 0,
                     values: {
                         animation: { value: ["/animations/1"], type: 0 },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
                         // endTime is fed by the pointer/get output rather than a literal.
                         endTime: { node: 0, socket: "value" },
                     },
@@ -355,7 +371,7 @@ describe("Interactivity/animation nodes", () => {
             ],
         };
 
-        await generateSimpleNodeGraph(
+        const { serialized } = await generateSimpleNodeGraph(
             gltf,
             [{ op: "animation/start" }, { op: "flow/setDelay" }, { op: "animation/stop" }],
             [
@@ -366,6 +382,9 @@ describe("Interactivity/animation nodes", () => {
                             value: ["/animations/1"],
                             type: 0,
                         },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        endTime: { value: [1], type: 1 },
                     },
                     flows: {
                         out: {
@@ -410,6 +429,7 @@ describe("Interactivity/animation nodes", () => {
         // The animation must be stopped while skipping the animation-end observable, so that stopping does not
         // activate the originating animation/start operation's `done` flow (KHR_interactivity spec).
         expect(stopSpy).toHaveBeenCalledWith(true);
+        expect(serialized.allBlocks.find((block) => block.className === "FlowGraphStopAnimationBlock")!.config.skipOnAnimationEnd).toBe(true);
     });
 
     // animation/stopAt
@@ -439,7 +459,7 @@ describe("Interactivity/animation nodes", () => {
             ],
         };
 
-        await generateSimpleNodeGraph(
+        const { serialized } = await generateSimpleNodeGraph(
             gltf,
             [{ op: "animation/start" }, { op: "animation/stopAt" }],
             [
@@ -450,6 +470,9 @@ describe("Interactivity/animation nodes", () => {
                             value: ["/animations/0"],
                             type: 0,
                         },
+                        speed: { value: [1], type: 1 },
+                        startTime: { value: [0], type: 1 },
+                        endTime: { value: [1], type: 1 },
                     },
                     flows: {
                         out: {
@@ -483,5 +506,9 @@ describe("Interactivity/animation nodes", () => {
         // wait another 400 ms and check that stop has been called
         await new Promise((resolve) => setTimeout(resolve, 400));
         expect(stopSpy).toHaveBeenCalledTimes(1);
+        expect(serialized.allBlocks.find((block) => block.className === "FlowGraphStopAnimationBlock")!.config).toMatchObject({
+            useVirtualStopAt: true,
+            skipOnAnimationEnd: true,
+        });
     });
 });

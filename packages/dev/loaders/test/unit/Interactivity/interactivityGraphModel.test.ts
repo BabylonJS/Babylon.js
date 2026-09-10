@@ -709,6 +709,38 @@ describe("KHR_interactivity canonical import model", () => {
         expect(model.diagnostics).toContainEqual(expect.objectContaining({ path: expect.stringContaining("/events/0/values/event"), severity: "error" }));
     });
 
+    it("rejects missing and mistyped custom event send inputs", () => {
+        const model = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "int" }, { signature: "float" }],
+            events: [{ values: { payload: { type: 0 } } }],
+            declarations: [{ op: "event/send" }],
+            nodes: [
+                { declaration: 0 },
+                {
+                    declaration: 0,
+                    configuration: { event: { value: [0] } },
+                    values: { payload: { type: 1, value: [1] } },
+                },
+            ],
+        });
+
+        expect(model.diagnostics.map((diagnostic) => diagnostic.path)).toEqual(
+            expect.arrayContaining([expect.stringContaining("/nodes/0/configuration/event"), expect.stringContaining("/nodes/1/values/payload/type")])
+        );
+    });
+
+    it("rejects animation/start when any required input is omitted", () => {
+        const model = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "ref" }, { signature: "float" }],
+            declarations: [{ op: "animation/start" }],
+            nodes: [{ declaration: 0, values: { animation: { type: 0, value: ["/animations/0"] } } }],
+        });
+
+        expect(model.diagnostics.map((diagnostic) => diagnostic.path)).toEqual(
+            expect.arrayContaining([expect.stringContaining("/values/speed"), expect.stringContaining("/values/startTime"), expect.stringContaining("/values/endTime")])
+        );
+    });
+
     it("derives fixed core output types for assertions", () => {
         const valid = CreateKHRInteractivityGraphModel({
             types: [{ signature: "float" }, { signature: "bool" }],

@@ -575,6 +575,20 @@ describe("Interactivity event nodes", () => {
         }
     });
 
+    it("keeps hoverability independent from selectability", () => {
+        const mesh = new Mesh("mesh", scene);
+        const node: any = { _babylonTransformNode: mesh, _primitiveBabylonMeshes: [mesh] };
+
+        InitializeInteractivityNodeState([node], "selectable", () => false);
+        InitializeInteractivityNodeState([node], "hoverable", () => true);
+        scene.constantlyUpdateMeshUnderPointer = true;
+        (scene._inputManager as any)._ensurePointerMovePredicate();
+
+        expect(mesh.isPickable).toBe(false);
+        expect(mesh._isPointerMovePickable).toBe(true);
+        expect(scene.pointerMovePredicate!(mesh)).toBe(true);
+    });
+
     it("should send an event with id", async () => {
         await generateSimpleNodeGraph(
             [{ op: "event/send" }, { op: "event/receive" }, { op: "flow/log", extension: "BABYLON" }],

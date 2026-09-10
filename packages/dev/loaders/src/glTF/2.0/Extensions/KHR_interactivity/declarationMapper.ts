@@ -157,11 +157,6 @@ export interface IGLTFToFlowGraphMappingObject {
      * Whether duplicate array values are removed from the effective configuration.
      */
     uniqueValues?: boolean;
-
-    /**
-     * Whether an input socket may use its runtime default when omitted.
-     */
-    optional?: boolean;
 }
 
 /**
@@ -406,6 +401,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "event/send": {
         blocks: [FlowGraphBlockNames.SendCustomEvent],
+        configuration: {
+            event: {
+                name: "eventId",
+                configurationType: "int",
+                required: true,
+                indexSource: "events",
+                validationOnly: true,
+            },
+        },
         inputs: {
             values: {
                 "[segment]": { name: "$1" },
@@ -420,7 +424,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             // set eventId and eventData. The configuration object of the glTF should have a single object.
             // validate that we are running it on the right block.
             if (declaration.op !== "event/send" || !gltfBlock.configuration?.event) {
-                throw new Error("Receive event should have a single configuration object, the event itself");
+                throw new Error("Send event should have a single configuration object, the event itself");
             }
             const eventConfiguration = gltfBlock.configuration["event"];
             const eventId = eventConfiguration.value?.[0];
@@ -437,6 +441,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "event/receive": {
         blocks: [FlowGraphBlockNames.ReceiveCustomEvent],
+        configuration: {
+            event: {
+                name: "eventId",
+                configurationType: "int",
+                required: true,
+                indexSource: "events",
+                validationOnly: true,
+            },
+        },
         outputs: {
             values: {
                 // KHR_interactivity `ref event` output (the event reference).
@@ -1906,18 +1919,16 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         inputs: {
             values: {
                 animation: { name: "index", gltfType: "ref", toBlock: FlowGraphBlockNames.ArrayIndex },
-                speed: { name: "speed", gltfType: "number", optional: true },
+                speed: { name: "speed", gltfType: "number" },
                 startTime: {
                     name: "from",
                     gltfType: "number",
-                    optional: true,
                     convertConnectedTimeToFrames: true,
                     dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps],
                 },
                 endTime: {
                     name: "to",
                     gltfType: "number",
-                    optional: true,
                     convertConnectedTimeToFrames: true,
                     dataTransformer: (time: number[], parser) => [time[0] * parser._animationTargetFps],
                 },
@@ -1947,10 +1958,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
-            const stopAnimationBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.StopAnimation);
-            if (stopAnimationBlock) {
-                stopAnimationBlock.config.useVirtualStopAt = true;
-            }
             const arrayIndexBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.ArrayIndex);
             if (arrayIndexBlock) {
                 arrayIndexBlock.config.referenceCollection = "animations";
@@ -1992,6 +1999,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
+            const stopAnimationBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.StopAnimation);
+            if (stopAnimationBlock) {
+                stopAnimationBlock.config.skipOnAnimationEnd = true;
+            }
             const arrayIndexBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.ArrayIndex);
             if (arrayIndexBlock) {
                 arrayIndexBlock.config.referenceCollection = "animations";
@@ -2041,6 +2052,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
+            const stopAnimationBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.StopAnimation);
+            if (stopAnimationBlock) {
+                stopAnimationBlock.config.useVirtualStopAt = true;
+                stopAnimationBlock.config.skipOnAnimationEnd = true;
+            }
             const arrayIndexBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.ArrayIndex);
             if (arrayIndexBlock) {
                 arrayIndexBlock.config.referenceCollection = "animations";

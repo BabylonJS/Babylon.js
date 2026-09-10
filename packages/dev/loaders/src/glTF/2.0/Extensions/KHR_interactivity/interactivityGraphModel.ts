@@ -432,6 +432,10 @@ function _resolveOutputTypeIndex(
         const defaultInput = sourceNode.values?.default;
         return defaultInput ? _resolveValueTypeIndex(defaultInput, graph, declarations, visited) : undefined;
     }
+    if (declaration.operation === "event/receive" && socket !== "event") {
+        const eventIndex = sourceNode.configuration?.event?.value?.[0];
+        return typeof eventIndex === "number" ? graph.events?.[eventIndex]?.values?.[socket]?.type : undefined;
+    }
     const fixedSignature = _getFixedOutputSignature(declaration.operation, socket);
     if (fixedSignature) {
         return graph.types?.findIndex((type) => type.signature === fixedSignature);
@@ -609,8 +613,20 @@ function _validateNode(
     }
 
     for (const [key, property] of Object.entries(mapping.inputs?.values ?? {})) {
-        if (!key.startsWith("[") && !property.optional && !node.values?.[key]) {
+        if (!key.startsWith("[") && !node.values?.[key]) {
             _addError(diagnostics, `${path}/values/${key}`, `Required input value socket "${key}" is missing.`);
+        }
+        if (declarationModel.operation === "event/send") {
+            const eventIndex = node.configuration?.event?.value?.[0];
+            const event = typeof eventIndex === "number" ? graph.events?.[eventIndex] : undefined;
+            for (const [socket, eventValue] of Object.entries(event?.values ?? {})) {
+                const source = node.values?.[socket];
+                if (!source) {
+                    _addError(diagnostics, `${path}/values/${socket}`, `Required custom event input value socket "${socket}" is missing.`);
+                } else if (_resolveValueTypeIndex(source, graph, declarations) !== eventValue.type) {
+                    _addError(diagnostics, `${path}/values/${socket}/type`, `Custom event input value socket "${socket}" has the wrong type.`);
+                }
+            }
         }
         const expectedSignature = property.gltfType === "number" ? "float" : property.gltfType === "boolean" ? "bool" : property.gltfType;
         const source = node.values?.[key];

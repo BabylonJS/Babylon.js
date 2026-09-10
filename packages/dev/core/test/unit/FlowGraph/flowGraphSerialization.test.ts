@@ -151,9 +151,9 @@ describe("Flow Graph Serialization", () => {
     });
 
     it.each([
-        [undefined, false],
-        [{ useVirtualStopAt: true }, true],
-    ])("preserves stop-animation mode through serialization", (config, expectedVirtualMode) => {
+        [undefined, false, false],
+        [{ useVirtualStopAt: true, skipOnAnimationEnd: true }, true, true],
+    ])("preserves stop-animation mode through serialization", (config, expectedVirtualMode, expectedSkipEnd) => {
         const block = new FlowGraphStopAnimationBlock(config);
         const serialized: any = {};
         block.serialize(serialized);
@@ -162,6 +162,8 @@ describe("Flow Graph Serialization", () => {
 
         expect(serialized.config.useVirtualStopAt).toBe(expectedVirtualMode ? true : undefined);
         expect(parsed.config?.useVirtualStopAt).toBe(expectedVirtualMode ? true : undefined);
+        expect(serialized.config.skipOnAnimationEnd).toBe(expectedSkipEnd ? true : undefined);
+        expect(parsed.config?.skipOnAnimationEnd).toBe(expectedSkipEnd ? true : undefined);
     });
 
     it("Serializes and parses a context", () => {

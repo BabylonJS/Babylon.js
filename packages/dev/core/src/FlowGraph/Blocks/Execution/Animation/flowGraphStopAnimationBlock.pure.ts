@@ -19,6 +19,11 @@ export interface IFlowGraphStopAnimationBlockConfiguration extends IFlowGraphBlo
      * When false, the block retains its legacy positive-frame scheduling behavior.
      */
     useVirtualStopAt?: boolean;
+
+    /**
+     * Whether stopping suppresses the animation-group end notification.
+     */
+    skipOnAnimationEnd?: boolean;
 }
 
 /**
@@ -178,7 +183,11 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
             // starting block's `done` flow. When an animation is
             // stopped (animation/stop or animation/stopAt) the previously associated `done` flows MUST NOT be
             // activated; only animation/stopAt's own `done` flow (fired from _executeOnTick) should run.
-            animationGroup.stop(true);
+            if (this.config?.skipOnAnimationEnd) {
+                animationGroup.stop(true);
+            } else {
+                animationGroup.stop();
+            }
             currentlyRunning.splice(index, 1);
             // update the global context variable
             context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunning);

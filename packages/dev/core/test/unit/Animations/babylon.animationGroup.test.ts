@@ -301,6 +301,7 @@ describe("Babylon Animation Group", function () {
             const animationGroup = new AnimationGroup("animationGroup0", scene);
             animationGroup.addTargetedAnimation(animation, node);
             animationGroup.start(true, 1, 0, 60);
+            const stopSpy = vi.spyOn(animationGroup, "stop");
             const coordinator = new FlowGraphCoordinator({ scene });
             const context = coordinator.createGraph().createContext();
             context._setGlobalContextVariable("currentlyRunningAnimationGroups", [animationGroup.uniqueId]);
@@ -311,6 +312,7 @@ describe("Babylon Animation Group", function () {
             stopBlock._execute(context);
 
             expect(animationGroup.isPlaying).toBe(false);
+            expect(stopSpy).toHaveBeenCalledWith();
         });
 
         it("maps every virtual frame to zero for a zero-duration animation", () => {

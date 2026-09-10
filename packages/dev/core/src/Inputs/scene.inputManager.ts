@@ -124,7 +124,7 @@ export class InputManager {
     private _pointerCaptures: { [pointerId: number]: boolean } = {};
     private _meshUnderPointerId: { [pointerId: number]: Nullable<AbstractMesh> } = {};
     private _movePointerInfo: Nullable<PointerInfo> = null;
-    private _latestPointerMoveEvents = new Map<number, IPointerEvent>();
+    private _latestPointerMoveEvents = new Map<number, { event: IPointerEvent; pointerX: number; pointerY: number; unTranslatedPointerX: number; unTranslatedPointerY: number }>();
     private _cameraObserverCount = 0;
     private _delayedClicks: Array<Nullable<_IClickEvent>> = [null, null, null, null, null];
 
@@ -339,17 +339,28 @@ export class InputManager {
             return;
         }
         this._ensurePointerMovePredicate();
-        for (const evt of this._latestPointerMoveEvents.values()) {
-            this._pickMove(evt);
+        const pointerX = this._pointerX;
+        const pointerY = this._pointerY;
+        const unTranslatedPointerX = this._unTranslatedPointerX;
+        const unTranslatedPointerY = this._unTranslatedPointerY;
+        for (const pointer of this._latestPointerMoveEvents.values()) {
+            this._pointerX = pointer.pointerX;
+            this._pointerY = pointer.pointerY;
+            this._unTranslatedPointerX = pointer.unTranslatedPointerX;
+            this._unTranslatedPointerY = pointer.unTranslatedPointerY;
+            this._pickMove(pointer.event);
         }
+        this._pointerX = pointerX;
+        this._pointerY = pointerY;
+        this._unTranslatedPointerX = unTranslatedPointerX;
+        this._unTranslatedPointerY = unTranslatedPointerY;
     }
 
     private _ensurePointerMovePredicate(): void {
         const scene = this._scene;
         if (!scene.pointerMovePredicate) {
             scene.pointerMovePredicate = (mesh: AbstractMesh): boolean =>
-                mesh._isPointerMovePickable &&
-                mesh.isPickable &&
+                (mesh._isPointerMovePickable ?? mesh.isPickable) &&
                 mesh.isVisible &&
                 mesh.isReady() &&
                 mesh.isEnabled() &&
@@ -811,7 +822,13 @@ export class InputManager {
 
         this._onPointerMove = (evt: IMouseEvent) => {
             this._updatePointerPosition(evt as IPointerEvent);
-            this._latestPointerMoveEvents.set((evt as IPointerEvent).pointerId, evt as IPointerEvent);
+            this._latestPointerMoveEvents.set((evt as IPointerEvent).pointerId, {
+                event: evt as IPointerEvent,
+                pointerX: this._pointerX,
+                pointerY: this._pointerY,
+                unTranslatedPointerX: this._unTranslatedPointerX,
+                unTranslatedPointerY: this._unTranslatedPointerY,
+            });
 
             // Check if pointer leaves DragMovementThreshold range to determine if swipe is occurring
             if (!this._isSwiping && this._swipeButtonPressed !== -1) {
@@ -959,6 +976,9 @@ export class InputManager {
 
             this._activePointerIds[pointerIdIndex] = -1;
             this._activePointerIdsCount--;
+            if (evt.pointerType === "touch") {
+                this._latestPointerMoveEvents.delete(evt.pointerId);
+            }
             this._pickedUpMesh = null;
             this._meshPickProceed = false;
 

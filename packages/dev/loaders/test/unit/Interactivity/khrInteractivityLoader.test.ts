@@ -183,5 +183,24 @@ describe("KHR_interactivity loader lifecycle", () => {
         expect(branch.dataInputs.map((socket) => socket.name)).toContain("condition");
         expect(forLoop.signalOutputs.map((socket) => socket.name)).toContain("completed");
         expect(forLoop.config.initialIndex.value).toBe(0);
+
+        const compatibilityScene = new Scene(engine);
+        await AppendSceneAsync(`data:${asset}`, compatibilityScene, {
+            pluginOptions: {
+                gltf: {
+                    extensionOptions: {
+                        KHR_interactivity: {
+                            parseOnly: true,
+                            strictValidation: false,
+                        },
+                    },
+                },
+            },
+        });
+        const compatibilityForLoop = GetKHRInteractivityImportResult(compatibilityScene)!.graphs[0].serializedFlowGraph!.allBlocks.find(
+            (block) => block.className === "FlowGraphForLoopBlock"
+        )!;
+        expect(compatibilityForLoop.config.initialIndex.value).toBe(0.5);
+        compatibilityScene.dispose();
     });
 });
