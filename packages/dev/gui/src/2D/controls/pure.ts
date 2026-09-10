@@ -8,6 +8,7 @@ export * from "./ellipse.pure";
 export * from "./focusableButton.pure";
 export * from "./focusableControl";
 export * from "./grid.pure";
+export * from "./flexPanel.pure";
 export * from "./image.pure";
 export * from "./inputText.pure";
 export * from "./inputTextArea.pure";

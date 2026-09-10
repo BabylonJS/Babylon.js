@@ -87,7 +87,7 @@ export class InputTextArea extends InputText {
 
     /** Gets the maximum width allowed by the control in pixels */
     public get maxHeightInPixels(): number {
-        return this._maxHeight.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        return this._getValueInPixel(this._maxHeight, this._cachedParentMeasure.height);
     }
 
     public set maxHeight(value: string | number) {
@@ -582,7 +582,7 @@ export class InputTextArea extends InputText {
         // measures the textlength -> this.measure.width
         this._textWidth = context.measureText(text).width;
         // we double up the margin width
-        const marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
+        const marginWidth = this._getValueInPixel(this._margin, parentMeasure.width) * 2;
 
         if (this._autoStretchWidth) {
             const tmpLines = text.split("\n");
@@ -593,12 +593,13 @@ export class InputTextArea extends InputText {
             }, "");
 
             const longerStringWidth = context.measureText(longerString).width;
-            this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), longerStringWidth + marginWidth) + "px";
+            this.width = Math.min(this._getValueInPixel(this._maxWidth, parentMeasure.width), longerStringWidth + marginWidth) + "px";
 
             this.autoStretchWidth = true;
         }
 
-        this._availableWidth = this._width.getValueInPixel(this._host, parentMeasure.width) - marginWidth;
+        const allocatedMeasure = this.parent?._getLayoutMeasureForChild(this);
+        this._availableWidth = (allocatedMeasure?.width ?? this._getValueInPixel(this._width, parentMeasure.width)) - marginWidth;
 
         // Prepare lines
         this._lines = this._breakLines(this._availableWidth, context);
@@ -607,14 +608,14 @@ export class InputTextArea extends InputText {
 
         if (this._autoStretchHeight) {
             const textHeight = this._lines.length * this._fontOffset.height;
-            const totalHeight = textHeight + this._margin.getValueInPixel(this._host, parentMeasure.height) * 2;
-            this.height = Math.min(this._maxHeight.getValueInPixel(this._host, parentMeasure.height), totalHeight) + "px";
+            const totalHeight = textHeight + this._getValueInPixel(this._margin, parentMeasure.height) * 2;
+            this.height = Math.min(this._getValueInPixel(this._maxHeight, parentMeasure.height), totalHeight) + "px";
 
             this._autoStretchHeight = true;
         }
 
-        const marginHeight = this._margin.getValueInPixel(this._host, parentMeasure.height) * 2;
-        this._availableHeight = this._height.getValueInPixel(this._host, parentMeasure.height) - marginHeight;
+        const marginHeight = this._getValueInPixel(this._margin, parentMeasure.height) * 2;
+        this._availableHeight = (allocatedMeasure?.height ?? this._getValueInPixel(this._height, parentMeasure.height)) - marginHeight;
 
         if (this._isFocused) {
             this._cursorInfo.currentLineIndex = 0;
@@ -645,8 +646,8 @@ export class InputTextArea extends InputText {
     }
 
     private _computeScroll() {
-        this._clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, this._cachedParentMeasure.width);
-        this._clipTextTop = this._currentMeasure.top + this._margin.getValueInPixel(this._host, this._cachedParentMeasure.height);
+        this._clipTextLeft = this._currentMeasure.left + this._getValueInPixel(this._margin, this._cachedParentMeasure.width);
+        this._clipTextTop = this._currentMeasure.top + this._getValueInPixel(this._margin, this._cachedParentMeasure.height);
 
         if (this._isFocused && this._lines[this._cursorInfo.currentLineIndex].width > this._availableWidth) {
             const textLeft = this._clipTextLeft - this._lines[this._cursorInfo.currentLineIndex].width + this._availableWidth;
@@ -849,10 +850,10 @@ export class InputTextArea extends InputText {
             const line = this._lines[i];
 
             if (i !== 0 && this._lineSpacing.internalValue !== 0) {
-                if (this._lineSpacing.isPixel) {
-                    rootY += this._lineSpacing.getValue(this._host);
+                if (!this._lineSpacing.isPercentage) {
+                    rootY += this._getValueInPixel(this._lineSpacing, 1);
                 } else {
-                    rootY = rootY + this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
+                    rootY = rootY + this._getValueInPixel(this._lineSpacing, 1) * this._getValueInPixel(this._height, this._cachedParentMeasure.height);
                 }
             }
 

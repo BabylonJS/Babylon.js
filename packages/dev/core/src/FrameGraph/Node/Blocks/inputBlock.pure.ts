@@ -83,7 +83,8 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
             case NodeRenderGraphBlockConnectionPointTypes.TextureVelocity:
             case NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity:
             case NodeRenderGraphBlockConnectionPointTypes.TextureIrradiance:
-            case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedoSqrt: {
+            case NodeRenderGraphBlockConnectionPointTypes.TextureAlbedoSqrt:
+            case NodeRenderGraphBlockConnectionPointTypes.TextureObjectId: {
                 const options: FrameGraphTextureCreationOptions = {
                     size: { width: 100, height: 100 },
                     options: {

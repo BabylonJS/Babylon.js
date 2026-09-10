@@ -5,6 +5,7 @@ import { type Nullable } from "../../types";
 import { type IDrawContext } from "../IDrawContext";
 import { type WebGPUBufferManager } from "./webgpuBufferManager";
 import { type WebGPUPipelineContext } from "./webgpuPipelineContext";
+import { type UniformBuffer } from "../../Materials/uniformBuffer";
 import * as WebGPUConstants from "./webgpuConstants";
 
 /**
@@ -47,6 +48,12 @@ export class WebGPUDrawContext implements IDrawContext {
     private _isDirty: boolean;
     private _enableIndirectDraw: boolean;
     private _vertexPullingEnabled: boolean;
+
+    /**
+     * Uniform buffers in which this context owns a slot. Filled by the buffers themselves.
+     * @internal
+     */
+    public _uniformBuffersWithOwnedSlot?: UniformBuffer[];
 
     /**
      * Checks if the draw context is dirty.
@@ -135,6 +142,7 @@ export class WebGPUDrawContext implements IDrawContext {
     }
 
     public reset(): void {
+        this._releaseUniformBufferSlots();
         this.buffers = {};
         this._isDirty = true;
         this._materialContextUpdateId = 0;
@@ -228,6 +236,7 @@ export class WebGPUDrawContext implements IDrawContext {
     }
 
     public dispose(): void {
+        this._releaseUniformBufferSlots();
         if (this.indirectDrawBuffer) {
             this._bufferManager.releaseBuffer(this.indirectDrawBuffer);
             this.indirectDrawBuffer = undefined;
@@ -237,5 +246,19 @@ export class WebGPUDrawContext implements IDrawContext {
         this.bindGroups = undefined;
         this.buffers = undefined as any;
         this._enableIndirectDraw = false;
+    }
+
+    /** @internal */
+    public _releaseUniformBufferSlots(): void {
+        const buffers = this._uniformBuffersWithOwnedSlot;
+        if (!buffers) {
+            return;
+        }
+        // _releaseOwnerSlot removes its reciprocal entry; pop first to avoid skipping
+        // entries when several buffers were registered on this context.
+        while (buffers.length) {
+            buffers.pop()!._releaseOwnerSlot(this);
+        }
+        this._uniformBuffersWithOwnedSlot = undefined;
     }
 }

@@ -6,4 +6,5 @@ export * from "./glTF/pure";
 export * from "./OBJ/pure";
 export * from "./STL/pure";
 export * from "./SPLAT/pure";
+export * from "./USD/pure";
 export * from "./dynamic";
