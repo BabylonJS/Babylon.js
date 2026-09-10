@@ -1412,7 +1412,16 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                         {
                             name: "Startup",
                             declarations: [{ op: "event/onStart" }, { op: "flow/sequence" }],
-                            nodes: [{ declaration: 0, values: {}, flows: { out: { node: 1 } } }, { declaration: 1, flows: { "0": { node: 2 } } }, { declaration: 1 }],
+                            nodes: [
+                                { declaration: 0, values: {}, flows: { out: { node: 1 } } },
+                                { declaration: 1, flows: { "0": { node: 2 } } },
+                                { declaration: 1, flows: { "0": { node: 3 } } },
+                                { declaration: 1, flows: { "0": { node: 4 } } },
+                                { declaration: 1, flows: { "0": { node: 5 } } },
+                                { declaration: 1, flows: { "0": { node: 6 } } },
+                                { declaration: 1, flows: { "0": { node: 7 } } },
+                                { declaration: 1 },
+                            ],
                         },
                         {
                             name: "Vendor behavior",

@@ -33,6 +33,7 @@ export class SerializationTools {
      * @param frame - optional graph frame to restrict to
      */
     public static UpdateLocations(flowGraph: FlowGraph, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
+        const shouldZoomToFitOnLoad = !!(flowGraph as any)._editorData?.zoomToFitOnLoad;
         const editorData: any = {
             locations: [],
         };
@@ -62,6 +63,9 @@ export class SerializationTools {
             const numericId = GetFlowGraphBlockNodeId(block.uniqueId);
             editorData.map[block.uniqueId] = numericId;
             editorData.map[numericId] = numericId;
+        }
+        if (shouldZoomToFitOnLoad) {
+            editorData.zoomToFitOnLoad = true;
         }
 
         // Persist editor data on the flow graph so it survives serialization round-trips
