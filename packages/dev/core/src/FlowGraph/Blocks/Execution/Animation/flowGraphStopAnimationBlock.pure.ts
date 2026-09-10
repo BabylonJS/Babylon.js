@@ -191,9 +191,10 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
             } else {
                 animationGroup.stop();
             }
-            currentlyRunning.splice(index, 1);
-            // update the global context variable
-            context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunning);
+            if (!owner) {
+                currentlyRunning.splice(index, 1);
+                context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunning);
+            }
         } else {
             // Logger.Warn("Trying to stop an animation that is not running.");
             // no-op for now. Probably no need to log anything here.

@@ -430,5 +430,59 @@ describe("Babylon Animation Group", function () {
             expect(firstDone).not.toHaveBeenCalled();
             expect((context._getGlobalContextVariable("animationGroupObserverSets", new Map()) as Map<number, unknown>).has(animationGroup.uniqueId)).toBe(false);
         });
+
+        it("keeps other running animations tracked when one animation is stopped", () => {
+            const scene = new Scene(subject);
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const context = coordinator.createGraph().createContext();
+            const groups = [0, 1].map((index) => {
+                const node = new TransformNode(`node${index}`, scene);
+                const animation = new Animation(`animation${index}`, "position.x", 60, Animation.ANIMATIONTYPE_FLOAT);
+                animation.setKeys([
+                    { frame: 0, value: 0 },
+                    { frame: 60, value: 1 },
+                ]);
+                const group = new AnimationGroup(`group${index}`, scene);
+                group.addTargetedAnimation(animation, node);
+                const play = new FlowGraphPlayAnimationBlock({ useVirtualTimeline: true });
+                play.animationGroup.setValue(group, context);
+                play.speed.setValue(1, context);
+                play.to.setValue(60, context);
+                play._execute(context);
+                return group;
+            });
+            const stop = new FlowGraphStopAnimationBlock({ skipOnAnimationEnd: true });
+            stop.animationGroup.setValue(groups[0], context);
+
+            stop._execute(context);
+
+            expect(context._getGlobalContextVariable("currentlyRunningAnimationGroups", [])).toEqual([groups[1].uniqueId]);
+            expect(groups[1].isPlaying).toBe(true);
+        });
+
+        it("cancels every pending animation from a stable pending-block snapshot", () => {
+            const scene = new Scene(subject);
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const context = coordinator.createGraph().createContext();
+            const groups = [0, 1].map((index) => {
+                const node = new TransformNode(`node${index}`, scene);
+                const animation = new Animation(`animation${index}`, "position.x", 60, Animation.ANIMATIONTYPE_FLOAT);
+                animation.setKeys([
+                    { frame: 0, value: 0 },
+                    { frame: 60, value: 1 },
+                ]);
+                const group = new AnimationGroup(`group${index}`, scene);
+                group.addTargetedAnimation(animation, node);
+                const play = new FlowGraphPlayAnimationBlock();
+                play.animationGroup.setValue(group, context);
+                play._execute(context);
+                return group;
+            });
+
+            context._clearPendingBlocks();
+
+            expect(groups.every((group) => !group.isPlaying)).toBe(true);
+            expect(context.hasPendingBlocks).toBe(false);
+        });
     });
 });

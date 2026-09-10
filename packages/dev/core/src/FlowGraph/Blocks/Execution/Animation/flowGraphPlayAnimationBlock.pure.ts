@@ -373,7 +373,6 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public _cleanupAfterExternalStop(context: FlowGraphContext, animationGroup: AnimationGroup): void {
         this._removeFromCurrentlyRunning(context, animationGroup);
         this._resetAfterCanceled(context);
-        context._removePendingBlock(this);
     }
 
     private _removeFromCurrentlyRunning(context: FlowGraphContext, animationGroup: AnimationGroup) {

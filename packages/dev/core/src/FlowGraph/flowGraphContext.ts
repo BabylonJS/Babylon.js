@@ -571,7 +571,7 @@ export class FlowGraphContext {
      * @internal
      */
     public _clearPendingBlocks() {
-        for (const block of this._pendingBlocks) {
+        for (const block of this._pendingBlocks.slice()) {
             block._cancelPendingTasks(this);
         }
         this._pendingBlocks.length = 0;
