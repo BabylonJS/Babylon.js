@@ -638,6 +638,31 @@ export class AnimationGroup implements IDisposable {
      * @returns the current animation group
      */
     public start(loop = false, speedRatio = 1, from?: number, to?: number, isAdditive?: boolean): AnimationGroup {
+        return this._start(loop, speedRatio, from, to, isAdditive, false);
+    }
+
+    /**
+     * Starts all animations using an unbounded requested timeline mapped to the animation's
+     * effective keyframe range.
+     * @param loop defines if animations must loop
+     * @param speedRatio defines the ratio to apply to animation speed
+     * @param from defines the requested start frame
+     * @param to defines the requested end frame
+     * @param isAdditive defines the additive state for the resulting animatables
+     * @returns the current animation group
+     */
+    public startWithVirtualTimeline(loop = false, speedRatio = 1, from?: number, to?: number, isAdditive?: boolean): AnimationGroup {
+        return this._start(loop, speedRatio, from, to, isAdditive, true);
+    }
+
+    private _start(
+        loop: boolean,
+        speedRatio: number,
+        from: number | undefined,
+        to: number | undefined,
+        isAdditive: boolean | undefined,
+        useVirtualTimeline: boolean
+    ): AnimationGroup {
         if (this._isStarted || this._targetedAnimations.length === 0) {
             return this;
         }
@@ -652,10 +677,16 @@ export class AnimationGroup implements IDisposable {
         this._virtualFrameDirection = effectiveTo < effectiveFrom ? -1 : 1;
         this._virtualFrameInitial = effectiveFrom;
         this._virtualFrameEnd = effectiveTo;
-        const effectiveSamplingFrom = this._mapVirtualFrame(effectiveFrom);
-        const effectiveSamplingTo = Number.isFinite(effectiveTo) ? this._mapVirtualFrame(effectiveTo) : effectiveTo < effectiveFrom ? 0 : this._to;
+        const effectiveSamplingFrom = useVirtualTimeline ? this._mapVirtualFrame(effectiveFrom) : effectiveFrom;
+        const effectiveSamplingTo = useVirtualTimeline
+            ? Number.isFinite(effectiveTo)
+                ? this._mapVirtualFrame(effectiveTo)
+                : effectiveTo < effectiveFrom
+                  ? 0
+                  : this._to
+            : effectiveTo;
         this._retainedCurrentFrame = effectiveSamplingFrom;
-        this._usesVirtualSampling = effectiveSamplingFrom !== effectiveFrom || effectiveSamplingTo !== effectiveTo;
+        this._usesVirtualSampling = useVirtualTimeline && (effectiveSamplingFrom !== effectiveFrom || effectiveSamplingTo !== effectiveTo);
         const samplingFrom = this._usesVirtualSampling ? (this._virtualFrameDirection > 0 ? 0 : this._to) : effectiveSamplingFrom;
         const samplingTo = this._usesVirtualSampling ? (this._virtualFrameDirection > 0 ? this._to : 0) : effectiveSamplingTo;
 

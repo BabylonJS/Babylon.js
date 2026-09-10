@@ -9,6 +9,25 @@ import { AnimationGroup } from "core/Animations/animationGroup.pure";
 import { type Animation } from "core/Animations/animation.pure";
 import { FlowGraphBlockNames } from "../../flowGraphBlockNames";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { type Observer } from "core/Misc/observable.pure";
+
+/**
+ * Configuration for playing an animation.
+ */
+export interface IFlowGraphPlayAnimationBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * Whether animation-group playback uses the unbounded KHR_interactivity timeline.
+     */
+    useVirtualTimeline?: boolean;
+}
+
+type AnimationObserverSet = {
+    block: FlowGraphPlayAnimationBlock;
+    groupEnd: Observer<AnimationGroup>;
+    animationEnd: Observer<any>;
+    animationLoop: Observer<any>;
+    groupLoop: Observer<AnimationGroup>;
+};
 
 /**
  * @experimental
@@ -67,7 +86,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         /**
          * the configuration of the block
          */
-        public override config?: IFlowGraphBlockConfiguration
+        public override config?: IFlowGraphPlayAnimationBlockConfiguration
     ) {
         super(config, ["animationLoop", "animationEnd", "animationGroupLoop"]);
 
@@ -236,14 +255,24 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             const currentlyRunningAnimationGroups = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
             // check if it already running
             if (currentlyRunningAnimationGroups.indexOf(animationGroupToUse.uniqueId) !== -1) {
-                animationGroupToUse.stop();
+                this._stopAnimationGroup(context, animationGroupToUse);
             }
             try {
-                animationGroupToUse.start(loop, speed, from, to);
-                animationGroupToUse.onAnimationGroupEndObservable.add(() => this._onAnimationGroupEnd(context));
-                animationGroupToUse.onAnimationEndObservable.add(() => this._eventsSignalOutputs["animationEnd"]._activateSignal(context));
-                animationGroupToUse.onAnimationLoopObservable.add(() => this._eventsSignalOutputs["animationLoop"]._activateSignal(context));
-                animationGroupToUse.onAnimationGroupLoopObservable.add(() => this._eventsSignalOutputs["animationGroupLoop"]._activateSignal(context));
+                if (this.config?.useVirtualTimeline) {
+                    animationGroupToUse.startWithVirtualTimeline(loop, speed, from, to);
+                } else {
+                    animationGroupToUse.start(loop, speed, from, to);
+                }
+                const observers: AnimationObserverSet = {
+                    block: this,
+                    groupEnd: animationGroupToUse.onAnimationGroupEndObservable.add(() => this._onAnimationGroupEnd(context, animationGroupToUse)),
+                    animationEnd: animationGroupToUse.onAnimationEndObservable.add(() => this._eventsSignalOutputs["animationEnd"]._activateSignal(context)),
+                    animationLoop: animationGroupToUse.onAnimationLoopObservable.add(() => this._eventsSignalOutputs["animationLoop"]._activateSignal(context)),
+                    groupLoop: animationGroupToUse.onAnimationGroupLoopObservable.add(() => this._eventsSignalOutputs["animationGroupLoop"]._activateSignal(context)),
+                };
+                const observerSets = context._getGlobalContextVariable("animationGroupObserverSets", new Map<number, AnimationObserverSet>()) as Map<number, AnimationObserverSet>;
+                observerSets.set(animationGroupToUse.uniqueId, observers);
+                context._setGlobalContextVariable("animationGroupObserverSets", observerSets);
                 currentlyRunningAnimationGroups.push(animationGroupToUse.uniqueId);
                 context._setGlobalContextVariable("currentlyRunningAnimationGroups", currentlyRunningAnimationGroups);
             } catch (e) {
@@ -275,8 +304,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         this._startPendingTasks(context);
     }
 
-    private _onAnimationGroupEnd(context: FlowGraphContext) {
-        this._removeFromCurrentlyRunning(context, this.currentAnimationGroup.getValue(context));
+    private _onAnimationGroupEnd(context: FlowGraphContext, animationGroup: AnimationGroup) {
+        this._removeAnimationObservers(context, animationGroup);
+        this._removeFromCurrentlyRunning(context, animationGroup);
         this._resetAfterCanceled(context);
         this.done._activateSignal(context);
     }
@@ -304,6 +334,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     private _stopAnimationGroup(context: FlowGraphContext, animationGroup: AnimationGroup) {
+        this._removeAnimationObservers(context, animationGroup);
         // stop, while skipping the on AnimationEndObservable to avoid the "done" signal
         animationGroup.stop(true);
         // Only dispose animation groups that were internally created by this block
@@ -314,6 +345,20 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             animationGroup.dispose();
         }
         this._removeFromCurrentlyRunning(context, animationGroup);
+    }
+
+    private _removeAnimationObservers(context: FlowGraphContext, animationGroup: AnimationGroup): void {
+        const observerSets = context._getGlobalContextVariable("animationGroupObserverSets", new Map<number, AnimationObserverSet>()) as Map<number, AnimationObserverSet>;
+        const observers = observerSets.get(animationGroup.uniqueId);
+        if (!observers) {
+            return;
+        }
+        animationGroup.onAnimationGroupEndObservable.remove(observers.groupEnd);
+        animationGroup.onAnimationEndObservable.remove(observers.animationEnd);
+        animationGroup.onAnimationLoopObservable.remove(observers.animationLoop);
+        animationGroup.onAnimationGroupLoopObservable.remove(observers.groupLoop);
+        observerSets.delete(animationGroup.uniqueId);
+        context._setGlobalContextVariable("animationGroupObserverSets", observerSets);
     }
 
     private _removeFromCurrentlyRunning(context: FlowGraphContext, animationGroup: AnimationGroup) {

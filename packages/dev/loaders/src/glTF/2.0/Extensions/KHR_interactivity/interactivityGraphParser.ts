@@ -88,6 +88,9 @@ export class InteractivityGraphToFlowGraphParser {
     }
 
     private _hasDefaultFlowInput(operation: string): boolean {
+        if (operation === "flow/waitAll") {
+            return false;
+        }
         return (
             operation.startsWith("flow/") ||
             operation.startsWith("animation/") ||

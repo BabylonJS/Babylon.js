@@ -107,7 +107,7 @@ describe("Interactivity/animation nodes", () => {
         const ag = new AnimationGroup("test");
         ag.to = 10;
         // spy on the start, reset and stop functions
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const stopSpy = vi.spyOn(ag, "stop");
         const gltf = {
             animations: [
@@ -120,7 +120,7 @@ describe("Interactivity/animation nodes", () => {
             ],
         };
 
-        await generateSimpleNodeGraph(
+        const { serialized } = await generateSimpleNodeGraph(
             gltf,
             [{ op: "animation/start" }],
             [
@@ -144,13 +144,14 @@ describe("Interactivity/animation nodes", () => {
         // expect the variables sent to start to be the default values
         expect(startSpy).toHaveBeenCalledWith(false, 1, 0, 10);
         expect(stopSpy).not.toHaveBeenCalled();
+        expect(serialized.allBlocks.find((block) => block.className === "FlowGraphPlayAnimationBlock")!.config.useVirtualTimeline).toBe(true);
     });
 
     test("animation/start with custom values", async () => {
         const ag = new AnimationGroup("test");
         ag.to = 600; // 600 frames mean 10 seconds at 60fps
         // spy on the start, reset and stop functions
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const stopSpy = vi.spyOn(ag, "stop");
         const gltf = {
             animations: [
@@ -200,7 +201,7 @@ describe("Interactivity/animation nodes", () => {
 
     test.each(["/animations/999", "/nodes/0"])("animation/start rejects a non-animation reference in strict mode: %s", async (reference) => {
         const ag = new AnimationGroup("test");
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         await generateSimpleNodeGraph(
             { animations: [{ _babylonAnimationGroup: ag }], nodes: [{}] },
             [{ op: "animation/start" }],
@@ -234,7 +235,7 @@ describe("Interactivity/animation nodes", () => {
         ]);
         ag.addTargetedAnimation(animation, { value: 0 });
         ag.to = 600;
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const gltf = {
             animations: [
                 {}, // index 0 unused
@@ -289,7 +290,7 @@ describe("Interactivity/animation nodes", () => {
     ])("animation/start does not start the animation for invalid input: %s", async (_name, extraValues) => {
         const ag = new AnimationGroup("test");
         ag.to = 10;
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const gltf = {
             animations: [{}, { _babylonAnimationGroup: ag }],
         };
@@ -321,7 +322,7 @@ describe("Interactivity/animation nodes", () => {
     test("animation/start allows an infinite endTime (plays/loops, does not error)", async () => {
         const ag = new AnimationGroup("test");
         ag.to = 10;
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const gltf = {
             animations: [{}, { _babylonAnimationGroup: ag }],
         };
@@ -358,7 +359,7 @@ describe("Interactivity/animation nodes", () => {
     test("animation/stop after a delay", async () => {
         const ag = new AnimationGroup("test");
         // spy on the start, reset and stop functions
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const stopSpy = vi.spyOn(ag, "stop");
         const gltf = {
             animations: [
@@ -449,7 +450,7 @@ describe("Interactivity/animation nodes", () => {
         ]);
         ag.addTargetedAnimation(animation, objectToAnimation);
         // spy on the start, reset and stop functions
-        const startSpy = vi.spyOn(ag, "start");
+        const startSpy = vi.spyOn(ag, "startWithVirtualTimeline");
         const stopSpy = vi.spyOn(ag, "stop");
         const gltf = {
             animations: [

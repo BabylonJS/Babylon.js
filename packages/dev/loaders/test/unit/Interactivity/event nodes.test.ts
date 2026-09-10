@@ -335,6 +335,25 @@ describe("Interactivity event nodes", () => {
         expect(block.value.getValue(context)).toBe(GetEventReference("event-key"));
     });
 
+    it("converts selection coordinates back to glTF asset space", () => {
+        const root = new Mesh("__root__", scene);
+        root.scaling.x = -1;
+        root.computeWorldMatrix(true);
+        const selected = new Mesh("selected", scene);
+        selected.parent = root;
+        const coordinator = new FlowGraphCoordinator({ scene, hostResolver: new InteractivityHostResolver() });
+        const context = coordinator.createGraph().createContext();
+        const block = new FlowGraphEventReferenceBlock({ eventKey: "select" });
+        block.node.setValue(selected, context);
+        block.selectionPointInput.setValue(new Vector3(-1, 2, 3), context);
+        block.selectionRayOriginInput.setValue(new Vector3(-4, 5, 6), context);
+
+        block._execute(context);
+
+        expect(block.selectionPoint.getValue(context)).toEqual(new Vector3(1, 2, 3));
+        expect(block.selectionRayOrigin.getValue(context)).toEqual(new Vector3(4, 5, 6));
+    });
+
     it.each([
         ["immediate", true],
         ["transitive", false],

@@ -469,7 +469,7 @@ describe("KHR_interactivity canonical import model", () => {
     });
 
     it("bounds configuration-derived waitAll input flow sockets", () => {
-        const create = (inputFlows: number | undefined, socket: string) => {
+        const create = (inputFlows: number | undefined, socket?: string) => {
             const graph: IKHRInteractivity_Graph = {
                 declarations: [{ op: "event/onStart" }, { op: "flow/waitAll" }],
                 nodes: [
@@ -503,6 +503,9 @@ describe("KHR_interactivity canonical import model", () => {
 
         const defaulted = create(undefined, "0");
         expect(defaulted.block.signalInputs.some((socket) => socket.name === "in_0")).toBe(false);
+
+        const implicit = create(2);
+        expect(implicit.block.signalInputs.some((socket) => socket.name === "in")).toBe(false);
 
         for (const invalid of [-1, 1.5, 1_000_000]) {
             const fallback = create(invalid, "0");

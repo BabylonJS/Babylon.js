@@ -55,7 +55,7 @@ async function _performRequiredInteractions(page: Page, descriptor: ITestDescrip
             const pickInfo = scene.pickWithRay(
                 ray,
                 interaction.type === "hover"
-                    ? (candidate) => targetPredicate(candidate) && candidate._isPointerMovePickable && candidate.isPickable
+                    ? (candidate) => targetPredicate(candidate) && (candidate._isPointerMovePickable ?? candidate.isPickable)
                     : (candidate) => targetPredicate(candidate) && candidate.isPickable
             );
             if (interaction.expectation === "mustNotFire") {

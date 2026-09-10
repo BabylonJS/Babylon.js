@@ -111,7 +111,7 @@ describe("Babylon Animation Group", function () {
             const animationGroup = new AnimationGroup("animationGroup0", scene);
             animationGroup.addTargetedAnimation(animation, target);
 
-            animationGroup.start(false, 1, requestedFrom, requestedFrom + 30);
+            animationGroup.startWithVirtualTimeline(false, 1, requestedFrom, requestedFrom + 30);
 
             expect(animationGroup.getVirtualCurrentFrame()).toBe(requestedFrom);
             expect(animationGroup.getRetainedCurrentFrame()).toBe(effectiveFrom);
@@ -132,7 +132,7 @@ describe("Babylon Animation Group", function () {
             ]);
             const animationGroup = new AnimationGroup("animationGroup0", scene);
             animationGroup.addTargetedAnimation(animation, target);
-            animationGroup.start(false, 1, from, to);
+            animationGroup.startWithVirtualTimeline(false, 1, from, to);
 
             scene._animate(500);
             scene.onAfterAnimationsObservable.notifyObservers(scene);
@@ -211,7 +211,7 @@ describe("Babylon Animation Group", function () {
             ]);
             const animationGroup = new AnimationGroup("animationGroup0", scene);
             animationGroup.addTargetedAnimation(animation, node);
-            animationGroup.start(true, 1, from, to);
+            animationGroup.startWithVirtualTimeline(true, 1, from, to);
             scene._animationTime = 2500;
 
             const coordinator = new FlowGraphCoordinator({ scene });
@@ -242,7 +242,7 @@ describe("Babylon Animation Group", function () {
             ]);
             const animationGroup = new AnimationGroup("animationGroup0", scene);
             animationGroup.addTargetedAnimation(animation, node);
-            animationGroup.start(true, 1, 0, Infinity);
+            animationGroup.startWithVirtualTimeline(true, 1, 0, Infinity);
 
             const coordinator = new FlowGraphCoordinator({ scene });
             const context = coordinator.createGraph().createContext();
@@ -322,7 +322,7 @@ describe("Babylon Animation Group", function () {
             animation.setKeys([{ frame: 0, value: 0 }]);
             const animationGroup = new AnimationGroup("animationGroup0", scene);
             animationGroup.addTargetedAnimation(animation, node);
-            animationGroup.start(true, 1, 0, Infinity);
+            animationGroup.startWithVirtualTimeline(true, 1, 0, Infinity);
 
             animationGroup.setVirtualCurrentFrame(5);
 
@@ -347,6 +347,59 @@ describe("Babylon Animation Group", function () {
 
             expect(animationGroup.getRetainedCurrentFrame()).toBe(30);
             expect(animationGroup.getCurrentFrame()).toBe(0);
+        });
+
+        it("preserves out-of-range frames for the public legacy start contract", () => {
+            const scene = new Scene(subject);
+            const node = new TransformNode("node0", scene);
+            const animation = new Animation("animation", "position.x", 60, Animation.ANIMATIONTYPE_FLOAT);
+            animation.setKeys([
+                { frame: 0, value: 0 },
+                { frame: 60, value: 1 },
+            ]);
+            const animationGroup = new AnimationGroup("animationGroup0", scene);
+            animationGroup.addTargetedAnimation(animation, node);
+            const beginDirectAnimation = vi.spyOn(scene, "beginDirectAnimation");
+
+            animationGroup.start(false, 1, 90, 150);
+
+            expect(beginDirectAnimation.mock.calls[0].slice(2, 6)).toEqual([90, 150, false, 1]);
+        });
+
+        it("suppresses stale completion when another block replaces the same animation", () => {
+            const scene = new Scene(subject);
+            const node = new TransformNode("node0", scene);
+            const animation = new Animation("animation", "position.x", 60, Animation.ANIMATIONTYPE_FLOAT);
+            animation.setKeys([
+                { frame: 0, value: 0 },
+                { frame: 60, value: 1 },
+            ]);
+            const animationGroup = new AnimationGroup("animationGroup0", scene);
+            animationGroup.addTargetedAnimation(animation, node);
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const context = coordinator.createGraph().createContext();
+            const first = new FlowGraphPlayAnimationBlock({ useVirtualTimeline: true });
+            const second = new FlowGraphPlayAnimationBlock({ useVirtualTimeline: true });
+            first.animationGroup.setValue(animationGroup, context);
+            second.animationGroup.setValue(animationGroup, context);
+            first.speed.setValue(1, context);
+            second.speed.setValue(1, context);
+            first.to.setValue(60, context);
+            second.to.setValue(60, context);
+            const firstDone = vi.spyOn(first.done, "_activateSignal");
+            const secondDone = vi.spyOn(second.done, "_activateSignal");
+
+            first._execute(context);
+            second._execute(context);
+
+            expect(firstDone).not.toHaveBeenCalled();
+            expect(
+                (context._getGlobalContextVariable("animationGroupObserverSets", new Map()) as Map<number, { block: FlowGraphPlayAnimationBlock }>).get(animationGroup.uniqueId)
+                    ?.block
+            ).toBe(second);
+            animationGroup.stop();
+            expect(firstDone).not.toHaveBeenCalled();
+            expect(secondDone).toHaveBeenCalledTimes(1);
         });
     });
 });

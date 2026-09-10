@@ -3,7 +3,7 @@ import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
 import { RichTypeAny, RichTypeNumber, RichTypeString, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
-import { Vector3 } from "core/Maths/math.vector.pure";
+import { Matrix, Vector3 } from "core/Maths/math.vector.pure";
 import { GetInteractivityObjectReference } from "./flowGraphObjectReferenceBlock";
 import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection.pure";
 
@@ -19,6 +19,9 @@ export interface IFlowGraphEventReferenceBlockConfiguration extends IFlowGraphBl
  * Produces the opaque reference associated with a KHR event operation.
  */
 export class FlowGraphEventReferenceBlock extends FlowGraphExecutionBlock {
+    private readonly _assetInverse = Matrix.Identity();
+    private readonly _selectionPointValue = Vector3.Zero();
+    private readonly _selectionRayOriginValue = Vector3.Zero();
     /** Output flow activated after event values are captured. */
     public readonly out: FlowGraphSignalConnection;
     /** Runtime node associated with the event. */
@@ -71,8 +74,21 @@ export class FlowGraphEventReferenceBlock extends FlowGraphExecutionBlock {
             }
             this.controllerIndex.setValue(controllerIndex, context);
         }
-        this.selectionPoint.setValue(this.selectionPointInput.getValue(context), context);
-        this.selectionRayOrigin.setValue(this.selectionRayOriginInput.getValue(context), context);
+        const node = this.node.getValue(context) as { parent?: any; getWorldMatrix?: () => Matrix } | undefined;
+        let root = node?.parent;
+        while (root?.parent) {
+            root = root.parent;
+        }
+        if (root?.getWorldMatrix) {
+            root.getWorldMatrix().invertToRef(this._assetInverse);
+            Vector3.TransformCoordinatesToRef(this.selectionPointInput.getValue(context), this._assetInverse, this._selectionPointValue);
+            Vector3.TransformCoordinatesToRef(this.selectionRayOriginInput.getValue(context), this._assetInverse, this._selectionRayOriginValue);
+            this.selectionPoint.setValue(this._selectionPointValue, context);
+            this.selectionRayOrigin.setValue(this._selectionRayOriginValue, context);
+        } else {
+            this.selectionPoint.setValue(this.selectionPointInput.getValue(context), context);
+            this.selectionRayOrigin.setValue(this.selectionRayOriginInput.getValue(context), context);
+        }
         this.value.setValue(context.getEventReference(this.config.eventKey), context);
         this.out._activateSignal(context);
     }
