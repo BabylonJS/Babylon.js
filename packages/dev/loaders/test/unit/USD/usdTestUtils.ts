@@ -77,7 +77,7 @@ class CommandWriter {
 
     public constructor() {
         this._writer.u32(0x42445355);
-        this._writer.u16(5);
+        this._writer.u16(4);
         this._writer.u16(0);
         this._writer.u32(0);
         this._writer.u32(0);

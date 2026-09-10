@@ -81,9 +81,9 @@ export async function CreateUsdFileLoaderOptionsAsync(files: readonly File[], ro
     const scriptBaseUrl = Tools.ScriptBaseUrl;
     const currentLocation = globalThis.location;
     const importerBaseUrl = scriptBaseUrl
-        ? `${scriptBaseUrl.replace(/\/$/, "")}/babylonUsdImporter/5/`
+        ? `${scriptBaseUrl.replace(/\/$/, "")}/babylonUsdImporter/4/`
         : currentLocation && (currentLocation.hostname === "localhost" || currentLocation.hostname === "127.0.0.1")
-          ? `${currentLocation.protocol}//${currentLocation.hostname}:1337/babylonUsdImporter/5/`
+          ? `${currentLocation.protocol}//${currentLocation.hostname}:1337/babylonUsdImporter/4/`
           : undefined;
 
     return {
