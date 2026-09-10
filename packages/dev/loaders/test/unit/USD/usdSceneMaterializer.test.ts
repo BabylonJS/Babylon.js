@@ -11,7 +11,13 @@ import { Animation } from "core/Animations/animation";
 import { Command, readCommands } from "loaders/USD/usdCommandProtocol";
 import { _RegisterUSDLoaderDependencies } from "loaders/USD/usdFileLoader.pure";
 import { materializeCommandBuffers } from "loaders/USD/usdSceneMaterializer";
-import { createUSDMeshTestBuffers, createUSDProcessedMaterialTestBuffers, createUSDSeparateMaterialTestBuffers, createUSDThinInstanceTestBuffers } from "./usdTestUtils";
+import {
+    createUSDMeshTestBuffers,
+    createUSDMorphTargetTestBuffers,
+    createUSDProcessedMaterialTestBuffers,
+    createUSDSeparateMaterialTestBuffers,
+    createUSDThinInstanceTestBuffers,
+} from "./usdTestUtils";
 import { deferUSDTextureLoads } from "./usdTextureTestUtils";
 import { GetEnvironmentBRDFTexture } from "core/Misc/brdfTextureTools";
 import { TextureChannel, type ITextureProcessOperand } from "core/Materials/Textures/textureProcessor";
@@ -133,6 +139,37 @@ describe("USD scene materializer protocol", () => {
         expect(source.thinInstanceEnablePicking).toBe(true);
         expect(source.thinInstanceGetWorldMatrices().map((matrix) => matrix.m[12])).toEqual([4, 8]);
         expect(container.meshes).toHaveLength(1);
+    });
+
+    it.each([true, false])("materializes morph targets and influence animation (addToScene=%s)", async (addToScene) => {
+        const buffers = createUSDMorphTargetTestBuffers();
+        const { container } = await materializeCommandBuffers(scene, buffers.commands, buffers.data, addToScene);
+        const mesh = container.meshes[0];
+        if (!(mesh instanceof Mesh)) {
+            throw new Error("Expected morph target source mesh");
+        }
+        const manager = mesh.morphTargetManager;
+        expect(manager).not.toBeNull();
+        expect(container.morphTargetManagers).toEqual([manager]);
+        expect(manager?.numTargets).toBe(1);
+        const target = manager!.getTarget(0);
+        expect(target.influence).toBeCloseTo(0.25);
+        expect(Array.from(target.getPositions()!)).toEqual([0, 0, 0, 1, 0, 0, 1, 2, 0, 0, 1, 0]);
+        expect(Array.from(target.getNormals()!)).toEqual(Array(4).fill([0, 1, 0]).flat());
+        const morphAnimation = container.animationGroups[0].targetedAnimations.find((entry) => entry.target === target);
+        expect(morphAnimation?.animation.targetProperty).toBe("influence");
+        expect(morphAnimation?.animation.dataType).toBe(Animation.ANIMATIONTYPE_FLOAT);
+        expect(morphAnimation?.animation.getKeys().map((key) => key.value)).toEqual([0.25, 1]);
+        expect(scene.morphTargetManagers).toHaveLength(addToScene ? 1 : 0);
+        if (!addToScene) {
+            if (!(container instanceof AssetContainer)) {
+                throw new Error("Expected detached AssetContainer");
+            }
+            container.addAllToScene();
+        }
+        expect(scene.morphTargetManagers).toHaveLength(1);
+        container.dispose();
+        expect(scene.morphTargetManagers).toHaveLength(0);
     });
 
     it("waits for textures and applies PBR slots, alpha and UV transforms", async () => {
@@ -324,6 +361,15 @@ describe("USD scene materializer protocol", () => {
         new DataView(buffers.commands).setUint32(command.payloadOffset + 4, 0xfffffffc, true);
         await expect(materializeCommandBuffers(scene, buffers.commands, buffers.data, false)).rejects.toThrow("thin instance transforms");
         expect(scene.meshes).toHaveLength(0);
+    });
+
+    it("rejects an invalid morph target position range", async () => {
+        const buffers = createUSDMorphTargetTestBuffers();
+        const command = readCommands(buffers.commands).find((record) => record.opcode === Command.MorphTarget)!;
+        new DataView(buffers.commands).setUint32(command.payloadOffset + 20, 0xfffffffc, true);
+        await expect(materializeCommandBuffers(scene, buffers.commands, buffers.data, false)).rejects.toThrow("morph target positions");
+        expect(scene.meshes).toHaveLength(0);
+        expect(scene.morphTargetManagers).toHaveLength(0);
     });
 
     it("observes late image errors after synchronous protocol rollback", async () => {

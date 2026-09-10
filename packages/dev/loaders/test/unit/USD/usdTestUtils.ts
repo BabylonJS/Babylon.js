@@ -146,7 +146,13 @@ export function createUSDTestBuffers(): USDTestBuffers {
     addUSDTestPrimitives(commands, data);
     return { commands: commands.finish(), data: data.toArrayBuffer() };
 }
-export function createUSDMeshTestBuffers(withTextures = false, separateMaterialTextures = false, processedMaterialTextures = false, withThinInstances = false): USDTestBuffers {
+export function createUSDMeshTestBuffers(
+    withTextures = false,
+    separateMaterialTextures = false,
+    processedMaterialTextures = false,
+    withThinInstances = false,
+    withMorphTarget = false
+): USDTestBuffers {
     const commands = new CommandWriter();
     const data = new BufferWriter();
     const name = data.appendString("Skinned quad");
@@ -264,6 +270,14 @@ export function createUSDMeshTestBuffers(withTextures = false, separateMaterialT
     commands.command(Command.Mesh, (writer) => {
         [1, 1, 1, MISSING_OFFSET, name.offset, name.length, 0, 1, subsets, 2].forEach((value) => writer.u32(value));
     });
+    if (withMorphTarget) {
+        const targetPositions = data.floats([0, 0, 0, 1, 0, 0, 1, 2, 0, 0, 1, 0]);
+        const targetNormals = data.floats(Array(4).fill([0, 1, 0]).flat());
+        commands.command(Command.MorphTarget, (writer) => {
+            [20, 1, name.offset, name.length, 4, targetPositions, targetNormals].forEach((value) => writer.u32(value));
+            writer.f32(0.25);
+        });
+    }
     if (!withThinInstances) {
         commands.command(Command.Instance, (writer) => {
             [1, 1, name.offset, name.length].forEach((value) => writer.u32(value));
@@ -295,6 +309,12 @@ export function createUSDMeshTestBuffers(withTextures = false, separateMaterialT
             [kind, target, AnimationProperty.Matrix, 0, 2, times, values, 16].forEach((value) => writer.u32(value));
         });
     }
+    if (withMorphTarget) {
+        const influences = data.floats([0.25, 1]);
+        commands.command(Command.Animation, (writer) => {
+            [AnimationTarget.MorphTarget, 20, AnimationProperty.Influence, 0, 2, times, influences, 1].forEach((value) => writer.u32(value));
+        });
+    }
 
     return { commands: commands.finish(), data: data.toArrayBuffer() };
 }
@@ -309,6 +329,10 @@ export function createUSDProcessedMaterialTestBuffers(): USDTestBuffers {
 
 export function createUSDThinInstanceTestBuffers(): USDTestBuffers {
     return createUSDMeshTestBuffers(false, false, false, true);
+}
+
+export function createUSDMorphTargetTestBuffers(): USDTestBuffers {
+    return createUSDMeshTestBuffers(false, false, false, false, true);
 }
 
 function addUSDTestPrimitives(commands: CommandWriter, data: BufferWriter): void {

@@ -20,6 +20,8 @@ import {
     type ITextureProcessOperand,
 } from "core/Materials/Textures/textureProcessor";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
+import { MorphTarget } from "core/Morph/morphTarget";
+import { MorphTargetManager } from "core/Morph/morphTargetManager";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder.pure";
 import { CreateCylinder } from "core/Meshes/Builders/cylinderBuilder.pure";
 import { CreateSphere } from "core/Meshes/Builders/sphereBuilder.pure";
@@ -96,6 +98,9 @@ class DirectAssetContainer extends AbstractAssetContainer {
         }
         for (const mesh of this.meshes.splice(0)) {
             mesh.dispose();
+        }
+        for (const manager of this.morphTargetManagers.splice(0)) {
+            manager.dispose();
         }
         for (const skeleton of this.skeletons.splice(0)) {
             skeleton.dispose();
@@ -235,6 +240,8 @@ export async function materializeCommandBuffers(
     const bones = new Map<number, Bone>();
     const geometries = new Map<number, GeometryDescriptor>();
     const meshes = new Map<number, Mesh>();
+    const morphTargetManagers = new Map<number, MorphTargetManager>();
+    const morphTargets = new Map<number, MorphTarget>();
     const classicInstanceSources = new Set<number>();
     const thinInstanceSources = new Set<number>();
     const animationGroups = new Map<number, AnimationGroup>();
@@ -829,6 +836,42 @@ export async function materializeCommandBuffers(
                         meshes.set(id, mesh);
                         break;
                     }
+                    case Command.MorphTarget: {
+                        const id = payload.u32();
+                        const meshId = payload.u32();
+                        const nameOffset = payload.u32();
+                        const nameLength = payload.u32();
+                        const vertexCount = payload.u32();
+                        const positionsOffset = payload.u32();
+                        const normalsOffset = payload.u32();
+                        const influence = payload.f32();
+                        const mesh = meshes.get(meshId);
+                        if (!mesh) {
+                            throw new Error(`Morph target references missing mesh ${meshId}.`);
+                        }
+                        if (morphTargets.has(id) || vertexCount !== mesh.getTotalVertices() || !Number.isFinite(influence)) {
+                            throw new Error(`Morph target ${id} has invalid metadata.`);
+                        }
+                        assertRange(dataBuffer, positionsOffset, vertexCount * 3, 4, "morph target positions");
+                        let manager = morphTargetManagers.get(meshId);
+                        if (!manager) {
+                            manager = new MorphTargetManager(scene, mesh.name);
+                            manager.areUpdatesFrozen = true;
+                            trackAsset(container.morphTargetManagers, manager);
+                            mesh.morphTargetManager = manager;
+                            morphTargetManagers.set(meshId, manager);
+                        }
+                        const target = new MorphTarget(stringAt(dataBuffer, nameOffset, nameLength), influence, scene, manager);
+                        target.id = `usd-morph-target-${id}`;
+                        target.setPositions(new Float32Array(dataBuffer, positionsOffset, vertexCount * 3));
+                        if (normalsOffset !== MISSING_OFFSET) {
+                            assertRange(dataBuffer, normalsOffset, vertexCount * 3, 4, "morph target normals");
+                            target.setNormals(new Float32Array(dataBuffer, normalsOffset, vertexCount * 3));
+                        }
+                        manager.addTarget(target);
+                        morphTargets.set(id, target);
+                        break;
+                    }
                     case Command.AnalyticPrimitive: {
                         const id = payload.u32();
                         const nodeId = payload.u32();
@@ -957,21 +1000,27 @@ export async function materializeCommandBuffers(
                         const timesOffset = payload.u32();
                         const valuesOffset = payload.u32();
                         const stride = payload.u32();
-                        if (targetKind !== AnimationTarget.Node && targetKind !== AnimationTarget.Bone) {
+                        if (targetKind !== AnimationTarget.Node && targetKind !== AnimationTarget.Bone && targetKind !== AnimationTarget.MorphTarget) {
                             throw new Error(`Invalid animation target kind ${targetKind}.`);
                         }
+                        if ((targetKind === AnimationTarget.MorphTarget) !== (property === AnimationProperty.Influence)) {
+                            throw new Error(`Invalid animation property ${property} for target kind ${targetKind}.`);
+                        }
                         const expectedStride =
-                            property === AnimationProperty.Position || property === AnimationProperty.Scaling
-                                ? 3
-                                : property === AnimationProperty.RotationQuaternion
-                                  ? 4
-                                  : property === AnimationProperty.Matrix
-                                    ? 16
-                                    : 0;
+                            property === AnimationProperty.Influence
+                                ? 1
+                                : property === AnimationProperty.Position || property === AnimationProperty.Scaling
+                                  ? 3
+                                  : property === AnimationProperty.RotationQuaternion
+                                    ? 4
+                                    : property === AnimationProperty.Matrix
+                                      ? 16
+                                      : 0;
                         if (stride !== expectedStride) {
                             throw new Error(`Invalid animation value stride ${stride} for property ${property}.`);
                         }
-                        const target = targetKind === AnimationTarget.Node ? nodes.get(targetId) : bones.get(targetId);
+                        const target =
+                            targetKind === AnimationTarget.Node ? nodes.get(targetId) : targetKind === AnimationTarget.Bone ? bones.get(targetId) : morphTargets.get(targetId);
                         if (!target) {
                             break;
                         }
@@ -982,15 +1031,19 @@ export async function materializeCommandBuffers(
                                   ? "rotationQuaternion"
                                   : property === AnimationProperty.Scaling
                                     ? "scaling"
-                                    : targetKind === AnimationTarget.Node
-                                      ? NODE_MATRIX_PROPERTY
-                                      : "_matrix";
+                                    : property === AnimationProperty.Influence
+                                      ? "influence"
+                                      : targetKind === AnimationTarget.Node
+                                        ? NODE_MATRIX_PROPERTY
+                                        : "_matrix";
                         const dataType =
-                            property === AnimationProperty.RotationQuaternion
-                                ? Animation.ANIMATIONTYPE_QUATERNION
-                                : property === AnimationProperty.Matrix
-                                  ? Animation.ANIMATIONTYPE_MATRIX
-                                  : Animation.ANIMATIONTYPE_VECTOR3;
+                            property === AnimationProperty.Influence
+                                ? Animation.ANIMATIONTYPE_FLOAT
+                                : property === AnimationProperty.RotationQuaternion
+                                  ? Animation.ANIMATIONTYPE_QUATERNION
+                                  : property === AnimationProperty.Matrix
+                                    ? Animation.ANIMATIONTYPE_MATRIX
+                                    : Animation.ANIMATIONTYPE_VECTOR3;
                         const animation = new Animation(`USD ${propertyName}`, propertyName, timeCodesPerSecond, dataType, Animation.ANIMATIONLOOPMODE_CYCLE);
                         assertRange(dataBuffer, timesOffset, keyCount, 4, "animation times");
                         assertRange(dataBuffer, valuesOffset, keyCount * stride, 4, "animation values");
@@ -1004,7 +1057,9 @@ export async function materializeCommandBuffers(
                                         ? Quaternion.FromArray(values, index * stride)
                                         : dataType === Animation.ANIMATIONTYPE_MATRIX
                                           ? Matrix.FromArray(values, index * stride)
-                                          : Vector3.FromArray(values, index * stride),
+                                          : dataType === Animation.ANIMATIONTYPE_FLOAT
+                                            ? values[index * stride]
+                                            : Vector3.FromArray(values, index * stride),
                             }))
                         );
                         let group = animationGroups.get(trackIndex);
@@ -1016,6 +1071,13 @@ export async function materializeCommandBuffers(
                         group.addTargetedAnimation(animation, target);
                         break;
                     }
+                }
+            }
+            for (const manager of morphTargetManagers.values()) {
+                manager.areUpdatesFrozen = false;
+                if (manager.isUsingTextureForTargets || manager.numTargets <= MorphTargetManager.MaxActiveMorphTargetsInVertexAttributeMode) {
+                    manager.optimizeInfluencers = false;
+                    manager.numMaxInfluencers = manager.numTargets;
                 }
             }
         } finally {
