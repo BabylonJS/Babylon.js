@@ -1,6 +1,6 @@
 import { type IReadonlyObservable } from "core/index";
 
-import { type ObservableCollection } from "../misc/observableCollection";
+import { type IReadonlyObservableCollection } from "../misc/observableCollection";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -84,7 +84,7 @@ export function useObservableState<T>(accessor: () => T, ...observables: Array<I
  * @param collection The collection to observe.
  * @returns A copy of the items in the collection.
  */
-export function useObservableCollection<T>(collection: ObservableCollection<T>) {
+export function useObservableCollection<T>(collection: IReadonlyObservableCollection<T>) {
     const itemsRef = useRef([...collection.items]);
     return useObservableState(
         useCallback(() => {
@@ -102,7 +102,7 @@ export function useObservableCollection<T>(collection: ObservableCollection<T>) 
  * @param collection The collection to observe.
  * @returns A copy of the items in the collection sorted by the order property.
  */
-export function useOrderedObservableCollection<T extends Readonly<{ order?: number }>>(collection: ObservableCollection<T>) {
+export function useOrderedObservableCollection<T extends Readonly<{ order?: number }>>(collection: IReadonlyObservableCollection<T>) {
     const items = useObservableCollection(collection);
     const sortedItems = useMemo(() => items.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)), [items]);
     return sortedItems;

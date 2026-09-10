@@ -9,6 +9,8 @@ import {
     type TextRenderer,
     type Texture2D,
 } from "@babylonjs/lite";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 vi.hoisted(() => {
@@ -38,6 +40,7 @@ import {
     EngineExplorerServiceDefinition,
     EngineExplorerServiceIdentity,
     type RenderingContextNodeProvider,
+    type RenderingContextPresentationProvider,
 } from "../../src/lite/engineExplorerService";
 import { MaterialExplorerServiceDefinition } from "../../src/lite/services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "../../src/lite/services/panes/scene/meshExplorerService";
@@ -45,6 +48,7 @@ import { TextLayerExplorerServiceDefinition } from "../../src/lite/services/pane
 import { TextureExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textureExplorerService";
 import { type IWatcherService, WatcherServiceIdentity } from "../../src/services/watcherService";
 import { type ISelectionService } from "../../src/services/selectionService";
+import { GetExplorerNodeChildren, type IExplorerService, ExplorerServiceIdentity } from "../../src/services/panes/explorer/explorerService";
 import { type IShellService } from "shared-ui-components/modularTool/services/shellService";
 
 function CreateMaterial(family: string, name: string, texture?: Texture2D): Material {
@@ -152,23 +156,31 @@ describe("Babylon Lite engine explorer service", () => {
 
         let getTopologySnapshot: (() => readonly object[]) | undefined;
         let areTopologySnapshotsEqual: ((left: readonly object[], right: readonly object[]) => boolean) | undefined;
+        let notifyTopologyChanged: (() => void) | undefined;
         const watcherService = {
             watchValue: vi.fn(
-                (getValue: () => readonly object[], _onChanged: (value: readonly object[]) => void, equals: (left: readonly object[], right: readonly object[]) => boolean) => {
+                (getValue: () => readonly object[], onChanged: (value: readonly object[]) => void, equals: (left: readonly object[], right: readonly object[]) => boolean) => {
                     getTopologySnapshot = getValue;
                     areTopologySnapshotsEqual = equals;
+                    notifyTopologyChanged = () => onChanged(getValue());
                     return { dispose: vi.fn() };
                 }
             ),
         } as unknown as IWatcherService;
         const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, {} as ISelectionService, watcherService)!;
+        const onNodesChanged = vi.fn();
+        PaneRegistrations.at(-1)!.options.onNodesChanged?.add(onNodesChanged);
         const providerRegistration = service.addRenderingContextNodeProvider({
             predicate: (context): context is SceneContext => context === firstScene || context === secondScene,
-            getNodes: () => [],
+            getNodes: (scene) => scene.meshes.map((entity) => ({ id: "mesh", entity, getDisplayInfo: () => ({ name: "Mesh" }) })),
             getSnapshot: (scene) => scene.meshes,
         });
+        const paneNodeProviders = PaneRegistrations.at(-1)!.options.nodeProviders?.items ?? [];
 
-        if (!getTopologySnapshot || !areTopologySnapshotsEqual) {
+        expect(GetExplorerNodeChildren(firstScene, [], paneNodeProviders)[0].entity).toBe(mesh);
+        expect(GetExplorerNodeChildren(secondScene, [], paneNodeProviders)).toEqual([]);
+
+        if (!getTopologySnapshot || !areTopologySnapshotsEqual || !notifyTopologyChanged) {
             throw new Error("Expected the topology watcher to be registered.");
         }
 
@@ -178,15 +190,127 @@ describe("Babylon Lite engine explorer service", () => {
         const afterTransfer = getTopologySnapshot();
 
         expect(areTopologySnapshotsEqual(beforeTransfer, afterTransfer)).toBe(false);
+        expect(onNodesChanged).toHaveBeenCalledOnce();
+        notifyTopologyChanged();
+        expect(onNodesChanged).toHaveBeenCalledTimes(2);
+        expect(GetExplorerNodeChildren(firstScene, [], paneNodeProviders)).toEqual([]);
+        expect(GetExplorerNodeChildren(secondScene, [], paneNodeProviders)[0].entity).toBe(mesh);
 
         providerRegistration.dispose();
+        providerRegistration.dispose();
+        expect(onNodesChanged).toHaveBeenCalledTimes(3);
+        expect(GetExplorerNodeChildren(secondScene, [], paneNodeProviders)).toEqual([]);
         service.dispose?.();
+    });
+
+    it("keeps rendering context presentation separate from contributed children", () => {
+        PaneRegistrations.length = 0;
+        type CustomRenderingContext = RenderingContext & { iconLabel: string };
+        const context = { _kind: "custom-rendering-context", iconLabel: "Custom context" } as unknown as CustomRenderingContext;
+        const child = {};
+        const engine = {
+            surfaces: [] as unknown as EngineContext["surfaces"],
+            _renderingContexts: [context],
+        } as unknown as EngineContext;
+        (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine];
+        const watcherService = {
+            watchValue: vi.fn(() => ({ dispose: vi.fn() })),
+        } as unknown as IWatcherService;
+        const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, {} as ISelectionService, watcherService)!;
+        const paneOptions = PaneRegistrations.at(-1)!.options;
+        const onNodesChanged = vi.fn();
+        paneOptions.onNodesChanged?.add(onNodesChanged);
+        const CustomIcon = ({ entity }: { entity: CustomRenderingContext }) => createElement("span", null, entity.iconLabel);
+
+        const getContextNode = () => paneOptions.getNodes()[0];
+        expect(getContextNode().getDisplayInfo().name).toBe("custom-rendering-context");
+        expect(getContextNode().icon).toBeUndefined();
+
+        const childRegistration = service.addRenderingContextNodeProvider({
+            predicate: (candidate): candidate is RenderingContext => candidate === context,
+            getNodes: () => [{ id: "child", entity: child, getDisplayInfo: () => ({ name: "Child" }) }],
+            getSnapshot: () => [child],
+        });
+        const earlierPresentationRegistration = service.addRenderingContextPresentationProvider({
+            predicate: (candidate): candidate is RenderingContext => candidate === context,
+            getPresentation: () => ({ getDisplayInfo: () => ({ name: "Earlier presentation" }) }),
+        });
+        const preferredPresentationRegistration = service.addRenderingContextPresentationProvider({
+            predicate: (candidate): candidate is CustomRenderingContext => candidate === context,
+            getPresentation: () => ({ icon: CustomIcon }),
+        });
+
+        const preferredNode = getContextNode();
+        expect(preferredNode.getDisplayInfo().name).toBe("custom-rendering-context");
+        expect(renderToStaticMarkup(createElement(preferredNode.icon!, { entity: {} }))).toBe("<span>Custom context</span>");
+        expect(GetExplorerNodeChildren(context, [], paneOptions.nodeProviders?.items ?? [])[0].entity).toBe(child);
+        expect(onNodesChanged).toHaveBeenCalledTimes(3);
+
+        preferredPresentationRegistration.dispose();
+        preferredPresentationRegistration.dispose();
+        expect(getContextNode().getDisplayInfo().name).toBe("Earlier presentation");
+        expect(getContextNode().icon).toBeUndefined();
+
+        earlierPresentationRegistration.dispose();
+        expect(getContextNode().getDisplayInfo().name).toBe("custom-rendering-context");
+
+        childRegistration.dispose();
+        childRegistration.dispose();
+        expect(GetExplorerNodeChildren(context, [], paneOptions.nodeProviders?.items ?? [])).toEqual([]);
+        expect(onNodesChanged).toHaveBeenCalledTimes(6);
+
+        const ownedProvider = {
+            predicate: (candidate: RenderingContext): candidate is RenderingContext => candidate === context,
+            getPresentation: () => ({ icon: CustomIcon }),
+        } satisfies RenderingContextPresentationProvider<RenderingContext>;
+        const ownedRegistration = service.addRenderingContextPresentationProvider(ownedProvider);
+        expect(onNodesChanged).toHaveBeenCalledTimes(7);
+
+        service.dispose?.();
+        ownedRegistration.dispose();
+        ownedRegistration.dispose();
+        expect(() => service.addRenderingContextPresentationProvider(ownedProvider)).toThrow("Observable collection is disposed.");
+        expect(onNodesChanged).toHaveBeenCalledTimes(7);
+    });
+
+    it("routes shared commands to the Explorer and cleans them up", () => {
+        PaneRegistrations.length = 0;
+        const engine = {
+            surfaces: [] as unknown as EngineContext["surfaces"],
+            _renderingContexts: [],
+        } as unknown as EngineContext;
+        (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine];
+        const watcherService = {
+            watchValue: vi.fn(() => ({ dispose: vi.fn() })),
+        } as unknown as IWatcherService;
+
+        const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, {} as ISelectionService, watcherService)!;
+        const sharedService: IExplorerService = service;
+        const itemCommand = { predicate: (context: unknown): context is Mesh => true, getCommand: () => ({}) };
+        const groupCommand = { predicate: (context: unknown): context is "Resources" => context === "Resources", getCommand: () => ({}) };
+        const itemRegistration = sharedService.addItemCommand(itemCommand as never);
+        const groupRegistration = sharedService.addGroupCommand(groupCommand as never);
+        const paneOptions = PaneRegistrations.at(-1)!.options;
+
+        expect(paneOptions.itemCommandProviders?.items).toEqual([itemCommand]);
+        expect(paneOptions.groupCommandProviders?.items).toEqual([groupCommand]);
+
+        itemRegistration.dispose();
+        groupRegistration.dispose();
+        expect(paneOptions.itemCommandProviders?.items).toEqual([]);
+        expect(paneOptions.groupCommandProviders?.items).toEqual([]);
+
+        sharedService.addItemCommand(itemCommand as never);
+        sharedService.addGroupCommand(groupCommand as never);
+        service.dispose?.();
+        expect(paneOptions.itemCommandProviders?.items).toEqual([]);
+        expect(paneOptions.groupCommandProviders?.items).toEqual([]);
     });
 });
 
 describe("Babylon Lite scene resource explorer services", () => {
     it("registers product-specific providers with the engine explorer", () => {
-        expect(EngineExplorerServiceDefinition.produces).toEqual([EngineExplorerServiceIdentity]);
+        expect(EngineExplorerServiceDefinition.produces).toEqual([EngineExplorerServiceIdentity, ExplorerServiceIdentity]);
         expect(MeshExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity]);
         expect(MaterialExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity]);
         expect(TextureExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity]);

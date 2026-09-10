@@ -10,6 +10,8 @@ export type {
     ExplorerNodeKind,
     ExplorerNodeValue,
 } from "./components/explorer/explorerModel";
+export type { ExplorerNodeProvider, IExplorerService } from "./services/panes/explorer/explorerService";
+export { ExplorerServiceIdentity } from "./services/panes/explorer/explorerService";
 export * from "shared-ui-components/modularTool/components/errorBoundary";
 export * from "shared-ui-components/modularTool/components/extensibleAccordion";
 export { SidePaneContainer } from "shared-ui-components/modularTool/components/pane";
