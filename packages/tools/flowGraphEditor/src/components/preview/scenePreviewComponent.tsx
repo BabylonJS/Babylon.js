@@ -14,6 +14,10 @@ import { LoadSnippet, type IPlaygroundSnippetResult } from "@tools/snippet-loade
 import { CaptureFlowGraphSnippetId } from "./flowGraphSnippetCapture";
 import { Body1, Button, Input, Tooltip, makeStyles, tokens } from "@fluentui/react-components";
 import { CheckmarkRegular } from "@fluentui/react-icons";
+import { ComputeFlowGraphLayout, type IFlowLayoutNode } from "../../graphSystem/flowGraphLayout";
+import { type ISerializedFlowGraphBlock } from "core/FlowGraph/typeDefinitions";
+import { IsFlowGraphEventBlockName } from "../../graphSystem/blockTypeColors";
+import { GetFlowGraphBlockNodeId } from "../../graphSystem/blockNodeData";
 
 interface IScenePreviewComponentProps {
     globalState: GlobalState;
@@ -28,6 +32,120 @@ interface IScenePreviewComponentState {
     isLoading: boolean;
     error: string;
     sceneObjectCount: number;
+}
+
+const ImportedBlockWidth = 240;
+const ImportedBlockBaseHeight = 76;
+const ImportedPortHeight = 26;
+const ImportedCompositeGap = 24;
+
+function _GetImportedBlockHeight(block: ISerializedFlowGraphBlock): number {
+    const inputCount = block.signalInputs.length + block.dataInputs.length;
+    const outputCount = block.signalOutputs.length + block.dataOutputs.length;
+    return ImportedBlockBaseHeight + Math.max(inputCount, outputCount) * ImportedPortHeight;
+}
+
+function _CreateKhrInteractivityEditorData(blocks: ISerializedFlowGraphBlock[]) {
+    const groupKeys = blocks.map((block, index) => {
+        const sourceNodeIndex = block.metadata?.khrInteractivity?.nodeIndex;
+        return typeof sourceNodeIndex === "number" ? `source:${sourceNodeIndex}` : `block:${index}`;
+    });
+    const groups = new Map<string, { blocks: ISerializedFlowGraphBlock[]; blockIndices: number[] }>();
+    for (let index = 0; index < blocks.length; index++) {
+        const key = groupKeys[index];
+        const group = groups.get(key) ?? { blocks: [], blockIndices: [] };
+        group.blocks.push(blocks[index]);
+        group.blockIndices.push(index);
+        groups.set(key, group);
+    }
+
+    const groupEntries = [...groups.entries()];
+    const groupIndexByKey = new Map(groupEntries.map(([key], index) => [key, index]));
+    const inputOwner = new Map<string, number>();
+    const outputOwner = new Map<string, number>();
+    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+        const groupIndex = groupIndexByKey.get(groupKeys[blockIndex])!;
+        for (const input of [...blocks[blockIndex].signalInputs, ...blocks[blockIndex].dataInputs]) {
+            inputOwner.set(input.uniqueId, groupIndex);
+        }
+        for (const output of [...blocks[blockIndex].signalOutputs, ...blocks[blockIndex].dataOutputs]) {
+            outputOwner.set(output.uniqueId, groupIndex);
+        }
+    }
+
+    const layoutNodes: IFlowLayoutNode[] = groupEntries.map(([, group], groupIndex) => {
+        const signalOut = new Set<number>();
+        const dataOut = new Set<number>();
+        let externalInputCount = 0;
+        let externalOutputCount = 0;
+        for (const block of group.blocks) {
+            for (const input of [...block.signalInputs, ...block.dataInputs]) {
+                if (input.connectedPointIds.some((endpoint) => outputOwner.get(endpoint) !== groupIndex)) {
+                    externalInputCount++;
+                }
+            }
+            for (const output of block.signalOutputs) {
+                let hasExternalTarget = false;
+                for (const endpoint of output.connectedPointIds) {
+                    const target = inputOwner.get(endpoint);
+                    if (target !== undefined && target !== groupIndex) {
+                        signalOut.add(target);
+                        hasExternalTarget = true;
+                    }
+                }
+                externalOutputCount += hasExternalTarget ? 1 : 0;
+            }
+            for (const output of block.dataOutputs) {
+                let hasExternalTarget = false;
+                for (const endpoint of output.connectedPointIds) {
+                    const target = inputOwner.get(endpoint);
+                    if (target !== undefined && target !== groupIndex) {
+                        dataOut.add(target);
+                        hasExternalTarget = true;
+                    }
+                }
+                externalOutputCount += hasExternalTarget ? 1 : 0;
+            }
+        }
+        const collapsedHeight = ImportedBlockBaseHeight + Math.max(externalInputCount, externalOutputCount) * ImportedPortHeight;
+        return {
+            id: groupIndex,
+            width: group.blocks.length > 1 ? ImportedBlockWidth : group.blocks.length * ImportedBlockWidth,
+            height: group.blocks.length > 1 ? collapsedHeight : Math.max(...group.blocks.map(_GetImportedBlockHeight)),
+            isEvent: group.blocks.some((block) => IsFlowGraphEventBlockName(block.className)),
+            signalOut: [...signalOut],
+            dataOut: [...dataOut],
+        };
+    });
+    const positions = ComputeFlowGraphLayout(layoutNodes);
+    const locations: { blockId: string; x: number; y: number; isCollapsed: boolean }[] = [];
+    const frames: any[] = [];
+    for (let groupIndex = 0; groupIndex < groupEntries.length; groupIndex++) {
+        const [, group] = groupEntries[groupIndex];
+        const position = positions.get(groupIndex)!;
+        let blockX = position.x;
+        for (const block of group.blocks) {
+            locations.push({ blockId: block.uniqueId, x: blockX, y: position.y, isCollapsed: false });
+            blockX += ImportedBlockWidth + ImportedCompositeGap;
+        }
+        if (group.blocks.length > 1) {
+            const provenance = group.blocks[0].metadata.khrInteractivity;
+            const expandedWidth = group.blocks.length * ImportedBlockWidth + (group.blocks.length - 1) * ImportedCompositeGap;
+            frames.push({
+                x: position.x - ImportedCompositeGap,
+                y: position.y - 36,
+                width: expandedWidth + ImportedCompositeGap * 2,
+                height: Math.max(...group.blocks.map(_GetImportedBlockHeight)) + 60,
+                color: [0.46, 0.32, 0.65],
+                name: `${provenance.operation} · glTF node ${provenance.nodeIndex}`,
+                isCollapsed: true,
+                blocks: group.blocks.map((block) => block.uniqueId),
+                comments: provenance.sourcePath,
+            });
+        }
+    }
+    const map = Object.fromEntries(blocks.map((block) => [block.uniqueId, GetFlowGraphBlockNodeId(block.uniqueId)]));
+    return { locations, frames, x: 0, y: 0, zoom: 1, map, zoomToFitOnLoad: true };
 }
 
 const useStyles = makeStyles({
@@ -441,49 +559,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 allBlocks: [],
                 executionContexts: [],
             };
-            const sourceNodeGroups = new Map<number, typeof serializedFlowGraph.allBlocks>();
-            for (const block of serializedFlowGraph.allBlocks) {
-                const sourceNodeIndex = block.metadata?.khrInteractivity?.nodeIndex;
-                if (typeof sourceNodeIndex === "number") {
-                    const group = sourceNodeGroups.get(sourceNodeIndex) ?? [];
-                    group.push(block);
-                    sourceNodeGroups.set(sourceNodeIndex, group);
-                }
-            }
-            const locations: { blockId: string; x: number; y: number; isCollapsed: boolean }[] = [];
-            const frames: any[] = [];
-            for (const [sourceNodeIndex, blocks] of sourceNodeGroups) {
-                const row = sourceNodeIndex * 220;
-                for (let role = 0; role < blocks.length; role++) {
-                    locations.push({
-                        blockId: blocks[role].uniqueId,
-                        x: role * 260,
-                        y: row,
-                        isCollapsed: false,
-                    });
-                }
-                if (blocks.length > 1) {
-                    const provenance = blocks[0].metadata.khrInteractivity;
-                    frames.push({
-                        x: -24,
-                        y: row - 36,
-                        width: blocks.length * 260 + 24,
-                        height: 190,
-                        color: [0.18, 0.36, 0.55],
-                        name: `${provenance.operation} · node ${sourceNodeIndex}`,
-                        isCollapsed: true,
-                        blocks: blocks.map((block) => block.uniqueId),
-                        comments: provenance.sourcePath,
-                    });
-                }
-            }
-            (serializedFlowGraph as any).editorData = {
-                locations,
-                frames,
-                x: 0,
-                y: 0,
-                zoom: 1,
-            };
+            (serializedFlowGraph as any).editorData = _CreateKhrInteractivityEditorData(serializedFlowGraph.allBlocks);
             return serializedFlowGraph;
         });
         this.props.globalState.coordinator?.dispose();

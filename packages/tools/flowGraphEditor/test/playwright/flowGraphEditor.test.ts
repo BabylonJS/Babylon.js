@@ -134,9 +134,7 @@ async function GetContextSnapshot(page: Page): Promise<{ selectedContextIndex: n
     });
 }
 
-async function GetCoordinatorSnapshot(
-    page: Page
-): Promise<{
+async function GetCoordinatorSnapshot(page: Page): Promise<{
     activeGraphIndex: number;
     dispatchEventsSynchronously: boolean;
     hasHostResolver: boolean;
@@ -1402,6 +1400,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
         await fge.assertEditorReady();
+        await expect(page.getByText("glTF: Interactivity Imported", { exact: true })).toBeVisible();
 
         const graphGltf = {
             asset: { version: "2.0", generator: "FGE KHR_interactivity Phase 1 test" },
@@ -1412,8 +1411,8 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                     graphs: [
                         {
                             name: "Startup",
-                            declarations: [{ op: "event/onStart" }],
-                            nodes: [{ declaration: 0, values: {}, flows: {} }],
+                            declarations: [{ op: "event/onStart" }, { op: "flow/sequence" }],
+                            nodes: [{ declaration: 0, values: {}, flows: { out: { node: 1 } } }, { declaration: 1, flows: { "0": { node: 2 } } }, { declaration: 1 }],
                         },
                         {
                             name: "Vendor behavior",
@@ -1431,12 +1430,16 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                         {
                             name: "Composite",
                             types: [{ signature: "float3" }],
-                            declarations: [{ op: "event/onStart" }, { op: "pointer/get" }],
+                            declarations: [{ op: "event/onStart" }, { op: "pointer/get" }, { op: "math/abs" }],
                             nodes: [
                                 { declaration: 0 },
                                 {
                                     declaration: 1,
                                     configuration: { pointer: { value: ["/nodes/0/translation"] }, type: { value: [0] } },
+                                },
+                                {
+                                    declaration: 2,
+                                    values: { a: { node: 1, type: 0 } },
                                 },
                             ],
                         },
@@ -1463,13 +1466,23 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect(unsupportedNode).toBeVisible();
         await expect(unsupportedNode).toContainText("amount");
         await expect(unsupportedNode).toContainText("result");
+        await expect(unsupportedNode).toContainText("glTF");
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Unknown core operation "core/doesNotExist"');
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('"values" must contain at least one property when present');
 
         await fge.selectGraphTab("Composite");
-        await expect(page.getByText("pointer/get · node 1", { exact: true })).toBeVisible();
+        await expect(page.getByText("pointer/get · glTF node 1", { exact: true })).toBeVisible();
+        await expect(page.locator("#graph-canvas-container .FlowGraphGetPropertyBlock[class*='hidden']")).toHaveCount(1);
+        await expect(page.locator("#graph-canvas-container .FlowGraphJsonPointerParserBlock[class*='hidden']")).toHaveCount(1);
+        await expect(fge.nodeOnCanvas("FlowGraphAbsBlock")).toBeVisible();
 
         await fge.selectGraphTab("Startup");
+        const importedLeftPositions = await page
+            .locator("#graph-canvas-container")
+            .evaluate((container) =>
+                [...container.children].filter((element) => !element.className.includes("hidden")).map((element) => Math.round(element.getBoundingClientRect().left))
+            );
+        expect(new Set(importedLeftPositions).size).toBeGreaterThan(1);
         await page.getByRole("button", { name: "Enable Debug Mode" }).click();
         await expect.poll(async () => (await GetDebugSnapshot(page)).isDebugMode).toBe(true);
         await ClickGraphControl(page, "Start");

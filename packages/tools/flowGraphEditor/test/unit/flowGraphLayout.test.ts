@@ -97,6 +97,15 @@ describe("ComputeFlowGraphLayout", () => {
         expect(provider.x).toBeLessThan(consumer.x);
     });
 
+    it("keeps a pure data network together and layers it left-to-right", () => {
+        const nodes = [MakeNode(1, { dataOut: [2] }), MakeNode(2, { dataOut: [3] }), MakeNode(3)];
+        const positions = ComputeFlowGraphLayout(nodes, Options);
+
+        expect(positions.get(1)!.x).toBeLessThan(positions.get(2)!.x);
+        expect(positions.get(2)!.x).toBeLessThan(positions.get(3)!.x);
+        expect(positions.get(1)!.y).toBe(positions.get(2)!.y);
+    });
+
     it("never overlaps two nodes within the same column", () => {
         const nodes = [MakeNode(1, { isEvent: true, signalOut: [2, 3, 4] }), MakeNode(2), MakeNode(3), MakeNode(4)];
         const positions = ComputeFlowGraphLayout(nodes, Options);
@@ -104,5 +113,27 @@ describe("ComputeFlowGraphLayout", () => {
         // Each node is 50 tall with a 40 gap, so consecutive tops differ by at least 90.
         expect(ys[1] - ys[0]).toBeGreaterThanOrEqual(90);
         expect(ys[2] - ys[1]).toBeGreaterThanOrEqual(90);
+    });
+
+    it("keeps a large fan-out compact without pushing later layers far right", () => {
+        const targets = Array.from({ length: 40 }, (_, index) => index + 2);
+        const nodes = [MakeNode(1, { isEvent: true, signalOut: targets }), ...targets.map((id) => MakeNode(id))];
+        const positions = ComputeFlowGraphLayout(nodes, Options);
+        const xs = [...positions.values()].map((position) => position.x);
+        const ys = [...positions.values()].map((position) => position.y);
+
+        expect(Math.max(...xs) - Math.min(...xs)).toBeLessThanOrEqual(950);
+        expect(Math.max(...ys) - Math.min(...ys)).toBeLessThanOrEqual(750);
+    });
+
+    it("keeps very large fan-outs sublinear before placing the next execution layer", () => {
+        const targets = Array.from({ length: 400 }, (_, index) => index + 2);
+        const joinId = 402;
+        const nodes = [MakeNode(1, { isEvent: true, signalOut: targets }), ...targets.map((id) => MakeNode(id, { signalOut: [joinId] })), MakeNode(joinId)];
+        const positions = ComputeFlowGraphLayout(nodes, Options);
+        const fanOutSpan = Math.max(...targets.map((id) => positions.get(id)!.x)) - Math.min(...targets.map((id) => positions.get(id)!.x));
+
+        expect(fanOutSpan).toBeLessThan(3000);
+        expect(positions.get(joinId)!.x).toBeGreaterThan(Math.max(...targets.map((id) => positions.get(id)!.x)));
     });
 });

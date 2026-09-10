@@ -178,6 +178,7 @@ export const AllFlowGraphBlocks: { [category: string]: string[] } = {
         "FlowGraphFunctionReference",
         "FlowGraphDebugBlock",
     ],
+    glTF__Interactivity_Imported: ["FlowGraphEventReferenceBlock", "FlowGraphGLTFDataProvider", "FlowGraphObjectReferenceBlock", "FlowGraphUnsupportedInteractivityBlock"],
 };
 
 /**

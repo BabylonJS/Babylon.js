@@ -71,16 +71,16 @@ export class FlowGraphUnsupportedInteractivityBlock extends FlowGraphExecutionBl
         this._unregisterSignalInput("in");
         this._unregisterSignalOutput("error");
 
-        for (const socket of config.inputValueSockets) {
+        for (const socket of config.inputValueSockets ?? []) {
             this.registerDataInput(socket.name, getRichTypeByFlowGraphType(socket.type));
         }
-        for (const socket of config.outputValueSockets) {
+        for (const socket of config.outputValueSockets ?? []) {
             this.registerDataOutput(socket.name, getRichTypeByFlowGraphType(socket.type), _GetDefaultValue(socket.signature));
         }
-        for (const socket of config.inputFlowSockets) {
+        for (const socket of config.inputFlowSockets ?? []) {
             this._registerSignalInput(socket);
         }
-        for (const socket of config.outputFlowSockets) {
+        for (const socket of config.outputFlowSockets ?? []) {
             this._registerSignalOutput(socket);
         }
     }

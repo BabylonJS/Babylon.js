@@ -12,7 +12,7 @@ import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalCo
  */
 export interface IFlowGraphEventReferenceBlockConfiguration extends IFlowGraphBlockConfiguration {
     /** Stable key shared by equivalent event operations. */
-    eventKey: string;
+    eventKey?: string;
 }
 
 /**
@@ -89,7 +89,7 @@ export class FlowGraphEventReferenceBlock extends FlowGraphExecutionBlock {
             this.selectionPoint.setValue(this.selectionPointInput.getValue(context), context);
             this.selectionRayOrigin.setValue(this.selectionRayOriginInput.getValue(context), context);
         }
-        this.value.setValue(context.getEventReference(this.config.eventKey), context);
+        this.value.setValue(context.getEventReference(this.config.eventKey ?? "gltf:manual"), context);
         this.out._activateSignal(context);
     }
 

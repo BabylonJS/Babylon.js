@@ -1,6 +1,7 @@
 import { type GlobalState } from "./globalState";
 import { type Nullable } from "core/types";
 import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { GetFlowGraphBlockNodeId } from "./graphSystem/blockNodeData";
 import { type FlowGraph } from "core/FlowGraph/flowGraph";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphCoordinator, type IFlowGraphCoordinatorConfiguration } from "core/FlowGraph/flowGraphCoordinator";
@@ -56,6 +57,12 @@ export class SerializationTools {
         }
 
         globalState.storeEditorData(editorData, frame);
+        editorData.map = {};
+        for (const block of blocks) {
+            const numericId = GetFlowGraphBlockNodeId(block.uniqueId);
+            editorData.map[block.uniqueId] = numericId;
+            editorData.map[numericId] = numericId;
+        }
 
         // Persist editor data on the flow graph so it survives serialization round-trips
         (flowGraph as any)._editorData = editorData;
