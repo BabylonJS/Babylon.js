@@ -20,6 +20,7 @@ import { type OBJLoadingOptions } from "./objLoadingOptions";
 import { SolidParser } from "./solidParser";
 import { type Mesh } from "core/Meshes/mesh.pure";
 import { StandardMaterial } from "core/Materials/standardMaterial.pure";
+import { type Geometry } from "core/Meshes/geometry";
 
 /**
  * OBJ file type loader.
@@ -48,6 +49,12 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     public static set INVERT_TEXTURE_Y(value: boolean) {
         MTLFileLoader.INVERT_TEXTURE_Y = value;
     }
+
+    /**
+     * Wait for referenced textures to finish loading before completing the OBJ load.
+     * Defaults to false for backwards compatibility.
+     */
+    public static WAIT_FOR_TEXTURES = false;
 
     /**
      * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
@@ -113,6 +120,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             importVertexColors: OBJFileLoader.IMPORT_VERTEX_COLORS,
             invertY: OBJFileLoader.INVERT_Y,
             invertTextureY: OBJFileLoader.INVERT_TEXTURE_Y,
+            waitForTextures: OBJFileLoader.WAIT_FOR_TEXTURES,
             // eslint-disable-next-line @typescript-eslint/naming-convention
             UVScaling: OBJFileLoader.UV_SCALING,
             materialLoadingFailsSilently: OBJFileLoader.MATERIAL_LOADING_FAILS_SILENTLY,
@@ -199,13 +207,20 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         //get the meshes from OBJ file
         // eslint-disable-next-line github/no-then
         return this._parseSolidAsync(meshesNames, scene, data, rootUrl).then((meshes) => {
+            const geometries: Geometry[] = [];
+            for (let i = 0; i < meshes.length; ++i) {
+                const geometry = (meshes[i] as Mesh).geometry;
+                if (geometry) {
+                    geometries.push(geometry);
+                }
+            }
             return {
                 meshes: meshes,
                 particleSystems: [],
                 skeletons: [],
                 animationGroups: [],
                 transformNodes: [],
-                geometries: [],
+                geometries: geometries,
                 lights: [],
                 spriteManagers: [],
             };
@@ -244,6 +259,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             this.importMeshAsync(null, scene, data, rootUrl)
                 // eslint-disable-next-line github/no-then
                 .then((result) => {
+                    result.geometries.forEach((geometry) => container.geometries.push(geometry));
                     result.meshes.forEach((mesh) => container.meshes.push(mesh));
                     result.meshes.forEach((mesh) => {
                         const material = mesh.material;
@@ -306,46 +322,42 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         const mtlPromises: Array<Promise<void>> = [];
         // Check if we have a file to load
         if (fileToLoad !== "" && !this._loadingOptions.skipMaterials) {
-            //Load the file synchronously
+            // Load the MTL and optionally wait for the textures used by the selected meshes.
             mtlPromises.push(
                 new Promise((resolve, reject) => {
                     this._loadMTL(
                         fileToLoad,
                         rootUrl,
-                        (dataLoaded) => {
+                        async (dataLoaded) => {
                             try {
                                 //Create materials thanks MTLLoader function
-                                materialsFromMTLFile.parseMTL(scene, this._decode(dataLoaded), rootUrl, this._assetContainer);
-                                //Look at each material loaded in the mtl file
-                                for (let n = 0; n < materialsFromMTLFile.materials.length; n++) {
-                                    //Three variables to get all meshes with the same material
-                                    let startIndex = 0;
-                                    const _indices = [];
-                                    let _index;
+                                const textureLoadPromises = materialsFromMTLFile.parseMTL(
+                                    scene,
+                                    this._decode(dataLoaded),
+                                    rootUrl,
+                                    this._assetContainer,
+                                    this._loadingOptions.invertTextureY,
+                                    new Set(materialToUse),
+                                    this._loadingOptions.waitForTextures
+                                );
+                                // Parsing creates the selected materials synchronously; only their textures are pending.
+                                for (let n = 0; n < materialsFromMTLFile.materials.length; ++n) {
+                                    const material = materialsFromMTLFile.materials[n];
+                                    for (let index = materialToUse.indexOf(material.name); index !== -1; index = materialToUse.indexOf(material.name, index + 1)) {
+                                        const mesh = babylonMeshesArray[index];
+                                        mesh.material = material;
 
-                                    //The material from MTL file is used in the meshes loaded
-                                    //Push the indice in an array
-                                    //Check if the material is not used for another mesh
-                                    while ((_index = materialToUse.indexOf(materialsFromMTLFile.materials[n].name, startIndex)) > -1) {
-                                        _indices.push(_index);
-                                        startIndex = _index + 1;
-                                    }
-                                    //If the material is not used dispose it
-                                    if (_index === -1 && _indices.length === 0) {
-                                        //If the material is not needed, remove it
-                                        materialsFromMTLFile.materials[n].dispose();
-                                    } else {
-                                        for (let o = 0; o < _indices.length; o++) {
-                                            //Apply the material to the Mesh for each mesh with the material
-                                            const mesh = babylonMeshesArray[_indices[o]];
-                                            const material = materialsFromMTLFile.materials[n];
-                                            mesh.material = material;
-
-                                            if (!mesh.getTotalIndices()) {
-                                                // No indices, we need to turn on point cloud
-                                                material.pointsCloud = true;
-                                            }
+                                        if (!mesh.getTotalIndices()) {
+                                            // No indices, we need to turn on point cloud
+                                            material.pointsCloud = true;
                                         }
+                                    }
+                                }
+                                if (this._loadingOptions.waitForTextures) {
+                                    const results = await Promise.allSettled(textureLoadPromises);
+                                    const rejected = results.find((result) => result.status === "rejected");
+                                    if (rejected) {
+                                        throw rejected.reason;
                                     }
                                 }
                                 resolve();
@@ -380,17 +392,53 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             // Iterate over the mesh, determine if it is a line mesh, clone or modify the material to line rendering.
             babylonMeshesArray.forEach((mesh) => {
                 if (isLine(mesh)) {
-                    let mat = mesh.material ?? new StandardMaterial(mesh.name + "_line", scene);
+                    let mat = mesh.material;
+                    if (!mat) {
+                        const blockEntityCollection = scene._blockEntityCollection;
+                        scene._blockEntityCollection = !!this._assetContainer;
+                        mat = new StandardMaterial(mesh.name + "_line", scene);
+                        mat._parentContainer = this._assetContainer;
+                        scene._blockEntityCollection = blockEntityCollection;
+                    }
                     // If another mesh is using this material and it is not a line then we need to clone it.
                     const needClone = mat.getBindedMeshes().filter((e) => !isLine(e)).length > 0;
                     if (needClone) {
-                        mat = mat.clone(mat.name + "_line") ?? mat;
+                        // Clone only the material; keep the MTL texture objects shared.
+                        const sourceMaterial = mat as StandardMaterial;
+                        const { ambientTexture, diffuseTexture, specularTexture, bumpTexture, opacityTexture } = sourceMaterial;
+                        const blockEntityCollection = scene._blockEntityCollection;
+                        let lineMaterial: StandardMaterial;
+                        try {
+                            sourceMaterial.ambientTexture = null;
+                            sourceMaterial.diffuseTexture = null;
+                            sourceMaterial.specularTexture = null;
+                            sourceMaterial.bumpTexture = null;
+                            sourceMaterial.opacityTexture = null;
+                            scene._blockEntityCollection = !!this._assetContainer;
+                            lineMaterial = sourceMaterial.clone(sourceMaterial.name + "_line");
+                            lineMaterial._parentContainer = this._assetContainer;
+                        } finally {
+                            scene._blockEntityCollection = blockEntityCollection;
+                            sourceMaterial.ambientTexture = ambientTexture;
+                            sourceMaterial.diffuseTexture = diffuseTexture;
+                            sourceMaterial.specularTexture = specularTexture;
+                            sourceMaterial.bumpTexture = bumpTexture;
+                            sourceMaterial.opacityTexture = opacityTexture;
+                        }
+                        lineMaterial.ambientTexture = ambientTexture;
+                        lineMaterial.diffuseTexture = diffuseTexture;
+                        lineMaterial.specularTexture = specularTexture;
+                        lineMaterial.bumpTexture = bumpTexture;
+                        lineMaterial.opacityTexture = opacityTexture;
+                        mat = lineMaterial;
                     }
                     mat.wireframe = true;
                     mesh.material = mat;
-                    if (mesh._internalMetadata) {
-                        mesh._internalMetadata["_isLine"] = undefined;
-                    }
+                }
+            });
+            babylonMeshesArray.forEach((mesh) => {
+                if (mesh._internalMetadata) {
+                    mesh._internalMetadata["_isLine"] = undefined;
                 }
             });
 

@@ -28,6 +28,12 @@ export type OBJLoadingOptions = {
      */
     invertTextureY: boolean;
     /**
+     * Wait for referenced textures to finish loading before completing the OBJ load.
+     * When enabled, texture loading failures follow materialLoadingFailsSilently.
+     * Defaults to false for backwards compatibility.
+     */
+    waitForTextures?: boolean;
+    /**
      * Include in meshes the vertex colors available in some OBJ files.  This is not part of OBJ standard.
      */
     importVertexColors: boolean;
