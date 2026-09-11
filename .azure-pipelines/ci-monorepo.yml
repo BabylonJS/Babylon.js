@@ -243,6 +243,8 @@ jobs:
             condition: and(succeeded(), eq(variables['SMARTFILTERSCHANGED'], 'true'))
 
           - script: |
+                printf '%s\n' "$(Build.SourceVersion)" > .snapshot/build-source-version.txt
+
                 cd .snapshot
                 zip -r ../snapshot.zip *
                 cd ..
