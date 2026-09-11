@@ -3,6 +3,23 @@
 // Does depth-of-field blur, edge blur
 // Inspired by Francois Tarlier & Martins Upitis
 
+// Sample with an explicit LOD (level 0). The blur samples below run inside control flow that depends on
+// the per-pixel blur level (if (blur_level > 1.0) ...), i.e. non-uniform control flow. Implicit-derivative
+// sampling (texture2D) is illegal there and breaks differently on each backend:
+//   - WebGL: at the boundary between two blur levels a 2x2 quad straddles the branch, so the derivatives are
+//     undefined and WebGL returns a garbage LOD -> a thin seam along that boundary.
+//   - WebGPU: WGSL forbids implicit-derivative sampling in non-uniform control flow outright, so the
+//     auto-transpiled shader fails to compile ("textureSample must only be called from uniform control flow")
+//     and the pipeline is invalid.
+// Explicit LOD 0 is derivative-free, so it is legal in non-uniform control flow and fixes both. The render
+// targets have no mipmaps, so level 0 is equivalent. On WebGPU/WebGL2/Native this maps to textureLod (which
+// twgsl lowers to textureSampleLevel for WebGPU); WebGL1 falls back to the biased texture2D form.
+#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+	#define TEXTUREFUNC(s, c, lod) texture2DLodEXT(s, c, lod)
+#else
+	#define TEXTUREFUNC(s, c, bias) texture2D(s, c, bias)
+#endif
+
 // samplers
 uniform sampler2D textureSampler;
 uniform sampler2D highlightsSampler;
@@ -74,7 +91,7 @@ float sampleScreen(inout vec4 color, in vec2 offset, in float weight) {
 	float angle = rand(coords * 100.0).x * TWOPI;
 	coords += vec2(offset.x * cos(angle) - offset.y * sin(angle), offset.x * sin(angle) + offset.y * cos(angle));
 
-	color += texture2D(textureSampler, coords)*weight;
+	color += TEXTUREFUNC(textureSampler, coords, 0.0)*weight;
 
 	return weight;
 }
@@ -87,7 +104,7 @@ float getBlurLevel(float size) {
 // returns original screen color after blur
 vec4 getBlurColor(float size) {
 
-	vec4 col = texture2D(textureSampler, distorted_coords);
+	vec4 col = TEXTUREFUNC(textureSampler, distorted_coords, 0.0);
 
 	// there are max. 30 samples; the number of samples chosen is dependant on the blur size
 	// there can be 10, 20 or 30 samples chosen; levels of blur are then 1, 2 or 3
@@ -162,9 +179,9 @@ void main(void)
 	distorted_coords = getDistortedCoords(vUV);		// we distort the screen coordinates (lens "magnifying" effect)
 	vec2 texels_coords = vec2(vUV.x * screen_width, vUV.y * screen_height);	// varies from 0 to SCREEN_WIDTH or _HEIGHT
 
-	float depth = texture2D(depthSampler, distorted_coords).r;	// depth value from DepthRenderer: 0 to 1
+	float depth = TEXTUREFUNC(depthSampler, distorted_coords, 0.0).r;	// depth value from DepthRenderer: 0 to 1
 	float distance = near + (far - near)*depth;		// actual distance from the lens
-	vec4 color = texture2D(textureSampler, vUV);	// original raster
+	vec4 color = TEXTUREFUNC(textureSampler, vUV, 0.0);	// original raster
 
 
 													// compute the circle of confusion size (CoC), i.e. blur radius depending on depth
@@ -185,7 +202,7 @@ void main(void)
 
 	// apply blur if necessary
 	if (blur_amount == 0.0) {
-		gl_FragColor = texture2D(textureSampler, distorted_coords);
+		gl_FragColor = TEXTUREFUNC(textureSampler, distorted_coords, 0.0);
 	}
 	else {
 
@@ -194,21 +211,21 @@ void main(void)
 
 		// if we have computed highlights: enhance highlights
 		if (highlights) {
-			gl_FragColor.rgb += clamp(coc, 0.0, 1.0)*texture2D(highlightsSampler, distorted_coords).rgb;
+			gl_FragColor.rgb += clamp(coc, 0.0, 1.0)*TEXTUREFUNC(highlightsSampler, distorted_coords, 0.0).rgb;
 		}
 
 		if (blur_noise) {
 			// we put a slight amount of noise in the blurred color
 			vec2 noise = rand(distorted_coords) * 0.01 * blur_amount;
 			vec2 blurred_coord = vec2(distorted_coords.x + noise.x, distorted_coords.y + noise.y);
-			gl_FragColor = 0.04 * texture2D(textureSampler, blurred_coord) + 0.96 * gl_FragColor;
+			gl_FragColor = 0.04 * TEXTUREFUNC(textureSampler, blurred_coord, 0.0) + 0.96 * gl_FragColor;
 		}
 	}
 
 
 	// apply grain
 	if (grain_amount > 0.0) {
-		vec4 grain_color = texture2D(grainSampler, texels_coords*0.003);
+		vec4 grain_color = TEXTUREFUNC(grainSampler, texels_coords*0.003, 0.0);
 		gl_FragColor.rgb += (-0.5 + grain_color.rgb) * 0.30 * grain_amount;
 	}
 
