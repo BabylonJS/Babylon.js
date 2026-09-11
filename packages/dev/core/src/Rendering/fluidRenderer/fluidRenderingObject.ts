@@ -127,6 +127,22 @@ export abstract class FluidRenderingObject {
         return true;
     }
 
+    /**
+     * Override to return 3 if the "size" attribute is laid out as (baseSize, scaleX, scaleY) instead of (width, height).
+     * @returns the number of components of the "size" attribute
+     */
+    protected _getPerParticleSizeAttributeSize(): number {
+        return 2;
+    }
+
+    /**
+     * Override to return true if the "offset" attribute is centered ([-0.5, 0.5]) instead of laid out in [0, 1].
+     * @returns true if the "offset" attribute is centered
+     */
+    protected _usesCenteredOffsetAttribute(): boolean {
+        return false;
+    }
+
     protected _createEffects(): void {
         // "size" is a uniform, or a per-particle attribute when UsePerParticleSizeAttribute is set (and supported).
         const perParticleSize = FluidRenderingObject.UsePerParticleSizeAttribute && this._supportsPerParticleSizeAttribute();
@@ -135,6 +151,14 @@ export abstract class FluidRenderingObject {
         const baseAttributeNames = perParticleSize ? ["position", "offset", "size"] : ["position", "offset"];
         const baseUniformNames = perParticleSize ? ["view", "projection", "particleRadius"] : ["view", "projection", "particleRadius", "size"];
         const defines: string[] = perParticleSize ? ["#define FLUIDRENDERING_PER_PARTICLE_SIZE"] : [];
+
+        if (perParticleSize && this._getPerParticleSizeAttributeSize() === 3) {
+            defines.push("#define FLUIDRENDERING_PER_PARTICLE_SIZE_VEC3");
+        }
+
+        if (this._usesCenteredOffsetAttribute()) {
+            defines.push("#define FLUIDRENDERING_CENTERED_OFFSET");
+        }
 
         this._effectsAreDirty = false;
 
