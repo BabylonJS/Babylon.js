@@ -911,8 +911,9 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Configures subsurface properties for PBR material
      */
     public configureSubsurface(): void {
-        // glTF diffuse transmission is thin-walled (before volume extension is applied) will map to the subsurface slab and, without a
+        // glTF diffuse transmission is thin-walled (before volume extension is applied) will map to the subsurface slab
         this._material.geometryThinWalled = 1.0;
+        //  and, without a volume extension, diffuse transmission is fully transmitting, like having scatter aniso = +1.
         this._material.subsurfaceScatterAnisotropy = 1.0;
     }
 
@@ -1292,7 +1293,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         // KHR_materials_scatter). Compute final transmission_weight = T*(1-S) and
         // subsurface_weight = T*S/(1-T*(1-S)) now that all textures are loaded.
         // This must run before the diffuse-transmission-tint block which reads subsurfaceWeight.
-        if (this.geometryThinWalled && this.subsurfaceWeight > 0 && !this._diffuseTransmissionTint) {
+        if (this.geometryThinWalled && this.subsurfaceWeight > 0 && this._diffuseTransmissionTint.equals(Color3.White())) {
             const transmissionFactor = this.transmissionWeight;
             const transmissionTex = this.transmissionWeightTexture;
             const scatterStrength = this.subsurfaceWeight;
@@ -1344,7 +1345,12 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
                 CreateTextureWithFactorOperand(colorTex, colorFactor.toColor4(), TextureChannel.RGBA, TextureColorSpace.SRGB),
                 this._material.getScene()
             );
-            const singleScatter = await MultiScatterToSingleScatterAlbedoAsync(`single-scatter (${this._material.name})`, scaledMultiScatter, this._material.getScene());
+            const singleScatter = await MultiScatterToSingleScatterAlbedoAsync(
+                `single-scatter (${this._material.name})`,
+                scaledMultiScatter,
+                this._material.getScene(),
+                this._material.transmissionScatterAnisotropy
+            );
             if (loader._disposed) {
                 singleScatter.dispose?.();
                 colorTex?.dispose();

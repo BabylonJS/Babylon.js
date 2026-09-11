@@ -192,7 +192,7 @@ export class KHR_materials_scatter implements IGLTFExporterExtensionV2 {
             const color = mat.transmissionColor;
             const extinctionTimesDepth = CreateFactorOperand(new Color4(-Math.log(color.r), -Math.log(color.g), -Math.log(color.b), 1.0));
             const singleScatterOp = await DivideTexturesAsync(`scatter single-scatter (${mat.name})`, transmissionScatterOp, extinctionTimesDepth, scene);
-            transmissionMultiOp = await SingleScatterToMultiScatterAlbedoAsync(`scatter multi-scatter (${mat.name})`, singleScatterOp, scene);
+            transmissionMultiOp = await SingleScatterToMultiScatterAlbedoAsync(`scatter multi-scatter (${mat.name})`, singleScatterOp, scene, mat.transmissionScatterAnisotropy);
         } else {
             transmissionMultiOp = CreateFactorOperand(new Color4(0, 0, 0, 1.0));
         }

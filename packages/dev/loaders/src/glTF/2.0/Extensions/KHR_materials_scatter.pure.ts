@@ -9,7 +9,6 @@ import { GLTFLoader } from "../glTFLoader.pure";
 import { type IKHRMaterialsScatter } from "babylonjs-gltf2interface";
 import { Color3 } from "core/Maths/math.color.pure";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { Logger } from "core/Misc/logger";
 
 const NAME = "KHR_materials_scatter";
 
@@ -57,7 +56,6 @@ export class KHR_materials_scatter implements IGLTFLoaderExtension {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsScatter>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
-            Logger.Log(`KHR_materials_scatter: ${material.name} (${material.index})`);
             promises.push(this._loadScatterPropertiesAsync(extensionContext, material, babylonMaterial, extension));
             return await Promise.all(promises).then(() => {});
         });
