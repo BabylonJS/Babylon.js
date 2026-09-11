@@ -57,7 +57,7 @@ async function _LoadShaderIncludeAsync(shaderLanguage: ShaderLanguage): Promise<
  *
  * The plugin keeps depth writing and the material's alpha mode unchanged. It only affects the material's own
  * color/depth-prepass shader; standalone depth, shadow, and custom shader passes are not modified.
- * @see https://playground.babylonjs.com/#2Z4X94#0
+ * @see https://playground.babylonjs.com/#2Z4X94#0
  */
 export class DitheredFadeMaterialPlugin extends MaterialPluginBase {
     /**
