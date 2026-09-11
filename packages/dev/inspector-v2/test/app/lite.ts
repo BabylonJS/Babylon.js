@@ -1,6 +1,7 @@
 import {
     addSprite2DIndex,
     addToScene,
+    attachControl,
     createBox,
     createDefaultTextData,
     createDefaultCamera,
@@ -105,6 +106,7 @@ setShadowTaskCasterMeshes(shadowGenerator, [box, sphere, smallBox]);
 
 const camera = createDefaultCamera(primaryScene);
 camera.name = "Main Camera";
+const detachCameraControl = attachControl(camera, canvas, primaryScene);
 
 await registerScene(primaryScene);
 
@@ -171,6 +173,7 @@ window.addEventListener(
     "beforeunload",
     () => {
         void inspectorToken.dispose();
+        detachCameraControl();
         stopEngine(engine);
         disposeTextRenderer(textRenderer);
         disposeDefaultTextData(overlayTextData);
