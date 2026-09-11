@@ -65,7 +65,7 @@ const DefaultOptions: Required<IFlowLayoutOptions> = {
  * Maximum number of blocks stacked in a single column before the column is wrapped into a
  * compact block of sub-columns. Prevents a wide fan-out from becoming one very tall column.
  */
-const MaxNodesPerColumn = 8;
+const MaxNodesPerColumn = 12;
 
 /** Internal: a laid-out independent flow, positioned relative to its own (0, 0) origin. */
 interface IComponentLayout {
@@ -173,10 +173,35 @@ export function ComputeFlowGraphLayout(nodes: IFlowLayoutNode[], options?: IFlow
             }
         }
     }
-    // Anything still unowned (fully isolated) forms its own single-node flow.
+    // Group remaining data-only islands by weak connectivity instead of treating every block as
+    // an unrelated flow. Large KHR graphs often contain math networks without signal edges; tiling
+    // each block independently makes those networks extremely wide and destroys their data flow.
+    const undirected = new Map<number, number[]>();
     for (const node of nodes) {
-        if (!owner.has(node.id)) {
-            owner.set(node.id, node.id);
+        undirected.set(node.id, []);
+    }
+    for (const node of nodes) {
+        for (const target of [...node.signalOut, ...node.dataOut]) {
+            if (byId.has(target)) {
+                undirected.get(node.id)!.push(target);
+                undirected.get(target)!.push(node.id);
+            }
+        }
+    }
+    for (const node of nodes) {
+        if (owner.has(node.id)) {
+            continue;
+        }
+        const stack = [node.id];
+        owner.set(node.id, node.id);
+        while (stack.length > 0) {
+            const current = stack.pop()!;
+            for (const connected of undirected.get(current) ?? []) {
+                if (!owner.has(connected)) {
+                    owner.set(connected, node.id);
+                    stack.push(connected);
+                }
+            }
         }
     }
 
@@ -375,6 +400,41 @@ function LayoutComponent(nodes: IFlowLayoutNode[], opts: Required<IFlowLayoutOpt
             changed = true;
         }
     }
+    // Any remaining pure-data island has no signal-layer anchor. Layer its acyclic data edges
+    // left-to-right from providers to consumers before falling back to column zero for cycles.
+    const unplaced = new Set(nodes.filter((node) => !column.has(node.id)).map((node) => node.id));
+    const dataIndegree = new Map<number, number>();
+    for (const id of unplaced) {
+        dataIndegree.set(id, 0);
+    }
+    for (const node of nodes) {
+        if (!unplaced.has(node.id)) {
+            continue;
+        }
+        for (const target of node.dataOut) {
+            if (unplaced.has(target)) {
+                dataIndegree.set(target, (dataIndegree.get(target) ?? 0) + 1);
+            }
+        }
+    }
+    const dataQueue = [...unplaced].filter((id) => dataIndegree.get(id) === 0).sort((a, b) => a - b);
+    head = 0;
+    while (head < dataQueue.length) {
+        const current = dataQueue[head++];
+        column.set(current, column.get(current) ?? 0);
+        sortKey.set(current, sortKey.get(current) ?? orderCounter++);
+        for (const target of byId.get(current)!.dataOut) {
+            if (!unplaced.has(target)) {
+                continue;
+            }
+            column.set(target, Math.max(column.get(target) ?? 0, column.get(current)! + 1));
+            const remaining = (dataIndegree.get(target) ?? 0) - 1;
+            dataIndegree.set(target, remaining);
+            if (remaining === 0) {
+                dataQueue.push(target);
+            }
+        }
+    }
     for (const node of nodes) {
         if (!column.has(node.id)) {
             column.set(node.id, 0);
@@ -412,7 +472,7 @@ function LayoutComponent(nodes: IFlowLayoutNode[], opts: Required<IFlowLayoutOpt
         // A wide fan-out would otherwise become one very tall column; wrap large columns into
         // a compact block of sub-columns (kept roughly square) instead.
         const count = bucket.length;
-        const rowsPerColumn = count > MaxNodesPerColumn ? Math.ceil(Math.sqrt(count)) : count;
+        const rowsPerColumn = count > MaxNodesPerColumn ? Math.ceil(Math.sqrt(count * 2)) : count;
         let subCursorX = cursorX;
         for (let start = 0; start < count; start += rowsPerColumn) {
             let subWidth = 0;

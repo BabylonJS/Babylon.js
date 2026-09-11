@@ -134,7 +134,12 @@ async function GetContextSnapshot(page: Page): Promise<{ selectedContextIndex: n
     });
 }
 
-async function GetCoordinatorSnapshot(page: Page): Promise<{ activeGraphIndex: number; graphs: { name: string; blockClassNames: string[]; totalConnections: number }[] }> {
+async function GetCoordinatorSnapshot(page: Page): Promise<{
+    activeGraphIndex: number;
+    dispatchEventsSynchronously: boolean;
+    hasHostResolver: boolean;
+    graphs: { name: string; blockClassNames: string[]; totalConnections: number }[];
+}> {
     return await page.evaluate(() => {
         const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
         const coordinator = state?.coordinator;
@@ -157,6 +162,8 @@ async function GetCoordinatorSnapshot(page: Page): Promise<{ activeGraphIndex: n
 
         return {
             activeGraphIndex: state.activeGraphIndex,
+            dispatchEventsSynchronously: coordinator.dispatchEventsSynchronously,
+            hasHostResolver: !!coordinator.config.hostResolver,
             graphs: coordinator.flowGraphs.map((graph: any) => {
                 const serializedGraph: any = {};
                 graph.serialize(serializedGraph);
@@ -1272,6 +1279,12 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await fge.addGraphTab();
         await RenameGraphTab(page, (await fge.getGraphNames())[1], "Scratch Graph");
         await expect.poll(async () => (await GetCoordinatorSnapshot(page)).activeGraphIndex).toBe(1);
+        await expect
+            .poll(async () => await GetCoordinatorSnapshot(page))
+            .toMatchObject({
+                dispatchEventsSynchronously: true,
+                hasHostResolver: false,
+            });
         await fge.addBlockFromPalette("Constant");
         await expect.poll(async () => await fge.getNodeCount()).toBe(1);
 
@@ -1381,6 +1394,178 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
 
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("No BABYLON_flow_graph extension found in this file");
         expect(await fge.getGraphTopology()).toEqual(topologyBeforeMissingExtension);
+    });
+
+    test("imports every KHR_interactivity graph, falls back from an invalid default, and preserves imported composites", async ({ page }) => {
+        test.setTimeout(60_000);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await expect(page.getByText("glTF: Interactivity Imported", { exact: true })).toHaveCount(0);
+
+        const graphGltf = {
+            asset: { version: "2.0", generator: "FGE KHR_interactivity Phase 1 test" },
+            extensionsUsed: ["KHR_interactivity", "EXT_vendor_interactivity"],
+            extensions: {
+                KHR_interactivity: {
+                    graph: 3,
+                    graphs: [
+                        {
+                            name: "Startup",
+                            declarations: [{ op: "event/onStart" }, { op: "flow/sequence" }],
+                            nodes: [
+                                { declaration: 0, values: {}, flows: { out: { node: 1 } } },
+                                { declaration: 1, flows: { "0": { node: 2 } } },
+                                { declaration: 1, flows: { "0": { node: 3 } } },
+                                { declaration: 1, flows: { "0": { node: 4 } } },
+                                { declaration: 1, flows: { "0": { node: 5 } } },
+                                { declaration: 1, flows: { "0": { node: 6 } } },
+                                { declaration: 1, flows: { "0": { node: 7 } } },
+                                { declaration: 1 },
+                            ],
+                        },
+                        {
+                            name: "Vendor behavior",
+                            types: [{ signature: "float" }],
+                            declarations: [
+                                {
+                                    op: "vendor/doThing",
+                                    extension: "EXT_vendor_interactivity",
+                                    inputValueSockets: { amount: { type: 0 } },
+                                    outputValueSockets: { result: { type: 0 } },
+                                },
+                            ],
+                            nodes: [{ declaration: 0, values: { amount: { type: 0, value: [2] } } }],
+                        },
+                        {
+                            name: "Composite",
+                            types: [{ signature: "ref" }, { signature: "float3" }],
+                            declarations: [{ op: "event/onStart" }, { op: "pointer/get" }, { op: "math/abs" }],
+                            nodes: [
+                                { declaration: 0 },
+                                {
+                                    declaration: 1,
+                                    configuration: { pointer: { value: ["/nodes/{target}/translation"] }, type: { value: [1] } },
+                                    values: { target: { type: 0, value: ["/nodes/0"] } },
+                                },
+                                {
+                                    declaration: 2,
+                                    values: { a: { node: 1, type: 1 } },
+                                },
+                            ],
+                        },
+                        {
+                            name: "Invalid core graph",
+                            declarations: [{ op: "core/doesNotExist" }],
+                            nodes: [{ declaration: 0 }],
+                        },
+                    ],
+                },
+            },
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "khrInteractivityPhaseOne.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            const target = document.querySelector("canvas") ?? document.body;
+            target.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, graphGltf);
+
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Startup", "Vendor behavior", "Composite", "Invalid core graph"]);
+        await expect
+            .poll(async () => await GetCoordinatorSnapshot(page))
+            .toMatchObject({
+                activeGraphIndex: 0,
+                dispatchEventsSynchronously: false,
+                hasHostResolver: true,
+            });
+        await fge.selectGraphTab("Vendor behavior");
+        const unsupportedNode = fge.nodeOnCanvas("FlowGraphUnsupportedInteractivityBlock");
+        await expect(unsupportedNode).toBeVisible();
+        await expect(unsupportedNode).toContainText("amount");
+        await expect(unsupportedNode).toContainText("result");
+        await expect(unsupportedNode).toContainText("glTF");
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Unknown core operation "core/doesNotExist"');
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("KHR_interactivity compatibility mode ignored 1 non-blocking source conformance issue(s)");
+        await expect(page.getByRole("log", { name: "Flow graph log" })).not.toContainText('"values" must contain at least one property when present');
+
+        await fge.selectGraphTab("Composite");
+        const pointerFrameTitle = page.getByText("pointer/get · glTF node 1", { exact: true });
+        await expect(pointerFrameTitle).toBeVisible();
+        const pointerFrameComment = pointerFrameTitle.locator("..").locator("..").locator("[class*='frame-comments']");
+        await expect(pointerFrameComment).toContainText("/extensions/KHR_interactivity/graphs/2/nodes/1");
+        expect(
+            await pointerFrameComment.evaluate((comment) => {
+                const frameBounds = comment.parentElement!.getBoundingClientRect();
+                const commentBounds = comment.getBoundingClientRect();
+                return commentBounds.left >= frameBounds.left && commentBounds.right <= frameBounds.right;
+            })
+        ).toBe(true);
+        await expect(page.locator("#graph-canvas-container .FlowGraphGetPropertyBlock[class*='hidden']")).toHaveCount(1);
+        await expect(page.locator("#graph-canvas-container .FlowGraphJsonPointerParserBlock[class*='hidden']")).toHaveCount(1);
+        await expect(fge.nodeOnCanvas("FlowGraphAbsBlock")).toBeVisible();
+
+        const topologyBeforeSort = await fge.getGraphTopology();
+        const pointerParserBeforeSort = topologyBeforeSort.blocks.find((block) => block.className === "FlowGraphJsonPointerParserBlock")!;
+        expect(pointerParserBeforeSort.dataIns).toEqual([{ name: "target", connectedIds: [] }]);
+        expect(topologyBeforeSort.totalConnections).toBe(4);
+
+        await page.getByRole("button", { name: /Sort graph/ }).click();
+        await fge.selectGraphTab("Startup");
+        await fge.selectGraphTab("Composite");
+
+        expect(await fge.getGraphTopology()).toEqual(topologyBeforeSort);
+        const compositeFrame = await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            const graph = state?.flowGraph;
+            const editorData = graph?._editorData;
+            const frame = editorData?.frames?.find((candidate: any) => candidate.name === "pointer/get · glTF node 1");
+            if (!graph || !frame) {
+                throw new Error("Imported pointer/get frame not found");
+            }
+            const blocks = graph.getAllBlocks();
+            const blockByFrameId = new Map(blocks.map((block: any) => [editorData.map[block.uniqueId], block]));
+            const locations = new Map(editorData.locations.map((location: any) => [location.blockId, location]));
+            return {
+                blockClassNames: frame.blocks.map((frameBlockId: number) => blockByFrameId.get(frameBlockId)?.getClassName()).sort(),
+                relativePositions: frame.blocks.map((frameBlockId: number) => {
+                    const block = blockByFrameId.get(frameBlockId);
+                    const location: any = locations.get(block?.uniqueId);
+                    return { x: location.x - frame.x, y: location.y - frame.y };
+                }),
+                width: frame.width,
+                height: frame.height,
+            };
+        });
+        expect(compositeFrame.blockClassNames).toEqual(["FlowGraphGetPropertyBlock", "FlowGraphJsonPointerParserBlock"]);
+        for (const position of compositeFrame.relativePositions) {
+            expect(position.x).toBeGreaterThanOrEqual(0);
+            expect(position.y).toBeGreaterThanOrEqual(0);
+            expect(position.x).toBeLessThan(compositeFrame.width);
+            expect(position.y).toBeLessThan(compositeFrame.height);
+        }
+        await expect(page.getByText("pointer/get · glTF node 1", { exact: true })).toBeVisible();
+        await expect(page.locator("#graph-canvas-container .FlowGraphGetPropertyBlock[class*='hidden']")).toHaveCount(1);
+        await expect(page.locator("#graph-canvas-container .FlowGraphJsonPointerParserBlock[class*='hidden']")).toHaveCount(1);
+
+        await fge.selectGraphTab("Startup");
+        const importedLeftPositions = await page
+            .locator("#graph-canvas-container")
+            .evaluate((container) =>
+                [...container.children].filter((element) => !element.className.includes("hidden")).map((element) => Math.round(element.getBoundingClientRect().left))
+            );
+        expect(new Set(importedLeftPositions).size).toBeGreaterThan(1);
+        await page.getByRole("button", { name: "Enable Debug Mode" }).click();
+        await expect.poll(async () => (await GetDebugSnapshot(page)).isDebugMode).toBe(true);
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await ClickGraphControl(page, "Stop");
+        await WaitForGraphState(page, "Stopped");
+        await ClickGraphControl(page, "Reset");
+        await WaitForGraphState(page, "Stopped");
+
+        await fge.selectGraphTab("Invalid core graph");
+        await expect.poll(async () => await fge.getNodeCount()).toBe(0);
     });
 });
 

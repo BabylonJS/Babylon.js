@@ -26,14 +26,17 @@
     display: grid;
     grid-row: 2;
     grid-column: 1;
+    min-width: 0;
+    overflow: hidden;
     padding: 0 10px;
     font-style: italic;
     word-wrap: break-word;
 }
 
 .frame-comment-span {
+    min-width: 0;
     white-space: normal;
-    overflow-wrap: break-word;
+    overflow-wrap: anywhere;
     word-wrap: break-word;
 }
 

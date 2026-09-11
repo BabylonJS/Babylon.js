@@ -11,6 +11,7 @@ import {
     FlowGraphConstantBlock,
     FlowGraphRGBToOkLChBlock,
     FlowGraphRGBFromOkLChBlock,
+    FlowGraphOneBitsCounterBlock,
 } from "core/FlowGraph";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
@@ -107,6 +108,18 @@ describe("Flow Graph Data Nodes", () => {
         expect(fromOkLCh.r.getValue(flowGraphContext)).toBeCloseTo(0.8, 4);
         expect(fromOkLCh.g.getValue(flowGraphContext)).toBeCloseTo(0.3, 4);
         expect(fromOkLCh.b.getValue(flowGraphContext)).toBeCloseTo(0.5, 4);
+    });
+
+    it.each([
+        [23, 4],
+        [0, 0],
+        [-1, 32],
+        [-2147483648, 1],
+    ])("counts the set bits of int32 value %i", (value, expected) => {
+        const block = new FlowGraphOneBitsCounterBlock();
+        block.a.setValue(new FlowGraphInteger(value), flowGraphContext);
+
+        expect(block.value.getValue(flowGraphContext).value).toBe(expected);
     });
 
     it("Values are cached for the same execution id", () => {

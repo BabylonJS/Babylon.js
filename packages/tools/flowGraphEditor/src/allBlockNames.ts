@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /**
- * Complete categorized list of all known flow graph block class names.
- * Shared between the node list palette and the display manager registration.
+ * Complete categorized list of user-creatable flow graph block class names.
+ * Import-only helper blocks are registered separately for display.
  */
 export const AllFlowGraphBlocks: { [category: string]: string[] } = {
     Events: [
@@ -17,6 +17,7 @@ export const AllFlowGraphBlocks: { [category: string]: string[] } = {
         "FlowGraphSendCustomEventBlock",
         "FlowGraphKeyDownEventBlock",
         "FlowGraphKeyUpEventBlock",
+        "FlowGraphStopEventPropagationBlock",
     ],
     Control_Flow: [
         "FlowGraphBranchBlock",
@@ -48,7 +49,7 @@ export const AllFlowGraphBlocks: { [category: string]: string[] } = {
     Audio__Events: ["FlowGraphSoundEndedEventBlock"],
     Audio__Data: ["FlowGraphGetSoundVolumeBlock", "FlowGraphIsSoundPlayingBlock"],
     Keyboard__Data: ["FlowGraphIsKeyPressedBlock"],
-    Math__Constants: ["FlowGraphEBlock", "FlowGraphPIBlock", "FlowGraphInfBlock", "FlowGraphNaNBlock", "FlowGraphRandomBlock"],
+    Math__Constants: ["FlowGraphEBlock", "FlowGraphPIBlock", "FlowGraphTauBlock", "FlowGraphInfBlock", "FlowGraphNaNBlock", "FlowGraphRandomBlock"],
     Math__Arithmetic: [
         "FlowGraphAddBlock",
         "FlowGraphSubtractBlock",
@@ -63,6 +64,9 @@ export const AllFlowGraphBlocks: { [category: string]: string[] } = {
         "FlowGraphClampBlock",
         "FlowGraphSaturateBlock",
         "FlowGraphMathInterpolationBlock",
+        "FlowGraphSmoothStepBlock",
+        "FlowGraphMathSlerpBlock",
+        "FlowGraphVectorSlerpBlock",
         "FlowGraphPowerBlock",
         "FlowGraphSquareRootBlock",
         "FlowGraphCubeRootBlock",
@@ -140,6 +144,10 @@ export const AllFlowGraphBlocks: { [category: string]: string[] } = {
         "FlowGraphQuaternionFromAxisAngleBlock",
         "FlowGraphAxisAngleFromQuaternionBlock",
         "FlowGraphQuaternionFromDirectionsBlock",
+        "FlowGraphQuaternionFromUpForwardBlock",
+        "FlowGraphQuaternionFromAnglesBlock",
+        "FlowGraphRGBToOkLChBlock",
+        "FlowGraphRGBFromOkLChBlock",
         "FlowGraphMatrixDecompose",
         "FlowGraphMatrixCompose",
         "FlowGraphBooleanToFloat",
@@ -173,6 +181,11 @@ export const AllFlowGraphBlocks: { [category: string]: string[] } = {
 };
 
 /**
+ * Import-only helper blocks that must remain renderable but are intentionally omitted from the creatable palette.
+ */
+export const ImportedFlowGraphBlocks = ["FlowGraphEventReferenceBlock", "FlowGraphGLTFDataProvider", "FlowGraphObjectReferenceBlock", "FlowGraphUnsupportedInteractivityBlock"];
+
+/**
  * Flat array of every block class name.
  * @returns all block names across all categories
  */
@@ -181,5 +194,6 @@ export function GetAllBlockNames(): string[] {
     for (const cat in AllFlowGraphBlocks) {
         names.push(...AllFlowGraphBlocks[cat]);
     }
+    names.push(...ImportedFlowGraphBlocks);
     return names;
 }

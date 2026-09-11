@@ -15,7 +15,13 @@ import { FlowGraphTypes, getAnimationTypeByFlowGraphType } from "core/FlowGraph/
 // block via the flow/for extraProcessor rather than by mutating the shared static.
 const InteractivityForLoopMaxIterations = 20000;
 
-interface IGLTFToFlowGraphMappingObject {
+/**
+ * Describes how one KHR_interactivity configuration or socket property maps to FlowGraph.
+ *
+ * The same contract is used for fixed sockets, wildcard sockets, configuration validation,
+ * defaulting, and multi-block routing during strict graph lowering.
+ */
+export interface IGLTFToFlowGraphMappingObject {
     /**
      * The name of the property in the FlowGraph block.
      */
@@ -59,7 +65,7 @@ interface IGLTFToFlowGraphMappingObject {
      * This is used if we generate more than one block for a single glTF node.
      * Defaults to the first block in the mapping.
      */
-    toBlock?: FlowGraphBlockNames;
+    toBlock?: FlowGraphBlockNames | string;
 
     /**
      * Used in configuration values. If defined, this will be the default value, if no value is provided.
@@ -75,6 +81,93 @@ interface IGLTFToFlowGraphMappingObject {
      * be fed by a `pointer/get` (e.g. the read-only `maxTime` animation pointer).
      */
     convertConnectedTimeToFrames?: boolean;
+
+    /**
+     * KHR configuration value type used by canonical validation.
+     */
+    configurationType?: "bool" | "int" | "int[]" | "string";
+
+    /**
+     * Whether this configuration entry exists only for canonical validation.
+     */
+    validationOnly?: boolean;
+
+    /**
+     * Whether an operation without a complete default configuration requires this property.
+     */
+    required?: boolean;
+
+    /**
+     * Graph array referenced by an integer configuration value.
+     */
+    indexSource?: "types" | "variables" | "events" | "nodes" | "assetNodes";
+
+    /**
+     * Minimum number of values required for an array configuration.
+     */
+    minItems?: number;
+
+    /**
+     * Whether the configured indices generate required input value sockets.
+     */
+    generatesInputValueSockets?: boolean;
+
+    /**
+     * Whether integer case values generate required input value sockets.
+     */
+    generatesCaseInputValueSockets?: boolean;
+
+    /**
+     * Whether this string configuration generates JSON Pointer Template sockets.
+     */
+    pointerTemplate?: boolean;
+
+    /**
+     * Whether an invalid value falls back to the operation's default configuration.
+     */
+    invalidUsesDefault?: boolean;
+
+    /**
+     * Allowed KHR type signatures for a type-index configuration.
+     */
+    allowedSignatures?: readonly ("bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "ref" | "custom")[];
+
+    /**
+     * Input socket whose effective type determines this output socket type.
+     */
+    typeSourceInput?: string;
+
+    /** Inclusive minimum for an integer configuration value. */
+    minimum?: number;
+
+    /** Inclusive maximum for an integer configuration value. */
+    maximum?: number;
+
+    /**
+     * Whether this configuration value generates numbered input flow sockets.
+     */
+    generatesInputFlowSockets?: boolean;
+
+    /**
+     * Whether this configuration array generates output flow sockets.
+     */
+    generatesOutputFlowSockets?: boolean;
+
+    /**
+     * Properties in the same group fall back to their defaults together when any member is
+     * missing or invalid.
+     */
+    configurationGroup?: string;
+
+    /**
+     * Whether duplicate array values are removed from the effective configuration.
+     */
+    uniqueValues?: boolean;
+
+    /**
+     * Whether a string configuration value is a `debug/log` message template.
+     */
+    debugLogTemplate?: boolean;
 }
 
 /**
@@ -90,6 +183,14 @@ export interface IGLTFToFlowGraphMapping {
      * When adding blocks defined in this module use the KHR_interactivity prefix.
      */
     blocks: (FlowGraphBlockNames | string)[];
+
+    /**
+     * Exact value socket contract for an operation supplied by another extension.
+     */
+    declarationSchema?: {
+        inputValueSockets: Record<string, "bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "ref" | "custom">;
+        outputValueSockets: Record<string, "bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "ref" | "custom">;
+    };
     /**
      * The inputs of the glTF node mapped to the FlowGraph block.
      */
@@ -203,36 +304,45 @@ export function getMappingForFullOperationName(fullOperationName: string) {
 export function getMappingForDeclaration(declaration: IKHRInteractivity_Declaration, returnNoOpIfNotAvailable: boolean = true): IGLTFToFlowGraphMapping | undefined {
     const mapping = declaration.extension ? gltfExtensionsToFlowGraphMapping[declaration.extension]?.[declaration.op] : gltfToFlowGraphMapping[declaration.op];
     if (!mapping) {
-        Logger.Warn(`No mapping found for operation ${declaration.op} and extension ${declaration.extension || "KHR_interactivity"}`);
         if (returnNoOpIfNotAvailable) {
-            const inputs: IGLTFToFlowGraphMapping["inputs"] = {};
-            const outputs: IGLTFToFlowGraphMapping["outputs"] = {
-                flows: {},
-            };
-            if (declaration.inputValueSockets) {
-                inputs.values = {};
-                for (const key in declaration.inputValueSockets) {
-                    inputs.values[key] = {
-                        name: key,
-                    };
-                }
-            }
-            if (declaration.outputValueSockets) {
-                outputs.values = {};
-                Object.keys(declaration.outputValueSockets).forEach((key) => {
-                    outputs.values![key] = {
-                        name: key,
-                    };
-                });
-            }
-            return {
-                blocks: [], // no blocks, just mapping
-                inputs,
-                outputs,
-            };
+            Logger.Warn(`No mapping found for operation ${declaration.op} and extension ${declaration.extension || "KHR_interactivity"}`);
+            return getNoOpMappingForDeclaration(declaration);
         }
     }
     return mapping;
+}
+
+/**
+ * Creates the typed no-op mapping required for an unsupported extension declaration.
+ * @param declaration unsupported extension declaration
+ * @returns a mapping that preserves the declared value sockets
+ */
+export function getNoOpMappingForDeclaration(declaration: IKHRInteractivity_Declaration): IGLTFToFlowGraphMapping {
+    const inputs: IGLTFToFlowGraphMapping["inputs"] = {};
+    const outputs: IGLTFToFlowGraphMapping["outputs"] = {
+        flows: {},
+    };
+    if (declaration.inputValueSockets) {
+        inputs.values = {};
+        for (const key in declaration.inputValueSockets) {
+            inputs.values[key] = {
+                name: key,
+            };
+        }
+    }
+    if (declaration.outputValueSockets) {
+        outputs.values = {};
+        Object.keys(declaration.outputValueSockets).forEach((key) => {
+            outputs.values![key] = {
+                name: key,
+            };
+        });
+    }
+    return {
+        blocks: [],
+        inputs,
+        outputs,
+    };
 }
 
 /**
@@ -290,6 +400,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         inputs: {},
         outputs: {
             values: {
+                timeSinceStart: { name: "timeSinceStart", gltfType: "number" },
                 timeSinceLastTick: { name: "deltaTime", gltfType: "number" /*, dataTransformer: (time: number) => time / 1000*/ },
                 // KHR_interactivity `ref event` output (the event reference).
                 event: { name: "event" },
@@ -301,11 +412,30 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "event/send": {
         blocks: [FlowGraphBlockNames.SendCustomEvent],
+        configuration: {
+            event: {
+                name: "eventId",
+                configurationType: "int",
+                required: true,
+                indexSource: "events",
+                validationOnly: true,
+            },
+        },
+        inputs: {
+            values: {
+                "[segment]": { name: "$1" },
+            },
+        },
+        outputs: {
+            flows: {
+                out: { name: "out" },
+            },
+        },
         extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
             // set eventId and eventData. The configuration object of the glTF should have a single object.
             // validate that we are running it on the right block.
-            if (declaration.op !== "event/send" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
-                throw new Error("Receive event should have a single configuration object, the event itself");
+            if (declaration.op !== "event/send" || !gltfBlock.configuration?.event) {
+                throw new Error("Send event should have a single configuration object, the event itself");
             }
             const eventConfiguration = gltfBlock.configuration["event"];
             const eventId = eventConfiguration.value?.[0];
@@ -322,10 +452,20 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "event/receive": {
         blocks: [FlowGraphBlockNames.ReceiveCustomEvent],
+        configuration: {
+            event: {
+                name: "eventId",
+                configurationType: "int",
+                required: true,
+                indexSource: "events",
+                validationOnly: true,
+            },
+        },
         outputs: {
             values: {
                 // KHR_interactivity `ref event` output (the event reference).
                 event: { name: "event" },
+                "[segment]": { name: "$1" },
             },
             flows: {
                 out: { name: "done" },
@@ -356,7 +496,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
             // set eventId and eventData. The configuration object of the glTF should have a single object.
             // validate that we are running it on the right block.
-            if (declaration.op !== "event/receive" || !gltfBlock.configuration || Object.keys(gltfBlock.configuration).length !== 1) {
+            if (declaration.op !== "event/receive" || !gltfBlock.configuration?.event) {
                 throw new Error("Receive event should have a single configuration object, the event itself");
             }
             const eventConfiguration = gltfBlock.configuration["event"];
@@ -389,11 +529,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
-    "math/E": getSimpleInputMapping(FlowGraphBlockNames.E),
-    "math/Pi": getSimpleInputMapping(FlowGraphBlockNames.PI),
-    "math/Tau": getSimpleInputMapping(FlowGraphBlockNames.Tau),
-    "math/Inf": getSimpleInputMapping(FlowGraphBlockNames.Inf),
-    "math/NaN": getSimpleInputMapping(FlowGraphBlockNames.NaN),
+    "math/E": getSimpleInputMapping(FlowGraphBlockNames.E, []),
+    "math/Pi": getSimpleInputMapping(FlowGraphBlockNames.PI, []),
+    "math/Tau": getSimpleInputMapping(FlowGraphBlockNames.Tau, []),
+    "math/Inf": getSimpleInputMapping(FlowGraphBlockNames.Inf, []),
+    "math/NaN": getSimpleInputMapping(FlowGraphBlockNames.NaN, []),
     "math/abs": getSimpleInputMapping(FlowGraphBlockNames.Abs),
     "math/sign": getSimpleInputMapping(FlowGraphBlockNames.Sign),
     "math/trunc": getSimpleInputMapping(FlowGraphBlockNames.Trunc),
@@ -529,7 +669,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "output" },
+                value: { name: "output", typeSourceInput: "a" },
             },
         },
     },
@@ -562,7 +702,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/cbrt": getSimpleInputMapping(FlowGraphBlockNames.CubeRoot),
     "math/pow": getSimpleInputMapping(FlowGraphBlockNames.Power, ["a", "b"]),
     "math/length": getSimpleInputMapping(FlowGraphBlockNames.Length),
-    "math/normalize": getSimpleInputMapping(FlowGraphBlockNames.Normalize),
+    "math/normalize": {
+        ...getSimpleInputMapping(FlowGraphBlockNames.Normalize),
+        outputs: {
+            values: {
+                value: { name: "value" },
+                isValid: { name: "isValid", gltfType: "bool" },
+            },
+        },
+    },
     "math/dot": getSimpleInputMapping(FlowGraphBlockNames.Dot, ["a", "b"]),
     "math/cross": getSimpleInputMapping(FlowGraphBlockNames.Cross, ["a", "b"]),
     "math/rotate2D": {
@@ -701,7 +849,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "math/transpose": getSimpleInputMapping(FlowGraphBlockNames.Transpose),
     "math/determinant": getSimpleInputMapping(FlowGraphBlockNames.Determinant),
-    "math/inverse": getSimpleInputMapping(FlowGraphBlockNames.InvertMatrix),
+    "math/inverse": {
+        ...getSimpleInputMapping(FlowGraphBlockNames.InvertMatrix),
+        outputs: {
+            values: {
+                value: { name: "value" },
+                isValid: { name: "isValid", gltfType: "bool" },
+            },
+        },
+    },
     "math/matMul": getSimpleInputMapping(FlowGraphBlockNames.MatrixMultiplication, ["a", "b"]),
     "math/matCompose": {
         blocks: [FlowGraphBlockNames.MatrixCompose],
@@ -714,7 +870,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", gltfType: "float4x4" },
             },
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects, context) {
@@ -789,7 +945,20 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
-    "math/quatToAxisAngle": getSimpleInputMapping(FlowGraphBlockNames.AxisAngleFromQuaternion, ["a"]),
+    "math/quatToAxisAngle": {
+        blocks: [FlowGraphBlockNames.AxisAngleFromQuaternion],
+        inputs: {
+            values: {
+                a: { name: "a", gltfType: "float4" },
+            },
+        },
+        outputs: {
+            values: {
+                axis: { name: "axis", gltfType: "float3" },
+                angle: { name: "angle", gltfType: "float" },
+            },
+        },
+    },
     "math/quatFromDirections": getSimpleInputMapping(FlowGraphBlockNames.QuaternionFromDirections, ["a", "b"]),
     "math/quatFromUpForward": {
         blocks: [FlowGraphBlockNames.QuaternionFromUpForward],
@@ -1066,6 +1235,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     // flows
     "flow/sequence": {
         blocks: [FlowGraphBlockNames.Sequence],
+        outputs: {
+            flows: {
+                "[segment]": { name: "$1" },
+            },
+        },
         extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
             const serializedObject = serializedObjects[0];
             serializedObject.config ||= {};
@@ -1078,6 +1252,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "flow/branch": {
         blocks: [FlowGraphBlockNames.Branch],
+        inputs: {
+            values: {
+                condition: { name: "condition", gltfType: "boolean" },
+            },
+        },
         outputs: {
             flows: {
                 true: { name: "onTrue" },
@@ -1088,7 +1267,16 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "flow/switch": {
         blocks: [FlowGraphBlockNames.Switch],
         configuration: {
-            cases: { name: "cases", isArray: true, inOptions: true, defaultValue: [] },
+            cases: {
+                name: "cases",
+                isArray: true,
+                inOptions: true,
+                defaultValue: [],
+                configurationType: "int[]",
+                invalidUsesDefault: true,
+                generatesOutputFlowSockets: true,
+                uniqueValues: true,
+            },
         },
         inputs: {
             values: {
@@ -1096,13 +1284,18 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 default: { name: "default" },
             },
         },
+        outputs: {
+            flows: {
+                default: { name: "default" },
+                "[segment]": { name: "$1" },
+            },
+        },
         validation(gltfBlock) {
             const cases = gltfBlock.configuration?.cases;
             if (cases && cases.value) {
-                const onlyIntegers = cases.value.every((caseValue) => {
-                    // case value should be an integer. Since Number.isInteger(1.0) is true, we need to check if toString has only digits.
-                    return typeof caseValue === "number" && /^-?\d+$/.test(caseValue.toString());
-                });
+                const onlyIntegers = cases.value.every(
+                    (caseValue) => typeof caseValue === "number" && Number.isInteger(caseValue) && caseValue >= -2147483648 && caseValue <= 2147483647
+                );
                 if (!onlyIntegers) {
                     Logger.Warn("Switch cases should be integers. Using empty array instead.");
                     cases.value = [] as number[];
@@ -1130,21 +1323,34 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "flow/while": {
         blocks: [FlowGraphBlockNames.WhileLoop],
+        inputs: {
+            values: {
+                condition: { name: "condition", gltfType: "boolean" },
+            },
+        },
         outputs: {
             flows: {
                 loopBody: { name: "executionFlow" },
+                completed: { name: "completed" },
             },
         },
     },
     "flow/for": {
         blocks: [FlowGraphBlockNames.ForLoop],
         configuration: {
-            initialIndex: { name: "initialIndex", gltfType: "number", inOptions: true, defaultValue: 0 },
+            initialIndex: {
+                name: "initialIndex",
+                gltfType: "int",
+                inOptions: true,
+                defaultValue: 0,
+                configurationType: "int",
+                invalidUsesDefault: true,
+            },
         },
         inputs: {
             values: {
-                startIndex: { name: "startIndex", gltfType: "number" },
-                endIndex: { name: "endIndex", gltfType: "number" },
+                startIndex: { name: "startIndex", gltfType: "int" },
+                endIndex: { name: "endIndex", gltfType: "int" },
             },
         },
         outputs: {
@@ -1153,6 +1359,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
             flows: {
                 loopBody: { name: "executionFlow" },
+                completed: { name: "completed" },
             },
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
@@ -1172,10 +1379,16 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {},
         inputs: {
             values: {
-                n: { name: "maxExecutions", gltfType: "number" },
+                n: { name: "maxExecutions", gltfType: "int" },
+            },
+            flows: {
+                reset: { name: "reset" },
             },
         },
         outputs: {
+            flows: {
+                out: { name: "out" },
+            },
             values: {
                 currentCount: { name: "executionCount" },
             },
@@ -1183,17 +1396,46 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "flow/multiGate": {
         blocks: [FlowGraphBlockNames.MultiGate],
+        inputs: {
+            flows: {
+                reset: { name: "reset" },
+            },
+        },
         configuration: {
-            isRandom: { name: "isRandom", gltfType: "boolean", inOptions: true, defaultValue: false },
-            isLoop: { name: "isLoop", gltfType: "boolean", inOptions: true, defaultValue: false },
+            isRandom: {
+                name: "isRandom",
+                gltfType: "boolean",
+                inOptions: true,
+                defaultValue: false,
+                configurationType: "bool",
+                invalidUsesDefault: true,
+                configurationGroup: "multiGate",
+            },
+            isLoop: {
+                name: "isLoop",
+                gltfType: "boolean",
+                inOptions: true,
+                defaultValue: false,
+                configurationType: "bool",
+                invalidUsesDefault: true,
+                configurationGroup: "multiGate",
+            },
+        },
+        outputs: {
+            flows: {
+                "[segment]": { name: "$1" },
+            },
+            values: {
+                lastIndex: { name: "lastIndex", gltfType: "int" },
+            },
         },
         extraProcessor(gltfBlock, declaration, _mapping, _arrays, serializedObjects) {
-            if (declaration.op !== "flow/multiGate" || !gltfBlock.flows || Object.keys(gltfBlock.flows).length === 0) {
-                throw new Error("MultiGate should have a single configuration object, the number of output flows");
+            if (declaration.op !== "flow/multiGate") {
+                throw new Error("Invalid operation for MultiGate mapping");
             }
             const serializedObject = serializedObjects[0];
             serializedObject.config ||= {};
-            serializedObject.config.outputSignalCount = Object.keys(gltfBlock.flows).length;
+            serializedObject.config.outputSignalCount = Object.keys(gltfBlock.flows ?? {}).length;
             serializedObject.signalOutputs.forEach((output, index) => {
                 output.name = "out_" + index;
             });
@@ -1203,7 +1445,17 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "flow/waitAll": {
         blocks: [FlowGraphBlockNames.WaitAll],
         configuration: {
-            inputFlows: { name: "inputSignalCount", gltfType: "number", inOptions: true, defaultValue: 0 },
+            inputFlows: {
+                name: "inputSignalCount",
+                gltfType: "number",
+                inOptions: true,
+                defaultValue: [0],
+                configurationType: "int",
+                invalidUsesDefault: true,
+                minimum: 0,
+                maximum: 64,
+                generatesInputFlowSockets: true,
+            },
         },
         inputs: {
             flows: {
@@ -1211,9 +1463,19 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 "[segment]": { name: "in_$1" },
             },
         },
+        outputs: {
+            flows: {
+                out: { name: "out" },
+                completed: { name: "completed" },
+            },
+            values: {
+                remainingInputs: { name: "remainingInputs", gltfType: "int" },
+            },
+        },
         validation(gltfBlock) {
-            // check that the configuration value is an integer
-            if (typeof gltfBlock.configuration?.inputFlows?.value?.[0] !== "number") {
+            const inputFlowsConfiguration = gltfBlock.configuration?.inputFlows?.value;
+            const inputFlows = inputFlowsConfiguration?.[0];
+            if (inputFlowsConfiguration?.length !== 1 || typeof inputFlows !== "number" || !Number.isInteger(inputFlows) || inputFlows < 0 || inputFlows > 64) {
                 gltfBlock.configuration = gltfBlock.configuration || {
                     inputFlows: { value: [0] },
                 };
@@ -1224,17 +1486,39 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "flow/throttle": {
         blocks: [FlowGraphBlockNames.Throttle],
+        inputs: {
+            values: {
+                duration: { name: "duration", gltfType: "number" },
+            },
+            flows: {
+                reset: { name: "reset" },
+            },
+        },
         outputs: {
             flows: {
+                out: { name: "out" },
                 err: { name: "error" },
+            },
+            values: {
+                lastRemainingTime: { name: "lastRemainingTime", gltfType: "number" },
             },
         },
     },
     "flow/setDelay": {
         blocks: [FlowGraphBlockNames.SetDelay],
+        inputs: {
+            values: {
+                duration: { name: "duration", gltfType: "number" },
+            },
+            flows: {
+                cancel: { name: "cancel" },
+            },
+        },
         outputs: {
             flows: {
+                out: { name: "out" },
                 err: { name: "error" },
+                done: { name: "done" },
             },
             values: {
                 // New spec renames this output to `lastDelay` (ref). Internally we still produce a
@@ -1247,9 +1531,12 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.CancelDelay],
         inputs: {
             values: {
-                // New spec renames this input to `delay` (ref). The underlying block reads an int
-                // from `delayIndex`; when a ref-string flows in we coerce it via the path converter.
-                delay: { name: "delayIndex" },
+                delay: { name: "delayIndex", gltfType: "ref" },
+            },
+        },
+        outputs: {
+            flows: {
+                out: { name: "out" },
             },
         },
     },
@@ -1266,6 +1553,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             variable: {
                 name: "variable",
                 gltfType: "number",
+                configurationType: "int",
+                required: true,
+                indexSource: "variables",
                 flowGraphType: "string",
                 inOptions: true,
                 isVariable: true,
@@ -1274,13 +1564,28 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 },
             },
         },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
     },
     "variable/set": {
         blocks: [FlowGraphBlockNames.SetVariable],
+        inputs: {
+            values: {
+                "[segment]": { name: "$1" },
+            },
+        },
         configuration: {
             variables: {
                 name: "variables",
                 gltfType: "number",
+                configurationType: "int[]",
+                required: true,
+                indexSource: "variables",
+                minItems: 1,
+                generatesInputValueSockets: true,
                 flowGraphType: "string",
                 inOptions: true,
                 isArray: true,
@@ -1310,6 +1615,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {
             variable: {
                 name: "propertyName",
+                configurationType: "int",
+                required: true,
+                indexSource: "variables",
                 inOptions: true,
                 isVariable: true,
                 dataTransformer(index, parser) {
@@ -1318,8 +1626,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
             useSlerp: {
                 name: "animationType",
+                configurationType: "bool",
+                required: true,
                 inOptions: true,
-                defaultValue: false,
                 dataTransformer(value) {
                     return value === true ? FlowGraphTypes.Quaternion : undefined;
                 },
@@ -1400,13 +1709,26 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "pointer/get": {
         blocks: [FlowGraphBlockNames.GetProperty, FlowGraphBlockNames.JsonPointerParser],
-        validation: ValidateJsonPointerTemplate,
+        validation: (node) => ValidateJsonPointerTemplate(node),
         configuration: {
-            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
+            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser, configurationType: "string", required: true, pointerTemplate: true },
+            type: {
+                name: "type",
+                configurationType: "int",
+                required: true,
+                validationOnly: true,
+                indexSource: "types",
+            },
         },
         inputs: {
             values: {
                 "[segment]": { name: "$1", toBlock: FlowGraphBlockNames.JsonPointerParser },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+                isValid: { name: "isValid", gltfType: "bool" },
             },
         },
         interBlockConnectors: [
@@ -1445,9 +1767,16 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "pointer/set": {
         blocks: [FlowGraphBlockNames.SetProperty, FlowGraphBlockNames.JsonPointerParser],
-        validation: ValidateJsonPointerTemplate,
+        validation: (node) => ValidateJsonPointerTemplate(node, new Set(["value"])),
         configuration: {
-            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
+            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser, configurationType: "string", required: true, pointerTemplate: true },
+            type: {
+                name: "type",
+                configurationType: "int",
+                required: true,
+                validationOnly: true,
+                indexSource: "types",
+            },
         },
         inputs: {
             values: {
@@ -1498,9 +1827,17 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "pointer/interpolate": {
         // interpolate, parse the pointer and play the animation generated. 3 blocks!
         blocks: [FlowGraphBlockNames.ValueInterpolation, FlowGraphBlockNames.JsonPointerParser, FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.BezierCurveEasing],
-        validation: ValidateJsonPointerTemplate,
+        validation: (node) => ValidateJsonPointerTemplate(node, new Set(["value", "duration", "p1", "p2"])),
         configuration: {
-            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser },
+            pointer: { name: "jsonPointer", toBlock: FlowGraphBlockNames.JsonPointerParser, configurationType: "string", required: true, pointerTemplate: true },
+            type: {
+                name: "type",
+                configurationType: "int",
+                required: true,
+                validationOnly: true,
+                indexSource: "types",
+                allowedSignatures: ["float", "float2", "float3", "float4", "float2x2", "float3x3", "float4x4"],
+            },
         },
         inputs: {
             values: {
@@ -1592,7 +1929,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.PlayAnimation, FlowGraphBlockNames.ArrayIndex, "KHR_interactivity/FlowGraphGLTFDataProvider"],
         inputs: {
             values: {
-                animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
+                animation: { name: "index", gltfType: "ref", toBlock: FlowGraphBlockNames.ArrayIndex },
                 speed: { name: "speed", gltfType: "number" },
                 startTime: {
                     name: "from",
@@ -1610,7 +1947,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             flows: {
+                out: { name: "out" },
                 err: { name: "error" },
+                done: { name: "done" },
             },
         },
         interBlockConnectors: [
@@ -1630,6 +1969,14 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
+            const playAnimationBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.PlayAnimation);
+            if (playAnimationBlock) {
+                playAnimationBlock.config.useVirtualTimeline = true;
+            }
+            const arrayIndexBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.ArrayIndex);
+            if (arrayIndexBlock) {
+                arrayIndexBlock.config.referenceCollection = "animations";
+            }
             // add the glTF to the configuration of the last serialized object
             const serializedObject = serializedObjects[serializedObjects.length - 1];
             serializedObject.config ||= {};
@@ -1641,11 +1988,12 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.StopAnimation, FlowGraphBlockNames.ArrayIndex, "KHR_interactivity/FlowGraphGLTFDataProvider"],
         inputs: {
             values: {
-                animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
+                animation: { name: "index", gltfType: "ref", toBlock: FlowGraphBlockNames.ArrayIndex },
             },
         },
         outputs: {
             flows: {
+                out: { name: "out" },
                 err: { name: "error" },
             },
         },
@@ -1666,6 +2014,14 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
+            const stopAnimationBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.StopAnimation);
+            if (stopAnimationBlock) {
+                stopAnimationBlock.config.skipOnAnimationEnd = true;
+            }
+            const arrayIndexBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.ArrayIndex);
+            if (arrayIndexBlock) {
+                arrayIndexBlock.config.referenceCollection = "animations";
+            }
             // add the glTF to the configuration of the last serialized object
             const serializedObject = serializedObjects[serializedObjects.length - 1];
             serializedObject.config ||= {};
@@ -1678,7 +2034,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         configuration: {},
         inputs: {
             values: {
-                animation: { name: "index", gltfType: "number", toBlock: FlowGraphBlockNames.ArrayIndex },
+                animation: { name: "index", gltfType: "ref", toBlock: FlowGraphBlockNames.ArrayIndex },
                 stopTime: {
                     name: "stopAtFrame",
                     gltfType: "number",
@@ -1689,7 +2045,9 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             flows: {
+                out: { name: "out" },
                 err: { name: "error" },
+                done: { name: "done" },
             },
         },
         interBlockConnectors: [
@@ -1709,6 +2067,15 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         ],
         extraProcessor(_gltfBlock, _declaration, _mapping, _arrays, serializedObjects, _context, globalGLTF) {
+            const stopAnimationBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.StopAnimation);
+            if (stopAnimationBlock) {
+                stopAnimationBlock.config.useVirtualStopAt = true;
+                stopAnimationBlock.config.skipOnAnimationEnd = true;
+            }
+            const arrayIndexBlock = serializedObjects.find((block) => block.className === FlowGraphBlockNames.ArrayIndex);
+            if (arrayIndexBlock) {
+                arrayIndexBlock.config.referenceCollection = "animations";
+            }
             // add the glTF to the configuration of the last serialized object
             const serializedObject = serializedObjects[serializedObjects.length - 1];
             serializedObject.config ||= {};
@@ -1719,11 +2086,26 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/switch": {
         blocks: [FlowGraphBlockNames.DataSwitch],
         configuration: {
-            cases: { name: "cases", isArray: true, inOptions: true, defaultValue: [] },
+            cases: {
+                name: "cases",
+                isArray: true,
+                inOptions: true,
+                defaultValue: [],
+                configurationType: "int[]",
+                invalidUsesDefault: true,
+                generatesCaseInputValueSockets: true,
+                uniqueValues: true,
+            },
         },
         inputs: {
             values: {
-                selection: { name: "case" },
+                selection: { name: "case", gltfType: "int" },
+                default: { name: "default" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
             },
         },
         validation(gltfBlock) {
@@ -1758,8 +2140,37 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "debug/log": {
         blocks: [FlowGraphBlockNames.ConsoleLog],
+        inputs: {
+            flows: {
+                in: { name: "in" },
+            },
+            values: {
+                "[parameter]": { name: "$1" },
+            },
+        },
+        outputs: {
+            flows: {
+                out: { name: "out" },
+            },
+        },
         configuration: {
-            message: { name: "messageTemplate", inOptions: true },
+            severity: {
+                name: "severity",
+                configurationType: "int",
+                defaultValue: 0,
+                invalidUsesDefault: true,
+                validationOnly: true,
+                configurationGroup: "debugLog",
+            },
+            message: {
+                name: "messageTemplate",
+                configurationType: "string",
+                defaultValue: "",
+                invalidUsesDefault: true,
+                inOptions: true,
+                configurationGroup: "debugLog",
+                debugLogTemplate: true,
+            },
         },
     },
 };
@@ -1778,7 +2189,7 @@ function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", typeSourceInput: inputs[0] },
             },
         },
         extraProcessor(gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
@@ -1837,6 +2248,7 @@ function HasOddBracketRun(segment: string): boolean {
         if ("[]{}".indexOf(character) === -1) {
             continue;
         }
+
         let runLength = 1;
         while (segment[index + runLength] === character) {
             runLength++;
@@ -1850,14 +2262,71 @@ function HasOddBracketRun(segment: string): boolean {
 }
 
 /**
+ * Result of parsing a ratified `debug/log` message template.
+ */
+export interface IDebugLogTemplateParseResult {
+    /** Whether all literal braces are doubled and every parameter is well formed. */
+    valid: boolean;
+    /** Unique parameter socket ids in first-occurrence order. */
+    sockets: string[];
+}
+
+/**
+ * Parses a ratified `debug/log` message template.
+ * Literal braces must be doubled; non-empty text inside a single brace pair defines a socket id.
+ * @param message message template to parse
+ * @returns template validity and its exact dynamic socket ids
+ */
+export function ParseDebugLogTemplate(message: string): IDebugLogTemplateParseResult {
+    let state = 0;
+    let parameterStart = -1;
+    const sockets: string[] = [];
+    const seen = new Set<string>();
+    for (let index = 0; index < message.length; index++) {
+        const character = message[index];
+        if (character === "{") {
+            if (state === 0) {
+                state = 1;
+            } else if (state === 1) {
+                state = 0;
+            } else {
+                return { valid: false, sockets: [] };
+            }
+        } else if (character === "}") {
+            if (state === 0) {
+                state = 3;
+            } else if (state === 3) {
+                state = 0;
+            } else if (state === 2) {
+                const socket = message.substring(parameterStart + 1, index);
+                if (!seen.has(socket)) {
+                    seen.add(socket);
+                    sockets.push(socket);
+                }
+                state = 0;
+            } else {
+                return { valid: false, sockets: [] };
+            }
+        } else if (state === 1) {
+            parameterStart = index - 1;
+            state = 2;
+        } else if (state === 3) {
+            return { valid: false, sockets: [] };
+        }
+    }
+    return { valid: state === 0, sockets: state === 0 ? sockets : [] };
+}
+
+/**
  * Validates the `pointer` configuration value of a `pointer/*` operation, following the JSON Pointer Template
  * Parsing steps of the KHR_interactivity specification. A template parameter must span an entire path segment, so
  * a template such as `/materials/{materialRef}pbrMetallicRoughness/...` is a syntax error, and the specification
  * requires the whole behavior graph to be rejected.
  * @param gltfBlock the glTF interactivity node
+ * @param reservedSocketIds input ids owned by the operation rather than template parameters
  * @returns the validation result
  */
-function ValidateJsonPointerTemplate(gltfBlock: IKHRInteractivity_Node): { valid: boolean; error?: string } {
+function ValidateJsonPointerTemplate(gltfBlock: IKHRInteractivity_Node, reservedSocketIds: ReadonlySet<string> = new Set()): { valid: boolean; error?: string } {
     const pointer = gltfBlock.configuration?.pointer?.value?.[0];
     if (typeof pointer !== "string") {
         return { valid: false, error: "A pointer operation requires a string `pointer` configuration value" };
@@ -1870,6 +2339,9 @@ function ValidateJsonPointerTemplate(gltfBlock: IKHRInteractivity_Node): { valid
     const invalid = (reason: string) => ({ valid: false, error: `The JSON Pointer Template "${pointer}" is invalid: ${reason}` });
     const socketIds = new Set<string>();
     for (const segment of pointer.split("/")) {
+        if (/~(?:[^01]|$)/.test(segment)) {
+            return invalid(`the path segment "${segment}" contains an invalid RFC 6901 escape`);
+        }
         const isIntegerParameter = segment[0] === "[" && segment[1] !== "[";
         const isReferenceParameter = segment[0] === "{" && segment[1] !== "{";
         if (!isIntegerParameter && !isReferenceParameter) {
@@ -1886,6 +2358,9 @@ function ValidateJsonPointerTemplate(gltfBlock: IKHRInteractivity_Node): { valid
         }
 
         const socketId = body.replace(/~1/g, "/").replace(/~0/g, "~");
+        if (reservedSocketIds.has(socketId)) {
+            return invalid(`the template parameter "${socketId}" uses a reserved input socket id`);
+        }
         if (socketIds.has(socketId)) {
             return invalid(`the template parameter "${socketId}" is used more than once`);
         }

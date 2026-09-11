@@ -18,6 +18,7 @@ import { type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from 
 import { RandomGUID } from "../Misc/guid";
 import { Tools } from "../Misc/tools.pure";
 import { AbstractEngine } from "../Engines/abstractEngine";
+import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 
 // UMD global names for the flow graph editor bundle (mirrors nodeGeometry.ts / nodeRenderGraph.ts).
 declare let FLOWGRAPHEDITOR: any;
@@ -238,7 +239,7 @@ export class FlowGraph {
         if (this._eventObserver) {
             return;
         }
-        this._eventObserver = this._sceneEventCoordinator.onEventTriggeredObservable.add((event) => {
+        this._eventObserver = this._sceneEventCoordinator.onEventTriggeredObservable.add((event, eventState) => {
             if (event.type === FlowGraphEventType.SceneDispose) {
                 this.dispose();
                 return;
@@ -248,13 +249,40 @@ export class FlowGraph {
                 return;
             }
 
+            const propagationStops =
+                event.type === FlowGraphEventType.MeshPick || event.type === FlowGraphEventType.PointerOver || event.type === FlowGraphEventType.PointerOut
+                    ? ([] as AbstractMesh[])
+                    : undefined;
+            const payload = event.payload as { mesh?: AbstractMesh; pickInfo?: { pickedMesh?: AbstractMesh } } | undefined;
+            const source = payload?.pickInfo?.pickedMesh ?? payload?.mesh;
             for (const context of this._executionContexts) {
                 const order = this._getContextualOrder(event.type, context);
                 for (const block of order) {
-                    // iterate contexts
-                    if (!block._executeEvent(context, event.payload)) {
+                    const eventBlock = block as FlowGraphEventBlock & {
+                        _getReferencedMesh?: (context: FlowGraphContext) => AbstractMesh | undefined;
+                    };
+                    const target = eventBlock._getReferencedMesh?.(context);
+                    if (source && target && propagationStops?.some((stoppedTarget) => stoppedTarget !== target && _IsDescendantOf(source, target))) {
+                        continue;
+                    }
+                    const eventKey = eventBlock.eventKey;
+                    this._coordinator._beginEventDispatch(eventKey, eventState);
+                    let shouldContinue: boolean;
+                    let dispatch: ReturnType<FlowGraphCoordinator["_endEventDispatch"]>;
+                    try {
+                        shouldContinue = block._executeEvent(context, event.payload);
+                    } finally {
+                        dispatch = this._coordinator._endEventDispatch();
+                    }
+                    if (dispatch?.propagationStopped && target) {
+                        propagationStops?.push(target);
+                    }
+                    if (eventState.skipNextObservers || !shouldContinue) {
                         break;
                     }
+                }
+                if (eventState.skipNextObservers) {
+                    break;
                 }
             }
             // custom behavior(s) of specific events
@@ -544,15 +572,28 @@ export class FlowGraph {
     private _getContextualOrder(type: FlowGraphEventType, context: FlowGraphContext): FlowGraphEventBlock[] {
         const order = this._eventBlocks[type].sort((a, b) => b.initPriority - a.initPriority);
 
-        if (type === FlowGraphEventType.MeshPick) {
+        if (type === FlowGraphEventType.MeshPick || type === FlowGraphEventType.PointerOver || type === FlowGraphEventType.PointerOut) {
             const meshPickOrder = [] as FlowGraphEventBlock[];
             for (const block1 of order) {
-                // If the block is a mesh pick, guarantee that picks of children meshes come before picks of parent meshes
-                const mesh1 = (block1 as FlowGraphMeshPickEventBlock).asset.getValue(context);
+                const mesh1 =
+                    type === FlowGraphEventType.MeshPick
+                        ? (block1 as FlowGraphMeshPickEventBlock).asset.getValue(context)
+                        : (
+                              block1 as FlowGraphEventBlock & {
+                                  _getReferencedMesh: (context: FlowGraphContext) => AbstractMesh;
+                              }
+                          )._getReferencedMesh(context);
                 let i = 0;
                 for (; i < order.length; i++) {
                     const block2 = order[i];
-                    const mesh2 = (block2 as FlowGraphMeshPickEventBlock).asset.getValue(context);
+                    const mesh2 =
+                        type === FlowGraphEventType.MeshPick
+                            ? (block2 as FlowGraphMeshPickEventBlock).asset.getValue(context)
+                            : (
+                                  block2 as FlowGraphEventBlock & {
+                                      _getReferencedMesh: (context: FlowGraphContext) => AbstractMesh;
+                                  }
+                              )._getReferencedMesh(context);
                     if (mesh1 && mesh2 && _IsDescendantOf(mesh1, mesh2)) {
                         break;
                     }

@@ -666,6 +666,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         this.props.globalState.onSortGraphRequiredObservable.add(() => {
             this.sortGraph();
+            this.zoomToFit();
         });
 
         this.props.globalState.onGetNodeFromBlock = (block) => {
@@ -847,6 +848,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         if (editorData) {
             this.reOrganize(editorData);
+            if ((editorData as any).zoomToFitOnLoad) {
+                setTimeout(() => {
+                    if (buildVersion === this._buildVersion && flowGraph === this.props.globalState.flowGraph) {
+                        this.zoomToFit();
+                        delete (editorData as any).zoomToFitOnLoad;
+                    }
+                }, 0);
+            }
         } else {
             // No saved positions — the graph was never laid out, so apply the flow-aware
             // "Sort graph" automatically. Deferred to the next macro-task so node DOM
@@ -975,47 +984,79 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.showWaitScreen();
         canvas._isLoading = true;
 
-        // Precompute a single block-instance -> node-id lookup so resolving each endpoint's
-        // owner is O(1) instead of an O(N) scan of canvas.nodes per endpoint.
-        const dataToNodeId = new Map<unknown, number>();
+        const frameById = new Map(canvas.frames.map((frame) => [frame.id, frame]));
+        const entities = new Map<string, { nodes: (typeof canvas.nodes)[number][]; frame: (typeof canvas.frames)[number] | null }>();
         for (const node of canvas.nodes) {
-            dataToNodeId.set(node.content.data, node.id);
+            const frame = frameById.get(node.enclosingFrameId);
+            const key = frame ? `frame:${frame.id}` : `node:${node.id}`;
+            const entity = entities.get(key) ?? { nodes: [], frame: frame ?? null };
+            entity.nodes.push(node);
+            entities.set(key, entity);
+        }
+        const entityList = [...entities.values()];
+        const dataToEntityId = new Map<unknown, number>();
+        for (let entityId = 0; entityId < entityList.length; entityId++) {
+            for (const node of entityList[entityId].nodes) {
+                dataToEntityId.set(node.content.data, entityId);
+            }
         }
 
-        const layoutNodes: IFlowLayoutNode[] = canvas.nodes.map((node) => {
+        const layoutNodes: IFlowLayoutNode[] = entityList.map((entity, entityId) => {
             const signalOut: number[] = [];
             const dataOut: number[] = [];
-            for (const output of node.content.outputs) {
-                if (!output.hasEndpoints) {
-                    continue;
-                }
-                const kind = (output as ConnectionPointPortData).connectionKind;
-                for (const endpoint of output.endpoints ?? []) {
-                    const targetId = dataToNodeId.get(endpoint.ownerData);
-                    if (targetId === undefined) {
+            for (const node of entity.nodes) {
+                for (const output of node.content.outputs) {
+                    if (!output.hasEndpoints) {
                         continue;
                     }
-                    if (kind === "signal") {
-                        signalOut.push(targetId);
-                    } else {
-                        dataOut.push(targetId);
+                    const kind = (output as ConnectionPointPortData).connectionKind;
+                    for (const endpoint of output.endpoints ?? []) {
+                        const targetId = dataToEntityId.get(endpoint.ownerData);
+                        if (targetId === undefined || targetId === entityId) {
+                            continue;
+                        }
+                        if (kind === "signal") {
+                            signalOut.push(targetId);
+                        } else {
+                            dataOut.push(targetId);
+                        }
                     }
                 }
             }
+            const frame = entity.frame;
+            const renderedFrameBounds = frame?.element.getBoundingClientRect();
+            const frameWidth = renderedFrameBounds ? renderedFrameBounds.width / canvas.zoom : frame?.width;
+            const frameHeight = renderedFrameBounds ? renderedFrameBounds.height / canvas.zoom : frame?.height;
             return {
-                id: node.id,
-                width: node.width,
-                height: node.height,
-                isEvent: node.content.data instanceof FlowGraphEventBlock,
-                signalOut,
-                dataOut,
+                id: entityId,
+                width: frame ? (frame.isCollapsed ? (frameWidth ?? 220) : frame.width) : entity.nodes[0].width,
+                height: frame ? (frame.isCollapsed ? (frameHeight ?? 120) : frame.height) : entity.nodes[0].height,
+                isEvent: entity.nodes.some((node) => node.content.data instanceof FlowGraphEventBlock),
+                signalOut: [...new Set(signalOut)],
+                dataOut: [...new Set(dataOut)],
             };
         });
 
         const positions = ComputeFlowGraphLayout(layoutNodes);
-        for (const node of canvas.nodes) {
-            const position = positions.get(node.id);
-            if (position) {
+        for (let entityId = 0; entityId < entityList.length; entityId++) {
+            const entity = entityList[entityId];
+            const position = positions.get(entityId);
+            if (!position) {
+                continue;
+            }
+            if (entity.frame) {
+                const deltaX = position.x - entity.frame.x;
+                const deltaY = position.y - entity.frame.y;
+                for (const node of entity.nodes) {
+                    node.x += deltaX;
+                    node.y += deltaY;
+                    node.cleanAccumulation();
+                }
+                entity.frame.x = position.x;
+                entity.frame.y = position.y;
+                entity.frame.cleanAccumulation();
+            } else {
+                const node = entity.nodes[0];
                 node.x = position.x;
                 node.y = position.y;
                 node.cleanAccumulation();

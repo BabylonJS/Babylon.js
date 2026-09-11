@@ -11,6 +11,16 @@ import { type Nullable } from "core/types";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**
+ * Configuration for array-index reference resolution.
+ */
+export interface IFlowGraphArrayIndexBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * Optional host collection name required when the index input is an opaque reference.
+     */
+    referenceCollection?: string;
+}
+
+/**
  * This simple Util block takes an array as input and selects a single element from it.
  */
 export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
@@ -33,7 +43,7 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
      * Construct a FlowGraphArrayIndexBlock.
      * @param config construction parameters
      */
-    constructor(public override config: IFlowGraphBlockConfiguration) {
+    constructor(public override config: IFlowGraphArrayIndexBlockConfiguration) {
         super(config);
 
         this.array = this.registerDataInput("array", RichTypeAny);
@@ -57,7 +67,7 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
         // which element the reference denotes.
         let index: number;
         if (typeof rawIndex === "string") {
-            const decoded = context.decodeIndexReference(rawIndex);
+            const decoded = context.decodeIndexReference(rawIndex, this.config.referenceCollection);
             if (decoded === undefined) {
                 this.value.setValue(null, context);
                 return;

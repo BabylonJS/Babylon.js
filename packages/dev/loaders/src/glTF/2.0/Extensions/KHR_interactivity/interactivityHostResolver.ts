@@ -26,13 +26,18 @@ export class InteractivityHostResolver implements IFlowGraphHostResolver {
 
     /**
      * @param reference the reference to decode
+     * @param collection optional glTF root collection the reference must address
      * @returns the index the reference denotes, or `undefined` when it is not an indexed JSON Pointer
      */
-    public decodeIndexReference(reference: string): number | undefined {
+    public decodeIndexReference(reference: string, collection?: string): number | undefined {
         if (reference.length === 0 || reference[0] !== "/") {
             return undefined;
         }
-        const tail = reference.substring(reference.lastIndexOf("/") + 1);
+        const prefix = collection ? `/${collection}/` : "/";
+        if (!reference.startsWith(prefix)) {
+            return undefined;
+        }
+        const tail = collection ? reference.substring(prefix.length) : reference.substring(reference.lastIndexOf("/") + 1);
         // RFC 6901 array indices are unsigned decimal integers with no leading zeros, so reject
         // anything else rather than letting `Number` accept "0x2", "1e1" or " 3".
         if (!/^(0|[1-9]\d*)$/.test(tail)) {

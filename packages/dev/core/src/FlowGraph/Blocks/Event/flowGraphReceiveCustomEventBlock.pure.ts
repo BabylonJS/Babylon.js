@@ -28,6 +28,15 @@ export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGra
 }
 
 /**
+ * Returns the event-dispatch key for an authored custom event id.
+ * @param eventId authored custom event id
+ * @returns namespaced event key
+ */
+export function GetFlowGraphCustomEventKey(eventId: string): string {
+    return `custom:${encodeURIComponent(eventId)}`;
+}
+
+/**
  * A block that receives a custom event.
  * It saves the event data in the data outputs, based on the provided eventData in the configuration. For example, if the event data is
  * `{ x: { type: RichTypeNumber }, y: { type: RichTypeNumber } }`, the block will have two data outputs: x and y.
@@ -41,6 +50,11 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
      * `event` outputs for equality succeeds. The reference format is owned by the host environment.
      */
     public readonly eventRef: FlowGraphDataConnection<string>;
+
+    /** @returns the configured custom event id */
+    public override get eventKey(): string {
+        return GetFlowGraphCustomEventKey(this.config.eventId);
+    }
 
     constructor(
         /**
@@ -69,7 +83,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     }
 
     public override _updateOutputs(context: FlowGraphContext): void {
-        this.eventRef.setValue(context.getEventReference(this.config.eventId), context);
+        this.eventRef.setValue(context.getEventReference(this.eventKey), context);
     }
 
     public override _preparePendingTasks(context: FlowGraphContext): void {
@@ -83,7 +97,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         const eventObserver = observable.add((eventData: { [key: string]: any }, eventState) => {
             // Make this dispatch's EventState reachable by event/stopPropagation
             // for the duration of the synchronous receiver flow.
-            context.configuration.coordinator._beginEventDispatch(this.config.eventId, eventState);
+            context.configuration.coordinator._beginEventDispatch(this.eventKey, eventState);
             try {
                 // Drive the outputs from the configured payload schema rather than from the incoming
                 // keys, so a key the sender omitted (or sent as undefined) resets to its configured
@@ -97,7 +111,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
                     output.setValue(incoming === undefined ? this._getEventDataDefault(key) : incoming, context);
                 }
                 // Expose the event reference before activating downstream flow.
-                this.eventRef.setValue(context.getEventReference(this.config.eventId), context);
+                this.eventRef.setValue(context.getEventReference(this.eventKey), context);
                 this._execute(context);
             } finally {
                 context.configuration.coordinator._endEventDispatch();

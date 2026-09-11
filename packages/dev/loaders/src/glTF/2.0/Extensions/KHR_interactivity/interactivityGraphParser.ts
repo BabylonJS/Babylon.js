@@ -1,12 +1,14 @@
 import { type IKHRInteractivity_Graph, type IKHRInteractivity_Node, type IKHRInteractivity_OutputSocketReference, type IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import { type IGLTF } from "../../glTFLoaderInterfaces";
-import { type IGLTFToFlowGraphMapping, getMappingForDeclaration, getMappingForFullOperationName } from "./declarationMapper";
+import { type IGLTFToFlowGraphMapping, getMappingForDeclaration, getNoOpMappingForDeclaration, ParseDebugLogTemplate } from "./declarationMapper";
 import { Logger } from "core/Misc/logger";
 import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphConnection, type ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc/guid";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
+import { CloneKHRInteractivityGraph, CreateEffectiveKHRInteractivityGraph, gltfTypeToBabylonType, type IKHRInteractivityDeclarationModel } from "./interactivityGraphModel";
+import { DelayReferencePrefix, EventReferencePrefix } from "./interactivityReferences";
 
 /**
  * Description of a KHR_interactivity custom event, as parsed from the
@@ -30,24 +32,11 @@ export interface InteractivityEvent {
         value?: any;
     }[];
 }
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const gltfTypeToBabylonType: {
-    [key: string]: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" | "string" };
-} = {
-    float: { length: 1, flowGraphType: FlowGraphTypes.Number, elementType: "number" },
-    bool: { length: 1, flowGraphType: FlowGraphTypes.Boolean, elementType: "boolean" },
-    float2: { length: 2, flowGraphType: FlowGraphTypes.Vector2, elementType: "number" },
-    float3: { length: 3, flowGraphType: FlowGraphTypes.Vector3, elementType: "number" },
-    float4: { length: 4, flowGraphType: FlowGraphTypes.Vector4, elementType: "number" },
-    float4x4: { length: 16, flowGraphType: FlowGraphTypes.Matrix, elementType: "number" },
-    float2x2: { length: 4, flowGraphType: FlowGraphTypes.Matrix2D, elementType: "number" },
-    float3x3: { length: 9, flowGraphType: FlowGraphTypes.Matrix3D, elementType: "number" },
-    int: { length: 1, flowGraphType: FlowGraphTypes.Integer, elementType: "number" },
-    // KHR_interactivity opaque reference type. Represented as a JSON Pointer string
-    // (e.g. "/nodes/17/") that addresses a glTF object. The empty string is the
-    // canonical "null reference" sentinel used by the parser.
-    ref: { length: 1, flowGraphType: FlowGraphTypes.String, elementType: "string" },
-};
+export { gltfTypeToBabylonType } from "./interactivityGraphModel";
+
+function _GetOwnMapping<T>(mapping: { [name: string]: T } | undefined, key: string): T | undefined {
+    return mapping && Object.prototype.hasOwnProperty.call(mapping, key) ? mapping[key] : undefined;
+}
 
 /**
  * Parses a KHR_interactivity graph definition (the raw glTF JSON object) into
@@ -62,8 +51,8 @@ export class InteractivityGraphToFlowGraphParser {
      * Note - the graph should be rejected if the same type is defined twice.
      * We currently don't validate that.
      */
-    private _types: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" | "string" }[] = [];
-    private _mappings: { flowGraphMapping: IGLTFToFlowGraphMapping; fullOperationName: string }[] = [];
+    private _types: { length: number; flowGraphType: FlowGraphTypes; elementType: "number" | "boolean" | "string" | "any" }[] = [];
+    private _mappings: { flowGraphMapping: IGLTFToFlowGraphMapping; fullOperationName: string; declaration: IKHRInteractivityDeclarationModel }[] = [];
     private _staticVariables: { type: FlowGraphTypes; value: any[] }[] = [];
     private _events: InteractivityEvent[] = [];
     private _internalEventsCounter: number = 0;
@@ -77,10 +66,16 @@ export class InteractivityGraphToFlowGraphParser {
     private _insertedBlocks: ISerializedFlowGraphBlock[] = [];
 
     constructor(
-        private _interactivityGraph: IKHRInteractivity_Graph,
+        interactivityGraph: IKHRInteractivity_Graph,
         private _gltf: IGLTF,
-        public _animationTargetFps: number = 60
+        public _animationTargetFps: number = 60,
+        private _graphIndex: number = 0,
+        private _supportedExtensions?: ReadonlySet<string>,
+        private _declarationModels?: readonly IKHRInteractivityDeclarationModel[]
     ) {
+        this._interactivityGraph = this._declarationModels
+            ? CreateEffectiveKHRInteractivityGraph(interactivityGraph, this._declarationModels, this._gltf.nodes?.length ?? 0)
+            : CloneKHRInteractivityGraph(interactivityGraph);
         // start with types
         this._parseTypes();
         // continue with declarations
@@ -88,6 +83,89 @@ export class InteractivityGraphToFlowGraphParser {
         this._parseVariables();
         this._parseEvents();
         this._parseNodes();
+    }
+
+    private _interactivityGraph: IKHRInteractivity_Graph;
+
+    private get _strictValidation(): boolean {
+        return !!this._declarationModels;
+    }
+
+    private _hasDefaultFlowInput(operation: string): boolean {
+        if (operation === "flow/waitAll") {
+            return false;
+        }
+        return (
+            operation.startsWith("flow/") ||
+            operation.startsWith("animation/") ||
+            operation === "pointer/set" ||
+            operation === "pointer/interpolate" ||
+            operation === "variable/set" ||
+            operation === "variable/interpolate" ||
+            operation === "event/send" ||
+            operation === "event/stopPropagation" ||
+            operation === "flow/log:BABYLON"
+        );
+    }
+
+    private _getAllowedDynamicValueSockets(operation: string, node: IKHRInteractivity_Node, direction: "input" | "output"): ReadonlySet<string> | undefined {
+        if (operation === "debug/log" && direction === "input") {
+            const message = node.configuration?.message?.value?.[0];
+            return new Set(typeof message === "string" ? ParseDebugLogTemplate(message).sockets : []);
+        }
+        if ((operation === "event/send" && direction === "input") || (operation === "event/receive" && direction === "output")) {
+            const eventIndex = node.configuration?.event?.value?.[0];
+            if (typeof eventIndex === "number") {
+                return new Set(Object.keys(this._interactivityGraph.events?.[eventIndex]?.values ?? {}));
+            }
+        }
+        if (operation === "variable/set" && direction === "input") {
+            return new Set((node.configuration?.variables?.value ?? []).map(String));
+        }
+        if (operation === "math/switch" && direction === "input") {
+            return new Set((node.configuration?.cases?.value ?? []).map(String));
+        }
+        if ((operation === "pointer/get" || operation === "pointer/set" || operation === "pointer/interpolate") && direction === "input") {
+            const pointer = node.configuration?.pointer?.value?.[0];
+            if (typeof pointer === "string") {
+                return new Set(
+                    pointer
+                        .split("/")
+                        .filter((segment) => (segment.startsWith("[") && !segment.startsWith("[[")) || (segment.startsWith("{") && !segment.startsWith("{{")))
+                        .map((segment) =>
+                            segment
+                                .substring(1, segment.length - 1)
+                                .replace(/~1/g, "/")
+                                .replace(/~0/g, "~")
+                        )
+                );
+            }
+        }
+        return undefined;
+    }
+
+    private _getAllowedDynamicFlowSockets(node: IKHRInteractivity_Node, mapping: IGLTFToFlowGraphMapping, direction: "input" | "output"): ReadonlySet<string> | undefined {
+        for (const [key, property] of Object.entries(mapping.configuration ?? {})) {
+            const generatesSockets = direction === "input" ? property.generatesInputFlowSockets : property.generatesOutputFlowSockets;
+            if (!generatesSockets) {
+                continue;
+            }
+            const configuredValues = node.configuration?.[key]?.value;
+            const validValues =
+                configuredValues &&
+                configuredValues.length > 0 &&
+                (property.configurationType !== "int" || configuredValues.length === 1) &&
+                configuredValues.every(
+                    (value) => typeof value === "number" && Number.isInteger(value) && value >= (property.minimum ?? -2147483648) && value <= (property.maximum ?? 2147483647)
+                );
+            const values = validValues ? configuredValues : property.defaultValue;
+            if (direction === "input") {
+                const count = Array.isArray(values) && typeof values[0] === "number" ? values[0] : 0;
+                return new Set(Array.from({ length: count }, (_, index) => String(index)));
+            }
+            return new Set(Array.isArray(values) ? values.map(String) : []);
+        }
+        return undefined;
     }
 
     public get arrays() {
@@ -113,10 +191,16 @@ export class InteractivityGraphToFlowGraphParser {
         if (!this._interactivityGraph.declarations) {
             return;
         }
-        for (const declaration of this._interactivityGraph.declarations) {
-            // make sure we have the mapping for this operation
-            const mapping = getMappingForDeclaration(declaration);
-            // mapping is defined, because we generate an empty mapping if it's not found
+        for (let index = 0; index < this._interactivityGraph.declarations.length; index++) {
+            const declaration = this._interactivityGraph.declarations[index];
+            const declarationModel = this._declarationModels?.[index];
+            const extensionEnabled = !declaration.extension || !this._supportedExtensions || this._supportedExtensions.has(declaration.extension);
+            const supportedMapping =
+                declarationModel?.support === "unsupported-extension" ? undefined : extensionEnabled ? getMappingForDeclaration(declaration, false) : undefined;
+            if (!supportedMapping && !declaration.extension) {
+                throw new Error(`Unknown core KHR_interactivity operation "${declaration.op}".`);
+            }
+            const mapping = supportedMapping ?? (declaration.extension ? getNoOpMappingForDeclaration(declaration) : undefined);
             if (!mapping) {
                 Logger.Error(["No mapping found for declaration", declaration]);
                 throw new Error("Error parsing declarations");
@@ -124,6 +208,14 @@ export class InteractivityGraphToFlowGraphParser {
             this._mappings.push({
                 flowGraphMapping: mapping,
                 fullOperationName: declaration.extension ? declaration.op + ":" + declaration.extension : declaration.op,
+                declaration:
+                    declarationModel ??
+                    ({
+                        index,
+                        operation: declaration.extension ? `${declaration.op}:${declaration.extension}` : declaration.op,
+                        support: supportedMapping ? (declaration.extension ? "extension" : "core") : "unsupported-extension",
+                        source: declaration,
+                    } satisfies IKHRInteractivityDeclarationModel),
             });
         }
     }
@@ -146,12 +238,12 @@ export class InteractivityGraphToFlowGraphParser {
             throw new Error("Error parsing variables");
         }
         if (variable.value) {
-            if (variable.value.length !== type.length) {
+            if (this._interactivityGraph.types?.[variable.type]?.signature !== "custom" && variable.value.length !== type.length) {
                 Logger.Error(["Invalid value length for variable", variable, type]);
                 throw new Error("Error parsing variables");
             }
         }
-        const value = variable.value || [];
+        const value = variable.value ? variable.value.slice() : [];
         if (!value.length) {
             switch (type.flowGraphType) {
                 case FlowGraphTypes.Boolean:
@@ -176,13 +268,17 @@ export class InteractivityGraphToFlowGraphParser {
                 case FlowGraphTypes.Vector4:
                 case FlowGraphTypes.Matrix2D:
                 case FlowGraphTypes.Quaternion:
-                    value.fill(NaN, 0, 4);
+                    value.push(NaN, NaN, NaN, NaN);
                     break;
                 case FlowGraphTypes.Matrix:
-                    value.fill(NaN, 0, 16);
+                    for (let i = 0; i < 16; i++) {
+                        value.push(NaN);
+                    }
                     break;
                 case FlowGraphTypes.Matrix3D:
-                    value.fill(NaN, 0, 9);
+                    for (let i = 0; i < 9; i++) {
+                        value.push(NaN);
+                    }
                     break;
                 default:
                     break;
@@ -191,17 +287,52 @@ export class InteractivityGraphToFlowGraphParser {
         // in case of NaN, Infinity, we need to parse the string to the object itself
         if (type.elementType === "number" && typeof value[0] === "string") {
             value[0] = parseFloat(value[0]);
+        } else if (type.flowGraphType === FlowGraphTypes.String && typeof value[0] === "string") {
+            value[0] = this._normalizeStaticReference(value[0]);
         }
         return { type: type.flowGraphType, value: dataTransform ? dataTransform(value, this) : value };
+    }
+
+    private _normalizeStaticReference(reference: string): string {
+        if (!reference || reference.startsWith(EventReferencePrefix) || reference.startsWith(DelayReferencePrefix)) {
+            return "";
+        }
+        if (!reference.startsWith("/")) {
+            return "";
+        }
+        let current: unknown = this._gltf;
+        for (const rawSegment of reference.substring(1).split("/")) {
+            const segment = rawSegment.replace(/~1/g, "/").replace(/~0/g, "~");
+            if (Array.isArray(current)) {
+                if (!/^(0|[1-9]\d*)$/.test(segment)) {
+                    return "";
+                }
+                current = current[parseInt(segment, 10)];
+            } else if (current !== null && typeof current === "object" && Object.prototype.hasOwnProperty.call(current, segment)) {
+                current = (current as Record<string, unknown>)[segment];
+            } else {
+                return "";
+            }
+        }
+        return current !== null && typeof current === "object" ? reference : "";
     }
 
     private _parseEvents() {
         if (!this._interactivityGraph.events) {
             return;
         }
+        const eventIds = new Set(this._interactivityGraph.events.flatMap((event) => (event.id === undefined ? [] : [event.id])));
+        const internalPrefix = `__babylon_khr_internal_${this._graphIndex}_`;
         for (const event of this._interactivityGraph.events) {
+            let generatedEventId: string | undefined;
+            if (event.id === undefined) {
+                do {
+                    generatedEventId = internalPrefix + this._internalEventsCounter++;
+                } while (eventIds.has(generatedEventId));
+                eventIds.add(generatedEventId);
+            }
             const converted: InteractivityEvent = {
-                eventId: event.id || "internalEvent_" + this._internalEventsCounter++,
+                eventId: event.id ?? generatedEventId!,
             };
             if (event.values) {
                 converted.eventData = Object.keys(event.values).map((key) => {
@@ -232,7 +363,8 @@ export class InteractivityGraphToFlowGraphParser {
         if (!this._interactivityGraph.nodes) {
             return;
         }
-        for (const node of this._interactivityGraph.nodes) {
+        for (let nodeIndex = 0; nodeIndex < this._interactivityGraph.nodes.length; nodeIndex++) {
+            const node = this._interactivityGraph.nodes[nodeIndex];
             // some validation
             if (typeof node.declaration !== "number") {
                 Logger.Error(["No declaration found for node", node]);
@@ -250,9 +382,13 @@ export class InteractivityGraphToFlowGraphParser {
                 }
             }
             const blocks: ISerializedFlowGraphBlock[] = [];
+            if (mapping.declaration.support === "unsupported-extension") {
+                blocks.push(this._createUnsupportedExtensionBlock(node, nodeIndex, mapping));
+            }
             // create block(s) for this node using the mapping
-            for (const blockType of mapping.flowGraphMapping.blocks) {
-                const block = this._getEmptyBlock(blockType, mapping.fullOperationName);
+            for (let role = 0; role < mapping.flowGraphMapping.blocks.length; role++) {
+                const blockType = mapping.flowGraphMapping.blocks[role];
+                const block = this._getEmptyBlock(blockType, mapping.fullOperationName, nodeIndex, node.declaration, role);
                 this._parseNodeConfiguration(node, block, mapping.flowGraphMapping, blockType);
                 blocks.push(block);
             }
@@ -260,7 +396,7 @@ export class InteractivityGraphToFlowGraphParser {
         }
     }
 
-    private _getEmptyBlock(className: string, type: string): ISerializedFlowGraphBlock {
+    private _getEmptyBlock(className: string, type: string, nodeIndex?: number, declarationIndex?: number, role?: number): ISerializedFlowGraphBlock {
         return {
             uniqueId: RandomGUID(),
             className,
@@ -270,8 +406,62 @@ export class InteractivityGraphToFlowGraphParser {
             signalOutputs: [],
             config: {},
             type,
-            metadata: {},
+            metadata:
+                nodeIndex === undefined
+                    ? {}
+                    : {
+                          khrInteractivity: {
+                              graphIndex: this._graphIndex,
+                              nodeIndex,
+                              declarationIndex,
+                              operation: type,
+                              role: role ?? 0,
+                              sourcePath: `/extensions/KHR_interactivity/graphs/${this._graphIndex}/nodes/${nodeIndex}`,
+                          },
+                      },
         };
+    }
+
+    private _createUnsupportedExtensionBlock(
+        node: IKHRInteractivity_Node,
+        nodeIndex: number,
+        mapping: { flowGraphMapping: IGLTFToFlowGraphMapping; fullOperationName: string; declaration: IKHRInteractivityDeclarationModel }
+    ): ISerializedFlowGraphBlock {
+        const block = this._getEmptyBlock("KHR_interactivity/FlowGraphUnsupportedInteractivityBlock", mapping.fullOperationName, nodeIndex, node.declaration, 0);
+        const inputFlowSockets = new Set<string>();
+        for (const sourceNode of this._interactivityGraph.nodes ?? []) {
+            for (const flow of Object.values(sourceNode.flows ?? {})) {
+                if (flow.node === nodeIndex) {
+                    inputFlowSockets.add(flow.socket ?? "in");
+                }
+            }
+        }
+        const toSockets = (sockets: typeof mapping.declaration.source.inputValueSockets) =>
+            Object.entries(sockets ?? {}).map(([name, definition]) => ({
+                name,
+                type: this._types[definition.type]?.flowGraphType,
+                signature: this._interactivityGraph.types?.[definition.type]?.signature,
+            }));
+        block.config = {
+            operation: mapping.fullOperationName,
+            inputValueSockets: toSockets(mapping.declaration.source.inputValueSockets),
+            outputValueSockets: toSockets(mapping.declaration.source.outputValueSockets),
+            inputFlowSockets: Array.from(inputFlowSockets).sort(),
+            outputFlowSockets: Object.keys(node.flows ?? {}).sort(),
+        };
+        for (const socket of block.config.inputValueSockets) {
+            block.dataInputs.push(this._createNewSocketConnection(socket.name));
+        }
+        for (const socket of block.config.outputValueSockets) {
+            block.dataOutputs.push(this._createNewSocketConnection(socket.name, true));
+        }
+        for (const socket of block.config.inputFlowSockets) {
+            block.signalInputs.push(this._createNewSocketConnection(socket));
+        }
+        for (const socket of block.config.outputFlowSockets) {
+            block.signalOutputs.push(this._createNewSocketConnection(socket, true));
+        }
+        return block;
     }
 
     private _parseNodeConfiguration(node: IKHRInteractivity_Node, block: ISerializedFlowGraphBlock, nodeMapping: IGLTFToFlowGraphMapping, blockType: FlowGraphBlockNames | string) {
@@ -284,6 +474,12 @@ export class InteractivityGraphToFlowGraphParser {
                 }
 
                 const propertyMapping = nodeMapping.configuration?.[key];
+                if (!propertyMapping && this._strictValidation) {
+                    continue;
+                }
+                if (propertyMapping?.validationOnly) {
+                    continue;
+                }
                 const belongsToBlock = propertyMapping && propertyMapping.toBlock ? propertyMapping.toBlock === blockType : nodeMapping.blocks.indexOf(blockType) === 0;
                 if (belongsToBlock) {
                     let value = propertyMapping?.defaultValue;
@@ -346,8 +542,25 @@ export class InteractivityGraphToFlowGraphParser {
             // connect the flows
             for (const flowKey of flowsKeys) {
                 const flow = flowsFromGLTF[flowKey];
-                const flowMapping = outputMapper.flowGraphMapping.outputs?.flows?.[flowKey];
-                const socketOutName = flowMapping?.name || flowKey;
+                let flowMapping = _GetOwnMapping(outputMapper.flowGraphMapping.outputs?.flows, flowKey);
+                let outputArrayMapping = false;
+                if (!flowMapping) {
+                    for (const key in outputMapper.flowGraphMapping.outputs?.flows) {
+                        if (key.startsWith("[") && key.endsWith("]")) {
+                            outputArrayMapping = true;
+                            flowMapping = outputMapper.flowGraphMapping.outputs?.flows?.[key];
+                            break;
+                        }
+                    }
+                }
+                const allowedDynamicOutputs = outputArrayMapping ? this._getAllowedDynamicFlowSockets(gltfNode, outputMapper.flowGraphMapping, "output") : undefined;
+                if (this._strictValidation && allowedDynamicOutputs && !allowedDynamicOutputs.has(flowKey)) {
+                    flowMapping = undefined;
+                }
+                if (this._strictValidation && !flowMapping) {
+                    continue;
+                }
+                const socketOutName = flowMapping ? (outputArrayMapping ? flowMapping.name.replace("$1", flowKey) : flowMapping.name) : flowKey;
                 // get the input node of this block
                 const inputNodeId = flow.node;
                 const nodeIn = this._nodes[inputNodeId];
@@ -363,16 +576,18 @@ export class InteractivityGraphToFlowGraphParser {
                     continue;
                 }
                 // create a serialized socket
-                const socketOut = this._createNewSocketConnection(socketOutName, true);
                 const block = (flowMapping && flowMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === flowMapping.toBlock)) || flowGraphBlocks.blocks[0];
-                block.signalOutputs.push(socketOut);
+                const socketOut = block.signalOutputs.find((socket) => socket.name === socketOutName) ?? this._createNewSocketConnection(socketOutName, true);
+                if (!block.signalOutputs.includes(socketOut)) {
+                    block.signalOutputs.push(socketOut);
+                }
                 // get the mapper for the input node - in case it mapped to multiple blocks
-                const inputMapper = getMappingForFullOperationName(nodeIn.fullOperationName);
+                const inputMapper = this._mappings[this._interactivityGraph.nodes![inputNodeId].declaration]?.flowGraphMapping;
                 if (!inputMapper) {
                     Logger.Error(["No mapping found for input node", nodeIn]);
                     throw new Error("Error parsing node connections");
                 }
-                let flowInMapping = inputMapper.inputs?.flows?.[flow.socket || "in"];
+                let flowInMapping = _GetOwnMapping(inputMapper.inputs?.flows, flow.socket || "in");
                 let arrayMapping = false;
                 if (!flowInMapping) {
                     for (const key in inputMapper.inputs?.flows) {
@@ -380,6 +595,16 @@ export class InteractivityGraphToFlowGraphParser {
                             arrayMapping = true;
                             flowInMapping = inputMapper.inputs?.flows?.[key];
                         }
+                    }
+                    const allowedDynamicInputs = arrayMapping ? this._getAllowedDynamicFlowSockets(this._interactivityGraph.nodes![inputNodeId], inputMapper, "input") : undefined;
+                    if (this._strictValidation && allowedDynamicInputs && !allowedDynamicInputs.has(flow.socket ?? "in")) {
+                        flowInMapping = undefined;
+                    }
+                    if (!flowInMapping && (flow.socket ?? "in") === "in" && this._hasDefaultFlowInput(nodeIn.fullOperationName)) {
+                        flowInMapping = { name: "in" };
+                    }
+                    if (this._strictValidation && !flowInMapping) {
+                        continue;
                     }
                 }
                 const nodeInSocketName = flowInMapping ? (arrayMapping ? flowInMapping.name.replace("$1", flow.socket || "") : flowInMapping.name) : flow.socket || "in";
@@ -400,7 +625,7 @@ export class InteractivityGraphToFlowGraphParser {
             const valuesKeys = Object.keys(valuesFromGLTF);
             for (const valueKey of valuesKeys) {
                 const value = valuesFromGLTF[valueKey];
-                let valueMapping = outputMapper.flowGraphMapping.inputs?.values?.[valueKey];
+                let valueMapping = _GetOwnMapping(outputMapper.flowGraphMapping.inputs?.values, valueKey);
                 let arrayMapping = false;
                 if (!valueMapping) {
                     for (const key in outputMapper.flowGraphMapping.inputs?.values) {
@@ -410,11 +635,17 @@ export class InteractivityGraphToFlowGraphParser {
                         }
                     }
                 }
+                const allowedDynamicInputs = arrayMapping ? this._getAllowedDynamicValueSockets(outputMapper.fullOperationName, gltfNode, "input") : undefined;
+                if (this._strictValidation && (!valueMapping || (allowedDynamicInputs && !allowedDynamicInputs.has(valueKey)))) {
+                    continue;
+                }
                 const socketInName = valueMapping ? (arrayMapping ? valueMapping.name.replace("$1", valueKey) : valueMapping.name) : valueKey;
                 // create a serialized socket
-                const socketIn = this._createNewSocketConnection(socketInName);
                 const block = (valueMapping && valueMapping.toBlock && flowGraphBlocks.blocks.find((b) => b.className === valueMapping.toBlock)) || flowGraphBlocks.blocks[0];
-                block.dataInputs.push(socketIn);
+                const socketIn = block.dataInputs.find((socket) => socket.name === socketInName) ?? this._createNewSocketConnection(socketInName);
+                if (!block.dataInputs.includes(socketIn)) {
+                    block.dataInputs.push(socketIn);
+                }
                 // Captured before the connected branch below shadows `valueMapping`. When set and the
                 // value is supplied by a connection, the seconds→frames `dataTransformer` cannot run
                 // (it is parse-time only), so the raw connected value is scaled by a runtime multiply.
@@ -440,12 +671,12 @@ export class InteractivityGraphToFlowGraphParser {
                         );
                         continue;
                     }
-                    const outputMapper = getMappingForFullOperationName(nodeOut.fullOperationName);
+                    const outputMapper = this._mappings[this._interactivityGraph.nodes![nodeOutId].declaration]?.flowGraphMapping;
                     if (!outputMapper) {
                         Logger.Error(["No mapping found for output socket reference", value]);
                         throw new Error("Error parsing node connections");
                     }
-                    let valueMapping = outputMapper.outputs?.values?.[nodeOutSocketName];
+                    let valueMapping = _GetOwnMapping(outputMapper.outputs?.values, nodeOutSocketName);
                     let arrayMapping = false;
                     // check if there is an array mapping defined
                     if (!valueMapping) {
@@ -455,6 +686,12 @@ export class InteractivityGraphToFlowGraphParser {
                                 arrayMapping = true;
                                 valueMapping = outputMapper.outputs?.values?.[key];
                             }
+                        }
+                        const allowedDynamicOutputs = arrayMapping
+                            ? this._getAllowedDynamicValueSockets(nodeOut.fullOperationName, this._interactivityGraph.nodes![nodeOutId], "output")
+                            : undefined;
+                        if (this._strictValidation && (!valueMapping || (allowedDynamicOutputs && !allowedDynamicOutputs.has(nodeOutSocketName)))) {
+                            continue;
                         }
                     }
                     const socketOutName = valueMapping ? (arrayMapping ? valueMapping.name.replace("$1", nodeOutSocketName) : valueMapping?.name) : nodeOutSocketName;
@@ -467,7 +704,7 @@ export class InteractivityGraphToFlowGraphParser {
                     }
                     // connect the sockets
                     if (convertConnectedTimeToFrames) {
-                        this._connectWithSecondsToFramesConversion(context, socketOut, socketIn);
+                        this._connectWithSecondsToFramesConversion(context, socketOut, socketIn, i, gltfNode.declaration);
                     } else {
                         socketIn.connectedPointIds.push(socketOut.uniqueId);
                         socketOut.connectedPointIds.push(socketIn.uniqueId);
@@ -525,13 +762,17 @@ export class InteractivityGraphToFlowGraphParser {
      * @param context the serialized flow graph context that stores literal socket values
      * @param upstreamOutput the data output socket providing the time value (in seconds)
      * @param downstreamInput the data input socket that expects the time in frames
+     * @param nodeIndex source node receiving the converted value
+     * @param declarationIndex source declaration used by the receiving node
      */
     private _connectWithSecondsToFramesConversion(
         context: ISerializedFlowGraphContext,
         upstreamOutput: ISerializedFlowGraphConnection,
-        downstreamInput: ISerializedFlowGraphConnection
+        downstreamInput: ISerializedFlowGraphConnection,
+        nodeIndex: number,
+        declarationIndex: number
     ): void {
-        const multiplyBlock = this._getEmptyBlock(FlowGraphBlockNames.Multiply, FlowGraphBlockNames.Multiply);
+        const multiplyBlock = this._getEmptyBlock(FlowGraphBlockNames.Multiply, FlowGraphBlockNames.Multiply, nodeIndex, declarationIndex, -1);
         // Scalar (float) multiply; matches how the `math/mul` mapping configures the block.
         multiplyBlock.config = { type: FlowGraphTypes.Number };
         const inputA = this._createNewSocketConnection("a");
@@ -600,6 +841,7 @@ export class InteractivityGraphToFlowGraphParser {
         const allBlocks = this._nodes.reduce((acc, val) => acc.concat(val.blocks), [] as ISerializedFlowGraphBlock[]).concat(this._insertedBlocks);
 
         return {
+            name: this._interactivityGraph.name ?? `Graph ${this._graphIndex + 1}`,
             rightHanded: true,
             allBlocks,
             executionContexts: [context],

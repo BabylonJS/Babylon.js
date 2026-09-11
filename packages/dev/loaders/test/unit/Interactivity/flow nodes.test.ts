@@ -1862,7 +1862,7 @@ describe("Flow Nodes", () => {
                     declaration: 0,
                     configuration: {
                         message: {
-                            value: ["Hello World {a}, this is a test {b}"],
+                            value: ["Hello {{World}} {a}, this is a test {b}; again {a}"],
                         },
                     },
                     values: {
@@ -1881,6 +1881,6 @@ describe("Flow Nodes", () => {
         );
         // expect log to be called 1 time with the message
         expect(log).toHaveBeenCalledTimes(1);
-        expect(log).toHaveBeenCalledWith("Hello World 1, this is a test {X: 2 Y: 3}");
+        expect(log).toHaveBeenCalledWith("Hello {World} 1, this is a test {X: 2 Y: 3}; again 1");
     });
 });

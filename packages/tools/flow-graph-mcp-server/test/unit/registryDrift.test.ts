@@ -21,7 +21,7 @@ import { blockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 // Side-effect import: make the Flow Graph block modules (and the factory) available.
 import "core/FlowGraph/index";
 
-import { FlowGraphBlockRegistry } from "../../src/blockRegistry";
+import { FlowGraphBlockRegistry, FlowGraphImportOnlyBlockClassNames } from "../../src/blockRegistry";
 
 /**
  * Config used to construct blocks that read required fields in their constructor. Everything
@@ -37,6 +37,11 @@ const CONSTRUCTION_CONFIG: Record<string, object> = {
 const isDynamicPort = (name: string): boolean => /_\d+$/.test(name);
 
 describe("Flow Graph MCP Server – Registry Drift", () => {
+    it("intentionally omits loader-created import-only blocks", () => {
+        const creatableClassNames = Object.values(FlowGraphBlockRegistry).map((block) => block.className);
+        expect(creatableClassNames).not.toEqual(expect.arrayContaining([...FlowGraphImportOnlyBlockClassNames]));
+    });
+
     it("registry signal/data connection names match the real Babylon blocks", async () => {
         const problems: string[] = [];
 
