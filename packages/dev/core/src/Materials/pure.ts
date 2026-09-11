@@ -30,6 +30,7 @@ export * from "./drawWrapper";
 export * from "./materialPluginBase.pure";
 export * from "./materialPluginManager.pure";
 export * from "./materialPluginEvent";
+export * from "./ditheredFadeMaterialPlugin";
 export * from "./material.detailMapConfiguration";
 export * from "./material.decalMapConfiguration.pure";
 export * from "./materialPluginFactoryExport";
