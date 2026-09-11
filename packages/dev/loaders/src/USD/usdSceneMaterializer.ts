@@ -31,6 +31,7 @@ import { TransformNode } from "core/Meshes/transformNode.pure";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { type Scene } from "core/scene.pure";
 import { type IAssetContainer } from "core/IAssetContainer";
+import { Constants } from "core/Engines/constants";
 
 import {
     AnalyticPrimitiveType,
@@ -253,6 +254,13 @@ export async function materializeCommandBuffers(
     let root: TransformNode | undefined;
     let timeCodesPerSecond = 24;
     let rollingBack = false;
+    const caps = scene.getEngine().getCaps();
+    const processedTextureType =
+        caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering
+            ? Constants.TEXTURETYPE_HALF_FLOAT
+            : caps.textureFloatRender && caps.textureFloatLinearFiltering
+              ? Constants.TEXTURETYPE_FLOAT
+              : Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
     const trackAsset = <T extends { _parentContainer: IAssetContainer | null }>(assets: T[], asset: T): void => {
         assets.push(asset);
@@ -329,10 +337,25 @@ export async function materializeCommandBuffers(
         binding: TextureBinding,
         scale: readonly number[] | Float32Array,
         bias: readonly number[] | Float32Array,
-        channel = binding.channel
+        channel = binding.channel,
+        preserveRange = false
     ): Promise<BaseTexture> => {
         const source = binding.descriptor;
-        const key = `${source.id}:${channel}:${scale.join(",")}:${bias.join(",")}`;
+        const size = source.texture.getSize();
+        const supportsMipMaps = !scene.getEngine().needPOTTextures || ((size.width & (size.width - 1)) === 0 && (size.height & (size.height - 1)) === 0);
+        const outputOptions = {
+            textureType: preserveRange ? processedTextureType : Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            samplingMode: supportsMipMaps ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            generateMipMaps: supportsMipMaps,
+        };
+        if (
+            preserveRange &&
+            processedTextureType === Constants.TEXTURETYPE_UNSIGNED_BYTE &&
+            scale.slice(0, 3).some((value, index) => Math.min(bias[index], bias[index] + value) < 0)
+        ) {
+            throw new Error(`USD texture processing for '${name}' requires a floating-point render target to preserve signed values.`);
+        }
+        const key = `${source.id}:${channel}:${scale.join(",")}:${bias.join(",")}:${preserveRange}`;
         const cached = processedTextures.get(key);
         if (cached) {
             return await cached;
@@ -350,7 +373,9 @@ export async function materializeCommandBuffers(
                     CreateFactorOperand(b),
                     CreateTextureOperand(source.texture, processorChannel(channel), processorColorSpace(source)),
                     scene,
-                    TextureColorSpace.Linear
+                    TextureColorSpace.Linear,
+                    undefined,
+                    outputOptions
                 );
             } finally {
                 scene._blockEntityCollection = previousBlockEntityCollection;
@@ -407,10 +432,18 @@ export async function materializeCommandBuffers(
             if (emissive.channel !== TextureOutputChannel.RGB) {
                 throw new Error("A USD emissive texture must use the RGB output.");
             }
-            material.emissiveColor = Color3.White();
-            material.emissiveTexture = valueTransformIs(emissive.descriptor, [1, 1, 1, 1], [0, 0, 0, 0])
-                ? emissive.descriptor.texture
-                : await processTextureAsync(`${material.name} emissive`, emissive, emissive.descriptor.scale, emissive.descriptor.bias);
+            const descriptor = emissive.descriptor;
+            const zeroBias = descriptor.bias.slice(0, 3).every((value) => value === 0);
+            if (zeroBias) {
+                material.emissiveColor = new Color3(descriptor.scale[0], descriptor.scale[1], descriptor.scale[2]);
+                material.emissiveTexture = descriptor.texture;
+            } else {
+                const factors = Array.from({ length: 3 }, (_, index) => Math.max(1, Math.abs(descriptor.bias[index]), Math.abs(descriptor.bias[index] + descriptor.scale[index])));
+                const scale = descriptor.scale.map((value, index) => (index < 3 ? value / factors[index] : value));
+                const bias = descriptor.bias.map((value, index) => (index < 3 ? value / factors[index] : value));
+                material.emissiveColor = new Color3(factors[0], factors[1], factors[2]);
+                material.emissiveTexture = await processTextureAsync(`${material.name} emissive`, emissive, scale, bias, emissive.channel, true);
+            }
         }
         if (normal) {
             if (normal.channel !== TextureOutputChannel.RGB) {
@@ -484,7 +517,6 @@ export async function materializeCommandBuffers(
             material.useAmbientInGrayScale = true;
         }
         if (opacity) {
-            material.alpha = 1;
             if (
                 base &&
                 material.albedoTexture &&
@@ -858,7 +890,6 @@ export async function materializeCommandBuffers(
                             manager = new MorphTargetManager(scene, mesh.name);
                             manager.areUpdatesFrozen = true;
                             trackAsset(container.morphTargetManagers, manager);
-                            mesh.morphTargetManager = manager;
                             morphTargetManagers.set(meshId, manager);
                         }
                         const target = new MorphTarget(stringAt(dataBuffer, nameOffset, nameLength), influence, scene, manager);
@@ -1073,12 +1104,13 @@ export async function materializeCommandBuffers(
                     }
                 }
             }
-            for (const manager of morphTargetManagers.values()) {
+            for (const [meshId, manager] of morphTargetManagers) {
                 manager.areUpdatesFrozen = false;
-                if (manager.isUsingTextureForTargets || manager.numTargets <= MorphTargetManager.MaxActiveMorphTargetsInVertexAttributeMode) {
+                if (!manager.isUsingTextureForTargets && manager.numTargets <= MorphTargetManager.MaxActiveMorphTargetsInVertexAttributeMode) {
                     manager.optimizeInfluencers = false;
                     manager.numMaxInfluencers = manager.numTargets;
                 }
+                meshes.get(meshId)!.morphTargetManager = manager;
             }
         } finally {
             if (!addToScene) {

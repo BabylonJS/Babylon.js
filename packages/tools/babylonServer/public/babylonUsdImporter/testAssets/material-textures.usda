@@ -81,6 +81,28 @@ def Xform "World"
                 float outputs:r
             }
         }
+
+        def Material "HdrEmissive"
+        {
+            token outputs:surface.connect = </World/Materials/HdrEmissive/Surface.outputs:surface>
+
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:emissiveColor.connect = </World/Materials/HdrEmissive/Emissive.outputs:rgb>
+                token outputs:surface
+            }
+
+            def Shader "Emissive"
+            {
+                uniform token info:id = "UsdUVTexture"
+                asset inputs:file = @asymmetric.png@
+                token inputs:sourceColorSpace = "raw"
+                float4 inputs:scale = (4, 2, 1, 1)
+                float4 inputs:bias = (1, 0, 0, 0)
+                float3 outputs:rgb
+            }
+        }
     }
 
     def Mesh "PackedMesh" (
@@ -107,5 +129,18 @@ def Xform "World"
             interpolation = "faceVarying"
         )
         rel material:binding = </World/Materials/Separate>
+    }
+
+    def Mesh "HdrEmissiveMesh" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        int[] faceVertexCounts = [4]
+        int[] faceVertexIndices = [0, 1, 2, 3]
+        point3f[] points = [(1, 0, 0), (2, 0, 0), (2, 1, 0), (1, 1, 0)]
+        texCoord2f[] primvars:st = [(0, 0), (1, 0), (1, 1), (0, 1)] (
+            interpolation = "faceVarying"
+        )
+        rel material:binding = </World/Materials/HdrEmissive>
     }
 }

@@ -7,6 +7,7 @@ import {
     MaterialFlags,
     MISSING_OFFSET,
     PrimitiveAxis,
+    PROTOCOL_VERSION,
     TextureOutputChannel,
     USDTextureColorSpace,
 } from "loaders/USD/usdCommandProtocol";
@@ -77,7 +78,7 @@ class CommandWriter {
 
     public constructor() {
         this._writer.u32(0x42445355);
-        this._writer.u16(4);
+        this._writer.u16(PROTOCOL_VERSION);
         this._writer.u16(0);
         this._writer.u32(0);
         this._writer.u32(0);
@@ -151,7 +152,9 @@ export function createUSDMeshTestBuffers(
     separateMaterialTextures = false,
     processedMaterialTextures = false,
     withThinInstances = false,
-    withMorphTarget = false
+    withMorphTarget = false,
+    withHdrEmissive = false,
+    withSignedEmissive = false
 ): USDTestBuffers {
     const commands = new CommandWriter();
     const data = new BufferWriter();
@@ -186,7 +189,8 @@ export function createUSDMeshTestBuffers(
         const processedMetallicTransformOffset = data.floats([1, 0.6, 1, 1, 0, 0.2, 0, 0]);
         const processedRoughnessTransformOffset = data.floats([1, 1, 0.5, 1, 0, 0, 0.1, 0]);
         const processedOcclusionTransformOffset = data.floats([1, 1, 1, 0.8, 0, 0, 0, 0.1]);
-        const textureCount = separateMaterialTextures ? 5 : 3;
+        const hdrEmissiveTransformOffset = data.floats([4, 2, 1, 1, withSignedEmissive ? -1 : 0, 0, 0, 0]);
+        const textureCount = withHdrEmissive ? 6 : separateMaterialTextures ? 5 : 3;
         for (let id = 1; id <= textureCount; ++id) {
             commands.command(Command.Texture, (writer) => {
                 [
@@ -200,7 +204,7 @@ export function createUSDMeshTestBuffers(
                     transformOffset,
                     1,
                     2,
-                    id === 1 ? USDTextureColorSpace.SRGB : USDTextureColorSpace.Raw,
+                    id === 1 || id === 6 ? USDTextureColorSpace.SRGB : USDTextureColorSpace.Raw,
                     id === 2
                         ? normalValueTransformOffset
                         : separateMaterialTextures && id === 3
@@ -211,9 +215,11 @@ export function createUSDMeshTestBuffers(
                             ? processedMaterialTextures
                                 ? processedRoughnessTransformOffset
                                 : roughnessValueTransformOffset
-                            : separateMaterialTextures && id === 5 && processedMaterialTextures
-                              ? processedOcclusionTransformOffset
-                              : valueTransformOffset,
+                            : id === 6
+                              ? hdrEmissiveTransformOffset
+                              : separateMaterialTextures && id === 5 && processedMaterialTextures
+                                ? processedOcclusionTransformOffset
+                                : valueTransformOffset,
                 ].forEach((value) => writer.u32(value));
             });
         }
@@ -229,7 +235,7 @@ export function createUSDMeshTestBuffers(
             const textureIds = withTextures
                 ? separateMaterialTextures
                     ? [1, id === 2 ? 1 : MISSING_OFFSET, 2, 3, 4, 5, 1]
-                    : [1, id === 2 ? 1 : MISSING_OFFSET, 2, 3, 3, 3, 1]
+                    : [1, id === 2 ? 1 : MISSING_OFFSET, 2, 3, 3, 3, withHdrEmissive ? 6 : 1]
                 : Array<number>(7).fill(MISSING_OFFSET);
             textureIds.forEach((value) => writer.u32(value));
             const channels = withTextures
@@ -333,6 +339,14 @@ export function createUSDThinInstanceTestBuffers(): USDTestBuffers {
 
 export function createUSDMorphTargetTestBuffers(): USDTestBuffers {
     return createUSDMeshTestBuffers(false, false, false, false, true);
+}
+
+export function createUSDHdrEmissiveTestBuffers(): USDTestBuffers {
+    return createUSDMeshTestBuffers(true, false, false, false, false, true);
+}
+
+export function createUSDSignedEmissiveTestBuffers(): USDTestBuffers {
+    return createUSDMeshTestBuffers(true, false, false, false, false, true, true);
 }
 
 function addUSDTestPrimitives(commands: CommandWriter, data: BufferWriter): void {

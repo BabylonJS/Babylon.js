@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
+import { Constants } from "core/Engines/constants";
 import { Scene } from "core/scene";
 import { AssetContainer } from "core/assetContainer";
 import { Mesh } from "core/Meshes/mesh";
@@ -13,9 +14,11 @@ import { _RegisterUSDLoaderDependencies } from "loaders/USD/usdFileLoader.pure";
 import { materializeCommandBuffers } from "loaders/USD/usdSceneMaterializer";
 import {
     createUSDMeshTestBuffers,
+    createUSDHdrEmissiveTestBuffers,
     createUSDMorphTargetTestBuffers,
     createUSDProcessedMaterialTestBuffers,
     createUSDSeparateMaterialTestBuffers,
+    createUSDSignedEmissiveTestBuffers,
     createUSDThinInstanceTestBuffers,
 } from "./usdTestUtils";
 import { deferUSDTextureLoads } from "./usdTextureTestUtils";
@@ -160,6 +163,8 @@ describe("USD scene materializer protocol", () => {
         expect(morphAnimation?.animation.targetProperty).toBe("influence");
         expect(morphAnimation?.animation.dataType).toBe(Animation.ANIMATIONTYPE_FLOAT);
         expect(morphAnimation?.animation.getKeys().map((key) => key.value)).toEqual([0.25, 1]);
+        expect(mesh.isVerticesDataPresent("position0")).toBe(true);
+        expect(manager?.optimizeInfluencers).toBe(false);
         expect(scene.morphTargetManagers).toHaveLength(addToScene ? 1 : 0);
         if (!addToScene) {
             if (!(container instanceof AssetContainer)) {
@@ -199,6 +204,7 @@ describe("USD scene materializer protocol", () => {
         expect(masked.albedoTexture).toBe(texture);
         expect(masked.useAlphaFromAlbedoTexture).toBe(true);
         expect(masked.opacityTexture).toBeNull();
+        expect(masked.alpha).toBeCloseTo(0.8);
         expect(masked.alphaCutOff).toBeCloseTo(0.5);
         expect(masked.backFaceCulling).toBe(false);
         expect(masked.unlit).toBe(true);
@@ -216,6 +222,29 @@ describe("USD scene materializer protocol", () => {
         expect(texture.wrapU).toBe(Texture.WRAP_ADDRESSMODE);
         expect(texture.wrapV).toBe(Texture.MIRROR_ADDRESSMODE);
         container.dispose();
+    });
+
+    it("keeps HDR emissive scale in the material factor", async () => {
+        const loads = deferUSDTextureLoads(engine);
+        const buffers = createUSDHdrEmissiveTestBuffers();
+        const loading = materializeCommandBuffers(scene, buffers.commands, buffers.data, true);
+        loads.forEach((load) => load.succeed());
+        const { container } = await loading;
+        const material = container.materials[0];
+        if (!(material instanceof PBRMaterial)) {
+            throw new Error("Expected PBR material");
+        }
+        expect(material.emissiveTexture).toBe(container.textures[5]);
+        expect(material.emissiveColor.asArray()).toEqual([4, 2, 1]);
+        expect(textureProcessorCalls).toHaveLength(0);
+    });
+
+    it("rejects signed emissive processing without a floating-point render target", async () => {
+        const loads = deferUSDTextureLoads(engine);
+        const buffers = createUSDSignedEmissiveTestBuffers();
+        const loading = materializeCommandBuffers(scene, buffers.commands, buffers.data, true);
+        loads.forEach((load) => load.succeed());
+        await expect(loading).rejects.toThrow("requires a floating-point render target");
     });
 
     it("preserves separate metallic, roughness, and occlusion textures", async () => {
@@ -288,6 +317,21 @@ describe("USD scene materializer protocol", () => {
             { bias: expect.closeTo(0.1), end: expect.closeTo(0.9), channel: TextureChannel.A },
         ]);
         container.dispose();
+    });
+
+    it("disables mipmaps for processed NPOT textures on POT-only engines", async () => {
+        Object.defineProperty(engine, "needPOTTextures", { configurable: true, value: true });
+        vi.spyOn(Texture.prototype, "getSize").mockReturnValue({ width: 3, height: 5 });
+        const loads = deferUSDTextureLoads(engine);
+        const buffers = createUSDProcessedMaterialTestBuffers();
+        const loading = materializeCommandBuffers(scene, buffers.commands, buffers.data, true);
+        loads.forEach((load) => load.succeed());
+        await loading;
+        const outputOptions = textureProcessorCalls[0][7] as { samplingMode: number; generateMipMaps: boolean };
+        expect(outputOptions).toMatchObject({
+            samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            generateMipMaps: false,
+        });
     });
 
     it("cancels texture processing without publishing or resurrecting processed textures", async () => {
