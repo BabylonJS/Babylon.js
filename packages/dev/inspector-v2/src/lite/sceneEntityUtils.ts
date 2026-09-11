@@ -103,11 +103,14 @@ export function GetSceneNodeRoots(scene: SceneContext): readonly SceneNode[] {
     return nodes.filter((node) => !IsSceneNode(node.parent) || !nodeSet.has(node.parent));
 }
 
-export function IsSceneNodeDescendantOf(node: SceneNode, ancestor: SceneNode): boolean {
+export function IsSceneNodeDescendantOf(node: SceneNode, ancestor: object): boolean {
     let parent = node.parent;
-    while (IsSceneNode(parent)) {
+    while (typeof parent === "object" && parent !== null) {
         if (parent === ancestor) {
             return true;
+        }
+        if (!IsSceneNode(parent)) {
+            return false;
         }
         parent = parent.parent;
     }

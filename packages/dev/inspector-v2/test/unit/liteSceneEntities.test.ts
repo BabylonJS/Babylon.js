@@ -262,6 +262,36 @@ describe("Babylon Lite scene entities", () => {
         expect(camera.children).not.toContain(cameraChild);
         expect(scene.meshes).not.toContain(cameraChild);
 
+        const removedCameraChild = CreateMesh("Removed Camera Child");
+        camera.children.push(removedCameraChild);
+        removedCameraChild.parent = camera;
+        scene.meshes.push(removedCameraChild);
+        selectionService.selectedEntity = removedCameraChild;
+        const cameraRemoveProvider = commandProviders.find((provider) => provider.predicate(camera));
+        const cameraRemoveCommand = cameraRemoveProvider?.getCommand(camera);
+        if (cameraRemoveCommand?.type !== "action") {
+            throw new Error("Expected a camera remove command.");
+        }
+        cameraRemoveCommand.execute();
+        expect(scene.camera).toBeNull();
+        expect(scene.meshes).not.toContain(removedCameraChild);
+        expect(selectionService.selectedEntity).toBeNull();
+
+        const removedLightChild = CreateMesh("Removed Light Child");
+        light.children.push(removedLightChild);
+        removedLightChild.parent = light;
+        scene.meshes.push(removedLightChild);
+        selectionService.selectedEntity = removedLightChild;
+        const lightRemoveProvider = commandProviders.find((provider) => provider.predicate(light));
+        const lightRemoveCommand = lightRemoveProvider?.getCommand(light);
+        if (lightRemoveCommand?.type !== "action") {
+            throw new Error("Expected a light remove command.");
+        }
+        lightRemoveCommand.execute();
+        expect(scene.lights).not.toContain(light);
+        expect(scene.meshes).not.toContain(removedLightChild);
+        expect(selectionService.selectedEntity).toBeNull();
+
         const secondScene = { ...scene, meshes: [root], camera: null, lights: [], shadowGenerators: [] } as SceneContext;
         engine._renderingContexts.push(secondScene);
         expect(nodeRemoveProvider?.predicate(root)).toBe(false);

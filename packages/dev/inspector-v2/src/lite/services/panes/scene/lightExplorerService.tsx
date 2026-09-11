@@ -6,10 +6,11 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 
 import { EngineExplorerServiceIdentity, type IEngineExplorerService } from "../../../engineExplorerService";
 import { EngineContextIdentity, type IEngineContext } from "../../../engineContext";
-import { GetLightDisplayName, GetSceneContexts, IsLight } from "../../../sceneEntityUtils";
+import { GetLightDisplayName, GetSceneContexts, IsLight, IsSceneNode, IsSceneNodeDescendantOf } from "../../../sceneEntityUtils";
 import { ExplorerServiceIdentity, type IExplorerService } from "../../../../services/panes/explorer/explorerService";
 import { SelectionServiceIdentity, type ISelectionService } from "../../../../services/selectionService";
 import { CreateSceneExplorerSectionNode, IsSceneContext } from "./sceneExplorerSection";
+import { ClearRemovedSelection } from "./sceneSelectionUtils";
 
 const LightIcon = () => <LightbulbRegular color={tokens.colorPaletteYellowForeground2} />;
 
@@ -37,10 +38,11 @@ export const LightExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplo
                 execute: () => {
                     const owningScenes = GetSceneContexts(engineContext.engine).filter((candidate) => candidate.lights.includes(light));
                     if (owningScenes.length === 1) {
-                        if (selectionService.selectedEntity === light || selectionService.selectedEntity === light.shadowGenerator) {
-                            selectionService.selectedEntity = null;
-                        }
+                        const selectedEntity = selectionService.selectedEntity;
+                        const selectionWasRemoved =
+                            selectedEntity === light || selectedEntity === light.shadowGenerator || (IsSceneNode(selectedEntity) && IsSceneNodeDescendantOf(selectedEntity, light));
                         removeFromScene(owningScenes[0], light);
+                        ClearRemovedSelection(selectionService, engineContext, selectionWasRemoved);
                     }
                 },
             }),

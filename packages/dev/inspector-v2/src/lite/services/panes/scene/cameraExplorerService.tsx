@@ -7,11 +7,12 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 import { EngineExplorerServiceIdentity, type IEngineExplorerService } from "../../../engineExplorerService";
 import { EngineContextIdentity, type IEngineContext } from "../../../engineContext";
 import { CreateWatchedNameDisplayInfo } from "../../../explorerDisplayInfo";
-import { GetSceneContexts, IsCamera } from "../../../sceneEntityUtils";
+import { GetSceneContexts, IsCamera, IsSceneNode, IsSceneNodeDescendantOf } from "../../../sceneEntityUtils";
 import { ExplorerServiceIdentity, type IExplorerService } from "../../../../services/panes/explorer/explorerService";
 import { SelectionServiceIdentity, type ISelectionService } from "../../../../services/selectionService";
 import { WatcherServiceIdentity, type IWatcherService } from "../../../../services/watcherService";
 import { CreateSceneExplorerSectionNode, IsSceneContext } from "./sceneExplorerSection";
+import { ClearRemovedSelection } from "./sceneSelectionUtils";
 
 const CameraIcon = () => <CameraRegular color={tokens.colorPaletteGreenForeground2} />;
 
@@ -47,10 +48,10 @@ export const CameraExplorerServiceDefinition: ServiceDefinition<[], [IEngineExpl
                 execute: () => {
                     const owningScenes = GetSceneContexts(engineContext.engine).filter((candidate) => candidate.camera === camera);
                     if (owningScenes.length === 1) {
-                        if (selectionService.selectedEntity === camera) {
-                            selectionService.selectedEntity = null;
-                        }
+                        const selectedEntity = selectionService.selectedEntity;
+                        const selectionWasRemoved = selectedEntity === camera || (IsSceneNode(selectedEntity) && IsSceneNodeDescendantOf(selectedEntity, camera));
                         removeFromScene(owningScenes[0], camera);
+                        ClearRemovedSelection(selectionService, engineContext, selectionWasRemoved);
                     }
                 },
             }),

@@ -14,6 +14,7 @@ import { ExplorerServiceIdentity, type IExplorerService } from "../../../../serv
 import { type ISelectionService, SelectionServiceIdentity } from "../../../../services/selectionService";
 import { type IWatcherService, WatcherServiceIdentity } from "../../../../services/watcherService";
 import { IsSceneContext } from "./sceneExplorerSection";
+import { ClearRemovedSelection } from "./sceneSelectionUtils";
 
 type NodeTopologyMarker = {
     parent: object | null;
@@ -43,18 +44,6 @@ function CreateNodeDescription(node: SceneNode, watcherService: IWatcherService)
         getDisplayInfo: () => CreateWatchedNameDisplayInfo(watcherService, node, () => node.name || (IsMesh(node) ? "Unnamed Mesh" : "Unnamed Transform Node")),
         getChildren: () => node.children.filter(IsSceneNode).map((child) => CreateNodeDescription(child, watcherService)),
     };
-}
-
-function ClearRemovedSelection(selectionService: ISelectionService, engineContext: IEngineContext, selectionWasRemoved: boolean): void {
-    const selectedEntity = selectionService.selectedEntity;
-    if (
-        selectionWasRemoved &&
-        !GetSceneContexts(engineContext.engine).some((scene) =>
-            GetSceneNodeRoots(scene).some((root) => root === selectedEntity || (IsSceneNode(selectedEntity) && IsSceneNodeDescendantOf(selectedEntity, root)))
-        )
-    ) {
-        selectionService.selectedEntity = null;
-    }
 }
 
 function IsNodeInScene(scene: SceneContext, node: SceneNode): boolean {
