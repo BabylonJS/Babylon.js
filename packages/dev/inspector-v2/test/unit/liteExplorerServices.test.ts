@@ -17,6 +17,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
+import { Observable } from "core/Misc/observable";
+
 vi.hoisted(() => {
     vi.stubGlobal("window", globalThis);
     vi.stubGlobal(
@@ -413,18 +415,27 @@ describe("Babylon Lite engine explorer service", () => {
             getNodes: () => rendererEntities.map((rendererEntity) => ({ id: "renderer-entity", entity: rendererEntity, getDisplayInfo: () => ({ name: "Renderer entity" }) })),
             getSnapshot: () => rendererEntities,
         });
+        const genericEntities = [entity];
+        const genericChanged = new Observable<void>();
         const genericRegistration = service.addNodeProvider({
             predicate: (parent): parent is EngineContext => parent === engine,
-            getNodes: () => [{ id: "generic-entity", entity, getDisplayInfo: () => ({ name: "Generic entity" }) }],
+            getNodes: () => genericEntities.map((genericEntity) => ({ id: "generic-entity", entity: genericEntity, getDisplayInfo: () => ({ name: "Generic entity" }) })),
+            onChanged: genericChanged,
         });
 
         rendererEntities.splice(0, 1);
         notifyTopologyChanged?.();
         expect(selectionService.selectedEntity).toBe(entity);
 
-        genericRegistration.dispose();
+        genericEntities.splice(0, 1);
+        genericChanged.notifyObservers();
         expect(selectionService.selectedEntity).toBeNull();
+
         service.dispose?.();
+        selectionService.selectedEntity = entity;
+        genericChanged.notifyObservers();
+        expect(selectionService.selectedEntity).toBe(entity);
+        genericRegistration.dispose();
     });
 });
 

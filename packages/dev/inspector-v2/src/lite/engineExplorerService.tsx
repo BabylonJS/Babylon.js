@@ -386,8 +386,17 @@ export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorer
             previousExplorerEntities = explorerEntities;
             onNodesChanged.notifyObservers();
         };
+        let explorerNodeProviderObservers: ReturnType<NonNullable<ExplorerNodeProvider<object>["onChanged"]>["add"]>[] = [];
+        const updateExplorerNodeProviderObservers = () => {
+            explorerNodeProviderObservers.forEach((observer) => observer.remove());
+            explorerNodeProviderObservers = explorerService.nodeProviders.items.flatMap((provider) => {
+                const observer = provider.onChanged?.add(handleExplorerTopologyChanged);
+                return observer ? [observer] : [];
+            });
+            handleExplorerTopologyChanged();
+        };
         const topologyWatcher = watcherService.watchValue(getTopologySnapshot, handleExplorerTopologyChanged, AreTopologySnapshotsEqual);
-        const explorerNodeProvidersObserver = explorerService.nodeProviders.observable.add(handleExplorerTopologyChanged);
+        const explorerNodeProvidersObserver = explorerService.nodeProviders.observable.add(updateExplorerNodeProviderObservers);
         const presentationProvidersObserver = presentationProviders.observable.add(() => onNodesChanged.notifyObservers());
 
         // Lite keeps its rendering-context vocabulary while adapting hierarchy and commands onto the generic
@@ -421,6 +430,7 @@ export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorer
             addGroupCommand: explorerService.addGroupCommand,
             dispose: () => {
                 explorerNodeProvidersObserver.remove();
+                explorerNodeProviderObservers.forEach((observer) => observer.remove());
                 presentationProvidersObserver.remove();
                 topologyWatcher.dispose();
                 paneRegistration.dispose();
