@@ -53,7 +53,7 @@ describe("glTF interactivity Object Model", () => {
             variables,
         };
 
-        const pathConverter = GetPathToObjectConverter(mockGltf);
+        const pathConverter = GetPathToObjectConverter(mockGltf, (mapping) => _AddInteractivityObjectModel(scene, 60, mapping));
         const i2fg = new InteractivityGraphToFlowGraphParser(ig, mockGltf);
         const json = i2fg.serializeToFlowGraph();
         const coordinator = new FlowGraphCoordinator({ scene });
@@ -75,7 +75,6 @@ describe("glTF interactivity Object Model", () => {
         new ArcRotateCamera("", Math.PI / 2, Math.PI / 2, 4, new Vector3(0, 0, 0));
         log.mockClear();
         errorLog.mockClear();
-        _AddInteractivityObjectModel(scene);
         renderInterval = setInterval(() => scene?.render(), 16);
     });
 
@@ -153,13 +152,16 @@ describe("glTF interactivity Object Model", () => {
         // reject the path. Without the `/animations/<i>/extensions/` exception, `pointer/get` on
         // maxTime throws and aborts any graph that reads it — e.g. WhackAMole's `animation/start`
         // reads maxTime for its end time, so the whole onStart pop-up chain never runs.
-        const converter = GetPathToObjectConverter({
-            animations: [
-                {
-                    _babylonAnimationGroup: { from: 0, to: 120, isPlaying: true },
-                },
-            ],
-        } as any);
+        const converter = GetPathToObjectConverter(
+            {
+                animations: [
+                    {
+                        _babylonAnimationGroup: { from: 0, to: 120, isPlaying: true },
+                    },
+                ],
+            } as any,
+            (mapping) => _AddInteractivityObjectModel(scene, 60, mapping)
+        );
 
         let maxTime!: ReturnType<typeof converter.convert>;
         expect(() => {
@@ -175,19 +177,21 @@ describe("glTF interactivity Object Model", () => {
     });
 
     it("uses the loader target FPS for all KHR_interactivity animation time properties", () => {
-        _AddInteractivityObjectModel(scene, 30);
-        const converter = GetPathToObjectConverter({
-            animations: [
-                {
-                    _babylonAnimationGroup: {
-                        from: 30,
-                        to: 120,
-                        getRetainedCurrentFrame: () => 90,
-                        getVirtualCurrentFrame: () => 150,
+        const converter = GetPathToObjectConverter(
+            {
+                animations: [
+                    {
+                        _babylonAnimationGroup: {
+                            from: 30,
+                            to: 120,
+                            getRetainedCurrentFrame: () => 90,
+                            getVirtualCurrentFrame: () => 150,
+                        },
                     },
-                },
-            ],
-        } as any);
+                ],
+            } as any,
+            (mapping) => _AddInteractivityObjectModel(scene, 30, mapping)
+        );
 
         expect(
             converter.convert("/animations/0/extensions/KHR_interactivity/minTime").info.get(converter.convert("/animations/0/extensions/KHR_interactivity/minTime").object)
@@ -206,18 +210,20 @@ describe("glTF interactivity Object Model", () => {
     });
 
     it("prefers the animation timeline FPS over the loader fallback", () => {
-        _AddInteractivityObjectModel(scene, 30);
-        const converter = GetPathToObjectConverter({
-            animations: [
-                {
-                    _babylonAnimationGroup: {
-                        from: 24,
-                        to: 72,
-                        targetedAnimations: [{ animation: { framePerSecond: 24 } }],
+        const converter = GetPathToObjectConverter(
+            {
+                animations: [
+                    {
+                        _babylonAnimationGroup: {
+                            from: 24,
+                            to: 72,
+                            targetedAnimations: [{ animation: { framePerSecond: 24 } }],
+                        },
                     },
-                },
-            ],
-        } as any);
+                ],
+            } as any,
+            (mapping) => _AddInteractivityObjectModel(scene, 30, mapping)
+        );
         const minTime = converter.convert("/animations/0/extensions/KHR_interactivity/minTime");
         const maxTime = converter.convert("/animations/0/extensions/KHR_interactivity/maxTime");
 
@@ -704,6 +710,26 @@ describe("glTF interactivity Object Model", () => {
         expect(lastCallValue.y).toBeCloseTo(1);
         expect(lastCallValue.z).toBeCloseTo(0);
         expect(lastCallValue.w).toBeCloseTo(0);
+    });
+
+    it("keeps active camera accessors scoped to the converter's scene", () => {
+        const otherScene = new Scene(engine);
+        const firstCamera = scene.activeCamera!;
+        firstCamera.position.set(1, 2, 3);
+        const secondCamera = new ArcRotateCamera("second", 0, Math.PI / 2, 8, Vector3.Zero(), otherScene);
+        otherScene.activeCamera = secondCamera;
+
+        const gltf = { extensions: { KHR_interactivity: {} } };
+        const firstConverter = GetPathToObjectConverter(gltf, (mapping) => _AddInteractivityObjectModel(scene, 60, mapping));
+        const secondConverter = GetPathToObjectConverter(gltf, (mapping) => _AddInteractivityObjectModel(otherScene, 60, mapping));
+        const pointer = "/extensions/KHR_interactivity/activeCamera/position";
+
+        const firstPosition = firstConverter.convert(pointer).info.get(undefined);
+        const secondPosition = secondConverter.convert(pointer).info.get(undefined);
+
+        expect(firstPosition).not.toEqual(secondPosition);
+        expect(firstConverter.convert(pointer).info.get(undefined)).toEqual(firstPosition);
+        otherScene.dispose();
     });
 
     // Helper: run a single pointer/get on a scalar (float) activeCamera pointer and return the logged value.

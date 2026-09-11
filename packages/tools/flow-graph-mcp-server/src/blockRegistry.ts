@@ -56,6 +56,17 @@ export interface IFlowGraphBlockTypeInfo {
 
 // ─── Block Registry ───────────────────────────────────────────────────────
 
+/**
+ * Loader-created KHR_interactivity helper blocks intentionally omitted from the creatable MCP catalog.
+ * They require source-asset metadata and have no meaningful standalone construction contract.
+ */
+export const FlowGraphImportOnlyBlockClassNames = [
+    "FlowGraphEventReferenceBlock",
+    "FlowGraphGLTFDataProvider",
+    "FlowGraphObjectReferenceBlock",
+    "FlowGraphUnsupportedInteractivityBlock",
+] as const;
+
 export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
     // ═══════════════════════════════════════════════════════════════════
     //  EVENT BLOCKS

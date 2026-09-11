@@ -38,6 +38,40 @@ describe("KHR_interactivity canonical import model", () => {
         expect(document.graphs[1].source.extensions).toEqual({ EXT_vendor_graph: { value: 42 } });
     });
 
+    it("isolates null graph siblings as canonical invalid graphs", () => {
+        const document = CreateKHRInteractivityDocument({
+            graphs: [null, { name: "Valid sibling" }],
+        } as any);
+
+        expect(document.graphs).toHaveLength(2);
+        expect(document.graphs[0].valid).toBe(false);
+        expect(document.graphs[0].source).toEqual({});
+        expect(document.graphs[0].diagnostics).toContainEqual(expect.objectContaining({ path: "/extensions/KHR_interactivity/graphs/0", severity: "error" }));
+        expect(document.graphs[1]).toMatchObject({ name: "Valid sibling", valid: true });
+        expect(document.source.graphs).toEqual([{}, { name: "Valid sibling" }]);
+    });
+
+    it("reports null graph collection entries at their graph-local paths", () => {
+        const model = CreateKHRInteractivityGraphModel({
+            types: [null],
+            variables: [null],
+            events: [null],
+            declarations: [null],
+            nodes: [null],
+        } as any);
+
+        expect(model.valid).toBe(false);
+        expect(model.diagnostics.map((diagnostic) => diagnostic.path)).toEqual(
+            expect.arrayContaining([
+                "/extensions/KHR_interactivity/graphs/0/types/0",
+                "/extensions/KHR_interactivity/graphs/0/variables/0",
+                "/extensions/KHR_interactivity/graphs/0/events/0",
+                "/extensions/KHR_interactivity/graphs/0/declarations/0",
+                "/extensions/KHR_interactivity/graphs/0/nodes/0",
+            ])
+        );
+    });
+
     it("rejects duplicate built-in types but permits repeated custom types", () => {
         const duplicateBuiltIn = CreateKHRInteractivityGraphModel({
             types: [{ signature: "float" }, { signature: "float" }],
@@ -76,6 +110,112 @@ describe("KHR_interactivity canonical import model", () => {
         expect(() => new InteractivityGraphToFlowGraphParser({ declarations: [{ op: "core/doesNotExist" }] }, {} as any)).toThrow(
             'Unknown core KHR_interactivity operation "core/doesNotExist".'
         );
+    });
+
+    it("preserves multi-component custom literals for unsupported extension no-ops", () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "custom", extensions: { EXT_vendor_types: { name: "triple" } } }],
+            declarations: [
+                {
+                    op: "vendor/noOp",
+                    extension: "EXT_vendor_interactivity",
+                    inputValueSockets: { payload: { type: 0 } },
+                },
+            ],
+            nodes: [{ declaration: 0, values: { payload: { type: 0, value: [1, 2, 3] } } }],
+        };
+        const model = CreateKHRInteractivityGraphModel(graph);
+        const serialized = new InteractivityGraphToFlowGraphParser(model.effectiveSource, {}, 60, 0, undefined, model.declarations).serializeToFlowGraph();
+        const unsupported = serialized.allBlocks.find((block) => block.className === "KHR_interactivity/FlowGraphUnsupportedInteractivityBlock")!;
+        const payload = unsupported.dataInputs.find((socket) => socket.name === "payload")!;
+
+        expect(model.valid).toBe(true);
+        expect(serialized.executionContexts[0]._connectionValues[payload.uniqueId].value).toEqual([1, 2, 3]);
+    });
+
+    it("uses the ratified debug log defaults and exact template parameter sockets", () => {
+        const valid = CreateKHRInteractivityGraphModel({
+            types: [{ signature: "float" }],
+            declarations: [{ op: "debug/log" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: {
+                        severity: { value: [2] },
+                        message: { value: ["value={value}; literal={{notASocket}}; again={value}"] },
+                    },
+                    values: { value: { type: 0, value: [3] } },
+                },
+            ],
+        });
+        const serialized = new InteractivityGraphToFlowGraphParser(valid.effectiveSource, {}, 60, 0, undefined, valid.declarations).serializeToFlowGraph();
+        const logBlock = serialized.allBlocks.find((block) => block.className === "FlowGraphConsoleLogBlock")!;
+        const defaults = CreateKHRInteractivityGraphModel({
+            declarations: [{ op: "debug/log" }],
+            nodes: [{ declaration: 0 }],
+        });
+
+        expect(valid.valid).toBe(true);
+        expect(logBlock.dataInputs.map((socket) => socket.name)).toEqual(["value"]);
+        expect(logBlock.config.messageTemplate.value).toBe("value={value}; literal={{notASocket}}; again={value}");
+        expect(defaults.effectiveSource.nodes![0].configuration).toEqual({
+            severity: { value: [0] },
+            message: { value: [""] },
+        });
+    });
+
+    it("defaults malformed debug templates and rejects missing generated inputs", () => {
+        const malformed = CreateKHRInteractivityGraphModel({
+            declarations: [{ op: "debug/log" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: {
+                        severity: { value: [1] },
+                        message: { value: ["bad {template"] },
+                    },
+                },
+            ],
+        });
+        const missingParameter = CreateKHRInteractivityGraphModel({
+            declarations: [{ op: "debug/log" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: {
+                        severity: { value: [0] },
+                        message: { value: ["missing {parameter}"] },
+                    },
+                },
+            ],
+        });
+
+        expect(malformed.valid).toBe(true);
+        expect(malformed.diagnostics).toContainEqual(expect.objectContaining({ severity: "warning", path: expect.stringContaining("/configuration/message/value/0") }));
+        expect(malformed.effectiveSource.nodes![0].configuration).toEqual({
+            severity: { value: [0] },
+            message: { value: [""] },
+        });
+        expect(missingParameter.valid).toBe(false);
+        expect(missingParameter.diagnostics).toContainEqual(expect.objectContaining({ path: expect.stringContaining("/values/parameter"), severity: "error" }));
+    });
+
+    it("rejects undeclared dynamic receive-event output sockets", () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }],
+            events: [{ values: { payload: { type: 0 } } }],
+            declarations: [{ op: "event/receive" }, { op: "math/abs" }],
+            nodes: [
+                { declaration: 0, configuration: { event: { value: [0] } } },
+                { declaration: 1, values: { a: { node: 0, socket: "missing", type: 0 } } },
+            ],
+        };
+        const invalid = CreateKHRInteractivityGraphModel(graph);
+        graph.nodes![1].values!.a = { node: 0, socket: "payload", type: 0 };
+        const valid = CreateKHRInteractivityGraphModel(graph);
+
+        expect(invalid.diagnostics).toContainEqual(expect.objectContaining({ path: expect.stringContaining("/values/a/socket"), message: expect.stringContaining('"missing"') }));
+        expect(valid.valid).toBe(true);
     });
 
     it("reports invalid type, declaration, node, and socket references with source paths", () => {
@@ -544,6 +684,8 @@ describe("KHR_interactivity canonical import model", () => {
 
         expect(block.signalOutputs.map((socket) => socket.name)).toEqual(expect.arrayContaining(["out_1", "default"]));
         expect(block.signalOutputs.some((socket) => socket.name === "out_9")).toBe(false);
+        expect(model.valid).toBe(false);
+        expect(model.diagnostics).toContainEqual(expect.objectContaining({ path: expect.stringContaining("/flows/9"), severity: "error" }));
 
         const invalidGraph = CloneKHRInteractivityGraph(graph);
         invalidGraph.nodes![0].configuration!.cases!.value = [2147483648];

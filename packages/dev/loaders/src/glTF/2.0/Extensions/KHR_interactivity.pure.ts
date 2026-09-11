@@ -53,6 +53,8 @@ export interface IKHRInteractivityGraphImportResult {
  * Completed KHR_interactivity import result associated with a loaded scene.
  */
 export interface IKHRInteractivityImportResult {
+    /** Stable zero-based identity of this interactivity asset among assets appended to the scene. */
+    assetIndex: number;
     /** Canonical, lossless source document. */
     document: IKHRInteractivityDocument;
     /** Graph import results in source order. */
@@ -65,7 +67,7 @@ export interface IKHRInteractivityImportResult {
     hostResolver: InteractivityHostResolver;
 }
 
-const _ImportResults = /*#__PURE__*/ new WeakMap<Scene, IKHRInteractivityImportResult>();
+const _ImportResults = /*#__PURE__*/ new WeakMap<Scene, IKHRInteractivityImportResult[]>();
 
 /**
  * Gets the completed KHR_interactivity import result for a loaded scene.
@@ -73,7 +75,18 @@ const _ImportResults = /*#__PURE__*/ new WeakMap<Scene, IKHRInteractivityImportR
  * @returns the import result, or undefined when the scene has no KHR_interactivity data
  */
 export function GetKHRInteractivityImportResult(scene: Scene): IKHRInteractivityImportResult | undefined {
-    return _ImportResults.get(scene);
+    const results = _ImportResults.get(scene);
+    return results?.[results.length - 1];
+}
+
+/**
+ * Gets every completed KHR_interactivity import result appended to a loaded scene.
+ * Results remain in asset load order and each result has a stable {@link IKHRInteractivityImportResult.assetIndex}.
+ * @param scene scene containing the loaded glTF assets
+ * @returns the scene's import results, or an empty array when it has no KHR_interactivity data
+ */
+export function GetKHRInteractivityImportResults(scene: Scene): readonly IKHRInteractivityImportResult[] {
+    return _ImportResults.get(scene) ?? [];
 }
 
 /**
@@ -100,52 +113,30 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     constructor(private _loader: GLTFLoader) {
         this.enabled = this._loader.isExtensionUsed(NAME);
-        this._gltfPathConverter = GetPathToObjectConverter(this._loader.gltf);
-        const scene = _loader.babylonScene;
-        if (this._gltfPathConverter) {
-            // Build a composite that handles both:
-            //   - The Babylon-scene namespace (`/extensions/BABYLON_scene_objects/...`),
-            //     used by ref values that point at scene objects not described by the
-            //     source glTF (e.g. refs emitted by engine-side event blocks).
-            //   - The standard glTF object model (everything else), via the existing
-            //     glTF converter as a fallback.
-            const initialPrefixes: IPathConverterPrefixEntry<IObjectAccessor>[] = [];
-            if (scene) {
-                initialPrefixes.push({
-                    prefix: BABYLON_SCENE_OBJECT_MODEL_PREFIX,
-                    converter: new BabylonScenePathToObjectConverter(scene, CreateDefaultBabylonSceneObjectModelTree()),
-                });
-            }
-            // KHR_interactivity ref-validity pointers (`/extensions/KHR_interactivity/events/{}`
-            // and `/extensions/KHR_interactivity/delays/{}`) are virtual: they validate an opaque
-            // event/delay reference rather than addressing a glTF object, so route them to a
-            // dedicated converter instead of the glTF fallback.
-            const refConverter = new InteractivityRefPathToObjectConverter();
-            initialPrefixes.push({ prefix: EventReferencePrefix, converter: refConverter });
-            initialPrefixes.push({ prefix: DelayReferencePrefix, converter: refConverter });
-            // Asset capabilities and runtime limits (`/extensions/KHR_interactivity/asset/...` and
-            // `/extensions/KHR_interactivity/limits/...`) are virtual too: they describe the asset and the
-            // implementation running it rather than addressing a glTF object. The set of enabled extensions is
-            // resolved eagerly because the loader is released once loading completes, while the behavior graph
-            // keeps querying these pointers at runtime.
-            const enabledExtensions = new Set(
-                (this._loader.gltf.extensionsUsed ?? []).filter((name) => registeredGLTFExtensions.has(name) && this._loader.parent.extensionOptions[name]?.enabled !== false)
-            );
-            const assetConverter = new InteractivityAssetPathToObjectConverter(this._loader.gltf, (extensionName) => enabledExtensions.has(extensionName));
-            initialPrefixes.push({ prefix: InteractivityAssetCapabilitiesPrefix, converter: assetConverter });
-            initialPrefixes.push({ prefix: InteractivityLimitsPrefix, converter: assetConverter });
-            this._pathConverter = new CompositePathToObjectConverter<IObjectAccessor>(
-                initialPrefixes,
-                this._gltfPathConverter as unknown as IPathToObjectConverter<IObjectAccessor>
-            );
-        }
         // avoid starting animations automatically.
         _loader._skipStartAnimationStep = true;
+    }
 
-        // Update object model with new pointers
-        if (scene) {
-            _AddInteractivityObjectModel(scene, this._loader.parent.targetFps);
-        }
+    private _initializePathConverter(scene: Scene): CompositePathToObjectConverter<IObjectAccessor> {
+        this._gltfPathConverter = GetPathToObjectConverter(this._loader.gltf, (mapping) => _AddInteractivityObjectModel(scene, this._loader.parent.targetFps, mapping));
+        const initialPrefixes: IPathConverterPrefixEntry<IObjectAccessor>[] = [
+            {
+                prefix: BABYLON_SCENE_OBJECT_MODEL_PREFIX,
+                converter: new BabylonScenePathToObjectConverter(scene, CreateDefaultBabylonSceneObjectModelTree()),
+            },
+        ];
+        const refConverter = new InteractivityRefPathToObjectConverter();
+        initialPrefixes.push({ prefix: EventReferencePrefix, converter: refConverter });
+        initialPrefixes.push({ prefix: DelayReferencePrefix, converter: refConverter });
+        const enabledExtensions = new Set(
+            (this._loader.gltf.extensionsUsed ?? []).filter((name) => registeredGLTFExtensions.has(name) && this._loader.parent.extensionOptions[name]?.enabled !== false)
+        );
+        const assetConverter = new InteractivityAssetPathToObjectConverter(this._loader.gltf, (extensionName) => enabledExtensions.has(extensionName));
+        initialPrefixes.push({ prefix: InteractivityAssetCapabilitiesPrefix, converter: assetConverter });
+        initialPrefixes.push({ prefix: InteractivityLimitsPrefix, converter: assetConverter });
+        const pathConverter = new CompositePathToObjectConverter<IObjectAccessor>(initialPrefixes, this._gltfPathConverter as unknown as IPathToObjectConverter<IObjectAccessor>);
+        this._pathConverter = pathConverter;
+        return pathConverter;
     }
 
     public dispose() {
@@ -155,10 +146,11 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
     }
 
     public async onReady(): Promise<void> {
-        if (!this._loader.babylonScene || !this._pathConverter) {
+        if (!this._loader.babylonScene) {
             return;
         }
         const scene = this._loader.babylonScene;
+        const pathConverter = this._initializePathConverter(scene);
         const interactivityDefinition = this._loader.gltf.extensions?.KHR_interactivity as IKHRInteractivity;
         if (!interactivityDefinition) {
             // This can technically throw, but it's not a critical error
@@ -173,14 +165,17 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         const autoStart = options?.autoStart ?? true;
         const parseOnly = options?.parseOnly ?? false;
         const strictValidation = options?.strictValidation ?? true;
+        const importResults = _ImportResults.get(scene) ?? [];
         const result: IKHRInteractivityImportResult = {
+            assetIndex: importResults.length,
             document,
             graphs: [],
-            pathConverter: this._pathConverter,
+            pathConverter,
             glTF: this._loader.gltf,
             hostResolver: new InteractivityHostResolver(),
         };
-        _ImportResults.set(scene, result);
+        importResults.push(result);
+        _ImportResults.set(scene, importResults);
 
         await Promise.all(
             document.graphs.map(async (graphModel) => {
@@ -210,7 +205,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                     const coordinator = new FlowGraphCoordinator({ scene, hostResolver: result.hostResolver });
                     coordinator.dispatchEventsSynchronously = false;
                     graphResult.coordinator = coordinator;
-                    graphResult.flowGraph = await ParseFlowGraphAsync(serializedFlowGraph, { coordinator, pathConverter: this._pathConverter });
+                    graphResult.flowGraph = await ParseFlowGraphAsync(serializedFlowGraph, { coordinator, pathConverter });
                     if (autoStart && graphModel.index === document.defaultGraphIndex) {
                         coordinator.start();
                     }
@@ -236,40 +231,48 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
  * @internal
  * populates the object model with the interactivity extension
  */
-export function _AddInteractivityObjectModel(scene: Scene, targetFps: number = 60) {
+export function _AddInteractivityObjectModel(scene: Scene, targetFps: number, mapping: object) {
     // Note - all of those are read-only, as per the specs!
 
     // active camera rotation
-    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/rotation", {
-        get: () => {
-            if (!scene.activeCamera) {
-                return new Quaternion(NaN, NaN, NaN, NaN);
-            }
-            const quat = Quaternion.FromRotationMatrix(scene.activeCamera.getWorldMatrix()).normalize();
-            if (!scene.useRightHandedSystem) {
-                quat.w *= -1; // glTF uses right-handed system, while babylon uses left-handed
-                quat.x *= -1; // glTF uses right-handed system, while babylon uses left-handed
-            }
-            return quat;
+    AddObjectAccessorToKey(
+        "/extensions/KHR_interactivity/?/activeCamera/rotation",
+        {
+            get: () => {
+                if (!scene.activeCamera) {
+                    return new Quaternion(NaN, NaN, NaN, NaN);
+                }
+                const quat = Quaternion.FromRotationMatrix(scene.activeCamera.getWorldMatrix()).normalize();
+                if (!scene.useRightHandedSystem) {
+                    quat.w *= -1; // glTF uses right-handed system, while babylon uses left-handed
+                    quat.x *= -1; // glTF uses right-handed system, while babylon uses left-handed
+                }
+                return quat;
+            },
+            type: "Quaternion",
+            getTarget: () => scene.activeCamera,
         },
-        type: "Quaternion",
-        getTarget: () => scene.activeCamera,
-    });
+        mapping
+    );
     // activeCamera position
-    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/position", {
-        get: () => {
-            if (!scene.activeCamera) {
-                return new Vector3(NaN, NaN, NaN);
-            }
-            const pos = scene.activeCamera.getWorldMatrix().getTranslation(); // not global position
-            if (!scene.useRightHandedSystem) {
-                pos.x *= -1; // glTF uses right-handed system, while babylon uses left-handed
-            }
-            return pos;
+    AddObjectAccessorToKey(
+        "/extensions/KHR_interactivity/?/activeCamera/position",
+        {
+            get: () => {
+                if (!scene.activeCamera) {
+                    return new Vector3(NaN, NaN, NaN);
+                }
+                const pos = scene.activeCamera.getWorldMatrix().getTranslation(); // not global position
+                if (!scene.useRightHandedSystem) {
+                    pos.x *= -1; // glTF uses right-handed system, while babylon uses left-handed
+                }
+                return pos;
+            },
+            type: "Vector3",
+            getTarget: () => scene.activeCamera,
         },
-        type: "Vector3",
-        getTarget: () => scene.activeCamera,
-    });
+        mapping
+    );
 
     // activeCamera projection properties. Per the spec these read-only values are NaN when there is no
     // active camera, or when the active camera does not use the projection type of the requested pointer
@@ -290,120 +293,172 @@ export function _AddInteractivityObjectModel(scene: Scene, targetFps: number = 6
     };
 
     // perspective/aspectRatio (width over height)
-    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/perspective/aspectRatio", {
-        get: () => getActivePerspectiveValue((camera) => camera.getEngine().getAspectRatio(camera)),
-        type: "number",
-        getTarget: () => scene.activeCamera,
-    });
+    AddObjectAccessorToKey(
+        "/extensions/KHR_interactivity/?/activeCamera/perspective/aspectRatio",
+        {
+            get: () => getActivePerspectiveValue((camera) => camera.getEngine().getAspectRatio(camera)),
+            type: "number",
+            getTarget: () => scene.activeCamera,
+        },
+        mapping
+    );
     // perspective/yfov (vertical field of view, in radians)
-    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/perspective/yfov", {
-        get: () =>
-            getActivePerspectiveValue((camera) => {
-                // Babylon stores the vertical fov when fovMode is vertical-fixed (the default and what the glTF
-                // loader sets). For a horizontal-fixed camera, convert the horizontal fov to vertical.
-                if (camera.fovMode === Constants.FOVMODE_VERTICAL_FIXED) {
-                    return camera.fov;
-                }
-                const aspectRatio = camera.getEngine().getAspectRatio(camera);
-                return aspectRatio ? 2 * Math.atan(Math.tan(camera.fov / 2) / aspectRatio) : camera.fov;
-            }),
-        type: "number",
-        getTarget: () => scene.activeCamera,
-    });
+    AddObjectAccessorToKey(
+        "/extensions/KHR_interactivity/?/activeCamera/perspective/yfov",
+        {
+            get: () =>
+                getActivePerspectiveValue((camera) => {
+                    // Babylon stores the vertical fov when fovMode is vertical-fixed (the default and what the glTF
+                    // loader sets). For a horizontal-fixed camera, convert the horizontal fov to vertical.
+                    if (camera.fovMode === Constants.FOVMODE_VERTICAL_FIXED) {
+                        return camera.fov;
+                    }
+                    const aspectRatio = camera.getEngine().getAspectRatio(camera);
+                    return aspectRatio ? 2 * Math.atan(Math.tan(camera.fov / 2) / aspectRatio) : camera.fov;
+                }),
+            type: "number",
+            getTarget: () => scene.activeCamera,
+        },
+        mapping
+    );
     // perspective/znear (distance to the near clipping plane)
-    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/perspective/znear", {
-        get: () => getActivePerspectiveValue((camera) => camera.minZ),
-        type: "number",
-        getTarget: () => scene.activeCamera,
-    });
+    AddObjectAccessorToKey(
+        "/extensions/KHR_interactivity/?/activeCamera/perspective/znear",
+        {
+            get: () => getActivePerspectiveValue((camera) => camera.minZ),
+            type: "number",
+            getTarget: () => scene.activeCamera,
+        },
+        mapping
+    );
     // perspective/zfar (distance to the far clipping plane; Babylon uses maxZ === 0 to mean an infinite far plane)
-    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/perspective/zfar", {
-        get: () => getActivePerspectiveValue((camera) => (camera.maxZ === 0 ? Infinity : camera.maxZ)),
-        type: "number",
-        getTarget: () => scene.activeCamera,
-    });
+    AddObjectAccessorToKey(
+        "/extensions/KHR_interactivity/?/activeCamera/perspective/zfar",
+        {
+            get: () => getActivePerspectiveValue((camera) => (camera.maxZ === 0 ? Infinity : camera.maxZ)),
+            type: "number",
+            getTarget: () => scene.activeCamera,
+        },
+        mapping
+    );
     // orthographic/xmag (half the orthographic width)
-    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/orthographic/xmag", {
-        get: () =>
-            getActiveOrthographicValue((camera) => {
-                const halfWidth = camera.getEngine().getRenderWidth() / 2;
-                return ((camera.orthoRight ?? halfWidth) - (camera.orthoLeft ?? -halfWidth)) / 2;
-            }),
-        type: "number",
-        getTarget: () => scene.activeCamera,
-    });
+    AddObjectAccessorToKey(
+        "/extensions/KHR_interactivity/?/activeCamera/orthographic/xmag",
+        {
+            get: () =>
+                getActiveOrthographicValue((camera) => {
+                    const halfWidth = camera.getEngine().getRenderWidth() / 2;
+                    return ((camera.orthoRight ?? halfWidth) - (camera.orthoLeft ?? -halfWidth)) / 2;
+                }),
+            type: "number",
+            getTarget: () => scene.activeCamera,
+        },
+        mapping
+    );
     // orthographic/ymag (half the orthographic height)
-    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/orthographic/ymag", {
-        get: () =>
-            getActiveOrthographicValue((camera) => {
-                const halfHeight = camera.getEngine().getRenderHeight() / 2;
-                return ((camera.orthoTop ?? halfHeight) - (camera.orthoBottom ?? -halfHeight)) / 2;
-            }),
-        type: "number",
-        getTarget: () => scene.activeCamera,
-    });
+    AddObjectAccessorToKey(
+        "/extensions/KHR_interactivity/?/activeCamera/orthographic/ymag",
+        {
+            get: () =>
+                getActiveOrthographicValue((camera) => {
+                    const halfHeight = camera.getEngine().getRenderHeight() / 2;
+                    return ((camera.orthoTop ?? halfHeight) - (camera.orthoBottom ?? -halfHeight)) / 2;
+                }),
+            type: "number",
+            getTarget: () => scene.activeCamera,
+        },
+        mapping
+    );
     // orthographic/znear (distance to the near clipping plane)
-    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/orthographic/znear", {
-        get: () => getActiveOrthographicValue((camera) => camera.minZ),
-        type: "number",
-        getTarget: () => scene.activeCamera,
-    });
+    AddObjectAccessorToKey(
+        "/extensions/KHR_interactivity/?/activeCamera/orthographic/znear",
+        {
+            get: () => getActiveOrthographicValue((camera) => camera.minZ),
+            type: "number",
+            getTarget: () => scene.activeCamera,
+        },
+        mapping
+    );
     // orthographic/zfar (distance to the far clipping plane)
-    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/orthographic/zfar", {
-        get: () => getActiveOrthographicValue((camera) => camera.maxZ),
-        type: "number",
-        getTarget: () => scene.activeCamera,
-    });
+    AddObjectAccessorToKey(
+        "/extensions/KHR_interactivity/?/activeCamera/orthographic/zfar",
+        {
+            get: () => getActiveOrthographicValue((camera) => camera.maxZ),
+            type: "number",
+            getTarget: () => scene.activeCamera,
+        },
+        mapping
+    );
 
     const getAnimationFps = (animation: IAnimation): number => animation._babylonAnimationGroup?.targetedAnimations?.[0]?.animation.framePerSecond ?? targetFps;
 
     // /animations/{} pointers:
-    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/isPlaying", {
-        get: (animation: IAnimation) => {
-            return animation._babylonAnimationGroup?.isPlaying ?? false;
+    AddObjectAccessorToKey(
+        "/animations/{}/extensions/KHR_interactivity/isPlaying",
+        {
+            get: (animation: IAnimation) => {
+                return animation._babylonAnimationGroup?.isPlaying ?? false;
+            },
+            type: "boolean",
+            getTarget: (animation: IAnimation) => {
+                return animation._babylonAnimationGroup;
+            },
         },
-        type: "boolean",
-        getTarget: (animation: IAnimation) => {
-            return animation._babylonAnimationGroup;
+        mapping
+    );
+    AddObjectAccessorToKey(
+        "/animations/{}/extensions/KHR_interactivity/minTime",
+        {
+            get: (animation: IAnimation) => {
+                return (animation._babylonAnimationGroup?.from ?? 0) / getAnimationFps(animation);
+            },
+            type: "number",
+            getTarget: (animation: IAnimation) => {
+                return animation._babylonAnimationGroup;
+            },
         },
-    });
-    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/minTime", {
-        get: (animation: IAnimation) => {
-            return (animation._babylonAnimationGroup?.from ?? 0) / getAnimationFps(animation);
+        mapping
+    );
+    AddObjectAccessorToKey(
+        "/animations/{}/extensions/KHR_interactivity/maxTime",
+        {
+            get: (animation: IAnimation) => {
+                return (animation._babylonAnimationGroup?.to ?? 0) / getAnimationFps(animation);
+            },
+            type: "number",
+            getTarget: (animation: IAnimation) => {
+                return animation._babylonAnimationGroup;
+            },
         },
-        type: "number",
-        getTarget: (animation: IAnimation) => {
-            return animation._babylonAnimationGroup;
-        },
-    });
-    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/maxTime", {
-        get: (animation: IAnimation) => {
-            return (animation._babylonAnimationGroup?.to ?? 0) / getAnimationFps(animation);
-        },
-        type: "number",
-        getTarget: (animation: IAnimation) => {
-            return animation._babylonAnimationGroup;
-        },
-    });
+        mapping
+    );
     // playhead
-    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/playhead", {
-        get: (animation: IAnimation) => {
-            return (animation._babylonAnimationGroup?.getRetainedCurrentFrame() ?? 0) / getAnimationFps(animation);
+    AddObjectAccessorToKey(
+        "/animations/{}/extensions/KHR_interactivity/playhead",
+        {
+            get: (animation: IAnimation) => {
+                return (animation._babylonAnimationGroup?.getRetainedCurrentFrame() ?? 0) / getAnimationFps(animation);
+            },
+            type: "number",
+            getTarget: (animation: IAnimation) => {
+                return animation._babylonAnimationGroup;
+            },
         },
-        type: "number",
-        getTarget: (animation: IAnimation) => {
-            return animation._babylonAnimationGroup;
+        mapping
+    );
+    AddObjectAccessorToKey(
+        "/animations/{}/extensions/KHR_interactivity/virtualPlayhead",
+        {
+            get: (animation: IAnimation) => {
+                return (animation._babylonAnimationGroup?.getVirtualCurrentFrame() ?? 0) / getAnimationFps(animation);
+            },
+            type: "number",
+            getTarget: (animation: IAnimation) => {
+                return animation._babylonAnimationGroup;
+            },
         },
-    });
-    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/virtualPlayhead", {
-        get: (animation: IAnimation) => {
-            return (animation._babylonAnimationGroup?.getVirtualCurrentFrame() ?? 0) / getAnimationFps(animation);
-        },
-        type: "number",
-        getTarget: (animation: IAnimation) => {
-            return animation._babylonAnimationGroup;
-        },
-    });
+        mapping
+    );
 }
 
 let _RuntimeRegistered = false;

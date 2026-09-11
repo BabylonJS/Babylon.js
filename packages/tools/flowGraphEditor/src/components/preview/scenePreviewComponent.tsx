@@ -547,7 +547,10 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     private async _importFlowGraphsFromSceneAsync(scene: Scene, fileName: string): Promise<boolean> {
         const getImportResult = (globalThis as any).BABYLON?.GLTF2?.Loader?.Extensions?.GetKHRInteractivityImportResult as
             ((scene: Scene) => IKHRInteractivityImportResult | undefined) | undefined;
-        const importResult = getImportResult?.(scene);
+        const getImportResults = (globalThis as any).BABYLON?.GLTF2?.Loader?.Extensions?.GetKHRInteractivityImportResults as
+            ((scene: Scene) => readonly IKHRInteractivityImportResult[]) | undefined;
+        const importResults = getImportResults?.(scene);
+        const importResult = importResults?.[importResults.length - 1] ?? getImportResult?.(scene);
         if (!importResult) {
             return false;
         }
@@ -563,10 +566,18 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             return serializedFlowGraph;
         });
         this.props.globalState.coordinator?.dispose();
+        const requestedGraphIndex = importResult.document.defaultGraphIndex;
+        const activeGraphIndex =
+            requestedGraphIndex >= 0 && importResult.graphs[requestedGraphIndex]?.serializedFlowGraph
+                ? requestedGraphIndex
+                : Math.max(
+                      0,
+                      importResult.graphs.findIndex((graphResult) => !!graphResult.serializedFlowGraph)
+                  );
         await SerializationTools.DeserializeAsync(
             {
                 _flowGraphs: serializedGraphs,
-                activeGraphIndex: importResult.document.defaultGraphIndex < 0 ? 0 : importResult.document.defaultGraphIndex,
+                activeGraphIndex,
             },
             this.props.globalState,
             scene,

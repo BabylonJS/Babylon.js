@@ -249,7 +249,10 @@ export class FlowGraph {
                 return;
             }
 
-            const propagationStops: AbstractMesh[] = [];
+            const propagationStops =
+                event.type === FlowGraphEventType.MeshPick || event.type === FlowGraphEventType.PointerOver || event.type === FlowGraphEventType.PointerOut
+                    ? ([] as AbstractMesh[])
+                    : undefined;
             const payload = event.payload as { mesh?: AbstractMesh; pickInfo?: { pickedMesh?: AbstractMesh } } | undefined;
             const source = payload?.pickInfo?.pickedMesh ?? payload?.mesh;
             for (const context of this._executionContexts) {
@@ -259,7 +262,7 @@ export class FlowGraph {
                         _getReferencedMesh?: (context: FlowGraphContext) => AbstractMesh | undefined;
                     };
                     const target = eventBlock._getReferencedMesh?.(context);
-                    if (source && target && propagationStops.some((stoppedTarget) => stoppedTarget !== target && _IsDescendantOf(source, target))) {
+                    if (source && target && propagationStops?.some((stoppedTarget) => stoppedTarget !== target && _IsDescendantOf(source, target))) {
                         continue;
                     }
                     const eventKey = eventBlock.eventKey;
@@ -272,7 +275,7 @@ export class FlowGraph {
                         dispatch = this._coordinator._endEventDispatch();
                     }
                     if (dispatch?.propagationStopped && target) {
-                        propagationStops.push(target);
+                        propagationStops?.push(target);
                     }
                     if (eventState.skipNextObservers || !shouldContinue) {
                         break;

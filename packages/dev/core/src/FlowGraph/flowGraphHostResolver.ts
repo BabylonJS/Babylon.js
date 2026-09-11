@@ -60,6 +60,7 @@ export interface IFlowGraphHostResolver {
      * element of one of the host's collections. Must return `undefined` for values the host does
      * not recognise as an indexed reference.
      * @param reference the reference to decode
+     * @param collection optional host collection the decoded reference must address
      * @returns the index the reference denotes, or `undefined` when it does not denote one
      */
     decodeIndexReference?(reference: string, collection?: string): number | undefined;

@@ -6,7 +6,13 @@ import {
     type IKHRInteractivity_Node,
     type IKHRInteractivity_Variable,
 } from "babylonjs-gltf2interface";
-import { getMappingForDeclaration, getNoOpMappingForDeclaration, type IGLTFToFlowGraphMapping, type IGLTFToFlowGraphMappingObject } from "./declarationMapper";
+import {
+    getMappingForDeclaration,
+    getNoOpMappingForDeclaration,
+    ParseDebugLogTemplate,
+    type IGLTFToFlowGraphMapping,
+    type IGLTFToFlowGraphMappingObject,
+} from "./declarationMapper";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 
 /**
@@ -31,7 +37,7 @@ export const gltfTypeToBabylonType: {
     float3x3: { length: 9, flowGraphType: FlowGraphTypes.Matrix3D, elementType: "number" },
     int: { length: 1, flowGraphType: FlowGraphTypes.Integer, elementType: "number" },
     ref: { length: 1, flowGraphType: FlowGraphTypes.String, elementType: "string" },
-    custom: { length: 1, flowGraphType: FlowGraphTypes.Any, elementType: "any" },
+    custom: { length: 0, flowGraphType: FlowGraphTypes.Any, elementType: "any" },
 };
 
 /**
@@ -147,14 +153,28 @@ function _isValidJsonPointer(value: string): boolean {
     return value === "" || /^(?:\/(?:[^~]|~[01])*)*$/.test(value);
 }
 
-function _matchesSocket(mapping: { [name: string]: IGLTFToFlowGraphMappingObject } | undefined, socket: string, defaultSocket?: string): boolean {
-    if (mapping?.[socket]) {
+function _matchesOutputSocket(
+    mapping: { [name: string]: IGLTFToFlowGraphMappingObject } | undefined,
+    socket: string,
+    declaration: IKHRInteractivityDeclarationModel,
+    node: IKHRInteractivity_Node,
+    graph: IKHRInteractivity_Graph,
+    defaultSocket?: string
+): boolean {
+    if (mapping && Object.prototype.hasOwnProperty.call(mapping, socket)) {
         return true;
     }
-    if (socket === defaultSocket && mapping?.[defaultSocket]) {
+    if (socket === defaultSocket && mapping && Object.prototype.hasOwnProperty.call(mapping, defaultSocket)) {
         return true;
     }
-    return Object.keys(mapping ?? {}).some((name) => name.startsWith("[") && name.endsWith("]"));
+    if (!Object.keys(mapping ?? {}).some((name) => name.startsWith("[") && name.endsWith("]"))) {
+        return false;
+    }
+    if (declaration.operation === "event/receive") {
+        const eventIndex = node.configuration?.event?.value?.[0];
+        return typeof eventIndex === "number" && Object.prototype.hasOwnProperty.call(graph.events?.[eventIndex]?.values ?? {}, socket);
+    }
+    return true;
 }
 
 function _validateTypeIndex(typeIndex: unknown, graph: IKHRInteractivity_Graph, diagnostics: IKHRInteractivityDiagnostic[], path: string): typeIndex is number {
@@ -174,7 +194,7 @@ function _validateValue(value: IKHRInteractivity_Variable, graph: IKHRInteractiv
     }
     const type = graph.types![value.type];
     const runtimeType = gltfTypeToBabylonType[type.signature];
-    if (runtimeType && value.value.length !== runtimeType.length) {
+    if (runtimeType && type.signature !== "custom" && value.value.length !== runtimeType.length) {
         _addError(diagnostics, `${path}/value`, `Expected ${runtimeType.length} value component(s) for type "${type.signature}", received ${value.value.length}.`);
     }
     for (let componentIndex = 0; componentIndex < value.value.length; componentIndex++) {
@@ -314,7 +334,36 @@ function _isEffectiveConfigurationValue(
             return false;
         }
     }
+    if (property.debugLogTemplate && !ParseDebugLogTemplate(configuration.value[0] as string).valid) {
+        return false;
+    }
     return true;
+}
+
+function _getAllowedDynamicFlowOutputSockets(
+    node: IKHRInteractivity_Node,
+    mapping: IGLTFToFlowGraphMapping,
+    graph: IKHRInteractivity_Graph,
+    assetNodeCount?: number
+): ReadonlySet<string> | undefined {
+    for (const [key, property] of Object.entries(mapping.configuration ?? {})) {
+        if (!property.generatesOutputFlowSockets) {
+            continue;
+        }
+        const configured = node.configuration?.[key];
+        const values = _isEffectiveConfigurationValue(configured, property, graph, assetNodeCount) ? configured!.value : property.defaultValue;
+        return new Set(Array.isArray(values) ? values.map(String) : []);
+    }
+    return undefined;
+}
+
+function _matchesFlowOutputSocket(mapping: IGLTFToFlowGraphMapping, socket: string, allowedDynamicSockets: ReadonlySet<string> | undefined): boolean {
+    const flowMappings = mapping.outputs?.flows;
+    if (flowMappings && Object.prototype.hasOwnProperty.call(flowMappings, socket)) {
+        return true;
+    }
+    const hasWildcard = Object.keys(flowMappings ?? {}).some((name) => name.startsWith("[") && name.endsWith("]"));
+    return !hasWildcard || !allowedDynamicSockets || allowedDynamicSockets.has(socket);
 }
 
 /**
@@ -561,6 +610,9 @@ function _validateNode(
                 reportConfigurationIssue(property, `${path}/configuration/${key}/value/0`, `Type "${String(signature)}" is not supported by this operation.`);
             }
         }
+        if (isConfigurationValid && configuration.value && property.debugLogTemplate && !ParseDebugLogTemplate(configuration.value[0] as string).valid) {
+            reportConfigurationIssue(property, `${path}/configuration/${key}/value/0`, `Configuration "${key}" is not a valid debug message template.`);
+        }
         if (isConfigurationValid && configuration.value && (property.minimum !== undefined || property.maximum !== undefined)) {
             const numericValue = configuration.value[0] as number;
             if ((property.minimum !== undefined && numericValue < property.minimum) || (property.maximum !== undefined && numericValue > property.maximum)) {
@@ -608,6 +660,19 @@ function _validateNode(
                         `Pointer template input "${socketDefinition.name}" must have type "${socketDefinition.signature}".`
                     );
                 }
+            }
+        }
+    }
+
+    if (declarationModel.operation === "debug/log") {
+        const severityProperty = mapping.configuration?.severity;
+        const messageProperty = mapping.configuration?.message;
+        const severityValid = !!severityProperty && _isEffectiveConfigurationValue(node.configuration?.severity, severityProperty, graph, assetNodeCount);
+        const messageValid = !!messageProperty && _isEffectiveConfigurationValue(node.configuration?.message, messageProperty, graph, assetNodeCount);
+        const message = severityValid && messageValid ? (node.configuration!.message.value![0] as string) : "";
+        for (const socket of ParseDebugLogTemplate(message).sockets) {
+            if (!node.values?.[socket]) {
+                _addError(diagnostics, `${path}/values/${socket}`, `Required debug message template input "${socket}" is missing.`);
             }
         }
     }
@@ -679,7 +744,7 @@ function _validateNode(
                         ? getNoOpMappingForDeclaration(sourceDeclaration.source)
                         : getMappingForDeclaration(sourceDeclaration.source, false);
                 const sourceSocket = value.socket ?? "value";
-                const hasMappedSocket = _matchesSocket(sourceMapping?.outputs?.values, sourceSocket, "value");
+                const hasMappedSocket = _matchesOutputSocket(sourceMapping?.outputs?.values, sourceSocket, sourceDeclaration, sourceNode, graph, "value");
                 if (sourceMapping && !hasMappedSocket) {
                     _addError(diagnostics, `${path}/values/${key}/socket`, `Output value socket "${sourceSocket}" does not exist on node ${value.node}.`);
                 }
@@ -695,6 +760,10 @@ function _validateNode(
     }
 
     for (const [key, flow] of Object.entries(node.flows ?? {})) {
+        const allowedDynamicSockets = _getAllowedDynamicFlowOutputSockets(node, mapping, graph, assetNodeCount);
+        if (!_matchesFlowOutputSocket(mapping, key, allowedDynamicSockets)) {
+            _addError(diagnostics, `${path}/flows/${key}`, `Output flow socket "${key}" is not defined by operation "${declarationModel.operation}".`);
+        }
         if (!_isValidIndex(flow.node, graph.nodes?.length ?? 0)) {
             _addError(diagnostics, `${path}/flows/${key}/node`, `Node index ${String(flow.node)} is out of range.`);
             continue;
@@ -714,17 +783,41 @@ function _validateNode(
  * @returns the canonical graph model
  */
 export function CreateKHRInteractivityGraphModel(
-    graph: IKHRInteractivity_Graph,
+    graph: IKHRInteractivity_Graph | null | undefined,
     index: number = 0,
     supportedExtensions?: ReadonlySet<string>,
     assetNodeCount?: number
 ): IKHRInteractivityGraphModel {
-    graph = CloneKHRInteractivityGraph(graph);
     const diagnostics: IKHRInteractivityDiagnostic[] = [];
     const path = `/extensions/KHR_interactivity/graphs/${index}`;
+    if (graph === null || typeof graph !== "object" || Array.isArray(graph)) {
+        _addError(diagnostics, path, "Behavior graph must be an object.");
+        graph = {};
+    } else {
+        graph = CloneKHRInteractivityGraph(graph);
+    }
+    const invalidEntryDefaults = {
+        types: () => ({ signature: "custom" }),
+        variables: () => ({ type: -1 }),
+        events: () => ({}),
+        declarations: () => ({ op: "" }),
+        nodes: () => ({ declaration: -1 }),
+    } as const;
     for (const key of ["types", "variables", "events", "declarations", "nodes"] as const) {
-        if (graph[key] && graph[key]!.length === 0) {
+        const collection = graph[key] as unknown;
+        if (collection !== undefined && !Array.isArray(collection)) {
+            _addError(diagnostics, `${path}/${key}`, `"${key}" must be an array when present.`);
+            (graph as any)[key] = [];
+        } else if (Array.isArray(collection) && collection.length === 0) {
             _addError(diagnostics, `${path}/${key}`, `"${key}" must contain at least one item when present.`);
+        } else if (Array.isArray(collection)) {
+            (graph as any)[key] = collection.map((entry, entryIndex) => {
+                if (entry === null || typeof entry !== "object" || Array.isArray(entry)) {
+                    _addError(diagnostics, `${path}/${key}/${entryIndex}`, `Each "${key}" item must be an object.`);
+                    return invalidEntryDefaults[key]();
+                }
+                return entry;
+            });
         }
     }
     for (let eventIndex = 0; eventIndex < (graph.events?.length ?? 0); eventIndex++) {
@@ -833,20 +926,26 @@ export function CreateKHRInteractivityGraphModel(
 export function CreateKHRInteractivityDocument(extension: IKHRInteractivity, supportedExtensions?: ReadonlySet<string>, assetNodeCount?: number): IKHRInteractivityDocument {
     const source = _cloneJson(extension);
     const diagnostics: IKHRInteractivityDiagnostic[] = [];
-    if (!source.graphs?.length) {
+    if (!Array.isArray(source.graphs)) {
+        _addError(diagnostics, "/extensions/KHR_interactivity/graphs", '"graphs" must be an array.');
+        source.graphs = [];
+    }
+    if (source.graphs.length === 0) {
         _addError(diagnostics, "/extensions/KHR_interactivity/graphs", "At least one behavior graph is required.");
     }
     const requestedDefaultGraphIndex = source.graph ?? 0;
-    const defaultGraphIndex = _isValidIndex(requestedDefaultGraphIndex, source.graphs?.length ?? 0) ? requestedDefaultGraphIndex : -1;
+    const defaultGraphIndex = _isValidIndex(requestedDefaultGraphIndex, source.graphs.length) ? requestedDefaultGraphIndex : -1;
     if (defaultGraphIndex === -1) {
         _addError(diagnostics, "/extensions/KHR_interactivity/graph", `Default graph index ${String(requestedDefaultGraphIndex)} is out of range.`);
     }
+    const graphs = source.graphs.map((graph, index) => CreateKHRInteractivityGraphModel(graph, index, supportedExtensions, assetNodeCount));
+    source.graphs = graphs.map((graph) => graph.source);
 
     return {
         specificationCommit: KHR_INTERACTIVITY_SPECIFICATION_COMMIT,
         source,
         defaultGraphIndex,
-        graphs: (source.graphs ?? []).map((graph, index) => CreateKHRInteractivityGraphModel(graph, index, supportedExtensions, assetNodeCount)),
+        graphs,
         diagnostics,
     };
 }

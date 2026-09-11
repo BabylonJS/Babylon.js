@@ -59,7 +59,7 @@ describe("Interactivity/animation nodes", () => {
             variables: variables.length ? variables : undefined,
         };
 
-        const pathConverter = GetPathToObjectConverter(mockGltf);
+        const pathConverter = GetPathToObjectConverter(mockGltf, (mapping) => _AddInteractivityObjectModel(scene, 60, mapping));
         const model = CreateKHRInteractivityGraphModel(ig);
         if (strictValidation) {
             expect(model.valid, model.diagnostics.map((diagnostic) => `${diagnostic.path}: ${diagnostic.message}`).join("\n")).toBe(true);
@@ -90,7 +90,6 @@ describe("Interactivity/animation nodes", () => {
     beforeEach(() => {
         engine = new NullEngine();
         scene = new Scene(engine);
-        _AddInteractivityObjectModel(scene, 60);
         new ArcRotateCamera("", 0, 0, 0, new Vector3(0, 0, 0));
         log.mockClear();
         errorLog.mockClear();
@@ -242,7 +241,9 @@ describe("Interactivity/animation nodes", () => {
                 { _babylonAnimationGroup: ag },
             ],
         };
-        const maxTime = GetPathToObjectConverter(gltf as any).convert("/animations/1/extensions/KHR_interactivity/maxTime");
+        const maxTime = GetPathToObjectConverter(gltf as any, (mapping) => _AddInteractivityObjectModel(scene, 60, mapping)).convert(
+            "/animations/1/extensions/KHR_interactivity/maxTime"
+        );
         expect(maxTime.info.get(maxTime.object)).toBe(10);
 
         await generateSimpleNodeGraph(

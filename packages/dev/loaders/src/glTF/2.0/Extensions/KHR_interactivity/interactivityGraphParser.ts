@@ -1,6 +1,6 @@
 import { type IKHRInteractivity_Graph, type IKHRInteractivity_Node, type IKHRInteractivity_OutputSocketReference, type IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import { type IGLTF } from "../../glTFLoaderInterfaces";
-import { type IGLTFToFlowGraphMapping, getMappingForDeclaration, getNoOpMappingForDeclaration } from "./declarationMapper";
+import { type IGLTFToFlowGraphMapping, getMappingForDeclaration, getNoOpMappingForDeclaration, ParseDebugLogTemplate } from "./declarationMapper";
 import { Logger } from "core/Misc/logger";
 import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphConnection, type ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc/guid";
@@ -33,6 +33,10 @@ export interface InteractivityEvent {
     }[];
 }
 export { gltfTypeToBabylonType } from "./interactivityGraphModel";
+
+function _GetOwnMapping<T>(mapping: { [name: string]: T } | undefined, key: string): T | undefined {
+    return mapping && Object.prototype.hasOwnProperty.call(mapping, key) ? mapping[key] : undefined;
+}
 
 /**
  * Parses a KHR_interactivity graph definition (the raw glTF JSON object) into
@@ -105,6 +109,10 @@ export class InteractivityGraphToFlowGraphParser {
     }
 
     private _getAllowedDynamicValueSockets(operation: string, node: IKHRInteractivity_Node, direction: "input" | "output"): ReadonlySet<string> | undefined {
+        if (operation === "debug/log" && direction === "input") {
+            const message = node.configuration?.message?.value?.[0];
+            return new Set(typeof message === "string" ? ParseDebugLogTemplate(message).sockets : []);
+        }
         if ((operation === "event/send" && direction === "input") || (operation === "event/receive" && direction === "output")) {
             const eventIndex = node.configuration?.event?.value?.[0];
             if (typeof eventIndex === "number") {
@@ -230,7 +238,7 @@ export class InteractivityGraphToFlowGraphParser {
             throw new Error("Error parsing variables");
         }
         if (variable.value) {
-            if (variable.value.length !== type.length) {
+            if (this._interactivityGraph.types?.[variable.type]?.signature !== "custom" && variable.value.length !== type.length) {
                 Logger.Error(["Invalid value length for variable", variable, type]);
                 throw new Error("Error parsing variables");
             }
@@ -534,7 +542,7 @@ export class InteractivityGraphToFlowGraphParser {
             // connect the flows
             for (const flowKey of flowsKeys) {
                 const flow = flowsFromGLTF[flowKey];
-                let flowMapping = outputMapper.flowGraphMapping.outputs?.flows?.[flowKey];
+                let flowMapping = _GetOwnMapping(outputMapper.flowGraphMapping.outputs?.flows, flowKey);
                 let outputArrayMapping = false;
                 if (!flowMapping) {
                     for (const key in outputMapper.flowGraphMapping.outputs?.flows) {
@@ -579,7 +587,7 @@ export class InteractivityGraphToFlowGraphParser {
                     Logger.Error(["No mapping found for input node", nodeIn]);
                     throw new Error("Error parsing node connections");
                 }
-                let flowInMapping = inputMapper.inputs?.flows?.[flow.socket || "in"];
+                let flowInMapping = _GetOwnMapping(inputMapper.inputs?.flows, flow.socket || "in");
                 let arrayMapping = false;
                 if (!flowInMapping) {
                     for (const key in inputMapper.inputs?.flows) {
@@ -617,7 +625,7 @@ export class InteractivityGraphToFlowGraphParser {
             const valuesKeys = Object.keys(valuesFromGLTF);
             for (const valueKey of valuesKeys) {
                 const value = valuesFromGLTF[valueKey];
-                let valueMapping = outputMapper.flowGraphMapping.inputs?.values?.[valueKey];
+                let valueMapping = _GetOwnMapping(outputMapper.flowGraphMapping.inputs?.values, valueKey);
                 let arrayMapping = false;
                 if (!valueMapping) {
                     for (const key in outputMapper.flowGraphMapping.inputs?.values) {
@@ -668,7 +676,7 @@ export class InteractivityGraphToFlowGraphParser {
                         Logger.Error(["No mapping found for output socket reference", value]);
                         throw new Error("Error parsing node connections");
                     }
-                    let valueMapping = outputMapper.outputs?.values?.[nodeOutSocketName];
+                    let valueMapping = _GetOwnMapping(outputMapper.outputs?.values, nodeOutSocketName);
                     let arrayMapping = false;
                     // check if there is an array mapping defined
                     if (!valueMapping) {

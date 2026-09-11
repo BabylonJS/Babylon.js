@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /**
- * Complete categorized list of all known flow graph block class names.
- * Shared between the node list palette and the display manager registration.
+ * Complete categorized list of user-creatable flow graph block class names.
+ * Import-only helper blocks are registered separately for display.
  */
 export const AllFlowGraphBlocks: { [category: string]: string[] } = {
     Events: [
@@ -178,8 +178,12 @@ export const AllFlowGraphBlocks: { [category: string]: string[] } = {
         "FlowGraphFunctionReference",
         "FlowGraphDebugBlock",
     ],
-    glTF__Interactivity_Imported: ["FlowGraphEventReferenceBlock", "FlowGraphGLTFDataProvider", "FlowGraphObjectReferenceBlock", "FlowGraphUnsupportedInteractivityBlock"],
 };
+
+/**
+ * Import-only helper blocks that must remain renderable but are intentionally omitted from the creatable palette.
+ */
+export const ImportedFlowGraphBlocks = ["FlowGraphEventReferenceBlock", "FlowGraphGLTFDataProvider", "FlowGraphObjectReferenceBlock", "FlowGraphUnsupportedInteractivityBlock"];
 
 /**
  * Flat array of every block class name.
@@ -190,5 +194,6 @@ export function GetAllBlockNames(): string[] {
     for (const cat in AllFlowGraphBlocks) {
         names.push(...AllFlowGraphBlocks[cat]);
     }
+    names.push(...ImportedFlowGraphBlocks);
     return names;
 }

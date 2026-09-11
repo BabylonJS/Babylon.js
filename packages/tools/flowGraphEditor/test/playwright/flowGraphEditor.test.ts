@@ -1282,8 +1282,8 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect
             .poll(async () => await GetCoordinatorSnapshot(page))
             .toMatchObject({
-                dispatchEventsSynchronously: false,
-                hasHostResolver: true,
+                dispatchEventsSynchronously: true,
+                hasHostResolver: false,
             });
         await fge.addBlockFromPalette("Constant");
         await expect.poll(async () => await fge.getNodeCount()).toBe(1);
@@ -1396,18 +1396,19 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         expect(await fge.getGraphTopology()).toEqual(topologyBeforeMissingExtension);
     });
 
-    test("imports every KHR_interactivity graph, selects the default, and preserves unsupported operations", async ({ page }) => {
+    test("imports every KHR_interactivity graph, falls back from an invalid default, and preserves imported composites", async ({ page }) => {
+        test.setTimeout(60_000);
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
         await fge.assertEditorReady();
-        await expect(page.getByText("glTF: Interactivity Imported", { exact: true })).toBeVisible();
+        await expect(page.getByText("glTF: Interactivity Imported", { exact: true })).toHaveCount(0);
 
         const graphGltf = {
             asset: { version: "2.0", generator: "FGE KHR_interactivity Phase 1 test" },
             extensionsUsed: ["KHR_interactivity", "EXT_vendor_interactivity"],
             extensions: {
                 KHR_interactivity: {
-                    graph: 1,
+                    graph: 3,
                     graphs: [
                         {
                             name: "Startup",
@@ -1438,17 +1439,18 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                         },
                         {
                             name: "Composite",
-                            types: [{ signature: "float3" }],
+                            types: [{ signature: "ref" }, { signature: "float3" }],
                             declarations: [{ op: "event/onStart" }, { op: "pointer/get" }, { op: "math/abs" }],
                             nodes: [
                                 { declaration: 0 },
                                 {
                                     declaration: 1,
-                                    configuration: { pointer: { value: ["/nodes/0/translation"] }, type: { value: [0] } },
+                                    configuration: { pointer: { value: ["/nodes/{target}/translation"] }, type: { value: [1] } },
+                                    values: { target: { type: 0, value: ["/nodes/0"] } },
                                 },
                                 {
                                     declaration: 2,
-                                    values: { a: { node: 1, type: 0 } },
+                                    values: { a: { node: 1, type: 1 } },
                                 },
                             ],
                         },
@@ -1470,7 +1472,14 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         }, graphGltf);
 
         await expect.poll(async () => await fge.getGraphNames()).toEqual(["Startup", "Vendor behavior", "Composite", "Invalid core graph"]);
-        await expect.poll(async () => (await GetCoordinatorSnapshot(page)).activeGraphIndex).toBe(1);
+        await expect
+            .poll(async () => await GetCoordinatorSnapshot(page))
+            .toMatchObject({
+                activeGraphIndex: 0,
+                dispatchEventsSynchronously: false,
+                hasHostResolver: true,
+            });
+        await fge.selectGraphTab("Vendor behavior");
         const unsupportedNode = fge.nodeOnCanvas("FlowGraphUnsupportedInteractivityBlock");
         await expect(unsupportedNode).toBeVisible();
         await expect(unsupportedNode).toContainText("amount");
@@ -1495,6 +1504,49 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect(page.locator("#graph-canvas-container .FlowGraphGetPropertyBlock[class*='hidden']")).toHaveCount(1);
         await expect(page.locator("#graph-canvas-container .FlowGraphJsonPointerParserBlock[class*='hidden']")).toHaveCount(1);
         await expect(fge.nodeOnCanvas("FlowGraphAbsBlock")).toBeVisible();
+
+        const topologyBeforeSort = await fge.getGraphTopology();
+        const pointerParserBeforeSort = topologyBeforeSort.blocks.find((block) => block.className === "FlowGraphJsonPointerParserBlock")!;
+        expect(pointerParserBeforeSort.dataIns).toEqual([{ name: "target", connectedIds: [] }]);
+        expect(topologyBeforeSort.totalConnections).toBe(4);
+
+        await page.getByRole("button", { name: /Sort graph/ }).click();
+        await fge.selectGraphTab("Startup");
+        await fge.selectGraphTab("Composite");
+
+        expect(await fge.getGraphTopology()).toEqual(topologyBeforeSort);
+        const compositeFrame = await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            const graph = state?.flowGraph;
+            const editorData = graph?._editorData;
+            const frame = editorData?.frames?.find((candidate: any) => candidate.name === "pointer/get · glTF node 1");
+            if (!graph || !frame) {
+                throw new Error("Imported pointer/get frame not found");
+            }
+            const blocks = graph.getAllBlocks();
+            const blockByFrameId = new Map(blocks.map((block: any) => [editorData.map[block.uniqueId], block]));
+            const locations = new Map(editorData.locations.map((location: any) => [location.blockId, location]));
+            return {
+                blockClassNames: frame.blocks.map((frameBlockId: number) => blockByFrameId.get(frameBlockId)?.getClassName()).sort(),
+                relativePositions: frame.blocks.map((frameBlockId: number) => {
+                    const block = blockByFrameId.get(frameBlockId);
+                    const location: any = locations.get(block?.uniqueId);
+                    return { x: location.x - frame.x, y: location.y - frame.y };
+                }),
+                width: frame.width,
+                height: frame.height,
+            };
+        });
+        expect(compositeFrame.blockClassNames).toEqual(["FlowGraphGetPropertyBlock", "FlowGraphJsonPointerParserBlock"]);
+        for (const position of compositeFrame.relativePositions) {
+            expect(position.x).toBeGreaterThanOrEqual(0);
+            expect(position.y).toBeGreaterThanOrEqual(0);
+            expect(position.x).toBeLessThan(compositeFrame.width);
+            expect(position.y).toBeLessThan(compositeFrame.height);
+        }
+        await expect(page.getByText("pointer/get · glTF node 1", { exact: true })).toBeVisible();
+        await expect(page.locator("#graph-canvas-container .FlowGraphGetPropertyBlock[class*='hidden']")).toHaveCount(1);
+        await expect(page.locator("#graph-canvas-container .FlowGraphJsonPointerParserBlock[class*='hidden']")).toHaveCount(1);
 
         await fge.selectGraphTab("Startup");
         const importedLeftPositions = await page

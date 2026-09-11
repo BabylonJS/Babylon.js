@@ -15,6 +15,12 @@ import { FlowGraphTypes, getAnimationTypeByFlowGraphType } from "core/FlowGraph/
 // block via the flow/for extraProcessor rather than by mutating the shared static.
 const InteractivityForLoopMaxIterations = 20000;
 
+/**
+ * Describes how one KHR_interactivity configuration or socket property maps to FlowGraph.
+ *
+ * The same contract is used for fixed sockets, wildcard sockets, configuration validation,
+ * defaulting, and multi-block routing during strict graph lowering.
+ */
 export interface IGLTFToFlowGraphMappingObject {
     /**
      * The name of the property in the FlowGraph block.
@@ -131,10 +137,10 @@ export interface IGLTFToFlowGraphMappingObject {
      */
     typeSourceInput?: string;
 
-    /**
-     * Inclusive numeric bounds for an integer configuration value.
-     */
+    /** Inclusive minimum for an integer configuration value. */
     minimum?: number;
+
+    /** Inclusive maximum for an integer configuration value. */
     maximum?: number;
 
     /**
@@ -157,6 +163,11 @@ export interface IGLTFToFlowGraphMappingObject {
      * Whether duplicate array values are removed from the effective configuration.
      */
     uniqueValues?: boolean;
+
+    /**
+     * Whether a string configuration value is a `debug/log` message template.
+     */
+    debugLogTemplate?: boolean;
 }
 
 /**
@@ -2129,8 +2140,37 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
     "debug/log": {
         blocks: [FlowGraphBlockNames.ConsoleLog],
+        inputs: {
+            flows: {
+                in: { name: "in" },
+            },
+            values: {
+                "[parameter]": { name: "$1" },
+            },
+        },
+        outputs: {
+            flows: {
+                out: { name: "out" },
+            },
+        },
         configuration: {
-            message: { name: "messageTemplate", inOptions: true },
+            severity: {
+                name: "severity",
+                configurationType: "int",
+                defaultValue: 0,
+                invalidUsesDefault: true,
+                validationOnly: true,
+                configurationGroup: "debugLog",
+            },
+            message: {
+                name: "messageTemplate",
+                configurationType: "string",
+                defaultValue: "",
+                invalidUsesDefault: true,
+                inOptions: true,
+                configurationGroup: "debugLog",
+                debugLogTemplate: true,
+            },
         },
     },
 };
@@ -2208,6 +2248,7 @@ function HasOddBracketRun(segment: string): boolean {
         if ("[]{}".indexOf(character) === -1) {
             continue;
         }
+
         let runLength = 1;
         while (segment[index + runLength] === character) {
             runLength++;
@@ -2218,6 +2259,62 @@ function HasOddBracketRun(segment: string): boolean {
         index += runLength - 1;
     }
     return false;
+}
+
+/**
+ * Result of parsing a ratified `debug/log` message template.
+ */
+export interface IDebugLogTemplateParseResult {
+    /** Whether all literal braces are doubled and every parameter is well formed. */
+    valid: boolean;
+    /** Unique parameter socket ids in first-occurrence order. */
+    sockets: string[];
+}
+
+/**
+ * Parses a ratified `debug/log` message template.
+ * Literal braces must be doubled; non-empty text inside a single brace pair defines a socket id.
+ * @param message message template to parse
+ * @returns template validity and its exact dynamic socket ids
+ */
+export function ParseDebugLogTemplate(message: string): IDebugLogTemplateParseResult {
+    let state = 0;
+    let parameterStart = -1;
+    const sockets: string[] = [];
+    const seen = new Set<string>();
+    for (let index = 0; index < message.length; index++) {
+        const character = message[index];
+        if (character === "{") {
+            if (state === 0) {
+                state = 1;
+            } else if (state === 1) {
+                state = 0;
+            } else {
+                return { valid: false, sockets: [] };
+            }
+        } else if (character === "}") {
+            if (state === 0) {
+                state = 3;
+            } else if (state === 3) {
+                state = 0;
+            } else if (state === 2) {
+                const socket = message.substring(parameterStart + 1, index);
+                if (!seen.has(socket)) {
+                    seen.add(socket);
+                    sockets.push(socket);
+                }
+                state = 0;
+            } else {
+                return { valid: false, sockets: [] };
+            }
+        } else if (state === 1) {
+            parameterStart = index - 1;
+            state = 2;
+        } else if (state === 3) {
+            return { valid: false, sockets: [] };
+        }
+    }
+    return { valid: state === 0, sockets: state === 0 ? sockets : [] };
 }
 
 /**
