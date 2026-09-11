@@ -3,17 +3,21 @@
 // Does depth-of-field blur, edge blur
 // Inspired by Francois Tarlier & Martins Upitis
 
-// Sample with an explicit LOD (level 0). The blur samples below run inside control flow that depends on
-// the per-pixel blur level (if (blur_level > 1.0) ...), i.e. non-uniform control flow. Implicit-derivative
-// sampling (texture2D) is illegal there and breaks differently on each backend:
+// Explicit-LOD (level 0) sampling, used *only* for the blur samples in getBlurColor / sampleScreen and the
+// branches of main() below. Those run inside control flow that depends on the per-pixel blur level
+// (if (blur_level > 1.0) ...) / blur amount, i.e. non-uniform control flow, where implicit-derivative
+// sampling (texture2D) is illegal and breaks differently on each backend:
 //   - WebGL: at the boundary between two blur levels a 2x2 quad straddles the branch, so the derivatives are
 //     undefined and WebGL returns a garbage LOD -> a thin seam along that boundary.
 //   - WebGPU: WGSL forbids implicit-derivative sampling in non-uniform control flow outright, so the
 //     auto-transpiled shader fails to compile ("textureSample must only be called from uniform control flow")
 //     and the pipeline is invalid.
-// Explicit LOD 0 is derivative-free, so it is legal in non-uniform control flow and fixes both. The render
-// targets have no mipmaps, so level 0 is equivalent. On WebGPU/WebGL2/Native this maps to textureLod (which
-// twgsl lowers to textureSampleLevel for WebGPU); WebGL1 falls back to the biased texture2D form.
+// Explicit LOD 0 is derivative-free, so it is legal in non-uniform control flow and fixes both. All textures
+// sampled this way are mip-less post-process render targets, so level 0 loses nothing. On WebGPU/WebGL2/Native
+// this maps to textureLod (which twgsl lowers to textureSampleLevel for WebGPU); WebGL1 falls back to the
+// biased texture2D form.
+// NOTE: reads in uniform control flow (the depth read, and the grain read guarded by the uniform grain_amount)
+// intentionally keep implicit-LOD texture2D so mip selection still works for a user-supplied grain texture.
 #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
 	#define TEXTUREFUNC(s, c, lod) texture2DLodEXT(s, c, lod)
 #else
@@ -179,9 +183,9 @@ void main(void)
 	distorted_coords = getDistortedCoords(vUV);		// we distort the screen coordinates (lens "magnifying" effect)
 	vec2 texels_coords = vec2(vUV.x * screen_width, vUV.y * screen_height);	// varies from 0 to SCREEN_WIDTH or _HEIGHT
 
-	float depth = TEXTUREFUNC(depthSampler, distorted_coords, 0.0).r;	// depth value from DepthRenderer: 0 to 1
+	float depth = texture2D(depthSampler, distorted_coords).r;	// depth value from DepthRenderer: 0 to 1
 	float distance = near + (far - near)*depth;		// actual distance from the lens
-	vec4 color = TEXTUREFUNC(textureSampler, vUV, 0.0);	// original raster
+	vec4 color = texture2D(textureSampler, vUV);	// original raster
 
 
 													// compute the circle of confusion size (CoC), i.e. blur radius depending on depth
@@ -225,7 +229,7 @@ void main(void)
 
 	// apply grain
 	if (grain_amount > 0.0) {
-		vec4 grain_color = TEXTUREFUNC(grainSampler, texels_coords*0.003, 0.0);
+		vec4 grain_color = texture2D(grainSampler, texels_coords*0.003);	// grain_amount is uniform, so this branch is uniform control flow: keep implicit LOD so a user-supplied mipmapped grain texture selects mips normally
 		gl_FragColor.rgb += (-0.5 + grain_color.rgb) * 0.30 * grain_amount;
 	}
 
