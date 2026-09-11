@@ -1,4 +1,7 @@
 import { type Camera, type DirectionalLight, type Mesh, type SceneContext, type SceneNode, type ShadowGenerator } from "@babylonjs/lite";
+import { tokens } from "@fluentui/react-components";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 vi.hoisted(() => {
@@ -206,6 +209,10 @@ describe("Babylon Lite scene entities", () => {
 
         expect(tree.nodes.map((node) => node.getDisplayInfo().name)).toEqual(["Nodes", "Cameras", "Lights", "Shadow Generators"]);
         expect(tree.nodes[0].children[0].children[0].entity).toBe(child);
+        expect(renderToStaticMarkup(createElement(tree.nodes[0].children[0].icon!, { entity: root }))).toContain(tokens.colorPaletteBlueForeground2);
+        expect(renderToStaticMarkup(createElement(tree.nodes[1].children[0].icon!, { entity: camera }))).toContain(tokens.colorPaletteGreenForeground2);
+        expect(renderToStaticMarkup(createElement(tree.nodes[2].children[0].icon!, { entity: light }))).toContain(tokens.colorPaletteYellowForeground2);
+        expect(renderToStaticMarkup(createElement(tree.nodes[3].children[0].icon!, { entity: shadowGenerator }))).toContain(tokens.colorPaletteYellowForeground2);
         expect(commandProviders).toHaveLength(5);
 
         const nodeProvider = providers[0];
@@ -217,6 +224,12 @@ describe("Babylon Lite scene entities", () => {
         expect(afterReparent.at(-1)).not.toBe(beforeReparent.at(-1));
         dragDropConfig?.onDrop(child, root);
 
+        const foreignRoot = CreateMesh("Foreign Root");
+        const foreignScene = { ...scene, meshes: [foreignRoot], camera: null, lights: [], shadowGenerators: [] } as SceneContext;
+        engine._renderingContexts.push(foreignScene);
+        expect(dragDropConfig?.canDrop(child, foreignRoot)).toBe(false);
+        engine._renderingContexts.pop();
+
         const visibilityProvider = commandProviders.find((provider) => provider.getCommand(root).type === "toggle");
         const visibilityCommand = visibilityProvider?.getCommand(root);
         if (visibilityCommand?.type !== "toggle") {
@@ -226,8 +239,29 @@ describe("Babylon Lite scene entities", () => {
         expect(root.visible).toBe(false);
         expect(child.visible).toBe(false);
 
-        selectionService.selectedEntity = child;
         const nodeRemoveProvider = commandProviders.find((provider) => provider.getCommand(root).displayName === "Remove from Scene");
+        selectionService.selectedEntity = child;
+        const childRemoveCommand = nodeRemoveProvider?.getCommand(child);
+        if (childRemoveCommand?.type !== "action") {
+            throw new Error("Expected a nested remove command.");
+        }
+        childRemoveCommand.execute();
+        expect(root.children).not.toContain(child);
+        expect(scene.meshes).not.toContain(child);
+        expect(selectionService.selectedEntity).toBeNull();
+
+        const cameraChild = CreateMesh("Camera Child");
+        camera.children.push(cameraChild);
+        cameraChild.parent = camera;
+        scene.meshes.push(cameraChild);
+        const cameraChildRemoveCommand = nodeRemoveProvider?.getCommand(cameraChild);
+        if (cameraChildRemoveCommand?.type !== "action") {
+            throw new Error("Expected a camera-child remove command.");
+        }
+        cameraChildRemoveCommand.execute();
+        expect(camera.children).not.toContain(cameraChild);
+        expect(scene.meshes).not.toContain(cameraChild);
+
         const secondScene = { ...scene, meshes: [root], camera: null, lights: [], shadowGenerators: [] } as SceneContext;
         engine._renderingContexts.push(secondScene);
         expect(nodeRemoveProvider?.predicate(root)).toBe(false);
@@ -237,6 +271,7 @@ describe("Babylon Lite scene entities", () => {
         if (nodeRemoveCommand?.type !== "action") {
             throw new Error("Expected a remove command.");
         }
+        selectionService.selectedEntity = root;
         nodeRemoveCommand.execute();
         expect(selectionService.selectedEntity).toBeNull();
         expect(scene.meshes).not.toContain(root);

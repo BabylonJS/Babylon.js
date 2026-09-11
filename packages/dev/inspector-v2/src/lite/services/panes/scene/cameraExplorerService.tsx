@@ -1,4 +1,5 @@
 import { removeFromScene, type Camera } from "@babylonjs/lite";
+import { tokens } from "@fluentui/react-components";
 import { CameraRegular, DeleteRegular } from "@fluentui/react-icons";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
@@ -12,7 +13,7 @@ import { SelectionServiceIdentity, type ISelectionService } from "../../../../se
 import { WatcherServiceIdentity, type IWatcherService } from "../../../../services/watcherService";
 import { CreateSceneExplorerSectionNode, IsSceneContext } from "./sceneExplorerSection";
 
-const CameraIcon = () => <CameraRegular />;
+const CameraIcon = () => <CameraRegular color={tokens.colorPaletteGreenForeground2} />;
 
 export const CameraExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplorerService, IExplorerService, IWatcherService, ISelectionService, IEngineContext]> = {
     friendlyName: "Babylon Lite Camera Explorer",

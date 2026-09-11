@@ -57,6 +57,10 @@ function ClearRemovedSelection(selectionService: ISelectionService, engineContex
     }
 }
 
+function IsNodeInScene(scene: SceneContext, node: SceneNode): boolean {
+    return GetSceneNodeRoots(scene).some((root) => root === node || IsSceneNodeDescendantOf(node, root));
+}
+
 export const MeshExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplorerService, IExplorerService, IWatcherService, ISelectionService, IEngineContext]> = {
     friendlyName: "Babylon Lite Scene Node Explorer",
     consumes: [EngineExplorerServiceIdentity, ExplorerServiceIdentity, WatcherServiceIdentity, SelectionServiceIdentity, EngineContextIdentity],
@@ -72,10 +76,15 @@ export const MeshExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplor
                         getDisplayInfo: () => ({ name: "Nodes" }),
                         getChildren: () => GetSceneNodeRoots(scene).map((node) => CreateNodeDescription(node, watcherService)),
                         dragDropConfig: {
-                            canDrag: IsSceneNode,
+                            canDrag: (entity) => IsSceneNode(entity) && IsNodeInScene(scene, entity),
                             canDrop: (draggedEntity, targetEntity) =>
                                 IsSceneNode(draggedEntity) &&
-                                (targetEntity === null || (IsSceneNode(targetEntity) && draggedEntity !== targetEntity && !IsSceneNodeDescendantOf(targetEntity, draggedEntity))) &&
+                                IsNodeInScene(scene, draggedEntity) &&
+                                (targetEntity === null ||
+                                    (IsSceneNode(targetEntity) &&
+                                        IsNodeInScene(scene, targetEntity) &&
+                                        draggedEntity !== targetEntity &&
+                                        !IsSceneNodeDescendantOf(targetEntity, draggedEntity))) &&
                                 draggedEntity.parent !== targetEntity,
                             onDrop: (draggedEntity, targetEntity) => {
                                 if (IsSceneNode(draggedEntity) && (targetEntity === null || IsSceneNode(targetEntity))) {
@@ -138,6 +147,9 @@ export const MeshExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplor
                     if (scene && GetOwningScenes(engineContext, node).length === 1) {
                         const selectedEntity = selectionService.selectedEntity;
                         const selectionWasRemoved = selectedEntity === node || (IsSceneNode(selectedEntity) && IsSceneNodeDescendantOf(selectedEntity, node));
+                        if (node.parent) {
+                            setParent(node, null);
+                        }
                         removeFromScene(scene, node);
                         ClearRemovedSelection(selectionService, engineContext, selectionWasRemoved);
                     }

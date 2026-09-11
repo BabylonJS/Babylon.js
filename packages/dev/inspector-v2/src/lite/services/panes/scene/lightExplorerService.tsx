@@ -1,4 +1,5 @@
 import { removeFromScene, type LightBase } from "@babylonjs/lite";
+import { tokens } from "@fluentui/react-components";
 import { DeleteRegular, LightbulbRegular } from "@fluentui/react-icons";
 
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
@@ -10,7 +11,7 @@ import { ExplorerServiceIdentity, type IExplorerService } from "../../../../serv
 import { SelectionServiceIdentity, type ISelectionService } from "../../../../services/selectionService";
 import { CreateSceneExplorerSectionNode, IsSceneContext } from "./sceneExplorerSection";
 
-const LightIcon = () => <LightbulbRegular />;
+const LightIcon = () => <LightbulbRegular color={tokens.colorPaletteYellowForeground2} />;
 
 export const LightExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplorerService, IExplorerService, ISelectionService, IEngineContext]> = {
     friendlyName: "Babylon Lite Light Explorer",

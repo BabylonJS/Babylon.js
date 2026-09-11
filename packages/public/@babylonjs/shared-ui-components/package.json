@@ -5,10 +5,19 @@
     "module": "index.js",
     "types": "index.d.ts",
     "exports": {
+        ".": {
+            "types": "./index.d.ts",
+            "default": "./index.js"
+        },
         "./lite": {
             "types": "./lite/index.d.ts",
             "default": "./lite/index.js"
         },
+        "./*.js": "./*.js",
+        "./*.d.ts": "./*.d.ts",
+        "./*.map": "./*.map",
+        "./*.svg": "./*.svg",
+        "./*.scss": "./*.scss",
         "./*": {
             "types": "./*.d.ts",
             "default": "./*.js"

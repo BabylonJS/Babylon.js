@@ -30,7 +30,7 @@ import {
     Vector3PropertyLine as LiteVector3PropertyLine,
 } from "shared-ui-components/lite/fluent/hoc/propertyLines/vectorPropertyLine";
 import { DerivedProperty } from "../../src/components/properties/boundProperty";
-import { DirectionalLightSetupProperties } from "../../src/lite/components/properties/lightProperties";
+import { DirectionalLightSetupProperties, SetLightProperty } from "../../src/lite/components/properties/lightProperties";
 
 vi.stubGlobal("NodeFilter", window.NodeFilter);
 
@@ -109,6 +109,25 @@ describe("runtime-neutral property-line wrappers", () => {
 
         expect(container.textContent).toContain("[4.00, 6.00, -3.00]");
         expect(container.textContent).toContain("[-0.50, -1.00, 0.25]");
+    });
+
+    it("invalidates Lite light rendering after plain color and intensity writes", () => {
+        const directionSet = vi.fn();
+        const light = {
+            direction: { x: -0.5, y: -1, z: 0.25, set: directionSet },
+            position: { x: 4, y: 6, z: -3, set: vi.fn() },
+            diffuse: [1, 1, 1] as [number, number, number],
+            specular: [1, 1, 1] as [number, number, number],
+            intensity: 0.5,
+        };
+
+        SetLightProperty(light, "diffuse", [0.2, 0.4, 0.6]);
+        expect(light.diffuse).toEqual([0.2, 0.4, 0.6]);
+        expect(directionSet).toHaveBeenLastCalledWith(-0.5, -1, 0.25);
+
+        SetLightProperty(light, "intensity", 0.25);
+        expect(light.intensity).toBe(0.25);
+        expect(directionSet).toHaveBeenCalledTimes(2);
     });
 
     it("supports reusable watched projections with custom write-back", () => {

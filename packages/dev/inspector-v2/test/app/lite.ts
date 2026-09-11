@@ -102,7 +102,6 @@ const shadowGenerator = createPcfDirectionalShadowGenerator(engine, directionalL
 directionalLight.shadowGenerator = shadowGenerator;
 primaryScene.shadowGenerators.push(shadowGenerator);
 setShadowTaskCasterMeshes(shadowGenerator, [box, sphere, smallBox]);
-sphere.receiveShadows = true;
 
 const camera = createDefaultCamera(primaryScene);
 camera.name = "Main Camera";
