@@ -55,6 +55,9 @@ function SyncCubeTextureSizeFromNative(
 }
 
 function NotifyCubeTextureLoaded(texture: InternalTexture, onLoad: Nullable<(data?: any) => void>, loadData?: any): void {
+    // Native cannot read cube faces for lazy irradiance generation. Preserve supplied
+    // coefficients, or publish an empty polynomial before observers (including clones) run.
+    texture._sphericalPolynomial ??= new SphericalPolynomial();
     texture.isReady = true;
     texture.onLoadedObservable.notifyObservers(texture);
     texture.onLoadedObservable.clear();
@@ -171,7 +174,7 @@ export function RegisterNativeEngineCubeTexture(): void {
                     onInternalError
                 );
             }
-        } else if (files && files.length === 6) {
+        } else if (!buffer && files && files.length === 6) {
             // Reorder from [+X, +Y, +Z, -X, -Y, -Z] to [+X, -X, +Y, -Y, +Z, -Z].
             const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
             // eslint-disable-next-line github/no-then
@@ -202,7 +205,7 @@ export function RegisterNativeEngineCubeTexture(): void {
                         }
                     }
                 );
-        } else if (!files || files.length <= 1) {
+        } else if (buffer || !files || files.length <= 1) {
             // Self-contained single-file cubemap container (.dds / .ktx / .ktx2) that already holds
             // all six faces (and their prefiltered mip chain). Prefer the supplied buffer; otherwise
             // fetch the single URL. Native parses the container and may return diffuse SH coefficients.
