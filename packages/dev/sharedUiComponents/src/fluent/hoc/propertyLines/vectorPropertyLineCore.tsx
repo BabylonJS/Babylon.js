@@ -45,7 +45,7 @@ type ControlledTensorPropertyLineProps<ValueT> = TensorPropertyLineProps<ValueT>
 export const ControlledTensorPropertyLine = <ValueT,>(props: ControlledTensorPropertyLineProps<ValueT>) => {
     const { adapter, min, max, unit, step, precision, valueConverter } = props;
     const converted = (value: number) => (valueConverter ? valueConverter.from(value) : value);
-    const formatted = (value: number) => converted(value).toFixed(step !== undefined ? Math.max(0, CalculatePrecision(step)) : 2);
+    const formatted = (value: number) => converted(value).toFixed(precision ?? (step !== undefined ? Math.max(0, CalculatePrecision(step)) : 2));
     const [value, setValue] = useState(props.value);
 
     useEffect(() => {
@@ -204,7 +204,7 @@ export const ControlledQuaternionPropertyLine = <QuaternionT, EulerT>(props: Con
 
     return (
         <ControlledTensorPropertyLine
-            {...props}
+            {...rest}
             nullable={false}
             value={quaternion}
             adapter={adapter.quaternion}

@@ -8,7 +8,7 @@ import { type AccordionProps, type AccordionSectionBlockProps, type AccordionSec
 const STORAGE_KEY_ROOT = "Babylon/Accordion";
 const InMemoryStorage = new Map<string, string>();
 // eslint-disable-next-line no-console
-const Warn = (message: string): void => globalThis.console.warn(message);
+const Warn = (message: string): void => globalThis.console?.warn?.(message);
 
 const ReadStoredString = (key: string): string => {
     try {

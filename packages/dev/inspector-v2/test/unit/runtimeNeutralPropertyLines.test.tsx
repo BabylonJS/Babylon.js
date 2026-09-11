@@ -93,8 +93,14 @@ describe("runtime-neutral property-line wrappers", () => {
 
         expect(container.textContent).toContain("[1.00, 2.00, 3.00]");
         expect(container.textContent).toContain("[4.00, 5.00, 6.00]");
-        expect(container.textContent).toContain("[0, 0, 0]");
+        expect(container.textContent).toContain("[0.0, 0.0, 0.0]");
         expect(container.querySelectorAll("button").length).toBeGreaterThan(0);
+    });
+
+    it("uses explicit precision in the collapsed tensor summary", () => {
+        const container = Render(<LiteVector3PropertyLine label="Precise" value={[1.24, 2.25, 3.26]} onChange={vi.fn()} precision={1} />);
+
+        expect(container.textContent).toContain("[1.2, 2.3, 3.3]");
     });
 
     it("renders watched Lite light vectors without a render loop", () => {

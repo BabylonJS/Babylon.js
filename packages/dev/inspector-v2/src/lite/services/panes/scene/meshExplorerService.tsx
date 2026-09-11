@@ -143,8 +143,9 @@ export const MeshExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplor
                 icon: DeleteRegular,
                 hotKey: { keyCode: "Delete" },
                 execute: () => {
-                    const [scene] = GetOwningScenes(engineContext, node);
-                    if (scene && GetOwningScenes(engineContext, node).length === 1) {
+                    const owningScenes = GetOwningScenes(engineContext, node);
+                    const [scene] = owningScenes;
+                    if (scene && owningScenes.length === 1) {
                         const selectedEntity = selectionService.selectedEntity;
                         const selectionWasRemoved = selectedEntity === node || (IsSceneNode(selectedEntity) && IsSceneNodeDescendantOf(selectedEntity, node));
                         if (node.parent) {
