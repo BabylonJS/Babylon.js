@@ -1840,6 +1840,12 @@
             "dependsOn": ["PostProcesses", "Textures", "Materials"]
         },
         {
+            "title": "Lens render pipeline",
+            "playgroundId": "#DX6AV#389",
+            "referenceImage": "lens-render-pipeline.png",
+            "dependsOn": ["PostProcesses", "Materials", "Loaders", "Meshes", "Lights", "Cameras"]
+        },
+        {
             "title": "Depth of field",
             "playgroundId": "#IDSQK2#86",
             "referenceImage": "depthOfField.png",
