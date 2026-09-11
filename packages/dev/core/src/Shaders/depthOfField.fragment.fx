@@ -188,8 +188,8 @@ void main(void)
 	vec4 color = texture2D(textureSampler, vUV);	// original raster
 
 
-													// compute the circle of confusion size (CoC), i.e. blur radius depending on depth
-													// screen_distance is precomputed in code
+	// compute the circle of confusion size (CoC), i.e. blur radius depending on depth
+	// screen_distance is precomputed in code
 	float coc = abs(aperture * (screen_distance * (inverse_focal_length - 1.0 / distance) - 1.0));
 
 	// disable blur
@@ -229,7 +229,9 @@ void main(void)
 
 	// apply grain
 	if (grain_amount > 0.0) {
-		vec4 grain_color = texture2D(grainSampler, texels_coords*0.003);	// grain_amount is uniform, so this branch is uniform control flow: keep implicit LOD so a user-supplied mipmapped grain texture selects mips normally
+		// grain_amount is uniform, so this branch is uniform control flow: keep implicit LOD so a user-supplied
+		// mipmapped grain texture selects mips normally.
+		vec4 grain_color = texture2D(grainSampler, texels_coords*0.003);
 		gl_FragColor.rgb += (-0.5 + grain_color.rgb) * 0.30 * grain_amount;
 	}
 
