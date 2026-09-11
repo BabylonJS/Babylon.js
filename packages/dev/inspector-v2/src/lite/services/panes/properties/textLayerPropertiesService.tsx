@@ -4,11 +4,13 @@ import { type FunctionComponent } from "react";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
 import { BoundProperty, ComputedProperty } from "../../../../components/properties/boundProperty";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../services/panes/properties/propertiesService";
 import { type IEngineContext, EngineContextIdentity } from "../../../engineContext";
+import { GetRenderingLayerDisplayName } from "../../../renderingLayerUtils";
 
 function GetRunCount(layer: TextLayer): number {
     return layer.data.runs.length;
@@ -28,11 +30,17 @@ function IsRegisteredTextLayer(engine: EngineContext, entity: unknown): entity i
     );
 }
 
-const TextLayerProperties: FunctionComponent<{ layer: TextLayer }> = (props) => {
-    const { layer } = props;
+const TextLayerProperties: FunctionComponent<{ engine: EngineContext; layer: TextLayer }> = (props) => {
+    const { engine, layer } = props;
 
     return (
         <>
+            <ComputedProperty
+                component={TextPropertyLine}
+                label="Name"
+                target={layer}
+                getValue={(target) => GetRenderingLayerDisplayName<TextLayer, TextRenderer>(engine, "text-renderer", target, "Text Layer")}
+            />
             <BoundProperty component={SwitchPropertyLine} label="Visible" target={layer} propertyKey="visible" />
             <BoundProperty component={NumberInputPropertyLine} label="Position X" target={layer.positionPx} propertyKey="x" propertyPath="positionPx.x" step={1} unit="px" />
             <BoundProperty component={NumberInputPropertyLine} label="Position Y" target={layer.positionPx} propertyKey="y" propertyPath="positionPx.y" step={1} unit="px" />
@@ -57,7 +65,7 @@ export const TextLayerPropertiesServiceDefinition: ServiceDefinition<[], [IPrope
             content: [
                 {
                     section: "General",
-                    component: ({ context }) => <TextLayerProperties layer={context} />,
+                    component: ({ context }) => <TextLayerProperties engine={engineContext.engine} layer={context} />,
                 },
             ],
         }),

@@ -112,12 +112,18 @@ await registerScene(primaryScene);
 
 const overlayFont = await loadFont("/fonts/Roboto-Regular.ttf");
 const overlayTextData = createDefaultTextData(overlayFont, 16, "Text overlay", [1, 0.85, 0.2, 1]);
+const backgroundTextData = createDefaultTextData(overlayFont, 14, "Background layer", [0.55, 0.75, 1, 1]);
 const overlayTextLayer = createTextLayer(overlayTextData, {
     positionPx: { x: 365, y: 36 },
     coverageGamma: 2,
+    order: 10,
+});
+const backgroundTextLayer = createTextLayer(backgroundTextData, {
+    positionPx: { x: 365, y: 62 },
+    order: 0,
 });
 const textRenderer = createTextRenderer(engine, {
-    layers: [overlayTextLayer],
+    layers: [overlayTextLayer, backgroundTextLayer],
     clear: false,
 });
 registerTextRenderer(textRenderer);
@@ -131,17 +137,33 @@ const spriteAtlas = createGridSpriteAtlas(blueTexture, {
     cellWidthPx: 1,
     cellHeightPx: 1,
 });
+const backgroundSpriteAtlas = createGridSpriteAtlas(redTexture, {
+    cellWidthPx: 1,
+    cellHeightPx: 1,
+});
 const spriteLayer = createSprite2DLayer(spriteAtlas, {
     capacity: 1,
     depth: "none",
+    order: 10,
 });
 addSprite2DIndex(spriteLayer, {
     positionPx: [100, 70],
     sizePx: [84, 84],
     rotation: Math.PI / 8,
 });
+const backgroundSpriteLayer = createSprite2DLayer(backgroundSpriteAtlas, {
+    capacity: 1,
+    depth: "none",
+    opacity: 0.8,
+    order: 0,
+});
+addSprite2DIndex(backgroundSpriteLayer, {
+    positionPx: [205, 70],
+    sizePx: [64, 64],
+    rotation: -Math.PI / 10,
+});
 const spriteRenderer = createSpriteRenderer(secondarySurface, {
-    layers: [spriteLayer],
+    layers: [spriteLayer, backgroundSpriteLayer],
     clearValue: { r: 0.05, g: 0.06, b: 0.1, a: 1 },
 });
 registerSpriteRenderer(spriteRenderer);
@@ -161,9 +183,11 @@ Object.assign(globalThis, {
     liteRegisterScene: registerScene,
     liteSecondarySurface: secondarySurface,
     liteSpriteLayer: spriteLayer,
+    liteSpriteLayers: [spriteLayer, backgroundSpriteLayer],
     liteSpriteRenderer: spriteRenderer,
     liteTextRenderer: textRenderer,
     liteTextRendererLayer: overlayTextLayer,
+    liteTextRendererLayers: [overlayTextLayer, backgroundTextLayer],
     liteTextures: [redTexture, blueTexture],
     liteTransformNode: boxGroup,
     liteShadowGenerator: shadowGenerator,
@@ -177,6 +201,7 @@ window.addEventListener(
         stopEngine(engine);
         disposeTextRenderer(textRenderer);
         disposeDefaultTextData(overlayTextData);
+        disposeDefaultTextData(backgroundTextData);
         disposeScene(primaryScene);
         disposeSpriteRenderer(spriteRenderer);
         disposeSurface(secondarySurface);
