@@ -7,6 +7,7 @@ import { type IAnimatable } from "core/Animations/animatable.interface";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { PushMaterial } from "core/Materials/pushMaterial";
+import { Constants } from "core/Engines/constants";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { type SubMesh } from "core/Meshes/subMesh";
@@ -36,10 +37,35 @@ class SkyMaterialDefines extends MaterialDefines {
     public SKIPFINALCOLORCLAMP = false;
     public DITHER = false;
     public LOGARITHMICDEPTH = false;
+    public SKY_RAW_HDR_OUTPUT = false;
 
     constructor() {
         super();
         this.rebuild();
+    }
+}
+
+/**
+ * Max value the sky shader may write before the bound render target stores it as +Inf (which would
+ * corrupt anything reading the texture back, e.g. an IBL CDF). Derived from the RT's texture type:
+ * half-float caps at its 65504 ceiling; float is effectively unbounded (a huge finite +Inf guard);
+ * anything else (8-bit LDR, or the default framebuffer when no RT is bound) is [0,1]. Only used when
+ * `rawHdrOutput` is enabled.
+ * @param textureType the bound render target's texture type (Constants.TEXTURETYPE_*), or undefined
+ * @returns the maximum color value that can be stored without overflowing to +Inf
+ * @internal
+ */
+export function _MaxColorValueForRenderTarget(textureType: number | undefined): number {
+    switch (textureType) {
+        case Constants.TEXTURETYPE_HALF_FLOAT:
+            // IEEE-754 half-float max (core's `MaxHalfFloat`). Inlined, not imported: it's not on
+            // the public `BABYLON` namespace, so the materials UMD build resolves the import to
+            // `undefined` at runtime (→ NaN clamp ceiling).
+            return 65504;
+        case Constants.TEXTURETYPE_FLOAT:
+            return 3.0e38;
+        default:
+            return 1.0;
     }
 }
 
@@ -130,6 +156,32 @@ export class SkyMaterial extends PushMaterial {
      */
     @serialize()
     public dithering: boolean = false;
+
+    /**
+     * When enabled, the material emits scene-referred linear HDR: `luminance` acts as a plain linear
+     * gain (no filmic tonemap), the output is clamped to the bound render target's max representable
+     * value rather than [0, 1] (so a bright sun cannot overflow to +Inf), and no sRGB encode is
+     * applied. Enable this to bake the sky into an HDR (float / half-float) render target — e.g. an
+     * IBL environment cube — where the full dynamic range of the sun disc must be preserved. The
+     * clamp ceiling follows whatever target is bound at draw time (65504 for half-float, effectively
+     * unbounded for float); if the sky is drawn to an LDR target or the default framebuffer it falls
+     * back to [0, 1], so this flag is only meaningful when rendering into a float/half-float target.
+     * When disabled, the material produces tonemapped, display-referred output for direct viewing.
+     */
+    @serialize()
+    public rawHdrOutput: boolean = false;
+
+    /**
+     * Cloud cover over the sun in [0, 1] (0 = clear direct sun, default; 1 = sun fully hidden). This
+     * softens only the *sun disc* — the sky dome color itself is unchanged (there is no overcast
+     * graying or whitening of the sky). At 0 the sun is a sharp solar disc; above 0 a physically-
+     * based single-scattering cloud model attenuates the direct beam (Beer–Lambert) and redistributes
+     * the removed energy into a dual-lobe Henyey–Greenstein aureole, energy-conserving as it broadens
+     * (thin cloud → tight silver lining; heavy cloud → broad, directionless glow). See the sun-disc
+     * branch in sky.fragment for the model + references.
+     */
+    @serialize()
+    public cloudiness: number = 0;
 
     // Private members
     private _cameraPosition: Vector3 = Vector3.Zero();
@@ -229,6 +281,10 @@ export class SkyMaterial extends PushMaterial {
             defines.markAsMiscDirty();
         }
 
+        if (defines.SKY_RAW_HDR_OUTPUT !== this.rawHdrOutput) {
+            defines.markAsMiscDirty();
+        }
+
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
@@ -243,6 +299,7 @@ export class SkyMaterial extends PushMaterial {
 
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
             defines.DITHER = this.dithering;
+            defines.SKY_RAW_HDR_OUTPUT = this.rawHdrOutput;
 
             //Attributes
             const attribs = [VertexBuffer.PositionKind];
@@ -270,6 +327,8 @@ export class SkyMaterial extends PushMaterial {
                 "cameraPosition",
                 "cameraOffset",
                 "up",
+                "cloudiness",
+                "maxColorValue",
             ];
             AddClipPlaneUniforms(uniforms);
             const join = defines.toString();
@@ -348,8 +407,9 @@ export class SkyMaterial extends PushMaterial {
             this._activeEffect.setMatrix("view", scene.getViewMatrix());
         }
 
-        // Fog
-        BindFogParameters(scene, mesh, this._activeEffect);
+        // Fog. In raw-HDR mode the shader output is linear scene-referred color, so the gamma-space
+        // scene.fogColor must be converted to linear before it is mixed in (linearSpace = true).
+        BindFogParameters(scene, mesh, this._activeEffect, this.rawHdrOutput);
 
         // Sky
         const camera = scene.activeCamera;
@@ -365,7 +425,10 @@ export class SkyMaterial extends PushMaterial {
 
         this._activeEffect.setVector3("up", this.up);
 
-        if (this.luminance > 0) {
+        // In raw-HDR mode `luminance` is a linear gain, so 0 is valid and must be uploaded (it
+        // produces black). The tonemapped path uses `luminance` as a divisor (0.1 / luminance,
+        // log2(2 / luminance^4)), where 0 is invalid — keep the guard that skips uploading it there.
+        if (this.rawHdrOutput || this.luminance > 0) {
             this._activeEffect.setFloat("luminance", this.luminance);
         }
 
@@ -373,6 +436,14 @@ export class SkyMaterial extends PushMaterial {
         this._activeEffect.setFloat("rayleigh", this.rayleigh);
         this._activeEffect.setFloat("mieCoefficient", this.mieCoefficient);
         this._activeEffect.setFloat("mieDirectionalG", this.mieDirectionalG);
+        this._activeEffect.setFloat("cloudiness", this.cloudiness);
+
+        if (this.rawHdrOutput) {
+            // Match the clamp ceiling to the render target the sky is drawn into (read at bind time,
+            // since the same material may bake into a half-float cube yet also draw to an LDR view).
+            const currentRenderTarget = scene.getEngine()._currentRenderTarget;
+            this._activeEffect.setFloat("maxColorValue", _MaxColorValueForRenderTarget(currentRenderTarget?.texture?.type));
+        }
 
         if (!this.useSunPosition) {
             const theta = Math.PI * (this.inclination - 0.5);

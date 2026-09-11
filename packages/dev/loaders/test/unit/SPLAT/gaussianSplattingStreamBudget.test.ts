@@ -241,6 +241,67 @@ describe("GaussianSplattingStream budget-driven LOD", () => {
         expect(s._countAtLevel(node, 0)).toBe(500);
     });
 
+    it("reports a pending LOD-0 diagnostic until its metadata pre-pass settles", () => {
+        const s = makeStream(undefined, []);
+
+        expect(s.lod0SplatCount).toEqual({ status: "pending" });
+    });
+
+    it("exposes the resolved resident splat budget for diagnostics", () => {
+        const s = new GaussianSplattingStream("s", METADATA, "", scene, { maxResidentSplats: 1_500_000 }) as any;
+        s._resolveResidentBudget();
+
+        expect(s.residentSplatBudget).toBe(1_500_000);
+    });
+
+    it("reports the normalized LOD-0 leaf-range total after every referenced source resolves", () => {
+        const s = makeStream(undefined, []);
+        const first: any = {
+            bound: { min: [0, 0, 0], max: [1, 1, 1] },
+            lods: { "0": { file: 0, offset: 0, count: "200" }, "1": { file: 0, offset: 200, count: 20 } },
+        };
+        const second: any = {
+            bound: { min: [2, 0, 0], max: [3, 1, 1] },
+            lods: { "0": { file: 0, offset: 400, count: "300" }, "1": { file: 1, offset: 0, count: 30 } },
+        };
+        s._collectLodEntries(first);
+        s._collectLodEntries(second);
+        s._fileCounts.set(0, 1_000);
+        s._fileCounts.set(1, 30);
+        s._fileMeta.set(0, {});
+        s._fileMeta.set(1, {});
+
+        s._resolveLod0SplatCount();
+
+        expect(s.lod0SplatCount).toEqual({ status: "available", count: 500 });
+    });
+
+    it("reports unavailable rather than a fabricated zero when LOD-0 metadata is missing or absent", () => {
+        const s = makeStream(undefined, []);
+        const node: any = {
+            bound: { min: [0, 0, 0], max: [1, 1, 1] },
+            lods: { "0": { file: 0, offset: 0, count: 100 } },
+        };
+        s._collectLodEntries(node);
+
+        s._resolveLod0SplatCount();
+        expect(s.lod0SplatCount).toEqual({ status: "unavailable" });
+
+        s._leafNodes.length = 0;
+        s._resolveLod0SplatCount();
+        expect(s.lod0SplatCount).toEqual({ status: "unavailable" });
+
+        const malformed: any = {
+            bound: { min: [0, 0, 0], max: [1, 1, 1] },
+            lods: { "0": { file: 0, offset: 0, count: 0 }, "1": { file: 0, offset: 0, count: 10 } },
+        };
+        s._collectLodEntries(malformed);
+        s._fileCounts.set(0, 10);
+        s._fileMeta.set(0, {});
+        s._resolveLod0SplatCount();
+        expect(s.lod0SplatCount).toEqual({ status: "unavailable" });
+    });
+
     it("drops malformed coarser-but-larger LOD levels at ingestion (enforces monotonic counts)", () => {
         const s = makeStream(undefined, []);
         // Level 2 (1000) is more expensive than the finer level 1 (10) — malformed; it must be dropped so the base
