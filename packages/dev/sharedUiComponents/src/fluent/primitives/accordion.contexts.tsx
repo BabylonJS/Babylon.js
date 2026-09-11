@@ -1,17 +1,38 @@
 import { type RefObject, createContext, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 import { type AccordionProps, type AccordionSectionBlockProps, type AccordionSectionItemProps } from "./accordion";
-import { DataStorage } from "core/Misc/dataStorage";
-import { Logger } from "core/Misc/logger";
 
 // ============================================================================
 // Storage Helpers
 // ============================================================================
 
 const STORAGE_KEY_ROOT = "Babylon/Accordion";
+const InMemoryStorage = new Map<string, string>();
+// eslint-disable-next-line no-console
+const Warn = (message: string): void => globalThis.console?.warn?.(message);
+
+const ReadStoredString = (key: string): string => {
+    try {
+        return globalThis.localStorage?.getItem(key) ?? InMemoryStorage.get(key) ?? "";
+    } catch {
+        return InMemoryStorage.get(key) ?? "";
+    }
+};
+
+const WriteStoredString = (key: string, value: string): void => {
+    try {
+        if (globalThis.localStorage) {
+            globalThis.localStorage.setItem(key, value);
+            return;
+        }
+    } catch {
+        // Fall through to in-memory persistence when localStorage is unavailable.
+    }
+    InMemoryStorage.set(key, value);
+};
 
 const ReadFromStorage = <T,>(path: string, initial: T): T => {
     try {
-        const stored = DataStorage.ReadString(`${STORAGE_KEY_ROOT}/${path}`, "");
+        const stored = ReadStoredString(`${STORAGE_KEY_ROOT}/${path}`);
         return stored ? JSON.parse(stored) : initial;
     } catch {
         return initial;
@@ -19,7 +40,7 @@ const ReadFromStorage = <T,>(path: string, initial: T): T => {
 };
 
 const WriteToStorage = (path: string, data: unknown): void => {
-    DataStorage.WriteString(`${STORAGE_KEY_ROOT}/${path}`, JSON.stringify(data));
+    WriteStoredString(`${STORAGE_KEY_ROOT}/${path}`, JSON.stringify(data));
 };
 
 // ============================================================================
@@ -323,7 +344,7 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
     const prevItemIdRef = useRef(itemId);
     useEffect(() => {
         if (accordionCtx && prevItemIdRef.current !== itemId) {
-            Logger.Warn(
+            Warn(
                 `Accordion: The uniqueId "${itemId}" in section "${sectionCtx?.sectionId}" has changed from "${prevItemIdRef.current}". ` +
                     `Each item must have a unique, stable ID for pin/hide persistence to work correctly.`
             );
@@ -338,7 +359,7 @@ export function useAccordionSectionItemState(props: AccordionSectionItemProps): 
         }
         const { registeredItemIds } = accordionCtx;
         if (registeredItemIds.has(itemUniqueId)) {
-            Logger.Warn(
+            Warn(
                 `Accordion: Duplicate uniqueId "${itemId}" detected in section "${sectionCtx?.sectionId}". ` +
                     `Each item must have a unique ID within its section for pin/hide persistence to work correctly.`
             );
