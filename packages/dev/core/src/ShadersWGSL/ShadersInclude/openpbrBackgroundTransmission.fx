@@ -11,7 +11,7 @@ var slab_translucent_background: vec4f = vec4f(0., 0., 0., 1.);
     // At LOD k of an N-level mip chain, one texel = 2^k / 2^N = 2^(k-N).
     let lodTexelSize: f32 = pow(2.0f, refractionLOD - uniforms.vBackgroundRefractionInfos.x);
 
-    #ifdef DISPERSION
+    #if defined(DISPERSION) && !defined(GEOMETRY_THIN_WALLED)
     {
         #ifdef REFRACTION_HIGH_QUALITY_BLUR
         {

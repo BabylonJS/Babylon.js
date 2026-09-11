@@ -17,7 +17,7 @@ export * from "./KHR_materials_specular.pure";
 export * from "./KHR_materials_transmission.pure";
 export * from "./KHR_materials_unlit.pure";
 export * from "./KHR_materials_volume.pure";
-export * from "./KHR_materials_volume_scatter.pure";
+export * from "./KHR_materials_scatter.pure";
 export * from "./KHR_materials_diffuse_roughness.pure";
 export * from "./KHR_materials_openpbr.pure";
 export * from "./KHR_texture_transform.pure";

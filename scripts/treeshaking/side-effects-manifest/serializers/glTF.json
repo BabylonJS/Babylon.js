@@ -18,12 +18,12 @@
         "glTF/2.0/Extensions/KHR_materials_ior.ts": ["top-level-call"],
         "glTF/2.0/Extensions/KHR_materials_iridescence.ts": ["top-level-call"],
         "glTF/2.0/Extensions/KHR_materials_openpbr.ts": ["top-level-call"],
+        "glTF/2.0/Extensions/KHR_materials_scatter.ts": ["top-level-call"],
         "glTF/2.0/Extensions/KHR_materials_sheen.ts": ["top-level-call"],
         "glTF/2.0/Extensions/KHR_materials_specular.ts": ["top-level-call"],
         "glTF/2.0/Extensions/KHR_materials_transmission.ts": ["top-level-call"],
         "glTF/2.0/Extensions/KHR_materials_unlit.ts": ["top-level-call"],
         "glTF/2.0/Extensions/KHR_materials_volume.ts": ["top-level-call"],
-        "glTF/2.0/Extensions/KHR_materials_volume_scatter.ts": ["top-level-call"],
         "glTF/2.0/Extensions/KHR_texture_basisu.ts": ["top-level-call"],
         "glTF/2.0/Extensions/KHR_texture_transform.ts": ["top-level-call"]
     }

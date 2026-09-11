@@ -54,7 +54,7 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
     const lastTo = useRef(0);
     const lastLoop = useRef(false);
 
-    const animatablesForTarget = scene.getAllAnimatablesByTarget(entity);
+    const animatablesForTarget = scene.getAllAnimatablesByTarget(entity) ?? [];
     const isPlaying = animatablesForTarget.length > 0;
     const mainAnimatable = isPlaying ? animatablesForTarget[0] : undefined;
 
@@ -70,7 +70,7 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
 
     const currentFrame = useObservableState(
         useCallback(() => {
-            return mainAnimatable ? mainAnimatable.masterFrame : (scene.getAllAnimatablesByTarget(entity)[0]?.masterFrame ?? 0);
+            return mainAnimatable ? mainAnimatable.masterFrame : (scene.getAllAnimatablesByTarget(entity)?.[0]?.masterFrame ?? 0);
         }, [scene, entity, mainAnimatable]),
         hasAnimations ? scene.onAfterAnimationsObservable : undefined
     );

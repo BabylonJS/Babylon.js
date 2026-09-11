@@ -72,6 +72,11 @@ uniform vec2 vTransmissionDepthInfos;
 uniform mat4 transmissionDepthMatrix;
 #endif
 
+#ifdef TRANSMISSION_SCATTER
+uniform vec2 vTransmissionScatterInfos;
+uniform mat4 transmissionScatterMatrix;
+#endif
+
 #ifdef TRANSMISSION_DISPERSION_SCALE
 uniform vec2 vTransmissionDispersionScaleInfos;
 uniform mat4 transmissionDispersionScaleMatrix;

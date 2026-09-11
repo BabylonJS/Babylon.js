@@ -17,12 +17,15 @@
 //   OPERAND_B_MATRIX       - operand B texture has a UV transform to bake; uses textureBMatrix uniform
 //   OP_LERP                - use mix(a, b, t) instead of a * b
 //   OP_MAX                 - use max(a, b) instead of a * b
+//   OP_DIVIDE              - component-wise safe division: result = a / max(b, 0.00001)
 //   OP_INVERT              - unary: invert selected channels of operand A (operand B is ignored)
 //   INVERT_R               - invert the red channel (used with OP_INVERT)
 //   INVERT_G               - invert the green channel (used with OP_INVERT)
 //   INVERT_B               - invert the blue channel (used with OP_INVERT)
 //   INVERT_A               - invert the alpha channel (used with OP_INVERT)
 //   OP_CHANNEL_MAX         - unary: broadcast max(r,g,b[,a]) of operand A to all output channels
+//   OP_MULTI_SCATTER_TO_SINGLE_SCATTER - unary: convert multi-scatter albedo A.rgb to single-scatter albedo
+//   OP_SINGLE_SCATTER_TO_MULTI_SCATTER - unary: convert single-scatter albedo A.rgb to multi-scatter albedo (inverse of the above)
 //   CHANNEL_MAX_INCLUDE_ALPHA - include alpha in the max computation and broadcast to all four channels
 //   LERP_T_TEXTURE         - t operand has a texture
 //   LERP_T_FACTOR          - t operand has a constant vec4 factor (combined with texture when both are set)
@@ -79,7 +82,7 @@ void main() {
     // Evaluate operand A
     #ifdef OPERAND_A_TEXTURE
     #ifdef OPERAND_A_MATRIX
-    vec4 a = texture2D(textureA, (textureAMatrix * vec4(uv, 0.0, 1.0)).xy);
+    vec4 a = texture2D(textureA, (textureAMatrix * vec4(uv, 1.0, 0.0)).xy);
     #else
     vec4 a = texture2D(textureA, uv);
     #endif
@@ -105,7 +108,7 @@ void main() {
     // Evaluate operand B
     #ifdef OPERAND_B_TEXTURE
     #ifdef OPERAND_B_MATRIX
-    vec4 b = texture2D(textureB, (textureBMatrix * vec4(uv, 0.0, 1.0)).xy);
+    vec4 b = texture2D(textureB, (textureBMatrix * vec4(uv, 1.0, 0.0)).xy);
     #else
     vec4 b = texture2D(textureB, uv);
     #endif
@@ -129,7 +132,15 @@ void main() {
     #endif
 
     // Apply operation
-    #ifdef OP_CHANNEL_MAX
+    #ifdef OP_MULTI_SCATTER_TO_SINGLE_SCATTER
+    vec3 rhoMs = clamp(a.rgb, vec3(0.0), vec3(1.0));
+    vec3 s = vec3(4.09712) + 4.20863 * rhoMs - sqrt(vec3(9.59217) + 41.6808 * rhoMs + 17.7126 * rhoMs * rhoMs);
+    vec4 result = vec4(vec3(1.0) - s * s, a.a);
+    #elif defined(OP_SINGLE_SCATTER_TO_MULTI_SCATTER)
+    vec3 ssAlbedo = clamp(a.rgb, vec3(0.0), vec3(1.0));
+    vec3 sq = sqrt(vec3(1.0) - ssAlbedo);
+    vec4 result = vec4((vec3(1.0) - sq) * (vec3(1.0) - 0.139 * sq) / (vec3(1.0) + 1.17 * sq), a.a);
+    #elif defined(OP_CHANNEL_MAX)
     float _cmax = max(max(a.r, a.g), a.b);
     #ifdef CHANNEL_MAX_INCLUDE_ALPHA
     _cmax = max(_cmax, a.a);
@@ -155,7 +166,7 @@ void main() {
     #elif defined(OP_LERP)
     #ifdef LERP_T_TEXTURE
     #ifdef LERP_T_MATRIX
-    vec4 t = texture2D(textureT, (textureTMatrix * vec4(uv, 0.0, 1.0)).xy);
+    vec4 t = texture2D(textureT, (textureTMatrix * vec4(uv, 1.0, 0.0)).xy);
     #else
     vec4 t = texture2D(textureT, uv);
     #endif
@@ -180,6 +191,8 @@ void main() {
     vec4 result = mix(a, b, t);
     #elif defined(OP_MAX)
     vec4 result = max(a, b);
+    #elif defined(OP_DIVIDE)
+    vec4 result = a / max(b, vec4(0.00001));
     #else
     vec4 result = a * b;
     #endif

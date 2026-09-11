@@ -324,6 +324,16 @@ export class GLTFExporter {
     }
 
     /**
+     * Returns whether a glTF exporter extension is both registered and enabled.
+     * @param name The extension name (e.g. "KHR_materials_transmission")
+     * @returns true if the extension is registered and its `enabled` flag is set
+     */
+    public isExtensionEnabled(name: string): boolean {
+        const extension = this._extensions[name];
+        return !!extension && extension.enabled;
+    }
+
+    /**
      * Get additional textures for a material
      * @param context The context when loading the asset
      * @param material The glTF material

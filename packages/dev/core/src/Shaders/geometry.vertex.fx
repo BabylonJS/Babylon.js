@@ -230,11 +230,11 @@ void main(void)
 			#ifdef ALBEDO_UV1
 			vAlbedoUV = vec2(albedoMatrix * vec4(uvUpdated, 1.0, 0.0));
 			#endif
-			#ifdef SUBSURFACE_COLOR_UV1
-			vSubsurfaceColorUV = vec2(subsurfaceColorMatrix * vec4(uvUpdated, 1.0, 0.0));
-			#endif
 			#ifdef SUBSURFACE_WEIGHT_UV1
 			vSubsurfaceWeightUV = vec2(subsurfaceWeightMatrix * vec4(uvUpdated, 1.0, 0.0));
+			#endif
+			#ifdef TRANSMISSION_WEIGHT_UV1
+			vTransmissionWeightUV = vec2(transmissionWeightMatrix * vec4(uvUpdated, 1.0, 0.0));
 			#endif
 		#endif
 		#ifdef UV2
@@ -260,11 +260,11 @@ void main(void)
 			#ifdef ALBEDO_UV2
 			vAlbedoUV = vec2(albedoMatrix * vec4(uv2Updated, 1.0, 0.0));
 			#endif
-			#ifdef SUBSURFACE_COLOR_UV2
-			vSubsurfaceColorUV = vec2(subsurfaceColorMatrix * vec4(uv2Updated, 1.0, 0.0));
-			#endif
 			#ifdef SUBSURFACE_WEIGHT_UV2
 			vSubsurfaceWeightUV = vec2(subsurfaceWeightMatrix * vec4(uv2Updated, 1.0, 0.0));
+			#endif
+			#ifdef TRANSMISSION_WEIGHT_UV2
+			vTransmissionWeightUV = vec2(transmissionWeightMatrix * vec4(uv2Updated, 1.0, 0.0));
 			#endif
 		#endif
 	#endif
