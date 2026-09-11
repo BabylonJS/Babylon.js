@@ -13,13 +13,20 @@ import { type IEngineContext, EngineContextIdentity } from "./engineContext";
 import { EngineExplorerServiceDefinition } from "./engineExplorerService";
 import { EngineSelectionServiceDefinition } from "./engineSelectionService";
 import { EnginePropertiesServiceDefinition } from "./services/panes/properties/enginePropertiesService";
+import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
+import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesService";
 import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
 import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
 import { RenderingContextPropertiesServiceDefinition } from "./services/panes/properties/renderingContextPropertiesService";
+import { SceneNodePropertiesServiceDefinition } from "./services/panes/properties/sceneNodePropertiesService";
+import { ShadowGeneratorPropertiesServiceDefinition } from "./services/panes/properties/shadowGeneratorPropertiesService";
 import { TextLayerPropertiesServiceDefinition } from "./services/panes/properties/textLayerPropertiesService";
 import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
+import { CameraExplorerServiceDefinition } from "./services/panes/scene/cameraExplorerService";
+import { LightExplorerServiceDefinition } from "./services/panes/scene/lightExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "./services/panes/scene/meshExplorerService";
+import { ShadowGeneratorExplorerServiceDefinition } from "./services/panes/scene/shadowGeneratorExplorerService";
 import { TextLayerExplorerServiceDefinition } from "./services/panes/scene/textLayerExplorerService";
 import { TextureExplorerServiceDefinition } from "./services/panes/scene/textureExplorerService";
 
@@ -63,13 +70,20 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 watcherServiceDefinition,
                 EngineExplorerServiceDefinition,
                 MeshExplorerServiceDefinition,
+                CameraExplorerServiceDefinition,
+                LightExplorerServiceDefinition,
+                ShadowGeneratorExplorerServiceDefinition,
                 MaterialExplorerServiceDefinition,
                 TextureExplorerServiceDefinition,
                 TextLayerExplorerServiceDefinition,
                 PropertiesServiceDefinition,
                 EnginePropertiesServiceDefinition,
                 RenderingContextPropertiesServiceDefinition,
+                SceneNodePropertiesServiceDefinition,
                 MeshPropertiesServiceDefinition,
+                CameraPropertiesServiceDefinition,
+                LightPropertiesServiceDefinition,
+                ShadowGeneratorPropertiesServiceDefinition,
                 MaterialPropertiesServiceDefinition,
                 TexturePropertiesServiceDefinition,
                 TextLayerPropertiesServiceDefinition,
