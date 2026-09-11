@@ -136,8 +136,9 @@ body,
     }
 }
 
-/* Folder Access Prompt */
-#folderAccessPrompt {
+/* File Selection Prompts */
+#folderAccessPrompt,
+#usdRootSelectionPrompt {
     position: fixed;
     top: 0;
     left: 0;
@@ -202,6 +203,31 @@ body,
                     background: #555;
                     transform: scale(1.05);
                 }
+            }
+        }
+    }
+}
+
+#usdRootSelectionPrompt {
+    .prompt-file-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 40vh;
+        overflow-y: auto;
+
+        button {
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            background: #444;
+            color: white;
+            cursor: pointer;
+            font-family: inherit;
+            text-align: left;
+
+            &:hover {
+                background: #bb464b;
             }
         }
     }

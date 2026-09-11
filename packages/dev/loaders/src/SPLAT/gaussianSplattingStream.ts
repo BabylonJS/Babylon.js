@@ -88,6 +88,12 @@ export interface ISOGLODMetadata {
 export type GaussianSplattingStreamDebugLodSource = "optimal" | "current";
 
 /**
+ * Immutable metadata-resolution state for a stream's total number of finest-LOD splats.
+ * @experimental
+ */
+export type GaussianSplattingStreamLod0SplatCount = Readonly<{ status: "pending" }> | Readonly<{ status: "available"; count: number }> | Readonly<{ status: "unavailable" }>;
+
+/**
  * Options for {@link GaussianSplattingStream}.
  */
 export interface IGaussianSplattingStreamOptions {
@@ -259,6 +265,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
 
     // Flat list of leaf nodes that carry renderable LOD entries (used by the LOD heuristic and debug).
     private readonly _leafNodes: ISOGLODNode[] = [];
+
+    private _lod0SplatCount: GaussianSplattingStreamLod0SplatCount = Object.freeze({ status: "pending" as const });
 
     // LOD heuristic parameters (PlayCanvas-aligned defaults).
     private _lodBaseDistance = 5;
@@ -555,6 +563,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
                 }
             },
             (e) => {
+                this._lod0SplatCount = Object.freeze({ status: "unavailable" as const });
                 Logger.Error("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
                 this._rejectPartReady("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
                 if (this._hostCompound && !this._disposed) {
@@ -758,6 +767,25 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
      */
     public get effectiveSplatBudget(): number {
         return this._effectiveSplatBudget();
+    }
+
+    /**
+     * The resolved maximum number of splats kept resident in the work buffer. This combines
+     * {@link IGaussianSplattingStreamOptions.maxResidentSplats} and {@link IGaussianSplattingStreamOptions.memoryBudgetMb},
+     * taking the smaller limit when both are configured. `0` means the resident budget is disabled.
+     * @experimental
+     */
+    public get residentSplatBudget(): number {
+        return this._residentBudget;
+    }
+
+    /**
+     * The total number of splats represented by valid level-0 leaf entries. This remains pending while source
+     * metadata is loading and is unavailable when no applicable level-0 entries exist or required metadata fails.
+     * @experimental
+     */
+    public get lod0SplatCount(): GaussianSplattingStreamLod0SplatCount {
+        return this._lod0SplatCount;
     }
 
     /**
@@ -1382,6 +1410,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         // resolves the max SH degree, so the resident-splat budget can now be sized with the SH/rotation byte cost.
         const fileIds = this._collectAllFileIds();
         const envCount = await this._gatherCountsAsync(fileIds);
+        this._resolveLod0SplatCount();
         if (this._disposed) {
             return;
         }
@@ -1618,6 +1647,36 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             }
         }
         return Array.from(ids).sort((a, b) => a - b);
+    }
+
+    /**
+     * Settles the level-0 diagnostic from normalized renderable leaf entries after their source metadata resolves.
+     * A file may back several leaf ranges, so its source count is deliberately not used in the total.
+     */
+    private _resolveLod0SplatCount(): void {
+        let total = 0;
+        let hasLod0Entry = false;
+        for (const node of this._leafNodes) {
+            if (node.availableLevels?.[0] !== 0) {
+                continue;
+            }
+            const entry = node.lods?.["0"];
+            if (!entry) {
+                this._lod0SplatCount = Object.freeze({ status: "unavailable" as const });
+                return;
+            }
+            hasLod0Entry = true;
+            if (!this._fileCounts.has(entry.file) || !this._fileMeta.has(entry.file)) {
+                this._lod0SplatCount = Object.freeze({ status: "unavailable" as const });
+                return;
+            }
+            total += entry.count;
+            if (!Number.isSafeInteger(total)) {
+                this._lod0SplatCount = Object.freeze({ status: "unavailable" as const });
+                return;
+            }
+        }
+        this._lod0SplatCount = hasLod0Entry ? Object.freeze({ status: "available" as const, count: total }) : Object.freeze({ status: "unavailable" as const });
     }
 
     /**

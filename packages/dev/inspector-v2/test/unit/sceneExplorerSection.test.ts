@@ -8,6 +8,7 @@ import { type ExplorerPaneOptions } from "../../src/services/panes/explorer/expl
 import { type ISceneContext, SceneContextIdentity } from "../../src/services/sceneContext";
 import { type ISelectionService } from "../../src/services/selectionService";
 import { SceneExplorerServiceDefinition } from "../../src/services/panes/scene/sceneExplorerService";
+import { GetExplorerNodeChildren, type IExplorerService, ExplorerServiceIdentity } from "../../src/services/panes/explorer/explorerService";
 import { type IShellService } from "shared-ui-components/modularTool/services/shellService";
 
 vi.hoisted(() => {
@@ -58,10 +59,10 @@ function CreateTestSceneExplorerService() {
         get groupCommands() {
             return [...(registration.options.groupCommandProviders?.items ?? [])];
         },
-        getNodes: () => registration.options.getNodes(),
-        get onNodesChanged() {
-            return registration.options.onNodesChanged;
+        get nodeProviders() {
+            return [...(registration.options.nodeProviders?.items ?? [])];
         },
+        getNodes: () => GetExplorerNodeChildren(scene, registration.options.getNodes(), registration.options.nodeProviders?.items ?? []),
     };
 }
 
@@ -106,6 +107,9 @@ describe("SceneExplorerService", () => {
 
     it("owns a single side pane titled Scene Explorer", () => {
         const service = CreateTestSceneExplorerService();
+        service.sceneExplorerService.addSection(CreateTestSection("Nodes", [{ name: "Mesh" }]));
+        service.sceneExplorerService.addItemCommand({ predicate: (context): context is TestEntity => true, getCommand: () => ({}) } as never);
+        service.sceneExplorerService.addGroupCommand({ predicate: (context): context is "Nodes" => context === "Nodes", getCommand: () => ({}) } as never);
 
         expect(PaneRegistrations).toHaveLength(1);
         expect(service.registration.options.title).toBe("Scene Explorer");
@@ -113,6 +117,10 @@ describe("SceneExplorerService", () => {
 
         service.sceneExplorerService.dispose?.();
         expect(service.registration.isDisposed).toBe(true);
+        expect(service.getNodes()).toEqual([]);
+        expect(service.nodeProviders).toEqual([]);
+        expect(service.itemCommands).toEqual([]);
+        expect(service.groupCommands).toEqual([]);
     });
 
     it("supplies the current scene and the Scene label as the explorer root", () => {
@@ -126,6 +134,7 @@ describe("SceneExplorerService", () => {
     it("consumes the scene context (and not a generic target context)", () => {
         expect(SceneExplorerServiceDefinition.consumes?.[0]).toBe(SceneContextIdentity);
         expect(SceneExplorerServiceDefinition.consumes).toHaveLength(3);
+        expect(SceneExplorerServiceDefinition.produces).toContain(ExplorerServiceIdentity);
     });
 
     it("adapts sections into explorer nodes ordered by section order", () => {
@@ -193,7 +202,7 @@ describe("SceneExplorerService", () => {
     it("notifies the explorer when sections are added or removed", () => {
         const service = CreateTestSceneExplorerService();
         let notifications = 0;
-        service.onNodesChanged?.add(() => notifications++);
+        service.registration.options.nodeProviders?.observable.add(() => notifications++);
 
         const registration = service.sceneExplorerService.addSection(CreateTestSection("Nodes", [{ name: "Mesh" }]));
         expect(notifications).toBe(1);
@@ -207,11 +216,39 @@ describe("SceneExplorerService", () => {
         const service = CreateTestSceneExplorerService();
         const entityCommand = { predicate: (context: unknown): context is TestEntity => true, getCommand: () => ({}) };
         const sectionCommand = { predicate: (context: unknown): context is "Nodes" => context === "Nodes", getCommand: () => ({}) };
+        const sharedService: IExplorerService = service.sceneExplorerService;
 
-        service.sceneExplorerService.addEntityCommand(entityCommand as never);
-        service.sceneExplorerService.addSectionCommand(sectionCommand as never);
+        const entityRegistration = service.sceneExplorerService.addEntityCommand(entityCommand as never);
+        const sectionRegistration = service.sceneExplorerService.addSectionCommand(sectionCommand as never);
 
         expect(service.itemCommands).toEqual([entityCommand]);
         expect(service.groupCommands).toEqual([sectionCommand]);
+
+        entityRegistration.dispose();
+        sectionRegistration.dispose();
+        expect(service.itemCommands).toEqual([]);
+        expect(service.groupCommands).toEqual([]);
+
+        sharedService.addItemCommand(entityCommand as never);
+        sharedService.addGroupCommand(sectionCommand as never);
+        expect(service.itemCommands).toEqual([entityCommand]);
+        expect(service.groupCommands).toEqual([sectionCommand]);
+    });
+
+    it("routes shared hierarchy providers through the same Explorer pane", () => {
+        const service = CreateTestSceneExplorerService();
+        const customEntity = {};
+        const sharedService: IExplorerService = service.sceneExplorerService;
+        const registration = sharedService.addNodeProvider({
+            predicate: (parent): parent is object => parent === service.scene,
+            getNodes: () => [{ id: "custom", entity: customEntity, getDisplayInfo: () => ({ name: "Custom" }) }],
+        });
+
+        expect(service.nodeProviders).toHaveLength(1);
+        expect(service.getNodes()[0].entity).toBe(customEntity);
+
+        registration.dispose();
+        registration.dispose();
+        expect(service.getNodes()).toEqual([]);
     });
 });

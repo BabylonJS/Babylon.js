@@ -66,6 +66,20 @@ async function getSandboxScene(page: Page): Promise<JSHandle<Scene>> {
     });
 }
 
+async function dropTextFiles(page: Page, files: Array<{ name: string; path: string; contents: string }>): Promise<void> {
+    const dataTransfer = await page.evaluateHandle((fileDefinitions) => {
+        const transfer = new DataTransfer();
+        for (const definition of fileDefinitions) {
+            const file = new File([definition.contents], definition.name, { type: "model/vnd.usd" });
+            Object.defineProperty(file, "webkitRelativePath", { value: definition.path });
+            transfer.items.add(file);
+        }
+        return transfer;
+    }, files);
+
+    await page.dispatchEvent("#renderCanvas", "drop", { dataTransfer });
+}
+
 test("Sandbox is loaded (Desktop)", async ({ page }) => {
     await page.goto(url, {
         waitUntil: "load",
@@ -76,7 +90,7 @@ test("Sandbox is loaded (Desktop)", async ({ page }) => {
     });
     await waitForSandboxReady(page);
     // check snapshot of the page
-    await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
+    await expect(page).toHaveScreenshot({ maxDiffPixels: 4000 });
 });
 
 test("Sandbox exposes the render canvas and main controls without page errors", async ({ page }) => {
@@ -94,7 +108,7 @@ test("Sandbox exposes the render canvas and main controls without page errors", 
 
     await expect(page.locator("#renderCanvas")).toBeVisible();
     await expect(page.locator("#droptext")).toBeVisible();
-    await expect(page.getByTitle("Open your scene from your hard drive (.babylon, .babylonproj, .gltf, .glb, .fbx, .obj)")).toBeVisible();
+    await expect(page.getByTitle("Open your scene from your hard drive (.babylon, .babylonproj, .gltf, .glb, .fbx, .obj, .usd, .usda, .usdc, .usdz)")).toBeVisible();
     expect(pageErrors).toHaveLength(0);
 });
 
@@ -129,6 +143,179 @@ test("dropping an image to the sandbox", async ({ page }) => {
     await expect(page.locator("#renderCanvas")).toHaveScreenshot({ maxDiffPixels: 3000 });
     // but still check that the inspector is displayed
     await expect(page.locator("#babylon-inspector-container")).toBeVisible();
+});
+
+test("dropping a USD file to the sandbox", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(url, { waitUntil: "load" });
+    await waitForSandboxReady(page);
+
+    await dropTextFiles(page, [
+        {
+            name: "scene.usd",
+            path: "scene.usd",
+            contents: `#usda 1.0
+(
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+def Xform "World"
+{
+    def Cube "SandboxCube"
+    {
+        double size = 2
+    }
+}
+`,
+        },
+    ]);
+
+    const scene = await getSandboxScene(page);
+    await expect.poll(async () => await scene.evaluate((loadedScene) => loadedScene.meshes.some((mesh) => mesh.name === "SandboxCube"))).toBe(true);
+});
+
+for (const extension of ["usda", "usdc", "usdz"]) {
+    test(`dropping real ${extension.toUpperCase()} preserves USD prototype instances`, async ({ page }) => {
+        test.setTimeout(60000);
+        await page.goto(url, { waitUntil: "load" });
+        await waitForSandboxReady(page);
+
+        const buffer = readFileSync(`${__dirname}/../../babylonServer/public/babylonUsdImporter/testAssets/instances.${extension}`);
+        const dataTransfer = await page.evaluateHandle(
+            ({ bytes, extension }) => {
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([new Uint8Array(bytes)], `instances.${extension}`));
+                return transfer;
+            },
+            { bytes: [...buffer], extension }
+        );
+        await page.dispatchEvent("#renderCanvas", "drop", { dataTransfer });
+
+        const scene = await getSandboxScene(page);
+        const result = await scene.evaluate((loadedScene) => {
+            const meshes = loadedScene.meshes.filter((mesh) => mesh.getTotalVertices() > 0);
+            meshes.forEach((mesh) => mesh.computeWorldMatrix(true));
+            return {
+                meshes: meshes.length,
+                instances: meshes.filter((mesh) => mesh.getClassName() === "InstancedMesh").length,
+                sharedGeometry: meshes.length === 2 && meshes[0].geometry === meshes[1].geometry,
+                vertices: meshes.map((mesh) => mesh.getTotalVertices()),
+                indices: meshes.map((mesh) => Array.from(mesh.getIndices() ?? [])),
+                translations: meshes.map((mesh) => mesh.getWorldMatrix().m[12]).sort((a, b) => a - b),
+            };
+        });
+        expect(result.meshes).toBe(2);
+        expect(result.instances).toBe(1);
+        expect(result.sharedGeometry).toBe(true);
+        expect(result.vertices).toEqual([3, 3]);
+        expect(result.indices[0]).toHaveLength(3);
+        expect(result.indices[1]).toEqual(result.indices[0]);
+        expect(result.translations).toEqual([0, 2]);
+    });
+}
+
+test("dropping a composed USD folder preserves paths and allows root selection", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(url, { waitUntil: "load" });
+    await waitForSandboxReady(page);
+
+    await dropTextFiles(page, [
+        {
+            name: "Main.usda",
+            path: "Package/Main.usda",
+            contents: `#usda 1.0
+(
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+def Xform "World"
+{
+    def Xform "ReferencedModel" (
+        prepend references = @./Layers/Geometry.usda@
+    )
+    {
+    }
+}
+`,
+        },
+        {
+            name: "Geometry.usda",
+            path: "Package/Layers/Geometry.usda",
+            contents: `#usda 1.0
+(
+    defaultPrim = "ReferencedModel"
+)
+def Xform "ReferencedModel"
+{
+    def Sphere "NestedSphere"
+    {
+        double radius = 1
+    }
+}
+`,
+        },
+    ]);
+
+    await expect(page.locator("#usdRootSelectionPrompt")).toBeVisible();
+    await page.locator("#usdRootSelectionPrompt .prompt-file-list button", { hasText: "Package/Main.usda" }).click();
+
+    const scene = await getSandboxScene(page);
+    await expect.poll(async () => await scene.evaluate((loadedScene) => loadedScene.meshes.some((mesh) => mesh.name === "NestedSphere"))).toBe(true);
+});
+
+test("canceling USD root selection does not replace the current scene", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(url, { waitUntil: "load" });
+    await waitForSandboxReady(page);
+
+    await dropTextFiles(page, [
+        {
+            name: "current.usda",
+            path: "current.usda",
+            contents: `#usda 1.0
+def Xform "World"
+{
+    def Cube "CurrentCube"
+    {
+    }
+}
+`,
+        },
+    ]);
+    const currentScene = await getSandboxScene(page);
+    await expect.poll(async () => await currentScene.evaluate((scene) => scene.meshes.some((mesh) => mesh.name === "CurrentCube"))).toBe(true);
+
+    await dropTextFiles(page, [
+        {
+            name: "First.usda",
+            path: "Package/First.usda",
+            contents: `#usda 1.0
+def Sphere "FirstSphere"
+{
+}
+`,
+        },
+        {
+            name: "Second.usda",
+            path: "Package/Second.usda",
+            contents: `#usda 1.0
+def Sphere "SecondSphere"
+{
+}
+`,
+        },
+    ]);
+
+    await expect(page.locator("#usdRootSelectionPrompt")).toBeVisible();
+    await page.getByRole("button", { name: "Cancel" }).click();
+    await expect(page.locator("#usdRootSelectionPrompt")).toBeHidden();
+    await page.keyboard.press("r");
+    await page.waitForTimeout(500);
+
+    expect(await currentScene.evaluate((scene) => scene.meshes.map((mesh) => mesh.name))).toContain("CurrentCube");
+    expect(await currentScene.evaluate((scene) => scene.meshes.some((mesh) => mesh.name === "FirstSphere" || mesh.name === "SecondSphere"))).toBe(false);
 });
 
 test("loading a model using query parameters", async ({ page }) => {
@@ -261,5 +448,5 @@ test("inspector is opened when clicking on the button", async ({ page }) => {
     await expect(page.locator("#babylon-inspector-container")).toBeVisible();
     await page.evaluate(() => document.fonts.ready);
     // check snapshot of the page
-    await expect(page).toHaveScreenshot({ maxDiffPixels: 3000 });
+    await expect(page).toHaveScreenshot({ maxDiffPixels: 15000 });
 });

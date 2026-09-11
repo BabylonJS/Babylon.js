@@ -1,6 +1,4 @@
-/**
- * @vitest-environment jsdom
- */
+// @vitest-environment jsdom
 
 import { FluentProvider, webLightTheme } from "@fluentui/react-components";
 import { act, type FunctionComponent, type ReactElement } from "react";
@@ -8,7 +6,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Explorer } from "../../src/components/explorer/explorer";
-import { type ExplorerNodeDescription } from "../../src/components/explorer/explorerModel";
+import { type ExplorerCommandProvider, type ExplorerNodeDescription } from "../../src/components/explorer/explorerModel";
 
 vi.hoisted(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -207,5 +205,70 @@ describe("Explorer root node", () => {
         RenderSelectionExplorer(root, [], customSelection, setSelectedEntity);
 
         expect(setSelectedEntity).not.toHaveBeenCalled();
+    });
+
+    it("disposes display metadata when topology rebuilds", () => {
+        const firstDispose = vi.fn();
+        const firstEntity = {};
+        const secondEntity = {};
+
+        RenderSelectionExplorer(root, [{ id: "first", entity: firstEntity, getDisplayInfo: () => ({ name: "First", dispose: firstDispose }) }], firstEntity, vi.fn());
+        expect(firstDispose).not.toHaveBeenCalled();
+
+        RenderSelectionExplorer(root, [{ id: "second", entity: secondEntity, getDisplayInfo: () => ({ name: "Second" }) }], secondEntity, vi.fn());
+        expect(firstDispose).toHaveBeenCalledOnce();
+    });
+
+    it("disposes item and group commands when their providers are removed", () => {
+        const itemDispose = vi.fn();
+        const groupDispose = vi.fn();
+        const itemEntity = {};
+        const childEntity = {};
+        const nodes: readonly ExplorerNodeDescription[] = [
+            { id: "item", entity: itemEntity, getDisplayInfo: () => ({ name: "Item" }) },
+            {
+                id: "group",
+                kind: "group",
+                getDisplayInfo: () => ({ name: "Group" }),
+                getChildren: () => [{ id: "child", entity: childEntity, getDisplayInfo: () => ({ name: "Child" }) }],
+            },
+        ];
+        const itemCommandProvider = {
+            predicate: (context: unknown): context is object => context === itemEntity,
+            getCommand: () => ({
+                type: "action",
+                displayName: "Inspect",
+                icon: () => null,
+                execute: () => {},
+                dispose: itemDispose,
+            }),
+        } satisfies ExplorerCommandProvider<object>;
+        const groupCommandProvider = {
+            predicate: (context: unknown): context is "Group" => context === "Group",
+            getCommand: () => ({
+                type: "action",
+                mode: "contextMenu",
+                displayName: "Create",
+                execute: () => {},
+                dispose: groupDispose,
+            }),
+        } satisfies ExplorerCommandProvider<"Group", "contextMenu">;
+        const render = (itemCommandProviders: readonly ExplorerCommandProvider<object>[], groupCommandProviders: readonly ExplorerCommandProvider<string, "contextMenu">[]) => {
+            act(() =>
+                root.render(
+                    <FluentProvider theme={webLightTheme}>
+                        <Explorer getNodes={() => nodes} itemCommandProviders={itemCommandProviders} groupCommandProviders={groupCommandProviders} />
+                    </FluentProvider>
+                )
+            );
+        };
+
+        render([itemCommandProvider], [groupCommandProvider]);
+        expect(itemDispose).not.toHaveBeenCalled();
+        expect(groupDispose).not.toHaveBeenCalled();
+
+        render([], []);
+        expect(itemDispose).toHaveBeenCalledOnce();
+        expect(groupDispose).toHaveBeenCalledOnce();
     });
 });

@@ -4,13 +4,14 @@ import { type ComponentType, type FunctionComponent, useCallback, useEffect, use
 
 import { type ExplorerCommandProvider, type ExplorerNodeDescription } from "../../../components/explorer/explorerModel";
 import { Explorer } from "../../../components/explorer/explorer";
+import { GetExplorerNodeChildren, type ExplorerNodeProvider } from "./explorerService";
 import { type ISelectionService } from "../../selectionService";
 import { type IShellService } from "shared-ui-components/modularTool/services/shellService";
 
 import { CubeTreeRegular } from "@fluentui/react-icons";
 
-import { useObservableState, useOrderedObservableCollection } from "shared-ui-components/modularTool/hooks/observableHooks";
-import { ObservableCollection } from "shared-ui-components/modularTool/misc/observableCollection";
+import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "shared-ui-components/modularTool/hooks/observableHooks";
+import { type IReadonlyObservableCollection, ObservableCollection } from "shared-ui-components/modularTool/misc/observableCollection";
 
 /**
  * Describes an Explorer side pane, including the services it needs and the hierarchy it displays.
@@ -69,14 +70,19 @@ export type ExplorerPaneOptions = Readonly<{
     onNodesChanged?: IReadonlyObservable<void>;
 
     /**
+     * Optional providers that contribute nodes beneath compatible entity-backed nodes.
+     */
+    nodeProviders?: IReadonlyObservableCollection<ExplorerNodeProvider<object>>;
+
+    /**
      * Optional command providers for nodes that represent an entity.
      */
-    itemCommandProviders?: ObservableCollection<ExplorerCommandProvider<object>>;
+    itemCommandProviders?: IReadonlyObservableCollection<ExplorerCommandProvider<object>>;
 
     /**
      * Optional command providers for group nodes (the command context is the group's display name).
      */
-    groupCommandProviders?: ObservableCollection<ExplorerCommandProvider<string, "contextMenu">>;
+    groupCommandProviders?: IReadonlyObservableCollection<ExplorerCommandProvider<string, "contextMenu">>;
 }>;
 
 // Rebuilds the tree when the owner reports that its set of top level nodes changed.
@@ -94,6 +100,25 @@ function useNodesVersion(onNodesChanged: IReadonlyObservable<void> | undefined):
     return version;
 }
 
+function useNodeProvidersVersion(providers: IReadonlyObservableCollection<ExplorerNodeProvider<object>>): number {
+    const [version, setVersion] = useState(0);
+
+    useEffect(() => {
+        let providerObservers = providers.items.map((provider) => provider.onChanged?.add(() => setVersion((version) => version + 1)));
+        const collectionObserver = providers.observable.add(() => {
+            providerObservers.forEach((observer) => observer?.remove());
+            providerObservers = providers.items.map((provider) => provider.onChanged?.add(() => setVersion((version) => version + 1)));
+        });
+
+        return () => {
+            collectionObserver.remove();
+            providerObservers.forEach((observer) => observer?.remove());
+        };
+    }, [providers]);
+
+    return version;
+}
+
 type ExplorerPaneProps = Readonly<{
     selectionService: ISelectionService;
     getRoot: () => Nullable<object>;
@@ -102,16 +127,19 @@ type ExplorerPaneProps = Readonly<{
     onRootChanged?: IReadonlyObservable<unknown>;
     getNodes: () => readonly ExplorerNodeDescription[];
     onNodesChanged?: IReadonlyObservable<void>;
-    itemCommandProviders: ObservableCollection<ExplorerCommandProvider<object>>;
-    groupCommandProviders: ObservableCollection<ExplorerCommandProvider<string, "contextMenu">>;
+    nodeProviders: IReadonlyObservableCollection<ExplorerNodeProvider<object>>;
+    itemCommandProviders: IReadonlyObservableCollection<ExplorerCommandProvider<object>>;
+    groupCommandProviders: IReadonlyObservableCollection<ExplorerCommandProvider<string, "contextMenu">>;
 }>;
 
 const ExplorerPane: FunctionComponent<ExplorerPaneProps> = (props) => {
-    const { selectionService, getRoot, rootLabel, rootIcon, onRootChanged, getNodes, onNodesChanged, itemCommandProviders, groupCommandProviders } = props;
+    const { selectionService, getRoot, rootLabel, rootIcon, onRootChanged, getNodes, onNodesChanged, nodeProviders, itemCommandProviders, groupCommandProviders } = props;
 
+    const currentNodeProviders = useObservableCollection(nodeProviders);
     const itemCommands = useOrderedObservableCollection(itemCommandProviders);
     const groupCommands = useOrderedObservableCollection(groupCommandProviders);
     const nodesVersion = useNodesVersion(onNodesChanged);
+    const nodeProvidersVersion = useNodeProvidersVersion(nodeProviders);
     const root = useObservableState(
         useCallback(() => getRoot(), [getRoot]),
         onRootChanged
@@ -130,11 +158,11 @@ const ExplorerPane: FunctionComponent<ExplorerPaneProps> = (props) => {
             entity: root,
             icon: rootIcon,
             getDisplayInfo: () => ({ name: rootLabel }),
-            getChildren: getNodes,
+            getChildren: () => GetExplorerNodeChildren(root, getNodes(), currentNodeProviders),
         };
 
         return [rootNode];
-    }, [rootLabel, rootIcon, getNodes, nodesVersion, root]);
+    }, [rootLabel, rootIcon, getNodes, nodesVersion, nodeProvidersVersion, currentNodeProviders, root]);
 
     return (
         <>
@@ -163,6 +191,7 @@ export function CreateExplorerPaneRegistration(shellService: IShellService, sele
     const { key, title, getRoot, rootLabel, rootIcon, onRootChanged, getNodes, onNodesChanged } = options;
 
     // These are created once per pane so the identities passed to the hooks below are stable.
+    const nodeProviders = options.nodeProviders ?? new ObservableCollection<ExplorerNodeProvider<object>>();
     const itemCommandProviders = options.itemCommandProviders ?? new ObservableCollection<ExplorerCommandProvider<object>>();
     const groupCommandProviders = options.groupCommandProviders ?? new ObservableCollection<ExplorerCommandProvider<string, "contextMenu">>();
 
@@ -183,6 +212,7 @@ export function CreateExplorerPaneRegistration(shellService: IShellService, sele
                 onRootChanged={onRootChanged}
                 getNodes={getNodes}
                 onNodesChanged={onNodesChanged}
+                nodeProviders={nodeProviders}
                 itemCommandProviders={itemCommandProviders}
                 groupCommandProviders={groupCommandProviders}
             />

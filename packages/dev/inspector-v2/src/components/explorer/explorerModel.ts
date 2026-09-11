@@ -7,11 +7,13 @@ import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 /**
  * The value used to uniquely identify a node within the Explorer tree (e.g. for expansion state).
  * This matches the Fluent `TreeItemValue` type.
+ * @experimental
  */
 export type ExplorerNodeValue = string | number;
 
 /**
  * Information about how to display a node in the Explorer tree.
+ * @experimental
  */
 export type ExplorerDisplayInfo = Partial<IDisposable> &
     Readonly<{
@@ -35,6 +37,7 @@ export type ExplorerDisplayInfo = Partial<IDisposable> &
 /**
  * Configuration for drag-and-drop behavior within a branch of the Explorer tree.
  * The configuration applies to the node it is specified on as well as all of its descendants.
+ * @experimental
  */
 export type ExplorerDragDropConfig<T> = Readonly<{
     /**
@@ -86,6 +89,7 @@ type ContextMenuCommand = {
 
 /**
  * The supported command modes (inline or context menu).
+ * @experimental
  */
 export type ExplorerCommandMode = NonNullable<(InlineCommand | ContextMenuCommand)["mode"]>;
 
@@ -109,11 +113,13 @@ type ToggleCommand = {
 
 /**
  * The supported command types (action or toggle).
+ * @experimental
  */
 export type ExplorerCommandType = (ActionCommand | ToggleCommand)["type"];
 
 /**
  * Describes a command that can be executed on a node in the Explorer.
+ * @experimental
  */
 export type ExplorerCommand<ModeT extends ExplorerCommandMode = ExplorerCommandMode, TypeT extends ExplorerCommandType = ExplorerCommandType> = Partial<IDisposable> &
     Readonly<{
@@ -143,6 +149,7 @@ export type ExplorerCommand<ModeT extends ExplorerCommandMode = ExplorerCommandM
 
 /**
  * Provides a command for a specific context (an entity or a group name) in the Explorer.
+ * @experimental
  */
 export type ExplorerCommandProvider<ContextT, ModeT extends ExplorerCommandMode = ExplorerCommandMode, TypeT extends ExplorerCommandType = ExplorerCommandType> = Readonly<{
     /**
@@ -167,6 +174,7 @@ export type ExplorerCommandProvider<ContextT, ModeT extends ExplorerCommandMode 
  * - "root": The single top level node representing the object being inspected (e.g. a Scene or an Engine).
  * - "group": A heading style node (e.g. "Nodes", "Materials", "Auxiliary Surfaces").
  * - "item": A standard node representing an entity within the tree (e.g. a mesh or a material).
+ * @experimental
  */
 export type ExplorerNodeKind = "root" | "group" | "item";
 
@@ -177,6 +185,7 @@ export type ExplorerNodeKind = "root" | "group" | "item";
  * presentation and enumerates its own children, which means an Explorer hierarchy can be arbitrarily
  * deep and fully heterogeneous (nodes of different kinds, backed by unrelated entity types, can be
  * freely nested within each other).
+ * @experimental
  */
 export type ExplorerNodeDescription = Readonly<{
     /**
