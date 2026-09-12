@@ -3570,6 +3570,7 @@
         {
             "title": "FrameGraph nrge OIT (Geometry renderer)",
             "playgroundId": "#MIACY4#14",
+            "canvasBackgroundColor": "white",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["FrameGraph", "Materials", "Meshes"]
         },
