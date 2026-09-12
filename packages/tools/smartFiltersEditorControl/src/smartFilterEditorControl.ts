@@ -15,6 +15,19 @@ import { type LogEntry } from "./components/log/logComponent.js";
 import { type BlockEditorRegistration } from "./configuration/blockEditorRegistration.js";
 import { type ObservableProperty } from "./helpers/observableProperty.js";
 
+type DisposeObservable = {
+    addOnce(callback: () => void): unknown;
+};
+
+function GetDisposeObservable(engine: unknown): DisposeObservable | null {
+    if (!engine || typeof engine !== "object") {
+        return null;
+    }
+
+    const onDisposeObservable = (engine as { onDisposeObservable?: Partial<DisposeObservable> }).onDisposeObservable;
+    return typeof onDisposeObservable?.addOnce === "function" ? (onDisposeObservable as DisposeObservable) : null;
+}
+
 /**
  * Options to configure the Smart Filter Editor
  */
@@ -241,7 +254,7 @@ export class SmartFilterEditorControl {
 
         // Close the popup window when the page is refreshed or scene is disposed
         if (globalState.smartFilter && options.engine && this._PopupWindow) {
-            options.engine.onDisposeObservable.addOnce(() => {
+            GetDisposeObservable(options.engine)?.addOnce(() => {
                 if (this._PopupWindow) {
                     this._PopupWindow.close();
                 }
