@@ -428,6 +428,15 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "OpenPBR Retroreflection Anisotropic 2D Environment",
+            "playgroundId": "#6N05SO#0",
+            "replace": "material.specularRoughnessAnisotropy = 0.85;, material.specularRoughnessAnisotropy = 0.85; material.specularRetroreflectivity = 1;",
+            "referenceImage": "openpbr-retroreflection-anisotropic-2d-environment.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Loaders", "Meshes", "PBR", "Textures", "glTF"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "OpenPBR Base Diffuse Roughness Analytical Lights",
             "playgroundId": "#MXACV7#30",
             "referenceImage": "openpbr_base_diffuse_roughness.png",

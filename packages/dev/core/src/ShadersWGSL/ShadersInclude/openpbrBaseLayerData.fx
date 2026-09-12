@@ -13,6 +13,7 @@ var specular_weight: f32 = 1.0;
 var specular_roughness: f32 = 0.3;
 var specular_color: vec3f = vec3f(1.0);
 var specular_roughness_anisotropy: f32 = 0.0;
+var specular_retroreflectivity: f32 = 0.0;
 var specular_ior: f32 = 1.5;
 var alpha: f32 = 1.0;
 var geometry_tangent: vec2f = vec2f(1.0, 0.0);
@@ -41,6 +42,10 @@ var geometry_thickness: f32 = 0.0;
 
 #ifdef SPECULAR_ROUGHNESS_ANISOTROPY
     let anisotropyFromTexture: f32 = TEXRD(specularRoughnessAnisotropySampler, specularRoughnessAnisotropySamplerSampler, fragmentInputs.vSpecularRoughnessAnisotropyUV + uvOffset).r * uniforms.vSpecularRoughnessAnisotropyInfos.y;
+#endif
+
+#ifdef SPECULAR_RETROREFLECTIVITY
+    let retroreflectivityFromTexture: f32 = TEXRD(specularRetroreflectivitySampler, specularRetroreflectivitySamplerSampler, fragmentInputs.vSpecularRetroreflectivityUV + uvOffset).r;
 #endif
 
 #ifdef GEOMETRY_OPACITY
@@ -98,6 +103,7 @@ specular_color = uniforms.vSpecularColor.rgb;
 specular_weight = uniforms.vReflectanceInfo.a;
 specular_ior = uniforms.vReflectanceInfo.z;
 specular_roughness_anisotropy = uniforms.vSpecularAnisotropy.b;
+specular_retroreflectivity = uniforms.vSpecularColor.a;
 geometry_tangent = uniforms.vSpecularAnisotropy.rg;
 geometry_thickness = uniforms.vGeometryThickness;
 
@@ -193,6 +199,10 @@ geometry_thickness = uniforms.vGeometryThickness;
     specular_roughness_anisotropy *= geometryTangentFromTexture.b;
 #elif defined(SPECULAR_ROUGHNESS_ANISOTROPY)
     specular_roughness_anisotropy *= anisotropyFromTexture;
+#endif
+
+#ifdef SPECULAR_RETROREFLECTIVITY
+    specular_retroreflectivity *= retroreflectivityFromTexture;
 #endif
 
 #ifdef DETAIL

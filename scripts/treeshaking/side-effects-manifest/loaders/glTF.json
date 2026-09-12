@@ -53,6 +53,8 @@
         "glTF/2.0/Extensions/KHR_materials_iridescence.types.ts": ["declare-module"],
         "glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts": ["top-level-call"],
         "glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.types.ts": ["declare-module"],
+        "glTF/2.0/Extensions/KHR_materials_retroreflection.ts": ["top-level-call"],
+        "glTF/2.0/Extensions/KHR_materials_retroreflection.types.ts": ["declare-module"],
         "glTF/2.0/Extensions/KHR_materials_sheen.ts": ["top-level-call"],
         "glTF/2.0/Extensions/KHR_materials_sheen.types.ts": ["declare-module"],
         "glTF/2.0/Extensions/KHR_materials_specular.ts": ["top-level-call"],

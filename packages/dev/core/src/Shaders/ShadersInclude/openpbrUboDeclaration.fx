@@ -149,5 +149,9 @@ uniform Material {
 #define ADDITIONAL_UBO_DECLARATION
 };
 
+#if defined(SPECULAR_RETROREFLECTIVITY) && SPECULAR_RETROREFLECTIVITYDIRECTUV == 0 && !defined(NATIVE)
+uniform mat4 specularRetroreflectivityMatrix;
+#endif
+
 #include<sceneUboDeclaration>
 #include<meshUboDeclaration>

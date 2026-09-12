@@ -143,6 +143,62 @@
         return reflectionCoords;
     }
 
+    #ifdef REFLECTIONMAP_3D
+        fn createReflectionCoordsFromDirection(vPositionW: vec3f, directionW: vec3f) -> vec3f
+    #else
+        fn createReflectionCoordsFromDirection(vPositionW: vec3f, directionW: vec3f) -> vec2f
+    #endif
+    {
+        var direction: vec3f = normalize(directionW);
+        var reflectionVector: vec3f;
+
+        #if defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
+            reflectionVector = computeMirroredFixedEquirectangularCoords(vec4f(vPositionW, 1.0f), vec3f(0.0f), direction);
+        #elif defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED)
+            reflectionVector = computeFixedEquirectangularCoords(vec4f(vPositionW, 1.0f), vec3f(0.0f), direction);
+        #elif defined(REFLECTIONMAP_EQUIRECTANGULAR)
+            direction = normalize((uniforms.reflectionMatrix * vec4f(direction, 0.0f)).xyz);
+            reflectionVector = computeFixedEquirectangularCoords(vec4f(vPositionW, 1.0f), vec3f(0.0f), direction);
+        #elif defined(REFLECTIONMAP_SPHERICAL)
+            reflectionVector = normalize((scene.view * vec4f(direction, 0.0f)).xyz);
+            reflectionVector = (uniforms.reflectionMatrix * vec4f(reflectionVector, 0.0f)).xyz;
+            reflectionVector.z -= 1.0f;
+            let reflectionLength: f32 = 2.0f * length(reflectionVector);
+            reflectionVector = vec3f(reflectionVector.x / reflectionLength + 0.5f, 1.0f - reflectionVector.y / reflectionLength - 0.5f, 0.0f);
+        #elif defined(REFLECTIONMAP_PLANAR)
+            reflectionVector = (uniforms.reflectionMatrix * vec4f(direction, 1.0f)).xyz;
+        #elif defined(REFLECTIONMAP_CUBIC)
+            #ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
+                direction = parallaxCorrectNormal(vPositionW, direction, uniforms.vReflectionSize, uniforms.vReflectionPosition);
+            #endif
+            reflectionVector = (uniforms.reflectionMatrix * vec4f(direction, 0.0f)).xyz;
+            #ifdef INVERTCUBICMAP
+                reflectionVector.y *= -1.0f;
+            #endif
+        #elif defined(REFLECTIONMAP_PROJECTION)
+            reflectionVector = computeProjectionCoords(vec4f(vPositionW, 1.0f), scene.view, uniforms.reflectionMatrix);
+        #elif defined(REFLECTIONMAP_SKYBOX)
+            reflectionVector = computeSkyBoxCoords(direction, uniforms.reflectionMatrix);
+        #else
+            reflectionVector = vec3f(0.0f);
+        #endif
+
+        #ifdef REFLECTIONMAP_OPPOSITEZ
+            reflectionVector.z *= -1.0f;
+        #endif
+
+        #ifdef REFLECTIONMAP_3D
+            return reflectionVector;
+        #else
+            var reflectionCoords: vec2f = reflectionVector.xy;
+            #ifdef REFLECTIONMAP_PROJECTION
+                reflectionCoords /= reflectionVector.z;
+            #endif
+            reflectionCoords.y = 1.0f - reflectionCoords.y;
+            return reflectionCoords;
+        #endif
+    }
+
     fn sampleRadiance(
         alphaG: f32
         , reflectionMicrosurfaceInfos: vec3f
@@ -208,6 +264,7 @@
         , noise: vec3f
         , isRefraction: bool
         , ior: f32
+        , useDirectionMapping: bool
     #ifdef REFLECTIONMAP_3D
         , reflectionSampler: texture_cube<f32>
         , reflectionSamplerSampler: sampler
@@ -293,35 +350,42 @@
                     bentNormal = normalW;
                 }
                 
+                var sampleDirection: vec3f;
+                if (isRefraction) {
+                    sampleDirection = double_refract(-viewDirectionW, bentNormal, ior);
+                } else {
+                    sampleDirection = reflect(-viewDirectionW, bentNormal);
+                }
                 #ifdef REFLECTIONMAP_3D
                     var reflectionCoords: vec3f;
-                    if (isRefraction) {
-                        reflectionCoords = double_refract(-viewDirectionW, bentNormal, ior);
-                    } else {
-                        reflectionCoords = reflect(-viewDirectionW, bentNormal);
-                    }
-                    reflectionCoords = (uniforms.reflectionMatrix * vec4f(reflectionCoords, 0.f)).xyz;
-                    #ifdef REFLECTIONMAP_OPPOSITEZ
-                        reflectionCoords.z *= -1.0f;
-                    #endif
                 #else
-                    var sampleDirection: vec3f;
-                    if (isRefraction) {
-                        sampleDirection = double_refract(-viewDirectionW, bentNormal, ior);
-                    } else {
-                        sampleDirection = reflect(-viewDirectionW, bentNormal);
-                    }
-                    let originalViewDirectionW: vec3f = normalize(scene.vEyePosition.xyz - positionW);
-                    let mappingNormalCandidate: vec3f = originalViewDirectionW + sampleDirection;
-                    var mappingNormal: vec3f;
-                    if (dot(mappingNormalCandidate, mappingNormalCandidate) > Epsilon) {
-                        mappingNormal = normalize(mappingNormalCandidate);
-                    } else {
-                        let perpendicularAxis: vec3f = select(vec3f(0.0f, 1.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), abs(originalViewDirectionW.x) < 0.9f);
-                        mappingNormal = normalize(cross(originalViewDirectionW, perpendicularAxis));
-                    }
-                    let reflectionCoords: vec2f = createReflectionCoords(positionW, mappingNormal);
+                    var reflectionCoords: vec2f;
                 #endif
+                if (useDirectionMapping) {
+                    if (dot(sampleDirection, sampleDirection) <= Epsilon) {
+                        let perpendicularAxis: vec3f = select(vec3f(0.0f, 1.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), abs(viewDirectionW.x) < 0.9f);
+                        sampleDirection = normalize(cross(viewDirectionW, perpendicularAxis));
+                    }
+                    reflectionCoords = createReflectionCoordsFromDirection(positionW, sampleDirection);
+                } else {
+                    #ifdef REFLECTIONMAP_3D
+                        reflectionCoords = (uniforms.reflectionMatrix * vec4f(sampleDirection, 0.0f)).xyz;
+                        #ifdef REFLECTIONMAP_OPPOSITEZ
+                            reflectionCoords.z *= -1.0f;
+                        #endif
+                    #else
+                        let originalViewDirectionW: vec3f = normalize(scene.vEyePosition.xyz - positionW);
+                        let mappingNormalCandidate: vec3f = originalViewDirectionW + sampleDirection;
+                        var mappingNormal: vec3f;
+                        if (dot(mappingNormalCandidate, mappingNormalCandidate) > Epsilon) {
+                            mappingNormal = normalize(mappingNormalCandidate);
+                        } else {
+                            let perpendicularAxis: vec3f = select(vec3f(0.0f, 1.0f, 0.0f), vec3f(1.0f, 0.0f, 0.0f), abs(originalViewDirectionW.x) < 0.9f);
+                            mappingNormal = normalize(cross(originalViewDirectionW, perpendicularAxis));
+                        }
+                        reflectionCoords = createReflectionCoords(positionW, mappingNormal);
+                    #endif
+                }
                 radianceSample = textureSampleLevel(reflectionSampler, reflectionSamplerSampler, reflectionCoords, reflectionLOD);
                 #ifdef RGBDREFLECTION
                     accumulatedRadiance += vec3f(sample_weight) * fromRGBD(radianceSample);
