@@ -3,19 +3,23 @@
 // Does depth-of-field blur, edge blur
 // Inspired by Francois Tarlier & Martins Upitis
 
-// Explicit-LOD (level 0) sampling, used *only* for the blur samples in getBlurColor / sampleScreen and the
-// branches of main() below. Those run inside control flow that depends on the per-pixel blur level
-// (if (blur_level > 1.0) ...) / blur amount, i.e. non-uniform control flow, where implicit-derivative
-// sampling (texture2D) is illegal and breaks differently on each backend:
-//   - WebGL: at the boundary between two blur levels a 2x2 quad straddles the branch, so the derivatives are
-//     undefined and WebGL returns a garbage LOD -> a thin seam along that boundary.
+// Explicit-LOD sampling, used *only* for the blur samples in getBlurColor / sampleScreen and the branches of
+// main() below. Those run inside control flow that depends on the per-pixel blur level (if (blur_level > 1.0)
+// ...) / blur amount, i.e. non-uniform control flow. Implicit-derivative sampling (texture2D) computes its LOD
+// from screen-space derivatives, which are only well-defined in uniform control flow, so it is illegal here and
+// breaks differently on each backend:
+//   - WebGL2: at the boundary between two blur levels a 2x2 quad straddles the branch, so the derivatives are
+//     undefined and the driver returns a garbage LOD -> a thin seam along that boundary.
 //   - WebGPU: WGSL forbids implicit-derivative sampling in non-uniform control flow outright, so the
 //     auto-transpiled shader fails to compile ("textureSample must only be called from uniform control flow")
 //     and the pipeline is invalid.
-// Explicit LOD 0 is derivative-free, so it is legal in non-uniform control flow and fixes both. All textures
-// sampled this way are mip-less post-process render targets, so level 0 loses nothing. On WebGPU/WebGL2/Native
-// this maps to textureLod (which twgsl lowers to textureSampleLevel for WebGPU); WebGL1 falls back to the
-// biased texture2D form.
+// texture2DLodEXT/textureLod takes an explicit, derivative-free LOD, which is what makes it legal in non-uniform
+// control flow. Level 0 is the deliberate choice: these render targets are NOT mip-less (the pipeline uses
+// trilinear sampling, so PostProcess generates mipmaps), and the blur wants the base image rather than an
+// undefined implicit mip. On WebGPU/WebGL2/Native this maps to textureLod (twgsl lowers it to textureSampleLevel
+// for WebGPU).
+// WebGL1 has no texture2DLodEXT and falls back to biased texture2D, which is still implicit-derivative sampling:
+// the seam fix does NOT apply on WebGL1 (that engine is excluded from the DoF visualization test).
 // NOTE: reads in uniform control flow (the depth read, and the grain read guarded by the uniform grain_amount)
 // intentionally keep implicit-LOD texture2D so mip selection still works for a user-supplied grain texture.
 #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
