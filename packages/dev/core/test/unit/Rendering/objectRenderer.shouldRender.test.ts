@@ -5,6 +5,9 @@ import { Scene } from "core/scene";
 import { ObjectRenderer } from "core/Rendering/objectRenderer";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Vector3 } from "core/Maths/math.vector";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
+import "core/Meshes/instancedMesh";
+import "core/Rendering/edgesRenderer";
 
 describe("ObjectRenderer.shouldRender", () => {
     let engine: Engine;
@@ -109,6 +112,42 @@ describe("ObjectRenderer.shouldRender", () => {
         renderer.finishRender();
         expect(scene.activeCamera).toBe(sceneCamera);
         expect(activeCameraChanged).not.toHaveBeenCalled();
+
+        renderer.dispose();
+    });
+
+    it("should wait for edge rendering to be ready", () => {
+        new ArcRotateCamera("camera", 0, 0, 10, Vector3.Zero(), scene);
+        const mesh = MeshBuilder.CreateBox("box", undefined, scene);
+        mesh.enableEdgesRendering();
+
+        vi.spyOn(mesh, "isReady").mockReturnValue(true);
+        const edgesReady = vi.spyOn(mesh.edgesRenderer!, "isReady").mockReturnValue(false);
+
+        const renderer = new ObjectRenderer("test", scene);
+        renderer.renderList = [mesh];
+
+        expect(renderer.isReadyForRendering(256, 256)).toBe(false);
+        expect(edgesReady).toHaveBeenCalledWith(false);
+
+        renderer.dispose();
+    });
+
+    it("should wait for shared instance edge rendering to be ready", () => {
+        new ArcRotateCamera("camera", 0, 0, 10, Vector3.Zero(), scene);
+        const source = MeshBuilder.CreateBox("source", undefined, scene);
+        source.enableEdgesRendering();
+        source.edgesShareWithInstances = true;
+        const instance = source.createInstance("instance");
+
+        vi.spyOn(instance, "isReady").mockReturnValue(true);
+        const edgesReady = vi.spyOn(source.edgesRenderer!, "isReady").mockReturnValue(false);
+
+        const renderer = new ObjectRenderer("test", scene);
+        renderer.renderList = [instance];
+
+        expect(renderer.isReadyForRendering(256, 256)).toBe(false);
+        expect(edgesReady).toHaveBeenCalledWith(true);
 
         renderer.dispose();
     });

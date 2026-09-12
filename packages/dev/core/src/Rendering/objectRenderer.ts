@@ -12,6 +12,7 @@ import {
     type BoundingBoxRenderer,
     type AbstractEngine,
     type ClusteredLightContainer,
+    type Mesh,
 } from "core/index";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { Observable } from "../Misc/observable";
@@ -824,6 +825,23 @@ export class ObjectRenderer {
                 } else if (!mesh.isReady(true)) {
                     returnValue = false;
                     continue;
+                }
+
+                let edgesRenderer = mesh._edgesRenderer;
+                let useInstances = mesh.hasThinInstances;
+                if (mesh.isAnInstance) {
+                    const sourceMesh = (mesh as InstancedMesh).sourceMesh;
+                    if (sourceMesh.edgesShareWithInstances) {
+                        edgesRenderer = sourceMesh._edgesRenderer;
+                        useInstances = true;
+                    }
+                } else if (mesh.hasInstances && (mesh as Mesh).edgesShareWithInstances) {
+                    useInstances = true;
+                }
+                if (this.renderOpaqueMeshes && edgesRenderer?.isEnabled) {
+                    if (!edgesRenderer.isReady(useInstances)) {
+                        returnValue = false;
+                    }
                 }
             }
 

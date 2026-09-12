@@ -47,9 +47,10 @@ export interface IEdgesRenderer extends IDisposable {
 
     /**
      * Checks whether or not the edges renderer is ready to render.
+     * @param useInstances Defines whether the instanced shader variant should be checked. If omitted, the current rendering state is used.
      * @returns true if ready, otherwise false.
      */
-    isReady(): boolean;
+    isReady(useInstances?: boolean): boolean;
 
     /**
      * List of instances to render in case the source mesh has instances
@@ -862,10 +863,12 @@ export class EdgesRenderer implements IEdgesRenderer {
 
     /**
      * Checks whether or not the edges renderer is ready to render.
+     * @param useInstances Defines whether the instanced shader variant should be checked. If omitted, the current rendering state is used.
      * @returns true if ready, otherwise false.
      */
-    public isReady(): boolean {
-        return this._lineShader.isReady(this._source, (this._source.hasInstances && this.customInstances.length > 0) || this._source.hasThinInstances);
+    public isReady(useInstances?: boolean): boolean {
+        useInstances ??= (this._source.hasInstances && this.customInstances.length > 0) || this._source.hasThinInstances;
+        return this._lineShader.isReady(this._source, useInstances);
     }
 
     /**
