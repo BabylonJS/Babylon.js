@@ -20,6 +20,7 @@ import { MeshPropertiesServiceDefinition } from "./services/panes/properties/mes
 import { RenderingContextPropertiesServiceDefinition } from "./services/panes/properties/renderingContextPropertiesService";
 import { SceneNodePropertiesServiceDefinition } from "./services/panes/properties/sceneNodePropertiesService";
 import { ShadowGeneratorPropertiesServiceDefinition } from "./services/panes/properties/shadowGeneratorPropertiesService";
+import { SpriteLayerPropertiesServiceDefinition } from "./services/panes/properties/spriteLayerPropertiesService";
 import { TextLayerPropertiesServiceDefinition } from "./services/panes/properties/textLayerPropertiesService";
 import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
 import { CameraExplorerServiceDefinition } from "./services/panes/scene/cameraExplorerService";
@@ -27,6 +28,7 @@ import { LightExplorerServiceDefinition } from "./services/panes/scene/lightExpl
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "./services/panes/scene/meshExplorerService";
 import { ShadowGeneratorExplorerServiceDefinition } from "./services/panes/scene/shadowGeneratorExplorerService";
+import { SpriteLayerExplorerServiceDefinition } from "./services/panes/scene/spriteLayerExplorerService";
 import { TextLayerExplorerServiceDefinition } from "./services/panes/scene/textLayerExplorerService";
 import { TextureExplorerServiceDefinition } from "./services/panes/scene/textureExplorerService";
 
@@ -76,6 +78,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 MaterialExplorerServiceDefinition,
                 TextureExplorerServiceDefinition,
                 TextLayerExplorerServiceDefinition,
+                SpriteLayerExplorerServiceDefinition,
                 PropertiesServiceDefinition,
                 EnginePropertiesServiceDefinition,
                 RenderingContextPropertiesServiceDefinition,
@@ -87,6 +90,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 MaterialPropertiesServiceDefinition,
                 TexturePropertiesServiceDefinition,
                 TextLayerPropertiesServiceDefinition,
+                SpriteLayerPropertiesServiceDefinition,
                 SettingsServiceDefinition,
                 watcherSettingsServiceDefinition,
                 ShellSettingsServiceDefinition,

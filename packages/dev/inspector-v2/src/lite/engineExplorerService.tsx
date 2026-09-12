@@ -12,7 +12,13 @@ import { type IShellService, ShellServiceIdentity } from "shared-ui-components/m
 import { ObservableCollection } from "shared-ui-components/modularTool/misc/observableCollection";
 
 import { CreateExplorerPaneRegistration } from "../services/panes/explorer/explorerPane";
-import { CreateExplorerService, type IExplorerService, ExplorerServiceIdentity } from "../services/panes/explorer/explorerService";
+import {
+    CreateExplorerService,
+    GetExplorerNodeChildren,
+    type ExplorerNodeProvider,
+    type IExplorerService,
+    ExplorerServiceIdentity,
+} from "../services/panes/explorer/explorerService";
 import { type ISelectionService, SelectionServiceIdentity } from "../services/selectionService";
 import { type IWatcherService, WatcherServiceIdentity } from "../services/watcherService";
 import { type IEngineContext, EngineContextIdentity } from "./engineContext";
@@ -308,6 +314,26 @@ function CreateEngineNodes(
     return nodes;
 }
 
+function GetExplorerEntities(
+    engine: EngineContext,
+    watcherService: IWatcherService,
+    presentationProviders: readonly UntypedRenderingContextPresentationProvider[],
+    nodeProviders: readonly ExplorerNodeProvider<object>[]
+): ReadonlySet<object> {
+    const entities = new Set<object>([engine]);
+    const collectEntities = (nodes: readonly ExplorerNodeDescription[]) => {
+        for (const node of nodes) {
+            if (node.entity) {
+                entities.add(node.entity);
+            }
+            collectEntities(node.getChildren?.() ?? []);
+        }
+    };
+
+    collectEntities(GetExplorerNodeChildren(engine, CreateEngineNodes(engine, watcherService, presentationProviders), nodeProviders));
+    return entities;
+}
+
 /**
  * Owns the "Explorer" pane of the Babylon Lite Inspector, which displays the engine hierarchy
  * (rendering contexts of the primary surface, and any auxiliary surfaces and their contexts).
@@ -349,8 +375,28 @@ export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorer
             groupCommandProviders: explorerService.groupCommandProviders,
         });
 
-        const topologyWatcher = watcherService.watchValue(getTopologySnapshot, () => onNodesChanged.notifyObservers(), AreTopologySnapshotsEqual);
-        const nodeProvidersObserver = nodeProviders.observable.add(() => onNodesChanged.notifyObservers());
+        const getExplorerEntities = () => GetExplorerEntities(engine, watcherService, presentationProviders.items, explorerService.nodeProviders.items);
+        let previousExplorerEntities = getExplorerEntities();
+        const handleExplorerTopologyChanged = () => {
+            const explorerEntities = getExplorerEntities();
+            const selectedEntity = selectionService.selectedEntity;
+            if (selectedEntity && previousExplorerEntities.has(selectedEntity) && !explorerEntities.has(selectedEntity)) {
+                selectionService.selectedEntity = null;
+            }
+            previousExplorerEntities = explorerEntities;
+            onNodesChanged.notifyObservers();
+        };
+        let explorerNodeProviderObservers: ReturnType<NonNullable<ExplorerNodeProvider<object>["onChanged"]>["add"]>[] = [];
+        const updateExplorerNodeProviderObservers = () => {
+            explorerNodeProviderObservers.forEach((observer) => observer.remove());
+            explorerNodeProviderObservers = explorerService.nodeProviders.items.flatMap((provider) => {
+                const observer = provider.onChanged?.add(handleExplorerTopologyChanged);
+                return observer ? [observer] : [];
+            });
+            handleExplorerTopologyChanged();
+        };
+        const topologyWatcher = watcherService.watchValue(getTopologySnapshot, handleExplorerTopologyChanged, AreTopologySnapshotsEqual);
+        const explorerNodeProvidersObserver = explorerService.nodeProviders.observable.add(updateExplorerNodeProviderObservers);
         const presentationProvidersObserver = presentationProviders.observable.add(() => onNodesChanged.notifyObservers());
 
         // Lite keeps its rendering-context vocabulary while adapting hierarchy and commands onto the generic
@@ -383,7 +429,8 @@ export const EngineExplorerServiceDefinition: ServiceDefinition<[IEngineExplorer
             addItemCommand: explorerService.addItemCommand,
             addGroupCommand: explorerService.addGroupCommand,
             dispose: () => {
-                nodeProvidersObserver.remove();
+                explorerNodeProvidersObserver.remove();
+                explorerNodeProviderObservers.forEach((observer) => observer.remove());
                 presentationProvidersObserver.remove();
                 topologyWatcher.dispose();
                 paneRegistration.dispose();
