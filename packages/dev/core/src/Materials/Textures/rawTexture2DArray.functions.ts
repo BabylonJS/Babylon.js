@@ -6,11 +6,11 @@ import { RawTexture2DArray } from "./rawTexture2DArray";
 
 /**
  * These helpers populate 2D array texture layers from decoded image sources.
- * They rely on the AbstractEngine.updateTextureArrayLayerFromImageSource engine extension, which is
- * an opt-in side effect. Register it before use by importing the matching module for your backend:
+ * They rely on the AbstractEngine.updateTextureArrayLayerFromImageSource engine extension. The full
+ * Engine build registers it for both backends at load time. On the side-effect-free (pure /
+ * tree-shaken) path it is opt-in: import the matching module for your backend before use:
  * - WebGL2:  import "core/Engines/Extensions/engine.texture2DArrayImageSource";
  * - WebGPU:  import "core/Engines/WebGPU/Extensions/engine.texture2DArrayImageSource";
- * (the full Engine build does not register it by default to keep it out of every engine bundle).
  *
  * Consuming the result: the built-in way to sample a chosen layer is Node Material's Texture block,
  * which exposes a `layer` input (feed it a Float) and samples the array at that layer for you — no
