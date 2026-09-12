@@ -151,4 +151,23 @@ describe("ObjectRenderer.shouldRender", () => {
 
         renderer.dispose();
     });
+
+    it("should use instance-local edge readiness when the shared renderer is unavailable", () => {
+        new ArcRotateCamera("camera", 0, 0, 10, Vector3.Zero(), scene);
+        const source = MeshBuilder.CreateBox("source", undefined, scene);
+        source.edgesShareWithInstances = true;
+        const instance = source.createInstance("instance");
+        instance.enableEdgesRendering();
+
+        vi.spyOn(instance, "isReady").mockReturnValue(true);
+        const edgesReady = vi.spyOn(instance.edgesRenderer!, "isReady").mockReturnValue(false);
+
+        const renderer = new ObjectRenderer("test", scene);
+        renderer.renderList = [instance];
+
+        expect(renderer.isReadyForRendering(256, 256)).toBe(false);
+        expect(edgesReady).toHaveBeenCalledWith(false);
+
+        renderer.dispose();
+    });
 });

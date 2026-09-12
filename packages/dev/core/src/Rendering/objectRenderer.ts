@@ -831,7 +831,7 @@ export class ObjectRenderer {
                 let useInstances = mesh.hasThinInstances;
                 if (mesh.isAnInstance) {
                     const sourceMesh = (mesh as InstancedMesh).sourceMesh;
-                    if (sourceMesh.edgesShareWithInstances) {
+                    if (sourceMesh.edgesShareWithInstances && sourceMesh._edgesRenderer?.isEnabled) {
                         edgesRenderer = sourceMesh._edgesRenderer;
                         useInstances = true;
                     }
