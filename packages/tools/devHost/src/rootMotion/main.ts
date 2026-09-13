@@ -7,7 +7,7 @@ import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { type AssetContainer } from "core/assetContainer";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { Color3, Color4 } from "core/Maths/math.color";
-import { Matrix, Vector3 } from "core/Maths/math.vector";
+import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { type Mesh } from "core/Meshes/mesh";
@@ -171,9 +171,14 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     printMaterial.emissiveColor = new Color3(1, 0.55, 0.2);
     printMaterial.disableLighting = true;
     const print = MeshBuilder.CreateDisc("footprint", { radius: 0.035, tessellation: 12 }, scene) as Mesh;
+    // Lay the disc flat in its vertices: a thin instance matrix is applied before the mesh's own transform, so a
+    // rotation left on the mesh would swing every footprint's position around with it.
     print.rotation.x = Math.PI / 2;
+    print.bakeCurrentTransformIntoVertices();
     print.material = printMaterial;
     print.isPickable = false;
+    // The prints spread across the ground far from the disc's own bounds at the origin.
+    print.alwaysSelectAsActiveMesh = true;
     const printMatrices = new Float32Array(MaxFootprints * 16);
     let printCount = 0;
     let printCursor = 0;
@@ -192,10 +197,14 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     let rootMotion: RootMotion | null = null;
     let printTimer = 0;
     let loadToken = 0;
+    let restRotation: Quaternion | null = null;
 
     const resetCharacter = () => {
         if (character) {
             character.position.setAll(0);
+            if (restRotation) {
+                character.rotationQuaternion = restRotation.clone();
+            }
         }
         rootMotion?.reset();
         clearPrints();
@@ -271,6 +280,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
 
         character = (container.rootNodes.find((node) => node instanceof TransformNode) as TransformNode) ?? null;
         if (character) {
+            restRotation = (character.rotationQuaternion ?? Quaternion.FromEulerVector(character.rotation)).clone();
             // Footprints come from the lowest leaf joints at rest, independent of what RootMotion picks.
             character.computeWorldMatrix(true);
             const leaves = character
@@ -366,6 +376,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
                 `height     ${rootMotion.characterHeight.toFixed(3)}`,
                 `cycle      ${rootMotion.cycleDistance.toFixed(3)} in ${rootMotion.duration.toFixed(2)}s`,
                 `speed      ${rootMotion.averageSpeed.toFixed(3)} /s`,
+                `turn       ${rootMotion.extractsRotation ? `${((rootMotion.cycleRotation * 180) / Math.PI).toFixed(1)} deg per cycle` : "not extracted"}`,
                 `direction  ${direction.x.toFixed(2)}, ${direction.y.toFixed(2)}, ${direction.z.toFixed(2)}`
             );
         } else if (activeGroup) {
@@ -377,6 +388,24 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
         }
         panel.readout.textContent = lines.join("\n");
     });
+
+    // Console access for poking at a clip: rootMotionDebug.rootMotion.getOffsetAtFrame(10, new rootMotionDebug.vector3()) etc.
+    (window as any).rootMotionDebug = {
+        scene,
+        get rootMotion() {
+            return rootMotion;
+        },
+        get group() {
+            return activeGroup;
+        },
+        get character() {
+            return character;
+        },
+        get container() {
+            return container;
+        },
+        vector3: Vector3,
+    };
 
     engine.runRenderLoop(() => scene.render());
     window.addEventListener("resize", () => engine.resize());

@@ -10,17 +10,17 @@ import { AbstractMesh } from "../Meshes/abstractMesh.pure";
  */
 export const enum RootMotionSource {
     /**
-     * No travel was found: the clip neither translates its root nor walks its contact nodes.
+     * No motion was found: the clip neither moves its root nor walks its contact nodes.
      */
     None = 0,
     /**
-     * The root node's own animated translation - the clip's ground truth. The travel is removed from the root's
-     * keys, so the clip plays in place, and applied to the character node instead.
+     * The root node's own animation - the clip's ground truth. Its travel (and turning, when extracted) is removed
+     * from the root's keys, so the clip plays in place, and applied to the character node instead.
      */
     Root = 1,
     /**
-     * Derived from the contact nodes (usually the feet) of an in-place clip: whatever a planted contact gives up
-     * in character space, the character travels. The clip is left untouched.
+     * Deduced from the contact nodes (usually the feet) of an in-place clip: whatever a planted contact gives up in
+     * character space, the character travels. The travel is not in the clip, so no translation is removed from it.
      */
     FootContact = 2,
 }
@@ -30,38 +30,48 @@ export const enum RootMotionSource {
  */
 export interface IRootMotionOptions {
     /**
-     * The node that carries the travel, usually the hips or a dedicated root bone. A bone is resolved to its linked
+     * The node that carries the motion, usually the hips or a dedicated root bone. A bone is resolved to its linked
      * transform node. Defaults to the position-animated node with the most animated descendants in the group.
      */
     rootNode?: TransformNode | Bone;
     /**
-     * The node that receives the travel and whose local space the travel is measured in. Defaults to the topmost
+     * The node that receives the motion and whose local space the motion is measured in. Defaults to the topmost
      * ancestor of the root node (the "__root__" node of a glTF asset).
      */
     characterNode?: TransformNode;
     /**
      * The nodes that touch the ground, used when the root does not travel. A bone is resolved to its linked
-     * transform node. Defaults to the lowest leaf nodes under the root node.
+     * transform node. Defaults to the leaf nodes under the root that come closest to the ground during the clip.
      */
     contactNodes?: Array<TransformNode | Bone>;
     /**
-     * Forces a source instead of trying {@link RootMotionSource.Root} first and falling back to
+     * Forces the source of the travel instead of trying {@link RootMotionSource.Root} first and falling back to
      * {@link RootMotionSource.FootContact}.
      */
     source?: RootMotionSource;
+    /**
+     * Whether the root's turning about the up axis is extracted and applied to the character. By default it is when
+     * the clip turns by at least {@link IRootMotionOptions.minimumTurn} over a cycle, so a walk's hip twist stays in
+     * the pose while a turning clip turns the character.
+     */
+    extractRotation?: boolean;
     /**
      * How densely the clip is sampled during analysis. Default is 60 samples per second of animation.
      */
     samplesPerSecond?: number;
     /**
-     * Travel below this share of the character's height is treated as the clip standing still: root sway rather
-     * than root motion. Default is 0.1.
+     * Travel below this share of the character's height over a cycle is treated as the clip standing still: root
+     * sway rather than root motion. Default is 0.1.
      */
     minimumTravel?: number;
     /**
+     * Turning below this angle over a cycle, in radians, is treated as twist rather than a turn. Default is 10 degrees.
+     */
+    minimumTurn?: number;
+    /**
      * When false (the default) only the travel along the clip's direction of travel is extracted, leaving the
      * side-to-side sway of the root in the animation. Set to true to extract all horizontal motion, for strafing
-     * or curved clips.
+     * clips. Turning clips always extract all horizontal motion, since their direction of travel changes.
      */
     extractLateralMotion?: boolean;
     /**
@@ -69,8 +79,9 @@ export interface IRootMotionOptions {
      */
     upAxis?: Vector3;
     /**
-     * Whether the travel is added to the character node's position every frame. Default is true. Set to false to
-     * consume {@link RootMotion.deltaPosition} yourself, for example to drive a physics character controller.
+     * Whether the motion is applied to the character node every frame. Default is true. Set to false to consume
+     * {@link RootMotion.deltaPosition} and {@link RootMotion.deltaRotation} yourself, for example to drive a
+     * physics character controller.
      */
     applyToCharacter?: boolean;
 }
@@ -89,36 +100,44 @@ interface IKeyRecord {
     outTangent: any;
 }
 
-/** Contact candidates must be this close to the lowest one, as a share of the character's height. */
+/** Contact candidates must come this close to the lowest one during the clip, as a share of the character's height. */
 const ContactHeightBand = 0.1;
+/** A contact counts as on the ground within this share of the character's height above its own lowest point. */
+const PlantedHeightBand = 0.05;
+/** Values per sample in the motion track: translation x, y, z and the turn about the up axis. */
+const TrackStride = 4;
+/** Frame step for the numeric tangents of rewritten cubic spline keys. */
+const TangentDelta = 1e-3;
 
 /**
- * Root motion for an animation group: moves a character by the distance its animation covers, so the feet stay
+ * Root motion for an animation group: moves and turns a character by the motion its animation covers, so the feet stay
  * planted instead of skating.
  *
  * The clip is analyzed once, when the RootMotion is created, without playing it or touching its playback state:
- * 1. The root node's own translation is tried first, as the ground truth. If it travels further than it could by
- *    swaying, that travel is removed from the root's keys - the clip then plays in place and loops without snapping
- *    back - and is applied to the character node instead.
- * 2. Otherwise the clip is treated as an in-place cycle and the travel is deduced from its contact nodes: the lowest
- *    contact is the planted one, and whatever it gives up in character space the character gains. The direction of
- *    travel falls out of the same measurement, so the forward axis of the rig does not have to be known.
+ * 1. The root node's own animation is tried first, as the ground truth. If the root ends a cycle a meaningful distance
+ *    from where it started, that travel is removed from its keys - the clip then plays in place and loops without
+ *    snapping back - and applied to the character node instead. Turning is read from the root the same way.
+ * 2. Otherwise the clip is treated as an in-place cycle and the travel is deduced from its contact nodes: a planted
+ *    contact stays put in the world, so in character space it moves opposite to the character, and whatever it gives
+ *    up the character gains. The direction of travel falls out of the same measurement, so the forward axis of
+ *    the rig does not have to be known.
  *
- * At runtime the travel follows the group's own playhead after animations are evaluated each frame, so pausing,
+ * At runtime the motion follows the group's own playhead after animations are evaluated each frame, so pausing,
  * speedRatio, looping (forwards and backwards) and weighted blending between groups all carry the character
  * consistently with the pose. Call {@link RootMotion.reset} after jumping the group with goToFrame.
  *
- * Extract before starting the group: the root's position keys are rewritten in place, which affects every group
- * sharing that Animation. {@link RootMotion.dispose} restores them.
+ * Extract before starting the group: the root's keys are rewritten in place, which affects every group sharing those
+ * animations. {@link RootMotion.dispose} restores them.
  */
 export class RootMotion implements IDisposable {
     /**
-     * Gets or sets whether the travel is added to the character node's position every frame.
+     * Gets or sets whether the motion is applied to the character node every frame.
      */
     public applyToCharacter: boolean;
 
     /**
-     * Notified every frame the character travels, after {@link RootMotion.deltaPosition} is updated.
+     * Notified every frame the character moves, after {@link RootMotion.deltaPosition} and
+     * {@link RootMotion.deltaRotation} are updated.
      */
     public readonly onRootMotionObservable = new Observable<RootMotion>();
 
@@ -132,35 +151,40 @@ export class RootMotion implements IDisposable {
     private _contactNodes: TransformNode[] = [];
     private readonly _travelDirection = new Vector3(0, 0, 1);
     private readonly _cycleOffset = Vector3.Zero();
+    private _cycleRotation = 0;
+    private _turns = false;
     private readonly _deltaPosition = Vector3.Zero();
+    private _deltaRotation = 0;
     private _duration = 0;
     private _characterHeight = 0;
     private _fromFrame = 0;
     private _toFrame = 0;
     private _sampleCount = 1;
-    private _track = new Float32Array(6);
+    private _track = new Float32Array(2 * TrackStride);
     private _restoredKeys: IKeyRecord[] = [];
     private _observer: Nullable<Observer<Scene>> = null;
     private _lastFrame: Nullable<number> = null;
-    private readonly _localDelta = Vector3.Zero();
-    private readonly _localOffset = Vector3.Zero();
+    private readonly _lastOffset = Vector3.Zero();
+    private readonly _currentOffset = Vector3.Zero();
+    private readonly _yawQuaternion = new Quaternion();
+    private readonly _yawMatrix = new Matrix();
 
     /**
-     * Where the travel comes from. {@link RootMotionSource.None} when no travel was found.
+     * Where the travel comes from. {@link RootMotionSource.None} when no motion was found.
      */
     public get source(): RootMotionSource {
         return this._source;
     }
 
     /**
-     * The node that carries the travel, if one was found.
+     * The node that carries the motion, if one was found.
      */
     public get rootNode(): Nullable<TransformNode> {
         return this._rootNode;
     }
 
     /**
-     * The node that receives the travel.
+     * The node that receives the motion.
      */
     public get characterNode(): Nullable<TransformNode> {
         return this._characterNode;
@@ -174,7 +198,7 @@ export class RootMotion implements IDisposable {
     }
 
     /**
-     * The direction the clip travels in, in character space (unit length).
+     * The direction the clip travels in over a cycle, in character space (unit length).
      */
     public get travelDirection(): Vector3 {
         return this._travelDirection;
@@ -192,6 +216,20 @@ export class RootMotion implements IDisposable {
      */
     public get cycleDistance(): number {
         return Vector3.Dot(this._cycleOffset, this._travelDirection);
+    }
+
+    /**
+     * The turn covered by one cycle of the clip about the up axis, in radians. Zero unless rotation is extracted.
+     */
+    public get cycleRotation(): number {
+        return this._cycleRotation;
+    }
+
+    /**
+     * Whether the root's turning is extracted and applied to the character.
+     */
+    public get extractsRotation(): boolean {
+        return this._turns;
     }
 
     /**
@@ -224,7 +262,14 @@ export class RootMotion implements IDisposable {
     }
 
     /**
-     * Analyzes an animation group and starts applying its travel to the character node.
+     * The turn applied during the last frame about the character's up axis, in radians, in character space.
+     */
+    public get deltaRotation(): number {
+        return this._deltaRotation;
+    }
+
+    /**
+     * Analyzes an animation group and starts applying its motion to the character node.
      * @param animationGroup defines the animation group to extract the root motion of
      * @param options defines how the root motion is extracted and applied
      */
@@ -276,29 +321,68 @@ export class RootMotion implements IDisposable {
             this._characterNode = this._topmostAncestor(anchor);
         }
         if (this._characterNode === anchor) {
-            Logger.Warn(`RootMotion: the root node "${anchor.name}" has no parent to carry its travel.`);
+            Logger.Warn(`RootMotion: the root node "${anchor.name}" has no parent to carry its motion.`);
             this._rootNode = null;
             return;
         }
 
         this._characterHeight = this._measureHeight(this._rootNode ?? this._characterNode);
-        const minimumTravel = (options.minimumTravel ?? 0.1) * (this._characterHeight > 0 ? this._characterHeight : 1);
+        const scale = this._characterHeight > 0 ? this._characterHeight : 1;
+        const minimumTravel = (options.minimumTravel ?? 0.1) * scale;
+        const minimumTurn = options.minimumTurn ?? Math.PI / 18;
         const source = options.source;
+        const root = this._rootNode;
+        const rootChannels = root ? this._channels.get(root) : undefined;
+        const samples = this._sampleCount;
 
-        if ((source === undefined || source === RootMotionSource.Root) && this._rootNode && this._channels.get(this._rootNode)?.position) {
-            if (this._analyzeRoot(minimumTravel, source === RootMotionSource.Root)) {
+        // Turning is only ever in the root's own rotation.
+        let yaw: Nullable<Float32Array> = null;
+        if (root && options.extractRotation !== false && (rootChannels?.rotationQuaternion || rootChannels?.rotation)) {
+            const measured = this._measureRootYaw();
+            if (options.extractRotation === true || Math.abs(measured[samples]) >= minimumTurn) {
+                yaw = measured;
+            }
+        }
+        this._turns = !!yaw;
+
+        let translation: Nullable<Float32Array> = null;
+        if ((source === undefined || source === RootMotionSource.Root) && root && rootChannels?.position) {
+            translation = this._measureRootTravel(yaw, minimumTravel, source === RootMotionSource.Root);
+            if (translation) {
                 this._source = RootMotionSource.Root;
             }
         }
-        if (this._source === RootMotionSource.None && (source === undefined || source === RootMotionSource.FootContact)) {
-            if (this._analyzeContacts(options.contactNodes, minimumTravel, source === RootMotionSource.FootContact)) {
+        if (!translation && (source === undefined || source === RootMotionSource.FootContact)) {
+            translation = this._measureContactTravel(yaw, options.contactNodes, minimumTravel, source === RootMotionSource.FootContact);
+            if (translation) {
                 this._source = RootMotionSource.FootContact;
             }
         }
-
-        if (this._source !== RootMotionSource.None) {
-            this._observer = animationGroup.getScene().onAfterAnimationsObservable.add(() => this._update());
+        if (!translation && yaw) {
+            // Turning on the spot.
+            translation = new Float32Array((samples + 1) * 3);
+            this._source = RootMotionSource.Root;
         }
+        if (!translation) {
+            this._turns = false;
+            return;
+        }
+
+        this._track = new Float32Array((samples + 1) * TrackStride);
+        for (let i = 0; i <= samples; i++) {
+            this._track[i * TrackStride] = translation[i * 3];
+            this._track[i * TrackStride + 1] = translation[i * 3 + 1];
+            this._track[i * TrackStride + 2] = translation[i * 3 + 2];
+            this._track[i * TrackStride + 3] = yaw ? yaw[i] : 0;
+        }
+        this._cycleOffset.fromArray(translation, samples * 3);
+        this._cycleRotation = yaw ? yaw[samples] : 0;
+
+        if (root && (this._source === RootMotionSource.Root || yaw)) {
+            this._stripRootKeys();
+        }
+
+        this._observer = animationGroup.getScene().onAfterAnimationsObservable.add(() => this._update());
     }
 
     /**
@@ -308,31 +392,36 @@ export class RootMotion implements IDisposable {
      * @returns the result vector
      */
     public getOffsetAtFrame(frame: number, result: Vector3): Vector3 {
-        const range = this._toFrame - this._fromFrame;
-        if (range <= 0 || this._source === RootMotionSource.None) {
-            return result.setAll(0);
-        }
-        const samples = this._sampleCount;
-        const exact = Math.min(samples, Math.max(0, ((frame - this._fromFrame) / range) * samples));
-        const index = Math.min(samples - 1, Math.floor(exact));
-        const blend = exact - index;
+        const [index, blend] = this._sampleAt(frame);
         const track = this._track;
-        const a = index * 3;
-        const b = a + 3;
+        const a = index * TrackStride;
+        const b = a + TrackStride;
         return result.set(track[a] + (track[b] - track[a]) * blend, track[a + 1] + (track[b + 1] - track[a + 1]) * blend, track[a + 2] + (track[b + 2] - track[a + 2]) * blend);
     }
 
     /**
-     * Forgets the last frame the travel was measured from. Call after jumping the group with goToFrame, so the
-     * jump is not read as travel.
+     * Gets the turn reached at a frame of the clip about the up axis, relative to its first frame, in radians.
+     * @param frame defines the frame to sample
+     * @returns the turn in radians
+     */
+    public getRotationAtFrame(frame: number): number {
+        const [index, blend] = this._sampleAt(frame);
+        const a = index * TrackStride + 3;
+        return this._track[a] + (this._track[a + TrackStride] - this._track[a]) * blend;
+    }
+
+    /**
+     * Forgets the last frame the motion was measured from. Call after jumping the group with goToFrame, so the jump
+     * is not read as motion.
      */
     public reset(): void {
         this._lastFrame = null;
         this._deltaPosition.setAll(0);
+        this._deltaRotation = 0;
     }
 
     /**
-     * Stops applying the travel and restores the root keys rewritten during extraction.
+     * Stops applying the motion and restores the root keys rewritten during extraction.
      */
     public dispose(): void {
         this._observer?.remove();
@@ -359,34 +448,66 @@ export class RootMotion implements IDisposable {
         this._lastFrame = frame;
         if (lastFrame === null || frame === lastFrame) {
             this._deltaPosition.setAll(0);
+            this._deltaRotation = 0;
             return;
         }
 
-        const delta = this.getOffsetAtFrame(frame, this._localDelta);
-        delta.subtractInPlace(this.getOffsetAtFrame(lastFrame, this._localOffset));
-        // The playhead wrapped: finish the cycle, then carry on from its start.
+        // The motion so far is a turn and a translation: now = yaw(now) then offset(now), in character space.
+        const lastOffset = this.getOffsetAtFrame(lastFrame, this._lastOffset);
+        const lastYaw = this.getRotationAtFrame(lastFrame);
+        const offset = this.getOffsetAtFrame(frame, this._currentOffset);
+        let yaw = this.getRotationAtFrame(frame);
+
+        // The playhead wrapped: continue from the end of the cycle (forwards) or back past its start (backwards).
         const forwards = group.speedRatio >= 0;
         if (forwards ? frame < lastFrame : frame > lastFrame) {
             if (forwards) {
-                delta.addInPlace(this._cycleOffset);
+                this._rotateAboutUp(offset, this._cycleRotation, offset).addInPlace(this._cycleOffset);
+                yaw += this._cycleRotation;
             } else {
-                delta.subtractInPlace(this._cycleOffset);
+                this._rotateAboutUp(offset.subtractInPlace(this._cycleOffset), -this._cycleRotation, offset);
+                yaw -= this._cycleRotation;
             }
         }
+
+        // Relative to where the character is now: undo the turn it already made.
+        const delta = this._rotateAboutUp(offset.subtractInPlace(lastOffset), -lastYaw, offset);
+        let deltaYaw = yaw - lastYaw;
         // A weighted group contributes its share, so blended groups add up to the blended pose.
         if (group.weight >= 0) {
             delta.scaleInPlace(group.weight);
+            deltaYaw *= group.weight;
+        }
+        this._deltaRotation = deltaYaw;
+
+        // Into the character's parent space through its own local rotation and scaling, not its world matrix: world
+        // matrices are cached per render, so with fixed animation steps every step after the first in a frame would read
+        // the facing from before the previous step's turn.
+        const rotation = character.rotationQuaternion ?? Quaternion.FromEulerVectorToRef(character.rotation, TmpVectors.Quaternion[2]);
+        Matrix.ComposeToRef(character.scaling, rotation, Vector3.ZeroReadOnly, TmpVectors.Matrix[3]);
+        const parentDelta = Vector3.TransformNormalToRef(delta, TmpVectors.Matrix[3], TmpVectors.Vector3[4]);
+        const parent = character.parent;
+        if (parent) {
+            Vector3.TransformNormalToRef(parentDelta, parent.computeWorldMatrix(), this._deltaPosition);
+        } else {
+            this._deltaPosition.copyFrom(parentDelta);
         }
 
-        Vector3.TransformNormalToRef(delta, character.computeWorldMatrix(), this._deltaPosition);
         if (this.applyToCharacter) {
-            const parent = character.parent;
-            if (parent) {
-                const toParent = TmpVectors.Matrix[0];
-                parent.computeWorldMatrix().invertToRef(toParent);
-                character.position.addInPlace(Vector3.TransformNormalToRef(this._deltaPosition, toParent, TmpVectors.Vector3[0]));
-            } else {
-                character.position.addInPlace(this._deltaPosition);
+            // Assigned rather than changed in place, so the node is marked dirty and renders where it now is.
+            character.position = character.position.addInPlace(parentDelta);
+            if (deltaYaw !== 0) {
+                // The turn happens in character space, before the character's own scaling. A mirroring scale (the
+                // handedness flip on a glTF __root__) reverses the sense of a turn once it is past that scaling.
+                const scaling = character.scaling;
+                const up = this._upAxis;
+                const mirrored = scaling.x * scaling.y * scaling.z * (up.x * up.x * scaling.x + up.y * up.y * scaling.y + up.z * up.z * scaling.z) < 0;
+                if (!character.rotationQuaternion) {
+                    character.rotationQuaternion = Quaternion.FromEulerVector(character.rotation);
+                }
+                const turned = character.rotationQuaternion;
+                turned.multiplyToRef(Quaternion.RotationAxisToRef(up, mirrored ? -deltaYaw : deltaYaw, TmpVectors.Quaternion[2]), turned);
+                character.rotationQuaternion = turned;
             }
         }
 
@@ -395,7 +516,24 @@ export class RootMotion implements IDisposable {
         }
     }
 
-    private _analyzeRoot(minimumTravel: number, forced: boolean): boolean {
+    private _measureRootYaw(): Float32Array {
+        const root = this._rootNode!;
+        const samples = this._sampleCount;
+        const reference = this._rotationInCharacter(root, this._fromFrame, new Quaternion());
+        reference.conjugateInPlace();
+        const rotation = new Quaternion();
+        const yaw = new Float32Array(samples + 1);
+        let previous = 0;
+        for (let i = 0; i <= samples; i++) {
+            const wrapped = this._twist(this._rotationInCharacter(root, this._frameAt(i), rotation), reference);
+            // Unwrap, so a clip that turns past half a revolution keeps counting instead of jumping back.
+            previous = i === 0 ? wrapped : previous + WrapAngle(wrapped - WrapAngle(previous));
+            yaw[i] = previous;
+        }
+        return yaw;
+    }
+
+    private _measureRootTravel(yaw: Nullable<Float32Array>, minimumTravel: number, forced: boolean): Nullable<Float32Array> {
         const root = this._rootNode!;
         const samples = this._sampleCount;
         const positions: Vector3[] = [];
@@ -410,123 +548,281 @@ export class RootMotion implements IDisposable {
         // which is safe: its feet do not slide either, so nothing is applied twice.
         const net = this._horizontal(positions[samples].subtract(start), new Vector3());
         if (!forced && net.length() < minimumTravel) {
-            return false;
+            return null;
         }
         if (net.lengthSquared() > 0) {
             this._travelDirection.copyFrom(net).normalize();
         }
 
+        const translation = new Float32Array((samples + 1) * 3);
         const offset = new Vector3();
-        this._track = new Float32Array((samples + 1) * 3);
         for (let i = 0; i <= samples; i++) {
-            this._project(positions[i].subtractToRef(start, offset), offset);
-            offset.toArray(this._track, i * 3);
+            this._rootTravelAt(positions[i], start, yaw ? yaw[i] : 0, !!yaw, offset).toArray(translation, i * 3);
         }
-        this._cycleOffset.fromArray(this._track, samples * 3);
-
-        this._stripRootKeys(start);
-        return true;
+        return translation;
     }
 
-    private _stripRootKeys(start: Vector3): void {
-        const root = this._rootNode!;
-        const animation = this._channels.get(root)!.position!;
-        const parent = root.parent;
-        const toCharacter = new Matrix();
-        const toParent = new Matrix();
-        const offset = new Vector3();
-        const keys = animation.getKeys();
+    /**
+     * The travel removed from the root at a pose, so that the in-place root keeps the start position (turning) or its
+     * sway (straight).
+     * @param position defines the root position in character space
+     * @param start defines the root position in character space at the first frame
+     * @param yaw defines the turn at this pose
+     * @param turning defines whether turning is extracted
+     * @param result defines the vector receiving the travel
+     * @returns the result vector
+     */
+    private _rootTravelAt(position: Vector3, start: Vector3, yaw: number, turning: boolean, result: Vector3): Vector3 {
+        if (turning) {
+            // Every horizontal move, since the direction of travel is turning with the character.
+            const pivot = this._rotateAboutUp(this._horizontal(start, TmpVectors.Vector3[3]), yaw, TmpVectors.Vector3[3]);
+            return this._horizontal(position, result).subtractInPlace(pivot);
+        }
+        return this._project(position.subtractToRef(start, result), result);
+    }
 
-        // Cubic spline tangents carry the travel's rate of change; the removal is linear, so it applies to them too.
-        const stripTangent = (tangent: Vector3 | undefined): Vector3 | undefined => {
-            if (!tangent) {
-                return tangent;
+    private _measureContactTravel(
+        yaw: Nullable<Float32Array>,
+        explicitContacts: Array<TransformNode | Bone> | undefined,
+        minimumTravel: number,
+        forced: boolean
+    ): Nullable<Float32Array> {
+        const samples = this._sampleCount;
+        const up = this._upAxis;
+        let contacts: TransformNode[];
+        if (explicitContacts) {
+            contacts = explicitContacts.map((node) => this._resolveNode(node)).filter((node): node is TransformNode => !!node);
+        } else {
+            const base = this._rootNode ?? this._characterNode!;
+            contacts = base.getDescendants(false, IsJoint).filter((node) => !node.getChildren(IsJoint, true).length) as TransformNode[];
+        }
+        if (!contacts.length) {
+            return null;
+        }
+
+        // Every candidate across the whole clip: a run starts with a foot in the air, so one frame cannot tell which
+        // nodes ever reach the ground.
+        const positions = contacts.map(() => [] as Vector3[]);
+        const lowest = contacts.map(() => Number.POSITIVE_INFINITY);
+        for (let i = 0; i <= samples; i++) {
+            const frame = this._frameAt(i);
+            for (let c = 0; c < contacts.length; c++) {
+                const position = this._positionInCharacter(contacts[c], frame, new Vector3());
+                positions[c].push(position);
+                lowest[c] = Math.min(lowest[c], Vector3.Dot(position, up));
             }
-            this._project(Vector3.TransformNormal(tangent, toCharacter), offset);
-            return tangent.subtract(Vector3.TransformNormal(offset, toParent));
+        }
+        if (!explicitContacts) {
+            const ground = Math.min(...lowest);
+            const kept = contacts.map((_, c) => lowest[c] <= ground + ContactHeightBand * this._characterHeight);
+            contacts = contacts.filter((_, c) => kept[c]);
+            const keptPositions = positions.filter((_, c) => kept[c]);
+            const keptLowest = lowest.filter((_, c) => kept[c]);
+            positions.length = 0;
+            positions.push(...keptPositions);
+            lowest.length = 0;
+            lowest.push(...keptLowest);
+        }
+
+        // A planted contact does not move in the world, so in character space it moves at exactly the opposite of the
+        // character's own velocity - and that velocity changes smoothly. A swinging contact sweeps forwards, even while
+        // touching down, when it can already be the lowest; a contact of a clip whose root carries the travel stands
+        // still. So each interval takes the contact on the ground whose step is closest to the ground speed of the
+        // interval before, starting from the clip's average ground speed measured with the slowest contact on the
+        // ground. With no contact on the ground - the flight of a run - the ground speed carries on.
+        // Steps are compared with the turn so far undone, so a turning path keeps a steady ground speed.
+        const tolerance = PlantedHeightBand * this._characterHeight;
+        const step = new Vector3();
+        const unturned = new Vector3();
+        const reference = new Vector3();
+        const translation = new Float32Array((samples + 1) * 3);
+        const travelled = Vector3.Zero();
+        const walk = (tracking: boolean) => {
+            const previous = reference.clone();
+            const sum = Vector3.Zero();
+            let grounded = 0;
+            travelled.setAll(0);
+            for (let i = 1; i <= samples; i++) {
+                const turn = yaw ? yaw[i] : 0;
+                let best = Number.POSITIVE_INFINITY;
+                const chosen = new Vector3();
+                for (let c = 0; c < contacts.length; c++) {
+                    const before = positions[c][i - 1];
+                    const after = positions[c][i];
+                    if (Vector3.Dot(before, up) > lowest[c] + tolerance || Vector3.Dot(after, up) > lowest[c] + tolerance) {
+                        continue;
+                    }
+                    this._rotateAboutUp(this._horizontal(before.subtractToRef(after, step), step), -turn, unturned);
+                    const score = tracking ? Vector3.DistanceSquared(unturned, previous) : unturned.lengthSquared();
+                    if (score < best) {
+                        best = score;
+                        chosen.copyFrom(unturned);
+                    }
+                }
+                if (best === Number.POSITIVE_INFINITY) {
+                    chosen.copyFrom(previous);
+                } else {
+                    sum.addInPlace(chosen);
+                    grounded++;
+                }
+                if (tracking) {
+                    previous.copyFrom(chosen);
+                }
+                travelled.addInPlace(this._rotateAboutUp(chosen, turn, step)).toArray(translation, i * 3);
+            }
+            if (!tracking && grounded > 0) {
+                reference.copyFrom(sum).scaleInPlace(1 / grounded);
+            }
+        };
+        walk(false);
+        walk(true);
+
+        if (travelled.lengthSquared() > 0) {
+            this._travelDirection.copyFrom(travelled).normalize();
+        }
+        const distance = Vector3.Dot(travelled, this._travelDirection);
+        if (!forced && distance < minimumTravel) {
+            return null;
+        }
+        if (!yaw) {
+            // Straight: only the travel along the direction, like the root path.
+            for (let i = 0; i <= samples; i++) {
+                step.fromArray(translation, i * 3);
+                this._travelDirection.scaleToRef(Vector3.Dot(step, this._travelDirection), step).toArray(translation, i * 3);
+            }
+        }
+        this._contactNodes = contacts;
+        return translation;
+    }
+
+    /**
+     * Rewrites the root keys so the clip plays in place: each key's pose, in character space, has the motion at its
+     * frame undone. The motion is the root's travel for a {@link RootMotionSource.Root} clip, plus the turn when
+     * rotation is extracted.
+     */
+    private _stripRootKeys(): void {
+        const root = this._rootNode!;
+        const channels = this._channels.get(root)!;
+        const parent = root.parent;
+        const removesTravel = this._source === RootMotionSource.Root;
+        const start = this._positionInCharacter(root, this._fromFrame, new Vector3());
+        const reference = this._rotationInCharacter(root, this._fromFrame, new Quaternion());
+        reference.conjugateInPlace();
+
+        const motionMatrix = new Matrix();
+        const rootMatrix = new Matrix();
+        const parentMatrix = new Matrix();
+        const localMatrix = new Matrix();
+        const yawQuaternion = new Quaternion();
+        const scratchPosition = new Vector3();
+        const scratchRotation = new Quaternion();
+        const travel = new Vector3();
+
+        // The in-place local transform of the root at any frame, from the original keys.
+        const strippedAt = (frame: number, position: Vector3, rotation: Quaternion) => {
+            this._matrixToCharacter(root, frame, rootMatrix);
+            this._matrixToCharacter(parent, frame, parentMatrix);
+            let yaw = 0;
+            if (this._turns) {
+                // Exact at this frame; the track only settles which whole turn the angle is on.
+                const wrapped = this._twist(this._rotationInCharacter(root, frame, scratchRotation), reference);
+                const tracked = this.getRotationAtFrame(frame);
+                yaw = wrapped + Math.round((tracked - wrapped) / (2 * Math.PI)) * 2 * Math.PI;
+            }
+            if (removesTravel) {
+                rootMatrix.getTranslationToRef(scratchPosition);
+                this._rootTravelAt(scratchPosition, start, yaw, this._turns, travel);
+            } else {
+                travel.setAll(0);
+            }
+            // The motion maps the in-place pose onto the clip's pose: turn, then travel.
+            Matrix.FromQuaternionToRef(Quaternion.RotationAxisToRef(this._upAxis, yaw, yawQuaternion), motionMatrix);
+            motionMatrix.setTranslation(travel);
+            motionMatrix.invertToRef(motionMatrix);
+            rootMatrix.multiplyToRef(motionMatrix, localMatrix);
+            parentMatrix.invertToRef(parentMatrix);
+            localMatrix.multiplyToRef(parentMatrix, localMatrix);
+            localMatrix.decompose(undefined, rotation, position);
         };
 
         // Everything is computed from the original keys before anything is written: keys padded by
         // AnimationGroup.normalize share their neighbor's value object.
-        const rewritten: IKeyRecord[] = [];
-        for (const key of keys) {
-            this._matrixToCharacter(parent, key.frame, toCharacter);
-            toCharacter.invertToRef(toParent);
+        const rewrites: IKeyRecord[] = [];
+        const position = new Vector3();
+        const rotation = new Quaternion();
+        const before = { position: new Vector3(), rotation: new Quaternion() };
+        const after = { position: new Vector3(), rotation: new Quaternion() };
 
-            const position = Vector3.TransformCoordinates(key.value, toCharacter);
-            this._project(position.subtractInPlace(start), offset);
-            const value = key.value.subtract(Vector3.TransformNormal(offset, toParent));
+        const rewriteChannel = (animation: Animation | undefined, kind: "position" | "rotationQuaternion" | "rotation") => {
+            if (!animation) {
+                return;
+            }
+            const keys = animation.getKeys();
+            let previousRotation: Nullable<Quaternion> = null;
+            for (const key of keys) {
+                strippedAt(key.frame, position, rotation);
+                let value: any;
+                if (kind === "position") {
+                    value = position.clone();
+                } else {
+                    // Stay in the same hemisphere as the previous key, so interpolation does not take the long way round.
+                    if (previousRotation && Quaternion.Dot(previousRotation, rotation) < 0) {
+                        rotation.scaleInPlace(-1);
+                    }
+                    previousRotation = rotation.clone();
+                    value = kind === "rotationQuaternion" ? previousRotation : previousRotation.toEulerAngles();
+                }
 
-            rewritten.push({ key, value, inTangent: stripTangent(key.inTangent), outTangent: stripTangent(key.outTangent) });
-            this._restoredKeys.push({ key, value: key.value, inTangent: key.inTangent, outTangent: key.outTangent });
+                // Cubic spline tangents follow the rewritten curve. Straight travel is a linear removal, so the key's own
+                // tangent is transformed exactly; a turn is not, so the tangents are measured from the curve either side.
+                const tangent = (original: any, direction: number): any => {
+                    if (!original) {
+                        return original;
+                    }
+                    if (kind === "position" && !this._turns) {
+                        this._matrixToCharacter(parent, key.frame, parentMatrix);
+                        const inCharacter = Vector3.TransformNormal(original, parentMatrix);
+                        const removed = removesTravel ? this._project(inCharacter.clone(), new Vector3()) : Vector3.Zero();
+                        parentMatrix.invertToRef(parentMatrix);
+                        return original.subtract(Vector3.TransformNormal(removed, parentMatrix));
+                    }
+                    strippedAt(key.frame - TangentDelta, before.position, before.rotation);
+                    strippedAt(key.frame + TangentDelta, after.position, after.rotation);
+                    const low = direction < 0 ? before : { position, rotation };
+                    const high = direction < 0 ? { position, rotation } : after;
+                    if (kind === "position") {
+                        return high.position.subtract(low.position).scaleInPlace(1 / TangentDelta);
+                    }
+                    if (Quaternion.Dot(low.rotation, high.rotation) < 0) {
+                        high.rotation.scaleInPlace(-1);
+                    }
+                    const rate = high.rotation.subtract(low.rotation).scaleInPlace(1 / TangentDelta);
+                    return kind === "rotationQuaternion"
+                        ? rate
+                        : high.rotation
+                              .toEulerAngles()
+                              .subtract(low.rotation.toEulerAngles())
+                              .scaleInPlace(1 / TangentDelta);
+                };
+
+                rewrites.push({ key, value, inTangent: tangent(key.inTangent, -1), outTangent: tangent(key.outTangent, 1) });
+                this._restoredKeys.push({ key, value: key.value, inTangent: key.inTangent, outTangent: key.outTangent });
+            }
+        };
+
+        rewriteChannel(channels.position, "position");
+        if (this._turns) {
+            rewriteChannel(channels.rotationQuaternion, "rotationQuaternion");
+            if (!channels.rotationQuaternion) {
+                rewriteChannel(channels.rotation, "rotation");
+            }
         }
 
-        for (const record of rewritten) {
+        for (const record of rewrites) {
             record.key.value = record.value;
             record.key.inTangent = record.inTangent;
             record.key.outTangent = record.outTangent;
         }
-    }
-
-    private _analyzeContacts(explicitContacts: Array<TransformNode | Bone> | undefined, minimumTravel: number, forced: boolean): boolean {
-        const contacts = explicitContacts ? explicitContacts.map((node) => this._resolveNode(node)).filter((node): node is TransformNode => !!node) : this._findContactNodes();
-        if (!contacts.length) {
-            return false;
-        }
-
-        const samples = this._sampleCount;
-        const up = this._upAxis;
-        let previous = contacts.map(() => new Vector3());
-        let current = contacts.map(() => new Vector3());
-        let previousStance = -1;
-        const stride = Vector3.Zero();
-        const steps: Vector3[] = [];
-
-        for (let i = 0; i <= samples; i++) {
-            const frame = this._frameAt(i);
-            let stance = 0;
-            for (let c = 0; c < contacts.length; c++) {
-                this._positionInCharacter(contacts[c], frame, current[c]);
-                if (Vector3.Dot(current[c], up) < Vector3.Dot(current[stance], up)) {
-                    stance = c;
-                }
-            }
-
-            // The planted contact gives up in character space what the character gains. Across a change of planted
-            // contact neither contact is planted for the whole interval, so the ground speed of the interval before
-            // carries over instead - reading either contact would count the swap itself as travel, and skipping the
-            // interval would lose a sample of travel at every step.
-            const step = Vector3.Zero();
-            if (i > 0 && stance === previousStance) {
-                this._horizontal(previous[stance].subtractToRef(current[stance], step), step);
-            } else if (i > 1) {
-                step.copyFrom(steps[i - 1]);
-            }
-            stride.addInPlace(step);
-            steps.push(step);
-            previousStance = stance;
-            const swap = previous;
-            previous = current;
-            current = swap;
-        }
-
-        if (stride.lengthSquared() > 0) {
-            this._travelDirection.copyFrom(stride).normalize();
-        }
-        const track = new Float32Array((samples + 1) * 3);
-        let distance = 0;
-        for (let i = 0; i <= samples; i++) {
-            distance += Vector3.Dot(steps[i], this._travelDirection);
-            this._travelDirection.scaleToRef(distance, TmpVectors.Vector3[0]).toArray(track, i * 3);
-        }
-        if (!forced && distance < minimumTravel) {
-            return false;
-        }
-
-        this._track = track;
-        this._cycleOffset.fromArray(track, samples * 3);
-        this._contactNodes = contacts;
-        return true;
     }
 
     private _findRootNode(): Nullable<TransformNode> {
@@ -546,18 +842,6 @@ export class RootMotion implements IDisposable {
         return best;
     }
 
-    private _findContactNodes(): TransformNode[] {
-        const base = this._rootNode ?? this._characterNode!;
-        const leaves = base.getDescendants(false, IsJoint).filter((node) => !node.getChildren(IsJoint, true).length) as TransformNode[];
-        if (!leaves.length) {
-            return [];
-        }
-        const position = new Vector3();
-        const heights = leaves.map((node) => Vector3.Dot(this._positionInCharacter(node, this._fromFrame, position), this._upAxis));
-        const lowest = Math.min(...heights);
-        return leaves.filter((_, i) => heights[i] <= lowest + ContactHeightBand * this._characterHeight);
-    }
-
     private _measureHeight(base: TransformNode): number {
         const position = new Vector3();
         let lowest = Number.POSITIVE_INFINITY;
@@ -568,6 +852,17 @@ export class RootMotion implements IDisposable {
             highest = Math.max(highest, height);
         }
         return highest - lowest;
+    }
+
+    private _sampleAt(frame: number): [number, number] {
+        const range = this._toFrame - this._fromFrame;
+        const samples = this._sampleCount;
+        if (range <= 0 || this._source === RootMotionSource.None) {
+            return [0, 0];
+        }
+        const exact = Math.min(samples, Math.max(0, ((frame - this._fromFrame) / range) * samples));
+        const index = Math.min(samples - 1, Math.floor(exact));
+        return [index, exact - index];
     }
 
     private _frameAt(sample: number): number {
@@ -588,9 +883,34 @@ export class RootMotion implements IDisposable {
         return result;
     }
 
+    private _rotateAboutUp(vector: Vector3, angle: number, result: Vector3): Vector3 {
+        if (angle === 0) {
+            return result.copyFrom(vector);
+        }
+        Matrix.FromQuaternionToRef(Quaternion.RotationAxisToRef(this._upAxis, angle, this._yawQuaternion), this._yawMatrix);
+        return Vector3.TransformNormalToRef(vector, this._yawMatrix, result);
+    }
+
+    /**
+     * The turn about the up axis from a reference orientation to a rotation, both in character space.
+     * @param rotation defines the rotation
+     * @param referenceConjugate defines the conjugate of the reference rotation
+     * @returns the angle in radians, between -PI and PI
+     */
+    private _twist(rotation: Quaternion, referenceConjugate: Quaternion): number {
+        const delta = rotation.multiplyToRef(referenceConjugate, TmpVectors.Quaternion[1]);
+        const up = this._upAxis;
+        return WrapAngle(2 * Math.atan2(delta.x * up.x + delta.y * up.y + delta.z * up.z, delta.w));
+    }
+
     private _positionInCharacter(node: TransformNode, frame: number, result: Vector3): Vector3 {
         const matrix = this._matrixToCharacter(node, frame, TmpVectors.Matrix[1]);
         return result.set(matrix.m[12], matrix.m[13], matrix.m[14]);
+    }
+
+    private _rotationInCharacter(node: TransformNode, frame: number, result: Quaternion): Quaternion {
+        this._matrixToCharacter(node, frame, TmpVectors.Matrix[1]).decompose(undefined, result);
+        return result;
     }
 
     /**
@@ -663,4 +983,8 @@ export class RootMotion implements IDisposable {
 
 function IsJoint(node: Node): node is TransformNode {
     return node instanceof TransformNode && !(node instanceof AbstractMesh);
+}
+
+function WrapAngle(angle: number): number {
+    return angle - 2 * Math.PI * Math.floor((angle + Math.PI) / (2 * Math.PI));
 }
