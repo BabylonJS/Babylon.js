@@ -51,8 +51,9 @@ export interface IRootMotionOptions {
     source?: RootMotionSource;
     /**
      * Whether the root's turning about the up axis is extracted and applied to the character. By default it is when
-     * the clip turns by at least {@link IRootMotionOptions.minimumTurn} over a cycle, so a walk's hip twist stays in
-     * the pose while a turning clip turns the character.
+     * a cycle leaves the character facing at least {@link IRootMotionOptions.minimumTurn} away from where it started,
+     * so a walk's hip twist - or a dance that spins round to face the front again - stays in the pose while a turning
+     * clip turns the character.
      */
     extractRotation?: boolean;
     /**
@@ -68,6 +69,13 @@ export interface IRootMotionOptions {
      * Turning below this angle over a cycle, in radians, is treated as twist rather than a turn. Default is 10 degrees.
      */
     minimumTurn?: number;
+    /**
+     * A straight clip whose direction of travel is within this angle of a character space axis, in radians, travels
+     * along that axis. Motion capture is rarely exactly straight - a stride a degree off is a character drifting a
+     * body width sideways every few dozen steps - while a deliberate diagonal or strafe is well clear of an axis.
+     * Default is 10 degrees; 0 keeps the measured direction. Ignored when lateral motion is extracted.
+     */
+    directionSnapAngle?: number;
     /**
      * When false (the default) only the travel along the clip's direction of travel is extracted, leaving the
      * side-to-side sway of the root in the animation. Set to true to extract all horizontal motion, for strafing
@@ -106,6 +114,11 @@ const ContactHeightBand = 0.1;
 const PlantedHeightBand = 0.05;
 /** Values per sample in the motion track: translation x, y, z and the turn about the up axis. */
 const TrackStride = 4;
+/**
+ * Deduced travel counts only if its steps mostly head the same way: net travel over the length of the path stepped.
+ * Walks and runs measure 0.99 and more; a dance or an idle that shuffles about on the spot measures under 0.3.
+ */
+const MinimumStraightness = 0.8;
 /** Frame step for the numeric tangents of rewritten cubic spline keys. */
 const TangentDelta = 1e-3;
 
@@ -144,6 +157,9 @@ export class RootMotion implements IDisposable {
     private readonly _group: AnimationGroup;
     private readonly _upAxis: Vector3;
     private readonly _extractLateral: boolean;
+    private readonly _directionSnapAngle: number;
+    /** Sideways travel over a cycle left in the root's keys after snapping the direction, removed without being applied. */
+    private readonly _lateralDrift = Vector3.Zero();
     private readonly _channels = new Map<Node, INodeChannels>();
     private _source = RootMotionSource.None;
     private _rootNode: Nullable<TransformNode> = null;
@@ -277,6 +293,7 @@ export class RootMotion implements IDisposable {
         this._group = animationGroup;
         this._upAxis = (options.upAxis ?? Vector3.UpReadOnly).normalizeToNew();
         this._extractLateral = !!options.extractLateralMotion;
+        this._directionSnapAngle = options.directionSnapAngle ?? Math.PI / 18;
         this.applyToCharacter = options.applyToCharacter ?? true;
 
         const targetedAnimations = animationGroup.targetedAnimations;
@@ -339,7 +356,9 @@ export class RootMotion implements IDisposable {
         let yaw: Nullable<Float32Array> = null;
         if (root && options.extractRotation !== false && (rootChannels?.rotationQuaternion || rootChannels?.rotation)) {
             const measured = this._measureRootYaw();
-            if (options.extractRotation === true || Math.abs(measured[samples]) >= minimumTurn) {
+            // By the turn a loop leaves the character facing: a dance that spins twice ends facing the way it began and
+            // loops seamlessly as it is, while a 90 degree turn has to carry the character round.
+            if (options.extractRotation === true || Math.abs(WrapAngle(measured[samples])) >= minimumTurn) {
                 yaw = measured;
             }
         }
@@ -365,6 +384,8 @@ export class RootMotion implements IDisposable {
         }
         if (!translation) {
             this._turns = false;
+            this._travelDirection.set(0, 0, 1);
+            this._lateralDrift.setAll(0);
             return;
         }
 
@@ -553,6 +574,12 @@ export class RootMotion implements IDisposable {
         if (net.lengthSquared() > 0) {
             this._travelDirection.copyFrom(net).normalize();
         }
+        if (!yaw && !this._extractLateral) {
+            this._snapTravelDirection();
+            // Whatever the root still drifts sideways of a snapped direction over a cycle would stay in the pose and pop
+            // back at every loop, so it is removed from the keys too, evenly over the cycle - but not applied.
+            this._horizontal(net, this._lateralDrift).subtractInPlace(this._travelDirection.scale(Vector3.Dot(net, this._travelDirection)));
+        }
 
         const translation = new Float32Array((samples + 1) * 3);
         const offset = new Vector3();
@@ -637,11 +664,15 @@ export class RootMotion implements IDisposable {
         const reference = new Vector3();
         const translation = new Float32Array((samples + 1) * 3);
         const travelled = Vector3.Zero();
+        const heading = Vector3.Zero();
+        let pathLength = 0;
         const walk = (tracking: boolean) => {
             const previous = reference.clone();
             const sum = Vector3.Zero();
             let grounded = 0;
             travelled.setAll(0);
+            heading.setAll(0);
+            pathLength = 0;
             for (let i = 1; i <= samples; i++) {
                 const turn = yaw ? yaw[i] : 0;
                 let best = Number.POSITIVE_INFINITY;
@@ -668,6 +699,8 @@ export class RootMotion implements IDisposable {
                 if (tracking) {
                     previous.copyFrom(chosen);
                 }
+                heading.addInPlace(chosen);
+                pathLength += chosen.length();
                 travelled.addInPlace(this._rotateAboutUp(chosen, turn, step)).toArray(translation, i * 3);
             }
             if (!tracking && grounded > 0) {
@@ -676,16 +709,20 @@ export class RootMotion implements IDisposable {
         };
         walk(false);
         walk(true);
+        const straightness = pathLength > 0 ? heading.length() / pathLength : 0;
 
         if (travelled.lengthSquared() > 0) {
             this._travelDirection.copyFrom(travelled).normalize();
         }
         const distance = Vector3.Dot(travelled, this._travelDirection);
-        if (!forced && distance < minimumTravel) {
+        if (!forced && (distance < minimumTravel || straightness < MinimumStraightness)) {
             return null;
         }
         if (!yaw) {
             // Straight: only the travel along the direction, like the root path.
+            if (!this._extractLateral) {
+                this._snapTravelDirection();
+            }
             for (let i = 0; i <= samples; i++) {
                 step.fromArray(translation, i * 3);
                 this._travelDirection.scaleToRef(Vector3.Dot(step, this._travelDirection), step).toArray(translation, i * 3);
@@ -705,6 +742,7 @@ export class RootMotion implements IDisposable {
         const channels = this._channels.get(root)!;
         const parent = root.parent;
         const removesTravel = this._source === RootMotionSource.Root;
+        const range = Math.max(this._toFrame - this._fromFrame, 1e-6);
         const start = this._positionInCharacter(root, this._fromFrame, new Vector3());
         const reference = this._rotationInCharacter(root, this._fromFrame, new Quaternion());
         reference.conjugateInPlace();
@@ -732,6 +770,9 @@ export class RootMotion implements IDisposable {
             if (removesTravel) {
                 rootMatrix.getTranslationToRef(scratchPosition);
                 this._rootTravelAt(scratchPosition, start, yaw, this._turns, travel);
+                if (!this._turns) {
+                    travel.addInPlace(this._lateralDrift.scale(Math.min(1, Math.max(0, (frame - this._fromFrame) / range))));
+                }
             } else {
                 travel.setAll(0);
             }
@@ -782,7 +823,7 @@ export class RootMotion implements IDisposable {
                     if (kind === "position" && !this._turns) {
                         this._matrixToCharacter(parent, key.frame, parentMatrix);
                         const inCharacter = Vector3.TransformNormal(original, parentMatrix);
-                        const removed = removesTravel ? this._project(inCharacter.clone(), new Vector3()) : Vector3.Zero();
+                        const removed = removesTravel ? this._project(inCharacter.clone(), new Vector3()).addInPlace(this._lateralDrift.scale(1 / range)) : Vector3.Zero();
                         parentMatrix.invertToRef(parentMatrix);
                         return original.subtract(Vector3.TransformNormal(removed, parentMatrix));
                     }
@@ -883,6 +924,35 @@ export class RootMotion implements IDisposable {
         return result;
     }
 
+    /**
+     * Snaps the direction of travel onto the nearest horizontal character space axis within the snap angle.
+     */
+    private _snapTravelDirection(): void {
+        if (this._directionSnapAngle <= 0) {
+            return;
+        }
+        const up = this._upAxis;
+        const axis = new Vector3();
+        let best: Nullable<Vector3> = null;
+        let bestDot = Math.cos(this._directionSnapAngle);
+        for (const candidate of [Vector3.RightReadOnly, Vector3.UpReadOnly, Vector3.Forward(false)]) {
+            if (Math.abs(Vector3.Dot(candidate, up)) > 0.5) {
+                continue;
+            }
+            this._horizontal(candidate, axis).normalize();
+            for (const sign of [1, -1]) {
+                const dot = sign * Vector3.Dot(axis, this._travelDirection);
+                if (dot >= bestDot) {
+                    bestDot = dot;
+                    best = axis.scale(sign);
+                }
+            }
+        }
+        if (best) {
+            this._travelDirection.copyFrom(best);
+        }
+    }
+
     private _rotateAboutUp(vector: Vector3, angle: number, result: Vector3): Vector3 {
         if (angle === 0) {
             return result.copyFrom(vector);
@@ -892,15 +962,23 @@ export class RootMotion implements IDisposable {
     }
 
     /**
-     * The turn about the up axis from a reference orientation to a rotation, both in character space.
+     * The turn about the up axis from a reference orientation to a rotation, both in character space: the angle of the
+     * rotation about the up axis that best matches the change of orientation. Unlike the twist of a swing-twist split,
+     * it stays well defined while the root pitches and rolls - a dancer's hips tilting through the vertical made the
+     * twist jump by half turns.
      * @param rotation defines the rotation
      * @param referenceConjugate defines the conjugate of the reference rotation
      * @returns the angle in radians, between -PI and PI
      */
     private _twist(rotation: Quaternion, referenceConjugate: Quaternion): number {
-        const delta = rotation.multiplyToRef(referenceConjugate, TmpVectors.Quaternion[1]);
+        const delta = Matrix.FromQuaternionToRef(rotation.multiplyToRef(referenceConjugate, TmpVectors.Quaternion[1]), TmpVectors.Matrix[2]);
         const up = this._upAxis;
-        return WrapAngle(2 * Math.atan2(delta.x * up.x + delta.y * up.y + delta.z * up.z, delta.w));
+        // Two horizontal axes, right-handed with up the way +X, +Z are with +Y.
+        const first = this._horizontal(Math.abs(up.x) < 0.9 ? Vector3.RightReadOnly : Vector3.Forward(false), TmpVectors.Vector3[5]).normalize();
+        const second = Vector3.CrossToRef(first, up, TmpVectors.Vector3[6]);
+        const turnedFirst = Vector3.TransformNormalToRef(first, delta, TmpVectors.Vector3[7]);
+        const turnedSecond = Vector3.TransformNormalToRef(second, delta, TmpVectors.Vector3[8]);
+        return WrapAngle(Math.atan2(Vector3.Dot(turnedSecond, first) - Vector3.Dot(turnedFirst, second), Vector3.Dot(turnedFirst, first) + Vector3.Dot(turnedSecond, second)));
     }
 
     private _positionInCharacter(node: TransformNode, frame: number, result: Vector3): Vector3 {

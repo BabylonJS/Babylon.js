@@ -34,6 +34,8 @@ interface IRigOptions {
     turn?: number;
     /** How far the hips twist either way during a cycle, in radians, ending where they began. */
     twist?: number;
+    /** How far the whole clip veers off +Z, in radians: the path, the hips and the feet. */
+    veer?: number;
 }
 
 /**
@@ -63,7 +65,8 @@ function FootInWalk(time: number, side: number): Vector3 {
  * @returns the rig
  */
 function BuildRig(scene: Scene, gait: Gait, options: IRigOptions = {}): IRig {
-    const { surge = 0, turn = 0, twist = 0 } = options;
+    const { surge = 0, turn = 0, twist = 0, veer = 0 } = options;
+    const veering = Matrix.RotationY(veer);
     const character = new TransformNode("character", scene);
     const armature = new TransformNode("armature", scene);
     armature.parent = character;
@@ -109,6 +112,9 @@ function BuildRig(scene: Scene, gait: Gait, options: IRigOptions = {}): IRig {
             left = FootInWalk(time, 1).subtractInPlace(new Vector3(0, 0, shift));
             right = FootInWalk(time, -1).subtractInPlace(new Vector3(0, 0, shift));
         }
+        Vector3.TransformCoordinatesToRef(hipsInCharacter, veering, hipsInCharacter);
+        Vector3.TransformCoordinatesToRef(left, veering, left);
+        Vector3.TransformCoordinatesToRef(right, veering, right);
         // Feet are children of the unrotated hips, so their local offset is the character space offset, unscaled.
         hipsKeys.push({ frame, value: Vector3.TransformCoordinates(hipsInCharacter, toArmature) });
         leftKeys.push({ frame, value: Vector3.TransformNormal(left.subtract(hipsInCharacter), toArmature) });
@@ -339,7 +345,50 @@ describe("RootMotion", () => {
         Run(scene, 100);
 
         expect(rootMotion.source).toBe(RootMotionSource.None);
+        expect(rootMotion.travelDirection.asArray()).toEqual([0, 0, 1]);
         expect(rig.character.position.length()).toBe(0);
+    });
+
+    describe("direction of travel", () => {
+        it("walks an in-place clip that veers slightly straight", () => {
+            const rig = BuildRig(scene, "inPlace", { veer: 0.05 });
+            const rootMotion = new RootMotion(rig.group);
+            rig.group.start(true);
+            Run(scene, 126);
+
+            expect(rootMotion.travelDirection.x).toBeCloseTo(0, 6);
+            expect(rig.character.position.x).toBeCloseTo(0, 6);
+            expect(rig.character.position.z).toBeCloseTo(Speed * 2, 1);
+        });
+
+        it("walks a root clip that veers slightly straight, without a pop at the loop", () => {
+            const rig = BuildRig(scene, "rootMotion", { veer: 0.05 });
+            const start = HipsInCharacter(rig, 0);
+            const rootMotion = new RootMotion(rig.group);
+
+            expect(rootMotion.travelDirection.x).toBeCloseTo(0, 6);
+            const end = HipsInCharacter(rig, CycleFrames);
+            expect(end.x).toBeCloseTo(start.x, 4);
+            expect(end.z).toBeCloseTo(start.z, 4);
+
+            rig.group.start(true);
+            Run(scene, 126);
+            expect(rig.character.position.x).toBeCloseTo(0, 6);
+        });
+
+        it("keeps a deliberate diagonal", () => {
+            const rig = BuildRig(scene, "inPlace", { veer: 0.5 });
+            const rootMotion = new RootMotion(rig.group);
+
+            expect(rootMotion.travelDirection.x).toBeCloseTo(Math.sin(0.5), 2);
+        });
+
+        it("keeps the measured direction when snapping is off", () => {
+            const rig = BuildRig(scene, "inPlace", { veer: 0.05 });
+            const rootMotion = new RootMotion(rig.group, { directionSnapAngle: 0 });
+
+            expect(rootMotion.travelDirection.x).toBeCloseTo(Math.sin(0.05), 2);
+        });
     });
 
     describe("turning", () => {
