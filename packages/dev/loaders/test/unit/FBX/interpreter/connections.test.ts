@@ -69,39 +69,37 @@ describe("resolveConnections", () => {
         expect(map.diagnostics.some((diagnostic) => diagnostic.reason === "duplicate-parent")).toBe(true);
     });
 
-    it("rejects unsafe numeric object IDs", () => {
-        expect(() =>
-            resolveConnections({
-                version: 7500,
-                nodes: [
-                    {
-                        name: "Objects",
-                        properties: [],
-                        children: [createObject("Model", Number.MAX_SAFE_INTEGER + 1, "Unsafe", "Null")],
-                    },
-                ],
-            })
-        ).toThrow("Unsafe FBX object ID");
+    it("accepts object IDs beyond 2^53 (identical bytes stay identical keys, as in ufbx)", () => {
+        const map = resolveConnections({
+            version: 7500,
+            nodes: [
+                {
+                    name: "Objects",
+                    properties: [],
+                    children: [createObject("Model", Number.MAX_SAFE_INTEGER + 1, "Unsafe", "Null")],
+                },
+            ],
+        });
+        expect(map.objects.size).toBe(1);
     });
 
-    it("rejects unsafe numeric connection endpoint IDs", () => {
-        expect(() =>
-            resolveConnections({
-                version: 7500,
-                nodes: [
-                    {
-                        name: "Objects",
-                        properties: [],
-                        children: [createObject("Model", 1, "Safe", "Null")],
-                    },
-                    {
-                        name: "Connections",
-                        properties: [],
-                        children: [createConnection("OO", Number.MAX_SAFE_INTEGER + 1, 0)],
-                    },
-                ],
-            })
-        ).toThrow("Unsafe FBX object ID");
+    it("accepts connection endpoint IDs beyond 2^53", () => {
+        const map = resolveConnections({
+            version: 7500,
+            nodes: [
+                {
+                    name: "Objects",
+                    properties: [],
+                    children: [createObject("Model", 1, "Safe", "Null")],
+                },
+                {
+                    name: "Connections",
+                    properties: [],
+                    children: [createConnection("OO", Number.MAX_SAFE_INTEGER + 1, 0)],
+                },
+            ],
+        });
+        expect(map.connections).toHaveLength(1);
     });
 });
 

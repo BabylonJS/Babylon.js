@@ -23,7 +23,7 @@ export interface FBXObjectEntry {
     /** Object node. */
     node: FBXNode;
     /** Source of the object entry. */
-    source: "Objects" | "legacySyntheticGeometry";
+    source: "Objects" | "legacySyntheticGeometry" | "legacySyntheticAttribute" | "legacySyntheticBlendShape";
     /** Legacy string object name, when applicable. */
     legacyName?: string;
     /** True if the object was synthesized for legacy compatibility. */
@@ -98,15 +98,24 @@ export function resolveConnections(doc: FBXDocument): FBXObjectMap {
     const connections: FBXConnection[] = [];
     const connectionEntries: FBXConnectionEntry[] = [];
     const diagnostics: FBXConnectionDiagnostic[] = [];
+    // Legacy (6.x and older) objects are identified by their full "Class::Name" string, exactly as the SDK does,
+    // so that a material, texture and video sharing a base name stay distinct. Connections that only carry the
+    // bare name fall back to the first object with that name.
     const legacyIds = new Map<string, number>();
+    const legacyIdsByCleanName = new Map<string, number>();
     const syntheticLegacyIds = new Map<string, Map<string, number>>();
+    const legacyGeometryByModelId = new Map<number, number>();
     let nextLegacyId = -1;
 
-    const getLegacyId = (name: string): number => {
-        let id = legacyIds.get(name);
+    const getLegacyId = (rawName: string): number => {
+        let id = legacyIds.get(rawName);
         if (id === undefined) {
             id = nextLegacyId--;
-            legacyIds.set(name, id);
+            legacyIds.set(rawName, id);
+            const clean = cleanFBXName(rawName);
+            if (!legacyIdsByCleanName.has(clean)) {
+                legacyIdsByCleanName.set(clean, id);
+            }
         }
         return id;
     };
@@ -126,6 +135,51 @@ export function resolveConnections(doc: FBXDocument): FBXObjectMap {
         return id;
     };
 
+    /** Turns `Shape` children of a geometry into a BlendShape deformer with one channel and shape geometry each. */
+    const synthesizeInlineShapes = (owner: FBXNode, geometryId: number, key: string): void => {
+        const shapes = owner.children.filter((c) => c.name === "Shape");
+        if (shapes.length === 0) {
+            return;
+        }
+        const deformerId = getSyntheticLegacyId("BlendShape", key);
+        const deformer = createLegacyObject("Deformer", deformerId, `Deformer::${cleanFBXName(key)}`, "BlendShape", [createVersionNode(100)]);
+        objects.set(deformerId, deformer);
+        objectEntries.push({ id: deformerId, node: deformer, source: "legacySyntheticBlendShape", legacyName: key, synthetic: true });
+        addConnection(connections, childrenOf, parentOf, diagnostics, "OO", deformerId, geometryId);
+        for (const shape of shapes) {
+            const shapeName = cleanFBXName(getPropertyValue<string>(shape, 0) ?? "Shape");
+            const channelId = getSyntheticLegacyId("BlendShapeChannel", `${key}|${shapeName}`);
+            const channel = createLegacyObject("Deformer", channelId, `SubDeformer::${shapeName}`, "BlendShapeChannel", [
+                createVersionNode(100),
+                { name: "DeformPercent", properties: [{ type: "float64", value: 0 }], children: [] },
+                {
+                    name: "Properties60",
+                    properties: [],
+                    children: [
+                        {
+                            name: "Property",
+                            properties: [
+                                { type: "string", value: "DeformPercent" },
+                                { type: "string", value: "Number" },
+                                { type: "string", value: "A" },
+                                { type: "float64", value: 0 },
+                            ],
+                            children: [],
+                        },
+                    ],
+                },
+            ]);
+            objects.set(channelId, channel);
+            objectEntries.push({ id: channelId, node: channel, source: "legacySyntheticBlendShape", legacyName: `${key}|${shapeName}`, synthetic: true });
+            addConnection(connections, childrenOf, parentOf, diagnostics, "OO", channelId, deformerId);
+            const shapeId = getSyntheticLegacyId("Shape", `${key}|${shapeName}`);
+            const shapeGeometry = createLegacyObject("Geometry", shapeId, `Geometry::${shapeName}`, "Shape", shape.children);
+            objects.set(shapeId, shapeGeometry);
+            objectEntries.push({ id: shapeId, node: shapeGeometry, source: "legacySyntheticBlendShape", legacyName: `${key}|${shapeName}`, synthetic: true });
+            addConnection(connections, childrenOf, parentOf, diagnostics, "OO", shapeId, channelId);
+        }
+    };
+
     // Build object map from Objects section
     const objectsNode = findDocumentNode(doc, "Objects");
     if (objectsNode) {
@@ -136,19 +190,35 @@ export function resolveConnections(doc: FBXDocument): FBXObjectMap {
                 if (id !== undefined) {
                     objects.set(id, obj);
                     objectEntries.push({ id, node: obj, source: "Objects", synthetic: false });
+                    if (obj.name === "Geometry" && getPropertyValue<string>(obj, 2) === "Mesh") {
+                        // FBX 7.1 stores blend shapes inline in the geometry, like 6.x files.
+                        synthesizeInlineShapes(obj, id, String(id));
+                    }
                 } else if (typeof idProp.value === "string") {
-                    const legacyName = cleanFBXName(idProp.value);
+                    const legacyName = idProp.value;
                     const id = getLegacyId(legacyName);
                     const normalized = normalizeLegacyObject(obj, id);
                     objects.set(id, normalized);
                     objectEntries.push({ id, node: normalized, source: "Objects", legacyName, synthetic: false });
 
-                    if (obj.name === "Model" && getPropertyValue<string>(obj, 1) === "Mesh") {
+                    const legacySubType = obj.name === "Model" ? getPropertyValue<string>(obj, 1) : undefined;
+                    if (legacySubType === "Mesh") {
                         const geometryId = getSyntheticLegacyId("Geometry", legacyName);
                         const geometry = createLegacyGeometry(obj, geometryId);
                         objects.set(geometryId, geometry);
                         objectEntries.push({ id: geometryId, node: geometry, source: "legacySyntheticGeometry", legacyName, synthetic: true });
                         addConnection(connections, childrenOf, parentOf, diagnostics, "OO", geometryId, id);
+                        legacyGeometryByModelId.set(id, geometryId);
+
+                        // Inline blend shapes become a BlendShape deformer with one channel and one shape geometry each.
+                        synthesizeInlineShapes(obj, geometryId, legacyName);
+                    } else if (legacySubType === "Light" || legacySubType === "Camera") {
+                        // 6.x lights and cameras keep their attribute properties on the model; expose them as a NodeAttribute.
+                        const attributeId = getSyntheticLegacyId("NodeAttribute", legacyName);
+                        const attribute = createLegacyObject("NodeAttribute", attributeId, `NodeAttribute::${cleanFBXName(legacyName)}`, legacySubType, obj.children);
+                        objects.set(attributeId, attribute);
+                        objectEntries.push({ id: attributeId, node: attribute, source: "legacySyntheticAttribute", legacyName, synthetic: true });
+                        addConnection(connections, childrenOf, parentOf, diagnostics, "OO", attributeId, id);
                     }
                 }
             }
@@ -164,9 +234,18 @@ export function resolveConnections(doc: FBXDocument): FBXObjectMap {
             }
 
             const connectionIndex = connectionEntries.length;
-            const type = getPropertyValue<string>(c, 0);
-            const childIdRaw = c.properties[1]?.value;
-            const parentIdRaw = c.properties[2]?.value;
+            let type = getPropertyValue<string>(c, 0);
+            let childIdRaw = c.properties[1]?.value;
+            let parentIdRaw = c.properties[2]?.value;
+            let poPropertyName: string | undefined;
+            // "PO" connects a property of the first object to the second object (6.x constraints use it for
+            // "Constrained Object"); it is the mirror image of "OP", so store it as OP from the object to the owner.
+            if (type === "PO" && typeof c.properties[2]?.value === "string" && c.properties.length > 3) {
+                type = "OP";
+                poPropertyName = c.properties[2].value as string;
+                childIdRaw = c.properties[3]?.value;
+                parentIdRaw = c.properties[1]?.value;
+            }
             const entry: FBXConnectionEntry = {
                 source: c.name,
                 rawType: type,
@@ -175,8 +254,8 @@ export function resolveConnections(doc: FBXDocument): FBXObjectMap {
             connectionEntries.push(entry);
 
             if (type !== "OO" && type !== "OP") {
-                const childId = childIdRaw === undefined ? undefined : toObjectId(childIdRaw, legacyIds);
-                const parentId = parentIdRaw === undefined ? undefined : toObjectId(parentIdRaw, legacyIds);
+                const childId = childIdRaw === undefined ? undefined : toObjectId(childIdRaw, legacyIds, legacyIdsByCleanName);
+                const parentId = parentIdRaw === undefined ? undefined : toObjectId(parentIdRaw, legacyIds, legacyIdsByCleanName);
                 diagnostics.push({
                     reason: "unsupported-connection-type",
                     message: `Unsupported FBX connection type '${type ?? ""}' was not added to the graph.`,
@@ -198,8 +277,12 @@ export function resolveConnections(doc: FBXDocument): FBXObjectMap {
                 continue;
             }
 
-            const childId = toObjectId(childIdRaw, legacyIds);
-            const parentId = toObjectId(parentIdRaw, legacyIds);
+            const childId = toObjectId(childIdRaw, legacyIds, legacyIdsByCleanName);
+            let parentId = toObjectId(parentIdRaw, legacyIds, legacyIdsByCleanName);
+            // 6.x deformers connect to the model; the importer expects them on the geometry.
+            if (childId !== undefined && parentId !== undefined && objects.get(childId)?.name === "Deformer") {
+                parentId = legacyGeometryByModelId.get(parentId) ?? parentId;
+            }
             if (childId === undefined || parentId === undefined) {
                 diagnostics.push({
                     reason: "unresolved-legacy-endpoint",
@@ -210,7 +293,7 @@ export function resolveConnections(doc: FBXDocument): FBXObjectMap {
                 continue;
             }
 
-            const propertyName = type === "OP" && c.properties.length > 3 ? getPropertyValue<string>(c, 3) : undefined;
+            const propertyName = poPropertyName ?? (type === "OP" && c.properties.length > 3 ? getPropertyValue<string>(c, 3) : undefined);
 
             entry.childId = childId;
             entry.parentId = parentId;
@@ -277,7 +360,7 @@ function toObjectNumber(value: unknown): number | undefined {
     return getSafeFBXObjectId(value);
 }
 
-function toObjectId(value: unknown, legacyIds: Map<string, number>): number | undefined {
+function toObjectId(value: unknown, legacyIds: Map<string, number>, legacyIdsByCleanName: Map<string, number>): number | undefined {
     const numericId = toObjectNumber(value);
     if (numericId !== undefined) {
         return numericId;
@@ -285,11 +368,31 @@ function toObjectId(value: unknown, legacyIds: Map<string, number>): number | un
     if (typeof value !== "string") {
         return undefined;
     }
+    const direct = legacyIds.get(value);
+    if (direct !== undefined) {
+        return direct;
+    }
     const legacyName = cleanFBXName(value);
     if (legacyName === "Scene") {
         return 0;
     }
-    return legacyIds.get(legacyName);
+    return legacyIdsByCleanName.get(legacyName);
+}
+
+function createVersionNode(version: number): FBXNode {
+    return { name: "Version", properties: [{ type: "int32", value: version }], children: [] };
+}
+
+function createLegacyObject(nodeName: string, id: number, name: string, subType: string, children: FBXNode[]): FBXNode {
+    return {
+        name: nodeName,
+        properties: [
+            { type: "int64", value: id },
+            { type: "string", value: name },
+            { type: "string", value: subType },
+        ],
+        children,
+    };
 }
 
 function addConnection(

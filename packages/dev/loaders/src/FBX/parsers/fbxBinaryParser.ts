@@ -3,7 +3,11 @@ import { type FBXDocument, type FBXNode, type FBXProperty, type FBXPropertyType 
 import { inflateZlib } from "./zlibInflate";
 
 const FBX_MAGIC = "Kaydara FBX Binary  \0";
-const HEADER_SIZE = 27; // 21 magic + 2 padding + 4 version uint32
+const HEADER_SIZE = 27; // 21 magic + 1 (0x1A) + 1 endianness flag + 4 version uint32
+
+// Byte order of the file being parsed. Big-endian FBX files exist (e.g. old Maya exports); the flag byte after the
+// magic is non-zero for them. Parsing is synchronous so a module-level flag is safe.
+let littleEndian = true;
 
 /**
  * Parse a binary FBX file into an FBXDocument.
@@ -12,6 +16,7 @@ const HEADER_SIZE = 27; // 21 magic + 2 padding + 4 version uint32
 export function parseBinaryFBX(buffer: ArrayBuffer): FBXDocument {
     const view = new DataView(buffer);
     const bytes = new Uint8Array(buffer);
+    littleEndian = bytes.length > 22 ? bytes[22] === 0 : true;
 
     // Validate magic
     const magic = decodeASCII(bytes, 0, 21);
@@ -22,7 +27,7 @@ export function parseBinaryFBX(buffer: ArrayBuffer): FBXDocument {
         throw new Error("Truncated binary FBX header");
     }
 
-    const version = view.getUint32(23, true);
+    const version = view.getUint32(23, littleEndian);
     // v7.5+ uses 64-bit offsets in node records
     const is64Bit = version >= 7500;
 
@@ -61,9 +66,9 @@ function parseNode(view: DataView, bytes: Uint8Array, offset: number, is64Bit: b
         headerSize = 25; // 8+8+8+1 (nameLen byte)
     } else {
         ensureRange(bytes, offset, 13, limit, "FBX node header");
-        endOffset = view.getUint32(offset, true);
-        numProperties = view.getUint32(offset + 4, true);
-        propertyListLen = view.getUint32(offset + 8, true);
+        endOffset = view.getUint32(offset, littleEndian);
+        numProperties = view.getUint32(offset + 4, littleEndian);
+        propertyListLen = view.getUint32(offset + 8, littleEndian);
         headerSize = 13; // 4+4+4+1 (nameLen byte)
     }
 
@@ -131,33 +136,43 @@ function parseProperty(view: DataView, bytes: Uint8Array, offset: number, limit:
 
     switch (typeCode) {
         case "C": {
-            // Boolean (1 byte)
+            // Boolean (1 byte). Legacy (pre-7000) files also use 'C' for bare characters such as key modes
+            // ('U', 's', 'n'); those are surfaced as small integers so consumers can read the character code.
             ensureRange(bytes, offset, 1, limit, "FBX boolean property");
-            const value = bytes[offset] !== 0;
-            return { property: { type: "boolean", value }, nextOffset: offset + 1 };
+            const byte = bytes[offset];
+            if (byte > 1) {
+                return { property: { type: "int32", value: byte }, nextOffset: offset + 1 };
+            }
+            return { property: { type: "boolean", value: byte !== 0 }, nextOffset: offset + 1 };
+        }
+        case "Z": {
+            // Single byte integer (rare, emitted by some exporters); ufbx reads it as an unsigned byte number.
+            ensureRange(bytes, offset, 1, limit, "FBX byte property");
+            const value = bytes[offset];
+            return { property: { type: "int32", value }, nextOffset: offset + 1 };
         }
         case "Y": {
             // Int16
             ensureRange(bytes, offset, 2, limit, "FBX int16 property");
-            const value = view.getInt16(offset, true);
+            const value = view.getInt16(offset, littleEndian);
             return { property: { type: "int16", value }, nextOffset: offset + 2 };
         }
         case "I": {
             // Int32
             ensureRange(bytes, offset, 4, limit, "FBX int32 property");
-            const value = view.getInt32(offset, true);
+            const value = view.getInt32(offset, littleEndian);
             return { property: { type: "int32", value }, nextOffset: offset + 4 };
         }
         case "F": {
             // Float32
             ensureRange(bytes, offset, 4, limit, "FBX float32 property");
-            const value = view.getFloat32(offset, true);
+            const value = view.getFloat32(offset, littleEndian);
             return { property: { type: "float32", value }, nextOffset: offset + 4 };
         }
         case "D": {
             // Float64
             ensureRange(bytes, offset, 8, limit, "FBX float64 property");
-            const value = view.getFloat64(offset, true);
+            const value = view.getFloat64(offset, littleEndian);
             return { property: { type: "float64", value }, nextOffset: offset + 8 };
         }
         case "L": {
@@ -169,7 +184,7 @@ function parseProperty(view: DataView, bytes: Uint8Array, offset: number, limit:
         case "S": {
             // String (uint32 length + data)
             ensureRange(bytes, offset, 4, limit, "FBX string property length");
-            const len = view.getUint32(offset, true);
+            const len = view.getUint32(offset, littleEndian);
             ensureRange(bytes, offset + 4, len, limit, "FBX string property data");
             const value = decodeUTF8(bytes, offset + 4, len);
             return { property: { type: "string", value }, nextOffset: offset + 4 + len };
@@ -177,7 +192,7 @@ function parseProperty(view: DataView, bytes: Uint8Array, offset: number, limit:
         case "R": {
             // Raw binary data (uint32 length + data)
             ensureRange(bytes, offset, 4, limit, "FBX raw property length");
-            const len = view.getUint32(offset, true);
+            const len = view.getUint32(offset, littleEndian);
             ensureRange(bytes, offset + 4, len, limit, "FBX raw property data");
             const value = bytes.slice(offset + 4, offset + 4 + len);
             return { property: { type: "raw", value }, nextOffset: offset + 4 + len };
@@ -193,6 +208,9 @@ function parseProperty(view: DataView, bytes: Uint8Array, offset: number, limit:
             return parseArrayProperty(view, bytes, offset, "int64[]", 8, limit);
         case "b":
             return parseArrayProperty(view, bytes, offset, "boolean[]", 1, limit);
+        case "c":
+            // Byte array (same layout as 'b'); consumers treat it as small integers.
+            return parseArrayProperty(view, bytes, offset, "boolean[]", 1, limit);
         default:
             throw new Error(`Unknown FBX property type: '${typeCode}' at offset ${offset - 1}`);
     }
@@ -200,9 +218,9 @@ function parseProperty(view: DataView, bytes: Uint8Array, offset: number, limit:
 
 function parseArrayProperty(view: DataView, bytes: Uint8Array, offset: number, type: FBXPropertyType, elementSize: number, limit: number): ParsedProperty {
     ensureRange(bytes, offset, 12, limit, `FBX array property header for ${type}`);
-    const arrayLength = view.getUint32(offset, true);
-    const encoding = view.getUint32(offset + 4, true); // 0=raw, 1=zlib
-    const compressedLength = view.getUint32(offset + 8, true);
+    const arrayLength = view.getUint32(offset, littleEndian);
+    const encoding = view.getUint32(offset + 4, littleEndian); // 0=raw, 1=zlib
+    const compressedLength = view.getUint32(offset + 8, littleEndian);
     offset += 12;
     const expectedByteLength = arrayLength * elementSize;
     ensureRange(bytes, offset, compressedLength, limit, `FBX array property data for ${type}`);
@@ -222,6 +240,9 @@ function parseArrayProperty(view: DataView, bytes: Uint8Array, offset: number, t
         arrayData = bytes.slice(offset, offset + compressedLength);
     }
 
+    if (!littleEndian && elementSize > 1 && type !== "int64[]") {
+        swapBytesInPlace(arrayData, elementSize);
+    }
     const arrayBuffer = arrayData.buffer.slice(arrayData.byteOffset, arrayData.byteOffset + arrayData.byteLength);
 
     let value: Float32Array | Float64Array | Int32Array | Uint8Array;
@@ -257,15 +278,25 @@ function ensureRange(bytes: Uint8Array, offset: number, byteLength: number, limi
     }
 }
 
+function swapBytesInPlace(data: Uint8Array, elementSize: number): void {
+    for (let i = 0; i + elementSize <= data.length; i += elementSize) {
+        for (let a = i, b = i + elementSize - 1; a < b; a++, b--) {
+            const t = data[a];
+            data[a] = data[b];
+            data[b] = t;
+        }
+    }
+}
+
 function readUint64AsNumber(view: DataView, offset: number): number {
-    const low = view.getUint32(offset, true);
-    const high = view.getUint32(offset + 4, true);
+    const low = view.getUint32(littleEndian ? offset : offset + 4, littleEndian);
+    const high = view.getUint32(littleEndian ? offset + 4 : offset, littleEndian);
     return high * 0x100000000 + low;
 }
 
 function readInt64AsNumber(view: DataView, offset: number): number {
-    const low = view.getUint32(offset, true);
-    const high = view.getInt32(offset + 4, true);
+    const low = view.getUint32(littleEndian ? offset : offset + 4, littleEndian);
+    const high = view.getInt32(littleEndian ? offset + 4 : offset, littleEndian);
     return high * 0x100000000 + low;
 }
 

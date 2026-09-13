@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractAnimations, isFrameBakedSampledCurve, sampleFBXCurveAtTime, type FBXKeyframe } from "loaders/FBX/interpreter/animation";
+import { extractAnimations, sampleFBXCurveAtTime } from "loaders/FBX/interpreter/animation";
 import { resolveConnections } from "loaders/FBX/interpreter/connections";
 import { type FBXDocument, type FBXNode } from "loaders/FBX/types/fbxTypes";
 
@@ -47,24 +47,21 @@ describe("FBX animation interpretation", () => {
         ).toBeCloseTo(1.5625);
     });
 
-    it("detects uniformly frame-baked sampled curves", () => {
-        const sampledKeys = createSampledKeys(8, 30);
-
-        expect(isFrameBakedSampledCurve(sampledKeys)).toBe(true);
-        expect(isFrameBakedSampledCurve([{ ...sampledKeys[0], time: 0 }, { ...sampledKeys[1], time: 0.1 }, ...sampledKeys.slice(2)])).toBe(false);
-    });
-
-    it("extracts animation layers, rebased keyframes, and layer diagnostics", () => {
+    it("extracts animation layers and keeps keyframe times (no rebasing), with layer diagnostics", () => {
         const animations = extractAnimations(resolveConnections(createAnimationDocument()));
 
         expect(animations).toHaveLength(1);
         expect(animations[0].name).toBe("Take 001");
-        expect(animations[0].startTime).toBe(0);
-        expect(animations[0].stopTime).toBe(1);
+        // Without LocalStart/LocalStop the clip spans its keys; times are kept as authored so clips stay aligned.
+        expect(animations[0].startTime).toBe(1);
+        expect(animations[0].stopTime).toBe(2);
         expect(animations[0].curveNodes[0].targetModelId).toBe(10);
         expect(animations[0].curveNodes[0].curves[0].channel).toBe("d|X");
-        expect(animations[0].curveNodes[0].curves[0].keys.map((key) => key.time)).toEqual([0, 1]);
-        expect(animations[0].layers[0].diagnostics.map((diagnostic) => diagnostic.type)).toEqual(["unsupported-layer-blend-mode", "partial-layer-weight"]);
+        expect(animations[0].curveNodes[0].curves[0].keys.map((key) => key.time)).toEqual([1, 2]);
+        // Override blending and partial weights are evaluated (not flagged): the layer keeps its blend mode and weight.
+        expect(animations[0].layers[0].diagnostics).toEqual([]);
+        expect(animations[0].layers[0].blendMode).toBe(1);
+        expect(animations[0].layers[0].weight).toBe(50);
     });
 
     it("extracts ASCII key attributes parsed as Float64Array", () => {
@@ -86,14 +83,6 @@ describe("FBX animation interpretation", () => {
         expect(animations[1].curveNodes[0].curves[0].channel).toBe("d|Y");
     });
 });
-
-function createSampledKeys(count: number, fps: number): FBXKeyframe[] {
-    return Array.from({ length: count }, (_, index) => ({
-        time: index / fps,
-        value: index,
-        interpolation: "linear" as const,
-    }));
-}
 
 function createAnimationDocument(): FBXDocument {
     return {
