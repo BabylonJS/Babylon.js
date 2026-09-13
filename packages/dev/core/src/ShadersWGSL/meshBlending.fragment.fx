@@ -10,15 +10,10 @@ varying vUV: vec2f;
 var textureSampler: texture_2d<f32>;
 var meshBlendTagSampler: texture_2d<u32>;
 var meshBlendDepthSampler: texture_2d<f32>;
-var meshBlendWorldNormalSampler: texture_2d<f32>;
 #ifdef MESH_BLEND_SHADOW_ESTIMATION
 var meshBlendBaseColorSampler: texture_2d<f32>;
 #endif
 var meshBlendBlueNoiseSampler: texture_2d<f32>;
-#ifdef MESH_BLEND_ARTISTIC_NOISE
-var meshBlendArtisticNoiseSamplerSampler: sampler;
-var meshBlendArtisticNoiseSampler: texture_2d<f32>;
-#endif
 
 uniform projection: mat4x4f;
 uniform inverseProjection: mat4x4f;
@@ -26,14 +21,7 @@ uniform inverseView: mat4x4f;
 uniform blendWorldRadii: vec4f;
 uniform minimumProjectedRadii: vec4f;
 uniform meshBlendIsOrthographic: f32;
-uniform meshBlendWorldNormalIsUnsigned: f32;
 uniform slopeFactor: f32;
-#ifdef MESH_BLEND_ARTISTIC_NOISE
-uniform noiseFactor: f32;
-uniform noiseFade: f32;
-uniform noiseOffset: f32;
-uniform noiseTileSize: f32;
-#endif
 
 #ifndef MESH_BLEND_DIRECTION_COUNT
     #define MESH_BLEND_DIRECTION_COUNT 3
@@ -43,7 +31,6 @@ uniform noiseTileSize: f32;
     #define MESH_BLEND_EXACT_EDGE_SAMPLE_COUNT 8
     #define MESH_BLEND_RADIUS_SCALE 0.9
     #define MESH_BLEND_JITTER_FACTOR 0.5
-    #define MESH_BLEND_ARTISTIC_NOISE
     #define MESH_BLEND_COLOR_INTERPOLATION_OKLAB
 #endif
 
@@ -125,9 +112,9 @@ struct MeshBlendColorEvaluation {
     samples: MeshBlendTargetColorSamples,
     currentColor: vec4f,
     blendedColor: vec4f,
+    #ifdef MESH_BLEND_DEBUG_WORLD_POSITION
     worldPosition: vec3f,
-    worldNormal: vec3f,
-    rawArtisticNoise: f32,
+    #endif
     shadowAttenuation: f32,
     adjustedFade: f32,
     nearSeamCorrected: bool,
@@ -189,14 +176,6 @@ fn reconstructMeshBlendWorldPosition(viewPosition: vec3f) -> vec3f {
     return (uniforms.inverseView * vec4f(viewPosition, 1.0)).xyz;
 }
 
-fn loadMeshBlendWorldNormal(pixel: vec2i, renderSize: vec2i) -> vec3f {
-    var worldNormal: vec3f = textureLoad(meshBlendWorldNormalSampler, clampPixel(pixel, renderSize), 0).xyz;
-    if (uniforms.meshBlendWorldNormalIsUnsigned > 0.5) {
-        worldNormal = worldNormal * 2.0 - 1.0;
-    }
-    return normalize(worldNormal);
-}
-
 fn isFiniteMeshBlendValue(value: f32) -> bool {
     return (bitcast<u32>(value) & 0x7f800000u) != 0x7f800000u;
 }
@@ -204,38 +183,6 @@ fn isFiniteMeshBlendValue(value: f32) -> bool {
 fn isValidMeshBlendPosition(position: vec3f) -> bool {
     return isFiniteMeshBlendValue(position.x) && isFiniteMeshBlendValue(position.y) && isFiniteMeshBlendValue(position.z);
 }
-
-fn isValidMeshBlendNormal(normal: vec3f) -> bool {
-    return isValidMeshBlendPosition(normal) && dot(normal, normal) > MESH_BLEND_EPSILON;
-}
-
-#ifdef MESH_BLEND_ARTISTIC_NOISE
-fn meshBlendDominantAxisWeights(worldNormal: vec3f) -> vec3f {
-    let absoluteNormal: vec3f = abs(normalize(worldNormal));
-    let dominantComponent: f32 = max(absoluteNormal.x, max(absoluteNormal.y, absoluteNormal.z));
-    let weights: vec3f = step(vec3f(dominantComponent), absoluteNormal);
-    return weights / max(dot(weights, vec3f(1.0)), 1.0);
-}
-
-fn sampleMeshBlendArtisticNoise(worldPosition: vec3f, worldNormal: vec3f, worldRadius: f32) -> f32 {
-    let noiseUvScale: f32 = uniforms.noiseTileSize / max(worldRadius, MESH_BLEND_EPSILON);
-    let weights: vec3f = meshBlendDominantAxisWeights(worldNormal);
-    let uvX: vec2f = fract(worldPosition.zy * noiseUvScale);
-    let uvY: vec2f = fract(worldPosition.xz * noiseUvScale);
-    let uvZ: vec2f = fract(worldPosition.xy * noiseUvScale);
-    return
-        textureSample(meshBlendArtisticNoiseSampler, meshBlendArtisticNoiseSamplerSampler, uvX).r * weights.x +
-        textureSample(meshBlendArtisticNoiseSampler, meshBlendArtisticNoiseSamplerSampler, uvY).r * weights.y +
-        textureSample(meshBlendArtisticNoiseSampler, meshBlendArtisticNoiseSamplerSampler, uvZ).r * weights.z;
-}
-
-fn modulateMeshBlendFade(fade: f32, rawNoise: f32) -> f32 {
-    let seamProximity: f32 = clamp(fade * 2.0, 0.0, 1.0);
-    let noiseEnvelope: f32 = mix(1.0, 1.0 - seamProximity, clamp(uniforms.noiseFade, 0.0, 1.0));
-    let noiseSignal: f32 = rawNoise * 2.0 - 1.0 + uniforms.noiseOffset;
-    return clamp(fade * (1.0 + noiseSignal * uniforms.noiseFactor * noiseEnvelope), 0.0, 0.5);
-}
-#endif
 
 fn meshBlendProjectionScale(renderHeight: f32) -> f32 {
     return max(0.5 * renderHeight * abs(uniforms.projection[1][1]), MESH_BLEND_EPSILON);
@@ -945,9 +892,9 @@ fn evaluateMeshBlendColor(
 ) -> MeshBlendColorEvaluation {
     var evaluation: MeshBlendColorEvaluation;
     evaluation.samples = constructMeshBlendTargetColorSamples(renderSize, result);
+    #ifdef MESH_BLEND_DEBUG_WORLD_POSITION
     evaluation.worldPosition = reconstructMeshBlendWorldPosition(result.currentViewPosition);
-    evaluation.worldNormal = loadMeshBlendWorldNormal(pixel, renderSize);
-    evaluation.rawArtisticNoise = 0.5;
+    #endif
     let currentSceneColor: vec4f = textureLoad(textureSampler, pixel, 0);
     var nearSeamCorrected: bool = false;
     evaluation.currentColor = applyMeshBlendNearSeamCorrection(
@@ -965,13 +912,6 @@ fn evaluateMeshBlendColor(
     evaluation.shadowAttenuation = calculateMeshBlendShadowAttenuation(evaluation.currentColor.rgb, evaluation.samples);
 #endif
     evaluation.adjustedFade = result.fade * evaluation.shadowAttenuation;
-#ifdef MESH_BLEND_ARTISTIC_NOISE
-    if (uniforms.noiseFactor > 0.0 && isValidMeshBlendNormal(evaluation.worldNormal)) {
-        let worldRadius: f32 = classValue(uniforms.blendWorldRadii, result.candidate.radiusClass);
-        evaluation.rawArtisticNoise = sampleMeshBlendArtisticNoise(evaluation.worldPosition, evaluation.worldNormal, worldRadius);
-        evaluation.adjustedFade = modulateMeshBlendFade(evaluation.adjustedFade, evaluation.rawArtisticNoise);
-    }
-#endif
     evaluation.blendedColor = vec4f(
         interpolateMeshBlendColor(evaluation.currentColor.rgb, evaluation.samples.targetColor.rgb, evaluation.adjustedFade),
         mix(evaluation.currentColor.a, evaluation.samples.targetColor.a, evaluation.adjustedFade)
@@ -1236,7 +1176,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             debugRadiusClass = primaryResult.candidate.radiusClass;
         }
         fragmentOutputs.color = vec4f(radiusClassDebugColor(debugRadiusClass) * 0.25, 1.0);
-#elif defined(MESH_BLEND_DEBUG_TARGET_COLOR) || defined(MESH_BLEND_DEBUG_SHADOW_ATTENUATION) || defined(MESH_BLEND_DEBUG_COLOR_INTERPOLATION) || defined(MESH_BLEND_DEBUG_WORLD_POSITION) || defined(MESH_BLEND_DEBUG_WORLD_NORMAL) || defined(MESH_BLEND_DEBUG_ARTISTIC_NOISE) || defined(MESH_BLEND_DEBUG_MODULATED_FADE)
+#elif defined(MESH_BLEND_DEBUG_TARGET_COLOR) || defined(MESH_BLEND_DEBUG_SHADOW_ATTENUATION) || defined(MESH_BLEND_DEBUG_COLOR_INTERPOLATION) || defined(MESH_BLEND_DEBUG_WORLD_POSITION)
         fragmentOutputs.color = vec4f(0.04, 0.04, 0.04, 1.0);
 #else
         fragmentOutputs.color = textureLoad(textureSampler, pixel, 0);
@@ -1259,15 +1199,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
 #ifdef MESH_BLEND_DEBUG_WORLD_POSITION
     fragmentOutputs.color = vec4f(fract(primaryColorEvaluation.worldPosition * 0.1), 1.0);
-    return fragmentOutputs;
-#elif defined(MESH_BLEND_DEBUG_WORLD_NORMAL)
-    fragmentOutputs.color = vec4f(primaryColorEvaluation.worldNormal * 0.5 + 0.5, 1.0);
-    return fragmentOutputs;
-#elif defined(MESH_BLEND_DEBUG_ARTISTIC_NOISE)
-    fragmentOutputs.color = vec4f(vec3f(primaryColorEvaluation.rawArtisticNoise), 1.0);
-    return fragmentOutputs;
-#elif defined(MESH_BLEND_DEBUG_MODULATED_FADE)
-    fragmentOutputs.color = vec4f(vec3f(clamp(primaryColorEvaluation.adjustedFade * 2.0, 0.0, 1.0)), 1.0);
     return fragmentOutputs;
 #elif defined(MESH_BLEND_DEBUG_TARGET_COLOR)
     let targetSampleIndex: i32 = (pixel.x / 4) % 4;

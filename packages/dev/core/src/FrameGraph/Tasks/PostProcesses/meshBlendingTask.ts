@@ -33,7 +33,7 @@ function _GetTextureFormat(creationOptions: FrameGraphTextureCreationOptions): n
  * geometry, collision queries, depth, normals, or shadows. All source and geometry textures must have matching
  * physical dimensions and sample counts. Transparent rendering is caller-controlled; overlapping transparent
  * surfaces can make SceneColor inconsistent with the single-layer geometry inputs.
- * @see https://playground.babylonjs.com/?version=preview#O05LI8#2
+ * @see https://playground.babylonjs.com/?version=preview#O05LI8#5
  */
 export class FrameGraphMeshBlendingTask extends FrameGraphPostProcessTask {
     /**
@@ -52,18 +52,6 @@ export class FrameGraphMeshBlendingTask extends FrameGraphPostProcessTask {
      * When omitted, shadow estimation is compiled out.
      */
     public baseColorTexture?: FrameGraphTextureHandle;
-
-    /**
-     * The world-space normal geometry texture aligned with SceneColor.
-     *
-     * FrameGraphGeometryRendererTask outputs unsigned-encoded normals by default.
-     */
-    public worldNormalTexture: FrameGraphTextureHandle;
-
-    /**
-     * Optional user-selected artistic-noise texture.
-     */
-    public noiseTexture?: FrameGraphTextureHandle;
 
     /**
      * Camera used to project radii and reconstruct view-space positions.
@@ -107,51 +95,6 @@ export class FrameGraphMeshBlendingTask extends FrameGraphPostProcessTask {
         this.postProcess.depthType = value;
     }
 
-    /** Gets or sets whether worldNormalTexture stores components encoded from [-1, 1] to [0, 1]. */
-    public get worldNormalTextureIsUnsigned(): boolean {
-        return this.postProcess.worldNormalTextureIsUnsigned;
-    }
-
-    public set worldNormalTextureIsUnsigned(value: boolean) {
-        this.postProcess.worldNormalTextureIsUnsigned = value;
-    }
-
-    /** Gets or sets the artistic-noise strength. A value of 0 skips artistic-noise sampling. */
-    public get noiseFactor(): number {
-        return this.postProcess.noiseFactor;
-    }
-
-    public set noiseFactor(value: number) {
-        this.postProcess.noiseFactor = value;
-    }
-
-    /** Gets or sets how strongly artistic noise fades toward the exact seam. */
-    public get noiseFade(): number {
-        return this.postProcess.noiseFade;
-    }
-
-    public set noiseFade(value: number) {
-        this.postProcess.noiseFade = value;
-    }
-
-    /** Gets or sets the artistic-noise bias. */
-    public get noiseOffset(): number {
-        return this.postProcess.noiseOffset;
-    }
-
-    public set noiseOffset(value: number) {
-        this.postProcess.noiseOffset = value;
-    }
-
-    /** Gets or sets the number of artistic-noise tiles across the selected radius class. */
-    public get noiseTileSize(): number {
-        return this.postProcess.noiseTileSize;
-    }
-
-    public set noiseTileSize(value: number) {
-        this.postProcess.noiseTileSize = value;
-    }
-
     /** Gets or sets the compiled debug visualization. */
     public get debugMode(): MeshBlendDebugMode {
         return this.postProcess.debugMode;
@@ -170,7 +113,6 @@ export class FrameGraphMeshBlendingTask extends FrameGraphPostProcessTask {
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinMeshBlendingPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinMeshBlendingPostProcess(name, frameGraph.engine));
         this.sourceSamplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        this.worldNormalTextureIsUnsigned = true;
     }
 
     /**
@@ -188,14 +130,8 @@ export class FrameGraphMeshBlendingTask extends FrameGraphPostProcessTask {
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         this.sourceSamplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
 
-        if (
-            this.sourceTexture === undefined ||
-            this.meshBlendTagTexture === undefined ||
-            this.depthTexture === undefined ||
-            this.worldNormalTexture === undefined ||
-            this.camera === undefined
-        ) {
-            throw new Error(`FrameGraphMeshBlendingTask "${this.name}": sourceTexture, meshBlendTagTexture, depthTexture, worldNormalTexture and camera are required`);
+        if (this.sourceTexture === undefined || this.meshBlendTagTexture === undefined || this.depthTexture === undefined || this.camera === undefined) {
+            throw new Error(`FrameGraphMeshBlendingTask "${this.name}": sourceTexture, meshBlendTagTexture, depthTexture and camera are required`);
         }
 
         const engine = this._frameGraph.engine as ThinEngine;
@@ -269,27 +205,6 @@ export class FrameGraphMeshBlendingTask extends FrameGraphPostProcessTask {
             }
         }
 
-        const worldNormalCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.worldNormalTexture);
-        const worldNormalType = _GetTextureType(worldNormalCreationOptions);
-        const worldNormalFormat = _GetTextureFormat(worldNormalCreationOptions);
-        const worldNormalSamples = worldNormalCreationOptions.options.samples ?? 1;
-        const validWorldNormalFormat = worldNormalFormat === Constants.TEXTUREFORMAT_RGB || worldNormalFormat === Constants.TEXTUREFORMAT_RGBA;
-        const validWorldNormalType =
-            worldNormalType === Constants.TEXTURETYPE_UNSIGNED_BYTE ||
-            worldNormalType === Constants.TEXTURETYPE_HALF_FLOAT ||
-            worldNormalType === Constants.TEXTURETYPE_FLOAT ||
-            worldNormalType === Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV ||
-            worldNormalType === Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV;
-        if (!validWorldNormalFormat || !validWorldNormalType) {
-            throw new Error(`FrameGraphMeshBlendingTask "${this.name}": worldNormalTexture must use a non-integer RGB or RGBA color format`);
-        }
-        if (!_Is2DTexture(worldNormalCreationOptions)) {
-            throw new Error(`FrameGraphMeshBlendingTask "${this.name}": worldNormalTexture must be a 2D texture`);
-        }
-        if (worldNormalCreationOptions.options.createMipMaps) {
-            throw new Error(`FrameGraphMeshBlendingTask "${this.name}": worldNormalTexture must not use mipmaps`);
-        }
-
         const sourceCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.sourceTexture);
         const sourceType = _GetTextureType(sourceCreationOptions);
         const sourceFormat = _GetTextureFormat(sourceCreationOptions);
@@ -302,14 +217,9 @@ export class FrameGraphMeshBlendingTask extends FrameGraphPostProcessTask {
         if (!_Is2DTexture(sourceCreationOptions)) {
             throw new Error(`FrameGraphMeshBlendingTask "${this.name}": sourceTexture must be a 2D texture`);
         }
-        if (
-            sourceSamples !== meshBlendTagSamples ||
-            sourceSamples !== depthSamples ||
-            (baseColorSamples !== undefined && sourceSamples !== baseColorSamples) ||
-            sourceSamples !== worldNormalSamples
-        ) {
+        if (sourceSamples !== meshBlendTagSamples || sourceSamples !== depthSamples || (baseColorSamples !== undefined && sourceSamples !== baseColorSamples)) {
             throw new Error(
-                `FrameGraphMeshBlendingTask "${this.name}": sourceTexture, meshBlendTagTexture, depthTexture, worldNormalTexture and baseColorTexture when provided must have matching sample counts`
+                `FrameGraphMeshBlendingTask "${this.name}": sourceTexture, meshBlendTagTexture, depthTexture and baseColorTexture when provided must have matching sample counts`
             );
         }
 
@@ -317,18 +227,15 @@ export class FrameGraphMeshBlendingTask extends FrameGraphPostProcessTask {
         const meshBlendTagSize = this._frameGraph.textureManager.getTextureDescription(this.meshBlendTagTexture).size;
         const depthSize = this._frameGraph.textureManager.getTextureDescription(this.depthTexture).size;
         const baseColorSize = this.baseColorTexture === undefined ? undefined : this._frameGraph.textureManager.getTextureDescription(this.baseColorTexture).size;
-        const worldNormalSize = this._frameGraph.textureManager.getTextureDescription(this.worldNormalTexture).size;
         if (
             sourceSize.width !== meshBlendTagSize.width ||
             sourceSize.height !== meshBlendTagSize.height ||
             sourceSize.width !== depthSize.width ||
             sourceSize.height !== depthSize.height ||
-            (baseColorSize !== undefined && (sourceSize.width !== baseColorSize.width || sourceSize.height !== baseColorSize.height)) ||
-            sourceSize.width !== worldNormalSize.width ||
-            sourceSize.height !== worldNormalSize.height
+            (baseColorSize !== undefined && (sourceSize.width !== baseColorSize.width || sourceSize.height !== baseColorSize.height))
         ) {
             throw new Error(
-                `FrameGraphMeshBlendingTask "${this.name}": sourceTexture, meshBlendTagTexture, depthTexture, worldNormalTexture and baseColorTexture when provided must have matching dimensions`
+                `FrameGraphMeshBlendingTask "${this.name}": sourceTexture, meshBlendTagTexture, depthTexture and baseColorTexture when provided must have matching dimensions`
             );
         }
 
@@ -356,71 +263,30 @@ export class FrameGraphMeshBlendingTask extends FrameGraphPostProcessTask {
             }
         }
 
-        let noiseSamplingMode = Constants.TEXTURE_BILINEAR_SAMPLINGMODE;
-        if (this.noiseTexture !== undefined) {
-            const noiseCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.noiseTexture);
-            const noiseType = _GetTextureType(noiseCreationOptions);
-            const noiseFormat = _GetTextureFormat(noiseCreationOptions);
-            const noiseSamples = noiseCreationOptions.options.samples ?? 1;
-            const validNoiseFormat =
-                noiseFormat === Constants.TEXTUREFORMAT_RED ||
-                noiseFormat === Constants.TEXTUREFORMAT_RG ||
-                noiseFormat === Constants.TEXTUREFORMAT_RGB ||
-                noiseFormat === Constants.TEXTUREFORMAT_RGBA;
-            const validNoiseType = noiseType === Constants.TEXTURETYPE_UNSIGNED_BYTE || noiseType === Constants.TEXTURETYPE_HALF_FLOAT || noiseType === Constants.TEXTURETYPE_FLOAT;
-            if (!validNoiseFormat || !validNoiseType) {
-                throw new Error(`FrameGraphMeshBlendingTask "${this.name}": noiseTexture must be a non-integer 2D color texture`);
-            }
-            if (!_Is2DTexture(noiseCreationOptions)) {
-                throw new Error(`FrameGraphMeshBlendingTask "${this.name}": noiseTexture must be a 2D texture`);
-            }
-            if (noiseSamples !== 1) {
-                throw new Error(`FrameGraphMeshBlendingTask "${this.name}": noiseTexture must be single-sampled`);
-            }
-            if (
-                (noiseType === Constants.TEXTURETYPE_FLOAT && !engine.getCaps().textureFloatLinearFiltering) ||
-                (noiseType === Constants.TEXTURETYPE_HALF_FLOAT && !engine.getCaps().textureHalfFloatLinearFiltering)
-            ) {
-                noiseSamplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-            }
-        }
-
         this.postProcess.camera = this.camera;
         this.postProcess.hasBaseColorTexture = this.baseColorTexture !== undefined;
-        this.postProcess._hasExternalNoiseTexture = this.noiseTexture !== undefined;
 
         const pass = super.record(
             skipCreationOfDisabledPasses,
             (context) => {
                 context.setTextureSamplingMode(this.meshBlendTagTexture, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
                 context.setTextureSamplingMode(this.depthTexture, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
-                context.setTextureSamplingMode(this.worldNormalTexture, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
                 if (this.baseColorTexture !== undefined) {
                     context.setTextureSamplingMode(this.baseColorTexture, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
-                }
-                if (this.noiseTexture !== undefined) {
-                    context.setTextureSamplingMode(this.noiseTexture, noiseSamplingMode);
                 }
             },
             (context) => {
                 context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "meshBlendTagSampler", this.meshBlendTagTexture);
                 context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "meshBlendDepthSampler", this.depthTexture);
-                context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "meshBlendWorldNormalSampler", this.worldNormalTexture);
                 if (this.baseColorTexture !== undefined) {
                     context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "meshBlendBaseColorSampler", this.baseColorTexture);
-                }
-                if (this.noiseTexture !== undefined) {
-                    context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "meshBlendArtisticNoiseSampler", this.noiseTexture);
                 }
             }
         );
 
-        pass.addDependencies([this.meshBlendTagTexture, this.depthTexture, this.worldNormalTexture]);
+        pass.addDependencies([this.meshBlendTagTexture, this.depthTexture]);
         if (this.baseColorTexture !== undefined) {
             pass.addDependencies(this.baseColorTexture);
-        }
-        if (this.noiseTexture !== undefined) {
-            pass.addDependencies(this.noiseTexture);
         }
 
         return pass;

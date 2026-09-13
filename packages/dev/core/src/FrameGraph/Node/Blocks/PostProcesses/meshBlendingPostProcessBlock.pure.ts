@@ -55,10 +55,8 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
 
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
         this.registerInput("geomDepth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("geomWorldNormal", NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal);
         this.registerInput("geomAlbedo", NodeRenderGraphBlockConnectionPointTypes.TextureAlbedo, true);
         this.registerInput("geomMeshBlendTag", NodeRenderGraphBlockConnectionPointTypes.TextureMeshBlendTag);
-        this.registerInput("noiseTexture", NodeRenderGraphBlockConnectionPointTypes.Texture, true);
 
         this.geomDepth.addExcludedConnectionPointFromAllowedTypes(
             NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth | NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth
@@ -176,46 +174,6 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
         this._frameGraphTask.postProcess.slopeFactor = value;
     }
 
-    /** Gets or sets the artistic-noise strength. A value of 0 skips artistic-noise sampling. */
-    @editableInPropertyPage("Noise factor", PropertyTypeForEdition.Float, "ARTISTIC NOISE", { min: 0 })
-    public get noiseFactor(): number {
-        return this._frameGraphTask.postProcess.noiseFactor;
-    }
-
-    public set noiseFactor(value: number) {
-        this._frameGraphTask.postProcess.noiseFactor = value;
-    }
-
-    /** Gets or sets how strongly artistic noise fades toward the exact seam. */
-    @editableInPropertyPage("Noise fade", PropertyTypeForEdition.Float, "ARTISTIC NOISE", { min: 0, max: 1 })
-    public get noiseFade(): number {
-        return this._frameGraphTask.postProcess.noiseFade;
-    }
-
-    public set noiseFade(value: number) {
-        this._frameGraphTask.postProcess.noiseFade = value;
-    }
-
-    /** Gets or sets the bias added to the centered artistic-noise signal. */
-    @editableInPropertyPage("Noise offset", PropertyTypeForEdition.Float, "ARTISTIC NOISE")
-    public get noiseOffset(): number {
-        return this._frameGraphTask.postProcess.noiseOffset;
-    }
-
-    public set noiseOffset(value: number) {
-        this._frameGraphTask.postProcess.noiseOffset = value;
-    }
-
-    /** Gets or sets the number of artistic-noise tiles across the selected radius class. */
-    @editableInPropertyPage("Noise tile size", PropertyTypeForEdition.Float, "ARTISTIC NOISE", { min: 0.00001 })
-    public get noiseTileSize(): number {
-        return this._frameGraphTask.postProcess.noiseTileSize;
-    }
-
-    public set noiseTileSize(value: number) {
-        this._frameGraphTask.postProcess.noiseTileSize = value;
-    }
-
     /** Gets or sets the compiled debug visualization. */
     @editableInPropertyPage("Debug mode", PropertyTypeForEdition.List, "DEBUG", {
         options: [
@@ -232,9 +190,6 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
             { label: "Shadow attenuation", value: MeshBlendDebugMode.ShadowAttenuation },
             { label: "Color interpolation", value: MeshBlendDebugMode.ColorInterpolation },
             { label: "World position", value: MeshBlendDebugMode.WorldPosition },
-            { label: "World normal", value: MeshBlendDebugMode.WorldNormal },
-            { label: "Raw artistic noise", value: MeshBlendDebugMode.ArtisticNoise },
-            { label: "Modulated fade", value: MeshBlendDebugMode.ModulatedFade },
         ],
     })
     public get debugMode(): MeshBlendDebugMode {
@@ -260,31 +215,17 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
     }
 
     /**
-     * Gets the unsigned-encoded world-space geometry-normal input.
-     */
-    public get geomWorldNormal(): NodeRenderGraphConnectionPoint {
-        return this._inputs[4];
-    }
-
-    /**
      * Gets the optional linear geometry base-color/albedo input used for shadow estimation.
      */
     public get geomAlbedo(): NodeRenderGraphConnectionPoint {
-        return this._inputs[5];
+        return this._inputs[4];
     }
 
     /**
      * Gets the packed mesh-blending tag input.
      */
     public get geomMeshBlendTag(): NodeRenderGraphConnectionPoint {
-        return this._inputs[6];
-    }
-
-    /**
-     * Gets the optional artistic-noise texture input.
-     */
-    public get noiseTexture(): NodeRenderGraphConnectionPoint {
-        return this._inputs[7];
+        return this._inputs[5];
     }
 
     public override getClassName(): string {
@@ -298,10 +239,8 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
         this._frameGraphTask.depthTexture = this.geomDepth.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.depthType =
             this.geomDepth.connectedPoint?.type === NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth ? MeshBlendDepthType.Screen : MeshBlendDepthType.View;
-        this._frameGraphTask.worldNormalTexture = this.geomWorldNormal.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.baseColorTexture = this.geomAlbedo.connectedPoint?.value as FrameGraphTextureHandle | undefined;
         this._frameGraphTask.meshBlendTagTexture = this.geomMeshBlendTag.connectedPoint?.value as FrameGraphTextureHandle;
-        this._frameGraphTask.noiseTexture = this.noiseTexture.connectedPoint?.value as FrameGraphTextureHandle;
     }
 
     protected override _dumpPropertiesCode(): string {
@@ -316,10 +255,6 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
         codes.push(`${this._codeVariableName}.extraLargeWorldRadius = ${this.extraLargeWorldRadius};`);
         codes.push(`${this._codeVariableName}.extraLargeMinimumProjectedRadius = ${this.extraLargeMinimumProjectedRadius};`);
         codes.push(`${this._codeVariableName}.slopeFactor = ${this.slopeFactor};`);
-        codes.push(`${this._codeVariableName}.noiseFactor = ${this.noiseFactor};`);
-        codes.push(`${this._codeVariableName}.noiseFade = ${this.noiseFade};`);
-        codes.push(`${this._codeVariableName}.noiseOffset = ${this.noiseOffset};`);
-        codes.push(`${this._codeVariableName}.noiseTileSize = ${this.noiseTileSize};`);
         codes.push(`${this._codeVariableName}.debugMode = ${this.debugMode};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
@@ -329,10 +264,6 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
         serializationObject.quality = this.quality;
         serializationObject.radiusClasses = this._frameGraphTask.postProcess.radiusClasses.map((definition) => ({ ...definition }));
         serializationObject.slopeFactor = this.slopeFactor;
-        serializationObject.noiseFactor = this.noiseFactor;
-        serializationObject.noiseFade = this.noiseFade;
-        serializationObject.noiseOffset = this.noiseOffset;
-        serializationObject.noiseTileSize = this.noiseTileSize;
         serializationObject.debugMode = this.debugMode;
         return serializationObject;
     }
@@ -352,10 +283,6 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
         this.extraLargeWorldRadius = radiusClasses[3]?.worldRadius ?? defaults[3].worldRadius;
         this.extraLargeMinimumProjectedRadius = radiusClasses[3]?.minimumProjectedRadius ?? defaults[3].minimumProjectedRadius;
         this.slopeFactor = serializationObject.slopeFactor ?? 2;
-        this.noiseFactor = serializationObject.noiseFactor ?? 0.5;
-        this.noiseFade = serializationObject.noiseFade ?? 0.5;
-        this.noiseOffset = serializationObject.noiseOffset ?? 0;
-        this.noiseTileSize = serializationObject.noiseTileSize ?? 10;
         this.debugMode = serializationObject.debugMode ?? MeshBlendDebugMode.Off;
     }
 }

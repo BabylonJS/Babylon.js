@@ -720,16 +720,14 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         className: "NodeRenderGraphMeshBlendingPostProcessBlock",
         category: "PostProcess",
         description:
-            "Blends source colors across seams between different nonzero mesh groups using packed R8UI mesh tags, depth, and unsigned-encoded world normals. Optional linear geometry albedo enables shadow estimation. Low quality interpolates in sRGB without artistic noise; Medium and above use OKLab and optional stable world-space artistic noise.",
+            "Blends source colors across seams between different nonzero mesh groups using packed R8UI mesh tags and depth. Optional linear geometry albedo enables shadow estimation. Low quality interpolates in sRGB; Medium and above use OKLab.",
         inputs: [
             { name: "source", type: "AutoDetect" },
             { name: "target", type: "AutoDetect", isOptional: true },
             { name: "camera", type: "Camera" },
             { name: "geomDepth", type: "AutoDetect" },
-            { name: "geomWorldNormal", type: "TextureWorldNormal" },
             { name: "geomAlbedo", type: "TextureAlbedo", isOptional: true },
             { name: "geomMeshBlendTag", type: "TextureMeshBlendTag" },
-            { name: "noiseTexture", type: "Texture", isOptional: true },
             { name: "dependencies", type: "AutoDetect", isOptional: true },
         ],
         outputs: [{ name: "output", type: "BasedOnInput" }],
@@ -745,12 +743,8 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             extraLargeWorldRadius: "number – extra-large-class authored world radius (default: 0.3)",
             extraLargeMinimumProjectedRadius: "number – extra-large-class minimum physical-pixel radius (default: 5)",
             slopeFactor: "number – contact-slope narrowing factor; 1 disables narrowing (default: 2)",
-            noiseFactor: "number – artistic-noise strength; 0 bypasses sampling (default: 0.5)",
-            noiseFade: "number – amount by which noise influence fades toward the exact seam, from 0 to 1 (default: 0.5)",
-            noiseOffset: "number – bias added to the centered artistic-noise signal (default: 0)",
-            noiseTileSize: "number – number of artistic-noise tiles across the selected world-radius class (default: 10)",
             debugMode:
-                "number – debug visualization (0=Off, 1=PackedTag, 2=CandidateDirectionDistance, 3=SeamFade, 4=RejectionReason, 5=StageWork, 6=Continuation, 7=TinyObject, 8=MultiTarget, 9=TargetColor, 10=ShadowAttenuation, 11=ColorInterpolation, 12=WorldPosition, 13=WorldNormal, 14=ArtisticNoise, 15=ModulatedFade; default: 0)",
+                "number – debug visualization (0=Off, 1=PackedTag, 2=CandidateDirectionDistance, 3=SeamFade, 4=RejectionReason, 5=StageWork, 6=Continuation, 7=TinyObject, 8=MultiTarget, 9=TargetColor, 10=ShadowAttenuation, 11=ColorInterpolation, 12=WorldPosition; default: 0)",
         },
     },
 

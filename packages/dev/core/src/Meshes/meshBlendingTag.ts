@@ -30,7 +30,7 @@ export interface IMeshBlendingTag {
  * @param groupId Logical blend group. Use 0 to disable mesh blending, otherwise use a value from 1 to 63.
  * @param radiusClass Radius class from 0 to 3.
  * @returns The packed mesh-blending tag.
- * @see https://playground.babylonjs.com/?version=preview#XVZTSI#0
+ * @see https://playground.babylonjs.com/?version=preview#XVZTSI#3
  */
 export function PackMeshBlendingTag(groupId: number, radiusClass: MeshBlendingRadiusClass): number {
     if (!Number.isInteger(groupId) || groupId < 0 || groupId > 63) {

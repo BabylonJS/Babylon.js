@@ -162,10 +162,6 @@ describe("Node Render Graph MCP Server – Registry Drift", () => {
             "extraLargeWorldRadius",
             "extraLargeMinimumProjectedRadius",
             "slopeFactor",
-            "noiseFactor",
-            "noiseFade",
-            "noiseOffset",
-            "noiseTileSize",
             "debugMode",
         ]);
         expect(metadata.properties.quality).toContain("default: 1");

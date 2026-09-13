@@ -76,7 +76,6 @@ describe("FrameGraphMeshBlendingTask", () => {
             depthType === MeshBlendDepthType.View ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
         task.baseColorTexture = createTexture("baseColor", 64, 64, Constants.TEXTUREFORMAT_RGBA);
-        task.worldNormalTexture = createTexture("worldNormal", 64, 64, Constants.TEXTUREFORMAT_RGBA);
         task.depthType = depthType;
         task.camera = new FreeCamera("camera", Vector3.Zero(), scene);
     };
@@ -104,8 +103,6 @@ describe("FrameGraphMeshBlendingTask", () => {
         task.sourceTexture = createDefaultTexture("sceneColor");
         task.targetTexture = createDefaultTexture("target");
         task.baseColorTexture = createDefaultTexture("baseColor");
-        task.worldNormalTexture = createDefaultTexture("worldNormal");
-        task.noiseTexture = createDefaultTexture("noise", 16, 16);
 
         expect(() => recordTask(task)).not.toThrow();
     });
@@ -154,11 +151,6 @@ describe("FrameGraphMeshBlendingTask", () => {
             radiusClasses,
             slopeFactor: 1.25,
             depthType: MeshBlendDepthType.Screen,
-            worldNormalTextureIsUnsigned: false,
-            noiseFactor: 0.2,
-            noiseFade: 0.7,
-            noiseOffset: -0.15,
-            noiseTileSize: 6,
         });
 
         expect(task.quality).toBe(MeshBlendQuality.Cinematic);
@@ -166,11 +158,6 @@ describe("FrameGraphMeshBlendingTask", () => {
         expect(task.radiusClasses).toEqual(radiusClasses);
         expect(task.slopeFactor).toBe(1.25);
         expect(task.depthType).toBe(MeshBlendDepthType.Screen);
-        expect(task.worldNormalTextureIsUnsigned).toBe(false);
-        expect(task.noiseFactor).toBe(0.2);
-        expect(task.noiseFade).toBe(0.7);
-        expect(task.noiseOffset).toBe(-0.15);
-        expect(task.noiseTileSize).toBe(6);
         expect(task.postProcess.options.defines).toContain("#define MESH_BLEND_QUALITY_CINEMATIC");
         expect(task.postProcess.options.defines).toContain("#define MESH_BLEND_DEBUG_STAGE_WORK");
         expect(task.postProcess.options.defines).toContain("#define MESH_BLEND_DEPTH_SCREEN");
@@ -281,99 +268,21 @@ describe("FrameGraphMeshBlendingTask", () => {
         expect(() => recordTask(task)).toThrow(message);
     });
 
-    it.each([
-        {
-            name: "wrongSize",
-            width: 32,
-            height: 64,
-            format: Constants.TEXTUREFORMAT_RGBA,
-            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            samples: 1,
-            message: "matching dimensions",
-        },
-        {
-            name: "integer",
-            width: 64,
-            height: 64,
-            format: Constants.TEXTUREFORMAT_RGBA_INTEGER,
-            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            samples: 1,
-            message: "non-integer RGB or RGBA",
-        },
-        {
-            name: "multisampled",
-            width: 64,
-            height: 64,
-            format: Constants.TEXTUREFORMAT_RGBA,
-            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            samples: 4,
-            message: "matching sample counts",
-        },
-    ])("rejects incompatible world-normal texture $name", ({ name, width, height, format, type, samples, message }) => {
-        const task = new FrameGraphMeshBlendingTask("meshBlend", frameGraph);
-        configureRequiredInputs(task);
-        task.worldNormalTexture = createTexture(name, width, height, format, false, type, samples);
-
-        expect(() => recordTask(task)).toThrow(message);
-    });
-
-    it("accepts an independently sized single-sampled artistic-noise texture", () => {
-        const task = new FrameGraphMeshBlendingTask("meshBlend", frameGraph);
-        configureRequiredInputs(task);
-        task.noiseTexture = createTexture("artisticNoise", 16, 32, Constants.TEXTUREFORMAT_RED);
-
-        expect(() => recordTask(task)).not.toThrow();
-        expect(task.postProcess._hasExternalNoiseTexture).toBe(true);
-        expect(task.postProcess.worldNormalTextureIsUnsigned).toBe(true);
-    });
-
-    it("reuses effect-owned noise resources across frame-graph recordings and disposes them with the task", () => {
+    it("reuses its stable search-noise resource across frame-graph recordings and disposes it with the task", () => {
         const task = new FrameGraphMeshBlendingTask("meshBlend", frameGraph);
         configureRequiredInputs(task);
         const stableNoiseTexture = (task.postProcess as any)._stableBlueNoiseTexture;
-        const neutralNoiseTexture = (task.postProcess as any)._neutralArtisticNoiseTexture;
         const stableNoiseDisposeSpy = vi.spyOn(stableNoiseTexture, "dispose");
-        const neutralNoiseDisposeSpy = vi.spyOn(neutralNoiseTexture, "dispose");
 
         recordTask(task);
         task._reset();
         recordTask(task);
 
         expect((task.postProcess as any)._stableBlueNoiseTexture).toBe(stableNoiseTexture);
-        expect((task.postProcess as any)._neutralArtisticNoiseTexture).toBe(neutralNoiseTexture);
         expect(stableNoiseDisposeSpy).not.toHaveBeenCalled();
-        expect(neutralNoiseDisposeSpy).not.toHaveBeenCalled();
 
         task.dispose();
         expect(stableNoiseDisposeSpy).toHaveBeenCalledOnce();
-        expect(neutralNoiseDisposeSpy).toHaveBeenCalledOnce();
-    });
-
-    it("rejects a multisampled artistic-noise texture", () => {
-        const task = new FrameGraphMeshBlendingTask("meshBlend", frameGraph);
-        configureRequiredInputs(task);
-        task.noiseTexture = createTexture("artisticNoise", 16, 16, Constants.TEXTUREFORMAT_RED, false, Constants.TEXTURETYPE_UNSIGNED_BYTE, 4);
-
-        expect(() => recordTask(task)).toThrow("noiseTexture must be single-sampled");
-    });
-
-    it("rejects a non-2D artistic-noise texture", () => {
-        const task = new FrameGraphMeshBlendingTask("meshBlend", frameGraph);
-        configureRequiredInputs(task);
-        task.noiseTexture = frameGraph.textureManager.createRenderTargetTexture("artisticNoiseArray", {
-            size: { width: 16, height: 16 },
-            sizeIsPercentage: false,
-            options: {
-                createMipMaps: false,
-                targetTypes: [Constants.TEXTURE_2D_ARRAY],
-                layerCounts: [2],
-                types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
-                formats: [Constants.TEXTUREFORMAT_RED],
-                samples: 1,
-            },
-        });
-
-        expect(() => recordTask(task)).toThrow("noiseTexture must be a 2D texture");
     });
 
     it.each([
@@ -438,7 +347,7 @@ describe("FrameGraphMeshBlendingTask", () => {
         }).toThrow("depthType");
     });
 
-    it("round-trips quality, debug, radius, and artistic-noise settings through the NRGE block", () => {
+    it("round-trips quality, debug, radius, and slope settings through the NRGE block", () => {
         const source = new NodeRenderGraphMeshBlendingPostProcessBlock("source", frameGraph, scene);
         const restored = new NodeRenderGraphMeshBlendingPostProcessBlock("restored", frameGraph, scene);
 
@@ -454,10 +363,6 @@ describe("FrameGraphMeshBlendingTask", () => {
             source.extraLargeWorldRadius = 0.44;
             source.extraLargeMinimumProjectedRadius = 8;
             source.slopeFactor = 3;
-            source.noiseFactor = 0.25;
-            source.noiseFade = 0.75;
-            source.noiseOffset = 1.5;
-            source.noiseTileSize = 12;
 
             const serialized = source.serialize();
             restored._deserialize(serialized);
@@ -465,8 +370,6 @@ describe("FrameGraphMeshBlendingTask", () => {
             expect(serialized.quality).toBe(MeshBlendQuality.Cinematic);
             expect(serialized.debugMode).toBe(MeshBlendDebugMode.RejectionReason);
             expect(serialized.inputs.map((input: { name: string }) => input.name)).toContain("geomAlbedo");
-            expect(serialized.inputs.map((input: { name: string }) => input.name)).toContain("geomWorldNormal");
-            expect(serialized.inputs.map((input: { name: string }) => input.name)).toContain("noiseTexture");
             expect(serialized.radiusClasses).toEqual([
                 { worldRadius: 0.11, minimumProjectedRadius: 2 },
                 { worldRadius: 0.22, minimumProjectedRadius: 4 },
@@ -477,10 +380,6 @@ describe("FrameGraphMeshBlendingTask", () => {
             expect(restored.debugMode).toBe(MeshBlendDebugMode.RejectionReason);
             expect(restored.task.postProcess.radiusClasses).toEqual(serialized.radiusClasses);
             expect(restored.slopeFactor).toBe(3);
-            expect(restored.noiseFactor).toBe(0.25);
-            expect(restored.noiseFade).toBe(0.75);
-            expect(restored.noiseOffset).toBe(1.5);
-            expect(restored.noiseTileSize).toBe(12);
             expect(source.geomAlbedo.name).toBe("geomAlbedo");
         } finally {
             source.dispose();
@@ -504,10 +403,6 @@ describe("FrameGraphMeshBlendingTask", () => {
                 { worldRadius: 0.3, minimumProjectedRadius: 5 },
             ]);
             expect(serialized.slopeFactor).toBe(2);
-            expect(serialized.noiseFactor).toBe(0.5);
-            expect(serialized.noiseFade).toBe(0.5);
-            expect(serialized.noiseOffset).toBe(0);
-            expect(serialized.noiseTileSize).toBe(10);
         } finally {
             block.dispose();
         }

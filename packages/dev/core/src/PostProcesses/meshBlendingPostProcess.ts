@@ -37,16 +37,6 @@ export interface IMeshBlendingPostProcessOptions extends PostProcessOptions, IMe
      * When omitted, shadow estimation is compiled out.
      */
     baseColorTexture?: BaseTexture;
-    /**
-     * The world-space normal geometry texture aligned with SceneColor.
-     *
-     * Signed normals are expected by default. Set worldNormalTextureIsUnsigned when the texture stores normals encoded in [0, 1].
-     */
-    worldNormalTexture: BaseTexture;
-    /**
-     * Optional user-owned artistic-noise texture. The post process never disposes it.
-     */
-    noiseTexture?: BaseTexture;
 }
 
 /**
@@ -57,17 +47,14 @@ export interface IMeshBlendingPostProcessOptions extends PostProcessOptions, IMe
  * group 0 disables blending, and surfaces with the same nonzero group are treated as one logical object.
  *
  * The classic wrapper consumes caller-owned geometry textures and does not enable, configure, or dispose
- * a GeometryBufferRenderer. The tag, depth, world-normal, and SceneColor inputs are required; optional base
- * color enables shadow estimation. All provided geometry inputs must have the same physical dimensions and
- * sample count; the independently sized artistic-noise texture is excluded from this constraint. Mesh-blending
- * geometry inputs are single-sampled. Overlapping transparent surfaces can make SceneColor
- * inconsistent with the single-layer geometry inputs; compositing transparent content after this effect remains
- * the recommended configuration.
+ * a GeometryBufferRenderer. The tag, depth, and SceneColor inputs are required; optional base color enables
+ * shadow estimation. All provided geometry inputs must have the same physical dimensions and sample count and
+ * are single-sampled. Overlapping transparent surfaces can make SceneColor inconsistent with the single-layer
+ * geometry inputs; compositing transparent content after this effect remains the recommended configuration.
  *
  * Four configurable radius classes combine world-space radii with physical-pixel minimums, for both
- * perspective and orthographic cameras. Quality variants trade search work for seam quality. Stable
- * search noise is internal and frame invariant; optional artistic noise is user-owned and world-space.
- * This implementation does not use temporal accumulation or require TAA.
+ * perspective and orthographic cameras. Quality variants trade search work for seam quality. Stable search
+ * noise is internal and frame invariant. This implementation does not use temporal accumulation or require TAA.
  *
  * The classic wrapper is runtime-only because its geometry textures are caller-owned resources. It cannot
  * be serialized, parsed, or cloned; use the FrameGraph/NRGE path when a serializable graph is required.
@@ -75,8 +62,8 @@ export interface IMeshBlendingPostProcessOptions extends PostProcessOptions, IMe
  * @see https://www.jacktollenaar.top/articles/meshblending.html
  * @see https://www.jacktollenaar.top/articles/meshblending2.html
  * @see https://bottosson.github.io/posts/oklab/
- * @see https://playground.babylonjs.com/?version=preview#XVZTSI#0
- * @see https://playground.babylonjs.com/?version=preview#O05LI8#2
+ * @see https://playground.babylonjs.com/?version=preview#XVZTSI#3
+ * @see https://playground.babylonjs.com/?version=preview#O05LI8#5
  */
 export class MeshBlendingPostProcess extends PostProcess {
     declare protected _effectWrapper: ThinMeshBlendingPostProcess;
@@ -84,7 +71,6 @@ export class MeshBlendingPostProcess extends PostProcess {
     private _meshBlendTagTexture: BaseTexture;
     private _depthTexture: BaseTexture;
     private _baseColorTexture: Nullable<BaseTexture>;
-    private _worldNormalTexture: BaseTexture;
     private readonly _ownsEffectWrapper: boolean;
 
     /**
@@ -107,7 +93,7 @@ export class MeshBlendingPostProcess extends PostProcess {
 
     public set meshBlendTagTexture(value: BaseTexture) {
         MeshBlendingPostProcess._ValidateMeshBlendTagTexture(value);
-        MeshBlendingPostProcess._ValidateInputTextureDimensions(value, this._depthTexture, this._baseColorTexture, this._worldNormalTexture);
+        MeshBlendingPostProcess._ValidateInputTextureDimensions(value, this._depthTexture, this._baseColorTexture);
         this._meshBlendTagTexture = value;
         this._validateInputDimensions();
     }
@@ -121,7 +107,7 @@ export class MeshBlendingPostProcess extends PostProcess {
 
     public set depthTexture(value: BaseTexture) {
         MeshBlendingPostProcess._ValidateDepthTexture(value, this.depthType);
-        MeshBlendingPostProcess._ValidateInputTextureDimensions(this._meshBlendTagTexture, value, this._baseColorTexture, this._worldNormalTexture);
+        MeshBlendingPostProcess._ValidateInputTextureDimensions(this._meshBlendTagTexture, value, this._baseColorTexture);
         this._depthTexture = value;
         this._validateInputDimensions();
     }
@@ -139,40 +125,10 @@ export class MeshBlendingPostProcess extends PostProcess {
         if (value) {
             MeshBlendingPostProcess._ValidateBaseColorTexture(value);
         }
-        MeshBlendingPostProcess._ValidateInputTextureDimensions(this._meshBlendTagTexture, this._depthTexture, value, this._worldNormalTexture);
+        MeshBlendingPostProcess._ValidateInputTextureDimensions(this._meshBlendTagTexture, this._depthTexture, value);
         this._baseColorTexture = value;
         this._effectWrapper.hasBaseColorTexture = !!value;
         this._validateInputDimensions();
-    }
-
-    /**
-     * The world-space normal geometry texture used for triplanar projection.
-     */
-    public get worldNormalTexture(): BaseTexture {
-        return this._worldNormalTexture;
-    }
-
-    public set worldNormalTexture(value: BaseTexture) {
-        MeshBlendingPostProcess._ValidateWorldNormalTexture(value);
-        MeshBlendingPostProcess._ValidateInputTextureDimensions(this._meshBlendTagTexture, this._depthTexture, this._baseColorTexture, value);
-        this._worldNormalTexture = value;
-        this._validateInputDimensions();
-    }
-
-    /**
-     * Gets or sets the optional user-owned artistic-noise texture.
-     *
-     * Setting null disables artistic noise without changing the configured controls.
-     */
-    public get noiseTexture(): Nullable<BaseTexture> {
-        return this._effectWrapper.noiseTexture;
-    }
-
-    public set noiseTexture(value: Nullable<BaseTexture>) {
-        if (value) {
-            MeshBlendingPostProcess._ValidateNoiseTexture(value);
-        }
-        this._effectWrapper.noiseTexture = value;
     }
 
     /**
@@ -187,17 +143,6 @@ export class MeshBlendingPostProcess extends PostProcess {
             MeshBlendingPostProcess._ValidateDepthTexture(this._depthTexture, value);
         }
         this._effectWrapper.depthType = value;
-    }
-
-    /**
-     * Whether worldNormalTexture stores components encoded from [-1, 1] to [0, 1].
-     */
-    public get worldNormalTextureIsUnsigned(): boolean {
-        return this._effectWrapper.worldNormalTextureIsUnsigned;
-    }
-
-    public set worldNormalTextureIsUnsigned(value: boolean) {
-        this._effectWrapper.worldNormalTextureIsUnsigned = value;
     }
 
     /**
@@ -225,42 +170,6 @@ export class MeshBlendingPostProcess extends PostProcess {
 
     public set slopeFactor(value: number) {
         this._effectWrapper.slopeFactor = value;
-    }
-
-    /** Artistic-noise strength. A value of 0 skips artistic-noise sampling. */
-    public get noiseFactor(): number {
-        return this._effectWrapper.noiseFactor;
-    }
-
-    public set noiseFactor(value: number) {
-        this._effectWrapper.noiseFactor = value;
-    }
-
-    /** Controls how strongly artistic noise fades toward the exact seam. */
-    public get noiseFade(): number {
-        return this._effectWrapper.noiseFade;
-    }
-
-    public set noiseFade(value: number) {
-        this._effectWrapper.noiseFade = value;
-    }
-
-    /** Bias added to the centered artistic-noise signal. */
-    public get noiseOffset(): number {
-        return this._effectWrapper.noiseOffset;
-    }
-
-    public set noiseOffset(value: number) {
-        this._effectWrapper.noiseOffset = value;
-    }
-
-    /** Number of artistic-noise tiles across the selected radius class. */
-    public get noiseTileSize(): number {
-        return this._effectWrapper.noiseTileSize;
-    }
-
-    public set noiseTileSize(value: number) {
-        this._effectWrapper.noiseTileSize = value;
     }
 
     /**
@@ -306,10 +215,8 @@ export class MeshBlendingPostProcess extends PostProcess {
         this._meshBlendTagTexture = options.meshBlendTagTexture;
         this._depthTexture = options.depthTexture;
         this._baseColorTexture = options.baseColorTexture ?? null;
-        this._worldNormalTexture = options.worldNormalTexture;
 
         this._effectWrapper.configure(options);
-        this._effectWrapper.noiseTexture = options.noiseTexture ?? null;
         this._effectWrapper.camera = camera;
         this._validateInputDimensions();
 
@@ -321,7 +228,6 @@ export class MeshBlendingPostProcess extends PostProcess {
             if (this._baseColorTexture) {
                 effect.setTexture("meshBlendBaseColorSampler", this._baseColorTexture);
             }
-            effect.setTexture("meshBlendWorldNormalSampler", this._worldNormalTexture);
         };
     }
 
@@ -359,24 +265,14 @@ export class MeshBlendingPostProcess extends PostProcess {
         if (options.baseColorTexture) {
             MeshBlendingPostProcess._ValidateBaseColorTexture(options.baseColorTexture);
         }
-        MeshBlendingPostProcess._ValidateWorldNormalTexture(options.worldNormalTexture);
-        if (options.noiseTexture) {
-            MeshBlendingPostProcess._ValidateNoiseTexture(options.noiseTexture);
-        }
-        MeshBlendingPostProcess._ValidateInputTextureDimensions(options.meshBlendTagTexture, options.depthTexture, options.baseColorTexture, options.worldNormalTexture);
+        MeshBlendingPostProcess._ValidateInputTextureDimensions(options.meshBlendTagTexture, options.depthTexture, options.baseColorTexture);
     }
 
-    private static _ValidateInputTextureDimensions(
-        meshBlendTagTexture: BaseTexture,
-        depthTexture: BaseTexture,
-        baseColorTexture: Nullable<BaseTexture> | undefined,
-        worldNormalTexture: BaseTexture
-    ): void {
+    private static _ValidateInputTextureDimensions(meshBlendTagTexture: BaseTexture, depthTexture: BaseTexture, baseColorTexture: Nullable<BaseTexture> | undefined): void {
         const tagInternalTexture = meshBlendTagTexture.getInternalTexture();
         const depthInternalTexture = depthTexture.getInternalTexture();
         const baseColorInternalTexture = baseColorTexture?.getInternalTexture();
-        const worldNormalInternalTexture = worldNormalTexture.getInternalTexture();
-        if (!tagInternalTexture || !depthInternalTexture || !worldNormalInternalTexture) {
+        if (!tagInternalTexture || !depthInternalTexture) {
             return;
         }
 
@@ -385,21 +281,16 @@ export class MeshBlendingPostProcess extends PostProcess {
             tagInternalTexture.height !== depthInternalTexture.height ||
             (baseColorInternalTexture !== null &&
                 baseColorInternalTexture !== undefined &&
-                (tagInternalTexture.width !== baseColorInternalTexture.width || tagInternalTexture.height !== baseColorInternalTexture.height)) ||
-            tagInternalTexture.width !== worldNormalInternalTexture.width ||
-            tagInternalTexture.height !== worldNormalInternalTexture.height
+                (tagInternalTexture.width !== baseColorInternalTexture.width || tagInternalTexture.height !== baseColorInternalTexture.height))
         ) {
-            throw new Error(
-                "MeshBlendingPostProcess: meshBlendTagTexture, depthTexture, worldNormalTexture, and baseColorTexture when provided must have matching physical dimensions"
-            );
+            throw new Error("MeshBlendingPostProcess: meshBlendTagTexture, depthTexture, and baseColorTexture when provided must have matching physical dimensions");
         }
         const inputSamples = tagInternalTexture.samples || 1;
         if (
             (depthInternalTexture.samples || 1) !== inputSamples ||
-            (baseColorInternalTexture !== null && baseColorInternalTexture !== undefined && (baseColorInternalTexture.samples || 1) !== inputSamples) ||
-            (worldNormalInternalTexture.samples || 1) !== inputSamples
+            (baseColorInternalTexture !== null && baseColorInternalTexture !== undefined && (baseColorInternalTexture.samples || 1) !== inputSamples)
         ) {
-            throw new Error("MeshBlendingPostProcess: meshBlendTagTexture, depthTexture, worldNormalTexture, and baseColorTexture when provided must have matching sample counts");
+            throw new Error("MeshBlendingPostProcess: meshBlendTagTexture, depthTexture, and baseColorTexture when provided must have matching sample counts");
         }
     }
 
@@ -465,52 +356,6 @@ export class MeshBlendingPostProcess extends PostProcess {
         }
     }
 
-    private static _ValidateWorldNormalTexture(texture: BaseTexture): void {
-        const internalTexture = texture.getInternalTexture();
-        if (!internalTexture) {
-            return;
-        }
-        MeshBlendingPostProcess._Validate2DTexture(internalTexture, "worldNormalTexture");
-
-        const validFormat = internalTexture.format === Constants.TEXTUREFORMAT_RGB || internalTexture.format === Constants.TEXTUREFORMAT_RGBA;
-        const validType =
-            internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_BYTE ||
-            internalTexture.type === Constants.TEXTURETYPE_HALF_FLOAT ||
-            internalTexture.type === Constants.TEXTURETYPE_FLOAT ||
-            internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV ||
-            internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV;
-        if (!validFormat || !validType) {
-            throw new Error("MeshBlendingPostProcess: worldNormalTexture must use a non-integer RGB or RGBA color format");
-        }
-        if (internalTexture.generateMipMaps || internalTexture.samples > 1) {
-            throw new Error("MeshBlendingPostProcess: worldNormalTexture must not use mipmaps and must be single-sampled");
-        }
-    }
-
-    private static _ValidateNoiseTexture(texture: BaseTexture): void {
-        const internalTexture = texture.getInternalTexture();
-        if (!internalTexture) {
-            return;
-        }
-        MeshBlendingPostProcess._Validate2DTexture(internalTexture, "noiseTexture");
-
-        const validFormat =
-            internalTexture.format === Constants.TEXTUREFORMAT_RED ||
-            internalTexture.format === Constants.TEXTUREFORMAT_RG ||
-            internalTexture.format === Constants.TEXTUREFORMAT_RGB ||
-            internalTexture.format === Constants.TEXTUREFORMAT_RGBA;
-        const validType =
-            internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_BYTE ||
-            internalTexture.type === Constants.TEXTURETYPE_HALF_FLOAT ||
-            internalTexture.type === Constants.TEXTURETYPE_FLOAT;
-        if (!validFormat || !validType) {
-            throw new Error("MeshBlendingPostProcess: noiseTexture must be a non-integer 2D color texture");
-        }
-        if (internalTexture.samples > 1) {
-            throw new Error("MeshBlendingPostProcess: noiseTexture must be single-sampled");
-        }
-    }
-
     private static _Validate2DTexture(internalTexture: InternalTexture, name: string): void {
         if (internalTexture.isCube || internalTexture.is3D || internalTexture.is2DArray) {
             throw new Error(`MeshBlendingPostProcess: ${name} must be a 2D texture`);
@@ -523,38 +368,28 @@ export class MeshBlendingPostProcess extends PostProcess {
         if (this._baseColorTexture) {
             MeshBlendingPostProcess._ValidateBaseColorTexture(this._baseColorTexture);
         }
-        MeshBlendingPostProcess._ValidateWorldNormalTexture(this._worldNormalTexture);
-        const noiseTexture = this.noiseTexture;
-        if (noiseTexture) {
-            MeshBlendingPostProcess._ValidateNoiseTexture(noiseTexture);
-        }
 
         const tagTexture = this._meshBlendTagTexture?.getInternalTexture();
         const depthTexture = this._depthTexture?.getInternalTexture();
         const baseColorTexture = this._baseColorTexture?.getInternalTexture();
-        const worldNormalTexture = this._worldNormalTexture?.getInternalTexture();
-        if (!tagTexture || !depthTexture || !worldNormalTexture) {
+        if (!tagTexture || !depthTexture) {
             return;
         }
 
-        MeshBlendingPostProcess._ValidateInputTextureDimensions(this._meshBlendTagTexture, this._depthTexture, this._baseColorTexture, this._worldNormalTexture);
+        MeshBlendingPostProcess._ValidateInputTextureDimensions(this._meshBlendTagTexture, this._depthTexture, this._baseColorTexture);
         const inputSamples = tagTexture.samples || 1;
         if (renderWidth !== undefined && renderHeight !== undefined && renderWidth > 0 && renderHeight > 0) {
             if (
                 tagTexture.width !== renderWidth ||
                 tagTexture.height !== renderHeight ||
-                (baseColorTexture !== null && baseColorTexture !== undefined && (baseColorTexture.width !== renderWidth || baseColorTexture.height !== renderHeight)) ||
-                worldNormalTexture.width !== renderWidth ||
-                worldNormalTexture.height !== renderHeight
+                (baseColorTexture !== null && baseColorTexture !== undefined && (baseColorTexture.width !== renderWidth || baseColorTexture.height !== renderHeight))
             ) {
                 throw new Error(
-                    "MeshBlendingPostProcess: SceneColor, meshBlendTagTexture, depthTexture, worldNormalTexture, and baseColorTexture when provided must have matching physical dimensions"
+                    "MeshBlendingPostProcess: SceneColor, meshBlendTagTexture, depthTexture, and baseColorTexture when provided must have matching physical dimensions"
                 );
             }
             if ((renderSamples || 1) !== inputSamples) {
-                throw new Error(
-                    "MeshBlendingPostProcess: SceneColor, meshBlendTagTexture, depthTexture, worldNormalTexture, and baseColorTexture when provided must have matching sample counts"
-                );
+                throw new Error("MeshBlendingPostProcess: SceneColor, meshBlendTagTexture, depthTexture, and baseColorTexture when provided must have matching sample counts");
             }
         }
     }

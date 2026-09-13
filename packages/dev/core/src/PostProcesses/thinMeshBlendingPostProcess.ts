@@ -5,11 +5,9 @@ import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type EffectWrapperCreationOptions } from "../Materials/effectRenderer";
 import { type ThinEngine } from "../Engines/thinEngine.pure";
 import { type RawTexture } from "../Materials/Textures/rawTexture";
-import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { type Camera } from "../Cameras/camera.pure";
 import { Constants } from "../Engines/constants";
 import { TmpVectors } from "../Maths/math.vector.pure";
-import { _CreateMeshBlendNeutralArtisticNoiseTexture } from "./meshBlendingArtisticNoise";
 import { _CreateMeshBlendBlueNoiseTexture } from "./meshBlendingBlueNoise";
 
 /**
@@ -58,12 +56,6 @@ export enum MeshBlendDebugMode {
     ColorInterpolation = 11,
     /** Visualize the reconstructed world position. */
     WorldPosition = 12,
-    /** Visualize the decoded world-space geometry normal. */
-    WorldNormal = 13,
-    /** Visualize the raw triplanar artistic-noise sample. */
-    ArtisticNoise = 14,
-    /** Visualize the final fade after shadow and artistic-noise modulation. */
-    ModulatedFade = 15,
 }
 
 /**
@@ -103,16 +95,6 @@ export interface IMeshBlendConfiguration {
     slopeFactor?: number;
     /** Representation stored in the depth texture. */
     depthType?: MeshBlendDepthType;
-    /** Whether the world-normal texture stores components encoded from [-1, 1] to [0, 1]. */
-    worldNormalTextureIsUnsigned?: boolean;
-    /** Artistic-noise strength. A value of 0 skips artistic-noise sampling. */
-    noiseFactor?: number;
-    /** Controls how strongly artistic noise fades toward the exact seam. */
-    noiseFade?: number;
-    /** Bias added to the centered artistic-noise signal. */
-    noiseOffset?: number;
-    /** Number of artistic-noise tiles across the selected radius class. */
-    noiseTileSize?: number;
     /** Debug visualization to compile into the shader. Off renders the final blended result. */
     debugMode?: MeshBlendDebugMode;
 }
@@ -120,10 +102,7 @@ export interface IMeshBlendConfiguration {
 /**
  * Options used to create a thin mesh-blending post process.
  */
-export interface IThinMeshBlendingPostProcessOptions extends EffectWrapperCreationOptions, IMeshBlendConfiguration {
-    /** Optional user-owned artistic-noise texture. */
-    noiseTexture?: Nullable<BaseTexture>;
-}
+export interface IThinMeshBlendingPostProcessOptions extends EffectWrapperCreationOptions, IMeshBlendConfiguration {}
 
 /**
  * Creates a new set of default mesh-blending radius definitions.
@@ -147,7 +126,6 @@ interface IMeshBlendQualitySettings {
     radiusScale: number;
     fullRandomRotation: boolean;
     searchJitterFactor: number;
-    artisticNoise: boolean;
     immediateFourNeighborFallback: boolean;
     tinyObjectSafeguard: boolean;
     multiTargetSecondaryBlend: boolean;
@@ -251,7 +229,6 @@ const _MeshBlendQualitySettings: readonly Readonly<IMeshBlendQualitySettings>[] 
         radiusScale: 0.5,
         fullRandomRotation: false,
         searchJitterFactor: 0.5,
-        artisticNoise: false,
         immediateFourNeighborFallback: false,
         tinyObjectSafeguard: false,
         multiTargetSecondaryBlend: false,
@@ -266,7 +243,6 @@ const _MeshBlendQualitySettings: readonly Readonly<IMeshBlendQualitySettings>[] 
         radiusScale: 0.9,
         fullRandomRotation: false,
         searchJitterFactor: 0.5,
-        artisticNoise: true,
         immediateFourNeighborFallback: false,
         tinyObjectSafeguard: false,
         multiTargetSecondaryBlend: false,
@@ -281,7 +257,6 @@ const _MeshBlendQualitySettings: readonly Readonly<IMeshBlendQualitySettings>[] 
         radiusScale: 1,
         fullRandomRotation: true,
         searchJitterFactor: 0.5,
-        artisticNoise: true,
         immediateFourNeighborFallback: true,
         tinyObjectSafeguard: true,
         multiTargetSecondaryBlend: true,
@@ -296,7 +271,6 @@ const _MeshBlendQualitySettings: readonly Readonly<IMeshBlendQualitySettings>[] 
         radiusScale: 0.95,
         fullRandomRotation: true,
         searchJitterFactor: 1,
-        artisticNoise: true,
         immediateFourNeighborFallback: true,
         tinyObjectSafeguard: true,
         multiTargetSecondaryBlend: true,
@@ -424,54 +398,6 @@ export function _CalculateMeshBlendSlopeScale(oppositeFacing: number, slopeFacto
 }
 
 /**
- * Calculates the artistic-noise UV scale for a radius class.
- * @param worldRadius Authored world radius selected for the seam.
- * @param noiseTileSize Number of noise tiles across that radius.
- * @returns The multiplier applied to world position before triplanar projection.
- * @internal
- */
-export function _CalculateMeshBlendNoiseUvScale(worldRadius: number, noiseTileSize: number): number {
-    return noiseTileSize / Math.max(worldRadius, 1e-5);
-}
-
-/**
- * Calculates the final fade after artistic-noise modulation.
- * @param fade Base fade after contact and shadow validation.
- * @param rawNoise Raw texture sample in the [0, 1] range.
- * @param noiseFactor Overall artistic-noise influence.
- * @param noiseFade Amount by which noise influence fades toward the exact seam.
- * @param noiseOffset Bias added to the centered noise signal.
- * @returns The clamped modulated fade.
- * @internal
- */
-export function _CalculateMeshBlendNoiseModulatedFade(fade: number, rawNoise: number, noiseFactor: number, noiseFade: number, noiseOffset: number): number {
-    if (noiseFactor === 0) {
-        return fade;
-    }
-
-    const seamProximity = Math.max(0, Math.min(fade * 2, 1));
-    const envelope = 1 - seamProximity * Math.max(0, Math.min(noiseFade, 1));
-    const signal = rawNoise * 2 - 1 + noiseOffset;
-    return Math.max(0, Math.min(fade * (1 + signal * noiseFactor * envelope), 0.5));
-}
-
-/**
- * Calculates one-hot dominant-axis weights for triplanar artistic-noise projection.
- * @param normal Normalized world-space normal.
- * @returns Projection weights ordered as X, Y, and Z.
- * @internal
- */
-export function _GetMeshBlendDominantAxisWeights(normal: readonly [number, number, number]): [number, number, number] {
-    const x = Math.abs(normal[0]);
-    const y = Math.abs(normal[1]);
-    const z = Math.abs(normal[2]);
-    const maximum = Math.max(x, y, z);
-    const weights: [number, number, number] = [x === maximum ? 1 : 0, y === maximum ? 1 : 0, z === maximum ? 1 : 0];
-    const total = weights[0] + weights[1] + weights[2];
-    return [weights[0] / total, weights[1] / total, weights[2] / total];
-}
-
-/**
  * Gets the compile-time shader define for a mesh-blending quality.
  * @param quality Quality to convert.
  * @returns The quality define.
@@ -514,9 +440,6 @@ export function _GetMeshBlendQualityDefines(quality: MeshBlendQuality): string {
     if (settings.fullRandomRotation) {
         defines.push("#define MESH_BLEND_FULL_RANDOM_ROTATION");
     }
-    if (settings.artisticNoise) {
-        defines.push("#define MESH_BLEND_ARTISTIC_NOISE");
-    }
     if (settings.immediateFourNeighborFallback) {
         defines.push("#define MESH_BLEND_FOUR_NEIGHBOR_FALLBACK");
     }
@@ -532,9 +455,9 @@ export function _GetMeshBlendQualityDefines(quality: MeshBlendQuality): string {
 }
 
 function _ValidateDebugMode(value: MeshBlendDebugMode): void {
-    if (value < MeshBlendDebugMode.Off || value > MeshBlendDebugMode.ModulatedFade || !Number.isInteger(value)) {
+    if (value < MeshBlendDebugMode.Off || value > MeshBlendDebugMode.WorldPosition || !Number.isInteger(value)) {
         throw new RangeError(
-            "Mesh-blending debug mode must be Off, PackedTag, CandidateDirectionDistance, SeamFade, RejectionReason, StageWork, Continuation, TinyObject, MultiTarget, TargetColor, ShadowAttenuation, ColorInterpolation, WorldPosition, WorldNormal, ArtisticNoise, or ModulatedFade."
+            "Mesh-blending debug mode must be Off, PackedTag, CandidateDirectionDistance, SeamFade, RejectionReason, StageWork, Continuation, TinyObject, MultiTarget, TargetColor, ShadowAttenuation, ColorInterpolation, or WorldPosition."
         );
     }
 }
@@ -583,12 +506,6 @@ function _BuildMeshBlendDefines(quality: MeshBlendQuality, debugMode: MeshBlendD
         defines.push("#define MESH_BLEND_DEBUG_COLOR_INTERPOLATION");
     } else if (debugMode === MeshBlendDebugMode.WorldPosition) {
         defines.push("#define MESH_BLEND_DEBUG_WORLD_POSITION");
-    } else if (debugMode === MeshBlendDebugMode.WorldNormal) {
-        defines.push("#define MESH_BLEND_DEBUG_WORLD_NORMAL");
-    } else if (debugMode === MeshBlendDebugMode.ArtisticNoise) {
-        defines.push("#define MESH_BLEND_DEBUG_ARTISTIC_NOISE");
-    } else if (debugMode === MeshBlendDebugMode.ModulatedFade) {
-        defines.push("#define MESH_BLEND_DEBUG_MODULATED_FADE");
     }
 
     if (depthType === MeshBlendDepthType.Screen) {
@@ -639,18 +556,6 @@ export function _ValidateMeshBlendConfiguration(options?: IMeshBlendConfiguratio
     if (options.slopeFactor !== undefined && (!Number.isFinite(options.slopeFactor) || options.slopeFactor < 1)) {
         throw new RangeError("Mesh-blending slopeFactor must be a finite number greater than or equal to 1.");
     }
-    if (options.noiseFactor !== undefined && (!Number.isFinite(options.noiseFactor) || options.noiseFactor < 0)) {
-        throw new RangeError("Mesh-blending noiseFactor must be a finite non-negative number.");
-    }
-    if (options.noiseFade !== undefined && (!Number.isFinite(options.noiseFade) || options.noiseFade < 0 || options.noiseFade > 1)) {
-        throw new RangeError("Mesh-blending noiseFade must be a finite number between 0 and 1.");
-    }
-    if (options.noiseOffset !== undefined && !Number.isFinite(options.noiseOffset)) {
-        throw new RangeError("Mesh-blending noiseOffset must be finite.");
-    }
-    if (options.noiseTileSize !== undefined && (!Number.isFinite(options.noiseTileSize) || options.noiseTileSize <= 0)) {
-        throw new RangeError("Mesh-blending noiseTileSize must be a finite number greater than 0.");
-    }
 }
 
 function _CopyRadiusDefinitions(target: MeshBlendRadiusDefinitions, source: IMeshBlendConfiguration["radiusClasses"]): void {
@@ -675,9 +580,9 @@ function _CopyRadiusDefinitions(target: MeshBlendRadiusDefinitions, source: IMes
  * treated as one logical object and do not blend with one another. The four radius classes combine an authored world-space
  * radius with a minimum radius measured in physical render-target pixels.
  *
- * Perspective and orthographic cameras are supported. Search noise is spatially stable and never varies by frame;
- * the optional artistic-noise texture is a separate world-space modulation. Optional base-color input enables shadow
- * estimation; without it, the related sampler and shader work are compiled out. The effect does not require or implement TAA.
+ * Perspective and orthographic cameras are supported. Search noise is spatially stable and never varies by frame.
+ * Optional base-color input enables shadow estimation; without it, the related sampler and shader work are compiled out.
+ * The effect does not require or implement TAA.
  */
 export class ThinMeshBlendingPostProcess extends EffectWrapper {
     /**
@@ -688,32 +593,12 @@ export class ThinMeshBlendingPostProcess extends EffectWrapper {
     /**
      * The list of uniforms used by the effect.
      */
-    public static readonly Uniforms = [
-        "projection",
-        "inverseProjection",
-        "inverseView",
-        "blendWorldRadii",
-        "minimumProjectedRadii",
-        "meshBlendIsOrthographic",
-        "meshBlendWorldNormalIsUnsigned",
-        "slopeFactor",
-        "noiseFactor",
-        "noiseFade",
-        "noiseOffset",
-        "noiseTileSize",
-    ];
+    public static readonly Uniforms = ["projection", "inverseProjection", "inverseView", "blendWorldRadii", "minimumProjectedRadii", "meshBlendIsOrthographic", "slopeFactor"];
 
     /**
      * The list of samplers used by the effect.
      */
-    public static readonly Samplers = [
-        "meshBlendTagSampler",
-        "meshBlendDepthSampler",
-        "meshBlendWorldNormalSampler",
-        "meshBlendBaseColorSampler",
-        "meshBlendBlueNoiseSampler",
-        "meshBlendArtisticNoiseSampler",
-    ];
+    public static readonly Samplers = ["meshBlendTagSampler", "meshBlendDepthSampler", "meshBlendBaseColorSampler", "meshBlendBlueNoiseSampler"];
 
     protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
         if (useWebGPU) {
@@ -752,84 +637,7 @@ export class ThinMeshBlendingPostProcess extends EffectWrapper {
         this._slopeFactor = value;
     }
 
-    /** Whether the world-normal texture stores components encoded from [-1, 1] to [0, 1]. */
-    public worldNormalTextureIsUnsigned = false;
-
-    private _noiseFactor = 0.5;
-    private _noiseFade = 0.5;
-    private _noiseOffset = 0;
-    private _noiseTileSize = 10;
-    private _noiseTexture: Nullable<BaseTexture> = null;
-
-    /**
-     * User-owned texture sampled for artistic world-space noise.
-     *
-     * The texture is not disposed with the post process.
-     */
-    public get noiseTexture(): Nullable<BaseTexture> {
-        return this._noiseTexture;
-    }
-
-    public set noiseTexture(value: Nullable<BaseTexture>) {
-        this._noiseTexture = value;
-    }
-
-    /** Artistic-noise strength. A value of 0 skips artistic-noise sampling. */
-    public get noiseFactor(): number {
-        return this._noiseFactor;
-    }
-
-    public set noiseFactor(value: number) {
-        if (!Number.isFinite(value) || value < 0) {
-            throw new RangeError("Mesh-blending noiseFactor must be a finite non-negative number.");
-        }
-        this._noiseFactor = value;
-    }
-
-    /** Controls how strongly artistic noise fades toward the exact seam. */
-    public get noiseFade(): number {
-        return this._noiseFade;
-    }
-
-    public set noiseFade(value: number) {
-        if (!Number.isFinite(value) || value < 0 || value > 1) {
-            throw new RangeError("Mesh-blending noiseFade must be a finite number between 0 and 1.");
-        }
-        this._noiseFade = value;
-    }
-
-    /** Bias added to the centered artistic-noise signal. */
-    public get noiseOffset(): number {
-        return this._noiseOffset;
-    }
-
-    public set noiseOffset(value: number) {
-        if (!Number.isFinite(value)) {
-            throw new RangeError("Mesh-blending noiseOffset must be finite.");
-        }
-        this._noiseOffset = value;
-    }
-
-    /** Number of artistic-noise tiles across the selected radius class. */
-    public get noiseTileSize(): number {
-        return this._noiseTileSize;
-    }
-
-    public set noiseTileSize(value: number) {
-        if (!Number.isFinite(value) || value <= 0) {
-            throw new RangeError("Mesh-blending noiseTileSize must be a finite number greater than 0.");
-        }
-        this._noiseTileSize = value;
-    }
-
-    /**
-     * Whether a frame-graph binding supplies the artistic-noise texture.
-     * @internal
-     */
-    public _hasExternalNoiseTexture = false;
-
     private readonly _stableBlueNoiseTexture: RawTexture;
-    private readonly _neutralArtisticNoiseTexture: RawTexture;
     private readonly _customDefines: string;
     private _quality = MeshBlendQuality.Medium;
     private _debugMode = MeshBlendDebugMode.Off;
@@ -930,10 +738,8 @@ export class ThinMeshBlendingPostProcess extends EffectWrapper {
         });
 
         this._customDefines = customDefines;
-        this._noiseTexture = options?.noiseTexture ?? null;
         this._applyConfiguration(options);
         this._stableBlueNoiseTexture = _CreateMeshBlendBlueNoiseTexture(resolvedEngine);
-        this._neutralArtisticNoiseTexture = _CreateMeshBlendNeutralArtisticNoiseTexture(resolvedEngine);
     }
 
     /**
@@ -967,22 +773,6 @@ export class ThinMeshBlendingPostProcess extends EffectWrapper {
             _ValidateDepthType(options.depthType);
             this._depthType = options.depthType;
         }
-        if (options.worldNormalTextureIsUnsigned !== undefined) {
-            this.worldNormalTextureIsUnsigned = options.worldNormalTextureIsUnsigned;
-        }
-        if (options.noiseFactor !== undefined) {
-            this.noiseFactor = options.noiseFactor;
-        }
-        if (options.noiseFade !== undefined) {
-            this.noiseFade = options.noiseFade;
-        }
-        if (options.noiseOffset !== undefined) {
-            this.noiseOffset = options.noiseOffset;
-        }
-        if (options.noiseTileSize !== undefined) {
-            this.noiseTileSize = options.noiseTileSize;
-        }
-
         const quality = options.quality ?? this._quality;
         const debugMode = options.debugMode ?? this._debugMode;
         _GetMeshBlendQualitySettings(quality);
@@ -1002,11 +792,13 @@ export class ThinMeshBlendingPostProcess extends EffectWrapper {
         const effect = this._drawWrapper.effect!;
         const projection = this.camera.getProjectionMatrix();
         projection.invertToRef(TmpVectors.Matrix[0]);
-        this.camera.getViewMatrix().invertToRef(TmpVectors.Matrix[1]);
 
         effect.setMatrix("projection", projection);
         effect.setMatrix("inverseProjection", TmpVectors.Matrix[0]);
-        effect.setMatrix("inverseView", TmpVectors.Matrix[1]);
+        if (this._debugMode === MeshBlendDebugMode.WorldPosition) {
+            this.camera.getViewMatrix().invertToRef(TmpVectors.Matrix[1]);
+            effect.setMatrix("inverseView", TmpVectors.Matrix[1]);
+        }
         effect.setFloat4(
             "blendWorldRadii",
             this.radiusClasses[0].worldRadius,
@@ -1022,22 +814,12 @@ export class ThinMeshBlendingPostProcess extends EffectWrapper {
             this.radiusClasses[3].minimumProjectedRadius
         );
         effect.setFloat("meshBlendIsOrthographic", this.camera.mode === Constants.ORTHOGRAPHIC_CAMERA ? 1 : 0);
-        effect.setFloat("meshBlendWorldNormalIsUnsigned", this.worldNormalTextureIsUnsigned ? 1 : 0);
         effect.setFloat("slopeFactor", this._slopeFactor);
-        const hasNoiseTexture = !!this._noiseTexture || this._hasExternalNoiseTexture;
-        effect.setFloat("noiseFactor", hasNoiseTexture ? this._noiseFactor : 0);
-        effect.setFloat("noiseFade", this._noiseFade);
-        effect.setFloat("noiseOffset", this._noiseOffset);
-        effect.setFloat("noiseTileSize", this._noiseTileSize);
         effect.setTexture("meshBlendBlueNoiseSampler", this._stableBlueNoiseTexture);
-        if (!this._hasExternalNoiseTexture) {
-            effect.setTexture("meshBlendArtisticNoiseSampler", this._noiseTexture ?? this._neutralArtisticNoiseTexture);
-        }
     }
 
     public override dispose(): void {
         this._stableBlueNoiseTexture.dispose();
-        this._neutralArtisticNoiseTexture.dispose();
         super.dispose();
     }
 

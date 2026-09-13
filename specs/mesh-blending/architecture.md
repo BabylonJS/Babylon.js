@@ -23,52 +23,51 @@ The effect consumes the following single-sampled geometry textures:
 1. SceneColor.
 2. Packed mesh-blending tags (`R8UI`, nearest sampling, no mipmaps).
 3. View or screen depth.
-4. World-space normals.
-5. Optional linear base color/albedo for shadow estimation.
+4. Optional linear base color/albedo for shadow estimation.
 
-SceneColor and all provided geometry inputs must use the same physical dimensions and sample coverage. The independently sized artistic-noise texture is excluded from this constraint. Alpha-tested fragments write tags only when they survive the material's configured alpha cutoff. When base color/albedo is omitted, shadow estimation and all base-color samples are compiled out; no fallback texture or additional geometry attachment is required.
+SceneColor and all provided geometry inputs must use the same physical dimensions and sample coverage. Alpha-tested fragments write tags only when they survive the material's configured alpha cutoff. When base color/albedo is omitted, shadow estimation and all base-color samples are compiled out; no fallback texture or additional geometry attachment is required.
 
-Transparent meshes are allowed, but the application is responsible for ensuring that they do not make SceneColor inconsistent with the single-layer depth, normal, albedo, and tag inputs. Transparent meshes that are screen-space-disjoint from participating blended surfaces can be rendered safely. Overlapping transparent surfaces can overwrite or blend geometry inputs independently from SceneColor and produce holes, false boundaries, or incorrect colors. Compositing transparent content after mesh blending remains the recommended general configuration.
+Transparent meshes are allowed, but the application is responsible for ensuring that they do not make SceneColor inconsistent with the single-layer depth, albedo, and tag inputs. Transparent meshes that are screen-space-disjoint from participating blended surfaces can be rendered safely. Overlapping transparent surfaces can overwrite or blend geometry inputs independently from SceneColor and produce holes, false boundaries, or incorrect colors. Compositing transparent content after mesh blending remains the recommended general configuration.
 
 ### Classic renderer
 
-Enable the required `GeometryBufferRenderer` outputs, set `samples` to `1`, and enable world-space normals and mesh-blending tags. Provide an aligned base-color texture only when shadow estimation is wanted. Construct `MeshBlendingPostProcess` with those caller-owned textures. The post process never enables, reconfigures, resizes, or disposes the geometry renderer or supplied textures, so caller-created inputs must be resized with the SceneColor input.
+Enable the required `GeometryBufferRenderer` outputs, set `samples` to `1`, and enable mesh-blending tags. Provide an aligned base-color texture only when shadow estimation is wanted. Construct `MeshBlendingPostProcess` with those caller-owned textures. The post process never enables, reconfigures, resizes, or disposes the geometry renderer or supplied textures, so caller-created inputs must be resized with the SceneColor input.
 
 The classic wrapper is runtime-only and cannot be serialized, parsed, or cloned because its geometry inputs are caller-owned runtime resources. Use FrameGraph/NRGE when the mesh-blending configuration must be serialized.
 
 ### Frame graph
 
-Request screen/view depth, world normal, and mesh-blending tag outputs from `FrameGraphGeometryRendererTask`. Request and connect albedo only when shadow estimation is wanted. The tag can occupy any color-attachment position and must use `TEXTURETYPE_UNSIGNED_BYTE` with `TEXTUREFORMAT_RED_INTEGER`. Mixed float and integer attachments are declared and cleared according to their actual scalar type. Connect those handles and the matching SceneColor to `FrameGraphMeshBlendingTask` or `NodeRenderGraphMeshBlendingPostProcessBlock`. `renderTransparentMeshes` is not overridden; set it according to the scene's overlap and composition requirements.
+Request screen/view depth and mesh-blending tag outputs from `FrameGraphGeometryRendererTask`. Request and connect albedo only when shadow estimation is wanted. The tag can occupy any color-attachment position and must use `TEXTURETYPE_UNSIGNED_BYTE` with `TEXTUREFORMAT_RED_INTEGER`. Mixed float and integer attachments are declared and cleared according to their actual scalar type. Connect those handles and the matching SceneColor to `FrameGraphMeshBlendingTask` or `NodeRenderGraphMeshBlendingPostProcessBlock`. `renderTransparentMeshes` is not overridden; set it according to the scene's overlap and composition requirements.
 
-Both wrappers use `ThinMeshBlendingPostProcess`, so quality, radius, slope, noise, depth, and debug configuration compile and bind through the same implementation.
+Both wrappers use `ThinMeshBlendingPostProcess`, so quality, radius, slope, depth, and debug configuration compile and bind through the same implementation.
 
 ## Quality and cost
 
 `MeshBlendQuality.Medium` is the default.
 
-- `Low` uses fewer searches, sRGB interpolation, and no artistic-noise sample.
-- `Medium` adds OKLab interpolation and artistic noise.
+- `Low` uses fewer searches and sRGB interpolation.
+- `Medium` adds OKLab interpolation.
 - `High` adds full search rotation, one-pixel fallback, tiny-object protection, and a secondary junction target.
 - `Cinematic` increases direction and boundary-search work.
 
 Cost grows with screen coverage and quality because the pass searches the packed tag texture per participating pixel. Profile enabled, disabled, and quality variants on the target hardware rather than relying on a universal millisecond threshold.
 
-The internal search texture is deterministic spatial noise: it rotates and jitters searches without changing between frames. `noiseTexture` is a separate, user-owned artistic texture projected in world space after contact validation. The effect has no temporal accumulation and does not require TAA.
+The internal search texture is deterministic spatial noise: it rotates and jitters searches without changing between frames. The effect has no temporal accumulation and does not require TAA.
 
 ## Examples
 
 These snippets require a Babylon.js build containing the mesh-blending APIs. Before that build is deployed to Playground Preview, run them through the local Playground:
 
-- Classic and FrameGraph parity: [`http://localhost:1338/#O05LI8#2`](http://localhost:1338/#O05LI8#2). Add `?engine=webgpu` before the hash to use WebGPU. The scene uses reverse depth, places the tag at MRT slot zero, and can omit albedo.
-- Feature and performance demo: [`http://localhost:1338/#XVZTSI#0`](http://localhost:1338/#XVZTSI#0). It includes rock-to-ground contacts, shared and different groups, distant seams, all four radius classes, tiny props, a three-mesh junction, alpha-tested foliage, quality/debug controls, and relative GPU timing.
+- Classic and FrameGraph parity: [`http://localhost:1338/#O05LI8#5`](http://localhost:1338/#O05LI8#5). Add `?engine=webgpu` before the hash to use WebGPU. The scene uses reverse depth, places the tag at MRT slot zero, and can omit albedo.
+- Feature and performance demo: [`http://localhost:1338/#XVZTSI#3`](http://localhost:1338/#XVZTSI#3). It includes rock-to-ground contacts, shared and different groups, distant seams, all four radius classes, tiny props, a three-mesh junction, alpha-tested foliage, quality/debug controls, and relative GPU timing.
 
-After deployment, the same snippet IDs are available through [Playground Preview (`#O05LI8#2`)](https://playground.babylonjs.com/?version=preview#O05LI8#2) and [Playground Preview (`#XVZTSI#0`)](https://playground.babylonjs.com/?version=preview#XVZTSI#0).
+After deployment, the same snippet IDs are available through [Playground Preview (`#O05LI8#5`)](https://playground.babylonjs.com/?version=preview#O05LI8#5) and [Playground Preview (`#XVZTSI#3`)](https://playground.babylonjs.com/?version=preview#XVZTSI#3).
 
 The performance demo exposes `window.runMeshBlendBenchmark()`. It uses `EngineInstrumentation.captureGPUFrameTime` and reports same-device ratios for disabled, Low, Medium, High, and Cinematic modes. Results are diagnostic measurements rather than pass/fail thresholds.
 
 ## Debug views
 
-`MeshBlendDebugMode` provides deterministic views for the packed tag, candidate direction/distance, seam/fade, rejection reason, approximate stage/work, target continuation, tiny-object protection, multi-target selection, target-color construction, shadow attenuation, color interpolation, reconstructed world position, world normal, artistic noise, and final modulated fade. The shadow-attenuation view is neutral when no albedo input is provided.
+`MeshBlendDebugMode` provides deterministic views for the packed tag, candidate direction/distance, seam/fade, rejection reason, approximate stage/work, target continuation, tiny-object protection, multi-target selection, target-color construction, shadow attenuation, color interpolation, and reconstructed world position. The shadow-attenuation view is neutral when no albedo input is provided.
 
 ## References
 

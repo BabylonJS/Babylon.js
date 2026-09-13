@@ -14,11 +14,8 @@ import {
     ThinMeshBlendingPostProcess,
     _CalculateMeshBlendEffectiveWorldRadius,
     _CalculateMeshBlendFade,
-    _CalculateMeshBlendNoiseModulatedFade,
-    _CalculateMeshBlendNoiseUvScale,
     _CalculateMeshBlendSearchRadius,
     _CalculateMeshBlendSlopeScale,
-    _GetMeshBlendDominantAxisWeights,
     _GetMeshBlendQualityRadiusScale,
     _GetMeshBlendQualityDefine,
     _GetMeshBlendQualityDefines,
@@ -86,7 +83,6 @@ describe("ThinMeshBlendingPostProcess", () => {
                 radiusScale: 0.5,
                 fullRandomRotation: false,
                 searchJitterFactor: 0.5,
-                artisticNoise: false,
                 immediateFourNeighborFallback: false,
                 tinyObjectSafeguard: false,
                 multiTargetSecondaryBlend: false,
@@ -104,7 +100,6 @@ describe("ThinMeshBlendingPostProcess", () => {
                 radiusScale: 0.9,
                 fullRandomRotation: false,
                 searchJitterFactor: 0.5,
-                artisticNoise: true,
                 immediateFourNeighborFallback: false,
                 tinyObjectSafeguard: false,
                 multiTargetSecondaryBlend: false,
@@ -122,7 +117,6 @@ describe("ThinMeshBlendingPostProcess", () => {
                 radiusScale: 1,
                 fullRandomRotation: true,
                 searchJitterFactor: 0.5,
-                artisticNoise: true,
                 immediateFourNeighborFallback: true,
                 tinyObjectSafeguard: true,
                 multiTargetSecondaryBlend: true,
@@ -140,7 +134,6 @@ describe("ThinMeshBlendingPostProcess", () => {
                 radiusScale: 0.95,
                 fullRandomRotation: true,
                 searchJitterFactor: 1,
-                artisticNoise: true,
                 immediateFourNeighborFallback: true,
                 tinyObjectSafeguard: true,
                 multiTargetSecondaryBlend: true,
@@ -160,14 +153,12 @@ describe("ThinMeshBlendingPostProcess", () => {
         expect(lowDefines).toContain("#define MESH_BLEND_DIRECTION_REFINEMENT_STEP_COUNT 2");
         expect(lowDefines).toContain("#define MESH_BLEND_COLOR_INTERPOLATION_SRGB");
         expect(lowDefines).not.toContain("MESH_BLEND_FULL_RANDOM_ROTATION");
-        expect(lowDefines).not.toContain("MESH_BLEND_ARTISTIC_NOISE");
         expect(lowDefines).not.toContain("MESH_BLEND_FOUR_NEIGHBOR_FALLBACK");
         expect(lowDefines).not.toContain("MESH_BLEND_TINY_OBJECT_SAFEGUARD");
         expect(lowDefines).not.toContain("MESH_BLEND_MULTI_TARGET_SECONDARY_BLEND");
 
         expect(highDefines).toContain("#define MESH_BLEND_EXACT_EDGE_SAMPLE_COUNT 10");
         expect(highDefines).toContain("#define MESH_BLEND_FULL_RANDOM_ROTATION");
-        expect(highDefines).toContain("#define MESH_BLEND_ARTISTIC_NOISE");
         expect(highDefines).toContain("#define MESH_BLEND_FOUR_NEIGHBOR_FALLBACK");
         expect(highDefines).toContain("#define MESH_BLEND_TINY_OBJECT_SAFEGUARD");
         expect(highDefines).toContain("#define MESH_BLEND_MULTI_TARGET_SECONDARY_BLEND");
@@ -249,27 +240,6 @@ describe("ThinMeshBlendingPostProcess", () => {
         expect(_CalculateMeshBlendSlopeScale(0.5, 3)).toBeCloseTo(0.4375);
     });
 
-    it("keeps artistic-noise frequency coherent across radius classes", () => {
-        const smallScale = _CalculateMeshBlendNoiseUvScale(0.1, 10);
-        const largeScale = _CalculateMeshBlendNoiseUvScale(0.4, 10);
-
-        expect(0.1 * smallScale).toBeCloseTo(10);
-        expect(0.4 * largeScale).toBeCloseTo(10);
-    });
-
-    it("uses deterministic dominant-axis projection weights", () => {
-        expect(_GetMeshBlendDominantAxisWeights([0.9, 0.2, 0.1])).toEqual([1, 0, 0]);
-        expect(_GetMeshBlendDominantAxisWeights([0.1, -0.8, 0.2])).toEqual([0, 1, 0]);
-        expect(_GetMeshBlendDominantAxisWeights([0.1, 0.2, -0.7])).toEqual([0, 0, 1]);
-        expect(_GetMeshBlendDominantAxisWeights([1, 1, 0])).toEqual([0.5, 0.5, 0]);
-    });
-
-    it("bypasses artistic-noise fade modulation when factor is zero", () => {
-        expect(_CalculateMeshBlendNoiseModulatedFade(0.3, 0, 0, 0.5, 1)).toBe(0.3);
-        expect(_CalculateMeshBlendNoiseModulatedFade(0.3, 1, 0.75, 0.5, 0)).toBeGreaterThan(0.3);
-        expect(_CalculateMeshBlendNoiseModulatedFade(0.3, 0, 0.75, 0.5, 0)).toBeLessThan(0.3);
-    });
-
     it("uses Medium by default, preserves custom defines, and recompiles only for quality or debug changes", () => {
         const postProcess = new ThinMeshBlendingPostProcess("meshBlend", engine, { defines: "#define CUSTOM_MESH_BLEND_TEST" });
         const updateEffectSpy = vi.spyOn(postProcess, "updateEffect");
@@ -278,7 +248,7 @@ describe("ThinMeshBlendingPostProcess", () => {
             expect(postProcess.quality).toBe(MeshBlendQuality.Medium);
             expect(postProcess.debugMode).toBe(MeshBlendDebugMode.Off);
 
-            postProcess.configure({ noiseFactor: 0.25 });
+            postProcess.configure({ slopeFactor: 1.25 });
             expect(updateEffectSpy).not.toHaveBeenCalled();
 
             postProcess.quality = MeshBlendQuality.Low;
@@ -304,12 +274,6 @@ describe("ThinMeshBlendingPostProcess", () => {
 
             postProcess.debugMode = MeshBlendDebugMode.WorldPosition;
             expect(updateEffectSpy.mock.calls[5][0]).toContain("#define MESH_BLEND_DEBUG_WORLD_POSITION");
-            postProcess.debugMode = MeshBlendDebugMode.WorldNormal;
-            expect(updateEffectSpy.mock.calls[6][0]).toContain("#define MESH_BLEND_DEBUG_WORLD_NORMAL");
-            postProcess.debugMode = MeshBlendDebugMode.ArtisticNoise;
-            expect(updateEffectSpy.mock.calls[7][0]).toContain("#define MESH_BLEND_DEBUG_ARTISTIC_NOISE");
-            postProcess.debugMode = MeshBlendDebugMode.ModulatedFade;
-            expect(updateEffectSpy.mock.calls[8][0]).toContain("#define MESH_BLEND_DEBUG_MODULATED_FADE");
         } finally {
             postProcess.dispose();
         }
@@ -345,9 +309,6 @@ describe("ThinMeshBlendingPostProcess", () => {
         [MeshBlendDebugMode.ShadowAttenuation, "MESH_BLEND_DEBUG_SHADOW_ATTENUATION"],
         [MeshBlendDebugMode.ColorInterpolation, "MESH_BLEND_DEBUG_COLOR_INTERPOLATION"],
         [MeshBlendDebugMode.WorldPosition, "MESH_BLEND_DEBUG_WORLD_POSITION"],
-        [MeshBlendDebugMode.WorldNormal, "MESH_BLEND_DEBUG_WORLD_NORMAL"],
-        [MeshBlendDebugMode.ArtisticNoise, "MESH_BLEND_DEBUG_ARTISTIC_NOISE"],
-        [MeshBlendDebugMode.ModulatedFade, "MESH_BLEND_DEBUG_MODULATED_FADE"],
     ])("compiles debug mode %s to the expected deterministic variant", (debugMode, expectedDefine) => {
         const postProcess = new ThinMeshBlendingPostProcess("meshBlend", engine, { debugMode });
 
@@ -360,25 +321,19 @@ describe("ThinMeshBlendingPostProcess", () => {
         }
     });
 
-    it("owns separate stable search noise and neutral artistic-noise fallback textures", () => {
+    it("owns and disposes its stable search-noise texture", () => {
         const postProcess = new ThinMeshBlendingPostProcess("meshBlend", engine);
         const texture = (postProcess as unknown as { _stableBlueNoiseTexture: RawTexture })._stableBlueNoiseTexture;
-        const artisticFallback = (postProcess as unknown as { _neutralArtisticNoiseTexture: RawTexture })._neutralArtisticNoiseTexture;
         const searchDisposeSpy = vi.spyOn(texture, "dispose");
-        const fallbackDisposeSpy = vi.spyOn(artisticFallback, "dispose");
 
         expect(texture.getSize()).toEqual({ width: 128, height: 128 });
         expect(texture.format).toBe(Constants.TEXTUREFORMAT_RG);
         expect(texture.samplingMode).toBe(Constants.TEXTURE_NEAREST_SAMPLINGMODE);
         expect(texture.wrapU).toBe(Texture.WRAP_ADDRESSMODE);
         expect(texture.wrapV).toBe(Texture.WRAP_ADDRESSMODE);
-        expect(artisticFallback).not.toBe(texture);
-        expect(artisticFallback.getSize()).toEqual({ width: 1, height: 1 });
-        expect(artisticFallback.format).toBe(Constants.TEXTUREFORMAT_RED);
 
         postProcess.dispose();
         expect(searchDisposeSpy).toHaveBeenCalledOnce();
-        expect(fallbackDisposeSpy).toHaveBeenCalledOnce();
     });
 
     it("validates classic construction, ownership, and compile-time variants", () => {
@@ -417,22 +372,10 @@ describe("ThinMeshBlendingPostProcess", () => {
             Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
-        const worldNormalTexture = new RawTexture(
-            new Float32Array(16),
-            2,
-            2,
-            Constants.TEXTUREFORMAT_RGBA,
-            engine,
-            false,
-            false,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_FLOAT
-        );
         const postProcess = new MeshBlendingPostProcess("meshBlend", scene, camera, {
             meshBlendTagTexture: tagTexture,
             depthTexture,
             baseColorTexture,
-            worldNormalTexture,
             quality: MeshBlendQuality.Low,
         });
 
@@ -483,17 +426,6 @@ describe("ThinMeshBlendingPostProcess", () => {
                 Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 Constants.TEXTURETYPE_UNSIGNED_BYTE
             );
-            const worldNormalTexture = new RawTexture(
-                new Float32Array(16),
-                2,
-                2,
-                Constants.TEXTUREFORMAT_RGBA,
-                engine,
-                false,
-                false,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                Constants.TEXTURETYPE_FLOAT
-            );
             const passWrapper = new ThinPassPostProcess("pass", engine);
 
             try {
@@ -504,7 +436,6 @@ describe("ThinMeshBlendingPostProcess", () => {
                             meshBlendTagTexture: invalidTagTexture,
                             depthTexture,
                             baseColorTexture,
-                            worldNormalTexture,
                         })
                 ).toThrow("TEXTUREFORMAT_RED_INTEGER");
                 expect(camera._postProcesses.filter(Boolean)).toHaveLength(0);
@@ -515,22 +446,9 @@ describe("ThinMeshBlendingPostProcess", () => {
                             meshBlendTagTexture: invalidTagTexture,
                             depthTexture,
                             baseColorTexture,
-                            worldNormalTexture,
                             effectWrapper: passWrapper as unknown as ThinMeshBlendingPostProcess,
                         })
                 ).toThrow("effectWrapper must be a ThinMeshBlendingPostProcess");
-                expect(camera._postProcesses.filter(Boolean)).toHaveLength(0);
-
-                expect(
-                    () =>
-                        new MeshBlendingPostProcess("meshBlend", scene, camera, {
-                            meshBlendTagTexture: validTagTexture,
-                            depthTexture,
-                            baseColorTexture,
-                            worldNormalTexture,
-                            noiseFactor: -1,
-                        })
-                ).toThrow("noiseFactor");
                 expect(camera._postProcesses.filter(Boolean)).toHaveLength(0);
             } finally {
                 passWrapper.dispose();
@@ -538,7 +456,6 @@ describe("ThinMeshBlendingPostProcess", () => {
                 validTagTexture.dispose();
                 depthTexture.dispose();
                 baseColorTexture.dispose();
-                worldNormalTexture.dispose();
                 scene.dispose();
             }
         }
@@ -579,22 +496,10 @@ describe("ThinMeshBlendingPostProcess", () => {
                 Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 Constants.TEXTURETYPE_UNSIGNED_BYTE
             );
-            const worldNormalTexture = new RawTexture(
-                new Float32Array(16),
-                2,
-                2,
-                Constants.TEXTUREFORMAT_RGBA,
-                engine,
-                false,
-                false,
-                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-                Constants.TEXTURETYPE_FLOAT
-            );
             const internal = new MeshBlendingPostProcess("internal", scene, camera, {
                 meshBlendTagTexture: tagTexture,
                 depthTexture,
                 baseColorTexture,
-                worldNormalTexture,
             });
             const internalWrapper = (internal as unknown as { _effectWrapper: ThinMeshBlendingPostProcess })._effectWrapper;
             const internalDisposeSpy = vi.spyOn(internalWrapper, "dispose");
@@ -604,7 +509,6 @@ describe("ThinMeshBlendingPostProcess", () => {
                 meshBlendTagTexture: tagTexture,
                 depthTexture,
                 baseColorTexture,
-                worldNormalTexture,
                 effectWrapper: externalWrapper,
             });
 
@@ -619,7 +523,6 @@ describe("ThinMeshBlendingPostProcess", () => {
                 tagTexture.dispose();
                 depthTexture.dispose();
                 baseColorTexture.dispose();
-                worldNormalTexture.dispose();
                 scene.dispose();
             }
         }
@@ -644,27 +547,16 @@ describe("ThinMeshBlendingPostProcess", () => {
                     { worldRadius: 0.16, minimumProjectedRadius: 4 },
                 ],
                 slopeFactor: 1.5,
-                worldNormalTextureIsUnsigned: true,
-                noiseFactor: 0.25,
-                noiseFade: 0.75,
-                noiseOffset: -0.1,
-                noiseTileSize: 6,
             });
             expect(postProcess.quality).toBe(MeshBlendQuality.High);
             expect(postProcess.debugMode).toBe(MeshBlendDebugMode.RejectionReason);
             expect(postProcess.radiusClasses[3]).toEqual({ worldRadius: 0.16, minimumProjectedRadius: 4 });
             expect(postProcess.slopeFactor).toBe(1.5);
-            expect(postProcess.worldNormalTextureIsUnsigned).toBe(true);
-            expect(postProcess.noiseFactor).toBe(0.25);
-            expect(postProcess.noiseFade).toBe(0.75);
-            expect(postProcess.noiseOffset).toBe(-0.1);
-            expect(postProcess.noiseTileSize).toBe(6);
         } finally {
             postProcess.dispose();
             tagTexture.dispose();
             depthTexture.dispose();
             baseColorTexture.dispose();
-            worldNormalTexture.dispose();
             scene.dispose();
         }
     });
@@ -705,17 +597,6 @@ describe("ThinMeshBlendingPostProcess", () => {
             Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
-        const worldNormalTexture = new RawTexture(
-            new Float32Array(16),
-            2,
-            2,
-            Constants.TEXTUREFORMAT_RGBA,
-            engine,
-            false,
-            false,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_FLOAT
-        );
         const mismatchedBaseColorTexture = new RawTexture(
             new Uint8Array(32).fill(128),
             4,
@@ -731,7 +612,6 @@ describe("ThinMeshBlendingPostProcess", () => {
             meshBlendTagTexture: tagTexture,
             depthTexture,
             baseColorTexture,
-            worldNormalTexture,
         });
 
         try {
@@ -756,13 +636,12 @@ describe("ThinMeshBlendingPostProcess", () => {
             tagTexture.dispose();
             depthTexture.dispose();
             baseColorTexture.dispose();
-            worldNormalTexture.dispose();
             mismatchedBaseColorTexture.dispose();
             scene.dispose();
         }
     });
 
-    it("rejects mismatched world normals and does not dispose a user artistic-noise texture", () => {
+    it("does not dispose caller-owned input textures", () => {
         const scene = new Scene(engine);
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
         const tagTexture = new RawTexture(
@@ -798,70 +677,24 @@ describe("ThinMeshBlendingPostProcess", () => {
             Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
-        const worldNormalTexture = new RawTexture(
-            new Uint8Array(16).fill(128),
-            2,
-            2,
-            Constants.TEXTUREFORMAT_RGBA,
-            engine,
-            false,
-            false,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_UNSIGNED_BYTE
-        );
-        const mismatchedWorldNormalTexture = new RawTexture(
-            new Uint8Array(32).fill(128),
-            4,
-            2,
-            Constants.TEXTUREFORMAT_RGBA,
-            engine,
-            false,
-            false,
-            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            Constants.TEXTURETYPE_UNSIGNED_BYTE
-        );
-        const noiseTexture = new RawTexture(
-            new Uint8Array(16).fill(128),
-            2,
-            2,
-            Constants.TEXTUREFORMAT_RGBA,
-            engine,
-            false,
-            false,
-            Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-            Constants.TEXTURETYPE_UNSIGNED_BYTE
-        );
-        const noiseDisposeSpy = vi.spyOn(noiseTexture, "dispose");
         const tagDisposeSpy = vi.spyOn(tagTexture, "dispose");
         const depthDisposeSpy = vi.spyOn(depthTexture, "dispose");
         const baseColorDisposeSpy = vi.spyOn(baseColorTexture, "dispose");
-        const worldNormalDisposeSpy = vi.spyOn(worldNormalTexture, "dispose");
         const postProcess = new MeshBlendingPostProcess("meshBlend", scene, camera, {
             meshBlendTagTexture: tagTexture,
             depthTexture,
             baseColorTexture,
-            worldNormalTexture,
-            worldNormalTextureIsUnsigned: true,
-            noiseTexture,
         });
 
         try {
-            expect(postProcess.worldNormalTextureIsUnsigned).toBe(true);
-            expect(postProcess.noiseTexture).toBe(noiseTexture);
-            expect(() => (postProcess.worldNormalTexture = mismatchedWorldNormalTexture)).toThrow("matching physical dimensions");
             postProcess.dispose();
-            expect(noiseDisposeSpy).not.toHaveBeenCalled();
             expect(tagDisposeSpy).not.toHaveBeenCalled();
             expect(depthDisposeSpy).not.toHaveBeenCalled();
             expect(baseColorDisposeSpy).not.toHaveBeenCalled();
-            expect(worldNormalDisposeSpy).not.toHaveBeenCalled();
         } finally {
             tagTexture.dispose();
             depthTexture.dispose();
             baseColorTexture.dispose();
-            worldNormalTexture.dispose();
-            mismatchedWorldNormalTexture.dispose();
-            noiseTexture.dispose();
             scene.dispose();
         }
     });
@@ -886,11 +719,8 @@ describe("ThinMeshBlendingPostProcess", () => {
                 })
             ).toThrow("world radii");
             expect(() => postProcess.configure({ slopeFactor: 0.5 })).toThrow("slopeFactor");
-            expect(() => postProcess.configure({ noiseFactor: -0.5 })).toThrow("noiseFactor");
-            expect(() => postProcess.configure({ noiseFade: 1.5 })).toThrow("noiseFade");
-            expect(() => postProcess.configure({ noiseOffset: Number.NaN })).toThrow("noiseOffset");
-            expect(() => postProcess.configure({ noiseTileSize: 0 })).toThrow("noiseTileSize");
             expect(() => postProcess.configure({ depthType: 7 as MeshBlendDepthType })).toThrow("depthType");
+            expect(() => postProcess.configure({ debugMode: 14 as MeshBlendDebugMode })).toThrow("debug mode");
         } finally {
             postProcess.dispose();
         }
