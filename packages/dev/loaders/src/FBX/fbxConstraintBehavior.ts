@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /**
  * Runtime evaluation of FBX constraints. An `FBXConstraintBehavior` is attached to each constrained node; all
- * behaviors of a scene register with one `FBXConstraintSolver`, which solves them from a single
- * `onBeforeRenderObservable` observer in dependency order (a constraint whose target or parent is driven by another
- * constraint is solved after it) and reuses scratch objects, so solving allocates nothing per frame.
+ * behaviors of a scene register with one `FBXConstraintSolver`, which solves them in dependency order (a constraint
+ * whose target or parent is driven by another constraint is solved after it) and reuses scratch objects, so solving
+ * allocates nothing per frame.
  *
- * Each solve blends from the node's unconstrained transform of the current frame (the value animation wrote, or
- * the value captured before the constraint first ran for static nodes), never from the previous solve's output,
- * so a 50% weight stays a 50% blend instead of converging on the target.
+ * The solver brackets the scene's animation phase: before animations run it writes each node's unconstrained
+ * transform back, after they ran it captures the result as the new unconstrained transform and solves. A partial
+ * weight therefore always blends from what animation (or nothing) produced this frame, never from the previous
+ * solve's output, so a 50% weight stays a 50% blend instead of converging on the target.
  *
  * All maths happen in FBX space, i.e. relative to the loader's root node, so the handedness conversion applied
  * at the root never enters the solve.
@@ -78,7 +79,8 @@ const Scratch = {
 const Solvers = new WeakMap<Scene, FBXConstraintSolver>();
 
 /**
- * Solves every FBX constraint of a scene before each render, in dependency order. Created on demand by the first
+ * Solves every FBX constraint of a scene once per frame, in dependency order, from the scene's animation phase
+ * observers (`beginFrame` before animations, `solve` after them). Created on demand by the first
  * `FBXConstraintBehavior` attached in the scene and removed with the last one.
  */
 export class FBXConstraintSolver {
@@ -87,7 +89,8 @@ export class FBXConstraintSolver {
     private _ordered: FBXConstraintBehavior[] = [];
     private _cyclic: FBXConstraintBehavior[] = [];
     private _dirty = false;
-    private _observer: Nullable<Observer<Scene>> = null;
+    private _beforeAnimations: Nullable<Observer<Scene>> = null;
+    private _afterAnimations: Nullable<Observer<Scene>> = null;
 
     private constructor(scene: Scene) {
         this._scene = scene;
@@ -141,8 +144,9 @@ export class FBXConstraintSolver {
         }
         this._behaviors.push(behavior);
         this._dirty = true;
-        if (!this._observer) {
-            this._observer = this._scene.onBeforeRenderObservable.add(() => this.solve());
+        if (!this._beforeAnimations) {
+            this._beforeAnimations = this._scene.onBeforeAnimationsObservable.add(() => this.beginFrame());
+            this._afterAnimations = this._scene.onAfterAnimationsObservable.add(() => this.solve());
         }
     }
 
@@ -158,10 +162,10 @@ export class FBXConstraintSolver {
         this._behaviors.splice(index, 1);
         this._dirty = true;
         if (this._behaviors.length === 0) {
-            if (this._observer) {
-                this._scene.onBeforeRenderObservable.remove(this._observer);
-                this._observer = null;
-            }
+            this._scene.onBeforeAnimationsObservable.remove(this._beforeAnimations);
+            this._scene.onAfterAnimationsObservable.remove(this._afterAnimations);
+            this._beforeAnimations = null;
+            this._afterAnimations = null;
             Solvers.delete(this._scene);
         }
     }
@@ -171,9 +175,25 @@ export class FBXConstraintSolver {
         this._dirty = true;
     }
 
-    /** Solves every registered constraint once, in dependency order. */
+    /**
+     * Start of a frame, before animations run: every constrained node gets its unconstrained transform back, so
+     * that animation either overwrites it or leaves it untouched.
+     */
+    public beginFrame(): void {
+        for (const behavior of this._behaviors) {
+            behavior.restoreBase();
+        }
+    }
+
+    /**
+     * End of the animation phase: takes every constrained node's current transform as its unconstrained value,
+     * then solves every registered constraint once, in dependency order.
+     */
     public solve(): void {
         this._ensureOrder();
+        for (const behavior of this._behaviors) {
+            behavior.captureBase();
+        }
         for (const behavior of this._ordered) {
             behavior.evaluate();
         }
@@ -257,10 +277,9 @@ export class FBXConstraintBehavior implements Behavior<TransformNode> {
     private readonly _offsetRotation: Matrix;
     private readonly _offsetScale: Vector3;
     private readonly _localBasisTransposed: Nullable<Matrix>;
-    /** Unconstrained transform of the current frame, blended towards the constraint's result. */
+    /** Unconstrained transform of the current frame (what animation produced), blended towards the constraint's result. */
     private readonly _base = { position: new Vector3(), rotation: new Quaternion(), scaling: new Vector3() };
-    /** What the last solve wrote; a node still holding it has not been animated since, so `_base` stays valid. */
-    private readonly _lastWritten = { position: new Vector3(NaN, NaN, NaN), rotation: new Quaternion(NaN, NaN, NaN, NaN), scaling: new Vector3(NaN, NaN, NaN) };
+    private _hasBase = false;
 
     /**
      * Creates the behavior.
@@ -290,12 +309,14 @@ export class FBXConstraintBehavior implements Behavior<TransformNode> {
     public init(): void {}
 
     /**
-     * Registers the behavior with the scene's solver and solves the constraint once.
+     * Registers the behavior with the scene's solver, takes the node's current transform as the unconstrained
+     * value and solves the constraint once.
      * @param target - Node to constrain
      */
     public attach(target: TransformNode): void {
         this.attachedNode = target;
         FBXConstraintSolver.GetOrCreate(target.getScene()).register(this);
+        this.captureBase();
         this.evaluate();
     }
 
@@ -305,9 +326,39 @@ export class FBXConstraintBehavior implements Behavior<TransformNode> {
             FBXConstraintSolver.Get(this.attachedNode.getScene())?.unregister(this);
         }
         this.attachedNode = null;
-        this._lastWritten.position.set(NaN, NaN, NaN);
-        this._lastWritten.rotation.set(NaN, NaN, NaN, NaN);
-        this._lastWritten.scaling.set(NaN, NaN, NaN);
+        this._hasBase = false;
+    }
+
+    /**
+     * Takes the node's current transform as the unconstrained value the next solve blends from. The solver calls
+     * this after the scene's animations ran; call it yourself after writing a transform by hand.
+     */
+    public captureBase(): void {
+        const node = this.attachedNode;
+        if (!node) {
+            return;
+        }
+        if (!node.rotationQuaternion) {
+            node.rotationQuaternion = Quaternion.FromEulerVector(node.rotation);
+        }
+        this._base.position.copyFrom(node.position);
+        this._base.rotation.copyFrom(node.rotationQuaternion);
+        this._base.scaling.copyFrom(node.scaling);
+        this._hasBase = true;
+    }
+
+    /**
+     * Writes the unconstrained transform back to the node. The solver calls this before the scene's animations
+     * run, so a node nothing animates keeps its unconstrained value between frames instead of the solved one.
+     */
+    public restoreBase(): void {
+        const node = this.attachedNode;
+        if (!node || !this._hasBase) {
+            return;
+        }
+        node.position.copyFrom(this._base.position);
+        node.rotationQuaternion!.copyFrom(this._base.rotation);
+        node.scaling.copyFrom(this._base.scaling);
     }
 
     /**
@@ -321,12 +372,18 @@ export class FBXConstraintBehavior implements Behavior<TransformNode> {
         return nodes;
     }
 
-    /** Solves the constraint and writes the node's local transform. */
+    /**
+     * Solves the constraint from the captured unconstrained transform and writes the node's local transform.
+     * Blends are relative to the value captured by `captureBase`, not to whatever the node holds now.
+     */
     public evaluate(): void {
         const node = this.attachedNode;
         const c = this.constraint;
         if (!node || !this.enabled || !c.active || c.weight <= 0 || this._options.targets.length === 0) {
             return;
+        }
+        if (!this._hasBase) {
+            this.captureBase();
         }
         this._options.root.computeWorldMatrix(true).invertToRef(Scratch.invRoot);
         const parent = node.parent as Nullable<TransformNode>;
@@ -336,11 +393,6 @@ export class FBXConstraintBehavior implements Behavior<TransformNode> {
             Matrix.IdentityToRef(Scratch.parent);
         }
         Scratch.parent.invertToRef(Scratch.invParent);
-
-        if (!node.rotationQuaternion) {
-            node.rotationQuaternion = Quaternion.FromEulerVector(node.rotation);
-        }
-        this._captureBase(node);
 
         switch (c.type) {
             case "position":
@@ -372,22 +424,6 @@ export class FBXConstraintBehavior implements Behavior<TransformNode> {
     private _fbxWorld(node: TransformNode, out: Matrix): Matrix {
         node.computeWorldMatrix(true).multiplyToRef(Scratch.invRoot, out);
         return out;
-    }
-
-    /**
-     * Takes the node's current transform as the unconstrained value unless it is still the previous solve's output.
-     * @param node - Constrained node
-     */
-    private _captureBase(node: TransformNode): void {
-        if (!node.position.equals(this._lastWritten.position)) {
-            this._base.position.copyFrom(node.position);
-        }
-        if (!node.rotationQuaternion!.equals(this._lastWritten.rotation)) {
-            this._base.rotation.copyFrom(node.rotationQuaternion!);
-        }
-        if (!node.scaling.equals(this._lastWritten.scaling)) {
-            this._base.scaling.copyFrom(node.scaling);
-        }
     }
 
     /**
@@ -448,17 +484,14 @@ export class FBXConstraintBehavior implements Behavior<TransformNode> {
             Quaternion.SlerpToRef(base, result, this.constraint.weight, result);
         }
         node.rotationQuaternion!.copyFrom(result);
-        this._lastWritten.rotation.copyFrom(result);
     }
 
     private _writePosition(node: TransformNode, desiredLocal: Vector3): void {
         this._applyWeighted(this._base.position, desiredLocal, this.constraint.affectTranslation, node.position);
-        this._lastWritten.position.copyFrom(node.position);
     }
 
     private _writeScaling(node: TransformNode, desiredLocal: Vector3): void {
         this._applyWeighted(this._base.scaling, desiredLocal, this.constraint.affectScale, node.scaling);
-        this._lastWritten.scaling.copyFrom(node.scaling);
     }
 
     private _solvePosition(node: TransformNode): void {

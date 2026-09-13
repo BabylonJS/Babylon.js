@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { TransformNode } from "core/Meshes/transformNode";
+import { FreeCamera } from "core/Cameras/freeCamera";
+import { Animation } from "core/Animations/animation";
+import "core/Animations/animatable";
 import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { FBXConstraintBehavior, FBXConstraintSolver } from "loaders/FBX/fbxConstraintBehavior";
 import { type FBXConstraintData, type FBXConstraintType } from "loaders/FBX/interpreter/constraints";
@@ -54,15 +57,57 @@ describe("FBXConstraintBehavior", () => {
 
         expect(constrained.position.x).toBeCloseTo(5, 6);
         for (let i = 0; i < 10; i++) {
+            // A frame in which nothing animates the node: it gets its unconstrained value back, then is solved.
+            solver.beginFrame();
             solver.solve();
         }
         // Not damping towards the target: still 50% between the static value and the target.
         expect(constrained.position.x).toBeCloseTo(5, 6);
 
         // Animation writes a new unconstrained value; the blend starts from it.
+        solver.beginFrame();
         constrained.position.x = 2;
         solver.solve();
         expect(constrained.position.x).toBeCloseTo(6, 6);
+    });
+
+    it("blends from what animation wrote even when it equals the previous solved value", () => {
+        const constrained = node("constrained", 0);
+        const target = node("target", 10);
+        constrain(constrained, [target], "position", 0.5);
+        const solver = FBXConstraintSolver.Get(scene)!;
+        expect(constrained.position.x).toBeCloseTo(5, 6);
+
+        // The animation sample happens to be 5, the previous constrained output: the blend must start from 5.
+        solver.beginFrame();
+        constrained.position.x = 5;
+        solver.solve();
+        expect(constrained.position.x).toBeCloseTo(7.5, 6);
+
+        // Animation stops writing: the node keeps the last animated value (5) as its unconstrained transform.
+        solver.beginFrame();
+        solver.solve();
+        expect(constrained.position.x).toBeCloseTo(7.5, 6);
+    });
+
+    it("solves from the scene's animation phase when rendering", () => {
+        new FreeCamera("camera", new Vector3(0, 0, -10), scene);
+        const constrained = node("constrained", 0);
+        const target = node("target", 10);
+        constrain(constrained, [target], "position", 0.5);
+        expect(constrained.position.x).toBeCloseTo(5, 6);
+
+        // A constant animation writing 5 (the previous result) every frame
+        const animation = new Animation("x", "position.x", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
+        animation.setKeys([
+            { frame: 0, value: 5 },
+            { frame: 30, value: 5 },
+        ]);
+        scene.beginDirectAnimation(constrained, [animation], 0, 30, true);
+        scene.render();
+        expect(constrained.position.x).toBeCloseTo(7.5, 6);
+        scene.render();
+        expect(constrained.position.x).toBeCloseTo(7.5, 6);
     });
 
     it("solves a constraint after the constraint that drives its target, whatever the attach order", () => {
@@ -110,17 +155,20 @@ describe("FBXConstraintBehavior", () => {
         expect(Number.isFinite(a.position.x) && Number.isFinite(b.position.x)).toBe(true);
     });
 
-    it("runs from one before-render observer and removes it with the last behavior", async () => {
-        const observersBefore = scene.onBeforeRenderObservable.observers.length;
+    it("runs from one pair of animation phase observers and removes them with the last behavior", async () => {
+        const beforeCount = scene.onBeforeAnimationsObservable.observers.length;
+        const afterCount = scene.onAfterAnimationsObservable.observers.length;
         const constrained = node("constrained", 0);
         const other = node("other", 0);
         const target = node("target", 10);
         const first = constrain(constrained, [target], "position", 1);
         const second = constrain(other, [target], "position", 1);
 
-        expect(scene.onBeforeRenderObservable.observers.length).toBe(observersBefore + 1);
+        expect(scene.onBeforeAnimationsObservable.observers.length).toBe(beforeCount + 1);
+        expect(scene.onAfterAnimationsObservable.observers.length).toBe(afterCount + 1);
         target.position.x = 30;
-        scene.onBeforeRenderObservable.notifyObservers(scene);
+        scene.onBeforeAnimationsObservable.notifyObservers(scene);
+        scene.onAfterAnimationsObservable.notifyObservers(scene);
         expect(constrained.position.x).toBeCloseTo(30, 6);
         expect(other.position.x).toBeCloseTo(30, 6);
 
@@ -128,9 +176,10 @@ describe("FBXConstraintBehavior", () => {
         expect(FBXConstraintSolver.Get(scene)).toBeDefined();
         other.removeBehavior(second);
         expect(FBXConstraintSolver.Get(scene)).toBeUndefined();
-        // Observable unregisters on the next tick.
+        // Observables unregister on the next tick.
         await new Promise((resolve) => setTimeout(resolve, 0));
-        expect(scene.onBeforeRenderObservable.observers.length).toBe(observersBefore);
+        expect(scene.onBeforeAnimationsObservable.observers.length).toBe(beforeCount);
+        expect(scene.onAfterAnimationsObservable.observers.length).toBe(afterCount);
         expect(first.attachedNode).toBeNull();
     });
 
