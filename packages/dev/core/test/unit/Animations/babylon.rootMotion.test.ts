@@ -6,7 +6,8 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Scene } from "core/scene";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { Logger } from "core/Misc/logger";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const Fps = 60;
 const CycleFrames = 60;
@@ -36,6 +37,10 @@ interface IRigOptions {
     twist?: number;
     /** How far the whole clip veers off +Z, in radians: the path, the hips and the feet. */
     veer?: number;
+    /** A constant turn of the hips, in radians, under the turn and twist. */
+    baseYaw?: number;
+    /** Animate the hips' rotation as Euler angles rather than a quaternion. */
+    euler?: boolean;
 }
 
 /**
@@ -65,7 +70,7 @@ function FootInWalk(time: number, side: number): Vector3 {
  * @returns the rig
  */
 function BuildRig(scene: Scene, gait: Gait, options: IRigOptions = {}): IRig {
-    const { surge = 0, turn = 0, twist = 0, veer = 0 } = options;
+    const { surge = 0, turn = 0, twist = 0, veer = 0, baseYaw = 0, euler = false } = options;
     const veering = Matrix.RotationY(veer);
     const character = new TransformNode("character", scene);
     const armature = new TransformNode("armature", scene);
@@ -84,7 +89,7 @@ function BuildRig(scene: Scene, gait: Gait, options: IRigOptions = {}): IRig {
 
     const toArmature = armature.computeWorldMatrix(true).clone().invert();
     const hipsKeys = [];
-    const hipsRotationKeys = [];
+    const hipsRotationKeys: { frame: number; value: Vector3 | Quaternion }[] = [];
     const leftKeys = [];
     const rightKeys = [];
     for (let frame = 0; frame <= CycleFrames; frame++) {
@@ -104,7 +109,8 @@ function BuildRig(scene: Scene, gait: Gait, options: IRigOptions = {}): IRig {
             HipHeight,
             pathZ + surge * Math.sin((4 * Math.PI * frame) / CycleFrames)
         );
-        hipsRotationKeys.push({ frame, value: Quaternion.RotationAxis(Vector3.Up(), heading + twist * Math.sin((2 * Math.PI * frame) / CycleFrames)) });
+        const hipsYaw = baseYaw + heading + twist * Math.sin((2 * Math.PI * frame) / CycleFrames);
+        hipsRotationKeys.push({ frame, value: euler ? new Vector3(0, hipsYaw, 0) : Quaternion.RotationAxis(Vector3.Up(), hipsYaw) });
         let left = new Vector3(0.1, 0, 0);
         let right = new Vector3(-0.1, 0, 0);
         if (gait !== "idle") {
@@ -130,8 +136,10 @@ function BuildRig(scene: Scene, gait: Gait, options: IRigOptions = {}): IRig {
     const hipsAnimation = makeAnimation("hips", hipsKeys);
     group.addTargetedAnimation(hipsAnimation, hips);
     let hipsRotationAnimation: Animation | null = null;
-    if (turn !== 0 || twist !== 0) {
-        hipsRotationAnimation = new Animation("hipsRotation", "rotationQuaternion", Fps, Animation.ANIMATIONTYPE_QUATERNION, Animation.ANIMATIONLOOPMODE_CYCLE);
+    if (turn !== 0 || twist !== 0 || baseYaw !== 0) {
+        hipsRotationAnimation = euler
+            ? new Animation("hipsRotation", "rotation", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE)
+            : new Animation("hipsRotation", "rotationQuaternion", Fps, Animation.ANIMATIONTYPE_QUATERNION, Animation.ANIMATIONLOOPMODE_CYCLE);
         hipsRotationAnimation.setKeys(hipsRotationKeys);
         group.addTargetedAnimation(hipsRotationAnimation, hips);
     }
@@ -163,7 +171,8 @@ function HipsInCharacter(rig: IRig, frame: number): Vector3 {
  * @returns the transform
  */
 function OriginalHipsInCharacter(rig: IRig, frame: number): Matrix {
-    const rotation = rig.hipsRotationAnimation ? rig.hipsRotationAnimation.evaluate(frame) : Quaternion.Identity();
+    const evaluated = rig.hipsRotationAnimation ? rig.hipsRotationAnimation.evaluate(frame) : Quaternion.Identity();
+    const rotation = evaluated instanceof Vector3 ? Quaternion.FromEulerVector(evaluated) : evaluated;
     const local = Matrix.Compose(Vector3.One(), rotation, rig.hipsAnimation.evaluate(frame));
     return local.multiply(Matrix.Compose(rig.armature.scaling, rig.armature.rotationQuaternion!, rig.armature.position));
 }
@@ -456,6 +465,54 @@ describe("RootMotion", () => {
             });
         }
 
+        it("keeps the hip sway of a clip that turns on the spot", () => {
+            const original = BuildRig(scene, "idle", { turn: Math.PI / 2 });
+            const rig = BuildRig(scene, "idle", { turn: Math.PI / 2 });
+            const start = rig.character.computeWorldMatrix(true).clone();
+            const rootMotion = new RootMotion(rig.group);
+            rig.group.start(true);
+            expect(rootMotion.extractsRotation).toBe(true);
+
+            let rendered = 0;
+            for (const frames of [16, 30, 45]) {
+                Run(scene, frames);
+                rendered += frames;
+                const cycles = Math.floor(((rendered - 1) * 0.96) / CycleFrames);
+                ExpectSamePose(FreshWorldMatrix(rig.hips), ExpectedHipsWorld(original, rig.group.getCurrentFrame(), cycles, start), 0.01);
+            }
+        });
+
+        it("keeps rewritten Euler rotation keys on the short path around PI", () => {
+            // Hips facing backwards that pitch and roll while turning: once the turn is taken out, the heading left in the
+            // keys wanders across PI, where converting back from a quaternion jumps between +PI and -PI.
+            const character = new TransformNode("character", scene);
+            const hips = new TransformNode("hips", scene);
+            hips.parent = character;
+            new TransformNode("foot", scene).parent = hips;
+            const rotation = new Animation("rotation", "rotation", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+            const position = new Animation("position", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+            const rotationKeys = [];
+            const positionKeys = [];
+            for (let frame = 0; frame <= CycleFrames; frame++) {
+                const phase = (2 * Math.PI * frame) / CycleFrames;
+                rotationKeys.push({ frame, value: new Vector3(0.6 * Math.sin(phase), Math.PI + (Math.PI / 2) * (frame / CycleFrames), 0.6 * Math.sin(2 * phase)) });
+                positionKeys.push({ frame, value: new Vector3(0, HipHeight, 0) });
+            }
+            rotation.setKeys(rotationKeys);
+            position.setKeys(positionKeys);
+            const group = new AnimationGroup("euler", scene);
+            group.addTargetedAnimation(position, hips);
+            group.addTargetedAnimation(rotation, hips);
+            const rootMotion = new RootMotion(group);
+
+            expect(rootMotion.extractsRotation).toBe(true);
+            const keys = rotation.getKeys();
+            for (let i = 1; i < keys.length; i++) {
+                const step = (keys[i].value as Vector3).subtract(keys[i - 1].value as Vector3);
+                expect(Math.max(Math.abs(step.x), Math.abs(step.y), Math.abs(step.z))).toBeLessThan(Math.PI);
+            }
+        });
+
         it("does not turn when rotation extraction is off", () => {
             const rig = BuildRig(scene, "rootMotion", { turn: Math.PI / 2 });
             const rootMotion = new RootMotion(rig.group, { extractRotation: false });
@@ -525,6 +582,112 @@ describe("RootMotion", () => {
 
             expect(rig.character.position.z).toBe(0);
             expect(travelled).toBeCloseTo(Speed, 1);
+        });
+
+        // One 16ms frame of walking; the first frame after starting only establishes where playback began.
+        const Walked = (frames: number, speedRatio = 1) => Speed * speedRatio * (frames - 1) * 0.016;
+
+        it("plays backwards", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            new RootMotion(rig.group);
+            rig.group.start(true, -1);
+            Run(scene, 130);
+
+            expect(rig.character.position.z).toBeCloseTo(-Walked(130), 3);
+        });
+
+        it("counts several cycles passing in one step", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            new RootMotion(rig.group);
+            rig.group.start(true, 70);
+            Run(scene, 10);
+
+            expect(rig.character.position.z).toBeCloseTo(Walked(10, 70), 2);
+        });
+
+        it("counts a step of exactly one cycle, which leaves the frame where it was", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            new RootMotion(rig.group);
+            rig.group.start(true, 1000 / 16);
+            Run(scene, 10);
+
+            expect(rig.character.position.z).toBeCloseTo(Speed * 9, 2);
+        });
+
+        it("does not read a restart between frames as a loop", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            new RootMotion(rig.group);
+            rig.group.start(true);
+            Run(scene, 40);
+            const before = rig.character.position.z;
+            rig.group.stop();
+            rig.group.start(true);
+            Run(scene, 2);
+
+            expect(rig.character.position.z - before).toBeCloseTo(Walked(2), 3);
+        });
+
+        it("swings forwards and back with a yoyo loop", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            for (const targetedAnimation of rig.group.targetedAnimations) {
+                targetedAnimation.animation.loopMode = Animation.ANIMATIONLOOPMODE_YOYO;
+            }
+            new RootMotion(rig.group);
+            rig.group.start(true);
+            let farthest = 0;
+            for (let i = 0; i < 130; i++) {
+                Run(scene, 1);
+                farthest = Math.max(farthest, rig.character.position.z);
+            }
+
+            expect(farthest).toBeCloseTo(Speed, 1);
+            expect(Math.abs(rig.character.position.z)).toBeLessThan(Speed);
+        });
+
+        it("loops a played range by its own stride", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            new RootMotion(rig.group);
+            rig.group.start(true, 1, 20, 40);
+            Run(scene, 130);
+
+            expect(rig.character.position.z).toBeCloseTo(Walked(130), 3);
+        });
+
+        it("runs on the root's animation rather than the group's first", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            // A 30 frames per second track listed ahead of the skeleton, on a node of its own.
+            const prop = new TransformNode("prop", scene);
+            const propAnimation = new Animation("prop", "position", 30, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+            propAnimation.setKeys([
+                { frame: 0, value: Vector3.Zero() },
+                { frame: 30, value: Vector3.One() },
+            ]);
+            const group = new AnimationGroup("mixed", scene);
+            group.addTargetedAnimation(propAnimation, prop);
+            for (const targetedAnimation of rig.group.targetedAnimations) {
+                group.addTargetedAnimation(targetedAnimation.animation, targetedAnimation.target);
+            }
+            const rootMotion = new RootMotion(group);
+            group.start(true);
+            Run(scene, 130);
+
+            expect(rootMotion.averageSpeed).toBeCloseTo(Speed, 3);
+            expect(rig.character.position.z).toBeCloseTo(Walked(130), 3);
+        });
+
+        it("warns when the group animates the character node itself", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const characterAnimation = new Animation("character", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+            characterAnimation.setKeys([
+                { frame: 0, value: Vector3.Zero() },
+                { frame: CycleFrames, value: Vector3.Zero() },
+            ]);
+            rig.group.addTargetedAnimation(characterAnimation, rig.character);
+            const warn = vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+            new RootMotion(rig.group, { rootNode: rig.hips });
+
+            expect(warn).toHaveBeenCalledWith(expect.stringContaining("animates the character node"));
+            warn.mockRestore();
         });
 
         it("stops moving the character after dispose", () => {

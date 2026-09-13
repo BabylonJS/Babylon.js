@@ -206,6 +206,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     let activeGroup: AnimationGroup | null = null;
     let rootMotion: RootMotion | null = null;
     let printTimer = 0;
+    let readoutTimer = 0;
     let loadToken = 0;
     let restRotation: Quaternion | null = null;
 
@@ -273,7 +274,8 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
 
         let loaded: AssetContainer;
         try {
-            const extension = name.toLowerCase().endsWith(".gltf") ? ".gltf" : ".glb";
+            // Judged on the path alone: a query or fragment after the file name is not part of its extension.
+            const extension = name.split(/[?#]/)[0].toLowerCase().endsWith(".gltf") ? ".gltf" : ".glb";
             loaded = await LoadAssetContainerAsync(source, scene, { pluginExtension: extension });
         } catch (error) {
             if (token === loadToken) {
@@ -378,6 +380,12 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
             print.thinInstanceCount = printCount;
         }
 
+        // The readout is for reading, not animating: a few updates a second, rather than rebuilding text every frame.
+        readoutTimer += dt;
+        if (readoutTimer < 0.1) {
+            return;
+        }
+        readoutTimer = 0;
         const lines: string[] = [];
         if (activeGroup) {
             lines.push(`clip       ${activeGroup.name}`, `frame      ${activeGroup.getCurrentFrame().toFixed(1)} / ${activeGroup.to.toFixed(0)}`);

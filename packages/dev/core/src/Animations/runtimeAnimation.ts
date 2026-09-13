@@ -136,6 +136,14 @@ export class RuntimeAnimation {
     }
 
     /**
+     * @internal
+     * The frame reached since the animation started, before looping folds it into the from-to range.
+     */
+    public get _absoluteFrame(): number {
+        return this._previousAbsoluteFrame;
+    }
+
+    /**
      * Gets the weight of the runtime animation
      */
     public get weight(): number {

@@ -1,4 +1,16 @@
-import { type AnimationGroup, type Animation, type Bone, type IAnimationKey, type IDisposable, type Node, type Nullable, type Observer, type Scene } from "core/index";
+import {
+    type Animatable,
+    type AnimationGroup,
+    type Bone,
+    type IAnimationKey,
+    type IDisposable,
+    type Node,
+    type Nullable,
+    type Observer,
+    type RuntimeAnimation,
+    type Scene,
+} from "core/index";
+import { Animation } from "./animation.pure";
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "../Maths/math.vector.pure";
 import { Observable } from "../Misc/observable.pure";
 import { Logger } from "../Misc/logger";
@@ -123,6 +135,8 @@ const TrackStride = 4;
 const MinimumStraightness = 0.8;
 /** Default snap of a direction of travel deduced from contacts, in radians. */
 const DeducedDirectionSnapAngle = Math.PI / 18;
+/** Whole cycles composed in a single step at most; beyond that a step is not playback anyone can see. */
+const MaxCyclesPerStep = 1000;
 /** Frame step for the numeric tangents of rewritten cubic spline keys. */
 const TangentDelta = 1e-3;
 
@@ -183,9 +197,20 @@ export class RootMotion implements IDisposable {
     private _track = new Float32Array(2 * TrackStride);
     private _restoredKeys: IKeyRecord[] = [];
     private _observer: Nullable<Observer<Scene>> = null;
-    private _lastFrame: Nullable<number> = null;
+    /** Whether the root's own travel is removed from its keys - not so for a clip that only turns on the spot. */
+    private _removesRootTravel = false;
+    /** The animation whose playback drives the motion: the root's own, so its frame rate and range are the motion's. */
+    private _clockAnimation: Nullable<Animation> = null;
+    private _clockRuntime: Nullable<RuntimeAnimation> = null;
+    private _clockAnimatable: Nullable<Animatable> = null;
+    private _clockIndex = -1;
+    private _lastProgress: Nullable<number> = null;
+    private _sampleBlend = 0;
     private readonly _lastOffset = Vector3.Zero();
     private readonly _currentOffset = Vector3.Zero();
+    private readonly _rangeStart = Vector3.Zero();
+    private readonly _rangeCycle = Vector3.Zero();
+    private readonly _cyclesOffset = Vector3.Zero();
     private readonly _yawQuaternion = new Quaternion();
     private readonly _yawMatrix = new Matrix();
 
@@ -322,12 +347,6 @@ export class RootMotion implements IDisposable {
             }
         }
 
-        this._fromFrame = animationGroup.from;
-        this._toFrame = animationGroup.to;
-        const framePerSecond = targetedAnimations[0].animation.framePerSecond;
-        this._duration = framePerSecond > 0 ? (this._toFrame - this._fromFrame) / framePerSecond : 0;
-        this._sampleCount = Math.max(2, Math.ceil(this._duration * (options.samplesPerSecond ?? 60)));
-
         this._rootNode = options.rootNode ? this._resolveNode(options.rootNode) : this._findRootNode();
         this._characterNode = options.characterNode ?? null;
         const anchor = this._rootNode ?? this._firstAnimatedNode();
@@ -346,6 +365,23 @@ export class RootMotion implements IDisposable {
             this._rootNode = null;
             return;
         }
+
+        const characterChannels = this._channels.get(this._characterNode);
+        if (characterChannels?.position || characterChannels?.rotationQuaternion || characterChannels?.rotation) {
+            Logger.Warn(
+                `RootMotion: animation group "${animationGroup.name}" animates the character node "${this._characterNode.name}" itself, which will overwrite the motion applied to it. Give a parent of it as the characterNode.`
+            );
+        }
+
+        // The motion runs on the root's own animation - its frame rate, and at runtime its playback - rather than whichever
+        // track happens to be first in the group, which could be a morph target at another frame rate.
+        const anchorChannels = this._channels.get(anchor)!;
+        this._clockAnimation = anchorChannels.position ?? anchorChannels.rotationQuaternion ?? anchorChannels.rotation ?? anchorChannels.scaling ?? null;
+        this._fromFrame = animationGroup.from;
+        this._toFrame = animationGroup.to;
+        const framePerSecond = this._clockAnimation?.framePerSecond ?? targetedAnimations[0].animation.framePerSecond;
+        this._duration = framePerSecond > 0 ? (this._toFrame - this._fromFrame) / framePerSecond : 0;
+        this._sampleCount = Math.max(2, Math.ceil(this._duration * (options.samplesPerSecond ?? 60)));
 
         this._characterHeight = this._measureHeight(this._rootNode ?? this._characterNode);
         const scale = this._characterHeight > 0 ? this._characterHeight : 1;
@@ -373,6 +409,7 @@ export class RootMotion implements IDisposable {
             translation = this._measureRootTravel(yaw, minimumTravel, source === RootMotionSource.Root);
             if (translation) {
                 this._source = RootMotionSource.Root;
+                this._removesRootTravel = true;
             }
         }
         if (!translation && (source === undefined || source === RootMotionSource.FootContact)) {
@@ -382,7 +419,7 @@ export class RootMotion implements IDisposable {
             }
         }
         if (!translation && yaw) {
-            // Turning on the spot.
+            // Turning on the spot: the root keeps its travel, sway included; only the turn is taken out.
             translation = new Float32Array((samples + 1) * 3);
             this._source = RootMotionSource.Root;
         }
@@ -403,7 +440,7 @@ export class RootMotion implements IDisposable {
         this._cycleOffset.fromArray(translation, samples * 3);
         this._cycleRotation = yaw ? yaw[samples] : 0;
 
-        if (root && (this._source === RootMotionSource.Root || yaw)) {
+        if (root && (this._removesRootTravel || yaw)) {
             this._stripRootKeys();
         }
 
@@ -417,10 +454,10 @@ export class RootMotion implements IDisposable {
      * @returns the result vector
      */
     public getOffsetAtFrame(frame: number, result: Vector3): Vector3 {
-        const [index, blend] = this._sampleAt(frame);
-        const track = this._track;
-        const a = index * TrackStride;
+        const a = this._sampleAt(frame) * TrackStride;
         const b = a + TrackStride;
+        const blend = this._sampleBlend;
+        const track = this._track;
         return result.set(track[a] + (track[b] - track[a]) * blend, track[a + 1] + (track[b + 1] - track[a + 1]) * blend, track[a + 2] + (track[b + 2] - track[a + 2]) * blend);
     }
 
@@ -430,17 +467,16 @@ export class RootMotion implements IDisposable {
      * @returns the turn in radians
      */
     public getRotationAtFrame(frame: number): number {
-        const [index, blend] = this._sampleAt(frame);
-        const a = index * TrackStride + 3;
-        return this._track[a] + (this._track[a + TrackStride] - this._track[a]) * blend;
+        const a = this._sampleAt(frame) * TrackStride + 3;
+        return this._track[a] + (this._track[a + TrackStride] - this._track[a]) * this._sampleBlend;
     }
 
     /**
-     * Forgets the last frame the motion was measured from. Call after jumping the group with goToFrame, so the jump
-     * is not read as motion.
+     * Forgets the last frame the motion was measured from. Call after jumping the group with goToFrame or resetting it,
+     * so the jump is not read as motion. Starting the group again needs no reset.
      */
     public reset(): void {
-        this._lastFrame = null;
+        this._lastProgress = null;
         this._deltaPosition.setAll(0);
         this._deltaRotation = 0;
     }
@@ -463,40 +499,75 @@ export class RootMotion implements IDisposable {
     private _update(): void {
         const group = this._group;
         const character = this._characterNode;
-        if (!group.isStarted || !character) {
+        const clock = group.isStarted && character ? this._findClock() : null;
+        if (!clock || !character) {
+            this._clockRuntime = null;
             this.reset();
             return;
         }
+        // A runtime animation belongs to one playback: a different one means the group was started again - possibly
+        // stopped and started between two frames - and nothing has travelled in the new playback yet.
+        if (clock !== this._clockRuntime) {
+            this._clockRuntime = clock;
+            this.reset();
+        }
 
-        const frame = group.getCurrentFrame();
-        const lastFrame = this._lastFrame;
-        this._lastFrame = frame;
-        if (lastFrame === null || frame === lastFrame) {
+        const animatable = this._clockAnimatable!;
+        const from = Math.max(this._fromFrame, Math.min(animatable.fromFrame, animatable.toFrame));
+        const to = Math.min(this._toFrame, Math.max(animatable.fromFrame, animatable.toFrame));
+        const range = to - from;
+        // Looping playback is followed by its unwrapped progress, so whole cycles are counted rather than guessed from two
+        // wrapped frames: several can pass in one step, or exactly one, leaving the frame where it was. A yoyo swings back
+        // and forth within the range and a playback that does not loop stops at its end, so both follow the frame alone.
+        const counted = animatable.loopAnimation && range > 0 && clock._animationState.loopMode !== Animation.ANIMATIONLOOPMODE_YOYO;
+        const progress = counted ? (clock._coreRuntimeAnimation ?? clock)._absoluteFrame : clock.currentFrame;
+        const lastProgress = this._lastProgress;
+        this._lastProgress = progress;
+        if (lastProgress === null || progress === lastProgress) {
             this._deltaPosition.setAll(0);
             this._deltaRotation = 0;
             return;
         }
 
-        // The motion so far is a turn and a translation: now = yaw(now) then offset(now), in character space.
-        const lastOffset = this.getOffsetAtFrame(lastFrame, this._lastOffset);
-        const lastYaw = this.getRotationAtFrame(lastFrame);
-        const offset = this.getOffsetAtFrame(frame, this._currentOffset);
-        let yaw = this.getRotationAtFrame(frame);
+        let lastFrame = lastProgress;
+        let frame = progress;
+        let cycles = 0;
+        if (counted) {
+            const lastCycle = Math.floor(lastProgress / range);
+            const cycle = Math.floor(progress / range);
+            lastFrame = from + lastProgress - lastCycle * range;
+            frame = from + progress - cycle * range;
+            cycles = cycle - lastCycle;
+        }
 
-        // The playhead wrapped: continue from the end of the cycle (forwards) or back past its start (backwards).
-        const forwards = group.speedRatio >= 0;
-        if (forwards ? frame < lastFrame : frame > lastFrame) {
-            if (forwards) {
-                this._rotateAboutUp(offset, this._cycleRotation, offset).addInPlace(this._cycleOffset);
-                yaw += this._cycleRotation;
-            } else {
-                this._rotateAboutUp(offset.subtractInPlace(this._cycleOffset), -this._cycleRotation, offset);
-                yaw -= this._cycleRotation;
+        // The motion within the played range, relative to its start - a range played on its own loops by its own stride,
+        // not the whole clip's. Each motion is a turn and then a translation, in character space.
+        const startYaw = this.getRotationAtFrame(from);
+        const startOffset = this.getOffsetAtFrame(from, this._rangeStart);
+        const lastYaw = this._motionInRange(lastFrame, startYaw, startOffset, this._lastOffset);
+        let yaw = this._motionInRange(frame, startYaw, startOffset, this._currentOffset);
+        const offset = this._currentOffset;
+
+        if (cycles !== 0) {
+            // Whole cycles passed: now = cycle^cycles, then the motion within the range.
+            let stepYaw = this._motionInRange(to, startYaw, startOffset, this._rangeCycle);
+            if (cycles < 0) {
+                this._rotateAboutUp(this._rangeCycle, -stepYaw, this._rangeCycle).scaleInPlace(-1);
+                stepYaw = -stepYaw;
             }
+            let cyclesYaw = 0;
+            this._cyclesOffset.setAll(0);
+            const count = Math.min(Math.abs(cycles), MaxCyclesPerStep);
+            for (let i = 0; i < count; i++) {
+                this._cyclesOffset.addInPlace(this._rotateAboutUp(this._rangeCycle, cyclesYaw, TmpVectors.Vector3[9]));
+                cyclesYaw += stepYaw;
+            }
+            this._rotateAboutUp(offset, cyclesYaw, offset).addInPlace(this._cyclesOffset);
+            yaw += cyclesYaw;
         }
 
         // Relative to where the character is now: undo the turn it already made.
-        const delta = this._rotateAboutUp(offset.subtractInPlace(lastOffset), -lastYaw, offset);
+        const delta = this._rotateAboutUp(offset.subtractInPlace(this._lastOffset), -lastYaw, offset);
         let deltaYaw = yaw - lastYaw;
         // A weighted group contributes its share, so blended groups add up to the blended pose.
         if (group.weight >= 0) {
@@ -539,6 +610,37 @@ export class RootMotion implements IDisposable {
         if (this.onRootMotionObservable.hasObservers()) {
             this.onRootMotionObservable.notifyObservers(this);
         }
+    }
+
+    /**
+     * The motion at a frame relative to the motion at the start of the played range.
+     * @param frame defines the frame
+     * @param startYaw defines the turn at the start of the range
+     * @param startOffset defines the travel at the start of the range
+     * @param result defines the vector receiving the travel
+     * @returns the turn
+     */
+    private _motionInRange(frame: number, startYaw: number, startOffset: Vector3, result: Vector3): number {
+        this._rotateAboutUp(this.getOffsetAtFrame(frame, result).subtractInPlace(startOffset), -startYaw, result);
+        return this.getRotationAtFrame(frame) - startYaw;
+    }
+
+    private _findClock(): Nullable<RuntimeAnimation> {
+        const animatables = this._group.animatables;
+        if (this._clockRuntime && this._clockAnimatable && animatables[this._clockIndex] === this._clockAnimatable) {
+            return this._clockRuntime;
+        }
+        for (let i = 0; i < animatables.length; i++) {
+            for (const runtime of animatables[i].getAnimations()) {
+                if (runtime.animation === this._clockAnimation) {
+                    this._clockAnimatable = animatables[i];
+                    this._clockIndex = i;
+                    return runtime;
+                }
+            }
+        }
+        this._clockAnimatable = null;
+        return null;
     }
 
     private _measureRootYaw(): Float32Array {
@@ -745,7 +847,7 @@ export class RootMotion implements IDisposable {
         const root = this._rootNode!;
         const channels = this._channels.get(root)!;
         const parent = root.parent;
-        const removesTravel = this._source === RootMotionSource.Root;
+        const removesTravel = this._removesRootTravel;
         const range = Math.max(this._toFrame - this._fromFrame, 1e-6);
         const start = this._positionInCharacter(root, this._fromFrame, new Vector3());
         const reference = this._rotationInCharacter(root, this._fromFrame, new Quaternion());
@@ -804,6 +906,7 @@ export class RootMotion implements IDisposable {
             }
             const keys = animation.getKeys();
             let previousRotation: Nullable<Quaternion> = null;
+            let previousEuler: Nullable<Vector3> = null;
             for (const key of keys) {
                 strippedAt(key.frame, position, rotation);
                 let value: any;
@@ -815,7 +918,20 @@ export class RootMotion implements IDisposable {
                         rotation.scaleInPlace(-1);
                     }
                     previousRotation = rotation.clone();
-                    value = kind === "rotationQuaternion" ? previousRotation : previousRotation.toEulerAngles();
+                    if (kind === "rotationQuaternion") {
+                        value = previousRotation;
+                    } else {
+                        // Each angle continues from the previous key, so interpolation does not swing the long way round
+                        // where the conversion from a quaternion jumps between +PI and -PI.
+                        const euler = previousRotation.toEulerAngles();
+                        if (previousEuler) {
+                            euler.x += Math.round((previousEuler.x - euler.x) / (2 * Math.PI)) * 2 * Math.PI;
+                            euler.y += Math.round((previousEuler.y - euler.y) / (2 * Math.PI)) * 2 * Math.PI;
+                            euler.z += Math.round((previousEuler.z - euler.z) / (2 * Math.PI)) * 2 * Math.PI;
+                        }
+                        previousEuler = euler;
+                        value = euler;
+                    }
                 }
 
                 // Cubic spline tangents follow the rewritten curve. Straight travel is a linear removal, so the key's own
@@ -899,15 +1015,22 @@ export class RootMotion implements IDisposable {
         return highest - lowest;
     }
 
-    private _sampleAt(frame: number): [number, number] {
+    /**
+     * The track sample before a frame; the blend towards the next one is left in _sampleBlend.
+     * @param frame defines the frame
+     * @returns the sample index
+     */
+    private _sampleAt(frame: number): number {
         const range = this._toFrame - this._fromFrame;
         const samples = this._sampleCount;
         if (range <= 0 || this._source === RootMotionSource.None) {
-            return [0, 0];
+            this._sampleBlend = 0;
+            return 0;
         }
         const exact = Math.min(samples, Math.max(0, ((frame - this._fromFrame) / range) * samples));
         const index = Math.min(samples - 1, Math.floor(exact));
-        return [index, exact - index];
+        this._sampleBlend = exact - index;
+        return index;
     }
 
     private _frameAt(sample: number): number {
