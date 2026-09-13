@@ -25,6 +25,12 @@ It supports the following params:
 
 - `useTS=boolean` Whether to use the `createScene.ts` or `createSceneJS.js` files. Defaults to true (`createScene.ts`) if not used.
 
+### exp=rootMotion
+
+Validates `RootMotion`. Drop a `.glb` or `.gltf` with animations on the page (or pick a sample), choose a clip, and switch between automatic extraction, root only, feet only and the raw clip. Footprints mark where the lowest foot touched down: a tight trail of prints means the feet stay planted, a smear means they skate. `model=Xbot`, `model=HVGirl` or `model=<url>` loads a model on start.
+
+Open `http://localhost:1338/?exp=rootMotion`.
+
 ### exp=webxrOverWebGPU
 
 This committed example creates an XR-compatible `WebGPUEngine`, enables the required WebXR Layers feature, and uses `WebXRDefaultExperience` for the standard entry UI, controller models, pointer selection, teleportation, near interaction, and hand tracking. It also displays WebGPU-XR capability and session-state diagnostics.
