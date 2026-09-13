@@ -23,8 +23,7 @@ export type FBXShaderType =
     | "3dsMaxPbrSpecGloss"
     | "gltfMaterial"
     | "openPbrMaterial"
-    | "shaderFxGraph"
-    | "blenderPhong";
+    | "shaderFxGraph";
 
 /** One resolved material parameter: a constant value and/or a texture. */
 export interface FBXMaterialMap<TTexture> {
@@ -166,8 +165,6 @@ export interface FBXMaterialSource<TTexture> {
         /** shader semantic name -> material property names */
         bindings: Map<string, string[]>;
     };
-    /** True when the file was written by Blender 4.12+ (Blender "Phong" carries PBR-ish semantics) */
-    blenderPbr?: boolean;
 }
 
 const enum Flag {
@@ -179,8 +176,6 @@ const enum Transform {
     None = 0,
     InvertX = 1,
     UnknownShininess = 2,
-    BlenderOpacity = 3,
-    BlenderShininess = 4,
 }
 const enum FeatureFlag {
     Inverted = 1,
@@ -528,17 +523,6 @@ const SHADERFX_PBR: MapEntry[] = [
     ["ambientOcclusion", 0, 0, "ao"],
 ];
 
-const BLENDER_PHONG_PBR: MapEntry[] = [
-    ["baseColor", Flag.DefaultW1, 0, "DiffuseColor"],
-    ["opacity", Flag.WidenToRgb, Transform.BlenderOpacity, "TransparencyFactor"],
-    ["emissionFactor", 0, 0, "EmissiveFactor"],
-    ["emissionColor", Flag.DefaultW1, 0, "EmissiveColor"],
-    ["roughness", 0, Transform.BlenderShininess, "Shininess"],
-    ["roughness", 0, Transform.BlenderShininess, "ShininessExponent"],
-    ["metalness", 0, 0, "ReflectionFactor"],
-    ["normalMap", 0, 0, "NormalMap"],
-];
-
 interface ShaderTable {
     maps: MapEntry[];
     features: FeatureEntry[];
@@ -582,7 +566,6 @@ const SHADER_TABLES: Record<FBXShaderType, ShaderTable> = {
         textureEnabledPrefix: "use_",
         textureEnabledSuffix: "_map",
     },
-    blenderPhong: { maps: BLENDER_PHONG_PBR, features: [], defaultFeatures: ["pbr", "metalness", "diffuse", "emission"] },
 };
 
 /** Shader types whose parameters are physically based; the loader emits PBR materials for them by default. */
@@ -603,13 +586,6 @@ function applyTransform(transform: number, v: number[]): void {
                     v[0] = 0;
                 }
             }
-            break;
-        case Transform.BlenderOpacity:
-            v[0] = 1 - v[0];
-            break;
-        case Transform.BlenderShininess:
-            // Blender writes shininess = (1 - roughness)^2 * 1000
-            v[0] = v[0] >= 0 ? 1 - Math.sqrt(v[0] / 1000) : 1;
             break;
         default:
             break;
@@ -668,9 +644,6 @@ export function detectShaderType<T>(source: FBXMaterialSource<T>): { shaderType:
         }
         if (a === 0xd00f1e00 && b === 0x01dbad33) {
             return { shaderType: "3dsMaxPbrSpecGloss", shaderPropPrefix: "3dsMax|main|" };
-        }
-        if (source.blenderPbr) {
-            return { shaderType: "blenderPhong", shaderPropPrefix: "" };
         }
     }
     return { shaderType, shaderPropPrefix: "" };

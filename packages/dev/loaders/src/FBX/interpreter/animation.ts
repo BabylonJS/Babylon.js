@@ -36,12 +36,14 @@ export interface FBXCurveNodeData {
     defaultValues?: [number, number, number];
 }
 
-/** Unsupported animation curve node preserved for diagnostics and future support. */
+/** Non-transform animation curve node (property animation), evaluated by the loader when a Babylon mapping exists. */
 export interface FBXUnsupportedCurveNodeData {
     /** Raw AnimationCurveNode property type/name */
     type: string;
     /** CurveNode object ID */
     id: number;
+    /** Index of the owning layer within the stack's layer list */
+    layerIndex: number;
     /** Target object ID if the curve node is connected to an object/property */
     targetId: number | null;
     /** OP connection property name on the target, e.g. Visibility */
@@ -94,6 +96,15 @@ export interface FBXAnimationLayerData {
     diagnostics: FBXAnimationDiagnostic[];
 }
 
+/** Options for animation extraction. */
+export interface FBXAnimationExtractOptions {
+    /**
+     * Shift each clip so its first key sits at time 0 (default true). False keeps the times authored in the file, so
+     * clips of one file stay aligned with each other and with the declared stack range.
+     */
+    rebaseKeyframes?: boolean;
+}
+
 /** One animation clip (AnimationStack) */
 export interface FBXAnimationStackData {
     /** Animation name */
@@ -117,12 +128,13 @@ export interface FBXAnimationStackData {
 /**
  * Extract all animation stacks from the FBX scene.
  */
-export function extractAnimations(objectMap: FBXObjectMap, doc?: FBXDocument): FBXAnimationStackData[] {
+export function extractAnimations(objectMap: FBXObjectMap, doc?: FBXDocument, options: FBXAnimationExtractOptions = {}): FBXAnimationStackData[] {
     const stacks: FBXAnimationStackData[] = [];
+    const rebaseKeyframes = options.rebaseKeyframes ?? true;
 
     for (const [id, node] of Array.from(objectMap.objects)) {
         if (node.name === "AnimationStack") {
-            const stack = extractAnimStack(id, node, objectMap);
+            const stack = extractAnimStack(id, node, objectMap, rebaseKeyframes);
             if (stack) {
                 stacks.push(stack);
             }
@@ -131,13 +143,13 @@ export function extractAnimations(objectMap: FBXObjectMap, doc?: FBXDocument): F
 
     // Pre-7000 files have no AnimationStack objects; their animation lives in the top-level Takes block.
     if (stacks.length === 0 && doc) {
-        stacks.push(...extractLegacyTakes(doc, objectMap));
+        stacks.push(...extractLegacyTakes(doc, objectMap, rebaseKeyframes));
     }
 
     return stacks;
 }
 
-function extractAnimStack(stackId: number, stackNode: FBXNode, objectMap: FBXObjectMap): FBXAnimationStackData | null {
+function extractAnimStack(stackId: number, stackNode: FBXNode, objectMap: FBXObjectMap, rebaseKeyframes: boolean): FBXAnimationStackData | null {
     const name = cleanFBXName(getPropertyValue<string>(stackNode, 1) ?? "Animation");
     const declaredTimeSpan = extractAnimationStackTimeSpan(stackNode);
 
@@ -153,7 +165,7 @@ function extractAnimStack(stackId: number, stackNode: FBXNode, objectMap: FBXObj
     const layers: FBXAnimationLayerData[] = [];
     const diagnostics: FBXAnimationDiagnostic[] = [];
     let minTime = Infinity;
-    let maxTime = 0;
+    let maxTime = -Infinity;
 
     for (const { id: layerId, node: layerNode } of layerEntries) {
         // Extract layer properties
@@ -190,7 +202,7 @@ function extractAnimStack(stackId: number, stackNode: FBXNode, objectMap: FBXObj
         for (const { id: curveNodeId, node: curveNodeNode } of curveNodeEntries) {
             const curveNodeData = extractCurveNode(curveNodeId, curveNodeNode, objectMap, layerIndex);
             if (!curveNodeData) {
-                const unsupported = extractUnsupportedCurveNode(curveNodeId, curveNodeNode, objectMap);
+                const unsupported = extractUnsupportedCurveNode(curveNodeId, curveNodeNode, objectMap, layerIndex);
                 if (unsupported) {
                     // The layer's own Weight property can be animated; it drives blending rather than a target.
                     if (unsupported.targetId === layerId && unsupported.propertyName === "Weight" && unsupported.curves.length > 0) {
@@ -254,10 +266,13 @@ function extractAnimStack(stackId: number, stackNode: FBXNode, objectMap: FBXObj
         return null;
     }
 
-    return finalizeAnimStack(name, layers, allCurveNodes, allUnsupportedCurveNodes, diagnostics, minTime, maxTime, declaredTimeSpan);
+    return finalizeAnimStack(name, layers, allCurveNodes, allUnsupportedCurveNodes, diagnostics, minTime, maxTime, declaredTimeSpan, rebaseKeyframes);
 }
 
-/** Rebases key times to start at zero and resolves the clip span from the declared time span or the key range. */
+/**
+ * Resolves the clip span from the declared time span or the key range and, when requested, rebases key times so
+ * the first key sits at zero.
+ */
 function finalizeAnimStack(
     name: string,
     layers: FBXAnimationLayerData[],
@@ -266,11 +281,11 @@ function finalizeAnimStack(
     diagnostics: FBXAnimationDiagnostic[],
     minTime: number,
     maxTime: number,
-    declaredTimeSpan: { start: number; stop: number } | null
+    declaredTimeSpan: { start: number; stop: number } | null,
+    rebaseKeyframes: boolean
 ): FBXAnimationStackData {
-    // Keep FBX times as authored: frame N of the group is FBX time N / fps, so clips from the same file stay in sync
-    // and callers can seek by FBX time. (Rebasing to zero was the previous behaviour; it is not the SDK's.)
-    const timeOffset = 0;
+    const hasKeys = isFinite(minTime) && isFinite(maxTime);
+    const timeOffset = rebaseKeyframes && hasKeys && minTime > 0 ? minTime : 0;
 
     // Rebase all keyframe times so the animation starts at 0
     if (timeOffset > 0) {
@@ -291,11 +306,14 @@ function finalizeAnimStack(
         maxTime -= timeOffset;
     }
 
-    const declaredStart = declaredTimeSpan ? declaredTimeSpan.start - timeOffset : 0;
+    const declaredStart = declaredTimeSpan ? (rebaseKeyframes ? Math.max(declaredTimeSpan.start - timeOffset, 0) : declaredTimeSpan.start) : 0;
     const declaredStop = declaredTimeSpan ? Math.max(declaredTimeSpan.stop - timeOffset, declaredStart) : 0;
     const hasDeclaredDuration = declaredStop > declaredStart;
-    const startTime = hasDeclaredDuration ? declaredStart : isFinite(minTime) ? minTime - timeOffset : 0;
-    const stopTime = hasDeclaredDuration ? declaredStop : maxTime;
+    // Without a declared span the clip covers its keys (a clip whose keys are all negative ends before zero).
+    const keyStart = hasKeys ? minTime - timeOffset : 0;
+    const keyStop = hasKeys ? maxTime : 0;
+    const startTime = hasDeclaredDuration ? declaredStart : rebaseKeyframes ? Math.min(0, keyStart) : keyStart;
+    const stopTime = hasDeclaredDuration ? declaredStop : Math.max(keyStop, startTime);
 
     return {
         name,
@@ -396,7 +414,7 @@ function extractCurveNode(curveNodeId: number, curveNodeNode: FBXNode, objectMap
     return null;
 }
 
-function extractUnsupportedCurveNode(curveNodeId: number, curveNodeNode: FBXNode, objectMap: FBXObjectMap): FBXUnsupportedCurveNodeData | null {
+function extractUnsupportedCurveNode(curveNodeId: number, curveNodeNode: FBXNode, objectMap: FBXObjectMap, layerIndex: number): FBXUnsupportedCurveNodeData | null {
     const typeName = cleanFBXName(getPropertyValue<string>(curveNodeNode, 1) ?? "");
     const curves = extractCurves(curveNodeId, objectMap);
     const defaultValues = extractCurveNodeDefaultValues(curveNodeNode);
@@ -417,6 +435,7 @@ function extractUnsupportedCurveNode(curveNodeId: number, curveNodeNode: FBXNode
     return {
         type: typeName,
         id: curveNodeId,
+        layerIndex,
         targetId,
         propertyName,
         curveCount: curves.length,
@@ -754,7 +773,7 @@ function getFiniteKeyAttrData(keyAttrData: Float32Array | null, index: number): 
  * Each take becomes one animation stack with a single layer. Models are matched through the same legacy string ids
  * that the connection resolver synthesizes for 6.x objects.
  */
-export function extractLegacyTakes(doc: FBXDocument, objectMap: FBXObjectMap): FBXAnimationStackData[] {
+export function extractLegacyTakes(doc: FBXDocument, objectMap: FBXObjectMap, rebaseKeyframes = true): FBXAnimationStackData[] {
     const takesNode = findDocumentNode(doc, "Takes");
     if (!takesNode) {
         return [];
@@ -786,7 +805,7 @@ export function extractLegacyTakes(doc: FBXDocument, objectMap: FBXObjectMap): F
         const curveNodes: FBXCurveNodeData[] = [];
         const unsupportedCurveNodes: FBXUnsupportedCurveNodeData[] = [];
         let minTime = Infinity;
-        let maxTime = 0;
+        let maxTime = -Infinity;
         const track = (curves: FBXCurveData[]) => {
             for (const curve of curves) {
                 for (const key of curve.keys) {
@@ -845,6 +864,7 @@ export function extractLegacyTakes(doc: FBXDocument, objectMap: FBXObjectMap): F
                         unsupportedCurveNodes.push({
                             type: channelName,
                             id: syntheticId--,
+                            layerIndex: 0,
                             targetId: attributeId ?? targetModelId,
                             propertyName: channelName,
                             curveCount: curves.length,
@@ -870,7 +890,7 @@ export function extractLegacyTakes(doc: FBXDocument, objectMap: FBXObjectMap): F
             unsupportedCurveNodes,
             diagnostics: [],
         };
-        stacks.push(finalizeAnimStack(name, [layer], curveNodes, unsupportedCurveNodes, [], minTime, maxTime, timeSpan));
+        stacks.push(finalizeAnimStack(name, [layer], curveNodes, unsupportedCurveNodes, [], minTime, maxTime, timeSpan, rebaseKeyframes));
     }
 
     return stacks;
@@ -1175,6 +1195,67 @@ export function evaluateLayeredChannel(
                 blend = { ...blend, weight: w };
             }
             result = combineLayerValue(result, value, blend, type, rotationOrder);
+        }
+    }
+    return result;
+}
+
+/** Curves of one animated property (or blend shape weight) contributed by one animation layer. */
+export interface FBXLayeredPropertySource {
+    /** Index of the owning layer within the stack's layer list */
+    layerIndex: number;
+    /** Curves of the property, keyed by channel name (`d|X`, `d|DeformPercent`, ...) */
+    curves: readonly FBXCurveData[];
+    /** Default channel values stored on the curve node */
+    defaultValues?: Record<string, number>;
+}
+
+/**
+ * Evaluates an animated property through the animation layers: the base layer replaces the static value, every
+ * further layer blends onto the running result according to its blend mode and (possibly animated) weight, like
+ * `evaluateLayeredChannel` does for transforms.
+ * @param sources - Per-layer curves of the property
+ * @param layers - Stack layers, in order
+ * @param channels - Channel names to evaluate, in output order
+ * @param staticValue - Value per channel when nothing animates it
+ * @param time - Time in seconds
+ * @returns One value per channel
+ */
+export function evaluateLayeredProperty(
+    sources: readonly FBXLayeredPropertySource[],
+    layers: readonly FBXAnimationLayerData[],
+    channels: readonly string[],
+    staticValue: readonly number[],
+    time: number
+): number[] {
+    const result = channels.map((_, i) => staticValue[i] ?? 0);
+    for (let layerIndex = 0; layerIndex < Math.max(layers.length, 1); layerIndex++) {
+        const source = sources.find((s) => s.layerIndex === layerIndex);
+        if (!source) {
+            continue;
+        }
+        const value = channels.map((channel, i) =>
+            evaluateCurve(
+                source.curves.find((c) => c.channel === channel),
+                time,
+                source.defaultValues?.[channel] ?? result[i]
+            )
+        );
+        const layer = layers[layerIndex];
+        if (layerIndex === 0 || !layer) {
+            for (let i = 0; i < result.length; i++) {
+                result[i] = value[i];
+            }
+            continue;
+        }
+        let blend = layer.blend;
+        if (layer.weightCurve && blend.blended) {
+            let w = evaluateCurve(layer.weightCurve, time, layer.weight) / 100;
+            w = w < 0 ? 0 : w > 0.99999 ? 1 : w;
+            blend = { ...blend, weight: w };
+        }
+        for (let i = 0; i < result.length; i++) {
+            result[i] = combineLayerValue([result[i], 0, 0], [value[i], 0, 0], blend, "other", 0)[0];
         }
     }
     return result;

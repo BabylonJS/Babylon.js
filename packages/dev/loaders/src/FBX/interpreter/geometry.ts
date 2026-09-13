@@ -12,7 +12,8 @@ export interface FBXUVSet {
 /** Recoverable geometry import issue. */
 export interface FBXGeometryDiagnostic {
     /** Diagnostic category. */
-    type: "degenerate-polygon" | "triangulation-fallback" | "layer-index-out-of-bounds" | "layer-data-too-short" | "nurbs-invalid" | "nurbs-trim-ignored";
+    type:
+        "degenerate-polygon" | "triangulation-fallback" | "layer-index-out-of-bounds" | "layer-data-too-short" | "nurbs-invalid" | "nurbs-trim-ignored" | "nurbs-deformer-ignored";
     /** Human-readable diagnostic message. */
     message: string;
     /** Polygon index associated with the diagnostic, if applicable. */

@@ -179,7 +179,11 @@ function parseProperty(view: DataView, bytes: Uint8Array, offset: number, limit:
             // Int64
             ensureRange(bytes, offset, 8, limit, "FBX int64 property");
             const value = readInt64AsNumber(view, offset);
-            return { property: { type: "int64", value }, nextOffset: offset + 8 };
+            const property: FBXProperty = { type: "int64", value };
+            if (!Number.isSafeInteger(value)) {
+                property.raw = int64ToDecimalString(view, offset);
+            }
+            return { property, nextOffset: offset + 8 };
         }
         case "S": {
             // String (uint32 length + data)
@@ -298,6 +302,26 @@ function readInt64AsNumber(view: DataView, offset: number): number {
     const low = view.getUint32(littleEndian ? offset : offset + 4, littleEndian);
     const high = view.getInt32(littleEndian ? offset + 4 : offset, littleEndian);
     return high * 0x100000000 + low;
+}
+
+/** Exact decimal text of a 64-bit two's complement integer, for values a double cannot represent. */
+function int64ToDecimalString(view: DataView, offset: number): string {
+    let low = view.getUint32(littleEndian ? offset : offset + 4, littleEndian);
+    let high = view.getUint32(littleEndian ? offset + 4 : offset, littleEndian);
+    const negative = (high & 0x80000000) !== 0;
+    if (negative) {
+        low = (~low + 1) >>> 0;
+        high = (~high + (low === 0 ? 1 : 0)) >>> 0;
+    }
+    const digits: number[] = [];
+    while (high !== 0 || low !== 0) {
+        const highQuotient = Math.floor(high / 10);
+        const carried = (high % 10) * 4294967296 + low;
+        digits.push(carried % 10);
+        high = highQuotient;
+        low = Math.floor(carried / 10);
+    }
+    return (negative ? "-" : "") + (digits.length > 0 ? digits.reverse().join("") : "0");
 }
 
 function readInt64ArrayData(arrayData: Uint8Array): Float64Array {

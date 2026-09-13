@@ -15,44 +15,65 @@ export type Bool3 = [boolean, boolean, boolean];
 
 /** One weighted target of a constraint. */
 export interface FBXConstraintTarget {
+    /** Model id of the target node */
     modelId: number;
     /** Normalized weight (file value / 100, or as-is for IK pole targets) */
     weight: number;
-    /** Parent constraint offsets expressed in the target's space */
+    /** Parent constraint translation offset expressed in the target's space */
     offsetTranslation: Vec3;
+    /** Parent constraint rotation offset in degrees, expressed in the target's space */
     offsetRotation: Vec3;
+    /** Parent constraint scale offset expressed in the target's space */
     offsetScale: Vec3;
 }
 
+/** A constraint object of the file, with its targets and parameters resolved. */
 export interface FBXConstraintData {
+    /** Constraint object id */
     id: number;
+    /** Constraint name */
     name: string;
+    /** Resolved constraint kind */
     type: FBXConstraintType;
+    /** Constraint type name as written in the file (e.g. "Parent-Child") */
     typeName: string;
     /** Constrained model */
     nodeId?: number;
+    /** Weighted targets in file order */
     targets: FBXConstraintTarget[];
     /** Global weight (file value / 100) */
     weight: number;
+    /** False when the constraint is switched off in the file */
     active: boolean;
+    /** Which translation axes the constraint drives */
     affectTranslation: Bool3;
+    /** Which rotation axes the constraint drives */
     affectRotation: Bool3;
+    /** Which scale axes the constraint drives */
     affectScale: Bool3;
-    /** Position / rotation (degrees) / scale offsets of the constrained node */
+    /** Translation offset of the constrained node */
     offsetTranslation: Vec3;
+    /** Rotation offset of the constrained node, in degrees */
     offsetRotation: Vec3;
+    /** Scale offset of the constrained node */
     offsetScale: Vec3;
-    /** Aim: local aim and up vectors, world up mode and vector */
+    /** Aim: local axis that points at the target */
     aimVector: Vec3;
+    /** Aim: local axis aligned with the up direction */
     upVector: Vec3;
+    /** Aim: world up direction (world up modes 2 and 3) */
     worldUpVector: Vec3;
-    /** 0 scene up, 1 aim up node, 2 align to node, 3 vector, 4 none */
+    /** Aim: 0 scene up, 1 aim up node, 2 align to node, 3 vector, 4 none */
     worldUpType: number;
+    /** Aim: model id of the world up object (world up modes 1 and 2) */
     worldUpNodeId?: number;
-    /** Single chain IK */
+    /** Single chain IK: model id of the first joint of the chain */
     ikFirstJointId?: number;
+    /** Single chain IK: model id of the last joint of the chain */
     ikEndJointId?: number;
+    /** Single chain IK: model id of the effector */
     ikEffectorId?: number;
+    /** Single chain IK: pole vector */
     ikPoleVector: Vec3;
 }
 

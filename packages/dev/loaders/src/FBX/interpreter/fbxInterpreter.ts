@@ -253,6 +253,25 @@ export interface FBXSceneData {
 export interface FBXInterpretOptions {
     /** Segments per knot span when tessellating NURBS surfaces; defaults to the Step stored in the file */
     nurbsSubdivision?: number;
+    /** Shift every clip so its first key sits at time 0 (default true); false keeps the authored times */
+    rebaseKeyframes?: boolean;
+}
+
+/**
+ * Tessellated NURBS vertices carry no control point mapping, so skin clusters and blend shapes bound to the surface
+ * cannot be applied; they are reported and the surface is imported undeformed.
+ */
+function flagNurbsDeformers(objectMap: FBXObjectMap, geometryId: number, geometry: FBXGeometryData): void {
+    const kinds = getChildren(objectMap, geometryId, "Deformer")
+        .map((d) => getPropertyValue<string>(d.node, 2) ?? "")
+        .filter((kind) => kind === "Skin" || kind === "BlendShape");
+    if (kinds.length === 0) {
+        return;
+    }
+    geometry.diagnostics.push({
+        type: "nurbs-deformer-ignored",
+        message: `${Array.from(new Set(kinds)).join(" and ")} deformer on NURBS surface '${geometry.name}' is ignored: the tessellated mesh has no control point mapping.`,
+    });
 }
 
 export function interpretFBX(doc: FBXDocument, options: FBXInterpretOptions = {}): FBXSceneData {
@@ -290,6 +309,7 @@ export function interpretFBX(doc: FBXDocument, options: FBXInterpretOptions = {}
             } else if (subType === "NurbsSurface") {
                 const geometry = nurbsSurfaceToGeometry(node, id, options.nurbsSubdivision);
                 if (geometry) {
+                    flagNurbsDeformers(objectMap, id, geometry);
                     geometries.push(geometry);
                 }
             } else if (subType === "TrimNurbsSurface") {
@@ -297,6 +317,7 @@ export function interpretFBX(doc: FBXDocument, options: FBXInterpretOptions = {}
                 const surfaceChild = getChildren(objectMap, id, "Geometry").find((child) => getPropertyValue<string>(child.node, 2) === "NurbsSurface");
                 const geometry = surfaceChild ? nurbsSurfaceToGeometry(surfaceChild.node, id, options.nurbsSubdivision) : null;
                 if (geometry) {
+                    flagNurbsDeformers(objectMap, id, geometry);
                     geometry.diagnostics.push({
                         type: "nurbs-trim-ignored",
                         message: `Trim curves of NURBS surface '${geometry.name}' are ignored; the surface is rendered untrimmed.`,
@@ -319,7 +340,7 @@ export function interpretFBX(doc: FBXDocument, options: FBXInterpretOptions = {}
     const blendShapes = extractBlendShapes(objectMap);
 
     // Extract animation data
-    const animations = extractAnimations(objectMap, doc);
+    const animations = extractAnimations(objectMap, doc, { rebaseKeyframes: options.rebaseKeyframes ?? true });
 
     // Extract cameras and lights from NodeAttribute objects
     const cameras = extractCameras(objectMap, propertyTemplates);

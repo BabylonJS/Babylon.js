@@ -365,7 +365,11 @@ function parseNodeFromTokens(tokenizer: Tokenizer): FBXNode | null {
             const tok = tokenizer.next();
             const numVal = parseNumericValue(tok.value);
             if (Number.isInteger(numVal) && !tok.value.includes(".") && !tok.value.includes("e") && !tok.value.includes("E")) {
-                properties.push({ type: isInt32(numVal) ? "int32" : "int64", value: numVal });
+                const property: FBXProperty = { type: isInt32(numVal) ? "int32" : "int64", value: numVal };
+                if (!Number.isSafeInteger(numVal)) {
+                    property.raw = canonicalIntegerText(tok.value);
+                }
+                properties.push(property);
             } else {
                 properties.push({ type: "float64", value: numVal });
             }
@@ -457,6 +461,13 @@ function parseNumericValue(str: string): number {
         return sign * Infinity;
     }
     return NaN;
+}
+
+/** Integer text without sign prefix noise or leading zeros, so equal values produce equal keys. */
+function canonicalIntegerText(text: string): string {
+    const negative = text.startsWith("-");
+    const digits = text.replace(/^[+-]/, "").replace(/^0+(?=\d)/, "");
+    return negative && digits !== "0" ? `-${digits}` : digits;
 }
 
 function isInt32(value: number): boolean {

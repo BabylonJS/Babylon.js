@@ -29,6 +29,11 @@ export interface FBXProperty {
     type: FBXPropertyType;
     /** Parsed property value. */
     value: FBXPropertyValue;
+    /**
+     * Exact decimal text of an int64 whose magnitude exceeds 2^53; `value` then holds the rounded double. Object
+     * ids are the only int64 values where the last bits matter, and `resolveConnections` keys them by this text.
+     */
+    raw?: string;
 }
 
 /** A node in the FBX document tree */
@@ -73,16 +78,15 @@ export function getPropertyValue<T extends FBXPropertyValue>(node: FBXNode, inde
 }
 
 /**
- * Converts an FBX object ID value to a safe JavaScript number.
+ * Validates an FBX object ID value: IDs are 64-bit integers, so anything non-numeric, non-finite or fractional is
+ * rejected. IDs beyond 2^53 are carried losslessly through the property's `raw` text by `resolveConnections`.
  * @param value - Parsed FBX object ID value
- * @returns The object ID, or undefined when the value is not numeric
+ * @returns The object ID, or undefined when the value cannot be an ID
  */
 export function getSafeFBXObjectId(value: unknown): number | undefined {
-    if (typeof value !== "number") {
+    if (typeof value !== "number" || !Number.isFinite(value) || !Number.isInteger(value)) {
         return undefined;
     }
-    // IDs beyond 2^53 lose precision when read as a double, but identical bytes always produce the identical
-    // double, so they remain stable map keys. ufbx accepts such files (e.g. negative 64-bit IDs); so do we.
     return value;
 }
 

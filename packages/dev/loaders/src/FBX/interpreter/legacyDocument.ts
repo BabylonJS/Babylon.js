@@ -11,8 +11,12 @@ const str = (value: string): FBXProperty => ({ type: "string", value });
 const num = (value: number): FBXProperty => ({ type: "float64", value });
 const int = (value: number): FBXProperty => ({ type: "int32", value });
 const makeNode = (name: string, properties: FBXProperty[] = [], children: FBXNode[] = []): FBXNode => ({ name, properties, children });
-const property60 = (name: string, typeName: string, flags: string, ...values: (number | string)[]): FBXNode =>
-    makeNode("Property", [str(name), str(typeName), str(flags), ...values.map((v) => (typeof v === "string" ? str(v) : num(v)))]);
+function property60(name: string, typeName: string, flags: string, ...values: (number | string)[]): FBXNode {
+    return makeNode("Property", [str(name), str(typeName), str(flags), ...values.map((v) => (typeof v === "string" ? str(v) : num(v)))]);
+}
+function property70(name: string, typeName: string, flags: string, ...values: (number | string)[]): FBXNode {
+    return makeNode("P", [str(name), str(typeName), str(""), str(flags), ...values.map((v) => (typeof v === "string" ? str(v) : num(v)))]);
+}
 const arrayNode = (name: string, array: Float64Array | Int32Array): FBXNode => makeNode(name, [{ type: array instanceof Int32Array ? "int32[]" : "float64[]", value: array }]);
 
 /** True for pre-6000 files: no `Objects` section but top-level `Model` nodes. */
@@ -460,17 +464,31 @@ export function upgradeLegacyDocument(doc: FBXDocument): FBXDocument {
     const frameRateValue = frameRateNode?.properties[0]?.value;
     const fps = typeof frameRateValue === "number" ? frameRateValue : typeof frameRateValue === "string" ? Number.parseFloat(frameRateValue) : NaN;
     const extra: FBXNode[] = [];
+    let replacedGlobalSettings = false;
     if (Number.isFinite(fps) && fps > 0) {
-        extra.push(
-            makeNode(
-                "GlobalSettings",
-                [],
-                [makeNode("Version", [int(1000)]), makeNode("Properties60", [], [property60("TimeMode", "enum", "", 14), property60("CustomFrameRate", "double", "", fps)])]
-            )
-        );
+        const existing = findDocumentNode(doc, "GlobalSettings");
+        if (existing) {
+            // Keep the file's axis, unit and other settings; only add the frame rate when the block lacks one.
+            const props70 = findChildByName(existing, "Properties70");
+            const container = props70 ?? findChildByName(existing, "Properties60") ?? makeNode("Properties60");
+            const hasTimeMode = container.children.some((c) => getPropertyValue<string>(c, 0) === "TimeMode");
+            const property = props70 ? property70 : property60;
+            const frameRate = hasTimeMode ? [] : [property("TimeMode", "enum", "", 14), property("CustomFrameRate", "double", "", fps)];
+            const children = existing.children.filter((c) => c !== container);
+            extra.push(makeNode("GlobalSettings", existing.properties, [...children, makeNode(container.name, container.properties, [...container.children, ...frameRate])]));
+        } else {
+            extra.push(
+                makeNode(
+                    "GlobalSettings",
+                    [],
+                    [makeNode("Version", [int(1000)]), makeNode("Properties60", [], [property60("TimeMode", "enum", "", 14), property60("CustomFrameRate", "double", "", fps)])]
+                )
+            );
+        }
+        replacedGlobalSettings = true;
     }
 
-    const kept = doc.nodes.filter((n) => n.name !== "Model" && n.name !== "Takes" && n.name !== "Settings" && n.name !== "GlobalSettings");
+    const kept = doc.nodes.filter((n) => n.name !== "Model" && n.name !== "Takes" && n.name !== "Settings" && (n.name !== "GlobalSettings" || !replacedGlobalSettings));
     const nodes = [...kept, ...extra, makeNode("Objects", [], ctx.objects), makeNode("Connections", [], ctx.connections)];
     if (takesNode) {
         nodes.push(takesNode);

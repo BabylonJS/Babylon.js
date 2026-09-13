@@ -157,7 +157,6 @@ export function getPropertyEntries(node: FBXNode | undefined): FBXPropertyEntry[
         if (container.name !== "Properties70" && container.name !== "Properties60") {
             continue;
         }
-        const is70 = container.name === "Properties70";
         for (const p of container.children) {
             if (p.name !== "P" && p.name !== "PS" && p.name !== "Property") {
                 continue;
@@ -166,13 +165,16 @@ export function getPropertyEntries(node: FBXNode | undefined): FBXPropertyEntry[
             if (typeof name !== "string") {
                 continue;
             }
+            // The layout follows the entry node, not its container: `P` / `PS` carry name, type, label and flags,
+            // `Property` carries name, type and flags. Transitional 6.x files write `P` entries inside Properties60.
+            const hasLabel = p.name !== "Property";
             const type = getPropertyValue<string>(p, 1);
-            const flags = getPropertyValue<string>(p, is70 ? 3 : 2);
+            const flags = getPropertyValue<string>(p, hasLabel ? 3 : 2);
             out.push({
                 name,
                 type: typeof type === "string" ? type : "",
                 flags: typeof flags === "string" ? flags : "",
-                values: p.properties.slice(is70 ? 4 : 3).map((property) => property.value),
+                values: p.properties.slice(hasLabel ? 4 : 3).map((property) => property.value),
             });
         }
     }
