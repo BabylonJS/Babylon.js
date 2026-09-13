@@ -71,9 +71,11 @@ export interface IRootMotionOptions {
     minimumTurn?: number;
     /**
      * A straight clip whose direction of travel is within this angle of a character space axis, in radians, travels
-     * along that axis. Motion capture is rarely exactly straight - a stride a degree off is a character drifting a
-     * body width sideways every few dozen steps - while a deliberate diagonal or strafe is well clear of an axis.
-     * Default is 10 degrees; 0 keeps the measured direction. Ignored when lateral motion is extracted.
+     * along that axis; 0 keeps the measured direction. Ignored when lateral motion is extracted.
+     *
+     * By default a root clip keeps its direction (0): its travel is authored or captured, and a deliberate veer is data.
+     * Travel deduced from contacts snaps within 10 degrees: an in-place clip is meant to travel straight, and the
+     * deduced direction is an estimate - Xbot's run deduces 3.5 degrees off straight from feet that slide 1 degree off.
      */
     directionSnapAngle?: number;
     /**
@@ -119,6 +121,8 @@ const TrackStride = 4;
  * Walks and runs measure 0.99 and more; a dance or an idle that shuffles about on the spot measures under 0.3.
  */
 const MinimumStraightness = 0.8;
+/** Default snap of a direction of travel deduced from contacts, in radians. */
+const DeducedDirectionSnapAngle = Math.PI / 18;
 /** Frame step for the numeric tangents of rewritten cubic spline keys. */
 const TangentDelta = 1e-3;
 
@@ -157,7 +161,7 @@ export class RootMotion implements IDisposable {
     private readonly _group: AnimationGroup;
     private readonly _upAxis: Vector3;
     private readonly _extractLateral: boolean;
-    private readonly _directionSnapAngle: number;
+    private readonly _directionSnapAngle: number | undefined;
     /** Sideways travel over a cycle left in the root's keys after snapping the direction, removed without being applied. */
     private readonly _lateralDrift = Vector3.Zero();
     private readonly _channels = new Map<Node, INodeChannels>();
@@ -293,7 +297,7 @@ export class RootMotion implements IDisposable {
         this._group = animationGroup;
         this._upAxis = (options.upAxis ?? Vector3.UpReadOnly).normalizeToNew();
         this._extractLateral = !!options.extractLateralMotion;
-        this._directionSnapAngle = options.directionSnapAngle ?? Math.PI / 18;
+        this._directionSnapAngle = options.directionSnapAngle;
         this.applyToCharacter = options.applyToCharacter ?? true;
 
         const targetedAnimations = animationGroup.targetedAnimations;
@@ -575,7 +579,7 @@ export class RootMotion implements IDisposable {
             this._travelDirection.copyFrom(net).normalize();
         }
         if (!yaw && !this._extractLateral) {
-            this._snapTravelDirection();
+            this._snapTravelDirection(0);
             // Whatever the root still drifts sideways of a snapped direction over a cycle would stay in the pose and pop
             // back at every loop, so it is removed from the keys too, evenly over the cycle - but not applied.
             this._horizontal(net, this._lateralDrift).subtractInPlace(this._travelDirection.scale(Vector3.Dot(net, this._travelDirection)));
@@ -721,7 +725,7 @@ export class RootMotion implements IDisposable {
         if (!yaw) {
             // Straight: only the travel along the direction, like the root path.
             if (!this._extractLateral) {
-                this._snapTravelDirection();
+                this._snapTravelDirection(DeducedDirectionSnapAngle);
             }
             for (let i = 0; i <= samples; i++) {
                 step.fromArray(translation, i * 3);
@@ -926,15 +930,17 @@ export class RootMotion implements IDisposable {
 
     /**
      * Snaps the direction of travel onto the nearest horizontal character space axis within the snap angle.
+     * @param defaultAngle defines the snap angle when none was given in the options
      */
-    private _snapTravelDirection(): void {
-        if (this._directionSnapAngle <= 0) {
+    private _snapTravelDirection(defaultAngle: number): void {
+        const angle = this._directionSnapAngle ?? defaultAngle;
+        if (angle <= 0) {
             return;
         }
         const up = this._upAxis;
         const axis = new Vector3();
         let best: Nullable<Vector3> = null;
-        let bestDot = Math.cos(this._directionSnapAngle);
+        let bestDot = Math.cos(angle);
         for (const candidate of [Vector3.RightReadOnly, Vector3.UpReadOnly, Vector3.Forward(false)]) {
             if (Math.abs(Vector3.Dot(candidate, up)) > 0.5) {
                 continue;

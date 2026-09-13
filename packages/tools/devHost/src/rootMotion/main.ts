@@ -45,6 +45,7 @@ interface IPanel {
     readout: HTMLPreElement;
     mode: HTMLSelectElement;
     lateral: HTMLInputElement;
+    snap: HTMLSelectElement;
     follow: HTMLInputElement;
     speed: HTMLInputElement;
     speedLabel: HTMLSpanElement;
@@ -97,6 +98,15 @@ function CreatePanel(container: HTMLElement): { panel: IPanel; onLoad: (handler:
     }
     const lateral = Element("input", row("Extract lateral motion"));
     lateral.type = "checkbox";
+    const snap = Element("select", row("Snap direction"), "background:#21262d;color:#e6edf3;border:1px solid #30363d;border-radius:4px");
+    for (const [value, label] of [
+        ["default", "Default (feet only)"],
+        ["always", "Within 10 degrees"],
+        ["never", "Never"],
+    ]) {
+        const option = Element("option", snap, "", label);
+        option.value = value;
+    }
     const follow = Element("input", row("Camera follows"));
     follow.type = "checkbox";
     follow.checked = true;
@@ -117,7 +127,7 @@ function CreatePanel(container: HTMLElement): { panel: IPanel; onLoad: (handler:
     const readout = Element("pre", root, "margin:10px 0 0;padding:8px;background:#010409;border-radius:4px;font:12px/1.5 ui-monospace,monospace;white-space:pre-wrap");
 
     return {
-        panel: { status, clips, readout, mode, lateral, follow, speed, speedLabel },
+        panel: { status, clips, readout, mode, lateral, snap, follow, speed, speedLabel },
         onLoad: (handler) => loadHandlers.push(handler),
         onReset: (handler) => resetHandlers.push(handler),
     };
@@ -226,6 +236,11 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
         const mode = panel.mode.value as Mode;
         if (mode !== Mode.Off) {
             const options: IRootMotionOptions = { extractLateralMotion: panel.lateral.checked };
+            if (panel.snap.value === "always") {
+                options.directionSnapAngle = Math.PI / 18;
+            } else if (panel.snap.value === "never") {
+                options.directionSnapAngle = 0;
+            }
             if (mode === Mode.Root) {
                 options.source = RootMotionSource.Root;
             } else if (mode === Mode.Feet) {
@@ -317,6 +332,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     const replay = () => activeGroup && playClip(activeGroup);
     panel.mode.onchange = replay;
     panel.lateral.onchange = replay;
+    panel.snap.onchange = replay;
     panel.speed.oninput = () => {
         const speed = parseFloat(panel.speed.value);
         panel.speedLabel.textContent = speed.toFixed(2);

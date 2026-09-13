@@ -361,10 +361,17 @@ describe("RootMotion", () => {
             expect(rig.character.position.z).toBeCloseTo(Speed * 2, 1);
         });
 
-        it("walks a root clip that veers slightly straight, without a pop at the loop", () => {
+        it("keeps a root clip's authored veer by default", () => {
+            const rig = BuildRig(scene, "rootMotion", { veer: 0.05 });
+            const rootMotion = new RootMotion(rig.group);
+
+            expect(rootMotion.travelDirection.x).toBeCloseTo(Math.sin(0.05), 4);
+        });
+
+        it("walks a root clip that veers slightly straight when asked, without a pop at the loop", () => {
             const rig = BuildRig(scene, "rootMotion", { veer: 0.05 });
             const start = HipsInCharacter(rig, 0);
-            const rootMotion = new RootMotion(rig.group);
+            const rootMotion = new RootMotion(rig.group, { directionSnapAngle: Math.PI / 18 });
 
             expect(rootMotion.travelDirection.x).toBeCloseTo(0, 6);
             const end = HipsInCharacter(rig, CycleFrames);
