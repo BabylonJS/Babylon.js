@@ -45,6 +45,13 @@ export class Animatable {
     public animationStarted = false;
 
     /**
+     * @internal
+     * Whether the animatable animated its targets in the scene's last animation step: a paused one, one parked at a
+     * weight of zero and one not started yet did not.
+     */
+    public _animated = false;
+
+    /**
      * Observer raised when the animation ends
      */
     public onAnimationEndObservable = new Observable<Animatable>();
@@ -422,6 +429,7 @@ export class Animatable {
      * @internal
      */
     public _animate(delay: number): boolean {
+        this._animated = false;
         if (this._paused) {
             this.animationStarted = false;
             if (this._pausedDelay === null) {
@@ -452,6 +460,7 @@ export class Animatable {
         }
 
         this._previousWeight = this._weight;
+        this._animated = true;
 
         // Animating
         let running = false;

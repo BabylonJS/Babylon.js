@@ -794,7 +794,8 @@ export class RuntimeAnimation {
             } else if (!returnValue) {
                 frames = currentFrame === to ? frameRange : 0;
             } else if (yoyoMode) {
-                frames = currentFrame - from;
+                // At the far end of the swing the mapped frame is exactly `to`, which the fold above lands on `from`: the same pose, so the whole range
+                frames = currentFrame === from && absoluteFrame === to ? frameRange : currentFrame - from;
             } else {
                 frames = absoluteFrame;
             }

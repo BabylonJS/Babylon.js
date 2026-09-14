@@ -48,6 +48,8 @@ interface IRigOptions {
     euler?: boolean;
     /** A multiplier on the speed of travel, for a second gait on the same skeleton. */
     speed?: number;
+    /** How far the hips sit off the character's axis along +X; the feet stay where they are. */
+    offset?: number;
     /** The name of the group. */
     name?: string;
 }
@@ -103,7 +105,7 @@ function BuildSkeleton(scene: Scene): ISkeleton {
  * @returns the rig
  */
 function AddGait(skeleton: ISkeleton, gait: Gait, options: IRigOptions = {}): IRig {
-    const { surge = 0, turn = 0, twist = 0, veer = 0, baseYaw = 0, euler = false, speed: speedRatio = 1, name = gait } = options;
+    const { surge = 0, turn = 0, twist = 0, veer = 0, baseYaw = 0, euler = false, speed: speedRatio = 1, offset = 0, name = gait } = options;
     const speed = Speed * speedRatio;
     const { character, armature, hips, leftFoot, rightFoot } = skeleton;
     const scene = character.getScene();
@@ -127,7 +129,7 @@ function AddGait(skeleton: ISkeleton, gait: Gait, options: IRigOptions = {}): IR
             pathZ = radius * Math.sin(heading);
         }
         const hipsInCharacter = new Vector3(
-            pathX + SwayAmplitude * Math.sin((2 * Math.PI * frame) / CycleFrames),
+            pathX + offset + SwayAmplitude * Math.sin((2 * Math.PI * frame) / CycleFrames),
             HipHeight,
             pathZ + surge * Math.sin((4 * Math.PI * frame) / CycleFrames)
         );
@@ -949,6 +951,7 @@ describe("RootMotion", () => {
             group.start(false, -1);
             Run(scene, 70);
 
+            expect(group.isStarted).toBe(false);
             expect(rig.character.position.z).toBeCloseTo(-Speed, 6);
         });
 
@@ -1376,6 +1379,229 @@ describe("RootMotion", () => {
             expect(() => new RootMotionController(second.character, [clip])).toThrow(/belongs to another controller/);
             controller.removeClip(clip);
             expect(() => new RootMotionController(second.character, [clip])).toThrow(/moves "character", not "character"/);
+        });
+
+        for (const property of ["rotationQuaternion", "rotation", "position.z"]) {
+            it(`refuses a group that animates the character node's ${property}`, () => {
+                const rig = BuildRig(scene, "rootMotion");
+                const isQuaternion = property === "rotationQuaternion";
+                const animation = new Animation(
+                    property,
+                    property,
+                    Fps,
+                    isQuaternion ? Animation.ANIMATIONTYPE_QUATERNION : property === "rotation" ? Animation.ANIMATIONTYPE_VECTOR3 : Animation.ANIMATIONTYPE_FLOAT,
+                    Animation.ANIMATIONLOOPMODE_CYCLE
+                );
+                const rest = isQuaternion ? Quaternion.Identity() : property === "rotation" ? Vector3.Zero() : 0;
+                animation.setKeys([
+                    { frame: 0, value: rest },
+                    { frame: CycleFrames, value: rest },
+                ]);
+                rig.group.addTargetedAnimation(animation, rig.character);
+
+                expect(() => new RootMotionClip(rig.group, { rootNode: rig.hips })).toThrow(/character node/);
+            });
+        }
+
+        it("refuses an animated node passed as the character node, even one detection would take for the root", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            // The hips: position-animated with the most descendants, so detection would elect them as the root.
+            expect(() => new RootMotionClip(rig.group, { characterNode: rig.hips })).toThrow(/character node/);
+        });
+
+        it("measures and moves in the space of a character node passed explicitly", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const clip = new RootMotionClip(rig.group, { characterNode: rig.armature });
+            new RootMotionController(rig.armature, [clip]);
+            clip.animationGroup.start(true);
+            Run(scene, 63);
+
+            // The armature is scaled by a half, so the travel is twice as long in its own units - and applied to its
+            // position, in its parent's space, through that scaling, so the world travel is the same.
+            expect(clip.characterNode).toBe(rig.armature);
+            expect(clip.cycleDistance).toBeCloseTo(2 * Speed, 3);
+            expect(rig.character.position.length()).toBe(0);
+            expect(rig.armature.position.length()).toBeCloseTo(Walked(63), 3);
+        });
+    });
+
+    describe("verified corners", () => {
+        it("reads the far end of a yoyo swing as the whole range", () => {
+            for (const speedRatio of [1.25, -1.25]) {
+                const rig = BuildRig(scene, "rootMotion");
+                SetLoopMode(rig.group, Animation.ANIMATIONLOOPMODE_YOYO);
+                const { group } = Extract(rig);
+                group.start(true, speedRatio);
+                // On the 26th tick the swing is exactly at its far end, which the frame folds onto the start.
+                Run(scene, 26);
+
+                expect(rig.character.position.z).toBeCloseTo(Math.sign(speedRatio) * Speed, 6);
+            }
+        });
+
+        it("gives a weighted group dropped to zero its last evaluation, replacing an unweighted one for that step", () => {
+            const skeleton = BuildSkeleton(scene);
+            const walk = AddGait(skeleton, "rootMotion", { name: "walk" });
+            const run = AddGait(skeleton, "rootMotion", { name: "run", speed: 2 });
+            const walkClip = new RootMotionClip(walk.group);
+            const runClip = new RootMotionClip(run.group);
+            new RootMotionController(skeleton.character, [walkClip, runClip]);
+            walkClip.animationGroup.start(true);
+            runClip.animationGroup.start(true);
+            runClip.animationGroup.weight = 0.5;
+            Run(scene, 20);
+            const before = skeleton.character.position.z;
+            expect(before).toBeCloseTo(0.5 * Walked(20, 2), 6);
+
+            // Babylon still evaluates the group once at weight zero, and its binding replaces the unweighted walk's pose.
+            runClip.animationGroup.weight = 0;
+            Run(scene, 1);
+            expect(skeleton.character.position.z).toBeCloseTo(before, 6);
+            // Parked from then on, the walk writes alone.
+            Run(scene, 10);
+            expect(skeleton.character.position.z).toBeCloseTo(before + 10 * Speed * 0.016, 6);
+        });
+
+        it("keeps a clip continuous through a single step at weight zero", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            group.start(true);
+            group.weight = 0.8;
+            Run(scene, 20);
+            group.weight = 0;
+            Run(scene, 1);
+            group.weight = 0.8;
+            Run(scene, 10);
+
+            expect(rig.character.position.z).toBeCloseTo(0.8 * (29 * Speed * 0.016), 6);
+        });
+
+        it("blends two weighted clips adding up to less than one without normalizing", () => {
+            const skeleton = BuildSkeleton(scene);
+            const walk = AddGait(skeleton, "rootMotion", { name: "walk" });
+            const run = AddGait(skeleton, "rootMotion", { name: "run", speed: 2 });
+            const walkClip = new RootMotionClip(walk.group);
+            const runClip = new RootMotionClip(run.group);
+            new RootMotionController(skeleton.character, [walkClip, runClip]);
+            walkClip.animationGroup.start(true);
+            runClip.animationGroup.start(true);
+            walkClip.animationGroup.weight = 0.3;
+            runClip.animationGroup.weight = 0.3;
+            Run(scene, 63);
+
+            expect(skeleton.character.position.z).toBeCloseTo(0.3 * Walked(63) + 0.3 * Walked(63, 2), 6);
+        });
+
+        it("blends the turns of two turning clips as a weighted sum", () => {
+            const skeleton = BuildSkeleton(scene);
+            const quarter = AddGait(skeleton, "idle", { name: "quarter", turn: Math.PI / 2 });
+            const eighth = AddGait(skeleton, "idle", { name: "eighth", turn: Math.PI / 4 });
+            const quarterClip = new RootMotionClip(quarter.group);
+            const eighthClip = new RootMotionClip(eighth.group);
+            const controller = new RootMotionController(skeleton.character, [quarterClip, eighthClip]);
+            let turned = 0;
+            controller.onRootMotionObservable.add(() => (turned += controller.deltaRotation));
+            quarterClip.animationGroup.start(true);
+            eighthClip.animationGroup.start(true);
+            quarterClip.animationGroup.weight = 0.8;
+            eighthClip.animationGroup.weight = 0.8;
+            Run(scene, 63);
+
+            const expected = 0.5 * (Math.PI / 2 + Math.PI / 4) * ((62 * FramesPerTick) / CycleFrames);
+            expect(turned).toBeCloseTo(expected, 6);
+            expect(skeleton.character.rotationQuaternion!.toEulerAngles().y).toBeCloseTo(expected, 6);
+        });
+
+        it("gives an unweighted group started on the step a playback ends the last word", () => {
+            const skeleton = BuildSkeleton(scene);
+            const walk = AddGait(skeleton, "rootMotion");
+            const idle = AddGait(skeleton, "idle");
+            const { group } = Extract(walk);
+            group.start(false);
+            Run(scene, 63);
+            // Started between the last advancing step and the end: appended after the walk, it writes the root last.
+            idle.group.start(true);
+            Run(scene, 1);
+
+            expect(group.isStarted).toBe(false);
+            expect(skeleton.character.position.z).toBeCloseTo(Walked(63), 6);
+        });
+
+        it("lands a turning clip that does not loop on its final facing", () => {
+            const rig = BuildRig(scene, "rootMotion", { turn: Math.PI / 2 });
+            const { group } = Extract(rig);
+            group.start(false);
+            Run(scene, 70);
+
+            expect(group.isStarted).toBe(false);
+            expect(rig.character.rotationQuaternion!.toEulerAngles().y).toBeCloseTo(Math.PI / 2, 6);
+        });
+
+        it("plays the in-place group over the source's range when that was trimmed inside its keys", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            rig.group.to = 50;
+            const { clip, group } = Extract(rig);
+
+            expect(clip.toFrame).toBe(50);
+            expect(group.to).toBe(50);
+            group.start(true);
+            Run(scene, 130);
+            // 129 ticks of 0.96 frames over a 50 frame stride of 1.0 units; the hips' sway leaves the range a little off +Z.
+            expect(rig.character.position.z).toBeCloseTo((129 * FramesPerTick * Speed) / CycleFrames, 2);
+        });
+
+        it("keeps the events of a channel it clones without rewriting", () => {
+            const rig = BuildRig(scene, "inPlace");
+            let fired = 0;
+            rig.hipsAnimation.addEvent(new AnimationEvent(30, () => fired++));
+            const clip = new RootMotionClip(rig.group, { cloneAnimations: true });
+            expect(ChannelOf(clip.animationGroup, rig.hips, "position")).not.toBe(rig.hipsAnimation);
+            new RootMotionController(rig.character, [clip]);
+            clip.animationGroup.start(true);
+            Run(scene, 40);
+
+            expect(fired).toBe(1);
+        });
+
+        it("composes cycles in closed form exactly as one by one", () => {
+            const rig = BuildRig(scene, "rootMotion", { turn: Math.PI / 2 });
+            const clip = new RootMotionClip(rig.group);
+            for (const cycles of [7, 1000, -3]) {
+                const closed = new Vector3();
+                const yaw = clip._motionBetween(0, CycleFrames, 0, cycles * CycleFrames, closed);
+                const step = clip.cycleOffset;
+                const summed = Vector3.Zero();
+                let turned = 0;
+                for (let i = 0; i < Math.abs(cycles); i++) {
+                    if (cycles > 0) {
+                        summed.addInPlace(step.applyRotationQuaternion(Quaternion.RotationAxis(Vector3.Up(), turned)));
+                        turned += clip.cycleRotation;
+                    } else {
+                        turned -= clip.cycleRotation;
+                        summed.subtractInPlace(step.applyRotationQuaternion(Quaternion.RotationAxis(Vector3.Up(), turned)));
+                    }
+                }
+
+                expect(yaw).toBeCloseTo(turned, 9);
+                expect(Vector3.Distance(closed, summed)).toBeLessThan(1e-5);
+            }
+        });
+
+        it("keeps a root off the character's axis in place while feet and a turn carry it round", () => {
+            const rig = BuildRig(scene, "inPlace", { turn: Math.PI / 2, offset: 0.3 });
+            const { clip, group } = Extract(rig);
+            expect(clip.source).toBe(RootMotionSource.FootContact);
+            expect(clip.extractsRotation).toBe(true);
+            group.start(true);
+
+            // Across the loop the hips must not pop: their world position moves by a tick's travel at most.
+            Run(scene, 62);
+            const before = FreshWorldMatrix(rig.hips).getTranslation();
+            Run(scene, 2);
+            const after = FreshWorldMatrix(rig.hips).getTranslation();
+            expect(Vector3.Distance(before, after)).toBeLessThan(2.5 * Speed * 0.016 + 0.01);
+            expect(HipsInCharacter(rig, 0, ChannelOf(group, rig.hips, "position")).x).toBeCloseTo(0.3, 3);
+            expect(HipsInCharacter(rig, CycleFrames, ChannelOf(group, rig.hips, "position")).x).toBeCloseTo(0.3, 3);
         });
     });
 });

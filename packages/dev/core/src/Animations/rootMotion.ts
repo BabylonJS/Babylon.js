@@ -1,5 +1,15 @@
-import { type AnimationGroup, type Bone, type IAnimationKey, type IDisposable, type Node, type Nullable, type Observer, type RuntimeAnimation, type Scene } from "core/index";
-import { Animatable } from "./animatable.pure";
+import {
+    type Animatable,
+    type AnimationGroup,
+    type Bone,
+    type IAnimationKey,
+    type IDisposable,
+    type Node,
+    type Nullable,
+    type Observer,
+    type RuntimeAnimation,
+    type Scene,
+} from "core/index";
 import { Animation } from "./animation.pure";
 import { Matrix, Quaternion, TmpVectors, Vector3 } from "../Maths/math.vector.pure";
 import { Observable } from "../Misc/observable.pure";
@@ -32,8 +42,8 @@ export const enum RootMotionSource {
  */
 export interface IRootMotionClipOptions {
     /**
-     * The node that carries the motion, usually the hips or a dedicated root bone. A bone is resolved to its linked
-     * transform node. Defaults to the position-animated node with the most animated descendants in the group.
+     * The root node, usually the hips or a dedicated root bone, whose own travel is tried first. A bone is resolved to
+     * its linked transform node. Defaults to the position-animated node with the most animated descendants in the group.
      */
     rootNode?: TransformNode | Bone;
     /**
@@ -124,6 +134,8 @@ interface IChannelWriters {
     weighted: boolean;
     /** The last unweighted animatable writing the channel, whose value is the pose unless a weighted one replaces it. */
     lastDirect: Nullable<Animatable>;
+    /** The place of that animatable among the scene's active animatables. */
+    lastDirectIndex: number;
 }
 
 /** Contact candidates must come this close to the lowest one during the clip, as a share of the character's height. */
@@ -141,10 +153,10 @@ const MinimumStraightness = 0.8;
 const DeducedDirectionSnapAngle = Math.PI / 18;
 /** Frame step for the numeric tangents of rewritten cubic spline keys. */
 const TangentDelta = 1e-3;
-/** Below this sine of half the turn per cycle - no turn, or whole revolutions - cycles compose as straight travel. */
-const StraightCycleTurn = 1e-6;
 /** The root motion of each scene, updating the scene's controllers in one pass after animations. */
 const SceneRootMotions = new WeakMap<Scene, SceneRootMotion>();
+/** The clip following each animatable a controller reads its clock from, so the scene's pass can place it among the writers. */
+const ClaimedAnimatables = new WeakMap<Animatable, RootMotionClip>();
 
 /**
  * The root motion of an animation group: how far the clip carries the character over a cycle, and how far it turns it,
@@ -174,9 +186,14 @@ const SceneRootMotions = new WeakMap<Scene, SceneRootMotion>();
  * {@link IRootMotionClipOptions.cloneAnimations} set so the source keeps its keys.
  */
 export class RootMotionClip implements IDisposable {
-    /** @internal The node whose channel the motion follows: the root, or the first animated node without one. */
+    /**
+     * @internal
+     * The node of the clip's clock: the channel whose runtime animation the controller reads the evaluated progress
+     * from and turns into motion. It is the root node, or the first animated transform node when the group animates
+     * no position.
+     */
     public _clockNode: Nullable<TransformNode> = null;
-    /** @internal The property of the channel the motion follows. */
+    /** @internal The property of the clock's channel. */
     public _clockProperty = "position";
     /** @internal The runtime animation of the clock the controller followed last. */
     public _clockRuntime: Nullable<RuntimeAnimation> = null;
@@ -190,8 +207,8 @@ export class RootMotionClip implements IDisposable {
     public _lastProgress: Nullable<number> = null;
     /** @internal Whether the clock has been left unevaluated at a weight of zero since the progress consumed last. */
     public _parked = false;
-    /** @internal Whether the clock's animatable was the last unweighted one writing its channel, the last time it was seen. */
-    public _wasLastDirect = false;
+    /** @internal The place of the clock's animatable among the scene's active animatables, the last time it was seen there. */
+    public _activeIndex = -1;
     /** @internal What the mixer wrote to the clock's channel this frame. */
     public _writers: Nullable<IChannelWriters> = null;
     /** @internal The controller the clip belongs to. */
@@ -232,7 +249,6 @@ export class RootMotionClip implements IDisposable {
     private readonly _rangeCycle = Vector3.Zero();
     private readonly _cyclesOffset = Vector3.Zero();
     private readonly _planarStep = Vector3.Zero();
-    private readonly _quarterStep = Vector3.Zero();
     private readonly _yawQuaternion = new Quaternion();
     private readonly _yawMatrix = new Matrix();
 
@@ -267,7 +283,8 @@ export class RootMotionClip implements IDisposable {
     }
 
     /**
-     * The node that carries the motion, if one was found.
+     * The root node the clip was analyzed with, or null when the group animates no position. It carries the motion
+     * only when {@link RootMotionClip.source} is {@link RootMotionSource.Root}.
      */
     public get rootNode(): Nullable<TransformNode> {
         return this._rootNode;
@@ -295,8 +312,8 @@ export class RootMotionClip implements IDisposable {
     }
 
     /**
-     * The first frame of the range the clip is analyzed over: the group's range, clamped to the keys of the root's
-     * animation the way playback clamps it.
+     * The first frame of the range the clip is analyzed over: the group's range, with a bound outside the clock
+     * channel's keys replaced by that channel's first or last key, as playback does.
      */
     public get fromFrame(): number {
         return this._fromFrame;
@@ -404,6 +421,22 @@ export class RootMotionClip implements IDisposable {
             }
         }
 
+        // The character node is where the motion goes; an animation of its position or rotation, or of a part of them,
+        // would overwrite it every frame.
+        const refuseAnimatedReceiver = (node: TransformNode) => {
+            if (
+                targetedAnimations.some(
+                    (targetedAnimation) => targetedAnimation.target === node && /^(position|rotationQuaternion|rotation)(\.|$)/.test(targetedAnimation.animation.targetProperty)
+                )
+            ) {
+                throw new Error(
+                    `RootMotionClip: animation group "${animationGroup.name}" animates the character node "${node.name}", which is to receive the motion. Parent the character under a node the group does not animate, or pass such an ancestor as characterNode.`
+                );
+            }
+        };
+        if (options.characterNode) {
+            refuseAnimatedReceiver(options.characterNode);
+        }
         this._rootNode = options.rootNode ? this._resolveNode(options.rootNode) : this._findRootNode();
         const anchor = this._rootNode ?? this._firstAnimatedNode();
         if (!anchor) {
@@ -412,20 +445,14 @@ export class RootMotionClip implements IDisposable {
         let character = options.characterNode ?? null;
         if (!character || character === anchor || !anchor.isDescendantOf(character)) {
             if (character) {
-                Logger.Warn(`RootMotionClip: the character node must be an ancestor of the root node; using the topmost ancestor instead.`);
+                Logger.Warn(`RootMotionClip: the character node "${character.name}" is not an ancestor of the root node "${anchor.name}"; using the topmost ancestor instead.`);
             }
             character = this._topmostAncestor(anchor);
         }
         if (character === anchor) {
             throw new Error(`RootMotionClip: the root node "${anchor.name}" has no parent to carry its motion. Parent the character under a node of its own.`);
         }
-        // The character node is where the motion goes; an animation of its own would overwrite it every frame.
-        const characterChannels = this._channels.get(character);
-        if (characterChannels?.position || characterChannels?.rotationQuaternion || characterChannels?.rotation) {
-            throw new Error(
-                `RootMotionClip: animation group "${animationGroup.name}" animates the character node "${character.name}", which is to receive the motion. Parent the character under a node the group does not animate, or pass such an ancestor as characterNode.`
-            );
-        }
+        refuseAnimatedReceiver(character);
         this._characterNode = character;
 
         // The motion runs on the root's own animation - its frame rate, its range and at runtime its playback - rather than
@@ -480,15 +507,21 @@ export class RootMotionClip implements IDisposable {
             }
         }
         if (!translation && yaw) {
-            // Turning on the spot: the character turns about the root's starting point, so a root off the character's
-            // axis stays where the clip has it, and the root keeps its travel, sway included; only the turn is taken out.
+            // Turning on the spot: the root keeps its travel, sway included; only the turn is taken out.
             translation = new Float32Array((samples + 1) * 3);
+            this._source = RootMotionSource.Root;
+        }
+        if (translation && yaw && !this._removesRootTravel) {
+            // A turn that is not in the root's travel turns the character about the root's starting point, so a root off
+            // the character's axis stays where the clip has it, in place from one cycle to the next.
             const start = this._positionInCharacter(root!, this._fromFrame, new Vector3());
             const pivot = new Vector3();
             for (let i = 0; i <= samples; i++) {
-                this._rootTravelAt(start, start, yaw[i], true, pivot).toArray(translation, i * 3);
+                this._rootTravelAt(start, start, yaw[i], true, pivot);
+                translation[i * 3] += pivot.x;
+                translation[i * 3 + 1] += pivot.y;
+                translation[i * 3 + 2] += pivot.z;
             }
-            this._source = RootMotionSource.Root;
             this._pivots = true;
         }
         if (translation) {
@@ -535,8 +568,9 @@ export class RootMotionClip implements IDisposable {
     }
 
     /**
-     * Removes the clip from its controller and disposes the in-place animation group. The source group is untouched,
-     * and a root position the in-place group animated on the source's behalf is put back.
+     * Removes the clip from its controller and disposes the in-place animation group. The source group is untouched.
+     * When the in-place group animates the root's position although the source does not (a root that only turns), the
+     * root's position is put back to what it was when the clip was created.
      */
     public dispose(): void {
         this._controller?.removeClip(this);
@@ -648,8 +682,10 @@ export class RootMotionClip implements IDisposable {
 
     /**
      * A whole number of cycles of a planar motion - a turn about the up axis and then a translation - in closed form,
-     * for any number of cycles: the sum of the translation turned 0, 1, ... n-1 times is a geometric series,
-     * (I - R^n)(I - R)^-1 t, and the inverse of I - R in the plane is [[1, -k], [k, 1]] / 2 with k = cot(turn / 2).
+     * for any number of cycles, forwards or back: the sum of the horizontal translation turned 0, 1, ... n-1 times is
+     * the translation turned (n - 1) / 2 times, sin(n * turn / 2) / sin(turn / 2) times as long, and n times the
+     * translation when there is no turn. The vertical part adds up. Nothing here is a matter of precision: no series
+     * is summed and no small angle is divided by.
      * @param cycles defines the number of cycles, negative to go back
      * @param step defines the translation of one cycle
      * @param stepYaw defines the turn of one cycle
@@ -657,21 +693,13 @@ export class RootMotionClip implements IDisposable {
      * @returns the turn of all the cycles
      */
     private _cyclePower(cycles: number, step: Vector3, stepYaw: number, result: Vector3): number {
-        const halfSine = Math.sin(stepYaw / 2);
-        if (Math.abs(halfSine) < StraightCycleTurn) {
-            // No turn, or whole revolutions: every cycle heads the same way.
-            step.scaleToRef(cycles, result);
-            return cycles * stepYaw;
-        }
+        // The turn only matters modulo a revolution; wrapped, whole revolutions read as no turn at all.
+        const turn = WrapAngle(stepYaw);
+        const halfSine = Math.sin(turn / 2);
+        const length = halfSine === 0 ? cycles : Math.sin((cycles * turn) / 2) / halfSine;
         const up = this._upAxis;
         const rise = Vector3.Dot(step, up) * cycles;
-        const planar = this._horizontal(step, this._planarStep);
-        const quarter = this._rotateAboutUp(planar, Math.PI / 2, this._quarterStep);
-        const k = Math.cos(stepYaw / 2) / halfSine;
-        // u = (I - R)^-1 t, then the series is u - R^n u
-        const u = planar.addInPlace(quarter.scaleInPlace(k)).scaleInPlace(0.5);
-        const turned = this._rotateAboutUp(u, cycles * stepYaw, result);
-        u.subtractToRef(turned, result);
+        this._rotateAboutUp(this._horizontal(step, this._planarStep), ((cycles - 1) * turn) / 2, result).scaleInPlace(length);
         result.addInPlace(up.scale(rise));
         return cycles * stepYaw;
     }
@@ -881,7 +909,15 @@ export class RootMotionClip implements IDisposable {
      * @returns the in-place group
      */
     private _buildInPlaceGroup(name: string, cloneAnimations: boolean): AnimationGroup {
-        const group = this._sourceGroup.clone(name, undefined, cloneAnimations, cloneAnimations);
+        const group = this._sourceGroup.clone(name);
+        // Cloning widens the range to the keys again; the in-place group plays what the source plays.
+        group.from = this._sourceGroup.from;
+        group.to = this._sourceGroup.to;
+        if (cloneAnimations) {
+            for (const targetedAnimation of group.targetedAnimations) {
+                targetedAnimation.animation = CloneAnimation(targetedAnimation.animation, true);
+            }
+        }
         const root = this._rootNode;
         if (!root || (!this._removesRootTravel && !this._turns)) {
             return group;
@@ -1029,9 +1065,10 @@ export class RootMotionClip implements IDisposable {
         if (channels.position) {
             replace(channels.position, "position");
         } else {
-            // A root that only turns needs a position channel of its own to stay where it is while the character turns
-            // about its origin, since the turn was taken out of the root's rotation. Its keys are as dense as the
-            // analysis, since the root goes round an arc that a few keys would cut across.
+            // A root that only turns gets a position channel of its own, holding it at its starting point while the
+            // character turns about that point. It is the clip's clock, the channel the mixer weighs every clip of the
+            // character on, and it keeps the root in place when another clip animates the position. Its keys are as
+            // dense as the analysis: an animated ancestor between the root and the character makes the position vary.
             const rotationChannel = (channels.rotationQuaternion ?? channels.rotation)!;
             const staticKeys: IAnimationKey[] = [];
             for (let i = 0; i <= this._sampleCount; i++) {
@@ -1232,7 +1269,7 @@ export class RootMotionClip implements IDisposable {
         }
         const linked = node.getTransformNode();
         if (!linked) {
-            Logger.Warn(`RootMotionClip: bone "${node.name}" has no linked transform node; only transform node animations are supported.`);
+            throw new Error(`RootMotionClip: bone "${node.name}" has no linked transform node; pass the transform node the bone drives instead.`);
         }
         return linked;
     }
@@ -1258,16 +1295,17 @@ export class RootMotionClip implements IDisposable {
 }
 
 /**
- * Moves and turns a character node by the root motion of the clips playing on it, once per frame, after animations are
- * evaluated and before the world matrices are computed.
+ * Moves and turns a character node by the root motion of the clips playing on it, once per animation step - from the
+ * scene's onAfterAnimationsObservable, so after animations are evaluated and before the world matrices are computed.
  *
  * The motion of each clip follows the playback of its in-place group's root animation: the progress of the pose it
  * evaluated, so pausing, speed ratio changes, looping in every loop mode, forwards and backwards, playing a range,
  * synchronizing with another animatable and running to the end all move the character exactly as far as the pose went.
  * Clips playing together are blended the way the animation mixer blends their root pose: weighted animation groups
- * contribute their normalized share, additive groups add theirs, an unweighted group takes over, and a group blending
- * in contributes as much as it is blended in, so the character moves with the blended pose whatever the clips do. The
- * turn is blended as a weighted sum of the clips' turns.
+ * contribute their share, normalized once their weights add up to more than one, additive groups add theirs on top,
+ * an unweighted group contributes its whole pose only while no weighted group animates the root (among unweighted
+ * groups the last to write wins), and a group blending in contributes as much as it is blended in, so the character
+ * moves with the blended pose whatever the clips do. The turn is blended as a weighted sum of the clips' turns.
  *
  * ```ts
  * const controller = new RootMotionController(character, [walk, run]);
@@ -1286,7 +1324,7 @@ export class RootMotionController implements IDisposable {
     public applyToCharacter = true;
 
     /**
-     * Notified every frame the character moves, after {@link RootMotionController.deltaPosition} and
+     * Notified every animation step the clips produce motion, after {@link RootMotionController.deltaPosition} and
      * {@link RootMotionController.deltaRotation} are updated.
      */
     public readonly onRootMotionObservable = new Observable<RootMotionController>();
@@ -1316,14 +1354,16 @@ export class RootMotionController implements IDisposable {
     }
 
     /**
-     * The travel applied during the last frame, in world space.
+     * The travel of the last animation step, in world space; applied to the character unless
+     * {@link RootMotionController.applyToCharacter} is false.
      */
     public get deltaPosition(): Vector3 {
         return this._deltaPosition;
     }
 
     /**
-     * The turn applied during the last frame about the character's up axis, in radians, in character space.
+     * The turn of the last animation step about the up axis, in radians; applied to the character unless
+     * {@link RootMotionController.applyToCharacter} is false.
      */
     public get deltaRotation(): number {
         return this._deltaRotation;
@@ -1346,7 +1386,8 @@ export class RootMotionController implements IDisposable {
     /**
      * Adds a clip, so the character moves while its in-place group plays.
      * @param clip defines the clip; its character node must be the controller's
-     * @throws when the clip belongs to another controller or moves another node
+     * @throws when the clip belongs to another controller, moves another node, or has another up axis than the clips
+     * already added
      */
     public addClip(clip: RootMotionClip): void {
         if (clip._controller === this) {
@@ -1439,6 +1480,10 @@ export class RootMotionController implements IDisposable {
                 clip._syncRuntime = null;
                 clip._lastProgress = null;
                 clip._parked = false;
+                clip._activeIndex = -1;
+                if (found) {
+                    ClaimedAnimatables.set(clip._foundAnimatable!, clip);
+                }
             }
             if (!found) {
                 continue;
@@ -1448,15 +1493,10 @@ export class RootMotionController implements IDisposable {
                 // Its clock stands still too, and carries on from here when it resumes.
                 continue;
             }
-            const progress = found._evaluatedProgress;
-            if (animatable.weight === 0 && !Animatable.ProcessPausedAnimatables) {
-                // Evaluated once at a weight of zero, then no more while its clock runs on: from the first evaluation it
-                // misses it is parked, and starts again from wherever it resumes.
-                if (progress === clip._lastProgress) {
-                    clip._parked = true;
-                } else if (!clip._parked) {
-                    clip._lastProgress = progress;
-                }
+            if (!animatable._animated) {
+                // Not evaluated this step - parked at a weight of zero - while its clock runs on: it starts again from
+                // wherever it resumes.
+                clip._parked = true;
                 continue;
             }
             if (clip._parked) {
@@ -1465,13 +1505,12 @@ export class RootMotionController implements IDisposable {
             }
             const syncRuntime = animatable.syncRoot ? (animatable.syncRoot.getAnimations()[0] ?? null) : null;
             if (syncRuntime !== clip._syncRuntime) {
-                // A change of clock is a jump of the pose, not travel.
+                // A change of synchronization root is a jump of the pose, not travel.
                 clip._syncRuntime = syncRuntime;
                 clip._lastProgress = null;
             }
-            // Remembered for the frame the playback ends on, when the animatable is no longer among the active ones.
-            clip._wasLastDirect = clip._writers !== null && clip._writers.lastDirect === animatable;
             // The first evaluation of a playback only establishes where it began.
+            const progress = found._evaluatedProgress;
             const lastProgress = clip._lastProgress;
             clip._lastProgress = progress;
             if (lastProgress !== null && progress !== lastProgress) {
@@ -1497,7 +1536,8 @@ export class RootMotionController implements IDisposable {
         const parentDelta = Vector3.TransformNormalToRef(delta, TmpVectors.Matrix[3], TmpVectors.Vector3[4]);
         const parent = character.parent;
         if (parent) {
-            Vector3.TransformNormalToRef(parentDelta, parent.computeWorldMatrix(), this._deltaPosition);
+            // Computed now, not read from the cache: with several animation steps in a render the parent may have moved.
+            Vector3.TransformNormalToRef(parentDelta, parent.computeWorldMatrix(true), this._deltaPosition);
         } else {
             this._deltaPosition.copyFrom(parentDelta);
         }
@@ -1567,9 +1607,12 @@ export class RootMotionController implements IDisposable {
         let weighted = writers.weighted;
         let lastDirect = writers.lastDirect;
         if (ended) {
-            // Gone from the active animatables, but it wrote this frame: in the order it had the frame before.
+            // Gone from the active animatables, but it wrote this step, from the place it had among them: a direct writer
+            // from further down the list - one started this step is appended after it - wrote after it.
             if (weight < 0) {
-                lastDirect = clip._wasLastDirect ? animatable : (lastDirect ?? animatable);
+                if (!lastDirect || writers.lastDirectIndex < clip._activeIndex) {
+                    lastDirect = animatable;
+                }
             } else {
                 weighted = true;
                 if (!runtime.isAdditive) {
@@ -1663,7 +1706,7 @@ class SceneRootMotion {
                 }
                 let entry = entries.find((candidate) => candidate.property === clip._clockProperty);
                 if (!entry) {
-                    entry = { property: clip._clockProperty, total: 0, weighted: false, lastDirect: null };
+                    entry = { property: clip._clockProperty, total: 0, weighted: false, lastDirect: null, lastDirectIndex: -1 };
                     entries.push(entry);
                     this._writers.push(entry);
                 }
@@ -1679,19 +1722,17 @@ class SceneRootMotion {
             entry.total = 0;
             entry.weighted = false;
             entry.lastDirect = null;
+            entry.lastDirectIndex = -1;
         }
-        // What the mixer wrote this frame: the animatables that evaluated. A paused one, one not started yet and one
-        // parked at a weight of zero write nothing.
+        // What the mixer wrote this step: the animatables that animated. A paused one, one not started yet and one
+        // parked at a weight of zero wrote nothing.
         const animatables = this._scene._activeAnimatables;
         for (let i = 0; i < animatables.length; i++) {
             const animatable = animatables[i];
-            if (animatable.paused || !animatable.animationStarted) {
+            if (!animatable._animated) {
                 continue;
             }
             const weight = animatable.weight;
-            if (weight === 0 && !Animatable.ProcessPausedAnimatables) {
-                continue;
-            }
             const runtimes = animatable.getAnimations();
             for (let j = 0; j < runtimes.length; j++) {
                 const runtime = runtimes[j];
@@ -1699,6 +1740,10 @@ class SceneRootMotion {
                 const entries = target ? this._writersByNode.get(target) : undefined;
                 if (!entries) {
                     continue;
+                }
+                const clip = ClaimedAnimatables.get(animatable);
+                if (clip) {
+                    clip._activeIndex = i;
                 }
                 for (let k = 0; k < entries.length; k++) {
                     const entry = entries[k];
@@ -1708,6 +1753,7 @@ class SceneRootMotion {
                     if (weight < 0) {
                         // Direct writers overwrite one another in order, so the last one is the pose.
                         entry.lastDirect = animatable;
+                        entry.lastDirectIndex = i;
                     } else {
                         entry.weighted = true;
                         if (!runtime.isAdditive) {
@@ -1726,10 +1772,11 @@ class SceneRootMotion {
 /**
  * Clones an animation as {@link Animation.clone} does, keeping the easing function and events with it.
  * @param source defines the animation to clone
- * @returns the clone, sharing the source's keys until they are replaced
+ * @param cloneKeys defines whether the keys and their values are cloned too, rather than shared until replaced
+ * @returns the clone
  */
-function CloneAnimation(source: Animation): Animation {
-    const animation = source.clone();
+function CloneAnimation(source: Animation, cloneKeys = false): Animation {
+    const animation = source.clone(cloneKeys);
     const easingFunction = source.getEasingFunction();
     if (easingFunction) {
         animation.setEasingFunction(easingFunction);
