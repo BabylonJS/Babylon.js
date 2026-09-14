@@ -114,6 +114,8 @@ Do not add `export {}` just to force module mode. If the augmentation needs an i
 
 6. **Do not create pure shader files.** Generated shader modules remain generated side-effect modules. If a pure implementation needs a shader, load the generated shader module from the owning registration/readiness path; do not split the shader file itself.
 
+7. **Keep generic infrastructure independent from feature implementations.** Generic rendering, scene, picking, and utility modules may use type-only imports from feature classes, but runtime predicates and shared functions must live in dependency-light `*.functions.ts` modules. Do not value-import a large feature implementation to access a small helper; intermediate single-bundle builds can retain the feature's full dependency tree.
+
 ## Tooling
 
 After adding, renaming, or removing files, run these scripts to keep everything in sync:
