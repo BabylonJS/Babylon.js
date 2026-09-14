@@ -1,5 +1,5 @@
 import { type AnimationGroup } from "core/Animations/animationGroup";
-import { RootMotion, RootMotionSource, type IRootMotionOptions } from "core/Animations/rootMotion";
+import { RootMotionClip, RootMotionController, RootMotionSource, type IRootMotionClipOptions } from "core/Animations/rootMotion";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Engine } from "core/Engines/engine";
 import { DirectionalLight } from "core/Lights/directionalLight";
@@ -203,8 +203,12 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     let container: AssetContainer | null = null;
     let character: TransformNode | null = null;
     let feet: TransformNode[] = [];
+    /** The source group picked in the list. */
+    let selectedGroup: AnimationGroup | null = null;
+    /** The group playing: the clip's in-place group, or the source itself in the raw mode. */
     let activeGroup: AnimationGroup | null = null;
-    let rootMotion: RootMotion | null = null;
+    let clip: RootMotionClip | null = null;
+    let controller: RootMotionController | null = null;
     let printTimer = 0;
     let readoutTimer = 0;
     let loadToken = 0;
@@ -217,8 +221,16 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
                 character.rotationQuaternion = restRotation.clone();
             }
         }
-        rootMotion?.reset();
+        controller?.reset();
         clearPrints();
+    };
+
+    const unloadClip = () => {
+        activeGroup?.stop();
+        activeGroup = null;
+        // The in-place group goes with the clip; the source is untouched.
+        clip?.dispose();
+        clip = null;
     };
 
     const playClip = (group: AnimationGroup) => {
@@ -228,15 +240,13 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
         for (const other of container.animationGroups) {
             other.stop();
         }
-        // Disposing restores the root keys the previous extraction rewrote, so every clip starts from its original data.
-        rootMotion?.dispose();
-        rootMotion = null;
-        activeGroup = group;
+        unloadClip();
+        selectedGroup = group;
         resetCharacter();
 
         const mode = panel.mode.value as Mode;
         if (mode !== Mode.Off) {
-            const options: IRootMotionOptions = { extractLateralMotion: panel.lateral.checked };
+            const options: IRootMotionClipOptions = { extractLateralMotion: panel.lateral.checked };
             if (panel.snap.value === "always") {
                 options.directionSnapAngle = Math.PI / 18;
             } else if (panel.snap.value === "never") {
@@ -247,9 +257,23 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
             } else if (mode === Mode.Feet) {
                 options.source = RootMotionSource.FootContact;
             }
-            rootMotion = new RootMotion(group, options);
+            try {
+                clip = new RootMotionClip(group, options);
+            } catch (error) {
+                panel.status.textContent = `${group.name}: ${error instanceof Error ? error.message : String(error)}`;
+            }
+            if (clip) {
+                // One controller per character: the clip's character node is the asset's root, the same for every clip.
+                if (controller && controller.characterNode !== clip.characterNode) {
+                    controller.dispose();
+                    controller = null;
+                }
+                controller = controller ?? new RootMotionController(clip.characterNode);
+                controller.addClip(clip);
+            }
         }
-        group.start(true, parseFloat(panel.speed.value));
+        activeGroup = clip ? clip.animationGroup : group;
+        activeGroup.start(true, parseFloat(panel.speed.value));
 
         for (const child of Array.from(panel.clips.children)) {
             (child as HTMLElement).style.borderColor = child.textContent === group.name ? "#f0883e" : "#30363d";
@@ -257,10 +281,10 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     };
 
     const unloadModel = () => {
-        // Disposing restores the root keys the extraction rewrote before the clips go away with the container.
-        rootMotion?.dispose();
-        rootMotion = null;
-        activeGroup = null;
+        unloadClip();
+        controller?.dispose();
+        controller = null;
+        selectedGroup = null;
         container?.dispose();
         container = null;
         character = null;
@@ -298,7 +322,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
         character = (container.rootNodes.find((node) => node instanceof TransformNode) as TransformNode) ?? null;
         if (character) {
             restRotation = (character.rotationQuaternion ?? Quaternion.FromEulerVector(character.rotation)).clone();
-            // Footprints come from the lowest leaf joints at rest, independent of what RootMotion picks.
+            // Footprints come from the lowest leaf joints at rest, independent of what the clip picks.
             character.computeWorldMatrix(true);
             const leaves = character
                 .getDescendants(false, (node) => node instanceof TransformNode && !(node instanceof AbstractMesh))
@@ -315,13 +339,13 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
 
         panel.clips.replaceChildren();
         for (const group of container.animationGroups) {
-            const clip = Element(
+            const entry = Element(
                 "button",
                 panel.clips,
                 "text-align:left;background:#161b22;color:#e6edf3;border:1px solid #30363d;border-radius:4px;padding:3px 8px;cursor:pointer",
                 group.name
             );
-            clip.onclick = () => playClip(group);
+            entry.onclick = () => playClip(group);
         }
         panel.status.textContent = `${name}: ${container.animationGroups.length} clip(s). Pick one below.`;
         if (!container.animationGroups.length) {
@@ -331,7 +355,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
 
     onLoad((source) => void loadAsync(source));
     onReset(resetCharacter);
-    const replay = () => activeGroup && playClip(activeGroup);
+    const replay = () => selectedGroup && playClip(selectedGroup);
     panel.mode.onchange = replay;
     panel.lateral.onchange = replay;
     panel.snap.onchange = replay;
@@ -339,9 +363,9 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
         const speed = parseFloat(panel.speed.value);
         panel.speedLabel.textContent = speed.toFixed(2);
         if (activeGroup) {
+            // The motion follows the playback through the change, so nothing has to be reset.
             activeGroup.speedRatio = speed;
         }
-        rootMotion?.reset();
     };
 
     window.addEventListener("dragover", (event) => event.preventDefault());
@@ -388,19 +412,23 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
         readoutTimer = 0;
         const lines: string[] = [];
         if (activeGroup) {
-            lines.push(`clip       ${activeGroup.name}`, `frame      ${activeGroup.getCurrentFrame().toFixed(1)} / ${activeGroup.to.toFixed(0)}`);
-        }
-        if (rootMotion) {
-            const direction = rootMotion.travelDirection;
             lines.push(
-                `source     ${SourceName(rootMotion.source)}`,
-                `root       ${rootMotion.rootNode?.name ?? "-"}`,
-                `character  ${rootMotion.characterNode?.name ?? "-"}`,
-                `contacts   ${rootMotion.contactNodes.map((node) => node.name).join(", ") || "-"}`,
-                `height     ${rootMotion.characterHeight.toFixed(3)}`,
-                `cycle      ${rootMotion.cycleDistance.toFixed(3)} in ${rootMotion.duration.toFixed(2)}s`,
-                `speed      ${rootMotion.averageSpeed.toFixed(3)} /s`,
-                `turn       ${rootMotion.extractsRotation ? `${((rootMotion.cycleRotation * 180) / Math.PI).toFixed(1)} deg per cycle` : "not extracted"}`,
+                `clip       ${selectedGroup?.name ?? activeGroup.name}`,
+                `playing    ${activeGroup.name}`,
+                `frame      ${activeGroup.getCurrentFrame().toFixed(1)} / ${activeGroup.to.toFixed(0)}`
+            );
+        }
+        if (clip) {
+            const direction = clip.travelDirection;
+            lines.push(
+                `source     ${SourceName(clip.source)}`,
+                `root       ${clip.rootNode?.name ?? "-"}`,
+                `character  ${clip.characterNode.name}`,
+                `contacts   ${clip.contactNodes.map((node) => node.name).join(", ") || "-"}`,
+                `height     ${clip.characterHeight.toFixed(3)}`,
+                `cycle      ${clip.cycleDistance.toFixed(3)} in ${clip.duration.toFixed(2)}s`,
+                `speed      ${clip.averageSpeed.toFixed(3)} /s`,
+                `turn       ${clip.extractsRotation ? `${((clip.cycleRotation * 180) / Math.PI).toFixed(1)} deg per cycle` : "not extracted"}`,
                 `direction  ${direction.x.toFixed(2)}, ${direction.y.toFixed(2)}, ${direction.z.toFixed(2)}`
             );
         } else if (activeGroup) {
@@ -413,11 +441,14 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
         panel.readout.textContent = lines.join("\n");
     });
 
-    // Console access for poking at a clip: rootMotionDebug.rootMotion.getOffsetAtFrame(10, new rootMotionDebug.vector3()) etc.
+    // Console access for poking at a clip: rootMotionDebug.clip.getOffsetAtFrame(10, new rootMotionDebug.vector3()) etc.
     (window as any).rootMotionDebug = {
         scene,
-        get rootMotion() {
-            return rootMotion;
+        get clip() {
+            return clip;
+        },
+        get controller() {
+            return controller;
         },
         get group() {
             return activeGroup;

@@ -117,6 +117,11 @@ export class RuntimeAnimation {
      * The previous absolute frame of the runtime animation (meaning, without taking into account the from/to values, only the elapsed time and the fps)
      */
     private _previousAbsoluteFrame: number = 0;
+    private _playbackFrom = 0;
+    private _playbackTo = 0;
+    private _playbackFrames = 0;
+    private _playbackProgress = 0;
+    private _playbackBlendingFactor = 1;
 
     private _enableBlending: boolean;
 
@@ -137,10 +142,37 @@ export class RuntimeAnimation {
 
     /**
      * @internal
-     * The frame reached since the animation started, before looping folds it into the from-to range.
+     * The first frame of the range the animation was last evaluated over: the requested range, clamped to its keys.
      */
-    public get _absoluteFrame(): number {
-        return this._previousAbsoluteFrame;
+    public get _evaluatedFrom(): number {
+        return this._playbackFrom;
+    }
+
+    /**
+     * @internal
+     * The last frame of the range the animation was last evaluated over.
+     */
+    public get _evaluatedTo(): number {
+        return this._playbackTo;
+    }
+
+    /**
+     * @internal
+     * How far the pose last evaluated had played from _evaluatedFrom, in frames, unwrapped across loops: folding it into
+     * the range gives the frame that was evaluated, and dividing it by the range counts the whole cycles the pose has been
+     * through. It follows a synchronization root, swings with a yoyo loop and holds where a constant loop or a playback
+     * that does not loop holds its pose, so it always describes the pose that was evaluated.
+     */
+    public get _evaluatedProgress(): number {
+        return this._playbackProgress;
+    }
+
+    /**
+     * @internal
+     * The blending factor the value last written was blended in with: less than one while the animation blends in.
+     */
+    public get _evaluatedBlendingFactor(): number {
+        return this._playbackBlendingFactor;
     }
 
     /**
@@ -455,8 +487,10 @@ export class RuntimeAnimation {
             }
 
             const blendingSpeed = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
+            this._playbackBlendingFactor = this._blendingFactor;
             this._blendingFactor += blendingSpeed;
         } else {
+            this._playbackBlendingFactor = 1;
             if (!this._currentValue) {
                 if (currentValue?.clone) {
                     this._currentValue = currentValue.clone();
@@ -740,6 +774,33 @@ export class RuntimeAnimation {
             this._animationState.repeatCount = frameRange === 0 ? 0 : (absoluteFrame / frameRange) >> 0;
             this._animationState.highLimitValue = highLimitValue;
             this._animationState.offsetValue = offsetValue;
+
+            // The frame evaluated, unwrapped across loops, then the progress of the pose it gave
+            this._playbackFrom = from;
+            this._playbackTo = to;
+            let frames: number;
+            if (this._host && this._host.syncRoot) {
+                // The root's folded frame over the root animatable's range, as above, plus the cycles the root has been through
+                const syncRoot = this._host.syncRoot;
+                const master = syncRoot.getAnimations()[0];
+                if (master) {
+                    const masterRange = master._playbackTo - master._playbackFrom;
+                    const masterCycles = masterRange !== 0 ? Math.round((master._playbackFrames - (master._currentFrame - master._playbackFrom)) / masterRange) : 0;
+                    frames = frameRange * (masterCycles + (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame));
+                } else {
+                    // A root with no runtime animation reads as frame 0: the pose snaps there and holds, and so does the progress
+                    frames = this._playbackFrames;
+                }
+            } else if (!returnValue) {
+                frames = currentFrame === to ? frameRange : 0;
+            } else if (yoyoMode) {
+                frames = currentFrame - from;
+            } else {
+                frames = absoluteFrame;
+            }
+            this._playbackFrames = frames;
+            // A constant loop holds its last value from its own second cycle on, whatever frame is evaluated
+            this._playbackProgress = this._animationState.loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && this._animationState.repeatCount > 0 ? frameRange : frames;
         } else {
             frameRange = to - from;
             currentFrame = this._coreRuntimeAnimation.currentFrame;
@@ -747,6 +808,10 @@ export class RuntimeAnimation {
             this._animationState.repeatCount = this._coreRuntimeAnimation._animationState.repeatCount;
             this._animationState.highLimitValue = this._coreRuntimeAnimation._animationState.highLimitValue;
             this._animationState.offsetValue = this._coreRuntimeAnimation._animationState.offsetValue;
+            this._playbackFrom = this._coreRuntimeAnimation._playbackFrom;
+            this._playbackTo = this._coreRuntimeAnimation._playbackTo;
+            this._playbackFrames = this._coreRuntimeAnimation._playbackFrames;
+            this._playbackProgress = this._coreRuntimeAnimation._playbackProgress;
         }
 
         const currentValue = animation._interpolate(currentFrame, this._animationState);
