@@ -7,6 +7,20 @@ import { type FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionB
 import { FlowGraphBlockDisplayName } from "./blockDisplayUtils";
 
 /**
+ * Converts a FlowGraph block GUID to the numeric id used by the graph canvas.
+ * @param id FlowGraph block GUID
+ * @returns stable numeric graph-node id
+ */
+export function GetFlowGraphBlockNodeId(id: string): number {
+    let hash = 0;
+    for (let index = 0; index < id.length; index++) {
+        hash = (hash << 5) - hash + id.charCodeAt(index);
+        hash |= 0;
+    }
+    return Math.abs(hash);
+}
+
+/**
  * Adapts a FlowGraphBlock to the INodeData interface used by the graph canvas.
  */
 export class BlockNodeData implements INodeData {
@@ -137,16 +151,6 @@ export class BlockNodeData implements INodeData {
         return !!(this.data as unknown as FlowGraphExecutionBlock).signalInputs;
     }
 
-    private _hashString(str: string): number {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = (hash << 5) - hash + char;
-            hash |= 0; // Convert to 32bit integer
-        }
-        return Math.abs(hash);
-    }
-
     /**
      * Creates a new BlockNodeData.
      * @param data - the underlying flow graph block
@@ -162,7 +166,7 @@ export class BlockNodeData implements INodeData {
         nodeContainer: INodeContainer
     ) {
         this.nodeContainer = nodeContainer;
-        this._numericId = this._hashString(data.uniqueId);
+        this._numericId = GetFlowGraphBlockNodeId(data.uniqueId);
 
         // Add signal inputs (execution flow)
         if ((data as unknown as FlowGraphExecutionBlock).signalInputs) {
