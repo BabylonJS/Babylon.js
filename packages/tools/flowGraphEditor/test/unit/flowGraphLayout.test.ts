@@ -34,6 +34,13 @@ describe("ComputeFlowGraphLayout", () => {
         expect(target.y).toBe(0);
     });
 
+    it("places the next column beyond the full width of a wide composite", () => {
+        const nodes = [MakeNode(1, { isEvent: true, width: 560, signalOut: [2] }), MakeNode(2)];
+        const positions = ComputeFlowGraphLayout(nodes, Options);
+
+        expect(positions.get(2)!.x).toBeGreaterThanOrEqual(positions.get(1)!.x + 560 + Options.horizontalGap);
+    });
+
     it("tiles independent flows side by side instead of one tall column", () => {
         // Two unrelated event chains: 1 -> 10 and 2 -> 20.
         const nodes = [MakeNode(1, { isEvent: true, signalOut: [10] }), MakeNode(2, { isEvent: true, signalOut: [20] }), MakeNode(10), MakeNode(20)];
@@ -95,6 +102,22 @@ describe("ComputeFlowGraphLayout", () => {
         const provider = positions.get(10)!;
         const consumer = positions.get(2)!;
         expect(provider.x).toBeLessThan(consumer.x);
+    });
+
+    it("propagates ownership through a long provider chain", () => {
+        const providerCount = 2_000;
+        const consumerId = providerCount + 2;
+        const nodes = [
+            MakeNode(0, { isEvent: true, signalOut: [consumerId] }),
+            ...Array.from({ length: providerCount }, (_, index) => MakeNode(index + 1, { dataOut: [index + 1 === providerCount ? consumerId : index + 2] })),
+            MakeNode(consumerId),
+        ];
+
+        const positions = ComputeFlowGraphLayout(nodes, Options);
+
+        expect(positions.size).toBe(nodes.length);
+        expect(positions.get(providerCount)!.x).toBeLessThan(positions.get(consumerId)!.x);
+        expect(positions.get(1)!.x).toBeLessThanOrEqual(positions.get(providerCount)!.x);
     });
 
     it("keeps a pure data network together and layers it left-to-right", () => {

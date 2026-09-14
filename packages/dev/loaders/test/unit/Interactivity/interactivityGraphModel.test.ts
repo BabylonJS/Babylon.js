@@ -9,6 +9,10 @@ import {
 import { InteractivityGraphToFlowGraphParser } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
 import { FlowGraphUnsupportedInteractivityBlock } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/flowGraphUnsupportedInteractivityBlock";
 import { _RegisterKHRNodeSelectabilityRuntime } from "../../../src/glTF/2.0/Extensions/KHR_node_selectability.pure";
+import { NullEngine } from "core/Engines/nullEngine";
+import { Scene } from "core/scene";
+import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 
 describe("KHR_interactivity canonical import model", () => {
     it("preserves graph names, extensions, extras, and the selected default graph", () => {
@@ -513,17 +517,24 @@ describe("KHR_interactivity canonical import model", () => {
         );
     });
 
-    it("keeps spec-allowed extra sockets and configuration out of strict lowering", () => {
+    it("keeps spec-allowed extra sockets out of strict and compatibility executable lowering", async () => {
         const graph: IKHRInteractivity_Graph = {
             types: [{ signature: "float" }],
-            declarations: [{ op: "event/onStart" }, { op: "math/abs" }],
+            declarations: [{ op: "event/onStart" }, { op: "math/abs" }, { op: "math/mul" }],
             nodes: [
-                { declaration: 0, flows: { extra: { node: 1, socket: "unknown" } } },
+                { declaration: 0, flows: { extra: { node: 2, socket: "unknown" } } },
+                {
+                    declaration: 2,
+                    values: {
+                        a: { type: 0, value: [3] },
+                        b: { type: 0, value: [4] },
+                    },
+                },
                 {
                     declaration: 1,
                     configuration: { unknown: { value: ["ignored"] } },
                     values: {
-                        a: { type: 0, value: [1] },
+                        a: { node: 1, socket: "value", type: 0 },
                         extra: { type: 0, value: [2] },
                     },
                 },
@@ -533,15 +544,104 @@ describe("KHR_interactivity canonical import model", () => {
         const serialized = new InteractivityGraphToFlowGraphParser(graph, {}, 60, 0, undefined, model.declarations).serializeToFlowGraph();
         const start = serialized.allBlocks.find((block) => block.className === "FlowGraphSceneReadyEventBlock")!;
         const absolute = serialized.allBlocks.find((block) => block.className === "FlowGraphAbsBlock")!;
+        const multiply = serialized.allBlocks.find((block) => block.className === "FlowGraphMultiplyBlock")!;
 
-        expect(model.valid).toBe(true);
+        expect(model.valid, model.diagnostics.map((diagnostic) => `${diagnostic.path}: ${diagnostic.message}`).join("\n")).toBe(true);
         expect(start.signalOutputs.some((socket) => socket.name === "extra")).toBe(false);
         expect(absolute.dataInputs.map((socket) => socket.name)).toEqual(["a"]);
+        expect(multiply.dataInputs.map((socket) => socket.name)).toEqual(["a", "b"]);
+        expect(multiply.dataOutputs.map((socket) => socket.name)).toEqual(["value"]);
         expect(absolute.config.unknown).toBeUndefined();
 
         const compatibility = new InteractivityGraphToFlowGraphParser(graph, {}).serializeToFlowGraph();
+        const compatibilityStart = compatibility.allBlocks.find((block) => block.className === "FlowGraphSceneReadyEventBlock")!;
         const compatibilityAbsolute = compatibility.allBlocks.find((block) => block.className === "FlowGraphAbsBlock")!;
+        const compatibilityMultiply = compatibility.allBlocks.find((block) => block.className === "FlowGraphMultiplyBlock")!;
+        expect(compatibilityStart.signalOutputs.some((socket) => socket.name === "extra")).toBe(false);
+        expect(compatibilityAbsolute.dataInputs.map((socket) => socket.name)).toEqual(["a"]);
+        expect(compatibilityMultiply.dataInputs.map((socket) => socket.name)).toEqual(["a", "b"]);
+        expect(compatibilityMultiply.dataOutputs.map((socket) => socket.name)).toEqual(["value"]);
         expect(compatibilityAbsolute.config.unknown.value).toBe("ignored");
+
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        await expect(ParseFlowGraphAsync(compatibility, { coordinator })).resolves.toBeDefined();
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("preserves only configured pre-ratification math/switch case sockets", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }],
+            declarations: [{ op: "math/switch" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { cases: { value: [-2, -1, 0] } },
+                    values: {
+                        selection: { type: 0, value: [-2] },
+                        default: { type: 0, value: [0] },
+                        "-2": { type: 0, value: [22] },
+                        "-1": { type: 0, value: [11] },
+                        "0": { type: 0, value: [33] },
+                        "4": { type: 0, value: [44] },
+                    },
+                },
+            ],
+        };
+        const serialized = new InteractivityGraphToFlowGraphParser(graph, {}).serializeToFlowGraph();
+        const switchBlock = serialized.allBlocks.find((block) => block.className === "FlowGraphDataSwitchBlock")!;
+
+        expect(switchBlock.dataInputs.map((socket) => socket.name).sort()).toEqual(["case", "default", "in_-1", "in_-2", "in_0"]);
+
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const runtimeGraph = await ParseFlowGraphAsync(serialized, { coordinator });
+        const value = runtimeGraph.getAllBlocks()[0].getDataOutput("value")!.getValue(runtimeGraph.getContext(0));
+
+        expect((value as any).value).toBe(22);
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("executes configured math/switch case sockets in strict mode", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }],
+            declarations: [{ op: "math/switch" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { cases: { value: [-2] } },
+                    values: {
+                        selection: { type: 0, value: [-2] },
+                        default: { type: 0, value: [0] },
+                        "-2": { type: 0, value: [22] },
+                        "4": { type: 0, value: [44] },
+                    },
+                },
+            ],
+        };
+        const model = CreateKHRInteractivityGraphModel(graph);
+        const serialized = new InteractivityGraphToFlowGraphParser(model.effectiveSource, {}, 60, 0, undefined, model.declarations).serializeToFlowGraph();
+        const switchBlock = serialized.allBlocks.find((block) => block.className === "FlowGraphDataSwitchBlock")!;
+
+        expect(model.valid).toBe(true);
+        expect(switchBlock.dataInputs.map((socket) => socket.name).sort()).toEqual(["case", "default", "in_-2"]);
+
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const runtimeGraph = await ParseFlowGraphAsync(serialized, { coordinator });
+        const value = runtimeGraph.getAllBlocks()[0].getDataOutput("value")!.getValue(runtimeGraph.getContext(0));
+
+        expect((value as any).value).toBe(22);
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
     });
 
     it("ignores unknown configuration while lowering custom event operations", () => {

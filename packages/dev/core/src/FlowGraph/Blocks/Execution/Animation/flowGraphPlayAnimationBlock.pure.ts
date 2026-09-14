@@ -164,6 +164,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         if (!ag && !animation) {
             this._reportError(context, "No animation or animation group provided");
             return false;
+        } else if (ag && ag.targetedAnimations.length === 0) {
+            this._reportError(context, "Animation group has no targeted animations");
+            return false;
         } else {
             // if an animation group was already created, dispose it and create a new one
             const currentAnimationGroup = this.currentAnimationGroup.getValue(context);

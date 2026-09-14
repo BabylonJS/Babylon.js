@@ -109,8 +109,8 @@ export class InteractivityGraphToFlowGraphParser {
     }
 
     private _getAllowedDynamicValueSockets(operation: string, node: IKHRInteractivity_Node, direction: "input" | "output"): ReadonlySet<string> | undefined {
-        if (operation === "debug/log" && direction === "input") {
-            const message = node.configuration?.message?.value?.[0];
+        if ((operation === "debug/log" || operation === "flow/log:BABYLON") && direction === "input") {
+            const message = node.configuration?.[operation === "debug/log" ? "message" : "messageTemplate"]?.value?.[0];
             return new Set(typeof message === "string" ? ParseDebugLogTemplate(message).sockets : []);
         }
         if ((operation === "event/send" && direction === "input") || (operation === "event/receive" && direction === "output")) {
@@ -543,13 +543,19 @@ export class InteractivityGraphToFlowGraphParser {
             for (const flowKey of flowsKeys) {
                 const flow = flowsFromGLTF[flowKey];
                 let flowMapping = _GetOwnMapping(outputMapper.flowGraphMapping.outputs?.flows, flowKey);
+                if (this._strictValidation && flowMapping?.compatibilityOnly) {
+                    flowMapping = undefined;
+                }
                 let outputArrayMapping = false;
                 if (!flowMapping) {
                     for (const key in outputMapper.flowGraphMapping.outputs?.flows) {
                         if (key.startsWith("[") && key.endsWith("]")) {
-                            outputArrayMapping = true;
-                            flowMapping = outputMapper.flowGraphMapping.outputs?.flows?.[key];
-                            break;
+                            const wildcardMapping = outputMapper.flowGraphMapping.outputs?.flows?.[key];
+                            if (!this._strictValidation || !wildcardMapping?.compatibilityOnly) {
+                                outputArrayMapping = true;
+                                flowMapping = wildcardMapping;
+                                break;
+                            }
                         }
                     }
                 }
@@ -557,7 +563,7 @@ export class InteractivityGraphToFlowGraphParser {
                 if (this._strictValidation && allowedDynamicOutputs && !allowedDynamicOutputs.has(flowKey)) {
                     flowMapping = undefined;
                 }
-                if (this._strictValidation && !flowMapping) {
+                if (!flowMapping && !this._isUnsupportedExtensionBlock(flowGraphBlocks.blocks[0])) {
                     continue;
                 }
                 const socketOutName = flowMapping ? (outputArrayMapping ? flowMapping.name.replace("$1", flowKey) : flowMapping.name) : flowKey;
@@ -588,12 +594,18 @@ export class InteractivityGraphToFlowGraphParser {
                     throw new Error("Error parsing node connections");
                 }
                 let flowInMapping = _GetOwnMapping(inputMapper.inputs?.flows, flow.socket || "in");
+                if (this._strictValidation && flowInMapping?.compatibilityOnly) {
+                    flowInMapping = undefined;
+                }
                 let arrayMapping = false;
                 if (!flowInMapping) {
                     for (const key in inputMapper.inputs?.flows) {
                         if (key.startsWith("[") && key.endsWith("]")) {
-                            arrayMapping = true;
-                            flowInMapping = inputMapper.inputs?.flows?.[key];
+                            const wildcardMapping = inputMapper.inputs?.flows?.[key];
+                            if (!this._strictValidation || !wildcardMapping?.compatibilityOnly) {
+                                arrayMapping = true;
+                                flowInMapping = wildcardMapping;
+                            }
                         }
                     }
                     const allowedDynamicInputs = arrayMapping ? this._getAllowedDynamicFlowSockets(this._interactivityGraph.nodes![inputNodeId], inputMapper, "input") : undefined;
@@ -603,7 +615,7 @@ export class InteractivityGraphToFlowGraphParser {
                     if (!flowInMapping && (flow.socket ?? "in") === "in" && this._hasDefaultFlowInput(nodeIn.fullOperationName)) {
                         flowInMapping = { name: "in" };
                     }
-                    if (this._strictValidation && !flowInMapping) {
+                    if (!flowInMapping && !this._isUnsupportedExtensionBlock(nodeIn.blocks[0])) {
                         continue;
                     }
                 }
@@ -626,17 +638,23 @@ export class InteractivityGraphToFlowGraphParser {
             for (const valueKey of valuesKeys) {
                 const value = valuesFromGLTF[valueKey];
                 let valueMapping = _GetOwnMapping(outputMapper.flowGraphMapping.inputs?.values, valueKey);
+                if (this._strictValidation && valueMapping?.compatibilityOnly) {
+                    valueMapping = undefined;
+                }
                 let arrayMapping = false;
                 if (!valueMapping) {
                     for (const key in outputMapper.flowGraphMapping.inputs?.values) {
                         if (key.startsWith("[") && key.endsWith("]")) {
-                            arrayMapping = true;
-                            valueMapping = outputMapper.flowGraphMapping.inputs?.values?.[key];
+                            const wildcardMapping = outputMapper.flowGraphMapping.inputs?.values?.[key];
+                            if (!this._strictValidation || !wildcardMapping?.compatibilityOnly) {
+                                arrayMapping = true;
+                                valueMapping = wildcardMapping;
+                            }
                         }
                     }
                 }
                 const allowedDynamicInputs = arrayMapping ? this._getAllowedDynamicValueSockets(outputMapper.fullOperationName, gltfNode, "input") : undefined;
-                if (this._strictValidation && (!valueMapping || (allowedDynamicInputs && !allowedDynamicInputs.has(valueKey)))) {
+                if (!valueMapping || (allowedDynamicInputs && !allowedDynamicInputs.has(valueKey))) {
                     continue;
                 }
                 const socketInName = valueMapping ? (arrayMapping ? valueMapping.name.replace("$1", valueKey) : valueMapping.name) : valueKey;
@@ -677,20 +695,26 @@ export class InteractivityGraphToFlowGraphParser {
                         throw new Error("Error parsing node connections");
                     }
                     let valueMapping = _GetOwnMapping(outputMapper.outputs?.values, nodeOutSocketName);
+                    if (this._strictValidation && valueMapping?.compatibilityOnly) {
+                        valueMapping = undefined;
+                    }
                     let arrayMapping = false;
                     // check if there is an array mapping defined
                     if (!valueMapping) {
                         // search for a value mapping that has an array mapping
                         for (const key in outputMapper.outputs?.values) {
                             if (key.startsWith("[") && key.endsWith("]")) {
-                                arrayMapping = true;
-                                valueMapping = outputMapper.outputs?.values?.[key];
+                                const wildcardMapping = outputMapper.outputs?.values?.[key];
+                                if (!this._strictValidation || !wildcardMapping?.compatibilityOnly) {
+                                    arrayMapping = true;
+                                    valueMapping = wildcardMapping;
+                                }
                             }
                         }
                         const allowedDynamicOutputs = arrayMapping
                             ? this._getAllowedDynamicValueSockets(nodeOut.fullOperationName, this._interactivityGraph.nodes![nodeOutId], "output")
                             : undefined;
-                        if (this._strictValidation && (!valueMapping || (allowedDynamicOutputs && !allowedDynamicOutputs.has(nodeOutSocketName)))) {
+                        if (!valueMapping || (allowedDynamicOutputs && !allowedDynamicOutputs.has(nodeOutSocketName))) {
                             continue;
                         }
                     }
@@ -751,6 +775,10 @@ export class InteractivityGraphToFlowGraphParser {
             _connectionType: isOutput ? FlowGraphConnectionType.Output : FlowGraphConnectionType.Input,
             connectedPointIds: [],
         };
+    }
+
+    private _isUnsupportedExtensionBlock(block: ISerializedFlowGraphBlock | undefined): boolean {
+        return block?.className === "KHR_interactivity/FlowGraphUnsupportedInteractivityBlock";
     }
 
     /**

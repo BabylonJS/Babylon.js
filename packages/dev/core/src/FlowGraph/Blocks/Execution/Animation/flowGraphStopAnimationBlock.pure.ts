@@ -23,6 +23,7 @@ export interface IFlowGraphStopAnimationBlockConfiguration extends IFlowGraphBlo
 
     /**
      * Whether stopping suppresses the animation-group end notification.
+     * Defaults to true to preserve the historical StopAnimation behavior.
      */
     skipOnAnimationEnd?: boolean;
 }
@@ -177,7 +178,7 @@ export class FlowGraphStopAnimationBlock extends FlowGraphAsyncExecutionBlock {
         const currentlyRunning = context._getGlobalContextVariable("currentlyRunningAnimationGroups", []) as number[];
         const index = currentlyRunning.indexOf(animationGroup.uniqueId);
         if (index !== -1) {
-            const suppressAnimationEnd = !!this.config?.skipOnAnimationEnd;
+            const suppressAnimationEnd = this.config?.skipOnAnimationEnd !== false;
             const owner = suppressAnimationEnd ? RemoveFlowGraphAnimationGroupObservers(context, animationGroup) : undefined;
             owner?._cleanupAfterExternalStop(context, animationGroup);
             if (virtualStopFrame !== undefined) {

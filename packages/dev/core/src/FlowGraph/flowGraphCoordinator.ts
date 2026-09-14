@@ -97,8 +97,8 @@ export class FlowGraphCoordinator {
 
     private _eventExecutionCounter: Map<string, number> = new Map();
 
-    private _disposeObserver: Observer<Scene>;
-    private _onBeforeRenderObserver: Observer<Scene>;
+    private _disposeObserver!: Observer<Scene>;
+    private _onBeforeRenderObserver!: Observer<Scene>;
     private _executeOnNextFrame: { id: string; data?: any; uniqueId: number }[] = [];
     private _eventUniqueId: number = 0;
 
@@ -118,12 +118,16 @@ export class FlowGraphCoordinator {
          */
         public config: IFlowGraphCoordinatorConfiguration
     ) {
+        this._attachToScene(this.config.scene);
+    }
+
+    private _attachToScene(scene: Scene): void {
         // When the scene is disposed, dispose all graphs currently running on it.
-        this._disposeObserver = this.config.scene.onDisposeObservable.add(() => {
+        this._disposeObserver = scene.onDisposeObservable.add(() => {
             this.dispose();
         });
 
-        this._onBeforeRenderObserver = this.config.scene.onBeforeRenderObservable.add(() => {
+        this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
             // Reset the event execution counter at the beginning of each frame.
             this._eventExecutionCounter.clear();
             // duplicate the _executeOnNextFrame array to avoid modifying it while iterating over it
@@ -142,12 +146,46 @@ export class FlowGraphCoordinator {
         });
 
         // Add itself to the SceneCoordinators list for the Inspector.
-        let coordinators = FlowGraphCoordinator.SceneCoordinators.get(this.config.scene);
+        let coordinators = FlowGraphCoordinator.SceneCoordinators.get(scene);
         if (!coordinators) {
             coordinators = [];
-            FlowGraphCoordinator.SceneCoordinators.set(this.config.scene, coordinators);
+            FlowGraphCoordinator.SceneCoordinators.set(scene, coordinators);
         }
         coordinators.push(this);
+    }
+
+    private _detachFromScene(scene: Scene): void {
+        this._disposeObserver.remove();
+        this._onBeforeRenderObserver.remove();
+        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(scene);
+        if (!coordinators) {
+            return;
+        }
+        const index = coordinators.indexOf(this);
+        if (index !== -1) {
+            coordinators.splice(index, 1);
+        }
+    }
+
+    /**
+     * Reattaches this coordinator's lifecycle observers to another scene.
+     * @param scene new scene owned by the coordinator
+     * @param updateGraphs whether existing graphs should also be reattached
+     * @internal
+     */
+    public _setScene(scene: Scene, updateGraphs = true): void {
+        const previousScene = this.config.scene;
+        if (scene === previousScene) {
+            return;
+        }
+        this._detachFromScene(previousScene);
+        this.config.scene = scene;
+        if (updateGraphs) {
+            for (const graph of this._flowGraphs) {
+                graph.setScene(scene);
+            }
+        }
+        this._attachToScene(scene);
     }
 
     /**
@@ -194,15 +232,7 @@ export class FlowGraphCoordinator {
             FlowGraphCoordinator._OnFlowGraphRemovedObservable.notifyObservers(graph);
         }
         this._flowGraphs.length = 0;
-        this._disposeObserver?.remove();
-        this._onBeforeRenderObserver?.remove();
-
-        // Remove itself from the SceneCoordinators list for the Inspector.
-        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this.config.scene) ?? [];
-        const index = coordinators.indexOf(this);
-        if (index !== -1) {
-            coordinators.splice(index, 1);
-        }
+        this._detachFromScene(this.config.scene);
     }
 
     /**

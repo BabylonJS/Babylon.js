@@ -716,7 +716,7 @@ export class AnimationGroup implements IDisposable {
 
             this._processLoop(animatable, targetedAnimation, index);
             this._animatables.push(animatable);
-            if (this._usesVirtualSampling) {
+            if (this._usesVirtualSampling && this._isTargetRetainedByMask(animatable.target)) {
                 animatable.goToFrame(effectiveSamplingFrom);
             }
         }
@@ -805,7 +805,7 @@ export class AnimationGroup implements IDisposable {
         this._virtualFrameStartTime = this._scene._animationTime;
         if (this._usesVirtualSampling) {
             this._retainedCurrentFrame = this._mapVirtualFrame(this._virtualFrame);
-            this.goToFrame(this._retainedCurrentFrame);
+            this._goToFrameWithMask(this._retainedCurrentFrame);
         }
 
         return this;
@@ -994,7 +994,7 @@ export class AnimationGroup implements IDisposable {
         this._virtualFrameStart = frame;
         this._virtualFrameStartTime = this._scene._animationTime;
         this._retainedCurrentFrame = this._mapVirtualFrame(frame);
-        this.goToFrame(this._retainedCurrentFrame);
+        this._goToFrameWithMask(this._retainedCurrentFrame);
     }
 
     private _updateVirtualFrame(): void {
@@ -1019,7 +1019,20 @@ export class AnimationGroup implements IDisposable {
         }
 
         this._retainedCurrentFrame = this._mapVirtualFrame(this._virtualFrame);
-        this.goToFrame(this._retainedCurrentFrame);
+        this._goToFrameWithMask(this._retainedCurrentFrame);
+    }
+
+    private _goToFrameWithMask(frame: number): void {
+        for (let index = 0; index < this._animatables.length; index++) {
+            const animatable = this._animatables[index];
+            if (this._isTargetRetainedByMask(animatable.target)) {
+                animatable.goToFrame(frame);
+            }
+        }
+    }
+
+    private _isTargetRetainedByMask(target: any): boolean {
+        return !this._mask || this._mask.disabled || this._mask.retainsTarget(target.name);
     }
 
     private _removeVirtualSamplingObserver(): void {

@@ -28,6 +28,11 @@ export interface IGLTFToFlowGraphMappingObject {
     name: string;
 
     /**
+     * Whether this socket mapping exists only for pre-ratification compatibility input.
+     */
+    compatibilityOnly?: boolean;
+
+    /**
      * The type of the property in the glTF specs.
      * If not provided will be inferred.
      */
@@ -375,6 +380,12 @@ const gltfExtensionsToFlowGraphMapping: { [extension: string]: { [key: string]: 
             inputs: {
                 values: {
                     message: { name: "message" },
+                    "[segment]": { name: "$1", compatibilityOnly: true },
+                },
+            },
+            outputs: {
+                flows: {
+                    out: { name: "out", compatibilityOnly: true },
                 },
             },
         },
@@ -565,6 +576,17 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/sub": getSimpleInputMapping(FlowGraphBlockNames.Subtract, ["a", "b"], true),
     "math/mul": {
         blocks: [FlowGraphBlockNames.Multiply],
+        inputs: {
+            values: {
+                a: { name: "a" },
+                b: { name: "b" },
+            },
+        },
+        outputs: {
+            values: {
+                value: { name: "value" },
+            },
+        },
         extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
             // configure it to work the way glTF specifies
             serializedObjects[0].config ||= {};
@@ -898,6 +920,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 translation: { name: "position" },
                 rotation: { name: "rotationQuaternion" },
                 scale: { name: "scaling" },
+                scaling: { name: "scaling", compatibilityOnly: true },
+                isValid: { name: "isValid", compatibilityOnly: true },
             },
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
@@ -1524,6 +1548,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 // New spec renames this output to `lastDelay` (ref). Internally we still produce a
                 // FlowGraphInteger; the index is unique per delay so it acts as the opaque handle.
                 lastDelay: { name: "lastDelayIndex" },
+                lastDelayIndex: { name: "lastDelayIndex", compatibilityOnly: true },
             },
         },
     },
@@ -1592,6 +1617,11 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
                 dataTransformer(index: number[], parser): string[] {
                     return index.map((i) => parser.getVariableName(i));
                 },
+            },
+        },
+        outputs: {
+            flows: {
+                out: { name: "out", compatibilityOnly: true },
             },
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, parser, serializedObjects) {
@@ -1788,6 +1818,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         outputs: {
             flows: {
                 err: { name: "error" },
+                out: { name: "out", compatibilityOnly: true },
             },
         },
         interBlockConnectors: [
@@ -2101,6 +2132,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 selection: { name: "case", gltfType: "int" },
                 default: { name: "default" },
+                "[case]": { name: "$1" },
             },
         },
         outputs: {

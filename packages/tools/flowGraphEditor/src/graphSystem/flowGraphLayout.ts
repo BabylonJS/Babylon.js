@@ -101,6 +101,17 @@ export function ComputeFlowGraphLayout(nodes: IFlowLayoutNode[], options?: IFlow
     for (const node of nodes) {
         byId.set(node.id, node);
     }
+    const providersByConsumer = new Map<number, number[]>();
+    for (const node of nodes) {
+        providersByConsumer.set(node.id, []);
+    }
+    for (const node of nodes) {
+        for (const target of [...node.signalOut, ...node.dataOut]) {
+            if (byId.has(target)) {
+                providersByConsumer.get(target)!.push(node.id);
+            }
+        }
+    }
 
     // Partition the graph into one flow per event / entry root: each root claims the blocks
     // reachable from it through execution (signal) wires. Shared downstream blocks are owned
@@ -152,24 +163,16 @@ export function ComputeFlowGraphLayout(nodes: IFlowLayoutNode[], options?: IFlow
         }
     }
 
-    // Attach data-only providers / isolated blocks to a flow they feed; iterate for chains.
-    let attachChanged = true;
-    while (attachChanged) {
-        attachChanged = false;
-        for (const node of nodes) {
-            if (owner.has(node.id)) {
-                continue;
-            }
-            let target: number | undefined;
-            for (const id of [...node.signalOut, ...node.dataOut]) {
-                if (owner.has(id)) {
-                    target = owner.get(id);
-                    break;
-                }
-            }
-            if (target !== undefined) {
-                owner.set(node.id, target);
-                attachChanged = true;
+    // Attach data-only provider chains by traversing reverse adjacency once.
+    const ownerQueue = nodes.filter((node) => owner.has(node.id)).map((node) => node.id);
+    let ownerQueueHead = 0;
+    while (ownerQueueHead < ownerQueue.length) {
+        const consumerId = ownerQueue[ownerQueueHead++];
+        const rootId = owner.get(consumerId)!;
+        for (const providerId of providersByConsumer.get(consumerId) ?? []) {
+            if (!owner.has(providerId)) {
+                owner.set(providerId, rootId);
+                ownerQueue.push(providerId);
             }
         }
     }
@@ -254,10 +257,19 @@ export function ComputeFlowGraphLayout(nodes: IFlowLayoutNode[], options?: IFlow
 function LayoutComponent(nodes: IFlowLayoutNode[], opts: Required<IFlowLayoutOptions>): IComponentLayout {
     const positions = new Map<number, IFlowLayoutPosition>();
     const byId = new Map<number, IFlowLayoutNode>();
+    const providersByConsumer = new Map<number, number[]>();
     let minId = Number.POSITIVE_INFINITY;
     for (const node of nodes) {
         byId.set(node.id, node);
+        providersByConsumer.set(node.id, []);
         minId = Math.min(minId, node.id);
+    }
+    for (const node of nodes) {
+        for (const target of [...node.signalOut, ...node.dataOut]) {
+            if (byId.has(target)) {
+                providersByConsumer.get(target)!.push(node.id);
+            }
+        }
     }
 
     // Forward signal edges kept for layering. Back-edges (e.g. loop bodies) are dropped
@@ -373,31 +385,19 @@ function LayoutComponent(nodes: IFlowLayoutNode[], opts: Required<IFlowLayoutOpt
         sortKey.set(id, idx);
     }
 
-    // Place data-only / isolated nodes that never participate in signal flow. A provider is
-    // parked one column to the left of the earliest block it feeds, just above that block.
-    // Iterate to resolve short provider chains; anything left over is parked in column 0.
-    let changed = true;
-    let guard = 0;
-    while (changed && guard <= nodes.length) {
-        changed = false;
-        guard++;
-        for (const node of nodes) {
-            if (column.has(node.id)) {
-                continue;
+    // Place data-only providers by walking reverse adjacency once from signal-layer anchors.
+    const providerQueue = nodes.filter((node) => column.has(node.id)).map((node) => node.id);
+    let providerQueueHead = 0;
+    while (providerQueueHead < providerQueue.length) {
+        const consumerId = providerQueue[providerQueueHead++];
+        const consumerColumn = column.get(consumerId)!;
+        const consumerKey = sortKey.get(consumerId) ?? 0;
+        for (const providerId of providersByConsumer.get(consumerId) ?? []) {
+            if (!column.has(providerId)) {
+                column.set(providerId, Math.max(0, consumerColumn - 1));
+                sortKey.set(providerId, consumerKey - 0.5);
+                providerQueue.push(providerId);
             }
-            const consumers = [...node.signalOut, ...node.dataOut].filter((id) => byId.has(id) && column.has(id));
-            if (consumers.length === 0) {
-                continue;
-            }
-            let minColumn = Number.POSITIVE_INFINITY;
-            let minKey = Number.POSITIVE_INFINITY;
-            for (const id of consumers) {
-                minColumn = Math.min(minColumn, column.get(id)!);
-                minKey = Math.min(minKey, sortKey.get(id) ?? 0);
-            }
-            column.set(node.id, Math.max(0, minColumn - 1));
-            sortKey.set(node.id, minKey - 0.5);
-            changed = true;
         }
     }
     // Any remaining pure-data island has no signal-layer anchor. Layer its acyclic data edges

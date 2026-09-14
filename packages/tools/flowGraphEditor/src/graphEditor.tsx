@@ -1025,11 +1025,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
             const frame = entity.frame;
             const renderedFrameBounds = frame?.element.getBoundingClientRect();
-            const frameWidth = renderedFrameBounds ? renderedFrameBounds.width / canvas.zoom : frame?.width;
             const frameHeight = renderedFrameBounds ? renderedFrameBounds.height / canvas.zoom : frame?.height;
             return {
                 id: entityId,
-                width: frame ? (frame.isCollapsed ? (frameWidth ?? 220) : frame.width) : entity.nodes[0].width,
+                width: frame ? frame.width : entity.nodes[0].width,
                 height: frame ? (frame.isCollapsed ? (frameHeight ?? 120) : frame.height) : entity.nodes[0].height,
                 isEvent: entity.nodes.some((node) => node.content.data instanceof FlowGraphEventBlock),
                 signalOut: [...new Set(signalOut)],

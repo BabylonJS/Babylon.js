@@ -8,6 +8,8 @@ import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { FlowGraphStopAnimationBlock } from "core/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock";
 import { FlowGraphPlayAnimationBlock } from "core/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock";
 import { FlowGraphConstantBlock } from "core/FlowGraph/Blocks/Data/flowGraphConstantBlock";
+import { AnimationGroupMask } from "core/Animations/animationGroupMask";
+import { ParseFlowGraphBlockWithClassType } from "core/FlowGraph/flowGraphParser";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -147,6 +149,39 @@ describe("Babylon Animation Group", function () {
             expect(animationGroup.getVirtualCurrentFrame()).toBe(to);
             expect(animationGroup.getRetainedCurrentFrame()).toBe(effectiveEnd);
             expect(animationGroup.isPlaying).toBe(false);
+        });
+
+        it("skips mask-excluded targets during virtual sampling without changing public goToFrame behavior", () => {
+            const scene = new Scene(subject);
+            const included = new TransformNode("included", scene);
+            const excluded = new TransformNode("excluded", scene);
+            included.position.x = -1;
+            excluded.position.x = -1;
+            const animation = new Animation("animation", "position.x", 60, Animation.ANIMATIONTYPE_FLOAT);
+            animation.setKeys([
+                { frame: 0, value: 0 },
+                { frame: 60, value: 60 },
+            ]);
+            const animationGroup = new AnimationGroup("animationGroup0", scene);
+            animationGroup.addTargetedAnimation(animation, included);
+            animationGroup.addTargetedAnimation(animation, excluded);
+            animationGroup.mask = new AnimationGroupMask(["included"]);
+
+            animationGroup.startWithVirtualTimeline(false, 1, 90, 150);
+
+            expect(included.position.x).toBe(30);
+            expect(excluded.position.x).toBe(-1);
+
+            scene._animate(500);
+            scene.onAfterAnimationsObservable.notifyObservers(scene);
+
+            expect(included.position.x).toBe(60);
+            expect(excluded.position.x).toBe(-1);
+
+            animationGroup.goToFrame(15);
+
+            expect(included.position.x).toBe(15);
+            expect(excluded.position.x).toBe(15);
         });
 
         it("passes an explicitly connected zero end frame to reverse playback", () => {
@@ -312,7 +347,7 @@ describe("Babylon Animation Group", function () {
             stopBlock._execute(context);
 
             expect(animationGroup.isPlaying).toBe(false);
-            expect(stopSpy).toHaveBeenCalledWith();
+            expect(stopSpy).toHaveBeenCalledWith(true);
         });
 
         it("maps every virtual frame to zero for a zero-duration animation", () => {
@@ -431,7 +466,7 @@ describe("Babylon Animation Group", function () {
             expect((context._getGlobalContextVariable("animationGroupObserverSets", new Map()) as Map<number, unknown>).has(animationGroup.uniqueId)).toBe(false);
         });
 
-        it("preserves the originating done flow for a generic stop block", () => {
+        it("suppresses the originating done flow for a serialized legacy generic stop block", () => {
             const scene = new Scene(subject);
             const node = new TransformNode("node0", scene);
             const animation = new Animation("animation", "position.x", 60, Animation.ANIMATIONTYPE_FLOAT);
@@ -447,13 +482,34 @@ describe("Babylon Animation Group", function () {
             play.animationGroup.setValue(animationGroup, context);
             const done = vi.spyOn(play.done, "_activateSignal");
             play._execute(context);
-            const stop = new FlowGraphStopAnimationBlock();
+            const serializedStop: any = {};
+            new FlowGraphStopAnimationBlock().serialize(serializedStop);
+            const stop = ParseFlowGraphBlockWithClassType(serializedStop, { scene }, FlowGraphStopAnimationBlock) as FlowGraphStopAnimationBlock;
             stop.animationGroup.setValue(animationGroup, context);
 
             stop._execute(context);
 
-            expect(done).toHaveBeenCalledTimes(1);
+            expect(done).not.toHaveBeenCalled();
             expect(context.hasPendingBlocks).toBe(false);
+        });
+
+        it("does not register an empty animation group as a pending task", () => {
+            const scene = new Scene(subject);
+            const animationGroup = new AnimationGroup("empty", scene);
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const context = coordinator.createGraph().createContext();
+            const play = new FlowGraphPlayAnimationBlock();
+            play.animationGroup.setValue(animationGroup, context);
+            const error = vi.spyOn(play.error, "_activateSignal");
+            const out = vi.spyOn(play.out, "_activateSignal");
+
+            play._execute(context);
+
+            expect(error).toHaveBeenCalledTimes(1);
+            expect(out).not.toHaveBeenCalled();
+            expect(context.hasPendingBlocks).toBe(false);
+            expect(context._getGlobalContextVariable("currentlyRunningAnimationGroups", [])).toEqual([]);
+            expect((context._getGlobalContextVariable("animationGroupObserverSets", new Map()) as Map<number, unknown>).size).toBe(0);
         });
 
         it("keeps other running animations tracked when one animation is stopped", () => {

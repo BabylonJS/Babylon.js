@@ -1355,6 +1355,235 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             });
     });
 
+    test("retains an imported graph when a graphless scene replaces its owning scene", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        const serializedGraph = JSON.parse(await fge.serializeGraph());
+
+        const graphBearingGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "graphBearingSceneNode" }],
+            extensionsUsed: ["BABYLON_flow_graph"],
+            extensions: { BABYLON_flow_graph: { flowGraph: serializedGraph } },
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "graphBearingScene.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, graphBearingGltf);
+
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported flow graph from "graphBearingScene.gltf"');
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            (globalThis as any).__graphBearingSceneState = {
+                coordinator: state.coordinator,
+                flowGraph: state.flowGraph,
+                scene: state.sceneContext.scene,
+            };
+        });
+
+        const graphlessGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "graphlessSceneNode" }],
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "graphlessScene.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, graphlessGltf);
+
+        await expect.poll(async () => (await GetSceneContextSnapshot(page))?.transformNodeNames).toContain("graphlessSceneNode");
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        const before = (globalThis as any).__graphBearingSceneState;
+                        const scene = state.sceneContext.scene;
+                        return {
+                            coordinatorRetained: state.coordinator === before.coordinator,
+                            graphRetained: state.flowGraph === before.flowGraph,
+                            graphMembership: state.coordinator.flowGraphs.includes(state.flowGraph),
+                            coordinatorScene: state.coordinator.config.scene === scene,
+                            graphScene: state.flowGraph.scene === scene,
+                            newSceneRegistered: (globalThis as any).BABYLON.FlowGraphCoordinator.SceneCoordinators.get(scene)?.includes(state.coordinator) ?? false,
+                            oldSceneCoordinatorCount: (globalThis as any).BABYLON.FlowGraphCoordinator.SceneCoordinators.get(before.scene)?.length,
+                            oldSceneDisposed: before.scene.isDisposed,
+                        };
+                    })
+            )
+            .toEqual({
+                coordinatorRetained: true,
+                graphRetained: true,
+                graphMembership: true,
+                coordinatorScene: true,
+                graphScene: true,
+                newSceneRegistered: true,
+                oldSceneCoordinatorCount: 0,
+                oldSceneDisposed: true,
+            });
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await ClickGraphControl(page, "Stop");
+        await WaitForGraphState(page, "Stopped");
+    });
+
+    test("rejects graphless scene replacement while editing a borrowed live-host graph", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            state.hostScene = state.sceneContext.scene;
+            state.sceneSource = "host";
+            (globalThis as any).__borrowedHostStateBeforeGraphlessDrop = {
+                sceneContext: state.sceneContext,
+                coordinator: state.coordinator,
+                flowGraph: state.flowGraph,
+                engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length,
+            };
+        });
+
+        const graphlessGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "rejectedHostReplacementNode" }],
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "hostGraphlessScene.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, graphlessGltf);
+
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Graphless scene replacement is unavailable while editing a borrowed live-host graph.");
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        const before = (globalThis as any).__borrowedHostStateBeforeGraphlessDrop;
+                        return {
+                            sceneContext: state.sceneContext === before.sceneContext,
+                            coordinator: state.coordinator === before.coordinator,
+                            flowGraph: state.flowGraph === before.flowGraph,
+                            graphMembership: state.coordinator.flowGraphs.includes(state.flowGraph),
+                            running: state.flowGraph.state,
+                            engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length === before.engineCount,
+                            stagedNodePublished: !!state.sceneContext.scene.getTransformNodeByName("rejectedHostReplacementNode"),
+                        };
+                    })
+            )
+            .toEqual({
+                sceneContext: true,
+                coordinator: true,
+                flowGraph: true,
+                graphMembership: true,
+                running: 1,
+                engineCount: true,
+                stagedNodePublished: false,
+            });
+    });
+
+    test("rejects graphless scene replacement for KHR_interactivity runtime services", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+
+        const khrGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "khrRuntimeNode" }],
+            extensionsUsed: ["KHR_interactivity"],
+            extensions: {
+                KHR_interactivity: {
+                    graphs: [{ name: "KHR Runtime", declarations: [{ op: "event/onStart" }], nodes: [{ declaration: 0 }] }],
+                },
+            },
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "khrRuntimeScene.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, khrGltf);
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["KHR Runtime"]);
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            (globalThis as any).__khrRuntimeStateBeforeGraphlessDrop = {
+                sceneContext: state.sceneContext,
+                coordinator: state.coordinator,
+                flowGraph: state.flowGraph,
+                hostResolver: state.coordinator.config.hostResolver,
+                engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length,
+            };
+        });
+
+        const graphlessGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "rejectedKhrReplacementNode" }],
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "khrGraphlessScene.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, graphlessGltf);
+
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText(
+            "Graphless scene replacement is unavailable for KHR_interactivity imports because their runtime services belong to the current asset."
+        );
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        const before = (globalThis as any).__khrRuntimeStateBeforeGraphlessDrop;
+                        return {
+                            sceneContext: state.sceneContext === before.sceneContext,
+                            coordinator: state.coordinator === before.coordinator,
+                            flowGraph: state.flowGraph === before.flowGraph,
+                            graphMembership: state.coordinator.flowGraphs.includes(state.flowGraph),
+                            hostResolver: state.coordinator.config.hostResolver === before.hostResolver,
+                            synchronousDispatch: state.coordinator.dispatchEventsSynchronously,
+                            importScoped: state.hasImportScopedRuntime,
+                            engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length === before.engineCount,
+                            stagedNodePublished: !!state.sceneContext.scene.getTransformNodeByName("rejectedKhrReplacementNode"),
+                        };
+                    })
+            )
+            .toEqual({
+                sceneContext: true,
+                coordinator: true,
+                flowGraph: true,
+                graphMembership: true,
+                hostResolver: true,
+                synchronousDispatch: false,
+                importScoped: true,
+                engineCount: true,
+                stagedNodePublished: false,
+            });
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await ClickGraphControl(page, "Stop");
+        await WaitForGraphState(page, "Stopped");
+    });
+
     test("loads flow graphs from glTF extension files and leaves the graph unchanged when the extension is absent", async ({ page }) => {
         const fge = new FlowGraphEditorPage(page);
         await fge.goto();
@@ -1394,6 +1623,110 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
 
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("No BABYLON_flow_graph extension found in this file");
         expect(await fge.getGraphTopology()).toEqual(topologyBeforeMissingExtension);
+    });
+
+    test("keeps the current scene and graph when a dropped KHR_interactivity file has no graphs", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            (globalThis as any).__sceneGraphPairBeforeFailedFile = {
+                sceneContext: state.sceneContext,
+                coordinator: state.coordinator,
+                flowGraph: state.flowGraph,
+                engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length,
+            };
+        });
+
+        const invalidKhrGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "failedKhrNode" }],
+            extensionsUsed: ["KHR_interactivity"],
+            extensions: { KHR_interactivity: { graphs: [] } },
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "zeroKhrGraphs.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, invalidKhrGltf);
+
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("A Flow Graph coordinator must contain at least one graph.");
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        const before = (globalThis as any).__sceneGraphPairBeforeFailedFile;
+                        return {
+                            sceneContext: state.sceneContext === before.sceneContext,
+                            coordinator: state.coordinator === before.coordinator,
+                            flowGraph: state.flowGraph === before.flowGraph,
+                            engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length === before.engineCount,
+                            failedNodePublished: !!state.sceneContext.scene.getTransformNodeByName("failedKhrNode"),
+                        };
+                    })
+            )
+            .toEqual({ sceneContext: true, coordinator: true, flowGraph: true, engineCount: true, failedNodePublished: false });
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await ClickGraphControl(page, "Stop");
+        await WaitForGraphState(page, "Stopped");
+    });
+
+    test("rejects malformed BABYLON_flow_graph data without publishing its staged scene", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto();
+        await fge.assertEditorReady();
+        await fge.addBlockFromPalette("SceneReadyEvent");
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            (globalThis as any).__sceneGraphPairBeforeMalformedCustomGraph = {
+                sceneContext: state.sceneContext,
+                coordinator: state.coordinator,
+                flowGraph: state.flowGraph,
+                engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length,
+            };
+        });
+
+        const malformedCustomGraphGltf = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "failedCustomGraphNode" }],
+            extensionsUsed: ["BABYLON_flow_graph"],
+            extensions: { BABYLON_flow_graph: { flowGraph: { _flowGraphs: [] } } },
+        };
+        await page.evaluate((source) => {
+            const file = new File([JSON.stringify(source)], "malformedCustomGraph.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, malformedCustomGraphGltf);
+
+        const log = page.getByRole("log", { name: "Flow graph log" });
+        await expect(log).toContainText("Failed to load file: A Flow Graph coordinator must contain at least one graph.");
+        await expect(log).not.toContainText('Loaded "malformedCustomGraph.gltf"');
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        const before = (globalThis as any).__sceneGraphPairBeforeMalformedCustomGraph;
+                        return {
+                            sceneContext: state.sceneContext === before.sceneContext,
+                            coordinator: state.coordinator === before.coordinator,
+                            flowGraph: state.flowGraph === before.flowGraph,
+                            engineCount: (globalThis as any).BABYLON.EngineStore.Instances.length === before.engineCount,
+                            failedNodePublished: !!state.sceneContext.scene.getTransformNodeByName("failedCustomGraphNode"),
+                        };
+                    })
+            )
+            .toEqual({ sceneContext: true, coordinator: true, flowGraph: true, engineCount: true, failedNodePublished: false });
     });
 
     test("imports every KHR_interactivity graph, falls back from an invalid default, and preserves imported composites", async ({ page }) => {
@@ -1479,6 +1812,13 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                 dispatchEventsSynchronously: false,
                 hasHostResolver: true,
             });
+        const saveButton = page.getByRole("button", { name: "Save", exact: true });
+        await expect(saveButton).toBeDisabled();
+        await saveButton.hover();
+        await expect(page.getByRole("tooltip")).toContainText("KHR_interactivity graphs use import-scoped runtime services");
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText(
+            "KHR_interactivity graphs use import-scoped runtime services; JSON save and reload are unavailable for this import."
+        );
         await fge.selectGraphTab("Vendor behavior");
         const unsupportedNode = fge.nodeOnCanvas("FlowGraphUnsupportedInteractivityBlock");
         await expect(unsupportedNode).toBeVisible();
@@ -1526,6 +1866,8 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             const blocks = graph.getAllBlocks();
             const blockByFrameId = new Map(blocks.map((block: any) => [editorData.map[block.uniqueId], block]));
             const locations = new Map(editorData.locations.map((location: any) => [location.blockId, location]));
+            const nextBlock = blocks.find((block: any) => block.getClassName() === "FlowGraphAbsBlock");
+            const nextBlockLocation: any = locations.get(nextBlock?.uniqueId);
             return {
                 blockClassNames: frame.blocks.map((frameBlockId: number) => blockByFrameId.get(frameBlockId)?.getClassName()).sort(),
                 relativePositions: frame.blocks.map((frameBlockId: number) => {
@@ -1535,6 +1877,8 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                 }),
                 width: frame.width,
                 height: frame.height,
+                right: frame.x + frame.width,
+                nextBlockX: nextBlockLocation.x,
             };
         });
         expect(compositeFrame.blockClassNames).toEqual(["FlowGraphGetPropertyBlock", "FlowGraphJsonPointerParserBlock"]);
@@ -1544,6 +1888,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             expect(position.x).toBeLessThan(compositeFrame.width);
             expect(position.y).toBeLessThan(compositeFrame.height);
         }
+        expect(compositeFrame.right).toBeLessThanOrEqual(compositeFrame.nextBlockX);
         await expect(page.getByText("pointer/get · glTF node 1", { exact: true })).toBeVisible();
         await expect(page.locator("#graph-canvas-container .FlowGraphGetPropertyBlock[class*='hidden']")).toHaveCount(1);
         await expect(page.locator("#graph-canvas-container .FlowGraphJsonPointerParserBlock[class*='hidden']")).toHaveCount(1);
@@ -1555,6 +1900,81 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                 [...container.children].filter((element) => !element.className.includes("hidden")).map((element) => Math.round(element.getBoundingClientRect().left))
             );
         expect(new Set(importedLeftPositions).size).toBeGreaterThan(1);
+
+        await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            (globalThis as any).__khrCoordinatorBeforeFailedLoad = state?.coordinator;
+        });
+        const khrJson = await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            const graphData: any = {};
+            state.flowGraph.serialize(graphData);
+            graphData.allBlocks[0].metadata = { khrInteractivity: { graphIndex: 0, nodeIndex: 0 } };
+            return { _flowGraphs: [graphData] };
+        });
+        const jsonInput = page.locator("input[type='file'][accept='.json']");
+        await jsonInput.setInputFiles({
+            name: "unsupported-khr-reload.json",
+            mimeType: "application/json",
+            buffer: Buffer.from(JSON.stringify(khrJson)),
+        });
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText(
+            "Error loading flow graph: Error: KHR_interactivity graphs use import-scoped runtime services"
+        );
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        return state.coordinator === (globalThis as any).__khrCoordinatorBeforeFailedLoad && state.coordinator.flowGraphs.includes(state.flowGraph);
+                    })
+            )
+            .toBe(true);
+
+        await jsonInput.setInputFiles({
+            name: "empty-coordinator.json",
+            mimeType: "application/json",
+            buffer: Buffer.from(JSON.stringify({ _flowGraphs: [] })),
+        });
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("A Flow Graph coordinator must contain at least one graph.");
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        return state.coordinator === (globalThis as any).__khrCoordinatorBeforeFailedLoad && state.coordinator.flowGraphs.includes(state.flowGraph);
+                    })
+            )
+            .toBe(true);
+
+        const malformedJson = await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+            const graphData: any = {};
+            state.flowGraph.serialize(graphData);
+            graphData.allBlocks[0].signalOutputs.push({
+                uniqueId: "unmapped-output",
+                name: "unmappedOutput",
+                _connectionType: 1,
+                connectedPointIds: [],
+            });
+            return { _flowGraphs: [graphData] };
+        });
+        await jsonInput.setInputFiles({
+            name: "malformed-flow-graph.json",
+            mimeType: "application/json",
+            buffer: Buffer.from(JSON.stringify(malformedJson)),
+        });
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Could not find signal output with name unmappedOutput");
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        return state.coordinator === (globalThis as any).__khrCoordinatorBeforeFailedLoad && state.coordinator.flowGraphs.includes(state.flowGraph);
+                    })
+            )
+            .toBe(true);
+
         await page.getByRole("button", { name: "Enable Debug Mode" }).click();
         await expect.poll(async () => (await GetDebugSnapshot(page)).isDebugMode).toBe(true);
         await ClickGraphControl(page, "Start");

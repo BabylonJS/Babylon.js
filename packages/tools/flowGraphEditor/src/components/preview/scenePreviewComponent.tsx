@@ -7,7 +7,7 @@ import "core/Helpers/sceneHelpers";
 import { type Engine } from "core/Engines/engine";
 import { type IKHRInteractivityImportResult } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 import { SceneContext } from "../../sceneContext";
-import { SerializationTools } from "../../serializationTools";
+import { SerializationTools, type IFlowGraphEditorDeserializedState } from "../../serializationTools";
 import { LogEntry } from "../log/logComponent";
 import { ShowToast } from "../toast/toastComponent";
 import { LoadSnippet, type IPlaygroundSnippetResult } from "@tools/snippet-loader";
@@ -32,6 +32,11 @@ interface IScenePreviewComponentState {
     isLoading: boolean;
     error: string;
     sceneObjectCount: number;
+}
+
+interface IStagedKhrInteractivityImport {
+    state: IFlowGraphEditorDeserializedState;
+    importResult: IKHRInteractivityImportResult;
 }
 
 const ImportedBlockWidth = 240;
@@ -108,9 +113,10 @@ function _CreateKhrInteractivityEditorData(blocks: ISerializedFlowGraphBlock[]) 
             }
         }
         const collapsedHeight = ImportedBlockBaseHeight + Math.max(externalInputCount, externalOutputCount) * ImportedPortHeight;
+        const expandedWidth = group.blocks.length * ImportedBlockWidth + Math.max(0, group.blocks.length - 1) * ImportedCompositeGap;
         return {
             id: groupIndex,
-            width: group.blocks.length > 1 ? ImportedBlockWidth : group.blocks.length * ImportedBlockWidth,
+            width: group.blocks.length > 1 ? expandedWidth + ImportedCompositeGap * 2 : expandedWidth,
             height: group.blocks.length > 1 ? collapsedHeight : Math.max(...group.blocks.map(_GetImportedBlockHeight)),
             isEvent: group.blocks.some((block) => IsFlowGraphEventBlockName(block.className)),
             signalOut: [...signalOut],
@@ -240,6 +246,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     private _onSnippetIdChangedObserver: Nullable<Observer<string>> = null;
     private _onReloadSnippetRequestedObserver: Nullable<Observer<void>> = null;
     private _onDropEventObserver: Nullable<Observer<DragEvent>> = null;
+    private _watchedSceneContext: Nullable<SceneContext> = null;
 
     /** @internal */
     constructor(props: IScenePreviewComponentInnerProps) {
@@ -349,13 +356,15 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         this._onContextRefreshedObserver = ctx.onContextRefreshed.add(() => {
             this.setState({ sceneObjectCount: ctx.entries.length });
         });
+        this._watchedSceneContext = ctx;
     }
 
     private _unwatchContext() {
-        if (this._onContextRefreshedObserver) {
-            this.props.globalState.sceneContext?.onContextRefreshed.remove(this._onContextRefreshedObserver);
+        if (this._onContextRefreshedObserver && this._watchedSceneContext) {
+            this._watchedSceneContext.onContextRefreshed.remove(this._onContextRefreshedObserver);
             this._onContextRefreshedObserver = null;
         }
+        this._watchedSceneContext = null;
     }
 
     /**
@@ -365,14 +374,18 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     private _disposeCurrentScene() {
         const oldCtx = this.props.globalState.sceneContext;
         if (oldCtx) {
-            // Never tear down a live host scene/engine — the editor only borrows it. Ownership is
-            // tracked on the context so attach-to-host mode leaves the running application intact.
-            if (oldCtx.ownsScene) {
-                oldCtx.engine.stopRenderLoop();
-                oldCtx.scene.dispose();
-                oldCtx.engine.dispose();
-            }
-            oldCtx.dispose();
+            this._disposeSceneContext(oldCtx);
+        }
+    }
+
+    private _disposeSceneContext(sceneContext: SceneContext): void {
+        if (sceneContext.ownsScene) {
+            sceneContext.engine.stopRenderLoop();
+            sceneContext.scene.dispose();
+            sceneContext.engine.dispose();
+        }
+        sceneContext.dispose();
+        if (this.props.globalState.sceneContext === sceneContext) {
             this.props.globalState.sceneContext = null;
             this.props.globalState.sceneSource = null;
         }
@@ -537,14 +550,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         }
     }
 
-    /**
-     * Imports every canonical KHR_interactivity graph into the editor after the
-     * glTF loader has completed its awaited parse-only pass.
-     * @param scene - the loaded scene
-     * @param fileName - the original file name (for log messages)
-     * @returns true if a flow graph was found and imported
-     */
-    private async _importFlowGraphsFromSceneAsync(scene: Scene, fileName: string): Promise<boolean> {
+    private async _stageFlowGraphsFromSceneAsync(scene: Scene): Promise<Nullable<IStagedKhrInteractivityImport>> {
         const getImportResult = (globalThis as any).BABYLON?.GLTF2?.Loader?.Extensions?.GetKHRInteractivityImportResult as
             ((scene: Scene) => IKHRInteractivityImportResult | undefined) | undefined;
         const getImportResults = (globalThis as any).BABYLON?.GLTF2?.Loader?.Extensions?.GetKHRInteractivityImportResults as
@@ -552,7 +558,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const importResults = getImportResults?.(scene);
         const importResult = importResults?.[importResults.length - 1] ?? getImportResult?.(scene);
         if (!importResult) {
-            return false;
+            return null;
         }
 
         const serializedGraphs = importResult.graphs.map((graphResult) => {
@@ -565,7 +571,6 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             (serializedFlowGraph as any).editorData = _CreateKhrInteractivityEditorData(serializedFlowGraph.allBlocks);
             return serializedFlowGraph;
         });
-        this.props.globalState.coordinator?.dispose();
         const requestedGraphIndex = importResult.document.defaultGraphIndex;
         const activeGraphIndex =
             requestedGraphIndex >= 0 && importResult.graphs[requestedGraphIndex]?.serializedFlowGraph
@@ -574,22 +579,28 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                       0,
                       importResult.graphs.findIndex((graphResult) => !!graphResult.serializedFlowGraph)
                   );
-        await SerializationTools.DeserializeAsync(
+        const state = await SerializationTools.DeserializeToStateAsync(
             {
                 _flowGraphs: serializedGraphs,
                 activeGraphIndex,
             },
-            this.props.globalState,
             scene,
             importResult.pathConverter,
             {
                 coordinatorConfig: { hostResolver: importResult.hostResolver },
                 dispatchEventsSynchronously: false,
+                sourceFormat: "KHR_interactivity",
             }
         );
+        return { state, importResult };
+    }
 
+    private _logKhrInteractivityImport(importResult: IKHRInteractivityImportResult, fileName: string): void {
         this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
         this.props.globalState.onClearUndoStack.notifyObservers();
+        this.props.globalState.onLogRequiredObservable.notifyObservers(
+            new LogEntry("KHR_interactivity graphs use import-scoped runtime services; JSON save and reload are unavailable for this import.", false)
+        );
         for (const diagnostic of importResult.document.diagnostics) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(
                 new LogEntry(`KHR_interactivity ${diagnostic.severity}: ${diagnostic.path}: ${diagnostic.message}`, diagnostic.severity === "error")
@@ -619,7 +630,6 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         this.props.globalState.onLogRequiredObservable.notifyObservers(
             new LogEntry(`Imported ${importResult.graphs.length} KHR_interactivity graph(s) from "${fileName}" (${executableGraphCount} executable)`, false)
         );
-        return true;
     }
 
     /**
@@ -634,8 +644,12 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         this.setState({ isLoading: true, error: "" });
 
         const registeredFiles: string[] = [];
+        let stagedEngine: Engine | null = null;
+        let stagedScene: Scene | null = null;
+        let stagedSceneContext: SceneContext | null = null;
+        let stagedGraphState: IFlowGraphEditorDeserializedState | null = null;
         try {
-            const { Engine } = await import("core/Engines/engine");
+            const { Engine: engineConstructor } = await import("core/Engines/engine");
             const { LoadSceneAsync } = await import("core/Loading/sceneLoader");
             const { FilesInputStore } = await import("core/Misc/filesInputStore");
 
@@ -644,9 +658,8 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 throw new Error("Preview canvas not available");
             }
 
-            this._disposeCurrentScene();
-
-            const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+            const engine = new engineConstructor(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+            stagedEngine = engine;
 
             // Register the main file and any companion files in Babylon's virtual file system
             const mainKey = file.name.toLowerCase();
@@ -676,6 +689,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     },
                 },
             });
+            stagedScene = scene;
 
             if (!scene || !scene.render) {
                 throw new Error("Failed to load scene from file");
@@ -688,33 +702,84 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 scene.createDefaultLight(true);
             }
 
-            this._setupEngineRenderLoop(scene, engine);
-
             await scene.whenReadyAsync(true);
-
-            const sceneContext = this._publishSceneContext(scene, "file");
-            this.props.globalState.snippetId = "";
 
             // Detect flow graphs from the loaded file:
             // 1. KHR_interactivity (processed by the glTF loader into coordinators)
             // 2. BABYLON_flow_graph custom extension (our round-trip format)
-            const foundViaCoordinator = await this._importFlowGraphsFromSceneAsync(scene, file.name);
-            if (!foundViaCoordinator) {
-                try {
-                    const imported = await SerializationTools.ImportFromGlbAsync(file, this.props.globalState);
-                    if (imported) {
-                        this.props.globalState.onLogRequiredObservable.notifyObservers(
-                            new LogEntry(`Imported flow graph from "${file.name}" (BABYLON_flow_graph extension)`, false)
-                        );
-                    }
-                } catch {
-                    // Custom extension not present or parse failed — that's fine
+            const stagedKhrImport = await this._stageFlowGraphsFromSceneAsync(scene);
+            let importedCustomGraph = false;
+            if (stagedKhrImport) {
+                stagedGraphState = stagedKhrImport.state;
+            } else {
+                const serializedCustomGraph = await SerializationTools.ReadFlowGraphFromGlbAsync(file);
+                if (serializedCustomGraph) {
+                    stagedGraphState = await SerializationTools.DeserializeToStateAsync(serializedCustomGraph, scene);
+                    importedCustomGraph = true;
                 }
             }
 
+            const previousSceneContext = this.props.globalState.sceneContext;
+            const retainedCoordinator = this.props.globalState.coordinator;
+            stagedSceneContext = new SceneContext(scene, true);
+            if (!stagedGraphState) {
+                const isBorrowedLiveHostGraph =
+                    !!this.props.globalState.hostScene &&
+                    previousSceneContext?.scene === this.props.globalState.hostScene &&
+                    (!retainedCoordinator || !this.props.globalState.isCoordinatorEditorOwned(retainedCoordinator));
+                if (isBorrowedLiveHostGraph) {
+                    throw new Error("Graphless scene replacement is unavailable while editing a borrowed live-host graph.");
+                }
+                if (this.props.globalState.hasImportScopedRuntime) {
+                    throw new Error("Graphless scene replacement is unavailable for KHR_interactivity imports because their runtime services belong to the current asset.");
+                }
+            }
+
+            this._setupEngineRenderLoop(scene, engine);
+            if (
+                !stagedGraphState &&
+                previousSceneContext &&
+                retainedCoordinator &&
+                this.props.globalState.isCoordinatorEditorOwned(retainedCoordinator) &&
+                retainedCoordinator.config.scene === previousSceneContext.scene
+            ) {
+                retainedCoordinator._setScene(scene, false);
+            }
+            this.props.globalState.sceneContext = stagedSceneContext;
+            this.props.globalState.sceneSource = "file";
+            this.props.globalState.snippetId = "";
+            if (stagedGraphState) {
+                SerializationTools.ApplyDeserializedState(stagedGraphState, this.props.globalState);
+                stagedGraphState = null;
+            }
+            this.props.globalState.onSceneContextChanged.notifyObservers(stagedSceneContext);
+            this.setState({ sceneObjectCount: stagedSceneContext.entries.length });
+            if (previousSceneContext && previousSceneContext !== stagedSceneContext) {
+                this._disposeSceneContext(previousSceneContext);
+            }
+
+            if (stagedKhrImport) {
+                this._logKhrInteractivityImport(stagedKhrImport.importResult, file.name);
+            } else if (importedCustomGraph) {
+                this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                this.props.globalState.onClearUndoStack.notifyObservers();
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Imported flow graph from "${file.name}" (BABYLON_flow_graph extension)`, false));
+            }
+
+            const sceneObjectCount = stagedSceneContext.entries.length;
+            stagedSceneContext = null;
+            stagedScene = null;
+            stagedEngine = null;
             this.setState({ isLoading: false, snippetId: "" });
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Loaded "${file.name}" with ${sceneContext.entries.length} scene objects`, false));
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Loaded "${file.name}" with ${sceneObjectCount} scene objects`, false));
         } catch (err: any) {
+            stagedGraphState?.coordinator.dispose();
+            if (stagedSceneContext) {
+                this._disposeSceneContext(stagedSceneContext);
+            } else {
+                stagedScene?.dispose();
+                stagedEngine?.dispose();
+            }
             // Clean up registered files on failure
             try {
                 const { FilesInputStore } = await import("core/Misc/filesInputStore");
@@ -729,7 +794,6 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 error: err.message || "Failed to load file",
             });
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Failed to load file: ${err.message}`, true));
-            this.props.globalState.onSceneContextChanged.notifyObservers(null);
         }
     }
 
