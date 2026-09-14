@@ -78,11 +78,6 @@ uniform objectId: f32;
 uniform meshBlendTag: i32;
 #endif
 
-#ifdef OBJECT_ID
-uniform objectId: f32;
-#include<objectIdFunctions>
-#endif
-
 #include<clipPlaneFragmentDeclaration>
 
 #include<bumpFragmentMainFunctions>

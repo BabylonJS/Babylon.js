@@ -25,9 +25,11 @@ The effect consumes the following single-sampled geometry textures:
 3. View or screen depth.
 4. Optional linear base color/albedo for shadow estimation.
 
+Mesh blending is supported on WebGL2 and WebGPU. Native is rejected because its current texture-format mapping cannot create the required `R8UI` tag render target.
+
 SceneColor and all provided geometry inputs must use the same physical dimensions and sample coverage. Alpha-tested fragments write tags only when they survive the material's configured alpha cutoff. When base color/albedo is omitted, shadow estimation and all base-color samples are compiled out; no fallback texture or additional geometry attachment is required.
 
-Transparent meshes are allowed, but the application is responsible for ensuring that they do not make SceneColor inconsistent with the single-layer depth, albedo, and tag inputs. Transparent meshes that are screen-space-disjoint from participating blended surfaces can be rendered safely. Overlapping transparent surfaces can overwrite or blend geometry inputs independently from SceneColor and produce holes, false boundaries, or incorrect colors. Compositing transparent content after mesh blending remains the recommended general configuration.
+Transparent meshes are allowed, but the application is responsible for ensuring that they do not make SceneColor inconsistent with the single-layer depth, albedo, and tag inputs. WebGL2 requires per-target blend-parameter support so blending can remain enabled for color outputs while being disabled for the integer tag attachment; configurations that request transparent tag rendering without this support are rejected. Transparent meshes that are screen-space-disjoint from participating blended surfaces can be rendered safely. Overlapping transparent surfaces can overwrite or blend geometry inputs independently from SceneColor and produce holes, false boundaries, or incorrect colors. Compositing transparent content after mesh blending remains the recommended general configuration.
 
 ### Classic renderer
 

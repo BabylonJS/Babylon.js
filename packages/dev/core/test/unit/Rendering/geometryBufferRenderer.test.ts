@@ -94,6 +94,7 @@ describe("GeometryBufferRenderer mesh-blending tags", () => {
             engine._webGLVersion = 2;
             engine.getCaps().drawBuffersExtension = true;
             engine.getCaps().maxDrawBuffers = 8;
+            engine.getCaps().blendParametersPerTarget = true;
             vi.spyOn(renderer as any, "_createRenderTargets").mockImplementation(() => {});
             renderer.enableMeshBlendingTag = true;
 
@@ -127,6 +128,7 @@ describe("GeometryBufferRenderer mesh-blending tags", () => {
             }).toThrow("mesh-blending tag textures require WebGL2 or WebGPU");
 
             engine._webGLVersion = 2;
+            engine.getCaps().blendParametersPerTarget = true;
             renderer.samples = 2;
             expect(() => {
                 renderer.enableMeshBlendingTag = true;
@@ -144,6 +146,52 @@ describe("GeometryBufferRenderer mesh-blending tags", () => {
         }
     });
 
+    it("rejects Native even though it reports a WebGL2-compatible version", async () => {
+        const engine = new NullEngine();
+        engine._webGLVersion = 2;
+        (engine as any)._shaderPlatformName = "NATIVE";
+        const scene = new Scene(engine);
+        const renderer = new GeometryBufferRenderer(scene);
+        await Promise.resolve();
+
+        try {
+            expect(() => {
+                renderer.enableMeshBlendingTag = true;
+            }).toThrow("mesh-blending tag textures require WebGL2 or WebGPU");
+        } finally {
+            renderer.dispose();
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
+    it("requires per-target blend parameters for transparent mesh-blending tags on WebGL2", async () => {
+        const engine = new NullEngine();
+        engine._webGLVersion = 2;
+        const scene = new Scene(engine);
+        const renderer = new GeometryBufferRenderer(scene);
+        await Promise.resolve();
+
+        try {
+            expect(() => {
+                renderer.enableMeshBlendingTag = true;
+            }).toThrow("transparent mesh-blending tags require per-target blend parameters");
+
+            renderer.renderTransparentMeshes = false;
+            vi.spyOn(renderer as any, "_createRenderTargets").mockImplementation(() => {});
+            expect(() => {
+                renderer.enableMeshBlendingTag = true;
+            }).not.toThrow();
+            expect(() => {
+                renderer.renderTransparentMeshes = true;
+            }).toThrow("transparent mesh-blending tags require per-target blend parameters");
+        } finally {
+            renderer.dispose();
+            scene.dispose();
+            engine.dispose();
+        }
+    });
+
     it("rejects PrePass linking after the tag attachment is enabled", async () => {
         const engine = new NullEngine();
         vi.spyOn(engine, "buildTextureLayout").mockImplementation((textureStatus) => textureStatus.map((enabled, index) => (enabled ? index + 1 : 0)));
@@ -153,6 +201,7 @@ describe("GeometryBufferRenderer mesh-blending tags", () => {
 
         try {
             engine._webGLVersion = 2;
+            engine.getCaps().blendParametersPerTarget = true;
             vi.spyOn(renderer as any, "_createRenderTargets").mockImplementation(() => {});
             renderer.enableMeshBlendingTag = true;
 
@@ -172,6 +221,7 @@ describe("GeometryBufferRenderer mesh-blending tags", () => {
 
         try {
             engine._webGLVersion = 2;
+            engine.getCaps().blendParametersPerTarget = true;
             const createRenderTargetsSpy = vi.spyOn(renderer as any, "_createRenderTargets").mockImplementation(() => {});
             renderer.enableMeshBlendingTag = true;
             renderer.enableMeshBlendingTag = true;

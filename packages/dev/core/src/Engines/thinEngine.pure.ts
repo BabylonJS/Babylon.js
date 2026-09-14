@@ -191,6 +191,8 @@ export class ThinEngine extends AbstractEngine {
     public _gl: WebGL2RenderingContext;
     /** @internal */
     public _webGLVersion = 1.0;
+    /** @internal */
+    public _integerMRTAttachmentsMask = 0;
 
     /** @internal */
     public _glSRGBExtensionValues: {
@@ -1091,6 +1093,7 @@ export class ThinEngine extends AbstractEngine {
             this._resolveAndGenerateMipMapsFramebuffer(this._currentRenderTarget);
         }
         this._currentRenderTarget = rtWrapper;
+        this._integerMRTAttachmentsMask = !rtWrapper.isMulti && rtWrapper.texture && IsIntegerTextureFormat(rtWrapper.texture.format) ? 1 : 0;
         this._bindUnboundFramebuffer(webglRtWrapper._framebuffer);
 
         const gl = this._gl;
@@ -1254,6 +1257,7 @@ export class ThinEngine extends AbstractEngine {
         const webglRtWrapper = texture as WebGLRenderTargetWrapper;
 
         this._currentRenderTarget = null;
+        this._integerMRTAttachmentsMask = 0;
         this._resolveAndGenerateMipMapsFramebuffer(texture, disableGenerateMipMaps);
 
         if (onBeforeUnbind) {
@@ -2783,7 +2787,11 @@ export class ThinEngine extends AbstractEngine {
     public applyStates() {
         this._depthCullingState.apply(this._gl);
         this._stencilStateComposer.apply(this._gl);
-        this._alphaState.apply(this._gl, this._currentRenderTarget && this._currentRenderTarget.textures ? this._currentRenderTarget.textures!.length : 1);
+        this._alphaState.apply(
+            this._gl,
+            this._currentRenderTarget && this._currentRenderTarget.textures ? this._currentRenderTarget.textures.length : 1,
+            this._integerMRTAttachmentsMask
+        );
 
         if (this._colorWriteChanged) {
             this._colorWriteChanged = false;

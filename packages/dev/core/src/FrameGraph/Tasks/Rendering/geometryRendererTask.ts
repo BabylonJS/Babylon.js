@@ -8,11 +8,11 @@ import {
     type FrameGraphRenderPass,
     type ObjectRenderer,
     type GeometryRenderingMeshBlendTagProvider,
-    type ThinEngine,
 } from "core/index";
 import { Color4 } from "core/Maths/math.color.pure";
 import { MaterialHelperGeometryRendering, GeometryRenderingTextureClearType, type GeometryRenderingObjectIdProvider } from "core/Materials/materialHelper.geometryrendering";
 import { Constants } from "core/Engines/constants";
+import { _IsMeshBlendingSupported } from "../../../Meshes/meshBlendingTag";
 import { FrameGraphObjectRendererTask } from "./objectRendererTask";
 
 /**
@@ -443,9 +443,12 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         const meshBlendTagIndex = this.textureDescriptions.findIndex((description) => description.type === Constants.PREPASS_MESH_BLEND_TAG_TEXTURE_TYPE);
         if (meshBlendTagIndex !== -1) {
             const description = this.textureDescriptions[meshBlendTagIndex];
-            const engine = this._engine as ThinEngine;
-            if (!engine.isWebGPU && engine.webGLVersion !== 2) {
+            const engine = this._engine;
+            if (!_IsMeshBlendingSupported(engine)) {
                 throw new Error(`FrameGraphGeometryRendererTask ${this.name}: mesh-blending tag textures require WebGL2 or WebGPU`);
+            }
+            if (this.renderTransparentMeshes && !engine.isWebGPU && !engine.getCaps().blendParametersPerTarget) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: transparent mesh-blending tags require per-target blend parameters`);
             }
             if (this.samples !== 1) {
                 throw new Error(`FrameGraphGeometryRendererTask ${this.name}: mesh-blending tag textures require samples to be 1`);

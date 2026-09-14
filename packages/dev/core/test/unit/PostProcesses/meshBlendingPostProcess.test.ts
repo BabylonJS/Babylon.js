@@ -46,6 +46,12 @@ describe("ThinMeshBlendingPostProcess", () => {
         expect(() => new ThinMeshBlendingPostProcess("meshBlend", engine)).toThrow("requires WebGL2 or WebGPU");
     });
 
+    it("rejects Native even though it reports a WebGL2-compatible version", () => {
+        (engine as any)._shaderPlatformName = "NATIVE";
+
+        expect(() => new ThinMeshBlendingPostProcess("meshBlend", engine)).toThrow("requires WebGL2 or WebGPU");
+    });
+
     it("provides independent four-class radius defaults", () => {
         const first = CreateDefaultMeshBlendRadiusDefinitions();
         const second = CreateDefaultMeshBlendRadiusDefinitions();
@@ -336,6 +342,30 @@ describe("ThinMeshBlendingPostProcess", () => {
         expect(searchDisposeSpy).toHaveBeenCalledOnce();
     });
 
+    it("reuses the inverse projection while the camera projection is unchanged", () => {
+        const scene = new Scene(engine);
+        const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+        const postProcess = new ThinMeshBlendingPostProcess("meshBlend", engine);
+        const projection = camera.getProjectionMatrix();
+        const invertToRef = vi.spyOn(projection, "invertToRef");
+
+        try {
+            postProcess.camera = camera;
+            (postProcess as any)._updateInverseProjection();
+            (postProcess as any)._updateInverseProjection();
+
+            expect(invertToRef).toHaveBeenCalledOnce();
+
+            camera.fov *= 0.5;
+            (postProcess as any)._updateInverseProjection();
+
+            expect(invertToRef).toHaveBeenCalledTimes(2);
+        } finally {
+            postProcess.dispose();
+            scene.dispose();
+        }
+    });
+
     it("validates classic construction, ownership, and compile-time variants", () => {
         const scene = new Scene(engine);
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
@@ -523,6 +553,51 @@ describe("ThinMeshBlendingPostProcess", () => {
                 tagTexture.dispose();
                 depthTexture.dispose();
                 baseColorTexture.dispose();
+                scene.dispose();
+            }
+        }
+
+        {
+            const scene = new Scene(engine);
+            const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+            const tagTexture = new RawTexture(
+                new Uint8Array(4),
+                2,
+                2,
+                Constants.TEXTUREFORMAT_RED_INTEGER,
+                engine,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                Constants.TEXTURETYPE_UNSIGNED_BYTE
+            );
+            const screenDepthTexture = new RawTexture(
+                new Uint8Array(4),
+                2,
+                2,
+                Constants.TEXTUREFORMAT_RED,
+                engine,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                Constants.TEXTURETYPE_UNSIGNED_BYTE
+            );
+            const externalWrapper = new ThinMeshBlendingPostProcess("externalScreenDepth", engine, {
+                depthType: MeshBlendDepthType.Screen,
+            });
+            const postProcess = new MeshBlendingPostProcess("externalScreenDepth", scene, camera, {
+                meshBlendTagTexture: tagTexture,
+                depthTexture: screenDepthTexture,
+                effectWrapper: externalWrapper,
+            });
+
+            try {
+                expect(postProcess.depthType).toBe(MeshBlendDepthType.Screen);
+            } finally {
+                postProcess.dispose();
+                externalWrapper.dispose();
+                tagTexture.dispose();
+                screenDepthTexture.dispose();
                 scene.dispose();
             }
         }

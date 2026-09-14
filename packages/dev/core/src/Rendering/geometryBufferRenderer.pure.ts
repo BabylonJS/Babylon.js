@@ -33,6 +33,7 @@ import { type OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial.pure";
 import { type IblShadowsRenderPipeline } from "./IBLShadows/iblShadowsRenderPipeline.pure";
 import { RegisterGeometryBufferRendererSceneComponent } from "./geometryBufferRendererSceneComponent.pure";
 import { IsGaussianSplattingClassName } from "../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { _IsMeshBlendingSupported } from "../Meshes/meshBlendingTag";
 import {
     _GetGeometryRenderingMeshBlendTag,
     _GetGeometryRenderingObjectId,
@@ -188,8 +189,19 @@ export class GeometryBufferRenderer {
      */
     public excludedSkinnedMeshesFromVelocity: AbstractMesh[] = [];
 
+    private _renderTransparentMeshes = true;
+
     /** Gets or sets a boolean indicating if transparent meshes should be rendered */
-    public renderTransparentMeshes = true;
+    public get renderTransparentMeshes(): boolean {
+        return this._renderTransparentMeshes;
+    }
+
+    public set renderTransparentMeshes(value: boolean) {
+        if (value && this._enableMeshBlendTag && !this._scene.getEngine().getCaps().blendParametersPerTarget) {
+            throw new Error("GeometryBufferRenderer: transparent mesh-blending tags require per-target blend parameters");
+        }
+        this._renderTransparentMeshes = value;
+    }
 
     /**
      * Provides the object ID written for each rendered mesh.
@@ -640,7 +652,7 @@ export class GeometryBufferRenderer {
      * Mesh-blending tags use a single-sample R8UI color attachment and are supported on WebGL2 and WebGPU.
      * Transparent rendering remains controlled by renderTransparentMeshes. Applications are responsible for
      * ensuring that transparent draws do not invalidate the SceneColor and geometry-input correspondence required
-     * by the mesh-blending pass.
+     * by the mesh-blending pass. On WebGL2, transparent rendering with this output requires per-target blend parameters.
      *
      * Enabling or disabling this output rebuilds the renderer's targets. The application retains ownership
      * of the GeometryBufferRenderer and of every post process that consumes the output.
@@ -652,8 +664,11 @@ export class GeometryBufferRenderer {
 
         if (enable) {
             const engine = this._scene.getEngine() as ThinEngine;
-            if (!engine.isWebGPU && engine.webGLVersion !== 2) {
+            if (!_IsMeshBlendingSupported(engine)) {
                 throw new Error("GeometryBufferRenderer: mesh-blending tag textures require WebGL2 or WebGPU");
+            }
+            if (this.renderTransparentMeshes && !engine.isWebGPU && !engine.getCaps().blendParametersPerTarget) {
+                throw new Error("GeometryBufferRenderer: transparent mesh-blending tags require per-target blend parameters");
             }
             if (this._linkedWithPrePass) {
                 throw new Error("GeometryBufferRenderer: mesh-blending tag textures are not supported when linked to the PrePassRenderer");

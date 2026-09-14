@@ -1,5 +1,4 @@
 import { Constants } from "../../../Engines/constants";
-import { type ThinEngine } from "../../../Engines/thinEngine.pure";
 import { type Camera } from "../../../Cameras/camera.pure";
 import { type FrameGraph } from "../../frameGraph";
 import { type FrameGraphRenderPass } from "../../Passes/renderPass";
@@ -13,6 +12,7 @@ import {
     ThinMeshBlendingPostProcess,
 } from "../../../PostProcesses/thinMeshBlendingPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
+import { _IsMeshBlendingSupported } from "../../../Meshes/meshBlendingTag";
 
 function _Is2DTexture(creationOptions: FrameGraphTextureCreationOptions): boolean {
     return (creationOptions.options.targetTypes?.[0] ?? Constants.TEXTURE_2D) === Constants.TEXTURE_2D;
@@ -32,7 +32,8 @@ function _GetTextureFormat(creationOptions: FrameGraphTextureCreationOptions): n
  * This WebGL2 and WebGPU task uses the same effect and configuration as MeshBlendingPostProcess. It does not modify
  * geometry, collision queries, depth, normals, or shadows. All source and geometry textures must have matching
  * physical dimensions and sample counts. Transparent rendering is caller-controlled; overlapping transparent
- * surfaces can make SceneColor inconsistent with the single-layer geometry inputs.
+ * surfaces can make SceneColor inconsistent with the single-layer geometry inputs. On WebGL2, rendering transparent
+ * meshes into the integer tag attachment requires per-target blend parameters.
  * @see https://playground.babylonjs.com/?version=preview#O05LI8#5
  */
 export class FrameGraphMeshBlendingTask extends FrameGraphPostProcessTask {
@@ -134,8 +135,8 @@ export class FrameGraphMeshBlendingTask extends FrameGraphPostProcessTask {
             throw new Error(`FrameGraphMeshBlendingTask "${this.name}": sourceTexture, meshBlendTagTexture, depthTexture and camera are required`);
         }
 
-        const engine = this._frameGraph.engine as ThinEngine;
-        if (!engine.isWebGPU && engine.webGLVersion !== 2) {
+        const engine = this._frameGraph.engine;
+        if (!_IsMeshBlendingSupported(engine)) {
             throw new Error(`FrameGraphMeshBlendingTask "${this.name}": mesh blending requires WebGL2 or WebGPU`);
         }
         if (this.depthType !== MeshBlendDepthType.View && this.depthType !== MeshBlendDepthType.Screen) {

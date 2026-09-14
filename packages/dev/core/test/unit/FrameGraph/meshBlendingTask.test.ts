@@ -88,6 +88,12 @@ describe("FrameGraphMeshBlendingTask", () => {
         expect(() => recordTask(task)).not.toThrow();
     });
 
+    it("rejects Native even though it reports a WebGL2-compatible version", () => {
+        (engine as any)._shaderPlatformName = "NATIVE";
+
+        expect(() => new FrameGraphMeshBlendingTask("meshBlend", frameGraph)).toThrow("requires WebGL2 or WebGPU");
+    });
+
     it("records without albedo and compiles out shadow estimation", () => {
         const task = new FrameGraphMeshBlendingTask("meshBlend", frameGraph);
         configureRequiredInputs(task);

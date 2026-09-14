@@ -2243,11 +2243,42 @@
             "excludeFromPerformance": true
         },
         {
-            "title": "Object ID texture - Geometry buffer renderer",
-            "playgroundId": "#SQXZ3X#1",
+            "title": "Object ID and mesh tag - Geometry buffer renderer",
+            "playgroundId": "#O0BI9B#0",
             "referenceImage": "object-id-texture-geometry-buffer.png",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Object ID and mesh tag - Geometry buffer renderer - WebGPU ForceGLSL",
+            "playgroundId": "#O0BI9B#0",
+            "referenceImage": "object-id-mesh-tag-geometry-buffer-webgpu-force-glsl.png",
+            "replace": "const forceGLSL = false;, const forceGLSL = true;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Object ID and mesh tag - FrameGraph object ID first",
+            "playgroundId": "#XKTMFR#0",
+            "referenceImage": "object-id-mesh-tag-framegraph.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Object ID and mesh tag - FrameGraph mesh tag first",
+            "playgroundId": "#XKTMFR#0",
+            "referenceImage": "object-id-mesh-tag-framegraph.png",
+            "replace": "const meshTagFirst = false;, const meshTagFirst = true;",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Object ID and mesh tag - FrameGraph object ID first - WebGPU ForceGLSL",
+            "playgroundId": "#XKTMFR#0",
+            "referenceImage": "object-id-mesh-tag-framegraph-webgpu-force-glsl.png",
+            "replace": "const forceGLSL = false;, const forceGLSL = true;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
         },
         {
             "title": "Mesh blending - world sizing and contact validation",

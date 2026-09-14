@@ -195,7 +195,8 @@ export class MeshBlendingPostProcess extends PostProcess {
         if (options.effectWrapper !== undefined && !(options.effectWrapper instanceof ThinMeshBlendingPostProcess)) {
             throw new TypeError("MeshBlendingPostProcess: effectWrapper must be a ThinMeshBlendingPostProcess");
         }
-        MeshBlendingPostProcess._ValidateInputs(options);
+        const depthType = options.depthType ?? options.effectWrapper?.depthType ?? MeshBlendDepthType.View;
+        MeshBlendingPostProcess._ValidateInputs(options, depthType);
 
         const ownsEffectWrapper = options.effectWrapper === undefined;
         const effectWrapper = options.effectWrapper ?? new ThinMeshBlendingPostProcess(name, engine, options);
@@ -258,10 +259,10 @@ export class MeshBlendingPostProcess extends PostProcess {
         return null;
     }
 
-    private static _ValidateInputs(options: IMeshBlendingPostProcessOptions): void {
+    private static _ValidateInputs(options: IMeshBlendingPostProcessOptions, depthType: MeshBlendDepthType): void {
         _ValidateMeshBlendConfiguration(options);
         MeshBlendingPostProcess._ValidateMeshBlendTagTexture(options.meshBlendTagTexture);
-        MeshBlendingPostProcess._ValidateDepthTexture(options.depthTexture, options.depthType ?? MeshBlendDepthType.View);
+        MeshBlendingPostProcess._ValidateDepthTexture(options.depthTexture, depthType);
         if (options.baseColorTexture) {
             MeshBlendingPostProcess._ValidateBaseColorTexture(options.baseColorTexture);
         }

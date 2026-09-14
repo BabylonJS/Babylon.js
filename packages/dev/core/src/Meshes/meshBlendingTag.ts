@@ -1,3 +1,16 @@
+import { type AbstractEngine } from "../Engines/abstractEngine.pure";
+import { type ThinEngine } from "../Engines/thinEngine.pure";
+
+/**
+ * Checks whether an engine supports the render-target and shader features required by mesh blending.
+ * @param engine Engine to check.
+ * @returns True for WebGL2 and WebGPU engines, and false for Native and WebGL1 engines.
+ * @internal
+ */
+export function _IsMeshBlendingSupported(engine: AbstractEngine): boolean {
+    return engine.shaderPlatformName !== "NATIVE" && (engine.isWebGPU || (engine as ThinEngine).webGLVersion === 2);
+}
+
 /**
  * Radius class stored in a packed mesh-blending tag.
  *

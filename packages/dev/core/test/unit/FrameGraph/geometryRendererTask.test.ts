@@ -259,6 +259,27 @@ describe("FrameGraphGeometryRendererTask mesh-blending tags", () => {
         expect(() => (task as any)._checkParameters()).toThrow("mesh-blending tag textures require WebGL2 or WebGPU");
     });
 
+    it("rejects Native even though it reports a WebGL2-compatible version", () => {
+        engine._webGLVersion = 2;
+        (engine as any)._shaderPlatformName = "NATIVE";
+        const { task } = createTask();
+        task.textureDescriptions = [meshBlendTagDescription];
+
+        expect(() => (task as any)._checkParameters()).toThrow("mesh-blending tag textures require WebGL2 or WebGPU");
+    });
+
+    it("requires per-target blend parameters for transparent mesh-blending tags on WebGL2", () => {
+        engine._webGLVersion = 2;
+        const { task } = createTask();
+        task.renderTransparentMeshes = true;
+        task.textureDescriptions = [meshBlendTagDescription];
+
+        expect(() => (task as any)._checkParameters()).toThrow("transparent mesh-blending tags require per-target blend parameters");
+
+        task.renderTransparentMeshes = false;
+        expect(() => (task as any)._checkParameters()).not.toThrow();
+    });
+
     it("requires the fixed R8UI format and single sampling", () => {
         engine._webGLVersion = 2;
 
@@ -330,6 +351,7 @@ describe("FrameGraphGeometryRendererTask mesh-blending tags", () => {
 
     it("allows transparent rendering when requested by the caller", () => {
         engine._webGLVersion = 2;
+        engine.getCaps().blendParametersPerTarget = true;
         const { task } = createTask();
         task.renderTransparentMeshes = true;
         task.textureDescriptions = [meshBlendTagDescription];

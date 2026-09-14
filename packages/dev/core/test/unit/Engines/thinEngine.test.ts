@@ -199,6 +199,7 @@ TEXTUREFORMAT_RGBA_INTEGER    true  RGBA8UI         RGBA_INTEGER    UNSIGNED_BYT
             const clearBufferfv = vi.fn();
             const clearBufferuiv = vi.fn();
             const drawBuffers = vi.fn();
+            thinEngine._webGLVersion = 2;
             thinEngine._gl = {
                 COLOR: 0x1800,
                 NONE: 0,
@@ -222,6 +223,62 @@ TEXTUREFORMAT_RGBA_INTEGER    true  RGBA8UI         RGBA_INTEGER    UNSIGNED_BYT
             expect(clearBufferuiv).toHaveBeenCalledOnce();
             expect(clearBufferuiv.mock.calls[0][1]).toBe(1);
             expect(Array.from(clearBufferuiv.mock.calls[0][2] as Uint32Array)).toEqual([255, 0, 0, 0]);
+            expect(thinEngine._integerMRTAttachmentsMask).toBe(1 << 1);
+        });
+
+        it("uses the WebGL1-compatible MRT clear path", () => {
+            const thinEngine = new ThinEngine(null);
+            const color = new Color4(1, 0, 0, 0);
+            thinEngine._webGLVersion = 1;
+            thinEngine._gl = { NONE: 0 } as unknown as WebGLRenderingContext;
+            thinEngine._currentRenderTarget = {
+                textures: [
+                    { format: Engine.TEXTUREFORMAT_RGBA, type: Engine.TEXTURETYPE_UNSIGNED_BYTE },
+                    { format: Engine.TEXTUREFORMAT_RGBA, type: Engine.TEXTURETYPE_UNSIGNED_BYTE },
+                ],
+            } as any;
+            const bindAttachments = vi.spyOn(thinEngine, "bindAttachments").mockImplementation(() => {});
+            const clear = vi.spyOn(thinEngine, "clear").mockImplementation(() => {});
+            const clearColorAttachment = vi.spyOn(thinEngine, "_clearColorAttachment");
+
+            thinEngine.clearAttachments(color, [1, 2], true, true, true, 7);
+
+            expect(bindAttachments).toHaveBeenCalledExactlyOnceWith([1, 2]);
+            expect(clear).toHaveBeenCalledExactlyOnceWith(color, true, true, true, 7);
+            expect(clearColorAttachment).not.toHaveBeenCalled();
+        });
+
+        it("uses the shared MRT clear path for non-integer WebGL2 attachments", () => {
+            const thinEngine = new ThinEngine(null);
+            const color = new Color4(1, 0, 0, 0);
+            thinEngine._webGLVersion = 2;
+            thinEngine._gl = { NONE: 0 } as unknown as WebGLRenderingContext;
+            thinEngine._currentRenderTarget = {
+                textures: [
+                    { format: Engine.TEXTUREFORMAT_RGBA, type: Engine.TEXTURETYPE_UNSIGNED_BYTE },
+                    { format: Engine.TEXTUREFORMAT_RGBA, type: Engine.TEXTURETYPE_HALF_FLOAT },
+                ],
+            } as any;
+            const bindAttachments = vi.spyOn(thinEngine, "bindAttachments").mockImplementation(() => {});
+            const clear = vi.spyOn(thinEngine, "clear").mockImplementation(() => {});
+            const clearColorAttachment = vi.spyOn(thinEngine, "_clearColorAttachment");
+
+            thinEngine.clearAttachments(color, [1, 2], true, true);
+
+            expect(bindAttachments).toHaveBeenCalledExactlyOnceWith([1, 2]);
+            expect(clear).toHaveBeenCalledExactlyOnceWith(color, true, true, false, 0);
+            expect(clearColorAttachment).not.toHaveBeenCalled();
+        });
+
+        it("rejects integer MRT attachments on WebGL1", () => {
+            const thinEngine = new ThinEngine(null);
+            thinEngine._webGLVersion = 1;
+            thinEngine._gl = { NONE: 0 } as unknown as WebGLRenderingContext;
+            thinEngine._currentRenderTarget = {
+                textures: [{ format: Engine.TEXTUREFORMAT_RED_INTEGER, type: Engine.TEXTURETYPE_UNSIGNED_BYTE }],
+            } as any;
+
+            expect(() => thinEngine.clearAttachments(new Color4(1, 0, 0, 0), [1], true, false)).toThrow("integer MRT attachments require WebGL2");
         });
     });
 });

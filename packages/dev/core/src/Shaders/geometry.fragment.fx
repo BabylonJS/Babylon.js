@@ -78,11 +78,6 @@ uniform float objectId;
 uniform int meshBlendTag;
 #endif
 
-#ifdef OBJECT_ID
-uniform float objectId;
-#include<objectIdFunctions>
-#endif
-
 #include<clipPlaneFragmentDeclaration>
 
 #include<mrtFragmentDeclaration>[SCENE_MRT_COUNT]
@@ -172,10 +167,6 @@ void main() {
     #endif
     #ifdef MESH_BLEND_TAG
         meshBlendTagOutput = uvec4(uint(meshBlendTag), 0u, 0u, 0u);
-    #endif
-
-    #ifdef OBJECT_ID
-        gl_FragData[OBJECT_ID_INDEX] = encodeObjectId(objectId);
     #endif
 
     #ifdef VELOCITY

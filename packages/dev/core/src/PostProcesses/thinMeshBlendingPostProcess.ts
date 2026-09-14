@@ -3,11 +3,11 @@ import { EffectWrapper } from "../Materials/effectRenderer.pure";
 import { EngineStore } from "../Engines/engineStore";
 import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { type EffectWrapperCreationOptions } from "../Materials/effectRenderer";
-import { type ThinEngine } from "../Engines/thinEngine.pure";
 import { type RawTexture } from "../Materials/Textures/rawTexture";
 import { type Camera } from "../Cameras/camera.pure";
 import { Constants } from "../Engines/constants";
-import { TmpVectors } from "../Maths/math.vector.pure";
+import { Matrix } from "../Maths/math.vector.pure";
+import { _IsMeshBlendingSupported } from "../Meshes/meshBlendingTag";
 import { _CreateMeshBlendBlueNoiseTexture } from "./meshBlendingBlueNoise";
 
 /**
@@ -643,6 +643,12 @@ export class ThinMeshBlendingPostProcess extends EffectWrapper {
     private _debugMode = MeshBlendDebugMode.Off;
     private _depthType = MeshBlendDepthType.View;
     private _hasBaseColorTexture = false;
+    private readonly _inverseProjection = new Matrix();
+    private readonly _inverseView = new Matrix();
+    private _cachedProjection: Nullable<Matrix> = null;
+    private _cachedView: Nullable<Matrix> = null;
+    private _projectionUpdateFlag = -1;
+    private _viewUpdateFlag = -1;
 
     /**
      * Gets the compile-time quality variant.
@@ -716,7 +722,7 @@ export class ThinMeshBlendingPostProcess extends EffectWrapper {
      */
     constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: IThinMeshBlendingPostProcessOptions) {
         const resolvedEngine = engine || EngineStore.LastCreatedEngine!;
-        if (!resolvedEngine.isWebGPU && (resolvedEngine as ThinEngine).webGLVersion !== 2) {
+        if (!_IsMeshBlendingSupported(resolvedEngine)) {
             throw new Error("ThinMeshBlendingPostProcess requires WebGL2 or WebGPU");
         }
         const quality = options?.quality ?? MeshBlendQuality.Medium;
@@ -790,14 +796,18 @@ export class ThinMeshBlendingPostProcess extends EffectWrapper {
         }
 
         const effect = this._drawWrapper.effect!;
-        const projection = this.camera.getProjectionMatrix();
-        projection.invertToRef(TmpVectors.Matrix[0]);
+        const projection = this._updateInverseProjection();
 
         effect.setMatrix("projection", projection);
-        effect.setMatrix("inverseProjection", TmpVectors.Matrix[0]);
+        effect.setMatrix("inverseProjection", this._inverseProjection);
         if (this._debugMode === MeshBlendDebugMode.WorldPosition) {
-            this.camera.getViewMatrix().invertToRef(TmpVectors.Matrix[1]);
-            effect.setMatrix("inverseView", TmpVectors.Matrix[1]);
+            const view = this.camera.getViewMatrix();
+            if (this._cachedView !== view || this._viewUpdateFlag !== view.updateFlag) {
+                view.invertToRef(this._inverseView);
+                this._cachedView = view;
+                this._viewUpdateFlag = view.updateFlag;
+            }
+            effect.setMatrix("inverseView", this._inverseView);
         }
         effect.setFloat4(
             "blendWorldRadii",
@@ -816,6 +826,16 @@ export class ThinMeshBlendingPostProcess extends EffectWrapper {
         effect.setFloat("meshBlendIsOrthographic", this.camera.mode === Constants.ORTHOGRAPHIC_CAMERA ? 1 : 0);
         effect.setFloat("slopeFactor", this._slopeFactor);
         effect.setTexture("meshBlendBlueNoiseSampler", this._stableBlueNoiseTexture);
+    }
+
+    private _updateInverseProjection(): Matrix {
+        const projection = this.camera!.getProjectionMatrix();
+        if (this._cachedProjection !== projection || this._projectionUpdateFlag !== projection.updateFlag) {
+            projection.invertToRef(this._inverseProjection);
+            this._cachedProjection = projection;
+            this._projectionUpdateFlag = projection.updateFlag;
+        }
+        return projection;
     }
 
     public override dispose(): void {

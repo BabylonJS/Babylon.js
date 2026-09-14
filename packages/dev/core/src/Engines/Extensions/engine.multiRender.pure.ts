@@ -61,6 +61,16 @@ export function RegisterEnginesExtensionsEngineMultiRender(): void {
 
     ThinEngine.prototype.bindAttachments = function (attachments: number[]): void {
         const gl = this._gl;
+        const textures = this._currentRenderTarget?.textures;
+
+        this._integerMRTAttachmentsMask = 0;
+        if (textures) {
+            for (let index = 0; index < attachments.length; index++) {
+                if (attachments[index] !== gl.NONE && textures[index] && IsIntegerTextureFormat(textures[index].format)) {
+                    this._integerMRTAttachmentsMask |= 1 << index;
+                }
+            }
+        }
 
         gl.drawBuffers(attachments);
     };
@@ -74,7 +84,21 @@ export function RegisterEnginesExtensionsEngineMultiRender(): void {
         stencilClearValue = 0
     ): void {
         const textures = this._currentRenderTarget?.textures;
-        if (!clearColor || !color || !textures) {
+        let hasIntegerAttachment = false;
+        if (clearColor && color && textures) {
+            for (let index = 0; index < attachments.length; index++) {
+                const texture = textures[index];
+                if (attachments[index] !== this._gl.NONE && texture && IsIntegerTextureFormat(texture.format)) {
+                    if (this._webGLVersion < 2) {
+                        throw new Error("ThinEngine.clearAttachments: integer MRT attachments require WebGL2");
+                    }
+                    hasIntegerAttachment = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasIntegerAttachment || !color || !textures) {
             this.bindAttachments(attachments);
             this.clear(color, clearColor, clearDepth, clearStencil, stencilClearValue);
             return;
@@ -112,6 +136,7 @@ export function RegisterEnginesExtensionsEngineMultiRender(): void {
         onBeforeUnbind?: () => void
     ): void {
         this._currentRenderTarget = null;
+        this._integerMRTAttachmentsMask = 0;
 
         if (!rtWrapper.disableAutomaticMSAAResolve) {
             this.resolveMultiFramebuffer(rtWrapper);

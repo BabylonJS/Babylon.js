@@ -89,4 +89,6 @@
         layout(location = 0) out vec4 glFragData[{X}];
         #define WRITE_GEOMETRY_FRAGMENT_OUTPUT(INDEX, VALUE) gl_FragData[INDEX] = VALUE
     #endif
+#else
+    #define WRITE_GEOMETRY_FRAGMENT_OUTPUT(INDEX, VALUE) gl_FragData[INDEX] = VALUE
 #endif
