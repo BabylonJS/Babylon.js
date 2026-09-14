@@ -11,7 +11,27 @@ import { Logger } from "core/Misc/logger";
 import { Constants } from "core/Engines/constants";
 import { type ISerializedFlowGraph } from "core/FlowGraph/typeDefinitions";
 import { FetchSnippet, type ISnippetServerResponse } from "@tools/snippet-loader";
-import { CreateKHRInteractivityExportPlan, KHRInteractivityExportError, type IKHRInteractivityExportAnalysis } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
+import { type CreateKHRInteractivityExportPlan, type IKHRInteractivityExportAnalysis, type KHRInteractivityExportPlan } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
+
+function _CreateKhrExportError(diagnostics: IKHRInteractivityExportAnalysis["diagnostics"]): Error & { diagnostics: IKHRInteractivityExportAnalysis["diagnostics"] } {
+    const error = new Error(diagnostics.map((diagnostic) => `${diagnostic.path}: ${diagnostic.message}`).join("\n")) as Error & {
+        diagnostics: IKHRInteractivityExportAnalysis["diagnostics"];
+    };
+    error.name = "KHRInteractivityExportError";
+    error.diagnostics = diagnostics;
+    return error;
+}
+
+function _CreateKhrExportPlan(
+    flowGraphs: Parameters<typeof CreateKHRInteractivityExportPlan>[0],
+    options: Parameters<typeof CreateKHRInteractivityExportPlan>[1]
+): KHRInteractivityExportPlan {
+    const factory = (globalThis as any).BABYLON?.GLTF2?.Loader?.Extensions?.CreateKHRInteractivityExportPlan as typeof CreateKHRInteractivityExportPlan | undefined;
+    if (!factory) {
+        throw new Error("CreateKHRInteractivityExportPlan is not available.");
+    }
+    return factory(flowGraphs, options);
+}
 
 /**
  * Runtime settings used when deserializing graphs into an editor coordinator.
@@ -574,7 +594,7 @@ export class SerializationTools {
                 ],
             };
         }
-        return CreateKHRInteractivityExportPlan(coordinator.flowGraphs, {
+        return _CreateKhrExportPlan(coordinator.flowGraphs, {
             document: importResult.document,
             sourceGLTF: importResult.glTF,
             defaultGraphIndex: importResult.document.defaultGraphIndex,
@@ -596,9 +616,9 @@ export class SerializationTools {
         const scene = globalState.sceneContext?.scene;
         if (!coordinator || !importResult || !scene) {
             const analysis = SerializationTools.AnalyzeKhrInteractivityExport(globalState);
-            throw new KHRInteractivityExportError(analysis.diagnostics);
+            throw _CreateKhrExportError(analysis.diagnostics);
         }
-        const plan = CreateKHRInteractivityExportPlan(coordinator.flowGraphs, {
+        const plan = _CreateKhrExportPlan(coordinator.flowGraphs, {
             document: importResult.document,
             sourceGLTF: importResult.glTF,
             defaultGraphIndex: importResult.document.defaultGraphIndex,
@@ -607,7 +627,7 @@ export class SerializationTools {
         });
         const analysis = plan.analyze();
         if (!analysis.representable) {
-            throw new KHRInteractivityExportError(analysis.diagnostics);
+            throw _CreateKhrExportError(analysis.diagnostics);
         }
         const serializer = (globalThis as any).BABYLON?.GLTF2Export;
         if (!serializer) {

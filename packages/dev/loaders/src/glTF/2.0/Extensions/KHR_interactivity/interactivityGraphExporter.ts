@@ -104,15 +104,36 @@ export interface IKHRInteractivityExportAnalysis {
  * Final glTF remapping context supplied by the serializer extension.
  */
 export interface IKHRInteractivitySerializerContext {
-    /** Gets the final glTF node index for a Babylon node. */
+    /**
+     * Gets the final glTF node index for a Babylon node.
+     * @param node Babylon node to resolve
+     * @returns final glTF node index, or undefined when the node was not exported
+     */
     getNodeIndex(node: Node): number | undefined;
-    /** Gets the final glTF animation index for a Babylon animation group. */
+    /**
+     * Gets the final glTF animation index for a Babylon animation group.
+     * @param animation Babylon animation group to resolve
+     * @returns final glTF animation index, or undefined when the animation was not exported
+     */
     getAnimationIndex(animation: AnimationGroup): number | undefined;
-    /** Gets the final glTF camera index for a Babylon camera. */
+    /**
+     * Gets the final glTF camera index for a Babylon camera.
+     * @param camera Babylon camera to resolve
+     * @returns final glTF camera index, or undefined when the camera was not exported
+     */
     getCameraIndex(camera: Camera): number | undefined;
-    /** Gets the final glTF material index for a Babylon material. */
+    /**
+     * Gets the final glTF material index for a Babylon material.
+     * @param material Babylon material to resolve
+     * @returns final glTF material index, or undefined when the material was not exported
+     */
     getMaterialIndex(material: Material): number | undefined;
-    /** Writes a companion extension on an already-exported glTF node. */
+    /**
+     * Writes a companion extension on an already-exported glTF node.
+     * @param nodeIndex final glTF node index
+     * @param extensionName companion extension name
+     * @param value companion extension payload
+     */
     setNodeExtension(nodeIndex: number, extensionName: string, value: unknown): void;
 }
 
@@ -217,6 +238,10 @@ function _FullOperationName(op: string, extension?: string): string {
     return extension ? `${op}:${extension}` : op;
 }
 
+function _RuntimeBlockClassName(className: string): string {
+    return className.substring(className.lastIndexOf("/") + 1);
+}
+
 function _GetRoleBlock(blocks: readonly FlowGraphBlock[], role: number): FlowGraphBlock | undefined {
     return blocks.find((block) => _GetBlockProvenance(block)?.role === role);
 }
@@ -317,7 +342,9 @@ function _GetSourceValue(graph: IKHRInteractivity_Graph, value: IKHRInteractivit
 function _GetConfigurationBlock(logicalNode: ILogicalNode, property: IGLTFToFlowGraphMappingObject): FlowGraphBlock | undefined {
     const targetBlock = property.toBlock;
     if (targetBlock) {
-        return logicalNode.blocks.find((block) => block.getClassName() === targetBlock || _GetBlockProvenance(block)?.role === logicalNode.mapping?.blocks.indexOf(targetBlock));
+        return logicalNode.blocks.find(
+            (block) => block.getClassName() === _RuntimeBlockClassName(targetBlock) || _GetBlockProvenance(block)?.role === logicalNode.mapping?.blocks.indexOf(targetBlock)
+        );
     }
     return _GetRoleBlock(logicalNode.blocks, 0);
 }
@@ -409,7 +436,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             nodes,
             diagnostics,
         };
-        this._additionalExtensionsUsed = this._collectAdditionalExtensions();
+        this._additionalExtensionsUsed = Array.from(new Set([...this._collectAdditionalExtensions(), ...this.additionalExtensionsRequired])).sort();
     }
 
     /**
@@ -537,7 +564,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
     }
 
     private _classifyStandaloneBlock(block: FlowGraphBlock, diagnostics: IKHRInteractivityExportDiagnostic[]): KHRInteractivityExportClassification {
-        const candidates = GetInteractivityOperationRegistry().filter((entry) => entry.mapping.blocks.length === 1 && entry.mapping.blocks[0] === block.getClassName());
+        const candidates = GetInteractivityOperationRegistry().filter(
+            (entry) => entry.mapping.blocks.length === 1 && _RuntimeBlockClassName(entry.mapping.blocks[0]) === block.getClassName()
+        );
         const path = `/blocks/${block.uniqueId}`;
         if (candidates.length === 0) {
             _PushDiagnostic(diagnostics, {
@@ -593,6 +622,15 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                     nodeIndex,
                     path: `/graphs/${graphIndex}/nodes/${nodeIndex}/declaration`,
                     message: `Declaration index ${sourceNode.declaration} is unavailable.`,
+                });
+            } else if (declaration.extension === "BABYLON") {
+                classification = "unsupported";
+                _PushDiagnostic(diagnostics, {
+                    code: "BLOCK_UNSUPPORTED",
+                    graphIndex,
+                    nodeIndex,
+                    path: `/graphs/${graphIndex}/nodes/${nodeIndex}`,
+                    message: `Compatibility-only operation "${operation}" is not part of ratified KHR_interactivity and cannot be exported as standards-compliant data.`,
                 });
             } else if (!mapping && !declaration.extension) {
                 classification = "unsupported";
@@ -686,7 +724,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 });
                 continue;
             }
-            if (roleBlocks[0].getClassName() !== mapping.blocks[role]) {
+            if (roleBlocks[0].getClassName() !== _RuntimeBlockClassName(mapping.blocks[role])) {
                 _PushDiagnostic(diagnostics, {
                     code: "BLOCK_TYPE_MISMATCH",
                     graphIndex,
@@ -742,6 +780,31 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 });
             }
         }
+        for (const block of blocks) {
+            const connections = [
+                ...block.dataInputs,
+                ...block.dataOutputs,
+                ...(block instanceof FlowGraphExecutionBlock ? block.signalInputs : []),
+                ...(block instanceof FlowGraphExecutionBlock ? block.signalOutputs : []),
+            ];
+            for (const connection of connections) {
+                if (!connection.isConnected() || _GetSocketProvenance(connection)) {
+                    continue;
+                }
+                const hasExternalConnection = connection._connectedPoint.some((peer) => !blocks.includes(peer._ownerBlock));
+                if (hasExternalConnection) {
+                    _PushDiagnostic(diagnostics, {
+                        code: "SOCKET_PROVENANCE_MISSING",
+                        graphIndex,
+                        nodeIndex,
+                        blockId: block.uniqueId,
+                        socket: connection.name,
+                        path: `/blocks/${block.uniqueId}/${connection.name}`,
+                        message: `Connected socket "${connection.name}" is not part of the "${operation}" inverse mapping.`,
+                    });
+                }
+            }
+        }
     }
 
     private _buildGraph(analysis: IGraphAnalysis, context: IKHRInteractivitySerializerContext, diagnostics: IKHRInteractivityExportDiagnostic[]): IKHRInteractivity_Graph {
@@ -777,9 +840,6 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
     ): IKHRInteractivity_Node {
         const node = _CloneJson(sourceNode);
         const mapping = logicalNode.mapping;
-        if (!mapping) {
-            return node;
-        }
         for (const socket of Object.keys(sourceNode.values ?? {}).sort()) {
             const input = _FindDataInput(logicalNode.blocks, logicalNode.sourceIndex, socket);
             if (!input) {
@@ -793,7 +853,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 });
                 continue;
             }
-            const mappingObject = this._getMappingObject(mapping.inputs?.values, socket);
+            const mappingObject = this._getMappingObject(mapping?.inputs?.values, socket);
             node.values![socket] = this._rebuildInputValue(graph, sourceNode.values![socket], input, mappingObject, logicalNode, graphAnalysis, context, diagnostics);
         }
         for (const socket of Object.keys(sourceNode.flows ?? {}).sort()) {
@@ -838,7 +898,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 ...(provenance.socket === "in" ? {} : { socket: provenance.socket }),
             };
         }
-        this._rebuildConfiguration(graph, node, logicalNode, graphAnalysis.graphIndex, context, diagnostics);
+        if (mapping) {
+            this._rebuildConfiguration(graph, node, logicalNode, graphAnalysis.graphIndex, context, diagnostics);
+        }
         return node;
     }
 
@@ -962,6 +1024,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         for (const [key, property] of Object.entries(logicalNode.mapping?.configuration ?? {})) {
             const current = _GetMappedConfigurationValue(logicalNode, key, property, graph);
             const source = node.configuration?.[key]?.value;
+            if (property.validationOnly && current === undefined) {
+                continue;
+            }
             if (!current) {
                 if (source !== undefined || property.required) {
                     _PushDiagnostic(diagnostics, {
@@ -1195,9 +1260,29 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
 
     private _collectAdditionalExtensions(): string[] {
         const extensions = new Set<string>();
+        const collectPropertyExtensions = (value: unknown): void => {
+            if (Array.isArray(value)) {
+                value.forEach(collectPropertyExtensions);
+                return;
+            }
+            if (value === null || typeof value !== "object") {
+                return;
+            }
+            const object = value as Record<string, unknown>;
+            if (object.extensions !== null && typeof object.extensions === "object" && !Array.isArray(object.extensions)) {
+                for (const extensionName of Object.keys(object.extensions as Record<string, unknown>)) {
+                    if (extensionName !== "KHR_interactivity") {
+                        extensions.add(extensionName);
+                    }
+                }
+            }
+            Object.values(object).forEach(collectPropertyExtensions);
+        };
+        collectPropertyExtensions(this._options.document?.source);
         for (const analysis of this._graphAnalyses) {
+            collectPropertyExtensions(analysis.source);
             for (const declaration of analysis.source.declarations ?? []) {
-                if (declaration.extension && declaration.extension !== "BABYLON") {
+                if (declaration.extension) {
                     extensions.add(declaration.extension);
                 }
             }

@@ -17,15 +17,36 @@ export type MeshCompressionMethod = "None" | "Draco";
  * Final entity remapping context exposed to a KHR_interactivity export provider.
  */
 export interface IKHRInteractivityExportContext {
-    /** Gets the final glTF node index for a Babylon node. */
+    /**
+     * Gets the final glTF node index for a Babylon node.
+     * @param node Babylon node to resolve
+     * @returns final glTF node index, or undefined when the node was not exported
+     */
     getNodeIndex(node: Node): number | undefined;
-    /** Gets the final glTF animation index for a Babylon animation group. */
+    /**
+     * Gets the final glTF animation index for a Babylon animation group.
+     * @param animation Babylon animation group to resolve
+     * @returns final glTF animation index, or undefined when the animation was not exported
+     */
     getAnimationIndex(animation: AnimationGroup): number | undefined;
-    /** Gets the final glTF camera index for a Babylon camera. */
+    /**
+     * Gets the final glTF camera index for a Babylon camera.
+     * @param camera Babylon camera to resolve
+     * @returns final glTF camera index, or undefined when the camera was not exported
+     */
     getCameraIndex(camera: Camera): number | undefined;
-    /** Gets the final glTF material index for a Babylon material. */
+    /**
+     * Gets the final glTF material index for a Babylon material.
+     * @param material Babylon material to resolve
+     * @returns final glTF material index, or undefined when the material was not exported
+     */
     getMaterialIndex(material: Material): number | undefined;
-    /** Writes a companion extension on an already-exported glTF node. */
+    /**
+     * Writes a companion extension on an already-exported glTF node.
+     * @param nodeIndex final glTF node index
+     * @param extensionName companion extension name
+     * @param value companion extension payload
+     */
     setNodeExtension(nodeIndex: number, extensionName: string, value: unknown): void;
 }
 

@@ -26,7 +26,7 @@ describe("KHR_interactivity serializer extension", () => {
             khrInteractivity: {
                 required: true,
                 additionalExtensionsUsed: ["KHR_node_selectability"],
-                additionalExtensionsRequired: [],
+                additionalExtensionsRequired: ["KHR_node_hoverability"],
                 build: (context) => {
                     const nodeIndex = context.getNodeIndex(node);
                     expect(nodeIndex).toBe(0);
@@ -42,8 +42,8 @@ describe("KHR_interactivity serializer extension", () => {
         expect(glTF.extensions.KHR_interactivity).toEqual({
             graphs: [{ declarations: [{ op: "event/onStart" }], nodes: [{ declaration: 0 }] }],
         });
-        expect(glTF.extensionsUsed).toEqual(["KHR_interactivity", "KHR_node_selectability"]);
-        expect(glTF.extensionsRequired).toEqual(["KHR_interactivity"]);
+        expect(glTF.extensionsUsed).toEqual(["KHR_interactivity", "KHR_node_selectability", "KHR_node_hoverability"]);
+        expect(glTF.extensionsRequired).toEqual(["KHR_interactivity", "KHR_node_hoverability"]);
         expect(glTF.nodes[0].extensions.KHR_node_selectability).toEqual({ selectable: true });
     });
 

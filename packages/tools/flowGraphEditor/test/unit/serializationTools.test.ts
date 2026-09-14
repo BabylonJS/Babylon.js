@@ -4,7 +4,11 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { GlobalState } from "flow-graph-editor/globalState";
 import { SerializationTools } from "flow-graph-editor/serializationTools";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+afterEach(() => {
+    vi.unstubAllGlobals();
+});
 
 describe("SerializationTools coordinator ownership", () => {
     it("detaches a borrowed host coordinator without disposing its graphs", async () => {
@@ -55,6 +59,44 @@ describe("SerializationTools coordinator ownership", () => {
         expect(globalState.hasImportScopedRuntime).toBe(false);
 
         ordinaryState.coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("resolves the KHR export plan from the loader UMD namespace", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const globalState = new GlobalState(scene);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        coordinator.createGraph();
+        globalState.coordinator = coordinator;
+        globalState.khrInteractivityImportResult = {
+            document: { defaultGraphIndex: 0 },
+            glTF: {},
+        } as any;
+        const analysis = { representable: true, nodes: [], diagnostics: [] };
+        const createPlan = vi.fn(() => ({ analyze: () => analysis }));
+        vi.stubGlobal("BABYLON", {
+            GLTF2: {
+                Loader: {
+                    Extensions: {
+                        CreateKHRInteractivityExportPlan: createPlan,
+                    },
+                },
+            },
+        });
+
+        expect(SerializationTools.AnalyzeKhrInteractivityExport(globalState)).toBe(analysis);
+        expect(createPlan).toHaveBeenCalledWith(
+            coordinator.flowGraphs,
+            expect.objectContaining({
+                document: globalState.khrInteractivityImportResult.document,
+                sourceGLTF: globalState.khrInteractivityImportResult.glTF,
+                required: true,
+            })
+        );
+
+        coordinator.dispose();
         scene.dispose();
         engine.dispose();
     });

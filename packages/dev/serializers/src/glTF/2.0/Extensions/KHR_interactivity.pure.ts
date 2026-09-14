@@ -54,6 +54,10 @@ export class KHR_interactivity implements IGLTFExporterExtensionV2 {
             }
         }
         for (const extensionName of provider.additionalExtensionsRequired) {
+            this._exporter._glTF.extensionsUsed ||= [];
+            if (this._exporter._glTF.extensionsUsed.indexOf(extensionName) === -1) {
+                this._exporter._glTF.extensionsUsed.push(extensionName);
+            }
             this._exporter._glTF.extensionsRequired ||= [];
             if (this._exporter._glTF.extensionsRequired.indexOf(extensionName) === -1) {
                 this._exporter._glTF.extensionsRequired.push(extensionName);

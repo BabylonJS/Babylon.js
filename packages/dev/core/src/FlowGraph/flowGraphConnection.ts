@@ -143,6 +143,9 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         this._connectedPoint.length = 0;
     }
 
+    /**
+     * Disconnects this point from every connected point.
+     */
     public dispose() {
         for (const point of this._connectedPoint) {
             this.disconnectFrom(point);

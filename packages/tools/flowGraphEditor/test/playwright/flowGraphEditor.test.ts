@@ -1813,75 +1813,6 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                 hasHostResolver: true,
             });
 
-        test("exports and re-imports ratified KHR_interactivity glTF and GLB with actionable diagnostics", async ({ page }) => {
-            test.setTimeout(90_000);
-            const fge = new FlowGraphEditorPage(page);
-            await fge.goto({ local: true });
-            await fge.assertEditorReady();
-
-            const source = {
-                asset: { version: "2.0", generator: "FGE KHR export E2E" },
-                scene: 0,
-                scenes: [{ nodes: [0] }],
-                nodes: [{ name: "interactiveNode" }],
-                extensionsUsed: ["KHR_interactivity"],
-                extensionsRequired: ["KHR_interactivity"],
-                extensions: {
-                    KHR_interactivity: {
-                        graphs: [{ name: "Interaction", declarations: [{ op: "event/onStart" }], nodes: [{ declaration: 0 }] }],
-                    },
-                },
-            };
-            await page.evaluate((gltf) => {
-                const file = new File([JSON.stringify(gltf)], "interaction.gltf", { type: "model/gltf+json" });
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
-            }, source);
-            await expect.poll(async () => await fge.getNodeCount()).toBe(1);
-
-            const gltfDownloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename().endsWith(".gltf"));
-            await page.getByRole("button", { name: "Export KHR glTF", exact: true }).click();
-            const gltfDownload = await gltfDownloadPromise;
-            const gltfPath = await gltfDownload.path();
-            expect(gltfPath).not.toBeNull();
-            const exportedGltf = readFileSync(gltfPath!, "utf8");
-            const exportedJson = JSON.parse(exportedGltf);
-            expect(exportedJson.extensions.KHR_interactivity.graphs[0]).toEqual(source.extensions.KHR_interactivity.graphs[0]);
-            expect(exportedJson.extensionsUsed).toContain("KHR_interactivity");
-            expect(exportedJson.extensionsRequired).toContain("KHR_interactivity");
-
-            await page.evaluate((content) => {
-                const file = new File([content], "roundTrip.gltf", { type: "model/gltf+json" });
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
-            }, exportedGltf);
-            await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "roundTrip.gltf"');
-            await expect.poll(async () => await fge.getNodeCount()).toBe(1);
-
-            const glbDownloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename().endsWith(".glb"));
-            await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
-            const glbDownload = await glbDownloadPromise;
-            const glbPath = await glbDownload.path();
-            expect(glbPath).not.toBeNull();
-            const exportedGlb = readFileSync(glbPath!);
-            expect(exportedGlb.subarray(0, 4).toString("utf8")).toBe("glTF");
-
-            await page.evaluate((bytes) => {
-                const file = new File([new Uint8Array(bytes)], "roundTrip.glb", { type: "model/gltf-binary" });
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
-            }, Array.from(exportedGlb));
-            await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "roundTrip.glb"');
-            await expect.poll(async () => await fge.getNodeCount()).toBe(1);
-
-            await fge.addBlockFromPalette("Constant");
-            await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
-            await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("KHR_interactivity export error");
-            await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("has no KHR_interactivity inverse mapping");
-        });
         const saveButton = page.getByRole("button", { name: "Save", exact: true });
         await expect(saveButton).toBeDisabled();
         await saveButton.hover();
@@ -2021,6 +1952,8 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
             const graphData: any = {};
             state.flowGraph.serialize(graphData);
+            delete graphData.metadata;
+            graphData.allBlocks.forEach((block: any) => delete block.metadata);
             graphData.allBlocks[0].signalOutputs.push({
                 uniqueId: "unmapped-output",
                 name: "unmappedOutput",
@@ -2056,6 +1989,79 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
 
         await fge.selectGraphTab("Invalid core graph");
         await expect.poll(async () => await fge.getNodeCount()).toBe(0);
+    });
+
+    test("exports and re-imports ratified KHR_interactivity glTF and GLB with actionable diagnostics", async ({ page }) => {
+        test.setTimeout(90_000);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+
+        const source = {
+            asset: { version: "2.0", generator: "FGE KHR export E2E" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "interactiveNode" }],
+            extensionsUsed: ["KHR_interactivity"],
+            extensionsRequired: ["KHR_interactivity"],
+            extensions: {
+                KHR_interactivity: {
+                    graphs: [{ name: "Interaction", declarations: [{ op: "event/onStart" }], nodes: [{ declaration: 0 }] }],
+                },
+            },
+        };
+        await page.evaluate((gltf) => {
+            const file = new File([JSON.stringify(gltf)], "interaction.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, source);
+        await expect.poll(async () => await fge.getNodeCount()).toBe(1);
+
+        const gltfDownloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename().endsWith(".gltf"));
+        await page.getByRole("button", { name: "Export KHR glTF", exact: true }).click();
+        const gltfDownload = await gltfDownloadPromise;
+        const gltfPath = await gltfDownload.path();
+        expect(gltfPath).not.toBeNull();
+        const exportedGltf = readFileSync(gltfPath!, "utf8");
+        const exportedJson = JSON.parse(exportedGltf);
+        expect(exportedJson.extensions.KHR_interactivity.graphs[0]).toEqual(source.extensions.KHR_interactivity.graphs[0]);
+        expect(exportedJson.extensionsUsed).toContain("KHR_interactivity");
+        expect(exportedJson.extensionsRequired).toContain("KHR_interactivity");
+
+        await page.evaluate((content) => {
+            const file = new File([content], "roundTrip.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, exportedGltf);
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "roundTrip.gltf"');
+        await expect.poll(async () => await fge.getNodeCount()).toBe(1);
+
+        const glbDownloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename().endsWith(".glb"));
+        await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
+        const glbDownload = await glbDownloadPromise;
+        const glbPath = await glbDownload.path();
+        expect(glbPath).not.toBeNull();
+        const exportedGlb = readFileSync(glbPath!);
+        expect(exportedGlb.subarray(0, 4).toString("utf8")).toBe("glTF");
+
+        await page.evaluate((bytes) => {
+            const file = new File([new Uint8Array(bytes)], "roundTrip.glb", { type: "model/gltf-binary" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, Array.from(exportedGlb));
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "roundTrip.glb"');
+        await expect.poll(async () => await fge.getNodeCount()).toBe(1);
+
+        await fge.addBlockFromPalette("Constant");
+        await page.evaluate(() => {
+            (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState?.stateManager.onSelectionChangedObservable.notifyObservers(null);
+        });
+        await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("KHR_interactivity export error");
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("has no KHR_interactivity inverse mapping");
     });
 });
 
