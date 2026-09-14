@@ -12,6 +12,7 @@ vi.mock("../../../src/SPLAT/gaussianSplattingWorkBuffer", () => ({
         public readonly textures = [{}, {}, {}, {}];
         public readonly shTextures: unknown[] = [];
         public readonly rotationTextures: unknown[] = [];
+        public async decodeAsync(): Promise<void> {}
         public dispose(): void {}
     },
 }));
@@ -298,5 +299,152 @@ describe("GaussianSplattingStream coarse-first startup", () => {
         expect(rangesSpy).not.toHaveBeenCalled();
         expect(warnSpy).toHaveBeenCalledWith(expect.stringMatching(/positions.*environment/i));
         expect(pack.meansTextureL.dispose).toHaveBeenCalledOnce();
+    });
+
+    it.each(["positions", "parse", "decode", "success"])("reclaims unsuccessful environment allocations and pins only usable data (%s)", async (outcome) => {
+        const stream = makeDormantStream(makeMetadata(), { maxResidentSplats: 91 });
+        vi.spyOn(stream, "_setExternalWorkBuffer").mockImplementation(() => {});
+        vi.spyOn(stream, "_gatherCountsAsync").mockImplementation(async () => {
+            stream._fileCounts.set(0, 80);
+            stream._fileCounts.set(1, 40);
+            stream._fileMeta.set(0, { sogData: { count: 80 }, subRootUrl: "" });
+            stream._fileMeta.set(1, { sogData: { count: 40 }, subRootUrl: "" });
+            stream._environmentFiles = new Map();
+            return 50;
+        });
+        vi.spyOn(Sog, "ParseSogMetaAsTextures").mockImplementation(async () => {
+            if (outcome === "parse") {
+                throw new Error("environment parsing failed");
+            }
+            if (outcome === "decode") {
+                vi.spyOn(stream._workBuffer, "decodeAsync").mockRejectedValueOnce(new Error("environment decoding failed"));
+            }
+            return { sogTextures: makePack() } as any;
+        });
+        vi.spyOn(stream, "_applyDecodedPositionsAsync").mockResolvedValue(outcome === "success");
+        vi.spyOn(stream, "_decodeFileAsync").mockImplementation(async (fileId: number) => {
+            stream._residency.pin(fileId, stream._fileCounts.get(fileId));
+            stream._decodedFiles.add(fileId);
+            stream._applyDesiredLods();
+            return true;
+        });
+        vi.spyOn(Logger, "Warn").mockImplementation(() => {});
+
+        await stream._streamAllAsync();
+
+        const residency: GaussianSplattingResidencyController = stream._residency;
+        expect(stream._baseLayerReady).toBe(true);
+        if (outcome === "success") {
+            residency.free(-1);
+            expect(residency.has(-1)).toBe(true);
+            expect(residency.freeSize).toBe(0);
+        } else {
+            expect(stream._environmentRange).toBeNull();
+            expect(residency.has(-1)).toBe(false);
+            expect(residency.freeSize).toBe(50);
+            expect(residency.allocate(0, 50)).not.toBeNull();
+        }
+    });
+
+    it.each(["metadata", "decode"])("disposes standalone streams when required coarse %s fails", async (failure) => {
+        startupSpy.mockRestore();
+        vi.spyOn(GaussianSplattingStream.prototype as any, "_gatherCountsAsync").mockImplementation(async function (this: any, fileIds: number[]) {
+            if (failure === "decode") {
+                for (const fileId of fileIds) {
+                    this._fileCounts.set(fileId, 100);
+                    this._fileMeta.set(fileId, { sogData: { count: 100 }, subRootUrl: "" });
+                }
+            }
+            return 0;
+        });
+        vi.spyOn(GaussianSplattingStream.prototype as any, "_setExternalWorkBuffer").mockImplementation(() => {});
+        vi.spyOn(GaussianSplattingStream.prototype as any, "_decodeFileAsync").mockResolvedValue(false);
+        vi.spyOn(Logger, "Error").mockImplementation(() => {});
+        const stream = new GaussianSplattingStream("failed", makeMetadata(), "", scene) as any;
+        const disposeSpy = vi.spyOn(stream, "dispose");
+
+        await vi.waitFor(() => expect(stream.isDisposed()).toBe(true));
+
+        expect(disposeSpy).toHaveBeenCalledOnce();
+        expect(scene.meshes).not.toContain(stream);
+        expect(stream._workBuffer).toBeNull();
+        expect(stream._residency).toBeNull();
+    });
+
+    it("caps an all-coarse stream at its complete source size even above the progressive metadata threshold", async () => {
+        const metadata: ISOGLODMetadata = {
+            lodLevels: 1,
+            filenames: Array.from({ length: 40 }, (_, file) => `${file}/meta.json`),
+            tree: {
+                bound: { min: [0, 0, 0], max: [40, 1, 1] },
+                children: Array.from({ length: 40 }, (_, file) => ({
+                    bound: { min: [file, 0, 0], max: [file + 1, 1, 1] },
+                    lods: { "0": { file, offset: 0, count: 10 } },
+                })),
+            },
+        };
+        const stream = makeDormantStream(metadata);
+        vi.spyOn(stream, "_setExternalWorkBuffer").mockImplementation(() => {});
+        vi.spyOn(stream, "_gatherCountsAsync").mockImplementation(async (fileIds: number[]) => {
+            for (const fileId of fileIds) {
+                stream._fileCounts.set(fileId, 10);
+                stream._fileMeta.set(fileId, { sogData: { count: 10 }, subRootUrl: "" });
+            }
+            return 0;
+        });
+        vi.spyOn(stream, "_decodeFileAsync").mockImplementation(async (fileId: number) => {
+            stream._decodedFiles.add(fileId);
+            stream._applyDesiredLods();
+            return true;
+        });
+
+        await stream._streamAllAsync();
+
+        expect(stream.minimumResidentSplats).toBe(401);
+        expect(stream.residentSplatBudget).toBe(401);
+    });
+
+    it("keeps the minimum pending until the coarse metadata promise resolves", async () => {
+        const stream = makeDormantStream();
+        let releaseMetadata!: () => void;
+        const metadataPending = new Promise<void>((resolve) => {
+            releaseMetadata = resolve;
+        });
+        vi.spyOn(stream, "_setExternalWorkBuffer").mockImplementation(() => {});
+        vi.spyOn(stream, "_gatherCountsAsync").mockImplementation(async () => {
+            await metadataPending;
+            stream._fileCounts.set(1, 100);
+            stream._fileMeta.set(1, { sogData: { count: 100 }, subRootUrl: "" });
+            return 0;
+        });
+        vi.spyOn(stream, "_decodeFileAsync").mockImplementation(async (fileId: number) => {
+            stream._decodedFiles.add(fileId);
+            stream._applyDesiredLods();
+            return true;
+        });
+
+        expect(stream.minimumResidentSplats).toBe(0);
+        const streaming = stream._streamAllAsync();
+        await Promise.resolve();
+        expect(stream.minimumResidentSplats).toBe(0);
+        releaseMetadata();
+        await streaming;
+        expect(stream.minimumResidentSplats).toBe(101);
+    });
+
+    it("clamps a large finite MB request to device capacity when finer source counts are unknown", () => {
+        const stream = makeDormantStream(makeMetadata(), { memoryBudgetMb: Number.MAX_SAFE_INTEGER });
+        stream._fileCounts.set(1, 100);
+        stream._resolveMinimumResidentSplats([1], 0);
+
+        expect(stream._resolveResidentBudget(null, 100)).toBe(2048 * 2048);
+    });
+
+    it.each([0.5, Number.MIN_VALUE])("raises a positive fractional residency request %s to the coarse minimum", (maxResidentSplats) => {
+        const stream = makeDormantStream(makeMetadata(), { maxResidentSplats });
+        stream._fileCounts.set(1, 100);
+        stream._resolveMinimumResidentSplats([1], 0);
+
+        expect(stream._resolveResidentBudget(901, 100)).toBe(101);
     });
 });

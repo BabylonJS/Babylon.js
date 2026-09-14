@@ -151,6 +151,7 @@ export interface IGaussianSplattingStreamOptions {
      * to fit the complete coarse layer. When unset, streams use a bounded device-tiered default with coarse-derived
      * refinement headroom, capped at the complete source size when known.
      * Finite non-positive values leave this limit unset; non-finite or unsafe positive counts are rejected.
+     * Positive fractional counts are floored to at least one splat before applying the coarse minimum.
      */
     maxResidentSplats?: number;
     /**
@@ -180,8 +181,8 @@ export interface IGaussianSplattingStreamOptions {
     /**
      * When true, higher-order spherical-harmonics carried by the SOG files (`shN`) are GPU-decoded into baked
      * packed-u32 SH textures so the streamed splats render with view-dependent lighting (matching the non-stream
-     * `.spz`/`.sog` path) instead of flat DC-only color. Small streams use the maximum source SH degree. Streams
-     * with more than 32 referenced files reserve the supported degree-4 layout before finer metadata is known,
+     * `.spz`/`.sog` path) instead of flat DC-only color. Streams with complete initial metadata use the maximum
+     * source SH degree. Streams that defer finer metadata reserve the supported degree-4 layout before it is known,
      * even if the files ultimately carry no `shN`; lower-degree files neutral-fill the unused bands.
      * Defaults to `true`; set to `false` to force flat DC-only color and avoid the SH decode cost/texture memory.
      */
@@ -561,7 +562,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         // deferred: _streamAllAsync resolves it once the base layer has decoded. If it finishes WITHOUT the part ever
         // becoming ready (empty stream) or throws, dispose the controller so a hosted stream doesn't leave its work
         // buffer and reserved region allocated — the synchronous AddGaussianSplattingStreamPart never awaits, so it
-        // can't clean up itself. `_partReadySettled` distinguishes a genuine success (leave it running) from a
+        // can't clean up itself. Standalone startup failures also dispose their partial resources.
+        // `_partReadySettled` distinguishes a genuine success (leave it running) from a
         // finished-but-never-ready result (dispose).
         // eslint-disable-next-line github/no-then
         void this._streamAllAsync().then(
@@ -576,7 +578,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
                 this._lod0SplatCount = Object.freeze({ status: "unavailable" as const });
                 Logger.Error("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
                 this._rejectPartReady("GaussianSplattingStream: streaming failed: " + (e?.message ?? e));
-                if (this._hostCompound && !this._disposed) {
+                if (!this._disposed) {
                     this._disposeAndReclaim();
                 }
             }
@@ -1019,8 +1021,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     }
 
     /**
-     * Disposes this stream (which tombstones its region) and then compacts the host once to actually reclaim the
-     * reserved rows. Used on a definitive load failure / empty result — a discrete, one-off reclaim, versus a bare
+     * Disposes this stream and, when hosted, compacts the host once to reclaim its tombstoned region's reserved
+     * rows. Used on a definitive load failure / empty result — a discrete, one-off reclaim, versus a bare
      * {@link dispose} that only tombstones so tearing down several parts doesn't rebuild the atlas repeatedly.
      */
     private _disposeAndReclaim(): void {
@@ -1425,7 +1427,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     /**
      * Streams the scene. Large streams fetch only required coarse metadata before allocating and decoding the
      * complete coarse layer; finer metadata starts afterwards so it cannot occupy the download queue ahead of
-     * visible geometry. Small streams retain an exact all-file capacity upper bound.
+     * visible geometry. Small streams and streams containing only coarse files retain an exact all-file capacity upper bound.
      */
     private async _streamAllAsync(): Promise<void> {
         const fileIds = this._collectAllFileIds();
@@ -1438,7 +1440,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             throw new Error("GaussianSplattingStream: no valid coarse source files were referenced.");
         }
 
-        const progressiveMetadata = fileIds.length > ProgressiveMetadataFileThreshold;
+        const progressiveMetadata = fileIds.length > ProgressiveMetadataFileThreshold && baseFileIds.length < fileIds.length;
         if (progressiveMetadata && this._decodeSh) {
             // Finer metadata is deliberately unknown during allocation. Reserve the renderer's complete supported
             // degree-4 layout so a later file can never require a fixed-atlas resize or silently lose its SH.
@@ -1492,10 +1494,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         this._evictionEnabled = progressiveMetadata || (fullCapacity !== null && capacity < fullCapacity);
 
         this._residency = new GaussianSplattingResidencyController(capacity, this._evictionCooldownFrames, (file) => this._onFileEvicted(file));
-        // Pin splat 0 as the invisible padding splat, then the environment (always rendered) — neither is evicted.
+        // Padding is always pinned. Reserve the environment now, but pin it only after a successful decode so
+        // failed environment data can release its allocation before coarse/fine files need that space.
         this._residency.pin(PaddingFileId, 1);
         if (envCount > 0) {
-            const envOffset = this._residency.pin(EnvironmentFileId, envCount);
+            const envOffset = this._residency.allocate(EnvironmentFileId, envCount);
             if (envOffset !== null) {
                 this._environmentRange = { offset: envOffset, count: envCount };
             } else {
@@ -1713,10 +1716,6 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         if (fullCapacity !== null) {
             budget = Math.min(budget, fullCapacity);
         }
-        if (!Number.isSafeInteger(budget) || budget < this._minimumResidentSplats || budget < 1) {
-            throw new Error("GaussianSplattingStream: resolved resident capacity is invalid.");
-        }
-
         if (fullCapacity !== null || this._minimumResidentSplats > 0) {
             const maxTextureSize = Math.floor(this._scene.getEngine().getCaps().maxTextureSize);
             const maxCapacity = maxTextureSize * maxTextureSize;
@@ -1729,6 +1728,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             if (budget < this._minimumResidentSplats) {
                 throw new Error(`GaussianSplattingStream: minimum resident splat count ${this._minimumResidentSplats} exceeds the device texture capacity ${maxCapacity}.`);
             }
+        }
+        if (!Number.isSafeInteger(budget) || budget < this._minimumResidentSplats || budget < 1) {
+            throw new Error("GaussianSplattingStream: resolved resident capacity is invalid.");
         }
         this._residentBudget = budget;
         return budget;
@@ -2074,10 +2076,12 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             return;
         }
         const range = this._environmentRange;
+        let decoded = false;
         try {
             const parsed = await ParseSogMetaAsTextures(this._environmentFiles, "", this._scene, !this._useGpuPositionReadback, this._downloadManager);
             const pack = parsed.sogTextures;
             if (!pack) {
+                Logger.Warn("GaussianSplattingStream: environment decoding produced no texture data.");
                 return;
             }
             try {
@@ -2094,9 +2098,12 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
                 }
                 if (!positionsApplied) {
                     Logger.Warn("GaussianSplattingStream: decoded positions could not be applied for the environment.");
-                    this._environmentRange = null;
                     return;
                 }
+                if (this._residency?.pin(EnvironmentFileId, range.count) !== range.offset) {
+                    throw new Error("GaussianSplattingStream: decoded environment could not be pinned.");
+                }
+                decoded = true;
                 this._refreshActiveRanges();
             } finally {
                 // Always release the GPU source textures (the decode pass is the only consumer).
@@ -2104,6 +2111,11 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             }
         } catch (e: any) {
             Logger.Warn("GaussianSplattingStream: failed to decode environment: " + (e?.message ?? e));
+        } finally {
+            if (!decoded) {
+                this._residency?.free(EnvironmentFileId);
+                this._environmentRange = null;
+            }
         }
     }
 
@@ -2812,11 +2824,14 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
         if (!Number.isFinite(value)) {
             throw new RangeError(`GaussianSplattingStream: ${name} must be finite.`);
         }
-        const normalized = integer ? Math.floor(value) : value;
+        if (value <= 0) {
+            return 0;
+        }
+        const normalized = integer ? Math.max(1, Math.floor(value)) : value;
         if (normalized > Number.MAX_SAFE_INTEGER) {
             throw new RangeError(`GaussianSplattingStream: ${name} is outside the supported range.`);
         }
-        return Math.max(0, normalized);
+        return normalized;
     }
 
     /**
