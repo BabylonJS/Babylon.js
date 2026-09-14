@@ -58,6 +58,48 @@ export interface IKHRInteractivityDiagnostic {
 }
 
 /**
+ * Stable source identity retained on every FlowGraph block lowered from a KHR_interactivity node.
+ */
+export interface IKHRInteractivityBlockProvenance {
+    /** Source graph index. */
+    graphIndex: number;
+    /** Source node index. */
+    nodeIndex: number;
+    /** Source declaration index. */
+    declarationIndex: number;
+    /** Full operation name. */
+    operation: string;
+    /** Role of this block in a one-to-many mapping. Negative roles identify generated helper blocks. */
+    role: number;
+    /** Stable JSON pointer to the source node. */
+    sourcePath: string;
+}
+
+/**
+ * Stable source identity retained on a FlowGraph connection lowered from a KHR_interactivity socket.
+ */
+export interface IKHRInteractivitySocketProvenance extends IKHRInteractivityBlockProvenance {
+    /** Socket category. */
+    kind: "value" | "flow";
+    /** Whether the socket is consumed by or produced from the logical KHR node. */
+    direction: "input" | "output";
+    /** Exact source KHR socket identifier. */
+    socket: string;
+}
+
+/**
+ * Canonical source retained on a FlowGraph lowered from KHR_interactivity.
+ */
+export interface IKHRInteractivityGraphProvenance {
+    /** Source graph index. */
+    graphIndex: number;
+    /** Ratified specification revision used by the importer. */
+    specificationCommit: string;
+    /** Detached canonical source graph. */
+    source: IKHRInteractivity_Graph;
+}
+
+/**
  * Canonical declaration information retained during import.
  */
 export interface IKHRInteractivityDeclarationModel {

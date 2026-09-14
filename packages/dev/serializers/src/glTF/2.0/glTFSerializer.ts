@@ -1,6 +1,10 @@
 import { type Node } from "core/node";
 import { type Scene } from "core/scene";
 import { type Animation } from "core/Animations/animation";
+import { type AnimationGroup } from "core/Animations/animationGroup";
+import { type Camera } from "core/Cameras/camera";
+import { type Material } from "core/Materials/material";
+import { type IKHRInteractivity } from "babylonjs-gltf2interface";
 import { type GLTFData } from "./glTFData";
 import { GLTFExporter } from "./glTFExporter";
 
@@ -8,6 +12,40 @@ import { GLTFExporter } from "./glTFExporter";
  * Mesh compression methods.
  */
 export type MeshCompressionMethod = "None" | "Draco";
+
+/**
+ * Final entity remapping context exposed to a KHR_interactivity export provider.
+ */
+export interface IKHRInteractivityExportContext {
+    /** Gets the final glTF node index for a Babylon node. */
+    getNodeIndex(node: Node): number | undefined;
+    /** Gets the final glTF animation index for a Babylon animation group. */
+    getAnimationIndex(animation: AnimationGroup): number | undefined;
+    /** Gets the final glTF camera index for a Babylon camera. */
+    getCameraIndex(camera: Camera): number | undefined;
+    /** Gets the final glTF material index for a Babylon material. */
+    getMaterialIndex(material: Material): number | undefined;
+    /** Writes a companion extension on an already-exported glTF node. */
+    setNodeExtension(nodeIndex: number, extensionName: string, value: unknown): void;
+}
+
+/**
+ * Supplies a detached canonical KHR_interactivity document to the glTF serializer.
+ */
+export interface IKHRInteractivityExportProvider {
+    /** Whether KHR_interactivity must be listed in extensionsRequired. */
+    readonly required: boolean;
+    /** Additional operation or companion extensions referenced by the graph. */
+    readonly additionalExtensionsUsed: readonly string[];
+    /** Additional extensions that must be listed in extensionsRequired. */
+    readonly additionalExtensionsRequired: readonly string[];
+    /**
+     * Builds the extension after final glTF entity indices are available.
+     * @param context final serializer remapping context
+     * @returns canonical KHR_interactivity extension payload
+     */
+    build(context: IKHRInteractivityExportContext): IKHRInteractivity;
+}
 
 /**
  * Holds a collection of exporter options and parameters
@@ -65,6 +103,12 @@ export interface IExportOptions {
      * Indicates what compression method to apply to mesh data.
      */
     meshCompressionMethod?: MeshCompressionMethod;
+
+    /**
+     * Canonical KHR_interactivity export provider. The provider is evaluated only after scene
+     * nodes and animations have their final glTF indices.
+     */
+    khrInteractivity?: IKHRInteractivityExportProvider;
 }
 
 /**

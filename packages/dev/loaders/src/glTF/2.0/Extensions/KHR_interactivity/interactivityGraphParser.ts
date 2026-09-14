@@ -7,7 +7,16 @@ import { RandomGUID } from "core/Misc/guid";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
-import { CloneKHRInteractivityGraph, CreateEffectiveKHRInteractivityGraph, gltfTypeToBabylonType, type IKHRInteractivityDeclarationModel } from "./interactivityGraphModel";
+import {
+    CloneKHRInteractivityGraph,
+    CreateEffectiveKHRInteractivityGraph,
+    gltfTypeToBabylonType,
+    KHR_INTERACTIVITY_SPECIFICATION_COMMIT,
+    type IKHRInteractivityBlockProvenance,
+    type IKHRInteractivityDeclarationModel,
+    type IKHRInteractivityGraphProvenance,
+    type IKHRInteractivitySocketProvenance,
+} from "./interactivityGraphModel";
 import { DelayReferencePrefix, EventReferencePrefix } from "./interactivityReferences";
 
 /**
@@ -396,6 +405,17 @@ export class InteractivityGraphToFlowGraphParser {
         }
     }
 
+    private _createBlockProvenance(nodeIndex: number, declarationIndex: number, operation: string, role: number): IKHRInteractivityBlockProvenance {
+        return {
+            graphIndex: this._graphIndex,
+            nodeIndex,
+            declarationIndex,
+            operation,
+            role,
+            sourcePath: `/extensions/KHR_interactivity/graphs/${this._graphIndex}/nodes/${nodeIndex}`,
+        };
+    }
+
     private _getEmptyBlock(className: string, type: string, nodeIndex?: number, declarationIndex?: number, role?: number): ISerializedFlowGraphBlock {
         return {
             uniqueId: RandomGUID(),
@@ -410,16 +430,34 @@ export class InteractivityGraphToFlowGraphParser {
                 nodeIndex === undefined
                     ? {}
                     : {
-                          khrInteractivity: {
-                              graphIndex: this._graphIndex,
-                              nodeIndex,
-                              declarationIndex,
-                              operation: type,
-                              role: role ?? 0,
-                              sourcePath: `/extensions/KHR_interactivity/graphs/${this._graphIndex}/nodes/${nodeIndex}`,
-                          },
+                          khrInteractivity: this._createBlockProvenance(nodeIndex, declarationIndex!, type, role ?? 0),
                       },
         };
+    }
+
+    private _setSocketProvenance(
+        connection: ISerializedFlowGraphConnection,
+        nodeIndex: number,
+        declarationIndex: number,
+        operation: string,
+        role: number,
+        kind: IKHRInteractivitySocketProvenance["kind"],
+        direction: IKHRInteractivitySocketProvenance["direction"],
+        socket: string
+    ): void {
+        connection.metadata = {
+            ...(connection.metadata ?? {}),
+            khrInteractivity: {
+                ...this._createBlockProvenance(nodeIndex, declarationIndex, operation, role),
+                kind,
+                direction,
+                socket,
+            } satisfies IKHRInteractivitySocketProvenance,
+        };
+    }
+
+    private _getBlockRole(blocks: readonly ISerializedFlowGraphBlock[], block: ISerializedFlowGraphBlock): number {
+        return (block.metadata?.khrInteractivity as IKHRInteractivityBlockProvenance | undefined)?.role ?? blocks.indexOf(block);
     }
 
     private _createUnsupportedExtensionBlock(
@@ -450,16 +488,24 @@ export class InteractivityGraphToFlowGraphParser {
             outputFlowSockets: Object.keys(node.flows ?? {}).sort(),
         };
         for (const socket of block.config.inputValueSockets) {
-            block.dataInputs.push(this._createNewSocketConnection(socket.name));
+            const connection = this._createNewSocketConnection(socket.name);
+            this._setSocketProvenance(connection, nodeIndex, node.declaration, mapping.fullOperationName, 0, "value", "input", socket.name);
+            block.dataInputs.push(connection);
         }
         for (const socket of block.config.outputValueSockets) {
-            block.dataOutputs.push(this._createNewSocketConnection(socket.name, true));
+            const connection = this._createNewSocketConnection(socket.name, true);
+            this._setSocketProvenance(connection, nodeIndex, node.declaration, mapping.fullOperationName, 0, "value", "output", socket.name);
+            block.dataOutputs.push(connection);
         }
         for (const socket of block.config.inputFlowSockets) {
-            block.signalInputs.push(this._createNewSocketConnection(socket));
+            const connection = this._createNewSocketConnection(socket);
+            this._setSocketProvenance(connection, nodeIndex, node.declaration, mapping.fullOperationName, 0, "flow", "input", socket);
+            block.signalInputs.push(connection);
         }
         for (const socket of block.config.outputFlowSockets) {
-            block.signalOutputs.push(this._createNewSocketConnection(socket, true));
+            const connection = this._createNewSocketConnection(socket, true);
+            this._setSocketProvenance(connection, nodeIndex, node.declaration, mapping.fullOperationName, 0, "flow", "output", socket);
+            block.signalOutputs.push(connection);
         }
         return block;
     }
@@ -587,6 +633,16 @@ export class InteractivityGraphToFlowGraphParser {
                 if (!block.signalOutputs.includes(socketOut)) {
                     block.signalOutputs.push(socketOut);
                 }
+                this._setSocketProvenance(
+                    socketOut,
+                    i,
+                    gltfNode.declaration,
+                    flowGraphBlocks.fullOperationName,
+                    this._getBlockRole(flowGraphBlocks.blocks, block),
+                    "flow",
+                    "output",
+                    flowKey
+                );
                 // get the mapper for the input node - in case it mapped to multiple blocks
                 const inputMapper = this._mappings[this._interactivityGraph.nodes![inputNodeId].declaration]?.flowGraphMapping;
                 if (!inputMapper) {
@@ -628,6 +684,16 @@ export class InteractivityGraphToFlowGraphParser {
                     socketIn = this._createNewSocketConnection(nodeInSocketName);
                     inputBlock.signalInputs.push(socketIn);
                 }
+                this._setSocketProvenance(
+                    socketIn,
+                    inputNodeId,
+                    this._interactivityGraph.nodes![inputNodeId].declaration,
+                    nodeIn.fullOperationName,
+                    this._getBlockRole(nodeIn.blocks, inputBlock),
+                    "flow",
+                    "input",
+                    flow.socket ?? "in"
+                );
                 // connect the sockets
                 socketIn.connectedPointIds.push(socketOut.uniqueId);
                 socketOut.connectedPointIds.push(socketIn.uniqueId);
@@ -664,6 +730,16 @@ export class InteractivityGraphToFlowGraphParser {
                 if (!block.dataInputs.includes(socketIn)) {
                     block.dataInputs.push(socketIn);
                 }
+                this._setSocketProvenance(
+                    socketIn,
+                    i,
+                    gltfNode.declaration,
+                    flowGraphBlocks.fullOperationName,
+                    this._getBlockRole(flowGraphBlocks.blocks, block),
+                    "value",
+                    "input",
+                    valueKey
+                );
                 // Captured before the connected branch below shadows `valueMapping`. When set and the
                 // value is supplied by a connection, the seconds→frames `dataTransformer` cannot run
                 // (it is parse-time only), so the raw connected value is scaled by a runtime multiply.
@@ -726,6 +802,16 @@ export class InteractivityGraphToFlowGraphParser {
                         socketOut = this._createNewSocketConnection(socketOutName, true);
                         outBlock.dataOutputs.push(socketOut);
                     }
+                    this._setSocketProvenance(
+                        socketOut,
+                        nodeOutId,
+                        this._interactivityGraph.nodes![nodeOutId].declaration,
+                        nodeOut.fullOperationName,
+                        this._getBlockRole(nodeOut.blocks, outBlock),
+                        "value",
+                        "output",
+                        nodeOutSocketName
+                    );
                     // connect the sockets
                     if (convertConnectedTimeToFrames) {
                         this._connectWithSecondsToFramesConversion(context, socketOut, socketIn, i, gltfNode.declaration);
@@ -870,6 +956,13 @@ export class InteractivityGraphToFlowGraphParser {
 
         return {
             name: this._interactivityGraph.name ?? `Graph ${this._graphIndex + 1}`,
+            metadata: {
+                khrInteractivity: {
+                    graphIndex: this._graphIndex,
+                    specificationCommit: KHR_INTERACTIVITY_SPECIFICATION_COMMIT,
+                    source: CloneKHRInteractivityGraph(this._interactivityGraph),
+                } satisfies IKHRInteractivityGraphProvenance,
+            },
             rightHanded: true,
             allBlocks,
             executionContexts: [context],

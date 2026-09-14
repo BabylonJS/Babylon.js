@@ -22,6 +22,7 @@ import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { type IFlowGraphValidationResult, ValidateFlowGraphWithBlockList } from "core/FlowGraph/flowGraphValidator";
 import { type HelpTopicId } from "./components/help/helpContent";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { type IKHRInteractivityImportResult } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 
 /**
  * Class used to hold the global state of the flow graph editor
@@ -167,6 +168,9 @@ export class GlobalState {
 
     /** Whether the active coordinator depends on runtime services scoped to its imported asset. */
     hasImportScopedRuntime = false;
+
+    /** Canonical KHR_interactivity import associated with the active editor coordinator. */
+    khrInteractivityImportResult: Nullable<IKHRInteractivityImportResult> = null;
 
     // ── Multi-Graph / Coordinator ──────────────────────────────────────
     /** The coordinator that owns all graphs in this editor session. */

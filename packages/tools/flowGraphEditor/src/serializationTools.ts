@@ -11,6 +11,7 @@ import { Logger } from "core/Misc/logger";
 import { Constants } from "core/Engines/constants";
 import { type ISerializedFlowGraph } from "core/FlowGraph/typeDefinitions";
 import { FetchSnippet, type ISnippetServerResponse } from "@tools/snippet-loader";
+import { CreateKHRInteractivityExportPlan, KHRInteractivityExportError, type IKHRInteractivityExportAnalysis } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 
 /**
  * Runtime settings used when deserializing graphs into an editor coordinator.
@@ -291,6 +292,7 @@ export class SerializationTools {
         const disposePreviousCoordinator = globalState.isCoordinatorEditorOwned(previousCoordinator);
         globalState.serializationDisabledReason = state.serializationDisabledReason;
         globalState.hasImportScopedRuntime = state.hasImportScopedRuntime;
+        globalState.khrInteractivityImportResult = null;
         globalState.setCoordinator(state.coordinator, true);
         globalState.activeGraphIndex = state.activeGraphIndex;
         if (previousCoordinator && previousCoordinator !== state.coordinator && disposePreviousCoordinator) {
@@ -473,7 +475,7 @@ export class SerializationTools {
      * @param globalState - the editor's global state
      * @param scene - optional preview scene to include in the export
      */
-    public static async ExportGlbAsync(flowGraph: FlowGraph, globalState: GlobalState, scene: Nullable<Scene>): Promise<void> {
+    public static async ExportBabylonFlowGraphGlbAsync(flowGraph: FlowGraph, globalState: GlobalState, scene: Nullable<Scene>): Promise<void> {
         this.UpdateLocations(flowGraph, globalState);
         globalState.snapshotUserVariables();
 
@@ -517,7 +519,7 @@ export class SerializationTools {
                 const glbData = await GLTF2Export.GLBAsync(scene, "flowGraph", {});
 
                 // Extract the GLB and inject our custom extension into its JSON chunk
-                const glbFile = glbData.glTFFiles["flowGraph.glb"];
+                const glbFile = glbData.files["flowGraph.glb"];
                 if (glbFile instanceof Blob) {
                     const buffer = await glbFile.arrayBuffer();
                     const augmented = SerializationTools._InjectExtensionIntoGlb(new Uint8Array(buffer), fgSerialized);
@@ -538,6 +540,85 @@ export class SerializationTools {
         const jsonStr = JSON.stringify(gltfJson);
         const glb = SerializationTools._BuildMinimalGlb(jsonStr);
         SerializationTools._DownloadBlob(new Blob([glb.buffer as ArrayBuffer], { type: "model/gltf-binary" }), "flowGraph.glb", globalState);
+    }
+
+    /**
+     * Backward-compatible alias for exporting the BABYLON_flow_graph GLB format.
+     * @param flowGraph graph to export
+     * @param globalState editor state
+     * @param scene optional preview scene
+     */
+    public static async ExportGlbAsync(flowGraph: FlowGraph, globalState: GlobalState, scene: Nullable<Scene>): Promise<void> {
+        await SerializationTools.ExportBabylonFlowGraphGlbAsync(flowGraph, globalState, scene);
+    }
+
+    /**
+     * Analyzes whether the active coordinator can be exported as ratified KHR_interactivity.
+     * @param globalState editor state containing canonical import provenance
+     * @returns detached representability analysis
+     */
+    public static AnalyzeKhrInteractivityExport(globalState: GlobalState): IKHRInteractivityExportAnalysis {
+        const coordinator = globalState.coordinator;
+        const importResult = globalState.khrInteractivityImportResult;
+        if (!coordinator || !importResult) {
+            return {
+                representable: false,
+                nodes: [],
+                diagnostics: [
+                    {
+                        code: "GRAPH_SOURCE_MISSING",
+                        path: "/extensions/KHR_interactivity",
+                        message: "KHR_interactivity export requires a graph imported from a canonical KHR_interactivity glTF or GLB.",
+                        severity: "error",
+                    },
+                ],
+            };
+        }
+        return CreateKHRInteractivityExportPlan(coordinator.flowGraphs, {
+            document: importResult.document,
+            sourceGLTF: importResult.glTF,
+            defaultGraphIndex: importResult.document.defaultGraphIndex,
+            required: true,
+            additionalExtensionsRequired: importResult.glTF.extensionsRequired?.filter((extensionName) => extensionName !== "KHR_interactivity"),
+        }).analyze();
+    }
+
+    /**
+     * Exports the active canonical graph set through the Babylon glTF serializer.
+     * The live editor graphs are analyzed and read without mutation.
+     * @param globalState editor state
+     * @param format glTF JSON or binary GLB
+     * @returns detached representability analysis for the exported graph set
+     */
+    public static async ExportKhrInteractivityAsync(globalState: GlobalState, format: "gltf" | "glb"): Promise<IKHRInteractivityExportAnalysis> {
+        const coordinator = globalState.coordinator;
+        const importResult = globalState.khrInteractivityImportResult;
+        const scene = globalState.sceneContext?.scene;
+        if (!coordinator || !importResult || !scene) {
+            const analysis = SerializationTools.AnalyzeKhrInteractivityExport(globalState);
+            throw new KHRInteractivityExportError(analysis.diagnostics);
+        }
+        const plan = CreateKHRInteractivityExportPlan(coordinator.flowGraphs, {
+            document: importResult.document,
+            sourceGLTF: importResult.glTF,
+            defaultGraphIndex: importResult.document.defaultGraphIndex,
+            required: true,
+            additionalExtensionsRequired: importResult.glTF.extensionsRequired?.filter((extensionName) => extensionName !== "KHR_interactivity"),
+        });
+        const analysis = plan.analyze();
+        if (!analysis.representable) {
+            throw new KHRInteractivityExportError(analysis.diagnostics);
+        }
+        const serializer = (globalThis as any).BABYLON?.GLTF2Export;
+        if (!serializer) {
+            throw new Error("GLTF2Export is not available.");
+        }
+        const data =
+            format === "glb"
+                ? await serializer.GLBAsync(scene, "flowGraphKHRInteractivity", { khrInteractivity: plan })
+                : await serializer.GLTFAsync(scene, "flowGraphKHRInteractivity", { khrInteractivity: plan });
+        data.downloadFiles();
+        return analysis;
     }
 
     /**

@@ -79,6 +79,7 @@ import { TargetCamera } from "core/Cameras/targetCamera";
 import { Epsilon } from "core/Maths/math.constants";
 import { DataWriter } from "./dataWriter";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { type AnimationGroup } from "core/Animations/animationGroup";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -248,7 +249,7 @@ export class GLTFExporter {
      */
     private _animationSampleRate: number;
 
-    private readonly _options: Required<IExportOptions>;
+    private readonly _options: Required<Omit<IExportOptions, "khrInteractivity">> & Pick<IExportOptions, "khrInteractivity">;
 
     public _shouldUseGlb: boolean = false;
 
@@ -262,6 +263,7 @@ export class GLTFExporter {
 
     // Babylon node -> glTF node index
     private readonly _nodeMap = new Map<Node, number>();
+    private readonly _animationGroupMap = new Map<AnimationGroup, number>();
 
     // Babylon material -> glTF material index
     public readonly _materialMap = new Map<Material, number>();
@@ -434,6 +436,7 @@ export class GLTFExporter {
             removeNoopRootNodes: true,
             includeCoordinateSystemConversionNodes: false,
             meshCompressionMethod: "None",
+            khrInteractivity: undefined,
             ...options,
         };
 
@@ -930,9 +933,41 @@ export class GLTFExporter {
                 this._accessors,
                 this._animationSampleRate,
                 stateLH.getNodesSet(),
-                this._options.shouldExportAnimation
+                this._options.shouldExportAnimation,
+                this._animationGroupMap
             );
         }
+    }
+
+    /** @internal */
+    public _getNodeIndex(node: Node): number | undefined {
+        return this._nodeMap.get(node);
+    }
+
+    /** @internal */
+    public _getAnimationIndex(animationGroup: AnimationGroup): number | undefined {
+        return this._animationGroupMap.get(animationGroup);
+    }
+
+    /** @internal */
+    public _getCameraIndex(camera: Camera): number | undefined {
+        const glTFCamera = this._camerasMap.get(camera);
+        return glTFCamera ? this._cameras.indexOf(glTFCamera) : undefined;
+    }
+
+    /** @internal */
+    public _getMaterialIndex(material: Material): number | undefined {
+        return this._materialMap.get(material);
+    }
+
+    /** @internal */
+    public _setNodeExtension(nodeIndex: number, extensionName: string, value: unknown): void {
+        const node = this._nodes[nodeIndex];
+        if (!node) {
+            throw new Error(`Cannot write ${extensionName}: glTF node ${nodeIndex} does not exist.`);
+        }
+        node.extensions ||= {};
+        node.extensions[extensionName] = value;
     }
 
     private _shouldExportNode(babylonNode: Node): boolean {

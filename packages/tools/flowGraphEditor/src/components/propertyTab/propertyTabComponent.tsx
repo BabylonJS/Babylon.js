@@ -198,16 +198,32 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
         void doLoadAsync();
     }
 
-    /**
-     * Export the flow graph (and optionally the preview scene) as a .glb file.
-     */
-    async exportGlbAsync() {
+    private async _exportKhrInteractivityAsync(format: "gltf" | "glb") {
+        try {
+            const analysis = await SerializationTools.ExportKhrInteractivityAsync(this.props.globalState, format);
+            const message = `Exported ${analysis.nodes.length} KHR_interactivity node(s) as ${format === "glb" ? "flowGraphKHRInteractivity.glb" : "flowGraphKHRInteractivity.gltf"}.`;
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, false));
+            ShowToast(this.props.globalState, message, "success");
+        } catch (err) {
+            const diagnostics = (err as { diagnostics?: { path: string; message: string }[] }).diagnostics;
+            if (diagnostics?.length) {
+                for (const diagnostic of diagnostics) {
+                    this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`KHR_interactivity export error: ${diagnostic.path}: ${diagnostic.message}`, true));
+                }
+            } else {
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Error exporting KHR_interactivity: " + err, true));
+            }
+            ShowToast(this.props.globalState, diagnostics?.[0]?.message ?? `Error exporting KHR_interactivity: ${String(err)}`, "error");
+        }
+    }
+
+    private async _exportBabylonFlowGraphGlbAsync() {
         try {
             const scene = this.props.globalState.sceneContext?.scene ?? null;
-            await SerializationTools.ExportGlbAsync(this.props.globalState.flowGraph, this.props.globalState, scene);
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph exported as flowGraph.glb", false));
+            await SerializationTools.ExportBabylonFlowGraphGlbAsync(this.props.globalState.flowGraph, this.props.globalState, scene);
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph exported as flowGraph.glb using BABYLON_flow_graph.", false));
         } catch (err) {
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Error exporting glTF: " + err, true));
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Error exporting BABYLON_flow_graph GLB: " + err, true));
         }
     }
 
@@ -401,6 +417,22 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
                             <FileUploadLine label="Load" accept=".json" onClick={(files) => this.load(files[0])} />
                             <FileUploadLine label="Load glTF" accept=".glb,.gltf" onClick={(files) => this.loadGlb(files[0])} />
                             <Button label="Save" title={serializationDisabledReason ?? "Save"} disabled={!!serializationDisabledReason} onClick={() => this.save()} />
+                            <Button
+                                label="Export KHR glTF"
+                                title="Export the preview scene and graph set as glTF with KHR_interactivity"
+                                onClick={() => void this._exportKhrInteractivityAsync("gltf")}
+                            />
+                            <Button
+                                label="Export KHR GLB"
+                                title="Export the preview scene and graph set as GLB with KHR_interactivity"
+                                onClick={() => void this._exportKhrInteractivityAsync("glb")}
+                            />
+                            <Button
+                                label="Export BABYLON_flow_graph GLB"
+                                title={serializationDisabledReason ?? "Export the active graph using the Babylon-specific BABYLON_flow_graph extension"}
+                                disabled={!!serializationDisabledReason}
+                                onClick={() => void this._exportBabylonFlowGraphGlbAsync()}
+                            />
                             {this.props.globalState.customSave && (
                                 <Button
                                     label={this.props.globalState.customSave.label}

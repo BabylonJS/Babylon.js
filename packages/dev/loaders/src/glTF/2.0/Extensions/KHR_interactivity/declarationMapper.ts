@@ -362,6 +362,41 @@ export function addNewInteractivityFlowGraphMapping(key: string, extension: stri
     gltfExtensionsToFlowGraphMapping[extension][key] = mapping;
 }
 
+/**
+ * One operation entry in the shared KHR_interactivity-to-FlowGraph registry.
+ */
+export interface IKHRInteractivityOperationRegistryEntry {
+    /** Ratified operation identifier. */
+    op: string;
+    /** Extension defining the operation, when it is not a KHR_interactivity core operation. */
+    extension?: string;
+    /** Bidirectional structural mapping used by import and export. */
+    mapping: IGLTFToFlowGraphMapping;
+}
+
+/**
+ * Gets a deterministic snapshot of the registered KHR_interactivity operation mappings.
+ * Export analysis uses this same registry as import lowering so the two directions cannot
+ * independently drift.
+ * @returns registered mappings sorted by extension and operation
+ */
+export function GetInteractivityOperationRegistry(): readonly IKHRInteractivityOperationRegistryEntry[] {
+    const entries: IKHRInteractivityOperationRegistryEntry[] = Object.keys(gltfToFlowGraphMapping).map((op) => ({
+        op,
+        mapping: gltfToFlowGraphMapping[op],
+    }));
+    for (const extension of Object.keys(gltfExtensionsToFlowGraphMapping).sort()) {
+        for (const op of Object.keys(gltfExtensionsToFlowGraphMapping[extension]).sort()) {
+            entries.push({
+                op,
+                extension,
+                mapping: gltfExtensionsToFlowGraphMapping[extension][op],
+            });
+        }
+    }
+    return entries.sort((left, right) => `${left.extension ?? ""}:${left.op}`.localeCompare(`${right.extension ?? ""}:${right.op}`));
+}
+
 const gltfExtensionsToFlowGraphMapping: { [extension: string]: { [key: string]: IGLTFToFlowGraphMapping } } = {
     /**
      * This is the BABYLON extension for glTF interactivity.

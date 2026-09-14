@@ -183,6 +183,7 @@ export function ParseFlowGraph(serializationObject: ISerializedFlowGraph, option
     if (serializationObject.uniqueId) {
         graph.uniqueId = serializationObject.uniqueId;
     }
+    graph.metadata = serializationObject.metadata;
     const blocks: FlowGraphBlock[] = [];
     const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
     // Parse all blocks

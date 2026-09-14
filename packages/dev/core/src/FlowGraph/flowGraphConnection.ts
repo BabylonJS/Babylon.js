@@ -47,6 +47,11 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
     public uniqueId = RandomGUID();
 
     /**
+     * Optional host-format metadata associated with this connection.
+     */
+    public metadata?: any;
+
+    /**
      * The name of the connection.
      */
     public name: string;
@@ -154,6 +159,9 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         serializationObject._connectionType = this._connectionType;
         serializationObject.connectedPointIds = [];
         serializationObject.className = this.getClassName();
+        if (this.metadata !== undefined) {
+            serializationObject.metadata = this.metadata;
+        }
         for (const point of this._connectedPoint) {
             serializationObject.connectedPointIds.push(point.uniqueId);
         }
@@ -175,5 +183,6 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         this.name = serializationObject.name;
         this._connectionType = serializationObject._connectionType;
         this.connectedPointIds = serializationObject.connectedPointIds;
+        this.metadata = serializationObject.metadata;
     }
 }

@@ -72,6 +72,7 @@ describe("Flow Graph Serialization", () => {
         const block = {} as any;
         block.uniqueId = "test";
         const connection = new FlowGraphDataConnection("test", FlowGraphConnectionType.Input, block, RichTypeNumber);
+        connection.metadata = { source: { socket: "value" } };
         const serialized: any = {};
         connection.serialize(serialized);
 
@@ -82,6 +83,7 @@ describe("Flow Graph Serialization", () => {
         expect(serialized.className).toEqual("FlowGraphDataConnection");
         expect(serialized.richType.typeName).toEqual("number");
         expect(serialized.richType.defaultValue).toEqual(0);
+        expect(serialized.metadata).toEqual(connection.metadata);
 
         const parsed = ParseGraphDataConnection(serialized, block, FlowGraphDataConnection);
         expect(parsed.uniqueId).toEqual(connection.uniqueId);
@@ -90,6 +92,7 @@ describe("Flow Graph Serialization", () => {
         expect(parsed.getClassName()).toEqual("FlowGraphDataConnection");
         expect(parsed.richType.typeName).toEqual("number");
         expect(parsed.richType.defaultValue).toEqual(0);
+        expect(parsed.metadata).toEqual(connection.metadata);
 
         const connection2 = new FlowGraphDataConnection("test2", FlowGraphConnectionType.Output, block, RichTypeNumber);
         connection.connectTo(connection2);
@@ -124,6 +127,7 @@ describe("Flow Graph Serialization", () => {
         // const pathConverter = new FlowGraphPathConverter(mockContext);
 
         const block = new FlowGraphPlayAnimationBlock();
+        block.metadata = { source: { node: 3 } };
 
         const serialized: any = {};
         block.serialize(serialized);
@@ -133,6 +137,7 @@ describe("Flow Graph Serialization", () => {
         expect(serialized.dataInputs.length).toEqual(block.dataInputs.length);
         expect(serialized.dataOutputs.length).toEqual(block.dataOutputs.length);
         expect(serialized.className).toEqual("FlowGraphPlayAnimationBlock");
+        expect(serialized.metadata).toEqual(block.metadata);
 
         const parsed = ParseFlowGraphBlockWithClassType(serialized, { scene }, FlowGraphPlayAnimationBlock);
         expect(parsed.uniqueId).toEqual(block.uniqueId);
@@ -141,6 +146,7 @@ describe("Flow Graph Serialization", () => {
         expect(parsed.dataOutputs.length).toEqual(block.dataOutputs.length);
         expect((parsed as FlowGraphExecutionBlock).signalInputs.length).toEqual(block.signalInputs.length);
         expect((parsed as FlowGraphExecutionBlock).signalOutputs.length).toEqual(block.signalOutputs.length);
+        expect(parsed.metadata).toEqual(block.metadata);
 
         // Serialize a block with configuration
         const multiGateBlock = new FlowGraphMultiGateBlock({ outputSignalCount: 3, name: "MultiGate" });
@@ -215,6 +221,7 @@ describe("Flow Graph Serialization", () => {
 
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = coordinator.createGraph();
+        graph.metadata = { source: { graph: 2 } };
         const context = graph.createContext();
 
         context.setVariable("test", 42);
@@ -235,6 +242,7 @@ describe("Flow Graph Serialization", () => {
         expect(serialized.allBlocks.length).toBe(3);
 
         const parsed = await ParseFlowGraphAsync(serialized, { coordinator, pathConverter });
+        expect(parsed.metadata).toEqual(graph.metadata);
         expect(parsed._eventBlocks[FlowGraphEventType.SceneReady].length).toBe(1);
         parsed.start();
 

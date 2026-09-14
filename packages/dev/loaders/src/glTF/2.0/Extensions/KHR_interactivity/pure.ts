@@ -6,4 +6,5 @@ export * from "./flowGraphEventReferenceBlock";
 export * from "./flowGraphObjectReferenceBlock";
 export * from "./flowGraphUnsupportedInteractivityBlock";
 export * from "./interactivityGraphModel";
+export * from "./interactivityGraphExporter";
 export * from "./interactivityNodeState";

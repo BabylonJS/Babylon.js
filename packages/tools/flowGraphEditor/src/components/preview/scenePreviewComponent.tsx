@@ -752,6 +752,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 SerializationTools.ApplyDeserializedState(stagedGraphState, this.props.globalState);
                 stagedGraphState = null;
             }
+            this.props.globalState.khrInteractivityImportResult = stagedKhrImport?.importResult ?? null;
             this.props.globalState.onSceneContextChanged.notifyObservers(stagedSceneContext);
             this.setState({ sceneObjectCount: stagedSceneContext.entries.length });
             if (previousSceneContext && previousSceneContext !== stagedSceneContext) {

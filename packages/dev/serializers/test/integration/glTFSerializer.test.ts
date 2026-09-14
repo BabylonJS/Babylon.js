@@ -130,6 +130,39 @@ test.describe("Babylon glTF Serializer", () => {
             expect(assertionData.version).toEqual("2.0");
             expect(assertionData.generator).toContain("Babylon.js v");
         });
+        test("should emit KHR_interactivity after final entity remapping", async () => {
+            const assertionData = await page.evaluate(async () => {
+                const box = BABYLON.MeshBuilder.CreateBox("interactiveBox", {}, window.scene!);
+                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test", {
+                    khrInteractivity: {
+                        required: true,
+                        additionalExtensionsUsed: ["KHR_node_selectability"],
+                        additionalExtensionsRequired: [],
+                        build: (context) => {
+                            const nodeIndex = context.getNodeIndex(box);
+                            if (nodeIndex === undefined) {
+                                throw new Error("Interactive box was not remapped.");
+                            }
+                            context.setNodeExtension(nodeIndex, "KHR_node_selectability", { selectable: true });
+                            return {
+                                graph: 0,
+                                graphs: [{ name: "Interaction", declarations: [{ op: "event/onStart" }], nodes: [{ declaration: 0 }] }],
+                            };
+                        },
+                    },
+                });
+                return JSON.parse(glTFData.files["test.gltf"] as string);
+            });
+
+            expect(assertionData.extensions.KHR_interactivity).toEqual({
+                graph: 0,
+                graphs: [{ name: "Interaction", declarations: [{ op: "event/onStart" }], nodes: [{ declaration: 0 }] }],
+            });
+            expect(assertionData.extensionsUsed).toContain("KHR_interactivity");
+            expect(assertionData.extensionsUsed).toContain("KHR_node_selectability");
+            expect(assertionData.extensionsRequired).toEqual(["KHR_interactivity"]);
+            expect(assertionData.nodes[0].extensions.KHR_node_selectability).toEqual({ selectable: true });
+        });
         test("should serialize sphere geometry in window.scene to glTF", async () => {
             const assertionData = await page.evaluate(async () => {
                 BABYLON.MeshBuilder.CreateSphere(

@@ -1212,6 +1212,11 @@ describe("KHR_interactivity canonical import model", () => {
 
         expect(JSON.stringify(graph)).toBe(before);
         expect(serialized.name).toBe("Named graph");
+        expect(serialized.metadata.khrInteractivity).toEqual({
+            graphIndex: 3,
+            specificationCommit: KHR_INTERACTIVITY_SPECIFICATION_COMMIT,
+            source: graph,
+        });
         expect(serialized.allBlocks[0].metadata.khrInteractivity).toEqual({
             graphIndex: 3,
             nodeIndex: 0,
@@ -1219,6 +1224,17 @@ describe("KHR_interactivity canonical import model", () => {
             operation: "math/abs",
             role: 0,
             sourcePath: "/extensions/KHR_interactivity/graphs/3/nodes/0",
+        });
+        expect(serialized.allBlocks[0].dataInputs[0].metadata.khrInteractivity).toEqual({
+            graphIndex: 3,
+            nodeIndex: 0,
+            declarationIndex: 0,
+            operation: "math/abs",
+            role: 0,
+            sourcePath: "/extensions/KHR_interactivity/graphs/3/nodes/0",
+            kind: "value",
+            direction: "input",
+            socket: "a",
         });
     });
 
