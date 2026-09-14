@@ -2,4 +2,5 @@
 export * from "./atmosphere/index";
 export * from "./htmlMesh/index";
 export * from "./msdfText/index";
+export * from "./multiTexture/index";
 export * from "./navigation/index";
