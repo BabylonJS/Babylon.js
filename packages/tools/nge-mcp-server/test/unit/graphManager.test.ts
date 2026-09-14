@@ -198,6 +198,28 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
         expect(block.operation).toBe(3); // Divide = 3
     });
 
+    it("rejects structural properties when adding or updating blocks", () => {
+        const structuralProperties = ["customType", "id", "inputs", "outputs"];
+
+        for (const property of structuralProperties) {
+            const mgr = new GeometryGraphManager();
+            mgr.createGeometry(property);
+
+            expect(mgr.addBlock(property, "BoxBlock", "box", { [property]: "invalid" })).toBe(`Property "${property}" is structural and cannot be set.`);
+            expect(mgr.getGeometry(property)!.blocks).toHaveLength(0);
+
+            const result = mgr.addBlock(property, "BoxBlock", "box");
+            if (typeof result === "string") {
+                throw new Error(result);
+            }
+            const block = result.block;
+            expect(block.id).toBe(1);
+
+            expect(mgr.setBlockProperties(property, block.id, { evaluateContext: true, [property]: "invalid" })).toBe(`Property "${property}" is structural and cannot be set.`);
+            expect(block.evaluateContext).toBe(false);
+        }
+    });
+
     // ── Test 7: exportJSON safety net converts remaining string enums ───
 
     it("exportJSON converts any remaining string enum values", () => {
@@ -234,6 +256,37 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
 
         // Non-existent geometry
         expect(mgr.connectBlocks("nope", boxId, "geometry", boxId, "geometry")).toContain("not found");
+    });
+
+    it("rejects connections that would create a cycle", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("cycle");
+
+        mgr.addBlock("cycle", "MathBlock", "first");
+        mgr.addBlock("cycle", "MathBlock", "second");
+
+        expect(mgr.connectBlocks("cycle", 1, "output", 2, "left")).toBe("OK");
+        expect(mgr.connectBlocks("cycle", 2, "output", 1, "left")).toBe("Connection from block 2 to block 1 would create a cycle.");
+        expect(mgr.getGeometry("cycle")!.blocks[0].inputs[0].targetBlockId).toBeUndefined();
+    });
+
+    it("terminates layout for imported cyclic graphs", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("importedCycle");
+
+        mgr.addBlock("importedCycle", "MathBlock", "first");
+        mgr.addBlock("importedCycle", "MathBlock", "second");
+        mgr.addBlock("importedCycle", "GeometryOutputBlock", "output");
+        mgr.connectBlocks("importedCycle", 1, "output", 2, "left");
+        mgr.connectBlocks("importedCycle", 2, "output", 3, "geometry");
+
+        mgr.getGeometry("importedCycle")!.blocks[0].inputs[0] = {
+            name: "left",
+            targetBlockId: 2,
+            targetConnectionName: "output",
+        };
+
+        expect(() => mgr.exportJSON("importedCycle")).not.toThrow();
     });
 
     // ── Test 9: Disconnect input ────────────────────────────────────────
@@ -294,6 +347,21 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
         const issues = mgr.validateGeometry("val");
         expect(issues.some((i) => i.includes("Missing GeometryOutputBlock"))).toBe(true);
         expect(issues.some((i) => i.includes("orphan"))).toBe(true);
+    });
+
+    it("validation rejects multiple output blocks and mismatched outputNodeId", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("outputs");
+
+        mgr.addBlock("outputs", "BoxBlock", "box");
+        mgr.addBlock("outputs", "GeometryOutputBlock", "first");
+        mgr.addBlock("outputs", "GeometryOutputBlock", "second");
+
+        expect(mgr.validateGeometry("outputs")).toContain("ERROR: Found 2 GeometryOutputBlocks — every geometry graph needs exactly one.");
+
+        mgr.removeBlock("outputs", 3);
+        mgr.getGeometry("outputs")!.outputNodeId = 1;
+        expect(mgr.validateGeometry("outputs")).toContain("ERROR: outputNodeId references block 1, which is not a GeometryOutputBlock.");
     });
 
     // ── Test 12: Registry completeness ──────────────────────────────────

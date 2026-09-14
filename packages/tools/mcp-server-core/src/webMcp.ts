@@ -9,14 +9,6 @@ export type WebMcpRegistrationStatus = "unsupported" | "registering" | "register
 export type WebMcpInput = Record<string, unknown>;
 
 /**
- * Options supplied by WebMCP when executing a tool.
- */
-export interface IWebMcpExecutionOptions {
-    /** Signal used to cancel the current tool execution. */
-    signal: AbortSignal;
-}
-
-/**
  * Tool annotations currently defined by the WebMCP proposal.
  */
 export interface IWebMcpToolAnnotations {
@@ -45,10 +37,10 @@ export interface IWebMcpTool {
     /**
      * Executes the tool.
      * @param input - Validated tool input supplied by the agent.
-     * @param options - Execution options supplied by WebMCP.
+     * @param signal - Signal used to cancel the current tool execution.
      * @returns A JSON-serializable result.
      */
-    execute: (input: WebMcpInput, options: IWebMcpExecutionOptions) => unknown | Promise<unknown>;
+    execute: (input: WebMcpInput, signal: AbortSignal) => unknown | Promise<unknown>;
 }
 
 /**

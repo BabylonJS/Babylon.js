@@ -1,11 +1,4 @@
-import {
-    AssertWebMcpMutationAllowed,
-    IsWebMcpSupported,
-    RegisterWebMcpToolsAsync,
-    type IWebMcpExecutionOptions,
-    type IWebMcpTool,
-    type WebMcpInput,
-} from "@tools/mcp-server-core/webMcp";
+import { AssertWebMcpMutationAllowed, IsWebMcpSupported, RegisterWebMcpToolsAsync, type IWebMcpTool, type WebMcpInput } from "@tools/mcp-server-core/webMcp";
 import {
     BlockRegistry,
     GeometryGraphManager,
@@ -25,6 +18,7 @@ export { IsWebMcpSupported as IsNodeGeometryWebMcpSupported };
 export type { IWebMcpTool };
 
 const CurrentGeometryName = "__current_node_geometry__";
+const SupportedSerializedBlockTypes = new Set(Object.values(BlockRegistry).map((info) => `BABYLON.${info.className}`));
 
 interface ICurrentGeometryCache {
     editorSerialization: string;
@@ -270,8 +264,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             description: "Return the complete serialized Node Geometry document currently open in Babylon.js Node Geometry Editor.",
             inputSchema: EmptyInputSchema,
             annotations: readOnlyAnnotations,
-            execute: (_input, options) => {
-                options.signal.throwIfAborted();
+            execute: (_input, signal) => {
+                signal.throwIfAborted();
                 return ReadCurrentNodeGeometry(globalState);
             },
         },
@@ -280,8 +274,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Create current node geometry",
             description: "Replace the current editor document with a new empty Node Geometry.",
             inputSchema: CreateGeometryInputSchema,
-            execute: (input, options) => {
-                AssertMutationAllowed(globalState, options);
+            execute: (input, signal) => {
+                AssertMutationAllowed(globalState, signal);
                 const manager = new GeometryGraphManager();
                 manager.createGeometry(CurrentGeometryName, ReadOptionalString(input, "comment"));
                 ApplyManagerDocument(manager, globalState);
@@ -293,8 +287,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Replace current node geometry",
             description: "Replace the current Node Geometry document and refresh the graph and preview.",
             inputSchema: ReplaceGeometryInputSchema,
-            execute: (input, options) => {
-                AssertMutationAllowed(globalState, options);
+            execute: (input, signal) => {
+                AssertMutationAllowed(globalState, signal);
                 const manager = CreateManagerFromSerializedGeometry(ReadSerializedNodeGeometry(input.nodeGeometry));
                 ApplyManagerDocument(manager, globalState);
                 return CreateDocumentSummary(manager);
@@ -305,8 +299,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Rebuild current node geometry",
             description: "Rebuild the current Node Geometry graph and refresh its preview.",
             inputSchema: EmptyInputSchema,
-            execute: (_input, options) => {
-                AssertMutationAllowed(globalState, options);
+            execute: (_input, signal) => {
+                AssertMutationAllowed(globalState, signal);
                 globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
                 return {
                     success: true,
@@ -319,8 +313,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Add node geometry block",
             description: "Add one block to the current Node Geometry. Use list_block_types or get_block_type_info to discover supported blocks and ports.",
             inputSchema: AddBlockInputSchema,
-            execute: (input, options) =>
-                MutateCurrentGeometry(globalState, options, (manager) => {
+            execute: (input, signal) =>
+                MutateCurrentGeometry(globalState, signal, (manager) => {
                     const result = manager.addBlock(
                         CurrentGeometryName,
                         ReadString(input, "blockType"),
@@ -342,8 +336,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Add node geometry blocks",
             description: "Add multiple blocks to the current Node Geometry as one editor update.",
             inputSchema: AddBlocksBatchInputSchema,
-            execute: (input, options) =>
-                MutateCurrentGeometry(globalState, options, (manager) => {
+            execute: (input, signal) =>
+                MutateCurrentGeometry(globalState, signal, (manager) => {
                     const blocks = ReadRecordArray(input, "blocks");
                     const created = blocks.map((block) => {
                         const result = manager.addBlock(
@@ -371,8 +365,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Remove node geometry block",
             description: "Remove a block and its connections from the current Node Geometry.",
             inputSchema: BlockIdInputSchema,
-            execute: (input, options) =>
-                MutateCurrentGeometry(globalState, options, (manager) => {
+            execute: (input, signal) =>
+                MutateCurrentGeometry(globalState, signal, (manager) => {
                     ThrowOnManagerError(manager.removeBlock(CurrentGeometryName, ReadNumber(input, "blockId")));
                     return { success: true };
                 }),
@@ -382,8 +376,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Set node geometry block properties",
             description: "Set one or more properties on a block in the current Node Geometry.",
             inputSchema: SetBlockPropertiesInputSchema,
-            execute: (input, options) =>
-                MutateCurrentGeometry(globalState, options, (manager) => {
+            execute: (input, signal) =>
+                MutateCurrentGeometry(globalState, signal, (manager) => {
                     ThrowOnManagerError(manager.setBlockProperties(CurrentGeometryName, ReadNumber(input, "blockId"), ReadRecord(input, "properties")));
                     return { success: true };
                 }),
@@ -393,8 +387,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Connect node geometry blocks",
             description: "Connect an output on one block to an input on another block in the current Node Geometry.",
             inputSchema: ConnectionSchema,
-            execute: (input, options) =>
-                MutateCurrentGeometry(globalState, options, (manager) => {
+            execute: (input, signal) =>
+                MutateCurrentGeometry(globalState, signal, (manager) => {
                     ThrowOnManagerError(
                         manager.connectBlocks(
                             CurrentGeometryName,
@@ -412,8 +406,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Connect node geometry blocks in batch",
             description: "Connect multiple block pairs in the current Node Geometry as one editor update.",
             inputSchema: ConnectBlocksBatchInputSchema,
-            execute: (input, options) =>
-                MutateCurrentGeometry(globalState, options, (manager) => {
+            execute: (input, signal) =>
+                MutateCurrentGeometry(globalState, signal, (manager) => {
                     const connections = ReadRecordArray(input, "connections");
                     for (const connection of connections) {
                         ThrowOnManagerError(
@@ -437,8 +431,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Disconnect node geometry input",
             description: "Remove the connection feeding an input on a block in the current Node Geometry.",
             inputSchema: DisconnectInputSchema,
-            execute: (input, options) =>
-                MutateCurrentGeometry(globalState, options, (manager) => {
+            execute: (input, signal) =>
+                MutateCurrentGeometry(globalState, signal, (manager) => {
                     ThrowOnManagerError(manager.disconnectInput(CurrentGeometryName, ReadNumber(input, "blockId"), ReadString(input, "inputName")));
                     return { success: true };
                 }),
@@ -449,8 +443,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             description: "Return a human-readable description of all blocks and connections in the current Node Geometry.",
             inputSchema: EmptyInputSchema,
             annotations: readOnlyAnnotations,
-            execute: (_input, options) => {
-                options.signal.throwIfAborted();
+            execute: (_input, signal) => {
+                signal.throwIfAborted();
                 return {
                     description: CreateManagerFromEditor(globalState).describeGeometry(CurrentGeometryName),
                 };
@@ -462,8 +456,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             description: "Return detailed properties, ports, and connections for one block in the current Node Geometry.",
             inputSchema: BlockIdInputSchema,
             annotations: readOnlyAnnotations,
-            execute: (input, options) => {
-                options.signal.throwIfAborted();
+            execute: (input, signal) => {
+                signal.throwIfAborted();
                 const manager = CreateManagerFromEditor(globalState);
                 const blockId = ReadNumber(input, "blockId");
                 const geometry = manager.getGeometry(CurrentGeometryName)!;
@@ -483,8 +477,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             annotations: {
                 readOnlyHint: true,
             },
-            execute: (input, options) => {
-                options.signal.throwIfAborted();
+            execute: (input, signal) => {
+                signal.throwIfAborted();
                 const category = ReadOptionalString(input, "category");
                 const blocks = Object.entries(BlockRegistry)
                     .filter(([, info]) => !category || info.category.toLowerCase() === category.toLowerCase())
@@ -507,8 +501,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             annotations: {
                 readOnlyHint: true,
             },
-            execute: (input, options) => {
-                options.signal.throwIfAborted();
+            execute: (input, signal) => {
+                signal.throwIfAborted();
                 const blockType = ReadString(input, "blockType");
                 const info = GetBlockTypeDetails(blockType);
                 if (!info) {
@@ -528,8 +522,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             annotations: {
                 readOnlyHint: true,
             },
-            execute: (_input, options) => {
-                options.signal.throwIfAborted();
+            execute: (_input, signal) => {
+                signal.throwIfAborted();
                 return {
                     catalog: NgeEnumCatalog,
                     markdown: GetNgeEnumsReference(),
@@ -544,8 +538,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             annotations: {
                 readOnlyHint: true,
             },
-            execute: (_input, options) => {
-                options.signal.throwIfAborted();
+            execute: (_input, signal) => {
+                signal.throwIfAborted();
                 return {
                     markdown: NgeConceptsMarkdown,
                 };
@@ -557,8 +551,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             description: "Validate the current Node Geometry for missing output, required inputs, broken references, and orphan blocks.",
             inputSchema: EmptyInputSchema,
             annotations: readOnlyAnnotations,
-            execute: (_input, options) => {
-                options.signal.throwIfAborted();
+            execute: (_input, signal) => {
+                signal.throwIfAborted();
                 const issues = CreateManagerFromEditor(globalState).validateGeometry(CurrentGeometryName);
                 return {
                     valid: !issues.some((issue) => issue.startsWith("ERROR")),
@@ -573,15 +567,15 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             inputSchema: SnippetIdInputSchema,
             // WebMCP defines this callback name.
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            execute: async (input, options) => {
-                AssertMutationAllowed(globalState, options);
+            execute: async (input, signal) => {
+                AssertMutationAllowed(globalState, signal);
                 const snippetId = ReadString(input, "snippetId");
                 const result = await LoadSnippet(snippetId);
-                options.signal.throwIfAborted();
                 if (result.type !== "nodeGeometry") {
                     throw new Error(`Snippet "${snippetId}" contains ${result.type} data instead of nodeGeometry data.`);
                 }
                 const manager = CreateManagerFromSerializedGeometry((result as IDataSnippetResult).data);
+                AssertMutationAllowed(globalState, signal);
                 ApplyManagerDocument(manager, globalState);
                 return {
                     snippetId,
@@ -599,8 +593,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             },
             // WebMCP defines this callback name.
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            execute: async (input, options) => {
-                options.signal.throwIfAborted();
+            execute: async (input, signal) => {
+                signal.throwIfAborted();
                 const result = await SaveSnippet(
                     {
                         type: "nodeGeometry",
@@ -615,7 +609,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
                         },
                     }
                 );
-                options.signal.throwIfAborted();
+                signal.throwIfAborted();
                 return {
                     success: true,
                     ...result,
@@ -629,8 +623,8 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             description: "Create a URL that opens the current serialized Node Geometry in the hosted Babylon.js Node Geometry Editor.",
             inputSchema: EmptyInputSchema,
             annotations: readOnlyAnnotations,
-            execute: (_input, options) => {
-                options.signal.throwIfAborted();
+            execute: (_input, signal) => {
+                signal.throwIfAborted();
                 const serialized = JSON.stringify(ReadCurrentNodeGeometry(globalState));
                 return {
                     url: `https://nge.babylonjs.com/#${EncodeBase64(serialized, globalState.hostWindow)}`,
@@ -651,20 +645,16 @@ export async function RegisterNodeGeometryWebMcpToolsAsync(globalState: GlobalSt
     return await RegisterWebMcpToolsAsync(globalState.hostDocument, CreateNodeGeometryWebMcpTools(globalState), signal);
 }
 
-function AssertMutationAllowed(globalState: GlobalState, options: IWebMcpExecutionOptions): void {
-    options.signal.throwIfAborted();
+function AssertMutationAllowed(globalState: GlobalState, signal: AbortSignal): void {
+    signal.throwIfAborted();
     AssertWebMcpMutationAllowed(globalState.mcpSessionConnected);
 }
 
-function MutateCurrentGeometry<T extends object>(
-    globalState: GlobalState,
-    options: IWebMcpExecutionOptions,
-    mutation: (manager: GeometryGraphManager) => T
-): T & { blockCount: number } {
-    AssertMutationAllowed(globalState, options);
+function MutateCurrentGeometry<T extends object>(globalState: GlobalState, signal: AbortSignal, mutation: (manager: GeometryGraphManager) => T): T & { blockCount: number } {
+    AssertMutationAllowed(globalState, signal);
     const manager = CreateManagerFromEditor(globalState);
     const result = mutation(manager);
-    options.signal.throwIfAborted();
+    signal.throwIfAborted();
     ApplyManagerDocument(manager, globalState);
     return {
         ...result,
@@ -735,11 +725,40 @@ function ReadSerializedNodeGeometry(value: unknown): ISerializedGeometry {
     if (!Array.isArray(geometry.blocks)) {
         throw new TypeError("nodeGeometry.blocks must be an array.");
     }
+    geometry.blocks.forEach((value, index) => {
+        if (!value || typeof value !== "object" || Array.isArray(value)) {
+            throw new TypeError(`nodeGeometry.blocks[${index}] must be an object.`);
+        }
+
+        const block = value as Record<string, unknown>;
+        if (typeof block.customType !== "string" || !SupportedSerializedBlockTypes.has(block.customType)) {
+            throw new TypeError(`nodeGeometry.blocks[${index}].customType must identify a supported Node Geometry block.`);
+        }
+        if (typeof block.id !== "number" || !Number.isFinite(block.id)) {
+            throw new TypeError(`nodeGeometry.blocks[${index}].id must be a finite number.`);
+        }
+        if (typeof block.name !== "string") {
+            throw new TypeError(`nodeGeometry.blocks[${index}].name must be a string.`);
+        }
+        ValidateSerializedConnectionPoints(block.inputs, `nodeGeometry.blocks[${index}].inputs`);
+        ValidateSerializedConnectionPoints(block.outputs, `nodeGeometry.blocks[${index}].outputs`);
+    });
 
     return {
         ...geometry,
         outputNodeId,
     } as unknown as ISerializedGeometry;
+}
+
+function ValidateSerializedConnectionPoints(value: unknown, path: string): void {
+    if (!Array.isArray(value)) {
+        throw new TypeError(`${path} must be an array.`);
+    }
+    value.forEach((connectionPoint, index) => {
+        if (!connectionPoint || typeof connectionPoint !== "object" || Array.isArray(connectionPoint) || typeof (connectionPoint as Record<string, unknown>).name !== "string") {
+            throw new TypeError(`${path}[${index}] must be an object with a string name.`);
+        }
+    });
 }
 
 function CloneSerializedNodeGeometry(geometry: ISerializedGeometry): ISerializedGeometry {

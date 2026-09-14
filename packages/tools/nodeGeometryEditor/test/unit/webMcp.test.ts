@@ -2,6 +2,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { GetNgeEnumsReference, NgeConceptsMarkdown, NgeEnumCatalog, type ISerializedGeometry } from "@tools/nge-mcp-common";
 
+const { mockLoadSnippet } = vi.hoisted(() => ({
+    mockLoadSnippet: vi.fn(),
+}));
+
+vi.mock("@tools/snippet-loader", () => ({
+    LoadSnippet: (...args: unknown[]) => mockLoadSnippet(...args),
+    SaveSnippet: vi.fn(),
+}));
+
 import { type GlobalState } from "../../src/globalState";
 import { SerializationTools } from "../../src/serializationTools";
 import { type IWebMcpTool, CreateNodeGeometryWebMcpTools, IsNodeGeometryWebMcpSupported, RegisterNodeGeometryWebMcpToolsAsync } from "../../src/webMcp";
@@ -78,6 +87,7 @@ function RemapGeometryIds(value: unknown, firstId: number): ISerializedGeometry 
 describe("Node Geometry WebMCP", () => {
     afterEach(() => {
         vi.restoreAllMocks();
+        mockLoadSnippet.mockReset();
     });
 
     it("reports whether the browser exposes WebMCP", () => {
@@ -126,6 +136,10 @@ describe("Node Geometry WebMCP", () => {
             readOnlyHint: true,
             untrustedContentHint: true,
         });
+        expect(registrations[15].tool.execute({}, new AbortController().signal)).toEqual({
+            catalog: NgeEnumCatalog,
+            markdown: GetNgeEnumsReference(),
+        });
     });
 
     it("exposes the shared NGE reference data", () => {
@@ -133,11 +147,11 @@ describe("Node Geometry WebMCP", () => {
         const controller = new AbortController();
         const tools = CreateNodeGeometryWebMcpTools(state);
 
-        expect(FindTool(tools, "get_node_geometry_enums").execute({}, { signal: controller.signal })).toEqual({
+        expect(FindTool(tools, "get_node_geometry_enums").execute({}, controller.signal)).toEqual({
             catalog: NgeEnumCatalog,
             markdown: GetNgeEnumsReference(),
         });
-        expect(FindTool(tools, "get_node_geometry_concepts").execute({}, { signal: controller.signal })).toEqual({
+        expect(FindTool(tools, "get_node_geometry_concepts").execute({}, controller.signal)).toEqual({
             markdown: NgeConceptsMarkdown,
         });
     });
@@ -162,15 +176,15 @@ describe("Node Geometry WebMCP", () => {
         });
 
         const tools = CreateNodeGeometryWebMcpTools(state);
-        expect(FindTool(tools, "create_current_node_geometry").execute({}, { signal: controller.signal })).toEqual({
+        expect(FindTool(tools, "create_current_node_geometry").execute({}, controller.signal)).toEqual({
             success: true,
             blockCount: 0,
         });
-        expect(FindTool(tools, "get_current_node_geometry").execute({}, { signal: controller.signal })).toMatchObject({
+        expect(FindTool(tools, "get_current_node_geometry").execute({}, controller.signal)).toMatchObject({
             outputNodeId: -1,
             blocks: [],
         });
-        expect(FindTool(tools, "add_block").execute({ blockType: "BoxBlock" }, { signal: controller.signal })).toMatchObject({
+        expect(FindTool(tools, "add_block").execute({ blockType: "BoxBlock" }, controller.signal)).toMatchObject({
             success: true,
             blockCount: 1,
         });
@@ -197,8 +211,8 @@ describe("Node Geometry WebMCP", () => {
         const addTool = FindTool(tools, "add_block");
         const connectTool = FindTool(tools, "connect_blocks");
 
-        expect(getTool.execute({}, { signal: controller.signal })).toEqual(currentGeometry);
-        expect(addTool.execute({ blockType: "BoxBlock", name: "Box" }, { signal: controller.signal })).toMatchObject({
+        expect(getTool.execute({}, controller.signal)).toEqual(currentGeometry);
+        expect(addTool.execute({ blockType: "BoxBlock", name: "Box" }, controller.signal)).toMatchObject({
             success: true,
             blockCount: 1,
             block: {
@@ -207,7 +221,7 @@ describe("Node Geometry WebMCP", () => {
                 customType: "BABYLON.BoxBlock",
             },
         });
-        expect(addTool.execute({ blockType: "GeometryOutputBlock", name: "Output" }, { signal: controller.signal })).toMatchObject({
+        expect(addTool.execute({ blockType: "GeometryOutputBlock", name: "Output" }, controller.signal)).toMatchObject({
             success: true,
             blockCount: 2,
             block: {
@@ -223,14 +237,14 @@ describe("Node Geometry WebMCP", () => {
                     targetBlockId: 2,
                     inputName: "geometry",
                 },
-                { signal: controller.signal }
+                controller.signal
             )
         ).toMatchObject({
             success: true,
             blockCount: 2,
         });
 
-        const exposedGeometry = getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry;
+        const exposedGeometry = getTool.execute({}, controller.signal) as ISerializedGeometry;
         expect(exposedGeometry.outputNodeId).toBe(2);
         expect(exposedGeometry.blocks).toHaveLength(2);
         expect(exposedGeometry.blocks[1].inputs[0]).toMatchObject({
@@ -253,24 +267,95 @@ describe("Node Geometry WebMCP", () => {
         vi.spyOn(SerializationTools, "Serialize").mockReturnValue(JSON.stringify(serializedGeometry));
 
         const tools = CreateNodeGeometryWebMcpTools(state);
-        expect(FindTool(tools, "get_current_node_geometry").execute({}, { signal: controller.signal })).toEqual(serializedGeometry);
+        expect(FindTool(tools, "get_current_node_geometry").execute({}, controller.signal)).toEqual(serializedGeometry);
         expect(() =>
             FindTool(tools, "add_block").execute(
                 {
                     blockType: "BoxBlock",
                 },
-                { signal: controller.signal }
+                controller.signal
             )
         ).toThrow("connected to a legacy MCP session");
     });
 
-    it("rejects malformed replacement documents without changing the editor", () => {
+    it("re-checks mutation ownership after loading a snippet", async () => {
+        const state = CreateTestState([], vi.fn());
+        const controller = new AbortController();
+        const deserialize = vi.spyOn(SerializationTools, "Deserialize").mockImplementation(() => {});
+        let resolveLoad!: (result: unknown) => void;
+        mockLoadSnippet.mockReturnValue(
+            new Promise((resolve) => {
+                resolveLoad = resolve;
+            })
+        );
+
+        const importPromise = Promise.resolve(
+            FindTool(CreateNodeGeometryWebMcpTools(state), "import_current_node_geometry_from_snippet").execute({ snippetId: "ABC123" }, controller.signal)
+        );
+        state.mcpSessionConnected = true;
+        resolveLoad({
+            snippetId: "ABC123",
+            type: "nodeGeometry",
+            metadata: {
+                name: "",
+                description: "",
+                tags: "",
+            },
+            data: {
+                customType: "BABYLON.NodeGeometry",
+                outputNodeId: -1,
+                blocks: [],
+            },
+        });
+
+        await expect(importPromise).rejects.toThrow("connected to a legacy MCP session");
+        expect(deserialize).not.toHaveBeenCalled();
+    });
+
+    it("rejects malformed or unsupported replacement blocks without changing the editor", () => {
         const state = CreateTestState([], vi.fn());
         const controller = new AbortController();
         const deserialize = vi.spyOn(SerializationTools, "Deserialize").mockImplementation(() => {});
         const replaceTool = FindTool(CreateNodeGeometryWebMcpTools(state), "replace_current_node_geometry");
 
-        expect(() => replaceTool.execute({ nodeGeometry: {} }, { signal: controller.signal })).toThrow('nodeGeometry.customType must be "BABYLON.NodeGeometry".');
+        expect(() => replaceTool.execute({ nodeGeometry: {} }, controller.signal)).toThrow('nodeGeometry.customType must be "BABYLON.NodeGeometry".');
+        expect(() =>
+            replaceTool.execute(
+                {
+                    nodeGeometry: {
+                        customType: "BABYLON.NodeGeometry",
+                        blocks: [
+                            {
+                                customType: "BABYLON.UnsupportedBlock",
+                                id: 1,
+                                name: "Unsupported",
+                                inputs: [],
+                                outputs: [],
+                            },
+                        ],
+                    },
+                },
+                controller.signal
+            )
+        ).toThrow("nodeGeometry.blocks[0].customType must identify a supported Node Geometry block.");
+        expect(() =>
+            replaceTool.execute(
+                {
+                    nodeGeometry: {
+                        customType: "BABYLON.NodeGeometry",
+                        blocks: [
+                            {
+                                customType: "BABYLON.BoxBlock",
+                                id: 1,
+                                name: "Malformed",
+                                inputs: [],
+                            },
+                        ],
+                    },
+                },
+                controller.signal
+            )
+        ).toThrow("nodeGeometry.blocks[0].outputs must be an array.");
         expect(deserialize).not.toHaveBeenCalled();
     });
 });

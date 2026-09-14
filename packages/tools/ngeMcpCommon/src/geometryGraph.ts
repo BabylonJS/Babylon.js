@@ -169,6 +169,8 @@ const BlockEnumProperties: Record<string, Record<string, Record<string, number>>
     GeometryCurveBlock: { curveType: EaseTypes },
 };
 
+const StructuralBlockProperties = new Set(["customType", "id", "inputs", "outputs"]);
+
 // ─── Manager ──────────────────────────────────────────────────────────────
 
 /**
@@ -260,6 +262,11 @@ export class GeometryGraphManager {
         const info: IBlockTypeInfo | undefined = BlockRegistry[blockType];
         if (!info) {
             return `Unknown block type "${blockType}". Use list_block_types to see available blocks.`;
+        }
+
+        const structuralProperty = properties && Object.keys(properties).find((key) => StructuralBlockProperties.has(key));
+        if (structuralProperty) {
+            return `Property "${structuralProperty}" is structural and cannot be set.`;
         }
 
         const warnings: string[] = [];
@@ -517,6 +524,30 @@ export class GeometryGraphManager {
         return "OK";
     }
 
+    private _wouldCreateCycle(geo: ISerializedGeometry, sourceBlockId: number, targetBlockId: number): boolean {
+        const pending = [targetBlockId];
+        const visited = new Set<number>();
+
+        while (pending.length > 0) {
+            const blockId = pending.pop()!;
+            if (blockId === sourceBlockId) {
+                return true;
+            }
+            if (visited.has(blockId)) {
+                continue;
+            }
+            visited.add(blockId);
+
+            for (const block of geo.blocks) {
+                if (block.inputs.some((input) => input.targetBlockId === blockId)) {
+                    pending.push(block.id);
+                }
+            }
+        }
+
+        return false;
+    }
+
     // ── Connections ────────────────────────────────────────────────────
 
     /**
@@ -555,6 +586,10 @@ export class GeometryGraphManager {
         if (!input) {
             const available = targetBlock.inputs.map((i) => i.name).join(", ");
             return `Input "${inputName}" not found on block ${targetBlockId} ("${targetBlock.name}"). Available: ${available}`;
+        }
+
+        if (this._wouldCreateCycle(geo, sourceBlockId, targetBlockId)) {
+            return `Connection from block ${sourceBlockId} to block ${targetBlockId} would create a cycle.`;
         }
 
         // An input can only have one connection — overwrite any existing one
@@ -809,8 +844,9 @@ export class GeometryGraphManager {
             const d = depth.get(id)!;
             for (const predId of predecessors.get(id) ?? []) {
                 const existing = depth.get(predId);
-                if (existing === undefined || d + 1 > existing) {
-                    depth.set(predId, d + 1);
+                const candidateDepth = d + 1;
+                if (candidateDepth < blocks.length && (existing === undefined || candidateDepth > existing)) {
+                    depth.set(predId, candidateDepth);
                     queue.push(predId);
                 }
             }
@@ -933,6 +969,11 @@ export class GeometryGraphManager {
 
         const typeName = block.customType.replace("BABYLON.", "");
 
+        const structuralProperty = Object.keys(properties).find((key) => StructuralBlockProperties.has(key));
+        if (structuralProperty) {
+            return `Property "${structuralProperty}" is structural and cannot be set.`;
+        }
+
         for (const [key, value] of Object.entries(properties)) {
             if (typeName === "GeometryInputBlock" && key === "type" && typeof value === "string") {
                 block["type"] = ConnectionPointTypes[value] ?? value;
@@ -974,15 +1015,22 @@ export class GeometryGraphManager {
         const issues: string[] = [];
 
         // Check for output node
-        const hasOutputBlock = geo.blocks.some((b) => b.customType === "BABYLON.GeometryOutputBlock");
-        if (!hasOutputBlock) {
+        const outputBlocks = geo.blocks.filter((b) => b.customType === "BABYLON.GeometryOutputBlock");
+        if (outputBlocks.length === 0) {
             issues.push("ERROR: Missing GeometryOutputBlock — every geometry graph needs exactly one.");
+        } else if (outputBlocks.length > 1) {
+            issues.push(`ERROR: Found ${outputBlocks.length} GeometryOutputBlocks — every geometry graph needs exactly one.`);
         }
 
         if (geo.outputNodeId < 0) {
             issues.push("ERROR: outputNodeId is not set. There should be a GeometryOutputBlock.");
-        } else if (!geo.blocks.find((b) => b.id === geo.outputNodeId)) {
-            issues.push(`ERROR: outputNodeId references block ${geo.outputNodeId} which does not exist.`);
+        } else {
+            const outputBlock = geo.blocks.find((b) => b.id === geo.outputNodeId);
+            if (!outputBlock) {
+                issues.push(`ERROR: outputNodeId references block ${geo.outputNodeId} which does not exist.`);
+            } else if (outputBlock.customType !== "BABYLON.GeometryOutputBlock") {
+                issues.push(`ERROR: outputNodeId references block ${geo.outputNodeId}, which is not a GeometryOutputBlock.`);
+            }
         }
 
         // Check for unconnected required inputs
