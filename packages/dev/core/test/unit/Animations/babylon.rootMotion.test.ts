@@ -456,6 +456,31 @@ describe("RootMotion", () => {
             expect(fired).toBe(1);
         });
 
+        it("rewrites the root's own entry when its animation also drives another node", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const prop = new TransformNode("prop", scene);
+            prop.parent = rig.armature;
+            // The hips' animation drives the prop too, and the prop is listed first.
+            const group = new AnimationGroup("shared", scene);
+            group.addTargetedAnimation(rig.hipsAnimation, prop);
+            for (const targetedAnimation of rig.group.targetedAnimations) {
+                group.addTargetedAnimation(targetedAnimation.animation, targetedAnimation.target);
+            }
+            group.normalize(0, CycleFrames);
+            const clip = new RootMotionClip(group);
+            new RootMotionController(rig.character, [clip]);
+
+            expect(clip.rootNode).toBe(rig.hips);
+            const inPlaceHips = ChannelOf(clip.animationGroup, rig.hips, "position");
+            expect(inPlaceHips).not.toBe(rig.hipsAnimation);
+            expect(ChannelOf(clip.animationGroup, prop, "position")).toBe(rig.hipsAnimation);
+            expect(HipsInCharacter(rig, CycleFrames, inPlaceHips).z).toBeCloseTo(HipsInCharacter(rig, 0, inPlaceHips).z, 4);
+
+            clip.animationGroup.start(true);
+            Run(scene, 63);
+            expect(rig.character.position.z).toBeCloseTo(Walked(63), 6);
+        });
+
         it("disposes cleanly after the source and its nodes are gone", () => {
             const rig = BuildRig(scene, "rootMotion");
             const { clip, controller, group } = Extract(rig);
@@ -509,6 +534,27 @@ describe("RootMotion", () => {
             const clip = new RootMotionClip(rig.group, { source: RootMotionSource.FootContact, contactNodes: [rig.leftFoot, rig.rightFoot] });
 
             expect(clip.source).toBe(RootMotionSource.FootContact);
+        });
+
+        it("takes a node the group does not animate, passed as the root, as the base of the contacts", () => {
+            const rig = BuildRig(scene, "inPlace");
+            for (const source of [undefined, RootMotionSource.FootContact]) {
+                const clip = new RootMotionClip(rig.group, { rootNode: rig.armature, source });
+
+                expect(clip.source).toBe(RootMotionSource.FootContact);
+                expect(clip.rootNode).toBe(rig.armature);
+                expect(clip.characterNode).toBe(rig.character);
+                expect(clip.contactNodes).toContain(rig.leftFoot);
+                expect(clip.contactNodes).toContain(rig.rightFoot);
+                expect(clip.cycleDistance).toBeCloseTo(Speed, 2);
+                clip.dispose();
+            }
+
+            const { group } = Extract(rig, { rootNode: rig.armature });
+            group.start(true);
+            Run(scene, 63);
+            expect(rig.character.position.z).toBeCloseTo(Walked(63), 1);
+            expect(rig.character.position.x).toBeCloseTo(0, 3);
         });
     });
 
@@ -964,6 +1010,59 @@ describe("RootMotion", () => {
             expect(rig.character.position.z).toBeCloseTo(Speed, 6);
         });
 
+        it("mixes the terminal motions of weighted clips completing together by their normalized weights", () => {
+            const skeleton = BuildSkeleton(scene);
+            const walk = AddGait(skeleton, "rootMotion", { name: "walk" });
+            const run = AddGait(skeleton, "rootMotion", { name: "run", speed: 2 });
+            const walkClip = new RootMotionClip(walk.group);
+            const runClip = new RootMotionClip(run.group);
+            new RootMotionController(skeleton.character, [walkClip, runClip]);
+            walkClip.animationGroup.start(false, 1000);
+            runClip.animationGroup.start(false, 1000);
+            walkClip.animationGroup.weight = 0.8;
+            runClip.animationGroup.weight = 0.8;
+            // Both complete in their first advancing tick, each weighed among all the writers of that tick.
+            Run(scene, 2);
+
+            expect(walkClip.animationGroup.isStarted).toBe(false);
+            expect(runClip.animationGroup.isStarted).toBe(false);
+            expect(skeleton.character.position.z).toBeCloseTo(0.5 * Speed + 0.5 * (2 * Speed), 6);
+        });
+
+        it("gives the last of two unweighted clips completing together the whole terminal motion", () => {
+            for (const runLast of [true, false]) {
+                const skeleton = BuildSkeleton(scene);
+                const walk = AddGait(skeleton, "rootMotion", { name: "walk" });
+                const run = AddGait(skeleton, "rootMotion", { name: "run", speed: 2 });
+                const walkClip = new RootMotionClip(walk.group);
+                const runClip = new RootMotionClip(run.group);
+                new RootMotionController(skeleton.character, [walkClip, runClip]);
+                // Started second, animated second: the last direct writer of the root, whose pose is the one seen.
+                (runLast ? walkClip : runClip).animationGroup.start(false, 1000);
+                (runLast ? runClip : walkClip).animationGroup.start(false, 1000);
+                Run(scene, 2);
+
+                expect(skeleton.character.position.z).toBeCloseTo(runLast ? 2 * Speed : Speed, 6);
+            }
+        });
+
+        it("weighs a clip completing against a weighted clip that plays on", () => {
+            const skeleton = BuildSkeleton(scene);
+            const walk = AddGait(skeleton, "rootMotion", { name: "walk" });
+            const run = AddGait(skeleton, "rootMotion", { name: "run", speed: 2 });
+            const walkClip = new RootMotionClip(walk.group);
+            const runClip = new RootMotionClip(run.group);
+            new RootMotionController(skeleton.character, [walkClip, runClip]);
+            walkClip.animationGroup.start(false, 1000);
+            runClip.animationGroup.start(true);
+            walkClip.animationGroup.weight = 0.8;
+            runClip.animationGroup.weight = 0.8;
+            Run(scene, 2);
+
+            // The walk's whole clip and the run's one tick, half each.
+            expect(skeleton.character.position.z).toBeCloseTo(0.5 * Speed + 0.5 * Walked(2, 2), 6);
+        });
+
         it("applies nothing beyond the last frame of a playback stopped explicitly", () => {
             const rig = BuildRig(scene, "rootMotion");
             const { group } = Extract(rig);
@@ -1368,6 +1467,18 @@ describe("RootMotion", () => {
             group.addTargetedAnimation(animation, hips);
 
             expect(() => new RootMotionClip(group)).toThrow(/no parent/);
+        });
+
+        it("refuses to take the travel from a root the group does not animate", () => {
+            const rig = BuildRig(scene, "inPlace");
+            expect(() => new RootMotionClip(rig.group, { rootNode: rig.armature, source: RootMotionSource.Root })).toThrow(/no position animation/);
+        });
+
+        it("refuses a root with nothing animated under it", () => {
+            const rig = BuildRig(scene, "inPlace");
+            const loose = new TransformNode("loose", scene);
+            loose.parent = rig.character;
+            expect(() => new RootMotionClip(rig.group, { rootNode: loose })).toThrow(/nor any node under it/);
         });
 
         it("keeps a controller to the clips of its own character", () => {

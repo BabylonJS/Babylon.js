@@ -8,6 +8,9 @@ import { Matrix, Quaternion, TmpVectors, Vector3 } from "core/Maths/math.vector.
 import { type Bone } from "core/Bones/bone";
 import { type Node } from "../node";
 
+/** Counts the animatables animated, across scenes, so the writers of an animation step can be told apart in order. */
+let EvaluationCounter = 0;
+
 /**
  * Class used to store an actual running animation
  */
@@ -46,10 +49,11 @@ export class Animatable {
 
     /**
      * @internal
-     * Whether the animatable animated its targets in the scene's last animation step: a paused one, one parked at a
-     * weight of zero and one not started yet did not.
+     * The place of the animatable in the order the scene animated its animatables in its last animation step, or 0
+     * when it did not animate its targets in that step: a paused one, one parked at a weight of zero and one not
+     * started yet did not.
      */
-    public _animated = false;
+    public _evaluationOrder = 0;
 
     /**
      * Observer raised when the animation ends
@@ -429,7 +433,7 @@ export class Animatable {
      * @internal
      */
     public _animate(delay: number): boolean {
-        this._animated = false;
+        this._evaluationOrder = 0;
         if (this._paused) {
             this.animationStarted = false;
             if (this._pausedDelay === null) {
@@ -460,7 +464,7 @@ export class Animatable {
         }
 
         this._previousWeight = this._weight;
-        this._animated = true;
+        this._evaluationOrder = ++EvaluationCounter;
 
         // Animating
         let running = false;

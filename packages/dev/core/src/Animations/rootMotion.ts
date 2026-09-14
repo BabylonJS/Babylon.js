@@ -44,6 +44,8 @@ export interface IRootMotionClipOptions {
     /**
      * The root node, usually the hips or a dedicated root bone, whose own travel is tried first. A bone is resolved to
      * its linked transform node. Defaults to the position-animated node with the most animated descendants in the group.
+     * A node the group does not animate is accepted as the base of the animated hierarchy: the travel then comes from
+     * the contact nodes under it, and {@link RootMotionSource.Root} cannot be forced.
      */
     rootNode?: TransformNode | Bone;
     /**
@@ -134,8 +136,16 @@ interface IChannelWriters {
     weighted: boolean;
     /** The last unweighted animatable writing the channel, whose value is the pose unless a weighted one replaces it. */
     lastDirect: Nullable<Animatable>;
-    /** The place of that animatable among the scene's active animatables. */
-    lastDirectIndex: number;
+    /** The place of that animatable in the order the scene animated its animatables. */
+    lastDirectOrder: number;
+    /** The active animatables that wrote the channel in the last step, to find those that ran to their end in this one. */
+    previous: Animatable[];
+    /** The runtime animation each of them wrote it with. */
+    previousRuntimes: RuntimeAnimation[];
+    /** The active animatables writing the channel in this step, gathered as the step is read. */
+    current: Animatable[];
+    /** The runtime animation each of them writes it with. */
+    currentRuntimes: RuntimeAnimation[];
 }
 
 /** Contact candidates must come this close to the lowest one during the clip, as a share of the character's height. */
@@ -155,8 +165,6 @@ const DeducedDirectionSnapAngle = Math.PI / 18;
 const TangentDelta = 1e-3;
 /** The root motion of each scene, updating the scene's controllers in one pass after animations. */
 const SceneRootMotions = new WeakMap<Scene, SceneRootMotion>();
-/** The clip following each animatable a controller reads its clock from, so the scene's pass can place it among the writers. */
-const ClaimedAnimatables = new WeakMap<Animatable, RootMotionClip>();
 
 /**
  * The root motion of an animation group: how far the clip carries the character over a cycle, and how far it turns it,
@@ -207,8 +215,6 @@ export class RootMotionClip implements IDisposable {
     public _lastProgress: Nullable<number> = null;
     /** @internal Whether the clock has been left unevaluated at a weight of zero since the progress consumed last. */
     public _parked = false;
-    /** @internal The place of the clock's animatable among the scene's active animatables, the last time it was seen there. */
-    public _activeIndex = -1;
     /** @internal What the mixer wrote to the clock's channel this frame. */
     public _writers: Nullable<IChannelWriters> = null;
     /** @internal The controller the clip belongs to. */
@@ -456,10 +462,23 @@ export class RootMotionClip implements IDisposable {
         this._characterNode = character;
 
         // The motion runs on the root's own animation - its frame rate, its range and at runtime its playback - rather than
-        // whichever track happens to be first in the group, which could be a morph target at another frame rate.
-        const anchorChannels = this._channels.get(anchor)!;
-        const clock = anchorChannels.position ?? anchorChannels.rotationQuaternion ?? anchorChannels.rotation ?? anchorChannels.scaling!;
-        this._clockNode = anchor;
+        // whichever track happens to be first in the group, which could be a morph target at another frame rate. A root
+        // the group does not animate, passed as the base of the hierarchy, runs on its first animated descendant.
+        let clockNode: Nullable<TransformNode> = this._channels.has(anchor) ? anchor : null;
+        if (!clockNode) {
+            for (const node of this._channels.keys()) {
+                if (node.isDescendantOf(anchor)) {
+                    clockNode = node as TransformNode;
+                    break;
+                }
+            }
+        }
+        if (!clockNode) {
+            throw new Error(`RootMotionClip: animation group "${animationGroup.name}" animates neither the root node "${anchor.name}" nor any node under it.`);
+        }
+        const clockChannels = this._channels.get(clockNode)!;
+        const clock = clockChannels.position ?? clockChannels.rotationQuaternion ?? clockChannels.rotation ?? clockChannels.scaling!;
+        this._clockNode = clockNode;
         this._clockProperty = clock.targetProperty;
         // The group's range clamped to the clock's keys, the way playback clamps it: another track may run longer.
         const keys = clock.getKeys();
@@ -492,6 +511,11 @@ export class RootMotionClip implements IDisposable {
         }
         this._turns = !!yaw;
 
+        if (source === RootMotionSource.Root && !rootChannels?.position) {
+            throw new Error(
+                `RootMotionClip: the root node "${root!.name}" has no position animation to take the travel from. Omit the source to deduce it from the contact nodes, or pass another rootNode.`
+            );
+        }
         let translation: Nullable<Float32Array> = null;
         if ((source === undefined || source === RootMotionSource.Root) && root && rootChannels?.position) {
             translation = this._measureRootTravel(yaw, minimumTravel, source === RootMotionSource.Root);
@@ -1058,7 +1082,8 @@ export class RootMotionClip implements IDisposable {
         const replace = (source: Animation, kind: "position" | "rotationQuaternion" | "rotation"): void => {
             const animation = CloneAnimation(source);
             animation.setKeys(inPlaceKeys(source.getKeys(), kind), true);
-            const index = this._sourceGroup.targetedAnimations.findIndex((targetedAnimation) => targetedAnimation.animation === source);
+            // By animation and target both: the same animation may drive other nodes earlier in the group.
+            const index = this._sourceGroup.targetedAnimations.findIndex((targetedAnimation) => targetedAnimation.animation === source && targetedAnimation.target === root);
             group.targetedAnimations[index].animation = animation;
         };
 
@@ -1471,19 +1496,16 @@ export class RootMotionController implements IDisposable {
             const found = clip._findClock();
             if (found !== previous) {
                 // A runtime animation belongs to one playback. The previous playback either ran to its end, in which case
-                // its last evaluation - the end of its range - is still to be consumed, or was stopped, and is forgotten.
+                // its last evaluation - the end of its range - is still to be consumed, weighed among the writers of this
+                // step like any other, or was stopped, and is forgotten.
                 if (previous && clip._lastProgress !== null && previous.isStopped()) {
-                    moved = this._accumulate(clip, previous, clip._clockAnimatable!, clip._lastProgress, previous._evaluatedProgress, true) || moved;
+                    moved = this._accumulate(clip, previous, clip._clockAnimatable!, clip._lastProgress, previous._evaluatedProgress) || moved;
                 }
                 clip._clockRuntime = found;
                 clip._clockAnimatable = found ? clip._foundAnimatable : null;
                 clip._syncRuntime = null;
                 clip._lastProgress = null;
                 clip._parked = false;
-                clip._activeIndex = -1;
-                if (found) {
-                    ClaimedAnimatables.set(clip._foundAnimatable!, clip);
-                }
             }
             if (!found) {
                 continue;
@@ -1493,7 +1515,7 @@ export class RootMotionController implements IDisposable {
                 // Its clock stands still too, and carries on from here when it resumes.
                 continue;
             }
-            if (!animatable._animated) {
+            if (!animatable._evaluationOrder) {
                 // Not evaluated this step - parked at a weight of zero - while its clock runs on: it starts again from
                 // wherever it resumes.
                 clip._parked = true;
@@ -1514,7 +1536,7 @@ export class RootMotionController implements IDisposable {
             const lastProgress = clip._lastProgress;
             clip._lastProgress = progress;
             if (lastProgress !== null && progress !== lastProgress) {
-                moved = this._accumulate(clip, found, animatable, lastProgress, progress, false) || moved;
+                moved = this._accumulate(clip, found, animatable, lastProgress, progress) || moved;
             }
         }
 
@@ -1572,14 +1594,13 @@ export class RootMotionController implements IDisposable {
      * @param animatable defines its animatable
      * @param lastProgress defines the progress consumed before
      * @param progress defines the progress to consume
-     * @param ended defines whether the playback ran to its end this frame, so its animatable is no longer active
      * @returns whether anything was added
      */
-    private _accumulate(clip: RootMotionClip, runtime: RuntimeAnimation, animatable: Animatable, lastProgress: number, progress: number, ended: boolean): boolean {
+    private _accumulate(clip: RootMotionClip, runtime: RuntimeAnimation, animatable: Animatable, lastProgress: number, progress: number): boolean {
         if ((clip.source === RootMotionSource.None && !clip.extractsRotation) || !clip._writers) {
             return false;
         }
-        const weight = this._effectiveWeight(clip, runtime, animatable, ended) * runtime._evaluatedBlendingFactor;
+        const weight = this._effectiveWeight(clip._writers, runtime, animatable) * runtime._evaluatedBlendingFactor;
         if (weight === 0) {
             return false;
         }
@@ -1593,46 +1614,29 @@ export class RootMotionController implements IDisposable {
      * The share of a playback in the pose the mixer wrote to its channel this frame, following the late animation
      * bindings of the scene: an unweighted animatable writes directly and the last one wins, unless a weighted animatable
      * also animates the channel, in which case the weighted ones replace it - normalized once their weights add up to
-     * more than one - and additive ones add their weight on top.
-     * @param clip defines the clip, with what the mixer wrote to its channel this frame
+     * more than one - and additive ones add their weight on top. A playback that ran to its end this step is among the
+     * writers like any other, from its place in the order the scene animated them.
+     * @param writers defines what the mixer wrote to the clip's channel this step
      * @param runtime defines the runtime animation of the clip's clock
      * @param animatable defines its animatable
-     * @param ended defines whether the animatable ran to its end this frame and has left the scene's active animatables
      * @returns the share, between 0 and 1
      */
-    private _effectiveWeight(clip: RootMotionClip, runtime: RuntimeAnimation, animatable: Animatable, ended: boolean): number {
-        const writers = clip._writers!;
+    private _effectiveWeight(writers: IChannelWriters, runtime: RuntimeAnimation, animatable: Animatable): number {
         const weight = animatable.weight;
-        let total = writers.total;
-        let weighted = writers.weighted;
-        let lastDirect = writers.lastDirect;
-        if (ended) {
-            // Gone from the active animatables, but it wrote this step, from the place it had among them: a direct writer
-            // from further down the list - one started this step is appended after it - wrote after it.
-            if (weight < 0) {
-                if (!lastDirect || writers.lastDirectIndex < clip._activeIndex) {
-                    lastDirect = animatable;
-                }
-            } else {
-                weighted = true;
-                if (!runtime.isAdditive) {
-                    total += weight;
-                }
-            }
-        }
         if (weight < 0) {
-            return weighted || lastDirect !== animatable ? 0 : 1;
+            return writers.weighted || writers.lastDirect !== animatable ? 0 : 1;
         }
         if (runtime.isAdditive) {
             return weight;
         }
-        return weight / Math.max(1, total);
+        return weight / Math.max(1, writers.total);
     }
 }
 
 /**
  * The root motion controllers of a scene. After the scene's animations, one pass over its active animatables gathers
- * what the mixer wrote to every channel a clip follows, then each controller applies its frame.
+ * what the mixer wrote to every channel a clip follows - with the writers of the step before that ran to their end in
+ * this one, in the order the scene animated them all - then each controller applies its frame.
  */
 class SceneRootMotion {
     private readonly _scene: Scene;
@@ -1706,7 +1710,17 @@ class SceneRootMotion {
                 }
                 let entry = entries.find((candidate) => candidate.property === clip._clockProperty);
                 if (!entry) {
-                    entry = { property: clip._clockProperty, total: 0, weighted: false, lastDirect: null, lastDirectIndex: -1 };
+                    entry = {
+                        property: clip._clockProperty,
+                        total: 0,
+                        weighted: false,
+                        lastDirect: null,
+                        lastDirectOrder: 0,
+                        previous: [],
+                        previousRuntimes: [],
+                        current: [],
+                        currentRuntimes: [],
+                    };
                     entries.push(entry);
                     this._writers.push(entry);
                 }
@@ -1722,17 +1736,25 @@ class SceneRootMotion {
             entry.total = 0;
             entry.weighted = false;
             entry.lastDirect = null;
-            entry.lastDirectIndex = -1;
+            entry.lastDirectOrder = 0;
+            // This step's writers become the last step's; the arrays change places rather than being copied.
+            const animatables = entry.previous;
+            const runtimes = entry.previousRuntimes;
+            entry.previous = entry.current;
+            entry.previousRuntimes = entry.currentRuntimes;
+            entry.current = animatables;
+            entry.currentRuntimes = runtimes;
+            animatables.length = 0;
+            runtimes.length = 0;
         }
-        // What the mixer wrote this step: the animatables that animated. A paused one, one not started yet and one
-        // parked at a weight of zero wrote nothing.
+        // What the mixer wrote this step: the active animatables that animated. A paused one, one not started yet and
+        // one parked at a weight of zero wrote nothing.
         const animatables = this._scene._activeAnimatables;
         for (let i = 0; i < animatables.length; i++) {
             const animatable = animatables[i];
-            if (!animatable._animated) {
+            if (!animatable._evaluationOrder) {
                 continue;
             }
-            const weight = animatable.weight;
             const runtimes = animatable.getAnimations();
             for (let j = 0; j < runtimes.length; j++) {
                 const runtime = runtimes[j];
@@ -1741,30 +1763,76 @@ class SceneRootMotion {
                 if (!entries) {
                     continue;
                 }
-                const clip = ClaimedAnimatables.get(animatable);
-                if (clip) {
-                    clip._activeIndex = i;
-                }
                 for (let k = 0; k < entries.length; k++) {
                     const entry = entries[k];
-                    if (entry.property !== runtime.targetPath) {
-                        continue;
+                    if (entry.property === runtime.targetPath) {
+                        this._addWriter(entry, animatable, runtime);
+                        entry.current.push(animatable);
+                        entry.currentRuntimes.push(runtime);
                     }
-                    if (weight < 0) {
-                        // Direct writers overwrite one another in order, so the last one is the pose.
-                        entry.lastDirect = animatable;
-                        entry.lastDirectIndex = i;
-                    } else {
-                        entry.weighted = true;
-                        if (!runtime.isAdditive) {
-                            entry.total += weight;
-                        }
-                    }
+                }
+            }
+        }
+        // The writers of the last step that ran to their end in this one are gone from the active animatables, but
+        // their last evaluation - the end of their range - was written this step, from their place in the order. One
+        // stopped explicitly is not among them: its runtime animations are not stopped.
+        for (let i = 0; i < writers.length; i++) {
+            const entry = writers[i];
+            const previous = entry.previous;
+            for (let j = 0; j < previous.length; j++) {
+                const animatable = previous[j];
+                const runtime = entry.previousRuntimes[j];
+                if (runtime.isStopped() && entry.current.indexOf(animatable) < 0) {
+                    this._addWriter(entry, animatable, runtime);
+                }
+            }
+        }
+        // A clip's own playback that ran to its end without having written the step before - raised from a weight of
+        // zero on its last step, say - is still to be consumed, so it is a writer too.
+        for (let i = 0; i < this._controllers.length; i++) {
+            const clips = this._controllers[i].clips;
+            for (let j = 0; j < clips.length; j++) {
+                const clip = clips[j];
+                const animatable = clip._clockAnimatable;
+                const runtime = clip._clockRuntime;
+                const entry = clip._writers;
+                if (
+                    animatable &&
+                    runtime &&
+                    entry &&
+                    clip._lastProgress !== null &&
+                    runtime.isStopped() &&
+                    entry.current.indexOf(animatable) < 0 &&
+                    entry.previous.indexOf(animatable) < 0
+                ) {
+                    this._addWriter(entry, animatable, runtime);
                 }
             }
         }
         for (let i = 0; i < this._controllers.length; i++) {
             this._controllers[i]._update();
+        }
+    }
+
+    /**
+     * Counts a writer of a channel in: the last direct writer in the scene's order is the pose unless weighted writers
+     * replace it, whose weights add up.
+     * @param entry defines the channel's writers
+     * @param animatable defines the animatable that wrote the channel
+     * @param runtime defines the runtime animation it wrote it with
+     */
+    private _addWriter(entry: IChannelWriters, animatable: Animatable, runtime: RuntimeAnimation): void {
+        const weight = animatable.weight;
+        if (weight < 0) {
+            if (animatable._evaluationOrder > entry.lastDirectOrder) {
+                entry.lastDirect = animatable;
+                entry.lastDirectOrder = animatable._evaluationOrder;
+            }
+        } else {
+            entry.weighted = true;
+            if (!runtime.isAdditive) {
+                entry.total += weight;
+            }
         }
     }
 }
