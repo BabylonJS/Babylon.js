@@ -261,7 +261,6 @@ export class MTLFileLoader {
             textureLoadPromises!.push(deferred.promise);
         }
 
-        const blockEntityCollection = scene._blockEntityCollection;
         scene._blockEntityCollection = !!assetContainer;
         let texture: Texture;
         try {
@@ -272,7 +271,7 @@ export class MTLFileLoader {
             });
             texture._parentContainer = assetContainer;
         } finally {
-            scene._blockEntityCollection = blockEntityCollection;
+            scene._blockEntityCollection = false;
         }
 
         // A container is not rendered yet, so delayed loading cannot wait for a material bind.

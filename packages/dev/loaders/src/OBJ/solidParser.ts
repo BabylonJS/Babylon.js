@@ -1022,13 +1022,12 @@ export class SolidParser {
                 vertexData.colors = this._handledMesh.colors;
             }
             //Set the data from the VertexBuffer to the current Mesh
-            const blockEntityCollection = scene._blockEntityCollection;
             scene._blockEntityCollection = !!assetContainer;
             try {
                 vertexData.applyToMesh(babylonMesh);
                 babylonMesh.geometry!._parentContainer = assetContainer;
             } finally {
-                scene._blockEntityCollection = blockEntityCollection;
+                scene._blockEntityCollection = false;
             }
             if (this._loadingOptions.invertY) {
                 babylonMesh.scaling.y *= -1;
