@@ -1,5 +1,5 @@
 import path from "path";
-import { readFile } from "fs";
+import { existsSync, readFile } from "fs";
 import { fileURLToPath } from "url";
 import { defineConfig, transformWithEsbuild, type Plugin, type UserConfig } from "vite";
 // @ts-ignore -- untyped JS helper
@@ -62,6 +62,41 @@ function serveHavokWasmPlugin(): Plugin {
                     response.setHeader("Content-Type", "application/wasm");
                     response.setHeader("Cache-Control", "no-cache");
                     response.end(wasm);
+                });
+            });
+        },
+    };
+}
+
+// Serve the Box3D physics module at /box3d/* for the box3d showcase. It comes from the babylon-box3d npm
+// package when installed, otherwise from a checkout next to the Babylon.js repository.
+const Box3dLibCandidates = [
+    fileURLToPath(new URL("../../../node_modules/babylon-box3d/lib/esm/", import.meta.url)),
+    fileURLToPath(new URL("../../../../babylon-box3d/lib/esm/", import.meta.url)),
+];
+const Box3dLibDir = Box3dLibCandidates.find((dir) => existsSync(path.join(dir, "box3d.wasm"))) ?? Box3dLibCandidates[0];
+
+function serveBox3dPlugin(): Plugin {
+    return {
+        name: "serve-box3d",
+        configureServer(server) {
+            server.middlewares.use((request, response, next) => {
+                const requestPath = request.url?.split("?", 1)[0] ?? "";
+                const match = /^\/box3d\/(box3d\.(?:js|wasm))$/.exec(requestPath);
+                if (!match) {
+                    next();
+                    return;
+                }
+                readFile(path.join(Box3dLibDir, match[1]), (error, data) => {
+                    if (error) {
+                        response.statusCode = 404;
+                        response.end("Box3D module not found. Install babylon-box3d or clone it next to the Babylon.js repository.");
+                        return;
+                    }
+                    response.statusCode = 200;
+                    response.setHeader("Content-Type", match[1].endsWith(".wasm") ? "application/wasm" : "text/javascript");
+                    response.setHeader("Cache-Control", "no-cache");
+                    response.end(data);
                 });
             });
         },
@@ -162,6 +197,6 @@ export default defineConfig((_env) => {
     return {
         ...base,
         oxc: false,
-        plugins: [esbuildDecoratorPlugin(), ...(base.plugins ?? []), stubOptionalPeerDepsPlugin(), serveHavokWasmPlugin()],
+        plugins: [esbuildDecoratorPlugin(), ...(base.plugins ?? []), stubOptionalPeerDepsPlugin(), serveHavokWasmPlugin(), serveBox3dPlugin()],
     };
 });

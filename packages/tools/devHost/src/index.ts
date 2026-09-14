@@ -23,6 +23,10 @@ switch (ExpQsp) {
         ImportPromise = import("./webxrOverWebGPU/main");
         break;
     }
+    case "box3d": {
+        ImportPromise = import("./box3d/main");
+        break;
+    }
     case "testscene":
     default: {
         ImportPromise = import("./testScene/main");
