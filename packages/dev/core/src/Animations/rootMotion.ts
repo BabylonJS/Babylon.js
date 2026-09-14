@@ -134,10 +134,12 @@ interface IChannelWriters {
     total: number;
     /** Whether any weighted animatable writes the channel. */
     weighted: boolean;
-    /** The last unweighted animatable writing the channel, whose value is the pose unless a weighted one replaces it. */
-    lastDirect: Nullable<Animatable>;
-    /** The animatables that wrote the channel this step, in the order the scene animated them. */
-    current: Animatable[];
+    /** The last runtime animation writing the channel unweighted, whose value is the pose unless a weighted one replaces it. */
+    lastDirect: Nullable<RuntimeAnimation>;
+    /** The runtime animations that wrote the channel this step, in the order they wrote it. */
+    current: RuntimeAnimation[];
+    /** The weight each of them wrote with, -1 for a direct write. */
+    currentWeights: number[];
 }
 
 /** Contact candidates must come this close to the lowest one during the clip, as a share of the character's height. */
@@ -1477,13 +1479,15 @@ export class RootMotionController implements IDisposable {
     /**
      * @internal
      * Applies the motion of this frame, once the mixer's writers of the clips' channels are gathered.
+     * @param animated defines whether the scene animated this step at all; when it did not, nothing moved and nothing
+     * is read into the clips' playbacks
      */
-    public _update(): void {
+    public _update(animated: boolean): void {
         const delta = this._frameDelta.setAll(0);
         this._frameYaw = 0;
         let moved = false;
 
-        for (const clip of this._clips) {
+        for (const clip of animated ? this._clips : []) {
             const previous = clip._clockRuntime;
             const found = clip._findClock();
             if (found !== previous) {
@@ -1491,7 +1495,7 @@ export class RootMotionController implements IDisposable {
                 // its last evaluation - the end of its range - is still to be consumed, weighed among the writers of this
                 // step like any other, or was stopped, and is forgotten.
                 if (previous && clip._lastProgress !== null && previous.isStopped()) {
-                    moved = this._accumulate(clip, previous, clip._clockAnimatable!, clip._lastProgress, previous._evaluatedProgress) || moved;
+                    moved = this._accumulate(clip, previous, clip._lastProgress, previous._evaluatedProgress) || moved;
                 }
                 clip._clockRuntime = found;
                 clip._clockAnimatable = found ? clip._foundAnimatable : null;
@@ -1507,8 +1511,8 @@ export class RootMotionController implements IDisposable {
                 // Its clock stands still too, and carries on from here when it resumes.
                 continue;
             }
-            if (clip._writers!.current.indexOf(animatable) < 0) {
-                // Not animated this step - parked at a weight of zero - while its clock runs on: it starts again from
+            if (clip._writers!.current.indexOf(found) < 0) {
+                // Did not write this step - parked at a weight of zero - while its clock ran on: it starts again from
                 // wherever it resumes.
                 clip._parked = true;
                 continue;
@@ -1528,7 +1532,7 @@ export class RootMotionController implements IDisposable {
             const lastProgress = clip._lastProgress;
             clip._lastProgress = progress;
             if (lastProgress !== null && progress !== lastProgress) {
-                moved = this._accumulate(clip, found, animatable, lastProgress, progress) || moved;
+                moved = this._accumulate(clip, found, lastProgress, progress) || moved;
             }
         }
 
@@ -1583,16 +1587,15 @@ export class RootMotionController implements IDisposable {
      * weighs the pose of the playback.
      * @param clip defines the clip
      * @param runtime defines the runtime animation of the clip's clock
-     * @param animatable defines its animatable
      * @param lastProgress defines the progress consumed before
      * @param progress defines the progress to consume
      * @returns whether anything was added
      */
-    private _accumulate(clip: RootMotionClip, runtime: RuntimeAnimation, animatable: Animatable, lastProgress: number, progress: number): boolean {
+    private _accumulate(clip: RootMotionClip, runtime: RuntimeAnimation, lastProgress: number, progress: number): boolean {
         if ((clip.source === RootMotionSource.None && !clip.extractsRotation) || !clip._writers) {
             return false;
         }
-        const weight = this._effectiveWeight(clip._writers, runtime, animatable) * runtime._evaluatedBlendingFactor;
+        const weight = this._effectiveWeight(clip._writers, runtime) * runtime._evaluatedBlendingFactor;
         if (weight === 0) {
             return false;
         }
@@ -1607,16 +1610,19 @@ export class RootMotionController implements IDisposable {
      * bindings of the scene: an unweighted animatable writes directly and the last one wins, unless a weighted animatable
      * also animates the channel, in which case the weighted ones replace it - normalized once their weights add up to
      * more than one - and additive ones add their weight on top. A playback that ran to its end this step is among the
-     * writers like any other, from its place in the order the scene animated them.
+     * writers like any other, from its place in the order they wrote; one that did not write this step has no share.
      * @param writers defines what the mixer wrote to the clip's channel this step
      * @param runtime defines the runtime animation of the clip's clock
-     * @param animatable defines its animatable
      * @returns the share, between 0 and 1
      */
-    private _effectiveWeight(writers: IChannelWriters, runtime: RuntimeAnimation, animatable: Animatable): number {
-        const weight = animatable.weight;
+    private _effectiveWeight(writers: IChannelWriters, runtime: RuntimeAnimation): number {
+        const index = writers.current.indexOf(runtime);
+        if (index < 0) {
+            return 0;
+        }
+        const weight = writers.currentWeights[index];
         if (weight < 0) {
-            return writers.weighted || writers.lastDirect !== animatable ? 0 : 1;
+            return writers.weighted || writers.lastDirect !== runtime ? 0 : 1;
         }
         if (runtime.isAdditive) {
             return weight;
@@ -1626,9 +1632,9 @@ export class RootMotionController implements IDisposable {
 }
 
 /**
- * The root motion controllers of a scene. After the scene's animations, one pass over the animatables the scene
- * animated this step - in that order, those that ran to their end included - gathers what the mixer wrote to every
- * channel a clip follows, then each controller applies its frame.
+ * The root motion controllers of a scene. After the scene's animations, one pass over the writes of the step - the
+ * runtime animations that wrote, in that order, with the weights they wrote with, recorded as they did - gathers what
+ * the mixer wrote to every channel a clip follows, then each controller applies its frame.
  */
 class SceneRootMotion {
     private readonly _scene: Scene;
@@ -1702,7 +1708,7 @@ class SceneRootMotion {
                 }
                 let entry = entries.find((candidate) => candidate.property === clip._clockProperty);
                 if (!entry) {
-                    entry = { property: clip._clockProperty, total: 0, weighted: false, lastDirect: null, current: [] };
+                    entry = { property: clip._clockProperty, total: 0, weighted: false, lastDirect: null, current: [], currentWeights: [] };
                     entries.push(entry);
                     this._writers.push(entry);
                 }
@@ -1712,6 +1718,9 @@ class SceneRootMotion {
     }
 
     private _update(): void {
+        // With the scene's animations disabled nothing wrote, nothing moved, and the clips' playbacks stand where they
+        // are - unlike a playback parked at a weight of zero, which the scene skips while its clock runs on.
+        const animated = this._scene.animationsEnabled;
         const writers = this._writers;
         for (let i = 0; i < writers.length; i++) {
             const entry = writers[i];
@@ -1719,43 +1728,43 @@ class SceneRootMotion {
             entry.weighted = false;
             entry.lastDirect = null;
             entry.current.length = 0;
+            entry.currentWeights.length = 0;
         }
-        // What the mixer wrote this step: the animatables the scene animated, in that order, gathered as they animated
-        // rather than read back from the active animatables - one that ran to its end has left those, on its first
-        // step as well as any other, but wrote the end of its range. A paused animatable, one not started yet and one
-        // parked at a weight of zero are not among them.
-        const animatables = this._scene._evaluatedAnimatables;
-        for (let i = 0; i < animatables.length; i++) {
-            const animatable = animatables[i];
-            const weight = animatable.weight;
-            const runtimes = animatable.getAnimations();
-            for (let j = 0; j < runtimes.length; j++) {
-                const runtime = runtimes[j];
-                const target = runtime.target;
-                const entries = target ? this._writersByNode.get(target) : undefined;
-                if (!entries) {
+        // What the mixer wrote this step: the runtime animations that wrote, in that order, with the weights they wrote
+        // with, recorded as they wrote rather than read back from the animatables afterwards - one that ran to its
+        // end has left the active animatables, one stopped by a callback in the same step has lost its runtime
+        // animations, but each wrote. A paused animatable, one not started yet and one parked at a weight of zero
+        // wrote nothing.
+        const runtimes = animated ? this._scene._evaluatedRuntimeAnimations : [];
+        const weights = this._scene._evaluatedWeights;
+        for (let i = 0; i < runtimes.length; i++) {
+            const runtime = runtimes[i];
+            const target = runtime.target;
+            const entries = target ? this._writersByNode.get(target) : undefined;
+            if (!entries) {
+                continue;
+            }
+            const weight = weights[i];
+            for (let k = 0; k < entries.length; k++) {
+                const entry = entries[k];
+                if (entry.property !== runtime.targetPath) {
                     continue;
                 }
-                for (let k = 0; k < entries.length; k++) {
-                    const entry = entries[k];
-                    if (entry.property !== runtime.targetPath) {
-                        continue;
-                    }
-                    entry.current.push(animatable);
-                    if (weight < 0) {
-                        // Direct writers overwrite one another in order, so the last one is the pose.
-                        entry.lastDirect = animatable;
-                    } else {
-                        entry.weighted = true;
-                        if (!runtime.isAdditive) {
-                            entry.total += weight;
-                        }
+                entry.current.push(runtime);
+                entry.currentWeights.push(weight);
+                if (weight < 0) {
+                    // Direct writers overwrite one another in order, so the last one is the pose.
+                    entry.lastDirect = runtime;
+                } else {
+                    entry.weighted = true;
+                    if (!runtime.isAdditive) {
+                        entry.total += weight;
                     }
                 }
             }
         }
         for (let i = 0; i < this._controllers.length; i++) {
-            this._controllers[i]._update();
+            this._controllers[i]._update(animated);
         }
     }
 }

@@ -452,7 +452,6 @@ export class Animatable {
         }
 
         this._previousWeight = this._weight;
-        this._scene._evaluatedAnimatables.push(this);
 
         // Animating
         let running = false;
@@ -895,7 +894,8 @@ export function AddAnimationExtensions(sceneClass: typeof Scene, boneClass: type
     }
 
     sceneClass.prototype._animate = function (customDeltaTime?: number): void {
-        this._evaluatedAnimatables.length = 0;
+        this._evaluatedRuntimeAnimations.length = 0;
+        this._evaluatedWeights.length = 0;
         if (!this.animationsEnabled) {
             return;
         }

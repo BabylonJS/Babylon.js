@@ -84,6 +84,7 @@ import { type SubMesh } from "./Meshes/subMesh.pure";
 import { type Node } from "./node";
 import { type Animation } from "./Animations/animation.pure";
 import { type Animatable } from "./Animations/animatable.core";
+import { type RuntimeAnimation } from "./Animations/runtimeAnimation";
 import { type Texture } from "./Materials/Textures/texture.pure";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
@@ -1797,10 +1798,12 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public _activeAnimatables = new Array<Animatable>();
     /**
      * @internal
-     * The animatables animated in the current or last animation step, in the order they were animated, those that
-     * ran to their end in it included: what the animations wrote that step.
+     * The runtime animations that wrote their targets in the current or last animation step, in the order they wrote
+     * them: what the animations wrote that step, kept whatever became of their animatables since.
      */
-    public _evaluatedAnimatables = new Array<Animatable>();
+    public _evaluatedRuntimeAnimations = new Array<RuntimeAnimation>();
+    /** @internal The weight each of them wrote with, -1 for a direct write. */
+    public _evaluatedWeights = new Array<number>();
 
     private _transformMatrix = Matrix.Zero();
     private _sceneUbo: UniformBuffer;

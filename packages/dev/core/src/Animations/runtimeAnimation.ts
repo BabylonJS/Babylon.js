@@ -367,6 +367,10 @@ export class RuntimeAnimation {
      * @param weight defines the weight to apply to this value (Defaults to 1.0)
      */
     public setValue(currentValue: any, weight: number) {
+        // Recorded as written, with the weight it is written with: what an animation step wrote can be read after the
+        // step from these records alone, whatever a callback did to the animatable since.
+        this._scene._evaluatedRuntimeAnimations.push(this);
+        this._scene._evaluatedWeights.push(weight);
         if (this._targetIsArray) {
             for (let index = 0; index < this._target.length; index++) {
                 const target = this._target[index];

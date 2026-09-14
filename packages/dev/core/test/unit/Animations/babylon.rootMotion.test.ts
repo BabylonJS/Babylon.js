@@ -1418,13 +1418,14 @@ describe("RootMotion", () => {
         });
     });
 
-    describe("writers completing on their first evaluation", () => {
+    describe("writers recorded as they write", () => {
         /**
          * A group the controller knows nothing about, holding the hips still and playing once.
          * @param hips defines the node
+         * @param stopAtFrame defines a frame at which an event of the animation stops the group itself
          * @returns the group
          */
-        const stillGroup = (hips: TransformNode) => {
+        const stillGroup = (hips: TransformNode, stopAtFrame?: number) => {
             const animation = new Animation("still", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
             animation.setKeys([
                 { frame: 0, value: Vector3.Zero() },
@@ -1432,8 +1433,32 @@ describe("RootMotion", () => {
             ]);
             const group = new AnimationGroup("still", scene);
             group.addTargetedAnimation(animation, hips);
+            if (stopAtFrame !== undefined) {
+                animation.addEvent(new AnimationEvent(stopAtFrame, () => group.stop(), true));
+            }
             return group;
         };
+
+        it("carries on where it was when the scene's animations are enabled again", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group, controller } = Extract(rig);
+            group.start(true);
+            Run(scene, 20);
+            const before = rig.character.position.z;
+            const frame = group.getCurrentFrame();
+
+            // Nothing animates, nothing moves, and the playback is not taken for one parked at a weight of zero.
+            scene.animationsEnabled = false;
+            Run(scene, 5);
+            expect(rig.character.position.z).toBe(before);
+            expect(controller.deltaPosition.length()).toBe(0);
+            expect(group.getCurrentFrame()).toBe(frame);
+
+            scene.animationsEnabled = true;
+            Run(scene, 1);
+            expect(group.getCurrentFrame()).toBeCloseTo(frame + FramesPerTick, 4);
+            expect(rig.character.position.z - before).toBeCloseTo(Speed * 0.016, 6);
+        });
 
         for (const weighted of [true, false]) {
             const kind = weighted ? "weighted" : "unweighted";
@@ -1480,6 +1505,30 @@ describe("RootMotion", () => {
                 const before = rig.character.position.z;
 
                 still.weight = weighted ? 0.8 : -1;
+                Run(scene, 1);
+
+                expect(still.isStarted).toBe(false);
+                expect(rig.character.position.z - before).toBeCloseTo(expected, 6);
+            });
+
+            it(`counts a group that stops itself from an animation event after writing (${kind})`, () => {
+                const rig = BuildRig(scene, "rootMotion");
+                const { group } = Extract(rig);
+                group.start(true);
+                if (weighted) {
+                    group.weight = 0.8;
+                }
+                Run(scene, 20);
+                // Started after the walk, it writes the root after it; on the tick it reaches frame 30 it writes, then
+                // its event stops the group and clears its runtime animations before the step ends.
+                const still = stillGroup(rig.hips, 30);
+                still.start(false);
+                if (weighted) {
+                    still.weight = 0.8;
+                }
+                Run(scene, 32);
+                expect(still.isStarted).toBe(true);
+                const before = rig.character.position.z;
                 Run(scene, 1);
 
                 expect(still.isStarted).toBe(false);
