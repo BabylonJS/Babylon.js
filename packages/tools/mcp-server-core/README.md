@@ -12,6 +12,7 @@ This package is not a standalone MCP server. It provides the common infrastructu
 - shared JSON import/export/snippet response helpers
 - shared tool schema fragments for repeated Zod fields
 - shared Scene-specific schema groups and attachment validation
+- browser-safe WebMCP registration, lifecycle, and writer-arbitration helpers
 
 ## Typical Usage
 
@@ -35,6 +36,10 @@ npm run build -w @tools/mcp-server-core
 npx jest packages/tools/mcp-server-core/test/unit --runInBand
 ```
 
+## Design Plans
+
+- [WebMCP migration plan](./WEBMCP_MIGRATION_PLAN.md): proposed architecture and phased rollout for adding WebMCP to Babylon.js browser editors while preserving the existing MCP servers and editor sessions.
+
 ## Main Modules
 
 - `textHandoff.ts`: inline-vs-file input resolution and file writing
@@ -45,6 +50,7 @@ npx jest packages/tools/mcp-server-core/test/unit --runInBand
 - `toolSchemas.ts`: shared field-level Zod schema fragments
 - `sceneToolSchemas.ts`: Scene-specific grouped field fragments
 - `sceneAttachmentValidation.ts`: shared scene attachment contract validation
+- `webMcp.ts`: browser-safe WebMCP types, registration, feature detection, and mutation arbitration
 
 ## Consumers
 

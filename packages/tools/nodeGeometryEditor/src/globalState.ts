@@ -15,6 +15,7 @@ import { RegisterExportData } from "./graphSystem/registerExportData";
 import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { PreviewMode } from "./components/preview/previewMode";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
+import { type WebMcpRegistrationStatus } from "@tools/mcp-server-core/webMcp";
 
 export class GlobalState {
     private _previewMode = PreviewMode.Normal;
@@ -51,6 +52,9 @@ export class GlobalState {
     mcpSessionConnected: boolean = false;
     mcpEventSource: EventSource | null = null;
     onMcpSessionStateChangedObservable = new Observable<boolean>();
+    webMcpRegistrationStatus: WebMcpRegistrationStatus = "unsupported";
+    webMcpRegistrationController: AbortController | null = null;
+    onWebMcpRegistrationStatusChangedObservable = new Observable<WebMcpRegistrationStatus>();
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
 
@@ -81,6 +85,21 @@ export class GlobalState {
         const g = DataStorage.ReadNumber("BackgroundColorG", 0.09803921568627451);
         const b = DataStorage.ReadNumber("BackgroundColorB", 0.25098039215686274);
         this.backgroundColor = new Color4(r, g, b, 1.0);
+    }
+
+    setWebMcpRegistrationStatus(status: WebMcpRegistrationStatus): void {
+        this.webMcpRegistrationStatus = status;
+        this.onWebMcpRegistrationStatusChangedObservable.notifyObservers(status);
+    }
+
+    disposeMcpConnections(): void {
+        this.webMcpRegistrationController?.abort();
+        this.webMcpRegistrationController = null;
+        this.mcpEventSource?.close();
+        this.mcpEventSource = null;
+        this.mcpSessionConnected = false;
+        this.mcpSessionUrl = null;
+        this.onMcpSessionStateChangedObservable.notifyObservers(false);
     }
 
     storeEditorData(serializationObject: any, frame?: Nullable<GraphFrame>) {

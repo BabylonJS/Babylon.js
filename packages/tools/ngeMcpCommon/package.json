@@ -1,21 +1,11 @@
 {
-    "name": "@tools/mcp-server-core",
+    "name": "@tools/nge-mcp-common",
     "version": "1.0.0",
     "private": true,
     "type": "module",
     "main": "dist/index.js",
     "module": "dist/index.js",
     "types": "dist/index.d.ts",
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "import": "./dist/index.js"
-        },
-        "./webMcp": {
-            "types": "./dist/webMcp.d.ts",
-            "import": "./dist/webMcp.js"
-        }
-    },
     "files": [
         "dist"
     ],

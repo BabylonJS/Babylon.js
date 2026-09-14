@@ -31,6 +31,7 @@ import { HistoryStack } from "shared-ui-components/historyStack";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
+import { IsNodeGeometryWebMcpSupported, RegisterNodeGeometryWebMcpToolsAsync } from "./webMcp";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -143,11 +144,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         this.build();
         this.props.globalState.onClearUndoStack.notifyObservers();
+        void this._registerWebMcpToolsAsync();
     }
 
     override componentWillUnmount() {
         window.removeEventListener("wheel", this.onWheel);
         const globalState = this.props.globalState;
+        globalState.disposeMcpConnections();
 
         if (globalState.hostDocument) {
             globalState.hostDocument.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
@@ -167,6 +170,33 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (this._previewManager) {
             this._previewManager.dispose();
             this._previewManager = null as any;
+        }
+    }
+
+    private async _registerWebMcpToolsAsync(): Promise<void> {
+        const globalState = this.props.globalState;
+        globalState.webMcpRegistrationController?.abort();
+
+        if (!IsNodeGeometryWebMcpSupported(globalState.hostDocument)) {
+            globalState.setWebMcpRegistrationStatus("unsupported");
+            return;
+        }
+
+        const controller = new AbortController();
+        globalState.webMcpRegistrationController = controller;
+        globalState.setWebMcpRegistrationStatus("registering");
+
+        try {
+            const registered = await RegisterNodeGeometryWebMcpToolsAsync(globalState, controller.signal);
+            if (!controller.signal.aborted) {
+                globalState.setWebMcpRegistrationStatus(registered ? "registered" : "unsupported");
+            }
+        } catch (error) {
+            if (!controller.signal.aborted) {
+                globalState.setWebMcpRegistrationStatus("error");
+                globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`WebMCP registration failed: ${error}`, true));
+                controller.abort();
+            }
         }
     }
 

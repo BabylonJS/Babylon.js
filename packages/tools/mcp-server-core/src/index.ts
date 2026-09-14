@@ -7,3 +7,4 @@ export * from "./toolSchemas.js";
 export * from "./sceneToolSchemas.js";
 export * from "./sceneAttachmentValidation.js";
 export * from "./editorSessionServer.js";
+export * from "./webMcp.js";
