@@ -2711,6 +2711,12 @@
             "dependsOn": ["Materials"]
         },
         {
+            "title": "Dithered Tile Fade Material Plugin",
+            "playgroundId": "#HI17VI#0",
+            "referenceImage": "ditheredTileFadeMaterialPlugin.png",
+            "dependsOn": ["Cameras", "GUI", "Lights", "Loaders", "Materials", "Meshes", "PBR", "Textures", "glTF"]
+        },
+        {
             "title": "Serialize and Load Instanced Hierarchy",
             "playgroundId": "#3ZQ1SL#7",
             "referenceImage": "serializeAndLoadInstancedHierarchy.png",
