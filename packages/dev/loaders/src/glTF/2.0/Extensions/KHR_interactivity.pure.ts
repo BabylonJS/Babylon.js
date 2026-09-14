@@ -197,7 +197,8 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                         this._loader.parent.targetFps,
                         graphModel.index,
                         supportedExtensions,
-                        strictValidation ? graphModel.declarations : undefined
+                        strictValidation ? graphModel.declarations : undefined,
+                        graphModel.source
                     );
                     const serializedFlowGraph = parser.serializeToFlowGraph();
                     graphResult.serializedFlowGraph = serializedFlowGraph;

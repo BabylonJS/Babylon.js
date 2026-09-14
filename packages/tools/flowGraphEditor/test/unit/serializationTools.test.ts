@@ -72,10 +72,13 @@ describe("SerializationTools coordinator ownership", () => {
         globalState.coordinator = coordinator;
         globalState.khrInteractivityImportResult = {
             document: { defaultGraphIndex: 0 },
-            glTF: {},
+            glTF: {
+                extensionsRequired: ["KHR_interactivity", "KHR_draco_mesh_compression", "KHR_node_hoverability"],
+            },
         } as any;
         const analysis = { representable: true, nodes: [], diagnostics: [] };
-        const createPlan = vi.fn(() => ({ analyze: () => analysis }));
+        const plan = { additionalExtensionsUsed: ["KHR_node_hoverability"], analyze: () => analysis };
+        const createPlan = vi.fn(() => plan);
         vi.stubGlobal("BABYLON", {
             GLTF2: {
                 Loader: {
@@ -87,7 +90,8 @@ describe("SerializationTools coordinator ownership", () => {
         });
 
         expect(SerializationTools.AnalyzeKhrInteractivityExport(globalState)).toBe(analysis);
-        expect(createPlan).toHaveBeenCalledWith(
+        expect(createPlan).toHaveBeenNthCalledWith(
+            1,
             coordinator.flowGraphs,
             expect.objectContaining({
                 document: globalState.khrInteractivityImportResult.document,
@@ -95,6 +99,51 @@ describe("SerializationTools coordinator ownership", () => {
                 required: true,
             })
         );
+        expect(createPlan).toHaveBeenNthCalledWith(
+            2,
+            coordinator.flowGraphs,
+            expect.objectContaining({
+                additionalExtensionsRequired: ["KHR_node_hoverability"],
+            })
+        );
+
+        coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("does not promote optional KHR data or unrelated source requirements", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const globalState = new GlobalState(scene);
+        const coordinator = new FlowGraphCoordinator({ scene });
+        coordinator.createGraph();
+        globalState.coordinator = coordinator;
+        globalState.khrInteractivityImportResult = {
+            document: { defaultGraphIndex: 0 },
+            glTF: { extensionsRequired: ["KHR_draco_mesh_compression"] },
+        } as any;
+        const analysis = { representable: true, nodes: [], diagnostics: [] };
+        const createPlan = vi.fn(() => ({ additionalExtensionsUsed: [], analyze: () => analysis }));
+        vi.stubGlobal("BABYLON", {
+            GLTF2: {
+                Loader: {
+                    Extensions: {
+                        CreateKHRInteractivityExportPlan: createPlan,
+                    },
+                },
+            },
+        });
+
+        expect(SerializationTools.AnalyzeKhrInteractivityExport(globalState)).toBe(analysis);
+        expect(createPlan).toHaveBeenCalledTimes(1);
+        expect(createPlan).toHaveBeenCalledWith(
+            coordinator.flowGraphs,
+            expect.objectContaining({
+                required: false,
+            })
+        );
+        expect(createPlan.mock.calls[0][1].additionalExtensionsRequired).toBeUndefined();
 
         coordinator.dispose();
         scene.dispose();

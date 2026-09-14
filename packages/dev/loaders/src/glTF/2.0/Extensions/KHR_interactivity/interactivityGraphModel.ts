@@ -97,6 +97,8 @@ export interface IKHRInteractivityGraphProvenance {
     specificationCommit: string;
     /** Detached canonical source graph. */
     source: IKHRInteractivity_Graph;
+    /** Explicit editor-authored variable defaults keyed by canonical variable index. */
+    authoredVariableValues?: Record<number, unknown[]>;
 }
 
 /**

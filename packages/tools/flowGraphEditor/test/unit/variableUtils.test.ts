@@ -23,6 +23,7 @@ import {
     GetDefaultValueForType,
     InferVariableType,
     InferVariableTypesFromBlocks,
+    SetVariableAuthoringValue,
     type VariableTypeName,
 } from "flow-graph-editor/variableUtils";
 import { CONSTRUCTOR_CONFIG } from "flow-graph-editor/graphSystem/properties/constructorConfigRegistry";
@@ -52,6 +53,26 @@ describe("Flow Graph Variable Utils", () => {
     afterEach(() => {
         scene.dispose();
         engine.dispose();
+    });
+
+    it("records explicit KHR variable edits separately from mutable runtime state", () => {
+        flowGraph.metadata = {
+            khrInteractivity: {
+                graphIndex: 0,
+                specificationCommit: "test",
+                source: {
+                    types: [{ signature: "int" }],
+                    variables: [{ type: 0, value: [1] }],
+                },
+            },
+        };
+
+        flowGraphContext.setVariable("staticVariable_0", 2);
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableValues).toBeUndefined();
+
+        SetVariableAuthoringValue(flowGraph, flowGraphContext, "staticVariable_0", 3);
+        expect(flowGraphContext.getVariable("staticVariable_0")).toBe(3);
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableValues).toEqual({ 0: [3] });
     });
 
     // --------------------------------------------------------

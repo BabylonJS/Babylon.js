@@ -5,10 +5,45 @@
 
 import { type FlowGraph } from "core/FlowGraph/flowGraph";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+
+/**
+ * Sets a runtime variable and records an explicit editor-authored default when the variable
+ * originates from a canonical KHR_interactivity graph.
+ * @param flowGraph graph containing the variable
+ * @param context execution context to update
+ * @param name variable name
+ * @param value authored value
+ */
+export function SetVariableAuthoringValue(flowGraph: FlowGraph, context: FlowGraphContext, name: string, value: unknown): void {
+    context.setVariable(name, value);
+    const match = /^staticVariable_(0|[1-9]\d*)$/.exec(name);
+    const provenance = flowGraph.metadata?.khrInteractivity;
+    if (!match || !provenance?.source?.variables) {
+        return;
+    }
+    const index = parseInt(match[1], 10);
+    const variable = provenance.source.variables[index];
+    if (!variable) {
+        return;
+    }
+    let components: unknown[];
+    if (value && typeof value === "object" && typeof (value as { asArray?: () => unknown[] }).asArray === "function") {
+        components = (value as { asArray: () => unknown[] }).asArray();
+    } else if (value instanceof FlowGraphInteger) {
+        components = [value.value];
+    } else if (value === undefined && provenance.source.types?.[variable.type]?.signature === "ref") {
+        components = [""];
+    } else {
+        components = [value];
+    }
+    provenance.authoredVariableValues ||= {};
+    provenance.authoredVariableValues[index] = components;
+}
 
 // -------------------------------------------------------
 // Variable type system (editor-side)

@@ -45,6 +45,11 @@ export interface IGLTFToFlowGraphMappingObject {
     flowGraphType?: string;
 
     /**
+     * Converts a dynamically created FlowGraph socket name back to its KHR socket id.
+     */
+    inverseSocketName?: (name: string) => string | undefined;
+
+    /**
      * A function that transforms the data from the glTF to the FlowGraph block.
      */
     dataTransformer?: (data: any, parser: InteractivityGraphToFlowGraphParser) => any;
@@ -304,6 +309,29 @@ export interface IGLTFToFlowGraphMapping {
 export function getMappingForFullOperationName(fullOperationName: string) {
     const [op, extension] = fullOperationName.split(":");
     return getMappingForDeclaration({ op, extension });
+}
+
+/**
+ * Returns whether a KHR operation accepts the conventional `in` flow socket when the registry
+ * does not need a renamed or dynamic input mapping.
+ * @param operation full KHR operation name
+ * @returns true when the operation accepts the conventional input flow
+ */
+export function HasDefaultInteractivityFlowInput(operation: string): boolean {
+    if (operation === "flow/waitAll") {
+        return false;
+    }
+    return (
+        operation.startsWith("flow/") ||
+        operation.startsWith("animation/") ||
+        operation === "pointer/set" ||
+        operation === "pointer/interpolate" ||
+        operation === "variable/set" ||
+        operation === "variable/interpolate" ||
+        operation === "event/send" ||
+        operation === "event/stopPropagation" ||
+        operation === "flow/log:BABYLON"
+    );
 }
 
 export function getMappingForDeclaration(declaration: IKHRInteractivity_Declaration, returnNoOpIfNotAvailable: boolean = true): IGLTFToFlowGraphMapping | undefined {
@@ -1296,7 +1324,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.Sequence],
         outputs: {
             flows: {
-                "[segment]": { name: "$1" },
+                "[segment]": { name: "$1", inverseSocketName: (name) => (/^out_\d+$/.test(name) ? name.substring(4) : undefined) },
             },
         },
         extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
@@ -1346,7 +1374,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         outputs: {
             flows: {
                 default: { name: "default" },
-                "[segment]": { name: "$1" },
+                "[segment]": { name: "$1", inverseSocketName: (name) => (name.startsWith("out_") ? name.substring(4) : undefined) },
             },
         },
         validation(gltfBlock) {
@@ -1482,7 +1510,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             flows: {
-                "[segment]": { name: "$1" },
+                "[segment]": { name: "$1", inverseSocketName: (name) => (/^out_\d+$/.test(name) ? name.substring(4) : undefined) },
             },
             values: {
                 lastIndex: { name: "lastIndex", gltfType: "int" },
@@ -2167,7 +2195,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 selection: { name: "case", gltfType: "int" },
                 default: { name: "default" },
-                "[case]": { name: "$1" },
+                "[case]": { name: "$1", inverseSocketName: (name) => (name.startsWith("in_") ? name.substring(3) : undefined) },
             },
         },
         outputs: {

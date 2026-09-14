@@ -1236,6 +1236,24 @@ describe("KHR_interactivity canonical import model", () => {
             direction: "input",
             socket: "a",
         });
+        expect(serialized.allBlocks[0].dataInputs[0].defaultValue).toEqual({ type: "number", value: [1] });
+    });
+
+    it("retains canonical source provenance when runtime lowering uses effective defaults", () => {
+        const source: IKHRInteractivity_Graph = {
+            declarations: [{ op: "debug/log" }],
+            nodes: [{ declaration: 0, configuration: { severity: { value: [99] } } }],
+        };
+        const model = CreateKHRInteractivityGraphModel(source);
+        expect(model.valid).toBe(true);
+        expect(model.effectiveSource.nodes![0].configuration).toEqual({
+            severity: { value: [0] },
+            message: { value: [""] },
+        });
+
+        const serialized = new InteractivityGraphToFlowGraphParser(model.effectiveSource, {} as any, 60, 0, undefined, model.declarations, model.source).serializeToFlowGraph();
+
+        expect(serialized.metadata.khrInteractivity.source).toEqual(source);
     });
 
     it("lowers an unsupported extension operation to an inspectable no-op block", () => {

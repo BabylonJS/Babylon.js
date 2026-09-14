@@ -18,6 +18,11 @@ export type MeshCompressionMethod = "None" | "Draco";
  */
 export interface IKHRInteractivityExportContext {
     /**
+     * Gets the final number of glTF nodes.
+     * @returns final glTF node count
+     */
+    getNodeCount(): number;
+    /**
      * Gets the final glTF node index for a Babylon node.
      * @param node Babylon node to resolve
      * @returns final glTF node index, or undefined when the node was not exported

@@ -40,6 +40,7 @@ export class KHR_interactivity implements IGLTFExporterExtensionV2 {
             return;
         }
         const extension = provider.build({
+            getNodeCount: () => this._exporter._nodes.length,
             getNodeIndex: (node) => this._exporter._getNodeIndex(node),
             getAnimationIndex: (animationGroup) => this._exporter._getAnimationIndex(animationGroup),
             getCameraIndex: (camera) => this._exporter._getCameraIndex(camera),

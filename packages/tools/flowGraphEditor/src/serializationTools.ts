@@ -33,6 +33,25 @@ function _CreateKhrExportPlan(
     return factory(flowGraphs, options);
 }
 
+function _CreateKhrExportPlanForImport(globalState: GlobalState): KHRInteractivityExportPlan | undefined {
+    const coordinator = globalState.coordinator;
+    const importResult = globalState.khrInteractivityImportResult;
+    if (!coordinator || !importResult) {
+        return undefined;
+    }
+    const options: Parameters<typeof CreateKHRInteractivityExportPlan>[1] = {
+        document: importResult.document,
+        sourceGLTF: importResult.glTF,
+        defaultGraphIndex: importResult.document.defaultGraphIndex,
+        required: importResult.glTF.extensionsRequired?.includes("KHR_interactivity") ?? false,
+    };
+    const preliminaryPlan = _CreateKhrExportPlan(coordinator.flowGraphs, options);
+    const additionalExtensionsRequired = (importResult.glTF.extensionsRequired ?? []).filter(
+        (extensionName) => extensionName !== "KHR_interactivity" && preliminaryPlan.additionalExtensionsUsed.includes(extensionName)
+    );
+    return additionalExtensionsRequired.length > 0 ? _CreateKhrExportPlan(coordinator.flowGraphs, { ...options, additionalExtensionsRequired }) : preliminaryPlan;
+}
+
 /**
  * Runtime settings used when deserializing graphs into an editor coordinator.
  */
@@ -578,9 +597,8 @@ export class SerializationTools {
      * @returns detached representability analysis
      */
     public static AnalyzeKhrInteractivityExport(globalState: GlobalState): IKHRInteractivityExportAnalysis {
-        const coordinator = globalState.coordinator;
-        const importResult = globalState.khrInteractivityImportResult;
-        if (!coordinator || !importResult) {
+        const plan = _CreateKhrExportPlanForImport(globalState);
+        if (!plan) {
             return {
                 representable: false,
                 nodes: [],
@@ -594,13 +612,7 @@ export class SerializationTools {
                 ],
             };
         }
-        return _CreateKhrExportPlan(coordinator.flowGraphs, {
-            document: importResult.document,
-            sourceGLTF: importResult.glTF,
-            defaultGraphIndex: importResult.document.defaultGraphIndex,
-            required: true,
-            additionalExtensionsRequired: importResult.glTF.extensionsRequired?.filter((extensionName) => extensionName !== "KHR_interactivity"),
-        }).analyze();
+        return plan.analyze();
     }
 
     /**
@@ -611,20 +623,12 @@ export class SerializationTools {
      * @returns detached representability analysis for the exported graph set
      */
     public static async ExportKhrInteractivityAsync(globalState: GlobalState, format: "gltf" | "glb"): Promise<IKHRInteractivityExportAnalysis> {
-        const coordinator = globalState.coordinator;
-        const importResult = globalState.khrInteractivityImportResult;
         const scene = globalState.sceneContext?.scene;
-        if (!coordinator || !importResult || !scene) {
+        const plan = _CreateKhrExportPlanForImport(globalState);
+        if (!plan || !scene) {
             const analysis = SerializationTools.AnalyzeKhrInteractivityExport(globalState);
             throw _CreateKhrExportError(analysis.diagnostics);
         }
-        const plan = _CreateKhrExportPlan(coordinator.flowGraphs, {
-            document: importResult.document,
-            sourceGLTF: importResult.glTF,
-            defaultGraphIndex: importResult.document.defaultGraphIndex,
-            required: true,
-            additionalExtensionsRequired: importResult.glTF.extensionsRequired?.filter((extensionName) => extensionName !== "KHR_interactivity"),
-        });
         const analysis = plan.analyze();
         if (!analysis.representable) {
             throw _CreateKhrExportError(analysis.diagnostics);

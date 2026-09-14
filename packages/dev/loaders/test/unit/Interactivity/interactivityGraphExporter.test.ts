@@ -7,7 +7,7 @@ import { TransformNode } from "core/Meshes/transformNode";
 import { Scene } from "core/scene";
 import { type IKHRInteractivity, type IKHRInteractivity_Graph } from "babylonjs-gltf2interface";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { _RegisterKHRInteractivityRuntime } from "../../../src/glTF/2.0/Extensions/KHR_interactivity.pure";
+import { _AddInteractivityObjectModel, _RegisterKHRInteractivityRuntime } from "../../../src/glTF/2.0/Extensions/KHR_interactivity.pure";
 import { InteractivityGraphToFlowGraphParser } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
 import { CreateKHRInteractivityDocument } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphModel";
 import { GetPathToObjectConverter } from "../../../src/glTF/2.0/Extensions/objectModelMapping";
@@ -63,16 +63,25 @@ describe("KHR_interactivity FlowGraph export", () => {
         );
         expect(document.diagnostics).toEqual([]);
         const flowGraphs = [];
-        const pathConverter = GetPathToObjectConverter(sourceGLTF);
+        const pathConverter = GetPathToObjectConverter(sourceGLTF, (mapping) => _AddInteractivityObjectModel(scene, 60, mapping));
         for (const graph of document.graphs) {
             expect(graph.valid).toBe(true);
-            const serialized = new InteractivityGraphToFlowGraphParser(graph.effectiveSource, sourceGLTF, 60, graph.index, undefined, graph.declarations).serializeToFlowGraph();
+            const serialized = new InteractivityGraphToFlowGraphParser(
+                graph.effectiveSource,
+                sourceGLTF,
+                60,
+                graph.index,
+                undefined,
+                graph.declarations,
+                graph.source
+            ).serializeToFlowGraph();
             flowGraphs.push(await ParseFlowGraphAsync(serialized, { coordinator, pathConverter }));
         }
         return CreateKHRInteractivityExportPlan(flowGraphs, { document, sourceGLTF });
     }
 
     const context: IKHRInteractivitySerializerContext = {
+        getNodeCount: () => 0,
         getNodeIndex: () => undefined,
         getAnimationIndex: () => undefined,
         getCameraIndex: () => undefined,
@@ -99,7 +108,7 @@ describe("KHR_interactivity FlowGraph export", () => {
         expect(plan.build(context)).toEqual(plan.build(context));
 
         const addBlock = coordinator.flowGraphs[0].getAllBlocks().find((block) => block.metadata?.khrInteractivity?.operation === "math/add")!;
-        addBlock.getDataInput("a")!.setValue(new FlowGraphInteger(9), coordinator.flowGraphs[0].getContext(0)!);
+        (addBlock.getDataInput("a") as any)._defaultValue = new FlowGraphInteger(9);
 
         const edited = plan.build(context);
         expect(edited.graphs[0].nodes![0].values!.a).toEqual({ type: 0, value: [9] });
@@ -176,7 +185,9 @@ describe("KHR_interactivity FlowGraph export", () => {
             getAnimationIndex: (animation) => (animation === animationGroup ? 3 : undefined),
         });
         expect(exported.graph).toBe(1);
+        expect(exported.graphs[1].nodes![3].values!.target).toEqual({ type: 0, value: [2] });
         expect(exported.graphs[1].nodes![4].values!.animation).toEqual({ type: 3, value: ["/animations/3"] });
+        expect(exported.graphs[1].nodes![8].configuration!.message.value).toEqual(["value={value}"]);
 
         const strictDocument = CreateKHRInteractivityDocument(exported, undefined, 3);
         expect(strictDocument.diagnostics).toEqual([]);
@@ -184,6 +195,221 @@ describe("KHR_interactivity FlowGraph export", () => {
         for (const graph of strictDocument.graphs) {
             expect(() => new InteractivityGraphToFlowGraphParser(graph.effectiveSource, sourceGLTF, 60, graph.index, undefined, graph.declarations)).not.toThrow();
         }
+    });
+
+    it("remaps pointer paths exactly once without interpreting unrelated configuration strings", async () => {
+        const sourceNode = new TransformNode("source", scene);
+        const sourceGLTF = { nodes: [{ index: 0, _babylonTransformNode: sourceNode }] };
+        const extension: IKHRInteractivity = {
+            graphs: [
+                {
+                    types: [{ signature: "float3" }],
+                    declarations: [{ op: "pointer/get" }, { op: "debug/log" }],
+                    nodes: [
+                        {
+                            declaration: 0,
+                            configuration: { pointer: { value: ["/nodes/0/translation"] }, type: { value: [0] } },
+                        },
+                        {
+                            declaration: 1,
+                            configuration: { severity: { value: [0] }, message: { value: ["/nodes/0"] } },
+                        },
+                    ],
+                },
+            ],
+        };
+        const plan = await CreatePlan(extension, sourceGLTF);
+        const exported = plan.build({
+            ...context,
+            getNodeCount: () => 5,
+            getNodeIndex: (node) => (node === sourceNode ? 4 : undefined),
+        });
+
+        expect(exported.graphs[0].nodes![0].configuration!.pointer.value).toEqual(["/nodes/4/translation"]);
+        expect(exported.graphs[0].nodes![1].configuration!.message.value).toEqual(["/nodes/0"]);
+        expect(plan.analyze().diagnostics).toEqual([]);
+    });
+
+    it("rejects computed pointer indices that cannot be remapped statically", async () => {
+        const sourceNode = new TransformNode("source", scene);
+        const sourceGLTF = { nodes: [{ index: 0, _babylonTransformNode: sourceNode }] };
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }, { signature: "float3" }],
+            declarations: [{ op: "math/abs" }, { op: "pointer/get" }],
+            nodes: [
+                { declaration: 0, values: { a: { type: 0, value: [0] } } },
+                {
+                    declaration: 1,
+                    configuration: { pointer: { value: ["/nodes/[target]/translation"] }, type: { value: [1] } },
+                    values: { target: { node: 0 } },
+                },
+            ],
+        };
+        const plan = await CreatePlan({ graphs: [graph] }, sourceGLTF);
+
+        expect(plan.analyze()).toMatchObject({
+            representable: false,
+            diagnostics: [expect.objectContaining({ code: "REFERENCE_UNRESOLVED", socket: "target" })],
+        });
+    });
+
+    it("keeps runtime-mutated variables separate from explicit authored defaults", async () => {
+        const extension: IKHRInteractivity = {
+            graphs: [
+                {
+                    types: [{ signature: "int" }],
+                    variables: [{ type: 0, value: [1] }],
+                    declarations: [{ op: "variable/get" }],
+                    nodes: [{ declaration: 0, configuration: { variable: { value: [0] } } }],
+                },
+            ],
+        };
+        const plan = await CreatePlan(extension);
+        coordinator.flowGraphs[0].getContext(0)!.setVariable("staticVariable_0", new FlowGraphInteger(9));
+
+        expect(plan.build(context).graphs[0].variables![0].value).toEqual([1]);
+
+        coordinator.flowGraphs[0].metadata.khrInteractivity.authoredVariableValues = { 0: [3] };
+        expect(plan.build(context).graphs[0].variables![0].value).toEqual([3]);
+    });
+
+    it("round-trips connected animation-time helpers as their owning KHR operation", async () => {
+        const animationGroup = new AnimationGroup("animation", scene);
+        const sourceGLTF = {
+            animations: [{ index: 0, channels: [], samplers: [], _babylonAnimationGroup: animationGroup }],
+        };
+        const extension: IKHRInteractivity = {
+            graphs: [
+                {
+                    types: [{ signature: "float" }, { signature: "ref" }],
+                    declarations: [{ op: "pointer/get" }, { op: "animation/start" }],
+                    nodes: [
+                        {
+                            declaration: 0,
+                            configuration: {
+                                pointer: { value: ["/animations/0/extensions/KHR_interactivity/maxTime"] },
+                                type: { value: [0] },
+                            },
+                        },
+                        {
+                            declaration: 1,
+                            values: {
+                                animation: { type: 1, value: ["/animations/0"] },
+                                speed: { type: 0, value: [1] },
+                                startTime: { type: 0, value: [0] },
+                                endTime: { node: 0 },
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+        const plan = await CreatePlan(extension, sourceGLTF);
+
+        expect(plan.analyze().diagnostics).toEqual([]);
+        expect(
+            plan.build({
+                ...context,
+                getAnimationIndex: (animation) => (animation === animationGroup ? 0 : undefined),
+            })
+        ).toEqual(extension);
+    });
+
+    it("emits added and removed mapped flow connections from the edited graph", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }],
+            declarations: [{ op: "event/onStart" }, { op: "flow/doN" }],
+            nodes: [{ declaration: 0 }, { declaration: 1, values: { n: { type: 0, value: [1] } } }],
+        };
+        await CreatePlan({ graphs: [graph] });
+        const source = coordinator.flowGraphs[0].getAllBlocks().find((block) => block.metadata?.khrInteractivity?.nodeIndex === 0) as any;
+        const target = coordinator.flowGraphs[0].getAllBlocks().find((block) => block.metadata?.khrInteractivity?.nodeIndex === 1) as any;
+        source.getSignalOutput("done").connectTo(target.getSignalInput("in"));
+
+        const connectedPlan = CreateKHRInteractivityExportPlan(coordinator.flowGraphs, {
+            document: CreateKHRInteractivityDocument({ graphs: [graph] }),
+        });
+        expect(connectedPlan.analyze().diagnostics).toEqual([]);
+        expect(connectedPlan.build(context).graphs[0].nodes![0].flows).toEqual({ out: { node: 1 } });
+
+        source.getSignalOutput("done").disconnectFrom(target.getSignalInput("in"));
+        const disconnectedPlan = CreateKHRInteractivityExportPlan(coordinator.flowGraphs, {
+            document: CreateKHRInteractivityDocument({ graphs: [graph] }),
+        });
+        expect(disconnectedPlan.analyze().diagnostics).toEqual([]);
+        expect(disconnectedPlan.build(context).graphs[0].nodes![0].flows).toBeUndefined();
+    });
+
+    it("inverts a newly connected dynamic flow socket through the shared registry", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }],
+            declarations: [{ op: "flow/sequence" }, { op: "flow/doN" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    flows: { "0": { node: 1 } },
+                },
+                { declaration: 1, values: { n: { type: 0, value: [1] } } },
+                { declaration: 1, values: { n: { type: 0, value: [1] } } },
+            ],
+        };
+        await CreatePlan({ graphs: [graph] });
+        const sequenceBlock = coordinator.flowGraphs[0].getAllBlocks().find((block) => block.metadata?.khrInteractivity?.nodeIndex === 0) as any;
+        const target = coordinator.flowGraphs[0].getAllBlocks().find((block) => block.metadata?.khrInteractivity?.nodeIndex === 2) as any;
+        sequenceBlock.setNumberOfOutputSignals(2);
+        sequenceBlock.getSignalOutput("out_1").connectTo(target.getSignalInput("in"));
+        const plan = CreateKHRInteractivityExportPlan(coordinator.flowGraphs, {
+            document: CreateKHRInteractivityDocument({ graphs: [graph] }),
+        });
+
+        expect(plan.analyze().diagnostics).toEqual([]);
+        expect(plan.build(context).graphs[0].nodes![0].flows).toEqual({
+            "0": { node: 1 },
+            "1": { node: 2 },
+        });
+    });
+
+    it("preserves a specification-defined no-op flow target", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }],
+            declarations: [{ op: "event/onStart" }, { op: "math/abs" }],
+            nodes: [
+                { declaration: 0, flows: { out: { node: 1, socket: "missing" } } },
+                { declaration: 1, values: { a: { type: 0, value: [1] } } },
+            ],
+        };
+        const plan = await CreatePlan({ graphs: [graph] });
+
+        expect(plan.analyze().diagnostics).toEqual([]);
+        expect(plan.build(context).graphs[0].nodes![0].flows).toEqual({ out: { node: 1, socket: "missing" } });
+    });
+
+    it("preserves prototype-like extension keys as own JSON properties", async () => {
+        const extension: IKHRInteractivity = {
+            graphs: [{ declarations: [{ op: "event/onStart" }], nodes: [{ declaration: 0 }] }],
+        };
+        const extras: Record<string, unknown> = {};
+        Object.defineProperty(extras, "__proto__", {
+            enumerable: true,
+            value: { preserved: true },
+        });
+        extension.extras = extras;
+        const plan = await CreatePlan(extension);
+        const exported = plan.build(context);
+
+        expect(Object.prototype.hasOwnProperty.call(exported.extras, "__proto__")).toBe(true);
+        expect((exported.extras as any).__proto__).toEqual({ preserved: true });
+        expect(({} as any).preserved).toBeUndefined();
+    });
+
+    it("reports an empty graph set without throwing during analysis", () => {
+        const plan = CreateKHRInteractivityExportPlan([]);
+
+        expect(plan.analyze()).toMatchObject({
+            representable: false,
+            diagnostics: [expect.objectContaining({ code: "GRAPH_COUNT_MISMATCH" })],
+        });
+        expect(() => plan.build(context)).toThrowError(KHRInteractivityExportError);
     });
 
     it("recognizes intact inverse composites and rejects an edited internal composite connection", async () => {
@@ -219,6 +445,7 @@ describe("KHR_interactivity FlowGraph export", () => {
         });
         expect(editedPlan.analyze()).toMatchObject({
             representable: false,
+            nodes: [expect.anything(), expect.objectContaining({ nodeIndex: 1, classification: "lossy" })],
             diagnostics: [expect.objectContaining({ code: "COMPOSITE_CONNECTION_CHANGED", nodeIndex: 1 })],
         });
     });
@@ -248,7 +475,7 @@ describe("KHR_interactivity FlowGraph export", () => {
         expect(plan.build(context)).toEqual(extension);
 
         const input = coordinator.flowGraphs[0].getAllBlocks()[0].getDataInput("amount")!;
-        input.setValue(7, coordinator.flowGraphs[0].getContext(0)!);
+        (input as any)._defaultValue = 7;
         expect(plan.build(context).graphs[0].nodes![0].values!.amount).toEqual({ type: 0, value: [7] });
     });
 
@@ -298,6 +525,7 @@ describe("KHR_interactivity FlowGraph export", () => {
         const nodeExtensions: Record<string, unknown> = {};
         const remappingContext: IKHRInteractivitySerializerContext = {
             ...context,
+            getNodeCount: () => 5,
             getNodeIndex: (node) => (node === sourceNode ? 4 : undefined),
             setNodeExtension: (nodeIndex, extensionName, value) => {
                 nodeExtensions[`${nodeIndex}:${extensionName}`] = value;
@@ -349,5 +577,21 @@ describe("KHR_interactivity FlowGraph export", () => {
         } catch (error) {
             expect((error as KHRInteractivityExportError).diagnostics).toContainEqual(expect.objectContaining({ code: "DEPENDENCY_CYCLE" }));
         }
+    });
+
+    it("rejects a self-referencing flow as a dependency cycle", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }],
+            declarations: [{ op: "flow/doN" }],
+            nodes: [{ declaration: 0, values: { n: { type: 0, value: [1] } } }],
+        };
+        await CreatePlan({ graphs: [graph] });
+        const block = coordinator.flowGraphs[0].getAllBlocks()[0] as any;
+        block.getSignalOutput("out").connectTo(block.getSignalInput("in"));
+        const plan = CreateKHRInteractivityExportPlan(coordinator.flowGraphs, {
+            document: CreateKHRInteractivityDocument({ graphs: [graph] }),
+        });
+
+        expect(plan.analyze().diagnostics).toContainEqual(expect.objectContaining({ code: "DEPENDENCY_CYCLE", nodeIndex: 0 }));
     });
 });
