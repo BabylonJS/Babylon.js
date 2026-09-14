@@ -1,4 +1,4 @@
-import { removeSpriteRendererLayer, type Sprite2DLayer, type SpriteRenderer } from "@babylonjs/lite";
+import { type Sprite2DLayer, type SpriteRenderer } from "@babylonjs/lite";
 import { tokens } from "@fluentui/react-components";
 import { LayerDiagonalPersonRegular } from "@fluentui/react-icons";
 import { type FunctionComponent } from "react";
@@ -12,5 +12,4 @@ export const SpriteLayerExplorerServiceDefinition = CreateRenderingLayerExplorer
     contextKind: "sprite-renderer",
     layerTypeName: "Sprite Layer",
     icon: SpriteLayerIcon,
-    removeLayer: removeSpriteRendererLayer,
 });

@@ -31,8 +31,7 @@ vi.hoisted(() => {
 import { Observable } from "core/Misc/observable";
 import { type IReactContextService, type ReactContextHandle } from "shared-ui-components/modularTool/services/reactContextService";
 import { type ISettingsStore, type SettingDescriptor } from "shared-ui-components/modularTool/services/settingsStore";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
-import { BoundProperty, ComputedProperty } from "../../src/components/properties/boundProperty";
+import { BoundProperty, ComputedProperty, DerivedProperty } from "../../src/components/properties/boundProperty";
 import { WatcherContext } from "../../src/contexts/watcherContext";
 import { EngineContextIdentity, type IEngineContext } from "../../src/lite/engineContext";
 import { EnginePropertiesServiceDefinition } from "../../src/lite/services/panes/properties/enginePropertiesService";
@@ -254,19 +253,7 @@ describe("Babylon Lite properties services", () => {
         const spriteBoundProperties = Children.toArray(spriteLayerProperties.props.children).filter(
             (child): child is ReactElement<{ propertyKey: string | number; target: object; propertyPath?: string }> => isValidElement(child) && child.type === BoundProperty
         );
-        expect(spriteBoundProperties.map((property) => property.props.propertyPath ?? property.props.propertyKey)).toEqual([
-            "visible",
-            "order",
-            "opacity",
-            "view.positionPx[0]",
-            "view.positionPx[1]",
-            "zoom",
-            "rotation",
-            "pivot[0]",
-            "pivot[1]",
-        ]);
-        expect(spriteBoundProperties[3].props).toMatchObject({ target: spriteLayer.view.positionPx, propertyKey: 0 });
-        expect(spriteBoundProperties[5].props).toMatchObject({ target: spriteLayer.view, propertyKey: "zoom" });
+        expect(spriteBoundProperties.map((property) => property.props.propertyKey)).toEqual(["visible", "order", "opacity"]);
         const spriteLayerChildren = Children.toArray(spriteLayerProperties.props.children);
         const spriteLayerName = spriteLayerChildren.find(
             (child): child is ReactElement<{ getValue: (target: Sprite2DLayer) => string }> => isValidElement(child) && child.type === ComputedProperty
@@ -276,6 +263,18 @@ describe("Babylon Lite properties services", () => {
         (engine._renderingContexts as RenderingContext[]).push(sharedSpriteRenderer);
         expect(spriteLayerName?.props.getValue(spriteLayer)).toBe("Sprite Layer");
         (engine._renderingContexts as RenderingContext[]).pop();
+        const spriteDerivedProperties = spriteLayerChildren.filter(
+            (
+                child
+            ): child is ReactElement<{
+                getValue: (target: Sprite2DLayer) => number;
+                setValue: (target: Sprite2DLayer, value: number) => void;
+                validator?: (value: number) => boolean;
+            }> => isValidElement(child) && child.type === DerivedProperty
+        );
+        expect(spriteDerivedProperties).toHaveLength(6);
+        expect(spriteDerivedProperties[2].props.validator?.(0)).toBe(false);
+        expect(spriteDerivedProperties[2].props.validator?.(-1)).toBe(true);
 
         const settingsStore = new TestSettingsStore();
         const watcher = MakeWatcherServiceDefinitions({ defaultSettings: { mode: "manual" } }).watcherServiceDefinition.factory(settingsStore, new TestReactContextService());
@@ -285,22 +284,47 @@ describe("Babylon Lite properties services", () => {
         act(() =>
             writeBackRoot.render(
                 <FluentProvider theme={webLightTheme}>
-                    <WatcherContext.Provider value={watcher}>{spriteBoundProperties[3]}</WatcherContext.Provider>
+                    <WatcherContext.Provider value={watcher}>
+                        {spriteDerivedProperties[0]}
+                        {spriteDerivedProperties[4]}
+                    </WatcherContext.Provider>
                 </FluentProvider>
             )
         );
-        const positionXInput = writeBackContainer.querySelector("input");
-        if (!positionXInput) {
-            throw new Error("Expected the Sprite layer position X input.");
+        const inputs = writeBackContainer.querySelectorAll("input");
+        expect([...inputs].map((input) => input.value)).toEqual(["10", "0.5"]);
+        const originalView = spriteLayer.view;
+        const originalPivot = spriteLayer.pivot;
+        spriteLayer.view = {
+            positionPx: [30, 40],
+            zoom: 2,
+            rotation: 1,
+        };
+        spriteLayer.pivot = [0.25, 0.75];
+        act(() => watcher.refresh());
+        expect([...inputs].map((input) => input.value)).toEqual(["30", "0.25"]);
+        const setInputValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+        if (!setInputValue) {
+            throw new Error("Expected the native input value setter.");
         }
         act(() => {
-            positionXInput.focus();
-            const setInputValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
-            setInputValue?.call(positionXInput, "42");
-            positionXInput.dispatchEvent(new Event("input", { bubbles: true }));
-            positionXInput.blur();
+            inputs[0].focus();
+            setInputValue.call(inputs[0], "42");
+            inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        act(() => {
+            inputs[0].blur();
+            inputs[1].focus();
+            setInputValue.call(inputs[1], "0.4");
+            inputs[1].dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        act(() => {
+            inputs[1].blur();
         });
         expect(spriteLayer.view.positionPx[0]).toBe(42);
+        expect(spriteLayer.pivot[0]).toBe(0.4);
+        expect(originalView.positionPx[0]).toBe(10);
+        expect(originalPivot[0]).toBe(0.5);
         act(() => writeBackRoot.unmount());
         writeBackContainer.remove();
         watcher.dispose?.();

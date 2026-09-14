@@ -1,5 +1,5 @@
 import { getRenderingContextKind, type RenderingContext } from "@babylonjs/lite";
-import { DeleteRegular, EyeOffRegular, EyeRegular } from "@fluentui/react-icons";
+import { EyeOffRegular, EyeRegular } from "@fluentui/react-icons";
 import { type ComponentType } from "react";
 
 import { Observable } from "core/Misc/observable";
@@ -7,7 +7,6 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 
 import { type ExplorerNodeDescription, GetEntityId } from "../../../../components/explorer/explorerModel";
 import { type IExplorerService, ExplorerServiceIdentity } from "../../../../services/panes/explorer/explorerService";
-import { type ISelectionService, SelectionServiceIdentity } from "../../../../services/selectionService";
 import { type IWatcherService, WatcherServiceIdentity } from "../../../../services/watcherService";
 import { type IEngineContext, EngineContextIdentity } from "../../../engineContext";
 import { type IEngineExplorerService, EngineExplorerServiceIdentity } from "../../../engineExplorerService";
@@ -27,18 +26,17 @@ type RenderingLayerExplorerOptions<ContextT extends LayerRenderingContext<LayerT
     contextKind: string;
     layerTypeName: string;
     icon: ComponentType<{ entity: object }>;
-    removeLayer: (context: ContextT, layer: LayerT) => boolean;
 }>;
 
 export function CreateRenderingLayerExplorerServiceDefinition<ContextT extends LayerRenderingContext<LayerT>, LayerT extends RenderingLayer>(
     options: RenderingLayerExplorerOptions<ContextT, LayerT>
-): ServiceDefinition<[], [IEngineExplorerService, IExplorerService, IWatcherService, ISelectionService, IEngineContext]> {
-    const { friendlyName, contextKind, layerTypeName, icon, removeLayer } = options;
+): ServiceDefinition<[], [IEngineExplorerService, IExplorerService, IWatcherService, IEngineContext]> {
+    const { friendlyName, contextKind, layerTypeName, icon } = options;
 
     return {
         friendlyName,
-        consumes: [EngineExplorerServiceIdentity, ExplorerServiceIdentity, WatcherServiceIdentity, SelectionServiceIdentity, EngineContextIdentity],
-        factory: (engineExplorerService, explorerService, watcherService, selectionService, engineContext) => {
+        consumes: [EngineExplorerServiceIdentity, ExplorerServiceIdentity, WatcherServiceIdentity, EngineContextIdentity],
+        factory: (engineExplorerService, explorerService, watcherService, engineContext) => {
             const getOwners = (layer: LayerT) => GetRenderingLayerOwners<LayerT, ContextT>(engineContext.engine, contextKind, layer);
             const providerRegistration = engineExplorerService.addRenderingContextNodeProvider({
                 predicate: (context): context is ContextT => getRenderingContextKind(context) === contextKind,
@@ -80,27 +78,9 @@ export function CreateRenderingLayerExplorerServiceDefinition<ContextT extends L
                     };
                 },
             });
-            const removeRegistration = explorerService.addItemCommand({
-                predicate: (entity): entity is LayerT => typeof entity === "object" && entity !== null && getOwners(entity as LayerT).length === 1,
-                order: 10000,
-                getCommand: (layer) => ({
-                    type: "action",
-                    mode: "contextMenu",
-                    displayName: `Remove from ${contextKind === "text-renderer" ? "Text" : "Sprite"} Renderer`,
-                    icon: DeleteRegular,
-                    hotKey: { keyCode: "Delete" },
-                    execute: () => {
-                        const owners = getOwners(layer);
-                        if (owners.length === 1 && removeLayer(owners[0], layer) && selectionService.selectedEntity === layer) {
-                            selectionService.selectedEntity = null;
-                        }
-                    },
-                }),
-            });
 
             return {
                 dispose: () => {
-                    removeRegistration.dispose();
                     visibilityRegistration.dispose();
                     providerRegistration.dispose();
                 },

@@ -17,8 +17,6 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-import { Observable } from "core/Misc/observable";
-
 vi.hoisted(() => {
     vi.stubGlobal("window", globalThis);
     vi.stubGlobal(
@@ -30,34 +28,6 @@ vi.hoisted(() => {
 const { PaneRegistrations } = vi.hoisted(() => ({
     PaneRegistrations: [] as { options: import("../../src/services/panes/explorer/explorerPane").ExplorerPaneOptions; dispose: ReturnType<typeof vi.fn> }[],
 }));
-
-const { RemoveSpriteRendererLayer, RemoveTextRendererLayer } = vi.hoisted(() => ({
-    RemoveSpriteRendererLayer: vi.fn((renderer: SpriteRenderer, layer: Sprite2DLayer) => {
-        const index = renderer.layers.indexOf(layer);
-        if (index === -1) {
-            return false;
-        }
-        (renderer.layers as Sprite2DLayer[]).splice(index, 1);
-        return true;
-    }),
-    RemoveTextRendererLayer: vi.fn((renderer: TextRenderer, layer: TextLayer) => {
-        const index = renderer.layers.indexOf(layer);
-        if (index === -1) {
-            return false;
-        }
-        (renderer.layers as TextLayer[]).splice(index, 1);
-        return true;
-    }),
-}));
-
-vi.mock("@babylonjs/lite", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@babylonjs/lite")>();
-    return {
-        ...original,
-        removeSpriteRendererLayer: RemoveSpriteRendererLayer,
-        removeTextRendererLayer: RemoveTextRendererLayer,
-    };
-});
 
 vi.mock("../../src/services/panes/explorer/explorerPane", () => ({
     CreateExplorerPaneRegistration: (_shellService: unknown, _selectionService: unknown, options: import("../../src/services/panes/explorer/explorerPane").ExplorerPaneOptions) => {
@@ -353,90 +323,6 @@ describe("Babylon Lite engine explorer service", () => {
         expect(paneOptions.itemCommandProviders?.items).toEqual([]);
         expect(paneOptions.groupCommandProviders?.items).toEqual([]);
     });
-
-    it("clears a selection when polling discovers that its Explorer entity was removed", () => {
-        PaneRegistrations.length = 0;
-        const layer = { order: 0 } as TextLayer;
-        const rendererLayers = [layer];
-        const renderer = { _kind: "text-renderer", layers: rendererLayers } as unknown as TextRenderer;
-        const engine = {
-            surfaces: [] as unknown as EngineContext["surfaces"],
-            _renderingContexts: [renderer],
-        } as unknown as EngineContext;
-        (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine];
-        const selectionService = { selectedEntity: layer } as ISelectionService;
-        let notifyTopologyChanged: ((snapshot: unknown) => void) | undefined;
-        let getTopologySnapshot: (() => unknown) | undefined;
-        const watcherService = {
-            watchValue: vi.fn((getValue: () => unknown, onChanged: (snapshot: unknown) => void) => {
-                getTopologySnapshot = getValue;
-                notifyTopologyChanged = onChanged;
-                return { dispose: vi.fn() };
-            }),
-        } as unknown as IWatcherService;
-        const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, selectionService, watcherService)!;
-        service.addRenderingContextNodeProvider({
-            predicate: (context): context is TextRenderer => context === renderer,
-            getNodes: (context) => context.layers.map((entity) => ({ id: "layer", entity, getDisplayInfo: () => ({ name: "Text Layer 1" }) })),
-            getSnapshot: (context) => context.layers,
-        });
-
-        rendererLayers.splice(0, 1);
-        notifyTopologyChanged?.(getTopologySnapshot?.());
-
-        expect(selectionService.selectedEntity).toBeNull();
-        service.dispose?.();
-    });
-
-    it("keeps a selection while the entity remains in another contributed branch", () => {
-        PaneRegistrations.length = 0;
-        const entity = {};
-        const rendererEntities = [entity];
-        const renderer = { _kind: "text-renderer", layers: rendererEntities } as unknown as TextRenderer;
-        const engine = {
-            surfaces: [] as unknown as EngineContext["surfaces"],
-            _renderingContexts: [renderer],
-        } as unknown as EngineContext;
-        (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine];
-        const selectionService = { selectedEntity: entity } as ISelectionService;
-        let notifyTopologyChanged: (() => void) | undefined;
-        const watcherService = {
-            watchValue: vi.fn((getValue: () => unknown, onChanged: () => void) => {
-                notifyTopologyChanged = () => {
-                    getValue();
-                    onChanged();
-                };
-                return { dispose: vi.fn() };
-            }),
-        } as unknown as IWatcherService;
-        const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, selectionService, watcherService)!;
-        service.addRenderingContextNodeProvider({
-            predicate: (context): context is TextRenderer => context === renderer,
-            getNodes: () => rendererEntities.map((rendererEntity) => ({ id: "renderer-entity", entity: rendererEntity, getDisplayInfo: () => ({ name: "Renderer entity" }) })),
-            getSnapshot: () => rendererEntities,
-        });
-        const genericEntities = [entity];
-        const genericChanged = new Observable<void>();
-        const genericRegistration = service.addNodeProvider({
-            predicate: (parent): parent is EngineContext => parent === engine,
-            getNodes: () => genericEntities.map((genericEntity) => ({ id: "generic-entity", entity: genericEntity, getDisplayInfo: () => ({ name: "Generic entity" }) })),
-            onChanged: genericChanged,
-        });
-
-        rendererEntities.splice(0, 1);
-        notifyTopologyChanged?.();
-        expect(selectionService.selectedEntity).toBe(entity);
-
-        genericEntities.splice(0, 1);
-        genericChanged.notifyObservers();
-        expect(selectionService.selectedEntity).toBeNull();
-
-        service.dispose?.();
-        selectionService.selectedEntity = entity;
-        genericChanged.notifyObservers();
-        expect(selectionService.selectedEntity).toBe(entity);
-        genericRegistration.dispose();
-    });
 });
 
 describe("Babylon Lite scene resource explorer services", () => {
@@ -451,20 +337,8 @@ describe("Babylon Lite scene resource explorer services", () => {
         ]);
         expect(MaterialExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity]);
         expect(TextureExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity]);
-        expect(TextLayerExplorerServiceDefinition.consumes).toEqual([
-            EngineExplorerServiceIdentity,
-            ExplorerServiceIdentity,
-            WatcherServiceIdentity,
-            SelectionServiceIdentity,
-            EngineContextIdentity,
-        ]);
-        expect(SpriteLayerExplorerServiceDefinition.consumes).toEqual([
-            EngineExplorerServiceIdentity,
-            ExplorerServiceIdentity,
-            WatcherServiceIdentity,
-            SelectionServiceIdentity,
-            EngineContextIdentity,
-        ]);
+        expect(TextLayerExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, ExplorerServiceIdentity, WatcherServiceIdentity, EngineContextIdentity]);
+        expect(SpriteLayerExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, ExplorerServiceIdentity, WatcherServiceIdentity, EngineContextIdentity]);
     });
 
     it("contributes selectable mesh, material, and texture sections beneath scene contexts", () => {
@@ -520,7 +394,7 @@ describe("Babylon Lite scene resource explorer services", () => {
             MeshExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, selectionService, { engine } as IEngineContext),
             MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService),
             TextureExplorerServiceDefinition.factory(engineExplorerService),
-            TextLayerExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, selectionService, { engine } as IEngineContext),
+            TextLayerExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, { engine } as IEngineContext),
         ];
 
         const descriptions = providers
@@ -597,8 +471,6 @@ describe("Babylon Lite scene resource explorer services", () => {
                 return { dispose };
             }),
         } as unknown as IWatcherService;
-        const selectionService = { selectedEntity: null } as ISelectionService;
-
         const firstTextLayer = { data: { runs: [] }, order: 10, visible: true } as unknown as TextLayer;
         const secondTextLayer = { data: { runs: [] }, order: 0, visible: true } as unknown as TextLayer;
         const textLayers = [firstTextLayer, secondTextLayer];
@@ -615,8 +487,8 @@ describe("Babylon Lite scene resource explorer services", () => {
         (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine, auxiliarySurface];
         const engineContext = { engine } as IEngineContext;
         const registrations = [
-            TextLayerExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, selectionService, engineContext),
-            SpriteLayerExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, selectionService, engineContext),
+            TextLayerExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, engineContext),
+            SpriteLayerExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, engineContext),
         ];
         const textProvider = providers.find((provider) => provider.predicate(textRenderer))!;
         const spriteProvider = providers.find((provider) => provider.predicate(spriteRenderer))!;
@@ -659,34 +531,6 @@ describe("Babylon Lite scene resource explorer services", () => {
         expect(secondSpriteLayer.visible).toBe(false);
         expect(spriteVisibilityCommand.displayName).toBe("Show Sprite Layer");
         spriteVisibilityCommand.dispose?.();
-
-        selectionService.selectedEntity = secondTextLayer;
-        const textRemoveProvider = commands.find((command) => command.order === 10000 && command.predicate(secondTextLayer))!;
-        const textRemoveCommand = textRemoveProvider.getCommand(secondTextLayer);
-        if (textRemoveCommand.type !== "action") {
-            throw new Error("Expected a Text layer remove command.");
-        }
-        textRemoveCommand.execute();
-        expect(RemoveTextRendererLayer).toHaveBeenCalledWith(textRenderer, secondTextLayer);
-        expect(textLayers).toEqual([firstTextLayer]);
-        expect(selectionService.selectedEntity).toBeNull();
-
-        selectionService.selectedEntity = secondSpriteLayer;
-        const spriteRemoveProvider = commands.find((command) => command.order === 10000 && command.predicate(secondSpriteLayer))!;
-        const spriteRemoveCommand = spriteRemoveProvider.getCommand(secondSpriteLayer);
-        if (spriteRemoveCommand.type !== "action") {
-            throw new Error("Expected a Sprite layer remove command.");
-        }
-        spriteRemoveCommand.execute();
-        expect(RemoveSpriteRendererLayer).toHaveBeenCalledWith(spriteRenderer, secondSpriteLayer);
-        expect(spriteLayers).toEqual([firstSpriteLayer]);
-        expect(selectionService.selectedEntity).toBeNull();
-
-        const sharedSpriteRenderer = { _kind: "sprite-renderer", layers: [firstSpriteLayer] } as unknown as SpriteRenderer;
-        (auxiliarySurface as { _renderingContexts: RenderingContext[] })._renderingContexts.push(sharedSpriteRenderer);
-        selectionService.selectedEntity = firstSpriteLayer;
-        expect(spriteRemoveProvider.predicate(firstSpriteLayer)).toBe(false);
-        expect(selectionService.selectedEntity).toBe(firstSpriteLayer);
 
         registrations.forEach((registration) => registration?.dispose?.());
         providerDisposals.forEach((dispose) => expect(dispose).toHaveBeenCalledOnce());

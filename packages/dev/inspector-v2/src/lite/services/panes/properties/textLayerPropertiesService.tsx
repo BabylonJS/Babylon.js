@@ -12,6 +12,17 @@ import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../
 import { type IEngineContext, EngineContextIdentity } from "../../../engineContext";
 import { GetRenderingLayerDisplayName } from "../../../renderingLayerUtils";
 
+const TextLayerDisplayNameGetters = new WeakMap<EngineContext, (layer: TextLayer) => string>();
+
+function GetTextLayerDisplayNameGetter(engine: EngineContext): (layer: TextLayer) => string {
+    let getter = TextLayerDisplayNameGetters.get(engine);
+    if (!getter) {
+        getter = (layer) => GetRenderingLayerDisplayName<TextLayer, TextRenderer>(engine, "text-renderer", layer, "Text Layer");
+        TextLayerDisplayNameGetters.set(engine, getter);
+    }
+    return getter;
+}
+
 function GetRunCount(layer: TextLayer): number {
     return layer.data.runs.length;
 }
@@ -35,12 +46,7 @@ const TextLayerProperties: FunctionComponent<{ engine: EngineContext; layer: Tex
 
     return (
         <>
-            <ComputedProperty
-                component={TextPropertyLine}
-                label="Name"
-                target={layer}
-                getValue={(target) => GetRenderingLayerDisplayName<TextLayer, TextRenderer>(engine, "text-renderer", target, "Text Layer")}
-            />
+            <ComputedProperty component={TextPropertyLine} label="Name" target={layer} getValue={GetTextLayerDisplayNameGetter(engine)} />
             <BoundProperty component={SwitchPropertyLine} label="Visible" target={layer} propertyKey="visible" />
             <BoundProperty component={NumberInputPropertyLine} label="Position X" target={layer.positionPx} propertyKey="x" propertyPath="positionPx.x" step={1} unit="px" />
             <BoundProperty component={NumberInputPropertyLine} label="Position Y" target={layer.positionPx} propertyKey="y" propertyPath="positionPx.y" step={1} unit="px" />

@@ -1,4 +1,4 @@
-import { removeTextRendererLayer, type TextLayer, type TextRenderer } from "@babylonjs/lite";
+import { type TextLayer, type TextRenderer } from "@babylonjs/lite";
 import { TextTRegular } from "@fluentui/react-icons";
 import { type FunctionComponent } from "react";
 
@@ -11,5 +11,4 @@ export const TextLayerExplorerServiceDefinition = CreateRenderingLayerExplorerSe
     contextKind: "text-renderer",
     layerTypeName: "Text Layer",
     icon: TextLayerIcon,
-    removeLayer: removeTextRendererLayer,
 });
