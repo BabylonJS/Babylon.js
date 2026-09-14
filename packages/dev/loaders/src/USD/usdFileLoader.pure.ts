@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { RegisterInstancedMesh } from "core/Meshes/instancedMesh.pure";
+import { RegisterThinInstanceMesh } from "core/Meshes/thinInstanceMesh.pure";
 import { RegisterPbrMaterial } from "core/Materials/PBR/pbrMaterial.pure";
 import { Tools } from "core/Misc/tools.pure";
 import { type AbstractAssetContainer, AssetContainer } from "core/assetContainer";
@@ -398,6 +399,7 @@ let _Registered = false;
 export function _RegisterUSDLoaderDependencies(): void {
     RegisterPbrMaterial();
     RegisterInstancedMesh();
+    RegisterThinInstanceMesh();
 }
 
 /**

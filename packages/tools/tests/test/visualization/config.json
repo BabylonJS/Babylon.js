@@ -5598,13 +5598,13 @@
         },
         {
             "title": "USD loader - analytic primitives",
-            "playgroundId": "#7P8ALV#0",
+            "playgroundId": "#PS2UEU#0",
             "referenceImage": "usd-loader-analytic-primitives.png",
             "dependsOn": ["Loaders", "Materials", "Meshes"]
         },
         {
             "title": "USD loader - PBR materials",
-            "playgroundId": "#P8OFFE#0",
+            "playgroundId": "#KBHY1R#0",
             "referenceImage": "usd-loader-pbr-materials.png",
             "dependsOn": ["Loaders", "Materials", "Meshes", "PBR"]
         },

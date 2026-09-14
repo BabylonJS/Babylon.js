@@ -1,4 +1,16 @@
-import { AnalyticPrimitiveType, AnimationProperty, AnimationTarget, Command, GeometryFlags, MaterialFlags, MISSING_OFFSET, PrimitiveAxis } from "loaders/USD/usdCommandProtocol";
+import {
+    AnalyticPrimitiveType,
+    AnimationProperty,
+    AnimationTarget,
+    Command,
+    GeometryFlags,
+    MaterialFlags,
+    MISSING_OFFSET,
+    PrimitiveAxis,
+    PROTOCOL_VERSION,
+    TextureOutputChannel,
+    USDTextureColorSpace,
+} from "loaders/USD/usdCommandProtocol";
 
 class BufferWriter {
     public readonly bytes: number[] = [];
@@ -66,7 +78,7 @@ class CommandWriter {
 
     public constructor() {
         this._writer.u32(0x42445355);
-        this._writer.u16(4);
+        this._writer.u16(PROTOCOL_VERSION);
         this._writer.u16(0);
         this._writer.u32(0);
         this._writer.u32(0);
@@ -128,14 +140,22 @@ export function createUSDTestBuffers(): USDTestBuffers {
         writer.f32(1);
         writer.f32(0);
         writer.u32(0);
-        for (let index = 0; index < 9; ++index) {
+        for (let index = 0; index < 14; ++index) {
             writer.u32(MISSING_OFFSET);
         }
     });
     addUSDTestPrimitives(commands, data);
     return { commands: commands.finish(), data: data.toArrayBuffer() };
 }
-export function createUSDMeshTestBuffers(withTextures = false): USDTestBuffers {
+export function createUSDMeshTestBuffers(
+    withTextures = false,
+    separateMaterialTextures = false,
+    processedMaterialTextures = false,
+    withThinInstances = false,
+    withMorphTarget = false,
+    withHdrEmissive = false,
+    withSignedEmissive = false
+): USDTestBuffers {
     const commands = new CommandWriter();
     const data = new BufferWriter();
     const name = data.appendString("Skinned quad");
@@ -143,6 +163,9 @@ export function createUSDMeshTestBuffers(withTextures = false): USDTestBuffers {
     const childMatrix = [..._identity];
     childMatrix[13] = 1;
     const childOffset = data.floats(childMatrix);
+    const childBindMatrix = [..._identity];
+    childBindMatrix[13] = 2;
+    const childBindOffset = data.floats(childBindMatrix);
 
     commands.command(Command.Scene, (writer) => {
         writer.u32(0);
@@ -159,9 +182,45 @@ export function createUSDMeshTestBuffers(withTextures = false): USDTestBuffers {
         const imageOffset = data.size;
         data.bytes.push(...png);
         const transformOffset = data.floats([2, 3, 0.1, 0.2, Math.PI / 4]);
-        for (let id = 1; id <= 3; ++id) {
+        const valueTransformOffset = data.floats([1, 1, 1, 1, 0, 0, 0, 0]);
+        const normalValueTransformOffset = data.floats([2, 2, 2, 1, -1, -1, -1, 0]);
+        const metallicValueTransformOffset = data.floats([0.75, 1, 1, 1, 0, 0, 0, 0]);
+        const roughnessValueTransformOffset = data.floats([0.5, 1, 1, 1, 0, 0, 0, 0]);
+        const processedMetallicTransformOffset = data.floats([1, 0.6, 1, 1, 0, 0.2, 0, 0]);
+        const processedRoughnessTransformOffset = data.floats([1, 1, 0.5, 1, 0, 0, 0.1, 0]);
+        const processedOcclusionTransformOffset = data.floats([1, 1, 1, 0.8, 0, 0, 0, 0.1]);
+        const hdrEmissiveTransformOffset = data.floats([4, 2, 1, 1, withSignedEmissive ? -1 : 0, 0, 0, 0]);
+        const textureCount = withHdrEmissive ? 6 : separateMaterialTextures ? 5 : 3;
+        for (let id = 1; id <= textureCount; ++id) {
             commands.command(Command.Texture, (writer) => {
-                [id, name.offset, name.length, 1, imageOffset, png.length, 0, transformOffset, 1, 2].forEach((value) => writer.u32(value));
+                [
+                    id,
+                    name.offset,
+                    name.length,
+                    1,
+                    imageOffset,
+                    png.length,
+                    0,
+                    transformOffset,
+                    1,
+                    2,
+                    id === 1 || id === 6 ? USDTextureColorSpace.SRGB : USDTextureColorSpace.Raw,
+                    id === 2
+                        ? normalValueTransformOffset
+                        : separateMaterialTextures && id === 3
+                          ? processedMaterialTextures
+                              ? processedMetallicTransformOffset
+                              : metallicValueTransformOffset
+                          : separateMaterialTextures && id === 4
+                            ? processedMaterialTextures
+                                ? processedRoughnessTransformOffset
+                                : roughnessValueTransformOffset
+                            : id === 6
+                              ? hdrEmissiveTransformOffset
+                              : separateMaterialTextures && id === 5 && processedMaterialTextures
+                                ? processedOcclusionTransformOffset
+                                : valueTransformOffset,
+                ].forEach((value) => writer.u32(value));
             });
         }
     }
@@ -171,14 +230,30 @@ export function createUSDMeshTestBuffers(withTextures = false): USDTestBuffers {
     for (let id = 1; id <= 2; ++id) {
         commands.command(Command.Material, (writer) => {
             [id, name.offset, name.length, baseOffset, emissiveOffset].forEach((value) => writer.u32(value));
-            [0.4, 0.6, 0.7, id === 2 ? 0.5 : 0].forEach((value) => writer.f32(value));
+            [withTextures ? 1 : 0.4, withTextures ? 1 : 0.6, 0.7, id === 2 ? 0.5 : 0].forEach((value) => writer.f32(value));
             writer.u32(id === 1 ? MaterialFlags.AlphaBlend : MaterialFlags.DoubleSided | MaterialFlags.Unlit);
-            const textureSlots = withTextures ? [1, id === 2 ? 1 : MISSING_OFFSET, 2, 3, 1, 3, 1, 2, 0] : Array<number>(9).fill(MISSING_OFFSET);
-            textureSlots.forEach((value) => writer.u32(value));
+            const textureIds = withTextures
+                ? separateMaterialTextures
+                    ? [1, id === 2 ? 1 : MISSING_OFFSET, 2, 3, 4, 5, 1]
+                    : [1, id === 2 ? 1 : MISSING_OFFSET, 2, 3, 3, 3, withHdrEmissive ? 6 : 1]
+                : Array<number>(7).fill(MISSING_OFFSET);
+            textureIds.forEach((value) => writer.u32(value));
+            const channels = withTextures
+                ? [
+                      TextureOutputChannel.RGB,
+                      id === 2 ? TextureOutputChannel.A : MISSING_OFFSET,
+                      TextureOutputChannel.RGB,
+                      separateMaterialTextures ? (processedMaterialTextures ? TextureOutputChannel.G : TextureOutputChannel.R) : TextureOutputChannel.B,
+                      separateMaterialTextures ? (processedMaterialTextures ? TextureOutputChannel.B : TextureOutputChannel.R) : TextureOutputChannel.G,
+                      processedMaterialTextures ? TextureOutputChannel.A : TextureOutputChannel.R,
+                      TextureOutputChannel.RGB,
+                  ]
+                : Array<number>(7).fill(MISSING_OFFSET);
+            channels.forEach((value) => writer.u32(value));
         });
     }
 
-    const jointsOffset = data.uints([MISSING_OFFSET, 10, name.offset, name.length, identityOffset, 0, 11, name.offset, name.length, childOffset]);
+    const jointsOffset = data.uints([MISSING_OFFSET, 10, name.offset, name.length, identityOffset, identityOffset, 0, 11, name.offset, name.length, childOffset, childBindOffset]);
     commands.command(Command.Skeleton, (writer) => {
         [1, name.offset, name.length, 2, jointsOffset].forEach((value) => writer.u32(value));
     });
@@ -201,9 +276,29 @@ export function createUSDMeshTestBuffers(withTextures = false): USDTestBuffers {
     commands.command(Command.Mesh, (writer) => {
         [1, 1, 1, MISSING_OFFSET, name.offset, name.length, 0, 1, subsets, 2].forEach((value) => writer.u32(value));
     });
-    commands.command(Command.Instance, (writer) => {
-        [1, 1, name.offset, name.length].forEach((value) => writer.u32(value));
-    });
+    if (withMorphTarget) {
+        const targetPositions = data.floats([0, 0, 0, 1, 0, 0, 1, 2, 0, 0, 1, 0]);
+        const targetNormals = data.floats(Array(4).fill([0, 1, 0]).flat());
+        commands.command(Command.MorphTarget, (writer) => {
+            [20, 1, name.offset, name.length, 4, targetPositions, targetNormals].forEach((value) => writer.u32(value));
+            writer.f32(0.25);
+        });
+    }
+    if (!withThinInstances) {
+        commands.command(Command.Instance, (writer) => {
+            [1, 1, name.offset, name.length].forEach((value) => writer.u32(value));
+        });
+    }
+    if (withThinInstances) {
+        const first = [..._identity];
+        first[12] = 4;
+        const second = [..._identity];
+        second[12] = 8;
+        const transforms = data.floats([...first, ...second]);
+        commands.command(Command.ThinInstances, (writer) => {
+            [1, transforms, 2].forEach((value) => writer.u32(value));
+        });
+    }
 
     const times = data.floats([0, 24]);
     const movedMatrix = [..._identity];
@@ -220,8 +315,38 @@ export function createUSDMeshTestBuffers(withTextures = false): USDTestBuffers {
             [kind, target, AnimationProperty.Matrix, 0, 2, times, values, 16].forEach((value) => writer.u32(value));
         });
     }
+    if (withMorphTarget) {
+        const influences = data.floats([0.25, 1]);
+        commands.command(Command.Animation, (writer) => {
+            [AnimationTarget.MorphTarget, 20, AnimationProperty.Influence, 0, 2, times, influences, 1].forEach((value) => writer.u32(value));
+        });
+    }
 
     return { commands: commands.finish(), data: data.toArrayBuffer() };
+}
+
+export function createUSDSeparateMaterialTestBuffers(): USDTestBuffers {
+    return createUSDMeshTestBuffers(true, true);
+}
+
+export function createUSDProcessedMaterialTestBuffers(): USDTestBuffers {
+    return createUSDMeshTestBuffers(true, true, true);
+}
+
+export function createUSDThinInstanceTestBuffers(): USDTestBuffers {
+    return createUSDMeshTestBuffers(false, false, false, true);
+}
+
+export function createUSDMorphTargetTestBuffers(): USDTestBuffers {
+    return createUSDMeshTestBuffers(false, false, false, false, true);
+}
+
+export function createUSDHdrEmissiveTestBuffers(): USDTestBuffers {
+    return createUSDMeshTestBuffers(true, false, false, false, false, true);
+}
+
+export function createUSDSignedEmissiveTestBuffers(): USDTestBuffers {
+    return createUSDMeshTestBuffers(true, false, false, false, false, true, true);
 }
 
 function addUSDTestPrimitives(commands: CommandWriter, data: BufferWriter): void {

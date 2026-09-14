@@ -125,6 +125,7 @@ describe("USDFileLoader", () => {
         const options = (loader as unknown as { _options: { glueUrl?: string; wasmUrl?: string; dataUrl?: string; workerUrl?: string | URL } })._options;
 
         expect(options).toMatchObject(USDFileLoader.DefaultConfiguration);
+        expect(options.wasmUrl).toContain("/babylonUsdImporter/5/");
 
         loader.dispose();
     });
