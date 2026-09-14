@@ -14,14 +14,17 @@
 //     auto-transpiled shader fails to compile ("textureSample must only be called from uniform control flow")
 //     and the pipeline is invalid.
 // texture2DLodEXT/textureLod takes an explicit, derivative-free LOD, which is what makes it legal in non-uniform
-// control flow. Level 0 is the deliberate choice: these render targets are NOT mip-less (the pipeline uses
-// trilinear sampling, so PostProcess generates mipmaps), and the blur wants the base image rather than an
-// undefined implicit mip. On WebGPU/WebGL2/Native this maps to textureLod (twgsl lowers it to textureSampleLevel
-// for WebGPU).
+// control flow. These render targets are NOT mip-less (the pipeline uses trilinear sampling, so PostProcess
+// generates mipmaps), and this pass runs at 1/4 the resolution of textureSampler, so an implicit lookup would
+// normally minify to ~mip 2. We therefore pass an explicit blur_lod = log2(sourceWidth / outputWidth) instead of
+// forcing mip 0, preserving the original minification (no aliasing / extra bandwidth). highlightsSampler is the
+// same size as the output, so it uses lod 0. On WebGPU/WebGL2/Native TEXTUREFUNC maps to textureLod (twgsl lowers
+// it to textureSampleLevel for WebGPU).
 // WebGL1 has no texture2DLodEXT and falls back to biased texture2D, which is still implicit-derivative sampling:
 // the seam fix does NOT apply on WebGL1 (that engine is excluded from the DoF visualization test).
-// NOTE: reads in uniform control flow (the depth read, and the grain read guarded by the uniform grain_amount)
-// intentionally keep implicit-LOD texture2D so mip selection still works for a user-supplied grain texture.
+// NOTE: reads in uniform control flow keep implicit-LOD texture2D so mip selection stays automatic: the depth
+// read, the grain read (guarded by the uniform grain_amount, and grain may be a user-supplied mipmapped texture),
+// and the direct unblurred sample (hoisted before the divergent branch in main).
 #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
 	#define TEXTUREFUNC(s, c, lod) texture2DLodEXT(s, c, lod)
 #else
@@ -47,6 +50,8 @@ uniform float aperture;
 uniform float darken;
 uniform float edge_blur;
 uniform bool highlights;
+// explicit LOD for blur samples of textureSampler = log2(textureSampler size / this pass' output size); see TEXTUREFUNC note above
+uniform float blur_lod;
 
 // preconputed uniforms (not effect parameters)
 uniform float near;
@@ -99,7 +104,7 @@ float sampleScreen(inout vec4 color, in vec2 offset, in float weight) {
 	float angle = rand(coords * 100.0).x * TWOPI;
 	coords += vec2(offset.x * cos(angle) - offset.y * sin(angle), offset.x * sin(angle) + offset.y * cos(angle));
 
-	color += TEXTUREFUNC(textureSampler, coords, 0.0)*weight;
+	color += TEXTUREFUNC(textureSampler, coords, blur_lod)*weight;
 
 	return weight;
 }
@@ -112,7 +117,7 @@ float getBlurLevel(float size) {
 // returns original screen color after blur
 vec4 getBlurColor(float size) {
 
-	vec4 col = TEXTUREFUNC(textureSampler, distorted_coords, 0.0);
+	vec4 col = TEXTUREFUNC(textureSampler, distorted_coords, blur_lod);
 
 	// there are max. 30 samples; the number of samples chosen is dependant on the blur size
 	// there can be 10, 20 or 30 samples chosen; levels of blur are then 1, 2 or 3
@@ -189,7 +194,9 @@ void main(void)
 
 	float depth = texture2D(depthSampler, distorted_coords).r;	// depth value from DepthRenderer: 0 to 1
 	float distance = near + (far - near)*depth;		// actual distance from the lens
-	vec4 color = texture2D(textureSampler, vUV);	// original raster
+	// Direct (unblurred) sample of the source, read here in uniform control flow so implicit mip selection stays
+	// legal and picks the correct per-pixel minification (important with distortion warping the sampling rate).
+	vec4 sharpColor = texture2D(textureSampler, distorted_coords);
 
 
 	// compute the circle of confusion size (CoC), i.e. blur radius depending on depth
@@ -210,7 +217,7 @@ void main(void)
 
 	// apply blur if necessary
 	if (blur_amount == 0.0) {
-		gl_FragColor = TEXTUREFUNC(textureSampler, distorted_coords, 0.0);
+		gl_FragColor = sharpColor;
 	}
 	else {
 
@@ -219,6 +226,7 @@ void main(void)
 
 		// if we have computed highlights: enhance highlights
 		if (highlights) {
+			// highlightsSampler is bound to this pass' own output (same resolution), so lod 0 is the matching level
 			gl_FragColor.rgb += clamp(coc, 0.0, 1.0)*TEXTUREFUNC(highlightsSampler, distorted_coords, 0.0).rgb;
 		}
 
@@ -226,7 +234,7 @@ void main(void)
 			// we put a slight amount of noise in the blurred color
 			vec2 noise = rand(distorted_coords) * 0.01 * blur_amount;
 			vec2 blurred_coord = vec2(distorted_coords.x + noise.x, distorted_coords.y + noise.y);
-			gl_FragColor = 0.04 * TEXTUREFUNC(textureSampler, blurred_coord, 0.0) + 0.96 * gl_FragColor;
+			gl_FragColor = 0.04 * TEXTUREFUNC(textureSampler, blurred_coord, blur_lod) + 0.96 * gl_FragColor;
 		}
 	}
 
