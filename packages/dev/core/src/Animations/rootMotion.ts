@@ -136,16 +136,8 @@ interface IChannelWriters {
     weighted: boolean;
     /** The last unweighted animatable writing the channel, whose value is the pose unless a weighted one replaces it. */
     lastDirect: Nullable<Animatable>;
-    /** The place of that animatable in the order the scene animated its animatables. */
-    lastDirectOrder: number;
-    /** The active animatables that wrote the channel in the last step, to find those that ran to their end in this one. */
-    previous: Animatable[];
-    /** The runtime animation each of them wrote it with. */
-    previousRuntimes: RuntimeAnimation[];
-    /** The active animatables writing the channel in this step, gathered as the step is read. */
+    /** The animatables that wrote the channel this step, in the order the scene animated them. */
     current: Animatable[];
-    /** The runtime animation each of them writes it with. */
-    currentRuntimes: RuntimeAnimation[];
 }
 
 /** Contact candidates must come this close to the lowest one during the clip, as a share of the character's height. */
@@ -1515,8 +1507,8 @@ export class RootMotionController implements IDisposable {
                 // Its clock stands still too, and carries on from here when it resumes.
                 continue;
             }
-            if (!animatable._evaluationOrder) {
-                // Not evaluated this step - parked at a weight of zero - while its clock runs on: it starts again from
+            if (clip._writers!.current.indexOf(animatable) < 0) {
+                // Not animated this step - parked at a weight of zero - while its clock runs on: it starts again from
                 // wherever it resumes.
                 clip._parked = true;
                 continue;
@@ -1634,9 +1626,9 @@ export class RootMotionController implements IDisposable {
 }
 
 /**
- * The root motion controllers of a scene. After the scene's animations, one pass over its active animatables gathers
- * what the mixer wrote to every channel a clip follows - with the writers of the step before that ran to their end in
- * this one, in the order the scene animated them all - then each controller applies its frame.
+ * The root motion controllers of a scene. After the scene's animations, one pass over the animatables the scene
+ * animated this step - in that order, those that ran to their end included - gathers what the mixer wrote to every
+ * channel a clip follows, then each controller applies its frame.
  */
 class SceneRootMotion {
     private readonly _scene: Scene;
@@ -1710,17 +1702,7 @@ class SceneRootMotion {
                 }
                 let entry = entries.find((candidate) => candidate.property === clip._clockProperty);
                 if (!entry) {
-                    entry = {
-                        property: clip._clockProperty,
-                        total: 0,
-                        weighted: false,
-                        lastDirect: null,
-                        lastDirectOrder: 0,
-                        previous: [],
-                        previousRuntimes: [],
-                        current: [],
-                        currentRuntimes: [],
-                    };
+                    entry = { property: clip._clockProperty, total: 0, weighted: false, lastDirect: null, current: [] };
                     entries.push(entry);
                     this._writers.push(entry);
                 }
@@ -1736,25 +1718,16 @@ class SceneRootMotion {
             entry.total = 0;
             entry.weighted = false;
             entry.lastDirect = null;
-            entry.lastDirectOrder = 0;
-            // This step's writers become the last step's; the arrays change places rather than being copied.
-            const animatables = entry.previous;
-            const runtimes = entry.previousRuntimes;
-            entry.previous = entry.current;
-            entry.previousRuntimes = entry.currentRuntimes;
-            entry.current = animatables;
-            entry.currentRuntimes = runtimes;
-            animatables.length = 0;
-            runtimes.length = 0;
+            entry.current.length = 0;
         }
-        // What the mixer wrote this step: the active animatables that animated. A paused one, one not started yet and
-        // one parked at a weight of zero wrote nothing.
-        const animatables = this._scene._activeAnimatables;
+        // What the mixer wrote this step: the animatables the scene animated, in that order, gathered as they animated
+        // rather than read back from the active animatables - one that ran to its end has left those, on its first
+        // step as well as any other, but wrote the end of its range. A paused animatable, one not started yet and one
+        // parked at a weight of zero are not among them.
+        const animatables = this._scene._evaluatedAnimatables;
         for (let i = 0; i < animatables.length; i++) {
             const animatable = animatables[i];
-            if (!animatable._evaluationOrder) {
-                continue;
-            }
+            const weight = animatable.weight;
             const runtimes = animatable.getAnimations();
             for (let j = 0; j < runtimes.length; j++) {
                 const runtime = runtimes[j];
@@ -1765,74 +1738,24 @@ class SceneRootMotion {
                 }
                 for (let k = 0; k < entries.length; k++) {
                     const entry = entries[k];
-                    if (entry.property === runtime.targetPath) {
-                        this._addWriter(entry, animatable, runtime);
-                        entry.current.push(animatable);
-                        entry.currentRuntimes.push(runtime);
+                    if (entry.property !== runtime.targetPath) {
+                        continue;
                     }
-                }
-            }
-        }
-        // The writers of the last step that ran to their end in this one are gone from the active animatables, but
-        // their last evaluation - the end of their range - was written this step, from their place in the order. One
-        // stopped explicitly is not among them: its runtime animations are not stopped.
-        for (let i = 0; i < writers.length; i++) {
-            const entry = writers[i];
-            const previous = entry.previous;
-            for (let j = 0; j < previous.length; j++) {
-                const animatable = previous[j];
-                const runtime = entry.previousRuntimes[j];
-                if (runtime.isStopped() && entry.current.indexOf(animatable) < 0) {
-                    this._addWriter(entry, animatable, runtime);
-                }
-            }
-        }
-        // A clip's own playback that ran to its end without having written the step before - raised from a weight of
-        // zero on its last step, say - is still to be consumed, so it is a writer too.
-        for (let i = 0; i < this._controllers.length; i++) {
-            const clips = this._controllers[i].clips;
-            for (let j = 0; j < clips.length; j++) {
-                const clip = clips[j];
-                const animatable = clip._clockAnimatable;
-                const runtime = clip._clockRuntime;
-                const entry = clip._writers;
-                if (
-                    animatable &&
-                    runtime &&
-                    entry &&
-                    clip._lastProgress !== null &&
-                    runtime.isStopped() &&
-                    entry.current.indexOf(animatable) < 0 &&
-                    entry.previous.indexOf(animatable) < 0
-                ) {
-                    this._addWriter(entry, animatable, runtime);
+                    entry.current.push(animatable);
+                    if (weight < 0) {
+                        // Direct writers overwrite one another in order, so the last one is the pose.
+                        entry.lastDirect = animatable;
+                    } else {
+                        entry.weighted = true;
+                        if (!runtime.isAdditive) {
+                            entry.total += weight;
+                        }
+                    }
                 }
             }
         }
         for (let i = 0; i < this._controllers.length; i++) {
             this._controllers[i]._update();
-        }
-    }
-
-    /**
-     * Counts a writer of a channel in: the last direct writer in the scene's order is the pose unless weighted writers
-     * replace it, whose weights add up.
-     * @param entry defines the channel's writers
-     * @param animatable defines the animatable that wrote the channel
-     * @param runtime defines the runtime animation it wrote it with
-     */
-    private _addWriter(entry: IChannelWriters, animatable: Animatable, runtime: RuntimeAnimation): void {
-        const weight = animatable.weight;
-        if (weight < 0) {
-            if (animatable._evaluationOrder > entry.lastDirectOrder) {
-                entry.lastDirect = animatable;
-                entry.lastDirectOrder = animatable._evaluationOrder;
-            }
-        } else {
-            entry.weighted = true;
-            if (!runtime.isAdditive) {
-                entry.total += weight;
-            }
         }
     }
 }

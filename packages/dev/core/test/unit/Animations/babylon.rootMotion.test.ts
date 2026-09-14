@@ -1418,6 +1418,76 @@ describe("RootMotion", () => {
         });
     });
 
+    describe("writers completing on their first evaluation", () => {
+        /**
+         * A group the controller knows nothing about, holding the hips still and playing once.
+         * @param hips defines the node
+         * @returns the group
+         */
+        const stillGroup = (hips: TransformNode) => {
+            const animation = new Animation("still", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+            animation.setKeys([
+                { frame: 0, value: Vector3.Zero() },
+                { frame: CycleFrames, value: Vector3.Zero() },
+            ]);
+            const group = new AnimationGroup("still", scene);
+            group.addTargetedAnimation(animation, hips);
+            return group;
+        };
+
+        for (const weighted of [true, false]) {
+            const kind = weighted ? "weighted" : "unweighted";
+            // Weighted: normalized against the walk, half a tick. Unweighted: it wrote the root last and owns the pose.
+            const expected = weighted ? 0.5 * Speed * 0.016 : 0;
+
+            it(`counts a group completing on its first evaluation, after a jump to its end (${kind})`, () => {
+                const rig = BuildRig(scene, "rootMotion");
+                const { group } = Extract(rig);
+                group.start(true);
+                if (weighted) {
+                    group.weight = 0.8;
+                }
+                Run(scene, 20);
+                const before = rig.character.position.z;
+
+                const still = stillGroup(rig.hips);
+                still.start(false);
+                if (weighted) {
+                    still.weight = 0.8;
+                }
+                // Jumped to its last frame before its first tick: that first evaluation writes the end and completes.
+                for (const animatable of still.animatables) {
+                    animatable.goToFrame(CycleFrames);
+                }
+                Run(scene, 1);
+
+                expect(still.isStarted).toBe(false);
+                expect(rig.character.position.z - before).toBeCloseTo(expected, 6);
+            });
+
+            it(`counts a group reactivated from a weight of zero at its elapsed end (${kind})`, () => {
+                const rig = BuildRig(scene, "rootMotion");
+                const { group } = Extract(rig);
+                group.start(true);
+                if (weighted) {
+                    group.weight = 0.8;
+                }
+                const still = stillGroup(rig.hips);
+                still.start(false);
+                still.weight = 0;
+                // Parked at zero for longer than it lasts, while its clock runs on.
+                Run(scene, 80);
+                const before = rig.character.position.z;
+
+                still.weight = weighted ? 0.8 : -1;
+                Run(scene, 1);
+
+                expect(still.isStarted).toBe(false);
+                expect(rig.character.position.z - before).toBeCloseTo(expected, 6);
+            });
+        }
+    });
+
     describe("errors", () => {
         it("refuses a group that animates the character node", () => {
             const rig = BuildRig(scene, "rootMotion");

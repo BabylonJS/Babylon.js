@@ -1795,6 +1795,12 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     /** @internal */
     public _activeAnimatables = new Array<Animatable>();
+    /**
+     * @internal
+     * The animatables animated in the current or last animation step, in the order they were animated, those that
+     * ran to their end in it included: what the animations wrote that step.
+     */
+    public _evaluatedAnimatables = new Array<Animatable>();
 
     private _transformMatrix = Matrix.Zero();
     private _sceneUbo: UniformBuffer;
