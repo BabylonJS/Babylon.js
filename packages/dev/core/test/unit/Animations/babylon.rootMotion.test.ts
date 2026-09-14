@@ -1420,24 +1420,78 @@ describe("RootMotion", () => {
 
     describe("writers recorded as they write", () => {
         /**
-         * A group the controller knows nothing about, holding the hips still and playing once.
-         * @param hips defines the node
-         * @param stopAtFrame defines a frame at which an event of the animation stops the group itself
-         * @returns the group
+         * A position animation holding its target still, playing once.
+         * @returns the animation
          */
-        const stillGroup = (hips: TransformNode, stopAtFrame?: number) => {
+        const stillAnimation = () => {
             const animation = new Animation("still", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
             animation.setKeys([
                 { frame: 0, value: Vector3.Zero() },
                 { frame: CycleFrames, value: Vector3.Zero() },
             ]);
+            return animation;
+        };
+
+        /**
+         * A group the controller knows nothing about, holding the hips still and playing once.
+         * @param hips defines the node
+         * @param event defines a frame at which an event of the animation acts on the group itself
+         * @returns the group
+         */
+        const stillGroup = (hips: TransformNode, event?: { frame: number; action: (group: AnimationGroup) => void }) => {
+            const animation = stillAnimation();
             const group = new AnimationGroup("still", scene);
             group.addTargetedAnimation(animation, hips);
-            if (stopAtFrame !== undefined) {
-                animation.addEvent(new AnimationEvent(stopAtFrame, () => group.stop(), true));
+            if (event) {
+                animation.addEvent(new AnimationEvent(event.frame, () => event.action(group), true));
             }
             return group;
         };
+
+        it("applies the terminal step of a playback whose event disables the scene's animations after it wrote", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            ChannelOf(group, rig.hips, "position").addEvent(
+                new AnimationEvent(
+                    CycleFrames,
+                    () => {
+                        scene.animationsEnabled = false;
+                    },
+                    true
+                )
+            );
+            group.start(false);
+            // The step that reaches the end writes it, then the event disables the animations; the step still completes.
+            Run(scene, 64);
+
+            expect(group.isStarted).toBe(false);
+            expect(scene.animationsEnabled).toBe(false);
+            expect(rig.character.position.z).toBeCloseTo(Speed, 6);
+        });
+
+        it("adds up the writes of a clock re-evaluated by an animation event within a step", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            // Registered before the playback starts: a runtime animation takes its events when it is created.
+            ChannelOf(group, rig.hips, "position").addEvent(
+                new AnimationEvent(
+                    30,
+                    () => {
+                        const hipsAnimatable = group.animatables.find((animatable) => animatable.target === rig.hips)!;
+                        hipsAnimatable.goToFrame(hipsAnimatable.getAnimations()[0].currentFrame, true);
+                    },
+                    true
+                )
+            );
+            group.start(true);
+            group.weight = 0.8;
+            Run(scene, 32);
+            const before = rig.character.position.z;
+            Run(scene, 1);
+
+            // Two writes of 0.8 are the whole binding, where one alone would be 0.8 of it.
+            expect(rig.character.position.z - before).toBeCloseTo(Speed * 0.016, 6);
+        });
 
         it("carries on where it was when the scene's animations are enabled again", () => {
             const rig = BuildRig(scene, "rootMotion");
@@ -1521,7 +1575,7 @@ describe("RootMotion", () => {
                 Run(scene, 20);
                 // Started after the walk, it writes the root after it; on the tick it reaches frame 30 it writes, then
                 // its event stops the group and clears its runtime animations before the step ends.
-                const still = stillGroup(rig.hips, 30);
+                const still = stillGroup(rig.hips, { frame: 30, action: (target) => target.stop() });
                 still.start(false);
                 if (weighted) {
                     still.weight = 0.8;
@@ -1534,7 +1588,51 @@ describe("RootMotion", () => {
                 expect(still.isStarted).toBe(false);
                 expect(rig.character.position.z - before).toBeCloseTo(expected, 6);
             });
+
+            it(`counts a write to the root by an animation of several targets (${kind})`, () => {
+                const rig = BuildRig(scene, "rootMotion");
+                const { group } = Extract(rig);
+                group.start(true);
+                if (weighted) {
+                    group.weight = 0.8;
+                }
+                Run(scene, 20);
+                const before = rig.character.position.z;
+
+                // One animatable writing the hips and a prop in turn; the hips are not the target it ends on.
+                const prop = new TransformNode("prop", scene);
+                const animatable = scene.beginDirectAnimation([rig.hips, prop], [stillAnimation()], 0, CycleFrames, false);
+                if (weighted) {
+                    animatable.weight = 0.8;
+                }
+                Run(scene, 1);
+
+                expect(rig.character.position.z - before).toBeCloseTo(expected, 6);
+            });
         }
+
+        it("weighs a group turned additive by an animation event after writing as the override it wrote", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            group.start(true);
+            group.weight = 0.8;
+            Run(scene, 20);
+            const still = stillGroup(rig.hips, {
+                frame: 30,
+                action: (target) => {
+                    target.isAdditive = true;
+                },
+            });
+            still.start(false);
+            still.weight = 0.8;
+            Run(scene, 32);
+            const before = rig.character.position.z;
+            Run(scene, 1);
+
+            // Bound as an override of 0.8 when it wrote, whatever it became after: two overrides, half each.
+            expect(still.isAdditive).toBe(true);
+            expect(rig.character.position.z - before).toBeCloseTo(0.5 * Speed * 0.016, 6);
+        });
     });
 
     describe("errors", () => {

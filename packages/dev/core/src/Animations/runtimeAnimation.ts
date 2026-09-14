@@ -16,6 +16,21 @@ import { type Scene } from "../scene";
 import { type IAnimationKey } from "./animationKey";
 
 /**
+ * @internal
+ * A write of a runtime animation to one of its targets in an animation step, recorded as it is made.
+ */
+export interface IRuntimeAnimationWrite {
+    /** The runtime animation that wrote. */
+    runtimeAnimation: RuntimeAnimation;
+    /** The object it wrote a property of. */
+    target: any;
+    /** The weight it wrote with, -1 for a direct write. */
+    weight: number;
+    /** Whether it wrote additively. */
+    additive: boolean;
+}
+
+/**
  * Defines a runtime animation
  */
 export class RuntimeAnimation {
@@ -367,10 +382,6 @@ export class RuntimeAnimation {
      * @param weight defines the weight to apply to this value (Defaults to 1.0)
      */
     public setValue(currentValue: any, weight: number) {
-        // Recorded as written, with the weight it is written with: what an animation step wrote can be read after the
-        // step from these records alone, whatever a callback did to the animatable since.
-        this._scene._evaluatedRuntimeAnimations.push(this);
-        this._scene._evaluatedWeights.push(weight);
         if (this._targetIsArray) {
             for (let index = 0; index < this._target.length; index++) {
                 const target = this._target[index];
@@ -455,6 +466,19 @@ export class RuntimeAnimation {
     }
 
     private _setValue(target: any, destination: any, currentValue: any, weight: number, targetIndex: number): void {
+        // Recorded as written - the target, the weight and whether additively, as the bindings take it - so what an
+        // animation step wrote can be read after the step from these records alone, whatever a callback did since.
+        const writes = this._scene._animationWrites;
+        const count = this._scene._animationWriteCount++;
+        let write = writes[count];
+        if (!write) {
+            write = writes[count] = { runtimeAnimation: this, target, weight, additive: false };
+        }
+        write.runtimeAnimation = this;
+        write.target = target;
+        write.weight = weight;
+        write.additive = this.isAdditive;
+
         // Set value
         this._currentActiveTarget = destination;
 

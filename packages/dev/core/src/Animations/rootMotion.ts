@@ -136,10 +136,12 @@ interface IChannelWriters {
     weighted: boolean;
     /** The last runtime animation writing the channel unweighted, whose value is the pose unless a weighted one replaces it. */
     lastDirect: Nullable<RuntimeAnimation>;
-    /** The runtime animations that wrote the channel this step, in the order they wrote it. */
+    /** The writes to the channel this step, in order: the runtime animation of each, which may write more than once. */
     current: RuntimeAnimation[];
-    /** The weight each of them wrote with, -1 for a direct write. */
+    /** The weight of each write, -1 for a direct one. */
     currentWeights: number[];
+    /** Whether each write was additive. */
+    currentAdditive: boolean[];
 }
 
 /** Contact candidates must come this close to the lowest one during the clip, as a share of the character's height. */
@@ -1610,24 +1612,34 @@ export class RootMotionController implements IDisposable {
      * bindings of the scene: an unweighted animatable writes directly and the last one wins, unless a weighted animatable
      * also animates the channel, in which case the weighted ones replace it - normalized once their weights add up to
      * more than one - and additive ones add their weight on top. A playback that ran to its end this step is among the
-     * writers like any other, from its place in the order they wrote; one that did not write this step has no share.
+     * writers like any other, from its place in the order they wrote; one that did not write this step has no share;
+     * one that wrote more than once - re-evaluated by an animation event, say - has the share of all its writes, as the
+     * bindings add them up.
      * @param writers defines what the mixer wrote to the clip's channel this step
      * @param runtime defines the runtime animation of the clip's clock
      * @returns the share, between 0 and 1
      */
     private _effectiveWeight(writers: IChannelWriters, runtime: RuntimeAnimation): number {
-        const index = writers.current.indexOf(runtime);
-        if (index < 0) {
-            return 0;
+        const runtimes = writers.current;
+        let share = 0;
+        let direct = false;
+        for (let i = 0; i < runtimes.length; i++) {
+            if (runtimes[i] !== runtime) {
+                continue;
+            }
+            const weight = writers.currentWeights[i];
+            if (weight < 0) {
+                direct = true;
+            } else if (writers.currentAdditive[i]) {
+                share += weight;
+            } else {
+                share += weight / Math.max(1, writers.total);
+            }
         }
-        const weight = writers.currentWeights[index];
-        if (weight < 0) {
-            return writers.weighted || writers.lastDirect !== runtime ? 0 : 1;
+        if (direct && !writers.weighted && writers.lastDirect === runtime) {
+            share += 1;
         }
-        if (runtime.isAdditive) {
-            return weight;
-        }
-        return weight / Math.max(1, writers.total);
+        return share;
     }
 }
 
@@ -1708,7 +1720,7 @@ class SceneRootMotion {
                 }
                 let entry = entries.find((candidate) => candidate.property === clip._clockProperty);
                 if (!entry) {
-                    entry = { property: clip._clockProperty, total: 0, weighted: false, lastDirect: null, current: [], currentWeights: [] };
+                    entry = { property: clip._clockProperty, total: 0, weighted: false, lastDirect: null, current: [], currentWeights: [], currentAdditive: [] };
                     entries.push(entry);
                     this._writers.push(entry);
                 }
@@ -1718,9 +1730,12 @@ class SceneRootMotion {
     }
 
     private _update(): void {
-        // With the scene's animations disabled nothing wrote, nothing moved, and the clips' playbacks stand where they
-        // are - unlike a playback parked at a weight of zero, which the scene skips while its clock runs on.
-        const animated = this._scene.animationsEnabled;
+        // A step the scene did not evaluate - its animations disabled when it began - wrote nothing and moved nothing,
+        // and the clips' playbacks stand where they are: unlike a playback parked at a weight of zero, which an
+        // evaluated step skips while its clock runs on. Whether the step evaluated is recorded by the step itself: a
+        // callback may disable the animations after the step's writes, and the step still completes.
+        const scene = this._scene;
+        const animated = scene._animationStepEvaluated;
         const writers = this._writers;
         for (let i = 0; i < writers.length; i++) {
             const entry = writers[i];
@@ -1729,22 +1744,23 @@ class SceneRootMotion {
             entry.lastDirect = null;
             entry.current.length = 0;
             entry.currentWeights.length = 0;
+            entry.currentAdditive.length = 0;
         }
-        // What the mixer wrote this step: the runtime animations that wrote, in that order, with the weights they wrote
-        // with, recorded as they wrote rather than read back from the animatables afterwards - one that ran to its
-        // end has left the active animatables, one stopped by a callback in the same step has lost its runtime
-        // animations, but each wrote. A paused animatable, one not started yet and one parked at a weight of zero
-        // wrote nothing.
-        const runtimes = animated ? this._scene._evaluatedRuntimeAnimations : [];
-        const weights = this._scene._evaluatedWeights;
-        for (let i = 0; i < runtimes.length; i++) {
-            const runtime = runtimes[i];
-            const target = runtime.target;
-            const entries = target ? this._writersByNode.get(target) : undefined;
+        // What the mixer wrote this step: every write of a runtime animation to a target, in order, with the weight and
+        // the mode it was made with, recorded as it was made rather than read back afterwards - one whose playback ran
+        // to its end has left the active animatables, one stopped by a callback in the same step has lost its runtime
+        // animations, one turned additive since was bound as it wrote, and an animation of several targets wrote each
+        // of them. A paused animatable, one not started yet and one parked at a weight of zero wrote nothing.
+        const writes = scene._animationWrites;
+        const count = animated ? scene._animationWriteCount : 0;
+        for (let i = 0; i < count; i++) {
+            const write = writes[i];
+            const entries = this._writersByNode.get(write.target);
             if (!entries) {
                 continue;
             }
-            const weight = weights[i];
+            const runtime = write.runtimeAnimation;
+            const weight = write.weight;
             for (let k = 0; k < entries.length; k++) {
                 const entry = entries[k];
                 if (entry.property !== runtime.targetPath) {
@@ -1752,12 +1768,13 @@ class SceneRootMotion {
                 }
                 entry.current.push(runtime);
                 entry.currentWeights.push(weight);
+                entry.currentAdditive.push(write.additive);
                 if (weight < 0) {
                     // Direct writers overwrite one another in order, so the last one is the pose.
                     entry.lastDirect = runtime;
                 } else {
                     entry.weighted = true;
-                    if (!runtime.isAdditive) {
+                    if (!write.additive) {
                         entry.total += weight;
                     }
                 }

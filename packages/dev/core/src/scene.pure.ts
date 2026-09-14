@@ -84,7 +84,7 @@ import { type SubMesh } from "./Meshes/subMesh.pure";
 import { type Node } from "./node";
 import { type Animation } from "./Animations/animation.pure";
 import { type Animatable } from "./Animations/animatable.core";
-import { type RuntimeAnimation } from "./Animations/runtimeAnimation";
+import { type IRuntimeAnimationWrite } from "./Animations/runtimeAnimation";
 import { type Texture } from "./Materials/Textures/texture.pure";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
@@ -1798,12 +1798,15 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public _activeAnimatables = new Array<Animatable>();
     /**
      * @internal
-     * The runtime animations that wrote their targets in the current or last animation step, in the order they wrote
-     * them: what the animations wrote that step, kept whatever became of their animatables since.
+     * The writes of the runtime animations in the current or last animation step, in the order they were made - the
+     * first _animationWriteCount entries, the rest being reused: what the animations wrote that step, kept whatever
+     * became of them since.
      */
-    public _evaluatedRuntimeAnimations = new Array<RuntimeAnimation>();
-    /** @internal The weight each of them wrote with, -1 for a direct write. */
-    public _evaluatedWeights = new Array<number>();
+    public _animationWrites = new Array<IRuntimeAnimationWrite>();
+    /** @internal How many of _animationWrites were made in the current or last animation step. */
+    public _animationWriteCount = 0;
+    /** @internal Whether the current or last animation step evaluated the active animatables, which none does while animations are disabled. */
+    public _animationStepEvaluated = false;
 
     private _transformMatrix = Matrix.Zero();
     private _sceneUbo: UniformBuffer;

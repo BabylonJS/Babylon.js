@@ -894,8 +894,8 @@ export function AddAnimationExtensions(sceneClass: typeof Scene, boneClass: type
     }
 
     sceneClass.prototype._animate = function (customDeltaTime?: number): void {
-        this._evaluatedRuntimeAnimations.length = 0;
-        this._evaluatedWeights.length = 0;
+        this._animationWriteCount = 0;
+        this._animationStepEvaluated = false;
         if (!this.animationsEnabled) {
             return;
         }
@@ -919,6 +919,7 @@ export function AddAnimationExtensions(sceneClass: typeof Scene, boneClass: type
 
         this._animationTime += this.deltaTime;
         const animationTime = this._animationTime;
+        this._animationStepEvaluated = true;
 
         for (let index = 0; index < animatables.length; index++) {
             const animatable = animatables[index];
