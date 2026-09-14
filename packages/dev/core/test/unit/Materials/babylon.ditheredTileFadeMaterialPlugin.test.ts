@@ -2,17 +2,19 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { Vector3 } from "core/Maths/math.vector";
 import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
-import { DitheredFadeMaterialPlugin, type IDitheredFadeBounds } from "core/Materials/ditheredFadeMaterialPlugin";
+import { DitheredTileFadeMaterialPlugin, type IDitheredTileFadeBounds } from "core/Materials/ditheredTileFadeMaterialPlugin";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { StandardMaterial } from "core/Materials/standardMaterial";
+import { type Mesh } from "core/Meshes/mesh";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { SubMesh } from "core/Meshes/subMesh";
 import { Scene } from "core/scene";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import "core/Meshes/instancedMesh";
 
-describe("DitheredFadeMaterialPlugin", () => {
+describe("DitheredTileFadeMaterialPlugin", () => {
     let engine: NullEngine;
     let scene: Scene;
 
@@ -37,10 +39,10 @@ describe("DitheredFadeMaterialPlugin", () => {
         ["PBRMaterial", (name: string) => new PBRMaterial(name, scene)],
     ])("attaches to and reuses a %s", (_name, createMaterial) => {
         const material = createMaterial("material");
-        const plugin = DitheredFadeMaterialPlugin.GetOrCreate(material);
+        const plugin = DitheredTileFadeMaterialPlugin.GetOrCreate(material);
 
-        expect(DitheredFadeMaterialPlugin.GetOrCreate(material)).toBe(plugin);
-        expect(() => new DitheredFadeMaterialPlugin(material)).toThrow(/GetOrCreate/);
+        expect(DitheredTileFadeMaterialPlugin.GetOrCreate(material)).toBe(plugin);
+        expect(() => new DitheredTileFadeMaterialPlugin(material)).toThrow(/GetOrCreate/);
         expect(plugin.doNotSerialize).toBe(true);
         expect(plugin.registerForExtraEvents).toBe(true);
     });
@@ -48,14 +50,14 @@ describe("DitheredFadeMaterialPlugin", () => {
     it("rejects unsupported material families", () => {
         const material = new BackgroundMaterial("background", scene);
 
-        expect(() => DitheredFadeMaterialPlugin.GetOrCreate(material as unknown as StandardMaterial)).toThrow(TypeError);
+        expect(() => DitheredTileFadeMaterialPlugin.GetOrCreate(material as unknown as StandardMaterial)).toThrow(TypeError);
     });
 
     it("validates bounds and allows an intentional empty interval", () => {
         const material = new StandardMaterial("material", scene);
         const mesh = MeshBuilder.CreateBox("mesh", {}, scene);
-        const plugin = new DitheredFadeMaterialPlugin(material);
-        const bounds: IDitheredFadeBounds = { lowerBound: -1, upperBound: -1 };
+        const plugin = new DitheredTileFadeMaterialPlugin(material);
+        const bounds: IDitheredTileFadeBounds = { lowerBound: -1, upperBound: -1 };
 
         for (const value of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, -0.01, 1.01]) {
             expect(() => plugin.setFadeLowerBound(mesh, value)).toThrow(RangeError);
@@ -73,8 +75,8 @@ describe("DitheredFadeMaterialPlugin", () => {
         const material = new StandardMaterial("material", scene);
         const meshA = MeshBuilder.CreateBox("meshA", {}, scene);
         const meshB = MeshBuilder.CreateBox("meshB", {}, scene);
-        const plugin = new DitheredFadeMaterialPlugin(material);
-        const bounds: IDitheredFadeBounds = { lowerBound: -1, upperBound: -1 };
+        const plugin = new DitheredTileFadeMaterialPlugin(material);
+        const bounds: IDitheredTileFadeBounds = { lowerBound: -1, upperBound: -1 };
 
         expect(plugin.getFadeBoundsToRef(meshA, bounds)).toBe(false);
         expect(bounds).toEqual({ lowerBound: 0, upperBound: 1 });
@@ -96,7 +98,7 @@ describe("DitheredFadeMaterialPlugin", () => {
         const material = createMaterial("shared");
         const meshA = MeshBuilder.CreateBox("meshA", {}, scene);
         const meshB = MeshBuilder.CreateBox("meshB", {}, scene);
-        const plugin = new DitheredFadeMaterialPlugin(material);
+        const plugin = new DitheredTileFadeMaterialPlugin(material);
         meshA.material = material;
         meshB.material = material;
         plugin.setFadeBounds(meshA, 0, 0.25);
@@ -133,7 +135,7 @@ describe("DitheredFadeMaterialPlugin", () => {
         mesh.material = multiMaterial;
         mesh.releaseSubMeshes();
         const subMesh = new SubMesh(0, 0, mesh.getTotalVertices(), 0, mesh.getTotalIndices(), mesh);
-        const plugin = new DitheredFadeMaterialPlugin(leafMaterial);
+        const plugin = new DitheredTileFadeMaterialPlugin(leafMaterial);
         plugin.setFadeBounds(mesh, 0.125, 0.875);
 
         await leafMaterial.forceCompilationAsync(mesh);
@@ -146,30 +148,66 @@ describe("DitheredFadeMaterialPlugin", () => {
         expect(setFloat3.mock.calls.find((call) => call[0] === "ditheredFadeSettings")).toEqual(["ditheredFadeSettings", 0.125, 0.875, 1]);
     });
 
-    it("injects equivalent early GLSL and WGSL Bayer interval tests", () => {
-        const plugin = new DitheredFadeMaterialPlugin(new StandardMaterial("material", scene));
+    it("injects equivalent late GLSL and WGSL Bayer interval tests with a depth-prepass guard", () => {
+        const plugin = new DitheredTileFadeMaterialPlugin(new StandardMaterial("material", scene));
         const glsl = plugin.getCustomCode("fragment")!;
         const wgsl = plugin.getCustomCode("fragment", ShaderLanguage.WGSL)!;
 
         expect(glsl.CUSTOM_FRAGMENT_DEFINITIONS).toContain("#include<bayerDitherFunctions>");
-        expect(glsl.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("gl_FragCoord.xy");
+        expect(glsl.CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR).toContain("shouldDiscardDitheredTileFragment");
+        expect(glsl["!#include<depthPrePass>"]).toContain("#ifdef DEPTHPREPASS");
         expect(wgsl.CUSTOM_FRAGMENT_DEFINITIONS).toContain("#include<bayerDitherFunctions>");
-        expect(wgsl.CUSTOM_FRAGMENT_MAIN_BEGIN).toContain("fragmentInputs.position.xy");
+        expect(wgsl.CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR).toContain("shouldDiscardDitheredTileFragment");
+        expect(wgsl["!#include<depthPrePass>"]).toContain("#ifdef DEPTHPREPASS");
         expect(plugin.getCustomCode("vertex")).toBeNull();
     });
 
-    it("releases state and rejects mutations after material disposal", () => {
+    it("rejects instanced and thin-instanced meshes", () => {
+        const material = new StandardMaterial("material", scene);
+        const source = MeshBuilder.CreateBox("source", {}, scene);
+        const instance = source.createInstance("instance");
+        const plugin = new DitheredTileFadeMaterialPlugin(material);
+
+        expect(() => plugin.setFadeBounds(source, 0, 0.5)).toThrow(/non-instanced/);
+        expect(() => plugin.setFadeBounds(instance as unknown as Mesh, 0.5, 1)).toThrow(/non-instanced/);
+
+        instance.dispose();
+        vi.spyOn(source, "hasThinInstances", "get").mockReturnValue(true);
+
+        expect(() => plugin.setFadeBounds(source, 0, 0.5)).toThrow(/non-instanced/);
+    });
+
+    it("copies material-level configuration without copying mesh bounds", () => {
         const material = new StandardMaterial("material", scene);
         const mesh = MeshBuilder.CreateBox("mesh", {}, scene);
-        const plugin = new DitheredFadeMaterialPlugin(material);
+        const plugin = new DitheredTileFadeMaterialPlugin(material);
+        plugin.setFadeBounds(mesh, 0.25, 0.75);
+        plugin.isEnabled = false;
+
+        const clone = material.clone("clone");
+        expect(clone.pluginManager?.getPlugin(DitheredTileFadeMaterialPlugin.Name)).toBeFalsy();
+
+        const clonePlugin = plugin.copyToMaterial(clone);
+        const bounds: IDitheredTileFadeBounds = { lowerBound: -1, upperBound: -1 };
+
+        expect(clonePlugin.isEnabled).toBe(false);
+        expect(clonePlugin.getFadeBoundsToRef(mesh, bounds)).toBe(false);
+        expect(bounds).toEqual({ lowerBound: 0, upperBound: 1 });
+    });
+
+    it("resets direct disposal and remains reusable through GetOrCreate", () => {
+        const material = new StandardMaterial("material", scene);
+        const mesh = MeshBuilder.CreateBox("mesh", {}, scene);
+        const plugin = new DitheredTileFadeMaterialPlugin(material);
         plugin.setFadeBounds(mesh, 0.25, 0.75);
 
-        material.dispose();
+        plugin.dispose();
+        const reused = DitheredTileFadeMaterialPlugin.GetOrCreate(material);
 
-        expect(plugin.isEnabled).toBe(false);
-        expect(() => plugin.setFadeBounds(mesh, 0, 1)).toThrow(/disposed/);
-        expect(() => {
-            plugin.isEnabled = true;
-        }).toThrow(/disposed/);
+        expect(reused).toBe(plugin);
+        expect(reused.isEnabled).toBe(false);
+        reused.setFadeBounds(mesh, 0, 1);
+        reused.isEnabled = true;
+        expect(reused.isEnabled).toBe(true);
     });
 });
