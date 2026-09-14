@@ -838,7 +838,7 @@ export class ObjectRenderer {
                 } else if (mesh.hasInstances && (mesh as Mesh).edgesShareWithInstances) {
                     useInstances = true;
                 }
-                if (this.renderOpaqueMeshes && edgesRenderer?.isEnabled) {
+                if (!this.customRenderFunction && this.renderOpaqueMeshes && edgesRenderer?.isEnabled) {
                     if (!edgesRenderer.isReady(useInstances)) {
                         returnValue = false;
                     }

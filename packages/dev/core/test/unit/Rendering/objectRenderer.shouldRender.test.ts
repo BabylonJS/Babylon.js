@@ -170,4 +170,22 @@ describe("ObjectRenderer.shouldRender", () => {
 
         renderer.dispose();
     });
+
+    it("should not wait for edge rendering when using a custom render function", () => {
+        new ArcRotateCamera("camera", 0, 0, 10, Vector3.Zero(), scene);
+        const mesh = MeshBuilder.CreateBox("box", undefined, scene);
+        mesh.enableEdgesRendering();
+
+        vi.spyOn(mesh, "isReady").mockReturnValue(true);
+        const edgesReady = vi.spyOn(mesh.edgesRenderer!, "isReady").mockReturnValue(false);
+
+        const renderer = new ObjectRenderer("test", scene);
+        renderer.renderList = [mesh];
+        renderer.customRenderFunction = vi.fn();
+
+        expect(renderer.isReadyForRendering(256, 256)).toBe(true);
+        expect(edgesReady).not.toHaveBeenCalled();
+
+        renderer.dispose();
+    });
 });
