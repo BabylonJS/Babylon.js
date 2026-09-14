@@ -2712,7 +2712,7 @@
         },
         {
             "title": "Dithered Tile Fade Material Plugin",
-            "playgroundId": "#UKLI2N#0",
+            "playgroundId": "#HI17VI#0",
             "referenceImage": "ditheredTileFadeMaterialPlugin.png",
             "dependsOn": ["Cameras", "GUI", "Lights", "Loaders", "Materials", "Meshes", "PBR", "Textures", "glTF"]
         },
