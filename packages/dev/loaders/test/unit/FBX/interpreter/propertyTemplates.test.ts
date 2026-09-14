@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractPropertyTemplates, getPropertyTemplate, resolvePropertyValues } from "loaders/FBX/interpreter/propertyTemplates";
+import { extractPropertyTemplates, getPropertyEntries, getPropertyTemplate, resolvePropertyValues } from "loaders/FBX/interpreter/propertyTemplates";
 import { type FBXDocument, type FBXNode } from "loaders/FBX/types/fbxTypes";
 
 describe("FBX property templates", () => {
@@ -10,6 +10,48 @@ describe("FBX property templates", () => {
         expect(resolvePropertyValues(materialNode, template, "DiffuseFactor")).toEqual([0.25]);
         expect(resolvePropertyValues(materialNode, template, "AmbientFactor")).toEqual([1]);
         expect(resolvePropertyValues(materialNode, template, "MissingProperty")).toBeUndefined();
+    });
+
+    it("reads the entry layout from the entry node, not from its container", () => {
+        // Transitional 6.x files write four-field "P" entries inside Properties60.
+        const node: FBXNode = {
+            name: "GlobalSettings",
+            properties: [],
+            children: [
+                {
+                    name: "Properties60",
+                    properties: [],
+                    children: [
+                        {
+                            name: "P",
+                            properties: [
+                                { type: "string", value: "UpAxis" },
+                                { type: "string", value: "int" },
+                                { type: "string", value: "Integer" },
+                                { type: "string", value: "" },
+                                { type: "int32", value: 2 },
+                            ],
+                            children: [],
+                        },
+                        {
+                            name: "Property",
+                            properties: [
+                                { type: "string", value: "UnitScaleFactor" },
+                                { type: "string", value: "double" },
+                                { type: "string", value: "" },
+                                { type: "float64", value: 2.54 },
+                            ],
+                            children: [],
+                        },
+                    ],
+                },
+            ],
+        };
+
+        expect(getPropertyEntries(node)).toEqual([
+            { name: "UpAxis", type: "int", flags: "", values: [2] },
+            { name: "UnitScaleFactor", type: "double", flags: "", values: [2.54] },
+        ]);
     });
 });
 
