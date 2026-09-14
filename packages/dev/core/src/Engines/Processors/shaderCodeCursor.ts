@@ -55,19 +55,14 @@ export class ShaderCodeCursor {
                 const split = line.split(";");
 
                 for (let index = 0; index < split.length; index++) {
-                    let subLine = split[index];
+                    const subLine = split[index].trim();
 
-                    if (!subLine) {
-                        continue;
+                    if (subLine) {
+                        this._lines.push(subLine + (index !== split.length - 1 ? ";" : ""));
+                    } else if (index !== split.length - 1) {
+                        // Preserve intermediate empty statements because their semicolon can be syntactically significant, as in `for (;;)`.
+                        this._lines.push(";");
                     }
-
-                    subLine = subLine.trim();
-
-                    if (!subLine) {
-                        continue;
-                    }
-
-                    this._lines.push(subLine + (index !== split.length - 1 ? ";" : ""));
                 }
             }
         }
