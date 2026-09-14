@@ -22,7 +22,8 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { type IEffectCreationOptions } from "core/Materials/effect.pure";
 import { type GaussianSplattingMaterial } from "../Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
-import { type GaussianSplattingMesh, IsGaussianSplattingClassName } from "../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { type GaussianSplattingMesh } from "../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { _IsGaussianSplattingMesh } from "../Meshes/GaussianSplatting/gaussianSplatting.functions";
 import { RegisterDepthRendererSceneComponent } from "./depthRendererSceneComponent.pure";
 
 /**
@@ -294,8 +295,7 @@ export class DepthRenderer {
             if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                 subMesh._renderId = scene.getRenderId();
 
-                const gsClassName = effectiveMesh.getClassName();
-                if (IsGaussianSplattingClassName(gsClassName)) {
+                if (_IsGaussianSplattingMesh(effectiveMesh)) {
                     const gsMaterial = this._ensureGaussianSplattingDepthMaterial(effectiveMesh, engine.currentRenderPassId);
                     if (gsMaterial && !gsMaterial.isReadyForSubMesh(effectiveMesh, subMesh, hardwareInstancedRendering)) {
                         return;
@@ -483,7 +483,7 @@ export class DepthRenderer {
 
         // For GaussianSplatting meshes, eagerly create the depth material so that
         // the scene's isReady check properly blocks until it is compiled.
-        if (IsGaussianSplattingClassName(mesh.getClassName())) {
+        if (_IsGaussianSplattingMesh(mesh)) {
             renderingMaterial = this._ensureGaussianSplattingDepthMaterial(mesh, renderPassId);
         }
 

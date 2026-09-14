@@ -9,7 +9,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type IShaderMaterialOptions, ShaderMaterial } from "core/Materials/shaderMaterial.pure";
 import { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { GaussianSplattingGpuPickingMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin.pure";
-import { IsGaussianSplattingClassName } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { _IsGaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplatting.functions";
 import { Color4 } from "core/Maths/math.color.pure";
 import { Epsilon } from "core/Maths/math.constants";
 import { type IVector2Like } from "core/Maths/math.like";
@@ -238,7 +238,7 @@ export class GPUPicker {
                 if (
                     material instanceof ShaderMaterial &&
                     !this._pickingMaterialCache.includes(material) &&
-                    !IsGaussianSplattingClassName(className) &&
+                    !_IsGaussianSplattingMesh(mesh) &&
                     className !== "GaussianSplattingPartProxyMesh"
                 ) {
                     return { mesh, material };
@@ -467,7 +467,7 @@ export class GPUPicker {
                 }
 
                 // Skip thin instance cleanup for Gaussian Splatting meshes (thin instances are for batching, not picking)
-                if (!IsGaussianSplattingClassName(className)) {
+                if (!_IsGaussianSplattingMesh(mesh)) {
                     if (mesh.hasInstances) {
                         (mesh as Mesh).removeVerticesData(GPUPicker._AttributeName);
                     }
@@ -564,7 +564,7 @@ export class GPUPicker {
                 newPickableMeshes[i] = item.mesh;
             } else {
                 const className = item.getClassName();
-                if (IsGaussianSplattingClassName(className) || className === "GaussianSplattingPartProxyMesh") {
+                if (_IsGaussianSplattingMesh(item) || className === "GaussianSplattingPartProxyMesh") {
                     // GS meshes get special picking materials - handled in the ID assignment loop below
                     newPickableMeshes[i] = item;
                 } else {
@@ -607,7 +607,7 @@ export class GPUPicker {
             }
 
             // Handle non-compound GaussianSplatting meshes (including streamed)
-            if (IsGaussianSplattingClassName(className)) {
+            if (_IsGaussianSplattingMesh(mesh)) {
                 const globalIndex = index + pickableMeshOffset;
                 const pickId = nextFreeId;
                 this._idMap[pickId] = globalIndex;

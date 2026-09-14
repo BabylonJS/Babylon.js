@@ -1228,6 +1228,11 @@ export class GaussianSplattingMeshBase extends Mesh {
         return this._loadingPromise;
     }
 
+    /** @internal */
+    public override get _isGaussianSplatting(): boolean {
+        return true;
+    }
+
     /**
      * Returns the class name
      * @returns "GaussianSplattingMeshBase"

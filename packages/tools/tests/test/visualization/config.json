@@ -2711,6 +2711,12 @@
             "dependsOn": ["Materials"]
         },
         {
+            "title": "Dithered Tile Fade Material Plugin",
+            "playgroundId": "#HI17VI#0",
+            "referenceImage": "ditheredTileFadeMaterialPlugin.png",
+            "dependsOn": ["Cameras", "GUI", "Lights", "Loaders", "Materials", "Meshes", "PBR", "Textures", "glTF"]
+        },
+        {
             "title": "Serialize and Load Instanced Hierarchy",
             "playgroundId": "#3ZQ1SL#7",
             "referenceImage": "serializeAndLoadInstancedHierarchy.png",
@@ -2805,6 +2811,40 @@
             "replace": "var withSizeBuffer = true, var withSizeBuffer = false",
             "referenceImage": "fluidCustomParticlesUniformSizeFallback.png",
             "renderCount": 10,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system per-particle size",
+            "playgroundId": "#M9FSIH#1",
+            "referenceImage": "fluidGpuParticleSystemPerParticleSize.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system uniform size",
+            "playgroundId": "#M9FSIH#1",
+            "replace": "UsePerParticleSizeAttribute = true;, UsePerParticleSizeAttribute = false;",
+            "referenceImage": "fluidGpuParticleSystemUniformSize.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system per-particle size with asymmetric scale",
+            "playgroundId": "#M9FSIH#4",
+            "referenceImage": "fluidGpuParticleSystemPerParticleSizeAsymmetricScale.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system uniform size with asymmetric scale",
+            "playgroundId": "#M9FSIH#4",
+            "replace": "UsePerParticleSizeAttribute = true;, UsePerParticleSizeAttribute = false;",
+            "referenceImage": "fluidGpuParticleSystemUniformSizeAsymmetricScale.png",
+            "renderCount": 60,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Rendering", "Particles"]
         },

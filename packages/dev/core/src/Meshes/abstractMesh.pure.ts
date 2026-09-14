@@ -1166,6 +1166,11 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         return this._uniformBuffer;
     }
 
+    /** @internal */
+    public get _isGaussianSplatting(): boolean {
+        return false;
+    }
+
     /**
      * Returns the string "AbstractMesh"
      * @returns "AbstractMesh"

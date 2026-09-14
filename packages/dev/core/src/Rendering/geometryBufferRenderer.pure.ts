@@ -31,7 +31,7 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial.pure";
 import { type IblShadowsRenderPipeline } from "./IBLShadows/iblShadowsRenderPipeline.pure";
 import { RegisterGeometryBufferRendererSceneComponent } from "./geometryBufferRendererSceneComponent.pure";
-import { IsGaussianSplattingClassName } from "../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { _IsGaussianSplattingMesh } from "../Meshes/GaussianSplatting/gaussianSplatting.functions";
 import { _GetGeometryRenderingObjectId, type GeometryRenderingObjectIdProvider } from "../Materials/materialHelper.geometryrendering";
 
 /** @internal */
@@ -703,7 +703,7 @@ export class GeometryBufferRenderer {
         // The generic geometry.vertex shader misreads this as world coordinates, producing
         // garbage positions and normals, and thus they should be excluded from the G-buffer
         // rendering.
-        if (IsGaussianSplattingClassName(subMesh.getMesh().getClassName())) {
+        if (_IsGaussianSplattingMesh(subMesh.getMesh())) {
             return false;
         }
 
