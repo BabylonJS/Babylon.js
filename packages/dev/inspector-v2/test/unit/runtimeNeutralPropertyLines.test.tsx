@@ -4,6 +4,7 @@
 
 import { Color3 } from "core/Maths/math.color";
 import { Vector3 } from "core/Maths/math.vector";
+import { Observable } from "core/Misc/observable";
 import { FluentProvider, webLightTheme } from "@fluentui/react-components";
 import { act, createRef, type ComponentProps, type ForwardRefExoticComponent, type FunctionComponent, type ReactNode, type RefAttributes } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -30,6 +31,7 @@ import {
     Vector3PropertyLine as LiteVector3PropertyLine,
 } from "shared-ui-components/lite/fluent/hoc/propertyLines/vectorPropertyLine";
 import { DerivedProperty } from "../../src/components/properties/boundProperty";
+import { PropertyContext, type PropertyChangeInfo } from "../../src/contexts/propertyContext";
 import { DirectionalLightSetupProperties, SetLightProperty } from "../../src/lite/components/properties/lightProperties";
 
 vi.stubGlobal("NodeFilter", window.NodeFilter);
@@ -155,6 +157,45 @@ describe("runtime-neutral property-line wrappers", () => {
         expect(container.textContent).toBe("Derived: 4");
         act(() => container.querySelector("button")?.click());
         expect(target.storedValue).toBe(3);
+    });
+
+    it("preserves copy and property-change behavior for derived values", () => {
+        const target = { nested: { value: 2.1 } };
+        const changes = new Observable<PropertyChangeInfo>();
+        const onChanged = vi.fn();
+        changes.add(onChanged);
+        let getCopyString: (() => string) | undefined;
+        const NumberProperty: FunctionComponent<{ label: string; value: number; onChange: (value: number) => void; onCopy?: () => string }> = (props) => {
+            const { label, value, onChange, onCopy } = props;
+            getCopyString = onCopy;
+            return <button onClick={() => onChange(value + 2)}>{`${label}: ${value}`}</button>;
+        };
+        const container = Render(
+            <PropertyContext.Provider value={{ onPropertyChanged: changes }}>
+                <DerivedProperty
+                    component={NumberProperty}
+                    label="Derived"
+                    target={target}
+                    getValue={(value) => Math.round(value.nested.value)}
+                    setValue={(value, changedValue) => (value.nested.value = changedValue)}
+                    propertyPath="nested.value"
+                    getPropertyTarget={(value) => value.nested}
+                    propertyKey="value"
+                />
+            </PropertyContext.Provider>
+        );
+        const button = container.querySelector("button");
+
+        expect(getCopyString?.()).toBe("globalThis.debugNode.nested.value = 2.1;");
+        target.nested = { value: 2.4 };
+        expect(getCopyString?.()).toBe("globalThis.debugNode.nested.value = 2.4;");
+        act(() => button?.click());
+        expect(onChanged.mock.calls[0][0]).toEqual({
+            entity: target.nested,
+            propertyKey: "value",
+            oldValue: 2.4,
+            newValue: 4,
+        });
     });
 
     it("preserves Lite quaternion representation during Euler conversion", () => {

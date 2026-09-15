@@ -195,7 +195,21 @@ export type DerivedPropertyProps<TargetT extends object, ComponentT extends Comp
     target: TargetT;
     getValue: (target: TargetT) => ComponentValue<ComponentT>;
     setValue: (target: TargetT, value: ComponentValue<ComponentT>) => void;
-};
+} & (
+        | {
+              propertyPath?: never;
+              getPropertyTarget?: never;
+              propertyKey?: never;
+          }
+        | {
+              /** Property path relative to `globalThis.debugNode`, used by Copy to Clipboard. */
+              propertyPath: string;
+              /** Gets the object whose property is changed by `setValue`. */
+              getPropertyTarget: (target: TargetT) => object;
+              /** The key changed on the object returned by `getPropertyTarget`. */
+              propertyKey: PropertyKey;
+          }
+    );
 
 /**
  * Renders an editable property-line component for a value derived from a target.
@@ -213,11 +227,41 @@ export function DerivedProperty<TargetT extends object, ComponentT extends Compo
         target,
         getValue,
         setValue,
+        propertyPath,
+        getPropertyTarget,
+        propertyKey,
         ...rest
     } = props;
     const value = useWatchedValue(target, getValue);
+    const notifyPropertyChanged = usePropertyChangedNotifier();
+    const getStoredProperty = () => {
+        if (!getPropertyTarget || propertyKey === undefined) {
+            return undefined;
+        }
+        const propertyTarget = getPropertyTarget(target);
+        return {
+            propertyTarget,
+            value: Reflect.get(propertyTarget, propertyKey),
+        };
+    };
 
-    return <Component {...({ ...rest, value, onChange: (changedValue: ComponentValue<ComponentT>) => setValue(target, changedValue) } as ComponentProps<ComponentT>)} />;
+    return (
+        <Component
+            {...({
+                ...(propertyPath ? { onCopy: () => GetOnCopyString(getStoredProperty()?.value, propertyPath) } : {}),
+                ...rest,
+                value,
+                onChange: (changedValue: ComponentValue<ComponentT>) => {
+                    const oldStoredProperty = getStoredProperty();
+                    setValue(target, changedValue);
+                    const newStoredProperty = getStoredProperty();
+                    if (newStoredProperty && oldStoredProperty && propertyKey !== undefined) {
+                        notifyPropertyChanged(newStoredProperty.propertyTarget, propertyKey, oldStoredProperty.value, newStoredProperty.value);
+                    }
+                },
+            } as ComponentProps<ComponentT>)}
+        />
+    );
 }
 
 /**

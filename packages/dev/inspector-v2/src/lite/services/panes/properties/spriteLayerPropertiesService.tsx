@@ -56,6 +56,10 @@ function SetViewPositionY(layer: Sprite2DLayer, value: number): void {
     layer.view.positionPx[1] = value;
 }
 
+function GetViewPosition(layer: Sprite2DLayer): Sprite2DLayer["view"]["positionPx"] {
+    return layer.view.positionPx;
+}
+
 function GetViewZoom(layer: Sprite2DLayer): number {
     return layer.view.zoom;
 }
@@ -66,6 +70,10 @@ function SetViewZoom(layer: Sprite2DLayer, value: number): void {
 
 function IsNonZero(value: number): boolean {
     return value !== 0;
+}
+
+function GetView(layer: Sprite2DLayer): Sprite2DLayer["view"] {
+    return layer.view;
 }
 
 function GetViewRotation(layer: Sprite2DLayer): number {
@@ -90,6 +98,10 @@ function GetPivotY(layer: Sprite2DLayer): number {
 
 function SetPivotY(layer: Sprite2DLayer, value: number): void {
     layer.pivot[1] = value;
+}
+
+function GetPivot(layer: Sprite2DLayer): Sprite2DLayer["pivot"] {
+    return layer.pivot;
 }
 
 function GetSpriteBlendModeName(blendMode: SpriteBlendMode): string {
@@ -141,6 +153,9 @@ const SpriteLayerProperties: FunctionComponent<{ engine: EngineContext; layer: S
                 target={layer}
                 getValue={GetViewPositionX}
                 setValue={SetViewPositionX}
+                propertyPath="view.positionPx[0]"
+                getPropertyTarget={GetViewPosition}
+                propertyKey={0}
                 step={1}
                 unit="px"
             />
@@ -150,21 +165,62 @@ const SpriteLayerProperties: FunctionComponent<{ engine: EngineContext; layer: S
                 target={layer}
                 getValue={GetViewPositionY}
                 setValue={SetViewPositionY}
+                propertyPath="view.positionPx[1]"
+                getPropertyTarget={GetViewPosition}
+                propertyKey={1}
                 step={1}
                 unit="px"
             />
-            <DerivedProperty component={NumberInputPropertyLine} label="View Zoom" target={layer} getValue={GetViewZoom} setValue={SetViewZoom} validator={IsNonZero} step={0.1} />
+            <DerivedProperty
+                component={NumberInputPropertyLine}
+                label="View Zoom"
+                target={layer}
+                getValue={GetViewZoom}
+                setValue={SetViewZoom}
+                propertyPath="view.zoom"
+                getPropertyTarget={GetView}
+                propertyKey="zoom"
+                validator={IsNonZero}
+                step={0.1}
+            />
             <DerivedProperty
                 component={NumberInputPropertyLine}
                 label="View Rotation"
                 target={layer}
                 getValue={GetViewRotation}
                 setValue={SetViewRotation}
+                propertyPath="view.rotation"
+                getPropertyTarget={GetView}
+                propertyKey="rotation"
                 step={0.01}
                 unit="rad"
             />
-            <DerivedProperty component={NumberInputPropertyLine} label="Pivot X" target={layer} getValue={GetPivotX} setValue={SetPivotX} min={0} max={1} step={0.01} />
-            <DerivedProperty component={NumberInputPropertyLine} label="Pivot Y" target={layer} getValue={GetPivotY} setValue={SetPivotY} min={0} max={1} step={0.01} />
+            <DerivedProperty
+                component={NumberInputPropertyLine}
+                label="Pivot X"
+                target={layer}
+                getValue={GetPivotX}
+                setValue={SetPivotX}
+                propertyPath="pivot[0]"
+                getPropertyTarget={GetPivot}
+                propertyKey={0}
+                min={0}
+                max={1}
+                step={0.01}
+            />
+            <DerivedProperty
+                component={NumberInputPropertyLine}
+                label="Pivot Y"
+                target={layer}
+                getValue={GetPivotY}
+                setValue={SetPivotY}
+                propertyPath="pivot[1]"
+                getPropertyTarget={GetPivot}
+                propertyKey={1}
+                min={0}
+                max={1}
+                step={0.01}
+            />
             <TextPropertyLine label="Default Depth" value="Not applicable to renderer-owned layers." />
             <TextPropertyLine label="Atlas Frames" value={layer.atlas.frames.length.toString()} />
             <TextPropertyLine label="Atlas Size" value={`${layer.atlas.textureSizePx[0]} x ${layer.atlas.textureSizePx[1]} px`} />
