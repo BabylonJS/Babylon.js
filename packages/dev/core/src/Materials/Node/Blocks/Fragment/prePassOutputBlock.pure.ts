@@ -266,6 +266,10 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
                 state.compilationString += `fragmentOutputs.fragData${index} = vec4u(u32(uniforms.meshBlendTag), 0u, 0u, 0u);\r\n`;
                 state.compilationString += `#endif\r\n`;
             }
+        } else {
+            state.compilationString += `#ifdef PREPASS_MESH_BLEND_TAG\r\n`;
+            state.compilationString += `meshBlendTagOutput = uvec4(uint(meshBlendTag), 0u, 0u, 0u);\r\n`;
+            state.compilationString += `#endif\r\n`;
         }
 
         state.compilationString += `#endif\r\n`;
