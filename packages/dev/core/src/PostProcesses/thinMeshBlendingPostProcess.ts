@@ -83,6 +83,46 @@ export interface IMeshBlendRadiusDefinition {
  */
 export type MeshBlendRadiusDefinitions = [IMeshBlendRadiusDefinition, IMeshBlendRadiusDefinition, IMeshBlendRadiusDefinition, IMeshBlendRadiusDefinition];
 
+function _ValidateWorldRadius(value: number): void {
+    if (!Number.isFinite(value) || value < 0) {
+        throw new RangeError("Mesh-blending world radii must be finite non-negative numbers.");
+    }
+}
+
+function _ValidateMinimumProjectedRadius(value: number): void {
+    if (!Number.isFinite(value) || value < 0) {
+        throw new RangeError("Mesh-blending minimum projected radii must be finite non-negative numbers.");
+    }
+}
+
+function _CreateValidatedRadiusDefinition(worldRadius: number, minimumProjectedRadius: number): IMeshBlendRadiusDefinition {
+    let validatedWorldRadius = 0;
+    let validatedMinimumProjectedRadius = 0;
+    const definition = {} as IMeshBlendRadiusDefinition;
+
+    Object.defineProperties(definition, {
+        worldRadius: {
+            enumerable: true,
+            get: () => validatedWorldRadius,
+            set: (value: number) => {
+                _ValidateWorldRadius(value);
+                validatedWorldRadius = value;
+            },
+        },
+        minimumProjectedRadius: {
+            enumerable: true,
+            get: () => validatedMinimumProjectedRadius,
+            set: (value: number) => {
+                _ValidateMinimumProjectedRadius(value);
+                validatedMinimumProjectedRadius = value;
+            },
+        },
+    });
+    definition.worldRadius = worldRadius;
+    definition.minimumProjectedRadius = minimumProjectedRadius;
+    return definition;
+}
+
 /**
  * Configurable mesh-blending values shared by the classic and frame-graph wrappers.
  */
@@ -110,10 +150,10 @@ export interface IThinMeshBlendingPostProcessOptions extends EffectWrapperCreati
  */
 export function CreateDefaultMeshBlendRadiusDefinitions(): MeshBlendRadiusDefinitions {
     return [
-        { worldRadius: 0.06, minimumProjectedRadius: 1.5 },
-        { worldRadius: 0.1, minimumProjectedRadius: 3 },
-        { worldRadius: 0.2, minimumProjectedRadius: 3 },
-        { worldRadius: 0.3, minimumProjectedRadius: 5 },
+        _CreateValidatedRadiusDefinition(0.06, 1.5),
+        _CreateValidatedRadiusDefinition(0.1, 3),
+        _CreateValidatedRadiusDefinition(0.2, 3),
+        _CreateValidatedRadiusDefinition(0.3, 5),
     ];
 }
 
@@ -519,12 +559,8 @@ function _BuildMeshBlendDefines(quality: MeshBlendQuality, debugMode: MeshBlendD
 }
 
 function _ValidateRadiusDefinition(definition: IMeshBlendRadiusDefinition): void {
-    if (!Number.isFinite(definition.worldRadius) || definition.worldRadius < 0) {
-        throw new RangeError("Mesh-blending world radii must be finite non-negative numbers.");
-    }
-    if (!Number.isFinite(definition.minimumProjectedRadius) || definition.minimumProjectedRadius < 0) {
-        throw new RangeError("Mesh-blending minimum projected radii must be finite non-negative numbers.");
-    }
+    _ValidateWorldRadius(definition.worldRadius);
+    _ValidateMinimumProjectedRadius(definition.minimumProjectedRadius);
 }
 
 /**
@@ -563,11 +599,12 @@ function _CopyRadiusDefinitions(target: MeshBlendRadiusDefinitions, source: IMes
         throw new RangeError("Mesh blending requires exactly four radius definitions.");
     }
 
-    for (let index = 0; index < 4; index++) {
-        const definition = source[index]!;
+    for (const definition of source) {
         _ValidateRadiusDefinition(definition);
-        target[index]!.worldRadius = definition.worldRadius;
-        target[index]!.minimumProjectedRadius = definition.minimumProjectedRadius;
+    }
+    for (let index = 0; index < 4; index++) {
+        target[index]!.worldRadius = source[index]!.worldRadius;
+        target[index]!.minimumProjectedRadius = source[index]!.minimumProjectedRadius;
     }
 }
 
@@ -797,6 +834,9 @@ export class ThinMeshBlendingPostProcess extends EffectWrapper {
 
         const effect = this._drawWrapper.effect!;
         const projection = this._updateInverseProjection();
+        for (const definition of this.radiusClasses) {
+            _ValidateRadiusDefinition(definition);
+        }
 
         effect.setMatrix("projection", projection);
         effect.setMatrix("inverseProjection", this._inverseProjection);

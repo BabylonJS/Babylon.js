@@ -676,6 +676,12 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     public isPickable = AbstractMesh.DefaultIsPickable;
 
     /**
+     * Whether this mesh participates in pointer-move ray picking.
+     * @internal
+     */
+    public _isPointerMovePickable: boolean | undefined;
+
+    /**
      * Gets or sets a boolean indicating if the mesh can be near picked (touched by the XR controller or hands). Default is false
      */
     public isNearPickable = false;
@@ -1178,6 +1184,11 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      */
     public getMeshUniformBuffer(): UniformBuffer {
         return this._uniformBuffer;
+    }
+
+    /** @internal */
+    public get _isGaussianSplatting(): boolean {
+        return false;
     }
 
     /**

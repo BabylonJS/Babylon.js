@@ -387,6 +387,10 @@ describe("FrameGraphMeshBlendingTask", () => {
             expect(restored.task.postProcess.radiusClasses).toEqual(serialized.radiusClasses);
             expect(restored.slopeFactor).toBe(3);
             expect(source.geomAlbedo.name).toBe("geomAlbedo");
+            expect(() => {
+                source.smallWorldRadius = Number.NaN;
+            }).toThrow("finite non-negative");
+            expect(source.smallWorldRadius).toBe(0.11);
         } finally {
             source.dispose();
             restored.dispose();
@@ -409,6 +413,25 @@ describe("FrameGraphMeshBlendingTask", () => {
                 { worldRadius: 0.3, minimumProjectedRadius: 5 },
             ]);
             expect(serialized.slopeFactor).toBe(2);
+        } finally {
+            block.dispose();
+        }
+    });
+
+    it("rejects malformed radius serialization without partially updating the block", () => {
+        const block = new NodeRenderGraphMeshBlendingPostProcessBlock("meshBlend", frameGraph, scene);
+        const before = block.task.postProcess.radiusClasses.map((definition) => ({ ...definition }));
+
+        try {
+            expect(() =>
+                block._deserialize({
+                    radiusClasses: [
+                        { worldRadius: 0.1, minimumProjectedRadius: 1 },
+                        { worldRadius: Number.POSITIVE_INFINITY, minimumProjectedRadius: 2 },
+                    ],
+                })
+            ).toThrow("finite non-negative");
+            expect(block.task.postProcess.radiusClasses).toEqual(before);
         } finally {
             block.dispose();
         }

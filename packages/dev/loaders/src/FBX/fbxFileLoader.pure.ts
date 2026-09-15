@@ -10,9 +10,11 @@ import {
 import { type Scene } from "core/scene";
 import { type FloatArray, type Nullable } from "core/types";
 import { Mesh } from "core/Meshes/mesh.pure";
+import { LinesMesh } from "core/Meshes/linesMesh.pure";
 import { SubMesh } from "core/Meshes/subMesh";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { StandardMaterial } from "core/Materials/standardMaterial.pure";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial.pure";
 import { Material } from "core/Materials/material";
 import { MultiMaterial } from "core/Materials/multiMaterial.pure";
 import { type ITextureCreationOptions, Texture } from "core/Materials/Textures/texture.pure";
@@ -32,6 +34,7 @@ import { FreeCamera } from "core/Cameras/freeCamera.pure";
 import { PointLight } from "core/Lights/pointLight.pure";
 import { DirectionalLight } from "core/Lights/directionalLight.pure";
 import { SpotLight } from "core/Lights/spotLight.pure";
+import { type Light } from "core/Lights/light";
 import { AssetContainer } from "core/assetContainer";
 import { GetMimeType } from "core/Misc/fileTools.pure";
 
@@ -40,12 +43,33 @@ import { parseAsciiFBX } from "./parsers/fbxAsciiParser";
 import { interpretFBX, type FBXModelData, type FBXSceneData, type FBXCameraData, type FBXLightData } from "./interpreter/fbxInterpreter";
 import { type FBXDocument } from "./types/fbxTypes";
 import { type FBXGeometryData } from "./interpreter/geometry";
+import { type FBXCurveGeometryData } from "./interpreter/nurbs";
+import { FBXConstraintBehavior, type FBXConstraintBehaviorTarget } from "./fbxConstraintBehavior";
 import { type FBXMaterialData, type FBXTextureRef } from "./interpreter/materials";
+import { isPbrShaderType, mapColor, mapScalar } from "./interpreter/materialModel";
 import { type FBXSkinData, type FBXBoneData } from "./interpreter/skeleton";
 import { type FBXRigData, type FBXSkinBindingData } from "./interpreter/rig";
 import { type FBXBlendShapeData, type FBXShapeData } from "./interpreter/blendShapes";
-import { sampleFBXCurveAtTime, type FBXAnimationStackData, type FBXCurveData, type FBXCurveNodeData } from "./interpreter/animation";
-import { computeFBXGeometricDeltaMatrix, computeFBXGeometricMatrix, computeFBXGeometricNormalMatrix, computeFBXLocalMatrix } from "./interpreter/transform";
+import {
+    evaluateLayeredChannel,
+    evaluateLayeredProperty,
+    isChannelSteppedAt,
+    sampleFBXCurveAtTime,
+    type FBXAnimationLayerData,
+    type FBXAnimationStackData,
+    type FBXCurveData,
+    type FBXCurveNodeData,
+    type FBXLayeredPropertySource,
+    type FBXUnsupportedCurveNodeData,
+} from "./interpreter/animation";
+import {
+    computeFBXGeometricDeltaMatrix,
+    computeFBXGeometricMatrix,
+    computeFBXGeometricNormalMatrix,
+    computeFBXLocalMatrix,
+    eulerToMatrix,
+    eulerToMatrixXYZ,
+} from "./interpreter/transform";
 import { FBXFileLoaderMetadata } from "./fbxFileLoader.metadata";
 
 const FBX_ASCII_MAGIC = "; FBX";
@@ -62,11 +86,83 @@ export type FBXNormalMapCoordinateSystem = "y-up" | "y-down";
  */
 export interface FBXFileLoaderOptions {
     /**
+     * Bundle of defaults for the options that change what the loaded scene looks like.
+     * - "compatible" (default): the behaviour of the loader as first shipped: StandardMaterial for every material,
+     *   one Babylon geometry per model, curve geometry skipped, constraints recorded as metadata only, clips rebased
+     *   to start at frame 0, cameras and lights placed in world space.
+     * - "full": everything the loader can do: PBRMaterial for physically based shaders, geometry shared between
+     *   instances, curves as lines meshes, constraints solved at runtime, authored clip times, cameras and lights
+     *   parented to their nodes so they animate.
+     * An option set explicitly always wins over the preset.
+     */
+    preset?: "compatible" | "full";
+    /**
      * Source convention for tangent-space normal maps connected through FBX normal-map slots.
      * FBX does not standardize this convention, so the loader defaults to the glTF/USD-style Y-up convention.
      * Set to "y-down" for assets authored with inverted green/Y normal maps.
      */
     normalMapCoordinateSystem?: FBXNormalMapCoordinateSystem;
+    /**
+     * Which Babylon material to build.
+     * - "standard" (default, "full" preset: "auto"): always StandardMaterial (PBR parameters are approximated).
+     * - "auto": PBRMaterial for physically based FBX materials (Standard Surface, Arnold, 3ds Max Physical,
+     *   3ds Max PBR, glTF, OpenPBR, Stingray PBS) and StandardMaterial for classic Lambert/Phong materials.
+     * - "pbr": always PBRMaterial (Lambert/Phong parameters are converted).
+     */
+    materials?: "auto" | "standard" | "pbr";
+    /**
+     * Unit conversion applied at the root of the loaded hierarchy.
+     * - "preserve" (default): keep the file's units (1 Babylon unit = 1 FBX unit).
+     * - "meters": scale so that 1 Babylon unit is 1 meter, using the file's UnitScaleFactor.
+     * - a number: centimeters per Babylon unit (100 = meters, 1 = centimeters, 2.54 = inches).
+     */
+    unitScale?: "preserve" | "meters" | number;
+    /**
+     * Share vertex data between models that reference the same FBX geometry (default false, "full" preset: true).
+     * Skinned meshes are never shared.
+     */
+    shareGeometry?: boolean;
+    /**
+     * Called for every recoverable issue found while loading (unsupported features, malformed data that was
+     * skipped, approximations). The same list is stored on the root node's metadata as `fbxDiagnostics`.
+     */
+    onWarning?: (warning: FBXLoaderWarning) => void;
+    /**
+     * Segments per knot span when tessellating NURBS surfaces. Zero or undefined uses the subdivision stored in
+     * the file (usually 4), capped at 16.
+     */
+    nurbsSubdivision?: number;
+    /** How curve geometry (Line, NurbsCurve) is imported: skipped (default) or as lines meshes ("full" preset). */
+    curves?: "lines" | "skip";
+    /**
+     * Constraints (aim, parent, position, rotation, scale): "metadata" (default) only records them on the nodes,
+     * "apply" ("full" preset) attaches an `FBXConstraintBehavior` to each constrained node so it is solved before
+     * every render. IK chains are always metadata only.
+     */
+    constraints?: "apply" | "metadata";
+    /**
+     * Shift every clip so its first keyframe sits at frame 0 (default true). With false ("full" preset) keys keep
+     * the times authored in the file, so clips of one file stay aligned with each other and with their declared
+     * ranges.
+     */
+    rebaseAnimations?: boolean;
+    /**
+     * Parent cameras and lights to their FBX node so they follow its animation (default false, "full" preset:
+     * true). Otherwise they are created at the node's world position and orientation, unparented.
+     */
+    attachCamerasAndLights?: boolean;
+}
+
+/** A recoverable issue reported while loading an FBX file. */
+export interface FBXLoaderWarning {
+    /** Which part of the loader reported the issue */
+    source: "scene" | "model" | "geometry" | "skin" | "rig" | "animation" | "blendShape" | "camera" | "light";
+    /** Human readable description */
+    message: string;
+    /** Name of the affected object, when known */
+    objectName?: string;
+    /** Structured details from the interpreter, when any */
+    details?: unknown;
 }
 
 interface IFBXSceneLoaderAsyncResult extends ISceneLoaderAsyncResult {
@@ -94,14 +190,41 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     private readonly _bindRestBones = new WeakSet<Bone>();
     private readonly _sourceBonesBySkeleton = new WeakMap<Skeleton, Bone[]>();
     private readonly _scaleCompensationHelpersBySkeleton = new WeakMap<Skeleton, Map<number, Bone>>();
+    /** Frame rate of the file being loaded (GlobalSettings TimeMode); animation is baked at this rate. */
+    private _frameRate = 30;
+    /** Layers of the animation stack currently being converted; used by the transform samplers. */
+    private _activeLayers: readonly FBXAnimationLayerData[] = [];
+    /** Parent model per model id, for inherit-mode aware sampling. */
+    private _parentModelById = new Map<number, FBXModelData>();
+    /** Curve nodes per model id for the stack currently being converted. */
+    private _curveNodesByModelId = new Map<number, FBXCurveNodeData[]>();
+    /** Helper nodes inserted above models whose InheritType is not RSrs. */
+    private _inheritScaleHelpers = new Map<number, TransformNode>();
+    /** First mesh built per (geometry, geometric transform), for geometry sharing between instances. */
+    private _meshByGeometryKey = new Map<string, Mesh>();
+    /** Instance mesh -> source mesh whose geometry it shares. */
+    private _instanceSource = new Map<Mesh, Mesh>();
+    /** Property curve nodes that were mapped onto Babylon animations; their "not evaluated" diagnostics are dropped. */
+    private _evaluatedCurveNodeIds = new Set<number>();
 
     /**
      * Creates a new FBX loader.
      * @param options - Options controlling FBX loading behavior
      */
     public constructor(options: FBXFileLoaderOptions = {}) {
+        const full = options.preset === "full";
         this._options = {
+            preset: full ? "full" : "compatible",
             normalMapCoordinateSystem: options.normalMapCoordinateSystem ?? "y-up",
+            materials: options.materials ?? (full ? "auto" : "standard"),
+            unitScale: options.unitScale ?? "preserve",
+            shareGeometry: options.shareGeometry ?? full,
+            onWarning: options.onWarning ?? (() => {}),
+            nurbsSubdivision: options.nurbsSubdivision ?? 0,
+            curves: options.curves ?? (full ? "lines" : "skip"),
+            constraints: options.constraints ?? (full ? "apply" : "metadata"),
+            rebaseAnimations: options.rebaseAnimations ?? !full,
+            attachCamerasAndLights: options.attachCamerasAndLights ?? full,
         };
     }
 
@@ -132,9 +255,9 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         _onProgress?: (event: ISceneLoaderProgressEvent) => void,
         _fileName?: string
     ): Promise<ISceneLoaderAsyncResult> {
-        const doc = this._parse(data);
-        const fbxScene = interpretFBX(doc);
-        return this._buildScene(fbxScene, scene, rootUrl, meshesNames);
+        const fbxScene = this._parseAndInterpret(data);
+        const result = this._buildScene(fbxScene, scene, rootUrl, meshesNames);
+        return result;
     }
 
     /**
@@ -147,8 +270,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @returns A promise that resolves when loading is complete
      */
     public async loadAsync(scene: Scene, data: unknown, rootUrl: string, _onProgress?: (event: ISceneLoaderProgressEvent) => void, _fileName?: string): Promise<void> {
-        const doc = this._parse(data);
-        const fbxScene = interpretFBX(doc);
+        const fbxScene = this._parseAndInterpret(data);
         this._buildScene(fbxScene, scene, rootUrl, null);
     }
 
@@ -168,8 +290,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         _onProgress?: (event: ISceneLoaderProgressEvent) => void,
         _fileName?: string
     ): Promise<AssetContainer> {
-        const doc = this._parse(data);
-        const fbxScene = interpretFBX(doc);
+        const fbxScene = this._parseAndInterpret(data);
 
         const container = new AssetContainer(scene);
 
@@ -201,6 +322,10 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             this._addTextureToContainer(texture, container);
         }
         for (const mesh of result.meshes) {
+            // Lines meshes own an internal colour shader; it is not an asset of the file.
+            if (mesh instanceof LinesMesh) {
+                continue;
+            }
             this._addMaterialToContainer(mesh.material, container);
         }
 
@@ -212,6 +337,18 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     }
 
     // ── Parsing ────────────────────────────────────────────────────────────
+
+    /**
+     * Parses and interprets the file. Parsing is synchronous, so no progress events are emitted: the scene loader's
+     * progress callback reports download bytes and must not be fed synthetic counts.
+     */
+    private _parseAndInterpret(data: unknown): FBXSceneData {
+        const doc = this._parse(data);
+        return interpretFBX(doc, {
+            nurbsSubdivision: this._options.nurbsSubdivision > 0 ? this._options.nurbsSubdivision : undefined,
+            rebaseKeyframes: this._options.rebaseAnimations,
+        });
+    }
 
     private _parse(data: unknown): FBXDocument {
         if (data instanceof ArrayBuffer) {
@@ -237,9 +374,11 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             return parseBinaryFBX(buffer);
         }
 
-        // Try ASCII
+        // Try ASCII. Most files start with "; FBX x.y.z project file", but the header comment is optional:
+        // some exporters start straight at FBXHeaderExtension or even at Objects.
         const text = new TextDecoder("utf-8").decode(buffer);
-        if (text.trimStart().startsWith(FBX_ASCII_MAGIC)) {
+        const head = text.substring(0, 4096);
+        if (head.trimStart().startsWith(FBX_ASCII_MAGIC) || /^\s*(?:;[^\n]*\n\s*)*(?:FBXHeaderExtension|Definitions|Objects|Connections)\s*:/.test(head)) {
             return parseAsciiFBX(text);
         }
 
@@ -250,9 +389,11 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
     private _buildScene(fbxScene: FBXSceneData, scene: Scene, rootUrl: string, meshesNames: string | readonly string[] | null | undefined): IFBXSceneLoaderAsyncResult {
         const nameFilter = this._buildNameFilter(meshesNames);
+        this._frameRate = fbxScene.frameRate > 0 ? fbxScene.frameRate : 30;
+        this._inheritScaleHelpers = new Map();
 
         // Create materials
-        const materialCache = new Map<number, StandardMaterial>();
+        const materialCache = new Map<number, Material>();
         for (const matData of fbxScene.materials) {
             const material = this._createMaterial(matData, scene, rootUrl);
             materialCache.set(matData.id, material);
@@ -270,6 +411,12 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             skinById.set(skin.id, skin);
         }
 
+        this._rigBoneModelIds = new Set();
+        for (const rig of fbxScene.rigs) {
+            for (const bone of rig.bones) {
+                this._rigBoneModelIds.add(bone.modelId);
+            }
+        }
         for (const rig of fbxScene.rigs) {
             const skeleton = this._createSkeleton(rig.id, rig.bones, scene);
             skeletons.push(skeleton);
@@ -289,15 +436,19 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
         // Collect model data for animation sampling.
         const modelIdToData = new Map<number, FBXModelData>();
-        const collectModelData = (models: FBXModelData[]) => {
+        this._parentModelById = new Map();
+        const collectModelData = (models: FBXModelData[], parent: FBXModelData | null) => {
             for (const m of models) {
                 modelIdToData.set(m.id, m);
-                collectModelData(m.children);
+                if (parent) {
+                    this._parentModelById.set(m.id, parent);
+                }
+                collectModelData(m.children, m);
             }
         };
-        collectModelData(fbxScene.rootModels);
+        collectModelData(fbxScene.rootModels, null);
         const cullingConflictMaterialIds = FBXFileLoader._collectCullingConflictMaterialIds(fbxScene.rootModels);
-        const cullingMaterialCloneCache = new Map<StandardMaterial, StandardMaterial>();
+        const cullingMaterialCloneCache = new Map<Material, Material>();
 
         // Build the FBX hierarchy under the same handedness conversion root that
         // Babylon's glTF loader uses when loading right-handed assets into a
@@ -308,6 +459,17 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             rootNode.rotation.y = Math.PI;
             rootNode.scaling.z = -1;
         }
+        // FBX units: one file unit is UnitScaleFactor centimeters.
+        const unitScale = this._options.unitScale;
+        const cmPerTargetUnit = unitScale === "preserve" ? 0 : unitScale === "meters" ? 100 : unitScale;
+        if (cmPerTargetUnit > 0 && fbxScene.unitScaleFactor > 0) {
+            const factor = fbxScene.unitScaleFactor / cmPerTargetUnit;
+            rootNode.scaling.scaleInPlace(factor);
+        }
+        rootNode.metadata = { ...((rootNode.metadata as object) ?? {}), fbxUnitScaleFactor: fbxScene.unitScaleFactor, fbxFrameRate: fbxScene.frameRate };
+        this._meshByGeometryKey = new Map();
+        this._instanceSource = new Map();
+        this._evaluatedCurveNodeIds = new Set();
 
         const meshes: Mesh[] = [];
         const transformNodes: TransformNode[] = [rootNode];
@@ -362,66 +524,62 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 }
             }
 
-            for (const boneData of rig.bones) {
-                if (!boneData.isCluster) {
-                    continue;
-                }
-
-                const boneNode = modelIdToNode.get(boneData.modelId);
-                const bone = this._getSourceBone(skeleton, boneData.index);
-                if (!boneNode || !bone) {
-                    continue;
-                }
-
-                // Find direct children of this bone's TransformNode that aren't bones themselves
-                for (const child of [...boneNode.getChildren()]) {
-                    const childTransform = child as TransformNode;
-                    if (!boneTransformNodes.has(childTransform)) {
-                        const childWorld = childTransform.computeWorldMatrix(true).clone();
-                        const boneReferenceWorld = FBXFileLoader._getBoneReferenceWorldMatrix(skeleton, bone, boneReferenceNode, skinnedMesh);
-                        const boneReferenceWorldInv = new Matrix();
-                        boneReferenceWorld.invertToRef(boneReferenceWorldInv);
-                        const childLocalToBone = childWorld.multiply(boneReferenceWorldInv);
-
-                        childTransform.parent = null;
-                        childTransform.attachToBone(bone, boneReferenceNode);
-                        FBXFileLoader._applyMatrixToTransform(childTransform, childLocalToBone);
-                    }
-                }
-            }
+            // Children of joints (props, end effectors, meshes) stay parented to the joint's TransformNode. Bones are
+            // linked to those nodes, so the hierarchy already follows the animation; attaching to the bone's skinning
+            // matrix would move them into the skinned mesh's space instead of the node's.
+            void boneTransformNodes;
+            void boneReferenceNode;
         }
 
         // Apply blend shapes (morph targets) to meshes
         if (fbxScene.blendShapes.length > 0) {
             this._applyBlendShapes(fbxScene.blendShapes, meshes, scene);
-        }
-
-        // Create animation groups
-        const animationGroups: AnimationGroup[] = [];
-        for (const animStack of fbxScene.animations) {
-            const group = this._createAnimationGroup(animStack, fbxScene.rigs, skeletonByRigId, scene, modelIdToNode, modelIdToData, meshes);
-            if (group) {
-                animationGroups.push(group);
+            for (const [instance, source] of Array.from(this._instanceSource)) {
+                if (source.morphTargetManager && !instance.morphTargetManager) {
+                    instance.morphTargetManager = source.morphTargetManager;
+                }
             }
         }
 
         // Create cameras
         const cameras: FreeCamera[] = [];
+        const cameraByAttributeId = new Map<number, FreeCamera>();
         for (const camData of fbxScene.cameras) {
             const cam = this._createCamera(camData, modelIdToNode, scene);
             if (cam) {
                 cameras.push(cam);
+                cameraByAttributeId.set(camData.attributeId, cam);
             }
         }
 
         // Create lights
         const sceneLights: (PointLight | DirectionalLight | SpotLight)[] = [];
+        const lightByAttributeId = new Map<number, Light>();
         for (const lightData of fbxScene.lights) {
             const light = this._createLight(lightData, modelIdToNode, scene);
             if (light) {
                 sceneLights.push(light);
+                lightByAttributeId.set(lightData.attributeId, light);
             }
         }
+
+        this._applyConstraints(fbxScene, modelIdToNode, rootNode, scene);
+
+        // Create animation groups
+        const animationGroups: AnimationGroup[] = [];
+        for (const animStack of fbxScene.animations) {
+            const group = this._createAnimationGroup(animStack, fbxScene.rigs, skeletonByRigId, scene, modelIdToNode, modelIdToData, meshes, {
+                cameraByAttributeId,
+                lightByAttributeId,
+                materialCache,
+            });
+            if (group) {
+                animationGroups.push(group);
+            }
+        }
+
+        // Reported last so that property curves the animation groups picked up are not flagged as unevaluated.
+        this._reportDiagnostics(fbxScene, rootNode, modelIdToNode);
 
         return {
             meshes,
@@ -542,10 +700,10 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     private _buildModel(
         model: FBXModelData,
         scene: Scene,
-        parent: Nullable<TransformNode>,
+        parentNode: Nullable<TransformNode>,
         assetRoot: TransformNode,
         parentFBXWorldMatrix: Matrix,
-        materialCache: Map<number, StandardMaterial>,
+        materialCache: Map<number, Material>,
         nameFilter: ((name: string) => boolean) | null,
         meshes: Mesh[],
         transformNodes: TransformNode[],
@@ -554,22 +712,66 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         skinBindingByGeometryId: Map<number, FBXSkinBindingData>,
         modelIdToNode: Map<number, TransformNode>,
         cullingConflictMaterialIds: Set<number>,
-        cullingMaterialCloneCache: Map<StandardMaterial, StandardMaterial>
+        cullingMaterialCloneCache: Map<Material, Material>
     ): void {
+        let parent = parentNode;
         const localMatrix = FBXFileLoader._computeFBXModelLocalMatrix(model);
         const fbxWorldMatrix = localMatrix.multiply(parentFBXWorldMatrix);
 
-        if (model.geometry && model.subType === "Mesh" && (!nameFilter || nameFilter(model.name))) {
-            // Create mesh
-            const skeleton = skeletonByGeometryId.get(model.geometry.id);
-            const skin = skinByGeometryId.get(model.geometry.id);
-            const skinBinding = skinBindingByGeometryId.get(model.geometry.id);
+        // Nodes with RrSs / Rrs inheritance do not inherit their parent's scale the normal way. Insert a helper that
+        // cancels the parent scale and re-express the local transform in that unscaled frame (see ufbx's
+        // inherit-mode evaluation). Skeleton bones with Rrs are handled by the rig code instead.
+        const parentModel = this._parentModelById.get(model.id);
+        const parentModelNode = parentModel ? modelIdToNode.get(parentModel.id) : undefined;
+        if (
+            parent &&
+            parentModel &&
+            parentModelNode &&
+            parent === parentModelNode &&
+            model.inheritType !== 1 &&
+            !this._isRigBone(model.id) &&
+            !this._isRigBone(parentModel.id) &&
+            !(parentModel.geometry && skinByGeometryId.has(parentModel.geometry.id))
+        ) {
+            // The helper sits beside the parent and carries the parent's rotation and translation with unit scale,
+            // i.e. the parent's "unscaled" frame. This avoids inverting the parent scale (which may be zero).
+            const helper = new TransformNode(`${model.name}__fbx_inheritScale`, scene);
+            helper.parent = parentModelNode.parent;
+            helper.position.copyFrom(parentModelNode.position);
+            helper.rotationQuaternion = parentModelNode.rotationQuaternion ? parentModelNode.rotationQuaternion.clone() : Quaternion.FromEulerVector(parentModelNode.rotation);
+            helper.scaling.set(1, 1, 1);
+            transformNodes.push(helper);
+            this._inheritScaleHelpers.set(model.id, helper);
+            parent = helper;
+        }
+
+        if (model.geometry && model.geometry.indices.length > 0 && (!nameFilter || nameFilter(model.name))) {
+            // Create mesh. Tessellated NURBS carry no control point mapping, so their deformers are not applied
+            // (the interpreter reports them).
+            const deformable = model.geometry.controlPointIndices !== null;
+            const skeleton = deformable ? skeletonByGeometryId.get(model.geometry.id) : undefined;
+            const skin = deformable ? skinByGeometryId.get(model.geometry.id) : undefined;
+            const skinBinding = deformable ? skinBindingByGeometryId.get(model.geometry.id) : undefined;
 
             if (skeleton && skin) {
                 skeleton.needInitialSkinMatrix = true;
             }
 
-            const mesh = this._createMesh(model, model.geometry, scene, skeleton, skin, skinBinding);
+            // Models referencing the same geometry (with the same geometric transform) share one Babylon geometry.
+            const geometryKey = `${model.geometry.id}|${model.geometricTranslation.join(",")}|${model.geometricRotation.join(",")}|${model.geometricScaling.join(",")}`;
+            const source = !skeleton && this._options.shareGeometry ? this._meshByGeometryKey.get(geometryKey) : undefined;
+            let mesh: Mesh;
+            if (source) {
+                mesh = source.clone(model.name, null, true);
+                mesh.sideOrientation = source.sideOrientation;
+                mesh.metadata = { ...((source.metadata as object) ?? {}), fbxInstanceOf: source.name };
+                this._instanceSource.set(mesh, source);
+            } else {
+                mesh = this._createMesh(model, model.geometry, scene, skeleton, skin, skinBinding);
+                if (!skeleton) {
+                    this._meshByGeometryKey.set(geometryKey, mesh);
+                }
+            }
 
             // For skinned meshes: keep bind/pose math in FBX space, but parent
             // the rendered mesh under the same conversion root as non-skinned
@@ -586,7 +788,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 if (parent) {
                     mesh.parent = parent;
                 }
-                FBXFileLoader._applyFBXTransform(mesh, model);
+                this._applyRestTRS(mesh, model);
             }
 
             // Apply material(s)
@@ -630,8 +832,37 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     cullingMaterialCloneCache
                 );
             }
+        } else if (model.curve && this._options.curves !== "skip" && model.curve.polylines.length > 0 && (!nameFilter || nameFilter(model.name))) {
+            const lines = this._createLinesMesh(model, model.curve, scene);
+            if (parent) {
+                lines.parent = parent;
+            }
+            this._applyRestTRS(lines, model);
+            meshes.push(lines);
+            modelIdToNode.set(model.id, lines);
+            FBXFileLoader._applyModelMetadata(lines, model);
+
+            for (const child of model.children) {
+                this._buildModel(
+                    child,
+                    scene,
+                    lines,
+                    assetRoot,
+                    fbxWorldMatrix,
+                    materialCache,
+                    nameFilter,
+                    meshes,
+                    transformNodes,
+                    skeletonByGeometryId,
+                    skinByGeometryId,
+                    skinBindingByGeometryId,
+                    modelIdToNode,
+                    cullingConflictMaterialIds,
+                    cullingMaterialCloneCache
+                );
+            }
         } else {
-            if (model.geometry && model.subType === "Mesh" && nameFilter && !FBXFileLoader._modelSubtreeMatchesNameFilter(model, nameFilter)) {
+            if ((model.geometry || model.curve) && nameFilter && !FBXFileLoader._modelSubtreeMatchesNameFilter(model, nameFilter)) {
                 return;
             }
 
@@ -642,7 +873,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             }
 
             // Apply full FBX transform chain
-            FBXFileLoader._applyFBXTransform(transformNode, model);
+            this._applyRestTRS(transformNode, model);
 
             transformNodes.push(transformNode);
             modelIdToNode.set(model.id, transformNode);
@@ -669,6 +900,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     cullingMaterialCloneCache
                 );
             }
+            FBXFileLoader._applyLodGroup(model, modelIdToNode);
         }
     }
 
@@ -723,15 +955,118 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     }
 
     private static _applyModelMetadata(node: TransformNode | Mesh, model: FBXModelData): void {
-        if (!model.customProperties && model.diagnostics.length === 0) {
+        if (!model.customProperties && model.diagnostics.length === 0 && !model.displayLayer && !model.lodGroup) {
             return;
         }
 
         node.metadata = {
             ...((node.metadata as object) ?? {}),
-            ...(model.customProperties ? { fbxCustomProperties: model.customProperties } : {}),
+            ...(model.customProperties ? { fbxCustomProperties: model.customProperties, fbxUserProperties: model.customProperties } : {}),
             ...(model.diagnostics.length > 0 ? { fbxDiagnostics: model.diagnostics } : {}),
+            ...(model.displayLayer
+                ? { fbxDisplayLayer: { name: model.displayLayer.name, show: model.displayLayer.show, freeze: model.displayLayer.freeze, color: model.displayLayer.color } }
+                : {}),
+            ...(model.lodGroup ? { fbxLodGroup: model.lodGroup } : {}),
         };
+        // Hidden display layers hide their members, as in the authoring application.
+        if (model.displayLayer && !model.displayLayer.show) {
+            node.setEnabled(false);
+        }
+    }
+
+    /**
+     * Wires a LodGroup's children as Babylon LOD levels: the first child holds the highest detail; every further
+     * child replaces it beyond the group's threshold distance (or screen coverage when thresholds are percentages).
+     * Each child's display mode is honoured first: level 1 (show) stays visible outside the LOD chain, level 2
+     * (hide) is disabled, and only level 0 (use LOD) children take part in the distance switching.
+     */
+    private static _applyLodGroup(model: FBXModelData, modelIdToNode: Map<number, TransformNode>): void {
+        const lod = model.lodGroup;
+        if (!lod) {
+            return;
+        }
+        const lodChildren: { child: FBXModelData; level: number }[] = [];
+        for (let level = 0; level < model.children.length; level++) {
+            const child = model.children[level];
+            const display = lod.displayLevels[level] ?? 0;
+            if (display === 2) {
+                modelIdToNode.get(child.id)?.setEnabled(false);
+            } else if (display === 0) {
+                lodChildren.push({ child, level });
+            }
+        }
+        if (lodChildren.length < 2) {
+            return;
+        }
+        const meshesOf = (child: FBXModelData): Mesh[] => {
+            const node = modelIdToNode.get(child.id);
+            if (!node) {
+                return [];
+            }
+            const meshes: Mesh[] = node instanceof Mesh ? [node] : [];
+            for (const m of node.getChildMeshes(false)) {
+                if (m instanceof Mesh) {
+                    meshes.push(m);
+                }
+            }
+            return meshes;
+        };
+        const base = meshesOf(lodChildren[0].child);
+        for (let i = 1; i < lodChildren.length; i++) {
+            const level = lodChildren[i].level;
+            const levelMeshes = meshesOf(lodChildren[i].child);
+            const threshold = lod.thresholds[level - 1] ?? lod.thresholds[lod.thresholds.length - 1] ?? 0;
+            for (let i = 0; i < base.length; i++) {
+                const target = levelMeshes[i] ?? null;
+                if (lod.relative) {
+                    base[i].useLODScreenCoverage = true;
+                    base[i].addLODLevel(threshold / 100, target);
+                } else {
+                    base[i].addLODLevel(threshold, target);
+                }
+                if (target) {
+                    target.metadata = { ...((target.metadata as object) ?? {}), fbxLodLevel: level };
+                }
+            }
+        }
+    }
+
+    /** Builds a lines mesh from Line or tessellated NurbsCurve geometry, applying the model's geometric transform. */
+    private _createLinesMesh(model: FBXModelData, curve: FBXCurveGeometryData, scene: Scene): LinesMesh {
+        const lines = new LinesMesh(model.name, scene);
+        const positions: number[] = [];
+        const indices: number[] = [];
+        for (const polyline of curve.polylines) {
+            const count = polyline.length / 3;
+            if (count < 2) {
+                continue;
+            }
+            const base = positions.length / 3;
+            for (let i = 0; i < polyline.length; i++) {
+                positions.push(polyline[i]);
+            }
+            for (let i = 0; i < count - 1; i++) {
+                indices.push(base + i, base + i + 1);
+            }
+        }
+        const geometricMatrix = FBXFileLoader._computeFBXGeometricMatrix(model.geometricTranslation, model.geometricRotation, model.geometricScaling);
+        if (!geometricMatrix.equals(Matrix.Identity())) {
+            for (let i = 0; i < positions.length; i += 3) {
+                const v = Vector3.TransformCoordinates(new Vector3(positions[i], positions[i + 1], positions[i + 2]), geometricMatrix);
+                positions[i] = v.x;
+                positions[i + 1] = v.y;
+                positions[i + 2] = v.z;
+            }
+        }
+        const vertexData = new VertexData();
+        vertexData.positions = positions;
+        vertexData.indices = indices;
+        vertexData.applyToMesh(lines);
+        if (curve.color) {
+            lines.color = new Color3(curve.color[0], curve.color[1], curve.color[2]);
+        }
+        lines.metadata = { ...((lines.metadata as object) ?? {}), fbxCurveType: curve.kind, fbxCurveSegments: curve.polylines.length };
+        return lines;
     }
 
     private _createMesh(model: FBXModelData, geomData: FBXGeometryData, scene: Scene, skeleton?: Skeleton, skin?: FBXSkinData, skinBinding?: FBXSkinBindingData): Mesh {
@@ -888,12 +1223,24 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     private _applyMultiMaterial(
         mesh: Mesh,
         model: FBXModelData,
-        materialCache: Map<number, StandardMaterial>,
+        materialCache: Map<number, Material>,
         scene: Scene,
         cullingConflictMaterialIds: Set<number>,
-        cullingMaterialCloneCache: Map<StandardMaterial, StandardMaterial>
+        cullingMaterialCloneCache: Map<Material, Material>
     ): void {
         const matIndices = model.geometry!.materialIndices!;
+        const recorded = (mesh.metadata as { fbxSubMeshMaterialIndices?: number[] } | undefined)?.fbxSubMeshMaterialIndices;
+        if (recorded) {
+            // Instance of an already split mesh: the index buffer and sub-meshes are shared; only the materials differ.
+            const multiMat = new MultiMaterial(model.name + "_multi", scene);
+            for (const matIdx of recorded) {
+                const fbxMat = model.materials[matIdx];
+                const mat = fbxMat ? materialCache.get(fbxMat.id) : undefined;
+                multiMat.subMaterials.push(mat ? FBXFileLoader._getModelMaterial(mat, model, cullingMaterialCloneCache, cullingConflictMaterialIds.has(fbxMat!.id)) : null);
+            }
+            mesh.material = multiMat;
+            return;
+        }
         const indices = mesh.getIndices();
         if (!indices) {
             return;
@@ -957,6 +1304,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             const range = subMeshRanges[i];
             new SubMesh(i, 0, vertexCount, range.start, range.count, mesh);
         }
+        mesh.metadata = { ...((mesh.metadata as object) ?? {}), fbxSubMeshMaterialIndices: sortedMatIndices };
     }
 
     private static _collectCullingConflictMaterialIds(models: FBXModelData[]): Set<number> {
@@ -990,12 +1338,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         return conflicts;
     }
 
-    private static _getModelMaterial(
-        material: StandardMaterial,
-        model: FBXModelData,
-        cullingCloneCache?: Map<StandardMaterial, StandardMaterial>,
-        cloneCullingOffMaterial = true
-    ): StandardMaterial {
+    private static _getModelMaterial(material: Material, model: FBXModelData, cullingCloneCache?: Map<Material, Material>, cloneCullingOffMaterial = true): Material {
         if (!model.cullingOff || !material.backFaceCulling) {
             return material;
         }
@@ -1009,7 +1352,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             return cached;
         }
 
-        const clone = material.clone(`${material.name}_CullingOff`);
+        const clone = material.clone(`${material.name}_CullingOff`) ?? material;
         clone.backFaceCulling = false;
         cullingCloneCache?.set(material, clone);
         return clone;
@@ -1021,27 +1364,41 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         }
         if (material instanceof MultiMaterial) {
             for (const subMaterial of material.subMaterials) {
-                if (subMaterial instanceof StandardMaterial) {
+                if (subMaterial instanceof StandardMaterial || subMaterial instanceof PBRMaterial) {
                     this._applyStandardMaterialUVSetCoordinates(subMaterial, geometry);
                 }
             }
             return;
         }
-        if (material instanceof StandardMaterial) {
+        if (material instanceof StandardMaterial || material instanceof PBRMaterial) {
             this._applyStandardMaterialUVSetCoordinates(material, geometry);
         }
     }
 
-    private _applyStandardMaterialUVSetCoordinates(material: StandardMaterial, geometry: FBXGeometryData): void {
-        for (const texture of [
-            material.diffuseTexture,
-            material.bumpTexture,
-            material.emissiveTexture,
-            material.ambientTexture,
-            material.specularTexture,
-            material.opacityTexture,
-            material.reflectionTexture,
-        ]) {
+    private _applyStandardMaterialUVSetCoordinates(material: StandardMaterial | PBRMaterial, geometry: FBXGeometryData): void {
+        for (const texture of material instanceof PBRMaterial
+            ? [
+                  material.albedoTexture,
+                  material.bumpTexture,
+                  material.emissiveTexture,
+                  material.ambientTexture,
+                  material.metallicTexture,
+                  material.reflectivityTexture,
+                  material.microSurfaceTexture,
+                  material.opacityTexture,
+                  material.clearCoat.texture,
+                  material.clearCoat.bumpTexture,
+                  material.sheen.texture,
+              ]
+            : [
+                  material.diffuseTexture,
+                  material.bumpTexture,
+                  material.emissiveTexture,
+                  material.ambientTexture,
+                  material.specularTexture,
+                  material.opacityTexture,
+                  material.reflectionTexture,
+              ]) {
             if (!texture) {
                 continue;
             }
@@ -1069,27 +1426,27 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             return;
         }
 
-        if (assignedMat instanceof StandardMaterial) {
-            if (!assignedMat.diffuseTexture) {
-                const clone = assignedMat.clone(`${assignedMat.name}_VertexColor`);
+        const unmodulated = (mat: Material): Material => {
+            if (mat instanceof StandardMaterial && !mat.diffuseTexture) {
+                const clone = mat.clone(`${mat.name}_VertexColor`);
                 clone.diffuseColor = new Color3(1, 1, 1);
-                mesh.material = clone;
+                return clone;
             }
-            return;
-        }
+            if (mat instanceof PBRMaterial && !mat.albedoTexture) {
+                const clone = mat.clone(`${mat.name}_VertexColor`);
+                clone.albedoColor = new Color3(1, 1, 1);
+                return clone;
+            }
+            return mat;
+        };
 
         if (assignedMat instanceof MultiMaterial) {
             const multiMat = new MultiMaterial(`${assignedMat.name}_VertexColor`, scene);
-            multiMat.subMaterials = assignedMat.subMaterials.map((sub) => {
-                if (sub instanceof StandardMaterial && !sub.diffuseTexture) {
-                    const clone = sub.clone(`${sub.name}_VertexColor`);
-                    clone.diffuseColor = new Color3(1, 1, 1);
-                    return clone;
-                }
-                return sub;
-            });
+            multiMat.subMaterials = assignedMat.subMaterials.map((sub) => (sub ? unmodulated(sub) : sub));
             mesh.material = multiMat;
+            return;
         }
+        mesh.material = unmodulated(assignedMat);
     }
 
     /**
@@ -1182,7 +1539,290 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         };
     }
 
-    private _createMaterial(matData: FBXMaterialData, scene: Scene, rootUrl: string): StandardMaterial {
+    private _createMaterial(matData: FBXMaterialData, scene: Scene, rootUrl: string): Material {
+        const mode = this._options.materials;
+        const usePbr = mode === "pbr" || (mode === "auto" && isPbrShaderType(matData.model.shaderType));
+        const material = usePbr ? this._createPbrMaterial(matData, scene, rootUrl) : this._createStandardMaterial(matData, scene, rootUrl);
+        material.metadata = {
+            ...((material.metadata as object) ?? {}),
+            ...(matData.userProperties ? { fbxUserProperties: matData.userProperties } : {}),
+            fbxShaderType: matData.model.shaderType,
+            fbxFeatures: Object.fromEntries(Object.entries(matData.model.features).map(([k, v]) => [k, v?.enabled ?? false])),
+        };
+        return material;
+    }
+
+    private _createPbrMaterial(matData: FBXMaterialData, scene: Scene, rootUrl: string): PBRMaterial {
+        const material = new PBRMaterial(matData.name, scene);
+        const pbr = matData.model.pbr;
+        const features = matData.model.features;
+        const enabled = (name: keyof typeof features) => features[name]?.enabled ?? false;
+        const specGloss = matData.model.shaderType === "3dsMaxPbrSpecGloss";
+
+        const scaleColor = (c: [number, number, number] | undefined, f: number | undefined): Color3 | undefined =>
+            c ? new Color3(c[0] * (f ?? 1), c[1] * (f ?? 1), c[2] * (f ?? 1)) : undefined;
+
+        // Base colour
+        const baseColor = mapColor(pbr.baseColor);
+        material.albedoColor = scaleColor(baseColor, pbr.baseColor?.texture ? 1 : mapScalar(pbr.baseFactor)) ?? Color3.White();
+
+        // Metal / rough or spec / gloss workflow
+        if (specGloss) {
+            material.metallic = null;
+            material.roughness = null;
+            material.reflectivityColor = scaleColor(mapColor(pbr.specularColor), 1) ?? Color3.White();
+            material.microSurface = mapScalar(pbr.glossiness) ?? 1 - (mapScalar(pbr.roughness) ?? 0.5);
+        } else {
+            material.metallic = enabled("metalness") ? (mapScalar(pbr.metalness) ?? 0) : 0;
+            material.roughness = mapScalar(pbr.roughness) ?? (pbr.glossiness?.value ? 1 - pbr.glossiness.value[0] : 0.5);
+            if (enabled("specular") && pbr.specularFactor?.value) {
+                material.metallicF0Factor = mapScalar(pbr.specularFactor) ?? 1;
+            }
+            if (enabled("specular")) {
+                const specularColor = mapColor(pbr.specularColor);
+                if (specularColor) {
+                    material.metallicReflectanceColor = new Color3(specularColor[0], specularColor[1], specularColor[2]);
+                }
+            }
+        }
+
+        // Emission
+        const emission = scaleColor(mapColor(pbr.emissionColor), pbr.emissionColor?.texture ? 1 : mapScalar(pbr.emissionFactor));
+        if (emission && enabled("emission")) {
+            material.emissiveColor = emission;
+        } else if (emission && (emission.r > 0 || emission.g > 0 || emission.b > 0)) {
+            material.emissiveColor = emission;
+        }
+
+        // Opacity / transparency
+        const opacity = mapColor(pbr.opacity);
+        if (opacity && enabled("opacity")) {
+            material.alpha = (opacity[0] + opacity[1] + opacity[2]) / 3;
+        } else if (!isPbrShaderType(matData.model.shaderType)) {
+            material.alpha = FBXFileLoader._alphaFromClassicTransparency(matData);
+        }
+        if (material.alpha < 1) {
+            material.transparencyMode = Material.MATERIAL_ALPHABLEND;
+        }
+
+        // Transmission (refraction)
+        const transmission = mapScalar(pbr.transmissionFactor) ?? 0;
+        if (enabled("transmission") && isPbrShaderType(matData.model.shaderType) && transmission > 0) {
+            material.subSurface.isRefractionEnabled = true;
+            material.subSurface.refractionIntensity = transmission;
+            const tint = mapColor(pbr.transmissionColor);
+            if (tint) {
+                material.subSurface.tintColor = new Color3(tint[0], tint[1], tint[2]);
+            }
+            const ior = mapScalar(pbr.specularIor);
+            if (ior && enabled("ior")) {
+                material.subSurface.indexOfRefraction = ior;
+            }
+        } else {
+            const ior = mapScalar(pbr.specularIor);
+            if (ior && enabled("ior") && ior > 1) {
+                material.indexOfRefraction = ior;
+            }
+        }
+
+        // Clear coat
+        const coat = mapScalar(pbr.coatFactor) ?? 0;
+        if ((enabled("coat") && coat > 0) || pbr.coatFactor?.texture) {
+            material.clearCoat.isEnabled = true;
+            material.clearCoat.intensity = coat;
+            const coatRough = mapScalar(pbr.coatRoughness);
+            if (coatRough !== undefined) {
+                material.clearCoat.roughness = coatRough;
+            }
+            const coatIor = mapScalar(pbr.coatIor);
+            if (coatIor !== undefined && coatIor > 1) {
+                material.clearCoat.indexOfRefraction = coatIor;
+            }
+            const coatColor = mapColor(pbr.coatColor);
+            if (coatColor && (coatColor[0] !== 1 || coatColor[1] !== 1 || coatColor[2] !== 1)) {
+                material.clearCoat.isTintEnabled = true;
+                material.clearCoat.tintColor = new Color3(coatColor[0], coatColor[1], coatColor[2]);
+            }
+        }
+
+        // Sheen
+        const sheen = mapScalar(pbr.sheenFactor) ?? 0;
+        if ((enabled("sheen") && sheen > 0) || pbr.sheenColor?.texture) {
+            material.sheen.isEnabled = true;
+            material.sheen.intensity = sheen;
+            const sheenColor = mapColor(pbr.sheenColor);
+            if (sheenColor) {
+                material.sheen.color = new Color3(sheenColor[0], sheenColor[1], sheenColor[2]);
+            }
+            const sheenRough = mapScalar(pbr.sheenRoughness);
+            if (sheenRough !== undefined) {
+                material.sheen.roughness = sheenRough;
+            }
+        }
+
+        if (enabled("unlit")) {
+            material.unlit = true;
+        }
+        if (enabled("doubleSided")) {
+            material.backFaceCulling = false;
+        }
+
+        // Textures
+        const textureFor = (map: { texture?: FBXTextureRef; textureEnabled: boolean } | undefined, isNormal = false): Nullable<Texture> => {
+            if (!map?.texture || !map.textureEnabled) {
+                return null;
+            }
+            const texture = FBXFileLoader._createTexture(map.texture, scene, rootUrl, isNormal);
+            if (texture) {
+                FBXFileLoader._applyTextureSettings(texture, map.texture);
+            }
+            return texture;
+        };
+
+        const albedo = textureFor(pbr.baseColor);
+        if (albedo) {
+            material.albedoTexture = albedo;
+        }
+        const normal = textureFor(pbr.normalMap, true);
+        if (normal) {
+            material.bumpTexture = normal;
+            this._configureNormalTexture(normal, material);
+        }
+        const emissiveTex = textureFor(pbr.emissionColor);
+        if (emissiveTex) {
+            material.emissiveTexture = emissiveTex;
+            if (!emission || (emission.r === 0 && emission.g === 0 && emission.b === 0)) {
+                material.emissiveColor = Color3.White();
+            }
+        }
+        const ao = textureFor(pbr.ambientOcclusion);
+        if (ao) {
+            material.ambientTexture = ao;
+            material.useAmbientInGrayScale = true;
+        }
+        if (specGloss) {
+            const spec = textureFor(pbr.specularColor);
+            if (spec) {
+                material.reflectivityTexture = spec;
+            }
+            const gloss = textureFor(pbr.glossiness) ?? textureFor(pbr.roughness);
+            if (gloss) {
+                material.microSurfaceTexture = gloss;
+            }
+        } else {
+            // Babylon reads metalness and roughness from one texture (B = metal, G = rough). Grayscale maps have
+            // identical channels, so either map works alone; two different maps cannot both be honoured. The choice
+            // is made on the references so that only the texture actually used is created.
+            const metalRef = pbr.metalness?.textureEnabled ? pbr.metalness.texture : undefined;
+            const roughSource =
+                pbr.roughness?.textureEnabled && pbr.roughness.texture ? pbr.roughness : pbr.glossiness?.textureEnabled && pbr.glossiness.texture ? pbr.glossiness : undefined;
+            const roughRef = roughSource?.texture;
+            const sameTexture = !!metalRef && !!roughRef && metalRef.id === roughRef.id;
+            let usesMetalTexture = false;
+            if (metalRef && (sameTexture || !roughRef)) {
+                const metalTex = textureFor(pbr.metalness);
+                if (metalTex) {
+                    usesMetalTexture = true;
+                    material.metallicTexture = metalTex;
+                    material.useMetallnessFromMetallicTextureBlue = true;
+                    material.useRoughnessFromMetallicTextureGreen = sameTexture;
+                    material.useRoughnessFromMetallicTextureAlpha = false;
+                }
+            } else if (roughRef) {
+                const roughTex = textureFor(roughSource);
+                if (roughTex) {
+                    material.metallicTexture = roughTex;
+                    material.useMetallnessFromMetallicTextureBlue = false;
+                    material.useRoughnessFromMetallicTextureGreen = true;
+                    material.useRoughnessFromMetallicTextureAlpha = false;
+                    if (metalRef) {
+                        material.metadata = { ...((material.metadata as object) ?? {}), fbxDroppedMetalnessTexture: metalRef.relativeFileName };
+                    }
+                }
+            }
+            // A roughness-only texture keeps the scalar metalness; a metalness texture needs metallic = 1 to show.
+            if (usesMetalTexture && material.metallic === 0) {
+                material.metallic = 1;
+            }
+        }
+        if (pbr.opacity?.texture && pbr.opacity.textureEnabled) {
+            if (albedo && pbr.opacity.texture.id === pbr.baseColor?.texture?.id) {
+                material.useAlphaFromAlbedoTexture = true;
+                material.transparencyMode = Material.MATERIAL_ALPHATESTANDBLEND;
+            } else {
+                const opacityTex = textureFor(pbr.opacity);
+                if (opacityTex) {
+                    material.opacityTexture = opacityTex;
+                    material.transparencyMode = Material.MATERIAL_ALPHATESTANDBLEND;
+                }
+            }
+        }
+        if (material.clearCoat.isEnabled) {
+            const coatTex = textureFor(pbr.coatFactor);
+            if (coatTex) {
+                material.clearCoat.texture = coatTex;
+            }
+            const coatNormal = textureFor(pbr.coatNormal, true);
+            if (coatNormal) {
+                material.clearCoat.bumpTexture = coatNormal;
+            }
+        }
+        if (material.sheen.isEnabled) {
+            const sheenTex = textureFor(pbr.sheenColor);
+            if (sheenTex) {
+                material.sheen.texture = sheenTex;
+            }
+        }
+
+        return material;
+    }
+
+    /** Alpha of a classic Lambert/Phong material: Opacity when present, otherwise 1 - TransparentColor * TransparencyFactor. */
+    private static _alphaFromClassicTransparency(matData: FBXMaterialData): number {
+        const props = matData.properties;
+        if (props.opacity !== undefined) {
+            return props.opacity;
+        }
+        const factor = mapScalar(matData.model.fbx.transparencyFactor);
+        if (factor === undefined) {
+            return 1;
+        }
+        const color = mapColor(matData.model.fbx.transparencyColor);
+        const amount = color ? (color[0] + color[1] + color[2]) / 3 : 1;
+        return Math.min(1, Math.max(0, 1 - amount * factor));
+    }
+
+    private static _applyTextureSettings(texture: Texture, tex: FBXTextureRef): void {
+        if (tex.uvTranslation) {
+            texture.uOffset = tex.uvTranslation[0];
+            texture.vOffset = tex.uvTranslation[1];
+        }
+        if (tex.uvScaling) {
+            texture.uScale = tex.uvScaling[0];
+            texture.vScale = tex.uvScaling[1];
+        }
+        if (tex.uvRotation !== undefined) {
+            texture.wAng = tex.uvRotation * (Math.PI / 180);
+        }
+        if (tex.uvSetIndex !== undefined) {
+            texture.coordinatesIndex = tex.uvSetIndex;
+        }
+        if (tex.wrapU !== undefined) {
+            texture.wrapU = tex.wrapU === 1 ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
+        }
+        if (tex.wrapV !== undefined) {
+            texture.wrapV = tex.wrapV === 1 ? Texture.CLAMP_ADDRESSMODE : Texture.WRAP_ADDRESSMODE;
+        }
+        if (tex.uvSetName || tex.layeredTextureId !== undefined) {
+            texture.metadata = {
+                ...((texture.metadata as object) ?? {}),
+                ...(tex.uvSetName ? { fbxUVSetName: tex.uvSetName } : {}),
+                ...(tex.layeredTextureId !== undefined ? { fbxLayeredTextureId: tex.layeredTextureId } : {}),
+            };
+        }
+    }
+
+    private _createStandardMaterial(matData: FBXMaterialData, scene: Scene, rootUrl: string): StandardMaterial {
         const material = new StandardMaterial(matData.name, scene);
 
         const props = matData.properties;
@@ -1212,11 +1852,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             material.emissiveColor = new Color3(props.emissiveColor[0] * emissiveFactor, props.emissiveColor[1] * emissiveFactor, props.emissiveColor[2] * emissiveFactor);
         }
 
-        if (props.opacity !== undefined) {
-            material.alpha = props.opacity;
-        } else if (props.transparencyFactor !== undefined) {
-            material.alpha = 1 - props.transparencyFactor;
-        }
+        material.alpha = FBXFileLoader._alphaFromClassicTransparency(matData);
 
         if (material.alpha < 1) {
             material.transparencyMode = Material.MATERIAL_ALPHABLEND;
@@ -1286,33 +1922,13 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                     break;
             }
 
-            // Apply UV transforms
-            if (tex.uvTranslation) {
-                texture.uOffset = tex.uvTranslation[0];
-                texture.vOffset = tex.uvTranslation[1];
-            }
-            if (tex.uvScaling) {
-                texture.uScale = tex.uvScaling[0];
-                texture.vScale = tex.uvScaling[1];
-            }
-            if (tex.uvRotation !== undefined) {
-                texture.wAng = tex.uvRotation * (Math.PI / 180);
-            }
-            if (tex.uvSetIndex !== undefined) {
-                texture.coordinatesIndex = tex.uvSetIndex;
-            }
-            if (tex.uvSetName) {
-                texture.metadata = {
-                    ...((texture.metadata as object) ?? {}),
-                    fbxUVSetName: tex.uvSetName,
-                };
-            }
+            FBXFileLoader._applyTextureSettings(texture, tex);
         }
 
         return material;
     }
 
-    private _configureNormalTexture(texture: Texture, material: StandardMaterial): void {
+    private _configureNormalTexture(texture: Texture, material: StandardMaterial | PBRMaterial): void {
         texture.gammaSpace = false;
         material.invertNormalMapX = false;
         material.invertNormalMapY = this._options.normalMapCoordinateSystem === "y-down";
@@ -1607,6 +2223,8 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
         const camera = new FreeCamera(camData.name, position, scene);
         camera.fov = camData.fieldOfView * (Math.PI / 180);
+        camera.fovMode = Camera.FOVMODE_VERTICAL_FIXED;
+        void position;
         camera.minZ = camData.nearPlane;
         camera.maxZ = camData.farPlane;
         camera.metadata = {
@@ -1619,27 +2237,45 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 orthoZoom: camData.orthoZoom,
                 roll: camData.roll,
                 aspectRatio: camData.aspectRatio,
+                fieldOfViewX: camData.fieldOfViewX,
+                apertureMode: camData.apertureMode,
+                apertureSizeInch: camData.apertureSizeInch,
+                userProperties: camData.userProperties,
                 unknownProperties: camData.unknownProperties,
                 diagnostics: camData.diagnostics,
             },
         };
 
         if (camData.projectionType === "orthographic") {
-            const orthoHeight = camData.orthoZoom && camData.orthoZoom > 0 ? camData.orthoZoom : 1;
-            const aspect = camData.aspectRatio > 0 ? camData.aspectRatio : 1;
             camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
-            camera.orthoTop = orthoHeight / 2;
-            camera.orthoBottom = -orthoHeight / 2;
-            camera.orthoRight = (orthoHeight * aspect) / 2;
-            camera.orthoLeft = -(orthoHeight * aspect) / 2;
+            camera.orthoTop = camData.orthographicSize[1] / 2;
+            camera.orthoBottom = -camData.orthographicSize[1] / 2;
+            camera.orthoRight = camData.orthographicSize[0] / 2;
+            camera.orthoLeft = -camData.orthographicSize[0] / 2;
         }
 
-        // FBX cameras look down their local +X axis. Derive the world-space look-at target from the
-        // node's world matrix using point transforms so the file's handedness conversion (the
-        // left-handed root applies scaling.z = -1) is reproduced correctly. Transforming a direction
-        // with the rotation alone would mirror it under that reflection and aim the camera wrongly.
-        const target = Vector3.TransformCoordinates(new Vector3(1, 0, 0), worldMatrix);
-        camera.setTarget(target);
+        // FBX cameras look down their local +X axis. When attached, the camera is parented to its node so it follows
+        // the node's animation, and oriented with a fixed local rotation (camera forward +Z -> node +X), with the FBX
+        // Roll applied around the view axis first. Otherwise it is placed in world space, unparented.
+        if (parentNode && this._options.attachCamerasAndLights) {
+            // The handedness conversion at the root mirrors every node's world matrix. A camera cannot render through
+            // a mirrored parent (its view matrix would flip the image and the winding), so when the node's world
+            // determinant is negative the camera hangs from a pivot whose own mirror cancels it.
+            let cameraParent: TransformNode = parentNode;
+            if (worldMatrix.determinant() < 0) {
+                const pivot = new TransformNode(`${camData.name}__fbx_cameraPivot`, scene);
+                pivot.parent = parentNode;
+                pivot.scaling.set(1, 1, -1);
+                cameraParent = pivot;
+            }
+            camera.parent = cameraParent;
+            camera.position.set(0, 0, 0);
+            const roll = ((camData.roll ?? 0) * Math.PI) / 180;
+            camera.rotationQuaternion = Quaternion.FromRotationMatrix(Matrix.RotationZ(roll).multiply(Matrix.RotationY(Math.PI / 2)));
+        } else {
+            const target = Vector3.TransformCoordinates(new Vector3(1, 0, 0), worldMatrix);
+            camera.setTarget(target);
+        }
 
         return camera;
     }
@@ -1659,25 +2295,44 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
         let light: PointLight | DirectionalLight | SpotLight;
 
+        // When attached, the light is parented to its node (so it follows animation) and its position and direction
+        // are expressed in node-local space: origin and local -Z. Otherwise it is placed in world space, unparented.
+        const attach = !!parentNode && this._options.attachCamerasAndLights;
+        const localPosition = attach ? Vector3.Zero() : position;
+        const localDirection = attach ? new Vector3(0, 0, -1) : direction;
+
         switch (lightData.lightType) {
             case 1: // Directional
-                light = new DirectionalLight(lightData.name, direction, scene);
+                light = new DirectionalLight(lightData.name, localDirection, scene);
                 light.diffuse = color;
                 light.intensity = lightData.intensity;
                 break;
             case 2: {
                 // Spot
                 const angle = lightData.coneAngle * (Math.PI / 180);
-                light = new SpotLight(lightData.name, position, direction, angle, 2, scene);
+                light = new SpotLight(lightData.name, localPosition, localDirection, angle, 2, scene);
                 light.diffuse = color;
                 light.intensity = lightData.intensity;
+                if (lightData.innerAngle !== undefined) {
+                    light.innerAngle = Math.min(angle, (lightData.innerAngle * Math.PI) / 180);
+                }
                 break;
             }
-            default: // Point (0)
-                light = new PointLight(lightData.name, position, scene);
+            default: // Point (0), Area (3) and Volume (4) approximated as point lights
+                light = new PointLight(lightData.name, localPosition, scene);
                 light.diffuse = color;
                 light.intensity = lightData.intensity;
                 break;
+        }
+        if (attach && parentNode) {
+            light.parent = parentNode;
+            // Babylon only resolves a parented light's world position and direction during rendering; do it now
+            // so getAbsolutePosition() and transformedDirection are usable straight after loading.
+            light.computeTransformedInformation();
+        }
+        light.specular = color;
+        if (lightData.enableFarAttenuation && lightData.farAttenuationEnd !== undefined && lightData.farAttenuationEnd > 0) {
+            light.range = lightData.farAttenuationEnd;
         }
 
         light.metadata = {
@@ -1691,6 +2346,10 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 enableNearAttenuation: lightData.enableNearAttenuation,
                 enableFarAttenuation: lightData.enableFarAttenuation,
                 castShadows: lightData.castShadows,
+                farAttenuationStart: lightData.farAttenuationStart,
+                farAttenuationEnd: lightData.farAttenuationEnd,
+                areaLightShape: lightData.areaLightShape,
+                userProperties: lightData.userProperties,
                 unknownProperties: lightData.unknownProperties,
                 diagnostics: lightData.diagnostics,
             },
@@ -1708,6 +2367,10 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         const authoredRuntimeLocalMatrices: Matrix[] = [];
 
         // Compute authored Lcl matrices for bones that do not carry FBX bind data.
+        const authoredInheritScales = FBXFileLoader._computeBoneInheritScales(
+            bones,
+            bones.map((b) => b.scale)
+        );
         for (let i = 0; i < bones.length; i++) {
             const boneData = bones[i];
             const authoredLocal = FBXFileLoader._computeFBXLocalMatrix(
@@ -1723,7 +2386,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 boneData.rotationOrder
             );
             authoredLocalMatrices[i] = authoredLocal;
-            authoredRuntimeLocalMatrices[i] = FBXFileLoader._computeFBXRuntimeLocalMatrix(bones, authoredLocal, i);
+            authoredRuntimeLocalMatrices[i] = FBXFileLoader._computeFBXRuntimeLocalMatrix(bones, authoredLocal, i, authoredInheritScales);
         }
         authoredAbsoluteMatrices.push(...FBXFileLoader._computeFBXAbsoluteMatrices(bones, authoredRuntimeLocalMatrices));
 
@@ -1753,11 +2416,19 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         // Only bones with that scale disagreement need their animation curves
         // remapped into bind-rest space; ordinary child curves are already in
         // the expected local animation space.
+        const restInheritScales = FBXFileLoader._computeBoneInheritScales(
+            bones,
+            bones.map((b) => b.scale)
+        );
         for (let i = 0; i < bones.length; i++) {
             let localMatrix = useBindAsRest ? localBindMatrices[i] : authoredRuntimeLocalMatrices[i];
             let parentBone = bones[i].parentIndex >= 0 ? sourceBones[bones[i].parentIndex] : null;
-            if (!useBindAsRest && bones[i].inheritType === 2 && bones[i].parentIndex >= 0 && parentBone) {
-                const split = FBXFileLoader._splitParentScaleCompensatedLocalMatrix(authoredLocalMatrices[i], bones[bones[i].parentIndex].scale);
+            if (!useBindAsRest && bones[i].inheritType !== 1 && bones[i].parentIndex >= 0 && parentBone) {
+                const split = FBXFileLoader._splitParentScaleCompensatedLocalMatrix(
+                    authoredLocalMatrices[i],
+                    restInheritScales[bones[i].parentIndex],
+                    FBXFileLoader._getBoneInheritedScale(bones, i, restInheritScales)
+                );
                 const helper = new Bone(
                     `${bones[i].name}__fbx_scaleCompensation`,
                     skeleton,
@@ -1803,6 +2474,12 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         return skeleton;
     }
 
+    private _rigBoneModelIds = new Set<number>();
+
+    private _isRigBone(modelId: number): boolean {
+        return this._rigBoneModelIds.has(modelId);
+    }
+
     private _getSourceBone(skeleton: Skeleton, sourceIndex: number): Bone | undefined {
         return this._sourceBonesBySkeleton.get(skeleton)?.[sourceIndex] ?? skeleton.bones[sourceIndex];
     }
@@ -1825,25 +2502,82 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         return absoluteMatrices;
     }
 
-    private static _computeFBXRuntimeLocalMatrix(bones: FBXBoneData[], localMatrix: Matrix, index: number, parentScaleOverride?: [number, number, number]): Matrix {
+    /**
+     * Effective ("inherit") scale of every bone, following the FBX SDK: the local scale for RSrs bones, and for
+     * RrSs / Rrs bones the local scale multiplied by the scale of the bone's inherit-scale node (the parent for RrSs,
+     * the parent's inherit-scale node for Rrs). Bones are ordered parents first.
+     */
+    private static _computeBoneInheritScales(bones: FBXBoneData[], ownScales: [number, number, number][]): [number, number, number][] {
+        const result: [number, number, number][] = [];
+        for (let i = 0; i < bones.length; i++) {
+            const own = ownScales[i];
+            const inheritedFrom = FBXFileLoader._getBoneInheritScaleNode(bones, i);
+            if (inheritedFrom < 0 || inheritedFrom >= i) {
+                result[i] = [own[0], own[1], own[2]];
+            } else {
+                const p = result[inheritedFrom];
+                result[i] = [own[0] * p[0], own[1] * p[1], own[2] * p[2]];
+            }
+        }
+        return result;
+    }
+
+    private static _getBoneInheritScaleNode(bones: FBXBoneData[], index: number): number {
         const parentIndex = bones[index].parentIndex;
-        if (bones[index].inheritType !== 2 || parentIndex < 0) {
+        if (parentIndex < 0) {
+            return -1;
+        }
+        if (bones[index].inheritType === 0) {
+            return parentIndex;
+        }
+        if (bones[index].inheritType === 2) {
+            return FBXFileLoader._getBoneInheritScaleNode(bones, parentIndex);
+        }
+        return -1;
+    }
+
+    /** Scale a bone inherits into its own scale (RrSs chains), or unit scale. */
+    private static _getBoneInheritedScale(bones: FBXBoneData[], index: number, inheritScales: [number, number, number][]): [number, number, number] {
+        const node = FBXFileLoader._getBoneInheritScaleNode(bones, index);
+        return node >= 0 ? inheritScales[node] : [1, 1, 1];
+    }
+
+    private static _computeFBXRuntimeLocalMatrix(bones: FBXBoneData[], localMatrix: Matrix, index: number, inheritScales?: [number, number, number][]): Matrix {
+        const parentIndex = bones[index].parentIndex;
+        if (bones[index].inheritType === 1 || parentIndex < 0) {
             return localMatrix;
         }
 
-        const parentScale = parentScaleOverride ?? bones[parentIndex].scale;
-        return FBXFileLoader._applyParentScaleCompensation(localMatrix, parentScale);
+        const scales =
+            inheritScales ??
+            FBXFileLoader._computeBoneInheritScales(
+                bones,
+                bones.map((b) => b.scale)
+            );
+        return FBXFileLoader._applyParentScaleCompensation(localMatrix, scales[parentIndex], FBXFileLoader._getBoneInheritedScale(bones, index, scales));
     }
 
-    private static _applyParentScaleCompensation(localMatrix: Matrix, parentScale: [number, number, number]): Matrix {
-        const split = FBXFileLoader._splitParentScaleCompensatedLocalMatrix(localMatrix, parentScale);
+    private static _applyParentScaleCompensation(localMatrix: Matrix, parentScale: [number, number, number], inheritedScale?: [number, number, number]): Matrix {
+        const split = FBXFileLoader._splitParentScaleCompensatedLocalMatrix(localMatrix, parentScale, inheritedScale);
         return split.boneLocalMatrix.multiply(split.helperLocalMatrix);
     }
 
-    private static _splitParentScaleCompensatedLocalMatrix(localMatrix: Matrix, parentScale: [number, number, number]): { boneLocalMatrix: Matrix; helperLocalMatrix: Matrix } {
+    /**
+     * Splits a bone's FBX local matrix into a helper (which cancels the parent scale and carries the translation,
+     * so the translation still follows the parent scale as the SDK does) and the bone's own rotation/scale. For RrSs
+     * bones the inherited scale is folded into the bone scale.
+     */
+    private static _splitParentScaleCompensatedLocalMatrix(
+        localMatrix: Matrix,
+        parentScale: [number, number, number],
+        inheritedScale?: [number, number, number]
+    ): { boneLocalMatrix: Matrix; helperLocalMatrix: Matrix } {
         const translation = localMatrix.getTranslation();
-        const boneLocalMatrix = localMatrix.clone();
+        let boneLocalMatrix = localMatrix.clone();
         boneLocalMatrix.setTranslation(Vector3.Zero());
+        if (inheritedScale && (inheritedScale[0] !== 1 || inheritedScale[1] !== 1 || inheritedScale[2] !== 1)) {
+            boneLocalMatrix = Matrix.Scaling(inheritedScale[0], inheritedScale[1], inheritedScale[2]).multiply(boneLocalMatrix);
+        }
         const helperLocalMatrix = Matrix.Compose(FBXFileLoader._getInverseScaleVector(parentScale), Quaternion.Identity(), translation);
         return { boneLocalMatrix, helperLocalMatrix };
     }
@@ -1931,22 +2665,12 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         });
     }
 
-    /**
-     * Apply the FBX transform chain to a Babylon TransformNode or Mesh.
-     * Decomposes the full local matrix into position/rotation/scale.
-     */
-    private static _applyFBXTransform(node: TransformNode | Mesh, model: FBXModelData): void {
-        const localMatrix = FBXFileLoader._computeFBXModelLocalMatrix(model);
-
-        // Decompose into TRS
-        const s = new Vector3();
-        const r = new Quaternion();
-        const t = new Vector3();
-        localMatrix.decompose(s, r, t);
-
-        node.position = t;
-        node.rotationQuaternion = r;
-        node.scaling = s;
+    private _applyRestTRS(node: TransformNode, model: FBXModelData): void {
+        const trs = FBXFileLoader._computeLocalTRS(model, model.translation, model.rotation, model.scale);
+        this._adjustTRSForInheritMode(model, trs, undefined);
+        node.position = trs.position;
+        node.rotationQuaternion = trs.rotationQuaternion;
+        node.scaling = trs.scaling;
     }
 
     private static _computeFBXModelLocalMatrix(model: FBXModelData): Matrix {
@@ -1962,16 +2686,6 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             model.scalingOffset,
             model.rotationOrder
         );
-    }
-
-    private static _getBoneReferenceWorldMatrix(skeleton: Skeleton, bone: Bone, referenceNode: TransformNode, skinnedMesh: Mesh | null): Matrix {
-        if (skinnedMesh) {
-            skeleton.getTransformMatrices(skinnedMesh);
-        } else {
-            skeleton.prepare(true);
-        }
-        referenceNode.computeWorldMatrix(true);
-        return bone.getFinalMatrix().multiply(referenceNode.getWorldMatrix());
     }
 
     private static _applyMatrixToTransform(node: TransformNode, matrix: Matrix): void {
@@ -1992,10 +2706,25 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         scene: Scene,
         modelIdToNode: Map<number, TransformNode>,
         modelIdToData: Map<number, FBXModelData>,
-        meshes: Mesh[]
+        meshes: Mesh[],
+        propertyTargets: { cameraByAttributeId: Map<number, FreeCamera>; lightByAttributeId: Map<number, Light>; materialCache: Map<number, Material> }
     ): AnimationGroup | null {
-        if (animStack.curveNodes.length === 0) {
+        // Stacks may animate only properties (visibility, light colour...) without any transform curve.
+        if (animStack.curveNodes.length === 0 && !animStack.unsupportedCurveNodes.some((c) => c.targetId !== null && c.curves.length > 0)) {
             return null;
+        }
+        this._activeLayers = animStack.layers;
+        this._curveNodesByModelId = new Map();
+        for (const curveNode of animStack.curveNodes) {
+            if (curveNode.type === "DeformPercent") {
+                continue;
+            }
+            const list = this._curveNodesByModelId.get(curveNode.targetModelId);
+            if (list) {
+                list.push(curveNode);
+            } else {
+                this._curveNodesByModelId.set(curveNode.targetModelId, [curveNode]);
+            }
         }
 
         const animGroup = new AnimationGroup(animStack.name, scene);
@@ -2068,7 +2797,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         // authored Lcl curves remapped onto the bind-rest local space.
         const inheritedRigModelIds = new Set<number>();
         for (const rig of rigs) {
-            const inheritType2ModelIds = new Set(rig.bones.filter((bone) => bone.inheritType === 2).map((bone) => bone.modelId));
+            const inheritType2ModelIds = new Set(rig.bones.filter((bone) => bone.inheritType !== 1 && bone.parentIndex >= 0).map((bone) => bone.modelId));
             if (inheritType2ModelIds.size === 0) {
                 continue;
             }
@@ -2144,9 +2873,80 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             }
         }
 
-        // Process blend shape (morph target) animations
+        // Inherit-scale helpers follow the inverse of their parent's (possibly animated) scale. Children of animated
+        // parents also need re-sampling even when they carry no curves of their own, since their local transform
+        // depends on the parent scale.
+        for (const [modelId, helper] of Array.from(this._inheritScaleHelpers)) {
+            const modelData = modelIdToData.get(modelId);
+            const parentModel = modelData ? this._parentModelById.get(modelId) : undefined;
+            if (!modelData || !parentModel) {
+                continue;
+            }
+            const fps = this._frameRate;
+            // The helper mirrors the parent's animated rotation/translation (its own curves plus any inherited scale
+            // that feeds its translation), with unit scale.
+            const parentCurves = [
+                ...(this._curveNodesByModelId.get(parentModel.id) ?? []),
+                ...this._collectInheritScaleCurves(parentModel).filter((cn) => cn.targetModelId !== parentModel.id),
+            ];
+            if (parentCurves.length > 0) {
+                const baseTimes = collectAnimationSampleTimes(parentCurves, fps, animStack.startTime, animStack.stopTime);
+                const sampleParent = (time: number) =>
+                    this._computeInheritAwareLocalMatrix(parentModel, this._sampleModelLocalMatrix(parentModel, this._curveNodesByModelId.get(parentModel.id) ?? [], time), time);
+                const times = FBXFileLoader._refineSampleTimes(baseTimes, sampleParent);
+                const posKeys: { frame: number; value: Vector3 }[] = [];
+                const rotKeys: { frame: number; value: Quaternion }[] = [];
+                let prevQuat: Quaternion | null = null;
+                for (const time of times) {
+                    const sc = new Vector3();
+                    const rq = new Quaternion();
+                    const tr = new Vector3();
+                    sampleParent(time).decompose(sc, rq, tr);
+                    if (prevQuat && Quaternion.Dot(prevQuat, rq) < 0) {
+                        rq.scaleInPlace(-1);
+                    }
+                    prevQuat = rq;
+                    posKeys.push({ frame: time * fps, value: tr });
+                    rotKeys.push({ frame: time * fps, value: rq });
+                }
+                if (!this._isVector3KeysConstant(posKeys)) {
+                    const anim = new Animation(`${helper.name}_position`, "position", fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+                    anim.setKeys(posKeys);
+                    animGroup.addTargetedAnimation(anim, helper);
+                }
+                if (!areQuaternionKeysConstant(rotKeys)) {
+                    const anim = new Animation(`${helper.name}_rotation`, "rotationQuaternion", fps, Animation.ANIMATIONTYPE_QUATERNION, Animation.ANIMATIONLOOPMODE_CYCLE);
+                    anim.setKeys(rotKeys);
+                    animGroup.addTargetedAnimation(anim, helper);
+                }
+            }
+            // The child's own local transform depends on the parent scale; re-sample it when that scale animates.
+            const scaleCurves = this._collectInheritScaleCurves(parentModel);
+            const node = modelIdToNode.get(modelId);
+            if (node && scaleCurves.length > 0 && !nonBoneCurves.has(modelId) && !boneCurves.has(modelId)) {
+                for (const animation of this._buildNodeAnimations([], node.name, modelData, animStack.startTime, animStack.stopTime, scaleCurves)) {
+                    animGroup.addTargetedAnimation(animation, node);
+                }
+            }
+        }
+
+        // Process blend shape (morph target) animations. Every layer animating a channel contributes to one
+        // influence animation evaluated through the layer stack.
+        const blendShapeGroups = new Map<number, FBXCurveNodeData[]>();
         for (const curveNode of blendShapeCurves) {
-            const targetChannelId = curveNode.targetModelId;
+            const group = blendShapeGroups.get(curveNode.targetModelId);
+            if (group) {
+                group.push(curveNode);
+            } else {
+                blendShapeGroups.set(curveNode.targetModelId, [curveNode]);
+            }
+        }
+        for (const [targetChannelId, group] of Array.from(blendShapeGroups)) {
+            group.sort((a, b) => a.layerIndex - b.layerIndex);
+            const sources: FBXLayeredPropertySource[] = group.filter((cn) => cn.curves.length > 0).map((cn) => ({ layerIndex: cn.layerIndex, curves: cn.curves }));
+            if (sources.length === 0) {
+                continue;
+            }
 
             // Find the morph target with matching channel ID across all meshes
             let targetFound = false;
@@ -2157,19 +2957,17 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 const metadata = mesh.metadata as Record<string, unknown> | undefined;
                 const channelTargets = metadata?.fbxBlendShapeChannelTargets as Map<number, { targetIndices: number[]; fullWeights: number[] | null }> | undefined;
                 const targetInfo = channelTargets?.get(targetChannelId);
-                if (targetInfo && curveNode.curves.length > 0) {
-                    const fps = 30;
+                if (targetInfo) {
+                    const fps = this._frameRate;
                     for (let shapeIndex = 0; shapeIndex < targetInfo.targetIndices.length; shapeIndex++) {
                         const target = mesh.morphTargetManager.getTarget(targetInfo.targetIndices[shapeIndex]);
                         if (!target) {
                             continue;
                         }
                         const anim = new Animation(`${target.name}_influence`, "influence", fps, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
-                        const keys = buildScalarAnimationKeys(
-                            curveNode.curves[0],
-                            fps,
-                            animStack.startTime,
-                            animStack.stopTime,
+                        const keys = this._layeredScalarKeys(
+                            sources,
+                            animStack,
                             (value) => calculateBlendShapeInfluences(value, targetInfo.fullWeights, targetInfo.targetIndices.length)[shapeIndex] ?? 0
                         );
                         anim.setKeys(keys);
@@ -2189,20 +2987,47 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 }
 
                 const target = mesh.morphTargetManager.getTarget(targetIndex);
-                if (target && curveNode.curves.length > 0) {
-                    const fps = 30;
+                if (target) {
+                    const fps = this._frameRate;
                     const anim = new Animation(`${target.name}_influence`, "influence", fps, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
-                    const keys = buildScalarAnimationKeys(curveNode.curves[0], fps, animStack.startTime, animStack.stopTime, (value) => value / 100);
-                    anim.setKeys(keys);
+                    anim.setKeys(this._layeredScalarKeys(sources, animStack, (value) => value / 100));
                     animGroup.addTargetedAnimation(anim, target);
                     targetFound = true;
                 }
             }
         }
 
+        // Animated non-transform properties: visibility, camera, light and material parameters. Curve nodes of
+        // several layers that animate the same property are evaluated together through the layer stack.
+        const propertyGroups = new Map<string, FBXUnsupportedCurveNodeData[]>();
+        for (const curveNode of animStack.unsupportedCurveNodes) {
+            if (curveNode.targetId === null || curveNode.curves.length === 0) {
+                continue;
+            }
+            const key = `${curveNode.targetId}|${curveNode.propertyName ?? curveNode.type}`;
+            const group = propertyGroups.get(key);
+            if (group) {
+                group.push(curveNode);
+            } else {
+                propertyGroups.set(key, [curveNode]);
+            }
+        }
+        for (const group of Array.from(propertyGroups.values())) {
+            group.sort((a, b) => a.layerIndex - b.layerIndex);
+            const built = this._buildPropertyAnimations(group, animStack, modelIdToNode, propertyTargets);
+            if (built.length > 0) {
+                for (const curveNode of group) {
+                    this._evaluatedCurveNodeIds.add(curveNode.id);
+                }
+            }
+            for (const { animation, target } of built) {
+                animGroup.addTargetedAnimation(animation, target);
+            }
+        }
+
         // Normalize the animation group
         if (animGroup.targetedAnimations.length > 0) {
-            animGroup.normalize(animStack.startTime * 30, animStack.stopTime * 30);
+            animGroup.normalize(animStack.startTime * this._frameRate, animStack.stopTime * this._frameRate);
             return animGroup;
         }
 
@@ -2219,7 +3044,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         startTime: number,
         stopTime: number
     ): { bone: Bone; animations: Animation[] }[] {
-        const fps = 30;
+        const fps = this._frameRate;
         const sampledModelIds = new Set<number>();
         for (let i = 0; i < rig.bones.length; i++) {
             if (!compensatedModelIds.has(rig.bones[i].modelId)) {
@@ -2231,9 +3056,17 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             }
         }
         const rigCurveNodes = rig.bones.filter((bone) => sampledModelIds.has(bone.modelId)).flatMap((bone) => boneCurves.get(bone.modelId) ?? []);
-        const times = collectAnimationSampleTimes(rigCurveNodes, fps, startTime, stopTime);
+        let times = collectAnimationSampleTimes(rigCurveNodes, fps, startTime, stopTime);
         if (times.length === 0) {
             return [];
+        }
+        for (const boneData of rig.bones) {
+            const md = modelIdToData.get(boneData.modelId);
+            const cn = boneCurves.get(boneData.modelId) ?? [];
+            if (!sampledModelIds.has(boneData.modelId) || !md || cn.length === 0) {
+                continue;
+            }
+            times = FBXFileLoader._refineSampleTimes(times, (time) => this._sampleModelLocalMatrix(md, cn, time));
         }
 
         const keysByBone = rig.bones.map(() => ({
@@ -2279,6 +3112,7 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 const curveNodes = boneCurves.get(boneData.modelId) ?? [];
                 return modelData ? this._sampleModelScale(modelData, curveNodes, time) : boneData.scale;
             });
+            const sampledInheritScales = FBXFileLoader._computeBoneInheritScales(rig.bones, sampledScales);
             const frame = time * fps;
 
             for (let i = 0; i < localMatrices.length; i++) {
@@ -2287,8 +3121,12 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 }
 
                 const parentIndex = rig.bones[i].parentIndex;
-                const parentScale = parentIndex >= 0 ? sampledScales[parentIndex] : rig.bones[i].scale;
-                const split = FBXFileLoader._splitParentScaleCompensatedLocalMatrix(localMatrices[i], parentScale);
+                const parentScale = parentIndex >= 0 ? sampledInheritScales[parentIndex] : rig.bones[i].scale;
+                const split = FBXFileLoader._splitParentScaleCompensatedLocalMatrix(
+                    localMatrices[i],
+                    parentScale,
+                    FBXFileLoader._getBoneInheritedScale(rig.bones, i, sampledInheritScales)
+                );
                 FBXFileLoader._pushMatrixKeys(keysByBone[i], frame, split.boneLocalMatrix);
                 FBXFileLoader._pushMatrixKeys(keysByHelper[i], frame, split.helperLocalMatrix);
             }
@@ -2385,69 +3223,50 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * Build animations for a non-bone node, correctly handling pivots.
      * Computes the full FBX transform matrix at each keyframe and decomposes into TRS.
      */
-    private _buildNodeAnimations(curveNodes: FBXCurveNodeData[], nodeName: string, modelData: FBXModelData, startTime: number, stopTime: number): Animation[] {
-        const fps = 30;
+    private _buildNodeAnimations(
+        curveNodes: FBXCurveNodeData[],
+        nodeName: string,
+        modelData: FBXModelData,
+        startTime: number,
+        stopTime: number,
+        extraTimeCurves: FBXCurveNodeData[] = []
+    ): Animation[] {
+        const fps = this._frameRate;
 
         // Separate curves by type
-        const tNode = curveNodes.find((cn) => cn.type === "T");
         const rNode = curveNodes.find((cn) => cn.type === "R");
-        const sNode = curveNodes.find((cn) => cn.type === "S");
 
-        const times = collectAnimationSampleTimes(curveNodes, fps, startTime, stopTime);
-        if (times.length === 0) {
+        const baseTimes = collectAnimationSampleTimes([...curveNodes, ...extraTimeCurves], fps, startTime, stopTime);
+        if (baseTimes.length === 0) {
             return [];
         }
+        const sampleTRS = (time: number) => {
+            const sampled = this._sampleModelTRS(modelData, curveNodes, time);
+            const trs = FBXFileLoader._computeLocalTRS(modelData, sampled.translation, sampled.rotation, sampled.scale);
+            this._adjustTRSForInheritMode(modelData, trs, time);
+            return trs;
+        };
+        const times = FBXFileLoader._refineSampleTimes(baseTimes, (time) => {
+            const trs = sampleTRS(time);
+            return Matrix.Compose(trs.scaling, trs.rotationQuaternion, trs.position);
+        });
 
-        // Get curve accessors
-        const txCurve = tNode?.curves.find((c) => c.channel === "d|X");
-        const tyCurve = tNode?.curves.find((c) => c.channel === "d|Y");
-        const tzCurve = tNode?.curves.find((c) => c.channel === "d|Z");
-        const rxCurve = rNode?.curves.find((c) => c.channel === "d|X");
-        const ryCurve = rNode?.curves.find((c) => c.channel === "d|Y");
-        const rzCurve = rNode?.curves.find((c) => c.channel === "d|Z");
-        const sxCurve = sNode?.curves.find((c) => c.channel === "d|X");
-        const syCurve = sNode?.curves.find((c) => c.channel === "d|Y");
-        const szCurve = sNode?.curves.find((c) => c.channel === "d|Z");
-
-        // Build keyframes by computing the full matrix at each time
-        const posKeys: { frame: number; value: Vector3 }[] = [];
-        const rotKeys: { frame: number; value: Quaternion }[] = [];
-        const sclKeys: { frame: number; value: Vector3 }[] = [];
+        // Build keyframes by computing the local transform at each time
+        const posKeys: { frame: number; value: Vector3; interpolation?: AnimationKeyInterpolation }[] = [];
+        const rotKeys: { frame: number; value: Quaternion; interpolation?: AnimationKeyInterpolation }[] = [];
+        const sclKeys: { frame: number; value: Vector3; interpolation?: AnimationKeyInterpolation }[] = [];
         let prevQuat: Quaternion | null = null;
 
         for (const time of times) {
             const frame = time * fps;
 
-            // Sample animated values, falling back to model's base values
-            const tx = sampleFBXCurveAtTime(txCurve, time) ?? modelData.translation[0];
-            const ty = sampleFBXCurveAtTime(tyCurve, time) ?? modelData.translation[1];
-            const tz = sampleFBXCurveAtTime(tzCurve, time) ?? modelData.translation[2];
-            const rx = sampleFBXCurveAtTime(rxCurve, time) ?? modelData.rotation[0];
-            const ry = sampleFBXCurveAtTime(ryCurve, time) ?? modelData.rotation[1];
-            const rz = sampleFBXCurveAtTime(rzCurve, time) ?? modelData.rotation[2];
-            const sx = sampleFBXCurveAtTime(sxCurve, time) ?? modelData.scale[0];
-            const sy = sampleFBXCurveAtTime(syCurve, time) ?? modelData.scale[1];
-            const sz = sampleFBXCurveAtTime(szCurve, time) ?? modelData.scale[2];
-
-            // Compute the full FBX local transform matrix with pivots
-            const localMatrix = FBXFileLoader._computeFBXLocalMatrix(
-                [tx, ty, tz],
-                [rx, ry, rz],
-                [sx, sy, sz],
-                modelData.preRotation,
-                modelData.postRotation,
-                modelData.rotationPivot,
-                modelData.scalingPivot,
-                modelData.rotationOffset,
-                modelData.scalingOffset,
-                modelData.rotationOrder
-            );
-
-            // Decompose into TRS
-            const s = new Vector3();
-            const r = new Quaternion();
-            const t = new Vector3();
-            localMatrix.decompose(s, r, t);
+            const trs = sampleTRS(time);
+            const s = trs.scaling;
+            const r = trs.rotationQuaternion;
+            const t = trs.position;
+            const stepT = isChannelSteppedAt(curveNodes, "T", time);
+            const stepR = isChannelSteppedAt(curveNodes, "R", time);
+            const stepS = isChannelSteppedAt(curveNodes, "S", time);
 
             // Ensure quaternion continuity
             if (prevQuat && Quaternion.Dot(prevQuat, r) < 0) {
@@ -2455,9 +3274,9 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             }
             prevQuat = r;
 
-            posKeys.push({ frame, value: t });
-            rotKeys.push({ frame, value: r });
-            sclKeys.push({ frame, value: s });
+            posKeys.push(stepT ? { frame, value: t, interpolation: AnimationKeyInterpolation.STEP } : { frame, value: t });
+            rotKeys.push(stepR ? { frame, value: r, interpolation: AnimationKeyInterpolation.STEP } : { frame, value: r });
+            sclKeys.push(stepS ? { frame, value: s, interpolation: AnimationKeyInterpolation.STEP } : { frame, value: s });
         }
 
         const animations: Animation[] = [];
@@ -2486,6 +3305,523 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         return animations;
     }
 
+    /**
+     * Baked keys are interpolated linearly by Babylon. Between two frames an FBX cubic segment can deviate from that
+     * line, so sample times are refined (midpoints inserted, up to two levels) wherever the interpolated transform
+     * differs noticeably from the curve. Flat and linear segments stay at frame resolution.
+     */
+    private static _refineSampleTimes(times: number[], sample: (time: number) => Matrix, maxDepth = 2): number[] {
+        const decompose = (time: number) => {
+            const s = new Vector3();
+            const r = new Quaternion();
+            const t = new Vector3();
+            sample(time).decompose(s, r, t);
+            return { s, r, t };
+        };
+        const out: number[] = [];
+        const refine = (t0: number, t1: number, d0: ReturnType<typeof decompose>, d1: ReturnType<typeof decompose>, depth: number) => {
+            if (depth >= maxDepth) {
+                return;
+            }
+            const tm = (t0 + t1) * 0.5;
+            if (!(tm > t0 && tm < t1)) {
+                return;
+            }
+            const dm = decompose(tm);
+            const lerpT = Vector3.Lerp(d0.t, d1.t, 0.5);
+            const lerpS = Vector3.Lerp(d0.s, d1.s, 0.5);
+            const slerpR = Quaternion.Slerp(d0.r, d1.r, 0.5);
+            const posErr = Vector3.Distance(lerpT, dm.t);
+            const sclErr = Vector3.Distance(lerpS, dm.s);
+            const dot = Math.min(1, Math.abs(Quaternion.Dot(slerpR, dm.r)));
+            const angErr = 2 * Math.acos(dot);
+            const posTol = 1e-4 * (1 + Math.max(Math.abs(dm.t.x), Math.abs(dm.t.y), Math.abs(dm.t.z)));
+            const sclTol = 1e-4 * (1 + Math.max(Math.abs(dm.s.x), Math.abs(dm.s.y), Math.abs(dm.s.z)));
+            if (posErr > posTol || sclErr > sclTol || angErr > 0.0005) {
+                refine(t0, tm, d0, dm, depth + 1);
+                out.push(tm);
+                refine(tm, t1, dm, d1, depth + 1);
+            }
+        };
+        let prev = times.length > 0 ? decompose(times[0]) : null;
+        for (let i = 0; i < times.length; i++) {
+            out.push(times[i]);
+            if (i + 1 < times.length && prev) {
+                const next = decompose(times[i + 1]);
+                refine(times[i], times[i + 1], prev, next, 0);
+                prev = next;
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Keys of a scalar property animated by one or more layers: the authored keys when a single layer drives it,
+     * otherwise the frame grid evaluated through the layer stack.
+     * @param sources - Per-layer curves of the property (each with at least one curve)
+     * @param animStack - Stack being converted
+     * @param mapValue - Conversion from the FBX value to the Babylon property value
+     * @returns Animation keys
+     */
+    private _layeredScalarKeys(sources: readonly FBXLayeredPropertySource[], animStack: FBXAnimationStackData, mapValue: (value: number) => number): IAnimationKey[] {
+        const fps = this._frameRate;
+        if (sources.length === 0) {
+            return [];
+        }
+        if (sources.length === 1) {
+            return buildScalarAnimationKeys(sources[0].curves[0], fps, animStack.startTime, animStack.stopTime, mapValue);
+        }
+        const channel = sources[0].curves[0].channel;
+        const times = collectAnimationSampleTimes(
+            sources.map((source) => ({ type: "other", targetModelId: 0, curves: Array.from(source.curves), layerIndex: source.layerIndex })),
+            fps,
+            animStack.startTime,
+            animStack.stopTime
+        );
+        return times.map((time) => ({ frame: time * fps, value: mapValue(evaluateLayeredProperty(sources, animStack.layers, [channel], [0], time)[0]) }));
+    }
+
+    /**
+     * Maps an animated FBX property (anything other than node transforms and blend shape weights) onto the Babylon
+     * property that carries it: mesh visibility, camera field of view and clip planes, light intensity, colour and
+     * cone angles, and material colours, alpha, roughness and metalness. `group` holds the curve nodes of every
+     * layer animating that property, in layer order; several layers are evaluated through the layer stack.
+     */
+    private _buildPropertyAnimations(
+        group: readonly FBXUnsupportedCurveNodeData[],
+        animStack: FBXAnimationStackData,
+        modelIdToNode: Map<number, TransformNode>,
+        targets: { cameraByAttributeId: Map<number, FreeCamera>; lightByAttributeId: Map<number, Light>; materialCache: Map<number, Material> }
+    ): { animation: Animation; target: unknown }[] {
+        const fps = this._frameRate;
+        const curveNode = group[0];
+        const prop = curveNode.propertyName ?? curveNode.type;
+        const targetId = curveNode.targetId!;
+        const out: { animation: Animation; target: unknown }[] = [];
+        const scalarCurve = curveNode.curves.find((c) => c.channel === "d|X") ?? curveNode.curves[0];
+        const defaults = curveNode.defaultValues;
+        const layered = group.length > 1;
+        const sources: FBXLayeredPropertySource[] = group.map((cn) => ({ layerIndex: cn.layerIndex, curves: cn.curves, defaultValues: cn.defaultValues }));
+        const sampleTimes = (): number[] =>
+            collectAnimationSampleTimes(
+                group.map((cn) => ({ type: "other", targetModelId: targetId, curves: cn.curves, layerIndex: cn.layerIndex })),
+                fps,
+                animStack.startTime,
+                animStack.stopTime
+            );
+        const vectorSamples = (staticValue: [number, number, number]): { frame: number; values: number[] }[] => {
+            const cx = curveNode.curves.find((c) => c.channel === "d|X");
+            const cy = curveNode.curves.find((c) => c.channel === "d|Y");
+            const cz = curveNode.curves.find((c) => c.channel === "d|Z");
+            return sampleTimes().map((time) => ({
+                frame: time * fps,
+                values: layered
+                    ? evaluateLayeredProperty(sources, animStack.layers, ["d|X", "d|Y", "d|Z"], staticValue, time)
+                    : [sampleFBXCurveAtTime(cx, time) ?? staticValue[0], sampleFBXCurveAtTime(cy, time) ?? staticValue[1], sampleFBXCurveAtTime(cz, time) ?? staticValue[2]],
+            }));
+        };
+        const scalarKeys = (map: (v: number) => number, step = false): IAnimationKey[] => {
+            const keys: IAnimationKey[] = layered
+                ? sampleTimes().map((time) => ({
+                      frame: time * fps,
+                      value: map(evaluateLayeredProperty(sources, animStack.layers, [scalarCurve.channel], [defaults[scalarCurve.channel] ?? 0], time)[0]),
+                  }))
+                : buildScalarAnimationKeys(scalarCurve, fps, animStack.startTime, animStack.stopTime, map);
+            if (step) {
+                for (const key of keys) {
+                    key.interpolation = AnimationKeyInterpolation.STEP;
+                    delete key.inTangent;
+                    delete key.outTangent;
+                }
+            }
+            return keys;
+        };
+        const colorKeys = (): IAnimationKey[] =>
+            vectorSamples([defaults["d|X"] ?? 1, defaults["d|Y"] ?? 1, defaults["d|Z"] ?? 1]).map(({ frame, values }) => ({
+                frame,
+                value: new Color3(values[0], values[1], values[2]),
+            }));
+        const add = (target: unknown, property: string, type: number, keys: IAnimationKey[], name: string) => {
+            if (keys.length === 0) {
+                return;
+            }
+            const animation = new Animation(`${name}_${property}`, property, fps, type, Animation.ANIMATIONLOOPMODE_CYCLE);
+            animation.setKeys(keys);
+            out.push({ animation, target });
+        };
+
+        const node = modelIdToNode.get(targetId);
+        if (node) {
+            if (prop === "Visibility" && node instanceof Mesh) {
+                add(
+                    node,
+                    "visibility",
+                    Animation.ANIMATIONTYPE_FLOAT,
+                    scalarKeys((v) => Math.min(1, Math.max(0, v)), true),
+                    node.name
+                );
+                return out;
+            }
+            // Animated user properties drive the value stored in the node's metadata.
+            const userProperties = (node.metadata as { fbxUserProperties?: Record<string, unknown> } | undefined)?.fbxUserProperties;
+            if (userProperties && prop in userProperties) {
+                const hasVector = curveNode.curves.some((c) => c.channel === "d|Y" || c.channel === "d|Z");
+                if (hasVector) {
+                    const current = userProperties[prop];
+                    const base = Array.isArray(current) ? (current as number[]) : [0, 0, 0];
+                    userProperties[prop] = new Vector3(base[0] ?? 0, base[1] ?? 0, base[2] ?? 0);
+                    const keys = vectorSamples([base[0] ?? 0, base[1] ?? 0, base[2] ?? 0]).map(({ frame, values }) => ({
+                        frame,
+                        value: new Vector3(values[0], values[1], values[2]),
+                    }));
+                    add(node, `metadata.fbxUserProperties.${prop}`, Animation.ANIMATIONTYPE_VECTOR3, keys, node.name);
+                } else {
+                    if (typeof userProperties[prop] === "boolean") {
+                        userProperties[prop] = userProperties[prop] ? 1 : 0;
+                    }
+                    add(
+                        node,
+                        `metadata.fbxUserProperties.${prop}`,
+                        Animation.ANIMATIONTYPE_FLOAT,
+                        scalarKeys((v) => v),
+                        node.name
+                    );
+                }
+            }
+            return out;
+        }
+
+        const camera = targets.cameraByAttributeId.get(targetId);
+        if (camera) {
+            const meta = (camera.metadata as { fbxCamera?: { aspectRatio?: number; apertureMode?: number; apertureSizeInch?: [number, number] } } | undefined)?.fbxCamera;
+            const aspect = meta?.aspectRatio || 1;
+            const apertureMode = meta?.apertureMode ?? 2;
+            switch (prop) {
+                case "FieldOfView":
+                    // Vertical unless the camera's aperture mode declares FieldOfView as horizontal.
+                    add(
+                        camera,
+                        "fov",
+                        Animation.ANIMATIONTYPE_FLOAT,
+                        scalarKeys((v) => (apertureMode === 1 ? 2 * Math.atan(Math.tan((v * Math.PI) / 360) / aspect) : (v * Math.PI) / 180)),
+                        camera.name
+                    );
+                    break;
+                case "FieldOfViewY":
+                    add(
+                        camera,
+                        "fov",
+                        Animation.ANIMATIONTYPE_FLOAT,
+                        scalarKeys((v) => (v * Math.PI) / 180),
+                        camera.name
+                    );
+                    break;
+                case "FieldOfViewX":
+                    if (apertureMode !== 0) {
+                        add(
+                            camera,
+                            "fov",
+                            Animation.ANIMATIONTYPE_FLOAT,
+                            scalarKeys((v) => 2 * Math.atan(Math.tan((v * Math.PI) / 360) / aspect)),
+                            camera.name
+                        );
+                    }
+                    break;
+                case "FocalLength": {
+                    const apertureY = meta?.apertureSizeInch?.[1];
+                    if (apertureY && apertureMode === 3) {
+                        add(
+                            camera,
+                            "fov",
+                            Animation.ANIMATIONTYPE_FLOAT,
+                            scalarKeys((v) => 2 * Math.atan((apertureY / Math.max(v / 25.4, 1e-6)) * 0.5)),
+                            camera.name
+                        );
+                    }
+                    break;
+                }
+                case "NearPlane":
+                    add(
+                        camera,
+                        "minZ",
+                        Animation.ANIMATIONTYPE_FLOAT,
+                        scalarKeys((v) => v),
+                        camera.name
+                    );
+                    break;
+                case "FarPlane":
+                    add(
+                        camera,
+                        "maxZ",
+                        Animation.ANIMATIONTYPE_FLOAT,
+                        scalarKeys((v) => v),
+                        camera.name
+                    );
+                    break;
+                default:
+                    break;
+            }
+            return out;
+        }
+
+        const light = targets.lightByAttributeId.get(targetId);
+        if (light) {
+            switch (prop) {
+                case "Intensity":
+                    add(
+                        light,
+                        "intensity",
+                        Animation.ANIMATIONTYPE_FLOAT,
+                        scalarKeys((v) => v / 100),
+                        light.name
+                    );
+                    break;
+                case "Color":
+                    add(light, "diffuse", Animation.ANIMATIONTYPE_COLOR3, colorKeys(), light.name);
+                    break;
+                case "OuterAngle":
+                case "ConeAngle":
+                    if (light instanceof SpotLight) {
+                        add(
+                            light,
+                            "angle",
+                            Animation.ANIMATIONTYPE_FLOAT,
+                            scalarKeys((v) => (v * Math.PI) / 180),
+                            light.name
+                        );
+                    }
+                    break;
+                case "InnerAngle":
+                    if (light instanceof SpotLight) {
+                        add(
+                            light,
+                            "innerAngle",
+                            Animation.ANIMATIONTYPE_FLOAT,
+                            scalarKeys((v) => (v * Math.PI) / 180),
+                            light.name
+                        );
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return out;
+        }
+
+        const material = targets.materialCache.get(targetId);
+        if (material) {
+            const isPbr = material instanceof PBRMaterial;
+            const short = prop.substring(prop.lastIndexOf("|") + 1);
+            if (prop === "DiffuseColor" || prop === "Diffuse" || short === "baseColor" || short === "base_color" || short === "color") {
+                add(material, isPbr ? "albedoColor" : "diffuseColor", Animation.ANIMATIONTYPE_COLOR3, colorKeys(), material.name);
+            } else if (
+                prop === "EmissiveColor" ||
+                prop === "Emissive" ||
+                short === "emissionColor" ||
+                short === "emission_color" ||
+                short === "emissive" ||
+                short === "emit_color"
+            ) {
+                add(material, "emissiveColor", Animation.ANIMATIONTYPE_COLOR3, colorKeys(), material.name);
+            } else if (prop === "Opacity") {
+                add(
+                    material,
+                    "alpha",
+                    Animation.ANIMATIONTYPE_FLOAT,
+                    scalarKeys((v) => v),
+                    material.name
+                );
+            } else if (prop === "TransparencyFactor" || prop === "TransparentFactor") {
+                add(
+                    material,
+                    "alpha",
+                    Animation.ANIMATIONTYPE_FLOAT,
+                    scalarKeys((v) => 1 - v),
+                    material.name
+                );
+            } else if (isPbr && (short === "roughness" || short === "specular_roughness" || short === "specularRoughness")) {
+                add(
+                    material,
+                    "roughness",
+                    Animation.ANIMATIONTYPE_FLOAT,
+                    scalarKeys((v) => v),
+                    material.name
+                );
+            } else if (isPbr && (short === "metalness" || short === "metallic" || short === "base_metalness")) {
+                add(
+                    material,
+                    "metallic",
+                    Animation.ANIMATIONTYPE_FLOAT,
+                    scalarKeys((v) => v),
+                    material.name
+                );
+            } else if (!isPbr && prop === "SpecularColor") {
+                add(material, "specularColor", Animation.ANIMATIONTYPE_COLOR3, colorKeys(), material.name);
+            }
+            return out;
+        }
+
+        return out;
+    }
+
+    /** Records constraints on their nodes and, unless disabled, attaches the runtime behavior that solves them. */
+    private _applyConstraints(fbxScene: FBXSceneData, modelIdToNode: Map<number, TransformNode>, rootNode: TransformNode, scene: Scene): void {
+        const nodeName = (id: number | undefined) => (id === undefined ? undefined : modelIdToNode.get(id)?.name);
+        const upSign = fbxScene.upAxisSign >= 0 ? 1 : -1;
+        const sceneUp = new Vector3(fbxScene.upAxis === 0 ? upSign : 0, fbxScene.upAxis === 1 ? upSign : 0, fbxScene.upAxis === 2 ? upSign : 0);
+        const summaries: unknown[] = [];
+        for (const c of fbxScene.constraints) {
+            const summary = {
+                name: c.name,
+                type: c.type,
+                node: nodeName(c.nodeId),
+                targets: c.targets.map((t) => ({ node: nodeName(t.modelId), weight: t.weight })),
+                weight: c.weight,
+                active: c.active,
+                ...(c.type === "singleChainIK" ? { firstJoint: nodeName(c.ikFirstJointId), endJoint: nodeName(c.ikEndJointId), effector: nodeName(c.ikEffectorId) } : {}),
+            };
+            summaries.push(summary);
+            const node = c.nodeId !== undefined ? modelIdToNode.get(c.nodeId) : undefined;
+            if (!node) {
+                continue;
+            }
+            const existing = ((node.metadata as { fbxConstraints?: unknown[] } | undefined)?.fbxConstraints ?? []) as unknown[];
+            node.metadata = { ...((node.metadata as object) ?? {}), fbxConstraints: [...existing, summary] };
+            if (this._options.constraints !== "apply" || c.type === "singleChainIK" || c.type === "unknown") {
+                continue;
+            }
+            const targets: FBXConstraintBehaviorTarget[] = [];
+            for (const t of c.targets) {
+                const targetNode = modelIdToNode.get(t.modelId);
+                if (!targetNode) {
+                    continue;
+                }
+                const d2r = Math.PI / 180;
+                const offset =
+                    c.type === "parent"
+                        ? Matrix.Compose(
+                              new Vector3(...t.offsetScale),
+                              Quaternion.FromRotationMatrix(eulerToMatrixXYZ(t.offsetRotation[0] * d2r, t.offsetRotation[1] * d2r, t.offsetRotation[2] * d2r)),
+                              new Vector3(...t.offsetTranslation)
+                          )
+                        : Matrix.Identity();
+                targets.push({ node: targetNode, weight: t.weight, offset });
+            }
+            if (targets.length === 0) {
+                continue;
+            }
+            const upNode = c.worldUpNodeId !== undefined ? (modelIdToNode.get(c.worldUpNodeId) ?? null) : null;
+            node.addBehavior(new FBXConstraintBehavior(c, { root: rootNode, targets, upNode, sceneUp }));
+        }
+        if (summaries.length > 0) {
+            rootNode.metadata = { ...((rootNode.metadata as object) ?? {}), fbxConstraints: summaries };
+        }
+    }
+
+    /** Collects every recoverable issue the interpreter recorded, stores it on the root node and notifies the caller. */
+    private _reportDiagnostics(fbxScene: FBXSceneData, rootNode: TransformNode, modelIdToNode: Map<number, TransformNode>): void {
+        const warnings: FBXLoaderWarning[] = [];
+        const push = (source: FBXLoaderWarning["source"], d: unknown, objectName?: string) => {
+            const message = typeof d === "string" ? d : ((d as { message?: string })?.message ?? JSON.stringify(d));
+            warnings.push({ source, message, objectName, details: typeof d === "string" ? undefined : d });
+        };
+        for (const d of fbxScene.diagnostics) {
+            // Objects with several parents (shared materials, textures, instanced geometry) are normal in FBX.
+            if (d.subType === "duplicate-parent") {
+                continue;
+            }
+            push("scene", d, d.objectName ?? d.nodeName);
+        }
+        for (const g of fbxScene.geometries) {
+            for (const d of g.diagnostics) {
+                push("geometry", d, g.name);
+            }
+        }
+        for (const c of fbxScene.curves) {
+            for (const d of c.diagnostics) {
+                push("geometry", d, c.name);
+            }
+        }
+        for (const skin of fbxScene.skins) {
+            for (const d of skin.diagnostics) {
+                push("skin", d);
+            }
+            for (const bone of skin.bones) {
+                for (const d of bone.diagnostics) {
+                    push("skin", d, bone.name);
+                }
+            }
+        }
+        for (const rig of fbxScene.rigs) {
+            for (const w of rig.warnings) {
+                push("rig", w);
+            }
+        }
+        for (const stack of fbxScene.animations) {
+            for (const d of stack.diagnostics) {
+                if (d.type === "unsupported-curve-node" && d.curveNodeId !== undefined && this._evaluatedCurveNodeIds.has(d.curveNodeId)) {
+                    continue;
+                }
+                push("animation", d, stack.name);
+            }
+        }
+        for (const cam of fbxScene.cameras) {
+            for (const d of cam.diagnostics) {
+                push("camera", d, cam.name);
+            }
+        }
+        for (const light of fbxScene.lights) {
+            for (const d of light.diagnostics) {
+                push("light", d, light.name);
+            }
+        }
+        const walk = (models: FBXModelData[]) => {
+            for (const m of models) {
+                for (const d of m.diagnostics) {
+                    push("model", d, m.name);
+                }
+                walk(m.children);
+            }
+        };
+        walk(fbxScene.rootModels);
+
+        rootNode.metadata = {
+            ...((rootNode.metadata as object) ?? {}),
+            fbxDiagnostics: warnings,
+            fbxDisplayLayers: fbxScene.displayLayers.map((l) => ({ name: l.name, show: l.show, freeze: l.freeze, color: l.color })),
+            fbxSelectionSets: fbxScene.selectionSets.map((set) => ({
+                name: set.name,
+                members: set.members.map((m) => ({
+                    node: modelIdToNode.get(m.modelId)?.name ?? String(m.modelId),
+                    includeNode: m.includeNode,
+                    ...(m.vertices ? { vertices: m.vertices } : {}),
+                    ...(m.edges ? { edges: m.edges } : {}),
+                    ...(m.faces ? { faces: m.faces } : {}),
+                })),
+            })),
+        };
+        for (const warning of warnings) {
+            this._options.onWarning(warning);
+        }
+    }
+
+    /** Curve nodes affecting the inherit scale of a model: its own scale curves and those of its inherit-scale chain. */
+    private _collectInheritScaleCurves(modelData: FBXModelData): FBXCurveNodeData[] {
+        const result: FBXCurveNodeData[] = [];
+        let current: FBXModelData | undefined = modelData;
+        const seen = new Set<number>();
+        while (current && !seen.has(current.id)) {
+            seen.add(current.id);
+            for (const cn of this._curveNodesByModelId.get(current.id) ?? []) {
+                if (cn.type === "S") {
+                    result.push(cn);
+                }
+            }
+            current = this._getInheritScaleNode(current);
+        }
+        return result;
+    }
+
     private _isVector3KeysConstant(keys: { frame: number; value: Vector3 }[]): boolean {
         if (keys.length < 2) {
             return true;
@@ -2500,37 +3836,91 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         return true;
     }
 
+    /** Samples the animated Lcl Translation / Rotation / Scaling of a model, blending all layers of the active stack. */
+    private _sampleModelTRS(
+        modelData: FBXModelData,
+        curveNodes: readonly FBXCurveNodeData[],
+        time: number
+    ): { translation: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] } {
+        const layers = this._activeLayers;
+        return {
+            translation: evaluateLayeredChannel(curveNodes, layers, "T", modelData.translation, modelData.rotationOrder, time),
+            rotation: evaluateLayeredChannel(curveNodes, layers, "R", modelData.rotation, modelData.rotationOrder, time),
+            scale: evaluateLayeredChannel(curveNodes, layers, "S", modelData.scale, modelData.rotationOrder, time),
+        };
+    }
+
+    /**
+     * Local position/rotation/scale of a model from FBX Lcl values. Without pivots and offsets the components map
+     * directly (rotation = pre * lcl * post⁻¹), which keeps zero and negative scales exact. With pivots the full
+     * matrix is built and decomposed.
+     */
+    private static _computeLocalTRS(
+        modelData: FBXModelData,
+        translation: [number, number, number],
+        rotation: [number, number, number],
+        scale: [number, number, number]
+    ): { position: Vector3; rotationQuaternion: Quaternion; scaling: Vector3 } {
+        const nz = (v: [number, number, number]) => v[0] !== 0 || v[1] !== 0 || v[2] !== 0;
+        const d2r = Math.PI / 180;
+        let rotM = eulerToMatrix(rotation[0] * d2r, rotation[1] * d2r, rotation[2] * d2r, modelData.rotationOrder);
+        if (nz(modelData.preRotation)) {
+            rotM = rotM.multiply(eulerToMatrixXYZ(modelData.preRotation[0] * d2r, modelData.preRotation[1] * d2r, modelData.preRotation[2] * d2r));
+        }
+        if (nz(modelData.postRotation)) {
+            const post = eulerToMatrixXYZ(modelData.postRotation[0] * d2r, modelData.postRotation[1] * d2r, modelData.postRotation[2] * d2r);
+            const postInv = new Matrix();
+            post.invertToRef(postInv);
+            rotM = postInv.multiply(rotM);
+        }
+        let position = new Vector3(translation[0], translation[1], translation[2]);
+        if (nz(modelData.rotationPivot) || nz(modelData.scalingPivot) || nz(modelData.rotationOffset) || nz(modelData.scalingOffset)) {
+            // Pivots and offsets only move the translation: the linear part of the FBX local matrix is always S·R.
+            position = FBXFileLoader._computeFBXLocalMatrix(
+                translation,
+                rotation,
+                scale,
+                modelData.preRotation,
+                modelData.postRotation,
+                modelData.rotationPivot,
+                modelData.scalingPivot,
+                modelData.rotationOffset,
+                modelData.scalingOffset,
+                modelData.rotationOrder
+            ).getTranslation();
+        }
+        return {
+            position,
+            rotationQuaternion: Quaternion.FromRotationMatrix(rotM),
+            scaling: new Vector3(scale[0], scale[1], scale[2]),
+        };
+    }
+
+    /** Applies inherit-mode adjustments to a local TRS (see _computeInheritAwareLocalMatrix). */
+    private _adjustTRSForInheritMode(modelData: FBXModelData, trs: { position: Vector3; rotationQuaternion: Quaternion; scaling: Vector3 }, time: number | undefined): void {
+        const parent = this._parentModelById.get(modelData.id);
+        if (modelData.inheritType === 1 || !parent) {
+            return;
+        }
+        const parentScale = this._getInheritScale(parent, time);
+        trs.position.x *= parentScale[0];
+        trs.position.y *= parentScale[1];
+        trs.position.z *= parentScale[2];
+        const inheritNode = this._getInheritScaleNode(modelData);
+        if (inheritNode) {
+            const inherited = this._getInheritScale(inheritNode, time);
+            trs.scaling.x *= inherited[0];
+            trs.scaling.y *= inherited[1];
+            trs.scaling.z *= inherited[2];
+        }
+    }
+
     private _sampleModelLocalMatrix(modelData: FBXModelData, curveNodes: FBXCurveNodeData[], time: number, scaleOverride?: [number, number, number]): Matrix {
-        const tNode = curveNodes.find((cn) => cn.type === "T");
-        const rNode = curveNodes.find((cn) => cn.type === "R");
-        const sNode = curveNodes.find((cn) => cn.type === "S");
-
-        const txCurve = tNode?.curves.find((c) => c.channel === "d|X");
-        const tyCurve = tNode?.curves.find((c) => c.channel === "d|Y");
-        const tzCurve = tNode?.curves.find((c) => c.channel === "d|Z");
-        const rxCurve = rNode?.curves.find((c) => c.channel === "d|X");
-        const ryCurve = rNode?.curves.find((c) => c.channel === "d|Y");
-        const rzCurve = rNode?.curves.find((c) => c.channel === "d|Z");
-        const sxCurve = sNode?.curves.find((c) => c.channel === "d|X");
-        const syCurve = sNode?.curves.find((c) => c.channel === "d|Y");
-        const szCurve = sNode?.curves.find((c) => c.channel === "d|Z");
-
+        const trs = this._sampleModelTRS(modelData, curveNodes, time);
         return FBXFileLoader._computeFBXLocalMatrix(
-            [
-                sampleFBXCurveAtTime(txCurve, time) ?? modelData.translation[0],
-                sampleFBXCurveAtTime(tyCurve, time) ?? modelData.translation[1],
-                sampleFBXCurveAtTime(tzCurve, time) ?? modelData.translation[2],
-            ],
-            [
-                sampleFBXCurveAtTime(rxCurve, time) ?? modelData.rotation[0],
-                sampleFBXCurveAtTime(ryCurve, time) ?? modelData.rotation[1],
-                sampleFBXCurveAtTime(rzCurve, time) ?? modelData.rotation[2],
-            ],
-            scaleOverride ?? [
-                sampleFBXCurveAtTime(sxCurve, time) ?? modelData.scale[0],
-                sampleFBXCurveAtTime(syCurve, time) ?? modelData.scale[1],
-                sampleFBXCurveAtTime(szCurve, time) ?? modelData.scale[2],
-            ],
+            trs.translation,
+            trs.rotation,
+            scaleOverride ?? trs.scale,
             modelData.preRotation,
             modelData.postRotation,
             modelData.rotationPivot,
@@ -2542,15 +3932,68 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     }
 
     private _sampleModelScale(modelData: FBXModelData, curveNodes: FBXCurveNodeData[], time: number): [number, number, number] {
-        const sNode = curveNodes.find((cn) => cn.type === "S");
-        const sxCurve = sNode?.curves.find((c) => c.channel === "d|X");
-        const syCurve = sNode?.curves.find((c) => c.channel === "d|Y");
-        const szCurve = sNode?.curves.find((c) => c.channel === "d|Z");
-        return [
-            sampleFBXCurveAtTime(sxCurve, time) ?? modelData.scale[0],
-            sampleFBXCurveAtTime(syCurve, time) ?? modelData.scale[1],
-            sampleFBXCurveAtTime(szCurve, time) ?? modelData.scale[2],
-        ];
+        return evaluateLayeredChannel(curveNodes, this._activeLayers, "S", modelData.scale, modelData.rotationOrder, time);
+    }
+
+    /**
+     * Effective scale of a model for inherit-mode math (`inherit_scale` in ufbx terms): its own local scale, multiplied
+     * componentwise by the inherited scale when the model uses RrSs inheritance. `time` samples animation; undefined
+     * uses the rest pose.
+     */
+    private _getInheritScale(modelData: FBXModelData | undefined, time: number | undefined): [number, number, number] {
+        if (!modelData) {
+            return [1, 1, 1];
+        }
+        const own = time === undefined ? modelData.scale : this._sampleModelScale(modelData, this._curveNodesByModelId.get(modelData.id) ?? [], time);
+        const inheritNode = this._getInheritScaleNode(modelData);
+        if (!inheritNode) {
+            return [own[0], own[1], own[2]];
+        }
+        const parentScale = this._getInheritScale(inheritNode, time);
+        return [own[0] * parentScale[0], own[1] * parentScale[1], own[2] * parentScale[2]];
+    }
+
+    /** RrSs nodes inherit scale from their parent; Rrs nodes skip their immediate parent (chaining through Rrs parents). */
+    private _getInheritScaleNode(modelData: FBXModelData): FBXModelData | undefined {
+        const parent = this._parentModelById.get(modelData.id);
+        if (!parent) {
+            return undefined;
+        }
+        if (modelData.inheritType === 0) {
+            return parent;
+        }
+        if (modelData.inheritType === 2) {
+            return this._getInheritScaleNode(parent);
+        }
+        return undefined;
+    }
+
+    /**
+     * Local matrix of a model relative to its Babylon parent frame, accounting for inherit modes. For RSrs (the
+     * default) this is the FBX local matrix. For RrSs / Rrs the node sits under a helper that removes the parent's
+     * scale, so translation is pre-scaled by the parent scale and (for RrSs) scale accumulates componentwise.
+     */
+    private _computeInheritAwareLocalMatrix(modelData: FBXModelData, localMatrix: Matrix, time: number | undefined): Matrix {
+        const parent = this._parentModelById.get(modelData.id);
+        if (modelData.inheritType === 1 || !parent) {
+            return localMatrix;
+        }
+        const s = new Vector3();
+        const r = new Quaternion();
+        const t = new Vector3();
+        localMatrix.decompose(s, r, t);
+        const parentScale = this._getInheritScale(parent, time);
+        t.x *= parentScale[0];
+        t.y *= parentScale[1];
+        t.z *= parentScale[2];
+        const inheritNode = this._getInheritScaleNode(modelData);
+        if (inheritNode) {
+            const inherited = this._getInheritScale(inheritNode, time);
+            s.x *= inherited[0];
+            s.y *= inherited[1];
+            s.z *= inherited[2];
+        }
+        return Matrix.Compose(s, r, t);
     }
 
     /**
@@ -2566,28 +4009,15 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         stopTime: number,
         bindLocalMatrix?: Matrix
     ): Animation[] {
-        const fps = 30;
+        const fps = this._frameRate;
 
-        // Separate curves by type
-        const tNode = curveNodes.find((cn) => cn.type === "T");
         const rNode = curveNodes.find((cn) => cn.type === "R");
-        const sNode = curveNodes.find((cn) => cn.type === "S");
 
-        const times = collectAnimationSampleTimes(curveNodes, fps, startTime, stopTime);
-        if (times.length === 0) {
+        const baseTimes = collectAnimationSampleTimes(curveNodes, fps, startTime, stopTime);
+        if (baseTimes.length === 0) {
             return [];
         }
-
-        // Get curve accessors
-        const txCurve = tNode?.curves.find((c) => c.channel === "d|X");
-        const tyCurve = tNode?.curves.find((c) => c.channel === "d|Y");
-        const tzCurve = tNode?.curves.find((c) => c.channel === "d|Z");
-        const rxCurve = rNode?.curves.find((c) => c.channel === "d|X");
-        const ryCurve = rNode?.curves.find((c) => c.channel === "d|Y");
-        const rzCurve = rNode?.curves.find((c) => c.channel === "d|Z");
-        const sxCurve = sNode?.curves.find((c) => c.channel === "d|X");
-        const syCurve = sNode?.curves.find((c) => c.channel === "d|Y");
-        const szCurve = sNode?.curves.find((c) => c.channel === "d|Z");
+        const times = FBXFileLoader._refineSampleTimes(baseTimes, (time) => this._sampleModelLocalMatrix(modelData, curveNodes, time));
 
         const posKeys: { frame: number; value: Vector3 }[] = [];
         const rotKeys: { frame: number; value: Quaternion }[] = [];
@@ -2614,30 +4044,8 @@ export class FBXFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         for (const time of times) {
             const frame = time * fps;
 
-            // Sample animated values, falling back to model's base values
-            const tx = sampleFBXCurveAtTime(txCurve, time) ?? modelData.translation[0];
-            const ty = sampleFBXCurveAtTime(tyCurve, time) ?? modelData.translation[1];
-            const tz = sampleFBXCurveAtTime(tzCurve, time) ?? modelData.translation[2];
-            const rx = sampleFBXCurveAtTime(rxCurve, time) ?? modelData.rotation[0];
-            const ry = sampleFBXCurveAtTime(ryCurve, time) ?? modelData.rotation[1];
-            const rz = sampleFBXCurveAtTime(rzCurve, time) ?? modelData.rotation[2];
-            const sx = sampleFBXCurveAtTime(sxCurve, time) ?? modelData.scale[0];
-            const sy = sampleFBXCurveAtTime(syCurve, time) ?? modelData.scale[1];
-            const sz = sampleFBXCurveAtTime(szCurve, time) ?? modelData.scale[2];
-
-            // Compute the full FBX local matrix from animated Lcl values
-            const localMatrix = FBXFileLoader._computeFBXLocalMatrix(
-                [tx, ty, tz],
-                [rx, ry, rz],
-                [sx, sy, sz],
-                modelData.preRotation,
-                modelData.postRotation,
-                modelData.rotationPivot,
-                modelData.scalingPivot,
-                modelData.rotationOffset,
-                modelData.scalingOffset,
-                modelData.rotationOrder
-            );
+            // Compute the full FBX local matrix from animated Lcl values, blending all layers
+            const localMatrix = this._sampleModelLocalMatrix(modelData, curveNodes, time);
 
             const correctedLocalMatrix = restLocalInverse && bindLocalMatrix ? bindLocalMatrix.multiply(restLocalInverse).multiply(localMatrix) : localMatrix;
 
@@ -3058,18 +4466,33 @@ function clamp01(value: number): number {
     return Math.max(0, Math.min(1, value));
 }
 
+/** Interior frames kept between two keys when the segment is cubic or extrapolated. */
+const MAX_DENSE_SEGMENT_SAMPLES = 512;
+/** Interior frames kept between two keys when every curve is linear or constant there. */
+const MAX_LINEAR_SEGMENT_SAMPLES = 32;
+/** Upper bound on samples per animated node, beyond which the frame stride grows. */
+const MAX_SAMPLES_PER_TARGET = 100000;
+
+/**
+ * Times at which the animation is baked: every key time plus the frame grid between keys. Segments where every
+ * curve is linear or constant only get a few interior frames (Babylon interpolates linearly between the baked
+ * keys), cubic or extrapolated segments get the full frame grid up to a cap, so day-long clips with a handful of
+ * keys do not explode into millions of samples.
+ */
 function collectAnimationSampleTimes(curveNodes: FBXCurveNodeData[], fps: number, startTime: number, stopTime: number): number[] {
     let minTime = Number.POSITIVE_INFINITY;
     let maxTime = Number.NEGATIVE_INFINITY;
-    const sourceTimes = new Set<number>();
+    const anchorSet = new Set<number>();
+    const curves: FBXCurveData[] = [];
 
     for (const curveNode of curveNodes) {
         for (const curve of curveNode.curves) {
+            curves.push(curve);
             for (const key of curve.keys) {
                 minTime = Math.min(minTime, key.time);
                 maxTime = Math.max(maxTime, key.time);
                 if (key.time >= startTime && key.time <= stopTime) {
-                    sourceTimes.add(key.time);
+                    anchorSet.add(key.time);
                 }
             }
         }
@@ -3081,15 +4504,83 @@ function collectAnimationSampleTimes(curveNodes: FBXCurveNodeData[], fps: number
 
     const rangeStart = stopTime > startTime ? startTime : minTime;
     const rangeStop = stopTime > startTime ? stopTime : maxTime;
-    const times = new Set<number>([rangeStart, rangeStop, ...Array.from(sourceTimes)]);
-    const startFrame = Math.ceil(rangeStart * fps);
-    const stopFrame = Math.floor(rangeStop * fps);
+    anchorSet.add(rangeStart);
+    anchorSet.add(rangeStop);
+    const anchors = Array.from(anchorSet)
+        .filter((t) => t >= rangeStart && t <= rangeStop)
+        .sort((a, b) => a - b);
 
-    for (let frame = startFrame; frame <= stopFrame; frame++) {
-        times.add(frame / fps);
+    // A segment needs the dense grid when any curve is cubic there or extrapolates a non-constant pattern.
+    const segmentIsDense = (t0: number): boolean => {
+        for (const curve of curves) {
+            const keys = curve.keys;
+            if (keys.length === 0) {
+                continue;
+            }
+            if (t0 < keys[0].time) {
+                if (curve.preExtrapolation && curve.preExtrapolation.mode !== "constant") {
+                    return true;
+                }
+                continue;
+            }
+            if (t0 >= keys[keys.length - 1].time) {
+                if (curve.postExtrapolation && curve.postExtrapolation.mode !== "constant") {
+                    return true;
+                }
+                continue;
+            }
+            let lo = 0;
+            let hi = keys.length - 1;
+            while (hi - lo > 1) {
+                const mid = (lo + hi) >> 1;
+                if (keys[mid].time <= t0) {
+                    lo = mid;
+                } else {
+                    hi = mid;
+                }
+            }
+            if (keys[lo].interpolation === "cubic") {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    const times: number[] = [];
+    const totalFrames = Math.floor(rangeStop * fps) - Math.ceil(rangeStart * fps) + 1;
+    const stride = Math.max(1, Math.ceil(totalFrames / MAX_SAMPLES_PER_TARGET));
+    for (let i = 0; i < anchors.length; i++) {
+        const t0 = anchors[i];
+        times.push(t0);
+        if (i + 1 >= anchors.length) {
+            break;
+        }
+        const t1 = anchors[i + 1];
+        const firstFrame = Math.floor(t0 * fps) + 1;
+        const lastFrame = Math.ceil(t1 * fps) - 1;
+        const interior = lastFrame - firstFrame + 1;
+        if (interior <= 0) {
+            continue;
+        }
+        const cap = segmentIsDense(t0) ? MAX_DENSE_SEGMENT_SAMPLES : MAX_LINEAR_SEGMENT_SAMPLES;
+        const step = Math.max(stride, Math.ceil(interior / cap));
+        for (let frame = firstFrame; frame <= lastFrame; frame += step) {
+            times.push(frame / fps);
+        }
     }
 
-    return Array.from(times).sort((a, b) => a - b);
+    const sorted = times.sort((a, b) => a - b);
+    // Key times and frame times can differ by floating point noise; keep one sample per instant.
+    const deduped: number[] = [];
+    for (const t of sorted) {
+        if (t < rangeStart - 1e-9 || t > rangeStop + 1e-9) {
+            continue;
+        }
+        if (deduped.length === 0 || t - deduped[deduped.length - 1] > 1e-9) {
+            deduped.push(t);
+        }
+    }
+    return deduped;
 }
 
 function areQuaternionKeysConstant(keys: { frame: number; value: Quaternion }[]): boolean {
@@ -3122,6 +4613,10 @@ function buildScalarAnimationKeys(curve: FBXCurveData, fps: number, startTime: n
                 time: range.start,
                 value: sampleFBXCurveAtTime(curve, range.start) ?? 0,
                 interpolation: "linear",
+                leftDx: 0,
+                leftDy: 0,
+                rightDx: 0,
+                rightDy: 0,
             },
             frame: range.start * fps,
             value: mapValue(sampleFBXCurveAtTime(curve, range.start) ?? 0),
@@ -3134,6 +4629,10 @@ function buildScalarAnimationKeys(curve: FBXCurveData, fps: number, startTime: n
                 time: range.stop,
                 value: sampleFBXCurveAtTime(curve, range.stop) ?? 0,
                 interpolation: "linear",
+                leftDx: 0,
+                leftDy: 0,
+                rightDx: 0,
+                rightDy: 0,
             },
             frame: range.stop * fps,
             value: mapValue(sampleFBXCurveAtTime(curve, range.stop) ?? 0),

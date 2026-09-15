@@ -18,6 +18,33 @@ describe("parseBinaryFBX", () => {
         expect(doc.nodes).toEqual([{ name: "Test", properties: [], children: [] }]);
     });
 
+    it("keeps the exact text of int64 values beyond 2^53", () => {
+        const nodeOffset = HEADER_SIZE;
+        const propertyBytes = 3 * 9;
+        const nodeEnd = nodeOffset + NODE_HEADER_SIZE + 4 + propertyBytes;
+        const buffer = createBinaryFBX(nodeEnd + NODE_HEADER_SIZE);
+        writeNodeHeader(buffer, nodeOffset, nodeEnd, 3, propertyBytes, "Test");
+        let offset = nodeOffset + NODE_HEADER_SIZE + 4;
+        // 2^53 + 1, -(2^53 + 1) and 42 as little-endian two's complement
+        for (const bytes of [
+            [0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00],
+            [0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xdf, 0xff],
+            [0x2a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+        ]) {
+            buffer[offset] = "L".charCodeAt(0);
+            buffer.set(bytes, offset + 1);
+            offset += 9;
+        }
+
+        const doc = parseBinaryFBX(buffer.buffer);
+
+        expect(doc.nodes[0].properties).toEqual([
+            { type: "int64", value: 9007199254740992, raw: "9007199254740993" },
+            { type: "int64", value: -9007199254740992, raw: "-9007199254740993" },
+            { type: "int64", value: 42 },
+        ]);
+    });
+
     it("rejects truncated binary headers", () => {
         const buffer = createBinaryFBX(21);
 

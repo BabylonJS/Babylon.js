@@ -1,5 +1,4 @@
 import { type Camera } from "../Cameras/camera.pure";
-import { type AbstractEngine } from "../Engines/abstractEngine.pure";
 import { Constants } from "../Engines/constants";
 import { type Effect } from "../Materials/effect.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
@@ -17,11 +16,13 @@ import {
     _ValidateMeshBlendConfiguration,
 } from "./thinMeshBlendingPostProcess";
 
+const _ClassicEffectWrapperOwners = new WeakSet<ThinMeshBlendingPostProcess>();
+
 /**
  * Options used to create a mesh-blending post process.
  */
 export interface IMeshBlendingPostProcessOptions extends PostProcessOptions, IMeshBlendConfiguration {
-    /** Optional caller-owned thin mesh-blending effect wrapper. */
+    /** Optional caller-owned thin mesh-blending effect wrapper. A wrapper can be attached to only one classic post process at a time. */
     effectWrapper?: ThinMeshBlendingPostProcess;
     /**
      * The packed R8UI mesh-blending tag texture.
@@ -72,6 +73,7 @@ export class MeshBlendingPostProcess extends PostProcess {
     private _depthTexture: BaseTexture;
     private _baseColorTexture: Nullable<BaseTexture>;
     private readonly _ownsEffectWrapper: boolean;
+    private readonly _usesExternalEffectWrapper: boolean;
 
     /**
      * Gets the compile-time quality variant.
@@ -191,21 +193,33 @@ export class MeshBlendingPostProcess extends PostProcess {
      * @param options The post-process and input-texture options.
      */
     constructor(name: string, scene: Scene, camera: Camera, options: IMeshBlendingPostProcessOptions) {
-        const engine: AbstractEngine = options.engine ?? scene.getEngine();
+        const sceneEngine = scene.getEngine();
+        if (camera.getScene() !== scene) {
+            throw new Error("MeshBlendingPostProcess: scene and camera must belong to the same scene");
+        }
+        if (options.engine !== undefined && options.engine !== sceneEngine) {
+            throw new Error("MeshBlendingPostProcess: options.engine must match the scene engine");
+        }
         if (options.effectWrapper !== undefined && !(options.effectWrapper instanceof ThinMeshBlendingPostProcess)) {
             throw new TypeError("MeshBlendingPostProcess: effectWrapper must be a ThinMeshBlendingPostProcess");
+        }
+        if (options.effectWrapper !== undefined && options.effectWrapper.options.engine !== sceneEngine) {
+            throw new Error("MeshBlendingPostProcess: effectWrapper must use the scene engine");
+        }
+        if (options.effectWrapper !== undefined && _ClassicEffectWrapperOwners.has(options.effectWrapper)) {
+            throw new Error("MeshBlendingPostProcess: effectWrapper is already attached to another classic mesh-blending post process");
         }
         const depthType = options.depthType ?? options.effectWrapper?.depthType ?? MeshBlendDepthType.View;
         MeshBlendingPostProcess._ValidateInputs(options, depthType);
 
         const ownsEffectWrapper = options.effectWrapper === undefined;
-        const effectWrapper = options.effectWrapper ?? new ThinMeshBlendingPostProcess(name, engine, options);
+        const effectWrapper = options.effectWrapper ?? new ThinMeshBlendingPostProcess(name, sceneEngine, options);
         effectWrapper.hasBaseColorTexture = !!options.baseColorTexture;
 
         super(name, ThinMeshBlendingPostProcess.FragmentUrl, {
             ...options,
             camera,
-            engine,
+            engine: sceneEngine,
             effectWrapper,
             uniforms: ThinMeshBlendingPostProcess.Uniforms,
             samplers: ThinMeshBlendingPostProcess.Samplers,
@@ -213,12 +227,17 @@ export class MeshBlendingPostProcess extends PostProcess {
         });
 
         this._ownsEffectWrapper = ownsEffectWrapper;
+        this._usesExternalEffectWrapper = !ownsEffectWrapper;
+        if (this._usesExternalEffectWrapper) {
+            _ClassicEffectWrapperOwners.add(effectWrapper);
+        }
         this._meshBlendTagTexture = options.meshBlendTagTexture;
         this._depthTexture = options.depthTexture;
         this._baseColorTexture = options.baseColorTexture ?? null;
 
         this._effectWrapper.configure(options);
         this._effectWrapper.camera = camera;
+        this.doNotSerialize = true;
         this._validateInputDimensions();
 
         this.onApply = (effect: Effect) => {
@@ -238,6 +257,9 @@ export class MeshBlendingPostProcess extends PostProcess {
 
     public override dispose(camera?: Camera): void {
         super.dispose(camera);
+        if (this._usesExternalEffectWrapper) {
+            _ClassicEffectWrapperOwners.delete(this._effectWrapper);
+        }
         if (this._ownsEffectWrapper) {
             this._effectWrapper.dispose();
         }

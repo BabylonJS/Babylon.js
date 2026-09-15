@@ -18,6 +18,10 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     public override initPriority: number = -1;
 
     public override readonly type: FlowGraphEventType = FlowGraphEventType.SceneReady;
+    /** @returns the shared scene-ready event key */
+    public override get eventKey(): string {
+        return EventKey;
+    }
 
     /**
      * Output: the opaque reference identifying this event source.

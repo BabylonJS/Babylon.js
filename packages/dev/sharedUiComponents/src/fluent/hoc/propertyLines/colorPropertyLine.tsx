@@ -1,65 +1,37 @@
-import { type FunctionComponent, forwardRef, useEffect, useState } from "react";
+import { type FunctionComponent, forwardRef } from "react";
 
-import { type PropertyLineProps, PropertyLine } from "./propertyLine";
-import { SyncedSliderPropertyLine } from "./syncedSliderPropertyLine";
+import { type PropertyLineProps } from "./propertyLine";
 
 import { type Color3, Color4 } from "core/Maths/math.color";
 import { ColorPickerPopup, type ColorPickerProps } from "../../primitives/colorPicker";
+import { ControlledColorPropertyLine, type ColorPropertyLineAdapter } from "./colorPropertyLineCore";
 
 export type ColorPropertyLineProps = ColorPickerProps<Color3 | Color4> & PropertyLineProps<Color3 | Color4>;
 
-/**
- * Reusable component which renders a color property line containing a label, colorPicker popout, and expandable RGBA values
- * The expandable RGBA values are synced sliders that allow the user to modify the color's RGBA values directly
- * @param props - PropertyLine props, replacing children with a color object so that we can properly display the color
- * @returns Component wrapping a colorPicker component with a property line
- */
-const ColorPropertyLine = forwardRef<HTMLDivElement, ColorPropertyLineProps>((props, ref) => {
-    ColorPropertyLine.displayName = "ColorPropertyLine";
-    const [color, setColor] = useState(props.value);
-
-    useEffect(() => {
-        setColor(props.value);
-    }, [props.value]);
-
-    const onSliderChange = (value: number, key: "r" | "g" | "b" | "a") => {
-        let newColor: Color3 | Color4;
-        if (key === "a") {
-            newColor = Color4.FromColor3(color, value);
-        } else {
-            newColor = color.clone();
-            newColor[key] = value / 255;
+const Picker: FunctionComponent<ColorPickerProps<Color3 | Color4>> = (props) => <ColorPickerPopup {...props} />;
+const Adapter: ColorPropertyLineAdapter<Color3 | Color4> = {
+    picker: Picker,
+    getColor: (value) => value,
+    createColor: (color, source) => {
+        if (source instanceof Color4) {
+            return new Color4(color.r, color.g, color.b, color.a ?? source.a);
         }
-
-        setColor(newColor); // Create a new object to trigger re-render
-        props.onChange(newColor);
-    };
-
-    const onColorPickerChange = (newColor: Color3 | Color4) => {
-        setColor(newColor);
-        props.onChange(newColor);
-    };
-
-    return (
-        <PropertyLine ref={ref} {...props} expandedContent={color ? <ColorSliders color={color} onSliderChange={onSliderChange} /> : undefined}>
-            <ColorPickerPopup {...props} onChange={onColorPickerChange} value={color} />
-        </PropertyLine>
-    );
-});
-
-type ColorSlidersProps = {
-    color: Color3 | Color4;
-    onSliderChange: (value: number, key: "r" | "g" | "b" | "a") => void;
+        return source.clone().set(color.r, color.g, color.b);
+    },
 };
 
-const ColorSliders: FunctionComponent<ColorSlidersProps> = ({ color, onSliderChange }) => (
-    <>
-        <SyncedSliderPropertyLine label="R" value={color.r * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "r")} />
-        <SyncedSliderPropertyLine label="G" value={color.g * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "g")} />
-        <SyncedSliderPropertyLine label="B" value={color.b * 255} min={0} max={255} onChange={(value) => onSliderChange(value, "b")} />
-        {color instanceof Color4 && <SyncedSliderPropertyLine label="A" value={color.a} min={0} max={1} step={0.01} onChange={(value) => onSliderChange(value, "a")} />}
-    </>
-);
+const ColorPropertyLine = forwardRef<HTMLDivElement, ColorPropertyLineProps>((props, ref) => <ControlledColorPropertyLine {...props} adapter={Adapter} propertyLineRef={ref} />);
+ColorPropertyLine.displayName = "ColorPropertyLine";
 
+/**
+ * Edits a Babylon.js Color3 value.
+ * @param props The controlled color and property-line presentation.
+ * @returns The Color3 property line.
+ */
 export const Color3PropertyLine = ColorPropertyLine as FunctionComponent<ColorPickerProps<Color3> & PropertyLineProps<Color3>>;
+/**
+ * Edits a Babylon.js Color4 value.
+ * @param props The controlled color and property-line presentation.
+ * @returns The Color4 property line.
+ */
 export const Color4PropertyLine = ColorPropertyLine as FunctionComponent<ColorPickerProps<Color4> & PropertyLineProps<Color4>>;

@@ -65,7 +65,7 @@ const DefaultOptions: Required<IFlowLayoutOptions> = {
  * Maximum number of blocks stacked in a single column before the column is wrapped into a
  * compact block of sub-columns. Prevents a wide fan-out from becoming one very tall column.
  */
-const MaxNodesPerColumn = 8;
+const MaxNodesPerColumn = 12;
 
 /** Internal: a laid-out independent flow, positioned relative to its own (0, 0) origin. */
 interface IComponentLayout {
@@ -100,6 +100,17 @@ export function ComputeFlowGraphLayout(nodes: IFlowLayoutNode[], options?: IFlow
     const byId = new Map<number, IFlowLayoutNode>();
     for (const node of nodes) {
         byId.set(node.id, node);
+    }
+    const providersByConsumer = new Map<number, number[]>();
+    for (const node of nodes) {
+        providersByConsumer.set(node.id, []);
+    }
+    for (const node of nodes) {
+        for (const target of [...node.signalOut, ...node.dataOut]) {
+            if (byId.has(target)) {
+                providersByConsumer.get(target)!.push(node.id);
+            }
+        }
     }
 
     // Partition the graph into one flow per event / entry root: each root claims the blocks
@@ -152,31 +163,48 @@ export function ComputeFlowGraphLayout(nodes: IFlowLayoutNode[], options?: IFlow
         }
     }
 
-    // Attach data-only providers / isolated blocks to a flow they feed; iterate for chains.
-    let attachChanged = true;
-    while (attachChanged) {
-        attachChanged = false;
-        for (const node of nodes) {
-            if (owner.has(node.id)) {
-                continue;
-            }
-            let target: number | undefined;
-            for (const id of [...node.signalOut, ...node.dataOut]) {
-                if (owner.has(id)) {
-                    target = owner.get(id);
-                    break;
-                }
-            }
-            if (target !== undefined) {
-                owner.set(node.id, target);
-                attachChanged = true;
+    // Attach data-only provider chains by traversing reverse adjacency once.
+    const ownerQueue = nodes.filter((node) => owner.has(node.id)).map((node) => node.id);
+    let ownerQueueHead = 0;
+    while (ownerQueueHead < ownerQueue.length) {
+        const consumerId = ownerQueue[ownerQueueHead++];
+        const rootId = owner.get(consumerId)!;
+        for (const providerId of providersByConsumer.get(consumerId) ?? []) {
+            if (!owner.has(providerId)) {
+                owner.set(providerId, rootId);
+                ownerQueue.push(providerId);
             }
         }
     }
-    // Anything still unowned (fully isolated) forms its own single-node flow.
+    // Group remaining data-only islands by weak connectivity instead of treating every block as
+    // an unrelated flow. Large KHR graphs often contain math networks without signal edges; tiling
+    // each block independently makes those networks extremely wide and destroys their data flow.
+    const undirected = new Map<number, number[]>();
     for (const node of nodes) {
-        if (!owner.has(node.id)) {
-            owner.set(node.id, node.id);
+        undirected.set(node.id, []);
+    }
+    for (const node of nodes) {
+        for (const target of [...node.signalOut, ...node.dataOut]) {
+            if (byId.has(target)) {
+                undirected.get(node.id)!.push(target);
+                undirected.get(target)!.push(node.id);
+            }
+        }
+    }
+    for (const node of nodes) {
+        if (owner.has(node.id)) {
+            continue;
+        }
+        const stack = [node.id];
+        owner.set(node.id, node.id);
+        while (stack.length > 0) {
+            const current = stack.pop()!;
+            for (const connected of undirected.get(current) ?? []) {
+                if (!owner.has(connected)) {
+                    owner.set(connected, node.id);
+                    stack.push(connected);
+                }
+            }
         }
     }
 
@@ -229,10 +257,19 @@ export function ComputeFlowGraphLayout(nodes: IFlowLayoutNode[], options?: IFlow
 function LayoutComponent(nodes: IFlowLayoutNode[], opts: Required<IFlowLayoutOptions>): IComponentLayout {
     const positions = new Map<number, IFlowLayoutPosition>();
     const byId = new Map<number, IFlowLayoutNode>();
+    const providersByConsumer = new Map<number, number[]>();
     let minId = Number.POSITIVE_INFINITY;
     for (const node of nodes) {
         byId.set(node.id, node);
+        providersByConsumer.set(node.id, []);
         minId = Math.min(minId, node.id);
+    }
+    for (const node of nodes) {
+        for (const target of [...node.signalOut, ...node.dataOut]) {
+            if (byId.has(target)) {
+                providersByConsumer.get(target)!.push(node.id);
+            }
+        }
     }
 
     // Forward signal edges kept for layering. Back-edges (e.g. loop bodies) are dropped
@@ -348,31 +385,54 @@ function LayoutComponent(nodes: IFlowLayoutNode[], opts: Required<IFlowLayoutOpt
         sortKey.set(id, idx);
     }
 
-    // Place data-only / isolated nodes that never participate in signal flow. A provider is
-    // parked one column to the left of the earliest block it feeds, just above that block.
-    // Iterate to resolve short provider chains; anything left over is parked in column 0.
-    let changed = true;
-    let guard = 0;
-    while (changed && guard <= nodes.length) {
-        changed = false;
-        guard++;
-        for (const node of nodes) {
-            if (column.has(node.id)) {
+    // Place data-only providers by walking reverse adjacency once from signal-layer anchors.
+    const providerQueue = nodes.filter((node) => column.has(node.id)).map((node) => node.id);
+    let providerQueueHead = 0;
+    while (providerQueueHead < providerQueue.length) {
+        const consumerId = providerQueue[providerQueueHead++];
+        const consumerColumn = column.get(consumerId)!;
+        const consumerKey = sortKey.get(consumerId) ?? 0;
+        for (const providerId of providersByConsumer.get(consumerId) ?? []) {
+            if (!column.has(providerId)) {
+                column.set(providerId, Math.max(0, consumerColumn - 1));
+                sortKey.set(providerId, consumerKey - 0.5);
+                providerQueue.push(providerId);
+            }
+        }
+    }
+    // Any remaining pure-data island has no signal-layer anchor. Layer its acyclic data edges
+    // left-to-right from providers to consumers before falling back to column zero for cycles.
+    const unplaced = new Set(nodes.filter((node) => !column.has(node.id)).map((node) => node.id));
+    const dataIndegree = new Map<number, number>();
+    for (const id of unplaced) {
+        dataIndegree.set(id, 0);
+    }
+    for (const node of nodes) {
+        if (!unplaced.has(node.id)) {
+            continue;
+        }
+        for (const target of node.dataOut) {
+            if (unplaced.has(target)) {
+                dataIndegree.set(target, (dataIndegree.get(target) ?? 0) + 1);
+            }
+        }
+    }
+    const dataQueue = [...unplaced].filter((id) => dataIndegree.get(id) === 0).sort((a, b) => a - b);
+    head = 0;
+    while (head < dataQueue.length) {
+        const current = dataQueue[head++];
+        column.set(current, column.get(current) ?? 0);
+        sortKey.set(current, sortKey.get(current) ?? orderCounter++);
+        for (const target of byId.get(current)!.dataOut) {
+            if (!unplaced.has(target)) {
                 continue;
             }
-            const consumers = [...node.signalOut, ...node.dataOut].filter((id) => byId.has(id) && column.has(id));
-            if (consumers.length === 0) {
-                continue;
+            column.set(target, Math.max(column.get(target) ?? 0, column.get(current)! + 1));
+            const remaining = (dataIndegree.get(target) ?? 0) - 1;
+            dataIndegree.set(target, remaining);
+            if (remaining === 0) {
+                dataQueue.push(target);
             }
-            let minColumn = Number.POSITIVE_INFINITY;
-            let minKey = Number.POSITIVE_INFINITY;
-            for (const id of consumers) {
-                minColumn = Math.min(minColumn, column.get(id)!);
-                minKey = Math.min(minKey, sortKey.get(id) ?? 0);
-            }
-            column.set(node.id, Math.max(0, minColumn - 1));
-            sortKey.set(node.id, minKey - 0.5);
-            changed = true;
         }
     }
     for (const node of nodes) {
@@ -412,7 +472,7 @@ function LayoutComponent(nodes: IFlowLayoutNode[], opts: Required<IFlowLayoutOpt
         // A wide fan-out would otherwise become one very tall column; wrap large columns into
         // a compact block of sub-columns (kept roughly square) instead.
         const count = bucket.length;
-        const rowsPerColumn = count > MaxNodesPerColumn ? Math.ceil(Math.sqrt(count)) : count;
+        const rowsPerColumn = count > MaxNodesPerColumn ? Math.ceil(Math.sqrt(count * 2)) : count;
         let subCursorX = cursorX;
         for (let start = 0; start < count; start += rowsPerColumn) {
             let subWidth = 0;

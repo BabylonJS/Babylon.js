@@ -213,7 +213,6 @@ TEXTUREFORMAT_RGBA_INTEGER    true  RGBA8UI         RGBA_INTEGER    UNSIGNED_BYT
                     { format: Engine.TEXTUREFORMAT_RED_INTEGER, type: Engine.TEXTURETYPE_UNSIGNED_BYTE },
                 ],
             } as any;
-            vi.spyOn(thinEngine, "applyStates").mockImplementation(() => {});
 
             thinEngine.clearAttachments(new Color4(1, 0, 0, 0), [1, 2], true, false);
 
@@ -224,6 +223,57 @@ TEXTUREFORMAT_RGBA_INTEGER    true  RGBA8UI         RGBA_INTEGER    UNSIGNED_BYT
             expect(clearBufferuiv.mock.calls[0][1]).toBe(1);
             expect(Array.from(clearBufferuiv.mock.calls[0][2] as Uint32Array)).toEqual([255, 0, 0, 0]);
             expect(thinEngine._integerMRTAttachmentsMask).toBe(1 << 1);
+        });
+
+        it("uses an unsigned clear for packed RGB10_A2UI attachments", () => {
+            const thinEngine = new ThinEngine(null);
+            const clearBufferuiv = vi.fn();
+            thinEngine._gl = {
+                COLOR: 0x1800,
+                clearBufferuiv,
+            } as unknown as WebGLRenderingContext;
+
+            thinEngine._clearColorAttachment(0, new Color4(1, 2, 3, 4), Engine.TEXTUREFORMAT_RGBA_INTEGER, Engine.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV);
+
+            expect(clearBufferuiv).toHaveBeenCalledOnce();
+            expect(Array.from(clearBufferuiv.mock.calls[0][2] as Uint32Array)).toEqual([1, 2, 3, 4]);
+        });
+
+        it("clears mixed MRT attachments with stale alpha state and no indexed blending", () => {
+            const thinEngine = new ThinEngine(null);
+            const clearBufferfv = vi.fn();
+            const clearBufferuiv = vi.fn();
+            const clear = vi.fn();
+            const enable = vi.fn();
+            thinEngine._webGLVersion = 2;
+            thinEngine._gl = {
+                BLEND: 0x0be2,
+                COLOR: 0x1800,
+                DEPTH_BUFFER_BIT: 0x0100,
+                NONE: 0,
+                clear,
+                clearBufferfv,
+                clearBufferuiv,
+                clearDepth: vi.fn(),
+                colorMask: vi.fn(),
+                drawBuffers: vi.fn(),
+                enable,
+            } as unknown as WebGLRenderingContext;
+            thinEngine._currentRenderTarget = {
+                textures: [
+                    { format: Engine.TEXTUREFORMAT_RGBA, type: Engine.TEXTURETYPE_UNSIGNED_BYTE },
+                    { format: Engine.TEXTUREFORMAT_RED_INTEGER, type: Engine.TEXTURETYPE_UNSIGNED_BYTE },
+                ],
+            } as any;
+            thinEngine.alphaState.setAlphaBlend(true);
+            vi.spyOn(thinEngine.depthCullingState, "apply").mockImplementation(() => {});
+            vi.spyOn(thinEngine.stencilStateComposer, "apply").mockImplementation(() => {});
+
+            expect(() => thinEngine.clearAttachments(new Color4(1, 0, 0, 0), [1, 2], true, true)).not.toThrow();
+            expect(clearBufferfv).toHaveBeenCalledOnce();
+            expect(clearBufferuiv).toHaveBeenCalledOnce();
+            expect(clear).toHaveBeenCalledWith(0x0100);
+            expect(enable).toHaveBeenCalledWith(0x0be2);
         });
 
         it("uses the WebGL1-compatible MRT clear path", () => {

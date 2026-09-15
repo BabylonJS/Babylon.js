@@ -33,6 +33,17 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
         return this._frameGraphTask;
     }
 
+    private _setRadiusValue(radiusClass: number, property: "worldRadius" | "minimumProjectedRadius", value: number): void {
+        const radiusClasses = this._frameGraphTask.postProcess.radiusClasses.map((definition) => ({ ...definition })) as [
+            { worldRadius: number; minimumProjectedRadius: number },
+            { worldRadius: number; minimumProjectedRadius: number },
+            { worldRadius: number; minimumProjectedRadius: number },
+            { worldRadius: number; minimumProjectedRadius: number },
+        ];
+        radiusClasses[radiusClass][property] = value;
+        this._frameGraphTask.configure({ radiusClasses });
+    }
+
     /** Mesh blending always uses exact texel loads from SceneColor. */
     public override get sourceSamplingMode(): number {
         return Constants.TEXTURE_NEAREST_SAMPLINGMODE;
@@ -91,7 +102,7 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
     }
 
     public set smallWorldRadius(value: number) {
-        this._frameGraphTask.postProcess.radiusClasses[0].worldRadius = value;
+        this._setRadiusValue(0, "worldRadius", value);
     }
 
     /** Gets or sets the small-class minimum projected radius in physical pixels. */
@@ -101,7 +112,7 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
     }
 
     public set smallMinimumProjectedRadius(value: number) {
-        this._frameGraphTask.postProcess.radiusClasses[0].minimumProjectedRadius = value;
+        this._setRadiusValue(0, "minimumProjectedRadius", value);
     }
 
     /** Gets or sets the medium-class authored world radius. */
@@ -111,7 +122,7 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
     }
 
     public set mediumWorldRadius(value: number) {
-        this._frameGraphTask.postProcess.radiusClasses[1].worldRadius = value;
+        this._setRadiusValue(1, "worldRadius", value);
     }
 
     /** Gets or sets the medium-class minimum projected radius in physical pixels. */
@@ -121,7 +132,7 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
     }
 
     public set mediumMinimumProjectedRadius(value: number) {
-        this._frameGraphTask.postProcess.radiusClasses[1].minimumProjectedRadius = value;
+        this._setRadiusValue(1, "minimumProjectedRadius", value);
     }
 
     /** Gets or sets the large-class authored world radius. */
@@ -131,7 +142,7 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
     }
 
     public set largeWorldRadius(value: number) {
-        this._frameGraphTask.postProcess.radiusClasses[2].worldRadius = value;
+        this._setRadiusValue(2, "worldRadius", value);
     }
 
     /** Gets or sets the large-class minimum projected radius in physical pixels. */
@@ -141,7 +152,7 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
     }
 
     public set largeMinimumProjectedRadius(value: number) {
-        this._frameGraphTask.postProcess.radiusClasses[2].minimumProjectedRadius = value;
+        this._setRadiusValue(2, "minimumProjectedRadius", value);
     }
 
     /** Gets or sets the extra-large-class authored world radius. */
@@ -151,7 +162,7 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
     }
 
     public set extraLargeWorldRadius(value: number) {
-        this._frameGraphTask.postProcess.radiusClasses[3].worldRadius = value;
+        this._setRadiusValue(3, "worldRadius", value);
     }
 
     /** Gets or sets the extra-large-class minimum projected radius in physical pixels. */
@@ -161,7 +172,7 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
     }
 
     public set extraLargeMinimumProjectedRadius(value: number) {
-        this._frameGraphTask.postProcess.radiusClasses[3].minimumProjectedRadius = value;
+        this._setRadiusValue(3, "minimumProjectedRadius", value);
     }
 
     /** Gets or sets the contact-slope narrowing factor. A value of 1 disables narrowing. */
@@ -272,18 +283,31 @@ export class NodeRenderGraphMeshBlendingPostProcessBlock extends NodeRenderGraph
         super._deserialize(serializationObject);
         const defaults = CreateDefaultMeshBlendRadiusDefinitions();
         const radiusClasses = serializationObject.radiusClasses ?? defaults;
+        const resolvedRadiusClasses = [
+            {
+                worldRadius: radiusClasses[0]?.worldRadius ?? defaults[0].worldRadius,
+                minimumProjectedRadius: radiusClasses[0]?.minimumProjectedRadius ?? defaults[0].minimumProjectedRadius,
+            },
+            {
+                worldRadius: radiusClasses[1]?.worldRadius ?? defaults[1].worldRadius,
+                minimumProjectedRadius: radiusClasses[1]?.minimumProjectedRadius ?? defaults[1].minimumProjectedRadius,
+            },
+            {
+                worldRadius: radiusClasses[2]?.worldRadius ?? defaults[2].worldRadius,
+                minimumProjectedRadius: radiusClasses[2]?.minimumProjectedRadius ?? defaults[2].minimumProjectedRadius,
+            },
+            {
+                worldRadius: radiusClasses[3]?.worldRadius ?? defaults[3].worldRadius,
+                minimumProjectedRadius: radiusClasses[3]?.minimumProjectedRadius ?? defaults[3].minimumProjectedRadius,
+            },
+        ] as const;
 
-        this.quality = serializationObject.quality ?? MeshBlendQuality.Medium;
-        this.smallWorldRadius = radiusClasses[0]?.worldRadius ?? defaults[0].worldRadius;
-        this.smallMinimumProjectedRadius = radiusClasses[0]?.minimumProjectedRadius ?? defaults[0].minimumProjectedRadius;
-        this.mediumWorldRadius = radiusClasses[1]?.worldRadius ?? defaults[1].worldRadius;
-        this.mediumMinimumProjectedRadius = radiusClasses[1]?.minimumProjectedRadius ?? defaults[1].minimumProjectedRadius;
-        this.largeWorldRadius = radiusClasses[2]?.worldRadius ?? defaults[2].worldRadius;
-        this.largeMinimumProjectedRadius = radiusClasses[2]?.minimumProjectedRadius ?? defaults[2].minimumProjectedRadius;
-        this.extraLargeWorldRadius = radiusClasses[3]?.worldRadius ?? defaults[3].worldRadius;
-        this.extraLargeMinimumProjectedRadius = radiusClasses[3]?.minimumProjectedRadius ?? defaults[3].minimumProjectedRadius;
-        this.slopeFactor = serializationObject.slopeFactor ?? 2;
-        this.debugMode = serializationObject.debugMode ?? MeshBlendDebugMode.Off;
+        this._frameGraphTask.configure({
+            quality: serializationObject.quality ?? MeshBlendQuality.Medium,
+            radiusClasses: resolvedRadiusClasses,
+            slopeFactor: serializationObject.slopeFactor ?? 2,
+            debugMode: serializationObject.debugMode ?? MeshBlendDebugMode.Off,
+        });
     }
 }
 

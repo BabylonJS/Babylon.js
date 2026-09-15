@@ -52,7 +52,7 @@ import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { _ConcatenateShader, _GetGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
-import { HasStencilAspect, IsDepthTexture, IsIntegerTextureFormat } from "core/Materials/Textures/textureHelper.functions";
+import { HasStencilAspect, IsDepthTexture, IsIntegerTextureFormat, IsUnsignedIntegerTextureType } from "core/Materials/Textures/textureHelper.functions";
 import { AlphaState } from "../States/alphaCullingState";
 
 /**
@@ -959,11 +959,7 @@ export class ThinEngine extends AbstractEngine {
                 const textureFormat = this._currentRenderTarget.texture?.format;
                 if (textureFormat !== undefined && IsIntegerTextureFormat(textureFormat)) {
                     const textureType = this._currentRenderTarget.texture?.type;
-                    if (
-                        textureType === Constants.TEXTURETYPE_UNSIGNED_INTEGER ||
-                        textureType === Constants.TEXTURETYPE_UNSIGNED_SHORT ||
-                        textureType === Constants.TEXTURETYPE_UNSIGNED_BYTE
-                    ) {
+                    if (textureType !== undefined && IsUnsignedIntegerTextureType(textureType)) {
                         ThinEngine._TempClearColorUint32[0] = color.r * 255;
                         ThinEngine._TempClearColorUint32[1] = color.g * 255;
                         ThinEngine._TempClearColorUint32[2] = color.b * 255;
@@ -1013,7 +1009,7 @@ export class ThinEngine extends AbstractEngine {
      */
     public _clearColorAttachment(attachmentIndex: number, color: IColor4Like, format: number, type: number): void {
         if (IsIntegerTextureFormat(format)) {
-            const unsigned = type === Constants.TEXTURETYPE_UNSIGNED_BYTE || type === Constants.TEXTURETYPE_UNSIGNED_SHORT || type === Constants.TEXTURETYPE_UNSIGNED_INTEGER;
+            const unsigned = IsUnsignedIntegerTextureType(type);
             const values = unsigned ? ThinEngine._TempClearColorUint32 : ThinEngine._TempClearColorInt32;
 
             values[0] = color.r;

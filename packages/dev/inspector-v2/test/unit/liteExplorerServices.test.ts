@@ -3,6 +3,7 @@ import {
     type Material,
     type Mesh,
     type RenderingContext,
+    type SceneNode,
     type SceneContext,
     type SurfaceContext,
     type TextLayer,
@@ -34,7 +35,7 @@ vi.mock("../../src/services/panes/explorer/explorerPane", () => ({
 }));
 
 import { BuildExplorerTree, type ExplorerNode } from "../../src/components/explorer/explorerModel";
-import { type IEngineContext } from "../../src/lite/engineContext";
+import { EngineContextIdentity, type IEngineContext } from "../../src/lite/engineContext";
 import {
     type IEngineExplorerService,
     EngineExplorerServiceDefinition,
@@ -47,7 +48,7 @@ import { MeshExplorerServiceDefinition } from "../../src/lite/services/panes/sce
 import { TextLayerExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textLayerExplorerService";
 import { TextureExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textureExplorerService";
 import { type IWatcherService, WatcherServiceIdentity } from "../../src/services/watcherService";
-import { type ISelectionService } from "../../src/services/selectionService";
+import { type ISelectionService, SelectionServiceIdentity } from "../../src/services/selectionService";
 import { GetExplorerNodeChildren, type IExplorerService, ExplorerServiceIdentity } from "../../src/services/panes/explorer/explorerService";
 import { type IShellService } from "shared-ui-components/modularTool/services/shellService";
 
@@ -65,7 +66,19 @@ function CreateMaterial(family: string, name: string, texture?: Texture2D): Mate
 }
 
 function CreateMesh(name: string, material: Material): Mesh {
-    return { name, material } as Mesh;
+    return {
+        name,
+        material,
+        receiveShadows: false,
+        children: [],
+        parent: null,
+        position: { x: 0, y: 0, z: 0 },
+        rotationQuaternion: { x: 0, y: 0, z: 0, w: 1 },
+        rotation: { x: 0, y: 0, z: 0 },
+        scaling: { x: 1, y: 1, z: 1 },
+        worldMatrix: new Float32Array(16),
+        worldMatrixVersion: 0,
+    } as Mesh;
 }
 
 function GetNames(nodes: readonly ExplorerNode[]): string[] {
@@ -311,7 +324,13 @@ describe("Babylon Lite engine explorer service", () => {
 describe("Babylon Lite scene resource explorer services", () => {
     it("registers product-specific providers with the engine explorer", () => {
         expect(EngineExplorerServiceDefinition.produces).toEqual([EngineExplorerServiceIdentity, ExplorerServiceIdentity]);
-        expect(MeshExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity]);
+        expect(MeshExplorerServiceDefinition.consumes).toEqual([
+            EngineExplorerServiceIdentity,
+            ExplorerServiceIdentity,
+            WatcherServiceIdentity,
+            SelectionServiceIdentity,
+            EngineContextIdentity,
+        ]);
         expect(MaterialExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity]);
         expect(TextureExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity]);
         expect(TextLayerExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity]);
@@ -336,14 +355,17 @@ describe("Babylon Lite scene resource explorer services", () => {
                 watcherDisposals.set(entity, dispose);
                 return { dispose };
             }),
+            watchValue: vi.fn(() => ({ dispose: vi.fn() })),
         } as unknown as IWatcherService;
-
-        const registrations = [
-            MeshExplorerServiceDefinition.factory(engineExplorerService, watcherService),
-            MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService),
-            TextureExplorerServiceDefinition.factory(engineExplorerService),
-            TextLayerExplorerServiceDefinition.factory(engineExplorerService),
-        ];
+        const commandDisposals: ReturnType<typeof vi.fn>[] = [];
+        const explorerService = {
+            addItemCommand: vi.fn(() => {
+                const commandDispose = vi.fn();
+                commandDisposals.push(commandDispose);
+                return { dispose: commandDispose };
+            }),
+        } as unknown as IExplorerService;
+        const selectionService = { selectedEntity: null } as ISelectionService;
 
         const redTexture = { width: 1, height: 1 } as Texture2D;
         const blueTexture = { width: 2, height: 2 } as Texture2D;
@@ -354,7 +376,21 @@ describe("Babylon Lite scene resource explorer services", () => {
         const scene = {
             _kind: "scene",
             meshes: [redMesh, blueMesh, CreateMesh("Small Red Box", standardMaterial)],
+            camera: null,
+            lights: [],
+            shadowGenerators: [],
         } as SceneContext;
+        const engine = {
+            surfaces: [] as unknown as EngineContext["surfaces"],
+            _renderingContexts: [scene],
+        } as unknown as EngineContext;
+        (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine];
+        const registrations = [
+            MeshExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, selectionService, { engine } as IEngineContext),
+            MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService),
+            TextureExplorerServiceDefinition.factory(engineExplorerService),
+            TextLayerExplorerServiceDefinition.factory(engineExplorerService),
+        ];
 
         const descriptions = providers
             .filter((provider) => provider.predicate(scene))
@@ -362,7 +398,7 @@ describe("Babylon Lite scene resource explorer services", () => {
             .flatMap((provider) => provider.getNodes(scene));
         const tree = BuildExplorerTree(descriptions);
 
-        expect(GetNames(tree.nodes)).toEqual(["Meshes", "Materials", "Textures"]);
+        expect(GetNames(tree.nodes)).toEqual(["Nodes", "Materials", "Textures"]);
         expect(GetNames(tree.nodes[0].children)).toEqual(["Red Box", "Blue Sphere", "Small Red Box"]);
         expect(GetNames(tree.nodes[1].children)).toEqual(["Red Material", "Blue Material"]);
         expect(GetNames(tree.nodes[2].children)).toEqual(["Texture 1 (1 x 1)", "Texture 2 (2 x 2)"]);
@@ -398,6 +434,7 @@ describe("Babylon Lite scene resource explorer services", () => {
 
         registrations.forEach((registration) => registration?.dispose?.());
         expect(dispose).toHaveBeenCalledTimes(4);
+        commandDisposals.forEach((commandDispose) => expect(commandDispose).toHaveBeenCalledOnce());
     });
 
     it("contributes stable text layer children and snapshots beneath text renderers", () => {
@@ -447,10 +484,24 @@ describe("Babylon Lite scene resource explorer services", () => {
         } as IEngineExplorerService;
         const watcherService = {
             watchProperty: vi.fn(() => ({ dispose: vi.fn() })),
+            watchValue: vi.fn(() => ({ dispose: vi.fn() })),
         } as unknown as IWatcherService;
-
-        MeshExplorerServiceDefinition.factory(engineExplorerService, watcherService);
         const effectRenderer = { _kind: "effect-renderer" } as RenderingContext;
+        const engine = {
+            surfaces: [] as unknown as EngineContext["surfaces"],
+            _renderingContexts: [effectRenderer],
+        } as unknown as EngineContext;
+        (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine];
+
+        MeshExplorerServiceDefinition.factory(
+            engineExplorerService,
+            { addItemCommand: vi.fn(() => ({ dispose: vi.fn() })) } as unknown as IExplorerService,
+            watcherService,
+            {
+                selectedEntity: null,
+            } as ISelectionService,
+            { engine } as IEngineContext
+        );
 
         expect(providers[0].predicate(effectRenderer)).toBe(false);
     });

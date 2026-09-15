@@ -190,6 +190,36 @@ export function ComputedProperty<TargetT extends object, ComponentT extends Comp
     return <Component {...({ ...rest, value } as ComponentProps<ComponentT>)} />;
 }
 
+export type DerivedPropertyProps<TargetT extends object, ComponentT extends ComponentType<any>> = Omit<ComponentProps<ComponentT>, "value" | "onChange"> & {
+    component: ComponentT;
+    target: TargetT;
+    getValue: (target: TargetT) => ComponentValue<ComponentT>;
+    setValue: (target: TargetT, value: ComponentValue<ComponentT>) => void;
+};
+
+/**
+ * Renders an editable property-line component for a value derived from a target.
+ *
+ * This is useful for method-backed values, readonly object references, or values whose UI
+ * representation differs from their stored representation. The getter follows the Preferred
+ * Watch Mode, while the setter owns the runtime-specific write-back.
+ * @param props The target, derived getter, write-back function, and property-line component props.
+ * @returns The editable derived property-line component.
+ */
+export function DerivedProperty<TargetT extends object, ComponentT extends ComponentType<any>>(props: DerivedPropertyProps<TargetT, ComponentT>) {
+    const {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        component: Component,
+        target,
+        getValue,
+        setValue,
+        ...rest
+    } = props;
+    const value = useWatchedValue(target, getValue);
+
+    return <Component {...({ ...rest, value, onChange: (changedValue: ComponentValue<ComponentT>) => setValue(target, changedValue) } as ComponentProps<ComponentT>)} />;
+}
+
 /**
  * Mutually exclusive propertyPath or functionPath - one required
  */

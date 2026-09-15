@@ -125,6 +125,10 @@ ivec2 clampPixel(ivec2 pixel, ivec2 renderSize) {
     return clamp(pixel, ivec2(0), renderSize - ivec2(1));
 }
 
+bool isPixelInBounds(ivec2 pixel, ivec2 renderSize) {
+    return pixel.x >= 0 && pixel.y >= 0 && pixel.x < renderSize.x && pixel.y < renderSize.y;
+}
+
 vec2 pixelToUv(ivec2 pixel, ivec2 renderSize) {
     return (vec2(clampPixel(pixel, renderSize)) + vec2(0.5)) / vec2(renderSize);
 }
@@ -375,8 +379,18 @@ MeshBlendCandidate refineExactBoundary(ivec2 pixel, ivec2 renderSize, MeshBlendC
 
 bool hasTargetContinuation(ivec2 pixel, ivec2 renderSize, MeshBlendCandidate candidate, out ivec2 continuationPixel) {
     float continuationDistance = max(candidate.distancePixels * 2.0, candidate.distancePixels + 1.0);
-    continuationPixel = clampPixel(pixel + ivec2(round(candidate.direction * continuationDistance)), renderSize);
+    continuationPixel = pixel + ivec2(round(candidate.direction * continuationDistance));
+    if (!isPixelInBounds(continuationPixel, renderSize)) {
+        return false;
+    }
     return loadMeshBlendTag(continuationPixel, renderSize).groupId == candidate.targetGroupId;
+}
+
+bool applyTargetRadiusClass(ivec2 targetPixel, ivec2 renderSize, float viewDepth, inout MeshBlendCandidate candidate) {
+    MeshBlendTag targetTag = loadMeshBlendTag(targetPixel, renderSize);
+    candidate.radiusClass = min(candidate.radiusClass, targetTag.radiusClass);
+    candidate.searchRadiusPixels = min(candidate.searchRadiusPixels, searchRadiusForClass(candidate.radiusClass, viewDepth, float(renderSize.y)));
+    return candidate.distancePixels <= candidate.searchRadiusPixels;
 }
 
 #ifdef MESH_BLEND_FOUR_NEIGHBOR_FALLBACK
@@ -611,6 +625,13 @@ MeshBlendResult evaluateMeshBlend(
     candidate = refineExactBoundary(pixel, renderSize, candidate);
     result.candidate = candidate;
     result.stageReached = 3;
+    ivec2 refinedTargetPixel = clampPixel(pixel + ivec2(round(candidate.direction * candidate.distancePixels)), renderSize);
+    if (!applyTargetRadiusClass(refinedTargetPixel, renderSize, viewDepth, candidate)) {
+        result.candidate = candidate;
+        result.rejectionReason = MESH_BLEND_REJECTION_PHYSICAL_SPAN;
+        return result;
+    }
+    result.candidate = candidate;
 
     ivec2 continuationPixel;
     bool continuationFound = hasTargetContinuation(pixel, renderSize, candidate, continuationPixel);
@@ -641,6 +662,12 @@ MeshBlendResult evaluateMeshBlend(
 
     result.continuationFound = continuationFound;
     result.stageReached = 4;
+    if (continuationFound && !applyTargetRadiusClass(continuationPixel, renderSize, viewDepth, candidate)) {
+        result.candidate = candidate;
+        result.rejectionReason = MESH_BLEND_REJECTION_PHYSICAL_SPAN;
+        return result;
+    }
+    result.candidate = candidate;
     float originalSearchRadius = candidate.searchRadiusPixels;
 
 #ifdef MESH_BLEND_TINY_OBJECT_SAFEGUARD

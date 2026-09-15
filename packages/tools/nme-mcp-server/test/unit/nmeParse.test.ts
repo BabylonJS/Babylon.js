@@ -11,6 +11,12 @@ import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 
 // Side-effect imports to register ALL NME block types via RegisterClass
 import "core/Materials/Node/Blocks/index";
+// PBR blocks start asynchronous shader imports in their constructor. Load both shader-language
+// variants before the tests so material parsing cannot leave imports pending past environment teardown.
+import "core/Shaders/pbr.vertex";
+import "core/Shaders/pbr.fragment";
+import "core/ShadersWGSL/pbr.vertex";
+import "core/ShadersWGSL/pbr.fragment";
 
 import * as fs from "fs";
 import * as path from "path";

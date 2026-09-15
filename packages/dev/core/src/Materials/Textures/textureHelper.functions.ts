@@ -33,6 +33,21 @@ export function IsIntegerTextureFormat(format: number): boolean {
 }
 
 /**
+ * Checks whether an integer texture type stores unsigned values.
+ * @param type Texture type to check
+ * @returns True for unsigned scalar and packed integer texture types
+ * @internal
+ */
+export function IsUnsignedIntegerTextureType(type: number): boolean {
+    return (
+        type === Constants.TEXTURETYPE_UNSIGNED_BYTE ||
+        type === Constants.TEXTURETYPE_UNSIGNED_SHORT ||
+        type === Constants.TEXTURETYPE_UNSIGNED_INTEGER ||
+        type === Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV
+    );
+}
+
+/**
  * Gets the type of a depth texture for a given format
  * @param format Format of the texture
  * @returns The type of the depth texture

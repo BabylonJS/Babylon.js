@@ -12,5 +12,5 @@ export * from "./engine.readTexture.pure";
 export * from "./engine.renderTarget.pure";
 export * from "./engine.renderTargetCube.pure";
 export * from "./engine.renderTargetTexture.pure";
-export * from "./engine.videoTexture.pure";
 export * from "./engine.texture2DArrayImageSource.pure";
+export * from "./engine.videoTexture.pure";

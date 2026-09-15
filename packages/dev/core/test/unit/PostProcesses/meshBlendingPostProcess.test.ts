@@ -4,6 +4,8 @@ import { FreeCamera } from "core/Cameras/freeCamera";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Vector3 } from "core/Maths/math.vector";
+import { SceneSerializer } from "core/Misc/sceneSerializer";
+import { _GetMeshBlendBlueNoiseData } from "core/PostProcesses/meshBlendingBlueNoise";
 import { MeshBlendingPostProcess } from "core/PostProcesses/meshBlendingPostProcess";
 import { ThinPassPostProcess } from "core/PostProcesses/thinPassPostProcess";
 import {
@@ -66,6 +68,10 @@ describe("ThinMeshBlendingPostProcess", () => {
 
         first[0].minimumProjectedRadius = 12;
         expect(second[0].minimumProjectedRadius).toBe(1.5);
+        expect(() => {
+            first[0].worldRadius = Number.NaN;
+        }).toThrow("finite non-negative");
+        expect(first[0].worldRadius).toBe(0.06);
     });
 
     it.each([
@@ -342,6 +348,51 @@ describe("ThinMeshBlendingPostProcess", () => {
         expect(searchDisposeSpy).toHaveBeenCalledOnce();
     });
 
+    it("uses deterministic blue noise with suppressed low-frequency power", () => {
+        const data = _GetMeshBlendBlueNoiseData();
+        const size = 128;
+        const lowFrequencies = [
+            [1, 0],
+            [0, 1],
+            [1, 1],
+            [2, 0],
+            [0, 2],
+            [2, 1],
+            [1, 2],
+        ];
+        const highFrequencies = [
+            [32, 0],
+            [0, 32],
+            [32, 32],
+            [48, 0],
+            [0, 48],
+            [48, 16],
+            [16, 48],
+        ];
+        const calculateAveragePower = (frequencies: number[][], channel: number) => {
+            let totalPower = 0;
+            for (const [frequencyX, frequencyY] of frequencies) {
+                let real = 0;
+                let imaginary = 0;
+                for (let y = 0; y < size; y++) {
+                    for (let x = 0; x < size; x++) {
+                        const value = data[(y * size + x) * 2 + channel] - 127.5;
+                        const angle = (2 * Math.PI * (frequencyX * x + frequencyY * y)) / size;
+                        real += value * Math.cos(angle);
+                        imaginary -= value * Math.sin(angle);
+                    }
+                }
+                totalPower += (real * real + imaginary * imaginary) / (size * size);
+            }
+            return totalPower / frequencies.length;
+        };
+
+        expect(_GetMeshBlendBlueNoiseData()).toBe(data);
+        for (let channel = 0; channel < 2; channel++) {
+            expect(calculateAveragePower(lowFrequencies, channel)).toBeLessThan(calculateAveragePower(highFrequencies, channel) * 0.1);
+        }
+    });
+
     it("reuses the inverse projection while the camera projection is unchanged", () => {
         const scene = new Scene(engine);
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
@@ -543,17 +594,98 @@ describe("ThinMeshBlendingPostProcess", () => {
             });
 
             try {
+                expect(
+                    () =>
+                        new MeshBlendingPostProcess("shared", scene, camera, {
+                            meshBlendTagTexture: tagTexture,
+                            depthTexture,
+                            baseColorTexture,
+                            effectWrapper: externalWrapper,
+                        })
+                ).toThrow("already attached");
                 internal.dispose();
                 external.dispose();
 
                 expect(internalDisposeSpy).toHaveBeenCalledOnce();
                 expect(externalDisposeSpy).not.toHaveBeenCalled();
+                const reused = new MeshBlendingPostProcess("reused", scene, camera, {
+                    meshBlendTagTexture: tagTexture,
+                    depthTexture,
+                    baseColorTexture,
+                    effectWrapper: externalWrapper,
+                });
+                reused.dispose();
             } finally {
                 externalWrapper.dispose();
                 tagTexture.dispose();
                 depthTexture.dispose();
                 baseColorTexture.dispose();
                 scene.dispose();
+            }
+
+            {
+                const scene = new Scene(engine);
+                const camera = new FreeCamera("camera", Vector3.Zero(), scene);
+                const otherScene = new Scene(engine);
+                const otherCamera = new FreeCamera("otherCamera", Vector3.Zero(), otherScene);
+                const otherEngine = new NullEngine();
+                otherEngine._webGLVersion = 2;
+                const tagTexture = new RawTexture(
+                    new Uint8Array(4),
+                    2,
+                    2,
+                    Constants.TEXTUREFORMAT_RED_INTEGER,
+                    engine,
+                    false,
+                    false,
+                    Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                    Constants.TEXTURETYPE_UNSIGNED_BYTE
+                );
+                const depthTexture = new RawTexture(
+                    new Float32Array(4).fill(1),
+                    2,
+                    2,
+                    Constants.TEXTUREFORMAT_RED,
+                    engine,
+                    false,
+                    false,
+                    Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                    Constants.TEXTURETYPE_FLOAT
+                );
+                const otherWrapper = new ThinMeshBlendingPostProcess("otherEngine", otherEngine);
+
+                try {
+                    expect(
+                        () =>
+                            new MeshBlendingPostProcess("otherCamera", scene, otherCamera, {
+                                meshBlendTagTexture: tagTexture,
+                                depthTexture,
+                            })
+                    ).toThrow("same scene");
+                    expect(
+                        () =>
+                            new MeshBlendingPostProcess("otherEngine", scene, camera, {
+                                meshBlendTagTexture: tagTexture,
+                                depthTexture,
+                                engine: otherEngine,
+                            })
+                    ).toThrow("options.engine");
+                    expect(
+                        () =>
+                            new MeshBlendingPostProcess("otherWrapper", scene, camera, {
+                                meshBlendTagTexture: tagTexture,
+                                depthTexture,
+                                effectWrapper: otherWrapper,
+                            })
+                    ).toThrow("effectWrapper must use the scene engine");
+                } finally {
+                    otherWrapper.dispose();
+                    tagTexture.dispose();
+                    depthTexture.dispose();
+                    otherScene.dispose();
+                    scene.dispose();
+                    otherEngine.dispose();
+                }
             }
         }
 
@@ -609,6 +741,8 @@ describe("ThinMeshBlendingPostProcess", () => {
             expect((postProcess as any)._effectWrapper.options.defines).toContain("#define MESH_BLEND_MULTI_TARGET_SECONDARY_BLEND");
             expect(() => (postProcess as any)._validateInputDimensions(2, 2, 4)).toThrow("matching sample counts");
 
+            expect(postProcess.doNotSerialize).toBe(true);
+            expect(SceneSerializer.Serialize(scene).postProcesses).toEqual([]);
             expect(() => postProcess.serialize()).toThrow("cannot be serialized");
             expect(postProcess.clone()).toBeNull();
 

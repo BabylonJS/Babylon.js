@@ -4,6 +4,7 @@ import { getGlobalConfig } from "@tools/test-tools";
 import { type Scene } from "core/scene";
 import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { type FreeCamera } from "core/Cameras/freeCamera";
+import { Constants } from "core/Engines/constants";
 
 test.beforeAll(async () => {
     // Set timeout for this hook.
@@ -77,6 +78,19 @@ async function dropTextFiles(page: Page, files: Array<{ name: string; path: stri
         return transfer;
     }, files);
 
+    await page.dispatchEvent("#renderCanvas", "drop", { dataTransfer });
+}
+
+async function dropBinaryFile(page: Page, path: string, name: string): Promise<void> {
+    const buffer = readFileSync(path);
+    const dataTransfer = await page.evaluateHandle(
+        ({ bytes, name }) => {
+            const transfer = new DataTransfer();
+            transfer.items.add(new File([new Uint8Array(bytes)], name));
+            return transfer;
+        },
+        { bytes: [...buffer], name }
+    );
     await page.dispatchEvent("#renderCanvas", "drop", { dataTransfer });
 }
 
@@ -214,6 +228,145 @@ for (const extension of ["usda", "usdc", "usdz"]) {
         expect(result.translations).toEqual([0, 2]);
     });
 }
+
+test("loading a real USDZ preserves packed and separate material textures", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(url, { waitUntil: "load" });
+    await waitForSandboxReady(page);
+
+    await dropBinaryFile(page, `${__dirname}/../../babylonServer/public/babylonUsdImporter/testAssets/material-textures.usdz`, "material-textures.usdz");
+
+    const scene = await getSandboxScene(page);
+    await expect.poll(async () => await scene.evaluate((loadedScene) => loadedScene.materials.some((material) => material.name === "Separate"))).toBe(true);
+    const result = await scene.evaluate(async (loadedScene) => {
+        const materials = loadedScene.materials as Array<
+            import("core/Materials/material").Material & {
+                metallic?: number;
+                roughness?: number;
+                metallicTexture?: import("core/Materials/Textures/baseTexture").BaseTexture | null;
+                microSurfaceTexture?: import("core/Materials/Textures/baseTexture").BaseTexture | null;
+                ambientTexture?: import("core/Materials/Textures/baseTexture").BaseTexture | null;
+                emissiveColor?: import("core/Maths/math.color").Color3;
+                emissiveTexture?: import("core/Materials/Textures/baseTexture").BaseTexture | null;
+            }
+        >;
+        const packed = materials.find((material) => material.name === "Packed");
+        const separate = materials.find((material) => material.name === "Separate");
+        const hdr = materials.find((material) => material.name === "HdrEmissive");
+        const hdrTexture = hdr?.emissiveTexture;
+        const hdrPixels = (await hdrTexture?.readPixels()) as Float32Array | undefined;
+        const internalTexture = hdrTexture?.getInternalTexture();
+        return {
+            packed: {
+                metallic: packed?.metallic,
+                roughness: packed?.roughness,
+                metallicTexture: !!packed?.metallicTexture,
+                roughnessTexture: !!packed?.microSurfaceTexture,
+            },
+            separate: {
+                metallic: separate?.metallic,
+                roughness: separate?.roughness,
+                metallicTexture: !!separate?.metallicTexture,
+                roughnessTexture: !!separate?.microSurfaceTexture,
+                occlusionTexture: !!separate?.ambientTexture,
+                distinct:
+                    separate?.metallicTexture !== separate?.microSurfaceTexture &&
+                    separate?.metallicTexture !== separate?.ambientTexture &&
+                    separate?.microSurfaceTexture !== separate?.ambientTexture,
+            },
+            hdr: {
+                combinedRed: hdrPixels && hdr?.emissiveColor ? hdrPixels[0] * hdr.emissiveColor.r : 0,
+                green: hdrPixels?.[1] ?? 0,
+                blue: hdrPixels?.[2] ?? 0,
+                textureType: internalTexture?.type,
+                samplingMode: internalTexture?.samplingMode,
+                generateMipMaps: internalTexture?.generateMipMaps,
+            },
+        };
+    });
+    expect(result.packed).toEqual({ metallic: 1, roughness: 1, metallicTexture: true, roughnessTexture: true });
+    expect(result.separate.metallic).toBeCloseTo(0.2);
+    expect(result.separate).toMatchObject({ roughness: 1, metallicTexture: true, roughnessTexture: true, occlusionTexture: true, distinct: true });
+    expect(result.hdr.combinedRed).toBeGreaterThan(1);
+    expect(result.hdr.green).not.toBeCloseTo(result.hdr.blue);
+    expect(result.hdr.samplingMode).toBe(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE);
+    expect(result.hdr.generateMipMaps).toBe(true);
+});
+
+test("loading real USD preserves bind pose matrices", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(url, { waitUntil: "load" });
+    await waitForSandboxReady(page);
+    await dropBinaryFile(page, `${__dirname}/../../babylonServer/public/babylonUsdImporter/testAssets/bind-pose.usda`, "bind-pose.usda");
+
+    const scene = await getSandboxScene(page);
+    const result = await scene.evaluate((loadedScene) => {
+        const mesh = loadedScene.meshes.find((candidate) => candidate.name === "Spinner");
+        const skeleton = loadedScene.skeletons[0];
+        return {
+            parent: mesh?.parent?.name,
+            rest: skeleton?.bones[0].getRestMatrix().m[13],
+            bind: skeleton?.bones[0].getBindMatrix().m[13],
+            firstPosition: mesh?.getVerticesData("position")?.[0],
+        };
+    });
+    expect(result).toEqual({ parent: "Rig", rest: 5, bind: 2, firstPosition: 7 });
+});
+
+test("loading real USD batches point instancers into thin instances", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(url, { waitUntil: "load" });
+    await waitForSandboxReady(page);
+    await dropBinaryFile(page, `${__dirname}/../../babylonServer/public/babylonUsdImporter/testAssets/point-instancer.usda`, "point-instancer.usda");
+
+    const scene = await getSandboxScene(page);
+    const result = await scene.evaluate((loadedScene) => {
+        const mesh = loadedScene.meshes.find((candidate) => candidate.hasThinInstances);
+        return {
+            meshes: loadedScene.meshes.length,
+            classicInstances: loadedScene.meshes.filter((candidate) => candidate.isAnInstance).length,
+            thinInstances: mesh && "thinInstanceCount" in mesh ? (mesh as import("core/Meshes/mesh").Mesh).thinInstanceCount : 0,
+            translations:
+                mesh && "thinInstanceGetWorldMatrices" in mesh ? (mesh as import("core/Meshes/mesh").Mesh).thinInstanceGetWorldMatrices().map((matrix) => matrix.m[12]) : [],
+        };
+    });
+    expect(result).toEqual({ meshes: 1, classicInstances: 0, thinInstances: 2, translations: [11, 31] });
+});
+
+test("loading real USD resolves morph targets and animated in-betweens", async ({ page }) => {
+    test.setTimeout(60000);
+    await page.goto(url, { waitUntil: "load" });
+    await waitForSandboxReady(page);
+    await dropBinaryFile(page, `${__dirname}/../../babylonServer/public/babylonUsdImporter/testAssets/morph-targets.usda`, "morph-targets.usda");
+
+    const scene = await getSandboxScene(page);
+    const result = await scene.evaluate((loadedScene) => {
+        const manager = loadedScene.morphTargetManagers[0];
+        const group = loadedScene.animationGroups[0];
+        group.play(true);
+        group.pause();
+        group.goToFrame(12);
+        const targets = Array.from({ length: manager.numTargets }, (_, index) => manager.getTarget(index));
+        return {
+            targetCount: manager.numTargets,
+            influenceTracks: group.targetedAnimations.filter((entry) => entry.animation.targetProperty === "influence").length,
+            halfInfluence: targets.find((target) => target.name.includes("inbetweens:half"))?.influence,
+            smileInfluence: targets.find((target) => target.name === "Smile")?.influence,
+            blinkInfluence: targets.find((target) => target.name === "Blink")?.influence,
+            optimizeInfluencers: manager.optimizeInfluencers,
+            maxInfluencers: manager.numMaxInfluencers,
+        };
+    });
+    expect(result).toMatchObject({
+        targetCount: 3,
+        influenceTracks: 3,
+        halfInfluence: 1,
+        smileInfluence: 0,
+        optimizeInfluencers: true,
+        maxInfluencers: 0,
+    });
+    expect(result.blinkInfluence).toBeCloseTo(0.2);
+});
 
 test("dropping a composed USD folder preserves paths and allows root selection", async ({ page }) => {
     test.setTimeout(60000);

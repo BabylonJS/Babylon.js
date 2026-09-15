@@ -12,7 +12,7 @@ import { type WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
 import { type TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { type IColor4Like } from "../../Maths/math.like";
 import { Color4 } from "../../Maths/math.color.pure";
-import { IsIntegerTextureFormat } from "../../Materials/Textures/textureHelper.functions";
+import { IsIntegerTextureFormat, IsUnsignedIntegerTextureType } from "../../Materials/Textures/textureHelper.functions";
 
 let _Registered = false;
 const _UnsignedIntegerClearColor = /*#__PURE__*/ new Color4();
@@ -105,16 +105,12 @@ export function RegisterEnginesExtensionsEngineMultiRender(): void {
         }
 
         this.bindAttachments(attachments);
-        this.applyStates();
         for (let index = 0; index < attachments.length; index++) {
             const texture = textures[index];
             if (attachments[index] !== this._gl.NONE && texture) {
                 let clearValue = color;
                 if (IsIntegerTextureFormat(texture.format)) {
-                    const unsigned =
-                        texture.type === Constants.TEXTURETYPE_UNSIGNED_BYTE ||
-                        texture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT ||
-                        texture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER;
+                    const unsigned = IsUnsignedIntegerTextureType(texture.type);
                     clearValue = unsigned ? _UnsignedIntegerClearColor : _SignedIntegerClearColor;
                     const scale = unsigned ? 255 : 1;
                     clearValue.r = Math.round(color.r * scale);
@@ -126,7 +122,13 @@ export function RegisterEnginesExtensionsEngineMultiRender(): void {
             }
         }
         if (clearDepth || clearStencil) {
-            this.clear(null, false, clearDepth, clearStencil, stencilClearValue);
+            const integerMRTAttachmentsMask = this._integerMRTAttachmentsMask;
+            this._integerMRTAttachmentsMask = 0;
+            try {
+                this.clear(null, false, clearDepth, clearStencil, stencilClearValue);
+            } finally {
+                this._integerMRTAttachmentsMask = integerMRTAttachmentsMask;
+            }
         }
     };
 

@@ -55,7 +55,7 @@ import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import { type WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
 import { type WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 import { AlphaState } from "../States/alphaCullingState";
-import { IsIntegerTextureFormat } from "../Materials/Textures/textureHelper.functions";
+import { IsIntegerTextureFormat, IsUnsignedIntegerTextureType } from "../Materials/Textures/textureHelper.functions";
 
 import { type VideoTexture } from "../Materials/Textures/videoTexture.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
@@ -3317,10 +3317,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         baseArrayLayer: 0,
                     };
                     const isRtInteger = IsIntegerTextureFormat(mrtTexture.format);
-                    const isRtUnsignedInteger =
-                        mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER ||
-                        mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT ||
-                        mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                    const isRtUnsignedInteger = IsUnsignedIntegerTextureType(mrtTexture.type);
 
                     const colorTextureView = this._cacheTextureViews.getView(gpuMRTTexture, viewDescriptor);
                     const colorMSAATextureView = gpuMSAATexture ? this._cacheTextureViews.getView(gpuMSAATexture, msaaViewDescriptor) : undefined;
@@ -3359,10 +3356,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     ? this._cacheTextureViews.getView(gpuMSAATexture, this._rttRenderPassWrapper.colorAttachmentViewDescriptor!)
                     : undefined;
                 const isRtInteger = IsIntegerTextureFormat(internalTexture.format);
-                const isRtUnsignedInteger =
-                    internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER ||
-                    internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT ||
-                    internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                const isRtUnsignedInteger = IsUnsignedIntegerTextureType(internalTexture.type);
 
                 colorAttachments.push({
                     view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,

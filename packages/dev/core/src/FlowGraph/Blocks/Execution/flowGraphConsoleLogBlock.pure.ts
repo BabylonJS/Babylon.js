@@ -45,10 +45,14 @@ export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSign
         super(config);
         this.message = this.registerDataInput("message", RichTypeAny);
         this.logType = this.registerDataInput("logType", RichTypeString, "log") as FlowGraphDataConnection<"log" | "warn" | "error">;
-        if (config?.messageTemplate) {
+        if (typeof config?.messageTemplate === "string") {
             const matches = this._getTemplateMatches(config.messageTemplate);
+            const registered = new Set<string>();
             for (const match of matches) {
-                this.registerDataInput(match, RichTypeAny);
+                if (!registered.has(match.name)) {
+                    registered.add(match.name);
+                    this.registerDataInput(match.name, RichTypeAny);
+                }
             }
         }
     }
@@ -98,27 +102,34 @@ export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSign
     }
 
     private _getMessageValue(context: FlowGraphContext): string {
-        if (this.config?.messageTemplate) {
+        if (typeof this.config?.messageTemplate === "string") {
             let template: string = this.config.messageTemplate;
             const matches = this._getTemplateMatches(template);
             // If the message input is an object, use its keys as the primary
             // source for template placeholders, falling back to named data inputs.
             const messageValue = this.message.getValue(context);
             const messageObj = messageValue !== null && messageValue !== undefined && typeof messageValue === "object" ? messageValue : null;
+            const replacements = new Map<string, string | undefined>();
             for (const match of matches) {
-                let value: any;
-                if (messageObj !== null && match in messageObj) {
-                    value = messageObj[match];
-                } else {
-                    value = this.getDataInput(match)?.getValue(context);
+                if (replacements.has(match.name)) {
+                    continue;
                 }
-                if (value !== undefined) {
-                    // Escape regex metacharacters in the placeholder name before building the pattern.
-                    const escapedMatch = match.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-                    template = template.replace(new RegExp(`\\{${escapedMatch}\\}`, "g"), this._serializeValue(value));
+                let value: any;
+                if (messageObj !== null && match.name in messageObj) {
+                    value = messageObj[match.name];
+                } else {
+                    value = this.getDataInput(match.name)?.getValue(context);
+                }
+                replacements.set(match.name, value === undefined ? undefined : this._serializeValue(value).replace(/[{}]/g, "$&$&"));
+            }
+            for (let index = matches.length - 1; index >= 0; index--) {
+                const match = matches[index];
+                const serialized = replacements.get(match.name);
+                if (serialized !== undefined) {
+                    template = template.substring(0, match.start) + serialized + template.substring(match.end + 1);
                 }
             }
-            return template;
+            return template.replace(/\{\{/g, "{").replace(/\}\}/g, "}");
         } else {
             // No template — pass the raw value directly so Logger receives the original
             // object (e.g. Vector3) rather than a stringified representation.
@@ -126,14 +137,43 @@ export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSign
         }
     }
 
-    private _getTemplateMatches(template: string): string[] {
-        const regex = /\{([^}]+)\}/g;
-        const matches: string[] = [];
-        let match;
-        while ((match = regex.exec(template)) !== null) {
-            matches.push(match[1]);
+    private _getTemplateMatches(template: string): { name: string; start: number; end: number }[] {
+        let state = 0;
+        let parameterStart = -1;
+        const matches: { name: string; start: number; end: number }[] = [];
+        for (let index = 0; index < template.length; index++) {
+            const character = template[index];
+            if (character === "{") {
+                if (state === 0) {
+                    state = 1;
+                } else if (state === 1) {
+                    state = 0;
+                } else {
+                    return [];
+                }
+            } else if (character === "}") {
+                if (state === 0) {
+                    state = 3;
+                } else if (state === 3) {
+                    state = 0;
+                } else if (state === 2) {
+                    matches.push({
+                        name: template.substring(parameterStart + 1, index),
+                        start: parameterStart,
+                        end: index,
+                    });
+                    state = 0;
+                } else {
+                    return [];
+                }
+            } else if (state === 1) {
+                parameterStart = index - 1;
+                state = 2;
+            } else if (state === 3) {
+                return [];
+            }
         }
-        return matches;
+        return state === 0 ? matches : [];
     }
 }
 
