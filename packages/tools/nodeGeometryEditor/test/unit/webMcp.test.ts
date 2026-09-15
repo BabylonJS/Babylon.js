@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { GeometryGraphManager, GetNgeEnumsReference, NgeConceptsMarkdown, NgeEnumCatalog, type ISerializedGeometry } from "@tools/nge-mcp-common";
-import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
@@ -746,6 +746,29 @@ describe("Node Geometry WebMCP", () => {
         const setPositions = attachedBlocks.find((block) => block.uniqueId === mapping.get(setPositionsId))!;
         expect(math.outputs.find((output) => output.name === "output")?.type).toBe(NodeGeometryBlockConnectionPointTypes.Vector3);
         expect(setPositions.inputs.find((input) => input.name === "positions")?.isConnected).toBe(true);
+    });
+
+    it("validates shared-dependency graphs without repeating hierarchy traversal per connection", () => {
+        const { editor } = CreateLiveEditorHarness();
+        const manager = new GeometryGraphManager();
+        manager.createGeometry("sharedValidationDependencies");
+
+        let sourceId = (manager.addBlock("sharedValidationDependencies", "GeometryInputBlock", "source", {
+            type: "Vector3",
+            value: { x: 1, y: 1, z: 1 },
+        }) as any).block.id;
+        for (let index = 0; index < 12; index++) {
+            const mathId = (manager.addBlock("sharedValidationDependencies", "MathBlock", `math ${index}`) as any).block.id;
+            expect(manager.connectBlocks("sharedValidationDependencies", sourceId, "output", mathId, "left")).toBe("OK");
+            expect(manager.connectBlocks("sharedValidationDependencies", sourceId, "output", mathId, "right")).toBe("OK");
+            sourceId = mathId;
+        }
+
+        const geometry = JSON.parse(manager.exportJSON("sharedValidationDependencies")!) as ISerializedGeometry;
+        const hierarchySpy = vi.spyOn(NodeGeometryBlock.prototype, "isAnAncestorOf");
+
+        expect(() => (editor as any)._validateDocument(geometry)).not.toThrow();
+        expect(hierarchySpy).not.toHaveBeenCalled();
     });
 
     it("deserializes changed vector inputs as Babylon vector values", () => {

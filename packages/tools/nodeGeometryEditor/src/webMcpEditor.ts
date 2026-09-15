@@ -2,6 +2,7 @@ import { GetClass } from "core/Misc/typeStore";
 import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { type TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
 import { type TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
+import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { type GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
 import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
@@ -191,12 +192,19 @@ export class NodeGeometryWebMcpEditor {
         }
 
         for (const { output, input, serializedBlock, serializedInput } of connections) {
-            if (!output.canConnectTo(input)) {
+            if (!this._areConnectionTypesCompatible(output, input)) {
                 throw new Error(
                     `The connection from ${serializedInput.targetBlockId}.${serializedInput.targetConnectionName} to ${serializedBlock.id}.${serializedInput.name} is incompatible.`
                 );
             }
         }
+    }
+
+    private _areConnectionTypesCompatible(output: NodeGeometryBlock["outputs"][number], input: NodeGeometryBlock["inputs"][number]): boolean {
+        if (output.type !== input.type && input.innerType !== NodeGeometryBlockConnectionPointTypes.AutoDetect) {
+            return input.acceptedConnectionPointTypes.includes(output.type);
+        }
+        return !input.excludedConnectionPointTypes.includes(output.type);
     }
 
     private _createRuntimeBlock(serializedBlock: ISerializedBlock): NodeGeometryBlock {
