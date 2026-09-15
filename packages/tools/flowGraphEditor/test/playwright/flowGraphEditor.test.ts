@@ -2141,6 +2141,30 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                     })
             )
             .toEqual({ connected: true, inMainDocument: false });
+        const beforeResize = await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+            const canvas = state.sceneContext.scene.getEngine().getRenderingCanvas();
+            return { width: canvas.clientWidth, height: canvas.clientHeight };
+        });
+        await popup.setViewportSize({ width: 820, height: 620 });
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(
+                        ({ previousWidth, previousHeight }) => {
+                            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                            const engine = state.sceneContext.scene.getEngine();
+                            const canvas = engine.getRenderingCanvas();
+                            return (
+                                (canvas.clientWidth !== previousWidth || canvas.clientHeight !== previousHeight) &&
+                                Math.abs(engine.getRenderWidth() - canvas.clientWidth) <= 1 &&
+                                Math.abs(engine.getRenderHeight() - canvas.clientHeight) <= 1
+                            );
+                        },
+                        { previousWidth: beforeResize.width, previousHeight: beforeResize.height }
+                    )
+            )
+            .toBe(true);
         await popup.close();
         await expect
             .poll(

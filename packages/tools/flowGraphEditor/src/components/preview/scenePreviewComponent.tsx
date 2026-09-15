@@ -251,6 +251,10 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     private _onReloadSnippetRequestedObserver: Nullable<Observer<void>> = null;
     private _onDropEventObserver: Nullable<Observer<DragEvent>> = null;
     private _watchedSceneContext: Nullable<SceneContext> = null;
+    private _resizeScene: Nullable<Scene> = null;
+    private _resizeWindow: Nullable<Window> = null;
+    private _resizeObserver: Nullable<ResizeObserver> = null;
+    private _resizeHandler: Nullable<() => void> = null;
 
     private _blockImportScopedSceneReplacement(): boolean {
         if (!this.props.globalState.hasImportScopedRuntime) {
@@ -322,6 +326,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const pendingSnippetId = this.props.globalState.snippetId;
         const hasHostScene = !!this.props.globalState.hostScene;
         const isHostCtx = !!ctx && !ctx.ownsScene;
+        if (ctx?.ownsScene) {
+            this._bindCanvasResize(ctx.scene, ctx.engine);
+        }
         if (isHostCtx) {
             // Popup pane re-mounted while attached to a still-live host scene — rewire the context
             // (and its observers) against that scene rather than tearing it down.
@@ -355,6 +362,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
     /** @internal */
     override componentWillUnmount() {
+        this._unbindCanvasResize();
         this._unwatchContext();
         this._onSceneContextChangedObserver?.remove();
         this._onSnippetIdChangedObserver?.remove();
@@ -391,6 +399,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
     private _disposeSceneContext(sceneContext: SceneContext): void {
         if (sceneContext.ownsScene) {
+            if (this._resizeScene === sceneContext.scene) {
+                this._unbindCanvasResize();
+            }
             sceneContext.engine.stopRenderLoop();
             sceneContext.scene.dispose();
             sceneContext.engine.dispose();
@@ -414,31 +425,41 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             }
         });
 
-        engine.resize();
+        this._bindCanvasResize(scene, engine);
+    }
 
+    private _bindCanvasResize(scene: Scene, engine: { resize: Engine["resize"] }): void {
+        this._unbindCanvasResize();
         const canvas = this.props.globalState.scenePreviewCanvas;
-        // Resize the engine's internal buffer AND re-render immediately so the canvas paints
-        // at the new size during the same frame the ResizeObserver fires. Without the inline
-        // re-render, the GL buffer at the old size flashes briefly stretched into the new CSS
-        // size, which reads as a visible flicker while the user drags the pane edge.
+        const ownerWindow = canvas?.ownerDocument.defaultView ?? null;
         const resizeHandler = () => {
             engine.resize();
             if (scene.activeCamera || (scene.activeCameras && scene.activeCameras.length > 0)) {
                 scene.render();
             }
         };
-        window.addEventListener("resize", resizeHandler);
+        resizeHandler();
+        ownerWindow?.addEventListener("resize", resizeHandler);
 
-        let resizeObserver: ResizeObserver | null = null;
         if (canvas?.parentElement) {
-            resizeObserver = new ResizeObserver(resizeHandler);
-            resizeObserver.observe(canvas.parentElement);
+            const resizeObserverConstructor = ownerWindow?.ResizeObserver ?? ResizeObserver;
+            this._resizeObserver = new resizeObserverConstructor(resizeHandler);
+            this._resizeObserver.observe(canvas.parentElement);
         }
+        this._resizeScene = scene;
+        this._resizeWindow = ownerWindow;
+        this._resizeHandler = resizeHandler;
+    }
 
-        scene.onDisposeObservable.addOnce(() => {
-            window.removeEventListener("resize", resizeHandler);
-            resizeObserver?.disconnect();
-        });
+    private _unbindCanvasResize(): void {
+        if (this._resizeHandler) {
+            this._resizeWindow?.removeEventListener("resize", this._resizeHandler);
+        }
+        this._resizeObserver?.disconnect();
+        this._resizeScene = null;
+        this._resizeWindow = null;
+        this._resizeObserver = null;
+        this._resizeHandler = null;
     }
 
     /**
