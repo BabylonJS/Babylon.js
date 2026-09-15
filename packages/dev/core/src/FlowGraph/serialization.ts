@@ -166,6 +166,8 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         finalValue = FlowGraphInteger.FromValue(intermediateValue.value);
     } else if (className === FlowGraphTypes.Number || className === FlowGraphTypes.String || className === FlowGraphTypes.Boolean) {
         finalValue = intermediateValue.value[0];
+    } else if (key === "eventData" && intermediateValue !== null && typeof intermediateValue === "object" && !Array.isArray(intermediateValue)) {
+        finalValue = intermediateValue;
     } else if (intermediateValue && intermediateValue.value !== undefined) {
         finalValue = intermediateValue.value;
     } else {

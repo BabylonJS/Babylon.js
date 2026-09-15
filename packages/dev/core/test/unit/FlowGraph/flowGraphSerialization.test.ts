@@ -182,19 +182,32 @@ describe("Flow Graph Serialization", () => {
         expect(parsed.config.eventData.score.value).toBe(42);
     });
 
-    it("applies scoped event decoding when an explicit value parser delegates to the default", () => {
+    it("applies scoped event decoding across Send and Receive when an explicit value parser delegates to the default", () => {
+        const eventData = { value: { type: RichTypeNumber, value: 5 } };
+        const send = new FlowGraphSendCustomEventBlock({ eventId: "event", eventData });
         const receive = new FlowGraphReceiveCustomEventBlock({
             eventId: "event",
-            eventData: { position: { type: RichTypeVector3, value: new Vector3(1, 2, 3) } },
+            eventData,
         });
-        const serialized: any = {};
-        receive.serialize(serialized);
         const valueParseFunction = vi.fn(defaultValueParseFunction);
+        const serializedSend: any = {};
+        send.serialize(serializedSend);
+        const serializedReceive: any = {};
+        receive.serialize(serializedReceive);
 
-        const parsed = ParseFlowGraphBlockWithClassType(serialized, { scene, valueParseFunction }, FlowGraphReceiveCustomEventBlock) as FlowGraphReceiveCustomEventBlock;
+        const parsedSend = ParseFlowGraphBlockWithClassType(serializedSend, { scene, valueParseFunction }, FlowGraphSendCustomEventBlock) as FlowGraphSendCustomEventBlock;
+        const parsedReceive = ParseFlowGraphBlockWithClassType(
+            serializedReceive,
+            { scene, valueParseFunction },
+            FlowGraphReceiveCustomEventBlock
+        ) as FlowGraphReceiveCustomEventBlock;
 
-        expect(valueParseFunction).toHaveBeenCalledWith("eventData", serialized.config, scene, scene);
-        expect(parsed.config.eventData.position.value).toEqual(new Vector3(1, 2, 3));
+        expect(valueParseFunction).toHaveBeenCalledWith("eventData", serializedSend.config, scene, scene);
+        expect(valueParseFunction).toHaveBeenCalledWith("eventData", serializedReceive.config, scene, scene);
+        expect(parsedSend.getDataInput("value")).toBeDefined();
+        expect(parsedReceive.getDataOutput("value")).toBeDefined();
+        expect(parsedSend.config.eventData.value.value).toBe(5);
+        expect(parsedReceive.config.eventData.value.value).toBe(5);
     });
 
     it("round-trips Send and Receive custom-event sockets named value through a full graph parse", () => {
@@ -319,6 +332,7 @@ describe("Flow Graph Serialization", () => {
 
     it.each([
         ["ordinary object", { score: 42 }],
+        ["ordinary object with a value property", { value: 5 }],
         ["typed value", new Vector3(1, 2, 3)],
     ])("preserves an %s stored in a context variable named eventData", (_description, value) => {
         const coordinator = new FlowGraphCoordinator({ scene });
