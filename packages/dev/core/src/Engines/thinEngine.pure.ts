@@ -2777,6 +2777,15 @@ export class ThinEngine extends AbstractEngine {
 
     // States
 
+    /** @internal */
+    public _applyColorWriteState(): void {
+        if (this._colorWriteChanged) {
+            this._colorWriteChanged = false;
+            const enable = this._colorWrite;
+            this._gl.colorMask(enable, enable, enable, enable);
+        }
+    }
+
     /**
      * Apply all cached states (depth, culling, stencil and alpha)
      */
@@ -2788,12 +2797,7 @@ export class ThinEngine extends AbstractEngine {
             this._currentRenderTarget && this._currentRenderTarget.textures ? this._currentRenderTarget.textures.length : 1,
             this._integerMRTAttachmentsMask
         );
-
-        if (this._colorWriteChanged) {
-            this._colorWriteChanged = false;
-            const enable = this._colorWrite;
-            this._gl.colorMask(enable, enable, enable, enable);
-        }
+        this._applyColorWriteState();
     }
 
     // Textures

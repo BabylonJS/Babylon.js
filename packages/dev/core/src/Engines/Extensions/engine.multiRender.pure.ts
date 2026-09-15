@@ -105,6 +105,7 @@ export function RegisterEnginesExtensionsEngineMultiRender(): void {
         }
 
         this.bindAttachments(attachments);
+        this._applyColorWriteState();
         for (let index = 0; index < attachments.length; index++) {
             const texture = textures[index];
             if (attachments[index] !== this._gl.NONE && texture) {

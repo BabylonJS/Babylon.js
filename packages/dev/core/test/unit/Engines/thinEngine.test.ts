@@ -205,6 +205,7 @@ TEXTUREFORMAT_RGBA_INTEGER    true  RGBA8UI         RGBA_INTEGER    UNSIGNED_BYT
                 NONE: 0,
                 clearBufferfv,
                 clearBufferuiv,
+                colorMask: vi.fn(),
                 drawBuffers,
             } as unknown as WebGLRenderingContext;
             thinEngine._currentRenderTarget = {
@@ -223,6 +224,37 @@ TEXTUREFORMAT_RGBA_INTEGER    true  RGBA8UI         RGBA_INTEGER    UNSIGNED_BYT
             expect(clearBufferuiv.mock.calls[0][1]).toBe(1);
             expect(Array.from(clearBufferuiv.mock.calls[0][2] as Uint32Array)).toEqual([255, 0, 0, 0]);
             expect(thinEngine._integerMRTAttachmentsMask).toBe(1 << 1);
+        });
+
+        it("applies a pending color-write state before clearing mixed MRT attachments", () => {
+            const thinEngine = new ThinEngine(null);
+            const clearBufferfv = vi.fn();
+            const clearBufferuiv = vi.fn();
+            const colorMask = vi.fn();
+            thinEngine._webGLVersion = 2;
+            thinEngine._gl = {
+                COLOR: 0x1800,
+                NONE: 0,
+                clearBufferfv,
+                clearBufferuiv,
+                colorMask,
+                drawBuffers: vi.fn(),
+            } as unknown as WebGLRenderingContext;
+            thinEngine._currentRenderTarget = {
+                textures: [
+                    { format: Engine.TEXTUREFORMAT_RGBA, type: Engine.TEXTURETYPE_UNSIGNED_BYTE },
+                    { format: Engine.TEXTUREFORMAT_RED_INTEGER, type: Engine.TEXTURETYPE_UNSIGNED_BYTE },
+                ],
+            } as any;
+
+            thinEngine.setColorWrite(false);
+            thinEngine._applyColorWriteState();
+            thinEngine.setColorWrite(true);
+            thinEngine.clearAttachments(new Color4(1, 0, 0, 0), [1, 2], true, false);
+
+            expect(colorMask).toHaveBeenLastCalledWith(true, true, true, true);
+            expect(colorMask.mock.invocationCallOrder[1]).toBeLessThan(clearBufferfv.mock.invocationCallOrder[0]);
+            expect(colorMask.mock.invocationCallOrder[1]).toBeLessThan(clearBufferuiv.mock.invocationCallOrder[0]);
         });
 
         it("uses an unsigned clear for packed RGB10_A2UI attachments", () => {
