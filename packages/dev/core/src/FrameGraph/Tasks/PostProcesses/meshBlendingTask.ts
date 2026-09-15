@@ -10,6 +10,9 @@ import {
     type MeshBlendQuality,
     type MeshBlendRadiusDefinitions,
     ThinMeshBlendingPostProcess,
+    _ClaimMeshBlendingEffectWrapper,
+    _IsMeshBlendingEffectWrapperOwned,
+    _ReleaseMeshBlendingEffectWrapper,
 } from "../../../PostProcesses/thinMeshBlendingPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";
 import { _IsMeshBlendingSupported } from "../../../Meshes/meshBlendingTag";
@@ -112,8 +115,20 @@ export class FrameGraphMeshBlendingTask extends FrameGraphPostProcessTask {
      * @param thinPostProcess The thin post process to use. A new one is created when omitted.
      */
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinMeshBlendingPostProcess) {
+        if (thinPostProcess && thinPostProcess.options.engine !== frameGraph.engine) {
+            throw new Error(`FrameGraphMeshBlendingTask "${name}": thinPostProcess must use the frame graph engine`);
+        }
+        if (thinPostProcess && _IsMeshBlendingEffectWrapperOwned(thinPostProcess)) {
+            throw new Error(`FrameGraphMeshBlendingTask "${name}": thinPostProcess is already attached to another owner`);
+        }
         super(name, frameGraph, thinPostProcess || new ThinMeshBlendingPostProcess(name, frameGraph.engine));
+        _ClaimMeshBlendingEffectWrapper(this.postProcess, this);
         this.sourceSamplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+    }
+
+    public override dispose(): void {
+        _ReleaseMeshBlendingEffectWrapper(this.postProcess, this);
+        super.dispose();
     }
 
     /**

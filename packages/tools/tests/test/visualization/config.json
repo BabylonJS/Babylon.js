@@ -2297,18 +2297,18 @@
             "dependsOn": ["FrameGraph", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
         },
         {
-            "title": "Mesh blending - Low quality",
-            "playgroundId": "#Q46SI1#1",
+            "title": "Mesh blending - viewport-edge continuation",
+            "playgroundId": "#Q46SI1#2",
             "referenceImage": "mesh-blending-phase4-low.png",
-            "replace": "BABYLON.MeshBlendQuality.Medium, BABYLON.MeshBlendQuality.Low",
+            "replace": "const scenario = \"all\";, const scenario = \"viewportEdges\";, BABYLON.MeshBlendQuality.Medium, BABYLON.MeshBlendQuality.Low",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
         },
         {
-            "title": "Mesh blending - Cinematic quality",
-            "playgroundId": "#Q46SI1#1",
+            "title": "Mesh blending - mixed radius continuation",
+            "playgroundId": "#Q46SI1#2",
             "referenceImage": "mesh-blending-phase4-cinematic.png",
-            "replace": "BABYLON.MeshBlendQuality.Medium, BABYLON.MeshBlendQuality.Cinematic",
+            "replace": "const scenario = \"all\";, const scenario = \"mixedRadius\";, BABYLON.MeshBlendQuality.Medium, BABYLON.MeshBlendQuality.Cinematic",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
         },

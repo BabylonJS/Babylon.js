@@ -72,6 +72,11 @@ describe("ThinMeshBlendingPostProcess", () => {
             first[0].worldRadius = Number.NaN;
         }).toThrow("finite non-negative");
         expect(first[0].worldRadius).toBe(0.06);
+        expect(() => (first as any).pop()).toThrow();
+        expect(() => {
+            (first as any)[0] = { worldRadius: -1, minimumProjectedRadius: 0 };
+        }).toThrow();
+        expect(first).toHaveLength(4);
     });
 
     it.each([

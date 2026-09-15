@@ -13,10 +13,11 @@ import {
     type MeshBlendQuality,
     type MeshBlendRadiusDefinitions,
     ThinMeshBlendingPostProcess,
+    _ClaimMeshBlendingEffectWrapper,
+    _IsMeshBlendingEffectWrapperOwned,
+    _ReleaseMeshBlendingEffectWrapper,
     _ValidateMeshBlendConfiguration,
 } from "./thinMeshBlendingPostProcess";
-
-const _ClassicEffectWrapperOwners = new WeakSet<ThinMeshBlendingPostProcess>();
 
 /**
  * Options used to create a mesh-blending post process.
@@ -73,7 +74,6 @@ export class MeshBlendingPostProcess extends PostProcess {
     private _depthTexture: BaseTexture;
     private _baseColorTexture: Nullable<BaseTexture>;
     private readonly _ownsEffectWrapper: boolean;
-    private readonly _usesExternalEffectWrapper: boolean;
 
     /**
      * Gets the compile-time quality variant.
@@ -206,7 +206,7 @@ export class MeshBlendingPostProcess extends PostProcess {
         if (options.effectWrapper !== undefined && options.effectWrapper.options.engine !== sceneEngine) {
             throw new Error("MeshBlendingPostProcess: effectWrapper must use the scene engine");
         }
-        if (options.effectWrapper !== undefined && _ClassicEffectWrapperOwners.has(options.effectWrapper)) {
+        if (options.effectWrapper !== undefined && _IsMeshBlendingEffectWrapperOwned(options.effectWrapper)) {
             throw new Error("MeshBlendingPostProcess: effectWrapper is already attached to another classic mesh-blending post process");
         }
         const depthType = options.depthType ?? options.effectWrapper?.depthType ?? MeshBlendDepthType.View;
@@ -227,10 +227,7 @@ export class MeshBlendingPostProcess extends PostProcess {
         });
 
         this._ownsEffectWrapper = ownsEffectWrapper;
-        this._usesExternalEffectWrapper = !ownsEffectWrapper;
-        if (this._usesExternalEffectWrapper) {
-            _ClassicEffectWrapperOwners.add(effectWrapper);
-        }
+        _ClaimMeshBlendingEffectWrapper(effectWrapper, this);
         this._meshBlendTagTexture = options.meshBlendTagTexture;
         this._depthTexture = options.depthTexture;
         this._baseColorTexture = options.baseColorTexture ?? null;
@@ -257,9 +254,7 @@ export class MeshBlendingPostProcess extends PostProcess {
 
     public override dispose(camera?: Camera): void {
         super.dispose(camera);
-        if (this._usesExternalEffectWrapper) {
-            _ClassicEffectWrapperOwners.delete(this._effectWrapper);
-        }
+        _ReleaseMeshBlendingEffectWrapper(this._effectWrapper, this);
         if (this._ownsEffectWrapper) {
             this._effectWrapper.dispose();
         }

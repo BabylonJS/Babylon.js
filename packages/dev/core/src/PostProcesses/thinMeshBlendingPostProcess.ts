@@ -81,7 +81,44 @@ export interface IMeshBlendRadiusDefinition {
 /**
  * The four radius definitions indexed by the packed mesh-blending radius class.
  */
-export type MeshBlendRadiusDefinitions = [IMeshBlendRadiusDefinition, IMeshBlendRadiusDefinition, IMeshBlendRadiusDefinition, IMeshBlendRadiusDefinition];
+export type MeshBlendRadiusDefinitions = readonly [IMeshBlendRadiusDefinition, IMeshBlendRadiusDefinition, IMeshBlendRadiusDefinition, IMeshBlendRadiusDefinition];
+
+const _MeshBlendingEffectWrapperOwners = new WeakMap<ThinMeshBlendingPostProcess, object>();
+
+/**
+ * Checks whether a thin mesh-blending wrapper is already exclusively owned.
+ * @param wrapper Wrapper to check.
+ * @returns Whether the wrapper already has an owner.
+ * @internal
+ */
+export function _IsMeshBlendingEffectWrapperOwned(wrapper: ThinMeshBlendingPostProcess): boolean {
+    return _MeshBlendingEffectWrapperOwners.has(wrapper);
+}
+
+/**
+ * Claims exclusive ownership of a thin mesh-blending wrapper.
+ * @param wrapper Wrapper to claim.
+ * @param owner Owner claiming the wrapper.
+ * @internal
+ */
+export function _ClaimMeshBlendingEffectWrapper(wrapper: ThinMeshBlendingPostProcess, owner: object): void {
+    if (_MeshBlendingEffectWrapperOwners.has(wrapper)) {
+        throw new Error("ThinMeshBlendingPostProcess is already attached to another owner");
+    }
+    _MeshBlendingEffectWrapperOwners.set(wrapper, owner);
+}
+
+/**
+ * Releases exclusive ownership of a thin mesh-blending wrapper.
+ * @param wrapper Wrapper to release.
+ * @param owner Owner releasing the wrapper.
+ * @internal
+ */
+export function _ReleaseMeshBlendingEffectWrapper(wrapper: ThinMeshBlendingPostProcess, owner: object): void {
+    if (_MeshBlendingEffectWrapperOwners.get(wrapper) === owner) {
+        _MeshBlendingEffectWrapperOwners.delete(wrapper);
+    }
+}
 
 function _ValidateWorldRadius(value: number): void {
     if (!Number.isFinite(value) || value < 0) {
@@ -149,12 +186,12 @@ export interface IThinMeshBlendingPostProcessOptions extends EffectWrapperCreati
  * @returns Four independently mutable radius definitions ordered from small to extra large.
  */
 export function CreateDefaultMeshBlendRadiusDefinitions(): MeshBlendRadiusDefinitions {
-    return [
+    return Object.freeze([
         _CreateValidatedRadiusDefinition(0.06, 1.5),
         _CreateValidatedRadiusDefinition(0.1, 3),
         _CreateValidatedRadiusDefinition(0.2, 3),
         _CreateValidatedRadiusDefinition(0.3, 5),
-    ];
+    ]) as MeshBlendRadiusDefinitions;
 }
 
 interface IMeshBlendQualitySettings {

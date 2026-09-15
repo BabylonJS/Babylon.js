@@ -7,7 +7,7 @@ import { NodeRenderGraphBuildState } from "core/FrameGraph/Node/nodeRenderGraphB
 import { FrameGraphMeshBlendingTask } from "core/FrameGraph/Tasks/PostProcesses/meshBlendingTask";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { Vector3 } from "core/Maths/math.vector";
-import { MeshBlendDebugMode, MeshBlendDepthType, MeshBlendQuality } from "core/PostProcesses/thinMeshBlendingPostProcess";
+import { MeshBlendDebugMode, MeshBlendDepthType, MeshBlendQuality, ThinMeshBlendingPostProcess } from "core/PostProcesses/thinMeshBlendingPostProcess";
 import { Scene } from "core/scene";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -92,6 +92,28 @@ describe("FrameGraphMeshBlendingTask", () => {
         (engine as any)._shaderPlatformName = "NATIVE";
 
         expect(() => new FrameGraphMeshBlendingTask("meshBlend", frameGraph)).toThrow("requires WebGL2 or WebGPU");
+    });
+
+    it("requires an engine-local, exclusively owned thin wrapper", () => {
+        const wrapper = new ThinMeshBlendingPostProcess("shared", engine);
+        const first = new FrameGraphMeshBlendingTask("first", frameGraph, wrapper);
+        const otherEngine = new NullEngine({ renderWidth: 64, renderHeight: 64 });
+        otherEngine._webGLVersion = 2;
+        const otherScene = new Scene(otherEngine);
+        const otherFrameGraph = new FrameGraph(otherScene);
+        const foreignWrapper = new ThinMeshBlendingPostProcess("foreign", otherEngine);
+
+        try {
+            expect(() => new FrameGraphMeshBlendingTask("shared", frameGraph, wrapper)).toThrow("already attached");
+            expect(() => new FrameGraphMeshBlendingTask("foreign", frameGraph, foreignWrapper)).toThrow("frame graph engine");
+
+            first.dispose();
+        } finally {
+            foreignWrapper.dispose();
+            otherFrameGraph.dispose();
+            otherScene.dispose();
+            otherEngine.dispose();
+        }
     });
 
     it("records without albedo and compiles out shadow estimation", () => {
