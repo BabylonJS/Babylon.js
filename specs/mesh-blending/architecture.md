@@ -60,10 +60,10 @@ The internal search texture is deterministic spatial noise: it rotates and jitte
 
 These snippets require a Babylon.js build containing the mesh-blending APIs. Before that build is deployed to Playground Preview, run them through the local Playground:
 
-- Classic and FrameGraph parity: [`http://localhost:1338/#O05LI8#5`](http://localhost:1338/#O05LI8#5). Add `?engine=webgpu` before the hash to use WebGPU. The scene uses reverse depth, places the tag at MRT slot zero, and can omit albedo.
+- Classic, FrameGraph, and NRGE parity: [`http://localhost:1338/#O05LI8#6`](http://localhost:1338/#O05LI8#6). Add `?engine=webgpu` before the hash to use WebGPU. The scene uses reverse depth, places the tag at MRT slot zero, and includes an NRGE path without albedo.
 - Feature and performance demo: [`http://localhost:1338/#XVZTSI#3`](http://localhost:1338/#XVZTSI#3). It includes rock-to-ground contacts, shared and different groups, distant seams, all four radius classes, tiny props, a three-mesh junction, alpha-tested foliage, quality/debug controls, and relative GPU timing.
 
-After deployment, the same snippet IDs are available through [Playground Preview (`#O05LI8#5`)](https://playground.babylonjs.com/?version=preview#O05LI8#5) and [Playground Preview (`#XVZTSI#3`)](https://playground.babylonjs.com/?version=preview#XVZTSI#3).
+After deployment, the same snippet IDs are available through [Playground Preview (`#O05LI8#6`)](https://playground.babylonjs.com/?version=preview#O05LI8#6) and [Playground Preview (`#XVZTSI#3`)](https://playground.babylonjs.com/?version=preview#XVZTSI#3).
 
 The performance demo exposes `window.runMeshBlendBenchmark()`. It uses `EngineInstrumentation.captureGPUFrameTime` and reports same-device ratios for disabled, Low, Medium, High, and Cinematic modes. Results are diagnostic measurements rather than pass/fail thresholds.
 

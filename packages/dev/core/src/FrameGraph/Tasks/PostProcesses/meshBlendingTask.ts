@@ -34,7 +34,7 @@ function _GetTextureFormat(creationOptions: FrameGraphTextureCreationOptions): n
  * physical dimensions and sample counts. Transparent rendering is caller-controlled; overlapping transparent
  * surfaces can make SceneColor inconsistent with the single-layer geometry inputs. On WebGL2, rendering transparent
  * meshes into the integer tag attachment requires per-target blend parameters.
- * @see https://playground.babylonjs.com/?version=preview#O05LI8#5
+ * @see https://playground.babylonjs.com/?version=preview#O05LI8#6
  */
 export class FrameGraphMeshBlendingTask extends FrameGraphPostProcessTask {
     /**

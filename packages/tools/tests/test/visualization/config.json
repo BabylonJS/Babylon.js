@@ -2281,25 +2281,12 @@
             "dependsOn": ["FrameGraph", "Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
         },
         {
-            "title": "Mesh blending - world sizing and contact validation",
-            "playgroundId": "#WN8Z3H#0",
-            "referenceImage": "mesh-blending-world-sizing-contact.png",
+            "title": "Mesh blending - coastal cliff scenery",
+            "playgroundId": "#BJBKKU#11",
+            "referenceImage": "mesh-blending-coastal-cliff.png",
+            "replace": "const showControls = true;, const showControls = false;, const showGpuTime = true;, const showGpuTime = false;",
             "excludedEngines": ["webgl1"],
-            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
-        },
-        {
-            "title": "Mesh blending - perspective world radius",
-            "playgroundId": "#G1OTDU#0",
-            "referenceImage": "mesh-blending-perspective-world-radius.png",
-            "excludedEngines": ["webgl1"],
-            "dependsOn": ["Cameras", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
-        },
-        {
-            "title": "Mesh blending - classic alpha cutoff coverage",
-            "playgroundId": "#OGVQ6C#0",
-            "referenceImage": "mesh-blending-alpha-cutoff.png",
-            "excludedEngines": ["webgl1"],
-            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+            "dependsOn": ["Cameras", "FrameGraph", "Lights", "Loaders", "Materials", "Meshes", "PBR", "PostProcesses", "Rendering", "Shaders", "Shadows", "Textures", "glTF"]
         },
         {
             "title": "Mesh blending - FrameGraph alpha cutoff coverage",
@@ -2310,7 +2297,7 @@
             "dependsOn": ["FrameGraph", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
         },
         {
-            "title": "Mesh blending - Phase 4 Low quality",
+            "title": "Mesh blending - Low quality",
             "playgroundId": "#Q46SI1#0",
             "referenceImage": "mesh-blending-phase4-low.png",
             "replace": "BABYLON.MeshBlendQuality.Medium, BABYLON.MeshBlendQuality.Low",
@@ -2318,22 +2305,7 @@
             "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
         },
         {
-            "title": "Mesh blending - Phase 4 Medium quality",
-            "playgroundId": "#Q46SI1#0",
-            "referenceImage": "mesh-blending-phase4-medium.png",
-            "excludedEngines": ["webgl1"],
-            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
-        },
-        {
-            "title": "Mesh blending - Phase 4 High quality",
-            "playgroundId": "#Q46SI1#0",
-            "referenceImage": "mesh-blending-phase4-high.png",
-            "replace": "BABYLON.MeshBlendQuality.Medium, BABYLON.MeshBlendQuality.High",
-            "excludedEngines": ["webgl1"],
-            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
-        },
-        {
-            "title": "Mesh blending - Phase 4 Cinematic quality",
+            "title": "Mesh blending - Cinematic quality",
             "playgroundId": "#Q46SI1#0",
             "referenceImage": "mesh-blending-phase4-cinematic.png",
             "replace": "BABYLON.MeshBlendQuality.Medium, BABYLON.MeshBlendQuality.Cinematic",
@@ -2341,39 +2313,22 @@
             "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
         },
         {
-            "title": "Mesh blending - Phase 5 target color, shadow attenuation enabled, and one-pixel seam",
-            "playgroundId": "#CYSYH2#5",
+            "title": "Mesh blending - shadow attenuation enabled",
+            "playgroundId": "#CYSYH2#7",
             "referenceImage": "mesh-blending-phase5-target-shadow-seam.png",
-            "renderCount": 3,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
         },
         {
-            "title": "Mesh blending - Phase 5 shadow attenuation disabled control",
-            "playgroundId": "#CYSYH2#5",
+            "title": "Mesh blending - shadow attenuation disabled",
+            "playgroundId": "#CYSYH2#7",
             "referenceImage": "mesh-blending-phase5-shadow-attenuation-disabled.png",
             "replace": "const useShadowAttenuation = true;, const useShadowAttenuation = false;",
-            "renderCount": 3,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
         },
         {
-            "title": "Mesh blending - Phase 5 Low sRGB interpolation",
-            "playgroundId": "#U8TAF6#0",
-            "referenceImage": "mesh-blending-phase5-low-srgb.png",
-            "replace": "BABYLON.MeshBlendQuality.Medium, BABYLON.MeshBlendQuality.Low",
-            "excludedEngines": ["webgl1"],
-            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
-        },
-        {
-            "title": "Mesh blending - Phase 5 Medium OKLab interpolation",
-            "playgroundId": "#U8TAF6#0",
-            "referenceImage": "mesh-blending-phase5-medium-oklab.png",
-            "excludedEngines": ["webgl1"],
-            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
-        },
-        {
-            "title": "Mesh blending - Phase 5 HDR SceneColor",
+            "title": "Mesh blending - HDR SceneColor",
             "playgroundId": "#GC20U3#0",
             "referenceImage": "mesh-blending-phase5-hdr-scene-color.png",
             "excludedEngines": ["webgl1"],
@@ -2381,87 +2336,26 @@
         },
         {
             "title": "Mesh blending - classic parity reference",
-            "playgroundId": "#O05LI8#5",
+            "playgroundId": "#O05LI8#6",
             "referenceImage": "mesh-blending-classic-framegraph-parity.png",
-            "renderCount": 3,
-            "errorRatio": 0.1,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Cameras", "FrameGraph", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
         },
         {
             "title": "Mesh blending - FrameGraph parity",
-            "playgroundId": "#O05LI8#5",
+            "playgroundId": "#O05LI8#6",
             "referenceImage": "mesh-blending-classic-framegraph-parity.png",
             "replace": "const useFrameGraph = false;, const useFrameGraph = true;",
-            "renderCount": 3,
-            "errorRatio": 0.1,
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Cameras", "FrameGraph", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
         },
         {
-            "title": "Mesh blending - FrameGraph without albedo",
-            "playgroundId": "#O05LI8#5",
+            "title": "Mesh blending - NRGE without albedo",
+            "playgroundId": "#O05LI8#6",
             "referenceImage": "mesh-blending-classic-framegraph-parity.png",
-            "replace": "const useFrameGraph = false;, const useFrameGraph = true;, const useAlbedo = true;, const useAlbedo = false;",
-            "renderCount": 3,
-            "errorRatio": 0.1,
+            "replace": "const useNRGE = false;, const useNRGE = true;",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Cameras", "FrameGraph", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
-        },
-        {
-            "title": "Mesh blending - feature and performance demo",
-            "playgroundId": "#XVZTSI#3",
-            "referenceImage": "mesh-blending-feature-demo.png",
-            "replace": "const showControls = true;, const showControls = false;",
-            "renderCount": 3,
-            "excludedEngines": ["webgl1"],
-            "excludeFromPerformance": true,
-            "dependsOn": ["Cameras", "GUI", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
-        },
-        {
-            "title": "Mesh blending - packed tag debug",
-            "playgroundId": "#XVZTSI#3",
-            "referenceImage": "mesh-blending-debug-packed-tag.png",
-            "replace": "const showControls = true;, const showControls = false;, const initialDebugMode = BABYLON.MeshBlendDebugMode.Off;, const initialDebugMode = BABYLON.MeshBlendDebugMode.PackedTag;",
-            "renderCount": 3,
-            "excludedEngines": ["webgl1"],
-            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
-        },
-        {
-            "title": "Mesh blending - candidate direction and distance debug",
-            "playgroundId": "#XVZTSI#3",
-            "referenceImage": "mesh-blending-debug-candidate.png",
-            "replace": "const showControls = true;, const showControls = false;, const initialDebugMode = BABYLON.MeshBlendDebugMode.Off;, const initialDebugMode = BABYLON.MeshBlendDebugMode.CandidateDirectionDistance;",
-            "renderCount": 3,
-            "excludedEngines": ["webgl1"],
-            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
-        },
-        {
-            "title": "Mesh blending - seam and fade debug",
-            "playgroundId": "#XVZTSI#3",
-            "referenceImage": "mesh-blending-debug-seam-fade.png",
-            "replace": "const showControls = true;, const showControls = false;, const initialDebugMode = BABYLON.MeshBlendDebugMode.Off;, const initialDebugMode = BABYLON.MeshBlendDebugMode.SeamFade;",
-            "renderCount": 3,
-            "excludedEngines": ["webgl1"],
-            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
-        },
-        {
-            "title": "Mesh blending - rejection reason debug",
-            "playgroundId": "#XVZTSI#3",
-            "referenceImage": "mesh-blending-debug-rejection-reason.png",
-            "replace": "const showControls = true;, const showControls = false;, const initialDebugMode = BABYLON.MeshBlendDebugMode.Off;, const initialDebugMode = BABYLON.MeshBlendDebugMode.RejectionReason;",
-            "renderCount": 3,
-            "excludedEngines": ["webgl1"],
-            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
-        },
-        {
-            "title": "Mesh blending - approximate stage work debug",
-            "playgroundId": "#XVZTSI#3",
-            "referenceImage": "mesh-blending-debug-stage-work.png",
-            "replace": "const showControls = true;, const showControls = false;, const initialDebugMode = BABYLON.MeshBlendDebugMode.Off;, const initialDebugMode = BABYLON.MeshBlendDebugMode.StageWork;",
-            "renderCount": 3,
-            "excludedEngines": ["webgl1"],
-            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
         },
         {
             "title": "Shadows and LODs",

@@ -63,7 +63,7 @@ export interface IMeshBlendingPostProcessOptions extends PostProcessOptions, IMe
  * @see https://www.jacktollenaar.top/articles/meshblending2.html
  * @see https://bottosson.github.io/posts/oklab/
  * @see https://playground.babylonjs.com/?version=preview#XVZTSI#3
- * @see https://playground.babylonjs.com/?version=preview#O05LI8#5
+ * @see https://playground.babylonjs.com/?version=preview#O05LI8#6
  */
 export class MeshBlendingPostProcess extends PostProcess {
     declare protected _effectWrapper: ThinMeshBlendingPostProcess;
