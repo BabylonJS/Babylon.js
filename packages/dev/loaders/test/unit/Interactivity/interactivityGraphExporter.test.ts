@@ -1393,6 +1393,22 @@ describe("KHR_interactivity FlowGraph export", () => {
         expect(exported.graphs[0].variables).toEqual([{ type: 0, value: ["/nodes/3"] }]);
     });
 
+    it("exports a primitive variable changed to an empty scene-object ref", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "float" }],
+            variables: [{ type: 0, value: [1] }],
+        };
+        const plan = await CreatePlan({ graphs: [graph] });
+        coordinator.flowGraphs[0].metadata!.khrInteractivity!.authoredVariableTypes = { 0: "TransformNode" };
+        coordinator.flowGraphs[0].metadata!.khrInteractivity!.authoredVariableValues = { 0: [""] };
+
+        const exported = plan.build(context);
+
+        expect(exported.graphs[0].types).toEqual([{ signature: "float" }, { signature: "ref" }]);
+        expect(exported.graphs[0].variables).toEqual([{ type: 1, value: [""] }]);
+        expect(CreateKHRInteractivityDocument(exported).graphs[0].valid).toBe(true);
+    });
+
     it("rejects pre-ratification Babylon compatibility operations", async () => {
         const graph: IKHRInteractivity_Graph = {
             types: [{ signature: "int" }],

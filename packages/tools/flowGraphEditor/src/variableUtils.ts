@@ -31,6 +31,8 @@ export function SetVariableAuthoringValue(flowGraph: FlowGraph, context: FlowGra
     if (!variable) {
         return;
     }
+    const authoredType = context.getVariableType(name);
+    const authoredAsReference = authoredType ? IsSceneObjectType(authoredType as VariableTypeName) : false;
     let components: unknown[];
     if (Array.isArray(value)) {
         components = value.slice();
@@ -38,14 +40,13 @@ export function SetVariableAuthoringValue(flowGraph: FlowGraph, context: FlowGra
         components = (value as { asArray: () => unknown[] }).asArray();
     } else if (value instanceof FlowGraphInteger) {
         components = [value.value];
-    } else if (value === undefined && provenance.source.types?.[variable.type]?.signature === "ref") {
+    } else if (value === undefined && (provenance.source.types?.[variable.type]?.signature === "ref" || authoredAsReference)) {
         components = [""];
     } else {
         components = [value];
     }
     provenance.authoredVariableValues ||= {};
     provenance.authoredVariableValues[index] = components;
-    const authoredType = context.getVariableType(name);
     if (authoredType) {
         provenance.authoredVariableTypes ||= {};
         provenance.authoredVariableTypes[index] = authoredType;

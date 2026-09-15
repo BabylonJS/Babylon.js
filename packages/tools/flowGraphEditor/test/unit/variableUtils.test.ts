@@ -134,6 +134,25 @@ describe("Flow Graph Variable Utils", () => {
         expect(flowGraph.metadata.khrInteractivity.authoredVariableValues).toEqual({ 0: [node] });
     });
 
+    it("records an empty ref when a primitive KHR variable changes to a scene-object type", () => {
+        flowGraph.metadata = {
+            khrInteractivity: {
+                graphIndex: 0,
+                specificationCommit: "test",
+                source: {
+                    types: [{ signature: "float" }],
+                    variables: [{ type: 0, value: [1] }],
+                },
+            },
+        };
+        flowGraphContext.setVariableType("staticVariable_0", "TransformNode");
+
+        SetVariableAuthoringValue(flowGraph, flowGraphContext, "staticVariable_0", undefined);
+
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableTypes).toEqual({ 0: "TransformNode" });
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableValues).toEqual({ 0: [""] });
+    });
+
     // --------------------------------------------------------
     // gatherVariables
     // --------------------------------------------------------
