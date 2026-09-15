@@ -247,6 +247,23 @@ interface IOrderedNodes {
 const _KnownIndexedRootCollections = new Set<string>(["nodes", "animations", "cameras", "materials", "meshes", "textures", "images", "samplers", "skins", "scenes"]);
 const _UnsupportedBlockClassName = "FlowGraphUnsupportedInteractivityBlock";
 const _CompanionNodeExtensions = ["KHR_node_hoverability", "KHR_node_selectability", "KHR_node_visibility"] as const;
+
+function _GetPointerExtensionNames(pointer: string): string[] {
+    const segments = pointer.split("/").map((segment) => segment.replace(/~1/g, "/").replace(/~0/g, "~"));
+    const extensions: string[] = [];
+    for (let index = 0; index < segments.length - 1; index++) {
+        if (segments[index] === "extensions" && segments[index + 1]) {
+            extensions.push(segments[index + 1]);
+        }
+    }
+    return extensions;
+}
+
+function _CanPreserveNestedExtensionPointer(pointer: string): boolean {
+    const segments = pointer.split("/").map((segment) => segment.replace(/~1/g, "/").replace(/~0/g, "~"));
+    const extensionIndex = segments.indexOf("extensions");
+    return extensionIndex > 1 && segments[1] === "nodes" && _CompanionNodeExtensions.includes(segments[extensionIndex + 1] as (typeof _CompanionNodeExtensions)[number]);
+}
 const _FlowGraphTypeToKHRSignature: Readonly<Record<string, string>> = {
     [FlowGraphTypes.Number]: "float",
     [FlowGraphTypes.Boolean]: "bool",
@@ -2036,6 +2053,10 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             if (typeof pointer !== "string") {
                 continue;
             }
+            const nestedExtensions = _GetPointerExtensionNames(pointer).filter((extension) => extension !== "KHR_interactivity");
+            if (nestedExtensions.length > 0 && !_CanPreserveNestedExtensionPointer(pointer)) {
+                continue;
+            }
             const segments = pointer.split("/");
             if (segments[0] !== "" || segments.length < 3) {
                 continue;
@@ -2115,6 +2136,14 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
 
     private _updateVariables(graph: IKHRInteractivity_Graph, flowGraph: FlowGraph, diagnostics: IKHRInteractivityExportDiagnostic[], graphIndex: number): void {
         const provenance = flowGraph.metadata?.khrInteractivity as IKHRInteractivityGraphProvenance | undefined;
+        if (provenance?.authoredVariableStructureChanged) {
+            _PushDiagnostic(diagnostics, {
+                code: "VALUE_UNREPRESENTABLE",
+                graphIndex,
+                path: `/graphs/${graphIndex}/variables`,
+                message: "Adding, renaming, or deleting variables from an imported KHR_interactivity graph is not supported by lossless export.",
+            });
+        }
         const authoredValues = provenance?.authoredVariableValues;
         const authoredTypes = provenance?.authoredVariableTypes;
         if (!authoredValues && !authoredTypes) {
@@ -2578,6 +2607,19 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         if (!match || !_KnownIndexedRootCollections.has(match[1])) {
             return reference;
         }
+        const nestedExtensions = _GetPointerExtensionNames(reference).filter((extension) => extension !== "KHR_interactivity");
+        if (nestedExtensions.length > 0 && !_CanPreserveNestedExtensionPointer(reference)) {
+            _PushDiagnostic(diagnostics, {
+                code: "REFERENCE_UNRESOLVED",
+                graphIndex,
+                nodeIndex,
+                path: `/graphs/${graphIndex}${nodeIndex === undefined ? "" : `/nodes/${nodeIndex}`}`,
+                message: `Reference "${reference}" observes extension-backed data (${nestedExtensions.join(
+                    ", "
+                )}) that the serializer cannot guarantee will retain its source semantics.`,
+            });
+            return reference;
+        }
         const collection = match[1];
         const sourceIndex = parseInt(match[2], 10);
         const targetIndex = this._getRemappedRootIndex(collection as KhrInteractivityRootCollection, sourceIndex, context);
@@ -2600,9 +2642,10 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             if (typeof value !== "string") {
                 return;
             }
-            const extensionName = /^\/extensions\/([^/]+)(?:\/|$)/.exec(value)?.[1];
-            if (extensionName && extensionName !== "KHR_interactivity") {
-                extensions.add(extensionName);
+            for (const extensionName of _GetPointerExtensionNames(value)) {
+                if (extensionName !== "KHR_interactivity") {
+                    extensions.add(extensionName);
+                }
             }
         };
         const collectPropertyExtensions = (value: unknown): void => {

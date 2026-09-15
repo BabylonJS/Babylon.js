@@ -120,6 +120,8 @@ export interface IKHRInteractivityGraphProvenance {
     authoredVariableValues?: Record<number, unknown[]>;
     /** Explicit editor-authored FlowGraph variable types keyed by canonical variable index. */
     authoredVariableTypes?: Record<number, string>;
+    /** True when variables were explicitly added, renamed, or deleted in the editor. */
+    authoredVariableStructureChanged?: boolean;
 }
 
 /**

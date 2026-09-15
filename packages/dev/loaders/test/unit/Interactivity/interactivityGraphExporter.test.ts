@@ -333,6 +333,39 @@ describe("KHR_interactivity FlowGraph export", () => {
         });
     });
 
+    it("rejects extension-backed material pointers whose observable value may change during serialization", async () => {
+        for (const extensionPayload of [{}, { emissiveStrength: 10 }]) {
+            const graph: IKHRInteractivity_Graph = {
+                types: [{ signature: "float" }],
+                declarations: [{ op: "pointer/get" }],
+                nodes: [
+                    {
+                        declaration: 0,
+                        configuration: {
+                            pointer: { value: ["/materials/0/extensions/KHR_materials_emissive_strength/emissiveStrength"] },
+                            type: { value: [0] },
+                        },
+                    },
+                ],
+            };
+            const sourceGLTF = {
+                materials: [{ index: 0, extensions: { KHR_materials_emissive_strength: extensionPayload } }],
+            };
+            const plan = await CreatePlan({ graphs: [graph] }, sourceGLTF);
+
+            expect(plan.additionalExtensionsUsed).toContain("KHR_materials_emissive_strength");
+            expect(plan.analyze()).toMatchObject({
+                representable: false,
+                diagnostics: [
+                    expect.objectContaining({
+                        code: "REFERENCE_UNRESOLVED",
+                        message: expect.stringContaining("KHR_materials_emissive_strength"),
+                    }),
+                ],
+            });
+        }
+    });
+
     it("uses a pointer template collection hint when an object has multiple glTF identities", async () => {
         const sourceNode = new TransformNode("source", scene);
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
@@ -1407,6 +1440,27 @@ describe("KHR_interactivity FlowGraph export", () => {
         expect(exported.graphs[0].types).toEqual([{ signature: "float" }, { signature: "ref" }]);
         expect(exported.graphs[0].variables).toEqual([{ type: 1, value: [""] }]);
         expect(CreateKHRInteractivityDocument(exported).graphs[0].valid).toBe(true);
+    });
+
+    it("rejects structural edits to imported variables", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "float" }],
+            variables: [{ type: 0, value: [1], name: "source" }],
+        };
+        const plan = await CreatePlan({ graphs: [graph] });
+        coordinator.flowGraphs[0].metadata!.khrInteractivity!.authoredVariableStructureChanged = true;
+
+        expect(plan.analyze()).toMatchObject({
+            representable: false,
+            diagnostics: [
+                expect.objectContaining({
+                    code: "VALUE_UNREPRESENTABLE",
+                    path: "/graphs/0/variables",
+                    message: expect.stringContaining("Adding, renaming, or deleting"),
+                }),
+            ],
+        });
+        expect(() => plan.build(context)).toThrowError(KHRInteractivityExportError);
     });
 
     it("rejects pre-ratification Babylon compatibility operations", async () => {

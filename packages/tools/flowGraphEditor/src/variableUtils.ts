@@ -23,7 +23,13 @@ export function SetVariableAuthoringValue(flowGraph: FlowGraph, context: FlowGra
     context.setVariable(name, value);
     const match = /^staticVariable_(0|[1-9]\d*)$/.exec(name);
     const provenance = flowGraph.metadata?.khrInteractivity;
-    if (!match || !provenance?.source?.variables) {
+    if (!match) {
+        if (provenance?.source) {
+            provenance.authoredVariableStructureChanged = true;
+        }
+        return;
+    }
+    if (!provenance?.source?.variables) {
         return;
     }
     const index = parseInt(match[1], 10);
@@ -530,6 +536,9 @@ export function RenameVariable(fg: FlowGraph, oldName: string, newName: string):
     if (!newName || newName === oldName) {
         return;
     }
+    if (fg.metadata?.khrInteractivity?.source) {
+        fg.metadata.khrInteractivity.authoredVariableStructureChanged = true;
+    }
 
     for (const block of fg.getAllBlocks()) {
         const className = block.getClassName();
@@ -575,6 +584,9 @@ export function RenameVariable(fg: FlowGraph, oldName: string, newName: string):
  * @param name - The variable name to delete.
  */
 export function DeleteVariable(fg: FlowGraph, name: string): void {
+    if (fg.metadata?.khrInteractivity?.source) {
+        fg.metadata.khrInteractivity.authoredVariableStructureChanged = true;
+    }
     const blocksToRemove: FlowGraphBlock[] = [];
 
     for (const block of fg.getAllBlocks()) {

@@ -153,6 +153,31 @@ describe("Flow Graph Variable Utils", () => {
         expect(flowGraph.metadata.khrInteractivity.authoredVariableValues).toEqual({ 0: [""] });
     });
 
+    it("records unsupported structural edits to imported KHR variables", () => {
+        flowGraph.metadata = {
+            khrInteractivity: {
+                graphIndex: 0,
+                specificationCommit: "test",
+                source: {
+                    types: [{ signature: "float" }],
+                    variables: [{ type: 0, value: [1] }],
+                },
+            },
+        };
+        flowGraphContext.setVariable("staticVariable_0", 1);
+
+        SetVariableAuthoringValue(flowGraph, flowGraphContext, "newVariable", 0);
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableStructureChanged).toBe(true);
+
+        flowGraph.metadata.khrInteractivity.authoredVariableStructureChanged = false;
+        RenameVariable(flowGraph, "staticVariable_0", "renamed");
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableStructureChanged).toBe(true);
+
+        flowGraph.metadata.khrInteractivity.authoredVariableStructureChanged = false;
+        DeleteVariable(flowGraph, "renamed");
+        expect(flowGraph.metadata.khrInteractivity.authoredVariableStructureChanged).toBe(true);
+    });
+
     // --------------------------------------------------------
     // gatherVariables
     // --------------------------------------------------------
