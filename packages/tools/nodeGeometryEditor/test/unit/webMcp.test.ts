@@ -420,6 +420,40 @@ describe("Node Geometry WebMCP", () => {
         expect(deserialize).not.toHaveBeenCalled();
     });
 
+    it("does not reuse a deleted block's logical id", () => {
+        const state = CreateTestState([], vi.fn());
+        const controller = new AbortController();
+        let currentGeometry: ISerializedGeometry = {
+            customType: "BABYLON.NodeGeometry",
+            outputNodeId: -1,
+            blocks: [],
+        };
+        let nextRuntimeId = 100;
+        vi.spyOn(SerializationTools, "Serialize").mockImplementation(() => JSON.stringify(currentGeometry));
+        state.webMcpEditor = {
+            applyIncrementalUpdate: vi.fn((_before, after) => {
+                currentGeometry = RemapGeometryIds(after, nextRuntimeId);
+                nextRuntimeId += currentGeometry.blocks.length + 1;
+                return new Map(after.blocks.map((block, index) => [block.id, currentGeometry.blocks[index].id]));
+            }),
+        } as unknown as GlobalState["webMcpEditor"];
+
+        const tools = CreateNodeGeometryWebMcpTools(state);
+        const addTool = FindTool(tools, "add_block");
+        const removeTool = FindTool(tools, "remove_block");
+        const setPropertiesTool = FindTool(tools, "set_block_properties");
+
+        const firstBlock = addTool.execute({ blockType: "BoxBlock" }, { signal: controller.signal }) as { block: { id: number } };
+        expect(firstBlock.block.id).toBe(1);
+        expect(removeTool.execute({ blockId: firstBlock.block.id }, { signal: controller.signal })).toMatchObject({ success: true, blockCount: 0 });
+
+        const replacementBlock = addTool.execute({ blockType: "SphereBlock" }, { signal: controller.signal }) as { block: { id: number } };
+        expect(replacementBlock.block.id).toBe(2);
+        expect(() =>
+            setPropertiesTool.execute({ blockId: firstBlock.block.id, properties: { name: "stale handle" } }, { signal: controller.signal })
+        ).toThrow("Block 1 not found.");
+    });
+
     it("preserves logical ids when editor history remaps runtime ids", () => {
         const state = CreateTestState([], vi.fn());
         const controller = new AbortController();

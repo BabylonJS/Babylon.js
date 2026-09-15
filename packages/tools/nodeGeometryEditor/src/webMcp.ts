@@ -655,7 +655,8 @@ function AssertMutationAllowed(globalState: GlobalState, signal: AbortSignal): v
 function MutateCurrentGeometry<T extends object>(globalState: GlobalState, signal: AbortSignal, mutation: (manager: GeometryGraphManager) => T): T & { blockCount: number } {
     AssertMutationAllowed(globalState, signal);
     const before = ReadCurrentNodeGeometry(globalState);
-    const manager = CreateManagerFromSerializedGeometry(before);
+    const cache = GetOrCreateCurrentGeometryCache(globalState);
+    const manager = CreateManagerFromSerializedGeometry(before, cache.nextLogicalId);
     const result = mutation(manager);
     signal.throwIfAborted();
     const after = ExportManagerDocument(manager);
@@ -664,7 +665,6 @@ function MutateCurrentGeometry<T extends object>(globalState: GlobalState, signa
         throw new Error("The live Node Geometry editor is not ready for WebMCP mutations.");
     }
 
-    const cache = GetOrCreateCurrentGeometryCache(globalState);
     const logicalToRuntime = editor.applyIncrementalUpdate(before, after, cache.logicalToRuntime);
     SetCurrentGeometryCache(globalState, logicalToRuntime, cache.nextLogicalId);
     return {
@@ -677,10 +677,10 @@ function CreateManagerFromEditor(globalState: GlobalState): GeometryGraphManager
     return CreateManagerFromSerializedGeometry(ReadCurrentNodeGeometry(globalState));
 }
 
-function CreateManagerFromSerializedGeometry(value: unknown): GeometryGraphManager {
+function CreateManagerFromSerializedGeometry(value: unknown, minimumNextBlockId = 1): GeometryGraphManager {
     const geometry = ReadSerializedNodeGeometry(value);
     const manager = new GeometryGraphManager();
-    const result = manager.importJSON(CurrentGeometryName, JSON.stringify(geometry));
+    const result = manager.importJSON(CurrentGeometryName, JSON.stringify(geometry), minimumNextBlockId);
     ThrowOnManagerError(result);
     return manager;
 }

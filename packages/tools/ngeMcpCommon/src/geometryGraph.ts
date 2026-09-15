@@ -1235,15 +1235,16 @@ export class GeometryGraphManager {
      * Import an NGE JSON string.
      * @param geometryName - Name to assign to the imported geometry.
      * @param json - The NGE JSON string to parse.
+     * @param minimumNextBlockId - Optional lower bound for the next allocated block id.
      * @returns "OK" or an error string.
      */
-    importJSON(geometryName: string, json: string): string {
+    importJSON(geometryName: string, json: string, minimumNextBlockId = 1): string {
         try {
             const parsed = ValidateNodeGeometryAttachmentPayload(json) as unknown as ISerializedGeometry;
             this._geometries.set(geometryName, parsed);
 
             const maxId = parsed.blocks.reduce((max, b) => Math.max(max, b.id), 0);
-            this._nextId.set(geometryName, maxId + 1);
+            this._nextId.set(geometryName, Math.max(maxId + 1, minimumNextBlockId));
             this._nextX.set(geometryName, parsed.blocks.length * 280);
 
             return "OK";
