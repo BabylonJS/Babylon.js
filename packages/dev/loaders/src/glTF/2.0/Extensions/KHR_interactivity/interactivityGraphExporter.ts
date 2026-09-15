@@ -1156,6 +1156,16 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 });
             }
         }
+        type CompositeConnection = FlowGraphDataConnection<any> | FlowGraphSignalConnection;
+        const allowedInternalPeers = new Map<CompositeConnection, Set<CompositeConnection>>();
+        const allowInternalConnection = (left: CompositeConnection, right: CompositeConnection) => {
+            const leftPeers = allowedInternalPeers.get(left) ?? new Set<CompositeConnection>();
+            leftPeers.add(right);
+            allowedInternalPeers.set(left, leftPeers);
+            const rightPeers = allowedInternalPeers.get(right) ?? new Set<CompositeConnection>();
+            rightPeers.add(left);
+            allowedInternalPeers.set(right, rightPeers);
+        };
         for (const connector of mapping.interBlockConnectors ?? []) {
             const inputBlock = _GetRoleBlock(blocks, connector.inputBlockIndex);
             const outputBlock = _GetRoleBlock(blocks, connector.outputBlockIndex);
@@ -1169,6 +1179,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 : outputBlock instanceof FlowGraphExecutionBlock
                   ? outputBlock.signalOutputs.find((connection) => connection.name === connector.output)
                   : undefined;
+            if (input && output) {
+                allowInternalConnection(input, output);
+            }
             if (!input || !output || !input._connectedPoint.includes(output as never)) {
                 _PushDiagnostic(diagnostics, {
                     code: "COMPOSITE_CONNECTION_CHANGED",
@@ -1179,6 +1192,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 });
             }
         }
+        const reportedUnexpectedConnections = new Set<CompositeConnection>();
         for (const block of blocks) {
             const blockProvenance = _GetBlockProvenance(block);
             for (const [key, expected] of Object.entries(blockProvenance?.generatedConfiguration ?? {})) {
@@ -1204,22 +1218,35 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             if ((blockProvenance?.role ?? 0) < 0) {
                 continue;
             }
-            const connections: (FlowGraphDataConnection<any> | FlowGraphSignalConnection)[] = [
+            const connections: CompositeConnection[] = [
                 ...block.dataInputs,
                 ...block.dataOutputs,
                 ...(block instanceof FlowGraphExecutionBlock ? block.signalInputs : []),
                 ...(block instanceof FlowGraphExecutionBlock ? block.signalOutputs : []),
             ];
             for (const connection of connections) {
-                if (
-                    !connection.isConnected() ||
-                    _GetSocketProvenance(connection) ||
-                    this._inferSocketProvenance(connection, { sourceIndex: nodeIndex, declarationIndex: -1, operation, mapping, blocks, classification: "exact", diagnostics })
-                ) {
+                if (!connection.isConnected() || reportedUnexpectedConnections.has(connection)) {
                     continue;
                 }
-                const hasExternalConnection = connection._connectedPoint.some((peer) => !blocks.includes(peer._ownerBlock));
-                if (hasExternalConnection) {
+                const khrFacing =
+                    _GetSocketProvenance(connection) ??
+                    this._inferSocketProvenance(connection, {
+                        sourceIndex: nodeIndex,
+                        declarationIndex: -1,
+                        operation,
+                        mapping,
+                        blocks,
+                        classification: "exact",
+                        diagnostics,
+                    });
+                const unexpectedPeers = connection._connectedPoint.filter((peer) => {
+                    const internal = blocks.includes(peer._ownerBlock);
+                    const importerHelper = internal && _GetBlockProvenance(peer._ownerBlock)?.role === -1;
+                    return internal ? !allowedInternalPeers.get(connection)?.has(peer) && !(khrFacing && importerHelper) : !khrFacing;
+                });
+                if (unexpectedPeers.length > 0) {
+                    reportedUnexpectedConnections.add(connection);
+                    unexpectedPeers.forEach((peer) => reportedUnexpectedConnections.add(peer));
                     _PushDiagnostic(diagnostics, {
                         code: "SOCKET_PROVENANCE_MISSING",
                         graphIndex,
@@ -1227,7 +1254,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                         blockId: block.uniqueId,
                         socket: connection.name,
                         path: `/blocks/${block.uniqueId}/${connection.name}`,
-                        message: `Connected socket "${connection.name}" is not part of the "${operation}" inverse mapping.`,
+                        message: `Connection from socket "${connection.name}" is not part of the "${operation}" inverse mapping.`,
                     });
                 }
             }

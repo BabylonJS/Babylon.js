@@ -1178,7 +1178,17 @@ describe("KHR_interactivity FlowGraph export", () => {
 
         const interpolationBlocks = coordinator.flowGraphs[0].getAllBlocks().filter((block) => block.metadata?.khrInteractivity?.nodeIndex === 1);
         const valueInterpolation = interpolationBlocks.find((block) => block.metadata?.khrInteractivity?.role === 0)!;
+        const playAnimation = interpolationBlocks.find((block) => block.metadata?.khrInteractivity?.role === 2)!;
         const getVariable = interpolationBlocks.find((block) => block.metadata?.khrInteractivity?.role === 4)!;
+        getVariable.getDataOutput("value")!.connectTo(playAnimation.getDataInput("speed")!);
+
+        expect(plan.analyze()).toMatchObject({
+            representable: false,
+            nodes: [expect.anything(), expect.objectContaining({ nodeIndex: 1, classification: "lossy" })],
+            diagnostics: [expect.objectContaining({ code: "SOCKET_PROVENANCE_MISSING", nodeIndex: 1, socket: "speed" })],
+        });
+
+        getVariable.getDataOutput("value")!.disconnectFrom(playAnimation.getDataInput("speed")!);
         valueInterpolation.getDataInput("value_0")!.disconnectFrom(getVariable.getDataOutput("value")!);
 
         const editedPlan = CreateKHRInteractivityExportPlan(coordinator.flowGraphs, {
