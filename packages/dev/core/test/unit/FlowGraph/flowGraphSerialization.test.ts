@@ -33,7 +33,7 @@ import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import { FlowGraphPathConverter } from "core/FlowGraph/flowGraphPathConverter";
-import { defaultValueParseFunction, defaultValueSerializationFunction } from "core/FlowGraph/serialization";
+import { defaultValueSerializationFunction } from "core/FlowGraph/serialization";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Vector3 } from "core/Maths";
 import { Mesh } from "core/Meshes";
@@ -124,17 +124,19 @@ describe("Flow Graph Serialization", () => {
     });
 
     it("preserves prototype-like custom event payload ids as own properties", () => {
-        const serializedConfiguration = {
-            eventData: [
-                {
-                    eventData: true,
-                    id: "__proto__",
-                    type: "number",
-                    value: { type: "number", value: [5] },
-                },
-            ],
-        };
-        const eventData = defaultValueParseFunction("eventData", serializedConfiguration, scene, scene);
+        const emptyReceive = new FlowGraphReceiveCustomEventBlock({ eventId: "event", eventData: {} });
+        const legacySerializedReceive: any = {};
+        emptyReceive.serialize(legacySerializedReceive);
+        legacySerializedReceive.config.eventData = [
+            {
+                eventData: true,
+                id: "__proto__",
+                type: "number",
+                value: { type: "number", value: [5] },
+            },
+        ];
+        const parsedLegacyReceive = ParseFlowGraphBlockWithClassType(legacySerializedReceive, { scene }, FlowGraphReceiveCustomEventBlock) as FlowGraphReceiveCustomEventBlock;
+        const eventData = parsedLegacyReceive.config.eventData;
         expect(Object.prototype.hasOwnProperty.call(eventData, "__proto__")).toBe(true);
         Object.defineProperty(eventData, "position", {
             configurable: true,
@@ -252,6 +254,22 @@ describe("Flow Graph Serialization", () => {
         expect(parsed._getConnectionValue(flowGraphAddBlock.a)).toEqual(1);
         expect(parsed._getConnectionValue(flowGraphAddBlock.b)).toEqual(2);
         expect(parsed.getVariable("test4").uniqueId).toEqual(mesh.uniqueId);
+    });
+
+    it.each([
+        ["ordinary object", { score: 42 }],
+        ["typed value", new Vector3(1, 2, 3)],
+    ])("preserves an %s stored in a context variable named eventData", (_description, value) => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const context = graph.createContext();
+        context.setVariable("eventData", value);
+
+        const serialized: any = {};
+        context.serialize(serialized);
+        const parsed = ParseFlowGraphContext(serialized, { graph });
+
+        expect(parsed.getVariable("eventData")).toEqual(value);
     });
 
     it("Serializes and parses a graph", async () => {

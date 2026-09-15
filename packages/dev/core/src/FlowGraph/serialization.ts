@@ -5,7 +5,7 @@ import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vec
 import { type Scene } from "../scene";
 import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger.pure";
-import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes.pure";
+import { FlowGraphTypes } from "./flowGraphRichTypes.pure";
 import { type Node } from "core/node";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
 
@@ -147,25 +147,7 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
     let finalValue;
     const className = intermediateValue?.type ?? intermediateValue?.className;
     const sceneNode = GetSceneNodeFromSerializedReference(intermediateValue, scene);
-    if (key === "eventData" && intermediateValue !== null && typeof intermediateValue === "object" && !Array.isArray(intermediateValue)) {
-        finalValue = Object.create(null);
-        for (const eventKey of Object.keys(intermediateValue)) {
-            const serializedEntry = intermediateValue[eventKey];
-            if (serializedEntry === null || typeof serializedEntry !== "object") {
-                continue;
-            }
-            const entry: { type?: unknown; value?: unknown } = { type: serializedEntry.type };
-            if (serializedEntry.value !== undefined) {
-                entry.value = defaultValueParseFunction("value", serializedEntry, assetsContainer, scene);
-            }
-            Object.defineProperty(finalValue, eventKey, {
-                configurable: true,
-                enumerable: true,
-                value: entry,
-                writable: true,
-            });
-        }
-    } else if (sceneNode) {
+    if (sceneNode) {
         finalValue = sceneNode;
     } else if (IsVectorClassName(className)) {
         finalValue = ParseVector(className, intermediateValue.value);
@@ -188,32 +170,7 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         finalValue = intermediateValue.value;
     } else {
         if (Array.isArray(intermediateValue)) {
-            // Check if this is an event configuration array (objects with id/eventData)
-            // versus a plain array of primitives (e.g. variable name lists)
-            if (intermediateValue.length > 0 && typeof intermediateValue[0] === "object" && intermediateValue[0] !== null && "eventData" in intermediateValue[0]) {
-                // configuration data of an event
-                finalValue = intermediateValue.reduce((acc: Record<string, { type: ReturnType<typeof getRichTypeByFlowGraphType>; value?: unknown }>, val) => {
-                    if (!val.eventData) {
-                        return acc;
-                    }
-                    const eventDefinition: { type: ReturnType<typeof getRichTypeByFlowGraphType>; value?: unknown } = {
-                        type: getRichTypeByFlowGraphType(val.type),
-                    };
-                    if (typeof val.value !== "undefined") {
-                        eventDefinition.value = defaultValueParseFunction("value", val, assetsContainer, scene);
-                    }
-                    Object.defineProperty(acc, val.id, {
-                        configurable: true,
-                        enumerable: true,
-                        value: eventDefinition,
-                        writable: true,
-                    });
-                    return acc;
-                }, Object.create(null));
-            } else {
-                // Plain array of primitives — return as-is
-                finalValue = intermediateValue;
-            }
+            finalValue = intermediateValue;
         } else {
             finalValue = intermediateValue;
         }
