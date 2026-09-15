@@ -921,7 +921,11 @@ export class SolidParser {
 
                 if (!this._materialNameFromObj) {
                     // Create a material with point cloud on
+                    scene._blockEntityCollection = !!assetContainer;
                     newMaterial = new StandardMaterial(Geometry.RandomId(), scene);
+                    newMaterial._parentContainer = assetContainer;
+                    assetContainer?.materials.push(newMaterial);
+                    scene._blockEntityCollection = false;
 
                     newMaterial.pointsCloud = true;
 
@@ -972,6 +976,7 @@ export class SolidParser {
             scene._blockEntityCollection = !!assetContainer;
             const babylonMesh = new Mesh(this._meshesFromObj[j].name, scene);
             babylonMesh._parentContainer = assetContainer;
+            assetContainer?.meshes.push(babylonMesh);
             scene._blockEntityCollection = false;
             this._handledMesh._babylonMesh = babylonMesh;
             // If this is a group mesh, it should have an object mesh as a parent. So look for the first object mesh that appears before it.
@@ -1019,7 +1024,14 @@ export class SolidParser {
                 vertexData.colors = this._handledMesh.colors;
             }
             //Set the data from the VertexBuffer to the current Mesh
-            vertexData.applyToMesh(babylonMesh);
+            scene._blockEntityCollection = !!assetContainer;
+            try {
+                vertexData.applyToMesh(babylonMesh);
+                babylonMesh.geometry!._parentContainer = assetContainer;
+                assetContainer?.geometries.push(babylonMesh.geometry!);
+            } finally {
+                scene._blockEntityCollection = false;
+            }
             if (this._loadingOptions.invertY) {
                 babylonMesh.scaling.y *= -1;
             }
