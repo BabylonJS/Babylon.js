@@ -9,6 +9,7 @@ import { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBloc
 import { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
 import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 import { Vector3 } from "core/Maths/math.vector";
+import { Observable } from "core/Misc/observable";
 
 const { mockLoadSnippet } = vi.hoisted(() => ({
     mockLoadSnippet: vi.fn(),
@@ -22,6 +23,7 @@ vi.mock("@tools/snippet-loader", () => ({
 import { type GlobalState } from "../../src/globalState";
 import { DecodeNodeGeometryUrlHash } from "../../src/encodedGeometryUrl";
 import { ConnectionPointPortData } from "../../src/graphSystem/connectionPointPortData";
+import { CreateNodeGeometryHistoryStack } from "../../src/historyTools";
 import { SerializationTools } from "../../src/serializationTools";
 import { type IWebMcpTool, CreateNodeGeometryWebMcpTools, IsNodeGeometryWebMcpSupported, RegisterNodeGeometryWebMcpToolsAsync } from "../../src/webMcp";
 import { NodeGeometryWebMcpEditor } from "../../src/webMcpEditor";
@@ -456,7 +458,7 @@ describe("Node Geometry WebMCP", () => {
         ).toThrow("Block 1 not found.");
     });
 
-    it("keeps a surviving block addressable by its logical id after editor history recreates it", () => {
+    it("keeps a surviving block addressable across real editor undo and redo rebuilds", async () => {
         const state = CreateTestState([], vi.fn());
         const controller = new AbortController();
         const nodeGeometry = new NodeGeometry("history");
@@ -465,34 +467,62 @@ describe("Node Geometry WebMCP", () => {
         state.nodeGeometry = nodeGeometry;
         state.onGetNodeFromBlock = () => ({ x: 10, y: 20, isCollapsed: false }) as ReturnType<GlobalState["onGetNodeFromBlock"]>;
         state.storeEditorData = vi.fn();
+        state.stateManager.onUpdateRequiredObservable = new Observable<void>();
+        state.stateManager.onRebuildRequiredObservable = new Observable<void>();
+        state.stateManager.onNodeMovedObservable = new Observable<void>();
+        state.stateManager.onNewNodeCreatedObservable = new Observable<void>();
+        state.stateManager.onSelectionChangedObservable = new Observable();
+        state.onClearUndoStack = new Observable<void>();
+        state.onResetRequiredObservable = new Observable<boolean>();
+        state.onResetRequiredObservable.add(() => {
+            SerializationTools.UpdateLocations(nodeGeometry, state);
+        });
 
         const tools = CreateNodeGeometryWebMcpTools(state);
         const getTool = FindTool(tools, "get_current_node_geometry");
         const setPropertiesTool = FindTool(tools, "set_block_properties");
         const originalLogicalId = box.uniqueId;
-        const historyState = JSON.parse(SerializationTools.Serialize(nodeGeometry, state));
         expect((getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry).blocks[0].id).toBe(originalLogicalId);
 
-        nodeGeometry.parseSerializedObject(historyState);
-        const recreatedRuntimeId = nodeGeometry.attachedBlocks[0].uniqueId;
-        expect(recreatedRuntimeId).not.toBe(originalLogicalId);
-        expect(nodeGeometry.editorData.map[originalLogicalId]).toBe(recreatedRuntimeId);
+        const historyStack = CreateNodeGeometryHistoryStack(state);
+        await historyStack.storeAsync();
+        box.name = "Changed";
+        await historyStack.storeAsync();
+
+        historyStack.undo();
+        const undoRuntimeId = nodeGeometry.attachedBlocks[0].uniqueId;
+        expect(undoRuntimeId).not.toBe(originalLogicalId);
+        expect(nodeGeometry.editorData.map).toBeUndefined();
+        expect(getTool.execute({}, { signal: controller.signal })).toMatchObject({
+            blocks: [{ id: originalLogicalId, name: "Box" }],
+        });
+
+        historyStack.redo();
+        const redoRuntimeId = nodeGeometry.attachedBlocks[0].uniqueId;
+        expect(redoRuntimeId).not.toBe(undoRuntimeId);
+        expect(nodeGeometry.editorData.map).toBeUndefined();
+        expect(getTool.execute({}, { signal: controller.signal })).toMatchObject({
+            blocks: [{ id: originalLogicalId, name: "Changed" }],
+        });
+
         state.webMcpEditor = {
             applyIncrementalUpdate: vi.fn((_before, after) => {
                 nodeGeometry.attachedBlocks[0].name = after.blocks[0].name;
-                return new Map([[after.blocks[0].id, recreatedRuntimeId]]);
+                return new Map([[after.blocks[0].id, redoRuntimeId]]);
             }),
         } as unknown as GlobalState["webMcpEditor"];
 
-        expect(
-            setPropertiesTool.execute({ blockId: originalLogicalId, properties: { name: "Updated after history" } }, { signal: controller.signal })
-        ).toMatchObject({ success: true, blockCount: 1 });
+        expect(setPropertiesTool.execute({ blockId: originalLogicalId, properties: { name: "Updated after history" } }, { signal: controller.signal })).toMatchObject({
+            success: true,
+            blockCount: 1,
+        });
         expect(getTool.execute({}, { signal: controller.signal })).toMatchObject({
             blocks: [{ id: originalLogicalId, name: "Updated after history" }],
             editorData: {
                 locations: [{ blockId: originalLogicalId, x: 10, y: 20 }],
             },
         });
+        historyStack.dispose();
     });
 
     it("preserves Teleport and frame references across replacement round trips", () => {

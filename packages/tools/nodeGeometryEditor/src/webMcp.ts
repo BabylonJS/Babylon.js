@@ -25,6 +25,7 @@ const SupportedSerializedBlockTypes = new Set(Object.values(BlockRegistry).map((
 interface ICurrentGeometryCache {
     logicalToRuntime: Map<number, number>;
     runtimeToLogical: Map<number, number>;
+    identityToLogical: Map<number, number>;
     nextLogicalId: number;
 }
 
@@ -712,11 +713,28 @@ function CreateDocumentSummary(manager: GeometryGraphManager): { success: true; 
 }
 
 function ReadCurrentNodeGeometry(globalState: GlobalState): ISerializedGeometry {
-    const editorMap = globalState.nodeGeometry.editorData?.map;
+    ReconcileNodeGeometryWebMcpHistory(globalState);
     const runtimeGeometry = ReadSerializedNodeGeometry(JSON.parse(SerializationTools.Serialize(globalState.nodeGeometry, globalState)));
     const cache = GetOrCreateCurrentGeometryCache(globalState);
-    ReconcileCurrentGeometryCache(cache, runtimeGeometry, editorMap);
+    ReconcileCurrentGeometryCache(
+        cache,
+        runtimeGeometry.blocks.map((block) => block.id)
+    );
     return RemapSerializedNodeGeometry(runtimeGeometry, (runtimeId) => cache.runtimeToLogical.get(runtimeId) ?? runtimeId);
+}
+
+export function ReconcileNodeGeometryWebMcpHistory(globalState: GlobalState): void {
+    const cache = CurrentGeometryCache.get(globalState);
+    const editorMap = globalState.nodeGeometry.editorData?.map;
+    if (!cache || !editorMap) {
+        return;
+    }
+
+    ReconcileCurrentGeometryCache(
+        cache,
+        globalState.nodeGeometry.attachedBlocks.map((block) => block.uniqueId),
+        editorMap
+    );
 }
 
 function ExportManagerDocument(manager: GeometryGraphManager): ISerializedGeometry {
@@ -733,6 +751,7 @@ function GetOrCreateCurrentGeometryCache(globalState: GlobalState): ICurrentGeom
         cache = {
             logicalToRuntime: new Map(),
             runtimeToLogical: new Map(),
+            identityToLogical: new Map(),
             nextLogicalId: 1,
         };
         CurrentGeometryCache.set(globalState, cache);
@@ -742,50 +761,63 @@ function GetOrCreateCurrentGeometryCache(globalState: GlobalState): ICurrentGeom
 
 function SetCurrentGeometryCache(globalState: GlobalState, logicalToRuntime: ReadonlyMap<number, number>, minimumNextLogicalId = 1): void {
     const mapping = new Map(logicalToRuntime);
+    const identityToLogical = new Map(CurrentGeometryCache.get(globalState)?.identityToLogical);
+    for (const [logicalId, runtimeId] of mapping) {
+        identityToLogical.set(runtimeId, logicalId);
+    }
     CurrentGeometryCache.set(globalState, {
         logicalToRuntime: mapping,
         runtimeToLogical: new Map(Array.from(mapping, ([logicalId, runtimeId]) => [runtimeId, logicalId])),
+        identityToLogical,
         nextLogicalId: Math.max(minimumNextLogicalId, Math.max(0, ...mapping.keys()) + 1),
     });
 }
 
-function ReconcileCurrentGeometryCache(cache: ICurrentGeometryCache, runtimeGeometry: ISerializedGeometry, editorMap?: Record<string, number>): void {
+function ReconcileCurrentGeometryCache(cache: ICurrentGeometryCache, runtimeIds: readonly number[], editorMap?: Record<string, number>): void {
     if (editorMap) {
         for (const [previousRuntimeIdText, runtimeId] of Object.entries(editorMap)) {
             const previousRuntimeId = Number(previousRuntimeIdText);
-            const logicalId = cache.runtimeToLogical.get(previousRuntimeId);
+            const logicalId = cache.identityToLogical.get(previousRuntimeId) ?? cache.runtimeToLogical.get(previousRuntimeId);
             if (logicalId !== undefined) {
-                cache.runtimeToLogical.delete(previousRuntimeId);
+                const currentRuntimeId = cache.logicalToRuntime.get(logicalId);
+                if (currentRuntimeId !== undefined) {
+                    cache.runtimeToLogical.delete(currentRuntimeId);
+                }
                 cache.runtimeToLogical.set(runtimeId, logicalId);
                 cache.logicalToRuntime.set(logicalId, runtimeId);
+                cache.identityToLogical.set(previousRuntimeId, logicalId);
+                cache.identityToLogical.set(runtimeId, logicalId);
             }
         }
     }
 
-    const currentRuntimeIds = new Set(runtimeGeometry.blocks.map((block) => block.id));
+    const currentRuntimeIds = new Set(runtimeIds);
     for (const [runtimeId, logicalId] of cache.runtimeToLogical) {
         if (!currentRuntimeIds.has(runtimeId)) {
             cache.runtimeToLogical.delete(runtimeId);
-            cache.logicalToRuntime.delete(logicalId);
+            if (cache.logicalToRuntime.get(logicalId) === runtimeId) {
+                cache.logicalToRuntime.delete(logicalId);
+            }
         }
     }
 
     const usedLogicalIds = new Set(cache.logicalToRuntime.keys());
-    for (const block of runtimeGeometry.blocks) {
-        if (cache.runtimeToLogical.has(block.id)) {
+    for (const runtimeId of runtimeIds) {
+        if (cache.runtimeToLogical.has(runtimeId)) {
             continue;
         }
 
-        let logicalId = block.id;
-        if (usedLogicalIds.has(logicalId)) {
+        let logicalId = runtimeId;
+        if (logicalId < cache.nextLogicalId || usedLogicalIds.has(logicalId) || cache.identityToLogical.has(runtimeId)) {
             while (usedLogicalIds.has(cache.nextLogicalId)) {
                 cache.nextLogicalId++;
             }
             logicalId = cache.nextLogicalId++;
         }
         usedLogicalIds.add(logicalId);
-        cache.runtimeToLogical.set(block.id, logicalId);
-        cache.logicalToRuntime.set(logicalId, block.id);
+        cache.runtimeToLogical.set(runtimeId, logicalId);
+        cache.logicalToRuntime.set(logicalId, runtimeId);
+        cache.identityToLogical.set(runtimeId, logicalId);
         cache.nextLogicalId = Math.max(cache.nextLogicalId, logicalId + 1);
     }
 }

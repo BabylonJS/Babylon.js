@@ -5,7 +5,6 @@ import { NodeListComponent } from "./components/nodeList/nodeListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent, LogEntry } from "./components/log/logComponent";
-import { DataStorage } from "core/Misc/dataStorage";
 import { type Nullable } from "core/types";
 import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 import { BlockTools } from "./blockTools";
@@ -27,12 +26,13 @@ import { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { GeometryOutputBlock } from "core/Meshes/Node/Blocks/geometryOutputBlock";
 import { type NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
-import { HistoryStack } from "shared-ui-components/historyStack";
+import { type HistoryStack } from "shared-ui-components/historyStack";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 import { IsNodeGeometryWebMcpSupported, RegisterNodeGeometryWebMcpToolsAsync } from "./webMcp";
 import { NodeGeometryWebMcpEditor } from "./webMcpEditor";
+import { CreateNodeGeometryHistoryStack } from "./historyTools";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -91,42 +91,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     prepareHistoryStack() {
-        const geometry = this.props.globalState.nodeGeometry;
         const globalState = this.props.globalState;
-
-        const dataProvider = () => {
-            SerializationTools.UpdateLocations(geometry, globalState);
-            return geometry.serialize();
-        };
-
-        const applyUpdate = (data: any) => {
-            globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-            geometry.parseSerializedObject(data);
-
-            globalState.onResetRequiredObservable.notifyObservers(false);
-        };
-
-        // Create the stack
-        this._historyStack = new HistoryStack(dataProvider, applyUpdate);
-        this._historyStack.isEnabled = DataStorage.ReadBoolean("UndoRedo", true);
-        globalState.stateManager.historyStack = this._historyStack;
-
-        // Connect to relevant events
-        globalState.stateManager.onUpdateRequiredObservable.add(() => {
-            void this._historyStack.storeAsync();
-        });
-        globalState.stateManager.onRebuildRequiredObservable.add(() => {
-            void this._historyStack.storeAsync();
-        });
-        globalState.stateManager.onNodeMovedObservable.add(() => {
-            void this._historyStack.storeAsync();
-        });
-        globalState.stateManager.onNewNodeCreatedObservable.add(() => {
-            void this._historyStack.storeAsync();
-        });
-        globalState.onClearUndoStack.add(() => {
-            this._historyStack.reset();
-        });
+        this._historyStack = CreateNodeGeometryHistoryStack(globalState);
     }
 
     override componentDidMount() {
