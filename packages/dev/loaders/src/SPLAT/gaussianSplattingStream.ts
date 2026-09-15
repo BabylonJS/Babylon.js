@@ -148,8 +148,9 @@ export interface IGaussianSplattingStreamOptions {
     memoryBudgetMb?: number;
     /**
      * Initial maximum number of splats kept resident in the fixed-size work buffer. It is raised when necessary
-     * to fit the complete coarse layer. When unset, streams use a bounded device-tiered default with coarse-derived
-     * refinement headroom, capped at the complete source size when known.
+     * to fit the complete coarse layer. When unset and the complete source size is known, streams retain the complete
+     * source. Streams that defer finer metadata use a bounded device-tiered default with coarse-derived refinement
+     * headroom.
      * Finite non-positive values leave this limit unset; non-finite or unsafe positive counts are rejected.
      * Positive fractional counts are floored to at least one splat before applying the coarse minimum.
      */
@@ -785,8 +786,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
      * The resolved maximum number of splats kept resident in the work buffer. This combines
      * {@link IGaussianSplattingStreamOptions.maxResidentSplats} and {@link IGaussianSplattingStreamOptions.memoryBudgetMb},
      * taking the smaller positive limit and raising it to {@link minimumResidentSplats}. With neither limit set,
-     * a bounded device-tiered default is used. The fixed capacity is capped at the complete source size when known
-     * and the device texture limit. `0` means initial capacity has not been resolved.
+     * the complete source size is retained when known; otherwise a bounded device-tiered default is used.
+     * The fixed capacity is capped at the device texture limit. `0` means initial capacity has not been resolved.
      * @experimental
      */
     public get residentSplatBudget(): number {
@@ -1685,9 +1686,10 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
 
     /**
      * Resolves the fixed initial work-buffer capacity. Explicit count/MB limits are combined by taking the smaller
-     * and then raised to the complete coarse minimum. Without an explicit limit, the device-tiered memory estimate
-     * is given at least one largest-coarse-file of headroom so one replacement file can refine while all coarse
-     * fallback files remain pinned. Exact small streams are capped at their complete source size.
+     * and then raised to the complete coarse minimum. Without an explicit limit, a known complete source retains
+     * legacy full residency. When finer metadata is deferred and the complete size is unknown, the device-tiered
+     * memory estimate is given at least one largest-coarse-file of headroom so one replacement file can refine
+     * while all coarse fallback files remain pinned.
      * @param fullCapacity exact complete source capacity, or null when unavailable
      * @param largestBaseFileCount largest whole coarse source file, used as modest replacement headroom
      * @returns the fixed initial work-buffer capacity
@@ -1700,7 +1702,9 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             const fromMB = Math.floor((this._memoryBudgetMb * 1024 * 1024) / bytesPerSplat);
             budget = Math.min(budget, fromMB);
         }
-        if (!hasExplicitLimit) {
+        if (!hasExplicitLimit && fullCapacity !== null) {
+            budget = fullCapacity;
+        } else if (!hasExplicitLimit) {
             const automaticMb = this._scene.getEngine().hostInformation?.isMobile ? MobileAutomaticResidentMemoryMb : DesktopAutomaticResidentMemoryMb;
             const automaticCount = Math.floor((automaticMb * 1024 * 1024) / bytesPerSplat);
             const refinementHeadroom = Math.max(0, Math.floor(largestBaseFileCount));
@@ -1826,8 +1830,8 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
     }
 
     /**
-     * Fetches the environment bundle and every referenced file's metadata to learn splat counts, caching
-     * each file's parsed metadata for the later on-demand decode. Metadata fetches run in parallel.
+     * Fetches the environment bundle and the supplied referenced files' metadata to learn splat counts, caching
+     * each file's parsed metadata for the later on-demand decode. File metadata fetches run in parallel.
      * @param fileIds file indices to fetch metadata for
      * @param includeEnvironment whether to fetch the optional environment bundle in this phase
      * @returns the environment splat count (0 when there is no environment)
