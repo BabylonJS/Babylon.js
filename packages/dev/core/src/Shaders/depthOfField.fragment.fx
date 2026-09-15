@@ -20,15 +20,19 @@
 // forcing mip 0, preserving the original minification (no aliasing / extra bandwidth). highlightsSampler is the
 // same size as the output, so it uses lod 0. On WebGPU/WebGL2/Native TEXTUREFUNC maps to textureLod (twgsl lowers
 // it to textureSampleLevel for WebGPU).
-// WebGL1 has no texture2DLodEXT and falls back to biased texture2D, which is still implicit-derivative sampling:
-// the seam fix does NOT apply on WebGL1 (that engine is excluded from the DoF visualization test).
+// WebGL1 has no texture2DLodEXT: the fallback drops the LOD argument and uses plain implicit-derivative
+// texture2D (NOT the bias form, which would over-blur), preserving existing WebGL1 filtering. The seam fix does
+// NOT apply on WebGL1 (that engine is excluded from the DoF visualization test).
 // NOTE: reads in uniform control flow keep implicit-LOD texture2D so mip selection stays automatic: the depth
 // read, the grain read (guarded by the uniform grain_amount, and grain may be a user-supplied mipmapped texture),
 // and the direct unblurred sample (hoisted before the divergent branch in main).
 #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
 	#define TEXTUREFUNC(s, c, lod) texture2DLodEXT(s, c, lod)
 #else
-	#define TEXTUREFUNC(s, c, bias) texture2D(s, c, bias)
+	// WebGL1: the 3-arg texture2D form treats its 3rd argument as a LOD *bias*, not an explicit level, so passing
+	// blur_lod (~2) would add to the implicitly-selected mip and over-blur. Drop the argument and use plain
+	// implicit sampling instead, preserving WebGL1's existing filtering (the seam simply remains unfixed there).
+	#define TEXTUREFUNC(s, c, lod) texture2D(s, c)
 #endif
 
 // samplers
