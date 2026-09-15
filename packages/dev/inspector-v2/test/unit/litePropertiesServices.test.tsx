@@ -233,13 +233,26 @@ describe("Babylon Lite properties services", () => {
         const boundProperties = Children.toArray(textLayerProperties.props.children).filter(
             (child): child is ReactElement<{ propertyKey: string; target: object; propertyPath?: string }> => isValidElement(child) && child.type === BoundProperty
         );
-        expect(boundProperties.map((property) => property.props.propertyKey)).toEqual(["visible", "x", "y", "rotationRad", "scale", "order", "opacity", "coverageGamma"]);
-        expect(boundProperties[1].props).toMatchObject({ target: textLayer.positionPx, propertyPath: "positionPx.x" });
-        expect(boundProperties[6].props).toMatchObject({ target: textLayer, min: 0, max: 1 });
-        const textLayerName = Children.toArray(textLayerProperties.props.children).find(
+        expect(boundProperties.map((property) => property.props.propertyKey)).toEqual(["visible", "rotationRad", "scale", "order", "opacity", "coverageGamma"]);
+        expect(boundProperties[4].props).toMatchObject({ target: textLayer, min: 0, max: 1 });
+        const textLayerChildren = Children.toArray(textLayerProperties.props.children);
+        const textLayerName = textLayerChildren.find(
             (child): child is ReactElement<{ getValue: (target: TextLayer) => string }> => isValidElement(child) && child.type === ComputedProperty
         );
         expect(textLayerName?.props.getValue(textLayer)).toBe("Text Layer 1");
+        const textDerivedProperties = textLayerChildren.filter(
+            (
+                child
+            ): child is ReactElement<{
+                getValue: (target: TextLayer) => number;
+                setValue: (target: TextLayer, value: number) => void;
+                propertyPath: string;
+                getPropertyOwner: (target: TextLayer) => object;
+                propertyKey: PropertyKey;
+            }> => isValidElement(child) && child.type === DerivedProperty
+        );
+        expect(textDerivedProperties).toHaveLength(2);
+        expect(textDerivedProperties.map((property) => property.props.propertyPath)).toEqual(["positionPx.x", "positionPx.y"]);
 
         const spriteLayerContent = registrations.get("Babylon Lite Sprite Layer Properties")?.content[0];
         const spriteLayerElement = spriteLayerContent?.component({ context: spriteLayer });
@@ -285,6 +298,7 @@ describe("Babylon Lite properties services", () => {
             writeBackRoot.render(
                 <FluentProvider theme={webLightTheme}>
                     <WatcherContext.Provider value={watcher}>
+                        {textDerivedProperties[0]}
                         {spriteDerivedProperties[0]}
                         {spriteDerivedProperties[4]}
                     </WatcherContext.Provider>
@@ -292,9 +306,11 @@ describe("Babylon Lite properties services", () => {
             )
         );
         const inputs = writeBackContainer.querySelectorAll("input");
-        expect([...inputs].map((input) => input.value)).toEqual(["10", "0.5"]);
+        expect([...inputs].map((input) => input.value)).toEqual(["10", "10", "0.5"]);
+        const originalTextPosition = textLayer.positionPx;
         const originalView = spriteLayer.view;
         const originalPivot = spriteLayer.pivot;
+        textLayer.positionPx = { x: 25, y: 35 };
         spriteLayer.view = {
             positionPx: [30, 40],
             zoom: 2,
@@ -302,7 +318,7 @@ describe("Babylon Lite properties services", () => {
         };
         spriteLayer.pivot = [0.25, 0.75];
         act(() => watcher.refresh());
-        expect([...inputs].map((input) => input.value)).toEqual(["30", "0.25"]);
+        expect([...inputs].map((input) => input.value)).toEqual(["25", "30", "0.25"]);
         const setInputValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
         if (!setInputValue) {
             throw new Error("Expected the native input value setter.");
@@ -315,14 +331,22 @@ describe("Babylon Lite properties services", () => {
         act(() => {
             inputs[0].blur();
             inputs[1].focus();
-            setInputValue.call(inputs[1], "0.4");
+            setInputValue.call(inputs[1], "48");
             inputs[1].dispatchEvent(new Event("input", { bubbles: true }));
         });
         act(() => {
             inputs[1].blur();
+            inputs[2].focus();
+            setInputValue.call(inputs[2], "0.4");
+            inputs[2].dispatchEvent(new Event("input", { bubbles: true }));
         });
-        expect(spriteLayer.view.positionPx[0]).toBe(42);
+        act(() => {
+            inputs[2].blur();
+        });
+        expect(textLayer.positionPx.x).toBe(42);
+        expect(spriteLayer.view.positionPx[0]).toBe(48);
         expect(spriteLayer.pivot[0]).toBe(0.4);
+        expect(originalTextPosition.x).toBe(10);
         expect(originalView.positionPx[0]).toBe(10);
         expect(originalPivot[0]).toBe(0.5);
         act(() => writeBackRoot.unmount());
@@ -364,6 +388,7 @@ describe("Babylon Lite properties services", () => {
         ];
         const textLayer = {
             data: { runs: textLayerRuns },
+            positionPx: { x: 0, y: 0 },
         } as unknown as TextLayer;
         const auxiliarySurface = {
             canvas: { width: 320, height: 200 },

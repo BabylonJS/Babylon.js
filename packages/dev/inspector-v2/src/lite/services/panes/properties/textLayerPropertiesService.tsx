@@ -7,7 +7,7 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
-import { BoundProperty, ComputedProperty } from "../../../../components/properties/boundProperty";
+import { BoundProperty, ComputedProperty, DerivedProperty } from "../../../../components/properties/boundProperty";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../services/panes/properties/propertiesService";
 import { type IEngineContext, EngineContextIdentity } from "../../../engineContext";
 import { GetRenderingLayerDisplayName } from "../../../renderingLayerUtils";
@@ -25,6 +25,26 @@ function GetTextLayerDisplayNameGetter(engine: EngineContext): (layer: TextLayer
 
 function GetRunCount(layer: TextLayer): number {
     return layer.data.runs.length;
+}
+
+function GetPositionX(layer: TextLayer): number {
+    return layer.positionPx.x;
+}
+
+function SetPositionX(layer: TextLayer, value: number): void {
+    layer.positionPx.x = value;
+}
+
+function GetPositionY(layer: TextLayer): number {
+    return layer.positionPx.y;
+}
+
+function SetPositionY(layer: TextLayer, value: number): void {
+    layer.positionPx.y = value;
+}
+
+function GetPosition(layer: TextLayer): TextLayer["positionPx"] {
+    return layer.positionPx;
 }
 
 function GetGlyphCount(layer: TextLayer): number {
@@ -48,8 +68,30 @@ const TextLayerProperties: FunctionComponent<{ engine: EngineContext; layer: Tex
         <>
             <ComputedProperty component={TextPropertyLine} label="Name" target={layer} getValue={GetTextLayerDisplayNameGetter(engine)} />
             <BoundProperty component={SwitchPropertyLine} label="Visible" target={layer} propertyKey="visible" />
-            <BoundProperty component={NumberInputPropertyLine} label="Position X" target={layer.positionPx} propertyKey="x" propertyPath="positionPx.x" step={1} unit="px" />
-            <BoundProperty component={NumberInputPropertyLine} label="Position Y" target={layer.positionPx} propertyKey="y" propertyPath="positionPx.y" step={1} unit="px" />
+            <DerivedProperty
+                component={NumberInputPropertyLine}
+                label="Position X"
+                target={layer}
+                getValue={GetPositionX}
+                setValue={SetPositionX}
+                propertyPath="positionPx.x"
+                getPropertyOwner={GetPosition}
+                propertyKey="x"
+                step={1}
+                unit="px"
+            />
+            <DerivedProperty
+                component={NumberInputPropertyLine}
+                label="Position Y"
+                target={layer}
+                getValue={GetPositionY}
+                setValue={SetPositionY}
+                propertyPath="positionPx.y"
+                getPropertyOwner={GetPosition}
+                propertyKey="y"
+                step={1}
+                unit="px"
+            />
             <BoundProperty component={NumberInputPropertyLine} label="Rotation" target={layer} propertyKey="rotationRad" step={0.01} unit="rad" />
             <BoundProperty component={NumberInputPropertyLine} label="Scale" target={layer} propertyKey="scale" step={0.1} />
             <BoundProperty component={NumberInputPropertyLine} label="Order" target={layer} propertyKey="order" />
