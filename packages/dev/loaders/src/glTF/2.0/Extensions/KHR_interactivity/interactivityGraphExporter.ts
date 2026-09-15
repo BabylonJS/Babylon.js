@@ -2084,7 +2084,8 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 continue;
             }
             const indexPlaceholder = /^\[([^\[\]]+)\]$/.exec(segments[2]);
-            const hasTemplateCollection = !!rootPlaceholder || !!indexPlaceholder;
+            const referenceIndexPlaceholder = /^\{([^\{\}]+)\}$/.exec(segments[2]);
+            const hasTemplateCollection = !!rootPlaceholder || !!indexPlaceholder || !!referenceIndexPlaceholder;
             if (
                 hasTemplateCollection &&
                 !this._validateExtensionReferencePreservation(

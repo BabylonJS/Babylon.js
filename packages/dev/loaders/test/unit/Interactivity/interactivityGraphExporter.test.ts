@@ -396,6 +396,51 @@ describe("KHR_interactivity FlowGraph export", () => {
         expect(() => plan.build(context)).toThrowError(KHRInteractivityExportError);
     });
 
+    it("rejects an extension-backed pointer with a ref-style material index", async () => {
+        const material = {};
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "ref" }, { signature: "float" }],
+            declarations: [{ op: "pointer/get" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/materials/{target}/extensions/KHR_materials_emissive_strength/emissiveStrength"] },
+                        type: { value: [1] },
+                    },
+                    values: { target: { type: 0, value: ["/materials/0"] } },
+                },
+            ],
+        };
+        const sourceGLTF = {
+            materials: [
+                {
+                    index: 0,
+                    _data: {
+                        0: {
+                            babylonMaterial: material,
+                            babylonMeshes: [],
+                            promise: Promise.resolve(),
+                        },
+                    },
+                },
+            ],
+        };
+        const plan = await CreatePlan({ graphs: [graph] }, sourceGLTF);
+
+        expect(plan.additionalExtensionsUsed).toContain("KHR_materials_emissive_strength");
+        expect(plan.analyze()).toMatchObject({
+            representable: false,
+            diagnostics: [
+                expect.objectContaining({
+                    code: "REFERENCE_UNRESOLVED",
+                    path: "/graphs/0/nodes/0/configuration/pointer",
+                }),
+            ],
+        });
+        expect(() => plan.build(context)).toThrowError(KHRInteractivityExportError);
+    });
+
     it("remaps a static node index behind a dynamic root for a preserved companion extension", async () => {
         const sourceNode = new TransformNode("source", scene);
         const sourceGLTF = {
