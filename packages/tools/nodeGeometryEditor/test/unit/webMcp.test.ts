@@ -710,6 +710,44 @@ describe("Node Geometry WebMCP", () => {
         expect(secondSetPositions.inputs.find((input) => input.name === "positions")?.isConnected).toBe(true);
     });
 
+    it("validates dynamic connections in dependency order instead of block creation order", () => {
+        const { attachedBlocks, editor } = CreateLiveEditorHarness();
+        const manager = new GeometryGraphManager();
+        manager.createGeometry("validationDependencyOrder");
+
+        const trueId = (manager.addBlock("validationDependencyOrder", "GeometryInputBlock", "true", { type: "Vector3", value: { x: 0, y: 0, z: 0 } }) as any)
+            .block.id;
+        const falseId = (manager.addBlock("validationDependencyOrder", "GeometryInputBlock", "false", {
+            type: "Vector3",
+            value: { x: 1, y: 1, z: 1 },
+        }) as any).block.id;
+        const rightId = (manager.addBlock("validationDependencyOrder", "GeometryInputBlock", "right", { type: "Float", value: 1 }) as any).block.id;
+        const mathId = (manager.addBlock("validationDependencyOrder", "MathBlock", "math") as any).block.id;
+        const conditionId = (manager.addBlock("validationDependencyOrder", "ConditionBlock", "condition") as any).block.id;
+        const setPositionsId = (manager.addBlock("validationDependencyOrder", "SetPositionsBlock", "set positions") as any).block.id;
+
+        expect(manager.connectBlocks("validationDependencyOrder", trueId, "output", conditionId, "ifTrue")).toBe("OK");
+        expect(manager.connectBlocks("validationDependencyOrder", falseId, "output", conditionId, "ifFalse")).toBe("OK");
+        expect(manager.connectBlocks("validationDependencyOrder", conditionId, "output", mathId, "left")).toBe("OK");
+        expect(manager.connectBlocks("validationDependencyOrder", rightId, "output", mathId, "right")).toBe("OK");
+        expect(manager.connectBlocks("validationDependencyOrder", mathId, "output", setPositionsId, "positions")).toBe("OK");
+
+        const geometry = JSON.parse(manager.exportJSON("validationDependencyOrder")!) as ISerializedGeometry;
+        expect(geometry.blocks.findIndex((block) => block.id === mathId)).toBeLessThan(geometry.blocks.findIndex((block) => block.id === conditionId));
+
+        const emptyGeometry: ISerializedGeometry = {
+            customType: "BABYLON.NodeGeometry",
+            outputNodeId: -1,
+            blocks: [],
+        };
+        const mapping = editor.applyIncrementalUpdate(emptyGeometry, geometry, new Map());
+
+        const math = attachedBlocks.find((block) => block.uniqueId === mapping.get(mathId))!;
+        const setPositions = attachedBlocks.find((block) => block.uniqueId === mapping.get(setPositionsId))!;
+        expect(math.outputs.find((output) => output.name === "output")?.type).toBe(NodeGeometryBlockConnectionPointTypes.Vector3);
+        expect(setPositions.inputs.find((input) => input.name === "positions")?.isConnected).toBe(true);
+    });
+
     it("deserializes changed vector inputs as Babylon vector values", () => {
         const { attachedBlocks, editor } = CreateLiveEditorHarness();
         const manager = new GeometryGraphManager();

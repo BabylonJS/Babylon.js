@@ -135,31 +135,59 @@ export class NodeGeometryWebMcpEditor {
 
     private _validateDocument(geometry: ISerializedGeometry): void {
         const blocks = new Map<number, NodeGeometryBlock>();
+        const serializedBlocks = new Map(geometry.blocks.map((block) => [block.id, block]));
         for (const serializedBlock of geometry.blocks) {
             blocks.set(serializedBlock.id, this._createRuntimeBlock(serializedBlock));
         }
 
         this._resolveTeleportRelationships(geometry, (logicalId) => blocks.get(logicalId));
 
-        const connections = [];
-        for (const serializedBlock of geometry.blocks) {
+        const connections: Array<{
+            output: NodeGeometryBlock["outputs"][number];
+            input: NodeGeometryBlock["inputs"][number];
+            serializedBlock: ISerializedBlock;
+            serializedInput: ISerializedConnectionPoint;
+        }> = [];
+        const connectedBlockIds = new Set<number>();
+        const connectingBlockIds = new Set<number>();
+        const connectBlock = (serializedBlock: ISerializedBlock): void => {
+            if (connectedBlockIds.has(serializedBlock.id)) {
+                return;
+            }
+            if (connectingBlockIds.has(serializedBlock.id)) {
+                throw new Error("Unable to validate connection types because the graph is cyclic.");
+            }
+
+            connectingBlockIds.add(serializedBlock.id);
             const targetBlock = blocks.get(serializedBlock.id)!;
+            if (serializedBlock.customType === "BABYLON.TeleportOutBlock" && typeof serializedBlock.entryPoint === "number") {
+                connectBlock(serializedBlocks.get(serializedBlock.entryPoint)!);
+            }
             for (const serializedInput of serializedBlock.inputs) {
                 if (serializedInput.targetBlockId === undefined || !serializedInput.targetConnectionName) {
                     continue;
                 }
 
+                const sourceSerializedBlock = serializedBlocks.get(serializedInput.targetBlockId);
                 const sourceBlock = blocks.get(serializedInput.targetBlockId);
                 const output = sourceBlock?.outputs.find((candidate) => candidate.name === serializedInput.targetConnectionName);
                 const input = targetBlock.inputs.find((candidate) => candidate.name === serializedInput.name);
-                if (!sourceBlock || !output || !input) {
+                if (!sourceSerializedBlock || !sourceBlock || !output || !input) {
                     throw new Error(
                         `Unable to resolve the connection from ${serializedInput.targetBlockId}.${serializedInput.targetConnectionName} to ${serializedBlock.id}.${serializedInput.name}.`
                     );
                 }
+                connectBlock(sourceSerializedBlock);
                 connections.push({ output, input, serializedBlock, serializedInput });
                 output.connectTo(input, true);
             }
+
+            connectingBlockIds.delete(serializedBlock.id);
+            connectedBlockIds.add(serializedBlock.id);
+        };
+
+        for (const serializedBlock of geometry.blocks) {
+            connectBlock(serializedBlock);
         }
 
         for (const { output, input, serializedBlock, serializedInput } of connections) {
