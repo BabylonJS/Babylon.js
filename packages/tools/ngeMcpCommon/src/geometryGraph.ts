@@ -712,7 +712,7 @@ export class GeometryGraphManager {
         return Object.values(BlockRegistry).find((info) => info.className === className);
     }
 
-    private _resolveConnectedInputType(geo: ISerializedGeometry, block: ISerializedBlock, inputName: string, visited: Set<string>): string | undefined {
+    private _resolveConnectedInputType(geo: ISerializedGeometry, block: ISerializedBlock, inputName: string, visited: Set<string>, resolveLinkedInput = true): string | undefined {
         const visitKey = `${block.id}:input:${inputName}`;
         if (visited.has(visitKey)) {
             return undefined;
@@ -722,7 +722,7 @@ export class GeometryGraphManager {
         const input = block.inputs.find((entry) => entry.name === inputName);
         if (input?.targetBlockId === undefined || !input.targetConnectionName) {
             const inputInfo = this._getBlockTypeInfo(block)?.inputs.find((entry) => entry.name === inputName);
-            return inputInfo?.type === "AutoDetect" && inputInfo.linkedConnectionSource
+            return resolveLinkedInput && inputInfo?.type === "AutoDetect" && inputInfo.linkedConnectionSource
                 ? this._resolveConnectedInputType(geo, block, inputInfo.linkedConnectionSource, visited)
                 : undefined;
         }
@@ -769,8 +769,17 @@ export class GeometryGraphManager {
                 }
                 return leftType;
             }
-            const sourceType = output.typeConnectionSource ? this._resolveConnectedInputType(geo, block, output.typeConnectionSource, visited) : undefined;
-            return sourceType ?? output.defaultConnectionPointType ?? output.type;
+            if (output.typeConnectionSource) {
+                const sourceType = this._resolveConnectedInputType(geo, block, output.typeConnectionSource, new Set(visited), false);
+                if (sourceType) {
+                    return sourceType;
+                }
+                if (output.defaultConnectionPointType) {
+                    return output.defaultConnectionPointType;
+                }
+                return this._resolveConnectedInputType(geo, block, output.typeConnectionSource, visited) ?? output.type;
+            }
+            return output.defaultConnectionPointType ?? output.type;
         }
         return output.type;
     }

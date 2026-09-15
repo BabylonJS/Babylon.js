@@ -539,6 +539,25 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
         expect(geometry.blocks.find((block) => block.id === setPositionsId)?.inputs.find((input) => input.name === "positions")?.targetBlockId).toBe(randomId);
     });
 
+    it("removeBlock prefers an output default over a surviving linked input", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("defaultTypeRemoval");
+
+        const trueId = (mgr.addBlock("defaultTypeRemoval", "GeometryInputBlock", "true", { type: "Vector3", value: { x: 0, y: 0, z: 0 } }) as any).block.id;
+        const falseId = (mgr.addBlock("defaultTypeRemoval", "GeometryInputBlock", "false", { type: "Vector3", value: { x: 1, y: 1, z: 1 } }) as any).block.id;
+        const conditionId = (mgr.addBlock("defaultTypeRemoval", "ConditionBlock", "condition") as any).block.id;
+        const setPositionsId = (mgr.addBlock("defaultTypeRemoval", "SetPositionsBlock", "set positions") as any).block.id;
+
+        expect(mgr.connectBlocks("defaultTypeRemoval", trueId, "output", conditionId, "ifTrue")).toBe("OK");
+        expect(mgr.connectBlocks("defaultTypeRemoval", falseId, "output", conditionId, "ifFalse")).toBe("OK");
+        expect(mgr.connectBlocks("defaultTypeRemoval", conditionId, "output", setPositionsId, "positions")).toBe("OK");
+        expect(mgr.removeBlock("defaultTypeRemoval", trueId)).toBe("OK");
+
+        const geometry = mgr.getGeometry("defaultTypeRemoval")!;
+        expect(geometry.blocks.find((block) => block.id === conditionId)?.inputs.find((input) => input.name === "ifFalse")?.targetBlockId).toBe(falseId);
+        expect(geometry.blocks.find((block) => block.id === setPositionsId)?.inputs.find((input) => input.name === "positions")?.targetBlockId).toBeUndefined();
+    });
+
     // ── Test 11: Validation catches issues ──────────────────────────────
 
     it("validation detects missing output block and orphans", () => {
