@@ -197,6 +197,32 @@ describe("Flow Graph Serialization", () => {
         expect(parsed.config.eventData.position.value).toEqual(new Vector3(1, 2, 3));
     });
 
+    it("round-trips Send and Receive custom-event sockets named value through a full graph parse", () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const eventData = { value: { type: RichTypeNumber, value: 5 } };
+        const send = new FlowGraphSendCustomEventBlock({ eventId: "event", eventData });
+        const receive = new FlowGraphReceiveCustomEventBlock({ eventId: "event", eventData });
+        graph.addBlock(send);
+        graph.addBlock(receive);
+        graph.addEventBlock(receive);
+        const serialized: any = {};
+        graph.serialize(serialized);
+
+        const parsed = ParseFlowGraph(
+            serialized,
+            { coordinator },
+            serialized.allBlocks.map((block: any) => (block.className === send.getClassName() ? FlowGraphSendCustomEventBlock : FlowGraphReceiveCustomEventBlock))
+        );
+        const parsedSend = parsed.getAllBlocks().find((block) => block.getClassName() === send.getClassName()) as FlowGraphSendCustomEventBlock;
+        const parsedReceive = parsed.getAllBlocks().find((block) => block.getClassName() === receive.getClassName()) as FlowGraphReceiveCustomEventBlock;
+
+        expect(parsedSend.getDataInput("value")).toBeDefined();
+        expect(parsedReceive.getDataOutput("value")).toBeDefined();
+        expect(parsedSend.config.eventData.value.value).toBe(5);
+        expect(parsedReceive.config.eventData.value.value).toBe(5);
+    });
+
     it("Serializes and parses a block", () => {
         // Serialize a block with path
         // const mockContext: any = vi.mock("core/FlowGraph/flowGraphContext") as any;

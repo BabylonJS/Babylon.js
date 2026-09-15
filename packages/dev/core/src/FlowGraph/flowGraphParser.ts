@@ -418,6 +418,7 @@ export function ParseFlowGraphBlockWithClassType(
 ): FlowGraphBlock {
     const parsedConfig: any = {};
     const valueParseFunction = parseOptions.valueParseFunction ?? defaultValueParseFunction;
+    const customValueParseFunction = parseOptions.valueParseFunction === defaultValueParseFunction ? undefined : parseOptions.valueParseFunction;
     if (serializationObject.config) {
         for (const key in serializationObject.config) {
             const assetsContainer = parseOptions.assetsContainer || parseOptions.scene;
@@ -425,9 +426,9 @@ export function ParseFlowGraphBlockWithClassType(
                 key === "eventData" &&
                 (serializationObject.className === FlowGraphBlockNames.SendCustomEvent || serializationObject.className === FlowGraphBlockNames.ReceiveCustomEvent);
             if (isCustomEventData) {
-                const customParsedEventData = parseOptions.valueParseFunction?.(key, serializationObject.config, assetsContainer, parseOptions.scene);
+                const customParsedEventData = customValueParseFunction?.(key, serializationObject.config, assetsContainer, parseOptions.scene);
                 parsedConfig[key] =
-                    parseOptions.valueParseFunction && customParsedEventData !== serializationObject.config[key]
+                    customValueParseFunction && customParsedEventData !== serializationObject.config[key]
                         ? customParsedEventData
                         : ParseCustomEventData(serializationObject.config[key], valueParseFunction, assetsContainer, parseOptions.scene);
             } else {
