@@ -6,6 +6,7 @@ import { Tools } from "core/Misc/tools";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { StandardMaterial } from "core/Materials/standardMaterial.pure";
 import { type Mesh } from "core/Meshes/mesh";
+import { VertexData } from "core/Meshes/mesh.vertexData";
 import { Texture } from "core/Materials/Textures/texture";
 import { OBJFileLoader } from "loaders/OBJ/objFileLoader.pure";
 import { MTLFileLoader } from "loaders/OBJ/mtlFileLoader";
@@ -291,6 +292,46 @@ describe("OBJ asset containers and texture loading", () => {
         const container = await loading;
         expect(container.textures[0].loadingError).toBe(true);
         container.dispose();
+    });
+
+    it("disposes failed container resources while preserving textures owned by another caller", async () => {
+        mockMTL(TexturedMaterial + "map_Ks missing.png\n");
+        const pending = holdTextureRequests();
+        const existingTexture = new Texture("/assets/color.png", scene, { invertY: MTLFileLoader.INVERT_TEXTURE_Y });
+        pending[0].complete();
+        const sharedInternalTexture = existingTexture.getInternalTexture()!;
+        const applyVertexData = vi.spyOn(VertexData.prototype, "applyToMesh");
+        const loader = new OBJFileLoader({ waitForTextures: true, materialLoadingFailsSilently: false });
+        const loading = loader.loadAssetContainerAsync(scene, TexturedTriangle, "/assets/");
+        const rejection = expect(loading).rejects.toThrow("/assets/missing.png: 404 Not Found");
+        await vi.waitFor(() => expect(pending).toHaveLength(2));
+
+        const mesh = applyVertexData.mock.calls[0][0] as Mesh;
+        const geometry = mesh.geometry!;
+        const material = mesh.material as StandardMaterial;
+        const ownedTextures = material.getActiveTextures();
+        const disposals = [mesh, geometry, material, ...ownedTextures].map((resource) => vi.spyOn(resource, "dispose"));
+        const releaseTexture = vi.spyOn(engine, "_releaseTexture");
+        expect(sharedInternalTexture._references).toBe(2);
+        pending[1].fail();
+        await rejection;
+
+        disposals.forEach((dispose) => expect(dispose).toHaveBeenCalled());
+        expect(sharedInternalTexture._references).toBe(1);
+        expect(existingTexture.isReady()).toBe(true);
+        expect(pending[1].texture._references).toBe(0);
+        // NullEngine does not remove cache entries in _releaseTexture, so verify release directly.
+        expect(releaseTexture).toHaveBeenCalledWith(pending[1].texture);
+        expect(releaseTexture).not.toHaveBeenCalledWith(sharedInternalTexture);
+        expect(scene.meshes).toHaveLength(0);
+        expect(scene.getGeometries()).toHaveLength(0);
+        expect(scene.materials).toHaveLength(0);
+        expect(scene.textures).toEqual([existingTexture]);
+
+        const next = await loader.loadAssetContainerAsync(scene, Triangle, "");
+        expect(next.meshes).toHaveLength(1);
+        next.dispose();
+        existingTexture.dispose();
     });
 
     it.each(["complete", "fail"] as const)("waits for remaining textures to %s after a silent texture failure", async (settle) => {

@@ -94,6 +94,7 @@ export class MTLFileLoader {
                 scene._blockEntityCollection = !!assetContainer;
                 material = new StandardMaterial(value, scene);
                 material._parentContainer = assetContainer;
+                assetContainer?.materials.push(material);
                 scene._blockEntityCollection = false;
             } else if (key === "kd" && material) {
                 // Diffuse color (color under white light) using RGB values
@@ -270,6 +271,7 @@ export class MTLFileLoader {
                 onError: deferred ? (message, exception) => deferred.reject(new Error(`${url}: ${exception?.message || message || "Failed to load texture"}`)) : undefined,
             });
             texture._parentContainer = assetContainer;
+            assetContainer?.textures.push(texture);
         } finally {
             scene._blockEntityCollection = false;
         }

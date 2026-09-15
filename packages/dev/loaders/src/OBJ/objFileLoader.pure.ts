@@ -250,43 +250,20 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * @param rootUrl The root url for scene and resources
      * @returns The loaded asset container
      */
-    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string): Promise<AssetContainer> {
+    public async loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string): Promise<AssetContainer> {
         const container = new AssetContainer(scene);
         this._assetContainer = container;
 
-        return (
-            this.importMeshAsync(null, scene, data, rootUrl)
-                // eslint-disable-next-line github/no-then
-                .then((result) => {
-                    result.geometries.forEach((geometry) => container.geometries.push(geometry));
-                    result.meshes.forEach((mesh) => container.meshes.push(mesh));
-                    result.meshes.forEach((mesh) => {
-                        const material = mesh.material;
-                        if (material) {
-                            // Materials
-                            if (container.materials.indexOf(material) == -1) {
-                                container.materials.push(material);
-
-                                // Textures
-                                const textures = material.getActiveTextures();
-                                textures.forEach((t) => {
-                                    if (container.textures.indexOf(t) == -1) {
-                                        container.textures.push(t);
-                                    }
-                                });
-                            }
-                        }
-                    });
-                    this._assetContainer = null;
-                    return container;
-                })
-                // eslint-disable-next-line github/no-then
-                .catch((ex) => {
-                    this._assetContainer = null;
-                    throw ex;
-                })
-        );
+        try {
+            // Resources are collected as they are created, including before texture loading settles.
+            await this.importMeshAsync(null, scene, data, rootUrl);
+            return container;
+        } catch (ex) {
+            container.dispose();
+            throw ex;
+        } finally {
+            this._assetContainer = null;
+        }
     }
 
     /**
@@ -397,6 +374,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                         scene._blockEntityCollection = !!this._assetContainer;
                         mat = new StandardMaterial(mesh.name + "_line", scene);
                         mat._parentContainer = this._assetContainer;
+                        this._assetContainer?.materials.push(mat);
                         scene._blockEntityCollection = false;
                     }
                     // If another mesh is using this material and it is not a line then we need to clone it.
@@ -415,6 +393,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                             scene._blockEntityCollection = !!this._assetContainer;
                             lineMaterial = sourceMaterial.clone(sourceMaterial.name + "_line");
                             lineMaterial._parentContainer = this._assetContainer;
+                            this._assetContainer?.materials.push(lineMaterial);
                         } finally {
                             scene._blockEntityCollection = false;
                             sourceMaterial.ambientTexture = ambientTexture;
