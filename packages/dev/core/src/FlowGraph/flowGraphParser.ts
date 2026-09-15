@@ -424,9 +424,15 @@ export function ParseFlowGraphBlockWithClassType(
             const isCustomEventData =
                 key === "eventData" &&
                 (serializationObject.className === FlowGraphBlockNames.SendCustomEvent || serializationObject.className === FlowGraphBlockNames.ReceiveCustomEvent);
-            parsedConfig[key] = isCustomEventData
-                ? ParseCustomEventData(serializationObject.config[key], valueParseFunction, assetsContainer, parseOptions.scene)
-                : valueParseFunction(key, serializationObject.config, assetsContainer, parseOptions.scene);
+            if (isCustomEventData) {
+                const customParsedEventData = parseOptions.valueParseFunction?.(key, serializationObject.config, assetsContainer, parseOptions.scene);
+                parsedConfig[key] =
+                    parseOptions.valueParseFunction && customParsedEventData !== serializationObject.config[key]
+                        ? customParsedEventData
+                        : ParseCustomEventData(serializationObject.config[key], valueParseFunction, assetsContainer, parseOptions.scene);
+            } else {
+                parsedConfig[key] = valueParseFunction(key, serializationObject.config, assetsContainer, parseOptions.scene);
+            }
         }
     }
     if (needsPathConverter(serializationObject.className)) {

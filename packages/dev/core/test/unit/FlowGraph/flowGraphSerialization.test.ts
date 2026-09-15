@@ -33,7 +33,7 @@ import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import { FlowGraphPathConverter } from "core/FlowGraph/flowGraphPathConverter";
-import { defaultValueSerializationFunction } from "core/FlowGraph/serialization";
+import { defaultValueParseFunction, defaultValueSerializationFunction } from "core/FlowGraph/serialization";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Vector3 } from "core/Maths";
 import { Mesh } from "core/Meshes";
@@ -160,6 +160,41 @@ describe("Flow Graph Serialization", () => {
         expect(serializedReceive.config.eventData["__proto__"].value).toBe(5);
         const parsedReceive = ParseFlowGraphBlockWithClassType(serializedReceive, { scene }, FlowGraphReceiveCustomEventBlock) as FlowGraphReceiveCustomEventBlock;
         expect(parsedReceive.config.eventData.position.value).toEqual(new Vector3(1, 2, 3));
+    });
+
+    it("passes the complete custom event schema to an explicit value parser", () => {
+        const receive = new FlowGraphReceiveCustomEventBlock({
+            eventId: "event",
+            eventData: { score: { type: RichTypeNumber, value: 5 } },
+        });
+        const serialized: any = {};
+        receive.serialize(serialized);
+        const valueParseFunction = vi.fn((key: string, serializationObject: any, assetsContainer: any, parseScene: Scene) => {
+            if (key === "eventData") {
+                return { score: { type: RichTypeNumber, value: 42 } };
+            }
+            return defaultValueParseFunction(key, serializationObject, assetsContainer, parseScene);
+        });
+
+        const parsed = ParseFlowGraphBlockWithClassType(serialized, { scene, valueParseFunction }, FlowGraphReceiveCustomEventBlock) as FlowGraphReceiveCustomEventBlock;
+
+        expect(valueParseFunction).toHaveBeenCalledWith("eventData", serialized.config, scene, scene);
+        expect(parsed.config.eventData.score.value).toBe(42);
+    });
+
+    it("applies scoped event decoding when an explicit value parser delegates to the default", () => {
+        const receive = new FlowGraphReceiveCustomEventBlock({
+            eventId: "event",
+            eventData: { position: { type: RichTypeVector3, value: new Vector3(1, 2, 3) } },
+        });
+        const serialized: any = {};
+        receive.serialize(serialized);
+        const valueParseFunction = vi.fn(defaultValueParseFunction);
+
+        const parsed = ParseFlowGraphBlockWithClassType(serialized, { scene, valueParseFunction }, FlowGraphReceiveCustomEventBlock) as FlowGraphReceiveCustomEventBlock;
+
+        expect(valueParseFunction).toHaveBeenCalledWith("eventData", serialized.config, scene, scene);
+        expect(parsed.config.eventData.position.value).toEqual(new Vector3(1, 2, 3));
     });
 
     it("Serializes and parses a block", () => {
