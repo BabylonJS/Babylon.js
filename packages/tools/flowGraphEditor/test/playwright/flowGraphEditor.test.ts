@@ -2188,6 +2188,27 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                     })
             )
             .toBeGreaterThan(beforeRedockFrameId);
+        const renderChainSample = await page.evaluate(async () => {
+            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+            const engine = state.sceneContext.scene.getEngine();
+            const startEngineFrame = engine.frameId;
+            const browserFrameCount = 12;
+            await new Promise<void>((resolve) => {
+                let currentFrame = 0;
+                const sampleFrame = () => {
+                    currentFrame++;
+                    if (currentFrame === browserFrameCount) {
+                        resolve();
+                    } else {
+                        requestAnimationFrame(sampleFrame);
+                    }
+                };
+                requestAnimationFrame(sampleFrame);
+            });
+            return { browserFrameCount, engineFrameCount: engine.frameId - startEngineFrame };
+        });
+        expect(renderChainSample.engineFrameCount).toBeGreaterThan(0);
+        expect(renderChainSample.engineFrameCount).toBeLessThanOrEqual(renderChainSample.browserFrameCount + 2);
         await expect
             .poll(
                 async () =>

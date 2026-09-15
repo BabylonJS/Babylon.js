@@ -281,7 +281,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
     /** @internal */
     override componentDidMount() {
-        this._attachPreviewCanvas();
+        const renderLoopNeedsRestart = this._attachPreviewCanvas();
 
         // Watch for external context changes
         if (this.props.globalState.sceneContext) {
@@ -327,8 +327,11 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const hasHostScene = !!this.props.globalState.hostScene;
         const isHostCtx = !!ctx && !ctx.ownsScene;
         if (ctx?.ownsScene) {
-            ctx.engine.stopRenderLoop();
-            this._setupEngineRenderLoop(ctx.scene, ctx.engine);
+            if (renderLoopNeedsRestart) {
+                this._setupEngineRenderLoop(ctx.scene, ctx.engine);
+            } else {
+                this._bindCanvasResize(ctx.scene, ctx.engine);
+            }
         }
         if (isHostCtx) {
             // Popup pane re-mounted while attached to a still-live host scene — rewire the context
@@ -345,7 +348,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         }
     }
 
-    private _attachPreviewCanvas(): HTMLCanvasElement {
+    private _attachPreviewCanvas(): boolean {
         const host = this._canvasHostRef.current;
         if (!host) {
             throw new Error("Preview canvas host not available");
@@ -353,12 +356,16 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const sceneContext = this.props.globalState.sceneContext;
         const sceneCanvas = sceneContext?.ownsScene ? sceneContext.engine.getRenderingCanvas() : null;
         const canvas = sceneCanvas ?? this.props.globalState.scenePreviewCanvas ?? host.ownerDocument.createElement("canvas");
+        const movedAcrossDocuments = canvas.ownerDocument !== host.ownerDocument;
+        if (movedAcrossDocuments && sceneContext?.ownsScene) {
+            sceneContext.engine.stopRenderLoop();
+        }
         canvas.className = this.props.classes.canvas;
         canvas.tabIndex = 0;
         canvas.dataset.testid = "scene-preview-canvas";
         host.appendChild(canvas);
         this.props.globalState.scenePreviewCanvas = canvas;
-        return canvas;
+        return movedAcrossDocuments;
     }
 
     /** @internal */
