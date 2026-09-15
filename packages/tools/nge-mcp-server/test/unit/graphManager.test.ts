@@ -498,6 +498,28 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
         expect(geometry.blocks.find((block) => block.id === rotationId)?.inputs.find((input) => input.name === "angle")?.targetBlockId).toBeUndefined();
     });
 
+    it("removeBlock disconnects consumers invalidated by dynamic output type changes", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("dynamicRemoval");
+
+        const scalarId = (mgr.addBlock("dynamicRemoval", "GeometryInputBlock", "scalar", { type: "Float", value: 1 }) as any).block.id;
+        const vectorId = (mgr.addBlock("dynamicRemoval", "GeometryInputBlock", "vector", { type: "Vector3", value: { x: 1, y: 2, z: 3 } }) as any).block.id;
+        const entryId = (mgr.addBlock("dynamicRemoval", "TeleportInBlock", "entry") as any).block.id;
+        const endpointId = (mgr.addBlock("dynamicRemoval", "TeleportOutBlock", "endpoint", { entryPoint: entryId }) as any).block.id;
+        const mathId = (mgr.addBlock("dynamicRemoval", "MathBlock", "math") as any).block.id;
+        const setPositionsId = (mgr.addBlock("dynamicRemoval", "SetPositionsBlock", "set positions") as any).block.id;
+
+        expect(mgr.connectBlocks("dynamicRemoval", scalarId, "output", mathId, "left")).toBe("OK");
+        expect(mgr.connectBlocks("dynamicRemoval", vectorId, "output", entryId, "input")).toBe("OK");
+        expect(mgr.connectBlocks("dynamicRemoval", endpointId, "output", mathId, "right")).toBe("OK");
+        expect(mgr.connectBlocks("dynamicRemoval", mathId, "output", setPositionsId, "positions")).toBe("OK");
+        expect(mgr.removeBlock("dynamicRemoval", entryId)).toBe("OK");
+
+        const geometry = mgr.getGeometry("dynamicRemoval")!;
+        expect(geometry.blocks.find((block) => block.id === mathId)?.inputs.find((input) => input.name === "right")?.targetBlockId).toBeUndefined();
+        expect(geometry.blocks.find((block) => block.id === setPositionsId)?.inputs.find((input) => input.name === "positions")?.targetBlockId).toBeUndefined();
+    });
+
     // ── Test 11: Validation catches issues ──────────────────────────────
 
     it("validation detects missing output block and orphans", () => {

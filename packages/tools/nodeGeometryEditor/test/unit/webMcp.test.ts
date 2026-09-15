@@ -18,6 +18,7 @@ vi.mock("@tools/snippet-loader", () => ({
 
 import { type GlobalState } from "../../src/globalState";
 import { DecodeNodeGeometryUrlHash } from "../../src/encodedGeometryUrl";
+import { ConnectionPointPortData } from "../../src/graphSystem/connectionPointPortData";
 import { SerializationTools } from "../../src/serializationTools";
 import { type IWebMcpTool, CreateNodeGeometryWebMcpTools, IsNodeGeometryWebMcpSupported, RegisterNodeGeometryWebMcpToolsAsync } from "../../src/webMcp";
 import { NodeGeometryWebMcpEditor } from "../../src/webMcpEditor";
@@ -143,13 +144,23 @@ function CreateTeleportGeometry(entryPointId: number): ISerializedGeometry {
 
 function CreateLiveEditorHarness() {
     const attachedBlocks: NodeGeometryBlock[] = [];
+    const links: Array<{
+        source: ConnectionPointPortData;
+        target: ConnectionPointPortData;
+        dispose: ReturnType<typeof vi.fn>;
+    }> = [];
     const nodes: Array<{
         x: number;
         y: number;
-        content: { data: NodeGeometryBlock };
+        content: {
+            data: NodeGeometryBlock;
+            inputs: ConnectionPointPortData[];
+            outputs: ConnectionPointPortData[];
+        };
         cleanAccumulation: ReturnType<typeof vi.fn>;
         dispose: ReturnType<typeof vi.fn>;
         refresh: ReturnType<typeof vi.fn>;
+        getLinksForPortData: (port: ConnectionPointPortData) => typeof links;
     }> = [];
     const nodeGeometry = {
         attachedBlocks,
@@ -160,11 +171,28 @@ function CreateLiveEditorHarness() {
     };
     const graphCanvas = {
         nodes,
-        links: [],
+        links,
         selectedNodes: [],
         selectedLink: null,
         findNodeFromData: (block: NodeGeometryBlock) => nodes.find((node) => node.content.data === block),
         removeDataFromCache: vi.fn(),
+        connectNodes: (
+            _sourceNode: (typeof nodes)[number],
+            source: ConnectionPointPortData,
+            _targetNode: (typeof nodes)[number],
+            target: ConnectionPointPortData
+        ) => {
+            source.connectTo(target);
+            const link = {
+                source,
+                target,
+                dispose: vi.fn(() => {
+                    source.disconnectFrom(target);
+                    links.splice(links.indexOf(link), 1);
+                }),
+            };
+            links.push(link);
+        },
     };
     const globalState = {
         nodeGeometry,
@@ -178,13 +206,16 @@ function CreateLiveEditorHarness() {
         graphCanvas as unknown as ConstructorParameters<typeof NodeGeometryWebMcpEditor>[1],
         (block) => {
             attachedBlocks.push(block);
+            const inputs = block.inputs.map((input) => new ConnectionPointPortData(input, graphCanvas as unknown as ConstructorParameters<typeof ConnectionPointPortData>[1]));
+            const outputs = block.outputs.map((output) => new ConnectionPointPortData(output, graphCanvas as unknown as ConstructorParameters<typeof ConnectionPointPortData>[1]));
             const node = {
                 x: 0,
                 y: 0,
-                content: { data: block },
+                content: { data: block, inputs, outputs },
                 cleanAccumulation: vi.fn(),
                 dispose: vi.fn(),
                 refresh: vi.fn(),
+                getLinksForPortData: (port: ConnectionPointPortData) => links.filter((link) => link.source === port || link.target === port),
             };
             nodes.push(node);
             return node as unknown as ReturnType<ConstructorParameters<typeof NodeGeometryWebMcpEditor>[2]>;
@@ -488,6 +519,41 @@ describe("Node Geometry WebMCP", () => {
         };
         editor.applyIncrementalUpdate(retargetedGeometry, withoutEndpoint, retargetedMapping);
         expect(secondEntry.endpoints).not.toContain(endpoint);
+    });
+
+    it("applies Teleport removal after disconnecting consumers invalidated by dynamic type changes", () => {
+        const { attachedBlocks, editor } = CreateLiveEditorHarness();
+        const manager = new GeometryGraphManager();
+        manager.createGeometry("dynamicRemoval");
+
+        const scalarId = (manager.addBlock("dynamicRemoval", "GeometryInputBlock", "scalar", { type: "Float", value: 1 }) as any).block.id;
+        const vectorId = (manager.addBlock("dynamicRemoval", "GeometryInputBlock", "vector", { type: "Vector3", value: { x: 1, y: 2, z: 3 } }) as any).block.id;
+        const entryId = (manager.addBlock("dynamicRemoval", "TeleportInBlock", "entry") as any).block.id;
+        const endpointId = (manager.addBlock("dynamicRemoval", "TeleportOutBlock", "endpoint", { entryPoint: entryId }) as any).block.id;
+        const mathId = (manager.addBlock("dynamicRemoval", "MathBlock", "math") as any).block.id;
+        const setPositionsId = (manager.addBlock("dynamicRemoval", "SetPositionsBlock", "set positions") as any).block.id;
+
+        expect(manager.connectBlocks("dynamicRemoval", scalarId, "output", mathId, "left")).toBe("OK");
+        expect(manager.connectBlocks("dynamicRemoval", vectorId, "output", entryId, "input")).toBe("OK");
+        expect(manager.connectBlocks("dynamicRemoval", endpointId, "output", mathId, "right")).toBe("OK");
+        expect(manager.connectBlocks("dynamicRemoval", mathId, "output", setPositionsId, "positions")).toBe("OK");
+
+        const before = JSON.parse(manager.exportJSON("dynamicRemoval")!) as ISerializedGeometry;
+        const emptyGeometry: ISerializedGeometry = {
+            customType: "BABYLON.NodeGeometry",
+            outputNodeId: -1,
+            blocks: [],
+        };
+        const mapping = editor.applyIncrementalUpdate(emptyGeometry, before, new Map());
+
+        expect(manager.removeBlock("dynamicRemoval", entryId)).toBe("OK");
+        const after = JSON.parse(manager.exportJSON("dynamicRemoval")!) as ISerializedGeometry;
+        expect(() => editor.applyIncrementalUpdate(before, after, mapping)).not.toThrow();
+
+        const math = attachedBlocks.find((block) => block.uniqueId === mapping.get(mathId))!;
+        const setPositions = attachedBlocks.find((block) => block.uniqueId === mapping.get(setPositionsId))!;
+        expect(math.inputs.find((input) => input.name === "right")?.isConnected).toBe(false);
+        expect(setPositions.inputs.find((input) => input.name === "positions")?.isConnected).toBe(false);
     });
 
     it("deserializes changed vector inputs as Babylon vector values", () => {

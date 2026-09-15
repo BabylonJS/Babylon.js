@@ -666,6 +666,7 @@ export class GeometryGraphManager {
         }
 
         geo.blocks.splice(idx, 1);
+        this._disconnectIncompatibleInputs(geo);
 
         // Clear output reference if this was the output block
         if (geo.outputNodeId === blockId) {
@@ -765,6 +766,63 @@ export class GeometryGraphManager {
         return output.type;
     }
 
+    private _getConnectionTypeError(
+        geo: ISerializedGeometry,
+        sourceBlock: ISerializedBlock,
+        outputName: string,
+        targetBlock: ISerializedBlock,
+        inputName: string
+    ): string | undefined {
+        const sourceInfo = this._getBlockTypeInfo(sourceBlock);
+        const targetInfo = this._getBlockTypeInfo(targetBlock);
+        const outputInfo = sourceInfo?.outputs.find((entry) => entry.name === outputName);
+        const inputInfo = targetInfo?.inputs.find((entry) => entry.name === inputName);
+        if (!outputInfo || !inputInfo) {
+            return `Cannot validate connection metadata for ${sourceBlock.name}.${outputName} -> ${targetBlock.name}.${inputName}.`;
+        }
+
+        const sourceType = this._resolveOutputType(geo, sourceBlock, outputInfo);
+        const targetType = this._resolveInputType(geo, targetBlock, inputInfo);
+        if (!sourceType) {
+            return undefined;
+        }
+
+        const accepted = [...(inputInfo.acceptedConnectionPointTypes ?? [])];
+        if (targetBlock.customType === "BABYLON.MathBlock" && targetType) {
+            accepted.push("Int", "Float", targetType);
+            if (targetType === "Int" || targetType === "Float") {
+                accepted.push("Vector2", "Vector3", "Vector4");
+            }
+        }
+        const excluded = inputInfo.excludedConnectionPointTypes ?? [];
+        const typeMismatch = targetType !== undefined && sourceType !== targetType && !accepted.includes(sourceType);
+        const explicitlyExcluded = !typeMismatch && excluded.includes(sourceType);
+        return typeMismatch || explicitlyExcluded
+            ? `Incompatible connection: ${sourceBlock.name}.${outputName} (${sourceType}) cannot connect to ${targetBlock.name}.${inputName} (${targetType ?? inputInfo.type}).`
+            : undefined;
+    }
+
+    private _disconnectIncompatibleInputs(geo: ISerializedGeometry): void {
+        let connectionRemoved: boolean;
+        do {
+            connectionRemoved = false;
+            for (const targetBlock of geo.blocks) {
+                for (const input of targetBlock.inputs) {
+                    if (input.targetBlockId === undefined || !input.targetConnectionName) {
+                        continue;
+                    }
+
+                    const sourceBlock = geo.blocks.find((block) => block.id === input.targetBlockId);
+                    if (!sourceBlock || this._getConnectionTypeError(geo, sourceBlock, input.targetConnectionName, targetBlock, input.name) !== undefined) {
+                        delete input.targetBlockId;
+                        delete input.targetConnectionName;
+                        connectionRemoved = true;
+                    }
+                }
+            }
+        } while (connectionRemoved);
+    }
+
     private _resolveInputType(geo: ISerializedGeometry, block: ISerializedBlock, input: IConnectionPointInfo): string | undefined {
         if (input.type !== "AutoDetect") {
             return input.type === "BasedOnInput" ? undefined : input.type;
@@ -812,30 +870,9 @@ export class GeometryGraphManager {
             return `Input "${inputName}" not found on block ${targetBlockId} ("${targetBlock.name}"). Available: ${available}`;
         }
 
-        const sourceInfo = this._getBlockTypeInfo(sourceBlock);
-        const targetInfo = this._getBlockTypeInfo(targetBlock);
-        const outputInfo = sourceInfo?.outputs.find((entry) => entry.name === outputName);
-        const inputInfo = targetInfo?.inputs.find((entry) => entry.name === inputName);
-        if (!outputInfo || !inputInfo) {
-            return `Cannot validate connection metadata for ${sourceBlock.name}.${outputName} -> ${targetBlock.name}.${inputName}.`;
-        }
-
-        const sourceType = this._resolveOutputType(geo, sourceBlock, outputInfo);
-        const targetType = this._resolveInputType(geo, targetBlock, inputInfo);
-        if (sourceType) {
-            const accepted = [...(inputInfo.acceptedConnectionPointTypes ?? [])];
-            if (targetBlock.customType === "BABYLON.MathBlock" && targetType) {
-                accepted.push("Int", "Float", targetType);
-                if (targetType === "Int" || targetType === "Float") {
-                    accepted.push("Vector2", "Vector3", "Vector4");
-                }
-            }
-            const excluded = inputInfo.excludedConnectionPointTypes ?? [];
-            const typeMismatch = targetType !== undefined && sourceType !== targetType && !accepted.includes(sourceType);
-            const explicitlyExcluded = !typeMismatch && excluded.includes(sourceType);
-            if (typeMismatch || explicitlyExcluded) {
-                return `Incompatible connection: ${sourceBlock.name}.${outputName} (${sourceType}) cannot connect to ${targetBlock.name}.${inputName} (${targetType ?? inputInfo.type}).`;
-            }
+        const connectionTypeError = this._getConnectionTypeError(geo, sourceBlock, outputName, targetBlock, inputName);
+        if (connectionTypeError) {
+            return connectionTypeError;
         }
 
         if (this._wouldCreateCycle(geo, sourceBlockId, targetBlockId)) {
