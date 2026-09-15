@@ -52,7 +52,11 @@ export class ShaderCodeCursor {
                 }
             } else {
                 // Semicolon in the middle of the line
-                const split = line.split(";");
+                const lineCommentIndex = line.indexOf("//");
+                const codePart = lineCommentIndex === -1 ? line : line.substring(0, lineCommentIndex);
+                const lineCommentPart = lineCommentIndex === -1 ? "" : line.substring(lineCommentIndex);
+                const firstLineIndex = this._lines.length;
+                const split = codePart.split(";");
 
                 for (let index = 0; index < split.length; index++) {
                     const subLine = split[index].trim();
@@ -62,6 +66,14 @@ export class ShaderCodeCursor {
                     } else if (index !== split.length - 1) {
                         // Preserve intermediate empty statements because their semicolon can be syntactically significant, as in `for (;;)`.
                         this._lines.push(";");
+                    }
+                }
+
+                if (lineCommentPart !== "") {
+                    if (this._lines.length > firstLineIndex) {
+                        this._lines[this._lines.length - 1] += " " + lineCommentPart;
+                    } else {
+                        this._lines.push(lineCommentPart);
                     }
                 }
             }
