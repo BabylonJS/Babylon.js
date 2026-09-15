@@ -969,6 +969,11 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                         path: `/graphs/${graphIndex}/nodes/${nodeIndex}`,
                         message: `Unsupported extension operation "${operation}" must remain an intact typed no-op block.`,
                     });
+                } else {
+                    this._validateUnsupportedExtensionBlock(source, sourceNode, nodeIndex, operation, declaration, blocks[0], graphIndex, diagnostics);
+                    if (diagnostics.some((diagnostic) => diagnostic.severity === "error")) {
+                        classification = "lossy";
+                    }
                 }
             } else {
                 this._validateMappedBlocks(graphIndex, nodeIndex, operation, mapping!, blocks, diagnostics);
@@ -1013,6 +1018,79 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             });
         }
         return logicalNodes;
+    }
+
+    private _validateUnsupportedExtensionBlock(
+        graph: IKHRInteractivity_Graph,
+        node: IKHRInteractivity_Node,
+        nodeIndex: number,
+        operation: string,
+        declaration: NonNullable<IKHRInteractivity_Graph["declarations"]>[number],
+        block: FlowGraphBlock,
+        graphIndex: number,
+        diagnostics: IKHRInteractivityExportDiagnostic[]
+    ): void {
+        const config = block.config as {
+            operation?: unknown;
+            inputValueSockets?: unknown;
+            outputValueSockets?: unknown;
+            inputFlowSockets?: unknown;
+            outputFlowSockets?: unknown;
+        };
+        const normalizeValueSockets = (sockets: unknown) =>
+            Array.isArray(sockets)
+                ? sockets
+                      .map((socket) =>
+                          socket !== null && typeof socket === "object"
+                              ? { name: (socket as { name?: unknown }).name, signature: (socket as { signature?: unknown }).signature }
+                              : socket
+                      )
+                      .sort((left, right) => String(JSON.stringify(left)).localeCompare(String(JSON.stringify(right))))
+                : sockets;
+        const normalizeFlowSockets = (sockets: unknown) => (Array.isArray(sockets) ? sockets.slice().sort() : sockets);
+        const expectedValueSockets = (sockets: typeof declaration.inputValueSockets) =>
+            Object.entries(sockets ?? {})
+                .map(([name, socket]) => ({ name, signature: graph.types?.[socket.type]?.signature }))
+                .sort((left, right) => left.name.localeCompare(right.name));
+        const expectedInputFlows = Array.from(
+            new Set(
+                (graph.nodes ?? []).flatMap((sourceNode) =>
+                    Object.values(sourceNode.flows ?? {})
+                        .filter((flow) => flow.node === nodeIndex)
+                        .map((flow) => flow.socket ?? "in")
+                )
+            )
+        ).sort();
+        const expectedOutputFlows = Object.keys(node.flows ?? {}).sort();
+        const actualConnectionNames = {
+            inputValues: block.dataInputs.map((connection) => connection.name).sort(),
+            outputValues: block.dataOutputs.map((connection) => connection.name).sort(),
+            inputFlows: block instanceof FlowGraphExecutionBlock ? block.signalInputs.map((connection) => connection.name).sort() : [],
+            outputFlows: block instanceof FlowGraphExecutionBlock ? block.signalOutputs.map((connection) => connection.name).sort() : [],
+        };
+        const expectedConnectionNames = {
+            inputValues: Object.keys(declaration.inputValueSockets ?? {}).sort(),
+            outputValues: Object.keys(declaration.outputValueSockets ?? {}).sort(),
+            inputFlows: expectedInputFlows,
+            outputFlows: expectedOutputFlows,
+        };
+        if (
+            config.operation !== operation ||
+            !_JsonEquivalent(normalizeValueSockets(config.inputValueSockets), expectedValueSockets(declaration.inputValueSockets)) ||
+            !_JsonEquivalent(normalizeValueSockets(config.outputValueSockets), expectedValueSockets(declaration.outputValueSockets)) ||
+            !_JsonEquivalent(normalizeFlowSockets(config.inputFlowSockets), expectedInputFlows) ||
+            !_JsonEquivalent(normalizeFlowSockets(config.outputFlowSockets), expectedOutputFlows) ||
+            !_JsonEquivalent(actualConnectionNames, expectedConnectionNames)
+        ) {
+            _PushDiagnostic(diagnostics, {
+                code: "BLOCK_TYPE_MISMATCH",
+                graphIndex,
+                nodeIndex,
+                path: `/graphs/${graphIndex}/nodes/${nodeIndex}`,
+                blockId: block.uniqueId,
+                message: `Unsupported extension operation "${operation}" has edited socket metadata and can no longer be exported as its canonical typed no-op.`,
+            });
+        }
     }
 
     private _validateMappedBlocks(

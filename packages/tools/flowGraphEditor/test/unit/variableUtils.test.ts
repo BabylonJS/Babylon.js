@@ -479,6 +479,16 @@ describe("Flow Graph Variable Utils", () => {
             expect(FormatVariableValue([1, 2, 3])).toBe("[1,2,3]");
         });
 
+        it("handles circular arrays gracefully", () => {
+            const array: any[] = [];
+            array.push(array);
+            expect(FormatVariableValue(array)).toBe("[object]");
+        });
+
+        it("handles arrays containing BigInt gracefully", () => {
+            expect(FormatVariableValue([1n])).toBe("[object]");
+        });
+
         it("handles circular references gracefully", () => {
             const obj: any = {};
             obj.self = obj;

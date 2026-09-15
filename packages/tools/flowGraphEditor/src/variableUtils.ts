@@ -634,7 +634,11 @@ export function FormatVariableValue(val: unknown): string {
         return "null";
     }
     if (Array.isArray(val)) {
-        return JSON.stringify(val);
+        try {
+            return JSON.stringify(val);
+        } catch {
+            return "[object]";
+        }
     }
     if (typeof val === "object") {
         if (typeof (val as any).toString === "function" && (val as any).toString !== Object.prototype.toString) {

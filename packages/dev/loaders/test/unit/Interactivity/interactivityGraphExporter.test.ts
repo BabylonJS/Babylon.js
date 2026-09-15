@@ -1202,12 +1202,9 @@ describe("KHR_interactivity FlowGraph export", () => {
                     outputValueSockets: { result: { type: 0 } },
                     extras: { declaration: true },
                 },
-                { op: "math/abs" },
+                { op: "debug/log" },
             ],
-            nodes: [
-                { declaration: 0, values: { amount: { type: 0, value: [2] } }, flows: { out: { node: 1 } }, extras: { node: true } },
-                { declaration: 1, values: { a: { type: 0, value: [1] } } },
-            ],
+            nodes: [{ declaration: 0, values: { amount: { type: 0, value: [2] } }, flows: { out: { node: 1 } }, extras: { node: true } }, { declaration: 1 }],
         };
         const extension = {
             extensions: { EXT_vendor_root: { child: { extensions: { EXT_child: { enabled: true } } } } },
@@ -1220,7 +1217,7 @@ describe("KHR_interactivity FlowGraph export", () => {
             representable: true,
             nodes: [
                 { operation: "vendor/doThing:EXT_vendor_interactivity", classification: "exact" },
-                { operation: "math/abs", classification: "exact" },
+                { operation: "debug/log", classification: "exact" },
             ],
         });
         expect(plan.additionalExtensionsUsed).toEqual(["EXT_child", "EXT_vendor_interactivity", "EXT_vendor_root"]);
@@ -1230,6 +1227,20 @@ describe("KHR_interactivity FlowGraph export", () => {
         (input as any)._defaultValue = 7;
         expect(plan.build(context).graphs[0].nodes![0].values!.amount).toEqual({ type: 0, value: [7] });
         expect(plan.build(context).graphs[0].nodes![0].flows).toEqual({ out: { node: 1 } });
+
+        const noOp = coordinator.flowGraphs[0].getAllBlocks().find((block) => block.metadata?.khrInteractivity?.nodeIndex === 0)!;
+        const target = coordinator.flowGraphs[0].getAllBlocks().find((block) => block.metadata?.khrInteractivity?.nodeIndex === 1)!;
+        noOp.getSignalOutput("out")!.disconnectFrom(target.getSignalInput("in")!);
+        expect(plan.build(context).graphs[0].nodes![0].flows).toBeUndefined();
+
+        (noOp.config.outputFlowSockets as string[]).push("edited");
+        expect(plan.analyze()).toEqual(
+            expect.objectContaining({
+                representable: false,
+                nodes: expect.arrayContaining([expect.objectContaining({ nodeIndex: 0, classification: "lossy" })]),
+                diagnostics: expect.arrayContaining([expect.objectContaining({ code: "BLOCK_TYPE_MISMATCH", nodeIndex: 0 })]),
+            })
+        );
     });
 
     it("remaps references to every supported indexed glTF root collection", async () => {
