@@ -2721,6 +2721,18 @@ export class ThinNativeEngine extends ThinEngine {
         // no gl.drawBuffers equivalent to select a subset.
     }
 
+    public override clearAttachments(
+        color: Nullable<IColor4Like>,
+        attachments: number[],
+        clearColor: boolean,
+        clearDepth: boolean,
+        clearStencil = false,
+        stencilClearValue = 0
+    ): void {
+        this.bindAttachments(attachments);
+        this.clear(color, clearColor, clearDepth, clearStencil, stencilClearValue);
+    }
+
     public override buildTextureLayout(textureStatus: boolean[], _backBufferLayout = false): number[] {
         // Native has no gl draw-buffer enums; return a per-attachment index list (consumers only use the
         // length/order, and bindAttachments is a no-op).

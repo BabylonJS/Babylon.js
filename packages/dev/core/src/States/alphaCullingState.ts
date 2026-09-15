@@ -16,6 +16,8 @@ export class AlphaState {
     private _isAlphaBlendDirty = false;
     private _isBlendFunctionParametersDirty = false;
     private _isBlendEquationParametersDirty = false;
+    private _blendDisabledTargetsMask = 0;
+    private _numTargets = 1;
 
     /**
      * Initializes the state.
@@ -113,9 +115,20 @@ export class AlphaState {
         this._isBlendFunctionParametersDirty = false;
         this._isBlendEquationParametersDirty = false;
         this._isBlendConstantsDirty = false;
+        this._blendDisabledTargetsMask = 0;
+        this._numTargets = 1;
     }
 
-    public apply(gl: WebGLRenderingContext, numTargets: number = 1): void {
+    public apply(gl: WebGLRenderingContext, numTargets: number = 1, blendDisabledTargetsMask = 0): void {
+        if (this._numTargets !== numTargets) {
+            this._numTargets = numTargets;
+            this._isAlphaBlendDirty = true;
+        }
+        if (this._blendDisabledTargetsMask !== blendDisabledTargetsMask) {
+            this._blendDisabledTargetsMask = blendDisabledTargetsMask;
+            this._isAlphaBlendDirty = true;
+        }
+
         if (!this.isDirty) {
             return;
         }
@@ -129,7 +142,10 @@ export class AlphaState {
         if (numTargets === 1 || !this._supportBlendParametersPerTarget) {
             // Single target or no support for per-target parameters
             if (this._isAlphaBlendDirty) {
-                if (this._alphaBlend[0]) {
+                if (numTargets > 1 && blendDisabledTargetsMask !== 0 && this.alphaBlend) {
+                    throw new Error("AlphaState: blending with integer MRT attachments requires per-target blend parameters");
+                }
+                if (this._alphaBlend[0] && (blendDisabledTargetsMask & 1) === 0) {
                     gl.enable(gl.BLEND);
                 } else {
                     gl.disable(gl.BLEND);
@@ -161,7 +177,7 @@ export class AlphaState {
         if (this._isAlphaBlendDirty) {
             for (let i = 0; i < numTargets; i++) {
                 const index = i < this._numTargetEnabled ? i : 0;
-                if (this._alphaBlend[index]) {
+                if (this._alphaBlend[index] && (blendDisabledTargetsMask & (1 << i)) === 0) {
                     gl2.enableIndexed(gl.BLEND, i);
                 } else {
                     gl2.disableIndexed(gl.BLEND, i);
