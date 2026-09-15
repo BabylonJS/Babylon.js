@@ -1481,7 +1481,7 @@ export class GaussianSplattingStream extends GaussianSplattingMesh implements IG
             }
         }
         if (this._minimumResidentSplats <= 1) {
-            return;
+            throw new Error("GaussianSplattingStream: stream produced no splats.");
         }
 
         let largestBaseFileCount = 0;
