@@ -243,6 +243,24 @@ async function StrictImportKhrInteractivityAsync(page: Page, fileName: string, b
     );
 }
 
+async function UndockRightSidePaneAsync(page: Page): Promise<Page> {
+    const menuButtons = page.locator('button[aria-haspopup="menu"]');
+    let rightmostMenuButton = -1;
+    let rightmostX = -1;
+    for (let index = 0; index < (await menuButtons.count()); index++) {
+        const box = await menuButtons.nth(index).boundingBox();
+        if (box && box.y < 120 && box.x > rightmostX) {
+            rightmostMenuButton = index;
+            rightmostX = box.x;
+        }
+    }
+    expect(rightmostMenuButton).toBeGreaterThanOrEqual(0);
+    const popupPromise = page.context().waitForEvent("page");
+    await menuButtons.nth(rightmostMenuButton).click();
+    await page.getByRole("menuitem", { name: "Undock", exact: true }).click();
+    return await popupPromise;
+}
+
 async function GetDefaultSceneBoxInfo(page: Page): Promise<{ sceneUid: string; source: string | null; boxX: number }> {
     return await page.evaluate(() => {
         const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
@@ -927,6 +945,11 @@ test.describe("Flow Graph Editor — Persistence and Scenes", () => {
         const originalScene = await GetScenePreviewSnapshot(page, "snippetBox");
         expect(originalScene).not.toBeNull();
         expect(originalScene!.meshNames).toContain("snippetBox");
+
+        const popup = await UndockRightSidePaneAsync(page);
+        await expect(popup.getByText("Scene Preview", { exact: true }).first()).toBeVisible();
+        await popup.close();
+        await expect.poll(async () => (await GetScenePreviewSnapshot(page, "snippetBox"))?.sceneUid).toBe(originalScene!.sceneUid);
 
         await fge.addBlockFromPalette("SceneReadyEvent");
         await fge.addBlockFromPalette("SetProperty");
@@ -2115,21 +2138,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         });
         expect(beforeUndock).toMatchObject({ connected: true, inMainDocument: true });
 
-        const menuButtons = page.locator('button[aria-haspopup="menu"]');
-        let rightmostMenuButton = -1;
-        let rightmostX = -1;
-        for (let index = 0; index < (await menuButtons.count()); index++) {
-            const box = await menuButtons.nth(index).boundingBox();
-            if (box && box.y < 120 && box.x > rightmostX) {
-                rightmostMenuButton = index;
-                rightmostX = box.x;
-            }
-        }
-        expect(rightmostMenuButton).toBeGreaterThanOrEqual(0);
-        const popupPromise = page.context().waitForEvent("page");
-        await menuButtons.nth(rightmostMenuButton).click();
-        await page.getByRole("menuitem", { name: "Undock", exact: true }).click();
-        const popup = await popupPromise;
+        const popup = await UndockRightSidePaneAsync(page);
         await expect(popup.getByText("Scene Preview", { exact: true }).first()).toBeVisible();
         await expect
             .poll(
@@ -2165,7 +2174,20 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                     )
             )
             .toBe(true);
+        const beforeRedockFrameId = await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+            return state.sceneContext.scene.getEngine().frameId;
+        });
         await popup.close();
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                        return state.sceneContext.scene.getEngine().frameId;
+                    })
+            )
+            .toBeGreaterThan(beforeRedockFrameId);
         await expect
             .poll(
                 async () =>

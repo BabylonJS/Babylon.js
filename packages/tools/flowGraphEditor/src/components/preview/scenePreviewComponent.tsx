@@ -272,7 +272,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         this._canvasHostRef = React.createRef();
 
         this.state = {
-            snippetId: "",
+            snippetId: props.globalState.snippetId,
             isLoading: false,
             error: "",
             sceneObjectCount: props.globalState.sceneContext?.entries.length ?? 0,
@@ -327,7 +327,8 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const hasHostScene = !!this.props.globalState.hostScene;
         const isHostCtx = !!ctx && !ctx.ownsScene;
         if (ctx?.ownsScene) {
-            this._bindCanvasResize(ctx.scene, ctx.engine);
+            ctx.engine.stopRenderLoop();
+            this._setupEngineRenderLoop(ctx.scene, ctx.engine);
         }
         if (isHostCtx) {
             // Popup pane re-mounted while attached to a still-live host scene — rewire the context
