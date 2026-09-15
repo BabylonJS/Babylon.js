@@ -459,15 +459,22 @@ export class RootMotionClip implements IDisposable {
 
         // The motion runs on the root's own animation - its frame rate, its range and at runtime its playback - rather than
         // whichever track happens to be first in the group, which could be a morph target at another frame rate. A root
-        // the group does not animate, passed as the base of the hierarchy, runs on its first animated descendant.
+        // the group does not animate, passed as the base of the hierarchy, runs on its first animated descendant - one
+        // with a position channel if there is one, since the mixer weighs vectors linearly.
         let clockNode: Nullable<TransformNode> = this._channels.has(anchor) ? anchor : null;
         if (!clockNode) {
-            for (const node of this._channels.keys()) {
-                if (node.isDescendantOf(anchor)) {
+            let fallback: Nullable<TransformNode> = null;
+            for (const [node, channels] of this._channels) {
+                if (!node.isDescendantOf(anchor)) {
+                    continue;
+                }
+                if (channels.position) {
                     clockNode = node as TransformNode;
                     break;
                 }
+                fallback = fallback ?? (node as TransformNode);
             }
+            clockNode = clockNode ?? fallback;
         }
         if (!clockNode) {
             throw new Error(`RootMotionClip: animation group "${animationGroup.name}" animates neither the root node "${anchor.name}" nor any node under it.`);
@@ -1621,21 +1628,26 @@ export class RootMotionController implements IDisposable {
      */
     private _effectiveWeight(writers: IChannelWriters, runtime: RuntimeAnimation): number {
         const runtimes = writers.current;
-        let share = 0;
+        let overrides = 0;
+        let additives = 0;
         let direct = false;
+        let weight = 0;
         for (let i = 0; i < runtimes.length; i++) {
             if (runtimes[i] !== runtime) {
                 continue;
             }
-            const weight = writers.currentWeights[i];
+            // The bindings hold one entry per write, added up from the weights as written, but each entry is read with
+            // the weight the runtime animation carries when the bindings are processed: that of its last write.
+            weight = writers.currentWeights[i];
             if (weight < 0) {
                 direct = true;
             } else if (writers.currentAdditive[i]) {
-                share += weight;
+                additives++;
             } else {
-                share += weight / Math.max(1, writers.total);
+                overrides++;
             }
         }
+        let share = (overrides / Math.max(1, writers.total) + additives) * weight;
         if (direct && !writers.weighted && writers.lastDirect === runtime) {
             share += 1;
         }
@@ -1759,7 +1771,7 @@ class SceneRootMotion {
             if (!entries) {
                 continue;
             }
-            const runtime = write.runtimeAnimation;
+            const runtime = write.runtimeAnimation!;
             const weight = write.weight;
             for (let k = 0; k < entries.length; k++) {
                 const entry = entries[k];

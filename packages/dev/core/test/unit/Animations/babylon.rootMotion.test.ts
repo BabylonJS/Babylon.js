@@ -2,6 +2,7 @@ import { Animation } from "core/Animations/animation";
 import { AnimationEvent } from "core/Animations/animationEvent";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import { RootMotionClip, RootMotionController, RootMotionSource, type IRootMotionClipOptions } from "core/Animations/rootMotion";
+import { type RuntimeAnimation } from "core/Animations/runtimeAnimation";
 import { type Engine } from "core/Engines/engine";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
@@ -1469,28 +1470,64 @@ describe("RootMotion", () => {
             expect(rig.character.position.z).toBeCloseTo(Speed, 6);
         });
 
-        it("adds up the writes of a clock re-evaluated by an animation event within a step", () => {
-            const rig = BuildRig(scene, "rootMotion");
-            const { group } = Extract(rig);
-            // Registered before the playback starts: a runtime animation takes its events when it is created.
-            ChannelOf(group, rig.hips, "position").addEvent(
-                new AnimationEvent(
-                    30,
-                    () => {
-                        const hipsAnimatable = group.animatables.find((animatable) => animatable.target === rig.hips)!;
-                        hipsAnimatable.goToFrame(hipsAnimatable.getAnimations()[0].currentFrame, true);
-                    },
-                    true
-                )
-            );
-            group.start(true);
-            group.weight = 0.8;
-            Run(scene, 32);
-            const before = rig.character.position.z;
-            Run(scene, 1);
+        for (const [first, second] of [
+            [0.8, 0.8],
+            [0.8, 0.2],
+            [0.2, 0.8],
+        ]) {
+            it(`follows the bindings of a clock re-evaluated by an animation event within a step (${first} then ${second})`, () => {
+                const rig = BuildRig(scene, "rootMotion");
+                const { group } = Extract(rig);
+                let hipsRuntime: RuntimeAnimation | null = null;
+                // Registered before the playback starts: a runtime animation takes its events when it is created.
+                ChannelOf(group, rig.hips, "position").addEvent(
+                    new AnimationEvent(
+                        30,
+                        () => {
+                            const hipsAnimatable = group.animatables.find((animatable) => animatable.target === rig.hips)!;
+                            hipsRuntime = hipsAnimatable.getAnimations()[0];
+                            group.weight = second;
+                            hipsAnimatable.goToFrame(hipsRuntime.currentFrame, true);
+                        },
+                        true
+                    )
+                );
+                group.start(true);
+                group.weight = first;
+                Run(scene, 32);
+                const before = rig.character.position.z;
+                Run(scene, 1);
 
-            // Two writes of 0.8 are the whole binding, where one alone would be 0.8 of it.
-            expect(rig.character.position.z - before).toBeCloseTo(Speed * 0.016, 6);
+                // The bindings hold two entries, added up as written, and read both with the weight of the last write: the
+                // pose is the runtime animation's value scaled by that, and the motion follows the same share.
+                const coefficient = (2 * second) / Math.max(1, first + second);
+                const value: Vector3 = hipsRuntime!.currentValue;
+                expect(Vector3.Distance(rig.hips.position, value.scale(coefficient))).toBeLessThan(1e-6);
+                expect(rig.character.position.z - before).toBeCloseTo(coefficient * Speed * 0.016, 6);
+            });
+        }
+
+        it("keeps no reference to a stopped animation or its target in the journal past its step", () => {
+            const prop = new TransformNode("prop", scene);
+            const animatable = scene.beginDirectAnimation(prop, [stillAnimation()], 0, CycleFrames, true);
+            const runtime = animatable.getAnimations()[0];
+            Run(scene, 3);
+            expect(scene._animationWrites.some((write) => write.runtimeAnimation === runtime && write.target === prop)).toBe(true);
+
+            animatable.stop();
+            // An idle step empties the journal of the step before, unused entries included.
+            Run(scene, 2);
+            expect(scene._animationWriteCount).toBe(0);
+            expect(scene._animationWrites.some((write) => write.runtimeAnimation === runtime || write.target === prop)).toBe(false);
+            expect(scene._animationWrites.every((write) => write.runtimeAnimation === null && write.target === null)).toBe(true);
+
+            const other = new Scene(engine);
+            const otherProp = new TransformNode("prop", other);
+            other.beginDirectAnimation(otherProp, [stillAnimation()], 0, CycleFrames, true);
+            other.animate();
+            expect(other._animationWrites.length).toBeGreaterThan(0);
+            other.dispose();
+            expect(other._animationWrites.length).toBe(0);
         });
 
         it("carries on where it was when the scene's animations are enabled again", () => {

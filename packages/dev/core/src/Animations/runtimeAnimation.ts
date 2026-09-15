@@ -20,9 +20,9 @@ import { type IAnimationKey } from "./animationKey";
  * A write of a runtime animation to one of its targets in an animation step, recorded as it is made.
  */
 export interface IRuntimeAnimationWrite {
-    /** The runtime animation that wrote. */
-    runtimeAnimation: RuntimeAnimation;
-    /** The object it wrote a property of. */
+    /** The runtime animation that wrote; null once the record is emptied, after its step. */
+    runtimeAnimation: Nullable<RuntimeAnimation>;
+    /** The object it wrote a property of; null once the record is emptied. */
     target: any;
     /** The weight it wrote with, -1 for a direct write. */
     weight: number;

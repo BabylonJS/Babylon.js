@@ -5843,6 +5843,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._renderTargets.dispose();
         this._materialsRenderTargets.dispose();
         this._registeredForLateAnimationBindings.dispose();
+        this._animationWrites.length = 0;
+        this._animationWriteCount = 0;
         this._meshesForIntersections.dispose();
         this._toBeDisposed.length = 0;
 

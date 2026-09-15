@@ -894,6 +894,13 @@ export function AddAnimationExtensions(sceneClass: typeof Scene, boneClass: type
     }
 
     sceneClass.prototype._animate = function (customDeltaTime?: number): void {
+        // The journal of the last step has been read by now; what it recorded must not outlive that step.
+        const writes = this._animationWrites;
+        for (let index = 0; index < this._animationWriteCount; index++) {
+            const write = writes[index];
+            write.runtimeAnimation = null;
+            write.target = null;
+        }
         this._animationWriteCount = 0;
         this._animationStepEvaluated = false;
         if (!this.animationsEnabled) {
