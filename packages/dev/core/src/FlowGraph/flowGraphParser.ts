@@ -9,7 +9,7 @@ import { type FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import { type FlowGraphSignalConnection } from "./flowGraphSignalConnection";
-import { defaultValueParseFunction, needsPathConverter } from "./serialization";
+import { _GetDefaultEventDataParseCount, defaultValueParseFunction, needsPathConverter } from "./serialization";
 import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerializedFlowGraphContext } from "./typeDefinitions";
 import { type Node } from "core/node";
 import { type Scene } from "core/scene";
@@ -32,7 +32,7 @@ function ParseCustomEventData(
             }
             const entry: { type: unknown; value?: unknown } = { type: getRichTypeByFlowGraphType(serializedEntry.type) };
             if (serializedEntry.value !== undefined) {
-                entry.value = valueParseFunction("value", serializedEntry, assetsContainer, scene);
+                entry.value = serializedEntry.value?.getClassName?.() ? serializedEntry.value : valueParseFunction("value", serializedEntry, assetsContainer, scene);
             }
             Object.defineProperty(eventData, serializedEntry.id, {
                 configurable: true,
@@ -53,7 +53,7 @@ function ParseCustomEventData(
         }
         const entry: { type: unknown; value?: unknown } = { type: serializedEntry.type };
         if (serializedEntry.value !== undefined) {
-            entry.value = valueParseFunction("value", serializedEntry, assetsContainer, scene);
+            entry.value = (serializedEntry.value as any)?.getClassName?.() ? serializedEntry.value : valueParseFunction("value", serializedEntry, assetsContainer, scene);
         }
         Object.defineProperty(eventData, eventKey, {
             configurable: true,
@@ -426,11 +426,14 @@ export function ParseFlowGraphBlockWithClassType(
                 key === "eventData" &&
                 (serializationObject.className === FlowGraphBlockNames.SendCustomEvent || serializationObject.className === FlowGraphBlockNames.ReceiveCustomEvent);
             if (isCustomEventData) {
+                const eventData = serializationObject.config[key];
+                const defaultParseCount = _GetDefaultEventDataParseCount(eventData);
                 const customParsedEventData = customValueParseFunction?.(key, serializationObject.config, assetsContainer, parseOptions.scene);
+                const delegatedToDefault = _GetDefaultEventDataParseCount(eventData) > defaultParseCount;
                 parsedConfig[key] =
-                    customValueParseFunction && customParsedEventData !== serializationObject.config[key]
+                    customValueParseFunction && (!delegatedToDefault || customParsedEventData !== eventData)
                         ? customParsedEventData
-                        : ParseCustomEventData(serializationObject.config[key], valueParseFunction, assetsContainer, parseOptions.scene);
+                        : ParseCustomEventData(eventData, valueParseFunction, assetsContainer, parseOptions.scene);
             } else {
                 parsedConfig[key] = valueParseFunction(key, serializationObject.config, assetsContainer, parseOptions.scene);
             }

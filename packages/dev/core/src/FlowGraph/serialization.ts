@@ -9,6 +9,13 @@ import { FlowGraphTypes } from "./flowGraphRichTypes.pure";
 import { type Node } from "core/node";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
 
+const _DefaultEventDataParseCounts = new WeakMap<object, number>();
+
+/** @internal */
+export function _GetDefaultEventDataParseCount(value: unknown): number {
+    return value !== null && typeof value === "object" ? (_DefaultEventDataParseCounts.get(value) ?? 0) : 0;
+}
+
 function IsVectorClassName(className: string) {
     return (
         className === FlowGraphTypes.Vector2 ||
@@ -167,6 +174,7 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
     } else if (className === FlowGraphTypes.Number || className === FlowGraphTypes.String || className === FlowGraphTypes.Boolean) {
         finalValue = intermediateValue.value[0];
     } else if (key === "eventData" && intermediateValue !== null && typeof intermediateValue === "object" && !Array.isArray(intermediateValue)) {
+        _DefaultEventDataParseCounts.set(intermediateValue, _GetDefaultEventDataParseCount(intermediateValue) + 1);
         finalValue = intermediateValue;
     } else if (intermediateValue && intermediateValue.value !== undefined) {
         finalValue = intermediateValue.value;

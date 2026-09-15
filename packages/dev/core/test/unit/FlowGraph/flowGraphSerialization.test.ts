@@ -7,6 +7,7 @@ import {
     FlowGraphConstantBlock,
     FlowGraphCoordinator,
     FlowGraphGetVariableBlock,
+    FlowGraphInteger,
     FlowGraphConsoleLogBlock,
     FlowGraphDivideBlock,
     FlowGraphMultiGateBlock,
@@ -19,6 +20,7 @@ import {
     FlowGraphSubtractBlock,
     FlowGraphStopAnimationBlock,
     RichTypeNumber,
+    RichTypeFlowGraphInteger,
     RichTypeVector3,
     ParseGraphDataConnection,
     ParseFlowGraphBlockWithClassType,
@@ -208,6 +210,28 @@ describe("Flow Graph Serialization", () => {
         expect(parsedReceive.getDataOutput("value")).toBeDefined();
         expect(parsedSend.config.eventData.value.value).toBe(5);
         expect(parsedReceive.config.eventData.value.value).toBe(5);
+    });
+
+    it("preserves a typed default reconstructed by an in-place custom event parser", () => {
+        const receive = new FlowGraphReceiveCustomEventBlock({
+            eventId: "event",
+            eventData: { value: { type: RichTypeFlowGraphInteger, value: new FlowGraphInteger(5) } },
+        });
+        const serialized: any = {};
+        receive.serialize(serialized);
+        const valueParseFunction = vi.fn((key: string, serializationObject: any, assetsContainer: any, parseScene: Scene) => {
+            if (key === "eventData") {
+                serializationObject.eventData.value.type = RichTypeFlowGraphInteger;
+                serializationObject.eventData.value.value = new FlowGraphInteger(5);
+                return serializationObject.eventData;
+            }
+            return defaultValueParseFunction(key, serializationObject, assetsContainer, parseScene);
+        });
+
+        const parsed = ParseFlowGraphBlockWithClassType(serialized, { scene, valueParseFunction }, FlowGraphReceiveCustomEventBlock) as FlowGraphReceiveCustomEventBlock;
+
+        expect(parsed.config.eventData.value.value).toBeInstanceOf(FlowGraphInteger);
+        expect(parsed.config.eventData.value.value.value).toBe(5);
     });
 
     it("round-trips Send and Receive custom-event sockets named value through a full graph parse", () => {
