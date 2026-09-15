@@ -93,17 +93,27 @@ describe("GaussianSplattingStream coarse-first startup", () => {
         expect(capacity).toBe(351);
     });
 
-    it("keeps a huge default allocation bounded while reserving one coarse-file-sized refinement slot", () => {
+    it("keeps a huge progressive default allocation bounded while reserving one coarse-file-sized refinement slot", () => {
         const stream = makeDormantStream(makeMetadata());
         stream._fileCounts.set(1, 535_548);
         stream._resolveMinimumResidentSplats([1], 0);
         stream._shTextureCount = 5;
 
-        const capacity = stream._resolveResidentBudget(265_459_067, 535_548);
+        const capacity = stream._resolveResidentBudget(null, 535_548);
 
         expect(capacity).toBeGreaterThanOrEqual(1_071_097);
         expect(capacity).toBeLessThan(10_000_000);
         expect(stream.residentSplatBudget).toBe(capacity);
+    });
+
+    it("preserves complete known source residency when no limit is requested", () => {
+        const stream = makeDormantStream(makeMetadata());
+        engine.getCaps().maxTextureSize = 4096;
+        stream._fileCounts.set(1, 100);
+        stream._resolveMinimumResidentSplats([1], 0);
+        stream._shTextureCount = 5;
+
+        expect(stream._resolveResidentBudget(4_000_000, 100)).toBe(4_000_000);
     });
 
     it.each([false, true])("uses the device memory tier when fine source counts are not yet known (mobile: %s)", (isMobile) => {
