@@ -556,6 +556,38 @@ describe("Node Geometry WebMCP", () => {
         expect(setPositions.inputs.find((input) => input.name === "positions")?.isConnected).toBe(false);
     });
 
+    it("preserves live consumers typed through a surviving linked input", () => {
+        const { attachedBlocks, editor } = CreateLiveEditorHarness();
+        const manager = new GeometryGraphManager();
+        manager.createGeometry("linkedInputRemoval");
+
+        const minId = (manager.addBlock("linkedInputRemoval", "GeometryInputBlock", "min", { type: "Vector3", value: { x: 0, y: 0, z: 0 } }) as any).block.id;
+        const maxId = (manager.addBlock("linkedInputRemoval", "GeometryInputBlock", "max", { type: "Vector3", value: { x: 1, y: 1, z: 1 } }) as any).block.id;
+        const randomId = (manager.addBlock("linkedInputRemoval", "RandomBlock", "random") as any).block.id;
+        const setPositionsId = (manager.addBlock("linkedInputRemoval", "SetPositionsBlock", "set positions") as any).block.id;
+
+        expect(manager.connectBlocks("linkedInputRemoval", minId, "output", randomId, "min")).toBe("OK");
+        expect(manager.connectBlocks("linkedInputRemoval", maxId, "output", randomId, "max")).toBe("OK");
+        expect(manager.connectBlocks("linkedInputRemoval", randomId, "output", setPositionsId, "positions")).toBe("OK");
+
+        const before = JSON.parse(manager.exportJSON("linkedInputRemoval")!) as ISerializedGeometry;
+        const emptyGeometry: ISerializedGeometry = {
+            customType: "BABYLON.NodeGeometry",
+            outputNodeId: -1,
+            blocks: [],
+        };
+        const mapping = editor.applyIncrementalUpdate(emptyGeometry, before, new Map());
+
+        expect(manager.removeBlock("linkedInputRemoval", minId)).toBe("OK");
+        const after = JSON.parse(manager.exportJSON("linkedInputRemoval")!) as ISerializedGeometry;
+        expect(() => editor.applyIncrementalUpdate(before, after, mapping)).not.toThrow();
+
+        const random = attachedBlocks.find((block) => block.uniqueId === mapping.get(randomId))!;
+        const setPositions = attachedBlocks.find((block) => block.uniqueId === mapping.get(setPositionsId))!;
+        expect(random.inputs.find((input) => input.name === "max")?.isConnected).toBe(true);
+        expect(setPositions.inputs.find((input) => input.name === "positions")?.isConnected).toBe(true);
+    });
+
     it("deserializes changed vector inputs as Babylon vector values", () => {
         const { attachedBlocks, editor } = CreateLiveEditorHarness();
         const manager = new GeometryGraphManager();

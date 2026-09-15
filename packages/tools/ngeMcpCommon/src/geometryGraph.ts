@@ -713,9 +713,18 @@ export class GeometryGraphManager {
     }
 
     private _resolveConnectedInputType(geo: ISerializedGeometry, block: ISerializedBlock, inputName: string, visited: Set<string>): string | undefined {
+        const visitKey = `${block.id}:input:${inputName}`;
+        if (visited.has(visitKey)) {
+            return undefined;
+        }
+        visited.add(visitKey);
+
         const input = block.inputs.find((entry) => entry.name === inputName);
         if (input?.targetBlockId === undefined || !input.targetConnectionName) {
-            return undefined;
+            const inputInfo = this._getBlockTypeInfo(block)?.inputs.find((entry) => entry.name === inputName);
+            return inputInfo?.type === "AutoDetect" && inputInfo.linkedConnectionSource
+                ? this._resolveConnectedInputType(geo, block, inputInfo.linkedConnectionSource, visited)
+                : undefined;
         }
         const sourceBlock = geo.blocks.find((entry) => entry.id === input.targetBlockId);
         if (!sourceBlock) {

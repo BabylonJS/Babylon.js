@@ -520,6 +520,25 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
         expect(geometry.blocks.find((block) => block.id === setPositionsId)?.inputs.find((input) => input.name === "positions")?.targetBlockId).toBeUndefined();
     });
 
+    it("removeBlock preserves consumers typed through a surviving linked input", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("linkedInputRemoval");
+
+        const minId = (mgr.addBlock("linkedInputRemoval", "GeometryInputBlock", "min", { type: "Vector3", value: { x: 0, y: 0, z: 0 } }) as any).block.id;
+        const maxId = (mgr.addBlock("linkedInputRemoval", "GeometryInputBlock", "max", { type: "Vector3", value: { x: 1, y: 1, z: 1 } }) as any).block.id;
+        const randomId = (mgr.addBlock("linkedInputRemoval", "RandomBlock", "random") as any).block.id;
+        const setPositionsId = (mgr.addBlock("linkedInputRemoval", "SetPositionsBlock", "set positions") as any).block.id;
+
+        expect(mgr.connectBlocks("linkedInputRemoval", minId, "output", randomId, "min")).toBe("OK");
+        expect(mgr.connectBlocks("linkedInputRemoval", maxId, "output", randomId, "max")).toBe("OK");
+        expect(mgr.connectBlocks("linkedInputRemoval", randomId, "output", setPositionsId, "positions")).toBe("OK");
+        expect(mgr.removeBlock("linkedInputRemoval", minId)).toBe("OK");
+
+        const geometry = mgr.getGeometry("linkedInputRemoval")!;
+        expect(geometry.blocks.find((block) => block.id === randomId)?.inputs.find((input) => input.name === "max")?.targetBlockId).toBe(maxId);
+        expect(geometry.blocks.find((block) => block.id === setPositionsId)?.inputs.find((input) => input.name === "positions")?.targetBlockId).toBe(randomId);
+    });
+
     // ── Test 11: Validation catches issues ──────────────────────────────
 
     it("validation detects missing output block and orphans", () => {
