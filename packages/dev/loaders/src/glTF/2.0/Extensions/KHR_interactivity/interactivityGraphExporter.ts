@@ -259,10 +259,14 @@ function _GetPointerExtensionNames(pointer: string): string[] {
     return extensions;
 }
 
-function _CanPreserveNestedExtensionPointer(pointer: string): boolean {
+function _CanPreserveNestedExtensionPointer(pointer: string, resolvedCollection?: string): boolean {
     const segments = pointer.split("/").map((segment) => segment.replace(/~1/g, "/").replace(/~0/g, "~"));
     const extensionIndex = segments.indexOf("extensions");
-    return extensionIndex > 1 && segments[1] === "nodes" && _CompanionNodeExtensions.includes(segments[extensionIndex + 1] as (typeof _CompanionNodeExtensions)[number]);
+    return (
+        extensionIndex > 1 &&
+        (resolvedCollection ?? segments[1]) === "nodes" &&
+        _CompanionNodeExtensions.includes(segments[extensionIndex + 1] as (typeof _CompanionNodeExtensions)[number])
+    );
 }
 const _FlowGraphTypeToKHRSignature: Readonly<Record<string, string>> = {
     [FlowGraphTypes.Number]: "float",
@@ -2053,10 +2057,6 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             if (typeof pointer !== "string") {
                 continue;
             }
-            const nestedExtensions = _GetPointerExtensionNames(pointer).filter((extension) => extension !== "KHR_interactivity");
-            if (nestedExtensions.length > 0 && !_CanPreserveNestedExtensionPointer(pointer)) {
-                continue;
-            }
             const segments = pointer.split("/");
             if (segments[0] !== "" || segments.length < 3) {
                 continue;
@@ -2084,6 +2084,20 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 continue;
             }
             const indexPlaceholder = /^\[([^\[\]]+)\]$/.exec(segments[2]);
+            const hasTemplateCollection = !!rootPlaceholder || !!indexPlaceholder;
+            if (
+                hasTemplateCollection &&
+                !this._validateExtensionReferencePreservation(
+                    pointer,
+                    collection,
+                    diagnostics,
+                    graphIndex,
+                    logicalNode.sourceIndex,
+                    `/graphs/${graphIndex}/nodes/${logicalNode.sourceIndex}/configuration/${key}`
+                )
+            ) {
+                continue;
+            }
             if (indexPlaceholder) {
                 const socket = node.values?.[indexPlaceholder[1]];
                 const path = `/graphs/${graphIndex}/nodes/${logicalNode.sourceIndex}/values/${indexPlaceholder[1]}`;
@@ -2558,6 +2572,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         graphIndex: number,
         nodeIndex?: number
     ): string {
+        if (!this._validateExtensionReferencePreservation(reference, targetCollection, diagnostics, graphIndex, nodeIndex)) {
+            return reference;
+        }
         const match = reference.match(/^\/([^/]+)\/(0|[1-9]\d*)(\/.*)?$/);
         if (!match || !_KnownIndexedRootCollections.has(match[1])) {
             return this._remapReference(reference, context, diagnostics, graphIndex, nodeIndex);
@@ -2607,17 +2624,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         if (!match || !_KnownIndexedRootCollections.has(match[1])) {
             return reference;
         }
-        const nestedExtensions = _GetPointerExtensionNames(reference).filter((extension) => extension !== "KHR_interactivity");
-        if (nestedExtensions.length > 0 && !_CanPreserveNestedExtensionPointer(reference)) {
-            _PushDiagnostic(diagnostics, {
-                code: "REFERENCE_UNRESOLVED",
-                graphIndex,
-                nodeIndex,
-                path: `/graphs/${graphIndex}${nodeIndex === undefined ? "" : `/nodes/${nodeIndex}`}`,
-                message: `Reference "${reference}" observes extension-backed data (${nestedExtensions.join(
-                    ", "
-                )}) that the serializer cannot guarantee will retain its source semantics.`,
-            });
+        if (!this._validateExtensionReferencePreservation(reference, match[1], diagnostics, graphIndex, nodeIndex)) {
             return reference;
         }
         const collection = match[1];
@@ -2634,6 +2641,30 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             return reference;
         }
         return `/${collection}/${targetIndex}${match[3] ?? ""}`;
+    }
+
+    private _validateExtensionReferencePreservation(
+        reference: string,
+        resolvedCollection: string,
+        diagnostics: IKHRInteractivityExportDiagnostic[],
+        graphIndex: number,
+        nodeIndex?: number,
+        path = `/graphs/${graphIndex}${nodeIndex === undefined ? "" : `/nodes/${nodeIndex}`}`
+    ): boolean {
+        const nestedExtensions = _GetPointerExtensionNames(reference).filter((extension) => extension !== "KHR_interactivity");
+        if (nestedExtensions.length === 0 || _CanPreserveNestedExtensionPointer(reference, resolvedCollection)) {
+            return true;
+        }
+        _PushDiagnostic(diagnostics, {
+            code: "REFERENCE_UNRESOLVED",
+            graphIndex,
+            nodeIndex,
+            path,
+            message: `Reference "${reference}" observes extension-backed data (${nestedExtensions.join(
+                ", "
+            )}) that the serializer cannot guarantee will retain its source semantics.`,
+        });
+        return false;
     }
 
     private _collectAdditionalExtensions(): string[] {

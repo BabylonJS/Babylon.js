@@ -366,6 +366,95 @@ describe("KHR_interactivity FlowGraph export", () => {
         }
     });
 
+    it("rejects an extension-backed pointer with a dynamic material index", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }, { signature: "float" }],
+            declarations: [{ op: "pointer/get" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/materials/[target]/extensions/KHR_materials_emissive_strength/emissiveStrength"] },
+                        type: { value: [1] },
+                    },
+                    values: { target: { type: 0, value: [0] } },
+                },
+            ],
+        };
+        const plan = await CreatePlan({ graphs: [graph] });
+
+        expect(plan.additionalExtensionsUsed).toContain("KHR_materials_emissive_strength");
+        expect(plan.analyze()).toMatchObject({
+            representable: false,
+            diagnostics: [
+                expect.objectContaining({
+                    code: "REFERENCE_UNRESOLVED",
+                    path: "/graphs/0/nodes/0/configuration/pointer",
+                }),
+            ],
+        });
+        expect(() => plan.build(context)).toThrowError(KHRInteractivityExportError);
+    });
+
+    it("remaps a static node index behind a dynamic root for a preserved companion extension", async () => {
+        const sourceNode = new TransformNode("source", scene);
+        const sourceGLTF = {
+            nodes: [{ index: 0, _babylonTransformNode: sourceNode, extensions: { KHR_node_visibility: { visible: true } } }],
+        };
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "ref" }, { signature: "bool" }],
+            declarations: [{ op: "pointer/get" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: {
+                        pointer: { value: ["/{root}/0/extensions/KHR_node_visibility/visible"] },
+                        type: { value: [1] },
+                    },
+                    values: { root: { type: 0, value: ["/nodes"] } },
+                },
+            ],
+        };
+        const plan = await CreatePlan({ graphs: [graph] }, sourceGLTF);
+        const exported = plan.build({
+            ...context,
+            getNodeCount: () => 5,
+            getNodeIndex: (node) => (node === sourceNode ? 4 : undefined),
+        });
+
+        expect(plan.additionalExtensionsUsed).toContain("KHR_node_visibility");
+        expect(exported.graphs[0].nodes![0].configuration!.pointer.value).toEqual(["/{root}/4/extensions/KHR_node_visibility/visible"]);
+    });
+
+    it("rejects an extension-backed ref variable reached through a collection hint", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "ref" }, { signature: "float" }],
+            variables: [{ type: 0, value: ["/materials/0/extensions/KHR_materials_emissive_strength/emissiveStrength"] }],
+            declarations: [{ op: "variable/get" }, { op: "pointer/get" }],
+            nodes: [
+                { declaration: 0, configuration: { variable: { value: [0] } } },
+                {
+                    declaration: 1,
+                    configuration: { pointer: { value: ["/{target}"] }, type: { value: [1] } },
+                    values: { target: { node: 0 } },
+                },
+            ],
+        };
+        const plan = await CreatePlan({ graphs: [graph] });
+
+        expect(plan.additionalExtensionsUsed).toContain("KHR_materials_emissive_strength");
+        expect(plan.analyze()).toMatchObject({
+            representable: false,
+            diagnostics: [
+                expect.objectContaining({
+                    code: "REFERENCE_UNRESOLVED",
+                    message: expect.stringContaining("KHR_materials_emissive_strength"),
+                }),
+            ],
+        });
+        expect(() => plan.build(context)).toThrowError(KHRInteractivityExportError);
+    });
+
     it("uses a pointer template collection hint when an object has multiple glTF identities", async () => {
         const sourceNode = new TransformNode("source", scene);
         const camera = new FreeCamera("camera", Vector3.Zero(), scene);
