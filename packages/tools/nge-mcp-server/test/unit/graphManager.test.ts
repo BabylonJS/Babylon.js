@@ -471,6 +471,33 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
         expect(issues.every((i) => !i.includes(`block ${inputId}`))).toBe(true);
     });
 
+    it("removeBlock disconnects typed consumers of invalidated Teleport outputs", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("teleportRemoval");
+
+        const value = mgr.addBlock("teleportRemoval", "GeometryInputBlock", "value", {
+            type: "Float",
+            value: 1,
+        });
+        const entry = mgr.addBlock("teleportRemoval", "TeleportInBlock", "entry");
+        const valueId = (value as any).block.id;
+        const entryId = (entry as any).block.id;
+        const endpoint = mgr.addBlock("teleportRemoval", "TeleportOutBlock", "endpoint", {
+            entryPoint: entryId,
+        });
+        const rotation = mgr.addBlock("teleportRemoval", "RotationXBlock", "rotation");
+        const endpointId = (endpoint as any).block.id;
+        const rotationId = (rotation as any).block.id;
+
+        expect(mgr.connectBlocks("teleportRemoval", valueId, "output", entryId, "input")).toBe("OK");
+        expect(mgr.connectBlocks("teleportRemoval", endpointId, "output", rotationId, "angle")).toBe("OK");
+        expect(mgr.removeBlock("teleportRemoval", entryId)).toBe("OK");
+
+        const geometry = mgr.getGeometry("teleportRemoval")!;
+        expect(geometry.blocks.find((block) => block.id === endpointId)?.entryPoint).toBeUndefined();
+        expect(geometry.blocks.find((block) => block.id === rotationId)?.inputs.find((input) => input.name === "angle")?.targetBlockId).toBeUndefined();
+    });
+
     // ── Test 11: Validation catches issues ──────────────────────────────
 
     it("validation detects missing output block and orphans", () => {

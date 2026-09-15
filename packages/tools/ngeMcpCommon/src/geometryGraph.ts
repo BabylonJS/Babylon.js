@@ -627,16 +627,41 @@ export class GeometryGraphManager {
             return `Block ${blockId} not found.`;
         }
 
-        // Remove any connections pointing to this block
+        const teleportEndpointsByEntryPoint = new Map<number, number[]>();
         for (const block of geo.blocks) {
-            for (const inp of block.inputs) {
-                if (inp.targetBlockId === blockId) {
-                    delete inp.targetBlockId;
-                    delete inp.targetConnectionName;
-                }
+            if (block.customType !== "BABYLON.TeleportOutBlock" || typeof block.entryPoint !== "number") {
+                continue;
             }
-            if (block.customType === "BABYLON.TeleportOutBlock" && block.entryPoint === blockId) {
+
+            const endpointIds = teleportEndpointsByEntryPoint.get(block.entryPoint) ?? [];
+            endpointIds.push(block.id);
+            teleportEndpointsByEntryPoint.set(block.entryPoint, endpointIds);
+            if (block.entryPoint === blockId) {
                 delete block.entryPoint;
+            }
+        }
+
+        const invalidatedSourceBlockIds = [blockId, ...(teleportEndpointsByEntryPoint.get(blockId) ?? [])];
+        const processedSourceBlockIds = new Set<number>();
+        while (invalidatedSourceBlockIds.length > 0) {
+            const sourceBlockId = invalidatedSourceBlockIds.pop()!;
+            if (processedSourceBlockIds.has(sourceBlockId)) {
+                continue;
+            }
+            processedSourceBlockIds.add(sourceBlockId);
+
+            for (const block of geo.blocks) {
+                for (const input of block.inputs) {
+                    if (input.targetBlockId !== sourceBlockId) {
+                        continue;
+                    }
+
+                    delete input.targetBlockId;
+                    delete input.targetConnectionName;
+                    if (block.customType === "BABYLON.TeleportInBlock" && input.name === "input") {
+                        invalidatedSourceBlockIds.push(...(teleportEndpointsByEntryPoint.get(block.id) ?? []));
+                    }
+                }
             }
         }
 
