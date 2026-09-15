@@ -2017,6 +2017,12 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
         }, source);
         await expect.poll(async () => await fge.getNodeCount()).toBe(1);
+        const importedScene = await GetSceneContextSnapshot(page);
+        const snippetInput = page.getByPlaceholder("Playground ID or URL...");
+        await snippetInput.fill("ABC123");
+        await snippetInput.press("Enter");
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("Replace the KHR_interactivity file instead of changing its preview scene");
+        expect((await GetSceneContextSnapshot(page))?.sceneUid).toBe(importedScene?.sceneUid);
 
         const gltfDownloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename().endsWith(".gltf"));
         await page.getByRole("button", { name: "Export KHR glTF", exact: true }).click();

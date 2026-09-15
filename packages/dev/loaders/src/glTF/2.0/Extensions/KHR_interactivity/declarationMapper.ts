@@ -45,11 +45,6 @@ export interface IGLTFToFlowGraphMappingObject {
     flowGraphType?: string;
 
     /**
-     * Converts a dynamically created FlowGraph socket name back to its KHR socket id.
-     */
-    inverseSocketName?: (name: string) => string | undefined;
-
-    /**
      * A function that transforms the data from the glTF to the FlowGraph block.
      */
     dataTransformer?: (data: any, parser: InteractivityGraphToFlowGraphParser) => any;
@@ -141,6 +136,9 @@ export interface IGLTFToFlowGraphMappingObject {
      * Allowed KHR type signatures for a type-index configuration.
      */
     allowedSignatures?: readonly ("bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "ref" | "custom")[];
+
+    /** Allowed literal values for this configuration property. */
+    allowedValues?: readonly (boolean | number | string)[];
 
     /**
      * Input socket whose effective type determines this output socket type.
@@ -334,8 +332,58 @@ export function HasDefaultInteractivityFlowInput(operation: string): boolean {
     );
 }
 
+/**
+ * Normalizes serialized or runtime FlowGraph custom-event configuration for inverse comparison.
+ * @param value serialized event-data entries or the runtime event-data dictionary
+ * @returns stable event-data entries sorted by socket id
+ */
+export function NormalizeInteractivityEventDataConfiguration(value: unknown): unknown {
+    const normalizeValue = (entry: unknown): unknown => {
+        if (Array.isArray(entry)) {
+            return entry.slice();
+        }
+        if (entry !== null && typeof entry === "object") {
+            if (typeof (entry as { asArray?: () => unknown[] }).asArray === "function") {
+                return (entry as { asArray: () => unknown[] }).asArray();
+            }
+            if (Object.prototype.hasOwnProperty.call(entry, "value")) {
+                const nested = (entry as { value: unknown }).value;
+                return Array.isArray(nested) ? nested.slice() : [nested];
+            }
+        }
+        return [entry];
+    };
+    if (Array.isArray(value)) {
+        return value
+            .filter((entry): entry is { id: string; type: string; value?: unknown } => entry !== null && typeof entry === "object" && typeof entry.id === "string")
+            .map((entry) => ({
+                id: entry.id,
+                type: entry.type,
+                ...(entry.value === undefined ? {} : { value: normalizeValue(entry.value) }),
+            }))
+            .sort((left, right) => left.id.localeCompare(right.id));
+    }
+    if (value !== null && typeof value === "object") {
+        return Object.entries(value as Record<string, unknown>)
+            .map(([id, entry]) => {
+                if (entry === null || typeof entry !== "object") {
+                    return { id, malformed: true };
+                }
+                const definition = entry as { type?: { typeName?: string } | string; value?: unknown };
+                return {
+                    id,
+                    type: typeof definition.type === "string" ? definition.type : definition.type?.typeName,
+                    ...(definition.value === undefined ? {} : { value: normalizeValue(definition.value) }),
+                };
+            })
+            .sort((left, right) => left.id.localeCompare(right.id));
+    }
+    return value;
+}
+
 export function getMappingForDeclaration(declaration: IKHRInteractivity_Declaration, returnNoOpIfNotAvailable: boolean = true): IGLTFToFlowGraphMapping | undefined {
-    const mapping = declaration.extension ? gltfExtensionsToFlowGraphMapping[declaration.extension]?.[declaration.op] : gltfToFlowGraphMapping[declaration.op];
+    const extensionMappings = declaration.extension ? _GetOwnRegistryValue(gltfExtensionsToFlowGraphMapping, declaration.extension) : undefined;
+    const mapping = declaration.extension ? _GetOwnRegistryValue(extensionMappings, declaration.op) : _GetOwnRegistryValue(gltfToFlowGraphMapping, declaration.op);
     if (!mapping) {
         if (returnNoOpIfNotAvailable) {
             Logger.Warn(`No mapping found for operation ${declaration.op} and extension ${declaration.extension || "KHR_interactivity"}`);
@@ -356,19 +404,27 @@ export function getNoOpMappingForDeclaration(declaration: IKHRInteractivity_Decl
         flows: {},
     };
     if (declaration.inputValueSockets) {
-        inputs.values = {};
+        inputs.values = Object.create(null);
         for (const key in declaration.inputValueSockets) {
-            inputs.values[key] = {
-                name: key,
-            };
+            if (Object.prototype.hasOwnProperty.call(declaration.inputValueSockets, key)) {
+                Object.defineProperty(inputs.values, key, {
+                    configurable: true,
+                    enumerable: true,
+                    value: { name: key },
+                    writable: true,
+                });
+            }
         }
     }
     if (declaration.outputValueSockets) {
-        outputs.values = {};
+        outputs.values = Object.create(null);
         Object.keys(declaration.outputValueSockets).forEach((key) => {
-            outputs.values![key] = {
-                name: key,
-            };
+            Object.defineProperty(outputs.values!, key, {
+                configurable: true,
+                enumerable: true,
+                value: { name: key },
+                writable: true,
+            });
         });
     }
     return {
@@ -386,8 +442,26 @@ export function getNoOpMappingForDeclaration(declaration: IKHRInteractivity_Decl
  * @param mapping The mapping object. See documentation or examples below.
  */
 export function addNewInteractivityFlowGraphMapping(key: string, extension: string, mapping: IGLTFToFlowGraphMapping) {
-    gltfExtensionsToFlowGraphMapping[extension] ||= {};
-    gltfExtensionsToFlowGraphMapping[extension][key] = mapping;
+    let extensionMappings = _GetOwnRegistryValue(gltfExtensionsToFlowGraphMapping, extension);
+    if (!extensionMappings) {
+        extensionMappings = Object.create(null);
+        Object.defineProperty(gltfExtensionsToFlowGraphMapping, extension, {
+            configurable: true,
+            enumerable: true,
+            value: extensionMappings,
+            writable: true,
+        });
+    }
+    Object.defineProperty(extensionMappings, key, {
+        configurable: true,
+        enumerable: true,
+        value: mapping,
+        writable: true,
+    });
+}
+
+function _GetOwnRegistryValue<T>(registry: Record<string, T> | undefined, key: string): T | undefined {
+    return registry && Object.prototype.hasOwnProperty.call(registry, key) ? registry[key] : undefined;
 }
 
 /**
@@ -623,7 +697,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", typeSourceInput: "a" },
             },
         },
         extraProcessor(gltfBlock, declaration, _mapping, parser, serializedObjects) {
@@ -647,7 +721,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", typeSourceInput: "a" },
             },
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
@@ -762,7 +836,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.Random],
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", gltfType: "float" },
             },
         },
     },
@@ -791,7 +865,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         ...getSimpleInputMapping(FlowGraphBlockNames.Normalize),
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", typeSourceInput: "a" },
                 isValid: { name: "isValid", gltfType: "bool" },
             },
         },
@@ -808,7 +882,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", typeSourceInput: "a" },
             },
         },
     },
@@ -822,7 +896,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", typeSourceInput: "a" },
             },
         },
     },
@@ -837,7 +911,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", typeSourceInput: "a" },
             },
         },
     },
@@ -851,7 +925,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", gltfType: "float2" },
             },
         },
     },
@@ -866,7 +940,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", gltfType: "float3" },
             },
         },
     },
@@ -882,7 +956,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", gltfType: "float4" },
             },
         },
     },
@@ -938,7 +1012,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         ...getSimpleInputMapping(FlowGraphBlockNames.InvertMatrix),
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", typeSourceInput: "a" },
                 isValid: { name: "isValid", gltfType: "bool" },
             },
         },
@@ -1002,13 +1076,13 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.Multiply],
         inputs: {
             values: {
-                a: { name: "a", gltfType: "vector4" },
-                b: { name: "b", gltfType: "vector4" },
+                a: { name: "a", gltfType: "float4" },
+                b: { name: "b", gltfType: "float4" },
             },
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", gltfType: "float4" },
             },
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects) {
@@ -1028,7 +1102,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", gltfType: "float4" },
             },
         },
     },
@@ -1046,7 +1120,14 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             },
         },
     },
-    "math/quatFromDirections": getSimpleInputMapping(FlowGraphBlockNames.QuaternionFromDirections, ["a", "b"]),
+    "math/quatFromDirections": {
+        ...getSimpleInputMapping(FlowGraphBlockNames.QuaternionFromDirections, ["a", "b"]),
+        outputs: {
+            values: {
+                value: { name: "value", gltfType: "float4" },
+            },
+        },
+    },
     "math/quatFromUpForward": {
         blocks: [FlowGraphBlockNames.QuaternionFromUpForward],
         inputs: {
@@ -1057,7 +1138,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", gltfType: "float4" },
             },
         },
     },
@@ -1066,7 +1147,13 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/quatFromAngles": {
         blocks: [FlowGraphBlockNames.QuaternionFromAngles],
         configuration: {
-            order: { name: "order", defaultValue: ["yxz"] },
+            order: {
+                name: "order",
+                defaultValue: ["yxz"],
+                configurationType: "string",
+                invalidUsesDefault: true,
+                allowedValues: ["xyz", "xzy", "yxz", "yzx", "zxy", "zyx"],
+            },
         },
         inputs: {
             values: {
@@ -1077,7 +1164,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", gltfType: "float4" },
             },
         },
     },
@@ -1093,7 +1180,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", gltfType: "float2x2" },
             },
         },
     },
@@ -1130,7 +1217,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", gltfType: "float3x3" },
             },
         },
     },
@@ -1179,7 +1266,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", gltfType: "float4x4" },
             },
         },
     },
@@ -1221,7 +1308,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", typeSourceInput: "a" },
             },
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects, context) {
@@ -1243,7 +1330,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", typeSourceInput: "a" },
             },
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects, context) {
@@ -1267,7 +1354,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", typeSourceInput: "a" },
             },
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects, context) {
@@ -1291,7 +1378,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             values: {
-                value: { name: "value" },
+                value: { name: "value", typeSourceInput: "a" },
             },
         },
         extraProcessor(_gltfBlock, _declaration, _mapping, _parser, serializedObjects, context) {
@@ -1324,7 +1411,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         blocks: [FlowGraphBlockNames.Sequence],
         outputs: {
             flows: {
-                "[segment]": { name: "$1", inverseSocketName: (name) => (/^out_\d+$/.test(name) ? name.substring(4) : undefined) },
+                "[segment]": { name: "$1" },
             },
         },
         extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects) {
@@ -1374,7 +1461,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         outputs: {
             flows: {
                 default: { name: "default" },
-                "[segment]": { name: "$1", inverseSocketName: (name) => (name.startsWith("out_") ? name.substring(4) : undefined) },
+                "[segment]": { name: "$1" },
             },
         },
         validation(gltfBlock) {
@@ -1510,7 +1597,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
         },
         outputs: {
             flows: {
-                "[segment]": { name: "$1", inverseSocketName: (name) => (/^out_\d+$/.test(name) ? name.substring(4) : undefined) },
+                "[segment]": { name: "$1" },
             },
             values: {
                 lastIndex: { name: "lastIndex", gltfType: "int" },
@@ -2195,7 +2282,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             values: {
                 selection: { name: "case", gltfType: "int" },
                 default: { name: "default" },
-                "[case]": { name: "$1", inverseSocketName: (name) => (name.startsWith("in_") ? name.substring(3) : undefined) },
+                "[case]": { name: "$1" },
             },
         },
         outputs: {

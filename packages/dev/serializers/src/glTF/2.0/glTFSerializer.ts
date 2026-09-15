@@ -9,6 +9,11 @@ import { type GLTFData } from "./glTFData";
 import { GLTFExporter } from "./glTFExporter";
 
 /**
+ * Indexed glTF root collections that KHR_interactivity references can target.
+ */
+export type KhrInteractivityRootCollection = "nodes" | "animations" | "cameras" | "materials" | "meshes" | "textures" | "images" | "samplers" | "skins" | "scenes";
+
+/**
  * Mesh compression methods.
  */
 export type MeshCompressionMethod = "None" | "Draco";
@@ -46,6 +51,13 @@ export interface IKHRInteractivityExportContext {
      * @returns final glTF material index, or undefined when the material was not exported
      */
     getMaterialIndex(material: Material): number | undefined;
+    /**
+     * Gets the final glTF index for an imported Babylon entity in a root collection.
+     * @param collection target glTF root collection
+     * @param entity imported Babylon entity associated with the source entry
+     * @returns final glTF index, or undefined when the entity was not exported uniquely
+     */
+    getRootIndex?(collection: KhrInteractivityRootCollection, entity: object): number | undefined;
     /**
      * Writes a companion extension on an already-exported glTF node.
      * @param nodeIndex final glTF node index

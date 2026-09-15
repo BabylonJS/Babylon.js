@@ -6,6 +6,7 @@ import {
     getMappingForDeclaration,
     getNoOpMappingForDeclaration,
     HasDefaultInteractivityFlowInput,
+    NormalizeInteractivityEventDataConfiguration,
     ParseDebugLogTemplate,
 } from "./declarationMapper";
 import { Logger } from "core/Misc/logger";
@@ -20,6 +21,7 @@ import {
     gltfTypeToBabylonType,
     KHR_INTERACTIVITY_SPECIFICATION_COMMIT,
     type IKHRInteractivityBlockProvenance,
+    type IKHRInteractivityConfigurationProvenance,
     type IKHRInteractivityDeclarationModel,
     type IKHRInteractivityGraphProvenance,
     type IKHRInteractivitySocketProvenance,
@@ -52,6 +54,34 @@ export { gltfTypeToBabylonType } from "./interactivityGraphModel";
 
 function _GetOwnMapping<T>(mapping: { [name: string]: T } | undefined, key: string): T | undefined {
     return mapping && Object.prototype.hasOwnProperty.call(mapping, key) ? mapping[key] : undefined;
+}
+
+function _CloneMetadataValue<T>(value: T): T {
+    if (Array.isArray(value)) {
+        return value.map((entry) => _CloneMetadataValue(entry)) as T;
+    }
+    if (value !== null && typeof value === "object") {
+        const clone: Record<string, unknown> = {};
+        for (const [key, entry] of Object.entries(value)) {
+            Object.defineProperty(clone, key, {
+                configurable: true,
+                enumerable: true,
+                value: _CloneMetadataValue(entry),
+                writable: true,
+            });
+        }
+        return clone as T;
+    }
+    return value;
+}
+
+function _IsSerializableConfigurationValue(value: unknown): boolean {
+    return (
+        value === null ||
+        ["string", "number", "boolean"].includes(typeof value) ||
+        (Array.isArray(value) && value.every(_IsSerializableConfigurationValue)) ||
+        (typeof value === "object" && Object.values(value as Record<string, unknown>).every(_IsSerializableConfigurationValue))
+    );
 }
 
 /**
@@ -733,6 +763,8 @@ export class InteractivityGraphToFlowGraphParser {
                     "input",
                     valueKey
                 );
+                const socketProvenance = socketIn.metadata!.khrInteractivity as IKHRInteractivitySocketProvenance;
+                socketProvenance.sourceValue = _CloneMetadataValue(this._canonicalGraph.nodes?.[i]?.values?.[valueKey] ?? value);
                 // Captured before the connected branch below shadows `valueMapping`. When set and the
                 // value is supplied by a connection, the seconds→frames `dataTransformer` cannot run
                 // (it is parse-time only), so the raw connected value is scaled by a runtime multiply.
@@ -741,6 +773,7 @@ export class InteractivityGraphToFlowGraphParser {
                     const convertedValue = this._parseVariable(value as IKHRInteractivity_Variable, valueMapping && valueMapping.dataTransformer);
                     context._connectionValues[socketIn.uniqueId] = convertedValue;
                     socketIn.defaultValue = convertedValue;
+                    socketProvenance.runtimeValue = _CloneMetadataValue(convertedValue.value);
                 } else if (typeof (value as IKHRInteractivity_OutputSocketReference).node !== "undefined") {
                     const nodeOutId = (value as IKHRInteractivity_OutputSocketReference).node;
                     const nodeOutSocketName = (value as IKHRInteractivity_OutputSocketReference).socket || "value";
@@ -891,6 +924,62 @@ export class InteractivityGraphToFlowGraphParser {
                     block.signalInputs.push(connection);
                 }
                 this._setSocketProvenance(connection, nodeIndex, node.declaration, mapping.fullOperationName, this._getBlockRole(blocks, block), "flow", "input", "in");
+            }
+        }
+        for (const [sourceKey, property] of Object.entries(mapping.flowGraphMapping.configuration ?? {})) {
+            const block = (property.toBlock && blocks.find((candidate) => candidate.className === property.toBlock)) || blocks[0];
+            const provenance = block?.metadata?.khrInteractivity as IKHRInteractivityBlockProvenance | undefined;
+            if (!block || !provenance) {
+                continue;
+            }
+            const serializedRuntimeValue = block.config?.[property.name];
+            const runtimeValue =
+                serializedRuntimeValue !== null && typeof serializedRuntimeValue === "object" && Object.prototype.hasOwnProperty.call(serializedRuntimeValue, "value")
+                    ? serializedRuntimeValue.value
+                    : serializedRuntimeValue;
+            provenance.configuration ||= {};
+            const configurationProvenance: IKHRInteractivityConfigurationProvenance = {
+                sourceValue: _CloneMetadataValue(this._canonicalGraph.nodes?.[nodeIndex]?.configuration?.[sourceKey]?.value),
+                runtimeValue: _CloneMetadataValue(runtimeValue),
+            };
+            Object.defineProperty(provenance.configuration, sourceKey, {
+                configurable: true,
+                enumerable: true,
+                value: configurationProvenance,
+                writable: true,
+            });
+        }
+        for (const block of blocks) {
+            const provenance = block.metadata?.khrInteractivity as IKHRInteractivityBlockProvenance | undefined;
+            if (!provenance) {
+                continue;
+            }
+            const mappedConfigurationNames = new Set(
+                Object.values(mapping.flowGraphMapping.configuration ?? {})
+                    .filter((property) => (property.toBlock ? block.className === property.toBlock : provenance.role === 0))
+                    .map((property) => property.name)
+            );
+            const ignoredConfigurationNames = new Set(["glTF"]);
+            for (const [key, value] of Object.entries(block.config ?? {})) {
+                if (mappedConfigurationNames.has(key) || ignoredConfigurationNames.has(key)) {
+                    continue;
+                }
+                const normalizedValue =
+                    key === "eventData"
+                        ? NormalizeInteractivityEventDataConfiguration(value)
+                        : value !== null && typeof value === "object" && Object.prototype.hasOwnProperty.call(value, "value")
+                          ? (value as { value: unknown }).value
+                          : value;
+                if (!_IsSerializableConfigurationValue(normalizedValue)) {
+                    continue;
+                }
+                provenance.generatedConfiguration ||= {};
+                Object.defineProperty(provenance.generatedConfiguration, key, {
+                    configurable: true,
+                    enumerable: true,
+                    value: _CloneMetadataValue(normalizedValue),
+                    writable: true,
+                });
             }
         }
     }

@@ -13,6 +13,8 @@ import {
     FlowGraphMultiplyBlock,
     FlowGraphPlayAnimationBlock,
     FlowGraphSceneReadyEventBlock,
+    FlowGraphSendCustomEventBlock,
+    FlowGraphReceiveCustomEventBlock,
     FlowGraphSetPropertyBlock,
     FlowGraphSubtractBlock,
     FlowGraphStopAnimationBlock,
@@ -31,7 +33,7 @@ import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import { FlowGraphPathConverter } from "core/FlowGraph/flowGraphPathConverter";
-import { defaultValueSerializationFunction } from "core/FlowGraph/serialization";
+import { defaultValueParseFunction, defaultValueSerializationFunction } from "core/FlowGraph/serialization";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Vector3 } from "core/Maths";
 import { Mesh } from "core/Meshes";
@@ -119,6 +121,43 @@ describe("Flow Graph Serialization", () => {
         expect(parsed3.richType.defaultValue.x).toEqual(0);
         expect(parsed3.richType.defaultValue.y).toEqual(0);
         expect(parsed3.richType.defaultValue.z).toEqual(0);
+    });
+
+    it("preserves prototype-like custom event payload ids as own properties", () => {
+        const serializedConfiguration = {
+            eventData: [
+                {
+                    eventData: true,
+                    id: "__proto__",
+                    type: "number",
+                    value: { type: "number", value: [5] },
+                },
+            ],
+        };
+        const eventData = defaultValueParseFunction("eventData", serializedConfiguration, scene, scene);
+        expect(Object.prototype.hasOwnProperty.call(eventData, "__proto__")).toBe(true);
+        Object.defineProperty(eventData, "position", {
+            configurable: true,
+            enumerable: true,
+            value: { type: RichTypeVector3, value: new Vector3(1, 2, 3) },
+            writable: true,
+        });
+
+        const send = new FlowGraphSendCustomEventBlock({ eventId: "event", eventData });
+        const receive = new FlowGraphReceiveCustomEventBlock({ eventId: "event", eventData });
+        expect(send.getDataInput("__proto__")).toBeDefined();
+        expect(receive.getDataOutput("__proto__")).toBeDefined();
+
+        const serialized: any = {};
+        send.serialize(serialized);
+        expect(Object.prototype.hasOwnProperty.call(serialized.config.eventData, "__proto__")).toBe(true);
+
+        const serializedReceive: any = {};
+        receive.serialize(serializedReceive);
+        expect(Object.prototype.hasOwnProperty.call(serializedReceive.config.eventData, "__proto__")).toBe(true);
+        expect(serializedReceive.config.eventData["__proto__"].value).toBe(5);
+        const parsedReceive = ParseFlowGraphBlockWithClassType(serializedReceive, { scene }, FlowGraphReceiveCustomEventBlock) as FlowGraphReceiveCustomEventBlock;
+        expect(parsedReceive.config.eventData.position.value).toEqual(new Vector3(1, 2, 3));
     });
 
     it("Serializes and parses a block", () => {

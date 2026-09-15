@@ -13,6 +13,7 @@ import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
 import { type FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection.pure";
+import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { type Material } from "core/Materials/material";
 import { type Node } from "core/node";
 import { type Camera } from "core/Cameras/camera";
@@ -21,13 +22,17 @@ import {
     GetInteractivityOperationRegistry,
     getMappingForDeclaration,
     HasDefaultInteractivityFlowInput,
+    NormalizeInteractivityEventDataConfiguration,
+    ParseDebugLogTemplate,
     type IGLTFToFlowGraphMapping,
     type IGLTFToFlowGraphMappingObject,
 } from "./declarationMapper";
 import {
     CloneKHRInteractivityGraph,
     CreateKHRInteractivityGraphModel,
+    gltfTypeToBabylonType,
     type IKHRInteractivityBlockProvenance,
+    type IKHRInteractivityConfigurationProvenance,
     type IKHRInteractivityDocument,
     type IKHRInteractivityGraphProvenance,
     type IKHRInteractivitySocketProvenance,
@@ -109,6 +114,11 @@ export interface IKHRInteractivityExportAnalysis {
 }
 
 /**
+ * Indexed glTF root collections that KHR_interactivity references can target.
+ */
+export type KhrInteractivityRootCollection = "nodes" | "animations" | "cameras" | "materials" | "meshes" | "textures" | "images" | "samplers" | "skins" | "scenes";
+
+/**
  * Final glTF remapping context supplied by the serializer extension.
  */
 export interface IKHRInteractivitySerializerContext {
@@ -141,6 +151,13 @@ export interface IKHRInteractivitySerializerContext {
      * @returns final glTF material index, or undefined when the material was not exported
      */
     getMaterialIndex(material: Material): number | undefined;
+    /**
+     * Gets the final glTF index for an imported Babylon entity in a root collection.
+     * @param collection target glTF root collection
+     * @param entity imported Babylon entity associated with the source entry
+     * @returns final glTF index, or undefined when the entity was not exported uniquely
+     */
+    getRootIndex?(collection: KhrInteractivityRootCollection, entity: object): number | undefined;
     /**
      * Writes a companion extension on an already-exported glTF node.
      * @param nodeIndex final glTF node index
@@ -177,7 +194,7 @@ export interface IKHRInteractivityExportProvider {
  * Options used to create a KHR_interactivity export plan.
  */
 export interface IKHRInteractivityExportOptions {
-    /** Canonical Phase 1 document associated with the FlowGraphs. */
+    /** Canonical Phase 1 document associated with the FlowGraphs. Required for a lossless export. */
     document?: IKHRInteractivityDocument;
     /** Loader glTF tree used to resolve original entity references. */
     sourceGLTF?: IGLTF;
@@ -222,8 +239,35 @@ interface IGraphAnalysis {
     diagnostics: IKHRInteractivityExportDiagnostic[];
 }
 
-const _KnownIndexedRootCollections = new Set(["nodes", "animations", "cameras", "materials", "meshes", "textures", "images", "samplers", "skins", "scenes"]);
+interface IOrderedNodes {
+    nodes: IKHRInteractivity_Node[];
+    sourceIndices: number[];
+}
+
+const _KnownIndexedRootCollections = new Set<string>(["nodes", "animations", "cameras", "materials", "meshes", "textures", "images", "samplers", "skins", "scenes"]);
 const _UnsupportedBlockClassName = "FlowGraphUnsupportedInteractivityBlock";
+const _CompanionNodeExtensions = ["KHR_node_hoverability", "KHR_node_selectability", "KHR_node_visibility"] as const;
+const _FlowGraphTypeToKHRSignature: Readonly<Record<string, string>> = {
+    [FlowGraphTypes.Number]: "float",
+    [FlowGraphTypes.Boolean]: "bool",
+    [FlowGraphTypes.Integer]: "int",
+    [FlowGraphTypes.String]: "ref",
+    [FlowGraphTypes.Vector2]: "float2",
+    [FlowGraphTypes.Vector3]: "float3",
+    [FlowGraphTypes.Vector4]: "float4",
+    [FlowGraphTypes.Quaternion]: "float4",
+    [FlowGraphTypes.Color3]: "float3",
+    [FlowGraphTypes.Color4]: "float4",
+    [FlowGraphTypes.Matrix2D]: "float2x2",
+    [FlowGraphTypes.Matrix3D]: "float3x3",
+    [FlowGraphTypes.Matrix]: "float4x4",
+    Mesh: "ref",
+    TransformNode: "ref",
+    Camera: "ref",
+    Light: "ref",
+    Material: "ref",
+    AnimationGroup: "ref",
+};
 
 function _CloneJson<T>(value: T): T {
     if (Array.isArray(value)) {
@@ -250,6 +294,10 @@ function _GetBlockProvenance(block: FlowGraphBlock): IKHRInteractivityBlockProve
 
 function _GetSocketProvenance(connection: FlowGraphDataConnection<any> | FlowGraphSignalConnection): IKHRInteractivitySocketProvenance | undefined {
     return connection.metadata?.khrInteractivity as IKHRInteractivitySocketProvenance | undefined;
+}
+
+function _GetOwn<T>(dictionary: Record<string, T> | undefined, key: string): T | undefined {
+    return dictionary && Object.prototype.hasOwnProperty.call(dictionary, key) ? dictionary[key] : undefined;
 }
 
 function _FullOperationName(op: string, extension?: string): string {
@@ -307,6 +355,27 @@ function _ValuesEqual(left: readonly unknown[] | undefined, right: readonly unkn
     return true;
 }
 
+function _JsonEquivalent(left: unknown, right: unknown): boolean {
+    if (typeof left === "number" && typeof right === "number" && Number.isNaN(left) && Number.isNaN(right)) {
+        return true;
+    }
+    if (left === right) {
+        return true;
+    }
+    if (Array.isArray(left) && Array.isArray(right)) {
+        return left.length === right.length && left.every((entry, index) => _JsonEquivalent(entry, right[index]));
+    }
+    if (left !== null && right !== null && typeof left === "object" && typeof right === "object") {
+        const leftEntries = Object.entries(left);
+        const rightKeys = Object.keys(right);
+        return (
+            leftEntries.length === rightKeys.length &&
+            leftEntries.every(([key, value]) => Object.prototype.hasOwnProperty.call(right, key) && _JsonEquivalent(value, (right as Record<string, unknown>)[key]))
+        );
+    }
+    return false;
+}
+
 function _GetTypeDefault(signature: string): unknown[] {
     switch (signature) {
         case "bool":
@@ -333,6 +402,81 @@ function _GetTypeDefault(signature: string): unknown[] {
     }
 }
 
+function _GetOrAddInputTypeIndex(
+    graph: IKHRInteractivity_Graph,
+    input: FlowGraphDataConnection<any>,
+    mapping: IGLTFToFlowGraphMappingObject | undefined,
+    logicalNode: ILogicalNode,
+    socket: string
+): number | undefined {
+    if (logicalNode.operation === "variable/set" && /^(0|[1-9]\d*)$/.test(socket)) {
+        return graph.variables?.[parseInt(socket, 10)]?.type;
+    }
+    if (logicalNode.operation === "event/send") {
+        const eventProperty = logicalNode.mapping?.configuration?.event;
+        const eventIndex = eventProperty ? _GetMappedConfigurationValue(logicalNode, "event", eventProperty, graph)?.[0] : undefined;
+        if (typeof eventIndex === "number") {
+            return graph.events?.[eventIndex]?.values?.[socket]?.type;
+        }
+    }
+    if (logicalNode.operation === "pointer/get" || logicalNode.operation === "pointer/set" || logicalNode.operation === "pointer/interpolate") {
+        const pointerProperty = logicalNode.mapping?.configuration?.pointer;
+        const pointer = pointerProperty ? _GetMappedConfigurationValue(logicalNode, "pointer", pointerProperty, graph)?.[0] : undefined;
+        if (typeof pointer === "string") {
+            const segment = pointer.split("/").find((entry) => entry === `[${socket}]` || entry === `{${socket}}`);
+            const semanticSignature = segment?.startsWith("[") ? "int" : segment?.startsWith("{") ? "ref" : undefined;
+            if (semanticSignature) {
+                const existing = graph.types?.findIndex((type) => type.signature === semanticSignature) ?? -1;
+                if (existing >= 0) {
+                    return existing;
+                }
+                graph.types ??= [];
+                graph.types.push({ signature: semanticSignature });
+                return graph.types.length - 1;
+            }
+        }
+    }
+    const mappedType = mapping?.gltfType;
+    const signature =
+        mappedType === "number"
+            ? "float"
+            : mappedType === "boolean"
+              ? "bool"
+              : mappedType === "vector2"
+                ? "float2"
+                : mappedType === "vector3"
+                  ? "float3"
+                  : mappedType === "vector4"
+                    ? "float4"
+                    : mappedType && mappedType !== "any"
+                      ? mappedType
+                      : _FlowGraphTypeToKHRSignature[input.richType.typeName];
+    if (!signature || !gltfTypeToBabylonType[signature]) {
+        return undefined;
+    }
+    graph.types ??= [];
+    const existing = graph.types.findIndex((type) => type.signature === signature);
+    if (existing >= 0) {
+        return existing;
+    }
+    graph.types.push({ signature: signature as NonNullable<IKHRInteractivity_Graph["types"]>[number]["signature"] });
+    return graph.types.length - 1;
+}
+
+function _GetOrAddVariableTypeIndex(graph: IKHRInteractivity_Graph, flowGraphType: string): number | undefined {
+    const signature = _FlowGraphTypeToKHRSignature[flowGraphType];
+    if (!signature || !gltfTypeToBabylonType[signature]) {
+        return undefined;
+    }
+    graph.types ??= [];
+    const existing = graph.types.findIndex((type) => type.signature === signature);
+    if (existing >= 0) {
+        return existing;
+    }
+    graph.types.push({ signature: signature as NonNullable<IKHRInteractivity_Graph["types"]>[number]["signature"] });
+    return graph.types.length - 1;
+}
+
 function _GetSourceValue(graph: IKHRInteractivity_Graph, value: IKHRInteractivity_Variable, mapping?: IGLTFToFlowGraphMappingObject, targetFps: number = 60): unknown[] {
     const signature = graph.types?.[value.type]?.signature ?? "custom";
     const source = value.value?.slice() ?? _GetTypeDefault(signature);
@@ -356,13 +500,18 @@ function _GetMappedConfigurationValue(
     logicalNode: ILogicalNode,
     key: string,
     property: IGLTFToFlowGraphMappingObject,
-    sourceGraph: IKHRInteractivity_Graph
+    sourceGraph: IKHRInteractivity_Graph,
+    preserveCanonicalWhenUnchanged: boolean = true
 ): unknown[] | undefined {
     const block = _GetConfigurationBlock(logicalNode, property);
     if (!block) {
         return undefined;
     }
     const value = block.config?.[property.name];
+    const provenance = _GetConfigurationProvenance(logicalNode, key, property);
+    if (preserveCanonicalWhenUnchanged && provenance && _ValuesEqual(_NormalizeValue(value), _NormalizeValue(provenance.runtimeValue))) {
+        return provenance.sourceValue ? _CloneJson(provenance.sourceValue) : undefined;
+    }
     if (property.indexSource === "variables") {
         const names = (Array.isArray(value) ? value : [value]).filter((entry): entry is string => typeof entry === "string");
         const indices = names.map((name) => (/^staticVariable_(0|[1-9]\d*)$/.test(name) ? parseInt(name.substring("staticVariable_".length), 10) : -1));
@@ -374,13 +523,105 @@ function _GetMappedConfigurationValue(
         return eventIndex !== undefined && eventIndex >= 0 ? [eventIndex] : undefined;
     }
     if (property.indexSource === "assetNodes" && typeof value === "string") {
-        const match = value.match(/(0|[1-9]\d*)$/);
-        return match ? [parseInt(match[1], 10)] : undefined;
+        return undefined;
     }
     if (key === "useSlerp") {
         return [value === "Quaternion"];
     }
     return _NormalizeValue(value);
+}
+
+function _GetConfigurationProvenance(logicalNode: ILogicalNode, key: string, property: IGLTFToFlowGraphMappingObject): IKHRInteractivityConfigurationProvenance | undefined {
+    const block = _GetConfigurationBlock(logicalNode, property);
+    return block ? _GetOwn(_GetBlockProvenance(block)?.configuration, key) : undefined;
+}
+
+function _IsValidConfigurationValue(value: unknown[] | undefined, property: IGLTFToFlowGraphMappingObject, graph: IKHRInteractivity_Graph, assetNodeCount?: number): boolean {
+    if (!value) {
+        return false;
+    }
+    const isInt = (entry: unknown): entry is number => typeof entry === "number" && Number.isInteger(entry) && entry >= -2147483648 && entry <= 2147483647;
+    let valid: boolean;
+    switch (property.configurationType) {
+        case "bool":
+            valid = value.length === 1 && typeof value[0] === "boolean";
+            break;
+        case "int":
+            valid = value.length === 1 && isInt(value[0]);
+            break;
+        case "int[]":
+            valid = value.every(isInt);
+            break;
+        case "string":
+            valid = value.length === 1 && typeof value[0] === "string";
+            break;
+        default:
+            valid = value.length > 0;
+            break;
+    }
+    if (!valid || (property.minItems !== undefined && value.length < property.minItems)) {
+        return false;
+    }
+    if (property.minimum !== undefined && value.some((entry) => typeof entry !== "number" || entry < property.minimum!)) {
+        return false;
+    }
+    if (property.maximum !== undefined && value.some((entry) => typeof entry !== "number" || entry > property.maximum!)) {
+        return false;
+    }
+    if (property.indexSource) {
+        const lengths: Record<NonNullable<IGLTFToFlowGraphMappingObject["indexSource"]>, number> = {
+            types: graph.types?.length ?? 0,
+            variables: graph.variables?.length ?? 0,
+            events: graph.events?.length ?? 0,
+            nodes: graph.nodes?.length ?? 0,
+            assetNodes: assetNodeCount ?? 0,
+        };
+        if (value.some((entry) => !isInt(entry) || entry < 0 || entry >= lengths[property.indexSource!])) {
+            return false;
+        }
+    }
+    if (property.allowedSignatures) {
+        const typeIndex = value[0];
+        const signature = typeof typeIndex === "number" ? graph.types?.[typeIndex]?.signature : undefined;
+        if (!signature || !property.allowedSignatures.includes(signature)) {
+            return false;
+        }
+    }
+    if (property.allowedValues && value.some((entry) => !property.allowedValues!.includes(entry as boolean | number | string))) {
+        return false;
+    }
+    if (property.debugLogTemplate && (typeof value[0] !== "string" || !ParseDebugLogTemplate(value[0]).valid)) {
+        return false;
+    }
+    return true;
+}
+
+function _GetEffectiveConfigurationValue(
+    node: IKHRInteractivity_Node,
+    mapping: IGLTFToFlowGraphMapping,
+    key: string,
+    property: IGLTFToFlowGraphMappingObject,
+    graph: IKHRInteractivity_Graph,
+    logicalNode?: ILogicalNode,
+    assetNodeCount?: number
+): unknown[] | undefined {
+    const getCandidate = (candidateKey: string, candidateProperty: IGLTFToFlowGraphMappingObject): unknown[] | undefined =>
+        logicalNode ? _GetMappedConfigurationValue(logicalNode, candidateKey, candidateProperty, graph) : node.configuration?.[candidateKey]?.value;
+    if (property.configurationGroup) {
+        for (const [candidateKey, candidateProperty] of Object.entries(mapping.configuration ?? {})) {
+            if (
+                candidateProperty.configurationGroup === property.configurationGroup &&
+                !_IsValidConfigurationValue(getCandidate(candidateKey, candidateProperty), candidateProperty, graph, assetNodeCount)
+            ) {
+                return property.defaultValue === undefined ? undefined : _NormalizeValue(property.defaultValue);
+            }
+        }
+    }
+    const candidate = getCandidate(key, property);
+    if (!_IsValidConfigurationValue(candidate, property, graph, assetNodeCount)) {
+        return property.defaultValue === undefined ? undefined : _NormalizeValue(property.defaultValue);
+    }
+    return property.uniqueValues ? Array.from(new Set(candidate)) : candidate;
 }
 
 function _PushDiagnostic(
@@ -390,14 +631,24 @@ function _PushDiagnostic(
     diagnostics.push({ severity: "error", ...diagnostic });
 }
 
+function _SetOwnProperty<T extends object, K extends PropertyKey>(target: T, key: K, value: unknown): void {
+    Object.defineProperty(target, key, {
+        configurable: true,
+        enumerable: true,
+        value,
+        writable: true,
+    });
+}
+
 /**
  * Detached representability and export plan for one or more FlowGraphs.
  */
 export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvider {
-    private readonly _analysis: IKHRInteractivityExportAnalysis;
-    private readonly _graphAnalyses: IGraphAnalysis[];
-    private readonly _additionalExtensionsUsed: string[];
+    private _analysis!: IKHRInteractivityExportAnalysis;
+    private _graphAnalyses: IGraphAnalysis[] = [];
+    private _additionalExtensionsUsed: string[] = [];
     private readonly _rootDiagnostics: IKHRInteractivityExportDiagnostic[] = [];
+    private _isPreflight = false;
 
     /** Whether KHR_interactivity is required in the exported asset. */
     public readonly required: boolean;
@@ -420,8 +671,14 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
     ) {
         this.required = _options.required ?? true;
         this.additionalExtensionsRequired = Array.from(new Set(_options.additionalExtensionsRequired ?? [])).sort();
+        this._refreshAnalysis();
+    }
+
+    private _refreshAnalysis(): void {
+        this._rootDiagnostics.length = 0;
         this._graphAnalyses = this._analyzeGraphs();
         this._additionalExtensionsUsed = Array.from(new Set([...this._collectAdditionalExtensions(), ...this.additionalExtensionsRequired])).sort();
+        const unscopedBuildDiagnostics = this._mergeBuildDiagnostics(this._validateBuildWithSourceIndices());
         const nodes = this._graphAnalyses.flatMap((graph) =>
             graph.nodes.map((node): IKHRInteractivityNodeExportAnalysis => ({
                 graphIndex: graph.graphIndex,
@@ -432,11 +689,10 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 diagnostics: node.diagnostics.slice(),
             }))
         );
-        const buildDiagnostics = this._validateBuildWithSourceIndices();
         const diagnostics = this._sortDiagnostics(
             this._rootDiagnostics.concat(
                 this._graphAnalyses.flatMap((graph) => graph.diagnostics.concat(graph.nodes.flatMap((node) => node.diagnostics))),
-                buildDiagnostics
+                unscopedBuildDiagnostics
             )
         );
         this._analysis = {
@@ -446,11 +702,33 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         };
     }
 
+    private _mergeBuildDiagnostics(diagnostics: IKHRInteractivityExportDiagnostic[]): IKHRInteractivityExportDiagnostic[] {
+        const unscoped: IKHRInteractivityExportDiagnostic[] = [];
+        for (const diagnostic of diagnostics) {
+            const pathNodeIndex = /\/nodes\/(\d+)(?:\/|$)/.exec(diagnostic.path)?.[1];
+            const nodeIndex = diagnostic.nodeIndex ?? (pathNodeIndex === undefined ? undefined : parseInt(pathNodeIndex, 10));
+            const graph = diagnostic.graphIndex === undefined ? undefined : this._graphAnalyses[diagnostic.graphIndex];
+            const node = nodeIndex === undefined ? undefined : graph?.nodes.find((candidate) => candidate.sourceIndex === nodeIndex);
+            if (!node) {
+                unscoped.push(diagnostic);
+                continue;
+            }
+            if (!node.diagnostics.some((existing) => existing.code === diagnostic.code && existing.path === diagnostic.path && existing.message === diagnostic.message)) {
+                node.diagnostics.push({ ...diagnostic, nodeIndex });
+            }
+            if (diagnostic.severity === "error" && (node.classification === "exact" || node.classification === "inverse-composite")) {
+                node.classification = "lossy";
+            }
+        }
+        return unscoped;
+    }
+
     /**
      * Gets the detached representability analysis.
      * @returns current analysis
      */
     public analyze(): IKHRInteractivityExportAnalysis {
+        this._refreshAnalysis();
         return {
             representable: this._analysis.representable,
             nodes: this._analysis.nodes.map((node) => ({ ...node, blockIds: node.blockIds.slice(), diagnostics: node.diagnostics.slice() })),
@@ -464,6 +742,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
      * @returns canonical KHR_interactivity payload
      */
     public build(context: IKHRInteractivitySerializerContext): IKHRInteractivity {
+        this._refreshAnalysis();
         if (!this._analysis.representable) {
             throw new KHRInteractivityExportError(this._analysis.diagnostics);
         }
@@ -511,17 +790,30 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             getCameraIndex: (camera) => indexOrUndefined(sourceGLTF?.cameras?.findIndex((candidate) => candidate._babylonCamera === camera)),
             getMaterialIndex: (material) =>
                 indexOrUndefined(sourceGLTF?.materials?.findIndex((candidate) => Object.values(candidate._data ?? {}).some((entry) => entry.babylonMaterial === material))),
+            getRootIndex: (collection, entity) => this._getSourceRootIndex(collection, entity),
             setNodeExtension: () => {},
         };
-        for (const analysis of this._graphAnalyses) {
-            this._buildGraph(analysis, context, diagnostics);
+        this._isPreflight = true;
+        try {
+            for (const analysis of this._graphAnalyses) {
+                this._buildGraph(analysis, context, diagnostics);
+            }
+            this._writeCompanionNodeExtensions(context, diagnostics);
+        } finally {
+            this._isPreflight = false;
         }
-        this._writeCompanionNodeExtensions(context, diagnostics);
         return diagnostics;
     }
 
     private _analyzeGraphs(): IGraphAnalysis[] {
         const analyses: IGraphAnalysis[] = [];
+        if (!this._options.document) {
+            _PushDiagnostic(this._rootDiagnostics, {
+                code: "GRAPH_SOURCE_MISSING",
+                path: "/extensions/KHR_interactivity",
+                message: "A canonical KHR_interactivity document is required to preserve root metadata and the default graph selection.",
+            });
+        }
         if (this._flowGraphs.length === 0) {
             _PushDiagnostic(this._rootDiagnostics, {
                 code: "GRAPH_COUNT_MISMATCH",
@@ -531,13 +823,12 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             return analyses;
         }
         for (const diagnostic of this._options.document?.diagnostics ?? []) {
-            if (diagnostic.severity === "error") {
-                _PushDiagnostic(this._rootDiagnostics, {
-                    code: "GRAPH_INVALID",
-                    path: diagnostic.path,
-                    message: diagnostic.message,
-                });
-            }
+            _PushDiagnostic(this._rootDiagnostics, {
+                code: "GRAPH_INVALID",
+                path: diagnostic.path,
+                message: diagnostic.message,
+                severity: diagnostic.severity,
+            });
         }
         if (this._options.document && this._options.document.graphs.length !== this._flowGraphs.length) {
             _PushDiagnostic(this._rootDiagnostics, {
@@ -552,14 +843,13 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             const source = this._getSourceGraph(graph, graphIndex);
             const diagnostics: IKHRInteractivityExportDiagnostic[] = [];
             for (const diagnostic of this._options.document?.graphs[graphIndex]?.diagnostics ?? []) {
-                if (diagnostic.severity === "error") {
-                    _PushDiagnostic(diagnostics, {
-                        code: "GRAPH_INVALID",
-                        graphIndex,
-                        path: diagnostic.path,
-                        message: diagnostic.message,
-                    });
-                }
+                _PushDiagnostic(diagnostics, {
+                    code: "GRAPH_INVALID",
+                    graphIndex,
+                    path: diagnostic.path,
+                    message: diagnostic.message,
+                    severity: diagnostic.severity,
+                });
             }
             if (!source) {
                 _PushDiagnostic(diagnostics, {
@@ -636,8 +926,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         for (let nodeIndex = 0; nodeIndex < (source.nodes?.length ?? 0); nodeIndex++) {
             const sourceNode = source.nodes![nodeIndex];
             const declaration = source.declarations?.[sourceNode.declaration];
+            const declarationModel = this._options.document?.graphs[graphIndex]?.declarations[sourceNode.declaration];
             const operation = declaration ? _FullOperationName(declaration.op, declaration.extension) : "";
-            const mapping = declaration ? getMappingForDeclaration(declaration, false) : undefined;
+            const mapping = declaration && declarationModel?.support !== "unsupported-extension" ? getMappingForDeclaration(declaration, false) : undefined;
             const blocks = groups.get(nodeIndex) ?? [];
             const diagnostics: IKHRInteractivityExportDiagnostic[] = [];
             let classification: KHRInteractivityExportClassification = mapping && mapping.blocks.length > 1 ? "inverse-composite" : "exact";
@@ -811,7 +1102,28 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             }
         }
         for (const block of blocks) {
-            if ((_GetBlockProvenance(block)?.role ?? 0) < 0) {
+            const blockProvenance = _GetBlockProvenance(block);
+            for (const [key, expected] of Object.entries(blockProvenance?.generatedConfiguration ?? {})) {
+                const current =
+                    key === "eventData"
+                        ? NormalizeInteractivityEventDataConfiguration(block.config?.[key])
+                        : key === "outputSignalCount"
+                          ? ((block as { outputSignals?: unknown[]; executionSignals?: unknown[] }).outputSignals?.length ??
+                            (block as { executionSignals?: unknown[] }).executionSignals?.length ??
+                            block.config?.[key])
+                          : block.config?.[key];
+                if (!_JsonEquivalent(current, expected)) {
+                    _PushDiagnostic(diagnostics, {
+                        code: "CONFIGURATION_UNREPRESENTABLE",
+                        graphIndex,
+                        nodeIndex,
+                        blockId: block.uniqueId,
+                        path: `/blocks/${block.uniqueId}/config/${key}`,
+                        message: `Importer-generated configuration "${key}" was changed and no longer represents "${operation}".`,
+                    });
+                }
+            }
+            if ((blockProvenance?.role ?? 0) < 0) {
                 continue;
             }
             const connections: (FlowGraphDataConnection<any> | FlowGraphSignalConnection)[] = [
@@ -852,24 +1164,31 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         } else {
             delete graph.name;
         }
+        this._updateVariables(graph, analysis.graph, diagnostics, analysis.graphIndex);
         const logicalBySourceIndex = new Map(analysis.nodes.filter((node) => node.sourceIndex >= 0).map((node) => [node.sourceIndex, node]));
         const rebuiltNodes = (graph.nodes ?? []).map((sourceNode, nodeIndex) => {
             const logicalNode = logicalBySourceIndex.get(nodeIndex)!;
             return this._rebuildNode(graph, sourceNode, logicalNode, analysis, context, diagnostics);
         });
-        this._updateVariables(graph, analysis.graph, diagnostics, analysis.graphIndex);
         const ordered = this._topologicallyOrderNodes(rebuiltNodes, analysis.graphIndex, diagnostics);
         if (!ordered) {
             return graph;
         }
-        graph.nodes = ordered;
-        this._remapGraphReferences(graph, context, diagnostics, analysis.graphIndex);
+        if (analysis.source.nodes !== undefined || ordered.nodes.length > 0) {
+            graph.nodes = ordered.nodes;
+        } else {
+            delete graph.nodes;
+        }
+        this._remapGraphReferences(graph, context, diagnostics, analysis.graphIndex, ordered.sourceIndices);
         const validation = CreateKHRInteractivityGraphModel(graph, analysis.graphIndex, new Set(this.additionalExtensionsUsed), context.getNodeCount());
         for (const diagnostic of validation.diagnostics) {
             if (diagnostic.severity === "error") {
+                const finalNodeIndexText = /\/nodes\/(\d+)(?:\/|$)/.exec(diagnostic.path)?.[1];
+                const finalNodeIndex = finalNodeIndexText === undefined ? undefined : parseInt(finalNodeIndexText, 10);
                 _PushDiagnostic(diagnostics, {
                     code: "GRAPH_INVALID",
                     graphIndex: analysis.graphIndex,
+                    nodeIndex: finalNodeIndex === undefined ? undefined : ordered.sourceIndices[finalNodeIndex],
                     path: diagnostic.path,
                     message: diagnostic.message,
                 });
@@ -888,7 +1207,31 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
     ): IKHRInteractivity_Node {
         const node = _CloneJson(sourceNode);
         const mapping = logicalNode.mapping;
+        if (mapping) {
+            this._rebuildConfiguration(graph, node, logicalNode, graphAnalysis.graphIndex, context, diagnostics);
+        }
         for (const socket of Object.keys(sourceNode.values ?? {}).sort()) {
+            if (mapping) {
+                const sourceEffective = this._isEffectiveValueInput(graph, sourceNode, logicalNode, socket, false);
+                const currentEffective = this._isEffectiveValueInput(graph, sourceNode, logicalNode, socket, true);
+                if (!sourceEffective) {
+                    if (currentEffective) {
+                        _PushDiagnostic(diagnostics, {
+                            code: "CONFIGURATION_UNREPRESENTABLE",
+                            graphIndex: graphAnalysis.graphIndex,
+                            nodeIndex: logicalNode.sourceIndex,
+                            socket,
+                            path: `/graphs/${graphAnalysis.graphIndex}/nodes/${logicalNode.sourceIndex}/values/${socket}`,
+                            message: `Configuration edits made formerly ignored value socket "${socket}" effective without an authored FlowGraph socket.`,
+                        });
+                    }
+                    continue;
+                }
+                if (!currentEffective) {
+                    delete node.values![socket];
+                    continue;
+                }
+            }
             const input = _FindDataInput(logicalNode.blocks, logicalNode.sourceIndex, socket);
             if (!input) {
                 _PushDiagnostic(diagnostics, {
@@ -904,6 +1247,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             const mappingObject = this._getMappingObject(mapping?.inputs?.values, socket);
             node.values![socket] = this._rebuildInputValue(graph, sourceNode.values![socket], input, mappingObject, logicalNode, graphAnalysis, diagnostics);
         }
+        if (node.values && Object.keys(node.values).length === 0) {
+            delete node.values;
+        }
         const flowOutputs = new Map<string, FlowGraphSignalConnection>();
         for (const block of logicalNode.blocks) {
             if (!(block instanceof FlowGraphExecutionBlock)) {
@@ -912,16 +1258,71 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             for (const output of block.signalOutputs) {
                 const provenance = _GetSocketProvenance(output) ?? this._inferSocketProvenance(output, logicalNode);
                 if (provenance?.nodeIndex === logicalNode.sourceIndex && provenance.kind === "flow" && provenance.direction === "output") {
-                    flowOutputs.set(provenance.socket, output);
+                    if (!this._isEffectiveFlowOutput(graph, sourceNode, logicalNode, provenance.socket, true)) {
+                        if (output.isConnected()) {
+                            _PushDiagnostic(diagnostics, {
+                                code: "CONFIGURATION_UNREPRESENTABLE",
+                                graphIndex: graphAnalysis.graphIndex,
+                                nodeIndex: logicalNode.sourceIndex,
+                                socket: provenance.socket,
+                                path: `/graphs/${graphAnalysis.graphIndex}/nodes/${logicalNode.sourceIndex}/flows/${provenance.socket}`,
+                                message: `Flow socket "${provenance.socket}" is connected but disabled by the edited configuration.`,
+                            });
+                        }
+                        continue;
+                    }
+                    if (flowOutputs.has(provenance.socket)) {
+                        _PushDiagnostic(diagnostics, {
+                            code: "SOCKET_CONNECTION_AMBIGUOUS",
+                            graphIndex: graphAnalysis.graphIndex,
+                            nodeIndex: logicalNode.sourceIndex,
+                            socket: provenance.socket,
+                            path: `/graphs/${graphAnalysis.graphIndex}/nodes/${logicalNode.sourceIndex}/flows/${provenance.socket}`,
+                            message: `Multiple FlowGraph outputs map to KHR flow socket "${provenance.socket}".`,
+                        });
+                    } else {
+                        flowOutputs.set(provenance.socket, output);
+                    }
                 }
             }
         }
         const rebuiltFlows: NonNullable<IKHRInteractivity_Node["flows"]> = {};
+        for (const [socket, sourceFlow] of Object.entries(sourceNode.flows ?? {})) {
+            const sourceEffective = this._isEffectiveFlowOutput(graph, sourceNode, logicalNode, socket, false);
+            const currentEffective = this._isEffectiveFlowOutput(graph, sourceNode, logicalNode, socket, true);
+            if (!sourceEffective) {
+                if (currentEffective) {
+                    _PushDiagnostic(diagnostics, {
+                        code: "CONFIGURATION_UNREPRESENTABLE",
+                        graphIndex: graphAnalysis.graphIndex,
+                        nodeIndex: logicalNode.sourceIndex,
+                        socket,
+                        path: `/graphs/${graphAnalysis.graphIndex}/nodes/${logicalNode.sourceIndex}/flows/${socket}`,
+                        message: `Configuration edits made formerly ignored flow socket "${socket}" effective without a live FlowGraph connection.`,
+                    });
+                } else {
+                    _SetOwnProperty(rebuiltFlows, socket, _CloneJson(sourceFlow));
+                }
+            }
+        }
         for (const [socket, output] of [...flowOutputs.entries()].sort(([left], [right]) => left.localeCompare(right))) {
             if (output._connectedPoint.length === 0) {
                 const sourceFlow = sourceNode.flows?.[socket];
-                if (sourceFlow && this._isNoOpFlowTarget(graph, sourceFlow)) {
-                    rebuiltFlows[socket] = _CloneJson(sourceFlow);
+                if (sourceFlow) {
+                    const sourceNoOp = this._isNoOpFlowTarget(graph, graphAnalysis, sourceFlow, false);
+                    const currentNoOp = this._isNoOpFlowTarget(graph, graphAnalysis, sourceFlow, true);
+                    if (sourceNoOp && currentNoOp) {
+                        _SetOwnProperty(rebuiltFlows, socket, _CloneJson(sourceFlow));
+                    } else if (sourceNoOp && !currentNoOp) {
+                        _PushDiagnostic(diagnostics, {
+                            code: "CONFIGURATION_UNREPRESENTABLE",
+                            graphIndex: graphAnalysis.graphIndex,
+                            nodeIndex: logicalNode.sourceIndex,
+                            socket,
+                            path: `/graphs/${graphAnalysis.graphIndex}/nodes/${logicalNode.sourceIndex}/flows/${socket}`,
+                            message: `Configuration edits made formerly ignored flow target "${sourceFlow.socket ?? "in"}" effective without a live FlowGraph connection.`,
+                        });
+                    }
                 }
                 continue;
             }
@@ -951,10 +1352,30 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 });
                 continue;
             }
-            rebuiltFlows[socket] = {
-                node: provenance.nodeIndex,
-                ...(provenance.socket === "in" ? {} : { socket: provenance.socket }),
-            };
+            if (targetLogicalNode) {
+                const targetSourceNode = graph.nodes?.[targetLogicalNode.sourceIndex];
+                if (targetSourceNode && !this._isEffectiveFlowInput(graph, targetSourceNode, targetLogicalNode, provenance.socket, true)) {
+                    _PushDiagnostic(diagnostics, {
+                        code: "CONFIGURATION_UNREPRESENTABLE",
+                        graphIndex: graphAnalysis.graphIndex,
+                        nodeIndex: logicalNode.sourceIndex,
+                        socket,
+                        path: `/graphs/${graphAnalysis.graphIndex}/nodes/${logicalNode.sourceIndex}/flows/${socket}`,
+                        message: `Flow target socket "${provenance.socket}" is disabled by the target node's edited configuration.`,
+                    });
+                    continue;
+                }
+            }
+            const rebuiltFlow = sourceNode.flows?.[socket]
+                ? _CloneJson(sourceNode.flows[socket])
+                : ({ node: provenance.nodeIndex } as NonNullable<IKHRInteractivity_Node["flows"]>[string]);
+            rebuiltFlow.node = provenance.nodeIndex;
+            if (provenance.socket === "in") {
+                delete rebuiltFlow.socket;
+            } else {
+                rebuiltFlow.socket = provenance.socket;
+            }
+            _SetOwnProperty(rebuiltFlows, socket, rebuiltFlow);
         }
         if (Object.keys(rebuiltFlows).length > 0) {
             node.flows = rebuiltFlows;
@@ -962,15 +1383,15 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             delete node.flows;
         }
         if (mapping) {
-            this._rebuildConfiguration(graph, node, logicalNode, graphAnalysis.graphIndex, context, diagnostics);
             this._remapPointerTemplateInputs(graph, node, logicalNode, graphAnalysis.graphIndex, context, diagnostics);
         }
         return node;
     }
 
     private _getMappingObject(mapping: { [name: string]: IGLTFToFlowGraphMappingObject } | undefined, socket: string): IGLTFToFlowGraphMappingObject | undefined {
-        if (mapping?.[socket]) {
-            return mapping[socket];
+        const fixed = _GetOwn(mapping, socket);
+        if (fixed) {
+            return fixed;
         }
         return Object.entries(mapping ?? {}).find(([key]) => key.startsWith("[") && key.endsWith("]"))?.[1];
     }
@@ -1003,37 +1424,12 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             }
             let inferredSourceName: string | undefined;
             if (sourceName.startsWith("[") && sourceName.endsWith("]")) {
-                inferredSourceName = property.inverseSocketName?.(connection.name);
-                let siblingConnections: readonly (FlowGraphDataConnection<any> | FlowGraphSignalConnection)[];
-                if (kind === "value") {
-                    siblingConnections = direction === "input" ? block.dataInputs : block.dataOutputs;
-                } else if (block instanceof FlowGraphExecutionBlock) {
-                    siblingConnections = direction === "input" ? block.signalInputs : block.signalOutputs;
-                } else {
+                if (kind !== "flow" || direction !== "input") {
                     continue;
                 }
-                const sibling =
-                    inferredSourceName === undefined
-                        ? siblingConnections.find((candidate) => {
-                              const provenance = _GetSocketProvenance(candidate);
-                              return provenance?.kind === kind && provenance.direction === direction && candidate.name.includes(provenance.socket);
-                          })
-                        : undefined;
-                const siblingProvenance = sibling ? _GetSocketProvenance(sibling) : undefined;
-                const sourceSocket = siblingProvenance?.socket;
-                if (sibling && sourceSocket) {
-                    const sourceOffset = sibling.name.indexOf(sourceSocket);
-                    const prefix = sibling.name.substring(0, sourceOffset);
-                    const suffix = sibling.name.substring(sourceOffset + sourceSocket.length);
-                    if (connection.name.startsWith(prefix) && connection.name.endsWith(suffix)) {
-                        inferredSourceName = connection.name.substring(prefix.length, connection.name.length - suffix.length);
-                    }
-                }
-                if (inferredSourceName === undefined) {
-                    const [prefix, suffix = ""] = property.name.split("$1");
-                    if (connection.name.startsWith(prefix) && connection.name.endsWith(suffix)) {
-                        inferredSourceName = connection.name.substring(prefix.length, connection.name.length - suffix.length);
-                    }
+                const [prefix, suffix = ""] = property.name.split("$1");
+                if (connection.name.startsWith(prefix) && connection.name.endsWith(suffix)) {
+                    inferredSourceName = connection.name.substring(prefix.length, connection.name.length - suffix.length);
                 }
             } else if (property.name === connection.name) {
                 inferredSourceName = sourceName;
@@ -1058,7 +1454,12 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         return undefined;
     }
 
-    private _isNoOpFlowTarget(graph: IKHRInteractivity_Graph, flow: NonNullable<IKHRInteractivity_Node["flows"]>[string]): boolean {
+    private _isNoOpFlowTarget(
+        graph: IKHRInteractivity_Graph,
+        graphAnalysis: IGraphAnalysis,
+        flow: NonNullable<IKHRInteractivity_Node["flows"]>[string],
+        useCurrentConfiguration: boolean
+    ): boolean {
         const targetNode = graph.nodes?.[flow.node];
         const declaration = targetNode ? graph.declarations?.[targetNode.declaration] : undefined;
         if (!declaration) {
@@ -1069,13 +1470,212 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             return false;
         }
         const socket = flow.socket ?? "in";
-        if (mapping.inputs?.flows?.[socket] && !mapping.inputs.flows[socket].compatibilityOnly) {
+        const fixed = _GetOwn(mapping.inputs?.flows, socket);
+        if (fixed && !fixed.compatibilityOnly) {
             return false;
         }
         if (Object.keys(mapping.inputs?.flows ?? {}).some((key) => key.startsWith("[") && key.endsWith("]"))) {
-            return false;
+            const targetLogicalNode = graphAnalysis.nodes.find((candidate) => candidate.sourceIndex === flow.node);
+            const allowedSockets = this._getAllowedDynamicFlowSockets(targetNode!, mapping, "input", useCurrentConfiguration ? targetLogicalNode : undefined, graph);
+            return !!allowedSockets && !allowedSockets.has(socket);
         }
         return !(socket === "in" && HasDefaultInteractivityFlowInput(_FullOperationName(declaration.op, declaration.extension)));
+    }
+
+    private _isEffectiveFlowInput(
+        graph: IKHRInteractivity_Graph,
+        node: IKHRInteractivity_Node,
+        logicalNode: ILogicalNode,
+        socket: string,
+        useCurrentConfiguration: boolean
+    ): boolean {
+        const mapping = logicalNode.mapping;
+        if (!mapping) {
+            return true;
+        }
+        const fixed = _GetOwn(mapping.inputs?.flows, socket);
+        if (fixed && !fixed.compatibilityOnly) {
+            return true;
+        }
+        if (Object.keys(mapping.inputs?.flows ?? {}).some((key) => key.startsWith("[") && key.endsWith("]"))) {
+            const allowedSockets = this._getAllowedDynamicFlowSockets(node, mapping, "input", useCurrentConfiguration ? logicalNode : undefined, graph);
+            return !allowedSockets || allowedSockets.has(socket);
+        }
+        return socket === "in" && HasDefaultInteractivityFlowInput(logicalNode.operation);
+    }
+
+    private _isEffectiveFlowOutput(
+        graph: IKHRInteractivity_Graph,
+        node: IKHRInteractivity_Node,
+        logicalNode: ILogicalNode,
+        socket: string,
+        useCurrentConfiguration: boolean
+    ): boolean {
+        const mappings = logicalNode.mapping?.outputs?.flows;
+        if (!logicalNode.mapping) {
+            return Object.prototype.hasOwnProperty.call(node.flows ?? {}, socket);
+        }
+        const fixed = _GetOwn(mappings, socket);
+        if (fixed && !fixed.compatibilityOnly) {
+            return true;
+        }
+        if (!Object.keys(mappings ?? {}).some((key) => key.startsWith("[") && key.endsWith("]"))) {
+            return false;
+        }
+        const allowedSockets = logicalNode.mapping
+            ? this._getAllowedDynamicFlowSockets(node, logicalNode.mapping, "output", useCurrentConfiguration ? logicalNode : undefined, graph)
+            : undefined;
+        return !allowedSockets || allowedSockets.has(socket);
+    }
+
+    private _getAllowedDynamicFlowSockets(
+        node: IKHRInteractivity_Node,
+        mapping: IGLTFToFlowGraphMapping,
+        direction: "input" | "output",
+        logicalNode?: ILogicalNode,
+        graph?: IKHRInteractivity_Graph
+    ): ReadonlySet<string> | undefined {
+        for (const [key, property] of Object.entries(mapping.configuration ?? {})) {
+            const generatesSockets = direction === "input" ? property.generatesInputFlowSockets : property.generatesOutputFlowSockets;
+            if (!generatesSockets) {
+                continue;
+            }
+            const values = graph
+                ? _GetEffectiveConfigurationValue(node, mapping, key, property, graph, logicalNode, this._options.sourceGLTF?.nodes?.length)
+                : node.configuration?.[key]?.value;
+            const effectiveValues = values ?? (Array.isArray(property.defaultValue) ? property.defaultValue : [property.defaultValue]);
+            if (direction === "input") {
+                const count = typeof effectiveValues[0] === "number" && Number.isInteger(effectiveValues[0]) && effectiveValues[0] >= 0 ? effectiveValues[0] : 0;
+                return new Set(Array.from({ length: count }, (_, index) => String(index)));
+            }
+            return new Set(effectiveValues.filter((value) => value !== undefined).map(String));
+        }
+        return undefined;
+    }
+
+    private _resolveValueTypeIndex(
+        graph: IKHRInteractivity_Graph,
+        value: IKHRInteractivity_Variable | IKHRInteractivity_OutputSocketReference,
+        visited: Set<string>
+    ): number | undefined {
+        return "node" in value ? this._resolveOutputTypeIndex(graph, value.node, value.socket ?? "value", visited) : value.type;
+    }
+
+    private _resolveOutputTypeIndex(graph: IKHRInteractivity_Graph, nodeIndex: number, socket: string, visited: Set<string> = new Set()): number | undefined {
+        const key = `${nodeIndex}:${socket}`;
+        if (visited.has(key)) {
+            return undefined;
+        }
+        visited.add(key);
+        const node = graph.nodes?.[nodeIndex];
+        const declaration = node ? graph.declarations?.[node.declaration] : undefined;
+        if (!node || !declaration) {
+            return undefined;
+        }
+        const declaredType = declaration.outputValueSockets?.[socket]?.type;
+        if (declaredType !== undefined) {
+            return declaredType;
+        }
+        if (declaration.op === "pointer/get" && socket === "value") {
+            const type = node.configuration?.type?.value?.[0];
+            return typeof type === "number" ? type : undefined;
+        }
+        if (declaration.op === "variable/get" && socket === "value") {
+            const variable = node.configuration?.variable?.value?.[0];
+            return typeof variable === "number" ? graph.variables?.[variable]?.type : undefined;
+        }
+        if (declaration.op === "math/switch" && socket === "value") {
+            const defaultValue = node.values?.default;
+            return defaultValue ? this._resolveValueTypeIndex(graph, defaultValue, visited) : undefined;
+        }
+        if (declaration.op === "event/receive" && socket !== "event") {
+            const event = node.configuration?.event?.value?.[0];
+            return typeof event === "number" ? graph.events?.[event]?.values?.[socket]?.type : undefined;
+        }
+        const mapping = getMappingForDeclaration(declaration, false);
+        const outputMapping = this._getMappingObject(mapping?.outputs?.values, socket);
+        const mappedType = outputMapping?.gltfType;
+        const signature =
+            mappedType === "number"
+                ? "float"
+                : mappedType === "boolean"
+                  ? "bool"
+                  : mappedType === "vector2"
+                    ? "float2"
+                    : mappedType === "vector3"
+                      ? "float3"
+                      : mappedType === "vector4"
+                        ? "float4"
+                        : mappedType;
+        if (signature && Object.prototype.hasOwnProperty.call(gltfTypeToBabylonType, signature)) {
+            const type = graph.types?.findIndex((candidate) => candidate.signature === signature) ?? -1;
+            return type >= 0 ? type : undefined;
+        }
+        const typeSource = outputMapping?.typeSourceInput ? node.values?.[outputMapping.typeSourceInput] : undefined;
+        return typeSource ? this._resolveValueTypeIndex(graph, typeSource, visited) : undefined;
+    }
+
+    private _isEffectiveValueInput(
+        graph: IKHRInteractivity_Graph,
+        node: IKHRInteractivity_Node,
+        logicalNode: ILogicalNode,
+        socket: string,
+        useCurrentConfiguration: boolean
+    ): boolean {
+        const mappings = logicalNode.mapping?.inputs?.values;
+        const fixed = _GetOwn(mappings, socket);
+        if (fixed && !fixed.compatibilityOnly) {
+            return true;
+        }
+        if (!Object.keys(mappings ?? {}).some((key) => key.startsWith("[") && key.endsWith("]"))) {
+            return false;
+        }
+        const configurationValue = (key: string): unknown[] | undefined => {
+            const property = logicalNode.mapping?.configuration?.[key];
+            return property
+                ? _GetEffectiveConfigurationValue(
+                      node,
+                      logicalNode.mapping!,
+                      key,
+                      property,
+                      graph,
+                      useCurrentConfiguration ? logicalNode : undefined,
+                      this._options.sourceGLTF?.nodes?.length
+                  )
+                : undefined;
+        };
+        switch (logicalNode.operation) {
+            case "debug/log": {
+                const message = configurationValue("message")?.[0];
+                return typeof message === "string" && ParseDebugLogTemplate(message).sockets.includes(socket);
+            }
+            case "event/send": {
+                const eventIndex = configurationValue("event")?.[0];
+                return typeof eventIndex === "number" && Object.prototype.hasOwnProperty.call(graph.events?.[eventIndex]?.values ?? {}, socket);
+            }
+            case "variable/set":
+                return (configurationValue("variables") ?? []).map(String).includes(socket);
+            case "math/switch":
+                return (configurationValue("cases") ?? []).map(String).includes(socket);
+            case "pointer/get":
+            case "pointer/set":
+            case "pointer/interpolate": {
+                const pointer = configurationValue("pointer")?.[0];
+                return (
+                    typeof pointer === "string" &&
+                    pointer.split("/").some(
+                        (segment) =>
+                            ((segment.startsWith("[") && !segment.startsWith("[[")) || (segment.startsWith("{") && !segment.startsWith("{{"))) &&
+                            segment
+                                .substring(1, segment.length - 1)
+                                .replace(/~1/g, "/")
+                                .replace(/~0/g, "~") === socket
+                    )
+                );
+            }
+            default:
+                return true;
+        }
     }
 
     private _rebuildInputValue(
@@ -1103,15 +1703,30 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 });
                 return sourceValue;
             }
-            return {
-                node: provenance.nodeIndex,
-                ...(provenance.socket === "value" ? {} : { socket: provenance.socket }),
-                ...("type" in sourceValue && sourceValue.type !== undefined ? { type: sourceValue.type } : {}),
-            };
+            const rebuiltReference = _CloneJson(sourceValue) as IKHRInteractivity_OutputSocketReference & { value?: unknown };
+            delete rebuiltReference.value;
+            rebuiltReference.node = provenance.nodeIndex;
+            if (provenance.socket === "value") {
+                delete rebuiltReference.socket;
+            } else {
+                rebuiltReference.socket = provenance.socket;
+            }
+            if (rebuiltReference.type !== undefined) {
+                const rebuiltType = this._resolveOutputTypeIndex(graph, provenance.nodeIndex, provenance.socket);
+                if (rebuiltType !== undefined) {
+                    rebuiltReference.type = rebuiltType;
+                }
+            }
+            return rebuiltReference;
         }
-        const original = "node" in sourceValue ? undefined : sourceValue;
-        const type = original?.type;
-        if (!original || type === undefined || !graph.types?.[type]) {
+        const socketProvenance = _GetSocketProvenance(input);
+        const current = _NormalizeValue((input as any)._defaultValue);
+        if (!input.isConnected() && socketProvenance?.runtimeValue && _ValuesEqual(current, socketProvenance.runtimeValue) && socketProvenance.sourceValue) {
+            return _CloneJson(socketProvenance.sourceValue);
+        }
+        const canonicalSource = socketProvenance?.sourceValue ?? sourceValue;
+        const type = canonicalSource.type ?? _GetOrAddInputTypeIndex(graph, input, mappingObject, logicalNode, socketProvenance?.socket ?? input.name);
+        if (type === undefined || !graph.types?.[type]) {
             _PushDiagnostic(diagnostics, {
                 code: "VALUE_UNREPRESENTABLE",
                 graphIndex: graphAnalysis.graphIndex,
@@ -1121,10 +1736,10 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             });
             return sourceValue;
         }
-        const current = _NormalizeValue((input as any)._defaultValue);
-        const expected = _GetSourceValue(graph, original, mappingObject, this._options.targetFps ?? 60);
+        const original = "node" in canonicalSource ? undefined : canonicalSource;
+        const expected = original ? _GetSourceValue(graph, original, mappingObject, this._options.targetFps ?? 60) : undefined;
         if (_ValuesEqual(current, expected)) {
-            return _CloneJson(original);
+            return _CloneJson(canonicalSource);
         }
         if (!current) {
             _PushDiagnostic(diagnostics, {
@@ -1139,7 +1754,12 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         if (mappingObject?.convertConnectedTimeToFrames && current.length === 1 && typeof current[0] === "number") {
             current[0] /= this._options.targetFps ?? 60;
         }
-        return { type, value: current as NonNullable<IKHRInteractivity_Variable["value"]> };
+        const rebuiltValue = _CloneJson(canonicalSource) as IKHRInteractivity_Variable & Partial<IKHRInteractivity_OutputSocketReference>;
+        delete rebuiltValue.node;
+        delete rebuiltValue.socket;
+        rebuiltValue.type = type;
+        rebuiltValue.value = current as NonNullable<IKHRInteractivity_Variable["value"]>;
+        return rebuiltValue;
     }
 
     private _unwrapAnimationTimeHelper(
@@ -1188,10 +1808,47 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         context: IKHRInteractivitySerializerContext,
         diagnostics: IKHRInteractivityExportDiagnostic[]
     ): void {
+        const changedConfigurationGroups = new Set<string>();
+        const fallbackConfigurationGroups = new Set<string>();
         for (const [key, property] of Object.entries(logicalNode.mapping?.configuration ?? {})) {
-            const current = _GetMappedConfigurationValue(logicalNode, key, property, graph);
+            if (!property.configurationGroup) {
+                continue;
+            }
+            const block = _GetConfigurationBlock(logicalNode, property);
+            const provenance = _GetConfigurationProvenance(logicalNode, key, property);
+            if (provenance && !_JsonEquivalent(block?.config?.[property.name], provenance.runtimeValue)) {
+                changedConfigurationGroups.add(property.configurationGroup);
+            }
+            if (!_IsValidConfigurationValue(provenance?.sourceValue, property, graph, this._options.sourceGLTF?.nodes?.length)) {
+                fallbackConfigurationGroups.add(property.configurationGroup);
+            }
+        }
+        for (const [key, property] of Object.entries(logicalNode.mapping?.configuration ?? {})) {
+            const groupChanged = !!property.configurationGroup && changedConfigurationGroups.has(property.configurationGroup);
+            const groupUsedFallback = !!property.configurationGroup && fallbackConfigurationGroups.has(property.configurationGroup);
+            const provenance = _GetConfigurationProvenance(logicalNode, key, property);
+            const preserveUnexposedValidMember =
+                groupChanged &&
+                !groupUsedFallback &&
+                provenance !== undefined &&
+                provenance.runtimeValue === undefined &&
+                _IsValidConfigurationValue(provenance.sourceValue, property, graph, this._options.sourceGLTF?.nodes?.length);
+            let current = _GetMappedConfigurationValue(logicalNode, key, property, graph, !groupChanged || preserveUnexposedValidMember);
+            if (groupChanged && current === undefined && property.defaultValue !== undefined) {
+                current = _NormalizeValue(property.defaultValue);
+            }
             const source = node.configuration?.[key]?.value;
-            if (property.validationOnly && current === undefined) {
+            if (property.validationOnly && current === undefined && provenance?.runtimeValue === undefined) {
+                continue;
+            }
+            if (groupChanged && !_IsValidConfigurationValue(current, property, graph, this._options.sourceGLTF?.nodes?.length)) {
+                _PushDiagnostic(diagnostics, {
+                    code: "CONFIGURATION_UNREPRESENTABLE",
+                    graphIndex,
+                    nodeIndex: logicalNode.sourceIndex,
+                    path: `/graphs/${graphIndex}/nodes/${logicalNode.sourceIndex}/configuration/${key}`,
+                    message: `Edited configuration group "${property.configurationGroup}" does not contain a valid value for "${key}".`,
+                });
                 continue;
             }
             if (!current) {
@@ -1206,7 +1863,34 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 }
                 continue;
             }
-            if (property.indexSource === "assetNodes" && current.length === 1 && typeof current[0] === "number") {
+            if (property.indexSource === "events" && current.length === 1 && typeof current[0] === "number") {
+                const event = graph.events?.[current[0]];
+                const block = _GetConfigurationBlock(logicalNode, property);
+                const runtimeEventData = NormalizeInteractivityEventDataConfiguration(block?.config?.eventData);
+                const runtimeSchema = runtimeEventData === undefined ? [] : runtimeEventData;
+                const eventSchema = Object.entries(event?.values ?? {})
+                    .map(([id, value]) => ({
+                        id,
+                        type: gltfTypeToBabylonType[graph.types?.[value.type]?.signature ?? ""]?.flowGraphType,
+                        ...(value.value === undefined ? {} : { value: value.value.slice() }),
+                    }))
+                    .sort((left, right) => left.id.localeCompare(right.id));
+                if (!_JsonEquivalent(runtimeSchema, eventSchema)) {
+                    _PushDiagnostic(diagnostics, {
+                        code: "CONFIGURATION_UNREPRESENTABLE",
+                        graphIndex,
+                        nodeIndex: logicalNode.sourceIndex,
+                        path: `/graphs/${graphIndex}/nodes/${logicalNode.sourceIndex}/configuration/${key}`,
+                        message: `The runtime custom-event payload schema does not match event index ${current[0]}.`,
+                    });
+                    continue;
+                }
+            }
+            const preservesFallback =
+                provenance &&
+                _JsonEquivalent(_GetConfigurationBlock(logicalNode, property)?.config?.[property.name], provenance.runtimeValue) &&
+                !_IsValidConfigurationValue(provenance.sourceValue, property, graph, this._options.sourceGLTF?.nodes?.length);
+            if (!preservesFallback && property.indexSource === "assetNodes" && current.length === 1 && typeof current[0] === "number") {
                 const sourceNode = this._options.sourceGLTF?.nodes?.[current[0]]?._babylonTransformNode;
                 const remapped = sourceNode ? context.getNodeIndex(sourceNode) : undefined;
                 if (remapped === undefined) {
@@ -1224,7 +1908,10 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             if (source === undefined && property.defaultValue !== undefined && _ValuesEqual(current, _NormalizeValue(property.defaultValue))) {
                 continue;
             }
-            (node.configuration ??= {})[key] = { value: current as NonNullable<IKHRInteractivity_Configuration["value"]> };
+            node.configuration ??= {};
+            const rebuiltConfiguration = node.configuration[key] ? _CloneJson(node.configuration[key]) : {};
+            rebuiltConfiguration.value = current as NonNullable<IKHRInteractivity_Configuration["value"]>;
+            _SetOwnProperty(node.configuration, key, rebuiltConfiguration);
         }
     }
 
@@ -1245,42 +1932,78 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 continue;
             }
             const segments = pointer.split("/");
-            for (let segmentIndex = 1; segmentIndex < segments.length; segmentIndex++) {
-                const match = /^\[([^\[\]]+)\]$/.exec(segments[segmentIndex]);
-                if (!match) {
-                    continue;
-                }
-                const collection = segments[segmentIndex - 1].replace(/~1/g, "/").replace(/~0/g, "~");
+            if (segments[0] !== "" || segments.length < 3) {
+                continue;
+            }
+            let collection = segments[1].replace(/~1/g, "/").replace(/~0/g, "~");
+            const rootPlaceholder = /^\{([^\{\}]+)\}$/.exec(segments[1]);
+            if (rootPlaceholder) {
+                const rootSocket = node.values?.[rootPlaceholder[1]];
+                const rootReference = rootSocket && !("node" in rootSocket) ? rootSocket.value?.[0] : undefined;
+                const rootMatch = typeof rootReference === "string" ? /^\/([^/]+)$/.exec(rootReference) : undefined;
+                collection = rootMatch?.[1] ?? "";
                 if (!_KnownIndexedRootCollections.has(collection)) {
+                    _PushDiagnostic(diagnostics, {
+                        code: "REFERENCE_UNRESOLVED",
+                        graphIndex,
+                        nodeIndex: logicalNode.sourceIndex,
+                        socket: rootPlaceholder[1],
+                        path: `/graphs/${graphIndex}/nodes/${logicalNode.sourceIndex}/values/${rootPlaceholder[1]}`,
+                        message: `Root collection template input "${rootPlaceholder[1]}" cannot be resolved statically for export.`,
+                    });
                     continue;
                 }
-                const socket = node.values?.[match[1]];
-                const path = `/graphs/${graphIndex}/nodes/${logicalNode.sourceIndex}/values/${match[1]}`;
+            }
+            if (!_KnownIndexedRootCollections.has(collection)) {
+                continue;
+            }
+            const indexPlaceholder = /^\[([^\[\]]+)\]$/.exec(segments[2]);
+            if (indexPlaceholder) {
+                const socket = node.values?.[indexPlaceholder[1]];
+                const path = `/graphs/${graphIndex}/nodes/${logicalNode.sourceIndex}/values/${indexPlaceholder[1]}`;
                 if (!socket || "node" in socket) {
                     _PushDiagnostic(diagnostics, {
                         code: "REFERENCE_UNRESOLVED",
                         graphIndex,
                         nodeIndex: logicalNode.sourceIndex,
-                        socket: match[1],
+                        socket: indexPlaceholder[1],
                         path,
-                        message: `Dynamic index template input "${match[1]}" cannot be safely remapped for the exported ${collection} array.`,
+                        message: `Dynamic index template input "${indexPlaceholder[1]}" cannot be safely remapped for the exported ${collection} array.`,
                     });
                     continue;
                 }
                 const sourceIndex = socket.value?.[0];
-                const remapped = typeof sourceIndex === "number" && Number.isInteger(sourceIndex) ? this._getRemappedRootIndex(collection, sourceIndex, context) : undefined;
+                const remapped =
+                    typeof sourceIndex === "number" && Number.isInteger(sourceIndex)
+                        ? this._getRemappedRootIndex(collection as KhrInteractivityRootCollection, sourceIndex, context)
+                        : undefined;
                 if (remapped === undefined) {
                     _PushDiagnostic(diagnostics, {
                         code: "REFERENCE_UNRESOLVED",
                         graphIndex,
                         nodeIndex: logicalNode.sourceIndex,
-                        socket: match[1],
+                        socket: indexPlaceholder[1],
                         path,
-                        message: `Template input "${match[1]}" does not resolve to an exported ${collection} element.`,
+                        message: `Template input "${indexPlaceholder[1]}" does not resolve to an exported ${collection} element.`,
                     });
                     continue;
                 }
                 socket.value = [remapped];
+            } else if (rootPlaceholder && /^(0|[1-9]\d*)$/.test(segments[2])) {
+                const sourceIndex = parseInt(segments[2], 10);
+                const remapped = this._getRemappedRootIndex(collection as KhrInteractivityRootCollection, sourceIndex, context);
+                if (remapped === undefined) {
+                    _PushDiagnostic(diagnostics, {
+                        code: "REFERENCE_UNRESOLVED",
+                        graphIndex,
+                        nodeIndex: logicalNode.sourceIndex,
+                        path: `/graphs/${graphIndex}/nodes/${logicalNode.sourceIndex}/configuration/${key}`,
+                        message: `Static ${collection} index ${sourceIndex} does not resolve to an exported element.`,
+                    });
+                } else {
+                    segments[2] = String(remapped);
+                    node.configuration![key].value![0] = segments.join("/");
+                }
             }
         }
     }
@@ -1288,10 +2011,26 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
     private _updateVariables(graph: IKHRInteractivity_Graph, flowGraph: FlowGraph, diagnostics: IKHRInteractivityExportDiagnostic[], graphIndex: number): void {
         const provenance = flowGraph.metadata?.khrInteractivity as IKHRInteractivityGraphProvenance | undefined;
         const authoredValues = provenance?.authoredVariableValues;
-        if (!authoredValues) {
+        const authoredTypes = provenance?.authoredVariableTypes;
+        if (!authoredValues && !authoredTypes) {
             return;
         }
-        for (const [indexText, authoredValue] of Object.entries(authoredValues)) {
+        for (const [indexText, flowGraphType] of Object.entries(authoredTypes ?? {})) {
+            const index = Number(indexText);
+            const variable = graph.variables?.[index];
+            const type = _GetOrAddVariableTypeIndex(graph, flowGraphType);
+            if (!variable || type === undefined) {
+                _PushDiagnostic(diagnostics, {
+                    code: "VALUE_UNREPRESENTABLE",
+                    graphIndex,
+                    path: `/graphs/${graphIndex}/variables/${index}/type`,
+                    message: `Authored variable type "${flowGraphType}" cannot be represented by KHR_interactivity.`,
+                });
+                continue;
+            }
+            variable.type = type;
+        }
+        for (const [indexText, authoredValue] of Object.entries(authoredValues ?? {})) {
             const index = Number(indexText);
             const variable = graph.variables![index];
             if (!variable) {
@@ -1319,26 +2058,41 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         diagnostics: IKHRInteractivityExportDiagnostic[],
         graphIndex: number,
         nodeIndex?: number,
-        referenceHint?: string
+        referenceHint?: string | null
     ): NonNullable<IKHRInteractivity_Variable["value"]> {
         if (signature !== "ref") {
             return value as NonNullable<IKHRInteractivity_Variable["value"]>;
         }
         return value.map((entry) => {
             if (typeof entry === "string") {
+                const hintedCollection = referenceHint?.match(/^\/([^/]+)\//)?.[1];
+                if (hintedCollection && _KnownIndexedRootCollections.has(hintedCollection)) {
+                    return this._remapReferenceToCollection(entry, hintedCollection, context, diagnostics, graphIndex, nodeIndex);
+                }
                 return this._remapReference(entry, context, diagnostics, graphIndex, nodeIndex);
             }
             if (entry !== null && typeof entry === "object") {
                 const hintedCollection = referenceHint?.match(/^\/([^/]+)\//)?.[1];
+                if (hintedCollection && _KnownIndexedRootCollections.has(hintedCollection) && context.getRootIndex) {
+                    const index = context.getRootIndex(hintedCollection as KhrInteractivityRootCollection, entry);
+                    if (index !== undefined) {
+                        return `/${hintedCollection}/${index}`;
+                    }
+                }
                 const candidates: [string, number | undefined][] = [
                     ["animations", context.getAnimationIndex(entry as AnimationGroup)],
                     ["cameras", context.getCameraIndex(entry as Camera)],
                     ["materials", context.getMaterialIndex(entry as Material)],
                     ["nodes", context.getNodeIndex(entry as Node)],
                 ];
-                const match = (hintedCollection ? candidates.filter(([collection]) => collection === hintedCollection) : candidates).find(([, index]) => index !== undefined);
-                if (match) {
-                    return `/${match[0]}/${match[1]}`;
+                const matches = (hintedCollection ? candidates.filter(([collection]) => collection === hintedCollection) : referenceHint === null ? [] : candidates).filter(
+                    ([, index]) => index !== undefined
+                );
+                if (matches.length === 1) {
+                    return `/${matches[0][0]}/${matches[0][1]}`;
+                }
+                if (this._isPreflight) {
+                    return "";
                 }
             }
             _PushDiagnostic(diagnostics, {
@@ -1352,7 +2106,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         }) as NonNullable<IKHRInteractivity_Variable["value"]>;
     }
 
-    private _topologicallyOrderNodes(nodes: IKHRInteractivity_Node[], graphIndex: number, diagnostics: IKHRInteractivityExportDiagnostic[]): IKHRInteractivity_Node[] | undefined {
+    private _topologicallyOrderNodes(nodes: IKHRInteractivity_Node[], graphIndex: number, diagnostics: IKHRInteractivityExportDiagnostic[]): IOrderedNodes | undefined {
         const outgoing = nodes.map(() => new Set<number>());
         const indegree = nodes.map(() => 0);
         let hasInvalidDependency = false;
@@ -1431,30 +2185,36 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 flow.node = remap.get(flow.node)!;
             }
         }
-        return ordered;
+        return { nodes: ordered, sourceIndices: order };
     }
 
     private _remapGraphReferences(
         graph: IKHRInteractivity_Graph,
         context: IKHRInteractivitySerializerContext,
         diagnostics: IKHRInteractivityExportDiagnostic[],
-        graphIndex: number
+        graphIndex: number,
+        sourceIndices: readonly number[]
     ): void {
         for (let variableIndex = 0; variableIndex < (graph.variables?.length ?? 0); variableIndex++) {
             const variable = graph.variables![variableIndex];
             if (graph.types?.[variable.type]?.signature === "ref" && variable.value) {
                 const sourceValue = this._options.document?.graphs[graphIndex]?.source.variables?.[variableIndex]?.value?.[0];
-                variable.value = this._remapValueArray(
-                    variable.value,
-                    "ref",
-                    context,
-                    diagnostics,
-                    graphIndex,
-                    undefined,
-                    typeof sourceValue === "string" ? sourceValue : undefined
-                );
+                const currentValue = variable.value[0];
+                const consumerCollection = this._getVariableReferenceCollection(graph, variableIndex);
+                const referenceHint =
+                    consumerCollection === null
+                        ? null
+                        : consumerCollection
+                          ? `/${consumerCollection}/0`
+                          : typeof currentValue === "object" || currentValue === sourceValue
+                            ? typeof sourceValue === "string"
+                                ? sourceValue
+                                : undefined
+                            : undefined;
+                variable.value = this._remapValueArray(variable.value, "ref", context, diagnostics, graphIndex, undefined, referenceHint);
             }
         }
+
         for (const event of graph.events ?? []) {
             for (const value of Object.values(event.values ?? {})) {
                 if (graph.types?.[value.type]?.signature === "ref" && value.value) {
@@ -1464,13 +2224,36 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         }
         for (let nodeIndex = 0; nodeIndex < (graph.nodes?.length ?? 0); nodeIndex++) {
             const node = graph.nodes![nodeIndex];
-            for (const value of Object.values(node.values ?? {})) {
-                if (!("node" in value) && graph.types?.[value.type]?.signature === "ref" && value.value) {
-                    value.value = this._remapValueArray(value.value, "ref", context, diagnostics, graphIndex, nodeIndex);
-                }
-            }
+            const sourceNodeIndex = sourceIndices[nodeIndex] ?? nodeIndex;
             const declaration = graph.declarations?.[node.declaration];
             const mapping = declaration ? getMappingForDeclaration(declaration, false) : undefined;
+            for (const [socket, value] of Object.entries(node.values ?? {})) {
+                if (!("node" in value) && graph.types?.[value.type]?.signature === "ref" && value.value) {
+                    const pointerCollection = this._getPointerReferenceCollection(node, mapping, socket);
+                    if (pointerCollection === null) {
+                        _PushDiagnostic(diagnostics, {
+                            code: "REFERENCE_UNRESOLVED",
+                            graphIndex,
+                            nodeIndex: sourceNodeIndex,
+                            socket,
+                            path: `/graphs/${graphIndex}/nodes/${sourceNodeIndex}/values/${socket}`,
+                            message: `Pointer template collection for reference input "${socket}" cannot be resolved statically.`,
+                        });
+                        continue;
+                    }
+                    const sourceValue = this._options.document?.graphs[graphIndex]?.source.nodes?.[sourceNodeIndex]?.values?.[socket];
+                    const sourceReference = sourceValue && !("node" in sourceValue) ? sourceValue.value?.[0] : undefined;
+                    const currentReference = value.value[0];
+                    const referenceHint = pointerCollection
+                        ? `/${pointerCollection}/0`
+                        : typeof currentReference === "object" || currentReference === sourceReference
+                          ? typeof sourceReference === "string"
+                              ? sourceReference
+                              : undefined
+                          : undefined;
+                    value.value = this._remapValueArray(value.value, "ref", context, diagnostics, graphIndex, sourceNodeIndex, referenceHint);
+                }
+            }
             for (const [key, property] of Object.entries(mapping?.configuration ?? {})) {
                 if (!property.pointerTemplate) {
                     continue;
@@ -1478,34 +2261,191 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 const configuration = node.configuration?.[key];
                 if (configuration?.value) {
                     configuration.value = configuration.value.map((value) =>
-                        typeof value === "string" ? this._remapReference(value, context, diagnostics, graphIndex, nodeIndex) : value
+                        typeof value === "string" ? this._remapReference(value, context, diagnostics, graphIndex, sourceNodeIndex) : value
                     );
                 }
             }
         }
     }
 
-    private _getRemappedRootIndex(collection: string, sourceIndex: number, context: IKHRInteractivitySerializerContext): number | undefined {
+    private _getVariableReferenceCollection(graph: IKHRInteractivity_Graph, variableIndex: number): string | null | undefined {
+        const getterNodes = new Set<number>();
+        for (let nodeIndex = 0; nodeIndex < (graph.nodes?.length ?? 0); nodeIndex++) {
+            const node = graph.nodes![nodeIndex];
+            const declaration = graph.declarations?.[node.declaration];
+            if (declaration?.op === "variable/get" && !declaration.extension && node.configuration?.variable?.value?.[0] === variableIndex) {
+                getterNodes.add(nodeIndex);
+            }
+        }
+        const collections = new Set<string>();
+        for (const node of graph.nodes ?? []) {
+            const declaration = graph.declarations?.[node.declaration];
+            const mapping = declaration ? getMappingForDeclaration(declaration, false) : undefined;
+            for (const [socket, value] of Object.entries(node.values ?? {})) {
+                if (!("node" in value) || !getterNodes.has(value.node)) {
+                    continue;
+                }
+                const collection = this._getPointerReferenceCollection(node, mapping, socket);
+                if (collection === null) {
+                    return null;
+                }
+                if (collection) {
+                    collections.add(collection);
+                }
+            }
+        }
+        return collections.size === 1 ? collections.values().next().value : collections.size > 1 ? null : undefined;
+    }
+
+    private _getPointerReferenceCollection(node: IKHRInteractivity_Node, mapping: IGLTFToFlowGraphMapping | undefined, socket: string): string | null | undefined {
+        for (const [key, property] of Object.entries(mapping?.configuration ?? {})) {
+            if (!property.pointerTemplate) {
+                continue;
+            }
+            const pointer = node.configuration?.[key]?.value?.[0];
+            if (typeof pointer !== "string") {
+                continue;
+            }
+            const segments = pointer.split("/");
+            const placeholderIndex = segments.findIndex((segment) => segment === `{${socket}}`);
+            if (placeholderIndex > 1) {
+                const parentSegment = segments[placeholderIndex - 1];
+                const parentPlaceholder = /^\{([^\{\}]+)\}$/.exec(parentSegment);
+                const parentValue = parentPlaceholder ? node.values?.[parentPlaceholder[1]] : undefined;
+                const parentReference = parentValue && !("node" in parentValue) ? parentValue.value?.[0] : undefined;
+                const collection = (parentPlaceholder && typeof parentReference === "string" ? (/^\/([^/]+)$/.exec(parentReference)?.[1] ?? "") : parentSegment)
+                    .replace(/~1/g, "/")
+                    .replace(/~0/g, "~");
+                if (_KnownIndexedRootCollections.has(collection)) {
+                    return collection;
+                }
+                if (parentPlaceholder) {
+                    return null;
+                }
+            }
+        }
+        return undefined;
+    }
+
+    private _getRemappedRootIndex(collection: KhrInteractivityRootCollection, sourceIndex: number, context: IKHRInteractivitySerializerContext): number | undefined {
+        const indices = new Set(
+            this._getSourceRootObjects(collection, sourceIndex)
+                .map((target) => this._getExportedObjectIndex(collection, target, context))
+                .filter((index): index is number => index !== undefined)
+        );
+        return indices.size === 1 ? indices.values().next().value : undefined;
+    }
+
+    private _getSourceRootObjects(collection: KhrInteractivityRootCollection, sourceIndex: number): object[] {
+        const sourceGLTF = this._options.sourceGLTF;
         switch (collection) {
-            case "nodes": {
-                const target = this._options.sourceGLTF?.nodes?.[sourceIndex]?._babylonTransformNode;
-                return target ? context.getNodeIndex(target) : undefined;
+            case "nodes":
+                return sourceGLTF?.nodes?.[sourceIndex]?._babylonTransformNode ? [sourceGLTF.nodes[sourceIndex]._babylonTransformNode!] : [];
+            case "animations":
+                return sourceGLTF?.animations?.[sourceIndex]?._babylonAnimationGroup ? [sourceGLTF.animations[sourceIndex]._babylonAnimationGroup!] : [];
+            case "cameras":
+                return sourceGLTF?.cameras?.[sourceIndex]?._babylonCamera ? [sourceGLTF.cameras[sourceIndex]._babylonCamera!] : [];
+            case "materials":
+                return Array.from(new Set(Object.values(sourceGLTF?.materials?.[sourceIndex]?._data ?? {}).map((entry) => entry.babylonMaterial)));
+            case "meshes":
+                return Array.from(
+                    new Set([
+                        ...(sourceGLTF?.meshes?.[sourceIndex]?.primitives.flatMap((primitive) => (primitive._instanceData ? [primitive._instanceData.babylonSourceMesh] : [])) ??
+                            []),
+                        ...(sourceGLTF?.nodes
+                            ?.filter((node) => node.mesh === sourceIndex)
+                            .flatMap((node) => [...(node._babylonTransformNode ? [node._babylonTransformNode] : []), ...(node._primitiveBabylonMeshes ?? [])]) ?? []),
+                    ])
+                );
+            case "textures":
+                return sourceGLTF?.textures?.[sourceIndex]?._babylonTextures?.slice() ?? [];
+            case "images":
+                return Array.from(
+                    new Set(
+                        sourceGLTF?.textures
+                            ?.flatMap((texture) => texture._babylonTextureSources ?? [])
+                            .filter((source) => source.imageIndex === sourceIndex)
+                            .map((source) => source.babylonTexture) ?? []
+                    )
+                );
+            case "samplers":
+                return Array.from(
+                    new Set(
+                        sourceGLTF?.textures
+                            ?.flatMap((texture) => texture._babylonTextureSources ?? [])
+                            .filter((source) => source.samplerIndex === sourceIndex)
+                            .map((source) => source.babylonTexture) ?? []
+                    )
+                );
+            case "skins":
+                return sourceGLTF?.skins?.[sourceIndex]?._data?.babylonSkeleton ? [sourceGLTF.skins[sourceIndex]._data!.babylonSkeleton] : [];
+            case "scenes":
+                return sourceIndex === (sourceGLTF?.scene ?? 0) && this._flowGraphs[0]?.scene ? [this._flowGraphs[0].scene] : [];
+        }
+    }
+
+    private _getSourceRootIndex(collection: KhrInteractivityRootCollection, target: object): number | undefined {
+        const roots = this._options.sourceGLTF?.[collection];
+        if (!roots) {
+            return undefined;
+        }
+        const matches: number[] = [];
+        for (let index = 0; index < roots.length; index++) {
+            if (this._getSourceRootObjects(collection, index).includes(target)) {
+                matches.push(index);
             }
-            case "animations": {
-                const target = this._options.sourceGLTF?.animations?.[sourceIndex]?._babylonAnimationGroup;
-                return target ? context.getAnimationIndex(target) : undefined;
-            }
-            case "cameras": {
-                const target = this._options.sourceGLTF?.cameras?.[sourceIndex]?._babylonCamera;
-                return target ? context.getCameraIndex(target) : undefined;
-            }
-            case "materials": {
-                const target = Object.values(this._options.sourceGLTF?.materials?.[sourceIndex]?._data ?? {})[0]?.babylonMaterial;
-                return target ? context.getMaterialIndex(target) : undefined;
-            }
+        }
+        return matches.length === 1 ? matches[0] : undefined;
+    }
+
+    private _getExportedObjectIndex(collection: KhrInteractivityRootCollection, target: object, context: IKHRInteractivitySerializerContext): number | undefined {
+        if (context.getRootIndex) {
+            return context.getRootIndex(collection, target);
+        }
+        switch (collection) {
+            case "nodes":
+                return context.getNodeIndex(target as Node);
+            case "animations":
+                return context.getAnimationIndex(target as AnimationGroup);
+            case "cameras":
+                return context.getCameraIndex(target as Camera);
+            case "materials":
+                return context.getMaterialIndex(target as Material);
             default:
                 return undefined;
         }
+    }
+
+    private _remapReferenceToCollection(
+        reference: string,
+        targetCollection: string,
+        context: IKHRInteractivitySerializerContext,
+        diagnostics: IKHRInteractivityExportDiagnostic[],
+        graphIndex: number,
+        nodeIndex?: number
+    ): string {
+        const match = reference.match(/^\/([^/]+)\/(0|[1-9]\d*)(\/.*)?$/);
+        if (!match || !_KnownIndexedRootCollections.has(match[1])) {
+            return this._remapReference(reference, context, diagnostics, graphIndex, nodeIndex);
+        }
+        const targets = this._getSourceRootObjects(targetCollection as KhrInteractivityRootCollection, parseInt(match[2], 10));
+        const targetIndices = new Set(
+            targets
+                .map((target) => this._getExportedObjectIndex(targetCollection as KhrInteractivityRootCollection, target, context))
+                .filter((index): index is number => index !== undefined)
+        );
+        const targetIndex = targetIndices.size === 1 ? targetIndices.values().next().value : undefined;
+        if (targetIndex === undefined) {
+            _PushDiagnostic(diagnostics, {
+                code: "REFERENCE_UNRESOLVED",
+                graphIndex,
+                nodeIndex,
+                path: `/graphs/${graphIndex}${nodeIndex === undefined ? "" : `/nodes/${nodeIndex}`}`,
+                message: `Reference "${reference}" cannot be remapped to the exported ${targetCollection} collection.`,
+            });
+            return reference;
+        }
+        return `/${targetCollection}/${targetIndex}${match[3] ?? ""}`;
     }
 
     private _remapReference(
@@ -1518,20 +2458,31 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         if (!reference || reference.startsWith("/extensions/KHR_interactivity/events/") || reference.startsWith("/extensions/KHR_interactivity/delays/")) {
             return reference;
         }
+        const extensionCollection = /^\/extensions\/([^/]+)\/[^/]+\/(0|[1-9]\d*)(?:\/|$)/.exec(reference);
+        if (extensionCollection && extensionCollection[1] !== "KHR_interactivity") {
+            _PushDiagnostic(diagnostics, {
+                code: "REFERENCE_UNRESOLVED",
+                graphIndex,
+                nodeIndex,
+                path: `/graphs/${graphIndex}${nodeIndex === undefined ? "" : `/nodes/${nodeIndex}`}`,
+                message: `Indexed reference "${reference}" belongs to ${extensionCollection[1]}, whose serializer index mapping is unavailable.`,
+            });
+            return reference;
+        }
         const match = reference.match(/^\/([^/]+)\/(0|[1-9]\d*)(\/.*)?$/);
         if (!match || !_KnownIndexedRootCollections.has(match[1])) {
             return reference;
         }
         const collection = match[1];
         const sourceIndex = parseInt(match[2], 10);
-        const targetIndex = this._getRemappedRootIndex(collection, sourceIndex, context);
+        const targetIndex = this._getRemappedRootIndex(collection as KhrInteractivityRootCollection, sourceIndex, context);
         if (targetIndex === undefined) {
             _PushDiagnostic(diagnostics, {
                 code: "REFERENCE_UNRESOLVED",
                 graphIndex,
                 nodeIndex,
                 path: `/graphs/${graphIndex}${nodeIndex === undefined ? "" : `/nodes/${nodeIndex}`}`,
-                message: `Reference "${reference}" cannot be remapped because its ${collection} target was not exported.`,
+                message: `Reference "${reference}" cannot be remapped because its ${collection} target was not exported uniquely.`,
             });
             return reference;
         }
@@ -1540,6 +2491,15 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
 
     private _collectAdditionalExtensions(): string[] {
         const extensions = new Set<string>();
+        const collectReferenceExtension = (value: unknown): void => {
+            if (typeof value !== "string") {
+                return;
+            }
+            const extensionName = /^\/extensions\/([^/]+)(?:\/|$)/.exec(value)?.[1];
+            if (extensionName && extensionName !== "KHR_interactivity") {
+                extensions.add(extensionName);
+            }
+        };
         const collectPropertyExtensions = (value: unknown): void => {
             if (Array.isArray(value)) {
                 value.forEach(collectPropertyExtensions);
@@ -1549,30 +2509,66 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 return;
             }
             const object = value as Record<string, unknown>;
-            if (object.extensions !== null && typeof object.extensions === "object" && !Array.isArray(object.extensions)) {
-                for (const extensionName of Object.keys(object.extensions as Record<string, unknown>)) {
-                    if (extensionName !== "KHR_interactivity") {
-                        extensions.add(extensionName);
+            for (const [key, entry] of Object.entries(object)) {
+                if (key === "extras") {
+                    continue;
+                }
+                if (key === "extensions" && entry !== null && typeof entry === "object" && !Array.isArray(entry)) {
+                    for (const [extensionName, extensionPayload] of Object.entries(entry as Record<string, unknown>)) {
+                        if (extensionName !== "KHR_interactivity") {
+                            extensions.add(extensionName);
+                        }
+                        collectPropertyExtensions(extensionPayload);
                     }
+                    continue;
+                }
+                if (key !== "extensions") {
+                    collectPropertyExtensions(entry);
                 }
             }
-            Object.values(object).forEach(collectPropertyExtensions);
         };
         collectPropertyExtensions(this._options.document?.source);
         for (const analysis of this._graphAnalyses) {
             collectPropertyExtensions(analysis.source);
+            for (const variable of analysis.source.variables ?? []) {
+                if (analysis.source.types?.[variable.type]?.signature === "ref") {
+                    variable.value?.forEach(collectReferenceExtension);
+                }
+            }
+            for (const event of analysis.source.events ?? []) {
+                for (const value of Object.values(event.values ?? {})) {
+                    if (value && typeof value === "object" && analysis.source.types?.[value.type]?.signature === "ref") {
+                        value.value?.forEach(collectReferenceExtension);
+                    }
+                }
+            }
             for (const declaration of analysis.source.declarations ?? []) {
                 if (declaration.extension) {
                     extensions.add(declaration.extension);
                 }
             }
+            for (const node of analysis.source.nodes ?? []) {
+                for (const value of Object.values(node.values ?? {})) {
+                    if (value && typeof value === "object" && !("node" in value) && analysis.source.types?.[value.type]?.signature === "ref") {
+                        value.value?.forEach(collectReferenceExtension);
+                    }
+                }
+                const declaration = analysis.source.declarations?.[node.declaration];
+                const mapping = declaration ? getMappingForDeclaration(declaration, false) : undefined;
+                for (const [key, property] of Object.entries(mapping?.configuration ?? {})) {
+                    if (property.pointerTemplate) {
+                        node.configuration?.[key]?.value?.forEach(collectReferenceExtension);
+                    }
+                }
+            }
         }
         for (const node of this._options.sourceGLTF?.nodes ?? []) {
-            if (node.extensions?.KHR_node_selectability) {
-                extensions.add("KHR_node_selectability");
-            }
-            if (node.extensions?.KHR_node_hoverability) {
-                extensions.add("KHR_node_hoverability");
+            for (const extensionName of _CompanionNodeExtensions) {
+                const extension = node.extensions?.[extensionName];
+                if (extension) {
+                    extensions.add(extensionName);
+                    collectPropertyExtensions(extension);
+                }
             }
         }
         return Array.from(extensions).sort();
@@ -1581,7 +2577,7 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
     private _writeCompanionNodeExtensions(context: IKHRInteractivitySerializerContext, diagnostics: IKHRInteractivityExportDiagnostic[]): void {
         for (let sourceIndex = 0; sourceIndex < (this._options.sourceGLTF?.nodes?.length ?? 0); sourceIndex++) {
             const sourceNode = this._options.sourceGLTF!.nodes![sourceIndex];
-            for (const extensionName of ["KHR_node_selectability", "KHR_node_hoverability"] as const) {
+            for (const extensionName of _CompanionNodeExtensions) {
                 const value = sourceNode.extensions?.[extensionName];
                 if (!value) {
                     continue;

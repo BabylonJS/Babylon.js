@@ -45,6 +45,7 @@ export class KHR_interactivity implements IGLTFExporterExtensionV2 {
             getAnimationIndex: (animationGroup) => this._exporter._getAnimationIndex(animationGroup),
             getCameraIndex: (camera) => this._exporter._getCameraIndex(camera),
             getMaterialIndex: (material) => this._exporter._getMaterialIndex(material),
+            getRootIndex: (collection, entity) => this._exporter._getRootIndex(collection, entity),
             setNodeExtension: (nodeIndex, extensionName, value) => this._exporter._setNodeExtension(nodeIndex, extensionName, value),
         });
         this._exporter._glTF.extensions![NAME] = extension;

@@ -36,7 +36,7 @@ function _CreateKhrExportPlan(
 function _CreateKhrExportPlanForImport(globalState: GlobalState): KHRInteractivityExportPlan | undefined {
     const coordinator = globalState.coordinator;
     const importResult = globalState.khrInteractivityImportResult;
-    if (!coordinator || !importResult) {
+    if (!coordinator || !importResult || (importResult.scene && globalState.sceneContext?.scene !== importResult.scene)) {
         return undefined;
     }
     const options: Parameters<typeof CreateKHRInteractivityExportPlan>[1] = {
@@ -349,7 +349,10 @@ export class SerializationTools {
     }
 
     private static _ContainsKhrInteractivityGraph(graphDataList: ISerializedFlowGraph[]): boolean {
-        return graphDataList.some((graph) => graph.allBlocks?.some((block) => block.className.startsWith("KHR_interactivity/") || !!block.metadata?.khrInteractivity));
+        return graphDataList.some(
+            (graph) =>
+                !!graph.metadata?.khrInteractivity || graph.allBlocks?.some((block) => block.className.startsWith("KHR_interactivity/") || !!block.metadata?.khrInteractivity)
+        );
     }
 
     /**
@@ -515,6 +518,10 @@ export class SerializationTools {
      * @param scene - optional preview scene to include in the export
      */
     public static async ExportBabylonFlowGraphGlbAsync(flowGraph: FlowGraph, globalState: GlobalState, scene: Nullable<Scene>): Promise<void> {
+        const disabledReason = SerializationTools.GetSerializationDisabledReason(globalState);
+        if (disabledReason) {
+            throw new Error(disabledReason);
+        }
         this.UpdateLocations(flowGraph, globalState);
         globalState.snapshotUserVariables();
 
@@ -597,6 +604,20 @@ export class SerializationTools {
      * @returns detached representability analysis
      */
     public static AnalyzeKhrInteractivityExport(globalState: GlobalState): IKHRInteractivityExportAnalysis {
+        if (globalState.khrInteractivityImportResult?.scene && globalState.sceneContext?.scene !== globalState.khrInteractivityImportResult.scene) {
+            return {
+                representable: false,
+                nodes: [],
+                diagnostics: [
+                    {
+                        code: "GRAPH_SOURCE_MISSING",
+                        path: "/extensions/KHR_interactivity",
+                        message: "The active preview scene is not the scene that owns this KHR_interactivity graph set.",
+                        severity: "error",
+                    },
+                ],
+            };
+        }
         const plan = _CreateKhrExportPlanForImport(globalState);
         if (!plan) {
             return {

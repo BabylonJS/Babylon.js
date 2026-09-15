@@ -32,7 +32,9 @@ export function SetVariableAuthoringValue(flowGraph: FlowGraph, context: FlowGra
         return;
     }
     let components: unknown[];
-    if (value && typeof value === "object" && typeof (value as { asArray?: () => unknown[] }).asArray === "function") {
+    if (Array.isArray(value)) {
+        components = value.slice();
+    } else if (value && typeof value === "object" && typeof (value as { asArray?: () => unknown[] }).asArray === "function") {
         components = (value as { asArray: () => unknown[] }).asArray();
     } else if (value instanceof FlowGraphInteger) {
         components = [value.value];
@@ -43,6 +45,11 @@ export function SetVariableAuthoringValue(flowGraph: FlowGraph, context: FlowGra
     }
     provenance.authoredVariableValues ||= {};
     provenance.authoredVariableValues[index] = components;
+    const authoredType = context.getVariableType(name);
+    if (authoredType) {
+        provenance.authoredVariableTypes ||= {};
+        provenance.authoredVariableTypes[index] = authoredType;
+    }
 }
 
 // -------------------------------------------------------
@@ -625,6 +632,9 @@ export function FormatVariableValue(val: unknown): string {
     }
     if (val === null) {
         return "null";
+    }
+    if (Array.isArray(val)) {
+        return JSON.stringify(val);
     }
     if (typeof val === "object") {
         if (typeof (val as any).toString === "function" && (val as any).toString !== Object.prototype.toString) {

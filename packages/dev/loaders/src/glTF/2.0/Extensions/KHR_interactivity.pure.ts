@@ -65,6 +65,8 @@ export interface IKHRInteractivityImportResult {
     pathConverter: CompositePathToObjectConverter<IObjectAccessor>;
     /** Live glTF loader data used by glTF data-provider blocks. */
     glTF: GLTFLoader["gltf"];
+    /** Scene that owns the imported asset and its runtime object mappings, when retained by the importer. */
+    scene?: Scene;
     /** Host resolver that supplies KHR reference semantics to executable graphs. */
     hostResolver: InteractivityHostResolver;
 }
@@ -174,6 +176,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             graphs: [],
             pathConverter,
             glTF: this._loader.gltf,
+            scene,
             hostResolver: new InteractivityHostResolver(),
         };
         importResults.push(result);

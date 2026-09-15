@@ -4,6 +4,7 @@ import {
     type IKHRInteractivity_Declaration,
     type IKHRInteractivity_Graph,
     type IKHRInteractivity_Node,
+    type IKHRInteractivity_OutputSocketReference,
     type IKHRInteractivity_Variable,
 } from "babylonjs-gltf2interface";
 import {
@@ -73,6 +74,20 @@ export interface IKHRInteractivityBlockProvenance {
     role: number;
     /** Stable JSON pointer to the source node. */
     sourcePath: string;
+    /** Original and lowered configuration values used for safe inverse transforms. */
+    configuration?: Record<string, IKHRInteractivityConfigurationProvenance>;
+    /** Importer-generated primitive configuration that must remain unchanged for inverse export. */
+    generatedConfiguration?: Record<string, unknown>;
+}
+
+/**
+ * Provenance for a transformed KHR configuration value.
+ */
+export interface IKHRInteractivityConfigurationProvenance {
+    /** Exact source configuration array. */
+    sourceValue?: unknown[];
+    /** Lowered FlowGraph configuration value immediately after import. */
+    runtimeValue?: unknown;
 }
 
 /**
@@ -85,6 +100,10 @@ export interface IKHRInteractivitySocketProvenance extends IKHRInteractivityBloc
     direction: "input" | "output";
     /** Exact source KHR socket identifier. */
     socket: string;
+    /** Exact canonical source value, when this is an input value socket. */
+    sourceValue?: IKHRInteractivity_Variable | IKHRInteractivity_OutputSocketReference;
+    /** Lowered inline runtime value immediately after import. */
+    runtimeValue?: unknown[];
 }
 
 /**
@@ -99,6 +118,8 @@ export interface IKHRInteractivityGraphProvenance {
     source: IKHRInteractivity_Graph;
     /** Explicit editor-authored variable defaults keyed by canonical variable index. */
     authoredVariableValues?: Record<number, unknown[]>;
+    /** Explicit editor-authored FlowGraph variable types keyed by canonical variable index. */
+    authoredVariableTypes?: Record<number, string>;
 }
 
 /**
@@ -185,6 +206,10 @@ function _isValidIndex(value: unknown, length: number): value is number {
     return typeof value === "number" && Number.isInteger(value) && value >= 0 && value < length;
 }
 
+function _isRecord(value: unknown): boolean {
+    return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
 function _addError(diagnostics: IKHRInteractivityDiagnostic[], path: string, message: string): void {
     diagnostics.push({ path, message, severity: "error" });
 }
@@ -234,6 +259,10 @@ function _validateValue(value: IKHRInteractivity_Variable, graph: IKHRInteractiv
         return;
     }
     if (value.value === undefined) {
+        return;
+    }
+    if (!Array.isArray(value.value)) {
+        _addError(diagnostics, `${path}/value`, "Value must be an array when present.");
         return;
     }
     const type = graph.types![value.type];
@@ -306,13 +335,13 @@ function _isCompatibleExtensionDeclaration(
         if (actualKeys.length !== expectedKeys.length || actualKeys.some((key, index) => key !== expectedKeys[index])) {
             return false;
         }
-        return actualKeys.every((key) => graph.types?.[actual![key].type]?.signature === expected[key]);
+        return actualKeys.every((key) => _isRecord(actual![key]) && graph.types?.[actual![key].type]?.signature === expected[key]);
     };
     return matches(declaration.inputValueSockets, schema.inputValueSockets) && matches(declaration.outputValueSockets, schema.outputValueSockets);
 }
 
 function _validateConfigurationValue(value: unknown[] | undefined, type: IGLTFToFlowGraphMappingObject["configurationType"]): boolean {
-    if (!value) {
+    if (!Array.isArray(value)) {
         return false;
     }
     const isInt = (entry: unknown) => typeof entry === "number" && Number.isInteger(entry) && entry >= -2147483648 && entry <= 2147483647;
@@ -378,36 +407,13 @@ function _isEffectiveConfigurationValue(
             return false;
         }
     }
+    if (property.allowedValues && configuration.value.some((value) => !property.allowedValues!.includes(value as boolean | number | string))) {
+        return false;
+    }
     if (property.debugLogTemplate && !ParseDebugLogTemplate(configuration.value[0] as string).valid) {
         return false;
     }
     return true;
-}
-
-function _getAllowedDynamicFlowOutputSockets(
-    node: IKHRInteractivity_Node,
-    mapping: IGLTFToFlowGraphMapping,
-    graph: IKHRInteractivity_Graph,
-    assetNodeCount?: number
-): ReadonlySet<string> | undefined {
-    for (const [key, property] of Object.entries(mapping.configuration ?? {})) {
-        if (!property.generatesOutputFlowSockets) {
-            continue;
-        }
-        const configured = node.configuration?.[key];
-        const values = _isEffectiveConfigurationValue(configured, property, graph, assetNodeCount) ? configured!.value : property.defaultValue;
-        return new Set(Array.isArray(values) ? values.map(String) : []);
-    }
-    return undefined;
-}
-
-function _matchesFlowOutputSocket(mapping: IGLTFToFlowGraphMapping, socket: string, allowedDynamicSockets: ReadonlySet<string> | undefined): boolean {
-    const flowMappings = mapping.outputs?.flows;
-    if (flowMappings && Object.prototype.hasOwnProperty.call(flowMappings, socket)) {
-        return true;
-    }
-    const hasWildcard = Object.keys(flowMappings ?? {}).some((name) => name.startsWith("[") && name.endsWith("]"));
-    return !hasWildcard || !allowedDynamicSockets || allowedDynamicSockets.has(socket);
 }
 
 /**
@@ -509,7 +515,11 @@ function _resolveOutputTypeIndex(
     if (declaredType !== undefined) {
         return declaredType;
     }
-    const booleanType = () => graph.types?.findIndex((type) => type.signature === "bool");
+    const findTypeIndex = (signature: string): number | undefined => {
+        const index = graph.types?.findIndex((type) => type.signature === signature) ?? -1;
+        return index >= 0 ? index : undefined;
+    };
+    const booleanType = () => findTypeIndex("bool");
     if (socket === "isValid") {
         return booleanType();
     }
@@ -531,14 +541,14 @@ function _resolveOutputTypeIndex(
     }
     const fixedSignature = _getFixedOutputSignature(declaration.operation, socket);
     if (fixedSignature) {
-        return graph.types?.findIndex((type) => type.signature === fixedSignature);
+        return findTypeIndex(String(fixedSignature));
     }
     const mapping = getMappingForDeclaration(declaration.source, false);
     const outputMapping = mapping?.outputs?.values?.[socket];
     const mappedType = outputMapping?.gltfType;
     const signature = mappedType === "number" ? "float" : mappedType === "boolean" ? "bool" : mappedType;
     if (signature && signature in gltfTypeToBabylonType) {
-        return graph.types?.findIndex((type) => type.signature === signature);
+        return findTypeIndex(signature);
     }
     const typeSource = outputMapping?.typeSourceInput ? sourceNode.values?.[outputMapping.typeSourceInput] : undefined;
     return typeSource ? _resolveValueTypeIndex(typeSource, graph, declarations, visited) : undefined;
@@ -624,7 +634,13 @@ function _validateNode(
         }
     };
     for (const [key, configuration] of Object.entries(node.configuration ?? {})) {
-        if (configuration.value && configuration.value.length === 0) {
+        if (!_isRecord(configuration)) {
+            _addError(diagnostics, `${path}/configuration/${key}`, `Configuration "${key}" must be an object.`);
+            continue;
+        }
+        if (configuration.value !== undefined && !Array.isArray(configuration.value)) {
+            _addError(diagnostics, `${path}/configuration/${key}/value`, "Configuration value must be an array when present.");
+        } else if (configuration.value && configuration.value.length === 0) {
             _addError(diagnostics, `${path}/configuration/${key}/value`, "Configuration value arrays must contain at least one item when present.");
         }
     }
@@ -653,6 +669,9 @@ function _validateNode(
             if (!signature || !property.allowedSignatures.includes(signature)) {
                 reportConfigurationIssue(property, `${path}/configuration/${key}/value/0`, `Type "${String(signature)}" is not supported by this operation.`);
             }
+        }
+        if (isConfigurationValid && configuration.value && property.allowedValues && configuration.value.some((value) => !property.allowedValues!.includes(value))) {
+            reportConfigurationIssue(property, `${path}/configuration/${key}/value`, `Configuration "${key}" contains an unsupported value.`);
         }
         if (isConfigurationValid && configuration.value && property.debugLogTemplate && !ParseDebugLogTemplate(configuration.value[0] as string).valid) {
             reportConfigurationIssue(property, `${path}/configuration/${key}/value/0`, `Configuration "${key}" is not a valid debug message template.`);
@@ -763,6 +782,10 @@ function _validateNode(
         }
     }
     for (const [key, value] of Object.entries(node.values ?? {})) {
+        if (!_isRecord(value)) {
+            _addError(diagnostics, `${path}/values/${key}`, `Input value socket "${key}" must be an object.`);
+            continue;
+        }
         if (declarationModel.support === "unsupported-extension" && !declarationModel.source.inputValueSockets?.[key]) {
             _addError(diagnostics, `${path}/values/${key}`, `Input value socket "${key}" is not defined by operation "${declarationModel.operation}".`);
         }
@@ -794,8 +817,32 @@ function _validateNode(
                 }
                 const declaredOutputType = sourceDeclaration.source.outputValueSockets?.[sourceSocket]?.type;
                 const effectiveOutputType = declaredOutputType ?? _resolveOutputTypeIndex(value.node, sourceSocket, graph, declarations);
-                if (value.type !== undefined && effectiveOutputType !== undefined && value.type !== effectiveOutputType) {
-                    _addError(diagnostics, `${path}/values/${key}/type`, `Type assertion does not match output socket "${sourceSocket}".`);
+                if (value.type !== undefined) {
+                    const mappedOutputs = sourceMapping?.outputs?.values;
+                    const mappedOutput = mappedOutputs && Object.prototype.hasOwnProperty.call(mappedOutputs, sourceSocket) ? mappedOutputs[sourceSocket] : undefined;
+                    const mappedType = mappedOutput?.gltfType;
+                    const mappedOutputSignature =
+                        mappedType === "number"
+                            ? "float"
+                            : mappedType === "boolean"
+                              ? "bool"
+                              : mappedType === "vector2"
+                                ? "float2"
+                                : mappedType === "vector3"
+                                  ? "float3"
+                                  : mappedType === "vector4"
+                                    ? "float4"
+                                    : mappedType;
+                    const fixedOutputSignature =
+                        _getFixedOutputSignature(sourceDeclaration.operation, sourceSocket) ??
+                        (mappedOutputSignature && Object.prototype.hasOwnProperty.call(gltfTypeToBabylonType, mappedOutputSignature) ? mappedOutputSignature : undefined);
+                    const assertedSignature = graph.types?.[value.type]?.signature;
+                    if (
+                        (fixedOutputSignature !== undefined && assertedSignature !== fixedOutputSignature) ||
+                        (fixedOutputSignature === undefined && effectiveOutputType !== undefined && value.type !== effectiveOutputType)
+                    ) {
+                        _addError(diagnostics, `${path}/values/${key}/type`, `Type assertion does not match output socket "${sourceSocket}".`);
+                    }
                 }
             }
         } else {
@@ -804,9 +851,9 @@ function _validateNode(
     }
 
     for (const [key, flow] of Object.entries(node.flows ?? {})) {
-        const allowedDynamicSockets = _getAllowedDynamicFlowOutputSockets(node, mapping, graph, assetNodeCount);
-        if (!_matchesFlowOutputSocket(mapping, key, allowedDynamicSockets)) {
-            _addError(diagnostics, `${path}/flows/${key}`, `Output flow socket "${key}" is not defined by operation "${declarationModel.operation}".`);
+        if (!_isRecord(flow)) {
+            _addError(diagnostics, `${path}/flows/${key}`, `Output flow socket "${key}" must be an object.`);
+            continue;
         }
         if (!_isValidIndex(flow.node, graph.nodes?.length ?? 0)) {
             _addError(diagnostics, `${path}/flows/${key}/node`, `Node index ${String(flow.node)} is out of range.`);
@@ -865,14 +912,21 @@ export function CreateKHRInteractivityGraphModel(
         }
     }
     for (let eventIndex = 0; eventIndex < (graph.events?.length ?? 0); eventIndex++) {
-        if (graph.events![eventIndex].values && Object.keys(graph.events![eventIndex].values!).length === 0) {
+        const event = graph.events![eventIndex];
+        if (event.values !== undefined && !_isRecord(event.values)) {
+            _addError(diagnostics, `${path}/events/${eventIndex}/values`, '"values" must be an object when present.');
+            event.values = undefined;
+        } else if (event.values && Object.keys(event.values).length === 0) {
             _addError(diagnostics, `${path}/events/${eventIndex}/values`, '"values" must contain at least one property when present.');
         }
     }
     for (let declarationIndex = 0; declarationIndex < (graph.declarations?.length ?? 0); declarationIndex++) {
         const declaration = graph.declarations![declarationIndex];
         for (const key of ["inputValueSockets", "outputValueSockets"] as const) {
-            if (declaration[key] && Object.keys(declaration[key]!).length === 0) {
+            if (declaration[key] !== undefined && !_isRecord(declaration[key])) {
+                _addError(diagnostics, `${path}/declarations/${declarationIndex}/${key}`, `"${key}" must be an object when present.`);
+                declaration[key] = undefined;
+            } else if (declaration[key] && Object.keys(declaration[key]!).length === 0) {
                 _addError(diagnostics, `${path}/declarations/${declarationIndex}/${key}`, `"${key}" must contain at least one property when present.`);
             }
         }
@@ -880,7 +934,10 @@ export function CreateKHRInteractivityGraphModel(
     for (let nodeIndex = 0; nodeIndex < (graph.nodes?.length ?? 0); nodeIndex++) {
         const node = graph.nodes![nodeIndex];
         for (const key of ["configuration", "values", "flows"] as const) {
-            if (node[key] && Object.keys(node[key]!).length === 0) {
+            if (node[key] !== undefined && !_isRecord(node[key])) {
+                _addError(diagnostics, `${path}/nodes/${nodeIndex}/${key}`, `"${key}" must be an object when present.`);
+                node[key] = undefined;
+            } else if (node[key] && Object.keys(node[key]!).length === 0) {
                 _addError(diagnostics, `${path}/nodes/${nodeIndex}/${key}`, `"${key}" must contain at least one property when present.`);
             }
         }
@@ -889,7 +946,10 @@ export function CreateKHRInteractivityGraphModel(
     const declarations = (graph.declarations ?? []).map((declaration, declarationIndex) => {
         const inputSockets = Object.keys(declaration.inputValueSockets ?? {})
             .sort()
-            .map((key) => `${JSON.stringify(key)}:${declaration.inputValueSockets![key].type}`)
+            .map((key) => {
+                const definition = declaration.inputValueSockets![key];
+                return `${JSON.stringify(key)}:${_isRecord(definition) ? String(definition.type) : "invalid"}`;
+            })
             .join(",");
         const declarationKey = `${JSON.stringify(declaration.op)}:${JSON.stringify(declaration.extension ?? "")}:${inputSockets}`;
         if (declarationKeys.has(declarationKey)) {
@@ -904,9 +964,17 @@ export function CreateKHRInteractivityGraphModel(
             _addError(diagnostics, `${path}/declarations/${declarationIndex}`, "Core operation declarations cannot define dynamic value sockets.");
         }
         for (const [socket, definition] of Object.entries(declaration.inputValueSockets ?? {})) {
+            if (!_isRecord(definition)) {
+                _addError(diagnostics, `${path}/declarations/${declarationIndex}/inputValueSockets/${socket}`, `Input value socket "${socket}" must be an object.`);
+                continue;
+            }
             _validateTypeIndex(definition.type, graph, diagnostics, `${path}/declarations/${declarationIndex}/inputValueSockets/${socket}/type`);
         }
         for (const [socket, definition] of Object.entries(declaration.outputValueSockets ?? {})) {
+            if (!_isRecord(definition)) {
+                _addError(diagnostics, `${path}/declarations/${declarationIndex}/outputValueSockets/${socket}`, `Output value socket "${socket}" must be an object.`);
+                continue;
+            }
             _validateTypeIndex(definition.type, graph, diagnostics, `${path}/declarations/${declarationIndex}/outputValueSockets/${socket}/type`);
         }
         return {
@@ -941,6 +1009,10 @@ export function CreateKHRInteractivityGraphModel(
             _addError(diagnostics, `${path}/events/${eventIndex}/values/event`, 'Custom event value socket id "event" is reserved.');
         }
         for (const [socket, value] of Object.entries(graph.events![eventIndex].values ?? {})) {
+            if (!_isRecord(value)) {
+                _addError(diagnostics, `${path}/events/${eventIndex}/values/${socket}`, `Event value socket "${socket}" must be an object.`);
+                continue;
+            }
             _validateValue(value, graph, diagnostics, `${path}/events/${eventIndex}/values/${socket}`);
         }
     }

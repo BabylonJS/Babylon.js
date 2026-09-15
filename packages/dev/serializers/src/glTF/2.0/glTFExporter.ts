@@ -37,7 +37,7 @@ import { EngineStore } from "core/Engines/engineStore";
 
 import { type IGLTFExporterExtensionV2 } from "./glTFExporterExtension";
 import { GLTFMaterialExporter } from "./glTFMaterialExporter";
-import { type IExportOptions } from "./glTFSerializer";
+import { type IExportOptions, type KhrInteractivityRootCollection } from "./glTFSerializer";
 import { GLTFData } from "./glTFData";
 import {
     ConvertToRightHandedPosition,
@@ -952,12 +952,61 @@ export class GLTFExporter {
     /** @internal */
     public _getCameraIndex(camera: Camera): number | undefined {
         const glTFCamera = this._camerasMap.get(camera);
-        return glTFCamera ? this._cameras.indexOf(glTFCamera) : undefined;
+        if (!glTFCamera) {
+            return undefined;
+        }
+        const index = this._cameras.indexOf(glTFCamera);
+        return index >= 0 ? index : undefined;
     }
 
     /** @internal */
     public _getMaterialIndex(material: Material): number | undefined {
         return this._materialMap.get(material);
+    }
+
+    /** @internal */
+    public _getRootIndex(collection: KhrInteractivityRootCollection, entity: object): number | undefined {
+        switch (collection) {
+            case "nodes":
+                return this._getNodeIndex(entity as Node);
+            case "animations":
+                return this._getAnimationIndex(entity as AnimationGroup);
+            case "cameras":
+                return this._getCameraIndex(entity as Camera);
+            case "materials":
+                return this._getMaterialIndex(entity as Material);
+            case "meshes": {
+                const nodeIndex = this._getNodeIndex(entity as Node);
+                return nodeIndex === undefined ? undefined : this._nodes[nodeIndex]?.mesh;
+            }
+            case "textures":
+                return this._materialExporter.getTextureInfo(entity as BaseTexture)?.index;
+            case "images": {
+                const textureIndex = this._materialExporter.getTextureInfo(entity as BaseTexture)?.index;
+                if (textureIndex === undefined) {
+                    return undefined;
+                }
+                const texture = this._textures[textureIndex];
+                for (const extensionName of ["KHR_texture_basisu", "EXT_texture_webp", "EXT_texture_avif"]) {
+                    const source = (texture?.extensions?.[extensionName] as { source?: unknown } | undefined)?.source;
+                    if (typeof source === "number") {
+                        return source;
+                    }
+                }
+                return texture?.source;
+            }
+            case "samplers": {
+                const textureIndex = this._materialExporter.getTextureInfo(entity as BaseTexture)?.index;
+                return textureIndex === undefined ? undefined : this._textures[textureIndex]?.sampler;
+            }
+            case "skins": {
+                const skin = this._skinMap.get(entity as Skeleton);
+                const index = skin ? this._skins.indexOf(skin) : -1;
+                return index >= 0 ? index : undefined;
+            }
+            case "scenes":
+                return entity === this._babylonScene && this._scenes.length > 0 ? 0 : undefined;
+        }
     }
 
     /** @internal */

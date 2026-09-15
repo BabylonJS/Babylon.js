@@ -53,12 +53,39 @@ describe("SerializationTools coordinator ownership", () => {
         const importedState = await SerializationTools.DeserializeToStateAsync(serializedGraph, scene, undefined, { sourceFormat: "KHR_interactivity" });
         SerializationTools.ApplyDeserializedState(importedState, globalState);
         expect(globalState.hasImportScopedRuntime).toBe(true);
+        await expect(SerializationTools.ExportBabylonFlowGraphGlbAsync(globalState.flowGraph, globalState, scene)).rejects.toThrow(
+            "KHR_interactivity graphs use import-scoped runtime services"
+        );
 
         const ordinaryState = await SerializationTools.DeserializeToStateAsync(serializedGraph, scene);
         SerializationTools.ApplyDeserializedState(ordinaryState, globalState);
         expect(globalState.hasImportScopedRuntime).toBe(false);
 
         ordinaryState.coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("rejects graph-level KHR provenance without import-scoped runtime services", async () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const globalState = new GlobalState(scene);
+        const serializedGraph = {
+            metadata: {
+                khrInteractivity: {
+                    graphIndex: 0,
+                    source: {},
+                },
+            },
+            rightHanded: true,
+            allBlocks: [],
+            executionContexts: [],
+        };
+
+        await expect(SerializationTools.DeserializeToStateAsync(serializedGraph, scene)).rejects.toThrow(
+            "KHR_interactivity graphs use import-scoped runtime services and cannot be saved to or reloaded from Flow Graph JSON."
+        );
+
         scene.dispose();
         engine.dispose();
     });
@@ -147,6 +174,28 @@ describe("SerializationTools coordinator ownership", () => {
 
         coordinator.dispose();
         scene.dispose();
+        engine.dispose();
+    });
+
+    it("rejects KHR export when the active preview scene no longer owns the import", () => {
+        const engine = new NullEngine();
+        const importedScene = new Scene(engine);
+        const replacementScene = new Scene(engine);
+        const globalState = new GlobalState(replacementScene);
+        globalState.khrInteractivityImportResult = {
+            document: { defaultGraphIndex: 0 },
+            glTF: {},
+            scene: importedScene,
+        } as any;
+        (globalState as any).sceneContext = { scene: replacementScene };
+
+        expect(SerializationTools.AnalyzeKhrInteractivityExport(globalState)).toMatchObject({
+            representable: false,
+            diagnostics: [expect.objectContaining({ message: expect.stringContaining("not the scene that owns") })],
+        });
+
+        importedScene.dispose();
+        replacementScene.dispose();
         engine.dispose();
     });
 });

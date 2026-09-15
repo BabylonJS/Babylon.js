@@ -248,6 +248,16 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     private _onDropEventObserver: Nullable<Observer<DragEvent>> = null;
     private _watchedSceneContext: Nullable<SceneContext> = null;
 
+    private _blockImportScopedSceneReplacement(): boolean {
+        if (!this.props.globalState.hasImportScopedRuntime) {
+            return false;
+        }
+        const message = "Replace the KHR_interactivity file instead of changing its preview scene; the active graph runtime and references belong to the imported asset.";
+        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, true));
+        this.setState({ error: message });
+        return true;
+    }
+
     /** @internal */
     constructor(props: IScenePreviewComponentInnerProps) {
         super(props);
@@ -317,6 +327,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const isHostCtx = !!ctx && !ctx.ownsScene;
         const canvasMismatch = !!ctx && ctx.ownsScene && !!canvas && ctx.engine.getRenderingCanvas() !== canvas;
         if (canvasMismatch) {
+            if (this._blockImportScopedSceneReplacement()) {
+                return;
+            }
             this._disposeCurrentScene();
             if (pendingSnippetId) {
                 this.setState({ snippetId: pendingSnippetId }, () => {
@@ -454,6 +467,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
      * @returns true when a host scene was present and attached
      */
     private _attachToHostScene(): boolean {
+        if (this._blockImportScopedSceneReplacement()) {
+            return false;
+        }
         const hostScene = this.props.globalState.hostScene;
         if (!hostScene) {
             return false;
@@ -472,6 +488,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
      * Create a minimal default scene so users can start building flow graphs immediately.
      */
     private async _createDefaultSceneAsync() {
+        if (this._blockImportScopedSceneReplacement()) {
+            return;
+        }
         const canvas = this._canvasRef.current;
         if (!canvas) {
             return;
@@ -869,6 +888,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     async loadSnippetAsync() {
         const { snippetId } = this.state;
         if (!snippetId) {
+            return;
+        }
+        if (this._blockImportScopedSceneReplacement()) {
             return;
         }
 
