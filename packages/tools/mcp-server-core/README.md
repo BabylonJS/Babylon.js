@@ -50,7 +50,7 @@ npx jest packages/tools/mcp-server-core/test/unit --runInBand
 - `toolSchemas.ts`: shared field-level Zod schema fragments
 - `sceneToolSchemas.ts`: Scene-specific grouped field fragments
 - `sceneAttachmentValidation.ts`: shared scene attachment contract validation
-- `webMcp.ts`: browser-safe WebMCP types, registration, feature detection, and mutation arbitration
+- `webMcp.ts`: browser-safe WebMCP types, registration, feature detection, and mutation arbitration, exported only through the `@tools/mcp-server-core/webMcp` browser entry point
 
 ## Consumers
 

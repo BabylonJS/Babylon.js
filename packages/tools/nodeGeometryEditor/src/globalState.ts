@@ -16,6 +16,7 @@ import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { PreviewMode } from "./components/preview/previewMode";
 import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import { type WebMcpRegistrationStatus } from "@tools/mcp-server-core/webMcp";
+import { type NodeGeometryWebMcpEditor } from "./webMcpEditor";
 
 export class GlobalState {
     private _previewMode = PreviewMode.Normal;
@@ -55,6 +56,7 @@ export class GlobalState {
     webMcpRegistrationStatus: WebMcpRegistrationStatus = "unsupported";
     webMcpRegistrationController: AbortController | null = null;
     onWebMcpRegistrationStatusChangedObservable = new Observable<WebMcpRegistrationStatus>();
+    webMcpEditor: NodeGeometryWebMcpEditor | null = null;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
 
@@ -95,6 +97,7 @@ export class GlobalState {
     disposeMcpConnections(): void {
         this.webMcpRegistrationController?.abort();
         this.webMcpRegistrationController = null;
+        this.webMcpEditor = null;
         this.mcpEventSource?.close();
         this.mcpEventSource = null;
         this.mcpSessionConnected = false;

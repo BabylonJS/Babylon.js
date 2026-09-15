@@ -14,6 +14,8 @@ The existing stdio MCP server and HTTP/SSE editor session remain supported. WebM
 
 This policy prevents two MCP clients from concurrently replacing the live editor document. It does not prevent normal user edits in the NGE interface.
 
+Block, property, and connection tools apply validated diffs to the live graph. They preserve existing node positions and selection, rebuild the preview once, and create one normal undo-history entry. Explicit whole-document operations (`create_current_node_geometry`, `replace_current_node_geometry`, and snippet import) intentionally replace the graph and reset its undo history.
+
 ## Available Tools
 
 ### Current document
@@ -47,6 +49,10 @@ This policy prevents two MCP clients from concurrently replacing the live editor
 - `save_current_node_geometry_snippet`
 
 The browser tools intentionally omit local server lifecycle, multi-document server storage, and arbitrary filesystem operations. The standard NGE MCP server continues to provide those capabilities.
+
+## Shareable Document URLs
+
+`get_current_node_geometry_url` returns a URL for the hosted NGE with the current serialized graph encoded in a `#nge=<base64url-json>` fragment. NGE decodes the fragment locally during startup; the document is not uploaded to the snippet server. Ordinary snippet hashes such as `#ABC123#0` continue to use the existing snippet-loading path.
 
 ## Browser Testing
 

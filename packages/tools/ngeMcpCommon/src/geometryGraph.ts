@@ -14,7 +14,7 @@
  *    export.  Multiple geometry graphs can coexist (keyed by name).
  */
 
-import { BlockRegistry, type IBlockTypeInfo } from "./blockRegistry.js";
+import { BlockRegistry, type IBlockPropertyInfo, type IBlockTypeInfo, type IConnectionPointInfo } from "./blockRegistry.js";
 import { NgeEnumCatalog } from "./referenceData.js";
 
 type JsonObject = Record<string, unknown>;
@@ -171,6 +171,155 @@ const BlockEnumProperties: Record<string, Record<string, Record<string, number>>
 
 const StructuralBlockProperties = new Set(["customType", "id", "inputs", "outputs"]);
 
+const ConnectionPointTypeNames = new Map(Object.entries(ConnectionPointTypes).map(([name, value]) => [value, name]));
+
+function FormatPropertyValue(value: unknown): string {
+    const serialized = JSON.stringify(value);
+    return serialized === undefined ? String(value) : serialized;
+}
+
+function NormalizeVector3(value: unknown): number[] | undefined {
+    if (Array.isArray(value) && value.length === 3 && value.every((component) => typeof component === "number" && Number.isFinite(component))) {
+        return [...value];
+    }
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+        const vector = value as Record<string, unknown>;
+        if (["x", "y", "z"].every((component) => typeof vector[component] === "number" && Number.isFinite(vector[component]))) {
+            return [vector.x, vector.y, vector.z] as number[];
+        }
+    }
+    return undefined;
+}
+
+function NormalizeGeometryInputValue(value: unknown, connectionType: unknown): unknown | undefined {
+    if (connectionType === ConnectionPointTypes.Int) {
+        return typeof value === "number" && Number.isInteger(value) ? value : undefined;
+    }
+    if (connectionType === ConnectionPointTypes.Float) {
+        return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+    }
+
+    const lengths = new Map<number, number>([
+        [ConnectionPointTypes.Vector2, 2],
+        [ConnectionPointTypes.Vector3, 3],
+        [ConnectionPointTypes.Vector4, 4],
+        [ConnectionPointTypes.Matrix, 16],
+    ]);
+    const length = typeof connectionType === "number" ? lengths.get(connectionType) : undefined;
+    if (!length) {
+        return undefined;
+    }
+
+    if (Array.isArray(value) && value.length === length && value.every((component) => typeof component === "number" && Number.isFinite(component))) {
+        return [...value];
+    }
+    if (length <= 4 && value && typeof value === "object" && !Array.isArray(value)) {
+        const vector = value as Record<string, unknown>;
+        const components = ["x", "y", "z", "w"].slice(0, length);
+        if (components.every((component) => typeof vector[component] === "number" && Number.isFinite(vector[component]))) {
+            return components.map((component) => vector[component]);
+        }
+    }
+    return undefined;
+}
+
+function ValidateSimpleProperty(propertyName: string, value: unknown, metadata: IBlockPropertyInfo): string | undefined {
+    if (metadata.type === "boolean" && typeof value !== "boolean") {
+        return `Property "${propertyName}" must be a boolean.`;
+    }
+    if (metadata.type === "string" && typeof value !== "string") {
+        return `Property "${propertyName}" must be a string.`;
+    }
+    if (metadata.type === "number" && (typeof value !== "number" || !Number.isFinite(value))) {
+        return `Property "${propertyName}" must be a finite number.`;
+    }
+    if (metadata.type === "integer" && (typeof value !== "number" || !Number.isInteger(value))) {
+        return `Property "${propertyName}" must be an integer.`;
+    }
+    if ((metadata.type === "number" || metadata.type === "integer") && typeof value === "number") {
+        if (metadata.minimum !== undefined && value < metadata.minimum) {
+            return `Property "${propertyName}" must be at least ${metadata.minimum}.`;
+        }
+        if (metadata.maximum !== undefined && value > metadata.maximum) {
+            return `Property "${propertyName}" must be at most ${metadata.maximum}.`;
+        }
+    }
+    return undefined;
+}
+
+function PrepareBlockProperties(blockType: string, currentProperties: Record<string, unknown>, properties: Record<string, unknown>): Record<string, unknown> | string {
+    const metadata = BlockRegistry[blockType].propertyMetadata!;
+    const structuralProperty = Object.keys(properties).find((key) => StructuralBlockProperties.has(key));
+    if (structuralProperty) {
+        return `Property "${structuralProperty}" is structural and cannot be set.`;
+    }
+
+    const undeclaredProperty = Object.keys(properties).find((key) => !metadata[key]);
+    if (undeclaredProperty) {
+        return `Property "${undeclaredProperty}" is not configurable on ${blockType}.`;
+    }
+
+    const prepared: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(properties)) {
+        const schema = metadata[key];
+        const simpleError = ValidateSimpleProperty(key, value, schema);
+        if (simpleError) {
+            return simpleError;
+        }
+
+        if (schema.type === "enum") {
+            const enumValues = schema.enumValues!;
+            if (typeof value === "string" && enumValues[value] !== undefined) {
+                prepared[key] = enumValues[value];
+            } else if (typeof value === "number" && Number.isInteger(value) && Object.values(enumValues).includes(value)) {
+                prepared[key] = value;
+            } else {
+                return `Property "${key}" must be a valid ${schema.enumName} name or numeric value; got ${FormatPropertyValue(value)}.`;
+            }
+        } else if (schema.type === "vector3Array") {
+            if (!Array.isArray(value)) {
+                return `Property "${key}" must be an array of Vector3 values.`;
+            }
+            const vectors = value.map(NormalizeVector3);
+            if (vectors.some((vector) => vector === undefined)) {
+                return `Property "${key}" must contain only Vector3 arrays or objects with finite x, y, and z values.`;
+            }
+            prepared[key] = vectors;
+        } else if (schema.type !== "geometryInputValue") {
+            prepared[key] = value;
+        }
+    }
+
+    if (blockType === "GeometryInputBlock") {
+        const contextualValue = prepared.contextualValue ?? currentProperties.contextualValue;
+        if (typeof contextualValue === "number" && contextualValue !== ContextualSources.None) {
+            prepared.type = ContextualSourceToType[contextualValue];
+        }
+        const valueNeedsValidation =
+            Object.prototype.hasOwnProperty.call(properties, "value") ||
+            Object.prototype.hasOwnProperty.call(properties, "type") ||
+            Object.prototype.hasOwnProperty.call(properties, "contextualValue");
+        if (valueNeedsValidation && contextualValue === ContextualSources.None) {
+            const type = prepared.type ?? currentProperties.type;
+            const value = Object.prototype.hasOwnProperty.call(properties, "value") ? properties.value : currentProperties.value;
+            const normalizedValue = NormalizeGeometryInputValue(value, type);
+            if (normalizedValue === undefined) {
+                const typeName = typeof type === "number" ? ConnectionPointTypeNames.get(type) : undefined;
+                return `Property "value" is not valid for GeometryInputBlock type ${typeName ?? FormatPropertyValue(type)}.`;
+            }
+            prepared.value = normalizedValue;
+        }
+
+        const minimum = prepared.min ?? currentProperties.min;
+        const maximum = prepared.max ?? currentProperties.max;
+        if (typeof minimum === "number" && typeof maximum === "number" && minimum > maximum) {
+            return `Property "min" cannot be greater than property "max".`;
+        }
+    }
+
+    return prepared;
+}
+
 // ─── Manager ──────────────────────────────────────────────────────────────
 
 /**
@@ -264,17 +413,30 @@ export class GeometryGraphManager {
             return `Unknown block type "${blockType}". Use list_block_types to see available blocks.`;
         }
 
-        const structuralProperty = properties && Object.keys(properties).find((key) => StructuralBlockProperties.has(key));
-        if (structuralProperty) {
-            return `Property "${structuralProperty}" is structural and cannot be set.`;
-        }
-
         const warnings: string[] = [];
 
         const id = this._nextId.get(geometryName)!;
-        this._nextId.set(geometryName, id + 1);
-
         const name = blockName ?? `${blockType}_${id}`;
+        const initialProperties: Record<string, unknown> = {
+            name,
+            ...(info.defaultSerializedProperties ?? {}),
+        };
+        if (blockType === "GeometryInputBlock") {
+            Object.assign(initialProperties, {
+                type: ConnectionPointTypes.Float,
+                contextualValue: ContextualSources.None,
+                min: 0,
+                max: 0,
+                groupInInspector: "",
+                displayInInspector: true,
+            });
+        }
+        const preparedProperties = PrepareBlockProperties(blockType, initialProperties, properties ?? {});
+        if (typeof preparedProperties === "string") {
+            return preparedProperties;
+        }
+
+        this._nextId.set(geometryName, id + 1);
 
         const block: ISerializedBlock = {
             customType: `BABYLON.${info.className}`,
@@ -290,42 +452,7 @@ export class GeometryGraphManager {
             })),
         };
 
-        // Set default GeometryInputBlock fields so the NGE parser never sees missing values
-        if (blockType === "GeometryInputBlock") {
-            block["type"] = ConnectionPointTypes.Float; // Default; overridden below
-            block["contextualValue"] = ContextualSources.None;
-            block["min"] = 0;
-            block["max"] = 0;
-            block["groupInInspector"] = "";
-            block["displayInInspector"] = true;
-        }
-
-        // Apply registry-defined default properties
-        if (info.defaultSerializedProperties) {
-            for (const [key, value] of Object.entries(info.defaultSerializedProperties)) {
-                block[key] = value;
-            }
-        }
-
-        // Apply user-supplied properties
-        if (properties) {
-            for (const [key, value] of Object.entries(properties)) {
-                if (blockType === "GeometryInputBlock" && key === "type" && typeof value === "string") {
-                    block["type"] = ConnectionPointTypes[value] ?? value;
-                } else if (blockType === "GeometryInputBlock" && key === "contextualValue" && typeof value === "string") {
-                    const cv = ContextualSources[value] ?? value;
-                    block["contextualValue"] = cv;
-                    // Auto-derive type from contextual source
-                    if (typeof cv === "number" && cv !== ContextualSources.None && ContextualSourceToType[cv] !== undefined) {
-                        block["type"] = ContextualSourceToType[cv];
-                    }
-                } else if (typeof value === "string" && BlockEnumProperties[blockType]?.[key]) {
-                    block[key] = BlockEnumProperties[blockType][key][value] ?? value;
-                } else {
-                    block[key] = value;
-                }
-            }
-        }
+        Object.assign(block, initialProperties, preparedProperties);
 
         // For GeometryInputBlock: normalise the value
         if (blockType === "GeometryInputBlock") {
@@ -548,6 +675,72 @@ export class GeometryGraphManager {
         return false;
     }
 
+    private _getBlockTypeInfo(block: ISerializedBlock): IBlockTypeInfo | undefined {
+        const className = block.customType.replace("BABYLON.", "");
+        return Object.values(BlockRegistry).find((info) => info.className === className);
+    }
+
+    private _resolveConnectedInputType(geo: ISerializedGeometry, block: ISerializedBlock, inputName: string, visited: Set<string>): string | undefined {
+        const input = block.inputs.find((entry) => entry.name === inputName);
+        if (input?.targetBlockId === undefined || !input.targetConnectionName) {
+            return undefined;
+        }
+        const sourceBlock = geo.blocks.find((entry) => entry.id === input.targetBlockId);
+        if (!sourceBlock) {
+            return undefined;
+        }
+        const sourceInfo = this._getBlockTypeInfo(sourceBlock);
+        const sourceOutput = sourceInfo?.outputs.find((entry) => entry.name === input.targetConnectionName);
+        return sourceOutput ? this._resolveOutputType(geo, sourceBlock, sourceOutput, visited) : undefined;
+    }
+
+    private _resolveOutputType(geo: ISerializedGeometry, block: ISerializedBlock, output: IConnectionPointInfo, visited = new Set<string>()): string | undefined {
+        const visitKey = `${block.id}:${output.name}`;
+        if (visited.has(visitKey)) {
+            return undefined;
+        }
+        visited.add(visitKey);
+
+        if (output.type === "AutoDetect") {
+            if (block.customType === "BABYLON.GeometryInputBlock") {
+                return typeof block.type === "number" ? ConnectionPointTypeNames.get(block.type) : undefined;
+            }
+            return undefined;
+        }
+        if (output.type === "BasedOnInput") {
+            if (block.customType === "BABYLON.TeleportOutBlock" && typeof block.entryPoint === "number") {
+                const entryPoint = geo.blocks.find((entry) => entry.id === block.entryPoint && entry.customType === "BABYLON.TeleportInBlock");
+                if (entryPoint) {
+                    return this._resolveConnectedInputType(geo, entryPoint, "input", visited) ?? output.type;
+                }
+            }
+            if (block.customType === "BABYLON.MathBlock") {
+                const leftType = this._resolveConnectedInputType(geo, block, "left", visited);
+                const rightType = this._resolveConnectedInputType(geo, block, "right", visited);
+                if (!leftType) {
+                    return rightType ?? output.defaultConnectionPointType ?? output.type;
+                }
+                if (!rightType) {
+                    return leftType;
+                }
+                if (leftType === "Int" || (leftType === "Float" && rightType !== "Int")) {
+                    return rightType;
+                }
+                return leftType;
+            }
+            const sourceType = output.typeConnectionSource ? this._resolveConnectedInputType(geo, block, output.typeConnectionSource, visited) : undefined;
+            return sourceType ?? output.defaultConnectionPointType ?? output.type;
+        }
+        return output.type;
+    }
+
+    private _resolveInputType(geo: ISerializedGeometry, block: ISerializedBlock, input: IConnectionPointInfo): string | undefined {
+        if (input.type !== "AutoDetect") {
+            return input.type === "BasedOnInput" ? undefined : input.type;
+        }
+        return input.linkedConnectionSource && !input.isMainLinkSource ? this._resolveConnectedInputType(geo, block, input.linkedConnectionSource, new Set<string>()) : undefined;
+    }
+
     // ── Connections ────────────────────────────────────────────────────
 
     /**
@@ -586,6 +779,32 @@ export class GeometryGraphManager {
         if (!input) {
             const available = targetBlock.inputs.map((i) => i.name).join(", ");
             return `Input "${inputName}" not found on block ${targetBlockId} ("${targetBlock.name}"). Available: ${available}`;
+        }
+
+        const sourceInfo = this._getBlockTypeInfo(sourceBlock);
+        const targetInfo = this._getBlockTypeInfo(targetBlock);
+        const outputInfo = sourceInfo?.outputs.find((entry) => entry.name === outputName);
+        const inputInfo = targetInfo?.inputs.find((entry) => entry.name === inputName);
+        if (!outputInfo || !inputInfo) {
+            return `Cannot validate connection metadata for ${sourceBlock.name}.${outputName} -> ${targetBlock.name}.${inputName}.`;
+        }
+
+        const sourceType = this._resolveOutputType(geo, sourceBlock, outputInfo);
+        const targetType = this._resolveInputType(geo, targetBlock, inputInfo);
+        if (sourceType) {
+            const accepted = [...(inputInfo.acceptedConnectionPointTypes ?? [])];
+            if (targetBlock.customType === "BABYLON.MathBlock" && targetType) {
+                accepted.push("Int", "Float", targetType);
+                if (targetType === "Int" || targetType === "Float") {
+                    accepted.push("Vector2", "Vector3", "Vector4");
+                }
+            }
+            const excluded = inputInfo.excludedConnectionPointTypes ?? [];
+            const typeMismatch = targetType !== undefined && sourceType !== targetType && !accepted.includes(sourceType);
+            const explicitlyExcluded = !typeMismatch && excluded.includes(sourceType);
+            if (typeMismatch || explicitlyExcluded) {
+                return `Incompatible connection: ${sourceBlock.name}.${outputName} (${sourceType}) cannot connect to ${targetBlock.name}.${inputName} (${targetType ?? inputInfo.type}).`;
+            }
         }
 
         if (this._wouldCreateCycle(geo, sourceBlockId, targetBlockId)) {
@@ -968,34 +1187,29 @@ export class GeometryGraphManager {
         }
 
         const typeName = block.customType.replace("BABYLON.", "");
-
-        const structuralProperty = Object.keys(properties).find((key) => StructuralBlockProperties.has(key));
-        if (structuralProperty) {
-            return `Property "${structuralProperty}" is structural and cannot be set.`;
+        const blockType = Object.entries(BlockRegistry).find(([, info]) => info.className === typeName)?.[0];
+        if (!blockType) {
+            return `Block ${blockId} has unsupported type "${typeName}".`;
+        }
+        const preparedProperties = PrepareBlockProperties(blockType, block, properties);
+        if (typeof preparedProperties === "string") {
+            return preparedProperties;
         }
 
-        for (const [key, value] of Object.entries(properties)) {
-            if (typeName === "GeometryInputBlock" && key === "type" && typeof value === "string") {
-                block["type"] = ConnectionPointTypes[value] ?? value;
-            } else if (typeName === "GeometryInputBlock" && key === "contextualValue" && typeof value === "string") {
-                const cv = ContextualSources[value] ?? value;
-                block["contextualValue"] = cv;
-                if (typeof cv === "number" && cv !== ContextualSources.None && ContextualSourceToType[cv] !== undefined) {
-                    block["type"] = ContextualSourceToType[cv];
-                }
-            } else if (typeof value === "string" && BlockEnumProperties[typeName]?.[key]) {
-                block[key] = BlockEnumProperties[typeName][key][value] ?? value;
-            } else {
-                block[key] = value;
-            }
-        }
-
-        // Re-normalise GeometryInputBlock value after property changes
+        const candidate = { ...block, ...preparedProperties };
         if (typeName === "GeometryInputBlock") {
-            this._normaliseInputBlockValue(block);
-            this._ensureDefaultValue(block);
+            if (
+                (Object.prototype.hasOwnProperty.call(properties, "type") || Object.prototype.hasOwnProperty.call(properties, "contextualValue")) &&
+                !Object.prototype.hasOwnProperty.call(properties, "value")
+            ) {
+                delete candidate.value;
+                delete candidate.valueType;
+            }
+            this._normaliseInputBlockValue(candidate);
+            this._ensureDefaultValue(candidate);
         }
 
+        Object.assign(block, candidate);
         return "OK";
     }
 

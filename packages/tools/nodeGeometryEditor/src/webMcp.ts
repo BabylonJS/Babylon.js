@@ -12,6 +12,7 @@ import {
 import { LoadSnippet, SaveSnippet, type IDataSnippetResult } from "@tools/snippet-loader";
 
 import { type GlobalState } from "./globalState";
+import { EncodeNodeGeometryUrlHash } from "./encodedGeometryUrl";
 import { SerializationTools } from "./serializationTools";
 
 export { IsWebMcpSupported as IsNodeGeometryWebMcpSupported };
@@ -21,8 +22,9 @@ const CurrentGeometryName = "__current_node_geometry__";
 const SupportedSerializedBlockTypes = new Set(Object.values(BlockRegistry).map((info) => `BABYLON.${info.className}`));
 
 interface ICurrentGeometryCache {
-    editorSerialization: string;
-    geometry: ISerializedGeometry;
+    logicalToRuntime: Map<number, number>;
+    runtimeToLogical: Map<number, number>;
+    nextLogicalId: number;
 }
 
 const CurrentGeometryCache = new WeakMap<GlobalState, ICurrentGeometryCache>();
@@ -264,7 +266,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             description: "Return the complete serialized Node Geometry document currently open in Babylon.js Node Geometry Editor.",
             inputSchema: EmptyInputSchema,
             annotations: readOnlyAnnotations,
-            execute: (_input, signal) => {
+            execute: (_input, { signal }) => {
                 signal.throwIfAborted();
                 return ReadCurrentNodeGeometry(globalState);
             },
@@ -274,7 +276,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Create current node geometry",
             description: "Replace the current editor document with a new empty Node Geometry.",
             inputSchema: CreateGeometryInputSchema,
-            execute: (input, signal) => {
+            execute: (input, { signal }) => {
                 AssertMutationAllowed(globalState, signal);
                 const manager = new GeometryGraphManager();
                 manager.createGeometry(CurrentGeometryName, ReadOptionalString(input, "comment"));
@@ -287,7 +289,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Replace current node geometry",
             description: "Replace the current Node Geometry document and refresh the graph and preview.",
             inputSchema: ReplaceGeometryInputSchema,
-            execute: (input, signal) => {
+            execute: (input, { signal }) => {
                 AssertMutationAllowed(globalState, signal);
                 const manager = CreateManagerFromSerializedGeometry(ReadSerializedNodeGeometry(input.nodeGeometry));
                 ApplyManagerDocument(manager, globalState);
@@ -299,7 +301,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Rebuild current node geometry",
             description: "Rebuild the current Node Geometry graph and refresh its preview.",
             inputSchema: EmptyInputSchema,
-            execute: (_input, signal) => {
+            execute: (_input, { signal }) => {
                 AssertMutationAllowed(globalState, signal);
                 globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
                 return {
@@ -313,7 +315,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Add node geometry block",
             description: "Add one block to the current Node Geometry. Use list_block_types or get_block_type_info to discover supported blocks and ports.",
             inputSchema: AddBlockInputSchema,
-            execute: (input, signal) =>
+            execute: (input, { signal }) =>
                 MutateCurrentGeometry(globalState, signal, (manager) => {
                     const result = manager.addBlock(
                         CurrentGeometryName,
@@ -336,7 +338,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Add node geometry blocks",
             description: "Add multiple blocks to the current Node Geometry as one editor update.",
             inputSchema: AddBlocksBatchInputSchema,
-            execute: (input, signal) =>
+            execute: (input, { signal }) =>
                 MutateCurrentGeometry(globalState, signal, (manager) => {
                     const blocks = ReadRecordArray(input, "blocks");
                     const created = blocks.map((block) => {
@@ -365,7 +367,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Remove node geometry block",
             description: "Remove a block and its connections from the current Node Geometry.",
             inputSchema: BlockIdInputSchema,
-            execute: (input, signal) =>
+            execute: (input, { signal }) =>
                 MutateCurrentGeometry(globalState, signal, (manager) => {
                     ThrowOnManagerError(manager.removeBlock(CurrentGeometryName, ReadNumber(input, "blockId")));
                     return { success: true };
@@ -376,7 +378,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Set node geometry block properties",
             description: "Set one or more properties on a block in the current Node Geometry.",
             inputSchema: SetBlockPropertiesInputSchema,
-            execute: (input, signal) =>
+            execute: (input, { signal }) =>
                 MutateCurrentGeometry(globalState, signal, (manager) => {
                     ThrowOnManagerError(manager.setBlockProperties(CurrentGeometryName, ReadNumber(input, "blockId"), ReadRecord(input, "properties")));
                     return { success: true };
@@ -387,7 +389,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Connect node geometry blocks",
             description: "Connect an output on one block to an input on another block in the current Node Geometry.",
             inputSchema: ConnectionSchema,
-            execute: (input, signal) =>
+            execute: (input, { signal }) =>
                 MutateCurrentGeometry(globalState, signal, (manager) => {
                     ThrowOnManagerError(
                         manager.connectBlocks(
@@ -406,7 +408,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Connect node geometry blocks in batch",
             description: "Connect multiple block pairs in the current Node Geometry as one editor update.",
             inputSchema: ConnectBlocksBatchInputSchema,
-            execute: (input, signal) =>
+            execute: (input, { signal }) =>
                 MutateCurrentGeometry(globalState, signal, (manager) => {
                     const connections = ReadRecordArray(input, "connections");
                     for (const connection of connections) {
@@ -431,7 +433,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             title: "Disconnect node geometry input",
             description: "Remove the connection feeding an input on a block in the current Node Geometry.",
             inputSchema: DisconnectInputSchema,
-            execute: (input, signal) =>
+            execute: (input, { signal }) =>
                 MutateCurrentGeometry(globalState, signal, (manager) => {
                     ThrowOnManagerError(manager.disconnectInput(CurrentGeometryName, ReadNumber(input, "blockId"), ReadString(input, "inputName")));
                     return { success: true };
@@ -443,7 +445,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             description: "Return a human-readable description of all blocks and connections in the current Node Geometry.",
             inputSchema: EmptyInputSchema,
             annotations: readOnlyAnnotations,
-            execute: (_input, signal) => {
+            execute: (_input, { signal }) => {
                 signal.throwIfAborted();
                 return {
                     description: CreateManagerFromEditor(globalState).describeGeometry(CurrentGeometryName),
@@ -456,7 +458,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             description: "Return detailed properties, ports, and connections for one block in the current Node Geometry.",
             inputSchema: BlockIdInputSchema,
             annotations: readOnlyAnnotations,
-            execute: (input, signal) => {
+            execute: (input, { signal }) => {
                 signal.throwIfAborted();
                 const manager = CreateManagerFromEditor(globalState);
                 const blockId = ReadNumber(input, "blockId");
@@ -477,7 +479,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             annotations: {
                 readOnlyHint: true,
             },
-            execute: (input, signal) => {
+            execute: (input, { signal }) => {
                 signal.throwIfAborted();
                 const category = ReadOptionalString(input, "category");
                 const blocks = Object.entries(BlockRegistry)
@@ -501,7 +503,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             annotations: {
                 readOnlyHint: true,
             },
-            execute: (input, signal) => {
+            execute: (input, { signal }) => {
                 signal.throwIfAborted();
                 const blockType = ReadString(input, "blockType");
                 const info = GetBlockTypeDetails(blockType);
@@ -522,7 +524,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             annotations: {
                 readOnlyHint: true,
             },
-            execute: (_input, signal) => {
+            execute: (_input, { signal }) => {
                 signal.throwIfAborted();
                 return {
                     catalog: NgeEnumCatalog,
@@ -538,7 +540,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             annotations: {
                 readOnlyHint: true,
             },
-            execute: (_input, signal) => {
+            execute: (_input, { signal }) => {
                 signal.throwIfAborted();
                 return {
                     markdown: NgeConceptsMarkdown,
@@ -551,7 +553,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             description: "Validate the current Node Geometry for missing output, required inputs, broken references, and orphan blocks.",
             inputSchema: EmptyInputSchema,
             annotations: readOnlyAnnotations,
-            execute: (_input, signal) => {
+            execute: (_input, { signal }) => {
                 signal.throwIfAborted();
                 const issues = CreateManagerFromEditor(globalState).validateGeometry(CurrentGeometryName);
                 return {
@@ -567,7 +569,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             inputSchema: SnippetIdInputSchema,
             // WebMCP defines this callback name.
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            execute: async (input, signal) => {
+            execute: async (input, { signal }) => {
                 AssertMutationAllowed(globalState, signal);
                 const snippetId = ReadString(input, "snippetId");
                 const result = await LoadSnippet(snippetId);
@@ -593,7 +595,7 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             },
             // WebMCP defines this callback name.
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            execute: async (input, signal) => {
+            execute: async (input, { signal }) => {
                 signal.throwIfAborted();
                 const result = await SaveSnippet(
                     {
@@ -623,11 +625,10 @@ export function CreateNodeGeometryWebMcpTools(globalState: GlobalState): readonl
             description: "Create a URL that opens the current serialized Node Geometry in the hosted Babylon.js Node Geometry Editor.",
             inputSchema: EmptyInputSchema,
             annotations: readOnlyAnnotations,
-            execute: (_input, signal) => {
+            execute: (_input, { signal }) => {
                 signal.throwIfAborted();
-                const serialized = JSON.stringify(ReadCurrentNodeGeometry(globalState));
                 return {
-                    url: `https://nge.babylonjs.com/#${EncodeBase64(serialized, globalState.hostWindow)}`,
+                    url: `https://nge.babylonjs.com/#${EncodeNodeGeometryUrlHash(ReadCurrentNodeGeometry(globalState), globalState.hostWindow)}`,
                     warning: "Very large Node Geometries should be saved as snippets instead of embedded in a URL.",
                 };
             },
@@ -652,13 +653,22 @@ function AssertMutationAllowed(globalState: GlobalState, signal: AbortSignal): v
 
 function MutateCurrentGeometry<T extends object>(globalState: GlobalState, signal: AbortSignal, mutation: (manager: GeometryGraphManager) => T): T & { blockCount: number } {
     AssertMutationAllowed(globalState, signal);
-    const manager = CreateManagerFromEditor(globalState);
+    const before = ReadCurrentNodeGeometry(globalState);
+    const manager = CreateManagerFromSerializedGeometry(before);
     const result = mutation(manager);
     signal.throwIfAborted();
-    ApplyManagerDocument(manager, globalState);
+    const after = ExportManagerDocument(manager);
+    const editor = globalState.webMcpEditor;
+    if (!editor) {
+        throw new Error("The live Node Geometry editor is not ready for WebMCP mutations.");
+    }
+
+    const cache = GetOrCreateCurrentGeometryCache(globalState);
+    const logicalToRuntime = editor.applyIncrementalUpdate(before, after, cache.logicalToRuntime);
+    SetCurrentGeometryCache(globalState, logicalToRuntime, cache.nextLogicalId);
     return {
         ...result,
-        blockCount: manager.getGeometry(CurrentGeometryName)!.blocks.length,
+        blockCount: after.blocks.length,
     };
 }
 
@@ -675,16 +685,22 @@ function CreateManagerFromSerializedGeometry(value: unknown): GeometryGraphManag
 }
 
 function ApplyManagerDocument(manager: GeometryGraphManager, globalState: GlobalState): void {
-    const json = manager.exportJSON(CurrentGeometryName);
-    if (!json) {
-        throw new Error("The current Node Geometry could not be exported.");
-    }
-    const geometry = ReadSerializedNodeGeometry(JSON.parse(json));
+    const geometry = ExportManagerDocument(manager);
     ApplySerializedNodeGeometryToEditor(CloneSerializedNodeGeometry(geometry), globalState);
-    CurrentGeometryCache.set(globalState, {
-        editorSerialization: SerializationTools.Serialize(globalState.nodeGeometry, globalState),
-        geometry,
+    const runtimeGeometry = ReadSerializedNodeGeometry(JSON.parse(SerializationTools.Serialize(globalState.nodeGeometry, globalState)));
+    if (runtimeGeometry.blocks.length !== geometry.blocks.length) {
+        throw new Error("The editor did not preserve every block from the applied Node Geometry.");
+    }
+
+    const logicalToRuntime = new Map<number, number>();
+    geometry.blocks.forEach((block, index) => {
+        const runtimeBlock = runtimeGeometry.blocks[index];
+        if (runtimeBlock.customType !== block.customType) {
+            throw new Error(`The editor replaced logical block ${block.id} with an unexpected runtime block type.`);
+        }
+        logicalToRuntime.set(block.id, runtimeBlock.id);
     });
+    SetCurrentGeometryCache(globalState, logicalToRuntime);
 }
 
 function CreateDocumentSummary(manager: GeometryGraphManager): { success: true; blockCount: number } {
@@ -695,18 +711,103 @@ function CreateDocumentSummary(manager: GeometryGraphManager): { success: true; 
 }
 
 function ReadCurrentNodeGeometry(globalState: GlobalState): ISerializedGeometry {
-    const editorSerialization = SerializationTools.Serialize(globalState.nodeGeometry, globalState);
-    const cached = CurrentGeometryCache.get(globalState);
-    if (cached?.editorSerialization === editorSerialization) {
-        return CloneSerializedNodeGeometry(cached.geometry);
+    const runtimeGeometry = ReadSerializedNodeGeometry(JSON.parse(SerializationTools.Serialize(globalState.nodeGeometry, globalState)));
+    const cache = GetOrCreateCurrentGeometryCache(globalState);
+    ReconcileCurrentGeometryCache(cache, runtimeGeometry);
+    return RemapSerializedNodeGeometry(runtimeGeometry, (runtimeId) => cache.runtimeToLogical.get(runtimeId) ?? runtimeId);
+}
+
+function ExportManagerDocument(manager: GeometryGraphManager): ISerializedGeometry {
+    const json = manager.exportJSON(CurrentGeometryName);
+    if (!json) {
+        throw new Error("The current Node Geometry could not be exported.");
+    }
+    return ReadSerializedNodeGeometry(JSON.parse(json));
+}
+
+function GetOrCreateCurrentGeometryCache(globalState: GlobalState): ICurrentGeometryCache {
+    let cache = CurrentGeometryCache.get(globalState);
+    if (!cache) {
+        cache = {
+            logicalToRuntime: new Map(),
+            runtimeToLogical: new Map(),
+            nextLogicalId: 1,
+        };
+        CurrentGeometryCache.set(globalState, cache);
+    }
+    return cache;
+}
+
+function SetCurrentGeometryCache(globalState: GlobalState, logicalToRuntime: ReadonlyMap<number, number>, minimumNextLogicalId = 1): void {
+    const mapping = new Map(logicalToRuntime);
+    CurrentGeometryCache.set(globalState, {
+        logicalToRuntime: mapping,
+        runtimeToLogical: new Map(Array.from(mapping, ([logicalId, runtimeId]) => [runtimeId, logicalId])),
+        nextLogicalId: Math.max(minimumNextLogicalId, Math.max(0, ...mapping.keys()) + 1),
+    });
+}
+
+function ReconcileCurrentGeometryCache(cache: ICurrentGeometryCache, runtimeGeometry: ISerializedGeometry): void {
+    const editorMap = (runtimeGeometry.editorData as { map?: Record<string, number> } | undefined)?.map;
+    if (editorMap) {
+        for (const [previousRuntimeIdText, runtimeId] of Object.entries(editorMap)) {
+            const previousRuntimeId = Number(previousRuntimeIdText);
+            const logicalId = cache.runtimeToLogical.get(previousRuntimeId);
+            if (logicalId !== undefined) {
+                cache.runtimeToLogical.delete(previousRuntimeId);
+                cache.runtimeToLogical.set(runtimeId, logicalId);
+                cache.logicalToRuntime.set(logicalId, runtimeId);
+            }
+        }
     }
 
-    const geometry = ReadSerializedNodeGeometry(JSON.parse(editorSerialization));
-    CurrentGeometryCache.set(globalState, {
-        editorSerialization,
-        geometry,
-    });
-    return CloneSerializedNodeGeometry(geometry);
+    const currentRuntimeIds = new Set(runtimeGeometry.blocks.map((block) => block.id));
+    for (const [runtimeId, logicalId] of cache.runtimeToLogical) {
+        if (!currentRuntimeIds.has(runtimeId)) {
+            cache.runtimeToLogical.delete(runtimeId);
+            cache.logicalToRuntime.delete(logicalId);
+        }
+    }
+
+    const usedLogicalIds = new Set(cache.logicalToRuntime.keys());
+    for (const block of runtimeGeometry.blocks) {
+        if (cache.runtimeToLogical.has(block.id)) {
+            continue;
+        }
+
+        let logicalId = block.id;
+        if (usedLogicalIds.has(logicalId)) {
+            while (usedLogicalIds.has(cache.nextLogicalId)) {
+                cache.nextLogicalId++;
+            }
+            logicalId = cache.nextLogicalId++;
+        }
+        usedLogicalIds.add(logicalId);
+        cache.runtimeToLogical.set(block.id, logicalId);
+        cache.logicalToRuntime.set(logicalId, block.id);
+        cache.nextLogicalId = Math.max(cache.nextLogicalId, logicalId + 1);
+    }
+}
+
+function RemapSerializedNodeGeometry(geometry: ISerializedGeometry, remapId: (id: number) => number): ISerializedGeometry {
+    const remapped = CloneSerializedNodeGeometry(geometry);
+    remapped.blocks = remapped.blocks.map((block) => ({
+        ...block,
+        id: remapId(block.id),
+        inputs: block.inputs.map((input) => ({
+            ...input,
+            targetBlockId: input.targetBlockId === undefined ? undefined : remapId(input.targetBlockId),
+        })),
+    }));
+    remapped.outputNodeId = remapped.outputNodeId < 0 ? -1 : remapId(remapped.outputNodeId);
+    if (remapped.editorData) {
+        remapped.editorData.locations = remapped.editorData.locations.map((location) => ({
+            ...location,
+            blockId: remapId(location.blockId),
+        }));
+        delete (remapped.editorData as { map?: Record<string, number> }).map;
+    }
+    return remapped;
 }
 
 function ReadSerializedNodeGeometry(value: unknown): ISerializedGeometry {
@@ -819,13 +920,4 @@ function ThrowOnManagerError(result: string): void {
     if (result !== "OK") {
         throw new Error(result);
     }
-}
-
-function EncodeBase64(value: string, hostWindow: Window): string {
-    const bytes = new TextEncoder().encode(value);
-    let binary = "";
-    for (const byte of bytes) {
-        binary += String.fromCharCode(byte);
-    }
-    return hostWindow.btoa(binary);
 }

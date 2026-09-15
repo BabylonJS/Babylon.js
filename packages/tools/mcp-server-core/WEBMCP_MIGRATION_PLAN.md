@@ -1,6 +1,6 @@
 # WebMCP Migration Plan
 
-Status: NGE reference implementation implemented and validated with a simulated browser API; native experimental-feature validation pending
+Status: NGE reference implementation implemented and validated with the native experimental WebMCP testing API in Chrome and Edge
 
 ## Summary
 
@@ -218,7 +218,7 @@ If read-only and mutation tools need different registration lifetimes in a futur
 
 ## NGE Reference Implementation
 
-The NGE reference implementation exposes the complete browser-appropriate current-document surface while preserving the standard MCP server. Its shared runtime, domain package, writer arbitration, and tool adapter are the template for later editor migrations. Live browser validation with the experimental WebMCP feature remains required before migrating another editor.
+The NGE reference implementation exposes the complete browser-appropriate current-document surface while preserving the standard MCP server. Its shared runtime, domain package, writer arbitration, and tool adapter are the template for later editor migrations. Native Chrome and Edge validation covers registration, callback execution, live mutation, layout preservation, single-step undo, and encoded-document URL loading.
 
 ### Phase 1: Root lifecycle and arbitration
 
@@ -273,11 +273,13 @@ Each browser mutation should be transactional from the editor's perspective:
 3. Execute the requested operation.
 4. Stop and return a structured error if the operation cannot be applied.
 5. Export the resulting serialized document.
-6. Apply it to the editor.
-7. Refresh the graph, selection, preview, undo history, and framing exactly once.
+6. Apply the validated diff to the live editor graph without replacing unaffected runtime blocks or visual nodes.
+7. Preserve existing layout and selection, refresh changed visuals, rebuild the preview once, and create one undo-history entry.
 8. Return a small structured result rather than the entire document unless the caller requested the document.
 
 Rehydrating from the live editor before every mutation avoids stale shared-manager state when the user edits the graph manually between calls.
+
+Explicit whole-document operations such as create, replace, and import may continue to deserialize a complete graph and reset undo history. Browser-only share URLs use an encoded `nge=` fragment that the hosted editor can load locally; they must not be presented as snippet-server URLs.
 
 ### Phase 4: Expand appropriate parity
 

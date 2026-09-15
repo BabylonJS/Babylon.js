@@ -32,6 +32,7 @@ import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
 import { IsNodeGeometryWebMcpSupported, RegisterNodeGeometryWebMcpToolsAsync } from "./webMcp";
+import { NodeGeometryWebMcpEditor } from "./webMcpEditor";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -134,6 +135,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
             this.prepareHistoryStack();
+            this.props.globalState.webMcpEditor = new NodeGeometryWebMcpEditor(
+                this.props.globalState,
+                this._graphCanvas,
+                (block) => this.appendBlock(block),
+                () => this.forceUpdate()
+            );
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
             (this.props.globalState as any)._previewManager = this._previewManager;
         }

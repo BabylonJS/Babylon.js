@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import { NgeEnumCatalog } from "./referenceData.js";
+
 /**
  * Complete registry of all Node Geometry block types available in Babylon.js.
  * Each entry describes the block's class name, category, target, and its inputs/outputs.
@@ -14,6 +16,32 @@ export interface IConnectionPointInfo {
     type: string;
     /** Whether the connection is optional */
     isOptional?: boolean;
+    /** Additional concrete types accepted by this port */
+    acceptedConnectionPointTypes?: string[];
+    /** Concrete types explicitly rejected by this port */
+    excludedConnectionPointTypes?: string[];
+    /** Port on the same block that determines a BasedOnInput port's type */
+    typeConnectionSource?: string;
+    /** Port on the same block whose inferred AutoDetect type is linked to this port */
+    linkedConnectionSource?: string;
+    /** Whether this is the authoritative side of a linked AutoDetect pair */
+    isMainLinkSource?: boolean;
+    /** Concrete fallback for an unconnected BasedOnInput port */
+    defaultConnectionPointType?: string;
+}
+
+/** Machine-readable validation metadata for a mutable block property. */
+export interface IBlockPropertyInfo {
+    /** The JSON-level value kind accepted by the shared graph API */
+    type: "boolean" | "number" | "integer" | "string" | "enum" | "geometryInputValue" | "vector3Array";
+    /** Enumeration name, when type is enum */
+    enumName?: string;
+    /** Valid enum names and their serialized numeric values */
+    enumValues?: Record<string, number>;
+    /** Inclusive numeric minimum */
+    minimum?: number;
+    /** Inclusive numeric maximum */
+    maximum?: number;
 }
 
 /**
@@ -32,6 +60,8 @@ export interface IBlockTypeInfo {
     outputs: IConnectionPointInfo[];
     /** Extra properties that can be configured on the block */
     properties?: Record<string, string>;
+    /** Machine-readable schemas for properties accepted by add/set operations */
+    propertyMetadata?: Record<string, IBlockPropertyInfo>;
     /**
      * Default property values to bake into newly created blocks of this type.
      * These are REQUIRED by the Babylon deserialiser – omitting them can cause
@@ -1261,6 +1291,218 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         defaultSerializedProperties: { clampCoordinates: true, interpolation: true },
     },
 };
+
+// Connection constraints are copied from the Babylon block constructors so this
+// package can enforce them without loading the Babylon runtime in a browser.
+const NumericExcluded = ["Matrix", "Geometry", "Texture"];
+const VectorExcluded = ["Int", "Float", "Matrix"];
+
+function SetPortMetadata(blockType: string, direction: "inputs" | "outputs", portName: string, metadata: Omit<IConnectionPointInfo, "name" | "type" | "isOptional">): void {
+    const port = BlockRegistry[blockType][direction].find((entry) => entry.name === portName);
+    if (!port) {
+        throw new Error(`Invalid static connection metadata: ${blockType}.${portName}`);
+    }
+    Object.assign(port, metadata);
+}
+
+SetPortMetadata("GeometryTransformBlock", "inputs", "value", { excludedConnectionPointTypes: ["Float", "Matrix", "Texture"] });
+SetPortMetadata("GeometryTransformBlock", "outputs", "output", { typeConnectionSource: "value" });
+SetPortMetadata("GeometryCollectionBlock", "inputs", "geometry0", { linkedConnectionSource: "geometry1" });
+SetPortMetadata("GeometryCollectionBlock", "inputs", "geometry1", { linkedConnectionSource: "geometry0" });
+SetPortMetadata("GeometryCollectionBlock", "outputs", "output", { typeConnectionSource: "geometry0" });
+SetPortMetadata("SetColorsBlock", "inputs", "colors", { excludedConnectionPointTypes: ["Int", "Float", "Vector2", "Texture", "Texture"] });
+SetPortMetadata("SetMaterialIDBlock", "inputs", "id", { acceptedConnectionPointTypes: ["Float"] });
+SetPortMetadata("AggregatorBlock", "outputs", "output", { typeConnectionSource: "source" });
+
+for (const blockType of [
+    "InstantiateBlock",
+    "InstantiateLinearBlock",
+    "InstantiateRadialBlock",
+    "InstantiateOnFacesBlock",
+    "InstantiateOnVerticesBlock",
+    "InstantiateOnVolumeBlock",
+]) {
+    SetPortMetadata(blockType, "inputs", "scaling", { acceptedConnectionPointTypes: ["Float"] });
+}
+
+for (const [blockType, inputName] of [
+    ["GeometryTrigonometryBlock", "input"],
+    ["GeometryClampBlock", "value"],
+    ["GeometrySmoothStepBlock", "value"],
+    ["GeometryStepBlock", "value"],
+    ["NormalizeVectorBlock", "input"],
+    ["GeometryEaseBlock", "input"],
+] as const) {
+    SetPortMetadata(blockType, "inputs", inputName, { excludedConnectionPointTypes: NumericExcluded });
+    SetPortMetadata(blockType, "outputs", "output", { typeConnectionSource: inputName });
+}
+
+for (const [blockType, leftName, rightName] of [
+    ["MathBlock", "left", "right"],
+    ["RandomBlock", "min", "max"],
+    ["GeometryLerpBlock", "left", "right"],
+    ["GeometryNLerpBlock", "left", "right"],
+    ["GeometryModBlock", "left", "right"],
+    ["GeometryPowBlock", "value", "power"],
+    ["GeometryArcTan2Block", "x", "y"],
+] as const) {
+    SetPortMetadata(blockType, "inputs", leftName, { excludedConnectionPointTypes: NumericExcluded, linkedConnectionSource: rightName });
+    SetPortMetadata(blockType, "inputs", rightName, { linkedConnectionSource: leftName });
+    SetPortMetadata(blockType, "outputs", "output", { typeConnectionSource: leftName });
+}
+SetPortMetadata("MathBlock", "inputs", "right", { excludedConnectionPointTypes: NumericExcluded });
+SetPortMetadata("RandomBlock", "inputs", "max", { excludedConnectionPointTypes: NumericExcluded });
+
+SetPortMetadata("ConditionBlock", "inputs", "left", { acceptedConnectionPointTypes: ["Int"] });
+SetPortMetadata("ConditionBlock", "inputs", "right", { acceptedConnectionPointTypes: ["Int"] });
+SetPortMetadata("ConditionBlock", "inputs", "ifTrue", { linkedConnectionSource: "ifFalse" });
+SetPortMetadata("ConditionBlock", "inputs", "ifFalse", { linkedConnectionSource: "ifTrue" });
+SetPortMetadata("ConditionBlock", "outputs", "output", { typeConnectionSource: "ifTrue", defaultConnectionPointType: "Float" });
+
+for (const [blockType, leftName, rightName, rightExcluded] of [
+    ["GeometryDotBlock", "left", "right", ["Float", "Matrix"]],
+    ["GeometryDistanceBlock", "left", "right", ["Float", "Matrix"]],
+    ["GeometryCrossBlock", "left", "right", ["Int", "Float", "Matrix", "Vector2"]],
+] as const) {
+    SetPortMetadata(blockType, "inputs", leftName, {
+        excludedConnectionPointTypes: blockType === "GeometryCrossBlock" ? [...rightExcluded] : VectorExcluded,
+        linkedConnectionSource: rightName,
+    });
+    SetPortMetadata(blockType, "inputs", rightName, { excludedConnectionPointTypes: [...rightExcluded], linkedConnectionSource: leftName });
+}
+
+SetPortMetadata("GeometryLengthBlock", "inputs", "value", { excludedConnectionPointTypes: VectorExcluded });
+SetPortMetadata("NormalizeVectorBlock", "inputs", "input", { excludedConnectionPointTypes: ["Float", "Matrix", "Geometry", "Texture"] });
+SetPortMetadata("GeometryReplaceColorBlock", "inputs", "value", { excludedConnectionPointTypes: ["Float", "Matrix"], linkedConnectionSource: "replacement" });
+SetPortMetadata("GeometryReplaceColorBlock", "inputs", "reference", { excludedConnectionPointTypes: ["Float", "Matrix"], linkedConnectionSource: "value" });
+SetPortMetadata("GeometryReplaceColorBlock", "inputs", "replacement", { excludedConnectionPointTypes: ["Float", "Matrix"], linkedConnectionSource: "value" });
+SetPortMetadata("GeometryReplaceColorBlock", "outputs", "output", { typeConnectionSource: "value" });
+SetPortMetadata("GeometryPosterizeBlock", "inputs", "value", { excludedConnectionPointTypes: ["Matrix"], linkedConnectionSource: "steps" });
+SetPortMetadata("GeometryPosterizeBlock", "inputs", "steps", {
+    acceptedConnectionPointTypes: ["Float"],
+    excludedConnectionPointTypes: ["Matrix"],
+    linkedConnectionSource: "value",
+});
+SetPortMetadata("GeometryPosterizeBlock", "outputs", "output", { typeConnectionSource: "value" });
+SetPortMetadata("MapRangeBlock", "inputs", "value", { excludedConnectionPointTypes: ["Vector2", "Vector3", "Vector4", "Matrix", "Geometry", "Texture"] });
+SetPortMetadata("MapRangeBlock", "outputs", "output", { typeConnectionSource: "value" });
+SetPortMetadata("DebugBlock", "inputs", "input", { excludedConnectionPointTypes: ["Geometry", "Texture"] });
+SetPortMetadata("DebugBlock", "outputs", "output", { typeConnectionSource: "input" });
+SetPortMetadata("GeometryCurveBlock", "inputs", "input", { excludedConnectionPointTypes: ["Matrix", "Int"] });
+SetPortMetadata("GeometryCurveBlock", "outputs", "output", { typeConnectionSource: "input" });
+for (const blockType of ["GeometryElbowBlock", "GeometryInterceptorBlock"]) {
+    SetPortMetadata(blockType, "outputs", "output", { typeConnectionSource: "input" });
+}
+for (const [blockType, inputName] of [
+    ["GeometryCollectionBlock", "geometry0"],
+    ["MathBlock", "left"],
+    ["RandomBlock", "min"],
+    ["GeometryLerpBlock", "left"],
+    ["GeometryNLerpBlock", "left"],
+    ["GeometryModBlock", "left"],
+    ["GeometryPowBlock", "value"],
+    ["GeometryArcTan2Block", "x"],
+    ["ConditionBlock", "ifTrue"],
+    ["GeometryDotBlock", "left"],
+    ["GeometryDistanceBlock", "left"],
+    ["GeometryCrossBlock", "left"],
+    ["GeometryReplaceColorBlock", "value"],
+    ["GeometryPosterizeBlock", "value"],
+] as const) {
+    SetPortMetadata(blockType, "inputs", inputName, { isMainLinkSource: true });
+}
+
+const BooleanProperty = { type: "boolean" } as const;
+const NumberProperty = { type: "number" } as const;
+const StringProperty = { type: "string" } as const;
+
+for (const info of Object.values(BlockRegistry)) {
+    info.propertyMetadata = {
+        name: StringProperty,
+        comments: StringProperty,
+        visibleOnFrame: BooleanProperty,
+    };
+    if (info.properties?.evaluateContext) {
+        info.propertyMetadata.evaluateContext = BooleanProperty;
+    }
+}
+
+function SetPropertyMetadata(blockType: string, metadata: Record<string, IBlockPropertyInfo>): void {
+    Object.assign(BlockRegistry[blockType].propertyMetadata!, metadata);
+}
+
+SetPropertyMetadata("GeometryInputBlock", {
+    type: {
+        type: "enum",
+        enumName: "NodeGeometryBlockConnectionPointTypes",
+        enumValues: Object.fromEntries(
+            Object.entries(NgeEnumCatalog.NodeGeometryBlockConnectionPointTypes.values).filter(([name]) =>
+                ["Int", "Float", "Vector2", "Vector3", "Vector4", "Matrix"].includes(name)
+            )
+        ),
+    },
+    contextualValue: {
+        type: "enum",
+        enumName: "NodeGeometryContextualSources",
+        enumValues: NgeEnumCatalog.NodeGeometryContextualSources.values,
+    },
+    value: { type: "geometryInputValue" },
+    min: NumberProperty,
+    max: NumberProperty,
+    groupInInspector: StringProperty,
+    displayInInspector: BooleanProperty,
+});
+SetPropertyMetadata("MeshBlock", { serializedCachedData: BooleanProperty, reverseWindingOrder: BooleanProperty });
+SetPropertyMetadata("PointListBlock", { points: { type: "vector3Array" } });
+SetPropertyMetadata("BooleanGeometryBlock", {
+    operation: { type: "enum", enumName: "BooleanGeometryOperations", enumValues: NgeEnumCatalog.BooleanGeometryOperations.values },
+    useOldCSGEngine: BooleanProperty,
+});
+SetPropertyMetadata("ExtrudeGeometryBlock", {
+    cap: { type: "enum", enumName: "ExtrudeGeometryCap", enumValues: { NoCap: 0, CapStart: 1, CapEnd: 2, CapAll: 3 } },
+});
+SetPropertyMetadata("SubdivideBlock", { flatOnly: BooleanProperty, loopWeight: { type: "number", minimum: 0, maximum: 1 } });
+SetPropertyMetadata("GeometryOptimizeBlock", { epsilon: { type: "number", minimum: 0 }, optimizeFaces: BooleanProperty });
+SetPropertyMetadata("SetUVsBlock", { textureCoordinateIndex: { type: "integer", minimum: 0, maximum: 5 } });
+SetPropertyMetadata("InstantiateOnVerticesBlock", { removeDuplicatedPositions: BooleanProperty });
+SetPropertyMetadata("InstantiateOnVolumeBlock", { gridMode: BooleanProperty });
+SetPropertyMetadata("MathBlock", {
+    operation: { type: "enum", enumName: "MathBlockOperations", enumValues: NgeEnumCatalog.MathBlockOperations.values },
+});
+SetPropertyMetadata("GeometryTrigonometryBlock", {
+    operation: {
+        type: "enum",
+        enumName: "GeometryTrigonometryBlockOperations",
+        enumValues: NgeEnumCatalog.GeometryTrigonometryBlockOperations.values,
+    },
+});
+SetPropertyMetadata("ConditionBlock", {
+    test: { type: "enum", enumName: "ConditionBlockTests", enumValues: NgeEnumCatalog.ConditionBlockTests.values },
+    epsilon: { type: "number", minimum: 0 },
+});
+SetPropertyMetadata("RandomBlock", {
+    lockMode: { type: "enum", enumName: "RandomBlockLocks", enumValues: NgeEnumCatalog.RandomBlockLocks.values },
+});
+SetPropertyMetadata("AggregatorBlock", {
+    aggregation: { type: "enum", enumName: "Aggregations", enumValues: NgeEnumCatalog.Aggregations.values },
+});
+SetPropertyMetadata("LatticeBlock", {
+    resolutionX: { type: "integer", minimum: 1, maximum: 10 },
+    resolutionY: { type: "integer", minimum: 1, maximum: 10 },
+    resolutionZ: { type: "integer", minimum: 1, maximum: 10 },
+});
+SetPropertyMetadata("MappingBlock", {
+    mapping: { type: "enum", enumName: "MappingTypes", enumValues: NgeEnumCatalog.MappingTypes.values },
+});
+SetPropertyMetadata("GeometryEaseBlock", {
+    type: { type: "enum", enumName: "GeometryEaseBlockTypes", enumValues: NgeEnumCatalog.GeometryEaseBlockTypes.values },
+});
+SetPropertyMetadata("TeleportOutBlock", { entryPoint: { type: "integer", minimum: 0 } });
+SetPropertyMetadata("GeometryTextureBlock", { serializedCachedData: BooleanProperty });
+SetPropertyMetadata("GeometryCurveBlock", {
+    curveType: { type: "enum", enumName: "GeometryCurveBlockTypes", enumValues: NgeEnumCatalog.GeometryEaseBlockTypes.values },
+});
+SetPropertyMetadata("GeometryTextureFetchBlock", { clampCoordinates: BooleanProperty, interpolation: BooleanProperty });
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 

@@ -6,7 +6,7 @@
  */
 
 import { GeometryGraphManager } from "../../src/geometryGraph";
-import { BlockRegistry } from "../../src/blockRegistry";
+import { BlockRegistry, GetBlockTypeDetails } from "../../src/blockRegistry";
 
 // ─── Test Helpers ─────────────────────────────────────────────────────────
 
@@ -198,6 +198,88 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
         expect(block.operation).toBe(3); // Divide = 3
     });
 
+    it("exposes machine-readable mutable property metadata", () => {
+        expect(GetBlockTypeDetails("GeometryInputBlock")?.propertyMetadata).toMatchObject({
+            name: { type: "string" },
+            type: {
+                type: "enum",
+                enumName: "NodeGeometryBlockConnectionPointTypes",
+                enumValues: expect.objectContaining({ Float: 2, Vector3: 8 }),
+            },
+            value: { type: "geometryInputValue" },
+            displayInInspector: { type: "boolean" },
+        });
+        expect(BlockRegistry.LatticeBlock.propertyMetadata?.resolutionX).toEqual({
+            type: "integer",
+            minimum: 1,
+            maximum: 10,
+        });
+    });
+
+    it("validates and normalizes declared block properties", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("validated");
+
+        const box = mgr.addBlock("validated", "BoxBlock", "box", { evaluateContext: true });
+        expect(typeof box).not.toBe("string");
+        expect((box as any).block.evaluateContext).toBe(true);
+
+        const lattice = mgr.addBlock("validated", "LatticeBlock", "lattice", { resolutionX: 4 });
+        expect(typeof lattice).not.toBe("string");
+        expect((lattice as any).block.resolutionX).toBe(4);
+        expect(mgr.setBlockProperties("validated", (lattice as any).block.id, { resolutionX: 0 })).toContain("at least 1");
+
+        const bool = mgr.addBlock("validated", "BooleanGeometryBlock", "csg", { operation: 2 });
+        expect(typeof bool).not.toBe("string");
+        expect((bool as any).block.operation).toBe(2);
+        expect(mgr.setBlockProperties("validated", (bool as any).block.id, { operation: "Subtract" })).toBe("OK");
+        expect((bool as any).block.operation).toBe(1);
+    });
+
+    it("rejects unknown, mistyped, and invalid enum properties atomically", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("invalidProperties");
+
+        expect(mgr.addBlock("invalidProperties", "BoxBlock", "bad", { evaluateContext: "yes" })).toBe('Property "evaluateContext" must be a boolean.');
+        expect(mgr.addBlock("invalidProperties", "BoxBlock", "bad", { invented: true })).toBe('Property "invented" is not configurable on BoxBlock.');
+        expect(mgr.getGeometry("invalidProperties")!.blocks).toHaveLength(0);
+
+        const math = mgr.addBlock("invalidProperties", "MathBlock", "math");
+        expect(typeof math).not.toBe("string");
+        const mathBlock = (math as any).block;
+        expect(mathBlock.id).toBe(1);
+        expect(mgr.setBlockProperties("invalidProperties", mathBlock.id, { name: "changed", operation: "NotAnOperation" })).toContain("must be a valid MathBlockOperations");
+        expect(mathBlock.name).toBe("math");
+        expect(mathBlock.operation).toBe(0);
+    });
+
+    it("validates and normalizes GeometryInputBlock values", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("inputValidation");
+
+        const vector = mgr.addBlock("inputValidation", "GeometryInputBlock", "vector", {
+            type: "Vector3",
+            value: { x: 1, y: 2, z: 3 },
+        });
+        expect(typeof vector).not.toBe("string");
+        expect((vector as any).block.value).toEqual([1, 2, 3]);
+
+        expect(
+            mgr.addBlock("inputValidation", "GeometryInputBlock", "badVector", {
+                type: "Vector3",
+                value: [1, 2],
+            })
+        ).toContain('Property "value" is not valid');
+        expect(mgr.addBlock("inputValidation", "GeometryInputBlock", "badType", { type: "Geometry" })).toContain("must be a valid NodeGeometryBlockConnectionPointTypes");
+        expect(mgr.setBlockProperties("inputValidation", (vector as any).block.id, { displayInInspector: 1 })).toBe('Property "displayInInspector" must be a boolean.');
+        expect((vector as any).block.displayInInspector).toBe(true);
+        expect(mgr.setBlockProperties("inputValidation", (vector as any).block.id, { type: "Float" })).toContain('Property "value" is not valid');
+        expect((vector as any).block.type).toBe(8);
+        expect(mgr.setBlockProperties("inputValidation", (vector as any).block.id, { type: "Float", value: 2 })).toBe("OK");
+        expect((vector as any).block.type).toBe(2);
+        expect((vector as any).block.value).toBe(2);
+    });
+
     it("rejects structural properties when adding or updating blocks", () => {
         const structuralProperties = ["customType", "id", "inputs", "outputs"];
 
@@ -256,6 +338,36 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
 
         // Non-existent geometry
         expect(mgr.connectBlocks("nope", boxId, "geometry", boxId, "geometry")).toContain("not found");
+    });
+
+    it("rejects incompatible concrete and inferred connection types without mutation", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("typedConnections");
+        mgr.addBlock("typedConnections", "BoxBlock", "box");
+        mgr.addBlock("typedConnections", "GeometryInputBlock", "vector", { type: "Vector3", value: [1, 2, 3] });
+        mgr.addBlock("typedConnections", "GeometryTransformBlock", "transform");
+        mgr.addBlock("typedConnections", "GeometryOutputBlock", "output");
+
+        expect(mgr.connectBlocks("typedConnections", 1, "geometry", 1, "size")).toContain("Incompatible connection");
+        expect(mgr.getGeometry("typedConnections")!.blocks[0].inputs.find((input) => input.name === "size")!.targetBlockId).toBeUndefined();
+        expect(mgr.connectBlocks("typedConnections", 2, "output", 1, "size")).toContain("Vector3");
+        expect(mgr.connectBlocks("typedConnections", 2, "output", 3, "value")).toBe("OK");
+        expect(mgr.connectBlocks("typedConnections", 3, "output", 4, "geometry")).toContain("Vector3");
+    });
+
+    it("handles accepted, excluded, and BasedOnInput connection metadata", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("connectionMetadata");
+        mgr.addBlock("connectionMetadata", "GeometryInputBlock", "scalar", { type: "Float", value: 2 });
+        mgr.addBlock("connectionMetadata", "InstantiateBlock", "instances");
+        mgr.addBlock("connectionMetadata", "MathBlock", "math");
+        mgr.addBlock("connectionMetadata", "BoxBlock", "box");
+        mgr.addBlock("connectionMetadata", "DebugBlock", "debug");
+
+        expect(mgr.connectBlocks("connectionMetadata", 1, "output", 2, "scaling")).toBe("OK");
+        expect(mgr.connectBlocks("connectionMetadata", 1, "output", 3, "left")).toBe("OK");
+        expect(mgr.connectBlocks("connectionMetadata", 3, "output", 4, "size")).toBe("OK");
+        expect(mgr.connectBlocks("connectionMetadata", 4, "geometry", 5, "input")).toContain("Incompatible connection");
     });
 
     it("rejects connections that would create a cycle", () => {

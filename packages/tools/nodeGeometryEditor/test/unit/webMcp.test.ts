@@ -12,6 +12,7 @@ vi.mock("@tools/snippet-loader", () => ({
 }));
 
 import { type GlobalState } from "../../src/globalState";
+import { DecodeNodeGeometryUrlHash } from "../../src/encodedGeometryUrl";
 import { SerializationTools } from "../../src/serializationTools";
 import { type IWebMcpTool, CreateNodeGeometryWebMcpTools, IsNodeGeometryWebMcpSupported, RegisterNodeGeometryWebMcpToolsAsync } from "../../src/webMcp";
 
@@ -35,6 +36,7 @@ function CreateTestState(registrations: IRegistration[], rebuild: () => void): G
         },
         hostWindow: {
             btoa,
+            atob,
         },
         nodeGeometry: {
             attachedBlocks: [],
@@ -136,7 +138,7 @@ describe("Node Geometry WebMCP", () => {
             readOnlyHint: true,
             untrustedContentHint: true,
         });
-        expect(registrations[15].tool.execute({}, new AbortController().signal)).toEqual({
+        expect(registrations[15].tool.execute({}, { signal: new AbortController().signal })).toEqual({
             catalog: NgeEnumCatalog,
             markdown: GetNgeEnumsReference(),
         });
@@ -147,11 +149,11 @@ describe("Node Geometry WebMCP", () => {
         const controller = new AbortController();
         const tools = CreateNodeGeometryWebMcpTools(state);
 
-        expect(FindTool(tools, "get_node_geometry_enums").execute({}, controller.signal)).toEqual({
+        expect(FindTool(tools, "get_node_geometry_enums").execute({}, { signal: controller.signal })).toEqual({
             catalog: NgeEnumCatalog,
             markdown: GetNgeEnumsReference(),
         });
-        expect(FindTool(tools, "get_node_geometry_concepts").execute({}, controller.signal)).toEqual({
+        expect(FindTool(tools, "get_node_geometry_concepts").execute({}, { signal: controller.signal })).toEqual({
             markdown: NgeConceptsMarkdown,
         });
     });
@@ -174,17 +176,23 @@ describe("Node Geometry WebMCP", () => {
         vi.spyOn(SerializationTools, "Deserialize").mockImplementation((value) => {
             currentGeometry = value as Record<string, unknown>;
         });
+        state.webMcpEditor = {
+            applyIncrementalUpdate: vi.fn((_before, after) => {
+                currentGeometry = after as unknown as Record<string, unknown>;
+                return new Map(after.blocks.map((block) => [block.id, block.id]));
+            }),
+        } as unknown as GlobalState["webMcpEditor"];
 
         const tools = CreateNodeGeometryWebMcpTools(state);
-        expect(FindTool(tools, "create_current_node_geometry").execute({}, controller.signal)).toEqual({
+        expect(FindTool(tools, "create_current_node_geometry").execute({}, { signal: controller.signal })).toEqual({
             success: true,
             blockCount: 0,
         });
-        expect(FindTool(tools, "get_current_node_geometry").execute({}, controller.signal)).toMatchObject({
+        expect(FindTool(tools, "get_current_node_geometry").execute({}, { signal: controller.signal })).toMatchObject({
             outputNodeId: -1,
             blocks: [],
         });
-        expect(FindTool(tools, "add_block").execute({ blockType: "BoxBlock" }, controller.signal)).toMatchObject({
+        expect(FindTool(tools, "add_block").execute({ blockType: "BoxBlock" }, { signal: controller.signal })).toMatchObject({
             success: true,
             blockCount: 1,
         });
@@ -205,14 +213,21 @@ describe("Node Geometry WebMCP", () => {
             currentGeometry = RemapGeometryIds(value, nextRuntimeId);
             nextRuntimeId += currentGeometry.blocks.length + 1;
         });
+        state.webMcpEditor = {
+            applyIncrementalUpdate: vi.fn((_before, after) => {
+                currentGeometry = RemapGeometryIds(after, nextRuntimeId);
+                nextRuntimeId += currentGeometry.blocks.length + 1;
+                return new Map(after.blocks.map((block, index) => [block.id, currentGeometry.blocks[index].id]));
+            }),
+        } as unknown as GlobalState["webMcpEditor"];
 
         const tools = CreateNodeGeometryWebMcpTools(state);
         const getTool = FindTool(tools, "get_current_node_geometry");
         const addTool = FindTool(tools, "add_block");
         const connectTool = FindTool(tools, "connect_blocks");
 
-        expect(getTool.execute({}, controller.signal)).toEqual(currentGeometry);
-        expect(addTool.execute({ blockType: "BoxBlock", name: "Box" }, controller.signal)).toMatchObject({
+        expect(getTool.execute({}, { signal: controller.signal })).toEqual(currentGeometry);
+        expect(addTool.execute({ blockType: "BoxBlock", name: "Box" }, { signal: controller.signal })).toMatchObject({
             success: true,
             blockCount: 1,
             block: {
@@ -221,7 +236,17 @@ describe("Node Geometry WebMCP", () => {
                 customType: "BABYLON.BoxBlock",
             },
         });
-        expect(addTool.execute({ blockType: "GeometryOutputBlock", name: "Output" }, controller.signal)).toMatchObject({
+        currentGeometry.blocks[0].name = "Box renamed by user";
+        currentGeometry.editorData = {
+            locations: [{ blockId: currentGeometry.blocks[0].id, x: 125, y: 75 }],
+        };
+        expect(getTool.execute({}, { signal: controller.signal })).toMatchObject({
+            blocks: [{ id: 1, name: "Box renamed by user" }],
+            editorData: {
+                locations: [{ blockId: 1, x: 125, y: 75 }],
+            },
+        });
+        expect(addTool.execute({ blockType: "GeometryOutputBlock", name: "Output" }, { signal: controller.signal })).toMatchObject({
             success: true,
             blockCount: 2,
             block: {
@@ -237,14 +262,14 @@ describe("Node Geometry WebMCP", () => {
                     targetBlockId: 2,
                     inputName: "geometry",
                 },
-                controller.signal
+                { signal: controller.signal }
             )
         ).toMatchObject({
             success: true,
             blockCount: 2,
         });
 
-        const exposedGeometry = getTool.execute({}, controller.signal) as ISerializedGeometry;
+        const exposedGeometry = getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry;
         expect(exposedGeometry.outputNodeId).toBe(2);
         expect(exposedGeometry.blocks).toHaveLength(2);
         expect(exposedGeometry.blocks[1].inputs[0]).toMatchObject({
@@ -252,7 +277,61 @@ describe("Node Geometry WebMCP", () => {
             targetConnectionName: "geometry",
         });
         expect(currentGeometry.outputNodeId).not.toBe(exposedGeometry.outputNodeId);
-        expect(deserialize).toHaveBeenCalledTimes(3);
+        expect(deserialize).not.toHaveBeenCalled();
+    });
+
+    it("preserves logical ids when editor history remaps runtime ids", () => {
+        const state = CreateTestState([], vi.fn());
+        const controller = new AbortController();
+        let currentGeometry: ISerializedGeometry = {
+            customType: "BABYLON.NodeGeometry",
+            outputNodeId: -1,
+            blocks: [
+                {
+                    customType: "BABYLON.BoxBlock",
+                    id: 100,
+                    name: "Box",
+                    inputs: [],
+                    outputs: [{ name: "geometry" }],
+                },
+            ],
+        };
+        vi.spyOn(SerializationTools, "Serialize").mockImplementation(() => JSON.stringify(currentGeometry));
+
+        const getTool = FindTool(CreateNodeGeometryWebMcpTools(state), "get_current_node_geometry");
+        expect((getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry).blocks[0].id).toBe(100);
+
+        currentGeometry = {
+            ...currentGeometry,
+            blocks: [{ ...currentGeometry.blocks[0], id: 500 }],
+            editorData: {
+                locations: [{ blockId: 500, x: 10, y: 20 }],
+                map: { 100: 500 },
+            } as ISerializedGeometry["editorData"],
+        };
+
+        const afterHistoryUpdate = getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry;
+        expect(afterHistoryUpdate.blocks[0].id).toBe(100);
+        expect(afterHistoryUpdate.editorData?.locations[0].blockId).toBe(100);
+        expect((afterHistoryUpdate.editorData as { map?: Record<string, number> }).map).toBeUndefined();
+    });
+
+    it("returns a URL whose fragment decodes to the current geometry", () => {
+        const state = CreateTestState([], vi.fn());
+        const controller = new AbortController();
+        const geometry: ISerializedGeometry = {
+            customType: "BABYLON.NodeGeometry",
+            outputNodeId: -1,
+            blocks: [],
+            comment: "Unicode survives: \u03c0",
+        };
+        vi.spyOn(SerializationTools, "Serialize").mockReturnValue(JSON.stringify(geometry));
+
+        const result = FindTool(CreateNodeGeometryWebMcpTools(state), "get_current_node_geometry_url").execute({}, { signal: controller.signal }) as { url: string };
+        const url = new URL(result.url);
+
+        expect(url.hash).toMatch(/^#nge=/u);
+        expect(DecodeNodeGeometryUrlHash(url.hash, state.hostWindow)).toEqual(geometry);
     });
 
     it("keeps reads available while a legacy session owns mutations", () => {
@@ -267,13 +346,13 @@ describe("Node Geometry WebMCP", () => {
         vi.spyOn(SerializationTools, "Serialize").mockReturnValue(JSON.stringify(serializedGeometry));
 
         const tools = CreateNodeGeometryWebMcpTools(state);
-        expect(FindTool(tools, "get_current_node_geometry").execute({}, controller.signal)).toEqual(serializedGeometry);
+        expect(FindTool(tools, "get_current_node_geometry").execute({}, { signal: controller.signal })).toEqual(serializedGeometry);
         expect(() =>
             FindTool(tools, "add_block").execute(
                 {
                     blockType: "BoxBlock",
                 },
-                controller.signal
+                { signal: controller.signal }
             )
         ).toThrow("connected to a legacy MCP session");
     });
@@ -290,7 +369,7 @@ describe("Node Geometry WebMCP", () => {
         );
 
         const importPromise = Promise.resolve(
-            FindTool(CreateNodeGeometryWebMcpTools(state), "import_current_node_geometry_from_snippet").execute({ snippetId: "ABC123" }, controller.signal)
+            FindTool(CreateNodeGeometryWebMcpTools(state), "import_current_node_geometry_from_snippet").execute({ snippetId: "ABC123" }, { signal: controller.signal })
         );
         state.mcpSessionConnected = true;
         resolveLoad({
@@ -318,7 +397,7 @@ describe("Node Geometry WebMCP", () => {
         const deserialize = vi.spyOn(SerializationTools, "Deserialize").mockImplementation(() => {});
         const replaceTool = FindTool(CreateNodeGeometryWebMcpTools(state), "replace_current_node_geometry");
 
-        expect(() => replaceTool.execute({ nodeGeometry: {} }, controller.signal)).toThrow('nodeGeometry.customType must be "BABYLON.NodeGeometry".');
+        expect(() => replaceTool.execute({ nodeGeometry: {} }, { signal: controller.signal })).toThrow('nodeGeometry.customType must be "BABYLON.NodeGeometry".');
         expect(() =>
             replaceTool.execute(
                 {
@@ -335,7 +414,7 @@ describe("Node Geometry WebMCP", () => {
                         ],
                     },
                 },
-                controller.signal
+                { signal: controller.signal }
             )
         ).toThrow("nodeGeometry.blocks[0].customType must identify a supported Node Geometry block.");
         expect(() =>
@@ -353,7 +432,7 @@ describe("Node Geometry WebMCP", () => {
                         ],
                     },
                 },
-                controller.signal
+                { signal: controller.signal }
             )
         ).toThrow("nodeGeometry.blocks[0].outputs must be an array.");
         expect(deserialize).not.toHaveBeenCalled();
