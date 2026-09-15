@@ -145,18 +145,15 @@ interface IChannelWriters {
 }
 
 /**
- * The channel of a node to run a clip's motion on: the first of its position, rotation and scaling channels whose keys
- * cover the range played, in that order of preference; failing that the one whose keys span the most of it, since a
- * channel keyed shorter clamps the analysis to its own keys; failing that the first of them.
+ * The channel of a node to run a clip's motion on: the one of its position, rotation and scaling channels preferred by
+ * {@link ClockBeats}.
  * @param channels defines the node's channels
  * @param fromFrame defines the first frame of the range played
  * @param toFrame defines the last frame of the range played
  * @returns the channel and the frames its keys span
  */
-function ClockChannel(channels: INodeChannels, fromFrame: number, toFrame: number): { animation: Animation; span: number } {
-    let best: Nullable<Animation> = null;
-    let bestSpan = 0;
-    let bestCovers = false;
+function ClockChannel(channels: INodeChannels, fromFrame: number, toFrame: number): IClockCandidate {
+    let best: Nullable<IClockCandidate> = null;
     for (const animation of [channels.position, channels.rotationQuaternion, channels.rotation, channels.scaling]) {
         if (!animation) {
             continue;
@@ -164,15 +161,46 @@ function ClockChannel(channels: INodeChannels, fromFrame: number, toFrame: numbe
         const keys = animation.getKeys();
         const first = keys.length ? keys[0].frame : 0;
         const last = keys.length ? keys[keys.length - 1].frame : 0;
-        const span = last - first;
-        const covers = span > 0 && first <= fromFrame && last >= toFrame;
-        if (!best || (covers && !bestCovers) || (covers === bestCovers && span > bestSpan)) {
-            best = animation;
-            bestSpan = span;
-            bestCovers = covers;
+        const candidate = { animation, span: last - first, covers: last > first && first <= fromFrame && last >= toFrame };
+        if (!best || ClockBeats(candidate, best)) {
+            best = candidate;
         }
     }
-    return { animation: best!, span: bestSpan };
+    return best!;
+}
+
+/** A channel a clip's motion could run on. */
+interface IClockCandidate {
+    /** The channel. */
+    animation: Animation;
+    /** The frames its keys span. */
+    span: number;
+    /** Whether its keys cover the range played. */
+    covers: boolean;
+}
+
+/**
+ * Whether one channel is to run a clip's motion rather than another: one whose keys cover the range played before one
+ * whose keys do not; among channels that cover it a position channel first, the channel the mixer weighs linearly, then
+ * the widest; among channels that do not, the widest, since a channel keyed shorter clamps the analysis to its keys,
+ * then a position channel.
+ * @param candidate defines the channel considered
+ * @param other defines the channel preferred so far
+ * @returns whether the channel considered is preferred
+ */
+function ClockBeats(candidate: IClockCandidate, other: IClockCandidate): boolean {
+    if (candidate.covers !== other.covers) {
+        return candidate.covers;
+    }
+    const position = candidate.animation.targetProperty === "position";
+    const otherPosition = other.animation.targetProperty === "position";
+    if (candidate.covers && position !== otherPosition) {
+        return position;
+    }
+    if (candidate.span !== other.span) {
+        return candidate.span > other.span;
+    }
+    return position && !otherPosition;
 }
 
 /** Contact candidates must come this close to the lowest one during the clip, as a share of the character's height. */
@@ -513,20 +541,18 @@ export class RootMotionClip implements IDisposable {
             clock = anchorClock.animation;
         } else {
             // The root has nothing to run on - it is not animated at all, or only by channels of a single key - so the
-            // clip runs on a channel of the hierarchy under it, itself as the last resort.
-            let bestRank = -1;
-            let bestSpan = -1;
+            // clip runs on a channel of the hierarchy under it, itself as the last resort, chosen across those nodes by
+            // the same preference as among the channels of one.
+            let best: Nullable<IClockCandidate> = null;
             for (const [node, channels] of this._channels) {
                 if (node !== anchor && !node.isDescendantOf(anchor)) {
                     continue;
                 }
                 const candidate = ClockChannel(channels, playedFrom, playedTo);
-                const rank = candidate.span > 0 ? (candidate.animation.targetProperty === "position" ? 2 : 1) : 0;
-                if (rank > bestRank || (rank === bestRank && candidate.span > bestSpan)) {
+                if (!best || ClockBeats(candidate, best)) {
+                    best = candidate;
                     clockNode = node as TransformNode;
                     clock = candidate.animation;
-                    bestRank = rank;
-                    bestSpan = candidate.span;
                 }
             }
         }

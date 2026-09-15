@@ -612,6 +612,31 @@ describe("RootMotion", () => {
             expect(rig.character.position.z).toBeCloseTo(Walked(63), 1);
         });
 
+        it("runs a root the group does not animate on the descendant channel that covers the clip, over another's shorter position", () => {
+            const rig = BuildRig(scene, "inPlace");
+            const head = rig.hips.getChildren().find((node) => node.name === "head") as TransformNode;
+            const rest = (rig.hipsAnimation.getKeys()[0].value as Vector3).clone();
+            const short = new Animation("hipsShort", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+            short.setKeys([
+                { frame: 0, value: rest.clone() },
+                { frame: 1, value: rest.clone() },
+            ]);
+            const nod = new Animation("headNod", "rotationQuaternion", Fps, Animation.ANIMATIONTYPE_QUATERNION, Animation.ANIMATIONLOOPMODE_CYCLE);
+            nod.setKeys([
+                { frame: 0, value: Quaternion.Identity() },
+                { frame: CycleFrames / 2, value: Quaternion.RotationAxis(Vector3.Right(), 0.2) },
+                { frame: CycleFrames, value: Quaternion.Identity() },
+            ]);
+            const group = new AnimationGroup("split", scene);
+            group.addTargetedAnimation(short, rig.hips);
+            group.addTargetedAnimation(nod, head);
+            const clip = new RootMotionClip(group, { rootNode: rig.armature });
+
+            // The head's rotation covers the clip where the hips' position does not: coverage comes before the property.
+            expect(clip.toFrame - clip.fromFrame).toBe(CycleFrames);
+            expect(clip.duration).toBeCloseTo(1, 6);
+        });
+
         it("runs a root whose channels are all single keys on a descendant that spans the clip", () => {
             const rig = BuildRig(scene, "inPlace");
             const still = new Animation("hipsStill", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
@@ -1575,6 +1600,41 @@ describe("RootMotion", () => {
             expect(rig.character.position.z - before).toBeCloseTo(39 * 0.5 * Speed * 0.016, 4);
         });
 
+        it("does not read a short driver's wrap as travel when the driver plays backwards", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            const driver = scene.beginDirectAnimation(new TransformNode("prop", scene), [DriverAnimation()], 0, 2 * CycleFrames, true);
+            group.start(true);
+            group.syncAllAnimationsWith(driver);
+            Run(scene, 20);
+            driver.speedRatio = -1;
+            Run(scene, 1);
+            const before = rig.character.position.z;
+            // Back through the start of the driver's keys, where it wraps to their end and the pose snaps forwards.
+            Run(scene, 40);
+
+            // Half a tick back per step, and nothing on the one step the pose snaps.
+            expect(rig.character.position.z - before).toBeCloseTo(-39 * 0.5 * Speed * 0.016, 4);
+        });
+
+        it("carries a short driver's snap down a chain of synchronized followers", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            const first = scene.beginDirectAnimation(new TransformNode("first", scene), [DriverAnimation()], 0, 2 * CycleFrames, true);
+            // Keyed over the whole of its own range, so it reads as a full driver to what follows it, while its pose snaps
+            // back with the first.
+            const second = scene.beginDirectAnimation(new TransformNode("second", scene), [DriverAnimation()], 0, CycleFrames, true);
+            second.syncWith(first);
+            group.start(true);
+            group.syncAllAnimationsWith(second);
+            Run(scene, 40);
+            const before = rig.character.position.z;
+            // Spans the first driver's wrap.
+            Run(scene, 40);
+
+            expect(rig.character.position.z - before).toBeCloseTo(39 * 0.5 * Speed * 0.016, 4);
+        });
+
         it("stands still while a short driver holds the pose in a stationary half of the clip", () => {
             const skeleton = BuildSkeleton(scene);
             // A clip that stands still for its first half and travels through its second.
@@ -2087,6 +2147,32 @@ describe("RootMotion", () => {
 
             // That step's pose was still the group's own clock: it travels as any other.
             Run(scene, 1);
+            expect(rig.character.position.z - before).toBeCloseTo(Tick, 6);
+
+            // The first pose on the driver's phase is a jump from it, not travel.
+            const synced = rig.character.position.z;
+            Run(scene, 1);
+            expect(rig.character.position.z - synced).toBeCloseTo(0, 6);
+        });
+
+        it("consumes the step a loop callback synchronizes the group on, and treats the driver's phase as a jump", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            const driver = scene.beginDirectAnimation(new TransformNode("prop", scene), [DriverAnimation()], 0, CycleFrames, true);
+            driver.speedRatio = 0.5;
+            let synchronized = false;
+            group.onAnimationLoopObservable.add(() => {
+                if (!synchronized) {
+                    synchronized = true;
+                    group.syncAllAnimationsWith(driver);
+                }
+            });
+            group.start(true);
+            // The 64th tick evaluates frame 60.48, which loops the clock and raises the callback.
+            Run(scene, 63);
+            const before = rig.character.position.z;
+            Run(scene, 1);
+            // That step's pose was still the group's own clock: it travels as any other.
             expect(rig.character.position.z - before).toBeCloseTo(Tick, 6);
 
             // The first pose on the driver's phase is a jump from it, not travel.

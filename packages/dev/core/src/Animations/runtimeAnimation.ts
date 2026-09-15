@@ -792,11 +792,36 @@ export class RuntimeAnimation {
 
             // Compute value
 
-            if (this._host && this._host.syncRoot) {
+            // The root this evaluation is clocked by, and the progress of the pose it gives, taken before any callback of
+            // the evaluation - a loop callback, an event - can synchronize the host with another root or move this one
+            const syncRoot = this._host ? this._host.syncRoot : null;
+            let syncFrames = this._playbackFrames;
+            let syncJumped = false;
+            if (syncRoot) {
                 // If we must sync with an animatable, calculate the current frame based on the frame of the root animatable
-                const syncRoot = this._host.syncRoot;
-                const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
+                const syncRange = syncRoot.toFrame - syncRoot.fromFrame;
+                const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / syncRange;
                 currentFrame = from + frameRange * hostNormalizedFrame;
+
+                const master = syncRoot.getAnimations()[0];
+                if (master && syncRange !== 0) {
+                    const phase = frameRange * hostNormalizedFrame;
+                    const masterEvaluated = master._playbackTo - master._playbackFrom;
+                    if (masterEvaluated !== 0 && master._playbackFrom <= syncRoot.fromFrame && master._playbackTo >= syncRoot.toFrame) {
+                        // The root's clock covers the range synchronized over: its whole cycles are whole cycles of the follower
+                        const masterCycles = Math.round((master._playbackFrames - (master._currentFrame - master._playbackFrom)) / masterEvaluated);
+                        syncFrames = frameRange * masterCycles + phase;
+                    } else {
+                        // Keyed shorter, the root never carries the follower to its end but snaps it back across its range:
+                        // a jump whenever the phase moves against the root, forwards or backwards, rather than with it
+                        syncJumped = (phase - this._playbackFrames) * (master._playbackFrames - this._playbackSyncMasterFrames) < 0;
+                        syncFrames = phase;
+                    }
+                    // A jump of the root is a jump of whatever follows it, down the chain
+                    syncJumped = syncJumped || master._playbackJumped;
+                    this._playbackSyncMasterFrames = master._playbackFrames;
+                }
+                // A root with no runtime animation reads as frame 0: the pose snaps there and holds, and so does the progress
             } else {
                 if ((absoluteFrame > 0 && from > to) || (absoluteFrame < 0 && from < to)) {
                     currentFrame = returnValue && frameRange !== 0 ? to + (absoluteFrame % frameRange) : from;
@@ -827,35 +852,11 @@ export class RuntimeAnimation {
             // The frame evaluated, unwrapped across loops, then the progress of the pose it gave
             this._playbackFrom = from;
             this._playbackTo = to;
-            this._playbackJumped = false;
-            this._playbackSyncRoot = this._host ? this._host.syncRoot : null;
+            this._playbackJumped = syncJumped;
+            this._playbackSyncRoot = syncRoot;
             let frames: number;
-            if (this._playbackSyncRoot) {
-                const syncRoot = this._playbackSyncRoot;
-                const master = syncRoot.getAnimations()[0];
-                const masterRange = syncRoot.toFrame - syncRoot.fromFrame;
-                if (master && masterRange !== 0) {
-                    // The phase of the pose: the frame the root's own frame maps to, over the range it is synchronized
-                    // over. Whole cycles are in it only when the root's clock covers that range - one keyed shorter
-                    // never carries the follower to its end, and snaps it back to the start rather than looping it.
-                    const phase = (frameRange * (syncRoot.masterFrame - syncRoot.fromFrame)) / masterRange;
-                    const masterEvaluated = master._playbackTo - master._playbackFrom;
-                    if (masterEvaluated !== 0 && master._playbackFrom <= syncRoot.fromFrame && master._playbackTo >= syncRoot.toFrame) {
-                        const masterCycles = Math.round((master._playbackFrames - (master._currentFrame - master._playbackFrom)) / masterEvaluated);
-                        frames = frameRange * masterCycles + phase;
-                    } else {
-                        // Snapped back to the start while the root played on: a jump of the pose, not travel. A root
-                        // playing backwards carries the follower back with it, which is travel, and is not one.
-                        if (phase < this._playbackFrames && master._playbackFrames > this._playbackSyncMasterFrames) {
-                            this._playbackJumped = true;
-                        }
-                        frames = phase;
-                    }
-                    this._playbackSyncMasterFrames = master._playbackFrames;
-                } else {
-                    // A root with no runtime animation reads as frame 0: the pose snaps there and holds, and so does the progress
-                    frames = this._playbackFrames;
-                }
+            if (syncRoot) {
+                frames = syncFrames;
             } else if (!returnValue) {
                 // The end of the cycle the playback was in - however many it had been through before it stopped looping - or that cycle's start when it ran backwards
                 const cycles = frameRange !== 0 ? Math.floor(this._playbackFrames / frameRange) : 0;
