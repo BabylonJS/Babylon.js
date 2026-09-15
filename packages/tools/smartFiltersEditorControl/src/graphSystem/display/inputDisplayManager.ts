@@ -5,7 +5,7 @@ import { type INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import * as styles from "../../assets/styles/graphSystem/display/inputDisplayManager.module.scss";
 import { ConnectionPointType, type AnyInputBlock } from "smart-filters";
 import { Color3, Color4 } from "core/Maths/math.color.js";
-import { GetTextureInputBlockEditorData } from "../getEditorData.js";
+import { GetTextureInputBlockEditorData, GetTextureInputBlockUrl } from "../getEditorData.js";
 
 export class InputDisplayManager implements IDisplayManager {
     public getHeaderClass(_nodeData: INodeData) {
@@ -67,7 +67,7 @@ export class InputDisplayManager implements IDisplayManager {
                     value = "Video";
                 } else {
                     const style = GetTextureInputBlockEditorData(inputBlock).flipY === false ? "transform: scaleY(-1); z-index: -1;" : "";
-                    const src = inputBlock.editorData?.url || inputBlock.runtimeValue.value?.getInternalTexture()?.url;
+                    const src = GetTextureInputBlockUrl(inputBlock);
                     value = src ? `<img src="${src}" style="${style}" class="texture-input-preview"/>` : "";
                 }
                 break;
