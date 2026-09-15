@@ -140,6 +140,30 @@ describe("Node Geometry MCP Server – Graph Manager Validation", () => {
         expect(vec3Block.valueType).toBe("BABYLON.Vector3");
     });
 
+    it("recomputes constant input serializer types after vector type changes", () => {
+        const mgr = new GeometryGraphManager();
+        mgr.createGeometry("valueTypes");
+        const result = mgr.addBlock("valueTypes", "GeometryInputBlock", "value", {
+            type: "Float",
+            value: 1,
+        });
+        expect(typeof result).not.toBe("string");
+        const block = (result as any).block;
+
+        expect(mgr.setBlockProperties("valueTypes", block.id, { type: "Vector3", value: { x: 1, y: 2, z: 3 } })).toBe("OK");
+        expect(block.value).toEqual([1, 2, 3]);
+        expect(block.valueType).toBe("BABYLON.Vector3");
+
+        expect(mgr.setBlockProperties("valueTypes", block.id, { type: "Vector2", value: [4, 5] })).toBe("OK");
+        expect(block.valueType).toBe("BABYLON.Vector2");
+        expect(mgr.setBlockProperties("valueTypes", block.id, { type: "Vector4", value: [6, 7, 8, 9] })).toBe("OK");
+        expect(block.valueType).toBe("BABYLON.Vector4");
+
+        const beforeInvalidUpdate = JSON.parse(JSON.stringify(block));
+        expect(mgr.setBlockProperties("valueTypes", block.id, { type: "Vector3", value: [1, 2] })).toContain('Property "value" is not valid');
+        expect(block).toEqual(beforeInvalidUpdate);
+    });
+
     // ── Test 5: Enum conversion for block properties ────────────────────
 
     it("converts string enum values to numbers for all block types", () => {

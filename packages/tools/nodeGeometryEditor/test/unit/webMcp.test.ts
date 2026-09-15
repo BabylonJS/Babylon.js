@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { GetNgeEnumsReference, NgeConceptsMarkdown, NgeEnumCatalog, type ISerializedGeometry } from "@tools/nge-mcp-common";
+import { GeometryGraphManager, GetNgeEnumsReference, NgeConceptsMarkdown, NgeEnumCatalog, type ISerializedGeometry } from "@tools/nge-mcp-common";
+import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
+import { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
+import { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
+import { Vector3 } from "core/Maths/math.vector";
 
 const { mockLoadSnippet } = vi.hoisted(() => ({
     mockLoadSnippet: vi.fn(),
@@ -15,6 +20,7 @@ import { type GlobalState } from "../../src/globalState";
 import { DecodeNodeGeometryUrlHash } from "../../src/encodedGeometryUrl";
 import { SerializationTools } from "../../src/serializationTools";
 import { type IWebMcpTool, CreateNodeGeometryWebMcpTools, IsNodeGeometryWebMcpSupported, RegisterNodeGeometryWebMcpToolsAsync } from "../../src/webMcp";
+import { NodeGeometryWebMcpEditor } from "../../src/webMcpEditor";
 
 interface IRegistration {
     tool: IWebMcpTool;
@@ -68,22 +74,124 @@ function RemapGeometryIds(value: unknown, firstId: number): ISerializedGeometry 
     const geometry = JSON.parse(JSON.stringify(value)) as ISerializedGeometry;
     const idMap = new Map(geometry.blocks.map((block, index) => [block.id, firstId + index]));
 
-    geometry.blocks = geometry.blocks.map((block) => ({
-        ...block,
-        id: idMap.get(block.id)!,
-        inputs: block.inputs.map((input) => ({
-            ...input,
-            targetBlockId: input.targetBlockId === undefined ? undefined : (idMap.get(input.targetBlockId) ?? input.targetBlockId),
-        })),
-    }));
+    geometry.blocks = geometry.blocks.map((block) => {
+        const remappedBlock: ISerializedGeometry["blocks"][number] = {
+            ...block,
+            id: idMap.get(block.id)!,
+            inputs: block.inputs.map((input) => ({
+                ...input,
+                targetBlockId: input.targetBlockId === undefined ? undefined : (idMap.get(input.targetBlockId) ?? input.targetBlockId),
+            })),
+        };
+        if (remappedBlock.customType === "BABYLON.TeleportOutBlock" && typeof remappedBlock.entryPoint === "number") {
+            remappedBlock.entryPoint = idMap.get(remappedBlock.entryPoint) ?? remappedBlock.entryPoint;
+        }
+        return remappedBlock;
+    });
     geometry.outputNodeId = idMap.get(geometry.outputNodeId) ?? -1;
     if (geometry.editorData) {
         geometry.editorData.locations = geometry.editorData.locations.map((location) => ({
             ...location,
             blockId: idMap.get(location.blockId) ?? location.blockId,
         }));
+        geometry.editorData.frames = geometry.editorData.frames?.map((frame) => ({
+            ...frame,
+            blocks: frame.blocks.map((blockId) => idMap.get(blockId) ?? blockId),
+        }));
     }
     return geometry;
+}
+
+function CreateTeleportGeometry(entryPointId: number): ISerializedGeometry {
+    return {
+        customType: "BABYLON.NodeGeometry",
+        outputNodeId: -1,
+        blocks: [
+            {
+                customType: "BABYLON.TeleportInBlock",
+                id: 1,
+                name: "First entry",
+                inputs: [{ name: "input" }],
+                outputs: [],
+            },
+            {
+                customType: "BABYLON.TeleportOutBlock",
+                id: 2,
+                name: "Exit",
+                entryPoint: entryPointId,
+                inputs: [],
+                outputs: [{ name: "output" }],
+            },
+            {
+                customType: "BABYLON.TeleportInBlock",
+                id: 3,
+                name: "Second entry",
+                inputs: [{ name: "input" }],
+                outputs: [],
+            },
+        ],
+        editorData: {
+            locations: [
+                { blockId: 1, x: 0, y: 0 },
+                { blockId: 2, x: 200, y: 0 },
+                { blockId: 3, x: 0, y: 200 },
+            ],
+            frames: [{ blocks: [1, 2], name: "Teleport frame" }],
+        },
+    };
+}
+
+function CreateLiveEditorHarness() {
+    const attachedBlocks: NodeGeometryBlock[] = [];
+    const nodes: Array<{
+        x: number;
+        y: number;
+        content: { data: NodeGeometryBlock };
+        cleanAccumulation: ReturnType<typeof vi.fn>;
+        dispose: ReturnType<typeof vi.fn>;
+        refresh: ReturnType<typeof vi.fn>;
+    }> = [];
+    const nodeGeometry = {
+        attachedBlocks,
+        outputBlock: null,
+        removeBlock: (block: NodeGeometryBlock) => {
+            attachedBlocks.splice(attachedBlocks.indexOf(block), 1);
+        },
+    };
+    const graphCanvas = {
+        nodes,
+        links: [],
+        selectedNodes: [],
+        selectedLink: null,
+        findNodeFromData: (block: NodeGeometryBlock) => nodes.find((node) => node.content.data === block),
+        removeDataFromCache: vi.fn(),
+    };
+    const globalState = {
+        nodeGeometry,
+        stateManager: {
+            onSelectionChangedObservable: { notifyObservers: vi.fn() },
+            onRebuildRequiredObservable: { notifyObservers: vi.fn() },
+        },
+    };
+    const editor = new NodeGeometryWebMcpEditor(
+        globalState as unknown as GlobalState,
+        graphCanvas as unknown as ConstructorParameters<typeof NodeGeometryWebMcpEditor>[1],
+        (block) => {
+            attachedBlocks.push(block);
+            const node = {
+                x: 0,
+                y: 0,
+                content: { data: block },
+                cleanAccumulation: vi.fn(),
+                dispose: vi.fn(),
+                refresh: vi.fn(),
+            };
+            nodes.push(node);
+            return node as unknown as ReturnType<ConstructorParameters<typeof NodeGeometryWebMcpEditor>[2]>;
+        },
+        vi.fn()
+    );
+    return { attachedBlocks, editor };
 }
 
 describe("Node Geometry WebMCP", () => {
@@ -314,6 +422,97 @@ describe("Node Geometry WebMCP", () => {
         expect(afterHistoryUpdate.blocks[0].id).toBe(100);
         expect(afterHistoryUpdate.editorData?.locations[0].blockId).toBe(100);
         expect((afterHistoryUpdate.editorData as { map?: Record<string, number> }).map).toBeUndefined();
+    });
+
+    it("preserves Teleport and frame references across replacement round trips", () => {
+        const state = CreateTestState([], vi.fn());
+        const controller = new AbortController();
+        let currentGeometry: ISerializedGeometry = {
+            customType: "BABYLON.NodeGeometry",
+            outputNodeId: -1,
+            blocks: [],
+        };
+        let nextRuntimeId = 100;
+        vi.spyOn(SerializationTools, "Serialize").mockImplementation(() => JSON.stringify(currentGeometry));
+        vi.spyOn(SerializationTools, "Deserialize").mockImplementation((value) => {
+            currentGeometry = RemapGeometryIds(value, nextRuntimeId);
+            nextRuntimeId += 100;
+        });
+
+        const tools = CreateNodeGeometryWebMcpTools(state);
+        const replaceTool = FindTool(tools, "replace_current_node_geometry");
+        const getTool = FindTool(tools, "get_current_node_geometry");
+        const logicalGeometry = CreateTeleportGeometry(1);
+
+        expect(replaceTool.execute({ nodeGeometry: logicalGeometry }, { signal: controller.signal })).toMatchObject({ success: true, blockCount: 3 });
+        const firstRead = getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry;
+        expect(firstRead.blocks.find((block) => block.id === 2)?.entryPoint).toBe(1);
+        expect(firstRead.editorData?.frames?.[0].blocks).toEqual([1, 2]);
+
+        expect(replaceTool.execute({ nodeGeometry: firstRead }, { signal: controller.signal })).toMatchObject({ success: true, blockCount: 3 });
+        const secondRead = getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry;
+        expect(secondRead.blocks.find((block) => block.id === 2)?.entryPoint).toBe(1);
+        expect(secondRead.editorData?.frames?.[0].blocks).toEqual([1, 2]);
+    });
+
+    it("attaches and retargets Teleport endpoints during live updates", () => {
+        const { attachedBlocks, editor } = CreateLiveEditorHarness();
+        const emptyGeometry: ISerializedGeometry = {
+            customType: "BABYLON.NodeGeometry",
+            outputNodeId: -1,
+            blocks: [],
+        };
+        const firstGeometry = CreateTeleportGeometry(1);
+
+        const mapping = editor.applyIncrementalUpdate(emptyGeometry, firstGeometry, new Map());
+        const firstEntry = attachedBlocks.find((block) => block.uniqueId === mapping.get(1)) as TeleportInBlock;
+        const endpoint = attachedBlocks.find((block) => block.uniqueId === mapping.get(2)) as TeleportOutBlock;
+        const secondEntry = attachedBlocks.find((block) => block.uniqueId === mapping.get(3)) as TeleportInBlock;
+
+        expect(firstEntry).toBeInstanceOf(TeleportInBlock);
+        expect(endpoint).toBeInstanceOf(TeleportOutBlock);
+        expect(secondEntry).toBeInstanceOf(TeleportInBlock);
+        expect(endpoint.entryPoint).toBe(firstEntry);
+        expect(firstEntry.endpoints).toContain(endpoint);
+
+        const retargetedGeometry = CreateTeleportGeometry(3);
+        const retargetedMapping = editor.applyIncrementalUpdate(firstGeometry, retargetedGeometry, mapping);
+
+        expect(endpoint.entryPoint).toBe(secondEntry);
+        expect(firstEntry.endpoints).not.toContain(endpoint);
+        expect(secondEntry.endpoints).toContain(endpoint);
+
+        const withoutEndpoint = {
+            ...retargetedGeometry,
+            blocks: retargetedGeometry.blocks.filter((block) => block.id !== 2),
+        };
+        editor.applyIncrementalUpdate(retargetedGeometry, withoutEndpoint, retargetedMapping);
+        expect(secondEntry.endpoints).not.toContain(endpoint);
+    });
+
+    it("deserializes changed vector inputs as Babylon vector values", () => {
+        const { attachedBlocks, editor } = CreateLiveEditorHarness();
+        const manager = new GeometryGraphManager();
+        manager.createGeometry("input");
+        const addResult = manager.addBlock("input", "GeometryInputBlock", "Value", { type: "Float", value: 1 });
+        expect(typeof addResult).not.toBe("string");
+
+        const scalarGeometry = JSON.parse(manager.exportJSON("input")!) as ISerializedGeometry;
+        const emptyGeometry: ISerializedGeometry = {
+            customType: "BABYLON.NodeGeometry",
+            outputNodeId: -1,
+            blocks: [],
+        };
+        const mapping = editor.applyIncrementalUpdate(emptyGeometry, scalarGeometry, new Map());
+
+        expect(manager.setBlockProperties("input", scalarGeometry.blocks[0].id, { type: "Vector3", value: { x: 1, y: 2, z: 3 } })).toBe("OK");
+        const vectorGeometry = JSON.parse(manager.exportJSON("input")!) as ISerializedGeometry;
+        editor.applyIncrementalUpdate(scalarGeometry, vectorGeometry, mapping);
+
+        const input = attachedBlocks[0] as GeometryInputBlock;
+        expect(input).toBeInstanceOf(GeometryInputBlock);
+        expect(input.value).toBeInstanceOf(Vector3);
+        expect(input.value.asArray()).toEqual([1, 2, 3]);
     });
 
     it("returns a URL whose fragment decodes to the current geometry", () => {

@@ -7,6 +7,7 @@ import {
     GetNgeEnumsReference,
     NgeConceptsMarkdown,
     NgeEnumCatalog,
+    type ISerializedBlock,
     type ISerializedGeometry,
 } from "@tools/nge-mcp-common";
 import { LoadSnippet, SaveSnippet, type IDataSnippetResult } from "@tools/snippet-loader";
@@ -791,19 +792,29 @@ function ReconcileCurrentGeometryCache(cache: ICurrentGeometryCache, runtimeGeom
 
 function RemapSerializedNodeGeometry(geometry: ISerializedGeometry, remapId: (id: number) => number): ISerializedGeometry {
     const remapped = CloneSerializedNodeGeometry(geometry);
-    remapped.blocks = remapped.blocks.map((block) => ({
-        ...block,
-        id: remapId(block.id),
-        inputs: block.inputs.map((input) => ({
-            ...input,
-            targetBlockId: input.targetBlockId === undefined ? undefined : remapId(input.targetBlockId),
-        })),
-    }));
+    remapped.blocks = remapped.blocks.map((block) => {
+        const remappedBlock: ISerializedBlock = {
+            ...block,
+            id: remapId(block.id),
+            inputs: block.inputs.map((input) => ({
+                ...input,
+                targetBlockId: input.targetBlockId === undefined ? undefined : remapId(input.targetBlockId),
+            })),
+        };
+        if (remappedBlock.customType === "BABYLON.TeleportOutBlock" && typeof remappedBlock.entryPoint === "number") {
+            remappedBlock.entryPoint = remapId(remappedBlock.entryPoint);
+        }
+        return remappedBlock;
+    });
     remapped.outputNodeId = remapped.outputNodeId < 0 ? -1 : remapId(remapped.outputNodeId);
     if (remapped.editorData) {
         remapped.editorData.locations = remapped.editorData.locations.map((location) => ({
             ...location,
             blockId: remapId(location.blockId),
+        }));
+        remapped.editorData.frames = remapped.editorData.frames?.map((frame) => ({
+            ...frame,
+            blocks: frame.blocks.map(remapId),
         }));
         delete (remapped.editorData as { map?: Record<string, number> }).map;
     }

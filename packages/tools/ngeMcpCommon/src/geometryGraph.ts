@@ -96,6 +96,8 @@ export interface ISerializedGeometry {
     editorData?: {
         /** Block positions in the editor */
         locations: Array<{ /** Block ID */ blockId: number; /** X coordinate */ x: number; /** Y coordinate */ y: number }>;
+        /** Optional editor frames containing block IDs */
+        frames?: Array<{ blocks: number[]; [key: string]: unknown }>;
     };
     /** Optional comment / description */
     comment?: string;
@@ -518,11 +520,9 @@ export class GeometryGraphManager {
             return;
         }
 
-        // Already a flat array — just ensure valueType is set
+        // Already a flat array — derive valueType from the effective input type
         if (Array.isArray(val)) {
-            if (!block["valueType"]) {
-                block["valueType"] = this._inferValueType(type, val.length);
-            }
+            block["valueType"] = this._inferValueType(type, val.length);
             return;
         }
 
@@ -635,6 +635,9 @@ export class GeometryGraphManager {
                     delete inp.targetConnectionName;
                 }
             }
+            if (block.customType === "BABYLON.TeleportOutBlock" && block.entryPoint === blockId) {
+                delete block.entryPoint;
+            }
         }
 
         geo.blocks.splice(idx, 1);
@@ -646,6 +649,9 @@ export class GeometryGraphManager {
 
         if (geo.editorData) {
             geo.editorData.locations = geo.editorData.locations.filter((l) => l.blockId !== blockId);
+            for (const frame of geo.editorData.frames ?? []) {
+                frame.blocks = frame.blocks.filter((frameBlockId) => frameBlockId !== blockId);
+            }
         }
 
         return "OK";

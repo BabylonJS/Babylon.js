@@ -1,5 +1,7 @@
 import { GetClass } from "core/Misc/typeStore";
 import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { type TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
+import { type TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
 import { type GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
 import { type GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { type IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
@@ -55,6 +57,7 @@ export class NodeGeometryWebMcpEditor {
             const block = runtimeId === undefined ? undefined : this._findRuntimeBlock(runtimeId);
             if (block) {
                 const node = this._graphCanvas.findNodeFromData(block);
+                this._detachTeleportBlock(block);
                 this._globalState.nodeGeometry.removeBlock(block);
                 if (node) {
                     node.dispose();
@@ -95,6 +98,11 @@ export class NodeGeometryWebMcpEditor {
             }
         }
 
+        this._resolveTeleportRelationships(after, (logicalId) => {
+            const runtimeId = updatedMapping.get(logicalId);
+            return runtimeId === undefined ? undefined : this._findRuntimeBlock(runtimeId);
+        });
+
         for (const { blockId, inputName } of changedInputs) {
             const serializedInput = afterById.get(blockId)?.inputs.find((candidate) => candidate.name === inputName);
             if (serializedInput?.targetBlockId === undefined || !serializedInput.targetConnectionName) {
@@ -130,6 +138,8 @@ export class NodeGeometryWebMcpEditor {
         for (const serializedBlock of geometry.blocks) {
             blocks.set(serializedBlock.id, this._createRuntimeBlock(serializedBlock));
         }
+
+        this._resolveTeleportRelationships(geometry, (logicalId) => blocks.get(logicalId));
 
         const connections = [];
         for (const serializedBlock of geometry.blocks) {
@@ -170,6 +180,43 @@ export class NodeGeometryWebMcpEditor {
         const block = new constructor(serializedBlock.name) as NodeGeometryBlock;
         block._deserialize(serializedBlock);
         return block;
+    }
+
+    private _resolveTeleportRelationships(geometry: ISerializedGeometry, findBlock: (logicalId: number) => NodeGeometryBlock | undefined): void {
+        for (const serializedBlock of geometry.blocks) {
+            if (serializedBlock.customType !== "BABYLON.TeleportOutBlock") {
+                continue;
+            }
+
+            const endpoint = findBlock(serializedBlock.id) as TeleportOutBlock | undefined;
+            if (!endpoint?.isTeleportOut) {
+                throw new Error(`Unable to resolve TeleportOutBlock ${serializedBlock.id}.`);
+            }
+
+            if (serializedBlock.entryPoint === undefined || serializedBlock.entryPoint === null || serializedBlock.entryPoint === "") {
+                endpoint.detach();
+                continue;
+            }
+            if (typeof serializedBlock.entryPoint !== "number") {
+                throw new Error(`TeleportOutBlock ${serializedBlock.id}.entryPoint must be a block ID.`);
+            }
+
+            const entryPoint = findBlock(serializedBlock.entryPoint) as TeleportInBlock | undefined;
+            if (!entryPoint?.isTeleportIn) {
+                throw new Error(`TeleportOutBlock ${serializedBlock.id}.entryPoint must reference a TeleportInBlock.`);
+            }
+            entryPoint.attachToEndpoint(endpoint);
+        }
+    }
+
+    private _detachTeleportBlock(block: NodeGeometryBlock): void {
+        if (block.isTeleportOut) {
+            (block as TeleportOutBlock).detach();
+        } else if (block.isTeleportIn) {
+            for (const endpoint of (block as TeleportInBlock).endpoints.slice()) {
+                endpoint.detach();
+            }
+        }
     }
 
     private _hasBlockDataChanged(before: ISerializedBlock, after: ISerializedBlock): boolean {
