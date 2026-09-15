@@ -127,7 +127,8 @@ export interface IExportOptions {
     exportUnusedUVs?: boolean;
 
     /**
-     * Remove no-op root nodes when possible. Defaults to true.
+     * Remove no-op root nodes when possible. Defaults to true. No-op roots are preserved when
+     * {@link khrInteractivity} is provided because the graph may reference them.
      */
     removeNoopRootNodes?: boolean;
 

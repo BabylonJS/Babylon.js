@@ -875,10 +875,11 @@ export class GLTFExporter {
         const rootNodesRH = new Array<Node>();
         const rootNodesLH = new Array<Node>();
         const rootNoopNodesRH = new Array<Node>();
+        const removeNoopRootNodes = this._options.removeNoopRootNodes && !this._options.khrInteractivity;
 
         // Collect root nodes targeted by animation groups so we preserve them during noop removal.
         let animGroupTargets: Set<Node> | undefined;
-        if (this._options.removeNoopRootNodes && !this._options.includeCoordinateSystemConversionNodes) {
+        if (removeNoopRootNodes && !this._options.includeCoordinateSystemConversionNodes) {
             for (const animationGroup of this._babylonScene.animationGroups) {
                 for (const targetedAnimation of animationGroup.targetedAnimations) {
                     const target = targetedAnimation.target;
@@ -892,12 +893,7 @@ export class GLTFExporter {
         for (const rootNode of this._babylonScene.rootNodes) {
             const animations = rootNode.animations;
             const hasAnimations = (!!animations && animations.length > 0) || animGroupTargets?.has(rootNode);
-            if (
-                this._options.removeNoopRootNodes &&
-                !this._options.includeCoordinateSystemConversionNodes &&
-                IsNoopNode(rootNode, this._babylonScene.useRightHandedSystem) &&
-                !hasAnimations
-            ) {
+            if (removeNoopRootNodes && !this._options.includeCoordinateSystemConversionNodes && IsNoopNode(rootNode, this._babylonScene.useRightHandedSystem) && !hasAnimations) {
                 rootNoopNodesRH.push(...rootNode.getChildren());
             } else if (this._babylonScene.useRightHandedSystem) {
                 rootNodesRH.push(rootNode);

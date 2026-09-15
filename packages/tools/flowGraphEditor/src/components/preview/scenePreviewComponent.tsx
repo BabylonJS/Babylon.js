@@ -200,6 +200,10 @@ const useStyles = makeStyles({
         overflow: "hidden",
         borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
     },
+    canvasHost: {
+        width: "100%",
+        height: "100%",
+    },
     canvas: {
         display: "block",
         width: "100%",
@@ -240,7 +244,7 @@ export const ScenePreviewComponent: React.FunctionComponent<IScenePreviewCompone
 };
 
 class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps, IScenePreviewComponentState> {
-    private _canvasRef: React.RefObject<HTMLCanvasElement>;
+    private _canvasHostRef: React.RefObject<HTMLDivElement>;
     private _onContextRefreshedObserver: Nullable<Observer<SceneContext>> = null;
     private _onSceneContextChangedObserver: Nullable<Observer<SceneContext>> = null;
     private _onSnippetIdChangedObserver: Nullable<Observer<string>> = null;
@@ -261,7 +265,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
     /** @internal */
     constructor(props: IScenePreviewComponentInnerProps) {
         super(props);
-        this._canvasRef = React.createRef();
+        this._canvasHostRef = React.createRef();
 
         this.state = {
             snippetId: "",
@@ -273,6 +277,8 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
     /** @internal */
     override componentDidMount() {
+        this._attachPreviewCanvas();
+
         // Watch for external context changes
         if (this.props.globalState.sceneContext) {
             this._watchContext(this.props.globalState.sceneContext);
@@ -310,37 +316,13 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             this._handleDrop(e);
         });
 
-        // Reconcile the existing scene (if any) with the freshly mounted canvas. The component can be
-        // re-mounted while a sceneContext already exists — for example when the side pane is undocked
-        // into a popup window and then re-docked back into the main window. Each mount creates a new
-        // <canvas> DOM element, but the Engine on the existing sceneContext is bound to the previous
-        // canvas, and a WebGL context cannot be transferred between canvas elements. Detect the
-        // mismatch and rebuild against the new canvas; if a snippet is already loaded, re-run it,
-        // otherwise create the default scene. Loses in-flight preview interaction state but preserves
-        // the editor's snippet selection.
+        // Reconcile the existing scene with the mounted pane. The canvas is retained and reparented
+        // across pane mounts because a WebGL context cannot be transferred to a replacement canvas.
         const ctx = this.props.globalState.sceneContext;
-        const canvas = this._canvasRef.current;
         const pendingSnippetId = this.props.globalState.snippetId;
         const hasHostScene = !!this.props.globalState.hostScene;
-        // A host context borrows the application's canvas and engine, so the "canvas moved" rebuild
-        // path below (which only applies to editor-owned scenes) must not fire for it.
         const isHostCtx = !!ctx && !ctx.ownsScene;
-        const canvasMismatch = !!ctx && ctx.ownsScene && !!canvas && ctx.engine.getRenderingCanvas() !== canvas;
-        if (canvasMismatch) {
-            if (this._blockImportScopedSceneReplacement()) {
-                return;
-            }
-            this._disposeCurrentScene();
-            if (pendingSnippetId) {
-                this.setState({ snippetId: pendingSnippetId }, () => {
-                    void this.loadSnippetAsync();
-                });
-            } else if (hasHostScene) {
-                this._attachToHostScene();
-            } else {
-                void this._createDefaultSceneAsync();
-            }
-        } else if (isHostCtx) {
+        if (isHostCtx) {
             // Popup pane re-mounted while attached to a still-live host scene — rewire the context
             // (and its observers) against that scene rather than tearing it down.
             this._attachToHostScene();
@@ -353,6 +335,22 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 void this._createDefaultSceneAsync();
             }
         }
+    }
+
+    private _attachPreviewCanvas(): HTMLCanvasElement {
+        const host = this._canvasHostRef.current;
+        if (!host) {
+            throw new Error("Preview canvas host not available");
+        }
+        const sceneContext = this.props.globalState.sceneContext;
+        const sceneCanvas = sceneContext?.ownsScene ? sceneContext.engine.getRenderingCanvas() : null;
+        const canvas = sceneCanvas ?? this.props.globalState.scenePreviewCanvas ?? host.ownerDocument.createElement("canvas");
+        canvas.className = this.props.classes.canvas;
+        canvas.tabIndex = 0;
+        canvas.dataset.testid = "scene-preview-canvas";
+        host.appendChild(canvas);
+        this.props.globalState.scenePreviewCanvas = canvas;
+        return canvas;
     }
 
     /** @internal */
@@ -418,7 +416,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
         engine.resize();
 
-        const canvas = this._canvasRef.current;
+        const canvas = this.props.globalState.scenePreviewCanvas;
         // Resize the engine's internal buffer AND re-render immediately so the canvas paints
         // at the new size during the same frame the ResizeObserver fires. Without the inline
         // re-render, the GL buffer at the old size flashes briefly stretched into the new CSS
@@ -491,7 +489,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         if (this._blockImportScopedSceneReplacement()) {
             return;
         }
-        const canvas = this._canvasRef.current;
+        const canvas = this.props.globalState.scenePreviewCanvas;
         if (!canvas) {
             return;
         }
@@ -510,6 +508,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             const { CreateCylinder } = await import("core/Meshes/Builders/cylinderBuilder");
             const { StandardMaterial } = await import("core/Materials/standardMaterial");
 
+            if (this._blockImportScopedSceneReplacement()) {
+                return;
+            }
             this._disposeCurrentScene();
 
             const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
@@ -672,7 +673,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             const { LoadSceneAsync } = await import("core/Loading/sceneLoader");
             const { FilesInputStore } = await import("core/Misc/filesInputStore");
 
-            const canvas = this._canvasRef.current;
+            const canvas = this.props.globalState.scenePreviewCanvas;
             if (!canvas) {
                 throw new Error("Preview canvas not available");
             }
@@ -906,10 +907,14 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
             const pgResult = result as IPlaygroundSnippetResult;
 
+            if (this._blockImportScopedSceneReplacement()) {
+                this.setState({ isLoading: false });
+                return;
+            }
             // Dispose old preview context if any
             this._disposeCurrentScene();
 
-            const canvas = this._canvasRef.current;
+            const canvas = this.props.globalState.scenePreviewCanvas;
             if (!canvas) {
                 throw new Error("Preview canvas not available");
             }
@@ -1098,7 +1103,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     )}
                 </div>
                 <div className={classes.canvasContainer} onDragOver={this._handleDragOver as React.DragEventHandler} onDrop={this._handleDrop as React.DragEventHandler}>
-                    <canvas ref={this._canvasRef} className={classes.canvas} tabIndex={0} />
+                    <div ref={this._canvasHostRef} className={classes.canvasHost} data-testid="scene-preview-canvas-host" />
                     {isHostMode && (
                         <div
                             style={{

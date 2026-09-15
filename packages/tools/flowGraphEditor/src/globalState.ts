@@ -935,6 +935,8 @@ export class GlobalState {
 
     /** The scene context populated when a Playground snippet is loaded */
     sceneContext: Nullable<SceneContext> = null;
+    /** Canvas retained across scene-preview pane mounts so its engine and WebGL context remain usable. */
+    scenePreviewCanvas: Nullable<HTMLCanvasElement> = null;
     /** The source used to create the current preview scene, if known. */
     sceneSource: "default" | "snippet" | "file" | "host" | null = null;
     /** Observable triggered when the scene context changes (snippet loaded/disposed) */

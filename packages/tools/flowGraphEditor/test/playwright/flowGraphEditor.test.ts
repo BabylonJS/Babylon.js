@@ -198,6 +198,51 @@ async function GetSceneContextSnapshot(
     });
 }
 
+async function StrictImportKhrInteractivityAsync(page: Page, fileName: string, bytes: Uint8Array): Promise<{ graphCount: number; errorCount: number }> {
+    return await page.evaluate(
+        async ({ name, data }) => {
+            const Babylon = (globalThis as any).BABYLON;
+            const key = name.toLowerCase();
+            const file = new File([new Uint8Array(data)], name, {
+                type: name.endsWith(".glb") ? "model/gltf-binary" : "model/gltf+json",
+            });
+            Babylon.FilesInputStore.FilesToLoad[key] = file;
+            const canvas = document.createElement("canvas");
+            const engine = new Babylon.Engine(canvas, false);
+            let scene: any = null;
+            try {
+                scene = await Babylon.LoadSceneAsync(name, engine, {
+                    rootUrl: "file:",
+                    pluginOptions: {
+                        gltf: {
+                            extensionOptions: {
+                                KHR_interactivity: {
+                                    autoStart: false,
+                                    parseOnly: true,
+                                    strictValidation: true,
+                                },
+                            },
+                        },
+                    },
+                });
+                const importResult = Babylon.GLTF2.Loader.Extensions.GetKHRInteractivityImportResult(scene);
+                if (!importResult) {
+                    throw new Error("Strict KHR_interactivity import result was not created.");
+                }
+                return {
+                    graphCount: importResult.graphs.length,
+                    errorCount: importResult.document.diagnostics.filter((diagnostic: { severity: string }) => diagnostic.severity === "error").length,
+                };
+            } finally {
+                scene?.dispose();
+                engine.dispose();
+                delete Babylon.FilesInputStore.FilesToLoad[key];
+            }
+        },
+        { name: fileName, data: Array.from(bytes) }
+    );
+}
+
 async function GetDefaultSceneBoxInfo(page: Page): Promise<{ sceneUid: string; source: string | null; boxX: number }> {
     return await page.evaluate(() => {
         const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
@@ -2034,6 +2079,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         expect(exportedJson.extensions.KHR_interactivity.graphs[0]).toEqual(source.extensions.KHR_interactivity.graphs[0]);
         expect(exportedJson.extensionsUsed).toContain("KHR_interactivity");
         expect(exportedJson.extensionsRequired).toContain("KHR_interactivity");
+        expect(await StrictImportKhrInteractivityAsync(page, "strictRoundTrip.gltf", Buffer.from(exportedGltf))).toEqual({ graphCount: 1, errorCount: 0 });
 
         await page.evaluate((content) => {
             const file = new File([content], "roundTrip.gltf", { type: "model/gltf+json" });
@@ -2051,6 +2097,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         expect(glbPath).not.toBeNull();
         const exportedGlb = readFileSync(glbPath!);
         expect(exportedGlb.subarray(0, 4).toString("utf8")).toBe("glTF");
+        expect(await StrictImportKhrInteractivityAsync(page, "strictRoundTrip.glb", exportedGlb)).toEqual({ graphCount: 1, errorCount: 0 });
 
         await page.evaluate((bytes) => {
             const file = new File([new Uint8Array(bytes)], "roundTrip.glb", { type: "model/gltf-binary" });
@@ -2060,6 +2107,51 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         }, Array.from(exportedGlb));
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "roundTrip.glb"');
         await expect.poll(async () => await fge.getNodeCount()).toBe(1);
+
+        const beforeUndock = await page.evaluate(() => {
+            const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+            const canvas = state.sceneContext.scene.getEngine().getRenderingCanvas();
+            return { sceneUid: state.sceneContext.scene.uid, connected: canvas.isConnected, inMainDocument: canvas.ownerDocument === document };
+        });
+        expect(beforeUndock).toMatchObject({ connected: true, inMainDocument: true });
+
+        const menuButtons = page.locator('button[aria-haspopup="menu"]');
+        let rightmostMenuButton = -1;
+        let rightmostX = -1;
+        for (let index = 0; index < (await menuButtons.count()); index++) {
+            const box = await menuButtons.nth(index).boundingBox();
+            if (box && box.y < 120 && box.x > rightmostX) {
+                rightmostMenuButton = index;
+                rightmostX = box.x;
+            }
+        }
+        expect(rightmostMenuButton).toBeGreaterThanOrEqual(0);
+        const popupPromise = page.context().waitForEvent("page");
+        await menuButtons.nth(rightmostMenuButton).click();
+        await page.getByRole("menuitem", { name: "Undock", exact: true }).click();
+        const popup = await popupPromise;
+        await expect(popup.getByText("Scene Preview", { exact: true }).first()).toBeVisible();
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                        const canvas = state.sceneContext.scene.getEngine().getRenderingCanvas();
+                        return { connected: canvas.isConnected, inMainDocument: canvas.ownerDocument === document };
+                    })
+            )
+            .toEqual({ connected: true, inMainDocument: false });
+        await popup.close();
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                        const canvas = state.sceneContext.scene.getEngine().getRenderingCanvas();
+                        return { sceneUid: state.sceneContext.scene.uid, connected: canvas.isConnected, inMainDocument: canvas.ownerDocument === document };
+                    })
+            )
+            .toEqual({ sceneUid: beforeUndock.sceneUid, connected: true, inMainDocument: true });
 
         await fge.addBlockFromPalette("Constant");
         await page.evaluate(() => {

@@ -163,6 +163,40 @@ test.describe("Babylon glTF Serializer", () => {
             expect(assertionData.extensionsRequired).toEqual(["KHR_interactivity"]);
             expect(assertionData.nodes[0].extensions.KHR_node_selectability).toEqual({ selectable: true });
         });
+        test("should preserve a right-handed identity root for KHR_interactivity references", async () => {
+            const assertionData = await page.evaluate(async () => {
+                window.scene!.useRightHandedSystem = true;
+                const identityRoot = new BABYLON.TransformNode("interactiveIdentityRoot", window.scene!);
+                const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test", {
+                    khrInteractivity: {
+                        required: true,
+                        additionalExtensionsUsed: [],
+                        additionalExtensionsRequired: [],
+                        build: (context) => {
+                            const nodeIndex = context.getNodeIndex(identityRoot);
+                            if (nodeIndex === undefined) {
+                                throw new Error("Interactive identity root was not remapped.");
+                            }
+                            return {
+                                graphs: [
+                                    {
+                                        types: [{ signature: "ref" }],
+                                        variables: [{ type: 0, value: [`/nodes/${nodeIndex}`] }],
+                                        declarations: [{ op: "event/onStart" }],
+                                        nodes: [{ declaration: 0 }],
+                                    },
+                                ],
+                            };
+                        },
+                    },
+                });
+                return JSON.parse(glTFData.files["test.gltf"] as string);
+            });
+
+            expect(assertionData.nodes).toEqual([expect.objectContaining({ name: "interactiveIdentityRoot" })]);
+            expect(assertionData.scenes[0].nodes).toEqual([0]);
+            expect(assertionData.extensions.KHR_interactivity.graphs[0].variables[0].value).toEqual(["/nodes/0"]);
+        });
         test("should serialize sphere geometry in window.scene to glTF", async () => {
             const assertionData = await page.evaluate(async () => {
                 BABYLON.MeshBuilder.CreateSphere(
