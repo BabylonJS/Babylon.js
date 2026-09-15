@@ -137,6 +137,9 @@ export class RuntimeAnimation {
     private _playbackFrames = 0;
     private _playbackProgress = 0;
     private _playbackBlendingFactor = 1;
+    private _playbackSyncRoot: Nullable<Animatable> = null;
+    private _playbackJumped = false;
+    private _playbackSyncMasterFrames = 0;
 
     private _enableBlending: boolean;
 
@@ -188,6 +191,24 @@ export class RuntimeAnimation {
      */
     public get _evaluatedBlendingFactor(): number {
         return this._playbackBlendingFactor;
+    }
+
+    /**
+     * @internal
+     * The animatable the evaluation was clocked by, captured as it was made: the pose of a step stays that of the root
+     * it was synchronized with then, whatever the host has been synchronized with since.
+     */
+    public get _evaluatedSyncRoot(): Nullable<Animatable> {
+        return this._playbackSyncRoot;
+    }
+
+    /**
+     * @internal
+     * Whether the evaluated progress jumped rather than playing on from the one before: the pose of a follower snapped
+     * back to the start of its range by a root whose own clock cannot carry it to the end.
+     */
+    public get _evaluatedJump(): boolean {
+        return this._playbackJumped;
     }
 
     /**
@@ -806,16 +827,31 @@ export class RuntimeAnimation {
             // The frame evaluated, unwrapped across loops, then the progress of the pose it gave
             this._playbackFrom = from;
             this._playbackTo = to;
+            this._playbackJumped = false;
+            this._playbackSyncRoot = this._host ? this._host.syncRoot : null;
             let frames: number;
-            if (this._host && this._host.syncRoot) {
-                // The frames the root has played, over the range the follower's frame is mapped from: the range the root
-                // animatable declares, which is not always the one its own clock evaluates. A root track keyed shorter
-                // than its group leaves the follower short of its end and snaps it back, and that is a jump, not a cycle.
-                const syncRoot = this._host.syncRoot;
+            if (this._playbackSyncRoot) {
+                const syncRoot = this._playbackSyncRoot;
                 const master = syncRoot.getAnimations()[0];
                 const masterRange = syncRoot.toFrame - syncRoot.fromFrame;
                 if (master && masterRange !== 0) {
-                    frames = (frameRange * master._playbackFrames) / masterRange;
+                    // The phase of the pose: the frame the root's own frame maps to, over the range it is synchronized
+                    // over. Whole cycles are in it only when the root's clock covers that range - one keyed shorter
+                    // never carries the follower to its end, and snaps it back to the start rather than looping it.
+                    const phase = (frameRange * (syncRoot.masterFrame - syncRoot.fromFrame)) / masterRange;
+                    const masterEvaluated = master._playbackTo - master._playbackFrom;
+                    if (masterEvaluated !== 0 && master._playbackFrom <= syncRoot.fromFrame && master._playbackTo >= syncRoot.toFrame) {
+                        const masterCycles = Math.round((master._playbackFrames - (master._currentFrame - master._playbackFrom)) / masterEvaluated);
+                        frames = frameRange * masterCycles + phase;
+                    } else {
+                        // Snapped back to the start while the root played on: a jump of the pose, not travel. A root
+                        // playing backwards carries the follower back with it, which is travel, and is not one.
+                        if (phase < this._playbackFrames && master._playbackFrames > this._playbackSyncMasterFrames) {
+                            this._playbackJumped = true;
+                        }
+                        frames = phase;
+                    }
+                    this._playbackSyncMasterFrames = master._playbackFrames;
                 } else {
                     // A root with no runtime animation reads as frame 0: the pose snaps there and holds, and so does the progress
                     frames = this._playbackFrames;
@@ -844,6 +880,8 @@ export class RuntimeAnimation {
             this._playbackTo = this._coreRuntimeAnimation._playbackTo;
             this._playbackFrames = this._coreRuntimeAnimation._playbackFrames;
             this._playbackProgress = this._coreRuntimeAnimation._playbackProgress;
+            this._playbackJumped = this._coreRuntimeAnimation._playbackJumped;
+            this._playbackSyncRoot = this._coreRuntimeAnimation._playbackSyncRoot;
         }
 
         const currentValue = animation._interpolate(currentFrame, this._animationState);

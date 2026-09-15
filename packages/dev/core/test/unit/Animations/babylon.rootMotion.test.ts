@@ -583,6 +583,35 @@ describe("RootMotion", () => {
             expect(rig.character.position.z).toBeCloseTo(Walked(63), 1);
         });
 
+        it("runs a root whose position channel is keyed shorter than the clip on the channel that covers it", () => {
+            const rig = BuildRig(scene, "inPlace", { twist: 0.1 });
+            const short = new Animation("hipsShort", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+            const rest = (rig.hipsAnimation.getKeys()[0].value as Vector3).clone();
+            // Two keys, so it spans more than one frame, but a single frame of the clip.
+            short.setKeys([
+                { frame: 0, value: rest.clone() },
+                { frame: 1, value: rest.clone() },
+            ]);
+            const group = new AnimationGroup("short", scene);
+            group.addTargetedAnimation(short, rig.hips);
+            group.addTargetedAnimation(rig.hipsRotationAnimation!, rig.hips);
+            group.addTargetedAnimation(ChannelOf(rig.group, rig.leftFoot, "position"), rig.leftFoot);
+            group.addTargetedAnimation(ChannelOf(rig.group, rig.rightFoot, "position"), rig.rightFoot);
+            const clip = new RootMotionClip(group);
+
+            // The root's rotation covers the clip where its position does not, so the analysis is not clamped to frame 1.
+            expect(clip.rootNode).toBe(rig.hips);
+            expect(clip.toFrame - clip.fromFrame).toBe(CycleFrames);
+            expect(clip.duration).toBeCloseTo(1, 6);
+            expect(clip.source).toBe(RootMotionSource.FootContact);
+            expect(clip.cycleDistance).toBeCloseTo(Speed, 2);
+
+            new RootMotionController(rig.character, [clip]);
+            clip.animationGroup.start(true);
+            Run(scene, 63);
+            expect(rig.character.position.z).toBeCloseTo(Walked(63), 1);
+        });
+
         it("runs a root whose channels are all single keys on a descendant that spans the clip", () => {
             const rig = BuildRig(scene, "inPlace");
             const still = new Animation("hipsStill", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
@@ -1538,10 +1567,41 @@ describe("RootMotion", () => {
             group.syncAllAnimationsWith(driver);
             Run(scene, 40);
             const before = rig.character.position.z;
-            // Spans the driver's wrap, which carries the pose no further than any other step.
+            // Spans the driver's wrap.
             Run(scene, 40);
 
-            expect(rig.character.position.z - before).toBeCloseTo(40 * 0.5 * Speed * 0.016, 4);
+            // Half a tick per step, the pose covering only half the clip, and nothing at all on the one step the driver
+            // wraps and the pose snaps back to the start.
+            expect(rig.character.position.z - before).toBeCloseTo(39 * 0.5 * Speed * 0.016, 4);
+        });
+
+        it("stands still while a short driver holds the pose in a stationary half of the clip", () => {
+            const skeleton = BuildSkeleton(scene);
+            // A clip that stands still for its first half and travels through its second.
+            const toArmature = Matrix.Invert(skeleton.armature.computeWorldMatrix(true));
+            const keys = [];
+            for (let frame = 0; frame <= CycleFrames; frame++) {
+                const travelled = frame <= CycleFrames / 2 ? 0 : (Speed * (frame - CycleFrames / 2)) / Fps;
+                keys.push({ frame, value: Vector3.TransformCoordinates(new Vector3(0, HipHeight, travelled), toArmature) });
+            }
+            const hipsAnimation = new Animation("hips", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+            hipsAnimation.setKeys(keys);
+            const group = new AnimationGroup("halfStill", scene);
+            group.addTargetedAnimation(hipsAnimation, skeleton.hips);
+            group.normalize(0, CycleFrames);
+            const clip = new RootMotionClip(group);
+            new RootMotionController(skeleton.character, [clip]);
+            expect(clip.source).toBe(RootMotionSource.Root);
+
+            const prop = new TransformNode("prop", scene);
+            const driver = scene.beginDirectAnimation(prop, [DriverAnimation()], 0, 2 * CycleFrames, true);
+            clip.animationGroup.start(true);
+            clip.animationGroup.syncAllAnimationsWith(driver);
+            // The driver's own clock is keyed over half the range it is synchronized over, so the pose never leaves the
+            // first half of the clip - the half the character stands still through - however often the driver wraps.
+            Run(scene, 80);
+
+            expect(skeleton.character.position.length()).toBeCloseTo(0, 4);
         });
 
         it("ends a follower that does not loop at the driver's frame", () => {
@@ -2015,6 +2075,24 @@ describe("RootMotion", () => {
 
             // A playback that no longer loops is taken to the end of its range, cycles already passed and all.
             expect(rig.character.position.z - before).toBeCloseTo(((CycleFrames - 30.24) / CycleFrames) * Speed, 5);
+        });
+
+        it("consumes the step an event synchronizes the group on, and treats the driver's phase as a jump", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            const prop = new TransformNode("prop", scene);
+            const driver = scene.beginDirectAnimation(prop, [DriverAnimation()], 0, CycleFrames, true);
+            driver.speedRatio = 0.5;
+            const before = walkToEvent(rig, group, () => group.syncAllAnimationsWith(driver));
+
+            // That step's pose was still the group's own clock: it travels as any other.
+            Run(scene, 1);
+            expect(rig.character.position.z - before).toBeCloseTo(Tick, 6);
+
+            // The first pose on the driver's phase is a jump from it, not travel.
+            const synced = rig.character.position.z;
+            Run(scene, 1);
+            expect(rig.character.position.z - synced).toBeCloseTo(0, 6);
         });
 
         it("applies nothing for a playback that ended while it was parked at a weight of zero", () => {

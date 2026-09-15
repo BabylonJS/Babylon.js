@@ -146,24 +146,33 @@ interface IChannelWriters {
 
 /**
  * The channel of a node to run a clip's motion on: the first of its position, rotation and scaling channels whose keys
- * span more than one frame, or the first of them when none does.
+ * cover the range played, in that order of preference; failing that the one whose keys span the most of it, since a
+ * channel keyed shorter clamps the analysis to its own keys; failing that the first of them.
  * @param channels defines the node's channels
+ * @param fromFrame defines the first frame of the range played
+ * @param toFrame defines the last frame of the range played
  * @returns the channel and the frames its keys span
  */
-function ClockChannel(channels: INodeChannels): { animation: Animation; span: number } {
-    let first: Nullable<Animation> = null;
+function ClockChannel(channels: INodeChannels, fromFrame: number, toFrame: number): { animation: Animation; span: number } {
+    let best: Nullable<Animation> = null;
+    let bestSpan = 0;
+    let bestCovers = false;
     for (const animation of [channels.position, channels.rotationQuaternion, channels.rotation, channels.scaling]) {
         if (!animation) {
             continue;
         }
-        first = first ?? animation;
         const keys = animation.getKeys();
-        const span = keys.length ? keys[keys.length - 1].frame - keys[0].frame : 0;
-        if (span > 0) {
-            return { animation, span };
+        const first = keys.length ? keys[0].frame : 0;
+        const last = keys.length ? keys[keys.length - 1].frame : 0;
+        const span = last - first;
+        const covers = span > 0 && first <= fromFrame && last >= toFrame;
+        if (!best || (covers && !bestCovers) || (covers === bestCovers && span > bestSpan)) {
+            best = animation;
+            bestSpan = span;
+            bestCovers = covers;
         }
     }
-    return { animation: first!, span: 0 };
+    return { animation: best!, span: bestSpan };
 }
 
 /** Contact candidates must come this close to the lowest one during the clip, as a share of the character's height. */
@@ -489,14 +498,16 @@ export class RootMotionClip implements IDisposable {
 
         // The motion runs on the root's own animation - its frame rate, its range and at runtime its playback - rather than
         // whichever track happens to be first in the group, which could be a morph target at another frame rate: the
-        // first of its channels whose keys span more than one frame, since a channel of a single key would clamp the
-        // analysis to that frame. A root the group does not animate, passed as the base of the hierarchy, runs on such a
-        // channel of an animated descendant: a position channel before any other, the channel the mixer weighs
-        // linearly, and the widest among those.
+        // channel of the root that covers the range played, since one keyed shorter would clamp the analysis to its own
+        // keys. A root the group does not animate, passed as the base of the hierarchy, runs on such a channel of an
+        // animated descendant: a position channel before any other, the channel the mixer weighs linearly, and the
+        // widest among those.
+        const playedFrom = animationGroup.from;
+        const playedTo = animationGroup.to;
         let clockNode: Nullable<TransformNode> = null;
         let clock: Nullable<Animation> = null;
         const anchorChannels = this._channels.get(anchor);
-        const anchorClock = anchorChannels ? ClockChannel(anchorChannels) : null;
+        const anchorClock = anchorChannels ? ClockChannel(anchorChannels, playedFrom, playedTo) : null;
         if (anchorClock && anchorClock.span > 0) {
             clockNode = anchor;
             clock = anchorClock.animation;
@@ -509,7 +520,7 @@ export class RootMotionClip implements IDisposable {
                 if (node !== anchor && !node.isDescendantOf(anchor)) {
                     continue;
                 }
-                const candidate = ClockChannel(channels);
+                const candidate = ClockChannel(channels, playedFrom, playedTo);
                 const rank = candidate.span > 0 ? (candidate.animation.targetProperty === "position" ? 2 : 1) : 0;
                 if (rank > bestRank || (rank === bestRank && candidate.span > bestSpan)) {
                     clockNode = node as TransformNode;
@@ -1589,11 +1600,13 @@ export class RootMotionController implements IDisposable {
                 clip._parked = false;
                 clip._lastProgress = null;
             }
-            const syncRoot = animatable.syncRoot;
+            // The root the evaluation was actually clocked by, as it was made: a callback of this very step may have
+            // synchronized the group afterwards, and this step's pose is still the one the old clock gave.
+            const syncRoot = found._evaluatedSyncRoot;
             const syncRuntime = syncRoot ? (syncRoot.getAnimations()[0] ?? null) : null;
-            if (syncRoot !== clip._syncRoot || syncRuntime !== clip._syncRuntime) {
-                // Synchronized with another root, or no longer synchronized at all and back on its own clock: either way
-                // the pose jumps to wherever that leaves it, which is not travel.
+            if (syncRoot !== clip._syncRoot || syncRuntime !== clip._syncRuntime || found._evaluatedJump) {
+                // Synchronized with another root, no longer synchronized at all and back on its own clock, or snapped
+                // back by a root that cannot carry it to its end: the pose jumps, which is not travel.
                 clip._syncRoot = syncRoot;
                 clip._syncRuntime = syncRuntime;
                 clip._lastProgress = null;
