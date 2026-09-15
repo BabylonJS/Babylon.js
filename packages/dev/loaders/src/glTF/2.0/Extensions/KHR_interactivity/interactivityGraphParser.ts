@@ -14,8 +14,10 @@ import { type ISerializedFlowGraph, type ISerializedFlowGraphBlock, type ISerial
 import { RandomGUID } from "core/Misc/guid";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
+import { type FlowGraph } from "core/FlowGraph/flowGraph";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 import {
+    _CreateKHRInteractivityRuntimeValueSnapshot,
     CloneKHRInteractivityGraph,
     CreateEffectiveKHRInteractivityGraph,
     gltfTypeToBabylonType,
@@ -82,6 +84,36 @@ function _IsSerializableConfigurationValue(value: unknown): boolean {
         (Array.isArray(value) && value.every(_IsSerializableConfigurationValue)) ||
         (typeof value === "object" && Object.values(value as Record<string, unknown>).every(_IsSerializableConfigurationValue))
     );
+}
+
+/**
+ * Captures import-time defaults for unconnected runtime inputs that have no authored KHR socket.
+ * @param flowGraph the fully parsed FlowGraph
+ * @internal
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function _CaptureKHRInteractivityRuntimeInputDefaults(flowGraph: FlowGraph): void {
+    for (const block of flowGraph.getAllBlocks()) {
+        const provenance = block.metadata?.khrInteractivity as IKHRInteractivityBlockProvenance | undefined;
+        if (!provenance) {
+            continue;
+        }
+        for (const input of block.dataInputs) {
+            if (input.isConnected() || input.metadata?.khrInteractivity) {
+                continue;
+            }
+            if (provenance.generatedInputDefaults && Object.prototype.hasOwnProperty.call(provenance.generatedInputDefaults, input.name)) {
+                continue;
+            }
+            provenance.generatedInputDefaults ||= {};
+            Object.defineProperty(provenance.generatedInputDefaults, input.name, {
+                configurable: true,
+                enumerable: true,
+                value: _CreateKHRInteractivityRuntimeValueSnapshot((input as any)._defaultValue),
+                writable: true,
+            });
+        }
+    }
 }
 
 /**

@@ -78,6 +78,18 @@ export interface IKHRInteractivityBlockProvenance {
     configuration?: Record<string, IKHRInteractivityConfigurationProvenance>;
     /** Importer-generated primitive configuration that must remain unchanged for inverse export. */
     generatedConfiguration?: Record<string, unknown>;
+    /** Importer-generated unconnected input defaults that have no authored KHR socket representation. */
+    generatedInputDefaults?: Record<string, IKHRInteractivityInputDefaultProvenance>;
+}
+
+/**
+ * Import-time value retained for an unconnected FlowGraph input that is not represented by an authored KHR socket.
+ */
+export interface IKHRInteractivityInputDefaultProvenance {
+    /** Type-tagged JSON-stable fingerprint of the normalized runtime input value. */
+    runtimeValueFingerprint?: string;
+    /** Whether the import-time value could not be fingerprinted safely. */
+    unrepresentable?: true;
 }
 
 /**
@@ -88,6 +100,99 @@ export interface IKHRInteractivityConfigurationProvenance {
     sourceValue?: unknown[];
     /** Lowered FlowGraph configuration value immediately after import. */
     runtimeValue?: unknown;
+}
+
+/** @internal */
+export function _NormalizeKHRInteractivityRuntimeValue(value: unknown): unknown[] | undefined {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value !== null && typeof value === "object") {
+        const asArray = (value as { asArray?: () => ArrayLike<unknown> }).asArray;
+        if (typeof asArray === "function") {
+            return Array.from(asArray.call(value));
+        }
+        if ("value" in value && typeof (value as { value?: unknown }).value !== "object") {
+            return [(value as { value: unknown }).value];
+        }
+    }
+    return Array.isArray(value) ? value.slice() : [value];
+}
+
+function _EncodeRuntimeValueSnapshot(value: unknown, ancestors: Set<object>): unknown {
+    if (value === undefined) {
+        return ["undefined"];
+    }
+    if (value === null) {
+        return ["null"];
+    }
+    switch (typeof value) {
+        case "boolean":
+            return ["boolean", value];
+        case "number":
+            return ["number", Number.isNaN(value) ? "NaN" : value === Infinity ? "Infinity" : value === -Infinity ? "-Infinity" : Object.is(value, -0) ? "-0" : value];
+        case "string":
+            return ["string", value];
+        case "object": {
+            if (Object.getOwnPropertySymbols(value).length > 0) {
+                return undefined;
+            }
+            if (Array.isArray(value)) {
+                const hasNonIndexProperty = Object.getOwnPropertyNames(value).some(
+                    (key) => key !== "length" && (!/^(0|[1-9]\d*)$/.test(key) || Number(key) >= value.length || !("value" in Object.getOwnPropertyDescriptor(value, key)!))
+                );
+                if (hasNonIndexProperty) {
+                    return undefined;
+                }
+            } else {
+                const prototype = Object.getPrototypeOf(value);
+                if (prototype !== Object.prototype && prototype !== null) {
+                    return undefined;
+                }
+                const hasNonJsonProperty = Object.getOwnPropertyNames(value).some(
+                    (key) => !Object.prototype.propertyIsEnumerable.call(value, key) || !("value" in Object.getOwnPropertyDescriptor(value, key)!)
+                );
+                if (hasNonJsonProperty) {
+                    return undefined;
+                }
+            }
+            if (ancestors.has(value)) {
+                return undefined;
+            }
+            ancestors.add(value);
+            let encoded: unknown;
+            if (Array.isArray(value)) {
+                const entries = value.map((entry) => _EncodeRuntimeValueSnapshot(entry, ancestors));
+                encoded = entries.some((entry) => entry === undefined) ? undefined : ["array", entries];
+            } else {
+                const entries: unknown[] = [];
+                let unrepresentable = false;
+                for (const key of Object.keys(value).sort()) {
+                    const entry = _EncodeRuntimeValueSnapshot((value as Record<string, unknown>)[key], ancestors);
+                    if (entry === undefined) {
+                        unrepresentable = true;
+                        break;
+                    }
+                    entries.push([key, entry]);
+                }
+                encoded = unrepresentable ? undefined : ["object", entries];
+            }
+            ancestors.delete(value);
+            return encoded;
+        }
+        default:
+            return undefined;
+    }
+}
+
+/** @internal */
+export function _CreateKHRInteractivityRuntimeValueSnapshot(value: unknown): IKHRInteractivityInputDefaultProvenance {
+    try {
+        const encoded = _EncodeRuntimeValueSnapshot(Array.isArray(value) ? value : _NormalizeKHRInteractivityRuntimeValue(value), new Set<object>());
+        return encoded === undefined ? { unrepresentable: true } : { runtimeValueFingerprint: JSON.stringify(encoded) };
+    } catch {
+        return { unrepresentable: true };
+    }
 }
 
 /**

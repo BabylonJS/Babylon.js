@@ -7,7 +7,7 @@ import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { registerGLTFExtension, unregisterGLTFExtension, registeredGLTFExtensions } from "../glTFLoaderExtensionRegistry";
 import { type GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { AddObjectAccessorToKey, GetPathToObjectConverter } from "./objectModelMapping";
-import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
+import { _CaptureKHRInteractivityRuntimeInputDefaults, InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
 import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 import { Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { type Scene } from "core/scene";
@@ -212,6 +212,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                     coordinator.dispatchEventsSynchronously = false;
                     graphResult.coordinator = coordinator;
                     graphResult.flowGraph = await ParseFlowGraphAsync(serializedFlowGraph, { coordinator, pathConverter });
+                    _CaptureKHRInteractivityRuntimeInputDefaults(graphResult.flowGraph);
                     if (autoStart && graphModel.index === document.defaultGraphIndex) {
                         coordinator.start();
                     }

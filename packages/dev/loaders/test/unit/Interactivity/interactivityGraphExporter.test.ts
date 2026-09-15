@@ -2,17 +2,18 @@ import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
 import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { FlowGraphPlayAnimationBlock } from "core/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.pure";
 import { AnimationGroup } from "core/Animations/animationGroup";
 import { NullEngine } from "core/Engines/nullEngine";
 import { TransformNode } from "core/Meshes/transformNode";
 import { FreeCamera } from "core/Cameras/freeCamera";
-import { Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
 import { type IKHRInteractivity, type IKHRInteractivity_Graph } from "babylonjs-gltf2interface";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { _AddInteractivityObjectModel, _RegisterKHRInteractivityRuntime } from "../../../src/glTF/2.0/Extensions/KHR_interactivity.pure";
-import { InteractivityGraphToFlowGraphParser } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
-import { CreateKHRInteractivityDocument } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphModel";
+import { _CaptureKHRInteractivityRuntimeInputDefaults, InteractivityGraphToFlowGraphParser } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
+import { _CreateKHRInteractivityRuntimeValueSnapshot, CreateKHRInteractivityDocument } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphModel";
 import { GetPathToObjectConverter } from "../../../src/glTF/2.0/Extensions/objectModelMapping";
 import { _RegisterKHRNodeSelectabilityRuntime } from "../../../src/glTF/2.0/Extensions/KHR_node_selectability.pure";
 import {
@@ -79,7 +80,9 @@ describe("KHR_interactivity FlowGraph export", () => {
                 graph.declarations,
                 graph.source
             ).serializeToFlowGraph();
-            flowGraphs.push(await ParseFlowGraphAsync(serialized, { coordinator, pathConverter }));
+            const flowGraph = await ParseFlowGraphAsync(serialized, { coordinator, pathConverter });
+            _CaptureKHRInteractivityRuntimeInputDefaults(flowGraph);
+            flowGraphs.push(flowGraph);
         }
         return CreateKHRInteractivityExportPlan(flowGraphs, { document, sourceGLTF });
     }
@@ -117,6 +120,109 @@ describe("KHR_interactivity FlowGraph export", () => {
         const edited = plan.build(context);
         expect(edited.graphs[0].nodes![0].values!.a).toEqual({ type: 0, value: [9] });
         expect(CreateKHRInteractivityDocument(edited).graphs[0].valid).toBe(true);
+    });
+
+    it("serializes edited matrix literals as ordinary JSON arrays", async () => {
+        const source = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+        const editedValue = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+        const plan = await CreatePlan({
+            graphs: [
+                {
+                    types: [{ signature: "float4x4" }],
+                    declarations: [{ op: "math/transpose" }],
+                    nodes: [{ declaration: 0, values: { a: { type: 0, value: source } } }],
+                },
+            ],
+        });
+        const transpose = coordinator.flowGraphs[0].getAllBlocks().find((block) => block.metadata?.khrInteractivity?.operation === "math/transpose")!;
+        (transpose.getDataInput("a") as any)._defaultValue = Matrix.FromArray(editedValue);
+
+        const edited = plan.build(context);
+        const value = edited.graphs[0].nodes![0].values!.a;
+
+        expect("value" in value && Array.isArray(value.value)).toBe(true);
+        expect(value).toEqual({ type: 0, value: editedValue });
+        expect(CreateKHRInteractivityDocument(edited).graphs[0].valid).toBe(true);
+    });
+
+    it("detects non-finite generated defaults corrupted by a FlowGraph JSON round trip", async () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "float" }, { signature: "float2" }],
+            variables: [{ type: 0, value: [1] }],
+            declarations: [{ op: "variable/interpolate" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { variable: { value: [0] }, useSlerp: { value: [false] } },
+                    values: {
+                        value: { type: 0, value: [5] },
+                        duration: { type: 0, value: [1] },
+                        p1: { type: 1, value: [0, 0] },
+                        p2: { type: 1, value: [1, 1] },
+                    },
+                },
+            ],
+        };
+        const document = CreateKHRInteractivityDocument({ graphs: [graph] });
+        const plan = await CreatePlan({ graphs: [graph] });
+        const importedReference = coordinator.flowGraphs[0].getAllBlocks().find((block) => block.metadata?.khrInteractivity?.role === 2)!;
+        const importedInput = importedReference.getDataInput("speed")!;
+        delete importedReference.metadata.khrInteractivity.generatedInputDefaults.speed;
+        (importedInput as any)._defaultValue = NaN;
+        _CaptureKHRInteractivityRuntimeInputDefaults(coordinator.flowGraphs[0]);
+        expect(plan.analyze().representable).toBe(true);
+        const expectedSnapshot = importedReference.metadata.khrInteractivity.generatedInputDefaults.speed;
+        expect(expectedSnapshot.runtimeValueFingerprint).toContain("NaN");
+
+        const serialized: any = {};
+        coordinator.flowGraphs[0].serialize(serialized);
+        const persisted = JSON.parse(JSON.stringify(serialized));
+        const reloadedCoordinator = new FlowGraphCoordinator({ scene });
+        const reloaded = await ParseFlowGraphAsync(persisted, { coordinator: reloadedCoordinator });
+        const reloadedReference = reloaded.getAllBlocks().find((block) => block.metadata?.khrInteractivity?.role === 2)!;
+        const reloadedInput = reloadedReference.getDataInput("speed")!;
+        expect(reloadedInput.isConnected()).toBe(false);
+        expect(reloadedInput.metadata?.khrInteractivity).toBeUndefined();
+        expect(_CreateKHRInteractivityRuntimeValueSnapshot((reloadedInput as any)._defaultValue)).not.toEqual(expectedSnapshot);
+        const reloadedPlan = CreateKHRInteractivityExportPlan([reloaded], { document });
+
+        expect(reloadedPlan.analyze()).toMatchObject({
+            representable: false,
+            diagnostics: expect.arrayContaining([
+                expect.objectContaining({
+                    code: "INPUT_DEFAULT_UNREPRESENTABLE",
+                    socket: "speed",
+                }),
+            ]),
+        });
+        reloadedCoordinator.dispose();
+    });
+
+    it("does not rebaseline generated input defaults that could not be fingerprinted", () => {
+        const graph = coordinator.createGraph();
+        const block = new FlowGraphPlayAnimationBlock();
+        block.metadata = {
+            khrInteractivity: {
+                graphIndex: 0,
+                nodeIndex: 0,
+                declarationIndex: 0,
+                operation: "variable/interpolate",
+                role: 2,
+                sourcePath: "/extensions/KHR_interactivity/graphs/0/nodes/0",
+            },
+        };
+        graph.addBlock(block);
+        const cyclic: Record<string, unknown> = {};
+        cyclic.self = cyclic;
+        (block.speed as any)._defaultValue = cyclic;
+
+        _CaptureKHRInteractivityRuntimeInputDefaults(graph);
+        const provenance = block.metadata.khrInteractivity.generatedInputDefaults.speed;
+        expect(provenance).toEqual({ unrepresentable: true });
+
+        (block.speed as any)._defaultValue = 42;
+        _CaptureKHRInteractivityRuntimeInputDefaults(graph);
+        expect(block.metadata.khrInteractivity.generatedInputDefaults.speed).toBe(provenance);
     });
 
     it("strictly round-trips representative operations from every ratified category", async () => {
@@ -1347,6 +1453,15 @@ describe("KHR_interactivity FlowGraph export", () => {
         const valueInterpolation = interpolationBlocks.find((block) => block.metadata?.khrInteractivity?.role === 0)!;
         const playAnimation = interpolationBlocks.find((block) => block.metadata?.khrInteractivity?.role === 2)!;
         const getVariable = interpolationBlocks.find((block) => block.metadata?.khrInteractivity?.role === 4)!;
+        (playAnimation.getDataInput("speed") as any)._defaultValue = 2;
+
+        expect(plan.analyze()).toMatchObject({
+            representable: false,
+            nodes: [expect.anything(), expect.objectContaining({ nodeIndex: 1, classification: "lossy" })],
+            diagnostics: [expect.objectContaining({ code: "INPUT_DEFAULT_UNREPRESENTABLE", nodeIndex: 1, socket: "speed" })],
+        });
+
+        (playAnimation.getDataInput("speed") as any)._defaultValue = 0;
         getVariable.getDataOutput("value")!.connectTo(playAnimation.getDataInput("speed")!);
 
         expect(plan.analyze()).toMatchObject({
@@ -1364,7 +1479,7 @@ describe("KHR_interactivity FlowGraph export", () => {
         expect(editedPlan.analyze()).toMatchObject({
             representable: false,
             nodes: [expect.anything(), expect.objectContaining({ nodeIndex: 1, classification: "lossy" })],
-            diagnostics: [expect.objectContaining({ code: "COMPOSITE_CONNECTION_CHANGED", nodeIndex: 1 })],
+            diagnostics: expect.arrayContaining([expect.objectContaining({ code: "COMPOSITE_CONNECTION_CHANGED", nodeIndex: 1 })]),
         });
     });
 
@@ -1640,6 +1755,7 @@ describe("KHR_interactivity FlowGraph export", () => {
         const document = CreateKHRInteractivityDocument({ graphs: [graph] }, new Set(), 1);
         const serialized = new InteractivityGraphToFlowGraphParser(graph, sourceGLTF, 60, 0, new Set(), document.graphs[0].declarations, graph).serializeToFlowGraph();
         const flowGraph = await ParseFlowGraphAsync(serialized, { coordinator, pathConverter: GetPathToObjectConverter(sourceGLTF) });
+        _CaptureKHRInteractivityRuntimeInputDefaults(flowGraph);
         const plan = CreateKHRInteractivityExportPlan([flowGraph], { document, sourceGLTF });
 
         expect(flowGraph.getAllBlocks()[0].getClassName()).toBe("FlowGraphUnsupportedInteractivityBlock");

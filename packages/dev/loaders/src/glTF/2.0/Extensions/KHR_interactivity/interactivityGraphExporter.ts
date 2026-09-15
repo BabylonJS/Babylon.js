@@ -28,6 +28,8 @@ import {
     type IGLTFToFlowGraphMappingObject,
 } from "./declarationMapper";
 import {
+    _CreateKHRInteractivityRuntimeValueSnapshot,
+    _NormalizeKHRInteractivityRuntimeValue,
     CloneKHRInteractivityGraph,
     CreateKHRInteractivityGraphModel,
     gltfTypeToBabylonType,
@@ -62,6 +64,7 @@ export interface IKHRInteractivityExportDiagnostic {
         | "SOCKET_PROVENANCE_MISSING"
         | "SOCKET_CONNECTION_AMBIGUOUS"
         | "SOCKET_TARGET_UNREPRESENTABLE"
+        | "INPUT_DEFAULT_UNREPRESENTABLE"
         | "VALUE_UNREPRESENTABLE"
         | "CONFIGURATION_UNREPRESENTABLE"
         | "REFERENCE_UNRESOLVED"
@@ -346,19 +349,7 @@ function _FindDataInput(blocks: readonly FlowGraphBlock[], nodeIndex: number, so
 }
 
 function _NormalizeValue(value: unknown): unknown[] | undefined {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value !== null && typeof value === "object") {
-        const asArray = (value as { asArray?: () => unknown[] }).asArray;
-        if (typeof asArray === "function") {
-            return asArray.call(value);
-        }
-        if ("value" in value && typeof (value as { value?: unknown }).value !== "object") {
-            return [(value as { value: unknown }).value];
-        }
-    }
-    return Array.isArray(value) ? value.slice() : [value];
+    return _NormalizeKHRInteractivityRuntimeValue(value);
 }
 
 function _ValuesEqual(left: readonly unknown[] | undefined, right: readonly unknown[] | undefined): boolean {
@@ -1233,6 +1224,28 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                         blockId: block.uniqueId,
                         path: `/blocks/${block.uniqueId}/config/${key}`,
                         message: `Importer-generated configuration "${key}" was changed and no longer represents "${operation}".`,
+                    });
+                }
+            }
+            for (const input of block.dataInputs) {
+                if (input.isConnected() || _GetSocketProvenance(input)) {
+                    continue;
+                }
+                const expected = _GetOwn(blockProvenance?.generatedInputDefaults, input.name);
+                const current = _CreateKHRInteractivityRuntimeValueSnapshot((input as any)._defaultValue);
+                if (!expected || expected.unrepresentable || current.unrepresentable || current.runtimeValueFingerprint !== expected.runtimeValueFingerprint) {
+                    _PushDiagnostic(diagnostics, {
+                        code: "INPUT_DEFAULT_UNREPRESENTABLE",
+                        graphIndex,
+                        nodeIndex,
+                        blockId: block.uniqueId,
+                        socket: input.name,
+                        path: `/blocks/${block.uniqueId}/dataInputs/${input.name}`,
+                        message: expected?.unrepresentable
+                            ? `Importer-generated input default "${input.name}" could not be preserved safely for inverse export.`
+                            : expected
+                              ? `Importer-generated input default "${input.name}" was changed and has no KHR_interactivity inverse mapping.`
+                              : `Input default "${input.name}" has no import-time provenance or KHR_interactivity inverse mapping.`,
                     });
                 }
             }

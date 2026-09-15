@@ -212,6 +212,42 @@ describe("Flow Graph Serialization", () => {
         expect(parsedReceive.config.eventData.value.value).toBe(5);
     });
 
+    it("applies delegated scoped event decoding to importer-shaped arrays across Send and Receive", () => {
+        const send = new FlowGraphSendCustomEventBlock({ eventId: "event", eventData: {} });
+        const receive = new FlowGraphReceiveCustomEventBlock({ eventId: "event", eventData: {} });
+        const serializedSend: any = {};
+        const serializedReceive: any = {};
+        send.serialize(serializedSend);
+        receive.serialize(serializedReceive);
+        const eventData = [
+            {
+                eventData: true,
+                id: "score",
+                type: "number",
+                value: { type: "number", value: [5] },
+            },
+        ];
+        serializedSend.config.eventData = eventData;
+        serializedReceive.config.eventData = eventData;
+        const valueParseFunction = vi.fn((key: string, serializationObject: any, assetsContainer: any, parseScene: Scene) =>
+            defaultValueParseFunction(key, serializationObject, assetsContainer, parseScene)
+        );
+
+        const parsedSend = ParseFlowGraphBlockWithClassType(serializedSend, { scene, valueParseFunction }, FlowGraphSendCustomEventBlock) as FlowGraphSendCustomEventBlock;
+        const parsedReceive = ParseFlowGraphBlockWithClassType(
+            serializedReceive,
+            { scene, valueParseFunction },
+            FlowGraphReceiveCustomEventBlock
+        ) as FlowGraphReceiveCustomEventBlock;
+
+        expect(parsedSend.getDataInput("score")).toBeDefined();
+        expect(parsedReceive.getDataOutput("score")).toBeDefined();
+        expect(parsedSend.getDataInput("0")).toBeUndefined();
+        expect(parsedReceive.getDataOutput("0")).toBeUndefined();
+        expect(parsedSend.config.eventData.score.value).toBe(5);
+        expect(parsedReceive.config.eventData.score.value).toBe(5);
+    });
+
     it("preserves a typed default reconstructed by an in-place custom event parser", () => {
         const receive = new FlowGraphReceiveCustomEventBlock({
             eventId: "event",
