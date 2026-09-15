@@ -275,6 +275,7 @@ const FORBIDDEN = {
     sprites: ["class SpriteManager {"],
     shadows: ["class ShadowGenerator {"],
     layers: ["class GlowLayer extends", "class HighlightLayer extends"],
+    gaussianSplatting: ["class GaussianSplattingMesh extends", "class GaussianSplattingMeshBase extends"],
 } as const;
 
 /** Combine multiple forbidden sets into one flat array. */
@@ -346,6 +347,12 @@ const TEST_CASE_TEMPLATES: SideEffectTestCase[] = [
         entryCode: `import { Vector3 } from "%DIST%/pure.js";\nconsole.log(Vector3);\n`,
         forbiddenStrings: ['RegisterClass("BABYLON.Vector3"'],
         description: "Named import of Vector3 from root pure barrel should not contain Vector3 RegisterClass",
+    },
+    {
+        name: "depth-renderer-no-gaussian-implementation",
+        entryCode: `import { DepthRenderer } from "%DIST%/Rendering/depthRenderer.pure.js";\nconsole.log(DepthRenderer);\n`,
+        forbiddenStrings: forbidden("gaussianSplatting"),
+        description: "Named import of DepthRenderer should not contain Gaussian Splatting mesh implementations",
     },
 
     // ── Free-function isolation tests ───────────────────────────────────────

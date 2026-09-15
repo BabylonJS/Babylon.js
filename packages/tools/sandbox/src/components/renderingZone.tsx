@@ -5,10 +5,11 @@ import { type GlobalState } from "../globalState";
 
 import { Engine } from "core/Engines/engine";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
-import { SceneLoader } from "core/Loading/sceneLoader";
+import { LoadSceneAsync, SceneLoader } from "core/Loading/sceneLoader";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Scene } from "core/scene";
-import { type ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { type Camera } from "core/Cameras/camera";
 import { type FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { EnvironmentTools } from "../tools/environmentTools";
 import { Tools } from "core/Misc/tools";
@@ -29,6 +30,7 @@ import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compa
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { LoadProjectFileAsync } from "shared-ui-components/projects/projectFile";
 import { DataStorage } from "core/Misc/dataStorage";
+import { CreateUsdFileLoaderOptionsAsync, GetInputFilePath, GetUsdRootCandidates, IsUsdSceneFile, type IUsdInputFile } from "../tools/usdFileInput";
 
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
@@ -53,24 +55,61 @@ function IsProjectAsset(extension: string): boolean {
     return extension.toLowerCase() === "babylonproj";
 }
 
+interface ICameraWithMovementKeys extends Camera {
+    speed: number;
+    keysUp: number[];
+    keysDown: number[];
+    keysLeft: number[];
+    keysRight: number[];
+}
+
+function HasMovementKeys(camera: Camera): camera is ICameraWithMovementKeys {
+    const cameraWithMovementKeys = camera as Partial<ICameraWithMovementKeys>;
+    return (
+        typeof cameraWithMovementKeys.speed === "number" &&
+        Array.isArray(cameraWithMovementKeys.keysUp) &&
+        Array.isArray(cameraWithMovementKeys.keysDown) &&
+        Array.isArray(cameraWithMovementKeys.keysLeft) &&
+        Array.isArray(cameraWithMovementKeys.keysRight)
+    );
+}
+
 interface IRenderingZoneProps {
     globalState: GlobalState;
     expanded: boolean;
     onEngineCreated?: (engine: AbstractEngine) => void;
 }
 
+interface IRenderingZoneState {
+    usdRootCandidates: IUsdInputFile[];
+}
+
 /**
  * RenderingZone component
  */
-export class RenderingZone extends React.Component<IRenderingZoneProps> {
+export class RenderingZone extends React.Component<IRenderingZoneProps, IRenderingZoneState> {
     private _currentPluginName?: string;
     private _engine: AbstractEngine;
     private _scene: Scene;
     private _canvas: HTMLCanvasElement;
     private _restoreInspector = false;
+    private _currentInputFiles: File[] = [];
+    private _filesInput?: FilesInput;
+    private _setSceneFileToLoad?: (sceneFile: File) => void;
+    private readonly _renderScene = () => {
+        const activeCamera = this._scene.activeCamera;
+        if (activeCamera instanceof ArcRotateCamera) {
+            // NOTE: this logic to adjust camera parameters based on radius is copied in viewer.ts.
+            // Please keep them in sync.
+            activeCamera.panningSensibility = 5000 / activeCamera.radius;
+            activeCamera.speed = activeCamera.radius * 0.2;
+        }
+        this._scene.render();
+    };
 
     public constructor(props: IRenderingZoneProps) {
         super(props);
+        this.state = { usdRootCandidates: [] };
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -118,7 +157,22 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             null,
             null,
             null,
-            () => {
+            (files = []) => {
+                const inputFiles = Array.from(files);
+                if (inputFiles.length === 0) {
+                    this._engine.hideLoadingUI();
+                    if (this._scene && !this._scene.isDisposed) {
+                        this._engine.runRenderLoop(this._renderScene);
+                    }
+                    if (this._restoreInspector) {
+                        this._restoreInspector = false;
+                        this.props.globalState.showDebugLayer();
+                    }
+                    return;
+                }
+                this._currentInputFiles = inputFiles;
+                this._setSceneFileToLoad = undefined;
+                this.setState({ usdRootCandidates: [] });
                 Tools.ClearLogCache();
                 if (this._scene) {
                     if (this.props.globalState.isDebugLayerEnabled) {
@@ -128,10 +182,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 }
             },
             () => {
-                // Ensure we stop any existing render loop when reloading, because if there was a previous scene loaded from the URL
-                // the filesInput will not know about it, and so it won't call stopRenderLoop.
-                this._engine.stopRenderLoop();
-                filesInput.reload();
+                this._requestFilesInputReload();
             },
             (file, scene, message) => {
                 this.props.globalState.onError.notifyObservers({ message: message });
@@ -139,8 +190,13 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             false,
             true
         );
+        this._filesInput = filesInput;
+        filesInput.onProcessFilesErrorCallback = () => {
+            this._cancelUsdRootSelection();
+        };
 
         filesInput.onProcessFileCallback = (file, name, extension, setSceneFileToLoad) => {
+            this._setSceneFileToLoad = setSceneFileToLoad;
             if (filesInput.filesToLoad && filesInput.filesToLoad.length === 1 && extension) {
                 switch (extension.toLowerCase()) {
                     case "dds":
@@ -166,7 +222,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         };
 
         filesInput.loadAsync = async (sceneFile, onProgress) => {
-            const sceneFileName = ((sceneFile as any).correctName as string | undefined) ?? sceneFile.name;
+            const sceneFileName = GetInputFilePath(sceneFile);
             const sceneFileExtension = GetFileExtension(sceneFileName);
             if (IsProjectAsset(sceneFileExtension)) {
                 const scene = new Scene(this._engine);
@@ -190,6 +246,14 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
             this._engine.clearInternalTexturesCache();
 
+            if (IsUsdSceneFile(sceneFileName)) {
+                const usdOptions = await CreateUsdFileLoaderOptionsAsync(this._currentInputFiles, sceneFile);
+                return await LoadSceneAsync(sceneFile, this._engine, {
+                    onProgress: onProgress ?? undefined,
+                    pluginOptions: { usd: usdOptions },
+                });
+            }
+
             return await SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
         };
 
@@ -200,7 +264,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
         window.addEventListener("keydown", (event) => {
             // Press R to reload
-            if (event.keyCode === 82 && event.target && (event.target as HTMLElement).nodeName !== "INPUT" && this._scene) {
+            if (event.keyCode === 82 && event.target && (event.target as HTMLElement).nodeName !== "INPUT" && this._scene && this.state.usdRootCandidates.length === 0) {
                 if (this.props.globalState.assetUrl) {
                     this.loadAssetFromUrl(this.props.globalState.assetUrl);
                 } else {
@@ -208,6 +272,51 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 }
             }
         });
+    }
+
+    private _requestFilesInputReload(): void {
+        const usdRootCandidates = GetUsdRootCandidates(this._currentInputFiles);
+        if (usdRootCandidates.length > 0 && !SceneLoader.IsPluginForExtensionAvailable(".usd")) {
+            this._cancelUsdRootSelection();
+            return;
+        }
+        if (usdRootCandidates.length > 1) {
+            this._restoreCurrentSceneRendering();
+            this.setState({ usdRootCandidates });
+            return;
+        }
+
+        this._reloadFilesInput(usdRootCandidates[0]?.file);
+    }
+
+    private _reloadFilesInput(usdRootFile?: File): void {
+        if (usdRootFile) {
+            this._setSceneFileToLoad?.(usdRootFile);
+        }
+        this.setState({ usdRootCandidates: [] });
+
+        // FilesInput does not know about scenes loaded from a URL, so stop their render loop explicitly.
+        this._engine.stopRenderLoop();
+        this._filesInput?.reload();
+    }
+
+    private _restoreCurrentSceneRendering(): void {
+        this._engine.hideLoadingUI();
+        if (this._scene && !this._scene.isDisposed) {
+            this._engine.runRenderLoop(this._renderScene);
+        }
+    }
+
+    private _cancelUsdRootSelection(): void {
+        this._currentInputFiles = [];
+        this._setSceneFileToLoad = undefined;
+        (this._filesInput as (FilesInput & { clearFileSelection?: (cancelActiveLoad?: boolean) => void }) | undefined)?.clearFileSelection?.(false);
+        this.setState({ usdRootCandidates: [] });
+        this._restoreCurrentSceneRendering();
+        if (this._restoreInspector) {
+            this._restoreInspector = false;
+            this.props.globalState.showDebugLayer();
+        }
     }
 
     prepareCamera() {
@@ -262,7 +371,20 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         return camera;
     }
 
-    handleErrors() {
+    private _configureMovementControls(camera: Camera, speed: number): void {
+        if (HasMovementKeys(camera)) {
+            camera.speed = speed;
+            camera.keysUp.push(90); // Z
+            camera.keysUp.push(87); // W
+            camera.keysDown.push(83); // S
+            camera.keysLeft.push(65); // A
+            camera.keysLeft.push(81); // Q
+            camera.keysRight.push(69); // E
+            camera.keysRight.push(68); // D
+        }
+    }
+
+    handleErrors(preparedCamera: ArcRotateCamera) {
         // In case of error during loading, meshes will be empty and clearColor is set to red
         if (this._scene.meshes.length === 0 && this._scene.clearColor.r === 1 && this._scene.clearColor.g === 0 && this._scene.clearColor.b === 0) {
             this._canvas.style.opacity = "0";
@@ -272,15 +394,9 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 this.props.globalState.onError.notifyObservers({ scene: this._scene, message: "Scene loaded but several errors were found" });
             }
             //    this._canvas.style.opacity = "1";
-            const camera = this._scene.activeCamera! as ArcRotateCamera;
-            if (camera.keysUp) {
-                camera.keysUp.push(90); // Z
-                camera.keysUp.push(87); // W
-                camera.keysDown.push(83); // S
-                camera.keysLeft.push(65); // A
-                camera.keysLeft.push(81); // Q
-                camera.keysRight.push(69); // E
-                camera.keysRight.push(68); // D
+            this._configureMovementControls(preparedCamera, preparedCamera.speed);
+            if (this._scene.activeCamera && this._scene.activeCamera !== preparedCamera) {
+                this._configureMovementControls(this._scene.activeCamera, preparedCamera.speed);
             }
         }
     }
@@ -292,7 +408,16 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             }
 
             if (this._scene.environmentTexture && this.props.globalState.skybox) {
-                this._scene.createDefaultSkybox(this._scene.environmentTexture, true, (this._scene.activeCamera!.maxZ - this._scene.activeCamera!.minZ) / 2, 0.3, false);
+                const camera = this._scene.activeCamera!;
+                const skyboxSize = (camera.maxZ - camera.minZ) / 2;
+                const skybox = this._scene.createDefaultSkybox(this._scene.environmentTexture, true, skyboxSize, 0.3, false);
+                if (skybox) {
+                    this._scene.onActiveCameraChanged.add((scene) => {
+                        if (scene.activeCamera) {
+                            skybox.scaling.setAll((scene.activeCamera.maxZ - scene.activeCamera.minZ) / 2 / skyboxSize);
+                        }
+                    });
+                }
             }
         } else {
             let pbrPresent = false;
@@ -333,8 +458,14 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         }
 
         const camera = this.prepareCamera();
+        const requestedCamera = this.props.globalState.cameraIndex === undefined ? undefined : this._scene.cameras[this.props.globalState.cameraIndex];
+        if (requestedCamera && requestedCamera !== camera) {
+            camera.detachControl();
+            this._scene.activeCamera = requestedCamera;
+            requestedCamera.attachControl();
+        }
         this.prepareLighting();
-        this.handleErrors();
+        this.handleErrors(camera);
 
         if (this._restoreInspector) {
             this._restoreInspector = false;
@@ -342,16 +473,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         }
 
         this._scene.executeWhenReady(() => {
-            this._engine.runRenderLoop(() => {
-                // NOTE: this logic to adjust camera parameters based on radius is copied in viewer.ts.
-                // Please keep them in sync.
-                // Adapt the camera sensibility based on the distance to the object
-                camera.panningSensibility = 5000 / camera.radius;
-                // Update the camera speed based on the camera's distance from the target.
-                // TODO: This makes mouse wheel zooming behave well, but makes mouse based rotation a bit worse.
-                camera.speed = camera.radius * 0.2;
-                this._scene.render();
-            });
+            this._engine.runRenderLoop(this._renderScene);
         });
 
         delete this._currentPluginName;
@@ -508,8 +630,8 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         this.initEngine();
     }
 
-    override shouldComponentUpdate(nextProps: IRenderingZoneProps) {
-        if (nextProps.expanded !== this.props.expanded) {
+    override shouldComponentUpdate(nextProps: IRenderingZoneProps, nextState: IRenderingZoneState) {
+        if (nextProps.expanded !== this.props.expanded || nextState.usdRootCandidates !== this.state.usdRootCandidates) {
             setTimeout(() => this._engine.resize());
             return true;
         }
@@ -520,6 +642,28 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         return (
             <div id="canvasZone" className={this.props.expanded ? "expanded" : ""}>
                 <canvas id="renderCanvas" touch-action="none" onContextMenu={(evt) => evt.preventDefault()}></canvas>
+                {this.state.usdRootCandidates.length > 1 && (
+                    <div id="usdRootSelectionPrompt">
+                        <div className="prompt-content">
+                            <p>
+                                <strong>Select the root USD layer</strong>
+                            </p>
+                            <p>This file set contains multiple USD layers. Select the layer that should be opened as the scene.</p>
+                            <div className="prompt-file-list">
+                                {this.state.usdRootCandidates.map((candidate) => (
+                                    <button type="button" key={candidate.path} onClick={() => this._reloadFilesInput(candidate.file)}>
+                                        {candidate.path}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="prompt-buttons">
+                                <button type="button" onClick={() => this._cancelUsdRootSelection()}>
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         );
     }

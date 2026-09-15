@@ -1,0 +1,70 @@
+#usda 1.0
+(
+    defaultPrim = "Scatter"
+    startTimeCode = 184
+    endTimeCode = 184
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+
+def PointInstancer "Scatter"
+{
+    int64[] ids = []
+    int64[] ids.timeSamples = {
+        184: [10, 11, 12]
+    }
+    int64[] invisibleIds = [11]
+    quath[] orientations = []
+    quath[] orientations.timeSamples = {
+        184: [(1, 0, 0, 0), (1, 0, 0, 0), (1, 0, 0, 0)]
+    }
+    point3f[] positions = []
+    point3f[] positions.timeSamples = {
+        184: [(10, 0, 0), (20, 0, 0), (30, 0, 0)]
+    }
+    int[] protoIndices = []
+    int[] protoIndices.timeSamples = {
+        184: [0, 0, 0]
+    }
+    rel prototypes = </Scatter/Prototypes/Building>
+    float3[] scales = []
+    float3[] scales.timeSamples = {
+        184: [(1, 1, 1), (1, 1, 1), (1, 1, 1)]
+    }
+    token visibility = "invisible"
+    token visibility.timeSamples = {
+        184: "inherited"
+    }
+    double3 xformOp:translate.timeSamples = {
+        184: (100, 0, 0)
+    }
+    uniform token[] xformOpOrder = ["xformOp:translate"]
+
+    def Scope "Prototypes"
+    {
+        def Xform "Building"
+        {
+            double3 xformOp:translate = (1, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate"]
+
+            def Mesh "Facade"
+            {
+                int[] faceVertexCounts = []
+                int[] faceVertexCounts.timeSamples = {
+                    184: [3]
+                }
+                int[] faceVertexIndices = []
+                int[] faceVertexIndices.timeSamples = {
+                    184: [0, 1, 2]
+                }
+                point3f[] points = []
+                point3f[] points.timeSamples = {
+                    184: [(0, 0, 0), (1, 0, 0), (0, 1, 0)]
+                }
+                double3 xformOp:translate = (0, 2, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate"]
+                uniform token subdivisionScheme = "none"
+            }
+        }
+    }
+}

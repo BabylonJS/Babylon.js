@@ -5,6 +5,9 @@
 uniform float alpha;
 uniform vec3 shadowColor;
 
+// Uniforms contributed by material plugins (e.g. IBL shadows)
+#define ADDITIONAL_FRAGMENT_DECLARATION
+
 // Input
 varying vec3 vPositionW;
 
@@ -62,6 +65,8 @@ void main(void) {
 	float numLights = 0.;
     
 #include<lightFragment>[0..1]
+
+#define CUSTOM_FRAGMENT_BEFORE_LIGHT_COMPOSITION
 
 	// Composition
 	vec4 color = vec4(shadowColor, (1.0 - clamp(shadow, 0., 1.)) * alpha);

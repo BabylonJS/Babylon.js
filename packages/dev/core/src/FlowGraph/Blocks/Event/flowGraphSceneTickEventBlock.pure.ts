@@ -47,6 +47,10 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     public readonly eventRef: FlowGraphDataConnection<string>;
 
     public override readonly type: FlowGraphEventType = FlowGraphEventType.SceneBeforeRender;
+    /** @returns the shared scene-tick event key */
+    public override get eventKey(): string {
+        return EventKey;
+    }
 
     constructor() {
         super();

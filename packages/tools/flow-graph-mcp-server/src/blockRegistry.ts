@@ -56,6 +56,17 @@ export interface IFlowGraphBlockTypeInfo {
 
 // ─── Block Registry ───────────────────────────────────────────────────────
 
+/**
+ * Loader-created KHR_interactivity helper blocks intentionally omitted from the creatable MCP catalog.
+ * They require source-asset metadata and have no meaningful standalone construction contract.
+ */
+export const FlowGraphImportOnlyBlockClassNames = [
+    "FlowGraphEventReferenceBlock",
+    "FlowGraphGLTFDataProvider",
+    "FlowGraphObjectReferenceBlock",
+    "FlowGraphUnsupportedInteractivityBlock",
+] as const;
+
 export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
     // ═══════════════════════════════════════════════════════════════════
     //  EVENT BLOCKS
@@ -971,6 +982,19 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         ],
     },
 
+    Tau: {
+        className: "FlowGraphTauBlock",
+        category: "Math",
+        description: "Outputs tau (2π).",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [],
+        dataOutputs: [
+            { name: "value", type: "number" },
+            { name: "isValid", type: "boolean" },
+        ],
+    },
+
     Inf: {
         className: "FlowGraphInfBlock",
         category: "Math",
@@ -1377,6 +1401,42 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         dataOutputs: [
             { name: "value", type: "Quaternion" },
             { name: "isValid", type: "boolean" },
+        ],
+    },
+
+    RGBToOkLCh: {
+        className: "FlowGraphRGBToOkLChBlock",
+        category: "Conversion",
+        description: "Converts linear sRGB components to OkLCh components.",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "r", type: "number" },
+            { name: "g", type: "number" },
+            { name: "b", type: "number" },
+        ],
+        dataOutputs: [
+            { name: "l", type: "number" },
+            { name: "c", type: "number" },
+            { name: "h", type: "number" },
+        ],
+    },
+
+    RGBFromOkLCh: {
+        className: "FlowGraphRGBFromOkLChBlock",
+        category: "Conversion",
+        description: "Converts OkLCh components to linear sRGB components.",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "l", type: "number" },
+            { name: "c", type: "number" },
+            { name: "h", type: "number" },
+        ],
+        dataOutputs: [
+            { name: "r", type: "number" },
+            { name: "g", type: "number" },
+            { name: "b", type: "number" },
         ],
     },
 

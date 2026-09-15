@@ -3,7 +3,7 @@
 # Converted from Azure DevOps Classic Pipeline
 #
 # Builds and deploys all tools (Playground, Sandbox, NME, NGE, NRGE,
-# GUI Editor, NPE, FGE) to production storage after a successful publish.
+# GUI Editor, NPE, FGE, SFE) to production storage after a successful publish.
 #
 # Triggers:
 #   - Schedule: midnight PST on Tue/Wed/Fri/Sat (daysToBuild: 22)
@@ -65,12 +65,11 @@ jobs:
                 command: custom
                 customCommand: "ci"
 
-          # DISABLED in classic pipeline:
-          # - task: Npm@1
-          #   displayName: 'npm update-version (for smart filters)'
-          #   inputs:
-          #     command: custom
-          #     customCommand: 'run update-version -w @dev/smart-filters'
+          - task: Npm@1
+            displayName: "update smart filters version"
+            inputs:
+                command: custom
+                customCommand: "run update-version -w @dev/smart-filters"
 
           - task: Npm@1
             displayName: "build dev"
@@ -78,12 +77,11 @@ jobs:
                 command: custom
                 customCommand: "run build:dev"
 
-          # DISABLED in classic pipeline:
-          # - task: Npm@1
-          #   displayName: 'build smart filters core'
-          #   inputs:
-          #     command: custom
-          #     customCommand: 'run build:source:smart-filters'
+          - task: Npm@1
+            displayName: "build smart filters"
+            inputs:
+                command: custom
+                customCommand: "run build:source:smart-filters"
 
           - task: Npm@1
             displayName: "build playground"
@@ -133,12 +131,11 @@ jobs:
                 command: custom
                 customCommand: "run build:deployment -w @tools/flow-graph-editor"
 
-          # DISABLED in classic pipeline:
-          # - task: Npm@1
-          #   displayName: 'build smart filters editor'
-          #   inputs:
-          #     command: custom
-          #     customCommand: 'run build:deployment -w @tools/smart-filters-editor'
+          - task: Npm@1
+            displayName: "build smart filters editor"
+            inputs:
+                command: custom
+                customCommand: "run build:deployment -w @tools/smart-filters-editor"
 
           - template: templates/deploy-tool.yml
             parameters:
@@ -212,7 +209,16 @@ jobs:
                 purgeEndpoint: "$(CDN_ENDPOINT_FGE)"
                 purgeProfile: "$(CDN_PROFILE_TOOLS)"
 
-          # DISABLED in classic pipeline:
+          - template: templates/deploy-tool.yml
+            parameters:
+                toolPackageDir: "packages/tools/smartFiltersEditor"
+                deployPath: "smartFiltersEditor"
+                storageAccount: "$(TOOLS_STORAGE_ACCOUNT)"
+                displayName: "SFE deployment"
+                purgeEndpoint: "$(CDN_ENDPOINT_SFE)"
+                purgeProfile: "$(CDN_PROFILE_TOOLS)"
+
+          # Legacy classic pipeline deployment (superseded by the template above):
           # - script: |
           #     # sfe
           #     cd packages/tools/smartFiltersEditor/dist

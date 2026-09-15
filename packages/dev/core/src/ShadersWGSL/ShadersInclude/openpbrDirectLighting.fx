@@ -37,7 +37,13 @@
 
     // Specular Lobe
     #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-        slab_glossy = computeAreaSpecularLighting(preInfo{X}, light{X}.vLightSpecular.rgb, baseConductorReflectance.F0, baseConductorReflectance.F90);
+        slab_glossy = computeOpenPBRAreaSpecularLighting(
+            preInfo{X},
+            light{X}.vLightSpecular.rgb,
+            baseDielectricReflectance.coloredF0,
+            baseDielectricReflectance.coloredF90
+        );
+        specularFresnel = computeOpenPBRAreaFresnel(preInfo{X}, baseDielectricReflectance.F0, baseDielectricReflectance.F90);
     #else
         {
             #ifdef ANISOTROPIC_BASE
@@ -219,7 +225,21 @@
 
     // Metal Lobe
     #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-        slab_metal = computeAreaSpecularLighting(preInfo{X}, light{X}.vLightSpecular.rgb, baseConductorReflectance.F0, baseConductorReflectance.F90);
+        #if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR
+            slab_metal = computeOpenPBRAreaConductorSpecularLighting(
+                preInfo{X},
+                light{X}.vLightSpecular.rgb,
+                baseConductorReflectance.coloredF0,
+                baseConductorReflectance.coloredF90
+            );
+        #else
+            slab_metal = computeOpenPBRAreaSpecularLighting(
+                preInfo{X},
+                light{X}.vLightSpecular.rgb,
+                baseConductorReflectance.coloredF0,
+                baseConductorReflectance.coloredF90
+            );
+        #endif
     #else
         {
             // For OpenPBR, we use the F82 specular model for metallic materials and mix with the
@@ -247,14 +267,19 @@
             #ifdef ANISOTROPIC_BASE
                 slab_metal = computeAnisotropicSpecularLighting(preInfo{X}, viewDirectionW, normalW, baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 0.0, lightColor{X}.rgb);
             #else
-                slab_metal = computeSpecularLighting(preInfo{X}, normalW, vec3f(baseConductorReflectance.coloredF0), coloredFresnel, specular_roughness, lightColor{X}.rgb);
+                slab_metal = computeSpecularLighting(preInfo{X}, normalW, vec3f(1.0f), coloredFresnel, specular_roughness, lightColor{X}.rgb);
             #endif
         }
     #endif
 
     // Coat Lobe
     #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
-        slab_coat = computeAreaSpecularLighting(preInfoCoat{X}, light{X}.vLightSpecular.rgb, coatReflectance.F0, coatReflectance.F90);
+        slab_coat = computeOpenPBRAreaSpecularLighting(
+            preInfoCoat{X},
+            light{X}.vLightSpecular.rgb,
+            vec3f(coatReflectance.F0),
+            vec3f(coatReflectance.F90)
+        );
     #else
         {
             #ifdef ANISOTROPIC_COAT
@@ -321,7 +346,11 @@
         total_direct_diffuse += slab_diffuse;
     #endif
     let material_dielectric_base: vec3f = mix(slab_diffuse * base_color.rgb, slab_translucent, surface_translucency_weight);
-    let material_dielectric_gloss: vec3f = material_dielectric_base * (1.0f - specularFresnel) + slab_glossy * specularColoredFresnel;
+    #if defined(AREALIGHT{X}) && defined(AREALIGHTUSED) && defined(AREALIGHTSUPPORTED)
+        let material_dielectric_gloss: vec3f = material_dielectric_base * (1.0f - specularFresnel) + slab_glossy;
+    #else
+        let material_dielectric_gloss: vec3f = material_dielectric_base * (1.0f - specularFresnel) + slab_glossy * specularColoredFresnel;
+    #endif
     let material_base_substrate: vec3f = mix(material_dielectric_gloss, slab_metal, base_metalness);
     let material_coated_base: vec3f = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3f(1.0f));
     material_surface_direct += layer(material_coated_base, slab_fuzz, fuzzFresnel * fuzz_weight, vec3f(1.0f), fuzz_color);

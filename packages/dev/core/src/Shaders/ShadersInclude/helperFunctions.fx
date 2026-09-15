@@ -251,7 +251,11 @@ float avg(vec3 value) {
     return dot(value, vec3(0.333333333));
 }
 
-#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE) 
+#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+// Some drivers (e.g. certain Android/Adreno implementations) default fragment-shader int/uint
+// precision to mediump, which silently corrupts the 32-bit bit manipulation below.
+precision highp int;
+
 uint extractBits(uint value, int offset, int width) {
     return (value >> offset) & ((1u << width) - 1u);
 }

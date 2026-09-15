@@ -271,6 +271,9 @@ export class BlockTools {
             case NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity:
                 color = "#c451e5";
                 break;
+            case NodeRenderGraphBlockConnectionPointTypes.TextureObjectId:
+                color = "#9251e5";
+                break;
             case NodeRenderGraphBlockConnectionPointTypes.ResourceContainer:
                 color = "#adad92";
                 break;
@@ -334,6 +337,8 @@ export class BlockTools {
                 return NodeRenderGraphBlockConnectionPointTypes.TextureWorldNormal;
             case "TextureLinearVelocity":
                 return NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity;
+            case "TextureObjectId":
+                return NodeRenderGraphBlockConnectionPointTypes.TextureObjectId;
             case "ResourceContainer":
                 return NodeRenderGraphBlockConnectionPointTypes.ResourceContainer;
             case "ShadowGenerator":
@@ -383,6 +388,8 @@ export class BlockTools {
                 return "TextureWorldNormal";
             case NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity:
                 return "TextureLinearVelocity";
+            case NodeRenderGraphBlockConnectionPointTypes.TextureObjectId:
+                return "TextureObjectId";
             case NodeRenderGraphBlockConnectionPointTypes.ResourceContainer:
                 return "ResourceContainer";
             case NodeRenderGraphBlockConnectionPointTypes.ShadowGenerator:

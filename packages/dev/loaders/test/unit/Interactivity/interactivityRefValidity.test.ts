@@ -91,6 +91,12 @@ describe("KHR_interactivity ref-validity accessors", () => {
             expect(accessor.info.get(accessor.object, undefined, context)).toBe(eventRef);
         });
 
+        it("resolves an authored empty custom event id as a non-null event reference", () => {
+            const eventRef = GetEventReference("");
+            const accessor = converter.convert(eventRef);
+            expect(accessor.info.get(accessor.object, undefined, context)).toBe(eventRef);
+        });
+
         it("exposes a non-null target for the event accessor", () => {
             const accessor = converter.convert(GetEventReference("onTick") + "/");
             expect(accessor.info.getTarget(accessor.object)).toBeTruthy();

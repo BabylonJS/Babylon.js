@@ -438,6 +438,10 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
     	fragData[PREPASS_POSITION_INDEX] = vec4f(fragmentInputs.vPositionW, writeGeometryInfo);
     #endif
 
+    #ifdef PREPASS_OBJECT_ID
+        fragData[PREPASS_OBJECT_ID_INDEX] = encodeObjectId(uniforms.objectId) * writeGeometryInfo;
+    #endif
+
 	#ifdef PREPASS_LOCAL_POSITION
 		fragData[PREPASS_LOCAL_POSITION_INDEX] = vec4f(fragmentInputs.vPosition, writeGeometryInfo);
 	#endif

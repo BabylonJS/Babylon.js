@@ -69,6 +69,11 @@ uniform vec2 vTangentSpaceParams;
 uniform sampler2D diffuseSampler;
 #endif
 
+#ifdef OBJECT_ID
+uniform float objectId;
+#include<objectIdFunctions>
+#endif
+
 #include<clipPlaneFragmentDeclaration>
 
 #include<mrtFragmentDeclaration>[SCENE_MRT_COUNT]
@@ -151,6 +156,10 @@ void main() {
 
     #ifdef POSITION
         gl_FragData[POSITION_INDEX] = vec4(vPositionW, 1.0);
+    #endif
+
+    #ifdef OBJECT_ID
+        gl_FragData[OBJECT_ID_INDEX] = encodeObjectId(objectId);
     #endif
 
     #ifdef VELOCITY

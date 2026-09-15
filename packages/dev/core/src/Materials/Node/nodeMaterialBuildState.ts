@@ -478,11 +478,12 @@ export class NodeMaterialBuildState {
             removeUniforms?: boolean;
             removeVaryings?: boolean;
             removeIfDef?: boolean;
+            define?: string;
             replaceStrings?: { search: RegExp; replace: string }[];
         },
         storeKey: string = ""
     ) {
-        const key = includeName + storeKey;
+        const key = includeName + storeKey + (options?.define ? `_${options.define}` : "");
         if (this.functions[key]) {
             return;
         }
@@ -497,6 +498,10 @@ export class NodeMaterialBuildState {
 
             if (this.sharedData.emitComments) {
                 this.functions[key] = comments + `\n` + this.functions[key];
+            }
+
+            if (options?.define) {
+                this.functions[key] = `#ifdef ${options.define}\n${this.functions[key]}#endif\n`;
             }
 
             return;
@@ -532,6 +537,10 @@ export class NodeMaterialBuildState {
                 const replaceString = options.replaceStrings[index];
                 this.functions[key] = this.functions[key].replace(replaceString.search, replaceString.replace);
             }
+        }
+
+        if (options.define) {
+            this.functions[key] = `#ifdef ${options.define}\n${this.functions[key]}#endif\n`;
         }
     }
 

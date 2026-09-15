@@ -15,6 +15,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Color4 } from "core/Maths/math.color";
+import { Constants } from "core/Engines/constants";
 import {
     MultiplyTexturesAsync,
     MaxTexturesAsync,
@@ -81,9 +82,11 @@ function _makeFakePTClass() {
         wAng: number = 0;
 
         disposed: boolean = false;
+        options: unknown;
 
-        constructor(name: string, _size: unknown, _shader: string, _scene: unknown, _options: unknown) {
+        constructor(name: string, _size: unknown, _shader: string, _scene: unknown, options: unknown) {
             this.name = name;
+            this.options = options;
             _capturedPTs.push(this);
         }
 
@@ -520,6 +523,30 @@ describe("TextureProcessor", () => {
             const r = await MultiplyTexturesAsync("t", { texture: tex }, CreateFactorOperand(new Color4(1, 1, 1, 1)), scene, TextureColorSpace.SRGB);
 
             expect(r.colorSpace).toBe(TextureColorSpace.SRGB);
+        });
+
+        it("uses requested HDR type, trilinear sampling, and mipmaps", async () => {
+            const tex = makeFakeTexture();
+            await LerpTexturesAsync(
+                "t",
+                CreateFactorOperand(new Color4(0, 0, 0, 0)),
+                CreateFactorOperand(new Color4(4, 4, 4, 1)),
+                { texture: tex },
+                scene,
+                TextureColorSpace.Linear,
+                undefined,
+                {
+                    textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+                    samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+                    generateMipMaps: true,
+                }
+            );
+
+            expect(_capturedPTs[0].options).toMatchObject({
+                type: Constants.TEXTURETYPE_HALF_FLOAT,
+                samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+                generateMipMaps: true,
+            });
         });
 
         it("emits OPERAND_A_TEXTURE define for texture operand", async () => {

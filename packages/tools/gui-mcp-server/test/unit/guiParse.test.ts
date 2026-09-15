@@ -60,6 +60,8 @@ if (typeof globalThis.OffscreenCanvas === "undefined") {
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { FlexPanel } from "gui/2D/controls/flexPanel";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 // Side-effect imports: register ALL GUI control types via RegisterClass
 import "gui/2D/controls/index";
@@ -156,6 +158,44 @@ describe("GUI MCP Server – Babylon.js Parse", () => {
         expect(label.name).toBe("label");
         expect(label.typeName).toBe("TextBlock");
 
+        adt.dispose();
+    });
+
+    it("creates and parses a FlexPanel with flex properties and relative units", () => {
+        const adt = buildAndParse("flex", (mgr) => {
+            getCtrlName(
+                mgr.addControl("flex", "FlexPanel", "panel", "root", {
+                    flexDirection: "column-reverse",
+                    flexWrap: "wrap-reverse",
+                    justifyContent: "space-evenly",
+                    alignItems: "center",
+                    alignContent: "flex-end",
+                    gap: "1rem",
+                    width: "20em",
+                    height: "10rem",
+                })
+            );
+            getCtrlName(mgr.addControl("flex", "TextBlock", "label", "panel", { text: "Flex", flexGrow: 2, flexShrink: 0.5, width: "4em", fontSize: "1rem" }));
+        });
+
+        const panel = adt.getControlByName("panel");
+        expect(panel).toBeInstanceOf(FlexPanel);
+        if (!(panel instanceof FlexPanel)) {
+            throw new Error("Expected a parsed FlexPanel");
+        }
+        expect(panel.flexDirection).toBe("column-reverse");
+        expect(panel.flexWrap).toBe("wrap-reverse");
+        expect(panel.justifyContent).toBe("space-evenly");
+        expect(panel.alignItems).toBe("center");
+        expect(panel.alignContent).toBe("flex-end");
+        expect(panel.gap).toBe("1rem");
+        expect(panel.width).toBe("20em");
+        expect(panel.height).toBe("10rem");
+        expect(panel.children).toHaveLength(1);
+        expect(panel.children[0].flexGrow).toBe(2);
+        expect(panel.children[0].flexShrink).toBe(0.5);
+        expect(panel.children[0].width).toBe("4em");
+        expect(panel.children[0].fontSize).toBe("1rem");
         adt.dispose();
     });
 

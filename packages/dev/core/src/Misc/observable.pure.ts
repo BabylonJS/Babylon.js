@@ -273,9 +273,7 @@ export class Observable<T> implements IReadonlyObservable<T> {
 
         // If the observable was already triggered and the observable is set to notify if triggered, notify the new observer
         if (this._hasNotified && this.notifyIfTriggered) {
-            if (this._lastNotifiedValue !== undefined) {
-                this.notifyObserver(observer, this._lastNotifiedValue);
-            }
+            this.notifyObserver(observer, this._lastNotifiedValue as T);
         }
 
         // attach the remove function to the observer

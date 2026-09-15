@@ -79,6 +79,7 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public USE_WORLD_COORDINATES = false;
 
     public IMAGEPROCESSING = false;
+    public WHITEBALANCE = false;
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;

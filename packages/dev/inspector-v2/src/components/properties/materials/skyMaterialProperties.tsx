@@ -65,6 +65,17 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial }>
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
+                label="Cloudiness"
+                description="Cloud cover over the sun (0 = clear direct sun, 1 = sun fully hidden). Softens only the sun disc, not the sky color."
+                target={material}
+                propertyKey="cloudiness"
+                min={0}
+                max={1}
+                step={0.001}
+                docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
                 label="Rayleigh"
                 description="Rayleigh scattering coefficient (0 to 4)."
                 target={material}
@@ -105,6 +116,14 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial }>
                 min={0}
                 max={1000}
                 step={0.1}
+                docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
+            />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Raw HDR Output"
+                description="Emit scene-referred linear HDR (no tonemap/sRGB, clamped to the render target's max) instead of tonemapped display output. Enable when baking the sky into a float/half-float target such as an IBL environment."
+                target={material}
+                propertyKey="rawHdrOutput"
                 docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
             />
             <BoundProperty

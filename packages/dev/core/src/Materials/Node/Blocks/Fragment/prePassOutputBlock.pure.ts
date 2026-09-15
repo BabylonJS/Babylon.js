@@ -251,27 +251,11 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         }
         state.compilationString += `#endif\r\n`;
 
-        state.compilationString += `#if SCENE_MRT_COUNT > 1\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 1)} = fragData[1];\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#if SCENE_MRT_COUNT > 2\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 2)} = fragData[2];\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#if SCENE_MRT_COUNT > 3\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 3)} = fragData[3];\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#if SCENE_MRT_COUNT > 4\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 4)} = fragData[4];\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#if SCENE_MRT_COUNT > 5\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 5)} = fragData[5];\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#if SCENE_MRT_COUNT > 6\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 6)} = fragData[6];\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#if SCENE_MRT_COUNT > 7\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 7)} = fragData[7];\r\n`;
-        state.compilationString += `#endif\r\n`;
+        for (let index = 0; index < 8; index++) {
+            state.compilationString += `#if SCENE_MRT_COUNT > ${index} && (!defined(PREPASS_COLOR) || PREPASS_COLOR_INDEX != ${index}) && (!defined(PREPASS_OBJECT_ID) || PREPASS_OBJECT_ID_INDEX != ${index})\r\n`;
+            state.compilationString += `${this._getFragData(isWebGPU, index)} = fragData[${index}];\r\n`;
+            state.compilationString += `#endif\r\n`;
+        }
 
         state.compilationString += `#endif\r\n`;
 

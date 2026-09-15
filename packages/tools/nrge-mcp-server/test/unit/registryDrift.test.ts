@@ -16,6 +16,7 @@ import { Scene } from "core/scene";
 import { FrameGraph } from "core/FrameGraph/frameGraph";
 import { GetClass } from "core/Misc/typeStore";
 import { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
+import { EffectWrapper } from "core/Materials/effectRenderer";
 
 // Side-effect import: register ALL NRGE block types via RegisterClass
 import "core/FrameGraph/Node/Blocks/index";
@@ -82,6 +83,12 @@ describe("Node Render Graph MCP Server – Registry Drift", () => {
         capturedInputs = [];
         capturedOutputs = [];
 
+        const originalCreateEffect = engine.createEffect;
+        const originalPostConstructor = EffectWrapper.prototype._postConstructor;
+        engine.createEffect = (() => {
+            throw new Error("GPU effect creation disabled by registry drift guard");
+        }) as typeof engine.createEffect;
+        EffectWrapper.prototype._postConstructor = () => {};
         const savedDescriptors = new Map<string, PropertyDescriptor | undefined>();
         for (const method of TASK_CREATION_METHODS) {
             savedDescriptors.set(method, Object.getOwnPropertyDescriptor(ctor.prototype, method));
@@ -94,6 +101,8 @@ describe("Node Render Graph MCP Server – Registry Drift", () => {
         } catch {
             // Inline task creation may still throw after all ports are registered; ports are already captured.
         } finally {
+            engine.createEffect = originalCreateEffect;
+            EffectWrapper.prototype._postConstructor = originalPostConstructor;
             for (const method of TASK_CREATION_METHODS) {
                 const descriptor = savedDescriptors.get(method);
                 if (descriptor) {

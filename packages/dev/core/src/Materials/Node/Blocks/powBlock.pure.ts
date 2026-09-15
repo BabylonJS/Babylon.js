@@ -58,8 +58,9 @@ export class PowBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         const output = this._outputs[0];
+        const zero = `${state._getShaderType(output.type)}(0.)`;
 
-        state.compilationString += state._declareOutput(output) + ` = pow(max(${this.value.associatedVariableName}, 0.), ${this.power.associatedVariableName});\n`;
+        state.compilationString += state._declareOutput(output) + ` = pow(max(${this.value.associatedVariableName}, ${zero}), ${this.power.associatedVariableName});\n`;
 
         return this;
     }

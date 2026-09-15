@@ -6,6 +6,7 @@ import { AudioEngine } from "core/Audio";
 import { AbstractEngine, NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { Sound } from "core/Audio/sound";
+import { _WebAudioEngine, type IWebAudioEngineOptions } from "../../../src/AudioV2/webAudio/webAudioEngine";
 
 import { type AudioContextMock, MockedAudioObjects } from "./helpers/mockedAudioObjects";
 
@@ -96,5 +97,31 @@ describe("AudioEngine", () => {
         AudioTestHelper.WaitForAudioContextSuspendedDoubleCheck();
 
         expect((audioEngine._v2 as any)._unmuteUI._button.style.display).toBe("none");
+    });
+
+    it("does not create silent HTML audio when the iOS ringer switch workaround is disabled", async () => {
+        const options: Partial<IWebAudioEngineOptions> = {
+            audioContext: new AudioContext(),
+            disableDefaultUI: true,
+            disableIOSRingerSwitchWorkaround: true,
+        };
+        const audioEngine = new _WebAudioEngine(options);
+        await audioEngine._initAsync(options);
+
+        const createElementSpy = vi.spyOn(document, "createElement");
+        const userGesturePromise = new Promise<void>((resolve) => {
+            audioEngine.userGestureObservable.addOnce(resolve);
+        });
+
+        try {
+            document.dispatchEvent(new MouseEvent("click"));
+            await userGesturePromise;
+
+            expect(createElementSpy).not.toHaveBeenCalledWith("audio");
+        } finally {
+            createElementSpy.mockRestore();
+            audioEngine.dispose();
+            createAudioEngine("running");
+        }
     });
 });

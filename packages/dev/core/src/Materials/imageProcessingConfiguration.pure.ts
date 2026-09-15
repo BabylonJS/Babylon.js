@@ -4,6 +4,8 @@ import { serialize, serializeAsTexture, serializeAsColorCurves, serializeAsColor
 import { Observable } from "../Misc/observable.pure";
 import { type Nullable } from "../types";
 import { Color4 } from "../Maths/math.color.pure";
+import { GetWhiteBalanceMatrix, MaxTintMagnitude, MinTemperatureKelvin } from "../Maths/colorTemperature.functions";
+import { Clamp } from "../Maths/math.scalar.functions";
 import { ColorCurves, ColorCurvesBind } from "../Materials/colorCurves.pure";
 import { type BaseTexture } from "../Materials/Textures/baseTexture.pure";
 import { type Effect } from "../Materials/effect.pure";
@@ -221,6 +223,110 @@ export class ImageProcessingConfiguration {
 
         this._contrast = value;
         this._updateParameters();
+    }
+
+    @serialize()
+    private _whiteBalanceEnabled = false;
+    /**
+     * Gets whether the white balance effect is enabled.
+     */
+    public get whiteBalanceEnabled(): boolean {
+        return this._whiteBalanceEnabled;
+    }
+    /**
+     * Sets whether the white balance effect is enabled.
+     */
+    public set whiteBalanceEnabled(value: boolean) {
+        if (this._whiteBalanceEnabled === value) {
+            return;
+        }
+
+        this._whiteBalanceEnabled = value;
+        this._updateParameters();
+    }
+
+    @serialize()
+    private _temperature = 6500;
+    /**
+     * Gets the correlated color temperature, in Kelvin, of the illuminant to neutralize when whiteBalanceEnabled
+     * is set to true - i.e. the light the scene is assumed to have been lit with, not a "warm"/"cool" creative
+     * adjustment. Lower values (e.g. ~2000-3500 K) correspond to warm/orange sources such as tungsten or candle
+     * light; higher values (e.g. ~7000-10000 K) correspond to cool/blue sources such as shade or overcast sky.
+     * Clamped to the tabulated range (roughly 1667 K and above) - the getter reflects the clamped value. Default is 6500.
+     */
+    public get temperature(): number {
+        return this._temperature;
+    }
+    /**
+     * Sets the correlated color temperature, in Kelvin, of the illuminant to neutralize when whiteBalanceEnabled
+     * is set to true - i.e. the light the scene is assumed to have been lit with, not a "warm"/"cool" creative
+     * adjustment. Lower values (e.g. ~2000-3500 K) correspond to warm/orange sources such as tungsten or candle
+     * light; higher values (e.g. ~7000-10000 K) correspond to cool/blue sources such as shade or overcast sky.
+     * Clamped to the tabulated range (roughly 1667 K and above) - the getter reflects the clamped value. Default is 6500.
+     */
+    public set temperature(value: number) {
+        value = Number.isNaN(value) ? MinTemperatureKelvin : Math.max(value, MinTemperatureKelvin);
+
+        if (this._temperature === value) {
+            return;
+        }
+
+        this._temperature = value;
+        this._updateParameters();
+    }
+
+    @serialize()
+    private _tint = 0;
+    /**
+     * Gets the white balance tint offset used in the effect if whiteBalanceEnabled is set to true, on the
+     * green/magenta axis perpendicular to temperature - e.g. to correct for illuminants (such as some
+     * fluorescent lights) that a color temperature alone can't fully neutralize. Positive values shift the
+     * corrected image toward magenta (compensating a green-tinted illuminant); negative values shift it toward
+     * green (compensating a magenta-tinted illuminant). Clamped to [-150, 150] - the getter reflects the clamped value. Default is 0 (no tint offset).
+     */
+    public get tint(): number {
+        return this._tint;
+    }
+    /**
+     * Sets the white balance tint offset used in the effect if whiteBalanceEnabled is set to true, on the
+     * green/magenta axis perpendicular to temperature - e.g. to correct for illuminants (such as some
+     * fluorescent lights) that a color temperature alone can't fully neutralize. Positive values shift the
+     * corrected image toward magenta (compensating a green-tinted illuminant); negative values shift it toward
+     * green (compensating a magenta-tinted illuminant). Clamped to [-150, 150] - the getter reflects the clamped value. Default is 0 (no tint offset).
+     */
+    public set tint(value: number) {
+        value = Clamp(value, -MaxTintMagnitude, MaxTintMagnitude);
+
+        if (this._tint === value) {
+            return;
+        }
+
+        this._tint = value;
+        this._updateParameters();
+    }
+
+    private _whiteBalanceMatrix: Nullable<Float32Array | Array<number>> = null;
+    private _whiteBalanceMatrixTemperature: Nullable<number> = null;
+    private _whiteBalanceMatrixTint: Nullable<number> = null;
+
+    /**
+     * Returns the white balance matrix for the current temperature/tint, computing it on first use and
+     * recomputing it if either value has changed since it was last computed. Deliberately lazy: white balance is
+     * disabled by default, and every `ImageProcessingConfiguration` instance (created per scene, per material,
+     * per post process) would otherwise pay this matrix's construction cost even when never enabled. Checking
+     * here (rather than eagerly refreshing from the temperature/tint setters) also means paths that set the
+     * private backing fields directly - such as SerializationHelper.Clone/Parse, which assign serialized
+     * properties without going through their setters - still end up with a matrix that matches the current
+     * temperature/tint.
+     * @returns the column-major white balance matrix for the current temperature/tint
+     */
+    private _getWhiteBalanceMatrix(): Float32Array | Array<number> {
+        if (this._whiteBalanceMatrix === null || this._whiteBalanceMatrixTemperature !== this._temperature || this._whiteBalanceMatrixTint !== this._tint) {
+            this._whiteBalanceMatrixTemperature = this._temperature;
+            this._whiteBalanceMatrixTint = this._tint;
+            this._whiteBalanceMatrix = GetWhiteBalanceMatrix(this._temperature, this._tint);
+        }
+        return this._whiteBalanceMatrix;
     }
 
     /**
@@ -481,6 +587,7 @@ export class ImageProcessingConfiguration {
      */
     public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess = false): void {
         if (forPostProcess !== this.applyByPostProcess || !this._isEnabled) {
+            defines.WHITEBALANCE = false;
             defines.VIGNETTE = false;
             defines.TONEMAPPING = 0;
             defines.CONTRAST = false;
@@ -495,6 +602,7 @@ export class ImageProcessingConfiguration {
             return;
         }
 
+        defines.WHITEBALANCE = this._whiteBalanceEnabled;
         defines.VIGNETTE = this.vignetteEnabled;
         defines.VIGNETTEBLENDMODEMULTIPLY = this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY;
         defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
@@ -530,7 +638,14 @@ export class ImageProcessingConfiguration {
         defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
         defines.SKIPFINALCOLORCLAMP = this.skipFinalColorClamp;
         defines.IMAGEPROCESSING =
-            defines.VIGNETTE || !!defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING || defines.DITHER;
+            defines.WHITEBALANCE ||
+            defines.VIGNETTE ||
+            !!defines.TONEMAPPING ||
+            defines.CONTRAST ||
+            defines.EXPOSURE ||
+            defines.COLORCURVES ||
+            defines.COLORGRADING ||
+            defines.DITHER;
     }
 
     /**
@@ -548,6 +663,11 @@ export class ImageProcessingConfiguration {
      * @param overrideAspectRatio Override the aspect ratio of the effect
      */
     public bind(effect: Effect, overrideAspectRatio?: number): void {
+        // White Balance
+        if (this._whiteBalanceEnabled) {
+            effect.setMatrix3x3("whiteBalanceMatrix", this._getWhiteBalanceMatrix());
+        }
+
         // Color Curves
         if (this._colorCurvesEnabled && this.colorCurves) {
             ColorCurvesBind(this.colorCurves, effect);

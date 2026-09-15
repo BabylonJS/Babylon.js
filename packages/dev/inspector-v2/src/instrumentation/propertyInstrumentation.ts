@@ -44,7 +44,14 @@ export type PropertyHooks<T = unknown> = {
     afterSet?: (value: T) => void;
 };
 
-const InterceptorHooksMaps = new WeakMap<object, Map<PropertyKey, PropertyHooks<unknown>[]>>();
+type PropertyInterception = {
+    readonly hooks: PropertyHooks<unknown>[];
+    readonly propertyOwner: object;
+    readonly propertyDescriptor: PropertyDescriptor;
+    readonly wasPropertyDefined: boolean;
+};
+
+const InterceptorHooksMaps = new WeakMap<object, Map<PropertyKey, PropertyInterception>>();
 
 /**
  * Intercepts a property on an object and allows you to add hooks that will be called when the property is get or set.
@@ -63,47 +70,41 @@ export function InterceptProperty<T extends object, K extends keyof T>(
 export function InterceptProperty<T extends object>(target: T, propertyKey: keyof T, hooks: PropertyHooks): IDisposable;
 /** @internal */
 export function InterceptProperty<T extends object>(target: T, propertyKey: keyof T, hooks: PropertyHooks): IDisposable {
-    // Find the property descriptor and note the owning object (might be inherited through the prototype chain).
-    const ownerAndDescriptor = GetPropertyDescriptor(target, propertyKey);
-
-    // If the property does not exist, we'll define one transiently directly on the target object.
-    const [propertyOwner, propertyDescriptor] = ownerAndDescriptor ?? [
-        target,
-        {
-            configurable: true,
-            enumerable: true,
-            writable: true,
-            value: undefined,
-        },
-    ];
-
-    if (!ownerAndDescriptor) {
-        Reflect.defineProperty(propertyOwner, propertyKey, propertyDescriptor);
-    } else {
-        // If the property is not configurable, it cannot be intercepted.
-        if (!propertyDescriptor.configurable) {
-            throw new Error(`Property "${propertyKey.toString()}" of object "${target}" is not configurable.`);
-        }
-
-        // If the property is not writable, it cannot be intercepted, but it cannot be mutated anyway so there is no need to intercept it.
-        if (IsPropertyReadonly(propertyDescriptor)) {
-            return {
-                dispose: () => {},
-            };
-        }
-    }
-
-    // Get or create the hooks map for the target object.
     let hooksMap = InterceptorHooksMaps.get(target);
-    if (!hooksMap) {
-        InterceptorHooksMaps.set(target, (hooksMap = new Map()));
-    }
+    let interception = hooksMap?.get(propertyKey);
 
-    // Get or create the hooks array for the property key.
-    let hooksForKey = hooksMap.get(propertyKey);
-    if (!hooksForKey) {
-        hooksMap.set(propertyKey, (hooksForKey = []));
+    if (!interception) {
+        // Find the property descriptor and note the owning object (might be inherited through the prototype chain).
+        const ownerAndDescriptor = GetPropertyDescriptor(target, propertyKey);
 
+        // If the property does not exist, we'll define one transiently directly on the target object.
+        const [propertyOwner, propertyDescriptor] = ownerAndDescriptor ?? [
+            target,
+            {
+                configurable: true,
+                enumerable: true,
+                writable: true,
+                value: undefined,
+            },
+        ];
+
+        if (!ownerAndDescriptor) {
+            Reflect.defineProperty(propertyOwner, propertyKey, propertyDescriptor);
+        } else {
+            // If the property is not configurable, it cannot be intercepted.
+            if (!propertyDescriptor.configurable) {
+                throw new Error(`Property "${propertyKey.toString()}" of object "${target}" is not configurable.`);
+            }
+
+            // If the property is not writable, it cannot be intercepted, but it cannot be mutated anyway so there is no need to intercept it.
+            if (IsPropertyReadonly(propertyDescriptor)) {
+                return {
+                    dispose: () => {},
+                };
+            }
+        }
+
+        const hooksForKey: PropertyHooks<unknown>[] = [];
         let { get: getValue, set: setValue } = propertyDescriptor;
 
         // We already checked that the property is writable, so if there is no setter, then it must be a value property.
@@ -132,7 +133,24 @@ export function InterceptProperty<T extends object>(target: T, propertyKey: keyo
         ) {
             throw new Error(`Failed to define new property "${propertyKey.toString()}" on object "${target}".`);
         }
+
+        if (!hooksMap) {
+            InterceptorHooksMaps.set(target, (hooksMap = new Map()));
+        }
+        hooksMap.set(
+            propertyKey,
+            (interception = {
+                hooks: hooksForKey,
+                propertyOwner,
+                propertyDescriptor,
+                wasPropertyDefined: !!ownerAndDescriptor,
+            })
+        );
     }
+    if (!hooksMap) {
+        throw new Error(`Property "${propertyKey.toString()}" of object "${target}" was not registered for interception.`);
+    }
+    const { hooks: hooksForKey, propertyOwner, propertyDescriptor, wasPropertyDefined } = interception;
     hooksForKey.push(hooks as PropertyHooks<unknown>);
 
     let isDisposed = false;
@@ -152,12 +170,9 @@ export function InterceptProperty<T extends object>(target: T, propertyKey: keyo
                     }
 
                     const shouldRestorePropertyDescriptor =
-                        // If the property is owned by the target object, then we may have replaced an original property descriptor that needs to be restore.
-                        propertyOwner === target &&
-                        // But this is only the case if we found an existing property descriptor on the target object (hence the ownerAndDescriptor check),
-                        // or if the property value is not undefined, in which case we still want to retain the value that was set.
-                        (ownerAndDescriptor || target[propertyKey] !== undefined);
-                    // Otherwise, the property was inherited through the prototype chain, and so we can simply delete it from the target object.
+                        // Restore a property that was originally owned by the target,
+                        // or retain a transient property when a value was assigned while it was intercepted.
+                        propertyOwner === target && (wasPropertyDefined || target[propertyKey] !== undefined);
 
                     if (shouldRestorePropertyDescriptor) {
                         if (!Reflect.defineProperty(target, propertyKey, propertyDescriptor)) {

@@ -121,6 +121,7 @@ function fileSize(path) {
  * @property {string} entryCode - JS code for the entry file
  * @property {number} maxBundleSizeBytes - Threshold for the test to pass
  * @property {number} [minBundleSizeBytes] - Lower threshold for sanity cases that must retain imported code
+ * @property {string[]} [forbiddenStrings] - Strings that must not appear in the bundled output
  * @property {string} description
  */
 
@@ -237,6 +238,19 @@ const CORE_TEST_CASES = [
         description: "Import + call of registration function should bundle correctly (sanity check)",
     },
     {
+        name: "texture-loaders-registration-pure-bare",
+        entryCode: `import "${CORE_DIST}/Engines/AbstractEngine/abstractEngine.textureLoaders.pure.js";\n`,
+        maxBundleSizeBytes: 500,
+        description: "Bare import of the texture loader registration module should produce a near-empty bundle",
+    },
+    {
+        name: "texture-loaders-registration-pure-named-call",
+        entryCode: `import { RegisterAbstractEngineTextureLoaders } from "${CORE_DIST}/Engines/AbstractEngine/abstractEngine.textureLoaders.pure.js";\nRegisterAbstractEngineTextureLoaders();\n`,
+        maxBundleSizeBytes: Infinity,
+        minBundleSizeBytes: 100,
+        description: "Import + call of the texture loader registration function should retain its implementation",
+    },
+    {
         name: "registration-types-only",
         entryCode: `import "${CORE_DIST}/Buffers/buffer.align.types.js";\n`,
         maxBundleSizeBytes: 500,
@@ -253,6 +267,7 @@ const CORE_TEST_CASES = [
         entryCode: `import { RegisterDepthRendererSceneComponent } from "${CORE_DIST}/Rendering/depthRendererSceneComponent.pure.js";\nimport { DepthRenderer } from "${CORE_DIST}/Rendering/depthRenderer.pure.js";\nRegisterDepthRendererSceneComponent(DepthRenderer);\n`,
         maxBundleSizeBytes: Infinity,
         minBundleSizeBytes: 100,
+        forbiddenStrings: ["GaussianSplattingMeshBase"],
         description: "Import + call of scene component registration function should bundle correctly",
     },
 ];
@@ -284,6 +299,28 @@ const TEST_CASES_BY_PACKAGE = {
             maxBundleSizeBytes: Infinity,
             minBundleSizeBytes: 100,
             description: "Named import of AdvancedDynamicTexture should retain the class (sanity check)",
+        },
+    ],
+    loaders: [
+        {
+            name: "loaders-gltf1-pure-barrel-bare",
+            entryCode: `import "${PKG_DIST}/glTF/1.0/pure.js";\n`,
+            maxBundleSizeBytes: 500,
+            description: "Bare import of the glTF 1.0 pure barrel should produce a near-empty bundle",
+        },
+        {
+            name: "loaders-gltf1-loader-register",
+            entryCode: `import { RegisterGLTF1Loader } from "${PKG_DIST}/glTF/1.0/glTFLoader.pure.js";\nRegisterGLTF1Loader();\n`,
+            maxBundleSizeBytes: Infinity,
+            minBundleSizeBytes: 100,
+            description: "Import + call of the glTF 1.0 loader registration function should retain its implementation",
+        },
+        {
+            name: "loaders-gltf1-extensions-register",
+            entryCode: `import { RegisterGLTFBinaryExtension } from "${PKG_DIST}/glTF/1.0/glTFBinaryExtension.pure.js";\nimport { RegisterGLTFMaterialsCommonExtension } from "${PKG_DIST}/glTF/1.0/glTFMaterialsCommonExtension.pure.js";\nRegisterGLTFBinaryExtension();\nRegisterGLTFMaterialsCommonExtension();\n`,
+            maxBundleSizeBytes: Infinity,
+            minBundleSizeBytes: 100,
+            description: "Import + call of the glTF 1.0 extension registration functions should retain their implementations",
         },
     ],
     serializers: [
@@ -362,7 +399,8 @@ async function testWithRollup(testCase) {
         const size = fileSize(outPath);
         const content = readFileSync(outPath, "utf-8").trim();
         const minSize = testCase.minBundleSizeBytes ?? 0;
-        const passed = size >= minSize && size <= testCase.maxBundleSizeBytes;
+        const forbiddenString = testCase.forbiddenStrings?.find((value) => content.includes(value));
+        const passed = size >= minSize && size <= testCase.maxBundleSizeBytes && forbiddenString === undefined;
 
         return {
             bundler: "rollup",
@@ -371,6 +409,7 @@ async function testWithRollup(testCase) {
             size,
             minSize,
             maxSize: testCase.maxBundleSizeBytes,
+            error: forbiddenString ? `Bundle contains forbidden string "${forbiddenString}"` : undefined,
             contentPreview: content.substring(0, 200),
         };
     } catch (err) {
@@ -461,7 +500,8 @@ async function testWithWebpack(testCase) {
             const size = fileSize(bundlePath);
             const content = size > 0 ? readFileSync(bundlePath, "utf-8").trim() : "";
             const minSize = testCase.minBundleSizeBytes ?? 0;
-            const passed = size >= minSize && size <= testCase.maxBundleSizeBytes;
+            const forbiddenString = testCase.forbiddenStrings?.find((value) => content.includes(value));
+            const passed = size >= minSize && size <= testCase.maxBundleSizeBytes && forbiddenString === undefined;
 
             resolvePromise({
                 bundler: "webpack",
@@ -470,6 +510,7 @@ async function testWithWebpack(testCase) {
                 size,
                 minSize,
                 maxSize: testCase.maxBundleSizeBytes,
+                error: forbiddenString ? `Bundle contains forbidden string "${forbiddenString}"` : undefined,
                 contentPreview: content.substring(0, 200),
             });
         });

@@ -441,6 +441,10 @@ color.rgb = max(color.rgb, 0.);
     	gl_FragData[PREPASS_POSITION_INDEX] = vec4(vPositionW, writeGeometryInfo);
     #endif
 
+    #ifdef PREPASS_OBJECT_ID
+        gl_FragData[PREPASS_OBJECT_ID_INDEX] = encodeObjectId(objectId) * writeGeometryInfo;
+    #endif
+
 	#ifdef PREPASS_LOCAL_POSITION
 		gl_FragData[PREPASS_LOCAL_POSITION_INDEX] = vec4(vPosition, writeGeometryInfo);
 	#endif
