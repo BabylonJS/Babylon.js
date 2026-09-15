@@ -103,15 +103,6 @@ export class NodeGeometryWebMcpEditor {
             return runtimeId === undefined ? undefined : this._findRuntimeBlock(runtimeId);
         });
 
-        for (const { blockId, inputName } of changedInputs) {
-            const serializedInput = afterById.get(blockId)?.inputs.find((candidate) => candidate.name === inputName);
-            if (serializedInput?.targetBlockId === undefined || !serializedInput.targetConnectionName) {
-                continue;
-            }
-
-            this._connectInput(updatedMapping, blockId, serializedInput);
-        }
-
         const affectedBlockIds = new Set(changedInputs.map(({ blockId }) => blockId));
         for (const serializedBlock of after.blocks) {
             const beforeBlock = beforeById.get(serializedBlock.id);
@@ -119,7 +110,7 @@ export class NodeGeometryWebMcpEditor {
                 affectedBlockIds.add(serializedBlock.id);
             }
         }
-        this._refreshDownstreamTypes(after, updatedMapping, affectedBlockIds);
+        this._applyConnectionsAndRefreshDownstreamTypes(after, updatedMapping, affectedBlockIds, changedInputs);
 
         const outputRuntimeId = updatedMapping.get(after.outputNodeId);
         this._globalState.nodeGeometry.outputBlock =
@@ -250,12 +241,23 @@ export class NodeGeometryWebMcpEditor {
         return changed;
     }
 
-    private _refreshDownstreamTypes(geometry: ISerializedGeometry, logicalToRuntime: ReadonlyMap<number, number>, affectedBlockIds: ReadonlySet<number>): void {
+    private _applyConnectionsAndRefreshDownstreamTypes(
+        geometry: ISerializedGeometry,
+        logicalToRuntime: ReadonlyMap<number, number>,
+        affectedBlockIds: ReadonlySet<number>,
+        changedInputs: ReadonlyArray<{ blockId: number; inputName: string }>
+    ): void {
         const downstream = new Map<number, Array<{ targetBlockId: number; input?: ISerializedConnectionPoint }>>();
+        const incoming = new Map<number, Array<{ sourceBlockId: number; input: ISerializedConnectionPoint }>>();
         const addDownstream = (sourceBlockId: number, targetBlockId: number, input?: ISerializedConnectionPoint) => {
             const entries = downstream.get(sourceBlockId) ?? [];
             entries.push({ targetBlockId, input });
             downstream.set(sourceBlockId, entries);
+            if (input) {
+                const incomingEntries = incoming.get(targetBlockId) ?? [];
+                incomingEntries.push({ sourceBlockId, input });
+                incoming.set(targetBlockId, incomingEntries);
+            }
         };
 
         for (const targetBlock of geometry.blocks) {
@@ -280,6 +282,7 @@ export class NodeGeometryWebMcpEditor {
             pending.push(...(downstream.get(sourceLogicalId)?.map(({ targetBlockId }) => targetBlockId) ?? []));
         }
 
+        const changedInputKeys = new Set(changedInputs.map(({ blockId, inputName }) => `${blockId}:${inputName}`));
         const incomingCount = new Map([...affected].map((blockId) => [blockId, 0]));
         for (const sourceBlockId of affected) {
             for (const { targetBlockId } of downstream.get(sourceBlockId) ?? []) {
@@ -295,23 +298,31 @@ export class NodeGeometryWebMcpEditor {
             const sourceLogicalId = ready.shift()!;
             processedCount++;
 
-            for (const { targetBlockId, input: serializedInput } of downstream.get(sourceLogicalId) ?? []) {
-                if (serializedInput) {
-                    const sourceRuntimeId = logicalToRuntime.get(sourceLogicalId);
-                    const targetRuntimeId = logicalToRuntime.get(targetBlockId);
-                    const sourceBlock = sourceRuntimeId === undefined ? undefined : this._findRuntimeBlock(sourceRuntimeId);
-                    const targetBlock = targetRuntimeId === undefined ? undefined : this._findRuntimeBlock(targetRuntimeId);
-                    const output = sourceBlock?.outputs.find((candidate) => candidate.name === serializedInput.targetConnectionName);
-                    const input = targetBlock?.inputs.find((candidate) => candidate.name === serializedInput.name);
-                    if (!output || !input || input.connectedPoint !== output) {
-                        throw new Error(
-                            `Unable to refresh the connection from ${sourceLogicalId}.${serializedInput.targetConnectionName} to ${targetBlockId}.${serializedInput.name}.`
-                        );
-                    }
-                    output.disconnectFrom(input);
-                    output.connectTo(input, true);
+            for (const { sourceBlockId, input: serializedInput } of incoming.get(sourceLogicalId) ?? []) {
+                if (changedInputKeys.has(`${sourceLogicalId}:${serializedInput.name}`)) {
+                    this._connectInput(logicalToRuntime, sourceLogicalId, serializedInput);
+                    continue;
+                }
+                if (!affected.has(sourceBlockId)) {
+                    continue;
                 }
 
+                const sourceRuntimeId = logicalToRuntime.get(sourceBlockId);
+                const targetRuntimeId = logicalToRuntime.get(sourceLogicalId);
+                const sourceBlock = sourceRuntimeId === undefined ? undefined : this._findRuntimeBlock(sourceRuntimeId);
+                const targetBlock = targetRuntimeId === undefined ? undefined : this._findRuntimeBlock(targetRuntimeId);
+                const output = sourceBlock?.outputs.find((candidate) => candidate.name === serializedInput.targetConnectionName);
+                const input = targetBlock?.inputs.find((candidate) => candidate.name === serializedInput.name);
+                if (!output || !input || input.connectedPoint !== output) {
+                    throw new Error(
+                        `Unable to refresh the connection from ${sourceBlockId}.${serializedInput.targetConnectionName} to ${sourceLogicalId}.${serializedInput.name}.`
+                    );
+                }
+                output.disconnectFrom(input);
+                output.connectTo(input, true);
+            }
+
+            for (const { targetBlockId } of downstream.get(sourceLogicalId) ?? []) {
                 if (affected.has(targetBlockId)) {
                     const remaining = incomingCount.get(targetBlockId)! - 1;
                     incomingCount.set(targetBlockId, remaining);

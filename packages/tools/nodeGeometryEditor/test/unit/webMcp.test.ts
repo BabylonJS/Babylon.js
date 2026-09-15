@@ -667,6 +667,49 @@ describe("Node Geometry WebMCP", () => {
         expect(secondSetPositions.inputs.find((input) => input.name === "positions")?.isConnected).toBe(true);
     });
 
+    it("refreshes retained downstream types before applying a changed consumer in the same batch", () => {
+        const { attachedBlocks, editor } = CreateLiveEditorHarness();
+        const manager = new GeometryGraphManager();
+        manager.createGeometry("sameBatchTypeRefresh");
+
+        const trueId = (manager.addBlock("sameBatchTypeRefresh", "GeometryInputBlock", "true", { type: "Vector3", value: { x: 0, y: 0, z: 0 } }) as any).block.id;
+        const falseId = (manager.addBlock("sameBatchTypeRefresh", "GeometryInputBlock", "false", { type: "Vector3", value: { x: 1, y: 1, z: 1 } }) as any).block.id;
+        const rightId = (manager.addBlock("sameBatchTypeRefresh", "GeometryInputBlock", "right", { type: "Vector3", value: { x: 2, y: 2, z: 2 } }) as any).block.id;
+        const scalarId = (manager.addBlock("sameBatchTypeRefresh", "GeometryInputBlock", "scalar", { type: "Float", value: 1 }) as any).block.id;
+        const conditionId = (manager.addBlock("sameBatchTypeRefresh", "ConditionBlock", "condition") as any).block.id;
+        const mathId = (manager.addBlock("sameBatchTypeRefresh", "MathBlock", "math") as any).block.id;
+        const firstSetPositionsId = (manager.addBlock("sameBatchTypeRefresh", "SetPositionsBlock", "first set positions") as any).block.id;
+
+        expect(manager.connectBlocks("sameBatchTypeRefresh", trueId, "output", conditionId, "ifTrue")).toBe("OK");
+        expect(manager.connectBlocks("sameBatchTypeRefresh", falseId, "output", conditionId, "ifFalse")).toBe("OK");
+        expect(manager.connectBlocks("sameBatchTypeRefresh", conditionId, "output", mathId, "left")).toBe("OK");
+        expect(manager.connectBlocks("sameBatchTypeRefresh", rightId, "output", mathId, "right")).toBe("OK");
+        expect(manager.connectBlocks("sameBatchTypeRefresh", mathId, "output", firstSetPositionsId, "positions")).toBe("OK");
+
+        const before = JSON.parse(manager.exportJSON("sameBatchTypeRefresh")!) as ISerializedGeometry;
+        const emptyGeometry: ISerializedGeometry = {
+            customType: "BABYLON.NodeGeometry",
+            outputNodeId: -1,
+            blocks: [],
+        };
+        const mapping = editor.applyIncrementalUpdate(emptyGeometry, before, new Map());
+
+        expect(manager.connectBlocks("sameBatchTypeRefresh", scalarId, "output", conditionId, "ifTrue")).toBe("OK");
+        const secondSetPositionsId = (manager.addBlock("sameBatchTypeRefresh", "SetPositionsBlock", "second set positions") as any).block.id;
+        expect(manager.connectBlocks("sameBatchTypeRefresh", mathId, "output", secondSetPositionsId, "positions")).toBe("OK");
+        const after = JSON.parse(manager.exportJSON("sameBatchTypeRefresh")!) as ISerializedGeometry;
+        const afterMapping = editor.applyIncrementalUpdate(before, after, mapping);
+
+        const condition = attachedBlocks.find((block) => block.uniqueId === mapping.get(conditionId))!;
+        const math = attachedBlocks.find((block) => block.uniqueId === mapping.get(mathId))!;
+        const firstSetPositions = attachedBlocks.find((block) => block.uniqueId === mapping.get(firstSetPositionsId))!;
+        const secondSetPositions = attachedBlocks.find((block) => block.uniqueId === afterMapping.get(secondSetPositionsId))!;
+        expect(condition.outputs.find((output) => output.name === "output")?.type).toBe(NodeGeometryBlockConnectionPointTypes.Float);
+        expect(math.outputs.find((output) => output.name === "output")?.type).toBe(NodeGeometryBlockConnectionPointTypes.Vector3);
+        expect(firstSetPositions.inputs.find((input) => input.name === "positions")?.isConnected).toBe(true);
+        expect(secondSetPositions.inputs.find((input) => input.name === "positions")?.isConnected).toBe(true);
+    });
+
     it("deserializes changed vector inputs as Babylon vector values", () => {
         const { attachedBlocks, editor } = CreateLiveEditorHarness();
         const manager = new GeometryGraphManager();
