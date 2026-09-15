@@ -112,6 +112,15 @@ export class NodeGeometryWebMcpEditor {
             this._connectInput(updatedMapping, blockId, serializedInput);
         }
 
+        const affectedBlockIds = new Set(changedInputs.map(({ blockId }) => blockId));
+        for (const serializedBlock of after.blocks) {
+            const beforeBlock = beforeById.get(serializedBlock.id);
+            if (!beforeBlock || this._hasBlockDataChanged(beforeBlock, serializedBlock)) {
+                affectedBlockIds.add(serializedBlock.id);
+            }
+        }
+        this._refreshDownstreamTypes(after, updatedMapping, affectedBlockIds);
+
         const outputRuntimeId = updatedMapping.get(after.outputNodeId);
         this._globalState.nodeGeometry.outputBlock =
             outputRuntimeId === undefined ? null : (this._findRuntimeBlock(outputRuntimeId) as typeof this._globalState.nodeGeometry.outputBlock);
@@ -239,6 +248,83 @@ export class NodeGeometryWebMcpEditor {
         }
 
         return changed;
+    }
+
+    private _refreshDownstreamTypes(geometry: ISerializedGeometry, logicalToRuntime: ReadonlyMap<number, number>, affectedBlockIds: ReadonlySet<number>): void {
+        const downstream = new Map<number, Array<{ targetBlockId: number; input?: ISerializedConnectionPoint }>>();
+        const addDownstream = (sourceBlockId: number, targetBlockId: number, input?: ISerializedConnectionPoint) => {
+            const entries = downstream.get(sourceBlockId) ?? [];
+            entries.push({ targetBlockId, input });
+            downstream.set(sourceBlockId, entries);
+        };
+
+        for (const targetBlock of geometry.blocks) {
+            if (targetBlock.customType === "BABYLON.TeleportOutBlock" && typeof targetBlock.entryPoint === "number") {
+                addDownstream(targetBlock.entryPoint, targetBlock.id);
+            }
+            for (const input of targetBlock.inputs) {
+                if (input.targetBlockId !== undefined && input.targetConnectionName) {
+                    addDownstream(input.targetBlockId, targetBlock.id, input);
+                }
+            }
+        }
+
+        const affected = new Set<number>();
+        const pending = [...affectedBlockIds];
+        while (pending.length > 0) {
+            const sourceLogicalId = pending.shift()!;
+            if (affected.has(sourceLogicalId)) {
+                continue;
+            }
+            affected.add(sourceLogicalId);
+            pending.push(...(downstream.get(sourceLogicalId)?.map(({ targetBlockId }) => targetBlockId) ?? []));
+        }
+
+        const incomingCount = new Map([...affected].map((blockId) => [blockId, 0]));
+        for (const sourceBlockId of affected) {
+            for (const { targetBlockId } of downstream.get(sourceBlockId) ?? []) {
+                if (affected.has(targetBlockId)) {
+                    incomingCount.set(targetBlockId, incomingCount.get(targetBlockId)! + 1);
+                }
+            }
+        }
+
+        const ready = [...incomingCount].filter(([, count]) => count === 0).map(([blockId]) => blockId);
+        let processedCount = 0;
+        while (ready.length > 0) {
+            const sourceLogicalId = ready.shift()!;
+            processedCount++;
+
+            for (const { targetBlockId, input: serializedInput } of downstream.get(sourceLogicalId) ?? []) {
+                if (serializedInput) {
+                    const sourceRuntimeId = logicalToRuntime.get(sourceLogicalId);
+                    const targetRuntimeId = logicalToRuntime.get(targetBlockId);
+                    const sourceBlock = sourceRuntimeId === undefined ? undefined : this._findRuntimeBlock(sourceRuntimeId);
+                    const targetBlock = targetRuntimeId === undefined ? undefined : this._findRuntimeBlock(targetRuntimeId);
+                    const output = sourceBlock?.outputs.find((candidate) => candidate.name === serializedInput.targetConnectionName);
+                    const input = targetBlock?.inputs.find((candidate) => candidate.name === serializedInput.name);
+                    if (!output || !input || input.connectedPoint !== output) {
+                        throw new Error(
+                            `Unable to refresh the connection from ${sourceLogicalId}.${serializedInput.targetConnectionName} to ${targetBlockId}.${serializedInput.name}.`
+                        );
+                    }
+                    output.disconnectFrom(input);
+                    output.connectTo(input, true);
+                }
+
+                if (affected.has(targetBlockId)) {
+                    const remaining = incomingCount.get(targetBlockId)! - 1;
+                    incomingCount.set(targetBlockId, remaining);
+                    if (remaining === 0) {
+                        ready.push(targetBlockId);
+                    }
+                }
+            }
+        }
+
+        if (processedCount !== affected.size) {
+            throw new Error("Unable to refresh downstream connection types because the affected graph is cyclic.");
+        }
     }
 
     private _connectInput(logicalToRuntime: ReadonlyMap<number, number>, targetLogicalId: number, serializedInput: ISerializedConnectionPoint): void {

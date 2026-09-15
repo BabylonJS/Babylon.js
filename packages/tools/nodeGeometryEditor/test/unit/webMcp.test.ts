@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { GeometryGraphManager, GetNgeEnumsReference, NgeConceptsMarkdown, NgeEnumCatalog, type ISerializedGeometry } from "@tools/nge-mcp-common";
 import { type NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
 import { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
@@ -618,6 +619,52 @@ describe("Node Geometry WebMCP", () => {
         const setPositions = attachedBlocks.find((block) => block.uniqueId === mapping.get(setPositionsId))!;
         expect(condition.inputs.find((input) => input.name === "ifFalse")?.isConnected).toBe(true);
         expect(setPositions.inputs.find((input) => input.name === "positions")?.isConnected).toBe(false);
+    });
+
+    it("refreshes downstream live types after an upstream output type changes", () => {
+        const { attachedBlocks, editor } = CreateLiveEditorHarness();
+        const manager = new GeometryGraphManager();
+        manager.createGeometry("chainedTypeRefresh");
+
+        const trueId = (manager.addBlock("chainedTypeRefresh", "GeometryInputBlock", "true", { type: "Vector3", value: { x: 0, y: 0, z: 0 } }) as any).block.id;
+        const falseId = (manager.addBlock("chainedTypeRefresh", "GeometryInputBlock", "false", { type: "Vector3", value: { x: 1, y: 1, z: 1 } }) as any).block.id;
+        const rightId = (manager.addBlock("chainedTypeRefresh", "GeometryInputBlock", "right", { type: "Vector3", value: { x: 2, y: 2, z: 2 } }) as any).block.id;
+        const conditionId = (manager.addBlock("chainedTypeRefresh", "ConditionBlock", "condition") as any).block.id;
+        const mathId = (manager.addBlock("chainedTypeRefresh", "MathBlock", "math") as any).block.id;
+        const setPositionsId = (manager.addBlock("chainedTypeRefresh", "SetPositionsBlock", "set positions") as any).block.id;
+
+        expect(manager.connectBlocks("chainedTypeRefresh", trueId, "output", conditionId, "ifTrue")).toBe("OK");
+        expect(manager.connectBlocks("chainedTypeRefresh", falseId, "output", conditionId, "ifFalse")).toBe("OK");
+        expect(manager.connectBlocks("chainedTypeRefresh", conditionId, "output", mathId, "left")).toBe("OK");
+        expect(manager.connectBlocks("chainedTypeRefresh", rightId, "output", mathId, "right")).toBe("OK");
+        expect(manager.connectBlocks("chainedTypeRefresh", mathId, "output", setPositionsId, "positions")).toBe("OK");
+
+        const before = JSON.parse(manager.exportJSON("chainedTypeRefresh")!) as ISerializedGeometry;
+        const emptyGeometry: ISerializedGeometry = {
+            customType: "BABYLON.NodeGeometry",
+            outputNodeId: -1,
+            blocks: [],
+        };
+        const mapping = editor.applyIncrementalUpdate(emptyGeometry, before, new Map());
+
+        expect(manager.removeBlock("chainedTypeRefresh", trueId)).toBe("OK");
+        const afterRemoval = JSON.parse(manager.exportJSON("chainedTypeRefresh")!) as ISerializedGeometry;
+        const afterRemovalMapping = editor.applyIncrementalUpdate(before, afterRemoval, mapping);
+
+        const condition = attachedBlocks.find((block) => block.uniqueId === mapping.get(conditionId))!;
+        const math = attachedBlocks.find((block) => block.uniqueId === mapping.get(mathId))!;
+        const setPositions = attachedBlocks.find((block) => block.uniqueId === mapping.get(setPositionsId))!;
+        expect(condition.outputs.find((output) => output.name === "output")?.type).toBe(NodeGeometryBlockConnectionPointTypes.Float);
+        expect(math.outputs.find((output) => output.name === "output")?.type).toBe(NodeGeometryBlockConnectionPointTypes.Vector3);
+        expect(setPositions.inputs.find((input) => input.name === "positions")?.isConnected).toBe(true);
+
+        const secondSetPositionsId = (manager.addBlock("chainedTypeRefresh", "SetPositionsBlock", "second set positions") as any).block.id;
+        expect(manager.connectBlocks("chainedTypeRefresh", mathId, "output", secondSetPositionsId, "positions")).toBe("OK");
+        const afterConnection = JSON.parse(manager.exportJSON("chainedTypeRefresh")!) as ISerializedGeometry;
+        const afterConnectionMapping = editor.applyIncrementalUpdate(afterRemoval, afterConnection, afterRemovalMapping);
+
+        const secondSetPositions = attachedBlocks.find((block) => block.uniqueId === afterConnectionMapping.get(secondSetPositionsId))!;
+        expect(secondSetPositions.inputs.find((input) => input.name === "positions")?.isConnected).toBe(true);
     });
 
     it("deserializes changed vector inputs as Babylon vector values", () => {
