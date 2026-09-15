@@ -1617,6 +1617,39 @@ describe("RootMotion", () => {
             expect(rig.character.position.z - before).toBeCloseTo(-39 * 0.5 * Speed * 0.016, 4);
         });
 
+        it("carries a follower played backwards along with a short driver played backwards", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            const driver = scene.beginDirectAnimation(new TransformNode("prop", scene), [DriverAnimation()], 0, 2 * CycleFrames, true);
+            // Played backwards, the follower's range runs the other way round from the driver's.
+            group.start(true, -1);
+            group.syncAllAnimationsWith(driver);
+            Run(scene, 20);
+            driver.speedRatio = -1;
+            Run(scene, 1);
+            const before = rig.character.position.z;
+            // Ten steps, all before the driver wraps: as the driver goes back, the follower goes forwards through its clip,
+            // from frame 51.36 to 56.16.
+            Run(scene, 10);
+
+            expect(rig.character.position.z - before).toBeCloseTo(10 * 0.5 * Speed * 0.016, 5);
+        });
+
+        it("does not read a short driver's wrap as travel for a follower played backwards", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            const driver = scene.beginDirectAnimation(new TransformNode("prop", scene), [DriverAnimation()], 0, 2 * CycleFrames, true);
+            group.start(true, -1);
+            group.syncAllAnimationsWith(driver);
+            Run(scene, 40);
+            const before = rig.character.position.z;
+            // Spans the driver's wrap, the follower going back through its clip at half the driver's rate.
+            Run(scene, 40);
+
+            // Half a tick back per step, and nothing on the one step the pose snaps.
+            expect(rig.character.position.z - before).toBeCloseTo(-39 * 0.5 * Speed * 0.016, 4);
+        });
+
         it("carries a short driver's snap down a chain of synchronized followers", () => {
             const rig = BuildRig(scene, "rootMotion");
             const { group } = Extract(rig);

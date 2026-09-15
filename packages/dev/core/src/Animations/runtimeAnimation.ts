@@ -139,7 +139,8 @@ export class RuntimeAnimation {
     private _playbackBlendingFactor = 1;
     private _playbackSyncRoot: Nullable<Animatable> = null;
     private _playbackJumped = false;
-    private _playbackSyncMasterFrames = 0;
+    private _playbackSyncMasterPlayed = 0;
+    private _playbackSyncMasterFrame = 0;
 
     private _enableBlending: boolean;
 
@@ -800,7 +801,8 @@ export class RuntimeAnimation {
             if (syncRoot) {
                 // If we must sync with an animatable, calculate the current frame based on the frame of the root animatable
                 const syncRange = syncRoot.toFrame - syncRoot.fromFrame;
-                const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / syncRange;
+                const masterFrame = syncRoot.masterFrame;
+                const hostNormalizedFrame = (masterFrame - syncRoot.fromFrame) / syncRange;
                 currentFrame = from + frameRange * hostNormalizedFrame;
 
                 const master = syncRoot.getAnimations()[0];
@@ -812,14 +814,17 @@ export class RuntimeAnimation {
                         const masterCycles = Math.round((master._playbackFrames - (master._currentFrame - master._playbackFrom)) / masterEvaluated);
                         syncFrames = frameRange * masterCycles + phase;
                     } else {
-                        // Keyed shorter, the root never carries the follower to its end but snaps it back across its range:
-                        // a jump whenever the phase moves against the root, forwards or backwards, rather than with it
-                        syncJumped = (phase - this._playbackFrames) * (master._playbackFrames - this._playbackSyncMasterFrames) < 0;
+                        // Keyed shorter, the root never carries the follower to its end but snaps it back across its range,
+                        // which happens exactly when the root's own frame wraps: when that frame moves against the root's
+                        // playback. Both are the root's frames, so neither the follower's range nor the root's, whichever
+                        // way round each is, changes the comparison.
+                        syncJumped = (masterFrame - this._playbackSyncMasterFrame) * (master._playbackFrames - this._playbackSyncMasterPlayed) < 0;
                         syncFrames = phase;
                     }
                     // A jump of the root is a jump of whatever follows it, down the chain
                     syncJumped = syncJumped || master._playbackJumped;
-                    this._playbackSyncMasterFrames = master._playbackFrames;
+                    this._playbackSyncMasterPlayed = master._playbackFrames;
+                    this._playbackSyncMasterFrame = masterFrame;
                 }
                 // A root with no runtime animation reads as frame 0: the pose snaps there and holds, and so does the progress
             } else {
