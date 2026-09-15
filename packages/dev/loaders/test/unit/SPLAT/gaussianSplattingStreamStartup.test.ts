@@ -371,6 +371,24 @@ describe("GaussianSplattingStream coarse-first startup", () => {
         expect(stream._residency).toBeNull();
     });
 
+    it("disposes a standalone stream when its tree contains no renderable splats", async () => {
+        startupSpy.mockRestore();
+        vi.spyOn(Logger, "Error").mockImplementation(() => {});
+        const metadata: ISOGLODMetadata = {
+            lodLevels: 1,
+            filenames: [],
+            tree: { bound: { min: [0, 0, 0], max: [1, 1, 1] }, children: [] },
+        };
+        const stream = new GaussianSplattingStream("empty", metadata, "", scene) as any;
+
+        await vi.waitFor(() => expect(stream.isDisposed()).toBe(true));
+
+        expect(scene.meshes).not.toContain(stream);
+        expect(stream._baseLayerReady).toBe(false);
+        expect(stream._workBuffer).toBeNull();
+        expect(stream._residency).toBeNull();
+    });
+
     it("caps an all-coarse stream at its complete source size even above the progressive metadata threshold", async () => {
         const metadata: ISOGLODMetadata = {
             lodLevels: 1,
