@@ -774,9 +774,13 @@ function SetCurrentGeometryCache(globalState: GlobalState, logicalToRuntime: Rea
 }
 
 function ReconcileCurrentGeometryCache(cache: ICurrentGeometryCache, runtimeIds: readonly number[], editorMap?: Record<string, number>): void {
+    const previousRuntimeIdsByRuntime = new Map<number, number[]>();
     if (editorMap) {
         for (const [previousRuntimeIdText, runtimeId] of Object.entries(editorMap)) {
             const previousRuntimeId = Number(previousRuntimeIdText);
+            const previousRuntimeIds = previousRuntimeIdsByRuntime.get(runtimeId) ?? [];
+            previousRuntimeIds.push(previousRuntimeId);
+            previousRuntimeIdsByRuntime.set(runtimeId, previousRuntimeIds);
             const logicalId = cache.identityToLogical.get(previousRuntimeId) ?? cache.runtimeToLogical.get(previousRuntimeId);
             if (logicalId !== undefined) {
                 const currentRuntimeId = cache.logicalToRuntime.get(logicalId);
@@ -818,6 +822,9 @@ function ReconcileCurrentGeometryCache(cache: ICurrentGeometryCache, runtimeIds:
         cache.runtimeToLogical.set(runtimeId, logicalId);
         cache.logicalToRuntime.set(logicalId, runtimeId);
         cache.identityToLogical.set(runtimeId, logicalId);
+        for (const previousRuntimeId of previousRuntimeIdsByRuntime.get(runtimeId) ?? []) {
+            cache.identityToLogical.set(previousRuntimeId, logicalId);
+        }
         cache.nextLogicalId = Math.max(cache.nextLogicalId, logicalId + 1);
     }
 }

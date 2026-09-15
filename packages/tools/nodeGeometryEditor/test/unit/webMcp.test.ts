@@ -5,6 +5,7 @@ import { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { BoxBlock } from "core/Meshes/Node/Blocks/Sources/boxBlock";
+import { SphereBlock } from "core/Meshes/Node/Blocks/Sources/sphereBlock";
 import { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
 import { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
 import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
@@ -458,7 +459,7 @@ describe("Node Geometry WebMCP", () => {
         ).toThrow("Block 1 not found.");
     });
 
-    it("keeps a surviving block addressable across real editor undo and redo rebuilds", async () => {
+    it("keeps known and first-discovered blocks addressable across real editor undo and redo rebuilds", async () => {
         const state = CreateTestState([], vi.fn());
         const controller = new AbortController();
         const nodeGeometry = new NodeGeometry("history");
@@ -486,42 +487,51 @@ describe("Node Geometry WebMCP", () => {
 
         const historyStack = CreateNodeGeometryHistoryStack(state);
         await historyStack.storeAsync();
-        box.name = "Changed";
+        const sphere = new SphereBlock("Sphere");
+        nodeGeometry.attachedBlocks.push(sphere);
+        await historyStack.storeAsync();
+        sphere.name = "Changed";
         await historyStack.storeAsync();
 
         historyStack.undo();
-        const undoRuntimeId = nodeGeometry.attachedBlocks[0].uniqueId;
-        expect(undoRuntimeId).not.toBe(originalLogicalId);
+        const undoRuntimeIds = nodeGeometry.attachedBlocks.map((block) => block.uniqueId);
+        expect(undoRuntimeIds).not.toContain(originalLogicalId);
         expect(nodeGeometry.editorData.map).toBeUndefined();
-        expect(getTool.execute({}, { signal: controller.signal })).toMatchObject({
-            blocks: [{ id: originalLogicalId, name: "Box" }],
-        });
+        const undoGeometry = getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry;
+        expect(undoGeometry.blocks[0]).toMatchObject({ id: originalLogicalId, name: "Box" });
+        const firstDiscoveredLogicalId = undoGeometry.blocks.find((block) => block.name === "Sphere")!.id;
 
         historyStack.redo();
-        const redoRuntimeId = nodeGeometry.attachedBlocks[0].uniqueId;
-        expect(redoRuntimeId).not.toBe(undoRuntimeId);
+        const redoRuntimeIds = nodeGeometry.attachedBlocks.map((block) => block.uniqueId);
+        expect(redoRuntimeIds).not.toEqual(undoRuntimeIds);
         expect(nodeGeometry.editorData.map).toBeUndefined();
-        expect(getTool.execute({}, { signal: controller.signal })).toMatchObject({
-            blocks: [{ id: originalLogicalId, name: "Changed" }],
-        });
+        const redoGeometry = getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry;
+        expect(redoGeometry.blocks[0]).toMatchObject({ id: originalLogicalId, name: "Box" });
+        expect(redoGeometry.blocks.find((block) => block.name === "Changed")?.id).toBe(firstDiscoveredLogicalId);
+
+        historyStack.undo();
+        expect((getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry).blocks.find((block) => block.name === "Sphere")?.id).toBe(
+            firstDiscoveredLogicalId
+        );
+        historyStack.redo();
+        const finalRedoRuntimeIds = nodeGeometry.attachedBlocks.map((block) => block.uniqueId);
+        expect((getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry).blocks.find((block) => block.name === "Changed")?.id).toBe(
+            firstDiscoveredLogicalId
+        );
 
         state.webMcpEditor = {
             applyIncrementalUpdate: vi.fn((_before, after) => {
-                nodeGeometry.attachedBlocks[0].name = after.blocks[0].name;
-                return new Map([[after.blocks[0].id, redoRuntimeId]]);
+                const updatedBlock = after.blocks.find((block) => block.id === firstDiscoveredLogicalId)!;
+                nodeGeometry.attachedBlocks[1].name = updatedBlock.name;
+                return new Map(after.blocks.map((block, index) => [block.id, finalRedoRuntimeIds[index]]));
             }),
         } as unknown as GlobalState["webMcpEditor"];
 
-        expect(setPropertiesTool.execute({ blockId: originalLogicalId, properties: { name: "Updated after history" } }, { signal: controller.signal })).toMatchObject({
-            success: true,
-            blockCount: 1,
-        });
-        expect(getTool.execute({}, { signal: controller.signal })).toMatchObject({
-            blocks: [{ id: originalLogicalId, name: "Updated after history" }],
-            editorData: {
-                locations: [{ blockId: originalLogicalId, x: 10, y: 20 }],
-            },
-        });
+        expect(
+            setPropertiesTool.execute({ blockId: firstDiscoveredLogicalId, properties: { name: "Updated after history" } }, { signal: controller.signal })
+        ).toMatchObject({ success: true, blockCount: 2 });
+        const updatedGeometry = getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry;
+        expect(updatedGeometry.blocks.find((block) => block.id === firstDiscoveredLogicalId)?.name).toBe("Updated after history");
         historyStack.dispose();
     });
 
