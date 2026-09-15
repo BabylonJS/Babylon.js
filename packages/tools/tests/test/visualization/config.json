@@ -2282,7 +2282,7 @@
         },
         {
             "title": "Mesh blending - coastal cliff scenery",
-            "playgroundId": "#BJBKKU#11",
+            "playgroundId": "#BJBKKU#12",
             "referenceImage": "mesh-blending-coastal-cliff.png",
             "replace": "const showControls = true;, const showControls = false;, const showGpuTime = true;, const showGpuTime = false;",
             "excludedEngines": ["webgl1"],
