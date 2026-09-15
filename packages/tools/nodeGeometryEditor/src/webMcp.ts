@@ -712,9 +712,10 @@ function CreateDocumentSummary(manager: GeometryGraphManager): { success: true; 
 }
 
 function ReadCurrentNodeGeometry(globalState: GlobalState): ISerializedGeometry {
+    const editorMap = globalState.nodeGeometry.editorData?.map;
     const runtimeGeometry = ReadSerializedNodeGeometry(JSON.parse(SerializationTools.Serialize(globalState.nodeGeometry, globalState)));
     const cache = GetOrCreateCurrentGeometryCache(globalState);
-    ReconcileCurrentGeometryCache(cache, runtimeGeometry);
+    ReconcileCurrentGeometryCache(cache, runtimeGeometry, editorMap);
     return RemapSerializedNodeGeometry(runtimeGeometry, (runtimeId) => cache.runtimeToLogical.get(runtimeId) ?? runtimeId);
 }
 
@@ -748,8 +749,7 @@ function SetCurrentGeometryCache(globalState: GlobalState, logicalToRuntime: Rea
     });
 }
 
-function ReconcileCurrentGeometryCache(cache: ICurrentGeometryCache, runtimeGeometry: ISerializedGeometry): void {
-    const editorMap = (runtimeGeometry.editorData as { map?: Record<string, number> } | undefined)?.map;
+function ReconcileCurrentGeometryCache(cache: ICurrentGeometryCache, runtimeGeometry: ISerializedGeometry, editorMap?: Record<string, number>): void {
     if (editorMap) {
         for (const [previousRuntimeIdText, runtimeId] of Object.entries(editorMap)) {
             const previousRuntimeId = Number(previousRuntimeIdText);

@@ -4,8 +4,10 @@ import { GeometryGraphManager, GetNgeEnumsReference, NgeConceptsMarkdown, NgeEnu
 import { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
+import { BoxBlock } from "core/Meshes/Node/Blocks/Sources/boxBlock";
 import { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
 import { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
+import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 import { Vector3 } from "core/Maths/math.vector";
 
 const { mockLoadSnippet } = vi.hoisted(() => ({
@@ -454,40 +456,43 @@ describe("Node Geometry WebMCP", () => {
         ).toThrow("Block 1 not found.");
     });
 
-    it("preserves logical ids when editor history remaps runtime ids", () => {
+    it("keeps a surviving block addressable by its logical id after editor history recreates it", () => {
         const state = CreateTestState([], vi.fn());
         const controller = new AbortController();
-        let currentGeometry: ISerializedGeometry = {
-            customType: "BABYLON.NodeGeometry",
-            outputNodeId: -1,
-            blocks: [
-                {
-                    customType: "BABYLON.BoxBlock",
-                    id: 100,
-                    name: "Box",
-                    inputs: [],
-                    outputs: [{ name: "geometry" }],
-                },
-            ],
-        };
-        vi.spyOn(SerializationTools, "Serialize").mockImplementation(() => JSON.stringify(currentGeometry));
+        const nodeGeometry = new NodeGeometry("history");
+        const box = new BoxBlock("Box");
+        nodeGeometry.attachedBlocks.push(box);
+        state.nodeGeometry = nodeGeometry;
+        state.onGetNodeFromBlock = () => ({ x: 10, y: 20, isCollapsed: false }) as ReturnType<GlobalState["onGetNodeFromBlock"]>;
+        state.storeEditorData = vi.fn();
 
-        const getTool = FindTool(CreateNodeGeometryWebMcpTools(state), "get_current_node_geometry");
-        expect((getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry).blocks[0].id).toBe(100);
+        const tools = CreateNodeGeometryWebMcpTools(state);
+        const getTool = FindTool(tools, "get_current_node_geometry");
+        const setPropertiesTool = FindTool(tools, "set_block_properties");
+        const originalLogicalId = box.uniqueId;
+        const historyState = JSON.parse(SerializationTools.Serialize(nodeGeometry, state));
+        expect((getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry).blocks[0].id).toBe(originalLogicalId);
 
-        currentGeometry = {
-            ...currentGeometry,
-            blocks: [{ ...currentGeometry.blocks[0], id: 500 }],
+        nodeGeometry.parseSerializedObject(historyState);
+        const recreatedRuntimeId = nodeGeometry.attachedBlocks[0].uniqueId;
+        expect(recreatedRuntimeId).not.toBe(originalLogicalId);
+        expect(nodeGeometry.editorData.map[originalLogicalId]).toBe(recreatedRuntimeId);
+        state.webMcpEditor = {
+            applyIncrementalUpdate: vi.fn((_before, after) => {
+                nodeGeometry.attachedBlocks[0].name = after.blocks[0].name;
+                return new Map([[after.blocks[0].id, recreatedRuntimeId]]);
+            }),
+        } as unknown as GlobalState["webMcpEditor"];
+
+        expect(
+            setPropertiesTool.execute({ blockId: originalLogicalId, properties: { name: "Updated after history" } }, { signal: controller.signal })
+        ).toMatchObject({ success: true, blockCount: 1 });
+        expect(getTool.execute({}, { signal: controller.signal })).toMatchObject({
+            blocks: [{ id: originalLogicalId, name: "Updated after history" }],
             editorData: {
-                locations: [{ blockId: 500, x: 10, y: 20 }],
-                map: { 100: 500 },
-            } as ISerializedGeometry["editorData"],
-        };
-
-        const afterHistoryUpdate = getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry;
-        expect(afterHistoryUpdate.blocks[0].id).toBe(100);
-        expect(afterHistoryUpdate.editorData?.locations[0].blockId).toBe(100);
-        expect((afterHistoryUpdate.editorData as { map?: Record<string, number> }).map).toBeUndefined();
+                locations: [{ blockId: originalLogicalId, x: 10, y: 20 }],
+            },
+        });
     });
 
     it("preserves Teleport and frame references across replacement round trips", () => {
