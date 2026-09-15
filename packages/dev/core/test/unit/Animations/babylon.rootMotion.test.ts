@@ -557,6 +557,93 @@ describe("RootMotion", () => {
             expect(rig.character.position.z).toBeCloseTo(Walked(63), 1);
             expect(rig.character.position.x).toBeCloseTo(0, 3);
         });
+
+        it("runs a root the group does not animate on a descendant channel that spans the clip, not on a single key", () => {
+            const rig = BuildRig(scene, "inPlace", { twist: 0.1 });
+            const head = rig.hips.getChildren().find((node) => node.name === "head") as TransformNode;
+            const headAnimation = new Animation("head", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+            headAnimation.setKeys([{ frame: 0, value: head.position.clone() }]);
+            // The hips' rotation over the clip, a head position of a single key, then the feet - not normalized, so the
+            // head's channel keeps its single key.
+            const group = new AnimationGroup("sparse", scene);
+            group.addTargetedAnimation(rig.hipsRotationAnimation!, rig.hips);
+            group.addTargetedAnimation(headAnimation, head);
+            group.addTargetedAnimation(ChannelOf(rig.group, rig.leftFoot, "position"), rig.leftFoot);
+            group.addTargetedAnimation(ChannelOf(rig.group, rig.rightFoot, "position"), rig.rightFoot);
+            const clip = new RootMotionClip(group, { rootNode: rig.armature });
+
+            expect(clip.source).toBe(RootMotionSource.FootContact);
+            expect(clip.toFrame - clip.fromFrame).toBe(CycleFrames);
+            expect(clip.duration).toBeCloseTo(1, 6);
+            expect(clip.cycleDistance).toBeCloseTo(Speed, 2);
+
+            new RootMotionController(rig.character, [clip]);
+            clip.animationGroup.start(true);
+            Run(scene, 63);
+            expect(rig.character.position.z).toBeCloseTo(Walked(63), 1);
+        });
+
+        it("runs a root whose channels are all single keys on a descendant that spans the clip", () => {
+            const rig = BuildRig(scene, "inPlace");
+            const still = new Animation("hipsStill", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+            still.setKeys([{ frame: 0, value: (rig.hipsAnimation.getKeys()[0].value as Vector3).clone() }]);
+            const group = new AnimationGroup("sparse", scene);
+            group.addTargetedAnimation(still, rig.hips);
+            group.addTargetedAnimation(ChannelOf(rig.group, rig.leftFoot, "position"), rig.leftFoot);
+            group.addTargetedAnimation(ChannelOf(rig.group, rig.rightFoot, "position"), rig.rightFoot);
+            const clip = new RootMotionClip(group);
+
+            // The hips are still the root; a clip cannot run on their single key, so it runs on a foot.
+            expect(clip.rootNode).toBe(rig.hips);
+            expect(clip.duration).toBeCloseTo(1, 6);
+            expect(clip.source).toBe(RootMotionSource.FootContact);
+            expect(clip.cycleDistance).toBeCloseTo(Speed, 2);
+
+            new RootMotionController(rig.character, [clip]);
+            clip.animationGroup.start(true);
+            Run(scene, 63);
+            expect(rig.character.position.z).toBeCloseTo(Walked(63), 1);
+        });
+
+        it("follows the very channel it was analyzed on when the root has two of that property", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const bob = new Animation("hipsBob", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+            const rest = rig.hipsAnimation.getKeys()[0].value as Vector3;
+            bob.setKeys([
+                { frame: 0, value: rest.clone() },
+                { frame: CycleFrames / 2, value: rest.clone() },
+            ]);
+            // The travelling channel is added second, so it is the one the mixer's pose ends on and the analysis takes.
+            const group = new AnimationGroup("duplicate", scene);
+            group.addTargetedAnimation(bob, rig.hips);
+            group.addTargetedAnimation(rig.hipsAnimation, rig.hips);
+            group.addTargetedAnimation(ChannelOf(rig.group, rig.leftFoot, "position"), rig.leftFoot);
+            group.addTargetedAnimation(ChannelOf(rig.group, rig.rightFoot, "position"), rig.rightFoot);
+            const clip = new RootMotionClip(group);
+            new RootMotionController(rig.character, [clip]);
+
+            expect(clip.source).toBe(RootMotionSource.Root);
+            clip.animationGroup.start(true);
+            Run(scene, 63);
+            expect(rig.character.position.z).toBeCloseTo(Walked(63), 3);
+        });
+
+        it("runs a root whose position channel has a single key on its rotation channel", () => {
+            const rig = BuildRig(scene, "inPlace", { twist: 0.1 });
+            const still = new Animation("hipsStill", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+            still.setKeys([{ frame: 0, value: (rig.hipsAnimation.getKeys()[0].value as Vector3).clone() }]);
+            const group = new AnimationGroup("sparse", scene);
+            group.addTargetedAnimation(still, rig.hips);
+            group.addTargetedAnimation(rig.hipsRotationAnimation!, rig.hips);
+            group.addTargetedAnimation(ChannelOf(rig.group, rig.leftFoot, "position"), rig.leftFoot);
+            group.addTargetedAnimation(ChannelOf(rig.group, rig.rightFoot, "position"), rig.rightFoot);
+            const clip = new RootMotionClip(group);
+
+            expect(clip.rootNode).toBe(rig.hips);
+            expect(clip.source).toBe(RootMotionSource.FootContact);
+            expect(clip.duration).toBeCloseTo(1, 6);
+            expect(clip.cycleDistance).toBeCloseTo(Speed, 2);
+        });
     });
 
     it("finds no travel in a clip that stands still", () => {
@@ -1332,6 +1419,19 @@ describe("RootMotion", () => {
         });
     });
 
+    /**
+     * A position animation to clock a synchronization driver, keyed over one cycle.
+     * @returns the animation
+     */
+    function DriverAnimation(): Animation {
+        const animation = new Animation("driver", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+        animation.setKeys([
+            { frame: 0, value: Vector3.Zero() },
+            { frame: CycleFrames, value: Vector3.Zero() },
+        ]);
+        return animation;
+    }
+
     describe("synchronization", () => {
         const Synced = (speedRatio = 1, masterLoopMode?: number, followerLoopMode?: number, loop = true) => {
             const skeleton = BuildSkeleton(scene);
@@ -1407,6 +1507,41 @@ describe("RootMotion", () => {
             Run(scene, 130);
 
             expect(skeleton.character.position.z).toBeCloseTo(Speed, 6);
+        });
+
+        it("does not read the return to its own clock as motion when it is no longer synchronized", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            const prop = new TransformNode("prop", scene);
+            const driver = scene.beginDirectAnimation(prop, [DriverAnimation()], 0, CycleFrames, true);
+            group.start(true);
+            group.syncAllAnimationsWith(driver);
+            Run(scene, 20);
+            driver.stop();
+            Run(scene, 1);
+            const before = rig.character.position.z;
+
+            // Back on its own clock, the pose lands wherever its own elapsed time puts it: a jump, not travel.
+            group.syncAllAnimationsWith(null);
+            Run(scene, 1);
+            expect(rig.character.position.z - before).toBeCloseTo(0, 6);
+        });
+
+        it("follows a driver whose group runs longer than the track it is clocked by", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            const prop = new TransformNode("prop", scene);
+            // Played over twice the range of its keys: Babylon maps the follower's frame over the range asked for, so
+            // the follower only ever reaches the middle of its own range and is snapped back at every wrap of the driver.
+            const driver = scene.beginDirectAnimation(prop, [DriverAnimation()], 0, 2 * CycleFrames, true);
+            group.start(true);
+            group.syncAllAnimationsWith(driver);
+            Run(scene, 40);
+            const before = rig.character.position.z;
+            // Spans the driver's wrap, which carries the pose no further than any other step.
+            Run(scene, 40);
+
+            expect(rig.character.position.z - before).toBeCloseTo(40 * 0.5 * Speed * 0.016, 4);
         });
 
         it("ends a follower that does not loop at the driver's frame", () => {
@@ -1506,6 +1641,36 @@ describe("RootMotion", () => {
                 expect(rig.character.position.z - before).toBeCloseTo(coefficient * Speed * 0.016, 6);
             });
         }
+
+        it("follows the bindings of a clock that turns additive and is re-evaluated twice within a step", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            let hipsRuntime: RuntimeAnimation | null = null;
+            ChannelOf(group, rig.hips, "position").addEvent(
+                new AnimationEvent(
+                    30,
+                    () => {
+                        const hipsAnimatable = group.animatables.find((animatable) => animatable.target === rig.hips)!;
+                        hipsRuntime = hipsAnimatable.getAnimations()[0];
+                        group.isAdditive = true;
+                        hipsAnimatable.goToFrame(hipsRuntime.currentFrame, true);
+                        hipsAnimatable.goToFrame(hipsRuntime.currentFrame, true);
+                    },
+                    true
+                )
+            );
+            group.start(true);
+            group.weight = 1;
+            Run(scene, 32);
+            const before = rig.character.position.z;
+            Run(scene, 1);
+
+            // One override entry at 1 over a total of 1, then two additive entries at 1: three times the value. The
+            // bindings copy the value they start from, so an entry does not add the value into itself.
+            const value: Vector3 = hipsRuntime!.currentValue;
+            expect(Vector3.Distance(rig.hips.position, value.scale(3))).toBeLessThan(1e-6);
+            expect(rig.character.position.z - before).toBeCloseTo(3 * Speed * 0.016, 6);
+        });
 
         it("keeps no reference to a stopped animation or its target in the journal past its step", () => {
             const prop = new TransformNode("prop", scene);
@@ -1669,6 +1834,203 @@ describe("RootMotion", () => {
             // Bound as an override of 0.8 when it wrote, whatever it became after: two overrides, half each.
             expect(still.isAdditive).toBe(true);
             expect(rig.character.position.z - before).toBeCloseTo(0.5 * Speed * 0.016, 6);
+        });
+    });
+
+    describe("mutations within an animation step", () => {
+        /** The travel of one 16ms tick of the walking fixture at a speed ratio of 1. */
+        const Tick = Speed * 0.016;
+
+        /**
+         * A position animation holding its target still over a cycle.
+         * @returns the animation
+         */
+        const stillAnimation = () => {
+            const animation = new Animation("still", "position", Fps, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+            animation.setKeys([
+                { frame: 0, value: Vector3.Zero() },
+                { frame: CycleFrames, value: Vector3.Zero() },
+            ]);
+            return animation;
+        };
+
+        /**
+         * A group the controller knows nothing about, holding the hips still and playing once.
+         * @param hips defines the node
+         * @param event defines a frame at which an event of the animation acts
+         * @returns the group
+         */
+        const stillGroup = (hips: TransformNode, event?: { frame: number; action: (group: AnimationGroup) => void }) => {
+            const animation = stillAnimation();
+            const group = new AnimationGroup("still", scene);
+            group.addTargetedAnimation(animation, hips);
+            if (event) {
+                animation.addEvent(new AnimationEvent(event.frame, () => event.action(group), true));
+            }
+            return group;
+        };
+
+        /**
+         * The animatable of a playing group that carries a node.
+         * @param group defines the group
+         * @param target defines the node
+         * @returns the animatable
+         */
+        const animatableOf = (group: AnimationGroup, target: TransformNode) => group.animatables.find((animatable) => animatable.target === target)!;
+
+        /**
+         * Plays a walk until the tick before an event at frame 30 of its clock: the next tick writes frame 30.72 and
+         * then fires it.
+         * @param rig defines the rig
+         * @param group defines the in-place group
+         * @param action defines the event
+         * @returns the character's position before that tick
+         */
+        const walkToEvent = (rig: IRig, group: AnimationGroup, action: () => void) => {
+            ChannelOf(group, rig.hips, "position").addEvent(new AnimationEvent(30, action, true));
+            group.start(true);
+            Run(scene, 32);
+            return rig.character.position.z;
+        };
+
+        for (const [name, stop] of [
+            ["stops it", (group: AnimationGroup, hips: TransformNode) => group.stop()],
+            [
+                "stops and starts it again",
+                (group: AnimationGroup, hips: TransformNode) => {
+                    group.stop();
+                    group.start(true);
+                },
+            ],
+            ["stops its clock's animatable", (group: AnimationGroup, hips: TransformNode) => animatableOf(group, hips).stop()],
+        ] as const) {
+            it(`applies the step of a playback whose event ${name} after its clock wrote`, () => {
+                const rig = BuildRig(scene, "rootMotion");
+                const { group } = Extract(rig);
+                const before = walkToEvent(rig, group, () => stop(group, rig.hips));
+                Run(scene, 1);
+
+                // The clock wrote frame 30.72 before the event: that is the pose, and the character goes with it.
+                expect(rig.character.position.z - before).toBeCloseTo(Tick, 6);
+            });
+        }
+
+        it("applies the step of another clip that a clock's event stops after it wrote", () => {
+            const skeleton = BuildSkeleton(scene);
+            const walk = AddGait(skeleton, "rootMotion", { name: "walk" });
+            const run = AddGait(skeleton, "rootMotion", { name: "run", speed: 2 });
+            const walkClip = new RootMotionClip(walk.group);
+            const runClip = new RootMotionClip(run.group);
+            new RootMotionController(skeleton.character, [walkClip, runClip]);
+            ChannelOf(walkClip.animationGroup, skeleton.hips, "position").addEvent(new AnimationEvent(30, () => runClip.animationGroup.stop(), true));
+            runClip.animationGroup.start(true);
+            runClip.animationGroup.weight = 0.5;
+            walkClip.animationGroup.start(true);
+            walkClip.animationGroup.weight = 0.5;
+            Run(scene, 32);
+            const before = skeleton.character.position.z;
+            Run(scene, 1);
+
+            // The run wrote before the walk's event stopped it: half of each, as the bindings mixed them.
+            expect(skeleton.character.position.z - before).toBeCloseTo(0.5 * 2 * Tick + 0.5 * Tick, 6);
+        });
+
+        it("applies the step of a playback paused by its event after its clock wrote, and carries on when it resumes", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            const before = walkToEvent(rig, group, () => group.pause());
+            Run(scene, 1);
+            expect(rig.character.position.z - before).toBeCloseTo(Tick, 6);
+
+            Run(scene, 3);
+            expect(rig.character.position.z - before).toBeCloseTo(Tick, 6);
+
+            group.restart();
+            Run(scene, 1);
+            expect(rig.character.position.z - before).toBeCloseTo(2 * Tick, 6);
+        });
+
+        it("does not read a jump made and reset from an event as motion", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group, controller } = Extract(rig);
+            const before = walkToEvent(rig, group, () => {
+                group.goToFrame(10);
+                controller.reset();
+            });
+            // The clock wrote 30.72 before the jump; the reset forgets that evaluation rather than measuring from it.
+            Run(scene, 1);
+            expect(rig.character.position.z - before).toBeCloseTo(0, 6);
+            // The first evaluation after the reset says where the playback carries on from.
+            Run(scene, 1);
+            expect(rig.character.position.z - before).toBeCloseTo(0, 6);
+            Run(scene, 1);
+            expect(rig.character.position.z - before).toBeCloseTo(Tick, 6);
+        });
+
+        it("follows a weighted jump made between steps as the bindings do", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            group.start(true);
+            group.weight = 0.8;
+            Run(scene, 32);
+            // Between steps: the binding this registers is still held when the next step's bindings are processed.
+            const hips = animatableOf(group, rig.hips);
+            hips.goToFrame(hips.getAnimations()[0].currentFrame, true);
+            const before = rig.character.position.z;
+            Run(scene, 1);
+
+            // Two entries of 0.8 over 1.6: the whole binding, where the step's own write alone would be 0.8 of it.
+            expect(rig.character.position.z - before).toBeCloseTo(Tick, 6);
+        });
+
+        it("catches up a clock the scene passed over after a callback removed the animatable before it", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            // Started first, this stops itself from its event, which compacts the scene's active animatables and makes
+            // its loop pass over the animatable that followed: the clip's clock, for that one step.
+            const still = stillGroup(rig.hips, { frame: 30, action: (target) => target.stop() });
+            still.start(false);
+            group.start(true);
+            Run(scene, 32);
+            const before = rig.character.position.z;
+            Run(scene, 1);
+            expect(rig.character.position.z - before).toBeCloseTo(0, 6);
+
+            // Its next evaluation catches the pose up, and the character with it.
+            Run(scene, 1);
+            expect(rig.character.position.z - before).toBeCloseTo(2 * Tick, 6);
+        });
+
+        it("finishes the cycle a looping playback was in when it stops looping", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            group.start(true);
+            // Frame 90.24: 30.24 into the second cycle.
+            Run(scene, 95);
+            const before = rig.character.position.z;
+            for (const animatable of group.animatables) {
+                animatable.loopAnimation = false;
+            }
+            Run(scene, 1);
+
+            // A playback that no longer loops is taken to the end of its range, cycles already passed and all.
+            expect(rig.character.position.z - before).toBeCloseTo(((CycleFrames - 30.24) / CycleFrames) * Speed, 5);
+        });
+
+        it("applies nothing for a playback that ended while it was parked at a weight of zero", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            group.start(false);
+            Run(scene, 20);
+            const before = rig.character.position.z;
+            group.weight = 0;
+            // Parked for longer than the playback lasts: it ends unseen, and none of it is the character's.
+            Run(scene, 80);
+            group.weight = 1;
+            Run(scene, 1);
+
+            expect(group.isStarted).toBe(false);
+            expect(rig.character.position.z - before).toBeCloseTo(0, 6);
         });
     });
 

@@ -808,19 +808,22 @@ export class RuntimeAnimation {
             this._playbackTo = to;
             let frames: number;
             if (this._host && this._host.syncRoot) {
-                // The root's folded frame over the root animatable's range, as above, plus the cycles the root has been through
+                // The frames the root has played, over the range the follower's frame is mapped from: the range the root
+                // animatable declares, which is not always the one its own clock evaluates. A root track keyed shorter
+                // than its group leaves the follower short of its end and snaps it back, and that is a jump, not a cycle.
                 const syncRoot = this._host.syncRoot;
                 const master = syncRoot.getAnimations()[0];
-                if (master) {
-                    const masterRange = master._playbackTo - master._playbackFrom;
-                    const masterCycles = masterRange !== 0 ? Math.round((master._playbackFrames - (master._currentFrame - master._playbackFrom)) / masterRange) : 0;
-                    frames = frameRange * (masterCycles + (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame));
+                const masterRange = syncRoot.toFrame - syncRoot.fromFrame;
+                if (master && masterRange !== 0) {
+                    frames = (frameRange * master._playbackFrames) / masterRange;
                 } else {
                     // A root with no runtime animation reads as frame 0: the pose snaps there and holds, and so does the progress
                     frames = this._playbackFrames;
                 }
             } else if (!returnValue) {
-                frames = currentFrame === to ? frameRange : 0;
+                // The end of the cycle the playback was in - however many it had been through before it stopped looping - or that cycle's start when it ran backwards
+                const cycles = frameRange !== 0 ? Math.floor(this._playbackFrames / frameRange) : 0;
+                frames = (currentFrame === to ? cycles + 1 : cycles) * frameRange;
             } else if (yoyoMode) {
                 // At the far end of the swing the mapped frame is exactly `to`, which the fold above lands on `from`: the same pose, so the whole range
                 frames = currentFrame === from && absoluteFrame === to ? frameRange : currentFrame - from;

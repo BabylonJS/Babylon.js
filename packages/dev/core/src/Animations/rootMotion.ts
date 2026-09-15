@@ -144,6 +144,28 @@ interface IChannelWriters {
     currentAdditive: boolean[];
 }
 
+/**
+ * The channel of a node to run a clip's motion on: the first of its position, rotation and scaling channels whose keys
+ * span more than one frame, or the first of them when none does.
+ * @param channels defines the node's channels
+ * @returns the channel and the frames its keys span
+ */
+function ClockChannel(channels: INodeChannels): { animation: Animation; span: number } {
+    let first: Nullable<Animation> = null;
+    for (const animation of [channels.position, channels.rotationQuaternion, channels.rotation, channels.scaling]) {
+        if (!animation) {
+            continue;
+        }
+        first = first ?? animation;
+        const keys = animation.getKeys();
+        const span = keys.length ? keys[keys.length - 1].frame - keys[0].frame : 0;
+        if (span > 0) {
+            return { animation, span };
+        }
+    }
+    return { animation: first!, span: 0 };
+}
+
 /** Contact candidates must come this close to the lowest one during the clip, as a share of the character's height. */
 const ContactHeightBand = 0.1;
 /** A contact counts as on the ground within this share of the character's height above its own lowest point. */
@@ -199,18 +221,26 @@ export class RootMotionClip implements IDisposable {
     public _clockNode: Nullable<TransformNode> = null;
     /** @internal The property of the clock's channel. */
     public _clockProperty = "position";
+    /** @internal The very channel of the in-place group the analysis ran on, which another of the same property must not be taken for. */
+    public _clockAnimation: Nullable<Animation> = null;
     /** @internal The runtime animation of the clock the controller followed last. */
     public _clockRuntime: Nullable<RuntimeAnimation> = null;
     /** @internal The animatable of the clock the controller followed last. */
     public _clockAnimatable: Nullable<Animatable> = null;
     /** @internal The animatable the last search for the clock found. */
     public _foundAnimatable: Nullable<Animatable> = null;
+    /** @internal The animatable the clock's playback was synchronized with last, and the runtime animation of that root. */
+    public _syncRoot: Nullable<Animatable> = null;
     /** @internal The runtime animation the clock was synchronized with last. */
     public _syncRuntime: Nullable<RuntimeAnimation> = null;
     /** @internal The progress of the clock the controller consumed last. */
     public _lastProgress: Nullable<number> = null;
     /** @internal Whether the clock has been left unevaluated at a weight of zero since the progress consumed last. */
     public _parked = false;
+    /** @internal The clock's runtime animation at the last reset, whose evaluation of then is not where the playback carries on from. */
+    public _staleRuntime: Nullable<RuntimeAnimation> = null;
+    /** @internal Its progress then. */
+    public _staleProgress: Nullable<number> = null;
     /** @internal What the mixer wrote to the clock's channel this frame. */
     public _writers: Nullable<IChannelWriters> = null;
     /** @internal The controller the clip belongs to. */
@@ -458,29 +488,40 @@ export class RootMotionClip implements IDisposable {
         this._characterNode = character;
 
         // The motion runs on the root's own animation - its frame rate, its range and at runtime its playback - rather than
-        // whichever track happens to be first in the group, which could be a morph target at another frame rate. A root
-        // the group does not animate, passed as the base of the hierarchy, runs on its first animated descendant - one
-        // with a position channel if there is one, since the mixer weighs vectors linearly.
-        let clockNode: Nullable<TransformNode> = this._channels.has(anchor) ? anchor : null;
-        if (!clockNode) {
-            let fallback: Nullable<TransformNode> = null;
+        // whichever track happens to be first in the group, which could be a morph target at another frame rate: the
+        // first of its channels whose keys span more than one frame, since a channel of a single key would clamp the
+        // analysis to that frame. A root the group does not animate, passed as the base of the hierarchy, runs on such a
+        // channel of an animated descendant: a position channel before any other, the channel the mixer weighs
+        // linearly, and the widest among those.
+        let clockNode: Nullable<TransformNode> = null;
+        let clock: Nullable<Animation> = null;
+        const anchorChannels = this._channels.get(anchor);
+        const anchorClock = anchorChannels ? ClockChannel(anchorChannels) : null;
+        if (anchorClock && anchorClock.span > 0) {
+            clockNode = anchor;
+            clock = anchorClock.animation;
+        } else {
+            // The root has nothing to run on - it is not animated at all, or only by channels of a single key - so the
+            // clip runs on a channel of the hierarchy under it, itself as the last resort.
+            let bestRank = -1;
+            let bestSpan = -1;
             for (const [node, channels] of this._channels) {
-                if (!node.isDescendantOf(anchor)) {
+                if (node !== anchor && !node.isDescendantOf(anchor)) {
                     continue;
                 }
-                if (channels.position) {
+                const candidate = ClockChannel(channels);
+                const rank = candidate.span > 0 ? (candidate.animation.targetProperty === "position" ? 2 : 1) : 0;
+                if (rank > bestRank || (rank === bestRank && candidate.span > bestSpan)) {
                     clockNode = node as TransformNode;
-                    break;
+                    clock = candidate.animation;
+                    bestRank = rank;
+                    bestSpan = candidate.span;
                 }
-                fallback = fallback ?? (node as TransformNode);
             }
-            clockNode = clockNode ?? fallback;
         }
-        if (!clockNode) {
+        if (!clockNode || !clock) {
             throw new Error(`RootMotionClip: animation group "${animationGroup.name}" animates neither the root node "${anchor.name}" nor any node under it.`);
         }
-        const clockChannels = this._channels.get(clockNode)!;
-        const clock = clockChannels.position ?? clockChannels.rotationQuaternion ?? clockChannels.rotation ?? clockChannels.scaling!;
         this._clockNode = clockNode;
         this._clockProperty = clock.targetProperty;
         // The group's range clamped to the clock's keys, the way playback clamps it: another track may run longer.
@@ -568,6 +609,13 @@ export class RootMotionClip implements IDisposable {
         }
 
         this._group = this._buildInPlaceGroup(name, !!options.cloneAnimations);
+        // The very channel of the in-place group the motion runs on - the last of that node and property, as the
+        // analysis took it - so that another channel of the same property is not followed in its place.
+        for (const targetedAnimation of this._group.targetedAnimations) {
+            if (targetedAnimation.target === this._clockNode && targetedAnimation.animation.targetProperty === this._clockProperty) {
+                this._clockAnimation = targetedAnimation.animation;
+            }
+        }
     }
 
     /**
@@ -628,7 +676,7 @@ export class RootMotionClip implements IDisposable {
             const runtimes = animatable.getAnimations();
             for (let j = 0; j < runtimes.length; j++) {
                 const runtime = runtimes[j];
-                if (runtime.animation.targetProperty === this._clockProperty && runtime.target) {
+                if (runtime.target && (this._clockAnimation ? runtime.animation === this._clockAnimation : runtime.animation.targetProperty === this._clockProperty)) {
                     this._foundAnimatable = animatable;
                     this._clockIndex = i;
                     return runtime;
@@ -646,9 +694,12 @@ export class RootMotionClip implements IDisposable {
     public _forgetPlayback(): void {
         this._clockRuntime = null;
         this._clockAnimatable = null;
+        this._syncRoot = null;
         this._syncRuntime = null;
         this._lastProgress = null;
         this._parked = false;
+        this._staleRuntime = null;
+        this._staleProgress = null;
     }
 
     /**
@@ -1464,7 +1515,12 @@ export class RootMotionController implements IDisposable {
      */
     public reset(): void {
         for (const clip of this._clips) {
+            // Reset from an animation event, after the clock wrote the step: that evaluation predates the jump, and the
+            // next one is the first to say where the playback carries on from.
+            const runtime = clip._clockRuntime;
             clip._forgetPlayback();
+            clip._staleRuntime = runtime;
+            clip._staleProgress = runtime ? runtime._evaluatedProgress : null;
         }
         this._deltaPosition.setAll(0);
         this._deltaRotation = 0;
@@ -1497,13 +1553,15 @@ export class RootMotionController implements IDisposable {
         let moved = false;
 
         for (const clip of animated ? this._clips : []) {
+            const writers = clip._writers;
             const previous = clip._clockRuntime;
             const found = clip._findClock();
             if (found !== previous) {
-                // A runtime animation belongs to one playback. The previous playback either ran to its end, in which case
-                // its last evaluation - the end of its range - is still to be consumed, weighed among the writers of this
-                // step like any other, or was stopped, and is forgotten.
-                if (previous && clip._lastProgress !== null && previous.isStopped()) {
+                // A runtime animation belongs to one playback. The previous playback's last evaluation is still to be
+                // consumed if it wrote this step - it ran to its end, or a callback stopped it after it wrote - weighed
+                // among the writers of this step like any other. One that did not write this step is forgotten: its
+                // last evaluation was consumed in the step it wrote.
+                if (previous && writers && clip._lastProgress !== null && !clip._parked && writers.current.indexOf(previous) >= 0) {
                     moved = this._accumulate(clip, previous, clip._lastProgress, previous._evaluatedProgress) || moved;
                 }
                 clip._clockRuntime = found;
@@ -1512,33 +1570,43 @@ export class RootMotionController implements IDisposable {
                 clip._lastProgress = null;
                 clip._parked = false;
             }
-            if (!found) {
+            if (!found || !writers) {
                 continue;
             }
             const animatable = clip._clockAnimatable!;
-            if (animatable.paused) {
-                // Its clock stands still too, and carries on from here when it resumes.
-                continue;
-            }
-            if (clip._writers!.current.indexOf(found) < 0) {
-                // Did not write this step - parked at a weight of zero - while its clock ran on: it starts again from
-                // wherever it resumes.
-                clip._parked = true;
+            if (writers.current.indexOf(found) < 0) {
+                // Did not write this step. Paused, its clock stands still too, and carries on from here when it resumes.
+                // Parked at a weight of zero, the scene skips it while its clock runs on: it starts again from wherever
+                // it resumes. Passed over for any other reason - by the scene's loop after a callback removed the
+                // animatable before it, or restarted after being passed over as paused - its next evaluation catches up,
+                // and the character with it.
+                if (!animatable.paused && animatable.weight === 0) {
+                    clip._parked = true;
+                }
                 continue;
             }
             if (clip._parked) {
                 clip._parked = false;
                 clip._lastProgress = null;
             }
-            const syncRuntime = animatable.syncRoot ? (animatable.syncRoot.getAnimations()[0] ?? null) : null;
-            if (syncRuntime !== clip._syncRuntime) {
-                // A change of synchronization root is a jump of the pose, not travel.
+            const syncRoot = animatable.syncRoot;
+            const syncRuntime = syncRoot ? (syncRoot.getAnimations()[0] ?? null) : null;
+            if (syncRoot !== clip._syncRoot || syncRuntime !== clip._syncRuntime) {
+                // Synchronized with another root, or no longer synchronized at all and back on its own clock: either way
+                // the pose jumps to wherever that leaves it, which is not travel.
+                clip._syncRoot = syncRoot;
                 clip._syncRuntime = syncRuntime;
                 clip._lastProgress = null;
             }
-            // The first evaluation of a playback only establishes where it began.
+            // The first evaluation of a playback only establishes where it began - unless the playback was reset since
+            // that evaluation, by a callback in this step, in which case the next one does.
             const progress = found._evaluatedProgress;
             const lastProgress = clip._lastProgress;
+            if (lastProgress === null && found === clip._staleRuntime && progress === clip._staleProgress) {
+                continue;
+            }
+            clip._staleRuntime = null;
+            clip._staleProgress = null;
             clip._lastProgress = progress;
             if (lastProgress !== null && progress !== lastProgress) {
                 moved = this._accumulate(clip, found, lastProgress, progress) || moved;
