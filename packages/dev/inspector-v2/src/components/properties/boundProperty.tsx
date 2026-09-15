@@ -198,15 +198,15 @@ export type DerivedPropertyProps<TargetT extends object, ComponentT extends Comp
 } & (
         | {
               propertyPath?: never;
-              getPropertyTarget?: never;
+              getPropertyOwner?: never;
               propertyKey?: never;
           }
         | {
               /** Property path relative to `globalThis.debugNode`, used by Copy to Clipboard. */
               propertyPath: string;
               /** Gets the object whose property is changed by `setValue`. */
-              getPropertyTarget: (target: TargetT) => object;
-              /** The key changed on the object returned by `getPropertyTarget`. */
+              getPropertyOwner: (target: TargetT) => object;
+              /** The key changed on the object returned by `getPropertyOwner`. */
               propertyKey: PropertyKey;
           }
     );
@@ -228,17 +228,17 @@ export function DerivedProperty<TargetT extends object, ComponentT extends Compo
         getValue,
         setValue,
         propertyPath,
-        getPropertyTarget,
+        getPropertyOwner,
         propertyKey,
         ...rest
     } = props;
     const value = useWatchedValue(target, getValue);
     const notifyPropertyChanged = usePropertyChangedNotifier();
     const getStoredProperty = () => {
-        if (!getPropertyTarget || propertyKey === undefined) {
+        if (!getPropertyOwner || propertyKey === undefined) {
             return undefined;
         }
-        const propertyTarget = getPropertyTarget(target);
+        const propertyTarget = getPropertyOwner(target);
         return {
             propertyTarget,
             value: Reflect.get(propertyTarget, propertyKey),

@@ -154,7 +154,7 @@ const SpriteLayerProperties: FunctionComponent<{ engine: EngineContext; layer: S
                 getValue={GetViewPositionX}
                 setValue={SetViewPositionX}
                 propertyPath="view.positionPx[0]"
-                getPropertyTarget={GetViewPosition}
+                getPropertyOwner={GetViewPosition}
                 propertyKey={0}
                 step={1}
                 unit="px"
@@ -166,7 +166,7 @@ const SpriteLayerProperties: FunctionComponent<{ engine: EngineContext; layer: S
                 getValue={GetViewPositionY}
                 setValue={SetViewPositionY}
                 propertyPath="view.positionPx[1]"
-                getPropertyTarget={GetViewPosition}
+                getPropertyOwner={GetViewPosition}
                 propertyKey={1}
                 step={1}
                 unit="px"
@@ -178,7 +178,7 @@ const SpriteLayerProperties: FunctionComponent<{ engine: EngineContext; layer: S
                 getValue={GetViewZoom}
                 setValue={SetViewZoom}
                 propertyPath="view.zoom"
-                getPropertyTarget={GetView}
+                getPropertyOwner={GetView}
                 propertyKey="zoom"
                 validator={IsNonZero}
                 step={0.1}
@@ -190,7 +190,7 @@ const SpriteLayerProperties: FunctionComponent<{ engine: EngineContext; layer: S
                 getValue={GetViewRotation}
                 setValue={SetViewRotation}
                 propertyPath="view.rotation"
-                getPropertyTarget={GetView}
+                getPropertyOwner={GetView}
                 propertyKey="rotation"
                 step={0.01}
                 unit="rad"
@@ -202,7 +202,7 @@ const SpriteLayerProperties: FunctionComponent<{ engine: EngineContext; layer: S
                 getValue={GetPivotX}
                 setValue={SetPivotX}
                 propertyPath="pivot[0]"
-                getPropertyTarget={GetPivot}
+                getPropertyOwner={GetPivot}
                 propertyKey={0}
                 min={0}
                 max={1}
@@ -215,7 +215,7 @@ const SpriteLayerProperties: FunctionComponent<{ engine: EngineContext; layer: S
                 getValue={GetPivotY}
                 setValue={SetPivotY}
                 propertyPath="pivot[1]"
-                getPropertyTarget={GetPivot}
+                getPropertyOwner={GetPivot}
                 propertyKey={1}
                 min={0}
                 max={1}

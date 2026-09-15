@@ -179,7 +179,7 @@ describe("runtime-neutral property-line wrappers", () => {
                     getValue={(value) => Math.round(value.nested.value)}
                     setValue={(value, changedValue) => (value.nested.value = changedValue)}
                     propertyPath="nested.value"
-                    getPropertyTarget={(value) => value.nested}
+                    getPropertyOwner={(value) => value.nested}
                     propertyKey="value"
                 />
             </PropertyContext.Provider>
