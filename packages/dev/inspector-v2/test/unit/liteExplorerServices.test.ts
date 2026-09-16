@@ -5,11 +5,14 @@ import {
     type RenderingContext,
     type SceneNode,
     type SceneContext,
+    type Sprite2DLayer,
+    type SpriteRenderer,
     type SurfaceContext,
     type TextLayer,
     type TextRenderer,
     type Texture2D,
 } from "@babylonjs/lite";
+import { tokens } from "@fluentui/react-components";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
@@ -45,6 +48,7 @@ import {
 } from "../../src/lite/engineExplorerService";
 import { MaterialExplorerServiceDefinition } from "../../src/lite/services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "../../src/lite/services/panes/scene/meshExplorerService";
+import { SpriteLayerExplorerServiceDefinition } from "../../src/lite/services/panes/scene/spriteLayerExplorerService";
 import { TextLayerExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textLayerExplorerService";
 import { TextureExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textureExplorerService";
 import { type IWatcherService, WatcherServiceIdentity } from "../../src/services/watcherService";
@@ -333,7 +337,8 @@ describe("Babylon Lite scene resource explorer services", () => {
         ]);
         expect(MaterialExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity]);
         expect(TextureExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity]);
-        expect(TextLayerExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity]);
+        expect(TextLayerExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, ExplorerServiceIdentity, WatcherServiceIdentity, EngineContextIdentity]);
+        expect(SpriteLayerExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, ExplorerServiceIdentity, WatcherServiceIdentity, EngineContextIdentity]);
     });
 
     it("contributes selectable mesh, material, and texture sections beneath scene contexts", () => {
@@ -389,7 +394,7 @@ describe("Babylon Lite scene resource explorer services", () => {
             MeshExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, selectionService, { engine } as IEngineContext),
             MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService),
             TextureExplorerServiceDefinition.factory(engineExplorerService),
-            TextLayerExplorerServiceDefinition.factory(engineExplorerService),
+            TextLayerExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, { engine } as IEngineContext),
         ];
 
         const descriptions = providers
@@ -437,41 +442,101 @@ describe("Babylon Lite scene resource explorer services", () => {
         commandDisposals.forEach((commandDispose) => expect(commandDispose).toHaveBeenCalledOnce());
     });
 
-    it("contributes stable text layer children and snapshots beneath text renderers", () => {
+    it("contributes ordered Text and Sprite layers with parity commands and clean disposal", () => {
         const providers: RenderingContextNodeProvider<RenderingContext>[] = [];
+        const providerDisposals: ReturnType<typeof vi.fn>[] = [];
         const engineExplorerService = {
             addRenderingContextNodeProvider: (provider: RenderingContextNodeProvider<RenderingContext>) => {
                 providers.push(provider);
-                return { dispose: () => {} };
+                const dispose = vi.fn();
+                providerDisposals.push(dispose);
+                return { dispose };
             },
         } as IEngineExplorerService;
-        TextLayerExplorerServiceDefinition.factory(engineExplorerService);
+        const commands: import("../../src/components/explorer/explorerModel").ExplorerCommandProvider<object>[] = [];
+        const commandDisposals: ReturnType<typeof vi.fn>[] = [];
+        const explorerService = {
+            addItemCommand: (command: import("../../src/components/explorer/explorerModel").ExplorerCommandProvider<object>) => {
+                commands.push(command);
+                const dispose = vi.fn();
+                commandDisposals.push(dispose);
+                return { dispose };
+            },
+        } as unknown as IExplorerService;
+        const watcherDisposals: ReturnType<typeof vi.fn>[] = [];
+        const watcherService = {
+            watchProperty: vi.fn(() => {
+                const dispose = vi.fn();
+                watcherDisposals.push(dispose);
+                return { dispose };
+            }),
+        } as unknown as IWatcherService;
+        const firstTextLayer = { data: { runs: [] }, order: 10, visible: true } as unknown as TextLayer;
+        const secondTextLayer = { data: { runs: [] }, order: 0, visible: true } as unknown as TextLayer;
+        const textLayers = [firstTextLayer, secondTextLayer];
+        const textRenderer = { _kind: "text-renderer", layers: textLayers } as unknown as TextRenderer;
+        const firstSpriteLayer = { count: 1, order: 5, visible: true } as unknown as Sprite2DLayer;
+        const secondSpriteLayer = { count: 2, order: -1, visible: true } as unknown as Sprite2DLayer;
+        const spriteLayers = [firstSpriteLayer, secondSpriteLayer];
+        const spriteRenderer = { _kind: "sprite-renderer", layers: spriteLayers } as unknown as SpriteRenderer;
+        const auxiliarySurface = { _renderingContexts: [textRenderer, spriteRenderer] } as unknown as SurfaceContext;
+        const engine = {
+            surfaces: [] as unknown as EngineContext["surfaces"],
+            _renderingContexts: [],
+        } as unknown as EngineContext;
+        (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine, auxiliarySurface];
+        const engineContext = { engine } as IEngineContext;
+        const registrations = [
+            TextLayerExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, engineContext),
+            SpriteLayerExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, engineContext),
+        ];
+        const textProvider = providers.find((provider) => provider.predicate(textRenderer))!;
+        const spriteProvider = providers.find((provider) => provider.predicate(spriteRenderer))!;
 
-        const firstLayer = { data: { runs: [] } } as unknown as TextLayer;
-        const secondLayer = { data: { runs: [] } } as unknown as TextLayer;
-        const layers = [firstLayer];
-        const renderer = { _kind: "text-renderer", layers } as unknown as TextRenderer;
-        const provider = providers[0];
+        expect(textProvider.predicate(textRenderer)).toBe(true);
+        expect(textProvider.predicate(spriteRenderer)).toBe(false);
+        expect(spriteProvider.predicate(spriteRenderer)).toBe(true);
+        expect(spriteProvider.predicate(textRenderer)).toBe(false);
 
-        expect(provider.predicate(renderer)).toBe(true);
-        expect(provider.predicate({ _kind: "sprite-renderer" } as RenderingContext)).toBe(false);
+        const textTree = BuildExplorerTree(textProvider.getNodes(textRenderer));
+        const spriteTree = BuildExplorerTree(spriteProvider.getNodes(spriteRenderer));
+        expect(GetNames(textTree.nodes)).toEqual(["Text Layer 1", "Text Layer 2"]);
+        expect(textTree.nodes.map((node) => node.entity)).toEqual([secondTextLayer, firstTextLayer]);
+        expect(GetNames(spriteTree.nodes)).toEqual(["Sprite Layer 1", "Sprite Layer 2"]);
+        expect(spriteTree.nodes.map((node) => node.entity)).toEqual([secondSpriteLayer, firstSpriteLayer]);
+        expect(renderToStaticMarkup(createElement(spriteTree.nodes[0].icon!, { entity: secondSpriteLayer }))).toContain(tokens.colorPalettePeachForeground2);
 
-        const firstDescriptions = provider.getNodes(renderer);
-        const firstTree = BuildExplorerTree(firstDescriptions);
-        expect(GetNames(firstTree.nodes)).toEqual(["Layer 1"]);
-        expect(firstTree.nodes[0].entity).toBe(firstLayer);
-        expect(firstTree.nodes[0].icon).toBeDefined();
+        const beforeOrderChange = textProvider.getSnapshot(textRenderer);
+        firstTextLayer.order = -2;
+        const afterOrderChange = textProvider.getSnapshot(textRenderer);
+        expect(afterOrderChange[1]).not.toBe(beforeOrderChange[1]);
+        expect(BuildExplorerTree(textProvider.getNodes(textRenderer)).nodes[0].entity).toBe(firstTextLayer);
 
-        layers.push(secondLayer);
-        const addedDescriptions = provider.getNodes(renderer);
-        expect(GetNames(BuildExplorerTree(addedDescriptions).nodes)).toEqual(["Layer 1", "Layer 2"]);
-        expect(provider.getSnapshot(renderer)).toEqual([firstLayer, secondLayer]);
+        const textVisibilityProvider = commands.find((command) => command.order === 1100 && command.predicate(firstTextLayer))!;
+        const textVisibilityCommand = textVisibilityProvider.getCommand(firstTextLayer);
+        if (textVisibilityCommand.type !== "toggle") {
+            throw new Error("Expected a Text layer visibility command.");
+        }
+        textVisibilityCommand.isEnabled = false;
+        expect(firstTextLayer.visible).toBe(false);
+        expect(textVisibilityCommand.displayName).toBe("Show Text Layer");
+        textVisibilityCommand.dispose?.();
 
-        layers.shift();
-        const removedDescriptions = provider.getNodes(renderer);
-        expect(removedDescriptions[0].id).toBe(addedDescriptions[1].id);
-        expect(GetNames(BuildExplorerTree(removedDescriptions).nodes)).toEqual(["Layer 1"]);
-        expect(provider.getSnapshot(renderer)).toEqual([secondLayer]);
+        const spriteVisibilityProvider = commands.find((command) => command.order === 1100 && command.predicate(secondSpriteLayer))!;
+        const spriteVisibilityCommand = spriteVisibilityProvider.getCommand(secondSpriteLayer);
+        if (spriteVisibilityCommand.type !== "toggle") {
+            throw new Error("Expected a Sprite layer visibility command.");
+        }
+        spriteVisibilityCommand.isEnabled = false;
+        expect(secondSpriteLayer.visible).toBe(false);
+        expect(spriteVisibilityCommand.displayName).toBe("Show Sprite Layer");
+        spriteVisibilityCommand.dispose?.();
+
+        registrations.forEach((registration) => registration?.dispose?.());
+        providerDisposals.forEach((dispose) => expect(dispose).toHaveBeenCalledOnce());
+        commandDisposals.forEach((dispose) => expect(dispose).toHaveBeenCalledOnce());
+        expect(watcherDisposals).toHaveLength(2);
+        watcherDisposals.forEach((dispose) => expect(dispose).toHaveBeenCalledOnce());
     });
 
     it("does not contribute scene resources beneath other rendering contexts", () => {

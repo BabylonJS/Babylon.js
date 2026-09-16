@@ -1,4 +1,4 @@
-﻿{
+{
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
@@ -2243,11 +2243,122 @@
             "excludeFromPerformance": true
         },
         {
-            "title": "Object ID texture - Geometry buffer renderer",
-            "playgroundId": "#SQXZ3X#0",
+            "title": "Object ID and mesh tag - Geometry buffer renderer",
+            "playgroundId": "#O0BI9B#0",
             "referenceImage": "object-id-texture-geometry-buffer.png",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Object ID and mesh tag - Geometry buffer renderer - WebGPU ForceGLSL",
+            "playgroundId": "#O0BI9B#0",
+            "referenceImage": "object-id-mesh-tag-geometry-buffer-webgpu-force-glsl.png",
+            "replace": "const forceGLSL = false;, const forceGLSL = true;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Object ID and mesh tag - FrameGraph object ID first",
+            "playgroundId": "#XKTMFR#0",
+            "referenceImage": "object-id-mesh-tag-framegraph.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Object ID and mesh tag - FrameGraph mesh tag first",
+            "playgroundId": "#XKTMFR#0",
+            "referenceImage": "object-id-mesh-tag-framegraph.png",
+            "replace": "const meshTagFirst = false;, const meshTagFirst = true;",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Object ID and mesh tag - FrameGraph object ID first - WebGPU ForceGLSL",
+            "playgroundId": "#XKTMFR#0",
+            "referenceImage": "object-id-mesh-tag-framegraph-webgpu-force-glsl.png",
+            "replace": "const forceGLSL = false;, const forceGLSL = true;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - coastal cliff scenery",
+            "playgroundId": "#BJBKKU#12",
+            "referenceImage": "mesh-blending-coastal-cliff.png",
+            "replace": "const showControls = true;, const showControls = false;, const showGpuTime = true;, const showGpuTime = false;",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "Lights", "Loaders", "Materials", "Meshes", "PBR", "PostProcesses", "Rendering", "Shaders", "Shadows", "Textures", "glTF"]
+        },
+        {
+            "title": "Mesh blending - FrameGraph alpha cutoff coverage",
+            "playgroundId": "#OGVQ6C#0",
+            "referenceImage": "mesh-blending-alpha-cutoff.png",
+            "replace": "const useFrameGraph = false;, const useFrameGraph = true;",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - viewport-edge continuation",
+            "playgroundId": "#Q46SI1#2",
+            "referenceImage": "mesh-blending-phase4-low.png",
+            "replace": "const scenario = \"all\";, const scenario = \"viewportEdges\";, BABYLON.MeshBlendQuality.Medium, BABYLON.MeshBlendQuality.Low",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - mixed radius continuation",
+            "playgroundId": "#Q46SI1#2",
+            "referenceImage": "mesh-blending-phase4-cinematic.png",
+            "replace": "const scenario = \"all\";, const scenario = \"mixedRadius\";, BABYLON.MeshBlendQuality.Medium, BABYLON.MeshBlendQuality.Cinematic",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - shadow attenuation enabled",
+            "playgroundId": "#CYSYH2#7",
+            "referenceImage": "mesh-blending-phase5-target-shadow-seam.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - shadow attenuation disabled",
+            "playgroundId": "#CYSYH2#7",
+            "referenceImage": "mesh-blending-phase5-shadow-attenuation-disabled.png",
+            "replace": "const useShadowAttenuation = true;, const useShadowAttenuation = false;",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - HDR SceneColor",
+            "playgroundId": "#GC20U3#0",
+            "referenceImage": "mesh-blending-phase5-hdr-scene-color.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - classic parity reference",
+            "playgroundId": "#O05LI8#6",
+            "referenceImage": "mesh-blending-classic-framegraph-parity.png",
+            "errorRatio": 0.1,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - FrameGraph parity",
+            "playgroundId": "#O05LI8#6",
+            "referenceImage": "mesh-blending-classic-framegraph-parity.png",
+            "replace": "const useFrameGraph = false;, const useFrameGraph = true;",
+            "errorRatio": 0.1,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - NRGE without albedo",
+            "playgroundId": "#O05LI8#6",
+            "referenceImage": "mesh-blending-classic-framegraph-parity.png",
+            "replace": "const useNRGE = false;, const useNRGE = true;",
+            "errorRatio": 0.1,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
         },
         {
             "title": "Shadows and LODs",

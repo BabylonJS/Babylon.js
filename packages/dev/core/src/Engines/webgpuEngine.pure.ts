@@ -55,6 +55,7 @@ import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import { type WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
 import { type WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 import { AlphaState } from "../States/alphaCullingState";
+import { IsIntegerTextureFormat, IsUnsignedIntegerTextureType } from "../Materials/Textures/textureHelper.functions";
 
 import { type VideoTexture } from "../Materials/Textures/videoTexture.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
@@ -101,6 +102,7 @@ const ViewDescriptorSwapChain: GPUTextureViewDescriptor = {
     arrayLayerCount: 1,
 };
 const TempColor4 = /*#__PURE__*/ new Color4();
+const TempColor4SignedInteger = /*#__PURE__*/ new Color4();
 
 /** @internal */
 interface IWebGPURenderPassWrapper {
@@ -1604,6 +1606,18 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         const hasScissor = this._scissorIsActive();
+
+        if (backBuffer && color && hasScissor && this._currentRenderTarget) {
+            const textures = this._currentRenderTarget.textures;
+            const attachments = this._mrtAttachments;
+            if (textures) {
+                for (let index = 0; index < textures.length; index++) {
+                    if ((!attachments || attachments[index] !== 0) && IsIntegerTextureFormat(textures[index].format)) {
+                        throw new Error("WebGPUEngine.clear: scissored clears of integer color attachments are not supported");
+                    }
+                }
+            }
+        }
 
         // We need to recreate the render pass so that the new parameters for clear color / depth / stencil are taken into account
         if (this._currentRenderTarget) {
@@ -3259,11 +3273,16 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         const clearColorForIntegerRt = TempColor4;
+        const clearColorForSignedIntegerRt = TempColor4SignedInteger;
         if (clearColor) {
             clearColorForIntegerRt.r = clearColor.r * 255;
             clearColorForIntegerRt.g = clearColor.g * 255;
             clearColorForIntegerRt.b = clearColor.b * 255;
             clearColorForIntegerRt.a = clearColor.a * 255;
+            clearColorForSignedIntegerRt.r = Math.round(clearColor.r);
+            clearColorForSignedIntegerRt.g = Math.round(clearColor.g);
+            clearColorForSignedIntegerRt.b = Math.round(clearColor.b);
+            clearColorForSignedIntegerRt.a = Math.round(clearColor.a);
         }
 
         const mustClearColor = setClearStates && clearColor;
@@ -3297,7 +3316,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         format: gpuMRTWrapper.format,
                         baseArrayLayer: 0,
                     };
-                    const isRtInteger = mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
+                    const isRtInteger = IsIntegerTextureFormat(mrtTexture.format);
+                    const isRtUnsignedInteger = IsUnsignedIntegerTextureType(mrtTexture.type);
 
                     const colorTextureView = this._cacheTextureViews.getView(gpuMRTTexture, viewDescriptor);
                     const colorMSAATextureView = gpuMSAATexture ? this._cacheTextureViews.getView(gpuMSAATexture, msaaViewDescriptor) : undefined;
@@ -3306,7 +3326,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture && !rtWrapper.disableAutomaticMSAAResolve && rtWrapper.resolveMSAAColors ? colorTextureView : undefined,
                         depthSlice,
-                        clearValue: index !== 0 && mustClearColor ? (isRtInteger ? clearColorForIntegerRt : clearColor) : undefined,
+                        clearValue:
+                            index !== 0 && mustClearColor ? (isRtInteger ? (isRtUnsignedInteger ? clearColorForIntegerRt : clearColorForSignedIntegerRt) : clearColor) : undefined,
                         loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                         storeOp: WebGPUConstants.StoreOp.Store,
                     });
@@ -3334,13 +3355,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                 const colorMSAATextureView = gpuMSAATexture
                     ? this._cacheTextureViews.getView(gpuMSAATexture, this._rttRenderPassWrapper.colorAttachmentViewDescriptor!)
                     : undefined;
-                const isRtInteger = internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
+                const isRtInteger = IsIntegerTextureFormat(internalTexture.format);
+                const isRtUnsignedInteger = IsUnsignedIntegerTextureType(internalTexture.type);
 
                 colorAttachments.push({
                     view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                     resolveTarget: gpuMSAATexture && !rtWrapper.disableAutomaticMSAAResolve && rtWrapper.resolveMSAAColors ? colorTextureView : undefined,
                     depthSlice,
-                    clearValue: mustClearColor ? (isRtInteger ? clearColorForIntegerRt : clearColor) : undefined,
+                    clearValue: mustClearColor ? (isRtInteger ? (isRtUnsignedInteger ? clearColorForIntegerRt : clearColorForSignedIntegerRt) : clearColor) : undefined,
                     loadOp: mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                     storeOp: WebGPUConstants.StoreOp.Store,
                 });

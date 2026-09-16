@@ -8,6 +8,7 @@ import {
     type Mesh,
     type RenderingContext,
     type SceneContext,
+    type Sprite2DLayer,
     type SpriteRenderer,
     type SurfaceContext,
     type TextLayer,
@@ -30,12 +31,13 @@ vi.hoisted(() => {
 import { Observable } from "core/Misc/observable";
 import { type IReactContextService, type ReactContextHandle } from "shared-ui-components/modularTool/services/reactContextService";
 import { type ISettingsStore, type SettingDescriptor } from "shared-ui-components/modularTool/services/settingsStore";
-import { BoundProperty } from "../../src/components/properties/boundProperty";
+import { BoundProperty, ComputedProperty, DerivedProperty } from "../../src/components/properties/boundProperty";
 import { WatcherContext } from "../../src/contexts/watcherContext";
 import { EngineContextIdentity, type IEngineContext } from "../../src/lite/engineContext";
 import { EnginePropertiesServiceDefinition } from "../../src/lite/services/panes/properties/enginePropertiesService";
 import { MaterialPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/materialPropertiesService";
 import { RenderingContextPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/renderingContextPropertiesService";
+import { SpriteLayerPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/spriteLayerPropertiesService";
 import { TextLayerPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/textLayerPropertiesService";
 import { TexturePropertiesServiceDefinition } from "../../src/lite/services/panes/properties/texturePropertiesService";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../src/services/panes/properties/propertiesService";
@@ -106,7 +108,27 @@ describe("Babylon Lite properties services", () => {
             visible: true,
         } as unknown as TextLayer;
         const textRenderer = { _kind: "text-renderer", layers: [textLayer] } as unknown as TextRenderer;
-        const spriteRenderer = { _kind: "sprite-renderer", layers: [] } as unknown as SpriteRenderer;
+        const spriteLayer = {
+            atlas: {
+                frames: [{}, {}],
+                textureSizePx: [16, 8],
+                premultipliedAlpha: false,
+            },
+            depth: "none",
+            blendMode: "alpha",
+            count: 2,
+            opacity: 0.75,
+            visible: true,
+            order: 5,
+            view: {
+                positionPx: [10, 20],
+                zoom: 1,
+                rotation: 0,
+            },
+            pivot: [0.5, 0.5],
+            layerZ: 0.5,
+        } as unknown as Sprite2DLayer;
+        const spriteRenderer = { _kind: "sprite-renderer", layers: [spriteLayer] } as unknown as SpriteRenderer;
         const auxiliarySurface = {
             canvas: { width: 320, height: 200 },
             format: "bgra8unorm",
@@ -159,6 +181,7 @@ describe("Babylon Lite properties services", () => {
             MaterialPropertiesServiceDefinition.factory(propertiesService),
             TexturePropertiesServiceDefinition.factory(propertiesService),
             TextLayerPropertiesServiceDefinition.factory(propertiesService, engineContext),
+            SpriteLayerPropertiesServiceDefinition.factory(propertiesService, engineContext),
         ];
 
         expect(EnginePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
@@ -166,7 +189,8 @@ describe("Babylon Lite properties services", () => {
         expect(MaterialPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity]);
         expect(TexturePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity]);
         expect(TextLayerPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
-        expect(registrations.size).toBe(8);
+        expect(SpriteLayerPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
+        expect(registrations.size).toBe(9);
 
         expect(registrations.get("Babylon Lite Engine Properties")?.predicate(engine)).toBe(true);
         expect(registrations.get("Babylon Lite Engine Properties")?.predicate(auxiliarySurface)).toBe(false);
@@ -178,6 +202,7 @@ describe("Babylon Lite properties services", () => {
         expect(registrations.get("Babylon Lite Material Properties")?.predicate(material)).toBe(true);
         expect(registrations.get("Babylon Lite Texture Properties")?.predicate(texture)).toBe(true);
         expect(registrations.get("Babylon Lite Text Layer Properties")?.predicate(textLayer)).toBe(true);
+        expect(registrations.get("Babylon Lite Sprite Layer Properties")?.predicate(spriteLayer)).toBe(true);
 
         const sceneContent = registrations.get("Babylon Lite Scene Properties")?.content[0];
         const sceneElement = sceneContent?.component({ context: scene });
@@ -208,9 +233,125 @@ describe("Babylon Lite properties services", () => {
         const boundProperties = Children.toArray(textLayerProperties.props.children).filter(
             (child): child is ReactElement<{ propertyKey: string; target: object; propertyPath?: string }> => isValidElement(child) && child.type === BoundProperty
         );
-        expect(boundProperties.map((property) => property.props.propertyKey)).toEqual(["visible", "x", "y", "rotationRad", "scale", "order", "opacity", "coverageGamma"]);
-        expect(boundProperties[1].props).toMatchObject({ target: textLayer.positionPx, propertyPath: "positionPx.x" });
-        expect(boundProperties[6].props).toMatchObject({ target: textLayer, min: 0, max: 1 });
+        expect(boundProperties.map((property) => property.props.propertyKey)).toEqual(["visible", "rotationRad", "scale", "order", "opacity", "coverageGamma"]);
+        expect(boundProperties[4].props).toMatchObject({ target: textLayer, min: 0, max: 1 });
+        const textLayerChildren = Children.toArray(textLayerProperties.props.children);
+        const textLayerName = textLayerChildren.find(
+            (child): child is ReactElement<{ getValue: (target: TextLayer) => string }> => isValidElement(child) && child.type === ComputedProperty
+        );
+        expect(textLayerName?.props.getValue(textLayer)).toBe("Text Layer 1");
+        const textDerivedProperties = textLayerChildren.filter(
+            (
+                child
+            ): child is ReactElement<{
+                getValue: (target: TextLayer) => number;
+                setValue: (target: TextLayer, value: number) => void;
+                propertyPath: string;
+                getPropertyOwner: (target: TextLayer) => object;
+                propertyKey: PropertyKey;
+            }> => isValidElement(child) && child.type === DerivedProperty
+        );
+        expect(textDerivedProperties).toHaveLength(2);
+        expect(textDerivedProperties.map((property) => property.props.propertyPath)).toEqual(["positionPx.x", "positionPx.y"]);
+
+        const spriteLayerContent = registrations.get("Babylon Lite Sprite Layer Properties")?.content[0];
+        const spriteLayerElement = spriteLayerContent?.component({ context: spriteLayer });
+        if (!isValidElement<{ layer: Sprite2DLayer }>(spriteLayerElement) || typeof spriteLayerElement.type !== "function") {
+            throw new Error("Expected the sprite layer property provider to render a function component.");
+        }
+        const spriteLayerProperties = (spriteLayerElement.type as FunctionComponent<{ layer: Sprite2DLayer }>)(spriteLayerElement.props);
+        if (!isValidElement<{ children?: ReactNode }>(spriteLayerProperties)) {
+            throw new Error("Expected the sprite layer properties component to render property lines.");
+        }
+        const spriteBoundProperties = Children.toArray(spriteLayerProperties.props.children).filter(
+            (child): child is ReactElement<{ propertyKey: string | number; target: object; propertyPath?: string }> => isValidElement(child) && child.type === BoundProperty
+        );
+        expect(spriteBoundProperties.map((property) => property.props.propertyKey)).toEqual(["visible", "order", "opacity"]);
+        const spriteLayerChildren = Children.toArray(spriteLayerProperties.props.children);
+        const spriteLayerName = spriteLayerChildren.find(
+            (child): child is ReactElement<{ getValue: (target: Sprite2DLayer) => string }> => isValidElement(child) && child.type === ComputedProperty
+        );
+        expect(spriteLayerName?.props.getValue(spriteLayer)).toBe("Sprite Layer 1");
+        const sharedSpriteRenderer = { _kind: "sprite-renderer", layers: [spriteLayer] } as unknown as SpriteRenderer;
+        (engine._renderingContexts as RenderingContext[]).push(sharedSpriteRenderer);
+        expect(spriteLayerName?.props.getValue(spriteLayer)).toBe("Sprite Layer");
+        (engine._renderingContexts as RenderingContext[]).pop();
+        const spriteDerivedProperties = spriteLayerChildren.filter(
+            (
+                child
+            ): child is ReactElement<{
+                getValue: (target: Sprite2DLayer) => number;
+                setValue: (target: Sprite2DLayer, value: number) => void;
+                validator?: (value: number) => boolean;
+            }> => isValidElement(child) && child.type === DerivedProperty
+        );
+        expect(spriteDerivedProperties).toHaveLength(6);
+        expect(spriteDerivedProperties[2].props.validator?.(0)).toBe(false);
+        expect(spriteDerivedProperties[2].props.validator?.(-1)).toBe(true);
+
+        const settingsStore = new TestSettingsStore();
+        const watcher = MakeWatcherServiceDefinitions({ defaultSettings: { mode: "manual" } }).watcherServiceDefinition.factory(settingsStore, new TestReactContextService());
+        const writeBackContainer = document.createElement("div");
+        document.body.appendChild(writeBackContainer);
+        const writeBackRoot = createRoot(writeBackContainer);
+        act(() =>
+            writeBackRoot.render(
+                <FluentProvider theme={webLightTheme}>
+                    <WatcherContext.Provider value={watcher}>
+                        {textDerivedProperties[0]}
+                        {spriteDerivedProperties[0]}
+                        {spriteDerivedProperties[4]}
+                    </WatcherContext.Provider>
+                </FluentProvider>
+            )
+        );
+        const inputs = writeBackContainer.querySelectorAll("input");
+        expect([...inputs].map((input) => input.value)).toEqual(["10", "10", "0.5"]);
+        const originalTextPosition = textLayer.positionPx;
+        const originalView = spriteLayer.view;
+        const originalPivot = spriteLayer.pivot;
+        textLayer.positionPx = { x: 25, y: 35 };
+        spriteLayer.view = {
+            positionPx: [30, 40],
+            zoom: 2,
+            rotation: 1,
+        };
+        spriteLayer.pivot = [0.25, 0.75];
+        act(() => watcher.refresh());
+        expect([...inputs].map((input) => input.value)).toEqual(["25", "30", "0.25"]);
+        const setInputValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+        if (!setInputValue) {
+            throw new Error("Expected the native input value setter.");
+        }
+        act(() => {
+            inputs[0].focus();
+            setInputValue.call(inputs[0], "42");
+            inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        act(() => {
+            inputs[0].blur();
+            inputs[1].focus();
+            setInputValue.call(inputs[1], "48");
+            inputs[1].dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        act(() => {
+            inputs[1].blur();
+            inputs[2].focus();
+            setInputValue.call(inputs[2], "0.4");
+            inputs[2].dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        act(() => {
+            inputs[2].blur();
+        });
+        expect(textLayer.positionPx.x).toBe(42);
+        expect(spriteLayer.view.positionPx[0]).toBe(48);
+        expect(spriteLayer.pivot[0]).toBe(0.4);
+        expect(originalTextPosition.x).toBe(10);
+        expect(originalView.positionPx[0]).toBe(10);
+        expect(originalPivot[0]).toBe(0.5);
+        act(() => writeBackRoot.unmount());
+        writeBackContainer.remove();
+        watcher.dispose?.();
 
         const unregisteredScene = { ...scene } as RenderingContext;
         const legacyUtilityLayer = { _kind: "utility-layer" } as RenderingContext;
@@ -220,9 +361,10 @@ describe("Babylon Lite properties services", () => {
         expect(registrations.get("Babylon Lite Material Properties")?.predicate({ name: "Not a material" })).toBe(false);
         expect(registrations.get("Babylon Lite Texture Properties")?.predicate({ width: 16, height: 8 })).toBe(false);
         expect(registrations.get("Babylon Lite Text Layer Properties")?.predicate({ ...textLayer })).toBe(false);
+        expect(registrations.get("Babylon Lite Sprite Layer Properties")?.predicate({ ...spriteLayer })).toBe(false);
 
         services.forEach((service) => service?.dispose?.());
-        expect(disposals).toHaveLength(8);
+        expect(disposals).toHaveLength(9);
         disposals.forEach((dispose) => expect(dispose).toHaveBeenCalledOnce());
     });
 
@@ -246,6 +388,7 @@ describe("Babylon Lite properties services", () => {
         ];
         const textLayer = {
             data: { runs: textLayerRuns },
+            positionPx: { x: 0, y: 0 },
         } as unknown as TextLayer;
         const auxiliarySurface = {
             canvas: { width: 320, height: 200 },
@@ -318,7 +461,7 @@ describe("Babylon Lite properties services", () => {
         expect(GetNormalizedText(container)).toContain("RunCount1");
         expect(GetNormalizedText(container)).toContain("GlyphCount2");
 
-        surfaces.push({} as SurfaceContext);
+        surfaces.push({ _renderingContexts: [] } as unknown as SurfaceContext);
         auxiliarySurface.canvas.width = 640;
         sceneMeshes.push({} as Mesh);
         rendererLayers.push({} as TextLayer);
@@ -333,7 +476,7 @@ describe("Babylon Lite properties services", () => {
         expect(GetNormalizedText(container)).toContain("GlyphCount5");
 
         act(() => settingsStore.writeSetting(watcherSettingsDescriptor, { mode: "polling", interval: 100 }));
-        surfaces.push({} as SurfaceContext);
+        surfaces.push({ _renderingContexts: [] } as unknown as SurfaceContext);
         auxiliarySurface.canvas.width = 800;
         sceneMeshes.push({} as Mesh);
         rendererLayers.push({} as TextLayer);

@@ -12,6 +12,7 @@ export * from "./trailMesh.pure";
 export * from "./instancedMesh.pure";
 export * from "./linesMesh.pure";
 export * from "./mesh.pure";
+export * from "./meshBlendingTag";
 export * from "./mesh.vertexData";
 export * from "./meshBuilder.pure";
 export * from "./meshSimplification";

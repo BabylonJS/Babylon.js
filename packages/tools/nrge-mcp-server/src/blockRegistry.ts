@@ -16,7 +16,7 @@
  *   TextureNormalizedViewDepth             – geometry normalised depth in view-space
  *   TextureScreenDepth                     – geometry depth in screen-space
  *   TextureViewNormal                      – geometry normals in view-space
- *   TextureWorldNormal                     – geometry normals in world-space
+ *   TextureWorldNormal                     – geometry normals in world-space, encoded in [0, 1]
  *   TextureAlbedo                          – geometry albedo (base-colour) buffer
  *   TextureReflectivity                    – geometry reflectivity buffer
  *   TextureLocalPosition                   – geometry positions in local-space
@@ -26,6 +26,7 @@
  *   TextureIrradiance                      – irradiance buffer
  *   TextureAlbedoSqrt                      – sqrt-encoded albedo buffer
  *   TextureObjectId                        – 24-bit RGBA object ID buffer
+ *   TextureMeshBlendTag                    – packed R8UI mesh-blending tag buffer
  *
  * Non-texture types:
  *   Camera       – a Babylon.js Camera object (provided by an InputBlock)
@@ -258,6 +259,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             { name: "geomVelocity", type: "TextureVelocity" },
             { name: "geomLinearVelocity", type: "TextureLinearVelocity" },
             { name: "geomObjectId", type: "TextureObjectId" },
+            { name: "geomMeshBlendTag", type: "TextureMeshBlendTag" },
         ],
         properties: {
             doNotChangeAspectRatio: "boolean – do not change aspect ratio (default: true) — additionalConstructionParameters[0]",
@@ -711,6 +713,38 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         properties: {
             ridge: "number – ridge curvature strength (default: 1)",
             valley: "number – valley curvature strength (default: 1)",
+        },
+    },
+
+    NodeRenderGraphMeshBlendingPostProcessBlock: {
+        className: "NodeRenderGraphMeshBlendingPostProcessBlock",
+        category: "PostProcess",
+        description:
+            "Blends source colors across seams between different nonzero mesh groups using packed R8UI mesh tags and depth. Optional linear geometry albedo enables shadow estimation. Low quality interpolates in sRGB; Medium and above use OKLab.",
+        inputs: [
+            { name: "source", type: "AutoDetect" },
+            { name: "target", type: "AutoDetect", isOptional: true },
+            { name: "camera", type: "Camera" },
+            { name: "geomDepth", type: "AutoDetect" },
+            { name: "geomAlbedo", type: "TextureAlbedo", isOptional: true },
+            { name: "geomMeshBlendTag", type: "TextureMeshBlendTag" },
+            { name: "dependencies", type: "AutoDetect", isOptional: true },
+        ],
+        outputs: [{ name: "output", type: "BasedOnInput" }],
+        properties: {
+            quality:
+                "number – compile-time quality variant (0=Low, 1=Medium, 2=High, 3=Cinematic; default: 1). High and Cinematic enable close-neighbor fallback, tiny-object protection, and secondary-target blending.",
+            smallWorldRadius: "number – small-class authored world radius (default: 0.06)",
+            smallMinimumProjectedRadius: "number – small-class minimum physical-pixel radius (default: 1.5)",
+            mediumWorldRadius: "number – medium-class authored world radius (default: 0.1)",
+            mediumMinimumProjectedRadius: "number – medium-class minimum physical-pixel radius (default: 3)",
+            largeWorldRadius: "number – large-class authored world radius (default: 0.2)",
+            largeMinimumProjectedRadius: "number – large-class minimum physical-pixel radius (default: 3)",
+            extraLargeWorldRadius: "number – extra-large-class authored world radius (default: 0.3)",
+            extraLargeMinimumProjectedRadius: "number – extra-large-class minimum physical-pixel radius (default: 5)",
+            slopeFactor: "number – contact-slope narrowing factor; 1 disables narrowing (default: 2)",
+            debugMode:
+                "number – debug visualization (0=Off, 1=PackedTag, 2=CandidateDirectionDistance, 3=SeamFade, 4=RejectionReason, 5=StageWork, 6=Continuation, 7=TinyObject, 8=MultiTarget, 9=TargetColor, 10=ShadowAttenuation, 11=ColorInterpolation, 12=WorldPosition; default: 0)",
         },
     },
 

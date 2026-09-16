@@ -52,7 +52,7 @@ import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { _ConcatenateShader, _GetGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
-import { HasStencilAspect, IsDepthTexture } from "core/Materials/Textures/textureHelper.functions";
+import { HasStencilAspect, IsDepthTexture, IsIntegerTextureFormat, IsUnsignedIntegerTextureType } from "core/Materials/Textures/textureHelper.functions";
 import { AlphaState } from "../States/alphaCullingState";
 
 /**
@@ -113,6 +113,7 @@ export interface EngineOptions extends AbstractEngineOptions, WebGLContextAttrib
 export class ThinEngine extends AbstractEngine {
     private static _TempClearColorUint32 = /*#__PURE__*/ new Uint32Array(4);
     private static _TempClearColorInt32 = /*#__PURE__*/ new Int32Array(4);
+    private static _TempClearColorFloat32 = /*#__PURE__*/ new Float32Array(4);
 
     /** Use this array to turn off some WebGL2 features on known buggy browsers version */
     public static ExceptionList = [
@@ -190,6 +191,8 @@ export class ThinEngine extends AbstractEngine {
     public _gl: WebGL2RenderingContext;
     /** @internal */
     public _webGLVersion = 1.0;
+    /** @internal */
+    public _integerMRTAttachmentsMask = 0;
 
     /** @internal */
     public _glSRGBExtensionValues: {
@@ -954,14 +957,9 @@ export class ThinEngine extends AbstractEngine {
             let setBackBufferColor = true;
             if (this._currentRenderTarget) {
                 const textureFormat = this._currentRenderTarget.texture?.format;
-                if (
-                    textureFormat === Constants.TEXTUREFORMAT_RED_INTEGER ||
-                    textureFormat === Constants.TEXTUREFORMAT_RG_INTEGER ||
-                    textureFormat === Constants.TEXTUREFORMAT_RGB_INTEGER ||
-                    textureFormat === Constants.TEXTUREFORMAT_RGBA_INTEGER
-                ) {
+                if (textureFormat !== undefined && IsIntegerTextureFormat(textureFormat)) {
                     const textureType = this._currentRenderTarget.texture?.type;
-                    if (textureType === Constants.TEXTURETYPE_UNSIGNED_INTEGER || textureType === Constants.TEXTURETYPE_UNSIGNED_SHORT) {
+                    if (textureType !== undefined && IsUnsignedIntegerTextureType(textureType)) {
                         ThinEngine._TempClearColorUint32[0] = color.r * 255;
                         ThinEngine._TempClearColorUint32[1] = color.g * 255;
                         ThinEngine._TempClearColorUint32[2] = color.b * 255;
@@ -999,6 +997,38 @@ export class ThinEngine extends AbstractEngine {
             mode |= this._gl.STENCIL_BUFFER_BIT;
         }
         this._gl.clear(mode);
+    }
+
+    /**
+     * Clears one color attachment using the operation required by its texture format.
+     * @param attachmentIndex The color attachment index.
+     * @param color The clear value.
+     * @param format The texture format.
+     * @param type The texture type.
+     * @internal
+     */
+    public _clearColorAttachment(attachmentIndex: number, color: IColor4Like, format: number, type: number): void {
+        if (IsIntegerTextureFormat(format)) {
+            const unsigned = IsUnsignedIntegerTextureType(type);
+            const values = unsigned ? ThinEngine._TempClearColorUint32 : ThinEngine._TempClearColorInt32;
+
+            values[0] = color.r;
+            values[1] = color.g;
+            values[2] = color.b;
+            values[3] = color.a;
+            if (unsigned) {
+                this._gl.clearBufferuiv(this._gl.COLOR, attachmentIndex, values as Uint32Array);
+            } else {
+                this._gl.clearBufferiv(this._gl.COLOR, attachmentIndex, values as Int32Array);
+            }
+            return;
+        }
+
+        ThinEngine._TempClearColorFloat32[0] = color.r;
+        ThinEngine._TempClearColorFloat32[1] = color.g;
+        ThinEngine._TempClearColorFloat32[2] = color.b;
+        ThinEngine._TempClearColorFloat32[3] = color.a;
+        this._gl.clearBufferfv(this._gl.COLOR, attachmentIndex, ThinEngine._TempClearColorFloat32);
     }
 
     /**
@@ -1059,6 +1089,7 @@ export class ThinEngine extends AbstractEngine {
             this._resolveAndGenerateMipMapsFramebuffer(this._currentRenderTarget);
         }
         this._currentRenderTarget = rtWrapper;
+        this._integerMRTAttachmentsMask = !rtWrapper.isMulti && rtWrapper.texture && IsIntegerTextureFormat(rtWrapper.texture.format) ? 1 : 0;
         this._bindUnboundFramebuffer(webglRtWrapper._framebuffer);
 
         const gl = this._gl;
@@ -1222,6 +1253,7 @@ export class ThinEngine extends AbstractEngine {
         const webglRtWrapper = texture as WebGLRenderTargetWrapper;
 
         this._currentRenderTarget = null;
+        this._integerMRTAttachmentsMask = 0;
         this._resolveAndGenerateMipMapsFramebuffer(texture, disableGenerateMipMaps);
 
         if (onBeforeUnbind) {
@@ -2745,19 +2777,27 @@ export class ThinEngine extends AbstractEngine {
 
     // States
 
+    /** @internal */
+    public _applyColorWriteState(): void {
+        if (this._colorWriteChanged) {
+            this._colorWriteChanged = false;
+            const enable = this._colorWrite;
+            this._gl.colorMask(enable, enable, enable, enable);
+        }
+    }
+
     /**
      * Apply all cached states (depth, culling, stencil and alpha)
      */
     public applyStates() {
         this._depthCullingState.apply(this._gl);
         this._stencilStateComposer.apply(this._gl);
-        this._alphaState.apply(this._gl, this._currentRenderTarget && this._currentRenderTarget.textures ? this._currentRenderTarget.textures!.length : 1);
-
-        if (this._colorWriteChanged) {
-            this._colorWriteChanged = false;
-            const enable = this._colorWrite;
-            this._gl.colorMask(enable, enable, enable, enable);
-        }
+        this._alphaState.apply(
+            this._gl,
+            this._currentRenderTarget && this._currentRenderTarget.textures ? this._currentRenderTarget.textures.length : 1,
+            this._integerMRTAttachmentsMask
+        );
+        this._applyColorWriteState();
     }
 
     // Textures

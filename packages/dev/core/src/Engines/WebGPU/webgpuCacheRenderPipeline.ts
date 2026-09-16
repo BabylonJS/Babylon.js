@@ -1108,7 +1108,8 @@ export abstract class WebGPUCacheRenderPipeline {
                     const alphaBlend = this._getAphaBlendState(i < this._numAlphaBlendTargetsEnabled ? i : 0);
                     const colorBlend = this._getColorBlendState(i < this._numAlphaBlendTargetsEnabled ? i : 0);
 
-                    if (alphaBlend && colorBlend) {
+                    const isIntegerFormat = format.endsWith("uint") || format.endsWith("sint");
+                    if (!isIntegerFormat && alphaBlend && colorBlend) {
                         descr.blend = {
                             alpha: alphaBlend,
                             color: colorBlend,
@@ -1128,7 +1129,9 @@ export abstract class WebGPUCacheRenderPipeline {
                 const alphaBlend = this._getAphaBlendState(0);
                 const colorBlend = this._getColorBlendState(0);
 
-                if (alphaBlend && colorBlend) {
+                const format = this._webgpuColorFormat[0];
+                const isIntegerFormat = format.endsWith("uint") || format.endsWith("sint");
+                if (!isIntegerFormat && alphaBlend && colorBlend) {
                     descr.blend = {
                         alpha: alphaBlend,
                         color: colorBlend,

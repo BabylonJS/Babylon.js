@@ -18,6 +18,7 @@
         "FrameGraph/Node/Blocks/PostProcesses/fxaaPostProcessBlock.ts": ["top-level-call"],
         "FrameGraph/Node/Blocks/PostProcesses/grainPostProcessBlock.ts": ["top-level-call"],
         "FrameGraph/Node/Blocks/PostProcesses/imageProcessingPostProcessBlock.ts": ["top-level-call"],
+        "FrameGraph/Node/Blocks/PostProcesses/meshBlendingPostProcessBlock.ts": ["top-level-call"],
         "FrameGraph/Node/Blocks/PostProcesses/motionBlurPostProcessBlock.ts": ["top-level-call"],
         "FrameGraph/Node/Blocks/PostProcesses/passPostProcessBlock.ts": ["top-level-call"],
         "FrameGraph/Node/Blocks/PostProcesses/screenSpaceCurvaturePostProcessBlock.ts": ["top-level-call"],
