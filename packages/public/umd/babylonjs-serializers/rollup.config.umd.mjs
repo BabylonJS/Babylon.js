@@ -24,4 +24,5 @@ export default commonUMDRollupConfiguration({
     overrideFilename: (pathData) =>
         pathData.chunk.name === "serializers" ? `babylonjs.serializers${production ? ".min" : ""}.js` : `babylon.${pathData.chunk.name}Serializer${production ? ".min" : ""}.js`,
     minToMax: true,
+    es5EntryPoint: "serializers",
 });

@@ -16,7 +16,7 @@ import { type SubMesh } from "core/Meshes/subMesh";
 import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { _ShaderImportLoader } from "core/Misc/shaderImportLoader";
 
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
@@ -155,7 +155,10 @@ export class LavaMaterial extends PushMaterial {
     public accessor maxSimultaneousLights: number;
 
     private _scaledDiffuse = new Color3();
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new _ShaderImportLoader(
+        () => [import("./lava.vertex"), import("./lava.fragment")],
+        () => [import("./wgsl/lava.vertex"), import("./wgsl/lava.fragment")]
+    );
 
     /**
      * Instantiates a Lava Material in the given scene
@@ -337,17 +340,7 @@ export class LavaMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights },
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("./wgsl/lava.vertex"), import("./wgsl/lava.fragment")]);
-                                  } else {
-                                      await Promise.all([import("./lava.vertex"), import("./lava.fragment")]);
-                                  }
-
-                                  this._shadersLoaded = true;
-                              },
+                        extraInitializationsAsync: LavaMaterial._ShaderLoader.getLoadCallback(this._shaderLanguage),
                     },
                     engine
                 ),

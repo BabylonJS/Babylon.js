@@ -835,7 +835,7 @@ export class Path3D {
     private _getLastNonNullVector(index: number): Vector3 {
         let i = 1;
         let nLVector: Vector3 = this._curve[index].subtract(this._curve[index - i]);
-        while (nLVector.length() === 0 && index > i + 1) {
+        while (nLVector.length() === 0 && index > i) {
             i++;
             nLVector = this._curve[index].subtract(this._curve[index - i]);
         }

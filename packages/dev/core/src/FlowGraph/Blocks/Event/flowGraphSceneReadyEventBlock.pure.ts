@@ -2,9 +2,15 @@
 
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import { type FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection.pure";
+import { RichTypeString } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import { RegisterClass } from "../../../Misc/typeStore";
+
+/** Event source key used to build this block's event reference. */
+const EventKey = "sceneReady";
+
 /**
  * Block that triggers when a scene is ready.
  */
@@ -12,8 +18,29 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     public override initPriority: number = -1;
 
     public override readonly type: FlowGraphEventType = FlowGraphEventType.SceneReady;
+    /** @returns the shared scene-ready event key */
+    public override get eventKey(): string {
+        return EventKey;
+    }
+
+    /**
+     * Output: the opaque reference identifying this event source.
+     * All instances of this block share the same reference, so comparing the `event` output of two
+     * of them for equality succeeds. The reference format is owned by the host environment.
+     */
+    public readonly eventRef: FlowGraphDataConnection<string>;
+
+    constructor() {
+        super();
+        this.eventRef = this.registerDataOutput("event", RichTypeString);
+    }
+
+    public override _updateOutputs(context: FlowGraphContext): void {
+        this.eventRef.setValue(context.getEventReference(EventKey), context);
+    }
 
     public override _executeEvent(context: FlowGraphContext, _payload: any): boolean {
+        this.eventRef.setValue(context.getEventReference(EventKey), context);
         this._execute(context);
         return true;
     }

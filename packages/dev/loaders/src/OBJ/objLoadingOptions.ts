@@ -5,6 +5,12 @@ import { type Vector2 } from "core/Maths/math.vector";
  */
 export type OBJLoadingOptions = {
     /**
+     * Defines the character encoding used to decode OBJ and MTL files.
+     * Use "auto" to detect UTF-8/UTF-16 and fall back to GB18030, or provide an encoding label supported by TextDecoder.
+     * Defaults to "auto".
+     */
+    encoding?: string;
+    /**
      * Defines if UVs are optimized by default during load.
      */
     optimizeWithUV: boolean;

@@ -51,7 +51,7 @@ export function RegisterStereoscopicUniversalCamera(): void {
     }
     _Registered = true;
 
-    Node.AddNodeConstructor("StereoscopicFreeCamera", (name, scene, options) => {
+    Node.AddNodeConstructor("StereoscopicUniversalCamera", (name, scene, options) => {
         return () => new StereoscopicUniversalCamera(name, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);
     });
 }

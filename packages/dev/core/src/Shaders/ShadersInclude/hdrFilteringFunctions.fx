@@ -2,9 +2,13 @@
     #if NUM_SAMPLES > 0
 
     #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+        // Some drivers (e.g. certain Android/Adreno implementations) default fragment-shader int/uint
+        // precision to mediump, which silently corrupts the 32-bit bit manipulation below.
+        precision highp int;
+
         // https://learnopengl.com/PBR/IBL/Specular-IBL
         // Hammersley
-        float radicalInverse_VdC(uint bits) 
+        float radicalInverse_VdC(uint bits)
         {
             bits = (bits << 16u) | (bits >> 16u);
             bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
@@ -397,7 +401,7 @@
             // Compute effective dimension scaled by anisotropy for proper solid angle
             float effectiveDim = dim0 * sqrt(clampedAlphaT * clampedAlphaB);
             float omegaP = (4. * PI) / (6. * effectiveDim * effectiveDim);
-            const float noiseScale = clamp(log2(float(NUM_SAMPLES)) / 12.0f, 0.0f, 1.0f);
+            const float noiseScale = clamp(log2(float(NUM_SAMPLES)) / 12.0, 0.0, 1.0);
             float weight = 0.;
             
             #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
@@ -409,7 +413,7 @@
                 vec2 Xi = hammersley(i, NUM_SAMPLES);
                 
                 // Add noise to sample coordinates to break up sampling artifacts
-                Xi = fract(Xi + noiseInput * mix(0.5f, 0.015f, noiseScale)); // Wrap around to stay in [0,1] range
+                Xi = fract(Xi + noiseInput * mix(0.5, 0.015, noiseScale)); // Wrap around to stay in [0,1] range
 
                 // Generate anisotropic half vector using importance sampling
                 vec3 H_tangent = hemisphereImportanceSampleDggxAnisotropic(Xi, clampedAlphaT, clampedAlphaB);

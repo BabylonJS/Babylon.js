@@ -8,29 +8,30 @@ import { RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage } from "core/Engin
 
 // Minimal mock types for the pipeline cache tests
 function createMockDevice(): GPUDevice {
-    const mockPipeline = { label: "mock-pipeline" } as unknown as GPURenderPipeline;
     const asyncMockPipeline = { label: "mock-pipeline-async" } as unknown as GPURenderPipeline;
+    let pipelineId = 0;
 
     return {
-        limits: { maxVertexBufferArrayStride: 2048 },
-        createRenderPipeline: vi.fn(() => mockPipeline),
+        limits: { maxVertexBufferArrayStride: 2048, maxVertexAttributes: 16 },
+        createRenderPipeline: vi.fn(() => ({ label: `mock-pipeline-${pipelineId++}` }) as unknown as GPURenderPipeline),
         createRenderPipelineAsync: vi.fn(() => Promise.resolve(asyncMockPipeline)),
         createPipelineLayout: vi.fn(() => ({})),
         createBindGroupLayout: vi.fn(() => ({})),
     } as unknown as GPUDevice;
 }
 
-function createMockEffect(uniqueId: number): Effect {
+function createMockEffect(uniqueId: number, attributes: string[] = []): Effect {
     return {
         uniqueId,
+        getEngine: () => ({}),
         _pipelineContext: {
             stages: {
                 vertexStage: { module: {}, entryPoint: "main" },
                 fragmentStage: { module: {}, entryPoint: "main" },
             },
             shaderProcessingContext: {
-                attributeNamesFromEffect: [],
-                attributeLocationsFromEffect: [],
+                attributeNamesFromEffect: attributes,
+                attributeLocationsFromEffect: attributes.map((_, index) => index),
                 bindGroupLayoutEntries: [],
                 bindGroupEntries: [],
                 bindGroupLayoutEntryInfo: [],
@@ -40,16 +41,19 @@ function createMockEffect(uniqueId: number): Effect {
     } as unknown as Effect;
 }
 
-function createMockVertexBuffer(): VertexBuffer {
+function createMockVertexBuffer(buffer: unknown = null, effectiveByteOffset = 0, effectiveByteStride = 12): VertexBuffer {
     return {
-        getSize: () => 12,
-        byteStride: 12,
-        byteOffset: 0,
-        effectiveByteStride: 12,
-        effectiveByteOffset: 0,
-        effectiveBuffer: null,
-        hashCode: 1,
-        _validOffsetRange: true,
+        getSize: (sizeInBytes?: boolean) => (sizeInBytes ? 4 : 1),
+        getIsInstanced: () => false,
+        type: Constants.FLOAT,
+        normalized: false,
+        byteStride: effectiveByteStride,
+        byteOffset: effectiveByteOffset,
+        effectiveByteStride,
+        effectiveByteOffset,
+        effectiveBuffer: buffer ? { underlyingResource: buffer } : null,
+        hashCode: effectiveByteStride << 12,
+        _validOffsetRange: undefined,
     } as unknown as VertexBuffer;
 }
 
@@ -98,6 +102,114 @@ describe("WebGPUCacheRenderPipeline", () => {
             cache.getRenderPipeline(Constants.MATERIAL_WireFrameFillMode, effect, 1, 0);
 
             expect(device.createRenderPipeline).toHaveBeenCalledTimes(2);
+        });
+
+        it("should create a new pipeline when the vertex buffer merge structure changes", () => {
+            effect = createMockEffect(1, ["position", "normal"]);
+            const sharedBuffer = {};
+
+            cache.setBuffers(
+                {
+                    position: createMockVertexBuffer(sharedBuffer, 0, 16),
+                    normal: createMockVertexBuffer(sharedBuffer, 4, 16),
+                },
+                null,
+                null
+            );
+            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            cache.setBuffers(
+                {
+                    position: createMockVertexBuffer({}, 0, 16),
+                    normal: createMockVertexBuffer({}, 4, 16),
+                },
+                null,
+                null
+            );
+            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            expect(device.createRenderPipeline).toHaveBeenCalledTimes(2);
+        });
+
+        it("should create a new pipeline when merged vertex attribute offsets change", () => {
+            effect = createMockEffect(1, ["position", "normal"]);
+            const firstBuffer = {};
+
+            cache.setBuffers(
+                {
+                    position: createMockVertexBuffer(firstBuffer, 0, 16),
+                    normal: createMockVertexBuffer(firstBuffer, 4, 16),
+                },
+                null,
+                null
+            );
+            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            const secondBuffer = {};
+            cache.setBuffers(
+                {
+                    position: createMockVertexBuffer(secondBuffer, 4, 16),
+                    normal: createMockVertexBuffer(secondBuffer, 8, 16),
+                },
+                null,
+                null
+            );
+            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            expect(device.createRenderPipeline).toHaveBeenCalledTimes(2);
+        });
+
+        it("should reuse a pipeline when only the underlying vertex buffer changes", () => {
+            effect = createMockEffect(1, ["position", "normal"]);
+            const firstBuffer = {};
+
+            cache.setBuffers(
+                {
+                    position: createMockVertexBuffer(firstBuffer, 0, 16),
+                    normal: createMockVertexBuffer(firstBuffer, 4, 16),
+                },
+                null,
+                null
+            );
+            const firstPipeline = cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            const differentLayoutBuffer = {};
+            cache.setBuffers(
+                {
+                    position: createMockVertexBuffer(differentLayoutBuffer, 4, 16),
+                    normal: createMockVertexBuffer(differentLayoutBuffer, 8, 16),
+                },
+                null,
+                null
+            );
+            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            const secondBuffer = {};
+            cache.setBuffers(
+                {
+                    position: createMockVertexBuffer(secondBuffer, 0, 16),
+                    normal: createMockVertexBuffer(secondBuffer, 4, 16),
+                },
+                null,
+                null
+            );
+            const reusedPipeline = cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            expect(reusedPipeline).toBe(firstPipeline);
+            expect(device.createRenderPipeline).toHaveBeenCalledTimes(2);
+        });
+
+        it("should reuse a pipeline when invalid vertex offsets change", () => {
+            effect = createMockEffect(1, ["position"]);
+
+            cache.setBuffers({ position: createMockVertexBuffer({}, 16, 16) }, null, null);
+            const firstPipeline = cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            cache.setBuffers({ position: createMockVertexBuffer({}, 32, 16) }, null, null);
+            const reusedPipeline = cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            expect(reusedPipeline).toBe(firstPipeline);
+            expect(device.createRenderPipeline).toHaveBeenCalledTimes(1);
         });
 
         it("should enable alpha-to-coverage in multisampled pipelines", () => {

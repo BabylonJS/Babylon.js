@@ -722,9 +722,10 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      */
     public normalizeToRef<T extends IVector2Like>(result: T): T {
         const len = this.length();
-        if (len === 0) {
+        if (len === 0 || len === 1.0) {
             result.x = this.x;
             result.y = this.y;
+            return result;
         }
         return this.scaleToRef(1.0 / len, result);
     }
@@ -6851,7 +6852,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
         const m = this._m,
             otherM = other.m;
         for (let i = 0; i < 16; i++) {
-            m[i] = Math.min(m[i], otherM[i]);
+            m[i] = Math.max(m[i], otherM[i]);
         }
         this.markAsUpdated();
         return this;
@@ -6860,7 +6861,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
     public maximizeInPlaceFromFloats(...floats: Tuple<number, 16>): this {
         const m = this._m;
         for (let i = 0; i < 16; i++) {
-            m[i] = Math.min(m[i], floats[i]);
+            m[i] = Math.max(m[i], floats[i]);
         }
         this.markAsUpdated();
         return this;

@@ -23,7 +23,7 @@
         "@types/react-dom": "^18.0.0",
         "@typescript/ata": "^0.9.8",
         "es-module-lexer": "^1.7.0",
-        "monaco-editor": "^0.55.1",
+        "monaco-editor": "^0.56.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "uuid": "^11.0.0",

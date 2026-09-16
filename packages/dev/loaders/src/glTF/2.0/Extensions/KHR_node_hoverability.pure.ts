@@ -5,6 +5,8 @@ import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { addNewInteractivityFlowGraphMapping } from "./KHR_interactivity/declarationMapper";
 import { type INode } from "../glTFLoaderInterfaces";
 import { AddObjectAccessorToKey } from "./objectModelMapping";
+import { GetInteractivityNodeState, InitializeInteractivityNodeState, SetInteractivityNodeState } from "./KHR_interactivity/interactivityNodeState";
+import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes.pure";
 
 const NAME = "KHR_node_hoverability";
 
@@ -23,6 +25,8 @@ export class KHR_node_hoverability implements IGLTFLoaderExtension {
      * The name of this extension.
      */
     public readonly name = NAME;
+    /** Applies node state before KHR_interactivity graphs start. */
+    public readonly order = 100;
     /**
      * Defines whether this extension is enabled.
      */
@@ -40,14 +44,7 @@ export class KHR_node_hoverability implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises
     public async onReady(): Promise<void> {
-        this._loader.gltf.nodes?.forEach((node) => {
-            // default is true, so only apply if false
-            if (node.extensions?.KHR_node_hoverability && node.extensions?.KHR_node_hoverability.hoverable === false) {
-                node._babylonTransformNode?.getChildMeshes().forEach((mesh) => {
-                    mesh.pointerOverDisableMeshTesting = true;
-                });
-            }
-        });
+        InitializeInteractivityNodeState(this._loader.gltf.nodes ?? [], "hoverable", (node) => node.extensions?.KHR_node_hoverability?.hoverable);
     }
 
     public dispose() {
@@ -55,26 +52,42 @@ export class KHR_node_hoverability implements IGLTFLoaderExtension {
     }
 }
 
-let _Registered = false;
+let _RuntimeRegistered = false;
 /**
- * Registers the KHR_node_hoverability glTF loader extension.
- * Safe to call multiple times; only the first call has an effect.
+ * @internal
+ * Registers KHR_node_hoverability runtime dependencies without changing the extension registry.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function RegisterKHR_node_hoverability(): void {
-    if (_Registered) {
+export function _RegisterKHRNodeHoverabilityRuntime(): void {
+    if (_RuntimeRegistered) {
         return;
     }
-    _Registered = true;
+    _RuntimeRegistered = true;
 
     addNewInteractivityFlowGraphMapping("event/onHoverIn", NAME, {
         // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
-        blocks: [FlowGraphBlockNames.PointerOverEvent, FlowGraphBlockNames.GetVariable, FlowGraphBlockNames.IndexOf, "KHR_interactivity/FlowGraphGLTFDataProvider"],
+        blocks: [
+            FlowGraphBlockNames.PointerOverEvent,
+            FlowGraphBlockNames.GetVariable,
+            FlowGraphBlockNames.IndexOf,
+            "KHR_interactivity/FlowGraphGLTFDataProvider",
+            "KHR_interactivity/FlowGraphEventReferenceBlock",
+        ],
+        declarationSchema: {
+            inputValueSockets: {},
+            outputValueSockets: {
+                hoveredNode: "ref",
+                controllerIndex: "int",
+                event: "ref",
+            },
+        },
         configuration: {
-            stopPropagation: { name: "stopPropagation" },
             nodeIndex: {
                 name: "variable",
+                configurationType: "int",
                 toBlock: FlowGraphBlockNames.GetVariable,
+                indexSource: "assetNodes",
+                invalidUsesDefault: true,
                 dataTransformer(data) {
                     return MeshPointerOverPrefix + data;
                 },
@@ -83,10 +96,12 @@ export function RegisterKHR_node_hoverability(): void {
         outputs: {
             values: {
                 hoverNodeIndex: { name: "index", toBlock: FlowGraphBlockNames.IndexOf },
-                controllerIndex: { name: "pointerId" },
+                hoveredNode: { name: "nodeReference", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
+                controllerIndex: { name: "controllerIndex", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
+                event: { name: "value", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
             },
             flows: {
-                out: { name: "done" },
+                out: { name: "out", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
             },
         },
         interBlockConnectors: [
@@ -111,37 +126,72 @@ export function RegisterKHR_node_hoverability(): void {
                 outputBlockIndex: 0,
                 isVariable: true,
             },
+            {
+                input: "node",
+                output: "meshUnderPointer",
+                inputBlockIndex: 4,
+                outputBlockIndex: 0,
+                isVariable: true,
+            },
+            {
+                input: "controllerIndexInput",
+                output: "pointerId",
+                inputBlockIndex: 4,
+                outputBlockIndex: 0,
+                isVariable: true,
+            },
+            {
+                input: "in",
+                output: "done",
+                inputBlockIndex: 4,
+                outputBlockIndex: 0,
+            },
         ],
         extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects, context, globalGLTF) {
-            // add the glTF to the configuration of the last serialized object
-            const serializedObject = serializedObjects[serializedObjects.length - 1];
-            serializedObject.config = serializedObject.config || {};
-            serializedObject.config.glTF = globalGLTF;
             // find the listener nodeIndex value
             const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value?.[0];
-            if (nodeIndex === undefined || typeof nodeIndex !== "number") {
-                throw new Error("nodeIndex not found in configuration");
-            }
-            const variableName = MeshPointerOverPrefix + nodeIndex;
+            const validNodeIndex = typeof nodeIndex === "number" && Number.isInteger(nodeIndex) && nodeIndex >= 0 && nodeIndex < (globalGLTF?.nodes?.length ?? 0);
+            const variableName = validNodeIndex ? MeshPointerOverPrefix + nodeIndex : MeshPointerOverPrefix + "unbound";
             // find the nodeIndex value
             serializedObjects[1].config.variable = variableName;
-            context._userVariables[variableName] = {
-                className: "Mesh",
-                id: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.id,
-                uniqueId: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.uniqueId,
-            };
+            context._userVariables[variableName] = validNodeIndex
+                ? {
+                      className: "Mesh",
+                      id: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.id,
+                      uniqueId: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.uniqueId,
+                  }
+                : { type: FlowGraphTypes.Any, value: [{}] };
+            const eventKey = `${NAME}:event/onHoverIn:${nodeIndex}`;
+            serializedObjects[0].config.eventKey = eventKey;
+            serializedObjects[4].config.eventKey = eventKey;
             return serializedObjects;
         },
     });
 
     addNewInteractivityFlowGraphMapping("event/onHoverOut", NAME, {
         // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
-        blocks: [FlowGraphBlockNames.PointerOutEvent, FlowGraphBlockNames.GetVariable, FlowGraphBlockNames.IndexOf, "KHR_interactivity/FlowGraphGLTFDataProvider"],
+        blocks: [
+            FlowGraphBlockNames.PointerOutEvent,
+            FlowGraphBlockNames.GetVariable,
+            FlowGraphBlockNames.IndexOf,
+            "KHR_interactivity/FlowGraphGLTFDataProvider",
+            "KHR_interactivity/FlowGraphEventReferenceBlock",
+        ],
+        declarationSchema: {
+            inputValueSockets: {},
+            outputValueSockets: {
+                hoveredNode: "ref",
+                controllerIndex: "int",
+                event: "ref",
+            },
+        },
         configuration: {
-            stopPropagation: { name: "stopPropagation" },
             nodeIndex: {
                 name: "variable",
+                configurationType: "int",
                 toBlock: FlowGraphBlockNames.GetVariable,
+                indexSource: "assetNodes",
+                invalidUsesDefault: true,
                 dataTransformer(data) {
                     return MeshPointerOutPrefix + data;
                 },
@@ -150,10 +200,12 @@ export function RegisterKHR_node_hoverability(): void {
         outputs: {
             values: {
                 hoverNodeIndex: { name: "index", toBlock: FlowGraphBlockNames.IndexOf },
-                controllerIndex: { name: "pointerId" },
+                hoveredNode: { name: "nodeReference", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
+                controllerIndex: { name: "controllerIndex", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
+                event: { name: "value", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
             },
             flows: {
-                out: { name: "done" },
+                out: { name: "out", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
             },
         },
         interBlockConnectors: [
@@ -178,46 +230,73 @@ export function RegisterKHR_node_hoverability(): void {
                 outputBlockIndex: 0,
                 isVariable: true,
             },
+            {
+                input: "node",
+                output: "meshOutOfPointer",
+                inputBlockIndex: 4,
+                outputBlockIndex: 0,
+                isVariable: true,
+            },
+            {
+                input: "controllerIndexInput",
+                output: "pointerId",
+                inputBlockIndex: 4,
+                outputBlockIndex: 0,
+                isVariable: true,
+            },
+            {
+                input: "in",
+                output: "done",
+                inputBlockIndex: 4,
+                outputBlockIndex: 0,
+            },
         ],
         extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects, context, globalGLTF) {
-            // add the glTF to the configuration of the last serialized object
-            const serializedObject = serializedObjects[serializedObjects.length - 1];
-            serializedObject.config = serializedObject.config || {};
-            serializedObject.config.glTF = globalGLTF;
-
             const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value?.[0];
-            if (nodeIndex === undefined || typeof nodeIndex !== "number") {
-                throw new Error("nodeIndex not found in configuration");
-            }
-            const variableName = MeshPointerOutPrefix + nodeIndex;
+            const validNodeIndex = typeof nodeIndex === "number" && Number.isInteger(nodeIndex) && nodeIndex >= 0 && nodeIndex < (globalGLTF?.nodes?.length ?? 0);
+            const variableName = validNodeIndex ? MeshPointerOutPrefix + nodeIndex : MeshPointerOutPrefix + "unbound";
             // find the nodeIndex value
             serializedObjects[1].config.variable = variableName;
-            context._userVariables[variableName] = {
-                className: "Mesh",
-                id: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.id,
-                uniqueId: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.uniqueId,
-            };
+            context._userVariables[variableName] = validNodeIndex
+                ? {
+                      className: "Mesh",
+                      id: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.id,
+                      uniqueId: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.uniqueId,
+                  }
+                : { type: FlowGraphTypes.Any, value: [{}] };
+            const eventKey = `${NAME}:event/onHoverOut:${nodeIndex}`;
+            serializedObjects[0].config.eventKey = eventKey;
+            serializedObjects[4].config.eventKey = eventKey;
             return serializedObjects;
         },
     });
 
     AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_hoverability/hoverable", {
         get: (node: INode) => {
-            const tn = node._babylonTransformNode as any;
-            if (tn && tn.pointerOverDisableMeshTesting !== undefined) {
-                return tn.pointerOverDisableMeshTesting;
-            }
-            return true;
+            return GetInteractivityNodeState(node, "hoverable");
         },
         set: (value: boolean, node: INode) => {
-            node._primitiveBabylonMeshes?.forEach((mesh) => {
-                mesh.pointerOverDisableMeshTesting = !value;
-            });
+            SetInteractivityNodeState(node, "hoverable", value);
         },
         getTarget: (node: INode) => node._babylonTransformNode,
         getPropertyName: [() => "pointerOverDisableMeshTesting"],
         type: "boolean",
     });
+}
+
+let _Registered = false;
+/**
+ * Registers the KHR_node_hoverability glTF loader extension.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function RegisterKHR_node_hoverability(): void {
+    if (_Registered) {
+        return;
+    }
+    _Registered = true;
+
+    _RegisterKHRNodeHoverabilityRuntime();
 
     unregisterGLTFExtension(NAME);
 

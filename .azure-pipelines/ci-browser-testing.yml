@@ -63,8 +63,8 @@ jobs:
             inputs:
                 version: "24.x"
 
-          - script: npm install
-            displayName: "NPM install"
+          - script: npm ci
+            displayName: "npm ci"
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
@@ -89,7 +89,7 @@ jobs:
           # Only upload reports when the run failed. Path is stable so the
           # previous nightly's report is overwritten and the URL never changes.
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webkitplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webkitplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete previous nightly Webkit report"
             condition: failed()
             continueOnError: true
@@ -130,8 +130,8 @@ jobs:
             inputs:
                 version: "24.x"
 
-          - script: npm install
-            displayName: "NPM install"
+          - script: npm ci
+            displayName: "npm ci"
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
@@ -156,7 +156,7 @@ jobs:
           # Only upload reports when the run failed. Path is stable so the
           # previous nightly's report is overwritten and the URL never changes.
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/firefoxplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/firefoxplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete previous nightly Firefox report"
             condition: failed()
             continueOnError: true
@@ -201,8 +201,8 @@ jobs:
             inputs:
                 version: "24.x"
 
-          - script: npm install
-            displayName: "NPM install"
+          - script: npm ci
+            displayName: "npm ci"
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
@@ -223,7 +223,7 @@ jobs:
           # Only upload reports when the run failed. The path is stable so the
           # previous nightly's report is overwritten and the URL never changes.
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webgl2playwright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webgl2playwright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete previous nightly WebGL2 report"
             condition: failed()
             continueOnError: true
@@ -269,8 +269,8 @@ jobs:
             inputs:
                 version: "24.x"
 
-          - script: npm install
-            displayName: "NPM install"
+          - script: npm ci
+            displayName: "npm ci"
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
@@ -292,7 +292,7 @@ jobs:
           # Only upload reports when the run failed. The path is stable so the
           # previous nightly's report is overwritten and the URL never changes.
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webgpuplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/webgpuplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete previous nightly WebGPU report"
             condition: failed()
             continueOnError: true
@@ -344,9 +344,9 @@ jobs:
                 jdkSourceOption: PreInstalled
 
           - script: |
-                npm install
-                npm i google-closure-compiler
-            displayName: "NPM install"
+                npm ci
+                npm install --no-save --package-lock=false google-closure-compiler
+            displayName: "npm ci and install Closure Compiler"
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
@@ -429,8 +429,8 @@ jobs:
             inputs:
                 version: "24.x"
 
-          - script: npm install
-            displayName: "NPM install"
+          - script: npm ci
+            displayName: "npm ci"
             env:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
@@ -466,7 +466,7 @@ jobs:
           # Upload reports only when the perf run failed. Path is stable so the
           # previous weekly's report is overwritten and the URL never changes.
           - script: |
-                curl "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/perfplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
+                curl --fail-with-body --silent --show-error "$(DEPLOYMENT_SERVER)/$(DEPLOY_ENDPOINT_DELETE)?path=$(NightlyReportRoot)/perfplaywright" -X POST -H "Authorization: Bearer $(DEPLOY_TOKEN)"
             displayName: "Delete previous weekly perf report"
             condition: eq(variables['PerfTestsFailed'], 'true')
             continueOnError: true

@@ -53,8 +53,8 @@ jobs:
 
           - template: cache-steps.yml
 
-          - script: npm install
-            displayName: "npm install"
+          - script: npm ci
+            displayName: "npm ci"
             retryCountOnTaskFailure: 1
 
           - script: npm run ${{ parameters.npmScript }} -- --no-fail-fast

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { WebSocketServer } from "ws";
+import { type RawData, type WebSocket, WebSocketServer } from "ws";
 import { readFileSync } from "fs";
 import { createServer } from "https";
 import { resolve } from "path";
@@ -7,6 +7,20 @@ import { resolve } from "path";
 interface IWebSocketInfo extends WebSocket {
     _id?: number;
     _other?: IWebSocketInfo;
+}
+
+function ToMessageText(data: RawData): string {
+    // ws can deliver a single Buffer, an ArrayBuffer, or an array of Buffer fragments, depending on
+    // the binaryType and how the message was framed, so normalize all of them to text.
+    if (Array.isArray(data)) {
+        return Buffer.concat(data).toString();
+    }
+
+    if (Buffer.isBuffer(data)) {
+        return data.toString();
+    }
+
+    return Buffer.from(data).toString();
 }
 
 class Server {
@@ -31,7 +45,8 @@ class Server {
 
             this._checkClients();
 
-            this._server.on("message", (message: string) => {
+            client.on("message", (data: RawData) => {
+                const message = ToMessageText(data);
                 console.log(`Received message from client ${client._id}: ${message.substring(0, 64)}`);
 
                 if (!client._other) {
@@ -43,7 +58,7 @@ class Server {
                 client._other.send(message);
             });
 
-            this._server.on("close", (code: any, reason: any) => {
+            client.on("close", (code: number, reason: Buffer) => {
                 console.log(`Client ${client._id} disconnected: ${code} ${reason}`);
                 if (client._other) {
                     delete client._other._other;

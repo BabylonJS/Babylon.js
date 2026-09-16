@@ -20,7 +20,7 @@
         }
     },
     "affected": {
-        "defaultBase": "main"
+        "defaultBase": "master"
     },
     "analytics": false
 }

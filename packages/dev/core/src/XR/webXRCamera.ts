@@ -5,8 +5,9 @@ import { FreeCamera } from "../Cameras/freeCamera.pure";
 import { TargetCamera } from "../Cameras/targetCamera.pure";
 import { type WebXRSessionManager } from "./webXRSessionManager";
 import { Viewport } from "../Maths/math.viewport";
-import { Observable } from "../Misc/observable";
+import { Observable, type Observer } from "../Misc/observable";
 import { WebXRTrackingState } from "./webXRTypes";
+import { type Nullable } from "../types";
 
 /**
  * WebXR Camera which holds the views for the xrSession
@@ -16,6 +17,8 @@ export class WebXRCamera extends FreeCamera {
     private static _ScaleReadOnly = Vector3.One();
 
     private _firstFrame = false;
+    private _xrSessionInitObserver: Nullable<Observer<XRSession>> = null;
+    private _xrFrameObserver: Nullable<Observer<XRFrame>> = null;
     private _referenceQuaternion: Quaternion = Quaternion.Identity();
     private _referencedPosition: Vector3 = new Vector3();
     private _trackingState: WebXRTrackingState = WebXRTrackingState.NOT_TRACKING;
@@ -92,7 +95,7 @@ export class WebXRCamera extends FreeCamera {
         this.freezeProjectionMatrix();
         this._deferOnly = true;
 
-        this._xrSessionManager.onXRSessionInit.add(() => {
+        this._xrSessionInitObserver = this._xrSessionManager.onXRSessionInit.add(() => {
             this._referencedPosition.copyFromFloats(0, 0, 0);
             this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
             // first frame - camera's y position should be 0 for the correct offset
@@ -103,7 +106,7 @@ export class WebXRCamera extends FreeCamera {
 
         // Check transformation changes on each frame. Callback is added to be first so that the transformation will be
         // applied to the rest of the elements using the referenceSpace object
-        this._xrSessionManager.onXRFrameObservable.add(
+        this._xrFrameObserver = this._xrSessionManager.onXRFrameObservable.add(
             () => {
                 if (this._firstFrame) {
                     this._updateFromXRSession();
@@ -213,6 +216,10 @@ export class WebXRCamera extends FreeCamera {
 
     public override dispose() {
         this._xrSessionManager.onWorldScaleFactorChangedObservable.removeCallback(this._onWorldScaleFactorChanged);
+        this._xrSessionManager.onXRSessionInit.remove(this._xrSessionInitObserver);
+        this._xrSessionInitObserver = null;
+        this._xrSessionManager.onXRFrameObservable.remove(this._xrFrameObserver);
+        this._xrFrameObserver = null;
         super.dispose();
         this._lastXRViewerPose = undefined;
         this.onTrackingStateChanged.clear();

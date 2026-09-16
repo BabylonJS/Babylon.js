@@ -5,13 +5,14 @@ import { InternalTexture, InternalTextureSource } from "../Materials/Textures/in
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
 import { type Nullable } from "../types";
 import { WebXRLayerRenderTargetTextureProvider } from "./webXRRenderTargetTextureProvider";
+import { type WebXRLayerType, type WebXRSupportedLayerType } from "./webXRLayerWrapper";
 
 /**
  * Provides render target textures for WebGL-backed XR layers. Owns all WebGL-specific
  * framebuffer/texture wiring so the base provider can stay graphics-API-agnostic.
  * @internal
  */
-export abstract class WebXRWebGLRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
+export abstract class WebXRWebGLRenderTargetTextureProvider<LayerTypeT extends WebXRSupportedLayerType = WebXRLayerType> extends WebXRLayerRenderTargetTextureProvider<LayerTypeT> {
     private _createInternalTexture(textureSize: { width: number; height: number }, texture: WebGLTexture): InternalTexture {
         const gl = (this._engine as ThinEngine)._gl;
         if (!gl) {

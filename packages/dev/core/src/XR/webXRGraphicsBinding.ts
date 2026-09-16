@@ -3,6 +3,56 @@ import { type ThinEngine } from "../Engines/thinEngine";
 import { type WebGPUEngine } from "../Engines/webgpuEngine";
 
 /**
+ * The error shown when the active WebGPU engine cannot start an XR session.
+ * @internal
+ */
+export const WebGPUXRNotSupportedErrorMessage =
+    "WebGPU XR is unavailable in this browser or device. This experimental path requires XRGPUBinding with projection-layer support. To fall back, create a WebGL engine before creating the scene; Babylon.js cannot switch an existing scene's rendering backend.";
+
+/**
+ * The error shown when a WebGPU XR session request is rejected as unsupported.
+ * @internal
+ */
+export const WebGPUXRSessionNotSupportedErrorMessage =
+    "The WebGPU XR session request was rejected as unsupported. The session mode, WebGPU or Layers requirements, or another required feature may be unavailable. If WebGPU XR is unavailable, create a WebGL engine before creating the scene.";
+
+/**
+ * The error shown when the active WebGPU engine was not created with XR compatibility enabled.
+ * @internal
+ */
+export const WebGPUXREngineNotCompatibleErrorMessage =
+    "WebGPU XR requires a WebGPUEngine created with { xrCompatible: true }. Select an XR-capable WebGPU engine or WebGL before creating scene resources.";
+
+/**
+ * Checks whether the runtime exposes the XRGPUBinding projection path required by Babylon.js.
+ * This is an advisory shape check; session negotiation can still reject for the active device.
+ * @returns whether the required WebGPU-XR binding APIs are exposed
+ * @internal
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function IsWebGPUXRSupported(): boolean {
+    return (
+        typeof XRGPUBinding === "function" &&
+        typeof XRGPUBinding.prototype.createProjectionLayer === "function" &&
+        typeof XRGPUBinding.prototype.getViewSubImage === "function" &&
+        typeof XRGPUBinding.prototype.getPreferredColorFormat === "function" &&
+        typeof XRGPUSubImage === "function" &&
+        typeof XRGPUSubImage.prototype.getViewDescriptor === "function"
+    );
+}
+
+/**
+ * Checks whether an engine was initialized with the adapter option required for WebGPU XR.
+ * @param engine the engine to test
+ * @returns true for non-WebGPU engines or WebGPU engines created with xrCompatible enabled
+ * @internal
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function IsWebGPUXREngineCompatible(engine: AbstractEngine): boolean {
+    return !engine.isWebGPU || (engine as WebGPUEngine)._options?.xrCompatible === true;
+}
+
+/**
  * The kind of underlying native binding an {@link IWebXRGraphicsBinding} wraps.
  * @internal
  */

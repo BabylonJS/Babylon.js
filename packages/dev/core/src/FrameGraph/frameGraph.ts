@@ -42,7 +42,7 @@ export class FrameGraph implements IDisposable {
     private readonly _initAsyncPromises: Promise<unknown>[] = [];
     private _currentProcessedTask: FrameGraphTask | null = null;
     private _whenReadyAsyncCancel: Nullable<() => void> = null;
-    private _importPromise: Promise<any>;
+    private _importPromise: Promise<void>;
 
     /**
      * Name of the frame graph
@@ -111,7 +111,15 @@ export class FrameGraph implements IDisposable {
     ) {
         this._scene = scene;
         this._engine = scene.getEngine();
-        this._importPromise = this._engine.isWebGPU ? import("../Engines/WebGPU/Extensions/engine.multiRender") : import("../Engines/Extensions/engine.multiRender");
+        this._importPromise = (async () => {
+            if (this._engine.isWebGPU) {
+                const module = await import("../Engines/WebGPU/Extensions/engine.multiRender.pure");
+                module.RegisterEnginesWebGPUExtensionsEngineMultiRender();
+            } else {
+                const module = await import("../Engines/Extensions/engine.multiRender.pure");
+                module.RegisterEnginesExtensionsEngineMultiRender();
+            }
+        })();
         this.textureManager = new FrameGraphTextureManager(this._engine, debugTextures, scene);
         this._passContext = new FrameGraphContext(this._engine, this.textureManager, scene);
         this._renderContext = new FrameGraphRenderContext(this._engine, this.textureManager, scene);

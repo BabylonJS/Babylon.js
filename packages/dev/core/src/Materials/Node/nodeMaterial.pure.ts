@@ -105,6 +105,10 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
 
     /** Prepass **/
     public PREPASS = false;
+    /** Prepass color */
+    public PREPASS_COLOR = false;
+    /** Prepass color index */
+    public PREPASS_COLOR_INDEX = -1;
     /** Prepass normal */
     public PREPASS_NORMAL = false;
     /** Prepass normal index */
@@ -141,6 +145,16 @@ export class NodeMaterialDefines extends ImageProcessingDefinesMixin(NodeMateria
     public PREPASS_VELOCITY_LINEAR = false;
     /** Velocity linear index */
     public PREPASS_VELOCITY_LINEAR_INDEX = -1;
+    /** Object ID */
+    public PREPASS_OBJECT_ID = false;
+    /** Object ID index */
+    public PREPASS_OBJECT_ID_INDEX = -1;
+    /** Whether object IDs use the RED texture format */
+    public PREPASS_OBJECT_ID_R8 = false;
+    /** Packed mesh-blending tag */
+    public PREPASS_MESH_BLEND_TAG = false;
+    /** Packed mesh-blending tag index */
+    public PREPASS_MESH_BLEND_TAG_INDEX = -1;
     /** Scene MRT count */
     public SCENE_MRT_COUNT = 0;
 
@@ -1563,7 +1577,9 @@ export class NodeMaterial extends NodeMaterialBase {
     }
 
     /**
-     * Create the effect to be used as the custom effect for a particle system
+     * Create the effect to be used as the custom effect for a particle system.
+     * If the material has not been built successfully yet, the build is started when needed and the effect is only
+     * created once it completes, so the effect may not be set on the particle system when this method returns.
      * @param particleSystem Particle system to create the effect for
      * @param onCompiled defines a function to call when the effect creation is successful
      * @param onError defines a function to call when the effect creation has failed
@@ -1571,6 +1587,24 @@ export class NodeMaterial extends NodeMaterialBase {
     public createEffectForParticles(particleSystem: IParticleSystem, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
         if (this.mode !== NodeMaterialModes.Particle) {
             Logger.Log("Incompatible material mode");
+            return;
+        }
+
+        // ParticleTextureBlock loads shader includes asynchronously. Wait for the build to produce
+        // shader code instead of registering an empty fragment shader that falls back to a URL.
+        if (!this._buildWasSuccessful) {
+            const buildObserver = this.onBuildObservable.addOnce(() => {
+                this.onBuildErrorObservable.remove(errorObserver);
+                this.createEffectForParticles(particleSystem, onCompiled, onError);
+            });
+            const errorObserver = this.onBuildErrorObservable.addOnce(() => {
+                this.onBuildObservable.remove(buildObserver);
+            });
+
+            if (!this._buildIsInProgress) {
+                this.build();
+            }
+
             return;
         }
 
@@ -1885,6 +1919,8 @@ export class NodeMaterial extends NodeMaterialBase {
 
         // Matrices
         this.bindOnlyWorldMatrix(world);
+
+        MaterialHelperGeometryRendering.Bind(scene.getEngine().currentRenderPassId, effect, mesh, world, this);
 
         const mustRebind = this._mustRebind(scene, effect, subMesh, mesh.visibility);
         const sharedData = this._sharedData;

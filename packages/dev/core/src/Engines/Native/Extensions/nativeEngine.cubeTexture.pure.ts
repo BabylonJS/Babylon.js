@@ -6,6 +6,7 @@ import { CreateRadianceImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical
 import { type IWebRequest } from "../../../Misc/interfaces/iWebRequest";
 import { type Scene } from "../../../scene.pure";
 import { type Nullable } from "../../../types";
+import { SphericalPolynomial } from "../../../Maths/sphericalPolynomial.pure";
 import { Constants } from "../../constants";
 import { ThinNativeEngine } from "../../thinNativeEngine.pure";
 
@@ -117,11 +118,7 @@ export function RegisterNativeEngineCubeTexture(): void {
                     onInternalError
                 );
             }
-        } else {
-            if (!files || files.length !== 6) {
-                throw new Error("Cannot load cubemap because 6 files were not defined");
-            }
-
+        } else if (files && files.length === 6) {
             // Reorder from [+X, +Y, +Z, -X, -Y, -Z] to [+X, -X, +Y, -Y, +Z, -Z].
             const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
             // eslint-disable-next-line github/no-then
@@ -129,7 +126,15 @@ export function RegisterNativeEngineCubeTexture(): void {
                 // eslint-disable-next-line github/no-then
                 .then(async (data) => {
                     return await new Promise<void>((resolve, reject) => {
-                        this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, texture._useSRGBBuffer, resolve, reject);
+                        this._engine.loadCubeTexture(
+                            texture._hardwareTexture!.underlyingResource,
+                            data,
+                            !noMipmap,
+                            true,
+                            texture._useSRGBBuffer,
+                            () => resolve(),
+                            () => reject(new Error("Native engine failed to load the cubemap faces"))
+                        );
                     });
                 })
                 // eslint-disable-next-line github/no-then
@@ -142,10 +147,64 @@ export function RegisterNativeEngineCubeTexture(): void {
                     },
                     (error) => {
                         if (onError) {
-                            onError(`Failed to load cubemap: ${error.message}`, error);
+                            onError(`Failed to load cubemap: ${error?.message ?? String(error)}`, error);
                         }
                     }
                 );
+        } else if (!files || files.length <= 1) {
+            // Self-contained single-file cubemap container (.dds / .ktx / .ktx2) that already holds
+            // all six faces (and their prefiltered mip chain). Load the single buffer and hand it to
+            // the native engine, which parses the container directly and returns the diffuse spherical
+            // harmonics (as a 27-float SphericalPolynomial) so PBR irradiance matches the web engines.
+            const singleUrl = files && files.length > 0 ? files[0] : rootUrl;
+
+            this._loadFileAsync(singleUrl, undefined, true)
+                // eslint-disable-next-line github/no-then
+                .then(async (data) => {
+                    const buffer = new Uint8Array(data, 0, data.byteLength);
+                    return await new Promise<void>((resolve, reject) => {
+                        this._engine.loadCubeTexture(
+                            texture._hardwareTexture!.underlyingResource,
+                            [buffer],
+                            !noMipmap,
+                            false,
+                            texture._useSRGBBuffer,
+                            (sphericalPolynomial?: ArrayLike<number>) => {
+                                if (createPolynomials && sphericalPolynomial && sphericalPolynomial.length >= 27) {
+                                    const sp = new SphericalPolynomial();
+                                    sp.x.copyFromFloats(sphericalPolynomial[0], sphericalPolynomial[1], sphericalPolynomial[2]);
+                                    sp.y.copyFromFloats(sphericalPolynomial[3], sphericalPolynomial[4], sphericalPolynomial[5]);
+                                    sp.z.copyFromFloats(sphericalPolynomial[6], sphericalPolynomial[7], sphericalPolynomial[8]);
+                                    sp.xx.copyFromFloats(sphericalPolynomial[9], sphericalPolynomial[10], sphericalPolynomial[11]);
+                                    sp.yy.copyFromFloats(sphericalPolynomial[12], sphericalPolynomial[13], sphericalPolynomial[14]);
+                                    sp.zz.copyFromFloats(sphericalPolynomial[15], sphericalPolynomial[16], sphericalPolynomial[17]);
+                                    sp.yz.copyFromFloats(sphericalPolynomial[18], sphericalPolynomial[19], sphericalPolynomial[20]);
+                                    sp.zx.copyFromFloats(sphericalPolynomial[21], sphericalPolynomial[22], sphericalPolynomial[23]);
+                                    sp.xy.copyFromFloats(sphericalPolynomial[24], sphericalPolynomial[25], sphericalPolynomial[26]);
+                                    texture._sphericalPolynomial = sp;
+                                }
+                                resolve();
+                            },
+                            () => reject(new Error(`Native engine failed to parse the cubemap container '${singleUrl}'`))
+                        );
+                    });
+                })
+                // eslint-disable-next-line github/no-then
+                .then(
+                    () => {
+                        texture.isReady = true;
+                        if (onLoad) {
+                            onLoad();
+                        }
+                    },
+                    (error) => {
+                        if (onError) {
+                            onError(`Failed to load cubemap: ${error?.message ?? String(error)}`, error);
+                        }
+                    }
+                );
+        } else {
+            throw new Error("Cannot load cubemap because 6 files were not defined");
         }
 
         this._internalTexturesCache.push(texture);

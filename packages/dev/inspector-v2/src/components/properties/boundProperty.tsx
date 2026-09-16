@@ -2,6 +2,7 @@ import { type ComponentProps, type ComponentType, forwardRef, useMemo } from "re
 
 import { ErrorBoundary } from "shared-ui-components/modularTool/components/errorBoundary";
 import { usePropertyChangedNotifier } from "../../contexts/propertyContext";
+import { useWatchedValue } from "../../contexts/watcherContext";
 import { MakePropertyHook, useProperty } from "../../hooks/compoundPropertyHooks";
 import { GetPropertyDescriptor } from "../../instrumentation/propertyInstrumentation";
 import { getClassNameWithNamespace } from "shared-ui-components/copyCommandToClipboard";
@@ -38,25 +39,25 @@ export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyo
 > &
     (IsNullable<TargetT[PropertyKeyT]> extends true
         ? // Pass null explicitly to skip nullable handling entirely - value passes through as-is
-          | {
-                defaultValue: null;
-                nullable?: never;
-                ignoreNullable?: never;
-            }
-          | (ComponentProps<ComponentT> extends { nullable?: boolean }
-                ? // Component supports nullable UI and thus requires a defaultValue to be sent with nullable = {true}
-                  | {
-                        nullable: true;
-                        defaultValue: NonNullable<TargetT[PropertyKeyT]>;
-                        ignoreNullable?: never;
-                    }
-                  | {
-                        ignoreNullable: true;
-                        defaultValue: NonNullable<TargetT[PropertyKeyT]>;
-                        nullable?: never;
-                    }
-                : // Component doesn't support nullable UI - only allow defaultValue: null
-                  never)
+              | {
+                    defaultValue: null;
+                    nullable?: never;
+                    ignoreNullable?: never;
+                }
+              | (ComponentProps<ComponentT> extends { nullable?: boolean }
+                    ? // Component supports nullable UI and thus requires a defaultValue to be sent with nullable = {true}
+                          | {
+                                nullable: true;
+                                defaultValue: NonNullable<TargetT[PropertyKeyT]>;
+                                ignoreNullable?: never;
+                            }
+                          | {
+                                ignoreNullable: true;
+                                defaultValue: NonNullable<TargetT[PropertyKeyT]>;
+                                nullable?: never;
+                            }
+                    : // Component doesn't support nullable UI - only allow defaultValue: null
+                      never)
         : {});
 
 function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyof TargetT, ComponentT extends ComponentType<any>>(
@@ -87,7 +88,7 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
 
             const onChange = useMemo(() => {
                 const propertyDescriptor = GetPropertyDescriptor(target, propertyKey)?.[1];
-                if (propertyDescriptor && (propertyDescriptor.set || propertyDescriptor.writable)) {
+                if ((propertyDescriptor && (propertyDescriptor.set || propertyDescriptor.writable)) || (!propertyDescriptor && Object.isExtensible(target))) {
                     return (val: TargetT[PropertyKeyT]) => {
                         const oldValue = target[propertyKey];
                         const newValue = convertFrom ? convertFrom(val) : val;
@@ -161,6 +162,107 @@ function CreateGenericForwardRef<T extends (...args: any[]) => any>(render: T) {
  * @returns JSX element
  */
 export const BoundProperty = CreateGenericForwardRef(BoundPropertyImpl);
+
+type ComponentValue<ComponentT extends ComponentType<any>> = ComponentProps<ComponentT> extends { value: infer ValueT } ? ValueT : never;
+
+export type ComputedPropertyProps<TargetT extends object, ComponentT extends ComponentType<any>> = Omit<ComponentProps<ComponentT>, "value" | "onChange"> & {
+    component: ComponentT;
+    target: TargetT;
+    getValue: (target: TargetT) => ComponentValue<ComponentT>;
+};
+
+/**
+ * Renders a read-only property-line component with a computed value that follows the Preferred
+ * Watch Mode. Use {@link BoundProperty} instead for an editable `target[propertyKey]`.
+ * @param props The target, computed getter, and property-line component props.
+ * @returns The property-line component with its current computed value.
+ */
+export function ComputedProperty<TargetT extends object, ComponentT extends ComponentType<any>>(props: ComputedPropertyProps<TargetT, ComponentT>) {
+    const {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        component: Component,
+        target,
+        getValue,
+        ...rest
+    } = props;
+    const value = useWatchedValue(target, getValue);
+
+    return <Component {...({ ...rest, value } as ComponentProps<ComponentT>)} />;
+}
+
+export type DerivedPropertyProps<TargetT extends object, ComponentT extends ComponentType<any>> = Omit<ComponentProps<ComponentT>, "value" | "onChange"> & {
+    component: ComponentT;
+    target: TargetT;
+    getValue: (target: TargetT) => ComponentValue<ComponentT>;
+    setValue: (target: TargetT, value: ComponentValue<ComponentT>) => void;
+} & (
+        | {
+              propertyPath?: never;
+              getPropertyOwner?: never;
+              propertyKey?: never;
+          }
+        | {
+              /** Property path relative to `globalThis.debugNode`, used by Copy to Clipboard. */
+              propertyPath: string;
+              /** Gets the object whose property is changed by `setValue`. */
+              getPropertyOwner: (target: TargetT) => object;
+              /** The key changed on the object returned by `getPropertyOwner`. */
+              propertyKey: PropertyKey;
+          }
+    );
+
+/**
+ * Renders an editable property-line component for a value derived from a target.
+ *
+ * This is useful for method-backed values, readonly object references, or values whose UI
+ * representation differs from their stored representation. The getter follows the Preferred
+ * Watch Mode, while the setter owns the runtime-specific write-back.
+ * @param props The target, derived getter, write-back function, and property-line component props.
+ * @returns The editable derived property-line component.
+ */
+export function DerivedProperty<TargetT extends object, ComponentT extends ComponentType<any>>(props: DerivedPropertyProps<TargetT, ComponentT>) {
+    const {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        component: Component,
+        target,
+        getValue,
+        setValue,
+        propertyPath,
+        getPropertyOwner,
+        propertyKey,
+        ...rest
+    } = props;
+    const value = useWatchedValue(target, getValue);
+    const notifyPropertyChanged = usePropertyChangedNotifier();
+    const getStoredProperty = () => {
+        if (!getPropertyOwner || propertyKey === undefined) {
+            return undefined;
+        }
+        const propertyTarget = getPropertyOwner(target);
+        return {
+            propertyTarget,
+            value: Reflect.get(propertyTarget, propertyKey),
+        };
+    };
+
+    return (
+        <Component
+            {...({
+                ...(propertyPath ? { onCopy: () => GetOnCopyString(getStoredProperty()?.value, propertyPath) } : {}),
+                ...rest,
+                value,
+                onChange: (changedValue: ComponentValue<ComponentT>) => {
+                    const oldStoredProperty = getStoredProperty();
+                    setValue(target, changedValue);
+                    const newStoredProperty = getStoredProperty();
+                    if (newStoredProperty && oldStoredProperty && propertyKey !== undefined) {
+                        notifyPropertyChanged(newStoredProperty.propertyTarget, propertyKey, oldStoredProperty.value, newStoredProperty.value);
+                    }
+                },
+            } as ComponentProps<ComponentT>)}
+        />
+    );
+}
 
 /**
  * Mutually exclusive propertyPath or functionPath - one required

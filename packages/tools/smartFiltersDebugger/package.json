@@ -19,8 +19,8 @@
         "watch": "rollup -c rollup.config.umd.mjs --watch"
     },
     "devDependencies": {
-        "@fortawesome/fontawesome-svg-core": "^6.1.0",
-        "@fortawesome/free-solid-svg-icons": "^6.1.0",
+        "@fortawesome/fontawesome-svg-core": "^7.3.1",
+        "@fortawesome/free-solid-svg-icons": "^7.3.1",
         "@fortawesome/react-fontawesome": "^3.3.1",
         "@types/chrome": "^0.0.268",
         "@types/react": "^18.0.0",

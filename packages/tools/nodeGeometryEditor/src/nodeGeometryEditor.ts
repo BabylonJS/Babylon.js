@@ -44,6 +44,7 @@ export class NodeGeometryEditor {
         RegisterTypeLedger();
 
         if (this._CurrentState) {
+            this._CurrentState.disposeMcpConnections();
             if (this._PopupWindow) {
                 this._PopupWindow.close();
             }

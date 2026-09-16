@@ -68,7 +68,7 @@ import {
     PrepareUniformLayoutForIBL,
     AreLightsTexturesReady,
 } from "../materialHelper.functions";
-import { ShaderLanguage } from "../shaderLanguage";
+import { _ShaderImportLoader } from "../../Misc/shaderImportLoader";
 import { MaterialHelperGeometryRendering } from "../materialHelper.geometryrendering";
 import { UVDefinesMixin } from "../uv.defines";
 import { PrepassDefinesMixin } from "../prepass.defines";
@@ -823,7 +823,10 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
 
     private _debugMode = 0;
 
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new _ShaderImportLoader(
+        () => [import("../../Shaders/pbr.vertex"), import("../../Shaders/pbr.fragment")],
+        () => [import("../../ShadersWGSL/pbr.vertex"), import("../../ShadersWGSL/pbr.fragment")]
+    );
     private _breakShaderLoadedCheck = false;
     private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
@@ -1535,17 +1538,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                 processCodeAfterIncludes: this._eventInfo.customCode,
                 multiTarget: defines.PREPASS,
                 shaderLanguage: this._shaderLanguage,
-                extraInitializationsAsync: this._shadersLoaded
-                    ? undefined
-                    : async () => {
-                          if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                              await Promise.all([import("../../ShadersWGSL/pbr.vertex"), import("../../ShadersWGSL/pbr.fragment")]);
-                          } else {
-                              await Promise.all([import("../../Shaders/pbr.vertex"), import("../../Shaders/pbr.fragment")]);
-                          }
-
-                          this._shadersLoaded = true;
-                      },
+                extraInitializationsAsync: PBRBaseMaterial._ShaderLoader.getLoadCallback(this._shaderLanguage),
             },
             engine
         );

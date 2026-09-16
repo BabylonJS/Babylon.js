@@ -106,9 +106,9 @@ export class MappingBlock extends NodeGeometryBlock {
                     position.subtractToRef(center, tempDirection);
                     const len = tempDirection.length();
                     if (len > 0) {
-                        uv.x = Math.acos(tempDirection.y / len) / Math.PI;
+                        uv.y = Math.acos(tempDirection.y / len) / Math.PI;
                         if (tempDirection.x !== 0 || tempDirection.z !== 0) {
-                            uv.y = Math.atan2(tempDirection.x, tempDirection.z) / (Math.PI * 2);
+                            uv.x = Math.atan2(tempDirection.x, tempDirection.z) / (Math.PI * 2);
                         }
                     }
                     break;

@@ -27,6 +27,11 @@ export interface EngineCapabilities {
     maxVertexUniformVectors: number;
     /** Maximum number of uniforms per fragment shader */
     maxFragmentUniformVectors: number;
+    /**
+     * Maximum number of uniform buffers that can be bound to a single shader stage.
+     * Only reported by engines where this is a hard, enforced limit (WebGPU). Left undefined elsewhere.
+     */
+    maxUniformBuffersPerShaderStage?: number;
     /** The number of bits that can be accurately represented in shader floats */
     shaderFloatPrecision: number;
     /** Defines if standard derivatives (dx/dy) are supported */

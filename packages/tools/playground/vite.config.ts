@@ -17,8 +17,7 @@ import { commonDevViteConfiguration, babylonDevExternalsPlugin } from "../../pub
 // lifetime of the dev server.
 //
 // editor.main.js (not editor.api.js) is used because it registers language
-// support — including `typescript` which source files import via:
-//   import { typescript } from "monaco-editor"
+// support — including the TypeScript language feature modules used by the source.
 // Color/HSLA are Monaco-internal utilities needed by defaultDocumentColorsComputer.
 const VIRTUAL_MONACO_ID = "\0virtual:monaco-main";
 let _monacoMainPromise: Promise<string> | null = null;
@@ -28,9 +27,7 @@ function getMonacoMainBundle(): Promise<string> {
         _monacoMainPromise = import("esbuild").then(({ build }) =>
             build({
                 stdin: {
-                    contents: ['export * from "monaco-editor/esm/vs/editor/editor.main.js";', 'export { Color, HSLA } from "monaco-editor/esm/vs/base/common/color.js";'].join(
-                        "\n"
-                    ),
+                    contents: ['export * from "monaco-editor/editor/editor.main.js";', 'export { Color, HSLA } from "monaco-editor/base/common/color.js";'].join("\n"),
                     resolveDir: process.cwd(),
                     loader: "js",
                 },
@@ -196,8 +193,8 @@ export default defineConfig({
                 const { build } = await import("esbuild");
                 const cache: Record<string, string> = {};
                 const entries: Record<string, string> = {
-                    editor: "monaco-editor/esm/vs/editor/editor.worker.js",
-                    ts: "monaco-editor/esm/vs/language/typescript/ts.worker.js",
+                    editor: "monaco-editor/editor/editor.worker.js",
+                    ts: "monaco-editor/language/typescript/ts.worker.js",
                 };
                 server.middlewares.use(async (req: any, res: any, next: any) => {
                     const match = req.url?.match(/^\/__monaco-worker-(editor|ts)\.js$/);
@@ -231,8 +228,8 @@ export default defineConfig({
             async generateBundle() {
                 const { build } = await import("esbuild");
                 const entries: Record<string, string> = {
-                    "editor.worker": "monaco-editor/esm/vs/editor/editor.worker.js",
-                    "ts.worker": "monaco-editor/esm/vs/language/typescript/ts.worker.js",
+                    "editor.worker": "monaco-editor/editor/editor.worker.js",
+                    "ts.worker": "monaco-editor/language/typescript/ts.worker.js",
                 };
                 for (const [name, entry] of Object.entries(entries)) {
                     const result = await build({

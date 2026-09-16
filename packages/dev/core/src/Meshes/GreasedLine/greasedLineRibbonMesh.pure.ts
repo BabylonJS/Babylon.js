@@ -340,7 +340,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
 
         for (let i = 0, c = 0; i < pathArrayCopy[0].length; i++) {
             const widthLower = this._uSegmentLengths[i][0] / 2;
-            const widthUpper = this._uSegmentLengths[i][pathArrayLength - 1] / 2;
+            const widthUpper = this._uSegmentLengths[i][pathArrayLength - 2] / 2;
             this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * widthLower);
             for (let pi = 0; pi < pathArrayLength - 2; pi++) {
                 this._ribbonWidths.push(0);
@@ -387,7 +387,11 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
                 throw "In GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FACE_TO 'GreasedLineMeshOptions.ribbonOptions.directions' must be a Vector3.";
             }
 
-            TmpVectors.Vector3[1] = ribbonInfo.directions instanceof Vector3 ? ribbonInfo.directions : GreasedLineRibbonMesh.DIRECTION_XZ;
+            // Copy into the scratch vector instead of rebinding the slot. Assigning would make
+            // TmpVectors.Vector3[1] alias either the caller's vector or one of the DIRECTION_*
+            // constants (which are themselves Vector3.UpReadOnly / LeftReadOnly / ...), so the next
+            // write to that shared scratch slot anywhere in the engine would silently corrupt them.
+            TmpVectors.Vector3[1].copyFrom(ribbonInfo.directions instanceof Vector3 ? ribbonInfo.directions : GreasedLineRibbonMesh.DIRECTION_XZ);
             for (let i = 0; i < pointVectors.length - (directionPlane ? 0 : 1); i++) {
                 const p1 = pointVectors[i];
                 const p2 = pointVectors[i + 1];
@@ -517,8 +521,8 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         }
 
         const positionsLength = pathArray[0].length;
-        this._uSegmentLengths = new Array(positionsLength).fill([]);
-        this._uTotalLengths = new Array(positionsLength).fill([]);
+        this._uSegmentLengths = Array.from({ length: positionsLength }, () => []);
+        this._uTotalLengths = new Array(positionsLength);
         const uLength = new Vector3();
         for (let i = 0; i < positionsLength; i++) {
             length = 0;

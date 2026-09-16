@@ -223,7 +223,7 @@ export class TBNBlock extends NodeMaterialBlock {
             if (row1.hasEndpoints) {
                 state.compilationString +=
                     state._declareOutput(row1) +
-                    ` = vec3${fSuffix}(${tbn.associatedVariableName}[1[0], ${tbn.associatedVariableName}[1][1], ${tbn.associatedVariableName}[1][2]);\n`;
+                    ` = vec3${fSuffix}(${tbn.associatedVariableName}[1][0], ${tbn.associatedVariableName}[1][1], ${tbn.associatedVariableName}[1][2]);\n`;
             }
             if (row2.hasEndpoints) {
                 state.compilationString +=

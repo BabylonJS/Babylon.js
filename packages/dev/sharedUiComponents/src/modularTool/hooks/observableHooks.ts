@@ -1,6 +1,6 @@
 import { type IReadonlyObservable } from "core/index";
 
-import { type ObservableCollection } from "../misc/observableCollection";
+import { type IReadonlyObservableCollection } from "../misc/observableCollection";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -47,8 +47,13 @@ export function useEventfulState<T>(accessor: () => T, element: HTMLElement | nu
  * @param accessor A function that returns the current value.
  * @param observables The observables to listen for changes on.
  * @returns The current value of the accessor.
- * @remarks If the accessor function is not idempotent (e.g. it returns a different array or object instance each time it is called),
- * then there is a good chance it should be wrapped in a `useCallback` to prevent unnecessary re-renders or re-render infinite loops.
+ * @remarks Prefer this hook when the source already exposes precise change observables. Pair it
+ * with a polling observable only when a fixed refresh cadence is intentional; use the source
+ * system's adapter hook when refresh policy is configurable elsewhere.
+ *
+ * If the accessor function is not idempotent (e.g. it returns a different array or object instance
+ * each time it is called), then there is a good chance it should be wrapped in a `useCallback` to
+ * prevent unnecessary re-renders or re-render infinite loops.
  */
 export function useObservableState<T>(accessor: () => T, ...observables: Array<IReadonlyObservable | null | undefined>): T {
     const [current, setCurrent] = useState(accessor);
@@ -79,7 +84,7 @@ export function useObservableState<T>(accessor: () => T, ...observables: Array<I
  * @param collection The collection to observe.
  * @returns A copy of the items in the collection.
  */
-export function useObservableCollection<T>(collection: ObservableCollection<T>) {
+export function useObservableCollection<T>(collection: IReadonlyObservableCollection<T>) {
     const itemsRef = useRef([...collection.items]);
     return useObservableState(
         useCallback(() => {
@@ -97,7 +102,7 @@ export function useObservableCollection<T>(collection: ObservableCollection<T>) 
  * @param collection The collection to observe.
  * @returns A copy of the items in the collection sorted by the order property.
  */
-export function useOrderedObservableCollection<T extends Readonly<{ order?: number }>>(collection: ObservableCollection<T>) {
+export function useOrderedObservableCollection<T extends Readonly<{ order?: number }>>(collection: IReadonlyObservableCollection<T>) {
     const items = useObservableCollection(collection);
     const sortedItems = useMemo(() => items.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)), [items]);
     return sortedItems;

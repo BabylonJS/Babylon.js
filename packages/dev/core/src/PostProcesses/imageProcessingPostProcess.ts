@@ -9,7 +9,25 @@ import { type ImageProcessingConfiguration } from "../Materials/imageProcessingC
 import { type PostProcessOptions, PostProcess } from "./postProcess.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
-import { ThinImageProcessingPostProcess } from "./thinImageProcessingPostProcess";
+import { _ApplyWhiteBalanceOptions, ThinImageProcessingPostProcess } from "./thinImageProcessingPostProcess";
+
+/**
+ * Options used to create an `ImageProcessingPostProcess`.
+ */
+export type ImageProcessingPostProcessOptions = PostProcessOptions & {
+    /**
+     * The correlated color temperature, in Kelvin, of the illuminant to neutralize via white balance - see
+     * `ImageProcessingConfiguration.temperature`. Providing this (or `tint`) also enables white balance.
+     * Defaults to 6500 K.
+     */
+    temperature?: number;
+
+    /**
+     * The white balance tint offset to apply, on the green/magenta axis - see `ImageProcessingConfiguration.tint`.
+     * Providing this (or `temperature`) also enables white balance. Defaults to 0 (no tint offset).
+     */
+    tint?: number;
+};
 
 /**
  * ImageProcessingPostProcess
@@ -146,6 +164,45 @@ export class ImageProcessingPostProcess extends PostProcess {
      */
     public set contrast(value: number) {
         this.imageProcessingConfiguration.contrast = value;
+    }
+
+    /**
+     * Gets whether the white balance effect is enabled.
+     */
+    public get whiteBalanceEnabled(): boolean {
+        return this.imageProcessingConfiguration.whiteBalanceEnabled;
+    }
+    /**
+     * Sets whether the white balance effect is enabled.
+     */
+    public set whiteBalanceEnabled(value: boolean) {
+        this.imageProcessingConfiguration.whiteBalanceEnabled = value;
+    }
+
+    /**
+     * Gets the white balance correlated color temperature, in Kelvin, used in the effect.
+     */
+    public get temperature(): number {
+        return this.imageProcessingConfiguration.temperature;
+    }
+    /**
+     * Sets the white balance correlated color temperature, in Kelvin, used in the effect.
+     */
+    public set temperature(value: number) {
+        this.imageProcessingConfiguration.temperature = value;
+    }
+
+    /**
+     * Gets the white balance tint offset used in the effect.
+     */
+    public get tint(): number {
+        return this.imageProcessingConfiguration.tint;
+    }
+    /**
+     * Sets the white balance tint offset used in the effect.
+     */
+    public set tint(value: number) {
+        this.imageProcessingConfiguration.tint = value;
     }
 
     /**
@@ -322,7 +379,7 @@ export class ImageProcessingPostProcess extends PostProcess {
 
     constructor(
         name: string,
-        options: number | PostProcessOptions,
+        options: number | ImageProcessingPostProcessOptions,
         camera: Nullable<Camera> = null,
         samplingMode?: number,
         engine?: AbstractEngine,
@@ -339,7 +396,7 @@ export class ImageProcessingPostProcess extends PostProcess {
             textureType,
             imageProcessingConfiguration,
             scene: camera?.getScene(),
-            ...(options as PostProcessOptions),
+            ...(options as ImageProcessingPostProcessOptions),
             blockCompilation: true,
         };
 
@@ -347,6 +404,11 @@ export class ImageProcessingPostProcess extends PostProcess {
             effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinImageProcessingPostProcess(name, engine, localOptions) : undefined,
             ...localOptions,
         });
+
+        // Applied here (not just inside ThinImageProcessingPostProcess's own constructor) so that `temperature`/
+        // `tint` are honored even when a caller supplies their own pre-built `effectWrapper`, in which case the
+        // thin wrapper above is never constructed and its own application of these options never runs.
+        _ApplyWhiteBalanceOptions(this.imageProcessingConfiguration, options);
 
         this.onApply = () => {
             this._effectWrapper.overrideAspectRatio = this.aspectRatio;

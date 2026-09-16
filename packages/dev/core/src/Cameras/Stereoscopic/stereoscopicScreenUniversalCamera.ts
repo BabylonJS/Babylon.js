@@ -60,7 +60,7 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
      * @returns StereoscopicScreenUniversalCamera
      */
     public override getClassName(): string {
-        return "StereoscopicUniversalCamera";
+        return "StereoscopicScreenUniversalCamera";
     }
 
     /**

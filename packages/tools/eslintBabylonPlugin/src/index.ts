@@ -1047,6 +1047,7 @@ const plugin: IPlugin = {
                     bareImport:
                         'Bare import "{{source}}" introduces side effects in a .pure.ts file. ' + "Move it to the non-pure counterpart or guard with an eslint-disable comment.",
                     unsafeBarrelReExport: 'Import or re-export from "{{source}}" in a pure file pulls in a module with side effects. ' + "Only reference side-effect-free modules.",
+                    unsafeDynamicImport: 'Dynamic import from "{{source}}" in a .pure.ts file selects a side-effect wrapper. ' + "Import from the .pure counterpart instead.",
                     unsafeValueImport:
                         'Import from "{{source}}" in a .pure.ts file pulls in a module with side effects. ' +
                         "Import from the .pure counterpart instead, or use a type-only import.",
@@ -1143,6 +1144,32 @@ const plugin: IPlugin = {
                     );
                 }
 
+                function hasPureCounterpart(source: string): boolean {
+                    if (source.endsWith(".pure")) {
+                        return false;
+                    }
+
+                    let resolved: string;
+                    if (source.startsWith(".")) {
+                        resolved = path.resolve(path.dirname(filename), source);
+                    } else {
+                        const packageImport = /^(core|gui|loaders|serializers)\/(.+)$/.exec(source);
+                        if (!packageImport) {
+                            return false;
+                        }
+
+                        const packagesMatch = /[/\\]packages[/\\]dev[/\\]/.exec(filename);
+                        if (!packagesMatch) {
+                            return false;
+                        }
+
+                        const repoRoot = filename.substring(0, packagesMatch.index);
+                        resolved = path.join(repoRoot, "packages", "dev", packageImport[1], "src", packageImport[2]);
+                    }
+
+                    return fs.existsSync(`${resolved}.pure.ts`) || fs.existsSync(`${resolved}.pure.tsx`);
+                }
+
                 return {
                     // Bare imports: import "foo"
                     ImportDeclaration(node: any) {
@@ -1211,6 +1238,17 @@ const plugin: IPlugin = {
                             context.report({
                                 node,
                                 messageId: "unsafeBarrelReExport",
+                                data: { source },
+                            });
+                        }
+                    },
+
+                    ImportExpression(node: any) {
+                        const source = typeof node.source?.value === "string" ? node.source.value : undefined;
+                        if (source && hasPureCounterpart(source)) {
+                            context.report({
+                                node,
+                                messageId: "unsafeDynamicImport",
                                 data: { source },
                             });
                         }

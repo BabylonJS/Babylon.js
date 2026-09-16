@@ -190,7 +190,7 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
      * @returns true if camera alpha reaches the target alpha
      */
     private _reachTargetAlpha(): boolean {
-        if (this._attachedCamera && this.targetAlpha) {
+        if (this._attachedCamera && this.targetAlpha !== null) {
             return Math.abs(this._attachedCamera.alpha - this.targetAlpha) < Epsilon;
         }
         return false;

@@ -19,7 +19,14 @@ const DFD_TRANSFER_LINEAR = 1;
  * @param supercompressionScheme the supercompression scheme to declare in the header (the level data is left uncompressed)
  * @returns the raw KTX2 bytes
  */
-function createUncompressedKtx2(width: number, layerCount: number, levelCount: number, vkFormat = VK_FORMAT_R8G8B8A8_UNORM, supercompressionScheme = 0): Uint8Array {
+function createUncompressedKtx2(
+    width: number,
+    layerCount: number,
+    levelCount: number,
+    vkFormat = VK_FORMAT_R8G8B8A8_UNORM,
+    supercompressionScheme = 0,
+    bytesPlane0 = 4
+): Uint8Array {
     const numSamples = 4;
     const descriptorBlockSize = 24 + numSamples * 16;
     const dfdByteLength = 4 + descriptorBlockSize;
@@ -93,7 +100,7 @@ function createUncompressedKtx2(width: number, layerCount: number, levelCount: n
     data[offset + 13] = 0;
     data[offset + 14] = 0;
     data[offset + 15] = 0;
-    data[offset + 16] = 4; // bytesPlane0
+    data[offset + 16] = bytesPlane0; // bytesPlane0
     const samplesOffset = offset + 24;
     const channelTypes = [0, 1, 2, 15]; // R, G, B, A
     for (let i = 0; i < numSamples; i++) {
@@ -201,6 +208,44 @@ describe("KTX2Decoder", () => {
         expect(decoded.errors).toBeUndefined();
         expect(decoded.mipmaps).toHaveLength(3);
         // Each layer must be sliced out of the decompressed level, not silently replaced by the whole level.
+        expect(decoded.mipmaps.map((mipmap) => mipmap.data![0])).toEqual([1, 2, 3]);
+        expect(decoded.mipmaps.map((mipmap) => mipmap.data!.byteLength)).toEqual([4 * 4 * 4, 4 * 4 * 4, 4 * 4 * 4]);
+    });
+
+    it("decodes ZStandard-compressed data when bytesPlane[0] is zero", async () => {
+        // UASTC files with Zstd supercompression have bytesPlane[0] = 0 per the KTX2 spec. The per-image byte
+        // length must be derived from the level's uncompressedByteLength rather than the block-based formula.
+        const file = createUncompressedKtx2(4, 1, 1, VK_FORMAT_R8G8B8A8_UNORM, 2 /* SupercompressionScheme.ZStandard */, 0 /* bytesPlane0 */);
+
+        const decoder = new KTX2Decoder();
+        (decoder as any)._zstdDecoder = {
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            init: async () => {},
+            decode: (array: Uint8Array) => array.slice(),
+        };
+
+        const decoded = await decoder.decode(file, EmptyCaps);
+
+        expect(decoded.errors).toBeUndefined();
+        expect(decoded.mipmaps).toHaveLength(1);
+        expect(decoded.mipmaps[0].data!.byteLength).toBe(4 * 4 * 4);
+        expect(decoded.mipmaps[0].data![0]).toBe(1);
+    });
+
+    it("decodes ZStandard-compressed multi-layer data when bytesPlane[0] is zero", async () => {
+        const file = createUncompressedKtx2(4, 3, 1, VK_FORMAT_R8G8B8A8_UNORM, 2 /* SupercompressionScheme.ZStandard */, 0 /* bytesPlane0 */);
+
+        const decoder = new KTX2Decoder();
+        (decoder as any)._zstdDecoder = {
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            init: async () => {},
+            decode: (array: Uint8Array) => array.slice(),
+        };
+
+        const decoded = await decoder.decode(file, EmptyCaps);
+
+        expect(decoded.errors).toBeUndefined();
+        expect(decoded.mipmaps).toHaveLength(3);
         expect(decoded.mipmaps.map((mipmap) => mipmap.data![0])).toEqual([1, 2, 3]);
         expect(decoded.mipmaps.map((mipmap) => mipmap.data!.byteLength)).toEqual([4 * 4 * 4, 4 * 4 * 4, 4 * 4 * 4]);
     });

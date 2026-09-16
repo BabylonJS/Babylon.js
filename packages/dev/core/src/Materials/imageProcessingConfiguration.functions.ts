@@ -7,6 +7,9 @@ import { type IImageProcessingConfigurationDefines } from "./imageProcessingConf
  * @param defines the list of defines currently in use
  */
 export function PrepareUniformsForImageProcessing(uniforms: string[], defines: IImageProcessingConfigurationDefines): void {
+    if (defines.WHITEBALANCE) {
+        uniforms.push("whiteBalanceMatrix");
+    }
     if (defines.EXPOSURE) {
         uniforms.push("exposureLinear");
     }

@@ -19,7 +19,7 @@ import { type SubMesh } from "core/Meshes/subMesh";
 import { type Mesh } from "core/Meshes/mesh";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { _ShaderImportLoader } from "core/Misc/shaderImportLoader";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 
 import { AddClipPlaneUniforms, BindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
@@ -132,7 +132,10 @@ export class FurMaterial extends PushMaterial {
     public _meshes: AbstractMesh[];
 
     private _furTime: number = 0;
-    private _shadersLoaded = false;
+    private static readonly _ShaderLoader = /*#__PURE__*/ new _ShaderImportLoader(
+        () => [import("./fur.vertex"), import("./fur.fragment")],
+        () => [import("./wgsl/fur.vertex"), import("./wgsl/fur.fragment")]
+    );
 
     /**
      * Instantiates a Fur Material in the given scene
@@ -355,17 +358,7 @@ export class FurMaterial extends PushMaterial {
                         onError: this.onError,
                         indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights },
                         shaderLanguage: this._shaderLanguage,
-                        extraInitializationsAsync: this._shadersLoaded
-                            ? undefined
-                            : async () => {
-                                  if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                                      await Promise.all([import("./wgsl/fur.vertex"), import("./wgsl/fur.fragment")]);
-                                  } else {
-                                      await Promise.all([import("./fur.vertex"), import("./fur.fragment")]);
-                                  }
-
-                                  this._shadersLoaded = true;
-                              },
+                        extraInitializationsAsync: FurMaterial._ShaderLoader.getLoadCallback(this._shaderLanguage),
                     },
                     engine
                 ),

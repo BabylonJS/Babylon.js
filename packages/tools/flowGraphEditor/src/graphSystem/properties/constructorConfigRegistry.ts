@@ -167,9 +167,6 @@ export const CONSTRUCTOR_CONFIG: ReadonlyMap<string, ReadonlyArray<IConstructorC
     ["FlowGraphBitwiseXorBlock", BITWISE_BLOCK_FIELDS],
 
     // ---------- Combine matrix blocks ----------
-    ["FlowGraphCombineMatrixBlock", [{ key: "inputIsColumnMajor", label: "Column-major input", kind: "boolean" }]],
-    ["FlowGraphCombineMatrix2DBlock", [{ key: "inputIsColumnMajor", label: "Column-major input", kind: "boolean" }]],
-    ["FlowGraphCombineMatrix3DBlock", [{ key: "inputIsColumnMajor", label: "Column-major input", kind: "boolean" }]],
 
     // ---------- Pointer / pick event blocks (stopPropagation) ----------
     ["FlowGraphPointerDownEventBlock", [{ key: "stopPropagation", label: "Stop propagation", kind: "boolean" }]],

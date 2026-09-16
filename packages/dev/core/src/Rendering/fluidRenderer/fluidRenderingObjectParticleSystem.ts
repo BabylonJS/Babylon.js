@@ -100,6 +100,26 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     }
 
     /**
+     * GPUParticleSystem stores "size" as (baseSize, scaleX, scaleY); ParticleSystem as (width, height).
+     * @returns the number of components of the "size" attribute
+     */
+    protected override _getPerParticleSizeAttributeSize(): number {
+        return this._isGPUParticleSystem ? 3 : 2;
+    }
+
+    /**
+     * GPUParticleSystem's "offset" quad is centered ([-0.5, 0.5]); ParticleSystem's is in [0, 1].
+     * @returns true if the "offset" attribute is centered
+     */
+    protected override _usesCenteredOffsetAttribute(): boolean {
+        return this._isGPUParticleSystem;
+    }
+
+    private get _isGPUParticleSystem(): boolean {
+        return this._particleSystem.getClassName() === "GPUParticleSystem";
+    }
+
+    /**
      * Indicates if the object is ready to be rendered
      * @returns True if everything is ready for the object to be rendered, otherwise false
      */

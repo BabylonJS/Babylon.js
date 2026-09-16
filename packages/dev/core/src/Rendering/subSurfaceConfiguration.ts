@@ -131,7 +131,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
             }
         }
 
-        this._ssDiffusionS.push(color.r, color.b, color.g);
+        this._ssDiffusionS.push(color.r, color.g, color.b);
         this._ssDiffusionD.push(Math.max(Math.max(color.r, color.b), color.g));
         this._ssFilterRadii.push(this.getDiffusionProfileParameters(color));
         this.ssDiffusionProfileColors.push(color);

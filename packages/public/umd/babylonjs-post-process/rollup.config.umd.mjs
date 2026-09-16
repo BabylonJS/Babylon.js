@@ -22,4 +22,5 @@ export default commonUMDRollupConfiguration({
     overrideFilename: (pathData) =>
         pathData.chunk.name === "postProcess" ? `babylonjs.postProcess${production ? ".min" : ""}.js` : `babylon.${pathData.chunk.name}PostProcess${production ? ".min" : ""}.js`,
     minToMax: true,
+    es5EntryPoint: "postProcess",
 });

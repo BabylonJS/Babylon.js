@@ -1,4 +1,4 @@
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector.pure";
 
 /**
  * Class used to transport Vector3 information for pointer events

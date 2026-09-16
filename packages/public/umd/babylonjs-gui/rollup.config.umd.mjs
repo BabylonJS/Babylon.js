@@ -11,6 +11,7 @@ export default commonUMDRollupConfiguration({
     namespace: "BABYLON.GUI",
     outputPath: path.resolve("."),
     minToMax: true,
+    es5EntryPoint: "gui",
     alias: {
         gui: path.resolve("../../../dev/gui/src"),
     },

@@ -1523,7 +1523,7 @@ declare namespace BABYLON.GLTF2 {
     /**
      * Interfaces for the KHR_interactivity extension
      */
-    interface IKHRInteractivity {
+    interface IKHRInteractivity extends IProperty {
         /**
          * Holding all of the graphs in the glTF
          */
@@ -1534,7 +1534,7 @@ declare namespace BABYLON.GLTF2 {
         graph?: number;
     }
 
-    interface IKHRInteractivity_Graph {
+    interface IKHRInteractivity_Graph extends IChildRootProperty {
         types?: IKHRInteractivity_Type /* | IKHRInteractivity_CustomType */[]; // should technically behave as a set - no two signatures should match
         variables?: IKHRInteractivity_Variable[];
         events?: IKHRInteractivity_Event[];
@@ -1556,15 +1556,15 @@ declare namespace BABYLON.GLTF2 {
      */
     type NodeIndex = number;
     /**
-     * Value types supported (in js it is either boolean or number)
+     * Value types supported (in js it is either boolean or number, or string for opaque references)
      */
-    type ValueType = (boolean | number)[];
+    type ValueType = (boolean | number | string)[];
 
-    type ValueSignature = "bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "custom";
+    type ValueSignature = "bool" | "float" | "float2" | "float3" | "float4" | "float2x2" | "float3x3" | "float4x4" | "int" | "ref" | "custom";
 
     type ConfigurationValueType = (boolean | number | string)[];
 
-    interface IKHRInteractivity_Event {
+    interface IKHRInteractivity_Event extends IChildRootProperty {
         /**
          * The event id is an application-specific event identifier recognized by the execution environment. If the id property is undefined, the event is considered internal to the graph.
          */
@@ -1579,7 +1579,7 @@ declare namespace BABYLON.GLTF2 {
             | undefined;
     }
 
-    interface IKHRInteractivity_Type {
+    interface IKHRInteractivity_Type extends IProperty {
         /**
          * A signature of this type or custom if defined by an external extension
          */
@@ -1590,7 +1590,7 @@ declare namespace BABYLON.GLTF2 {
     //     signature: string;
     // }
 
-    interface IKHRInteractivity_Variable {
+    interface IKHRInteractivity_Variable extends IChildRootProperty {
         /**
          * Array size depends on the type. primitives have array size 1, rest depending on the object type (2,3,4,16)
          * if value is not provided it should be initialized to the default value of the type according to the specs - NaN for floats, 0 for integers, false for booleans.
@@ -1607,7 +1607,7 @@ declare namespace BABYLON.GLTF2 {
      * Declarations are considered equal when their op, extension and input values are equal.
      * If stating an external extension it is possible the declaration is not supported by the engine. In this case the operation will be a no-op
      */
-    interface IKHRInteractivity_Declaration {
+    interface IKHRInteractivity_Declaration extends IProperty {
         /**
          * the operation identifier.
          * Either defined by the interactivity extension or a custom operation by an external extension
@@ -1621,15 +1621,22 @@ declare namespace BABYLON.GLTF2 {
          * If custom operation, this is the output values signatures of the event
          * if undefined the custom operation has no outputs
          */
-        outputValueSockets?: { [id: string]: { type: TypeIndex } };
+        outputValueSockets?: { [id: string]: IKHRInteractivity_DeclarationValueSocket };
         /**
          * if custom operation, this is the input values signatures of the event
          * If undefined the custom operation has no inputs
          */
-        inputValueSockets?: { [id: string]: { type: TypeIndex } };
+        inputValueSockets?: { [id: string]: IKHRInteractivity_DeclarationValueSocket };
     }
 
-    interface IKHRInteractivity_Node {
+    interface IKHRInteractivity_DeclarationValueSocket extends IProperty {
+        /**
+         * An index in the graph types array.
+         */
+        type: TypeIndex;
+    }
+
+    interface IKHRInteractivity_Node extends IProperty {
         /**
          * An index in the declarations array
          */
@@ -1646,7 +1653,7 @@ declare namespace BABYLON.GLTF2 {
         configuration?: { [id: string]: IKHRInteractivity_Configuration };
     }
 
-    interface IKHRInteractivity_OutputSocketReference {
+    interface IKHRInteractivity_OutputSocketReference extends IProperty {
         /**
          * An index in the nodes array
          */
@@ -1661,7 +1668,7 @@ declare namespace BABYLON.GLTF2 {
         type?: TypeIndex;
     }
 
-    interface IKHRInteractivity_OutputFlow {
+    interface IKHRInteractivity_OutputFlow extends IProperty {
         /**
          * An index in the nodes array
          */
@@ -1673,7 +1680,7 @@ declare namespace BABYLON.GLTF2 {
         socket?: string;
     }
 
-    interface IKHRInteractivity_Configuration {
+    interface IKHRInteractivity_Configuration extends IProperty {
         /**
          * Array size depends on the type. primitives have array size 1, rest depending on the object type (2,3,4,16)
          */

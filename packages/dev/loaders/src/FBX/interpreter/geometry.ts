@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention, jsdoc/require-param, jsdoc/require-returns */
-import { type FBXNode, findChildByName, findChildrenByName, getPropertyValue, cleanFBXName } from "../types/fbxTypes";
+import { type FBXNode, findChildByName, findChildrenByName, getPropertyValue, cleanFBXName, getNodeArray } from "../types/fbxTypes";
 
 /** A named UV set */
 export interface FBXUVSet {
@@ -12,7 +12,14 @@ export interface FBXUVSet {
 /** Recoverable geometry import issue. */
 export interface FBXGeometryDiagnostic {
     /** Diagnostic category. */
-    type: "degenerate-polygon" | "triangulation-fallback" | "layer-index-out-of-bounds" | "layer-data-too-short";
+    type:
+        | "degenerate-polygon"
+        | "triangulation-fallback"
+        | "layer-index-out-of-bounds"
+        | "layer-data-too-short"
+        | "nurbs-invalid"
+        | "nurbs-trim-ignored"
+        | "nurbs-deformer-ignored";
     /** Human-readable diagnostic message. */
     message: string;
     /** Polygon index associated with the diagnostic, if applicable. */
@@ -61,18 +68,14 @@ export function extractGeometry(geometryNode: FBXNode, nodeId: number): FBXGeome
     const name = cleanFBXName(getPropertyValue<string>(geometryNode, 1) ?? "Geometry");
 
     // Extract raw vertices
+    // Edge-only meshes (e.g. Blender edge circles) and empty placeholders have no vertices or polygons; they
+    // become geometry with zero triangles rather than errors.
     const verticesNode = findChildByName(geometryNode, "Vertices");
-    if (!verticesNode) {
-        throw new Error(`Geometry '${name}' has no Vertices node`);
-    }
-    const rawPositions = toFloat64Array(getNodeArrayValue(verticesNode));
+    const rawPositions = verticesNode ? toFloat64Array(getNodeArrayValue(verticesNode)) : new Float64Array(0);
 
     // Extract polygon vertex indices
     const pviNode = findChildByName(geometryNode, "PolygonVertexIndex");
-    if (!pviNode) {
-        throw new Error(`Geometry '${name}' has no PolygonVertexIndex node`);
-    }
-    const rawIndices = toInt32Array(getNodeArrayValue(pviNode));
+    const rawIndices = pviNode ? toInt32Array(getNodeArrayValue(pviNode)) : new Int32Array(0);
     const diagnostics: FBXGeometryDiagnostic[] = [];
 
     // Parse polygons from the FBX negative-index convention
@@ -251,49 +254,90 @@ function triangulatePolygon(poly: Polygon, polyIndex: number, rawPositions: Floa
     }
 
     const isCCW = polygonArea > 0;
-    const remaining = poly.indices.map((_, i) => i);
-    const clipped: Triangle[] = [];
-    let guard = 0;
+    const clipped = earClip(projected, isCCW, polygonArea);
+    if (!clipped) {
+        diagnostics.push({
+            type: "triangulation-fallback",
+            message: `Polygon ${polyIndex} could not be fully ear-clipped; using fan triangulation.`,
+            polygonIndex: polyIndex,
+        });
+        return fanTriangulate(poly, polyIndex);
+    }
+    return clipped.map(([a, b, c]) => ({ vertices: [poly.startIndex + a, poly.startIndex + b, poly.startIndex + c] as [number, number, number], polyIndex }));
+}
 
-    while (remaining.length > 3 && guard++ < poly.indices.length * poly.indices.length) {
-        let clippedEar = false;
+/**
+ * Ear clipping on a doubly linked vertex ring. Only reflex vertices can lie inside a candidate ear, so the
+ * containment test walks the reflex vertices alone, and the scan resumes after the last clipped ear instead of
+ * restarting, which keeps large n-gons (thousands of vertices) at roughly quadratic cost in the reflex count.
+ * @returns triangles as local vertex indices, or null when no ear can be found (self-intersecting input)
+ */
+function earClip(points: [number, number][], isCCW: boolean, polygonArea: number): [number, number, number][] | null {
+    const n = points.length;
+    const prev = new Int32Array(n);
+    const next = new Int32Array(n);
+    for (let i = 0; i < n; i++) {
+        prev[i] = (i + n - 1) % n;
+        next[i] = (i + 1) % n;
+    }
+    // Tolerances scale with the polygon so huge and tiny coordinates behave the same.
+    const eps = Math.abs(polygonArea) * 1e-12 + 1e-300;
+    const sign = isCCW ? 1 : -1;
+    const turn = (i: number): number => sign * cross2D(points[prev[i]], points[i], points[next[i]]);
+    const reflex = new Uint8Array(n);
+    for (let i = 0; i < n; i++) {
+        reflex[i] = turn(i) < -eps ? 1 : 0;
+    }
+    const inside = (p: [number, number], a: [number, number], b: [number, number], c: [number, number]): boolean => {
+        // Inside or on the boundary of the (consistently oriented) triangle
+        return sign * cross2D(a, b, p) >= -eps && sign * cross2D(b, c, p) >= -eps && sign * cross2D(c, a, p) >= -eps;
+    };
 
-        for (let i = 0; i < remaining.length; i++) {
-            const prev = remaining[(i + remaining.length - 1) % remaining.length];
-            const curr = remaining[i];
-            const next = remaining[(i + 1) % remaining.length];
-
-            if (!isConvex(projected[prev], projected[curr], projected[next], isCCW)) {
-                continue;
+    const triangles: [number, number, number][] = [];
+    let remaining = n;
+    let i = 0;
+    let visitedSinceClip = 0;
+    while (remaining > 3) {
+        const a = prev[i];
+        const c = next[i];
+        let clip = false;
+        if (!reflex[i]) {
+            const t = turn(i);
+            if (t <= eps) {
+                // Collinear vertex: its ear is a zero-area sliver, kept so every n-gon still yields n - 2 triangles.
+                clip = true;
+                triangles.push([a, i, c]);
+            } else {
+                clip = true;
+                for (let j = next[c]; j !== a; j = next[j]) {
+                    if (reflex[j] && inside(points[j], points[a], points[i], points[c])) {
+                        clip = false;
+                        break;
+                    }
+                }
+                if (clip) {
+                    triangles.push([a, i, c]);
+                }
             }
-            if (containsAnyPoint(projected, remaining, prev, curr, next)) {
-                continue;
-            }
-
-            clipped.push({
-                vertices: [poly.startIndex + prev, poly.startIndex + curr, poly.startIndex + next],
-                polyIndex,
-            });
-            remaining.splice(i, 1);
-            clippedEar = true;
-            break;
         }
-
-        if (!clippedEar) {
-            diagnostics.push({
-                type: "triangulation-fallback",
-                message: `Polygon ${polyIndex} could not be fully ear-clipped; using fan triangulation.`,
-                polygonIndex: polyIndex,
-            });
-            return fanTriangulate(poly, polyIndex);
+        if (clip) {
+            next[a] = c;
+            prev[c] = a;
+            remaining--;
+            reflex[a] = turn(a) < -eps ? 1 : 0;
+            reflex[c] = turn(c) < -eps ? 1 : 0;
+            i = c;
+            visitedSinceClip = 0;
+            continue;
+        }
+        i = c;
+        if (++visitedSinceClip > remaining) {
+            return null;
         }
     }
-
-    clipped.push({
-        vertices: [poly.startIndex + remaining[0], poly.startIndex + remaining[1], poly.startIndex + remaining[2]],
-        polyIndex,
-    });
-    return clipped;
+    const last = i;
+    triangles.push([prev[last], last, next[last]]);
+    return triangles;
 }
 
 function fanTriangulate(poly: Polygon, polyIndex: number): Triangle[] {
@@ -359,31 +403,6 @@ function signedArea2D(points: [number, number][]): number {
         area += a[0] * b[1] - b[0] * a[1];
     }
     return area / 2;
-}
-
-function isConvex(a: [number, number], b: [number, number], c: [number, number], isCCW: boolean): boolean {
-    const cross = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
-    return isCCW ? cross > 1e-12 : cross < -1e-12;
-}
-
-function containsAnyPoint(points: [number, number][], remaining: number[], prev: number, curr: number, next: number): boolean {
-    for (const index of remaining) {
-        if (index === prev || index === curr || index === next) {
-            continue;
-        }
-        if (pointInTriangle(points[index], points[prev], points[curr], points[next])) {
-            return true;
-        }
-    }
-    return false;
-}
-
-function pointInTriangle(p: [number, number], a: [number, number], b: [number, number], c: [number, number]): boolean {
-    const area = Math.abs(cross2D(a, b, c));
-    const area1 = Math.abs(cross2D(p, a, b));
-    const area2 = Math.abs(cross2D(p, b, c));
-    const area3 = Math.abs(cross2D(p, c, a));
-    return Math.abs(area - (area1 + area2 + area3)) < 1e-10;
 }
 
 function cross2D(a: [number, number], b: [number, number], c: [number, number]): number {
@@ -659,43 +678,85 @@ function buildTriangleMesh(
     expandedTangents: Float64Array | null,
     expandedBinormals: Float64Array | null
 ): TriangleMeshData {
-    // Each polygon-vertex becomes a unique vertex in the output
-    const vertexCount = polyVertexList.length;
-    const positions = new Float64Array(vertexCount * 3);
-    const controlPointIndices = new Uint32Array(vertexCount);
-
-    // Copy positions — keep in original RH space (root node handles RH→LH conversion)
-    for (let i = 0; i < polyVertexList.length; i++) {
-        const cp = polyVertexList[i].controlPointIndex;
-        positions[i * 3] = rawPositions[cp * 3];
-        positions[i * 3 + 1] = rawPositions[cp * 3 + 1];
-        positions[i * 3 + 2] = rawPositions[cp * 3 + 2];
-        controlPointIndices[i] = cp;
+    // FBX stores every attribute per polygon-vertex. Polygon-vertices that share the control point and all attribute
+    // values are welded into one output vertex (this is what every DCC does on import); polygon-vertices that differ
+    // in any attribute (hard edges, UV seams) stay separate. Skinning and blend shapes index by control point, so
+    // welding is transparent to them.
+    const polyVertexCount = polyVertexList.length;
+    const remap = new Uint32Array(polyVertexCount);
+    const unique: number[] = [];
+    const keyToIndex = new Map<string, number>();
+    const uvSetCount = expandedUVSets.length;
+    for (let i = 0; i < polyVertexCount; i++) {
+        let key = String(polyVertexList[i].controlPointIndex);
+        if (expandedNormals) {
+            key += `|${expandedNormals[i * 3]},${expandedNormals[i * 3 + 1]},${expandedNormals[i * 3 + 2]}`;
+        }
+        for (let u = 0; u < uvSetCount; u++) {
+            const d = expandedUVSets[u].data;
+            key += `|${d[i * 2]},${d[i * 2 + 1]}`;
+        }
+        if (expandedColors) {
+            key += `|${expandedColors[i * 4]},${expandedColors[i * 4 + 1]},${expandedColors[i * 4 + 2]},${expandedColors[i * 4 + 3]}`;
+        }
+        if (expandedTangents) {
+            key += `|${expandedTangents[i * 4]},${expandedTangents[i * 4 + 1]},${expandedTangents[i * 4 + 2]},${expandedTangents[i * 4 + 3]}`;
+        }
+        let index = keyToIndex.get(key);
+        if (index === undefined) {
+            index = unique.length;
+            keyToIndex.set(key, index);
+            unique.push(i);
+        }
+        remap[i] = index;
     }
 
-    // Normals stay in RH space (root node handles conversion)
-    if (expandedNormals) {
-        // No transformation needed
+    const vertexCount = unique.length;
+    const positions = new Float64Array(vertexCount * 3);
+    const controlPointIndices = new Uint32Array(vertexCount);
+    const gather = (src: Float64Array | Float32Array | null, stride: number, ctor: typeof Float64Array | typeof Float32Array) => {
+        if (!src) {
+            return null;
+        }
+        const out = new ctor(vertexCount * stride);
+        for (let v = 0; v < vertexCount; v++) {
+            const srcIndex = unique[v] * stride;
+            for (let k = 0; k < stride; k++) {
+                out[v * stride + k] = src[srcIndex + k];
+            }
+        }
+        return out;
+    };
+
+    // Positions come from control points — keep in original RH space (root node handles RH→LH conversion)
+    for (let v = 0; v < vertexCount; v++) {
+        const cp = polyVertexList[unique[v]].controlPointIndex;
+        positions[v * 3] = rawPositions[cp * 3];
+        positions[v * 3 + 1] = rawPositions[cp * 3 + 1];
+        positions[v * 3 + 2] = rawPositions[cp * 3 + 2];
+        controlPointIndices[v] = cp;
     }
 
     // Keep original winding order — Z negation handles handedness
     const indexCount = triangles.length * 3;
     const indices = new Uint32Array(indexCount);
     for (let i = 0; i < triangles.length; i++) {
-        indices[i * 3] = triangles[i].vertices[0];
-        indices[i * 3 + 1] = triangles[i].vertices[1];
-        indices[i * 3 + 2] = triangles[i].vertices[2];
+        indices[i * 3] = remap[triangles[i].vertices[0]];
+        indices[i * 3 + 1] = remap[triangles[i].vertices[1]];
+        indices[i * 3 + 2] = remap[triangles[i].vertices[2]];
     }
+
+    const uvSets: FBXUVSet[] = expandedUVSets.map((set) => ({ name: set.name, data: gather(set.data, 2, Float64Array) as Float64Array }));
 
     return {
         positions,
         indices,
-        normals: expandedNormals,
-        uvs: expandedUVs,
-        uvSets: expandedUVSets,
-        colors: expandedColors,
-        tangents: expandedTangents,
-        binormals: expandedBinormals,
+        normals: gather(expandedNormals, 3, Float64Array) as Float64Array | null,
+        uvs: uvSets.length > 0 ? uvSets[0].data : (gather(expandedUVs, 2, Float64Array) as Float64Array | null),
+        uvSets,
+        colors: gather(expandedColors, 4, Float32Array) as Float32Array | null,
+        tangents: gather(expandedTangents, 4, Float64Array) as Float64Array | null,
+        binormals: gather(expandedBinormals, 3, Float64Array) as Float64Array | null,
         controlPointIndices,
     };
 }
@@ -709,7 +770,7 @@ function toFloat64Array(value: unknown): Float64Array {
     if (value instanceof Float32Array) {
         return new Float64Array(value);
     }
-    if (value instanceof Int32Array) {
+    if (value instanceof Int32Array || value instanceof Uint8Array) {
         return new Float64Array(value);
     }
     if (Array.isArray(value)) {
@@ -733,7 +794,7 @@ function toInt32Array(value: unknown): Int32Array {
         }
         return result;
     }
-    if (value instanceof Float32Array) {
+    if (value instanceof Float32Array || value instanceof Uint8Array) {
         const result = new Int32Array(value.length);
         for (let i = 0; i < value.length; i++) {
             result[i] = Math.round(value[i]);
@@ -751,8 +812,5 @@ function toInt32Array(value: unknown): Int32Array {
 }
 
 function getNodeArrayValue(node: FBXNode): unknown {
-    if (node.properties.length === 1) {
-        return node.properties[0].value;
-    }
-    return node.properties.map((property) => property.value);
+    return getNodeArray(node) ?? new Float64Array(0);
 }

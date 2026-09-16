@@ -245,6 +245,22 @@ export class _IblShadowsVoxelTracingPass {
     }
     private _coloredShadows: boolean = false;
 
+    /**
+     * Maximum number of translucent voxels a shadow ray roulettes through before it is treated as
+     * unoccluded. Higher values converge more accurately at extra cost. Applied via a shader define.
+     */
+    public set maxVoxelRouletteTests(value: number) {
+        // Becomes a shader define, so keep it a finite integer in [1, 4096]; ignore non-finite input.
+        if (!Number.isFinite(value)) {
+            return;
+        }
+        this._maxVoxelRouletteTests = Math.min(4096, Math.max(1, Math.floor(value)));
+    }
+    public get maxVoxelRouletteTests(): number {
+        return this._maxVoxelRouletteTests;
+    }
+    private _maxVoxelRouletteTests: number = 16;
+
     private _debugVoxelMarchEnabled: boolean = false;
     private _debugPassPP: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
@@ -360,6 +376,8 @@ export class _IblShadowsVoxelTracingPass {
         if (this._scene.geometryBufferRenderer?.normalsAreUnsigned) {
             defines += "#define WORLD_NORMAL_UNSIGNED\n";
         }
+        // _maxVoxelRouletteTests is normalized to a finite integer in [1, 4096] by its setter.
+        defines += `#define MAX_VOXEL_ROULETTE_TESTS ${this._maxVoxelRouletteTests}\n`;
         return defines;
     }
 

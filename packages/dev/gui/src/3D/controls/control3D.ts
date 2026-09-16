@@ -1,9 +1,9 @@
 import { type Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import { type TransformNode } from "core/Meshes/transformNode";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { AbstractMesh } from "core/Meshes/abstractMesh.pure";
 import { type IBehaviorAware, type Behavior } from "core/Behaviors/behavior";
 import { type IDisposable, type Scene } from "core/scene";
 

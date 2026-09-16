@@ -29,6 +29,17 @@
                 "typeName": "number",
                 "defaultValue": 0
               }
+            },
+            {
+              "uniqueId": "fg-00000008",
+              "name": "event",
+              "_connectionType": 1,
+              "connectedPointIds": [],
+              "className": "FlowGraphDataConnection",
+              "richType": {
+                "typeName": "string",
+                "defaultValue": ""
+              }
             }
           ],
           "signalInputs": [],
@@ -44,7 +55,7 @@
               "name": "done",
               "_connectionType": 1,
               "connectedPointIds": [
-                "fg-00000012"
+                "fg-00000013"
               ]
             },
             {
@@ -63,11 +74,11 @@
           "config": {
             "variable": "counter"
           },
-          "uniqueId": "fg-00000008",
+          "uniqueId": "fg-00000009",
           "dataInputs": [],
           "dataOutputs": [
             {
-              "uniqueId": "fg-00000009",
+              "uniqueId": "fg-0000000a",
               "name": "value",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -89,11 +100,11 @@
             "value": 1,
             "type": "number"
           },
-          "uniqueId": "fg-0000000a",
+          "uniqueId": "fg-0000000b",
           "dataInputs": [],
           "dataOutputs": [
             {
-              "uniqueId": "fg-0000000b",
+              "uniqueId": "fg-0000000c",
               "name": "output",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -112,14 +123,14 @@
         {
           "className": "FlowGraphAddBlock",
           "config": {},
-          "uniqueId": "fg-0000000c",
+          "uniqueId": "fg-0000000d",
           "dataInputs": [
             {
-              "uniqueId": "fg-0000000d",
+              "uniqueId": "fg-0000000e",
               "name": "a",
               "_connectionType": 0,
               "connectedPointIds": [
-                "fg-00000009"
+                "fg-0000000a"
               ],
               "className": "FlowGraphDataConnection",
               "richType": {
@@ -128,11 +139,11 @@
               "optional": false
             },
             {
-              "uniqueId": "fg-0000000e",
+              "uniqueId": "fg-0000000f",
               "name": "b",
               "_connectionType": 0,
               "connectedPointIds": [
-                "fg-0000000b"
+                "fg-0000000c"
               ],
               "className": "FlowGraphDataConnection",
               "richType": {
@@ -143,7 +154,7 @@
           ],
           "dataOutputs": [
             {
-              "uniqueId": "fg-0000000f",
+              "uniqueId": "fg-00000010",
               "name": "value",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -153,7 +164,7 @@
               }
             },
             {
-              "uniqueId": "fg-00000010",
+              "uniqueId": "fg-00000011",
               "name": "isValid",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -175,14 +186,14 @@
           "config": {
             "variable": "counter"
           },
-          "uniqueId": "fg-00000011",
+          "uniqueId": "fg-00000012",
           "dataInputs": [
             {
-              "uniqueId": "fg-00000015",
+              "uniqueId": "fg-00000016",
               "name": "value",
               "_connectionType": 0,
               "connectedPointIds": [
-                "fg-0000000f"
+                "fg-00000010"
               ],
               "className": "FlowGraphDataConnection",
               "richType": {
@@ -194,7 +205,7 @@
           "dataOutputs": [],
           "signalInputs": [
             {
-              "uniqueId": "fg-00000012",
+              "uniqueId": "fg-00000013",
               "name": "in",
               "_connectionType": 0,
               "connectedPointIds": []
@@ -202,15 +213,15 @@
           ],
           "signalOutputs": [
             {
-              "uniqueId": "fg-00000013",
+              "uniqueId": "fg-00000014",
               "name": "out",
               "_connectionType": 1,
               "connectedPointIds": [
-                "fg-00000017"
+                "fg-00000018"
               ]
             },
             {
-              "uniqueId": "fg-00000014",
+              "uniqueId": "fg-00000015",
               "name": "error",
               "_connectionType": 1,
               "connectedPointIds": []
@@ -223,14 +234,14 @@
         {
           "className": "FlowGraphConsoleLogBlock",
           "config": {},
-          "uniqueId": "fg-00000016",
+          "uniqueId": "fg-00000017",
           "dataInputs": [
             {
-              "uniqueId": "fg-0000001a",
+              "uniqueId": "fg-0000001b",
               "name": "message",
               "_connectionType": 0,
               "connectedPointIds": [
-                "fg-0000000f"
+                "fg-00000010"
               ],
               "className": "FlowGraphDataConnection",
               "richType": {
@@ -239,7 +250,7 @@
               "optional": false
             },
             {
-              "uniqueId": "fg-0000001b",
+              "uniqueId": "fg-0000001c",
               "name": "logType",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -253,7 +264,7 @@
           "dataOutputs": [],
           "signalInputs": [
             {
-              "uniqueId": "fg-00000017",
+              "uniqueId": "fg-00000018",
               "name": "in",
               "_connectionType": 0,
               "connectedPointIds": []
@@ -261,13 +272,13 @@
           ],
           "signalOutputs": [
             {
-              "uniqueId": "fg-00000018",
+              "uniqueId": "fg-00000019",
               "name": "out",
               "_connectionType": 1,
               "connectedPointIds": []
             },
             {
-              "uniqueId": "fg-00000019",
+              "uniqueId": "fg-0000001a",
               "name": "error",
               "_connectionType": 1,
               "connectedPointIds": []

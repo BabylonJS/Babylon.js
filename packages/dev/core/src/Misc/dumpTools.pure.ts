@@ -34,7 +34,7 @@ async function _CreateDumpResourcesAsync(): Promise<DumpResources> {
 
     // If WebGL via ThinEngine is not available, we cannot encode the data.
     // If https://github.com/whatwg/html/issues/10142 is resolved, we can migrate to just BitmapRenderer and avoid an engine dependency altogether.
-    const { ThinEngine: thinEngineClass } = await import("../Engines/thinEngine");
+    const { ThinEngine: thinEngineClass } = await import("../Engines/thinEngine.pure");
     if (!thinEngineClass.IsSupported) {
         throw new Error("DumpData: No WebGL context available. Cannot dump data.");
     }

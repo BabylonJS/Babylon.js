@@ -11,7 +11,7 @@ import { FreeCamera } from "core/Cameras/freeCamera.pure";
 import { type Animation } from "core/Animations/animation";
 import { type IAnimatable } from "core/Animations/animatable.interface";
 import { type IAnimationKey, AnimationKeyInterpolation } from "core/Animations/animationKey";
-import { type AnimationGroup } from "core/Animations/animationGroup";
+import { type AnimationGroup } from "core/Animations/animationGroup.pure";
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { Material } from "core/Materials/material";
@@ -68,10 +68,11 @@ import { type IGLTFLoader, type IGLTFLoaderData, GLTFFileLoader, GLTFLoaderState
 import { type IDataBuffer } from "core/Misc/dataReader";
 import { DecodeBase64UrlToBinary, GetMimeType, IsBase64DataUrl, LoadFileError } from "core/Misc/fileTools.pure";
 import { Logger } from "core/Misc/logger";
+import { RandomGUID } from "core/Misc/guid";
 import { type Light } from "core/Lights/light";
 import { BoundingInfo } from "core/Culling/boundingInfo";
 import { type AssetContainer } from "core/assetContainer";
-import { type AnimationPropertyInfo } from "./glTFLoaderAnimation";
+import { type AnimationPropertyInfo } from "./glTFLoaderAnimation.pure";
 import { type IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
 import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension, type GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
 import { type IInterpolationPropertyInfo } from "core/FlowGraph/typeDefinitions";
@@ -82,8 +83,8 @@ import { Lazy } from "core/Misc/lazy";
 import { type IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 
 // Caching these dynamic imports gives a surprising perf boost (compared to importing them directly each time).
-const LazyAnimationGroupModulePromise = /*#__PURE__*/ new Lazy(() => import("core/Animations/animationGroup"));
-const LazyLoaderAnimationModulePromise = /*#__PURE__*/ new Lazy(() => import("./glTFLoaderAnimation"));
+const LazyAnimationGroupModulePromise = /*#__PURE__*/ new Lazy(() => import("core/Animations/animationGroup.pure"));
+const LazyLoaderAnimationModulePromise = /*#__PURE__*/ new Lazy(() => import("./glTFLoaderAnimation.pure"));
 
 export { GLTFFileLoader };
 
@@ -455,7 +456,7 @@ export class GLTFLoader implements IGLTFLoader {
         return await Promise.resolve()
             .then(async () => {
                 this._rootUrl = rootUrl;
-                this._uniqueRootUrl = !rootUrl.startsWith("file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
+                this._uniqueRootUrl = !rootUrl.startsWith("file:") && fileName ? rootUrl : `${rootUrl}${RandomGUID()}/`;
                 this._fileName = fileName;
                 this._allMaterialsDirtyRequired = false;
 
@@ -570,7 +571,7 @@ export class GLTFLoader implements IGLTFLoader {
                     promises.push(this._compileShadowGeneratorsAsync());
                 }
 
-                const resultPromise = Promise.all(promises).then(() => {
+                const resultPromise = Promise.all(promises).then(async () => {
                     if (this._rootBabylonMesh && this._rootBabylonMesh !== this._parent.customRootNode) {
                         this._rootBabylonMesh.setEnabled(true);
                     }
@@ -591,7 +592,7 @@ export class GLTFLoader implements IGLTFLoader {
                         this._completePromises.push(adapter.finalizeAsync(this));
                     }
 
-                    this._extensionsOnReady();
+                    await this._extensionsOnReadyAsync();
                     this._parent._setState(GLTFLoaderState.READY);
                     if (!this._skipStartAnimationStep) {
                         this._startAnimations();
@@ -1863,7 +1864,8 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         // async-load the animation sampler to provide the interpolation of the channelTargetPath
-        return LazyLoaderAnimationModulePromise.value.then(() => {
+        return LazyLoaderAnimationModulePromise.value.then(({ RegisterGLTFLoaderAnimation: registerGLTFLoaderAnimation }) => {
+            registerGLTFLoaderAnimation();
             let properties: IInterpolationPropertyInfo[];
             switch (channelTargetPath) {
                 case AnimationChannelTargetPath.TRANSLATION: {
@@ -2768,7 +2770,7 @@ export class GLTFLoader implements IGLTFLoader {
             return extensionPromise;
         }
 
-        if (!GLTFLoader._ValidateUri(uri)) {
+        if (!this._parent._isPreprocessUrlAsyncSet && !GLTFLoader._ValidateUri(uri)) {
             throw new Error(`${context}: '${uri}' is invalid`);
         }
 
@@ -2780,7 +2782,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         this.log(`${context}: Loading ${uri}`);
 
-        return this._parent.preprocessUrlAsync(this._rootUrl + uri).then((url) => {
+        return this._parent.preprocessUrlAsync(this._rootUrl + uri, this._rootUrl ?? undefined).then((url) => {
             return new Promise((resolve, reject) => {
                 this._parent._loadFile(
                     this._babylonScene,
@@ -3042,8 +3044,13 @@ export class GLTFLoader implements IGLTFLoader {
         this._forEachExtensions((extension) => extension.onLoading && extension.onLoading());
     }
 
-    private _extensionsOnReady(): void {
-        this._forEachExtensions((extension) => extension.onReady && extension.onReady());
+    private async _extensionsOnReadyAsync(): Promise<void> {
+        for (const extension of this._extensions) {
+            if (extension.enabled && extension.onReady) {
+                // eslint-disable-next-line no-await-in-loop -- extension order can define readiness dependencies
+                await extension.onReady();
+            }
+        }
     }
 
     private _extensionsLoadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {

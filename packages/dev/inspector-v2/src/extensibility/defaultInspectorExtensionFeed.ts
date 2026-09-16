@@ -30,8 +30,9 @@ export const DefaultInspectorExtensionFeed = new BuiltInsExtensionFeed("Inspecto
     },
     {
         name: "Reflector",
-        description: "Connects to the Reflector Bridge for real-time scene synchronization with the Babylon.js Sandbox.",
-        keywords: ["reflector", "bridge", "sync", "sandbox", "tools"],
+        description:
+            "Sends a serialized snapshot of the scene to the Babylon.js Sandbox through the Reflector Bridge. The snapshot is sent once and is read-only, so it does not stay in sync with this scene.",
+        keywords: ["reflector", "bridge", "snapshot", "sync", "sandbox", "tools"],
         ...BabylonWebResources,
         getExtensionModuleAsync: async () => await import("../services/panes/tools/reflectorService"),
     },

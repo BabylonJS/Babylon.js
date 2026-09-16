@@ -403,7 +403,7 @@ export class UtilityLayerRenderer implements IDisposable {
         this.onPointerOutObservable.clear();
 
         if (this._afterRenderObserver) {
-            this.originalScene.onAfterCameraRenderObservable.remove(this._afterRenderObserver);
+            this.originalScene.onAfterRenderCameraObservable.remove(this._afterRenderObserver);
         }
         if (this._sceneDisposeObserver) {
             this.originalScene.onDisposeObservable.remove(this._sceneDisposeObserver);

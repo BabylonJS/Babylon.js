@@ -1,5 +1,5 @@
-import { Tools } from "core/Misc/tools";
-import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { Tools } from "core/Misc/tools.pure";
+import { TmpVectors, Vector3 } from "core/Maths/math.vector.pure";
 import { type float } from "core/types";
 
 import { VolumeBasedPanel } from "./volumeBasedPanel";

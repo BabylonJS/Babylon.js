@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { type TransformNode } from "core/Meshes/transformNode";
 import { type Scene } from "core/scene";
 import { Control3D } from "./control3D";
-import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder.pure";
 import { PointerDragBehavior } from "core/Behaviors/Meshes/pointerDragBehavior";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { MRDLSliderBarMaterial } from "../materials/mrdl/mrdlSliderBarMaterial.pure";
 import { MRDLSliderThumbMaterial } from "../materials/mrdl/mrdlSliderThumbMaterial.pure";
 import { MRDLBackplateMaterial } from "../materials/mrdl/mrdlBackplateMaterial.pure";
-import { Tools } from "core/Misc/tools";
+import { Tools } from "core/Misc/tools.pure";
 
 const SLIDER_MIN: number = 0;
 const SLIDER_MAX: number = 100;

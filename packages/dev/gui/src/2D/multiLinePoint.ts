@@ -1,6 +1,6 @@
 import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { Epsilon } from "core/Maths/math.constants";
 import { type Camera } from "core/Cameras/camera";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
@@ -142,8 +142,8 @@ export class MultiLinePoint {
         } else {
             const host: any = this._multiLine._host as any;
 
-            const xValue: number = this._x.getValueInPixel(host, Number(host._canvas.width));
-            const yValue: number = this._y.getValueInPixel(host, Number(host._canvas.height));
+            const xValue: number = this._multiLine._getValueInPixel(this._x, Number(host._canvas.width));
+            const yValue: number = this._multiLine._getValueInPixel(this._y, Number(host._canvas.height));
 
             return new Vector3(xValue, yValue, 1 - Epsilon);
         }

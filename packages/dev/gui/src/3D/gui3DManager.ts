@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Nullable } from "core/types";
 import { type Observer, Observable } from "core/Misc/observable";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { type PointerInfo, PointerEventTypes } from "core/Events/pointerEvents";
 import { type Material } from "core/Materials/material";
-import { HemisphericLight } from "core/Lights/hemisphericLight";
+import { HemisphericLight } from "core/Lights/hemisphericLight.pure";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { EngineStore } from "core/Engines/engineStore";

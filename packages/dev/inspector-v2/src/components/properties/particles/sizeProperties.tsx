@@ -10,6 +10,7 @@ import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";
 import { BoundProperty } from "../boundProperty";
 import { useObservableArray } from "../../../hooks/useObservableArray";
+import { SortAndRefreshParticleGradients } from "./particleGradientUtils";
 
 const useStyles = makeStyles({
     subsection: {
@@ -87,7 +88,7 @@ export const ParticleSystemSizeProperties: FunctionComponent<{ particleSystem: P
                             system.forceRefreshGradients();
                         }}
                         onChange={(_gradient: FactorGradient) => {
-                            system.forceRefreshGradients();
+                            SortAndRefreshParticleGradients(system, system.getStartSizeGradients());
                         }}
                     />
                 </>
@@ -122,7 +123,7 @@ export const ParticleSystemSizeProperties: FunctionComponent<{ particleSystem: P
                             system.forceRefreshGradients();
                         }}
                         onChange={(_gradient: FactorGradient) => {
-                            system.forceRefreshGradients();
+                            SortAndRefreshParticleGradients(system, system.getSizeGradients());
                         }}
                     />
                 </>

@@ -464,5 +464,6 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
                 matl.dispose();
             }
         }
+        super.dispose();
     }
 }

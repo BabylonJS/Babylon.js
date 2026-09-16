@@ -6,6 +6,8 @@ import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { WebXRInputSource } from "core/XR/webXRInputSource";
 import { Quaternion } from "core/Maths/math.vector";
+import { WebXRGenericTriggerMotionController } from "core/XR/motionController/webXRGenericMotionController";
+import { WebXRMotionControllerManager } from "core/XR/motionController/webXRMotionControllerManager";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 
 /**
@@ -21,6 +23,19 @@ function createMockInputSource(overrides: Partial<XRInputSource> = {}): XRInputS
         gamepad: null,
         ...overrides,
     } as XRInputSource;
+}
+
+function createMockGamepad(): Gamepad {
+    return {
+        axes: [],
+        buttons: [{ value: 0, touched: false, pressed: false }],
+        connected: true,
+        id: "test-gamepad",
+        index: 0,
+        mapping: "xr-standard",
+        timestamp: 0,
+        vibrationActuator: null,
+    };
 }
 
 describe("WebXRInputSource", () => {
@@ -39,9 +54,31 @@ describe("WebXRInputSource", () => {
     });
 
     afterEach(() => {
+        vi.restoreAllMocks();
         scene.dispose();
         engine.dispose();
     });
+
+    async function createTrackedInputSource(skipRendering: boolean | undefined, doNotLoadControllerMesh = false) {
+        const gamepad = createMockGamepad();
+        const motionController = new WebXRGenericTriggerMotionController(scene, gamepad, "right");
+        const loadModel = vi.spyOn(motionController, "loadModel").mockResolvedValue(true);
+        vi.spyOn(WebXRMotionControllerManager, "GetMotionControllerWithXRInput").mockResolvedValue(motionController);
+
+        const source = new WebXRInputSource(
+            scene,
+            createMockInputSource({
+                gamepad,
+                skipRendering,
+            }),
+            { doNotLoadControllerMesh }
+        );
+        const motionControllerInitialized = vi.fn();
+        source.onMotionControllerInitObservable.add(motionControllerInitialized);
+        await vi.waitFor(() => expect(source.motionController).toBe(motionController));
+
+        return { source, motionController, loadModel, motionControllerInitialized };
+    }
 
     describe("construction", () => {
         it("creates with a unique id", () => {
@@ -120,6 +157,64 @@ describe("WebXRInputSource", () => {
         it("has onMotionControllerInitObservable", () => {
             const source = new WebXRInputSource(scene, createMockInputSource(), { doNotLoadControllerMesh: true });
             expect(source.onMotionControllerInitObservable).toBeDefined();
+            source.dispose();
+        });
+    });
+
+    describe("skipRendering", () => {
+        it("keeps the motion controller lifecycle active without loading its default model", async () => {
+            const { source, motionController, loadModel, motionControllerInitialized } = await createTrackedInputSource(true);
+            const disposeCallback = vi.fn();
+            const disposeMotionController = vi.spyOn(motionController, "dispose");
+            source.onDisposeObservable.add(disposeCallback);
+
+            expect(source.pointer).toBeDefined();
+            expect(source.grip).toBeDefined();
+            expect(source.motionController).toBe(motionController);
+            expect(motionControllerInitialized).toHaveBeenCalledOnce();
+            expect(motionControllerInitialized.mock.calls[0][0]).toBe(motionController);
+            expect(loadModel).not.toHaveBeenCalled();
+            expect(motionController.rootMesh).toBeFalsy();
+
+            source.dispose();
+
+            expect(disposeMotionController).toHaveBeenCalledOnce();
+            expect(disposeCallback).toHaveBeenCalledOnce();
+            expect(disposeCallback.mock.calls[0][0]).toBe(source);
+        });
+
+        it.each([undefined, false])("loads the default model when skipRendering is %s", async (skipRendering) => {
+            const { source, loadModel } = await createTrackedInputSource(skipRendering);
+
+            expect(loadModel).toHaveBeenCalledOnce();
+
+            source.dispose();
+        });
+
+        it("preserves explicit controller mesh suppression", async () => {
+            const { source, loadModel } = await createTrackedInputSource(false, true);
+
+            expect(loadModel).not.toHaveBeenCalled();
+
+            source.dispose();
+        });
+
+        it.each(["gaze", "screen"] as const)("does not change %s input source handling", async (targetRayMode) => {
+            const getMotionController = vi.spyOn(WebXRMotionControllerManager, "GetMotionControllerWithXRInput");
+            const source = new WebXRInputSource(
+                scene,
+                createMockInputSource({
+                    gamepad: createMockGamepad(),
+                    skipRendering: true,
+                    targetRayMode,
+                })
+            );
+            await Promise.resolve();
+
+            expect(source.pointer).toBeDefined();
+            expect(source.motionController).toBeUndefined();
+            expect(getMotionController).not.toHaveBeenCalled();
+
             source.dispose();
         });
     });

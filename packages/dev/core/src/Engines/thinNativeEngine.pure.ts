@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Nullable, type IndicesArray, type DataArray, type FloatArray, type DeepImmutable, type int } from "../types";
 
+import { type Scene } from "../scene.pure";
 import { type VertexBuffer } from "../Buffers/buffer.pure";
 import { RegisterBufferAlign } from "../Buffers/buffer.align.pure";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
@@ -239,6 +240,11 @@ export class ThinNativeEngine extends ThinEngine {
     private _stencilOpStencilDepthPass: number;
     private _zOffset: number;
     private _zOffsetUnits: number;
+    private _cachedCulling: boolean;
+    private _cachedReverseSide: boolean;
+    private _cachedCullBackFaces: boolean;
+    private _cachedZOffset: number;
+    private _cachedZOffsetUnits: number;
     private _depthWrite: boolean;
     // warning for non supported fill mode has already been displayed
     private _fillModeWarningDisplayed: boolean;
@@ -281,6 +287,11 @@ export class ThinNativeEngine extends ThinEngine {
         this._stencilOpStencilDepthPass = Constants.REPLACE;
         this._zOffset = 0;
         this._zOffsetUnits = 0;
+        this._cachedCulling = true;
+        this._cachedReverseSide = false;
+        this._cachedCullBackFaces = true;
+        this._cachedZOffset = 0;
+        this._cachedZOffsetUnits = 0;
         this._depthWrite = true;
         // warning for non supported fill mode has already been displayed
         this._fillModeWarningDisplayed = false;
@@ -327,7 +338,7 @@ export class ThinNativeEngine extends ThinEngine {
             maxVaryingVectors: 16,
             maxDrawBuffers: 8,
             maxFragmentUniformVectors: 16,
-            maxVertexUniformVectors: 16,
+            maxVertexUniformVectors: 256,
             shaderFloatPrecision: 23, // TODO: is this correct?
             standardDerivatives: true,
             astc: null,
@@ -339,8 +350,8 @@ export class ThinNativeEngine extends ThinEngine {
             uintIndices: true,
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
-            colorBufferFloat: false,
-            blendFloat: false,
+            colorBufferFloat: true,
+            blendFloat: true,
             supportFloatTexturesResolve: false,
             rg11b10ufColorRenderable: false,
             textureFloat: true,
@@ -350,7 +361,7 @@ export class ThinNativeEngine extends ThinEngine {
             textureHalfFloatLinearFiltering: true,
             textureHalfFloatRender: true,
             textureLOD: true,
-            texelFetch: false,
+            texelFetch: true,
             drawBuffersExtension: true,
             depthTextureExtension: false,
             vertexArrayObject: true,
@@ -464,13 +475,36 @@ export class ThinNativeEngine extends ThinEngine {
         this._shaderProcessor = new NativeShaderProcessor();
 
         this.onNewSceneAddedObservable.add((scene) => {
-            const originalRender = scene.render;
-            scene.render = (...args: Parameters<typeof originalRender>) => {
-                this._commandBufferEncoder.beginCommandScope();
-                originalRender.apply(scene, args);
-                this._commandBufferEncoder.endCommandScope();
-            };
+            this._wrapSceneRenderWithCommandScope(scene);
         });
+    }
+
+    /**
+     * Brackets a scene's render with a command scope, so the commands it encodes are submitted together.
+     * @param scene the scene whose render should be wrapped
+     */
+    private _wrapSceneRenderWithCommandScope(scene: Scene): void {
+        const originalRender = scene.render;
+        scene.render = (...args: Parameters<typeof originalRender>) => {
+            this._commandBufferEncoder.beginCommandScope();
+            try {
+                originalRender.apply(scene, args);
+            } catch (renderException) {
+                // The scope must be closed even when the render throws. Otherwise it stays
+                // open forever and every later frame fails with "Command scope already
+                // active.", so one recoverable error permanently breaks the engine instead
+                // of affecting just this frame.
+                try {
+                    this._commandBufferEncoder.endCommandScope();
+                } catch (endException) {
+                    // Never let this replace the root cause; report it separately instead.
+                    Logger.Error(`Failed to end the command scope while unwinding a render error: ${endException}`);
+                }
+                throw renderException;
+            }
+
+            this._commandBufferEncoder.endCommandScope();
+        };
     }
 
     public override setHardwareScalingLevel(level: number): void {
@@ -992,8 +1026,25 @@ export class ThinNativeEngine extends ThinEngine {
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
-    public override setStateCullFaceType(_cullBackFaces?: boolean, _force?: boolean): void {
-        throw new Error("setStateCullFaceType: Not Implemented");
+    public override setStateCullFaceType(cullBackFaces?: boolean, force?: boolean): void {
+        const cullBack = this.cullBackFaces ?? cullBackFaces ?? true;
+        if (this._cachedCullBackFaces === cullBack && !force) {
+            return;
+        }
+        this._cachedCullBackFaces = cullBack;
+
+        // Native uses an immediate command-buffer state model (no lazy _depthCullingState), so
+        // re-issue the last COMMAND_SETSTATE payload with only the cull face changed. The zOffset
+        // values are the ones that command actually encoded rather than the live _zOffset fields,
+        // which setZOffset()/setZOffsetUnits() can update independently (and encode with the
+        // opposite sign under a reverse depth buffer).
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSTATE);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(this._cachedCulling ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(this._cachedZOffset);
+        this._commandBufferEncoder.encodeCommandArgAsFloat32(this._cachedZOffsetUnits);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(cullBack ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(this._cachedReverseSide ? 1 : 0);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     public override setState(
@@ -1018,6 +1069,13 @@ export class ThinNativeEngine extends ThinEngine {
         this._commandBufferEncoder.encodeCommandArgAsUInt32((this.cullBackFaces ?? cullBackFaces ?? true) ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(reverseSide ? 1 : 0);
         this._commandBufferEncoder.finishEncodingCommand();
+
+        // Cache the resolved state so setStateCullFaceType() can re-issue it with a new cull face.
+        this._cachedCulling = culling;
+        this._cachedReverseSide = reverseSide;
+        this._cachedCullBackFaces = this.cullBackFaces ?? cullBackFaces ?? true;
+        this._cachedZOffset = zOffset;
+        this._cachedZOffsetUnits = zOffsetUnits;
     }
 
     /**
@@ -2168,6 +2226,26 @@ export class ThinNativeEngine extends ThinEngine {
 
         const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
+
+        // Populate the standard depth/stencil texture metadata, mirroring ThinEngine._setupDepthStencilTexture.
+        // In particular `samples` must be set so consumers such as the FrameGraph texture manager report the
+        // correct sample count; leaving it at the InternalTexture default (0) breaks FrameGraph MSAA
+        // depth/output sample-count validation. `is2DArray`/`depth` matter for the texture-array depth targets
+        // used by cascaded shadow maps.
+        texture.baseWidth = width;
+        texture.baseHeight = height;
+        texture.width = width;
+        texture.height = height;
+        texture.is2DArray = layers > 0;
+        texture.depth = layers || depth;
+        texture.isReady = true;
+        texture.samples = samples;
+        texture.generateMipMaps = false;
+        texture.samplingMode = options.bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        texture._comparisonFunction = options.comparisonFunction ?? 0;
 
         const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, generateStencil, true, samples);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
@@ -2641,6 +2719,18 @@ export class ThinNativeEngine extends ThinEngine {
     public override bindAttachments(_attachments: number[]): void {
         // No-op on Native: bgfx renders to every color attachment of the bound framebuffer, so there is
         // no gl.drawBuffers equivalent to select a subset.
+    }
+
+    public override clearAttachments(
+        color: Nullable<IColor4Like>,
+        attachments: number[],
+        clearColor: boolean,
+        clearDepth: boolean,
+        clearStencil = false,
+        stencilClearValue = 0
+    ): void {
+        this.bindAttachments(attachments);
+        this.clear(color, clearColor, clearDepth, clearStencil, stencilClearValue);
     }
 
     public override buildTextureLayout(textureStatus: boolean[], _backBufferLayout = false): number[] {

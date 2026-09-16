@@ -1,7 +1,7 @@
 import { type Scene } from "core/scene";
-import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import { TransformNode } from "core/Meshes/transformNode";
-import { Vector3 } from "core/Maths/math.vector";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder.pure";
+import { TransformNode } from "core/Meshes/transformNode.pure";
+import { Vector3 } from "core/Maths/math.vector.pure";
 import { HandleMaterial } from "../materials/handle/handleMaterial.pure";
 import { type SlateGizmo } from "./slateGizmo";
 import { BaseSixDofDragBehavior } from "core/Behaviors/Meshes/baseSixDofDragBehavior";

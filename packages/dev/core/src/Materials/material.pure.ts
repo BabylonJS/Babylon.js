@@ -2143,9 +2143,9 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      */
     public static ParseAlphaMode(parsedMaterial: any, material: Material) {
         if (parsedMaterial._alphaMode !== undefined) {
-            material._alphaMode = Array.isArray(parsedMaterial._alphaMode) ? parsedMaterial._alphaMode : [parsedMaterial._alphaMode];
+            material._alphaMode = Array.isArray(parsedMaterial._alphaMode) ? [...parsedMaterial._alphaMode] : [parsedMaterial._alphaMode];
         } else if (parsedMaterial.alphaMode !== undefined) {
-            material._alphaMode = Array.isArray(parsedMaterial.alphaMode) ? parsedMaterial.alphaMode : [parsedMaterial.alphaMode];
+            material._alphaMode = Array.isArray(parsedMaterial.alphaMode) ? [...parsedMaterial.alphaMode] : [parsedMaterial.alphaMode];
         } else {
             material._alphaMode = [Constants.ALPHA_COMBINE];
         }

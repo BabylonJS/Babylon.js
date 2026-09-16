@@ -4,7 +4,8 @@ import { Constants } from "../../Engines/constants";
 import { EngineStore } from "../../Engines/engineStore";
 import { Matrix, Vector3, Vector4, Quaternion } from "../../Maths/math.vector.pure";
 import { type Mesh } from "../../Meshes/mesh.pure";
-import { type GaussianSplattingMesh, IsGaussianSplattingClassName } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { type GaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
+import { _IsGaussianSplattingMesh } from "../../Meshes/GaussianSplatting/gaussianSplatting.functions";
 import { type Scene } from "../../scene.pure";
 import { Texture } from "../../Materials/Textures/texture.pure";
 import { Logger } from "../../Misc/logger";
@@ -25,11 +26,9 @@ import { RegisterIblCdfGeneratorSceneComponent } from "core/Rendering/iblCdfGene
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RawTexture3D } from "core/Materials/Textures/rawTexture3D";
 import { IBLShadowsPluginMaterial } from "./iblShadowsPluginMaterial.pure";
-import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial.pure";
-import { StandardMaterial } from "core/Materials/standardMaterial.pure";
+import { IsIBLShadowsReceiverCompatible } from "./iblShadowsMaterialCompatibility.pure";
 import { type Material } from "core/Materials/material.pure";
 import { Observable } from "core/Misc/observable.pure";
-import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial.pure";
 import { Tools } from "../../Misc/tools.pure";
 
 interface IIblShadowsSettings {
@@ -112,6 +111,13 @@ interface IIblShadowsSettings {
      * region so shouldn't need to change if you scale your scene.
      */
     ssShadowThicknessScale?: number;
+
+    /**
+     * Maximum number of translucent voxels a shadow ray roulettes through before it is treated as
+     * unoccluded (default 16). Higher values converge more accurately through thick translucent volumes
+     * (e.g. dense Gaussian splats) at extra cost. Opaque voxels always block on first contact.
+     */
+    maxVoxelRouletteTests?: number;
 }
 
 /**
@@ -231,6 +237,21 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             return;
         }
         this._voxelTracingPass.voxelShadowOpacity = value;
+    }
+
+    /**
+     * Maximum number of translucent voxels a shadow ray roulettes through before it is treated as
+     * unoccluded. Higher values converge more accurately at extra cost. Opaque voxels always block.
+     */
+    public get maxVoxelRouletteTests(): number {
+        return this._voxelTracingPass?.maxVoxelRouletteTests;
+    }
+
+    public set maxVoxelRouletteTests(value: number) {
+        if (!this._voxelTracingPass) {
+            return;
+        }
+        this._voxelTracingPass.maxVoxelRouletteTests = value;
     }
 
     /**
@@ -515,7 +536,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             for (const m of mesh) {
                 if (m && this._shadowCastingMeshes.indexOf(m) === -1) {
                     this._shadowCastingMeshes.push(m);
-                    if (IsGaussianSplattingClassName(m.getClassName())) {
+                    if (_IsGaussianSplattingMesh(m)) {
                         (m as GaussianSplattingMesh).needsRotationScaleTextures = true;
                     }
                 }
@@ -523,7 +544,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         } else {
             if (mesh && this._shadowCastingMeshes.indexOf(mesh) === -1) {
                 this._shadowCastingMeshes.push(mesh);
-                if (IsGaussianSplattingClassName(mesh.getClassName())) {
+                if (_IsGaussianSplattingMesh(mesh)) {
                     (mesh as GaussianSplattingMesh).needsRotationScaleTextures = true;
                 }
             }
@@ -541,7 +562,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 const index = this._shadowCastingMeshes.indexOf(m);
                 if (index !== -1) {
                     this._shadowCastingMeshes.splice(index, 1);
-                    if (IsGaussianSplattingClassName(m.getClassName())) {
+                    if (_IsGaussianSplattingMesh(m)) {
                         (m as GaussianSplattingMesh).needsRotationScaleTextures = false;
                     }
                 }
@@ -550,7 +571,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             const index = this._shadowCastingMeshes.indexOf(mesh);
             if (index !== -1) {
                 this._shadowCastingMeshes.splice(index, 1);
-                if (IsGaussianSplattingClassName(mesh.getClassName())) {
+                if (_IsGaussianSplattingMesh(mesh)) {
                     (mesh as GaussianSplattingMesh).needsRotationScaleTextures = false;
                 }
             }
@@ -562,7 +583,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      */
     public clearShadowCastingMeshes(): void {
         for (const m of this._shadowCastingMeshes) {
-            if (IsGaussianSplattingClassName(m.getClassName())) {
+            if (_IsGaussianSplattingMesh(m)) {
                 (m as GaussianSplattingMesh).needsRotationScaleTextures = false;
             }
         }
@@ -809,7 +830,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._geometryBufferRenderer.enableNormal = true;
         this._geometryBufferRenderer.generateNormalsInWorldSpace = true;
         this.scene.enableIblCdfGenerator();
-        this.shadowOpacity = options.shadowOpacity || 0.8;
+        this.shadowOpacity = options.shadowOpacity ?? 0.8;
         this._voxelRenderer = new _IblShadowsVoxelRenderer(
             this.scene,
             this,
@@ -832,6 +853,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.ssShadowStride = options.ssShadowStride || 8;
         this.ssShadowThicknessScale = options.ssShadowThicknessScale || 1.0;
         this.shadowRemanence = options.shadowRemanence ?? 0.75;
+        this.maxVoxelRouletteTests = options.maxVoxelRouletteTests ?? 16;
         this._noiseTexture = new Texture(
             Tools.GetAssetUrl("https://assets.babylonjs.com/core/blue_noise/blue_noise_rgb.png"),
             this.scene,
@@ -1101,7 +1123,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     protected _addShadowSupportToMaterial(material: Material) {
-        if (!(material instanceof PBRBaseMaterial) && !(material instanceof StandardMaterial) && !(material instanceof OpenPBRMaterial)) {
+        if (!IsIBLShadowsReceiverCompatible(material)) {
             return;
         }
         let plugin = material.pluginManager?.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name);

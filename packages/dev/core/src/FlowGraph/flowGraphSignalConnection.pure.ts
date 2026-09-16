@@ -58,11 +58,17 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
             if (context._shouldBreak(this._ownerBlock, this)) {
                 return; // Execution paused — stored as pending activation
             }
+            // Start a new execution frame BEFORE executing the node: an output value socket (a random
+            // value, for instance) retains its value until a node with one or more flow sockets is
+            // executed, after which it is recomputed on the next access. Because flow execution is
+            // synchronous and nested, the id must be increased before the block runs so each flow
+            // socket activation (including loop self-activations) observes a fresh frame, while
+            // staying constant within a single block execution so per-frame value caching still works.
+            context._increaseExecutionId();
             context._notifyExecuteNode(this._ownerBlock);
             const startTime = performance.now();
             this._ownerBlock._execute(context, this);
             this._ownerBlock._lastExecutionTime = performance.now() - startTime;
-            context._increaseExecutionId();
         } else {
             for (const connectedPoint of this._connectedPoint) {
                 connectedPoint._activateSignal(context);

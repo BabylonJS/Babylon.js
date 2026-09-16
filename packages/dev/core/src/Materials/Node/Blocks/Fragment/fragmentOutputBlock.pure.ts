@@ -106,6 +106,8 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("logarithmicDepthConstant");
         state._excludeVariableName("vFragmentDepth");
+        state._excludeVariableName("objectId");
+        state._excludeVariableName("meshBlendTag");
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
@@ -114,9 +116,9 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/helperFunctions");
+            await Promise.all([import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"), import("../../../../ShadersWGSL/ShadersInclude/objectIdFunctions")]);
         } else {
-            await import("../../../../Shaders/ShadersInclude/helperFunctions");
+            await Promise.all([import("../../../../Shaders/ShadersInclude/helperFunctions"), import("../../../../Shaders/ShadersInclude/objectIdFunctions")]);
         }
 
         this._codeIsReady = true;
@@ -160,6 +162,18 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
     protected _getOutputString(state: NodeMaterialBuildState): string {
         return state.shaderLanguage === ShaderLanguage.WGSL ? "fragmentOutputsColor" : "gl_FragColor";
+    }
+
+    private _writePrePassOutput(state: NodeMaterialBuildState, define: string, indexDefine: string, value: string): string {
+        if (state.shaderLanguage !== ShaderLanguage.WGSL) {
+            return `#ifdef ${define}\r\nWRITE_GEOMETRY_FRAGMENT_OUTPUT(${indexDefine}, ${value});\r\n#endif\r\n`;
+        }
+
+        let code = "";
+        for (let index = 0; index < 8; index++) {
+            code += `#if defined(${define}) && ${indexDefine} == ${index}\r\nfragmentOutputs.fragData${index} = ${value};\r\n#endif\r\n`;
+        }
+        return code;
     }
 
     /**
@@ -216,6 +230,9 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
         const comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);
+        state._emitFunctionFromInclude("objectIdFunctions", comments, { define: "PREPASS_OBJECT_ID" });
+        state._emitUniformFromString("objectId", NodeMaterialBlockConnectionPointTypes.Float, "PREPASS_OBJECT_ID");
+        state._emitUniformFromString("meshBlendTag", NodeMaterialBlockConnectionPointTypes.Int, "PREPASS_MESH_BLEND_TAG");
 
         const outputString = this._getOutputString(state);
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
@@ -287,8 +304,22 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
             state.compilationString += `${output} = log2(${fragDepth}) * ${uniformP}logarithmicDepthConstant * 0.5;\n`;
         }
 
+        const uniformPrefix = isWebGPU ? "uniforms." : "";
         state.compilationString += `#if defined(PREPASS)\r\n`;
-        state.compilationString += `${isWebGPU ? "fragmentOutputs.fragData0" : "gl_FragData[0]"} = ${outputString};\r\n`;
+        state.compilationString += this._writePrePassOutput(state, "PREPASS_COLOR", "PREPASS_COLOR_INDEX", outputString);
+        state.compilationString += this._writePrePassOutput(state, "PREPASS_OBJECT_ID", "PREPASS_OBJECT_ID_INDEX", `encodeObjectId(${uniformPrefix}objectId)`);
+        if (isWebGPU) {
+            state.compilationString += this._writePrePassOutput(
+                state,
+                "PREPASS_MESH_BLEND_TAG",
+                "PREPASS_MESH_BLEND_TAG_INDEX",
+                `vec4u(u32(${uniformPrefix}meshBlendTag), 0u, 0u, 0u)`
+            );
+        } else {
+            state.compilationString += `#ifdef PREPASS_MESH_BLEND_TAG\r\n`;
+            state.compilationString += `meshBlendTagOutput = uvec4(uint(${uniformPrefix}meshBlendTag), 0u, 0u, 0u);\r\n`;
+            state.compilationString += `#endif\r\n`;
+        }
         state.compilationString += `#endif\r\n`;
 
         return this;

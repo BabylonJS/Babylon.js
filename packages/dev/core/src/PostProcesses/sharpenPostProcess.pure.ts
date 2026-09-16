@@ -108,8 +108,8 @@ export class SharpenPostProcess extends PostProcess {
                     targetCamera,
                     parsedPostProcess.renderTargetSamplingMode,
                     scene.getEngine(),
-                    parsedPostProcess.textureType,
-                    parsedPostProcess.reusable
+                    parsedPostProcess.reusable,
+                    parsedPostProcess.textureType
                 );
             },
             parsedPostProcess,

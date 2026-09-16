@@ -31,25 +31,23 @@ const updateCdnVersion = (version) => {
     const toolsData = fs.readFileSync(toolsFile, "utf-8");
     const newToolsData = toolsData.replace(/static _CdnVersion = "(.*)"/, `static _CdnVersion = "${version}"`);
     if (newToolsData === toolsData) {
-        console.warn("Warning: Could not find Tools._CdnVersion to update");
-    } else {
-        fs.writeFileSync(toolsFile, newToolsData);
-        console.log(`Updated Tools._CdnVersion to "${version}"`);
+        throw new Error("Could not find Tools._CdnVersion to update");
     }
+    fs.writeFileSync(toolsFile, newToolsData);
+    console.log(`Updated Tools._CdnVersion to "${version}"`);
 
     // Update Transcoder.CdnVersion in ktx2Decoder so CDN URLs are versioned at runtime
     const transcoderFile = path.join(baseDirectory, "packages", "tools", "ktx2Decoder", "src", "transcoder.ts");
     const transcoderData = fs.readFileSync(transcoderFile, "utf-8");
     const newTranscoderData = transcoderData.replace(/static CdnVersion = "(.*)"/, `static CdnVersion = "${version}"`);
     if (newTranscoderData === transcoderData) {
-        console.warn("Warning: Could not find Transcoder.CdnVersion to update");
-    } else {
-        fs.writeFileSync(transcoderFile, newTranscoderData);
-        console.log(`Updated Transcoder.CdnVersion to "${version}"`);
+        throw new Error("Could not find Transcoder.CdnVersion to update");
     }
+    fs.writeFileSync(transcoderFile, newTranscoderData);
+    console.log(`Updated Transcoder.CdnVersion to "${version}"`);
 };
 
-const updateSinceTag = (version) => {
+const updateSinceTag = async (version) => {
     // get all typescript files in the dev folder
     const files = glob.globSync(path.join(baseDirectory, "packages", "dev", "**", "*.ts").replace(/\\/g, "/"));
     files.forEach((file) => {
@@ -69,11 +67,11 @@ const updateSinceTag = (version) => {
                 fs.writeFileSync(file, newData);
             }
         } catch (e) {
-            console.log("updateSinceTag error", e);
+            throw new Error(`Could not update @since tags in ${file}`, { cause: e });
         }
     });
     // run formatter to make sure the package.json files are formatted
-    runCommand("npx prettier --write packages/public/**/package.json");
+    await runCommand("npx prettier --write packages/public/**/package.json");
 };
 
 // Babylon-scoped packages that are versioned independently from the monorepo and must NOT be bumped
@@ -137,7 +135,7 @@ const updatePeerDependencies = (version) => {
                 fs.writeFileSync(file, JSON.stringify(packageJson, null, 4));
             }
         } catch (e) {
-            console.log("updatePeerDependencies error", e);
+            throw new Error(`Could not update peer dependencies in ${file}`, { cause: e });
         }
     });
 };
@@ -168,7 +166,7 @@ const updatePackages = (version) => {
             // write file
             fs.writeFileSync(file, JSON.stringify(packageJson, null, 4));
         } catch (e) {
-            console.log("updatePackages error", e);
+            throw new Error(`Could not update package metadata in ${file}`, { cause: e });
         }
     });
 };
@@ -207,7 +205,7 @@ async function main() {
         console.log("Release notes written to .build/release-notes.md");
     }
     // update since tags
-    updateSinceTag(version);
+    await updateSinceTag(version);
     // if major, update peer dependencies
     if (config.versionDefinition === "major") {
         updatePeerDependencies(`^${version}`);
@@ -217,5 +215,8 @@ if (!branchName) {
     console.log("Please provide a branch name");
     process.exit(1);
 } else {
-    main();
+    main().catch((error) => {
+        console.error(error);
+        process.exitCode = 1;
+    });
 }

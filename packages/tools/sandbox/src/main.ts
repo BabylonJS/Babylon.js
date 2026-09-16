@@ -13,8 +13,16 @@
 import "loaders/glTF/2.0";
 // Register the FBX loader so .fbx files can be loaded via SceneLoader (drag-and-drop and the file picker).
 import "loaders/FBX/fbxFileLoader";
+// Register the OBJ loader explicitly so local drag-and-drop uses the dev loader implementation.
+import "loaders/OBJ/objFileLoader";
+// Register the USD loader for local files, related file sets, and dropped folders.
+import "loaders/USD/usdFileLoader";
 // Register Scene animation extensions (e.g. getAllAnimatablesByTarget) used by the Inspector's animation panel.
 import "core/Animations/animatable";
+// glTF scenes can reference a single mesh from multiple nodes, which the loader
+// realizes with InstancedMesh. In the tree-shaken dev build that side-effect is
+// not pulled in automatically, so import it explicitly here.
+import "core/Meshes/instancedMesh";
 import { Sandbox } from "./sandbox";
 
 const HostElement = document.getElementById("host-element") as HTMLElement;

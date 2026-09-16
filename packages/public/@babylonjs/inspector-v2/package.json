@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "9.19.1",
+    "version": "9.26.2",
     "main": "lib/index.js",
     "module": "lib/index.js",
     "esnext": "lib/index.js",
@@ -9,6 +9,10 @@
         ".": {
             "types": "./lib/index.d.ts",
             "default": "./lib/index.js"
+        },
+        "./lite": {
+            "types": "./lib/lite/index.d.ts",
+            "default": "./lib/lite/index.js"
         },
         "./package.json": "./package.json"
     },
@@ -36,8 +40,13 @@
         "@babylonjs/core": "^9.0.0",
         "@babylonjs/gui": "^9.0.0",
         "@babylonjs/gui-editor": "^9.0.0",
+        "@babylonjs/lite": "^1.27.0",
         "@babylonjs/loaders": "^9.0.0",
         "@babylonjs/materials": "^9.0.0",
+        "@babylonjs/node-editor": "^9.0.0",
+        "@babylonjs/node-geometry-editor": "^9.0.0",
+        "@babylonjs/node-particle-editor": "^9.0.0",
+        "@babylonjs/node-render-graph-editor": "^9.0.0",
         "@babylonjs/serializers": "^9.0.0",
         "@fluentui-contrib/react-resize-handle": "^0.8.4",
         "@fluentui-contrib/react-virtualizer": "^1.0.0",
@@ -49,7 +58,13 @@
         "react-dom": ">=16.14.0 <20.0.0",
         "usehooks-ts": "^3.1.1"
     },
+    "peerDependenciesMeta": {
+        "@babylonjs/lite": {
+            "optional": true
+        }
+    },
     "devDependencies": {
+        "@babylonjs/lite": "1.27.0",
         "@dev/build-tools": "^1.0.0",
         "@dev/inspector": "1.0.0",
         "@rollup/plugin-alias": "^5.1.0",

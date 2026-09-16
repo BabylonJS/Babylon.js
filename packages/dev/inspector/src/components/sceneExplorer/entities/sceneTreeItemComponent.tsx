@@ -5,7 +5,7 @@ import { type IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import { type Scene } from "core/scene";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, faVectorSquare, faLocationDot } from "@fortawesome/free-solid-svg-icons";
+import { faSyncAlt, faImage, faCrosshairs, faArrowsAlt, faCompress, faRedoAlt, faBorderAll, faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
@@ -478,7 +478,7 @@ export class SceneTreeItemComponent extends React.Component<
                         onClick={() => this.setGizmoMode(4)}
                         title="Enable/Disable bounding box mode"
                     >
-                        <FontAwesomeIcon icon={faVectorSquare} />
+                        <FontAwesomeIcon icon={faBorderAll} />
                     </div>
                     <div className="separator" />
                     <div

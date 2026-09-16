@@ -99,6 +99,18 @@ uint hash(uint i) {
   return i;
 }
 
+// Stateless pseudorandom canonical functions from "On generating random numbers, with help of y=[(a+x)sin(bx)]
+// mod 1", W.J.J. Rey, 1998. Used for the per-voxel Russian-roulette transmittance test during ray marching.
+float prngCanonical1d(float co) { return fract(sin(co * 91.3458) * 47453.5453); }
+float prngCanonical2d(vec2 co) { return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453); }
+float prngCanonical3d(vec3 co) { return prngCanonical2d(co.xy + prngCanonical1d(co.z)); }
+
+// Max occupied leaves a shadow ray roulettes through before treated as unoccluded; bounds cost in
+// soft volumes. Injected by the pipeline (maxVoxelRouletteTests); falls back to 16.
+#ifndef MAX_VOXEL_ROULETTE_TESTS
+#define MAX_VOXEL_ROULETTE_TESTS 16
+#endif
+
 vec3 uv_to_normal(vec2 uv) {
   vec3 N;
 
@@ -134,10 +146,10 @@ int stack[24];                           // Swapped dimension
 #define POP() stack[--stackLevel]        // perf improvement
 
 #ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-bool anyHitVoxels(const Ray ray_vs,
+bool anyHitVoxels(const Ray ray_vs, const vec3 rouletteSeed,
                   out VoxelMarchDiagnosticInfo voxel_march_diagnostic_info) {
 #else
-bool anyHitVoxels(const Ray ray_vs) {
+bool anyHitVoxels(const Ray ray_vs, const vec3 rouletteSeed) {
 #endif
 
   vec3 invD = ray_vs.dir_rcp;
@@ -148,6 +160,7 @@ bool anyHitVoxels(const Ray ray_vs) {
   vec3 t0 = -O * invD, t1 = (vec3(1.0) - O) * invD;
   int maxLod = int(highestMipLevel);
   int stackLevel = 0;
+  int leafTests = 0;
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
   uint steps = 0u;
 #endif
@@ -159,11 +172,32 @@ bool anyHitVoxels(const Ray ray_vs) {
         ivec4(elem & 0xFF, elem >> 8 & 0xFF, elem >> 16 & 0xFF, elem >> 24);
 
     if (Coords.w == 0) {
+      // Leaf voxel; mip 0 holds its opacity. Russian-roulette: block with probability = opacity, else
+      // keep marching. Averaged over samples/frames this converges to transmittance 1 - prod(1-alpha_i).
+      float cellOpacity = texelFetch(voxelGridSampler, Coords.xyz, 0).x;
+      // Fully opaque cells always block: fast path, skip the PRNG.
+      if (cellOpacity >= 1.0) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-      voxel_march_diagnostic_info.heat = float(steps) / 24.0;
-      //   voxel_march_diagnostic_info.voxel_intersect_coords = node_coords;
+        voxel_march_diagnostic_info.heat = float(steps) / 24.0;
 #endif
-      return true;
+        return true;
+      }
+      // Cap the translucent tests at MAX_VOXEL_ROULETTE_TESTS; on exhaustion the ray passes.
+      if (leafTests >= MAX_VOXEL_ROULETTE_TESTS) {
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+        voxel_march_diagnostic_info.heat = float(steps) / 24.0;
+#endif
+        return false;
+      }
+      leafTests++;
+      if (cellOpacity >= prngCanonical3d(vec3(Coords.xyz) + rouletteSeed)) {
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+        voxel_march_diagnostic_info.heat = float(steps) / 24.0;
+        //   voxel_march_diagnostic_info.voxel_intersect_coords = node_coords;
+#endif
+        return true;
+      }
+      continue;
     }
 
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
@@ -349,10 +383,13 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal,
   ray_vs.t_min = max(ray_vs.t_min, near);
   ray_vs.t_max = min(ray_vs.t_max, far);
 
+  // Per-sample roulette seed; DitherNoise varies per pixel/frame/direction.
+  vec3 rouletteSeed = vec3(DitherNoise, DitherNoise.x + DitherNoise.y) * 17.0;
+
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-  return anyHitVoxels(ray_vs, voxel_march_diagnostic_info) ? 1.0f : 0.0f;
+  return anyHitVoxels(ray_vs, rouletteSeed, voxel_march_diagnostic_info) ? 1.0f : 0.0f;
 #else
-  return anyHitVoxels(ray_vs) ? 1.0f : 0.0f;
+  return anyHitVoxels(ray_vs, rouletteSeed) ? 1.0f : 0.0f;
 #endif
 }
 

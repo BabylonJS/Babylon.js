@@ -18,6 +18,7 @@ import { RegisterFilterPostProcessBlock } from "./PostProcesses/filterPostProces
 import { RegisterFxaaPostProcessBlock } from "./PostProcesses/fxaaPostProcessBlock.pure";
 import { RegisterGrainPostProcessBlock } from "./PostProcesses/grainPostProcessBlock.pure";
 import { RegisterImageProcessingPostProcessBlock } from "./PostProcesses/imageProcessingPostProcessBlock.pure";
+import { RegisterMeshBlendingPostProcessBlock } from "./PostProcesses/meshBlendingPostProcessBlock.pure";
 import { RegisterMotionBlurPostProcessBlock } from "./PostProcesses/motionBlurPostProcessBlock.pure";
 import { RegisterPassPostProcessBlock } from "./PostProcesses/passPostProcessBlock.pure";
 import { RegisterScreenSpaceCurvaturePostProcessBlock } from "./PostProcesses/screenSpaceCurvaturePostProcessBlock.pure";
@@ -81,6 +82,7 @@ export function RegisterNodeRenderGraphPostProcessesBlocks(): void {
     RegisterFxaaPostProcessBlock();
     RegisterGrainPostProcessBlock();
     RegisterImageProcessingPostProcessBlock();
+    RegisterMeshBlendingPostProcessBlock();
     RegisterMotionBlurPostProcessBlock();
     RegisterPassPostProcessBlock();
     RegisterScreenSpaceCurvaturePostProcessBlock();

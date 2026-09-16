@@ -1,5 +1,6 @@
 import { type Engine, NullEngine } from "core/Engines";
 import { FlowGraphCoordinator } from "core/FlowGraph";
+import { GetDefaultEventReference } from "core/FlowGraph/flowGraphHostResolver";
 import { FlowGraphConsoleLogBlock } from "core/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock";
 import { Scene } from "core/scene";
 
@@ -70,7 +71,25 @@ describe("FlowGraphCoordinator", () => {
             coordinator.dispose();
 
             const registered = FlowGraphCoordinator.SceneCoordinators.get(scene);
+            expect(registered).toEqual([]);
             expect(registered).not.toContain(coordinator);
+        });
+
+        it("should move registration while retaining the old scene's empty coordinator list", () => {
+            const scene2 = new Scene(engine);
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const graph = coordinator.createGraph();
+
+            coordinator._setScene(scene2, false);
+
+            expect(FlowGraphCoordinator.SceneCoordinators.get(scene)).toEqual([]);
+            expect(FlowGraphCoordinator.SceneCoordinators.get(scene2)).toEqual([coordinator]);
+
+            scene.dispose();
+            expect(coordinator.flowGraphs).toEqual([graph]);
+
+            coordinator.dispose();
+            scene2.dispose();
         });
 
         it("should only remove the disposed coordinator, leaving others intact", () => {
@@ -82,6 +101,52 @@ describe("FlowGraphCoordinator", () => {
             const registered = FlowGraphCoordinator.SceneCoordinators.get(scene);
             expect(registered).toHaveLength(1);
             expect(registered).toContain(coordinator2);
+        });
+    });
+
+    describe("custom event propagation", () => {
+        it("should keep activating immediate handlers when stopImmediate is false", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const eventId = "test";
+            const calls: string[] = [];
+            const observable = coordinator.getCustomEventObservable(eventId);
+
+            observable.add((_data, state) => {
+                calls.push("A");
+                coordinator._beginEventDispatch(eventId, state);
+                try {
+                    coordinator.stopEventPropagation(GetDefaultEventReference(eventId), false);
+                } finally {
+                    coordinator._endEventDispatch();
+                }
+            });
+            observable.add(() => calls.push("B"));
+
+            coordinator.notifyCustomEvent(eventId, {}, false);
+
+            expect(calls).toEqual(["A", "B"]);
+        });
+
+        it("should stop remaining immediate handlers when stopImmediate is true", () => {
+            const coordinator = new FlowGraphCoordinator({ scene });
+            const eventId = "test";
+            const calls: string[] = [];
+            const observable = coordinator.getCustomEventObservable(eventId);
+
+            observable.add((_data, state) => {
+                calls.push("A");
+                coordinator._beginEventDispatch(eventId, state);
+                try {
+                    coordinator.stopEventPropagation(GetDefaultEventReference(eventId), true);
+                } finally {
+                    coordinator._endEventDispatch();
+                }
+            });
+            observable.add(() => calls.push("B"));
+
+            coordinator.notifyCustomEvent(eventId, {}, false);
+
+            expect(calls).toEqual(["A"]);
         });
     });
 
@@ -165,7 +230,6 @@ describe("FlowGraphCoordinator", () => {
         it("should be safe to dispose a graph twice", () => {
             const coordinator = new FlowGraphCoordinator({ scene });
             const graph = coordinator.createGraph();
-
             graph.dispose();
             expect(() => graph.dispose()).not.toThrow();
         });

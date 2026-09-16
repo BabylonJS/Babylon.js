@@ -5,6 +5,7 @@ export * from "./ssaoRenderingPipeline";
 export * from "./standardRenderingPipeline";
 export * from "./ssrRenderingPipeline";
 export * from "./taaRenderingPipeline";
+export * from "./fsr1RenderingPipeline";
 
 // SSAO2 shaders
 import "../../../Shaders/ssao2.fragment";
@@ -23,3 +24,9 @@ import "../../../ShadersWGSL/screenSpaceReflection2BlurCombiner.fragment";
 // TAA shaders
 import "../../../Shaders/taa.fragment";
 import "../../../ShadersWGSL/taa.fragment";
+
+// FSR 1 shaders
+import "../../../Shaders/fsr1Upscale.fragment";
+import "../../../Shaders/fsr1Sharpen.fragment";
+import "../../../ShadersWGSL/fsr1Upscale.fragment";
+import "../../../ShadersWGSL/fsr1Sharpen.fragment";

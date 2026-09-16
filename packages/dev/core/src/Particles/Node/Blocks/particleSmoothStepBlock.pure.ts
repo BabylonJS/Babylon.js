@@ -1,6 +1,7 @@
 /** This file must only contain pure code and pure imports */
 
-import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector.pure";
+import { Vector2, Vector3 } from "core/Maths/math.vector.pure";
+import { Color4 } from "../../../Maths/math.color.pure";
 import { NodeParticleBlock } from "../nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
 import { type NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
@@ -93,7 +94,7 @@ export class ParticleSmoothStepBlock extends NodeParticleBlock {
                     return new Vector3(func(source.x, edge0, edge1), func(source.y, edge0, edge1), func(source.z, edge0, edge1));
                 }
                 case NodeParticleBlockConnectionPointTypes.Color4: {
-                    return new Vector4(func(source.r, edge0, edge1), func(source.g, edge0, edge1), func(source.b, edge0, edge1), func(source.a, edge0, edge1));
+                    return new Color4(func(source.r, edge0, edge1), func(source.g, edge0, edge1), func(source.b, edge0, edge1), func(source.a, edge0, edge1));
                 }
             }
 

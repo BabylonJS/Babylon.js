@@ -534,14 +534,22 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         const colorGradient = new ColorGradient(gradient, color1, color2);
         this._colorGradients.push(colorGradient);
 
-        this._refreshColorGradient(true);
-
-        this._releaseBuffers();
+        if (!this._refreshColorGradient(true)) {
+            this._releaseBuffers();
+        }
 
         return this;
     }
 
-    private _refreshColorGradient(reorder = false) {
+    /**
+     * Resyncs the color gradient state after a change.
+     * @param reorder true to re-sort the gradient list by position
+     * @returns true when the existing lookup texture was re-baked in place (value-only change — nothing to
+     * release, the live particle pool survives), false when the change is structural (family emptied, color2 row
+     * layout flipped, or no texture yet) and the caller must release the buffers; in that case the outdated
+     * texture is disposed for lazy recreation.
+     */
+    private _refreshColorGradient(reorder = false): boolean {
         if (this._colorGradients) {
             if (reorder) {
                 this._colorGradients.sort((a, b) => {
@@ -566,6 +574,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 }
             }
 
+            // When the texture layout is unchanged, re-bake the existing texture's pixels in place: identity is
+            // preserved, so retained bindings (e.g. the WebGPU update compute shader's) stay valid and no buffer
+            // release is needed.
+            if (this._rebakeColorGradientTexture()) {
+                return true;
+            }
+
             if (this._colorGradientsTexture) {
                 this._colorGradientsTexture.dispose();
                 (<any>this._colorGradientsTexture) = null;
@@ -573,18 +588,80 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         } else {
             this._hasColorGradientColor2 = false;
         }
+
+        return false;
     }
 
-    /** Force the system to rebuild all gradients that need to be resync */
+    /**
+     * Force the system to rebuild all gradients that need to be resync.
+     *
+     * This is the live-edit entry point both Inspectors call from their gradient onChange handlers, so a
+     * value-only edit must preserve the running simulation: every family whose lookup texture can be re-baked
+     * in place is updated without touching the particle buffers. Only a STRUCTURAL change — a family that has
+     * no texture to re-bake yet, one that was emptied, or a color2 row-layout flip — rebuilds the pool.
+     *
+     * An ABSENT family is not a structural change: it has nothing to resync, and counting it as one would
+     * reset the pool on every call (the destruction this method exists to avoid). Absence has two spellings —
+     * see _gradientFamilyNeedsResync.
+     */
     public forceRefreshGradients() {
-        this._refreshColorGradient();
-        this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture");
-        this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture");
-        this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture");
-        this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture");
-        this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture");
+        let structural = false;
 
-        this.reset();
+        if (this._gradientFamilyNeedsResync(this._colorGradients, "_colorGradientsTexture") && !this._refreshColorGradient()) {
+            structural = true;
+        }
+        if (this._gradientFamilyNeedsResync(this._sizeGradients, "_sizeGradientsTexture") && !this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture")) {
+            structural = true;
+        }
+        if (
+            this._gradientFamilyNeedsResync(this._angularSpeedGradients, "_angularSpeedGradientsTexture") &&
+            !this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture")
+        ) {
+            structural = true;
+        }
+        if (
+            this._gradientFamilyNeedsResync(this._velocityGradients, "_velocityGradientsTexture") &&
+            !this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture")
+        ) {
+            structural = true;
+        }
+        if (
+            this._gradientFamilyNeedsResync(this._limitVelocityGradients, "_limitVelocityGradientsTexture") &&
+            !this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture")
+        ) {
+            structural = true;
+        }
+        if (this._gradientFamilyNeedsResync(this._dragGradients, "_dragGradientsTexture") && !this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture")) {
+            structural = true;
+        }
+
+        if (structural) {
+            this.reset();
+        }
+    }
+
+    /**
+     * Whether a gradient family still has anything for a resync pass to do.
+     *
+     * Absence has TWO spellings: a family that was never initialized is `null`, but one that has been emptied
+     * stays `[]`. Only the first is falsy, so a bare truthiness test reads an emptied family as unfinished
+     * business on every later call — its refresh finds nothing to re-bake, reports "structural", and
+     * forceRefreshGradients resets the live pool forever after, which is precisely the destruction it exists
+     * to prevent.
+     *
+     * Entries always mean work (re-bake in place, or build when there is no texture yet). An EMPTY family is
+     * work only while it still owns a texture: that is the just-emptied transition, whose stale texture must
+     * be disposed. `[]` with no texture is settled absence — nothing left to resync.
+     * @param gradients the gradient family to test, or null when it was never initialized
+     * @param textureName the name of the lookup texture property backing that family
+     * @returns true when the family still has work for a resync pass, false when its absence is settled
+     */
+    private _gradientFamilyNeedsResync(gradients: Nullable<IValueGradient[]>, textureName: string): boolean {
+        if (!gradients) {
+            return false;
+        }
+
+        return gradients.length > 0 || !!(<any>this)[textureName];
     }
 
     /**
@@ -593,11 +670,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns the current particle system
      */
     public removeColorGradient(gradient: number): GPUParticleSystem {
-        this._removeGradientAndTexture(gradient, this._colorGradients, this._colorGradientsTexture);
-        (<any>this._colorGradientsTexture) = null;
+        super._removeGradientAndTexture(gradient, this._colorGradients, null);
 
-        // The set of remaining gradients may no longer contain a color2; recompute the flag.
-        this._refreshColorGradient();
+        // The set of remaining gradients may no longer contain a color2; _refreshColorGradient recomputes the flag
+        // and either re-bakes the texture in place (value-only change) or signals a structural change.
+        if (!this._refreshColorGradient()) {
+            this._releaseBuffers();
+        }
 
         return this;
     }
@@ -637,9 +716,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         this._addFactorGradient(this._sizeGradients, gradient, factor, factor2);
 
-        this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture");
-
-        this._releaseBuffers();
+        if (!this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture")) {
+            this._releaseBuffers();
+        }
 
         return this;
     }
@@ -650,15 +729,30 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns the current particle system
      */
     public removeSizeGradient(gradient: number): GPUParticleSystem {
-        this._removeGradientAndTexture(gradient, this._sizeGradients, this._sizeGradientsTexture);
-        (<any>this._sizeGradientsTexture) = null;
+        this._removeFactorGradient(this._sizeGradients, gradient);
+
+        if (!this._refreshFactorGradient(this._sizeGradients, "_sizeGradientsTexture")) {
+            this._releaseBuffers();
+        }
 
         return this;
     }
 
-    private _refreshFactorGradient(factorGradients: Nullable<FactorGradient[]>, textureName: string) {
+    /**
+     * Resyncs a factor gradient family's lookup texture after a change.
+     * @param factorGradients defines the gradient family that changed
+     * @param textureName defines the name of the property holding the family's lookup texture
+     * @returns true when the existing texture was re-baked in place (value-only change — nothing to release, the
+     * live particle pool survives), false when the caller must release the buffers (no texture to re-bake, or the
+     * family was emptied); in that case the outdated texture is disposed for lazy recreation.
+     */
+    private _refreshFactorGradient(factorGradients: Nullable<FactorGradient[]>, textureName: string): boolean {
         if (!factorGradients) {
-            return;
+            return false;
+        }
+
+        if (this._rebakeFactorGradientTexture(factorGradients, textureName)) {
+            return true;
         }
 
         const that = this as any;
@@ -666,6 +760,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             that[textureName].dispose();
             that[textureName] = null;
         }
+
+        return false;
     }
 
     /**
@@ -681,9 +777,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         this._addFactorGradient(this._angularSpeedGradients, gradient, factor, factor2);
-        this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture");
 
-        this._releaseBuffers();
+        if (!this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture")) {
+            this._releaseBuffers();
+        }
 
         return this;
     }
@@ -694,8 +791,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns the current particle system
      */
     public removeAngularSpeedGradient(gradient: number): GPUParticleSystem {
-        this._removeGradientAndTexture(gradient, this._angularSpeedGradients, this._angularSpeedGradientsTexture);
-        (<any>this._angularSpeedGradientsTexture) = null;
+        this._removeFactorGradient(this._angularSpeedGradients, gradient);
+
+        if (!this._refreshFactorGradient(this._angularSpeedGradients, "_angularSpeedGradientsTexture")) {
+            this._releaseBuffers();
+        }
 
         return this;
     }
@@ -713,9 +813,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         this._addFactorGradient(this._velocityGradients, gradient, factor, factor2);
-        this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture");
 
-        this._releaseBuffers();
+        if (!this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture")) {
+            this._releaseBuffers();
+        }
 
         return this;
     }
@@ -726,8 +827,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns the current particle system
      */
     public removeVelocityGradient(gradient: number): GPUParticleSystem {
-        this._removeGradientAndTexture(gradient, this._velocityGradients, this._velocityGradientsTexture);
-        (<any>this._velocityGradientsTexture) = null;
+        this._removeFactorGradient(this._velocityGradients, gradient);
+
+        if (!this._refreshFactorGradient(this._velocityGradients, "_velocityGradientsTexture")) {
+            this._releaseBuffers();
+        }
 
         return this;
     }
@@ -745,9 +849,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         this._addFactorGradient(this._limitVelocityGradients, gradient, factor, factor2);
-        this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture");
 
-        this._releaseBuffers();
+        if (!this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture")) {
+            this._releaseBuffers();
+        }
 
         return this;
     }
@@ -758,8 +863,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns the current particle system
      */
     public removeLimitVelocityGradient(gradient: number): GPUParticleSystem {
-        this._removeGradientAndTexture(gradient, this._limitVelocityGradients, this._limitVelocityGradientsTexture);
-        (<any>this._limitVelocityGradientsTexture) = null;
+        this._removeFactorGradient(this._limitVelocityGradients, gradient);
+
+        if (!this._refreshFactorGradient(this._limitVelocityGradients, "_limitVelocityGradientsTexture")) {
+            this._releaseBuffers();
+        }
 
         return this;
     }
@@ -777,9 +885,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         this._addFactorGradient(this._dragGradients, gradient, factor, factor2);
-        this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture");
 
-        this._releaseBuffers();
+        if (!this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture")) {
+            this._releaseBuffers();
+        }
 
         return this;
     }
@@ -790,8 +899,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns the current particle system
      */
     public removeDragGradient(gradient: number): GPUParticleSystem {
-        this._removeGradientAndTexture(gradient, this._dragGradients, this._dragGradientsTexture);
-        (<any>this._dragGradientsTexture) = null;
+        this._removeFactorGradient(this._dragGradients, gradient);
+
+        if (!this._refreshFactorGradient(this._dragGradients, "_dragGradientsTexture")) {
+            this._releaseBuffers();
+        }
 
         return this;
     }
@@ -1704,13 +1816,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
     }
 
-    private _createFactorGradientTexture(factorGradients: Nullable<IValueGradient[]>, textureName: string) {
-        const texture: RawTexture = (<any>this)[textureName];
-
-        if (!factorGradients || !factorGradients.length || texture) {
-            return;
-        }
-
+    private _bakeFactorGradientData(factorGradients: IValueGradient[]): Float32Array {
         const data = new Float32Array(this._rawTextureWidth * 2);
 
         for (let x = 0; x < this._rawTextureWidth; x++) {
@@ -1723,6 +1829,40 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 data[x * 2 + 1] = Lerp(cg.factor2 ?? cg.factor1, ng.factor2 ?? ng.factor1, scale);
             });
         }
+
+        return data;
+    }
+
+    /**
+     * Re-bakes an active factor gradient family's lookup texture pixels in place. The texture identity is
+     * preserved, so retained bindings (e.g. the WebGPU update compute shader's) stay valid and no buffer
+     * release is needed — the live particle pool survives the edit. The texture layout is independent of the
+     * number of stops (fixed _rawTextureWidth x 1), so any change within an active family can be re-baked.
+     * @param factorGradients defines the gradient family to bake
+     * @param textureName defines the name of the property holding the family's lookup texture
+     * @returns false when there is nothing to re-bake (no texture yet, or the family was emptied) — callers
+     * fall back to the dispose + release path.
+     */
+    private _rebakeFactorGradientTexture(factorGradients: Nullable<FactorGradient[]>, textureName: string): boolean {
+        const texture: Nullable<RawTexture> = (<any>this)[textureName];
+
+        if (!texture || !factorGradients || !factorGradients.length) {
+            return false;
+        }
+
+        texture.update(this._bakeFactorGradientData(factorGradients));
+
+        return true;
+    }
+
+    private _createFactorGradientTexture(factorGradients: Nullable<IValueGradient[]>, textureName: string) {
+        const texture: RawTexture = (<any>this)[textureName];
+
+        if (!factorGradients || !factorGradients.length || texture) {
+            return;
+        }
+
+        const data = this._bakeFactorGradientData(factorGradients);
 
         (<any>this)[textureName] = new RawTexture(
             data,
@@ -1896,22 +2036,14 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._meshEmitterUsedNormals = useNormals;
     }
 
-    private _createColorGradientTexture() {
-        if (!this._colorGradients || !this._colorGradients.length || this._colorGradientsTexture) {
-            return;
-        }
-
-        // When any stop has a color2, pack color1 into row 0 and color2 into row 1. The render shader
-        // samples both rows and lerps using the particle's persistent seed.x for per-particle randomness.
-        const hasColor2 = this._hasColorGradientColor2;
-        const height = hasColor2 ? 2 : 1;
+    private _bakeColorGradientData(height: number): Uint8Array {
         const data = new Uint8Array(this._rawTextureWidth * 4 * height);
         const tmpColor = TmpColors.Color4[0];
 
         for (let x = 0; x < this._rawTextureWidth; x++) {
             const ratio = x / this._rawTextureWidth;
 
-            GradientHelper.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
+            GradientHelper.GetCurrentGradient(ratio, this._colorGradients!, (currentGradient, nextGradient, scale) => {
                 Color4.LerpToRef((<ColorGradient>currentGradient).color1, (<ColorGradient>nextGradient).color1, scale, tmpColor);
                 data[x * 4] = tmpColor.r * 255;
                 data[x * 4 + 1] = tmpColor.g * 255;
@@ -1920,12 +2052,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             });
         }
 
-        if (hasColor2) {
+        if (height === 2) {
             const rowOffset = this._rawTextureWidth * 4;
             for (let x = 0; x < this._rawTextureWidth; x++) {
                 const ratio = x / this._rawTextureWidth;
 
-                GradientHelper.GetCurrentGradient(ratio, this._colorGradients, (currentGradient, nextGradient, scale) => {
+                GradientHelper.GetCurrentGradient(ratio, this._colorGradients!, (currentGradient, nextGradient, scale) => {
                     const cg = currentGradient as ColorGradient;
                     const ng = nextGradient as ColorGradient;
                     // Fall back to color1 for stops without a color2 so the row stays continuous.
@@ -1937,6 +2069,43 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 });
             }
         }
+
+        return data;
+    }
+
+    /**
+     * Re-bakes the color gradient lookup texture pixels in place (same texture identity, so retained bindings —
+     * e.g. the WebGPU update compute shader's — stay valid and the live particle pool survives the edit). Only
+     * valid while the row layout is unchanged: a color2 range appearing or disappearing changes the texture
+     * height and the render vertex buffer layout, which must go through the structural dispose + release path.
+     * @returns false when the re-bake cannot handle the change (no texture yet, family emptied, or row layout flip)
+     */
+    private _rebakeColorGradientTexture(): boolean {
+        const texture = this._colorGradientsTexture;
+
+        if (!texture || !this._colorGradients || !this._colorGradients.length) {
+            return false;
+        }
+
+        const height = this._hasColorGradientColor2 ? 2 : 1;
+        if (texture.getSize().height !== height) {
+            return false;
+        }
+
+        texture.update(this._bakeColorGradientData(height));
+
+        return true;
+    }
+
+    private _createColorGradientTexture() {
+        if (!this._colorGradients || !this._colorGradients.length || this._colorGradientsTexture) {
+            return;
+        }
+
+        // When any stop has a color2, pack color1 into row 0 and color2 into row 1. The render shader
+        // samples both rows and lerps using the particle's persistent seed.x for per-particle randomness.
+        const height = this._hasColorGradientColor2 ? 2 : 1;
+        const data = this._bakeColorGradientData(height);
 
         this._colorGradientsTexture = RawTexture.CreateRGBATexture(data, this._rawTextureWidth, height, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
         this._colorGradientsTexture.name = "colorGradients";

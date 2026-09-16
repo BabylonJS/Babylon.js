@@ -502,6 +502,74 @@ export function BindLight(light: Light, lightIndex: number, scene: Scene, effect
 }
 
 /**
+ * Uniform buffers the vertex stage binds in addition to the per-light ones: Scene, Mesh, Material and
+ * LeftOver. Used to work out how many lights still fit within the device's per-stage uniform buffer limit.
+ *
+ * LeftOver is the buffer WebGPU's shader processor synthesises for uniforms declared outside of a uniform
+ * block; it is given both vertex and fragment visibility as soon as any such uniform exists in either stage,
+ * which is the case for virtually every material (per-light shadow matrices, logarithmicDepthConstant,
+ * vClipPlane and so on).
+ * It is counted unconditionally: reserving one buffer too many merely costs a light in the rare shader that
+ * has no leftover uniforms, whereas reserving one too few brings back the black screen this guards against.
+ */
+const _NonLightVertexUniformBufferCount = 4;
+
+/** Light counts already warned about, per engine, so the warning is emitted once. */
+const _LightBudgetWarnedEngines = new WeakMap<AbstractEngine, Set<number>>();
+
+/**
+ * Returns the number of simultaneous lights the engine can actually render, which may be lower than the
+ * requested maximum.
+ *
+ * Engines that declare one uniform buffer per light in the vertex shader (WebGPU, through
+ * lightVxUboDeclaration) are bounded by maxUniformBuffersPerShaderStage: past that limit every pipeline
+ * creation is rejected by the WebGPU validator and nothing renders at all, with only a CreateBindGroupLayout
+ * validation error to go on. maxUniformBuffersPerShaderStage is 12 both as the WebGPU spec default and as
+ * the maximum a D3D12 adapter reports, so it cannot be raised through requiredLimits either.
+ * @param scene The scene that will be rendered
+ * @param maxSimultaneousLights The requested maximum number of simultaneous lights
+ * @returns The number of simultaneous lights supported, clamped to the engine's capabilities
+ */
+export function GetSupportedSimultaneousLights(scene: Scene, maxSimultaneousLights: number): number {
+    const maxUniformBuffersPerShaderStage = scene.getEngine().getCaps().maxUniformBuffersPerShaderStage;
+
+    // Engines that do not report the limit (WebGL, native) do not enforce it: leave the count untouched.
+    // Tested against null rather than for truthiness so that a limit of 0, however unlikely, still clamps.
+    if (maxUniformBuffersPerShaderStage == null) {
+        return maxSimultaneousLights;
+    }
+
+    // Keep at least one light: a scene lit by a single light is far more useful than an unlit one, and it
+    // matches what the device can do even with an unusually low reported limit.
+    const supported = Math.max(maxUniformBuffersPerShaderStage - _NonLightVertexUniformBufferCount, 1);
+
+    return Math.min(maxSimultaneousLights, supported);
+}
+
+function WarnAboutClampedLights(engine: AbstractEngine, requested: number, supported: number, lightsInUse: number): void {
+    let warned = _LightBudgetWarnedEngines.get(engine);
+    if (!warned) {
+        warned = new Set<number>();
+        _LightBudgetWarnedEngines.set(engine, warned);
+    }
+    if (warned.has(lightsInUse)) {
+        return;
+    }
+    warned.add(lightsInUse);
+
+    // Report the lights actually affecting the mesh, not maxSimultaneousLights: the per-light uniform buffers
+    // are declared per light in use, so a very high cap on a mesh with fewer lights would overstate the cost.
+    Logger.Warn(
+        `maxSimultaneousLights is ${requested} but this engine supports at most ${supported} simultaneous lights. ` +
+            `Each light declares its own uniform buffer in the vertex shader, so the ${lightsInUse} lights affecting this mesh plus ` +
+            `the scene, mesh, material and leftover buffers would need ${lightsInUse + _NonLightVertexUniformBufferCount} uniform buffers, over ` +
+            `the device limit of ${engine.getCaps().maxUniformBuffersPerShaderStage} per shader stage. The light count has been clamped ` +
+            `to ${supported}, so the extra lights will not contribute to the render. Set maxSimultaneousLights to ${supported} or less ` +
+            `to silence this warning.`
+    );
+}
+
+/**
  * Binds the lights information from the scene to the effect for the given mesh.
  * @param scene The scene the lights belongs to
  * @param mesh The mesh we are binding the information to render
@@ -699,6 +767,11 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
         return defines._needNormals;
     }
 
+    // Some engines cannot render as many lights as requested (see GetSupportedSimultaneousLights). Clamp the
+    // count so the scene renders with fewer lights, rather than failing pipeline creation and rendering nothing.
+    const requestedSimultaneousLights = maxSimultaneousLights;
+    maxSimultaneousLights = GetSupportedSimultaneousLights(scene, maxSimultaneousLights);
+
     let lightIndex = 0;
     const state = {
         needNormals: defines._needNormals, // prevents overriding previous reflection or other needs for normals
@@ -709,6 +782,12 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
     };
 
     if (scene.lightsEnabled && !disableLighting) {
+        // Only worth telling the user about the clamp when lights are actually being dropped because of it:
+        // the per-light uniform buffers are declared per light in use, not per maxSimultaneousLights.
+        if (mesh.lightSources.length > maxSimultaneousLights && maxSimultaneousLights < requestedSimultaneousLights) {
+            WarnAboutClampedLights(scene.getEngine(), requestedSimultaneousLights, maxSimultaneousLights, Math.min(mesh.lightSources.length, requestedSimultaneousLights));
+        }
+
         for (const light of mesh.lightSources) {
             PrepareDefinesForLight(scene, mesh, light, lightIndex, defines, specularSupported, state);
 

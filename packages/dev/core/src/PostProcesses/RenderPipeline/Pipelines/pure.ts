@@ -6,4 +6,5 @@ export * from "./ssaoRenderingPipeline.pure";
 export * from "./standardRenderingPipeline.pure";
 export * from "./ssrRenderingPipeline.pure";
 export * from "./taaRenderingPipeline.pure";
+export * from "./fsr1RenderingPipeline";
 export * from "./taaMaterialManager.pure";

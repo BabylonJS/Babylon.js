@@ -423,6 +423,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         if (!this.interpolatePose) {
             this.attachedNode.position.copyFrom(this.followedCamera.globalPosition).addInPlace(this._workingPosition);
             this.attachedNode.rotationQuaternion.copyFrom(this._workingQuaternion);
+            this.attachedNode.setParent(oldParent);
             return;
         }
 

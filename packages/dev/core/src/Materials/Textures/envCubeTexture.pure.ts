@@ -224,8 +224,13 @@ export abstract class EnvCubeTexture extends BaseTexture {
             // Extract the raw linear data.
             const data = await this._getCubeMapTextureDataAsync(buffer, this._size, this._supersample);
 
-            // Generate harmonics if needed.
-            if (this._generateHarmonics) {
+            // Generate harmonics if needed. When prefiltering was requested but the engine cannot
+            // prefilter textures (e.g. Babylon Native or WebGL1), neither a prefiltered irradiance
+            // map nor a prefiltered radiance cube is produced. In that case fall back to
+            // CPU-computed spherical harmonics so diffuse IBL still has a source; without this the
+            // reflection texture keeps an empty spherical polynomial and diffuse IBL renders black.
+            const prefilterUnavailable = (this._prefilterOnLoad || this._prefilterIrradianceOnLoad) && !engine._features.allowTexturePrefiltering;
+            if (this._generateHarmonics || prefilterUnavailable) {
                 const sphericalPolynomial = CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data, this._sphericalPolynomialTargetSize);
                 this.sphericalPolynomial = sphericalPolynomial;
             }

@@ -153,7 +153,7 @@ export class AreaLightTextureTools {
                 generateMipMaps: true,
                 generateStencilBuffer: false,
                 samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-                type: Constants.TEXTURE_2D,
+                type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
                 format: Constants.TEXTUREFORMAT_RGBA,
             }
         );

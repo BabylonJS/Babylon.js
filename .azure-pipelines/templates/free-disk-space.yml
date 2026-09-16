@@ -14,7 +14,7 @@
 # image layout can never fail the job. Node itself
 # (/opt/hostedtoolcache/node, installed by UseNode@1) is deliberately kept.
 #
-# Include this immediately BEFORE the cache/restore + npm install steps.
+# Include this immediately BEFORE the cache/restore + npm ci steps.
 # =============================================================================
 
 steps:

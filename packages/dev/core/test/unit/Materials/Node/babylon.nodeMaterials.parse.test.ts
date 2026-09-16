@@ -78,6 +78,41 @@ describe("Babylon NodeMaterial image processing observer lifecycle", () => {
     });
 });
 
+describe("Babylon NodeMaterial alpha mode parsing", () => {
+    let engine: NullEngine;
+    let scene: Scene;
+
+    beforeEach(() => {
+        engine = new NullEngine();
+        scene = new Scene(engine);
+    });
+
+    afterEach(() => {
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it.each(["_alphaMode", "alphaMode"] as const)("does not share serialized %s state between parsed materials", (propertyName) => {
+        const serialized = {
+            blocks: [],
+            outputNodes: [],
+            [propertyName]: [2],
+        };
+
+        const transparent = new NodeMaterial("transparent", scene);
+        transparent.parseSerializedObject(serialized);
+        transparent.alphaMode = 7;
+
+        const opaque = new NodeMaterial("opaque", scene);
+        opaque.parseSerializedObject(serialized);
+        opaque.alphaMode = 0;
+
+        expect(serialized[propertyName]).toEqual([2]);
+        expect(transparent.alphaMode).toBe(7);
+        expect(opaque.alphaMode).toBe(0);
+    });
+});
+
 describe("Babylon NodeMaterial image processing configuration parsing", () => {
     let engine: NullEngine;
     let scene: Scene;

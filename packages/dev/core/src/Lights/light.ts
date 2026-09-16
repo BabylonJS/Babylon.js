@@ -836,11 +836,9 @@ export abstract class Light extends Node implements ISortableLight {
             return deleted;
         };
 
-        if (!this._clusteredContainer) {
-            for (const item of array) {
-                item._resyncLightSource(this);
-            }
-        }
+        // Re-sync every mesh rather than just the ones in the new array: a mesh removed from the
+        // exclusion list would otherwise stay unlit. Mirrors _hookArrayForIncludedOnly.
+        this._resyncMeshes();
     }
 
     private _hookArrayForIncludedOnly(array: AbstractMesh[]): void {

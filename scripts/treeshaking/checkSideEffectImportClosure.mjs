@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 /**
- * Checks that side-effect-free core files do not statically pull in files with
- * module-level side effects.
+ * Checks that side-effect-free package files do not statically pull in files
+ * with module-level side effects. GUI imports are also checked against Core's
+ * manifest so the GUI pure surface stays pure across the package boundary.
  *
  * The side-effects manifest lists files that have module-level side effects.
  * Every other source file is part of the side-effect-free import surface used by
@@ -29,8 +30,7 @@ import { getPackageConfig, resolvePackageFromArgv } from "./packageConfig.mjs";
 
 const PACKAGE = resolvePackageFromArgv();
 const PACKAGE_CONFIG = getPackageConfig(PACKAGE);
-const CORE_SRC = PACKAGE_CONFIG.srcRoot;
-const MANIFEST_PATH = PACKAGE_CONFIG.manifestDir;
+const PACKAGE_SRC = PACKAGE_CONFIG.srcRoot;
 
 const args = process.argv.slice(2);
 const verbose = args.includes("--verbose");
@@ -71,8 +71,8 @@ function isGeneratedShaderPath(relPath) {
     return relPath.startsWith("Shaders/") || relPath.startsWith("ShadersWGSL/");
 }
 
-function isStaleGeneratedShader(filePath) {
-    const relPath = toPosixPath(relative(CORE_SRC, filePath));
+function isStaleGeneratedShader(filePath, srcRoot) {
+    const relPath = toPosixPath(relative(srcRoot, filePath));
     if (!isGeneratedShaderPath(relPath)) {
         return false;
     }
@@ -81,13 +81,13 @@ function isStaleGeneratedShader(filePath) {
     return !statSyncNoThrow(`${sourcePath}.fx`)?.isFile() && !statSyncNoThrow(`${sourcePath}.wgsl`)?.isFile();
 }
 
-function collectTsFiles(dir, results = []) {
+function collectTsFiles(dir, srcRoot, results = []) {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
         const fullPath = join(dir, entry.name);
         if (entry.isDirectory()) {
-            collectTsFiles(fullPath, results);
+            collectTsFiles(fullPath, srcRoot, results);
         } else if (entry.isFile() && entry.name.endsWith(".ts") && !entry.name.endsWith(".d.ts") && !entry.name.endsWith(".test.ts") && !entry.name.endsWith(".spec.ts")) {
-            if (!isStaleGeneratedShader(fullPath)) {
+            if (!isStaleGeneratedShader(fullPath, srcRoot)) {
                 results.push(fullPath);
             }
         }
@@ -95,27 +95,52 @@ function collectTsFiles(dir, results = []) {
     return results;
 }
 
-const allFiles = collectTsFiles(CORE_SRC).sort(compareCodePoint);
-const allRelFiles = new Set(allFiles.map((filePath) => toPosixPath(relative(CORE_SRC, filePath))));
-// A `declare module` augmentation is type-only and erases at runtime, so files whose only
-// side effect is `declare-module` are not real side-effect targets for the closure check.
-const manifestSideEffectFiles = readSideEffectsManifest(MANIFEST_PATH)
-    .manifest.filter((entry) => entry.sideEffects.some((sideEffect) => sideEffect.type !== "declare-module"))
-    .map((entry) => toPosixPath(entry.file));
-const sideEffectFiles = new Set(manifestSideEffectFiles);
-for (const file of allRelFiles) {
-    if (file.endsWith("/index.ts") || file === "index.ts") {
-        sideEffectFiles.add(file);
+function createSourceContext(packageName) {
+    const packageConfig = getPackageConfig(packageName);
+    const allFiles = collectTsFiles(packageConfig.srcRoot, packageConfig.srcRoot).sort(compareCodePoint);
+    const allRelFiles = new Set(allFiles.map((filePath) => toPosixPath(relative(packageConfig.srcRoot, filePath))));
+    // A `declare module` augmentation is type-only and erases at runtime, so files whose only
+    // side effect is `declare-module` are not real side-effect targets for the closure check.
+    const manifestSideEffectFiles = readSideEffectsManifest(packageConfig.manifestDir)
+        .manifest.filter((entry) => entry.sideEffects.some((sideEffect) => sideEffect.type !== "declare-module"))
+        .map((entry) => toPosixPath(entry.file));
+    const sideEffectFiles = new Set(manifestSideEffectFiles);
+    for (const file of allRelFiles) {
+        if (file.endsWith("/index.ts") || file === "index.ts") {
+            sideEffectFiles.add(file);
+        }
     }
+
+    return {
+        packageName,
+        allFiles,
+        allRelFiles,
+        sideEffectFiles,
+    };
 }
 
+const packageContext = createSourceContext(PACKAGE);
+const checksCoreImports = PACKAGE === "core" || PACKAGE === "gui";
+const coreContext = PACKAGE === "gui" ? createSourceContext("core") : packageContext;
+const allFiles = packageContext.allFiles;
+const sideEffectFiles = packageContext.sideEffectFiles;
+
 function resolveImport(importer, source) {
+    let context = packageContext;
     let rel;
     if (source.startsWith(".")) {
-        rel = toPosixPath(relative(CORE_SRC, resolve(dirname(join(CORE_SRC, importer)), source)));
+        rel = toPosixPath(relative(PACKAGE_SRC, resolve(dirname(join(PACKAGE_SRC, importer)), source)));
     } else if (source === "core") {
+        if (!checksCoreImports) {
+            return null;
+        }
+        context = coreContext;
         rel = "index";
     } else if (source.startsWith("core/")) {
+        if (!checksCoreImports) {
+            return null;
+        }
+        context = coreContext;
         rel = source.substring("core/".length);
     } else {
         return null;
@@ -123,8 +148,12 @@ function resolveImport(importer, source) {
 
     rel = rel.replace(/\.(?:js|mjs|ts|tsx)$/, "");
     for (const candidate of [`${rel}.ts`, `${rel}.tsx`, `${rel}/index.ts`]) {
-        if (allRelFiles.has(candidate) || sideEffectFiles.has(candidate)) {
-            return candidate;
+        if (context.allRelFiles.has(candidate) || context.sideEffectFiles.has(candidate)) {
+            return {
+                context,
+                relPath: candidate,
+                displayPath: context === packageContext ? candidate : `${context.packageName}/${candidate}`,
+            };
         }
     }
     return null;
@@ -182,7 +211,7 @@ function addViolation(violations, sourceFile, importer, kind, source, target, no
 }
 
 function findViolations(filePath) {
-    const importer = toPosixPath(relative(CORE_SRC, filePath));
+    const importer = toPosixPath(relative(PACKAGE_SRC, filePath));
     if (sideEffectFiles.has(importer)) {
         return [];
     }
@@ -195,14 +224,14 @@ function findViolations(filePath) {
         if (ts.isImportDeclaration(statement) && ts.isStringLiteral(statement.moduleSpecifier) && hasValueImport(statement)) {
             const source = statement.moduleSpecifier.text;
             const target = resolveImport(importer, source);
-            if (target && sideEffectFiles.has(target)) {
-                addViolation(violations, sourceFile, importer, "imports", source, target, statement);
+            if (target && target.context.sideEffectFiles.has(target.relPath)) {
+                addViolation(violations, sourceFile, importer, "imports", source, target.displayPath, statement);
             }
         } else if (ts.isExportDeclaration(statement) && statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier) && hasValueExport(statement)) {
             const source = statement.moduleSpecifier.text;
             const target = resolveImport(importer, source);
-            if (target && sideEffectFiles.has(target)) {
-                addViolation(violations, sourceFile, importer, "exports", source, target, statement);
+            if (target && target.context.sideEffectFiles.has(target.relPath)) {
+                addViolation(violations, sourceFile, importer, "exports", source, target.displayPath, statement);
             }
         }
     }

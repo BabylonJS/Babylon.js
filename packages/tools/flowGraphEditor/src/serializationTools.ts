@@ -1,9 +1,10 @@
 import { type GlobalState } from "./globalState";
 import { type Nullable } from "core/types";
 import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
+import { GetFlowGraphBlockNodeId } from "./graphSystem/blockNodeData";
 import { type FlowGraph } from "core/FlowGraph/flowGraph";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
-import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { FlowGraphCoordinator, type IFlowGraphCoordinatorConfiguration } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { type Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
@@ -12,9 +13,50 @@ import { type ISerializedFlowGraph } from "core/FlowGraph/typeDefinitions";
 import { FetchSnippet, type ISnippetServerResponse } from "@tools/snippet-loader";
 
 /**
+ * Runtime settings used when deserializing graphs into an editor coordinator.
+ */
+export interface IFlowGraphEditorDeserializeOptions {
+    /** Coordinator configuration supplied by the graph's host format. */
+    coordinatorConfig?: Omit<IFlowGraphCoordinatorConfiguration, "scene">;
+    /** Whether custom events are dispatched synchronously. */
+    dispatchEventsSynchronously?: boolean;
+    /** Identifies a KHR_interactivity import that supplies its required runtime services. */
+    sourceFormat?: "KHR_interactivity";
+}
+
+/**
+ * Fully parsed coordinator state that has not yet been installed in the editor.
+ */
+export interface IFlowGraphEditorDeserializedState {
+    /** Parsed coordinator. The caller owns it until the state is installed. */
+    coordinator: FlowGraphCoordinator;
+    /** Graph index to activate when the state is installed. */
+    activeGraphIndex: number;
+    /** Reason serialization should be disabled for this state, or null. */
+    serializationDisabledReason: Nullable<string>;
+    /** Whether the coordinator depends on runtime services scoped to its imported asset. */
+    hasImportScopedRuntime: boolean;
+    /** Optional scene snippet identifier stored in the source. */
+    sceneSnippetId?: string;
+    /** Optional Flow Graph snippet identifier stored in the source. */
+    flowGraphSnippetId?: string;
+}
+
+/**
  * Provides serialization and deserialization utilities for the flow graph editor.
  */
 export class SerializationTools {
+    private static readonly _KhrPersistenceDisabledReason = "KHR_interactivity graphs use import-scoped runtime services and cannot be saved to or reloaded from Flow Graph JSON.";
+
+    /**
+     * Gets the reason serialization is disabled for the current editor state.
+     * @param globalState editor state to inspect
+     * @returns the reason serialization is disabled, or null when serialization is supported
+     */
+    public static GetSerializationDisabledReason(globalState: GlobalState): Nullable<string> {
+        return globalState.serializationDisabledReason;
+    }
+
     /**
      * Update the editor-data locations for every block in the graph.
      * @param flowGraph - the flow graph whose blocks to update
@@ -22,6 +64,7 @@ export class SerializationTools {
      * @param frame - optional graph frame to restrict to
      */
     public static UpdateLocations(flowGraph: FlowGraph, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
+        const shouldZoomToFitOnLoad = !!(flowGraph as any)._editorData?.zoomToFitOnLoad;
         const editorData: any = {
             locations: [],
         };
@@ -46,6 +89,15 @@ export class SerializationTools {
         }
 
         globalState.storeEditorData(editorData, frame);
+        editorData.map = {};
+        for (const block of blocks) {
+            const numericId = GetFlowGraphBlockNodeId(block.uniqueId);
+            editorData.map[block.uniqueId] = numericId;
+            editorData.map[numericId] = numericId;
+        }
+        if (shouldZoomToFitOnLoad) {
+            editorData.zoomToFitOnLoad = true;
+        }
 
         // Persist editor data on the flow graph so it survives serialization round-trips
         (flowGraph as any)._editorData = editorData;
@@ -77,6 +129,10 @@ export class SerializationTools {
      * @returns a JSON string representing the serialized coordinator
      */
     public static Serialize(flowGraph: FlowGraph, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
+        const disabledReason = SerializationTools.GetSerializationDisabledReason(globalState);
+        if (disabledReason) {
+            throw new Error(disabledReason);
+        }
         this.UpdateLocations(flowGraph, globalState, frame);
 
         // Snapshot live contexts before serialization so we capture the latest
@@ -136,73 +192,123 @@ export class SerializationTools {
      * @param globalState - the editor's global state
      * @param scene - optional scene to use instead of globalState.scene
      * @param pathConverter - optional path converter for JSON pointer blocks
+     * @param options - optional host runtime settings
      */
-    public static async DeserializeAsync(serializationObject: any, globalState: GlobalState, scene?: Scene, pathConverter?: any): Promise<void> {
+    public static async DeserializeAsync(
+        serializationObject: any,
+        globalState: GlobalState,
+        scene?: Scene,
+        pathConverter?: any,
+        options?: IFlowGraphEditorDeserializeOptions
+    ): Promise<void> {
         globalState.onIsLoadingChanged.notifyObservers(true);
         try {
             const targetScene = scene ?? globalState.scene;
-            const coordinator = new FlowGraphCoordinator({ scene: targetScene });
-
-            // Detect format: coordinator-level vs legacy single-graph
-            let graphDataList: ISerializedFlowGraph[];
-            let activeIndex = 0;
-            let topLevelSnippetId: string | undefined;
-            let topLevelFlowGraphSnippetId: string | undefined;
-
-            if (serializationObject._flowGraphs && Array.isArray(serializationObject._flowGraphs)) {
-                // Coordinator-level format
-                graphDataList = serializationObject._flowGraphs;
-                activeIndex = serializationObject.activeGraphIndex ?? 0;
-                topLevelSnippetId = serializationObject.sceneSnippetId;
-                topLevelFlowGraphSnippetId = serializationObject.flowGraphSnippetId;
-            } else {
-                // Legacy single-graph format — wrap it
-                graphDataList = [serializationObject as ISerializedFlowGraph];
-                topLevelSnippetId = serializationObject.sceneSnippetId;
-                topLevelFlowGraphSnippetId = serializationObject.flowGraphSnippetId;
-            }
-
-            // Parse graphs sequentially to preserve tab order (coordinator.flowGraphs
-            // array order must match _flowGraphs serialization order).
-            const parsedGraphs: FlowGraph[] = [];
-            for (const graphData of graphDataList) {
-                // eslint-disable-next-line no-await-in-loop -- sequential order is intentional
-                const parsedGraph = await ParseFlowGraphAsync(graphData, { coordinator, pathConverter });
-
-                SerializationTools.PreserveUnresolvedNames(parsedGraph, graphData);
-                SerializationTools.PreserveUnresolvedVariables(parsedGraph, graphData);
-                SerializationTools.SyncConnectionValuesToDefaults(parsedGraph);
-
-                if ((graphData as any).editorData) {
-                    (parsedGraph as any)._editorData = (graphData as any).editorData;
-                }
-
-                parsedGraphs.push(parsedGraph);
-            }
-
-            // Clamp active index to valid range
-            if (activeIndex < 0 || activeIndex >= parsedGraphs.length) {
-                activeIndex = 0;
-            }
-
-            // Set the coordinator and active graph on globalState
-            globalState.coordinator = coordinator;
-            globalState.activeGraphIndex = activeIndex;
-
-            // Restore the scene snippet ID so the preview component can auto-load the scene
-            const snippetId = topLevelSnippetId ?? "";
-            if (snippetId && snippetId !== globalState.snippetId) {
-                globalState.snippetId = snippetId;
-                globalState.onSnippetIdChanged.notifyObservers(snippetId);
-            }
-
-            // Restore the flow graph snippet ID
-            if (topLevelFlowGraphSnippetId) {
-                globalState.flowGraphSnippetId = topLevelFlowGraphSnippetId;
-            }
+            const state = await SerializationTools.DeserializeToStateAsync(serializationObject, targetScene, pathConverter, options);
+            SerializationTools.ApplyDeserializedState(state, globalState);
         } finally {
             globalState.onIsLoadingChanged.notifyObservers(false);
         }
+    }
+
+    /**
+     * Parses serialized graphs into an uninstalled coordinator state.
+     * @param serializationObject serialized coordinator or legacy single graph
+     * @param scene scene the parsed coordinator will target
+     * @param pathConverter optional path converter for JSON pointer blocks
+     * @param options optional host runtime settings
+     * @returns parsed state owned by the caller until installed
+     */
+    public static async DeserializeToStateAsync(
+        serializationObject: any,
+        scene: Scene,
+        pathConverter?: any,
+        options?: IFlowGraphEditorDeserializeOptions
+    ): Promise<IFlowGraphEditorDeserializedState> {
+        let graphDataList: ISerializedFlowGraph[];
+        let activeGraphIndex = 0;
+        let sceneSnippetId: string | undefined;
+        let flowGraphSnippetId: string | undefined;
+
+        if (serializationObject._flowGraphs && Array.isArray(serializationObject._flowGraphs)) {
+            graphDataList = serializationObject._flowGraphs;
+            activeGraphIndex = serializationObject.activeGraphIndex ?? 0;
+            sceneSnippetId = serializationObject.sceneSnippetId;
+            flowGraphSnippetId = serializationObject.flowGraphSnippetId;
+        } else {
+            graphDataList = [serializationObject as ISerializedFlowGraph];
+            sceneSnippetId = serializationObject.sceneSnippetId;
+            flowGraphSnippetId = serializationObject.flowGraphSnippetId;
+        }
+
+        if (graphDataList.length === 0) {
+            throw new Error("A Flow Graph coordinator must contain at least one graph.");
+        }
+        if (options?.sourceFormat !== "KHR_interactivity" && SerializationTools._ContainsKhrInteractivityGraph(graphDataList)) {
+            throw new Error(SerializationTools._KhrPersistenceDisabledReason);
+        }
+
+        const coordinator = new FlowGraphCoordinator({ scene, ...options?.coordinatorConfig });
+        coordinator.dispatchEventsSynchronously = options?.dispatchEventsSynchronously ?? coordinator.dispatchEventsSynchronously;
+        const parsedGraphs: FlowGraph[] = [];
+        try {
+            for (const graphData of graphDataList) {
+                // eslint-disable-next-line no-await-in-loop -- sequential order is intentional
+                const parsedGraph = await ParseFlowGraphAsync(graphData, { coordinator, pathConverter });
+                SerializationTools.PreserveUnresolvedNames(parsedGraph, graphData);
+                SerializationTools.PreserveUnresolvedVariables(parsedGraph, graphData);
+                SerializationTools.SyncConnectionValuesToDefaults(parsedGraph);
+                if ((graphData as any).editorData) {
+                    (parsedGraph as any)._editorData = (graphData as any).editorData;
+                }
+                parsedGraphs.push(parsedGraph);
+            }
+        } catch (error) {
+            coordinator.dispose();
+            throw error;
+        }
+
+        if (activeGraphIndex < 0 || activeGraphIndex >= parsedGraphs.length) {
+            activeGraphIndex = 0;
+        }
+        return {
+            coordinator,
+            activeGraphIndex,
+            serializationDisabledReason: options?.sourceFormat === "KHR_interactivity" ? SerializationTools._KhrPersistenceDisabledReason : null,
+            hasImportScopedRuntime: options?.sourceFormat === "KHR_interactivity",
+            sceneSnippetId,
+            flowGraphSnippetId,
+        };
+    }
+
+    /**
+     * Installs a previously parsed coordinator state and disposes the old coordinator.
+     * @param state parsed state to install
+     * @param globalState editor state to update
+     */
+    public static ApplyDeserializedState(state: IFlowGraphEditorDeserializedState, globalState: GlobalState): void {
+        const previousCoordinator = globalState.coordinator;
+        const disposePreviousCoordinator = globalState.isCoordinatorEditorOwned(previousCoordinator);
+        globalState.serializationDisabledReason = state.serializationDisabledReason;
+        globalState.hasImportScopedRuntime = state.hasImportScopedRuntime;
+        globalState.setCoordinator(state.coordinator, true);
+        globalState.activeGraphIndex = state.activeGraphIndex;
+        if (previousCoordinator && previousCoordinator !== state.coordinator && disposePreviousCoordinator) {
+            previousCoordinator.dispose();
+        }
+
+        const snippetId = state.sceneSnippetId ?? "";
+        if (snippetId && snippetId !== globalState.snippetId) {
+            globalState.snippetId = snippetId;
+            globalState.onSnippetIdChanged.notifyObservers(snippetId);
+        }
+        if (state.flowGraphSnippetId) {
+            globalState.flowGraphSnippetId = state.flowGraphSnippetId;
+        }
+    }
+
+    private static _ContainsKhrInteractivityGraph(graphDataList: ISerializedFlowGraph[]): boolean {
+        return graphDataList.some((graph) => graph.allBlocks?.some((block) => block.className.startsWith("KHR_interactivity/") || !!block.metadata?.khrInteractivity));
     }
 
     /**
@@ -435,12 +541,12 @@ export class SerializationTools {
     }
 
     /**
-     * Try to import a flow graph from a .glb/.gltf file's BABYLON_flow_graph extension.
+     * Reads a serialized flow graph from a .glb/.gltf file's BABYLON_flow_graph extension.
      * @param file - the file dropped by the user
-     * @param globalState - the editor's global state
-     * @returns true if a flow graph was found and imported, false otherwise
+     * @returns the serialized graph, or null when the extension is absent
+     * @throws when the extension is present but does not contain a serialized graph object
      */
-    public static async ImportFromGlbAsync(file: File, globalState: GlobalState): Promise<boolean> {
+    public static async ReadFlowGraphFromGlbAsync(file: File): Promise<any | null> {
         const buffer = await file.arrayBuffer();
         const bytes = new Uint8Array(buffer);
 
@@ -462,14 +568,14 @@ export class SerializationTools {
 
             // Validate: first chunk must be JSON and data must fit within buffer
             if (jsonChunkType !== SerializationTools._GLB_JSON_CHUNK_TYPE || jsonDataOffset + jsonChunkLength > buffer.byteLength) {
-                return false;
+                return null;
             }
             const jsonChunkData = new Uint8Array(buffer, jsonDataOffset, jsonChunkLength);
             const decoder = new TextDecoder("utf-8");
             try {
                 gltfJson = JSON.parse(decoder.decode(jsonChunkData));
             } catch {
-                return false;
+                return null;
             }
         } else {
             // Plain .gltf JSON
@@ -477,18 +583,33 @@ export class SerializationTools {
             try {
                 gltfJson = JSON.parse(decoder.decode(bytes));
             } catch {
-                return false;
+                return null;
             }
         }
 
         // Check for our custom extension
         const ext = gltfJson?.extensions?.[SerializationTools.GLTF_EXTENSION_NAME];
-        if (!ext || !ext.flowGraph) {
+        if (!ext) {
+            return null;
+        }
+        if (!Object.prototype.hasOwnProperty.call(ext, "flowGraph") || !ext.flowGraph || typeof ext.flowGraph !== "object") {
+            throw new Error("Malformed BABYLON_flow_graph extension: flowGraph must be a serialized graph object.");
+        }
+        return ext.flowGraph;
+    }
+
+    /**
+     * Try to import a flow graph from a .glb/.gltf file's BABYLON_flow_graph extension.
+     * @param file - the file dropped by the user
+     * @param globalState - the editor's global state
+     * @returns true if a flow graph was found and imported, false otherwise
+     */
+    public static async ImportFromGlbAsync(file: File, globalState: GlobalState): Promise<boolean> {
+        const serializedGraph = await SerializationTools.ReadFlowGraphFromGlbAsync(file);
+        if (!serializedGraph) {
             return false;
         }
-
-        // Deserialize the flow graph
-        await SerializationTools.DeserializeAsync(ext.flowGraph, globalState);
+        await SerializationTools.DeserializeAsync(serializedGraph, globalState);
         globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
         globalState.onClearUndoStack.notifyObservers();
         return true;

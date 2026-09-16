@@ -1,14 +1,17 @@
-import { type AbstractEngine, type AbstractEngineOptions, type EngineOptions, type IDisposable, type Nullable, type WebGPUEngineOptions } from "core/index";
+import { type AbstractEngine, type AbstractEngineOptions, type EngineOptions, type WebGPUEngineOptions } from "core/index";
 import { type ViewerDetails, type ViewerOptions, Viewer } from "./viewer";
 
 import { Deferred } from "core/Misc/deferred";
 import { Logger } from "core/Misc/logger";
+import { SuspendRenderingWhenOffscreen } from "../offscreenRenderingSuspension";
 
 /**
  * Options for creating a Viewer instance that is bound to an HTML canvas.
  */
 export type CanvasViewerOptions = ViewerOptions & { onFaulted?: (error: Error) => void } & (
-        ({ engine?: undefined } & AbstractEngineOptions) | ({ engine: "WebGL" } & EngineOptions) | ({ engine: "WebGPU" } & WebGPUEngineOptions)
+        | ({ engine?: undefined } & AbstractEngineOptions)
+        | ({ engine: "WebGL" } & EngineOptions)
+        | ({ engine: "WebGPU" } & WebGPUEngineOptions)
     );
 
 const DefaultCanvasViewerOptions = {
@@ -144,19 +147,7 @@ export async function CreateViewerForCanvas(
         disposeActions.push(() => beforeRenderObserver.remove());
 
         // If the canvas is not visible, suspend rendering.
-        let offscreenRenderingSuspension: Nullable<IDisposable> = null;
-        const intersectionObserver = new IntersectionObserver((entries) => {
-            if (entries.length > 0) {
-                if (entries[entries.length - 1].isIntersecting) {
-                    offscreenRenderingSuspension?.dispose();
-                    offscreenRenderingSuspension = null;
-                } else {
-                    offscreenRenderingSuspension = details.suspendRendering();
-                }
-            }
-        });
-        intersectionObserver.observe(canvas);
-        disposeActions.push(() => intersectionObserver.disconnect());
+        disposeActions.push(SuspendRenderingWhenOffscreen(canvas, () => details.suspendRendering()).dispose);
     }
 
     disposeActions.push(viewer.dispose.bind(viewer));

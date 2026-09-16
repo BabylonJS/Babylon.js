@@ -152,10 +152,16 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
             (data) => {
                 const decoder = new TextDecoder("utf-8");
                 const doLoadAsync = async () => {
-                    await SerializationTools.DeserializeAsync(JSON.parse(decoder.decode(data)), this.props.globalState);
-                    this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-                    this.props.globalState.onClearUndoStack.notifyObservers();
-                    ShowToast(this.props.globalState, "Flow graph loaded from file", "success");
+                    try {
+                        await SerializationTools.DeserializeAsync(JSON.parse(decoder.decode(data)), this.props.globalState);
+                        this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                        this.props.globalState.onClearUndoStack.notifyObservers();
+                        ShowToast(this.props.globalState, "Flow graph loaded from file", "success");
+                    } catch (err) {
+                        const message = "Error loading flow graph: " + err;
+                        this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, true));
+                        ShowToast(this.props.globalState, message, "error");
+                    }
                 };
                 void doLoadAsync();
             },
@@ -319,6 +325,7 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
 
     override render() {
         const { classes } = this.props;
+        const serializationDisabledReason = SerializationTools.GetSerializationDisabledReason(this.props.globalState);
         if (this.state.currentNode) {
             return <div className={classes.root}>{this.state.currentNode?.renderProperties() || this.state.currentNodePort?.node.renderProperties()}</div>;
         }
@@ -393,12 +400,12 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
                         <div className={classes.buttonStack}>
                             <FileUploadLine label="Load" accept=".json" onClick={(files) => this.load(files[0])} />
                             <FileUploadLine label="Load glTF" accept=".glb,.gltf" onClick={(files) => this.loadGlb(files[0])} />
-                            <Button label="Save" title="Save" onClick={() => this.save()} />
+                            <Button label="Save" title={serializationDisabledReason ?? "Save"} disabled={!!serializationDisabledReason} onClick={() => this.save()} />
                             {this.props.globalState.customSave && (
                                 <Button
                                     label={this.props.globalState.customSave.label}
-                                    title={this.props.globalState.customSave.label}
-                                    disabled={this.state.uploadInProgress}
+                                    title={serializationDisabledReason ?? this.props.globalState.customSave.label}
+                                    disabled={this.state.uploadInProgress || !!serializationDisabledReason}
                                     onClick={() => this.customSave()}
                                 />
                             )}
@@ -418,7 +425,12 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
                         )}
                         <div className={classes.buttonStack}>
                             <Button label="Load from snippet server" title="Load from snippet server" onClick={async () => await this.loadFromSnippetAsync()} />
-                            <Button label="Save to snippet server" title="Save to snippet server" onClick={async () => await this.saveToSnippetServerAsync()} />
+                            <Button
+                                label="Save to snippet server"
+                                title={serializationDisabledReason ?? "Save to snippet server"}
+                                disabled={!!serializationDisabledReason}
+                                onClick={async () => await this.saveToSnippetServerAsync()}
+                            />
                         </div>
                     </AccordionSection>
                 </Accordion>

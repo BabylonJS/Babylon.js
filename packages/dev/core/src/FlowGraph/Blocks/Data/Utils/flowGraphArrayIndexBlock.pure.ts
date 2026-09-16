@@ -11,6 +11,16 @@ import { type Nullable } from "core/types";
 import { RegisterClass } from "core/Misc/typeStore";
 
 /**
+ * Configuration for array-index reference resolution.
+ */
+export interface IFlowGraphArrayIndexBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * Optional host collection name required when the index input is an opaque reference.
+     */
+    referenceCollection?: string;
+}
+
+/**
  * This simple Util block takes an array as input and selects a single element from it.
  */
 export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
@@ -33,7 +43,7 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
      * Construct a FlowGraphArrayIndexBlock.
      * @param config construction parameters
      */
-    constructor(public override config: IFlowGraphBlockConfiguration) {
+    constructor(public override config: IFlowGraphArrayIndexBlockConfiguration) {
         super(config);
 
         this.array = this.registerDataInput("array", RichTypeAny);
@@ -46,7 +56,26 @@ export class FlowGraphArrayIndexBlock<T = any> extends FlowGraphBlock {
      */
     public override _updateOutputs(context: FlowGraphContext): void {
         const array = this.array.getValue(context);
-        const index = getNumericValue(this.index.getValue(context));
+        const rawIndex = this.index.getValue(context);
+        // An undefined or unconnected input short-circuits to a null output rather than crashing
+        // `getNumericValue` on a missing `.value` property.
+        if (rawIndex === undefined || rawIndex === null) {
+            this.value.setValue(null, context);
+            return;
+        }
+        // A string index is an opaque reference whose format the host environment owns, so ask it
+        // which element the reference denotes.
+        let index: number;
+        if (typeof rawIndex === "string") {
+            const decoded = context.decodeIndexReference(rawIndex, this.config.referenceCollection);
+            if (decoded === undefined) {
+                this.value.setValue(null, context);
+                return;
+            }
+            index = decoded;
+        } else {
+            index = getNumericValue(rawIndex);
+        }
         if (array && index >= 0 && index < array.length) {
             this.value.setValue(array[index], context);
         } else {

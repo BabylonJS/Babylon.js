@@ -232,7 +232,7 @@ export class GreasedLineTools {
     public static GetPointsCountInfo(points: number[][]): { total: number; counts: number[] } {
         const counts = new Array(points.length);
         let total = 0;
-        for (let n = points.length; n--;) {
+        for (let n = points.length; n--; ) {
             counts[n] = points[n].length / 3;
             total += counts[n];
         }
@@ -414,7 +414,7 @@ export class GreasedLineTools {
         const s = (lengthVisibilityRatio - sumSegmentLengths) / lineSegments[segmentIndex].length;
 
         lineSegments[segmentIndex].point2.subtractToRef(lineSegments[segmentIndex].point1, TmpVectors.Vector3[0]);
-        TmpVectors.Vector3[1] = TmpVectors.Vector3[0].multiplyByFloats(s, s, s);
+        TmpVectors.Vector3[0].scaleToRef(s, TmpVectors.Vector3[1]);
         if (!localSpace) {
             TmpVectors.Vector3[1].addInPlace(lineSegments[segmentIndex].point1);
         }

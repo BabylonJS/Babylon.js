@@ -326,7 +326,7 @@ export class Polar {
      * @returns the updated reference
      */
     public static FromVector2ToRef(v: Vector2, ref: Polar): Polar {
-        const theta = Math.sign(v.y) * Math.acos(v.x / v.length());
+        const theta = Math.atan2(v.y, v.x);
         ref.radius = v.length();
         ref.theta = theta;
         return ref;

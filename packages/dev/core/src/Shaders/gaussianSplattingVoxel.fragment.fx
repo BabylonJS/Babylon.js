@@ -13,23 +13,6 @@ uniform float stepSize;
 
 float max3(vec3 v) { return max(max(v.x, v.y), v.z); }
 
-// Stateless pseudorandom canonical functions from "On generating random numbers, with help of y=[(a+x)sin(bx)]
-// mod 1", W.J.J. Rey, 1998.
-float prngCanonical1d(float co)
-{
-    return fract(sin(co * 91.3458) * 47453.5453);
-}
-
-float prngCanonical2d(vec2 co)
-{
-    return fract(sin(dot(vec2(co.x, co.y), vec2(12.9898, 78.233))) * 43758.5453);
-}
-
-float prngCanonical3d(vec3 co)
-{
-    return prngCanonical2d(vec2(co.x, co.y) + prngCanonical1d(co.z));
-}
-
 void main(void) {
     vec3 normPos = vNormalizedPosition.xyz;
     // If we're not rendering into the current "slab", discard.
@@ -37,25 +20,29 @@ void main(void) {
         discard;
     }
 
+    // Per-fragment cell coverage times splat transparency, stored as non-binary opacity; the
+    // Russian-roulette is deferred to the shadow ray-march. Overlapping splats combine via MAX blend
+    // (see the opacity-compositing limitation in iblShadowsVoxelRenderer's renderGsSplat).
     float distToCenter = max3(abs(vNormalizedCenterPosition - normPos));
     float shadowingOpacity = clamp((distToCenter < stepSize ? 1.0 : exp(-dot(vPatchPosition, vPatchPosition))) * vAlpha, 0.0, 1.0);
-    
-    if (shadowingOpacity < 1.0 && shadowingOpacity < prngCanonical3d(normPos / stepSize)) {
+
+    if (shadowingOpacity <= 0.0) {
         discard;
     }
 
     // I'd like to do this with a for loop but I can't index into glFragData[] without a constant integer.
     // Loop-unrolling doesn't seem to be an option.
-    glFragData[0] = normPos.z < nearPlane + stepSize ? 1.0 : 0.0;
-    glFragData[1] = normPos.z >= nearPlane + stepSize && normPos.z < nearPlane + 2.0 * stepSize ? 1.0 : 0.0;
-    glFragData[2] = normPos.z >= nearPlane + 2.0 * stepSize && normPos.z < nearPlane + 3.0 * stepSize ? 1.0 : 0.0;
-    glFragData[3] = normPos.z >= nearPlane + 3.0 * stepSize && normPos.z < nearPlane + 4.0 * stepSize ? 1.0 : 0.0;
+    // Write opacity into the slab slice its Z falls in; 0.0 elsewhere is a MAX-blend no-op.
+    glFragData[0] = normPos.z < nearPlane + stepSize ? shadowingOpacity : 0.0;
+    glFragData[1] = normPos.z >= nearPlane + stepSize && normPos.z < nearPlane + 2.0 * stepSize ? shadowingOpacity : 0.0;
+    glFragData[2] = normPos.z >= nearPlane + 2.0 * stepSize && normPos.z < nearPlane + 3.0 * stepSize ? shadowingOpacity : 0.0;
+    glFragData[3] = normPos.z >= nearPlane + 3.0 * stepSize && normPos.z < nearPlane + 4.0 * stepSize ? shadowingOpacity : 0.0;
 #if MAX_DRAW_BUFFERS > 4
-    glFragData[4] = normPos.z >= nearPlane + 4.0 * stepSize && normPos.z < nearPlane + 5.0 * stepSize ? 1.0 : 0.0;
-    glFragData[5] = normPos.z >= nearPlane + 5.0 * stepSize && normPos.z < nearPlane + 6.0 * stepSize ? 1.0 : 0.0;
+    glFragData[4] = normPos.z >= nearPlane + 4.0 * stepSize && normPos.z < nearPlane + 5.0 * stepSize ? shadowingOpacity : 0.0;
+    glFragData[5] = normPos.z >= nearPlane + 5.0 * stepSize && normPos.z < nearPlane + 6.0 * stepSize ? shadowingOpacity : 0.0;
 #if MAX_DRAW_BUFFERS > 6
-    glFragData[6] = normPos.z >= nearPlane + 6.0 * stepSize && normPos.z < nearPlane + 7.0 * stepSize ? 1.0 : 0.0;
-    glFragData[7] = normPos.z >= nearPlane + 7.0 * stepSize && normPos.z < nearPlane + 8.0 * stepSize ? 1.0 : 0.0;
+    glFragData[6] = normPos.z >= nearPlane + 6.0 * stepSize && normPos.z < nearPlane + 7.0 * stepSize ? shadowingOpacity : 0.0;
+    glFragData[7] = normPos.z >= nearPlane + 7.0 * stepSize && normPos.z < nearPlane + 8.0 * stepSize ? shadowingOpacity : 0.0;
 #endif
 #endif
 }

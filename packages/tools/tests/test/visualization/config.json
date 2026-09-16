@@ -1,4 +1,4 @@
-﻿{
+{
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
@@ -12,6 +12,14 @@
             "playgroundId": "#418POI#12",
             "renderCount": 15,
             "referenceImage": "gsplat-lod.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting LOD COMPOUND",
+            "playgroundId": "#418POI#21",
+            "renderCount": 15,
+            "referenceImage": "gsplat-lod-compound.png",
             "dependsOn": ["GaussianSplatting", "Loaders", "SPLATLoader", "Textures"],
             "excludeFromPerformance": true
         },
@@ -135,6 +143,13 @@
             "excludeFromPerformance": true
         },
         {
+            "title": "Gaussian Splatting PLY 16 Bit",
+            "playgroundId": "#XSNFXP#26",
+            "referenceImage": "gsplat-ply-16-bit.png",
+            "dependsOn": ["Loaders", "SPLATLoader"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting Update Data",
             "playgroundId": "#Q0LBM8#2",
             "referenceImage": "gsplat-update-data.png",
@@ -211,6 +226,22 @@
             "playgroundId": "#DAID4Q#2",
             "renderCount": 15,
             "referenceImage": "gsplat-ibl-shadows.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting IBL on Shadow Only Ground",
+            "playgroundId": "#DAID4Q#21",
+            "renderCount": 15,
+            "referenceImage": "gsplat-ibl-shadow-only-ground.png",
+            "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures", "LibMaterials"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "Gaussian Splatting LOD SH and IBL Shadows",
+            "playgroundId": "#DAID4Q#11",
+            "renderCount": 15,
+            "referenceImage": "gsplat-lod-sh-ibl-shadows.png",
             "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
             "excludeFromPerformance": true
         },
@@ -378,6 +409,22 @@
             "playgroundId": "#DT1XPP#4",
             "referenceImage": "openpbr_base_weight.png",
             "dependsOn": ["Lights", "PBR", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "OpenPBR Metallic Area Light Edge Tint",
+            "playgroundId": "#UVZI6U#0",
+            "referenceImage": "openpbr-metallic-area-light-edge-tint.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Lights", "PBR", "Textures"],
+            "excludeFromPerformance": true
+        },
+        {
+            "title": "OpenPBR Anisotropic 2D Environment",
+            "playgroundId": "#6N05SO#0",
+            "referenceImage": "openpbr-anisotropic-2d-environment.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Loaders", "Meshes", "PBR", "Textures", "glTF"],
             "excludeFromPerformance": true
         },
         {
@@ -747,6 +794,12 @@
             "playgroundId": "#N55Q2M#0",
             "referenceImage": "bwpp.png",
             "dependsOn": ["Lights", "Loaders", "PostProcesses"]
+        },
+        {
+            "title": "White balance post-process",
+            "playgroundId": "#N55Q2M#11",
+            "referenceImage": "white-balance-post-process.png",
+            "dependsOn": ["Lights", "Loaders", "Materials", "PostProcesses"]
         },
         {
             "title": "Sprite maps",
@@ -1781,6 +1834,19 @@
             "dependsOn": ["PostProcesses"]
         },
         {
+            "title": "FSR1 render pipeline",
+            "playgroundId": "#JV4PZC#0",
+            "referenceImage": "fsr1.png",
+            "dependsOn": ["PostProcesses", "Textures", "Materials"]
+        },
+        {
+            "title": "Lens render pipeline",
+            "playgroundId": "#DX6AV#389",
+            "referenceImage": "lens-render-pipeline.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["PostProcesses", "Materials", "Loaders", "Meshes", "Lights", "Cameras", "Shaders"]
+        },
+        {
             "title": "Depth of field",
             "playgroundId": "#IDSQK2#86",
             "referenceImage": "depthOfField.png",
@@ -2182,6 +2248,124 @@
             "excludeFromAutomaticTesting": true,
             "dependsOn": ["Materials", "PBR", "PostProcesses", "Textures"],
             "excludeFromPerformance": true
+        },
+        {
+            "title": "Object ID and mesh tag - Geometry buffer renderer",
+            "playgroundId": "#O0BI9B#0",
+            "referenceImage": "object-id-texture-geometry-buffer.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Object ID and mesh tag - Geometry buffer renderer - WebGPU ForceGLSL",
+            "playgroundId": "#O0BI9B#0",
+            "referenceImage": "object-id-mesh-tag-geometry-buffer-webgpu-force-glsl.png",
+            "replace": "const forceGLSL = false;, const forceGLSL = true;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Object ID and mesh tag - FrameGraph object ID first",
+            "playgroundId": "#XKTMFR#0",
+            "referenceImage": "object-id-mesh-tag-framegraph.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Object ID and mesh tag - FrameGraph mesh tag first",
+            "playgroundId": "#XKTMFR#0",
+            "referenceImage": "object-id-mesh-tag-framegraph.png",
+            "replace": "const meshTagFirst = false;, const meshTagFirst = true;",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Object ID and mesh tag - FrameGraph object ID first - WebGPU ForceGLSL",
+            "playgroundId": "#XKTMFR#0",
+            "referenceImage": "object-id-mesh-tag-framegraph-webgpu-force-glsl.png",
+            "replace": "const forceGLSL = false;, const forceGLSL = true;",
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "PBR", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - coastal cliff scenery",
+            "playgroundId": "#BJBKKU#12",
+            "referenceImage": "mesh-blending-coastal-cliff.png",
+            "replace": "const showControls = true;, const showControls = false;, const showGpuTime = true;, const showGpuTime = false;",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "Lights", "Loaders", "Materials", "Meshes", "PBR", "PostProcesses", "Rendering", "Shaders", "Shadows", "Textures", "glTF"]
+        },
+        {
+            "title": "Mesh blending - FrameGraph alpha cutoff coverage",
+            "playgroundId": "#OGVQ6C#0",
+            "referenceImage": "mesh-blending-alpha-cutoff.png",
+            "replace": "const useFrameGraph = false;, const useFrameGraph = true;",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - viewport-edge continuation",
+            "playgroundId": "#Q46SI1#2",
+            "referenceImage": "mesh-blending-phase4-low.png",
+            "replace": "const scenario = \"all\";, const scenario = \"viewportEdges\";, BABYLON.MeshBlendQuality.Medium, BABYLON.MeshBlendQuality.Low",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - mixed radius continuation",
+            "playgroundId": "#Q46SI1#2",
+            "referenceImage": "mesh-blending-phase4-cinematic.png",
+            "replace": "const scenario = \"all\";, const scenario = \"mixedRadius\";, BABYLON.MeshBlendQuality.Medium, BABYLON.MeshBlendQuality.Cinematic",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - shadow attenuation enabled",
+            "playgroundId": "#CYSYH2#7",
+            "referenceImage": "mesh-blending-phase5-target-shadow-seam.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - shadow attenuation disabled",
+            "playgroundId": "#CYSYH2#7",
+            "referenceImage": "mesh-blending-phase5-shadow-attenuation-disabled.png",
+            "replace": "const useShadowAttenuation = true;, const useShadowAttenuation = false;",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - HDR SceneColor",
+            "playgroundId": "#GC20U3#0",
+            "referenceImage": "mesh-blending-phase5-hdr-scene-color.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - classic parity reference",
+            "playgroundId": "#O05LI8#6",
+            "referenceImage": "mesh-blending-classic-framegraph-parity.png",
+            "errorRatio": 0.1,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - FrameGraph parity",
+            "playgroundId": "#O05LI8#6",
+            "referenceImage": "mesh-blending-classic-framegraph-parity.png",
+            "replace": "const useFrameGraph = false;, const useFrameGraph = true;",
+            "errorRatio": 0.1,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
+        },
+        {
+            "title": "Mesh blending - NRGE without albedo",
+            "playgroundId": "#O05LI8#6",
+            "referenceImage": "mesh-blending-classic-framegraph-parity.png",
+            "replace": "const useNRGE = false;, const useNRGE = true;",
+            "errorRatio": 0.1,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "Materials", "Meshes", "PostProcesses", "Rendering", "Shaders", "Textures"]
         },
         {
             "title": "Shadows and LODs",
@@ -2645,6 +2829,12 @@
             "dependsOn": ["Materials"]
         },
         {
+            "title": "Dithered Tile Fade Material Plugin",
+            "playgroundId": "#HI17VI#0",
+            "referenceImage": "ditheredTileFadeMaterialPlugin.png",
+            "dependsOn": ["Cameras", "GUI", "Lights", "Loaders", "Materials", "Meshes", "PBR", "Textures", "glTF"]
+        },
+        {
             "title": "Serialize and Load Instanced Hierarchy",
             "playgroundId": "#3ZQ1SL#7",
             "referenceImage": "serializeAndLoadInstancedHierarchy.png",
@@ -2724,6 +2914,57 @@
             "renderCount": 120,
             "excludedEngines": ["webgl1", "webgpu"],
             "dependsOn": ["Audio", "Behaviors", "CSG", "Cameras", "Collisions", "GUI", "Loaders", "Meshes", "PBR", "PostProcesses", "Textures"]
+        },
+        {
+            "title": "Fluid rendering custom particles per-particle size",
+            "playgroundId": "#DBSRBB#1",
+            "referenceImage": "fluidCustomParticlesPerParticleSize.png",
+            "renderCount": 10,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering custom particles uniform size fallback",
+            "playgroundId": "#DBSRBB#1",
+            "replace": "var withSizeBuffer = true, var withSizeBuffer = false",
+            "referenceImage": "fluidCustomParticlesUniformSizeFallback.png",
+            "renderCount": 10,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system per-particle size",
+            "playgroundId": "#M9FSIH#1",
+            "referenceImage": "fluidGpuParticleSystemPerParticleSize.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system uniform size",
+            "playgroundId": "#M9FSIH#1",
+            "replace": "UsePerParticleSizeAttribute = true;, UsePerParticleSizeAttribute = false;",
+            "referenceImage": "fluidGpuParticleSystemUniformSize.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system per-particle size with asymmetric scale",
+            "playgroundId": "#M9FSIH#4",
+            "referenceImage": "fluidGpuParticleSystemPerParticleSizeAsymmetricScale.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
+        },
+        {
+            "title": "Fluid rendering GPU particle system uniform size with asymmetric scale",
+            "playgroundId": "#M9FSIH#4",
+            "replace": "UsePerParticleSizeAttribute = true;, UsePerParticleSizeAttribute = false;",
+            "referenceImage": "fluidGpuParticleSystemUniformSizeAsymmetricScale.png",
+            "renderCount": 60,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Rendering", "Particles"]
         },
         {
             "title": "Export GLTF Extension KHR_texture_transform",
@@ -2977,6 +3218,24 @@
             "playgroundId": "#RKGF05#5",
             "referenceImage": "multi-scale-grid-material.png",
             "dependsOn": ["LibMaterials", "Materials", "Meshes"]
+        },
+        {
+            "title": "Simple Sky Material",
+            "playgroundId": "#VBTSKJ#2",
+            "referenceImage": "simple-sky-material.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
+        },
+        {
+            "title": "Overcast Sky Material",
+            "playgroundId": "#VBTSKJ#3",
+            "referenceImage": "overcast-sky-material.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes"]
+        },
+        {
+            "title": "HDR Sky Material as IBL",
+            "playgroundId": "#VBTSKJ#6",
+            "referenceImage": "hdr-sky-material-as-ibl.png",
+            "dependsOn": ["LibMaterials", "Materials", "Meshes", "Probes", "PBR", "Textures", "Loaders", "glTF"]
         },
         {
             "title": "water-material",
@@ -3469,6 +3728,7 @@
         {
             "title": "FrameGraph nrge OIT (Geometry renderer)",
             "playgroundId": "#MIACY4#14",
+            "canvasBackgroundColor": "white",
             "excludedEngines": ["webgl1"],
             "dependsOn": ["FrameGraph", "Materials", "Meshes"]
         },
@@ -3589,6 +3849,13 @@
             "title": "FrameGraph multi-render targets",
             "playgroundId": "#XSNYAU#165",
             "dependsOn": ["FrameGraph", "Materials", "Particles", "Textures"]
+        },
+        {
+            "title": "Object ID texture - FrameGraph geometry renderer",
+            "playgroundId": "#00T6WJ#0",
+            "referenceImage": "object-id-texture-framegraph.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["FrameGraph", "Materials", "Meshes", "NodeMaterial", "PBR", "Rendering", "Shaders", "Textures"]
         },
         {
             "title": "FrameGraph selection outline",
@@ -5499,6 +5766,18 @@
             "playgroundId": "#DZBTQU#17",
             "referenceImage": "fbx-m16-units.png",
             "dependsOn": ["Loaders", "Meshes"]
+        },
+        {
+            "title": "USD loader - analytic primitives",
+            "playgroundId": "#PS2UEU#0",
+            "referenceImage": "usd-loader-analytic-primitives.png",
+            "dependsOn": ["Loaders", "Materials", "Meshes"]
+        },
+        {
+            "title": "USD loader - PBR materials",
+            "playgroundId": "#KBHY1R#0",
+            "referenceImage": "usd-loader-pbr-materials.png",
+            "dependsOn": ["Loaders", "Materials", "Meshes", "PBR"]
         },
         {
             "title": "CSG2 Right-Handed glTF winding",

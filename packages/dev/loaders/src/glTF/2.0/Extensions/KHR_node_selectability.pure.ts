@@ -5,6 +5,8 @@ import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { addNewInteractivityFlowGraphMapping } from "./KHR_interactivity/declarationMapper";
 import { type INode } from "../glTFLoaderInterfaces";
 import { AddObjectAccessorToKey } from "./objectModelMapping";
+import { GetInteractivityNodeState, InitializeInteractivityNodeState, SetInteractivityNodeState } from "./KHR_interactivity/interactivityNodeState";
+import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes.pure";
 
 const NAME = "KHR_node_selectability";
 
@@ -21,6 +23,8 @@ export class KHR_node_selectability implements IGLTFLoaderExtension {
      * The name of this extension.
      */
     public readonly name = NAME;
+    /** Applies node state before KHR_interactivity graphs start. */
+    public readonly order = 100;
     /**
      * Defines whether this extension is enabled.
      */
@@ -38,13 +42,7 @@ export class KHR_node_selectability implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises
     public async onReady(): Promise<void> {
-        this._loader.gltf.nodes?.forEach((node) => {
-            if (node.extensions?.KHR_node_selectability && node.extensions?.KHR_node_selectability.selectable === false) {
-                node._babylonTransformNode?.getChildMeshes().forEach((mesh) => {
-                    mesh.isPickable = false;
-                });
-            }
-        });
+        InitializeInteractivityNodeState(this._loader.gltf.nodes ?? [], "selectable", (node) => node.extensions?.KHR_node_selectability?.selectable);
     }
 
     public dispose() {
@@ -52,26 +50,44 @@ export class KHR_node_selectability implements IGLTFLoaderExtension {
     }
 }
 
-let _Registered = false;
+let _RuntimeRegistered = false;
 /**
- * Registers the KHR_node_selectability glTF loader extension.
- * Safe to call multiple times; only the first call has an effect.
+ * @internal
+ * Registers KHR_node_selectability runtime dependencies without changing the extension registry.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function RegisterKHR_node_selectability(): void {
-    if (_Registered) {
+export function _RegisterKHRNodeSelectabilityRuntime(): void {
+    if (_RuntimeRegistered) {
         return;
     }
-    _Registered = true;
+    _RuntimeRegistered = true;
 
     addNewInteractivityFlowGraphMapping("event/onSelect", NAME, {
         // using GetVariable as the nodeIndex is a configuration and not a value (i.e. it's not mutable)
-        blocks: [FlowGraphBlockNames.MeshPickEvent, FlowGraphBlockNames.GetVariable, FlowGraphBlockNames.IndexOf, "KHR_interactivity/FlowGraphGLTFDataProvider"],
+        blocks: [
+            FlowGraphBlockNames.MeshPickEvent,
+            FlowGraphBlockNames.GetVariable,
+            FlowGraphBlockNames.IndexOf,
+            "KHR_interactivity/FlowGraphGLTFDataProvider",
+            "KHR_interactivity/FlowGraphEventReferenceBlock",
+        ],
+        declarationSchema: {
+            inputValueSockets: {},
+            outputValueSockets: {
+                selectedNode: "ref",
+                selectionRayOrigin: "float3",
+                selectionPoint: "float3",
+                controllerIndex: "int",
+                event: "ref",
+            },
+        },
         configuration: {
-            stopPropagation: { name: "stopPropagation" },
             nodeIndex: {
                 name: "variable",
+                configurationType: "int",
                 toBlock: FlowGraphBlockNames.GetVariable,
+                indexSource: "assetNodes",
+                invalidUsesDefault: true,
                 dataTransformer(data) {
                     return "pickedMesh_" + data;
                 },
@@ -80,12 +96,17 @@ export function RegisterKHR_node_selectability(): void {
         outputs: {
             values: {
                 selectedNodeIndex: { name: "index", toBlock: FlowGraphBlockNames.IndexOf },
-                controllerIndex: { name: "pointerId" },
-                selectionPoint: { name: "pickedPoint" },
-                selectionRayOrigin: { name: "pickOrigin" },
+                // `selectedNode` is the new ref-typed output from the Opaque-Reference
+                // spec update. It's the picked Babylon mesh itself, available directly
+                // from FlowGraphMeshPickEventBlock.pickedMesh — no IndexOf lookup needed.
+                selectedNode: { name: "nodeReference", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
+                controllerIndex: { name: "controllerIndex", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
+                selectionPoint: { name: "selectionPoint", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
+                selectionRayOrigin: { name: "selectionRayOrigin", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
+                event: { name: "value", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
             },
             flows: {
-                out: { name: "done" },
+                out: { name: "out", toBlock: "KHR_interactivity/FlowGraphEventReferenceBlock" },
             },
         },
         interBlockConnectors: [
@@ -110,46 +131,90 @@ export function RegisterKHR_node_selectability(): void {
                 outputBlockIndex: 0,
                 isVariable: true,
             },
+            {
+                input: "node",
+                output: "pickedMesh",
+                inputBlockIndex: 4,
+                outputBlockIndex: 0,
+                isVariable: true,
+            },
+            {
+                input: "controllerIndexInput",
+                output: "pointerId",
+                inputBlockIndex: 4,
+                outputBlockIndex: 0,
+                isVariable: true,
+            },
+            {
+                input: "selectionPointInput",
+                output: "pickedPoint",
+                inputBlockIndex: 4,
+                outputBlockIndex: 0,
+                isVariable: true,
+            },
+            {
+                input: "selectionRayOriginInput",
+                output: "pickOrigin",
+                inputBlockIndex: 4,
+                outputBlockIndex: 0,
+                isVariable: true,
+            },
+            {
+                input: "in",
+                output: "done",
+                inputBlockIndex: 4,
+                outputBlockIndex: 0,
+            },
         ],
         extraProcessor(gltfBlock, _declaration, _mapping, _arrays, serializedObjects, context, globalGLTF) {
-            // add the glTF to the configuration of the last serialized object
-            const serializedObject = serializedObjects[serializedObjects.length - 1];
-            serializedObject.config = serializedObject.config || {};
-            serializedObject.config.glTF = globalGLTF;
             // find the listener nodeIndex value
             const nodeIndex = gltfBlock.configuration?.["nodeIndex"]?.value?.[0];
-            if (nodeIndex === undefined || typeof nodeIndex !== "number") {
-                throw new Error("nodeIndex not found in configuration");
-            }
-            const variableName = "pickedMesh_" + nodeIndex;
+            const validNodeIndex = typeof nodeIndex === "number" && Number.isInteger(nodeIndex) && nodeIndex >= 0 && nodeIndex < (globalGLTF?.nodes?.length ?? 0);
+            const variableName = validNodeIndex ? "pickedMesh_" + nodeIndex : "pickedMesh_unbound";
             // find the nodeIndex value
             serializedObjects[1].config.variable = variableName;
-            context._userVariables[variableName] = {
-                className: "Mesh",
-                id: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.id,
-                uniqueId: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.uniqueId,
-            };
+            context._userVariables[variableName] = validNodeIndex
+                ? {
+                      className: "Mesh",
+                      id: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.id,
+                      uniqueId: globalGLTF?.nodes?.[nodeIndex]._babylonTransformNode?.uniqueId,
+                  }
+                : { type: FlowGraphTypes.Any, value: [{}] };
+            const eventKey = `${NAME}:event/onSelect:${nodeIndex}`;
+            serializedObjects[0].config.eventKey = eventKey;
+            serializedObjects[0].config.useNaNDefaults = true;
+            serializedObjects[0].config.pointerIdDefault = -1;
+            serializedObjects[4].config.eventKey = eventKey;
             return serializedObjects;
         },
     });
 
     AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_selectability/selectable", {
         get: (node: INode) => {
-            const tn = node._babylonTransformNode as any;
-            if (tn && tn.isPickable !== undefined) {
-                return tn.isPickable;
-            }
-            return true;
+            return GetInteractivityNodeState(node, "selectable");
         },
         set: (value: boolean, node: INode) => {
-            node._primitiveBabylonMeshes?.forEach((mesh) => {
-                mesh.isPickable = value;
-            });
+            SetInteractivityNodeState(node, "selectable", value);
         },
         getTarget: (node: INode) => node._babylonTransformNode,
         getPropertyName: [() => "isPickable"],
         type: "boolean",
     });
+}
+
+let _Registered = false;
+/**
+ * Registers the KHR_node_selectability glTF loader extension.
+ * Safe to call multiple times; only the first call has an effect.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function RegisterKHR_node_selectability(): void {
+    if (_Registered) {
+        return;
+    }
+    _Registered = true;
+
+    _RegisterKHRNodeSelectabilityRuntime();
 
     unregisterGLTFExtension(NAME);
 

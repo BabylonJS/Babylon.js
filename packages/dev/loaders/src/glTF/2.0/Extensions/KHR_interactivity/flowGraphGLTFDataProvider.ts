@@ -12,7 +12,7 @@ export interface IFlowGraphGLTFDataProviderBlockConfiguration extends IFlowGraph
     /**
      * the glTF object to provide data from
      */
-    glTF: IGLTF;
+    glTF?: IGLTF;
 }
 
 /**
@@ -32,7 +32,7 @@ export class FlowGraphGLTFDataProvider extends FlowGraphBlock {
      */
     public readonly nodes: FlowGraphDataConnection<TransformNode[]>;
 
-    constructor(config: IFlowGraphGLTFDataProviderBlockConfiguration) {
+    constructor(config: IFlowGraphGLTFDataProviderBlockConfiguration = {}) {
         super(config);
         const glTF = config.glTF;
         // glTF may be undefined when the block is re-created from serialized data

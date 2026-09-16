@@ -532,6 +532,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
                 "darken",
                 "edge_blur",
                 "highlights",
+                "blur_lod",
                 "near",
                 "far",
             ],
@@ -549,6 +550,13 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
             effect.setTexture("grainSampler", this._grainTexture);
             effect.setTextureFromPostProcess("textureSampler", this._highlightsPostProcess);
             effect.setTextureFromPostProcess("highlightsSampler", this._depthOfFieldPostProcess);
+
+            // Explicit LOD for the blur samples of textureSampler: this pass runs at a lower resolution than its
+            // source (textureSampler = highlights pass), so reproduce the minification an implicit lookup would
+            // have selected instead of forcing mip 0. Derived from the actual render-target sizes.
+            const sourceWidth = this._highlightsPostProcess.width;
+            const outputWidth = this._depthOfFieldPostProcess.width;
+            effect.setFloat("blur_lod", sourceWidth > 0 && outputWidth > 0 ? Math.max(0, Math.log2(sourceWidth / outputWidth)) : 0);
 
             effect.setFloat("grain_amount", this._grainAmount);
             effect.setBool("blur_noise", this._blurNoise);
@@ -579,7 +587,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
         const size = 512;
 
         const data = new Uint8Array(size * size * 4);
-        for (let index = 0; index < data.length;) {
+        for (let index = 0; index < data.length; ) {
             const value = Math.floor(RandomRange(0.42, 0.58) * 255);
             data[index++] = value;
             data[index++] = value;

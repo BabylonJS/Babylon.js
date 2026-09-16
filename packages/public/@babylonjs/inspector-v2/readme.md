@@ -22,6 +22,16 @@ import { ShowInspector } from "@babylonjs/inspector";
 ShowInspector(scene);
 ```
 
+### Babylon Lite
+
+The initial Babylon Lite Inspector can display the surfaces and rendering contexts associated with an engine:
+
+```ts
+import { ShowInspector } from "@babylonjs/inspector/lite";
+
+ShowInspector(engine);
+```
+
 ## Headless Inspectable (No UI)
 
 You can make a scene inspectable for the CLI without showing the Inspector UI by calling `StartInspectable`:

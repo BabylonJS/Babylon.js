@@ -42,4 +42,27 @@ describe("InterceptProperty", () => {
 
         token.dispose();
     });
+
+    it("restores the original property after multiple hooks are disposed out of registration order", () => {
+        const target = { value: 1 };
+        const firstAfterSet = vi.fn();
+        const secondAfterSet = vi.fn();
+        const firstToken = InterceptProperty(target, "value", { afterSet: firstAfterSet });
+        const secondToken = InterceptProperty(target, "value", { afterSet: secondAfterSet });
+
+        firstToken.dispose();
+        target.value = 2;
+
+        expect(firstAfterSet).not.toHaveBeenCalled();
+        expect(secondAfterSet).toHaveBeenCalledOnce();
+
+        secondToken.dispose();
+
+        expect(Reflect.getOwnPropertyDescriptor(target, "value")).toEqual({
+            configurable: true,
+            enumerable: true,
+            value: 2,
+            writable: true,
+        });
+    });
 });

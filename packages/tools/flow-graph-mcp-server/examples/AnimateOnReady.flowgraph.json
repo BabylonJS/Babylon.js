@@ -7,7 +7,19 @@
           "config": {},
           "uniqueId": "fg-00000002",
           "dataInputs": [],
-          "dataOutputs": [],
+          "dataOutputs": [
+            {
+              "uniqueId": "fg-00000006",
+              "name": "event",
+              "_connectionType": 1,
+              "connectedPointIds": [],
+              "className": "FlowGraphDataConnection",
+              "richType": {
+                "typeName": "string",
+                "defaultValue": ""
+              }
+            }
+          ],
           "signalInputs": [],
           "signalOutputs": [
             {
@@ -21,7 +33,7 @@
               "name": "done",
               "_connectionType": 1,
               "connectedPointIds": [
-                "fg-00000007"
+                "fg-00000008"
               ]
             },
             {
@@ -40,10 +52,10 @@
           "config": {
             "targetMesh": "hero"
           },
-          "uniqueId": "fg-00000006",
+          "uniqueId": "fg-00000007",
           "dataInputs": [
             {
-              "uniqueId": "fg-0000000e",
+              "uniqueId": "fg-0000000f",
               "name": "speed",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -55,7 +67,7 @@
               "optional": false
             },
             {
-              "uniqueId": "fg-0000000f",
+              "uniqueId": "fg-00000010",
               "name": "loop",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -67,7 +79,7 @@
               "optional": false
             },
             {
-              "uniqueId": "fg-00000010",
+              "uniqueId": "fg-00000011",
               "name": "from",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -79,7 +91,7 @@
               "optional": false
             },
             {
-              "uniqueId": "fg-00000011",
+              "uniqueId": "fg-00000012",
               "name": "to",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -91,7 +103,7 @@
               "optional": false
             },
             {
-              "uniqueId": "fg-00000012",
+              "uniqueId": "fg-00000013",
               "name": "animationGroup",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -102,7 +114,7 @@
               "optional": false
             },
             {
-              "uniqueId": "fg-00000013",
+              "uniqueId": "fg-00000014",
               "name": "animation",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -113,7 +125,7 @@
               "optional": true
             },
             {
-              "uniqueId": "fg-00000014",
+              "uniqueId": "fg-00000015",
               "name": "object",
               "_connectionType": 0,
               "connectedPointIds": [],
@@ -126,7 +138,7 @@
           ],
           "dataOutputs": [
             {
-              "uniqueId": "fg-00000015",
+              "uniqueId": "fg-00000016",
               "name": "currentFrame",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -137,7 +149,7 @@
               }
             },
             {
-              "uniqueId": "fg-00000016",
+              "uniqueId": "fg-00000017",
               "name": "currentTime",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -148,7 +160,7 @@
               }
             },
             {
-              "uniqueId": "fg-00000017",
+              "uniqueId": "fg-00000018",
               "name": "currentAnimationGroup",
               "_connectionType": 1,
               "connectedPointIds": [],
@@ -160,7 +172,7 @@
           ],
           "signalInputs": [
             {
-              "uniqueId": "fg-00000007",
+              "uniqueId": "fg-00000008",
               "name": "in",
               "_connectionType": 0,
               "connectedPointIds": []
@@ -168,37 +180,37 @@
           ],
           "signalOutputs": [
             {
-              "uniqueId": "fg-00000008",
+              "uniqueId": "fg-00000009",
               "name": "out",
               "_connectionType": 1,
               "connectedPointIds": []
             },
             {
-              "uniqueId": "fg-00000009",
+              "uniqueId": "fg-0000000a",
               "name": "done",
               "_connectionType": 1,
               "connectedPointIds": []
             },
             {
-              "uniqueId": "fg-0000000a",
+              "uniqueId": "fg-0000000b",
               "name": "error",
               "_connectionType": 1,
               "connectedPointIds": []
             },
             {
-              "uniqueId": "fg-0000000b",
+              "uniqueId": "fg-0000000c",
               "name": "animationLoopEvent",
               "_connectionType": 1,
               "connectedPointIds": []
             },
             {
-              "uniqueId": "fg-0000000c",
+              "uniqueId": "fg-0000000d",
               "name": "animationEndEvent",
               "_connectionType": 1,
               "connectedPointIds": []
             },
             {
-              "uniqueId": "fg-0000000d",
+              "uniqueId": "fg-0000000e",
               "name": "animationGroupLoopEvent",
               "_connectionType": 1,
               "connectedPointIds": []

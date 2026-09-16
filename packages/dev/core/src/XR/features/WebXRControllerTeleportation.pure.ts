@@ -11,7 +11,7 @@ import { WebXRControllerComponent, type IWebXRMotionControllerAxesValue } from "
 
 import { type AbstractMesh } from "../../Meshes/abstractMesh.pure";
 import { Vector3, Quaternion } from "../../Maths/math.vector.pure";
-import { Ray } from "../../Culling/ray.pure";
+import { Ray, RegisterRay } from "../../Culling/ray.pure";
 import { type Material } from "../../Materials/material.pure";
 import { DynamicTexture } from "../../Materials/Textures/dynamicTexture.pure";
 import { CreateCylinder } from "../../Meshes/Builders/cylinderBuilder.pure";
@@ -1159,6 +1159,8 @@ export function RegisterWebXRControllerTeleportation(): void {
         return;
     }
     _Registered = true;
+
+    RegisterRay();
 
     WebXRFeaturesManager.AddWebXRFeature(
         WebXRMotionControllerTeleportation.Name,

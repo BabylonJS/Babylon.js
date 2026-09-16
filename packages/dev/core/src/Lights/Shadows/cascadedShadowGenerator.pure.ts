@@ -200,16 +200,13 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             return;
         }
 
+        // Clamp both bounds into [0, 1] before checking ordering: previously min was only clamped
+        // low and max only clamped high, so inputs like (1.5, 2) produced min > max.
+        min = Math.min(Math.max(min, 0), 1);
+        max = Math.min(Math.max(max, 0), 1);
+
         if (min > max) {
             min = 0;
-            max = 1;
-        }
-
-        if (min < 0) {
-            min = 0;
-        }
-
-        if (max > 1) {
             max = 1;
         }
 

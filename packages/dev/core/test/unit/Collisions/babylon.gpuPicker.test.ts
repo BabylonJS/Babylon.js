@@ -49,6 +49,7 @@ type GPUPickerInternals = GPUPicker & {
     _prepareForPicking: (x: number, y: number, scaleX: number, scaleY: number) => { x: number; y: number };
     _readDepthTexturePixelsAsync: (x: number, y: number, w: number, h: number) => Promise<Nullable<ArrayBufferView>>;
     _shouldUseIndividualMultiPickReadback: (inBoundsPointCount: number, readArea: number, options?: IGPUMultiPickOptions) => boolean;
+    _isPartProxyActiveForPicking: (proxy: { isEnabled: () => boolean; isPickable: boolean; isVisible: boolean }) => boolean;
 };
 
 const createPicker = (): GPUPickerInternals => {
@@ -58,6 +59,13 @@ const createPicker = (): GPUPickerInternals => {
 describe("GPUPicker", () => {
     it("uses high precision integers for WebGL2 picking ID bit shifts", () => {
         expect(pickingPixelShader.shader).toContain("precision highp int;");
+    });
+
+    it("excludes disabled Gaussian splatting part proxies from picking", () => {
+        const picker = createPicker();
+        const proxy = { isEnabled: () => false, isPickable: true, isVisible: true };
+
+        expect(picker._isPartProxyActiveForPicking(proxy)).toBe(false);
     });
 
     it("decodes float depth values from a depth read buffer", () => {

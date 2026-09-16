@@ -56,6 +56,17 @@ export interface IFlowGraphBlockTypeInfo {
 
 // ─── Block Registry ───────────────────────────────────────────────────────
 
+/**
+ * Loader-created KHR_interactivity helper blocks intentionally omitted from the creatable MCP catalog.
+ * They require source-asset metadata and have no meaningful standalone construction contract.
+ */
+export const FlowGraphImportOnlyBlockClassNames = [
+    "FlowGraphEventReferenceBlock",
+    "FlowGraphGLTFDataProvider",
+    "FlowGraphObjectReferenceBlock",
+    "FlowGraphUnsupportedInteractivityBlock",
+] as const;
+
 export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
     // ═══════════════════════════════════════════════════════════════════
     //  EVENT BLOCKS
@@ -72,7 +83,13 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "error", description: "Fires on error" },
         ],
         dataInputs: [],
-        dataOutputs: [],
+        dataOutputs: [
+            {
+                name: "event",
+                type: "string",
+                description: "KHR_interactivity event reference for this lifecycle event (stable string ref usable with ref/extractProperty and event equality)",
+            },
+        ],
     },
 
     SceneTickEvent: {
@@ -89,6 +106,11 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         dataOutputs: [
             { name: "timeSinceStart", type: "number", description: "Total time since the scene started (seconds)" },
             { name: "deltaTime", type: "number", description: "Time since last frame (seconds)" },
+            {
+                name: "event",
+                type: "string",
+                description: "KHR_interactivity event reference for this lifecycle event (stable string ref usable with ref/extractProperty and event equality)",
+            },
         ],
     },
 
@@ -323,11 +345,31 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "error" },
         ],
         dataInputs: [],
-        dataOutputs: [],
+        dataOutputs: [
+            {
+                name: "event",
+                type: "string",
+                description: "KHR_interactivity event reference for the received custom event (stable string ref usable with ref/extractProperty and event equality)",
+            },
+        ],
         config: {
             eventId: "string — must match the sender's eventId",
             eventData: "Record<string, { type: RichType }> — dynamic data outputs are created from this",
         },
+    },
+
+    StopEventPropagation: {
+        className: "FlowGraphStopEventPropagationBlock",
+        category: "Event",
+        description:
+            "Stops propagation of an in-flight custom event (KHR_interactivity event/stopPropagation). Skips the remaining handler nodes of the currently-dispatching event referenced by the `event` input.",
+        signalInputs: [{ name: "in" }],
+        signalOutputs: [{ name: "out" }, { name: "error" }],
+        dataInputs: [
+            { name: "event", type: "string", description: "Event reference (from an event block's `event` output) whose propagation should be stopped" },
+            { name: "stopImmediate", type: "boolean", description: "Also stop remaining immediate handlers (default: false)", isOptional: true },
+        ],
+        dataOutputs: [],
     },
 
     // ═══════════════════════════════════════════════════════════════════
@@ -940,6 +982,19 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         ],
     },
 
+    Tau: {
+        className: "FlowGraphTauBlock",
+        category: "Math",
+        description: "Outputs tau (2π).",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [],
+        dataOutputs: [
+            { name: "value", type: "number" },
+            { name: "isValid", type: "boolean" },
+        ],
+    },
+
     Inf: {
         className: "FlowGraphInfBlock",
         category: "Math",
@@ -1089,6 +1144,23 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "a", type: "any", description: "Start value" },
             { name: "b", type: "any", description: "End value" },
             { name: "c", type: "any", description: "Interpolation factor (0-1)" },
+        ],
+        dataOutputs: [
+            { name: "value", type: "any" },
+            { name: "isValid", type: "boolean" },
+        ],
+    },
+
+    SmoothStep: {
+        className: "FlowGraphSmoothStepBlock",
+        category: "Math",
+        description: "Smooth Hermite interpolation coefficient: for edges a and b and value c, returns t*t*(3-2t) with t = saturate((c - min(a, b)) / |b - a|).",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "a", type: "any", description: "Lower edge" },
+            { name: "b", type: "any", description: "Upper edge" },
+            { name: "c", type: "any", description: "Value to interpolate" },
         ],
         dataOutputs: [
             { name: "value", type: "any" },
@@ -1262,6 +1334,112 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         ],
     },
 
+    QuaternionFromUpForward: {
+        className: "FlowGraphQuaternionFromUpForwardBlock",
+        category: "Vector",
+        description: "Creates a rotation quaternion from the specified up and forward directions.",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "a", type: "Vector3", description: "Up direction" },
+            { name: "b", type: "Vector3", description: "Forward direction" },
+        ],
+        dataOutputs: [
+            { name: "value", type: "Quaternion" },
+            { name: "isValid", type: "boolean" },
+        ],
+    },
+
+    QuaternionFromAngles: {
+        className: "FlowGraphQuaternionFromAnglesBlock",
+        category: "Vector",
+        description: "Creates a rotation quaternion from three Tait–Bryan intrinsic Euler angles (a=x, b=y, c=z, in radians) applied in the configured order.",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "a", type: "number", description: "Rotation around X, in radians" },
+            { name: "b", type: "number", description: "Rotation around Y, in radians" },
+            { name: "c", type: "number", description: "Rotation around Z, in radians" },
+        ],
+        dataOutputs: [
+            { name: "value", type: "Quaternion" },
+            { name: "isValid", type: "boolean" },
+        ],
+        config: {
+            order: "string — intrinsic rotation order, one of xyz/xzy/yxz/yzx/zxy/zyx (default yxz)",
+        },
+    },
+
+    VectorSlerp: {
+        className: "FlowGraphVectorSlerpBlock",
+        category: "Vector",
+        description: "Spherical linear interpolation between two vectors (float2/float3). c is the interpolation coefficient.",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "a", type: "any", description: "First vector" },
+            { name: "b", type: "any", description: "Second vector" },
+            { name: "c", type: "number", description: "Interpolation coefficient" },
+        ],
+        dataOutputs: [
+            { name: "value", type: "any" },
+            { name: "isValid", type: "boolean" },
+        ],
+    },
+
+    MathSlerp: {
+        className: "FlowGraphMathSlerpBlock",
+        category: "Vector",
+        description: "Spherical linear interpolation between two quaternions. c is the interpolation coefficient.",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "a", type: "Quaternion", description: "First quaternion" },
+            { name: "b", type: "Quaternion", description: "Second quaternion" },
+            { name: "c", type: "number", description: "Interpolation coefficient" },
+        ],
+        dataOutputs: [
+            { name: "value", type: "Quaternion" },
+            { name: "isValid", type: "boolean" },
+        ],
+    },
+
+    RGBToOkLCh: {
+        className: "FlowGraphRGBToOkLChBlock",
+        category: "Conversion",
+        description: "Converts linear sRGB components to OkLCh components.",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "r", type: "number" },
+            { name: "g", type: "number" },
+            { name: "b", type: "number" },
+        ],
+        dataOutputs: [
+            { name: "l", type: "number" },
+            { name: "c", type: "number" },
+            { name: "h", type: "number" },
+        ],
+    },
+
+    RGBFromOkLCh: {
+        className: "FlowGraphRGBFromOkLChBlock",
+        category: "Conversion",
+        description: "Converts OkLCh components to linear sRGB components.",
+        signalInputs: [],
+        signalOutputs: [],
+        dataInputs: [
+            { name: "l", type: "number" },
+            { name: "c", type: "number" },
+            { name: "h", type: "number" },
+        ],
+        dataOutputs: [
+            { name: "r", type: "number" },
+            { name: "g", type: "number" },
+            { name: "b", type: "number" },
+        ],
+    },
+
     // ═══════════════════════════════════════════════════════════════════
     //  MATRIX BLOCKS
     // ═══════════════════════════════════════════════════════════════════
@@ -1385,7 +1563,6 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "value", type: "Matrix" },
             { name: "isValid", type: "boolean" },
         ],
-        config: { inputIsColumnMajor: "boolean — whether inputs are in column-major order" },
     },
 
     CombineMatrix2D: {
@@ -1403,7 +1580,6 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "value", type: "Matrix2D" },
             { name: "isValid", type: "boolean" },
         ],
-        config: { inputIsColumnMajor: "boolean — whether inputs are in column-major order" },
     },
 
     CombineMatrix3D: {
@@ -1421,7 +1597,6 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
             { name: "value", type: "Matrix3D" },
             { name: "isValid", type: "boolean" },
         ],
-        config: { inputIsColumnMajor: "boolean — whether inputs are in column-major order" },
     },
 
     // ═══════════════════════════════════════════════════════════════════

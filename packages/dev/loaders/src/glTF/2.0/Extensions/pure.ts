@@ -46,3 +46,4 @@ export * from "./KHR_node_selectability.pure";
 export * from "./KHR_node_hoverability.pure";
 export * from "./ExtrasAsMetadata.pure";
 export * from "./KHR_interactivity/pure";
+export * from "./KHR_animation_pointer.data.pure";

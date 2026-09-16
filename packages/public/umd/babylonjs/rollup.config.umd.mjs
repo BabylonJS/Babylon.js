@@ -12,6 +12,7 @@ export default commonUMDRollupConfiguration({
     outputPath: path.resolve("."),
     maxMode: true,
     minToMax: true,
+    es5EntryPoint: "core",
     alias: {
         core: path.resolve("../../../dev/core/src"),
     },

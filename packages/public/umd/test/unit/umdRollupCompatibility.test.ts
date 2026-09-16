@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as fs from "node:fs";
+import * as os from "node:os";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -57,6 +58,44 @@ describe("UMD Rollup compatibility", () => {
         expect(multiEntryConfig.every((config) => config.treeshake === false)).toBe(true);
     });
 
+    it("generates one ES5 sibling for the configured aggregate entry point", async () => {
+        const { commonUMDRollupConfiguration } = await import("../../../rollupUMDHelper.mjs");
+        const outputPath = fs.mkdtempSync(path.join(os.tmpdir(), "babylon-umd-es5-"));
+
+        try {
+            const configs = commonUMDRollupConfiguration({
+                devPackageName: "loaders",
+                mode: "production",
+                outputPath,
+                entryPoints: {
+                    loaders: "./src/index.ts",
+                    glTFFileLoader: "./src/glTFFileLoader.ts",
+                },
+                overrideFilename: ({ chunk }: { chunk: { name: string } }) => `babylonjs.${chunk.name}.min.js`,
+                es5EntryPoint: "loaders",
+            });
+            const aggregateConfig = configs[0];
+            const secondaryConfig = configs[1];
+            const source = "const exponent = (value) => value ** 2;\n//# sourceMappingURL=babylonjs.loaders.min.js.map\n";
+            fs.writeFileSync(aggregateConfig.output.file, source);
+
+            const aggregatePlugin = aggregateConfig.plugins.find((candidate: { name?: string }) => candidate?.name === "generate-es5-umd");
+            const secondaryPlugin = secondaryConfig.plugins.find((candidate: { name?: string }) => candidate?.name === "generate-es5-umd");
+            expect(aggregatePlugin).toBeDefined();
+            expect(secondaryPlugin).toBeUndefined();
+
+            aggregatePlugin.closeBundle();
+
+            const es5Path = path.join(outputPath, "babylonjs.loaders.es5.js");
+            expect(fs.existsSync(es5Path)).toBe(true);
+            expect(fs.readFileSync(es5Path, "utf8")).toContain("Math.pow(value, 2)");
+            expect(fs.readFileSync(es5Path, "utf8")).not.toContain("sourceMappingURL");
+            expect(fs.existsSync(path.join(outputPath, "babylonjs.glTFFileLoader.es5.js"))).toBe(false);
+        } finally {
+            fs.rmSync(outputPath, { recursive: true, force: true });
+        }
+    });
+
     it("keeps the glTF2 legacy export compatible with nested UMD namespaces", async () => {
         const { GLTF2: glTF2EntryNamespace } = await import("../../../../dev/loaders/src/legacy/legacy-glTF2");
         const { GLTF2: fullLoadersNamespace } = await import("../../../../dev/loaders/src/legacy/legacy");
@@ -67,5 +106,74 @@ describe("UMD Rollup compatibility", () => {
             expect(legacyGLTF2.Loader.Extensions).toBeDefined();
             expect(legacyGLTF2.Loader.Extensions.KHR_lights).toBeDefined();
         }
+    });
+
+    it("lazy-loads editor bundles from the CDN and shares a single load between concurrent imports", async () => {
+        const { commonUMDRollupConfiguration } = await import("../../../rollupUMDHelper.mjs");
+
+        const config = commonUMDRollupConfiguration({ devPackageName: "core" });
+        const plugin = config.plugins.find((candidate: { name?: string }) => candidate?.name === "rewrite-dynamic-external-imports");
+        expect(plugin).toBeDefined();
+
+        const rendered = plugin.renderChunk(`export const load = () => import("babylonjs-gui-editor");\nexport const loadCore = () => import("babylonjs");`);
+        expect(rendered).not.toBeNull();
+        const code: string = rendered.code;
+
+        // The editor import resolves through the lazy CDN loader rather than reading a global that may not exist yet.
+        expect(code).toContain(`_BabylonUMDLoadEditorAsync("GUIEDITOR","guiEditor/babylon.guiEditor.js")`);
+        // Non-editor externals keep resolving straight from their global, since the host page always preloads them.
+        expect(code).toContain(`Promise.resolve(BABYLON)`);
+
+        // The helper is emitted as a single leading line, so evaluate just that line with a stubbed global object.
+        const helperSource = code.slice(0, code.indexOf("\n"));
+        // eslint-disable-next-line no-new-func
+        const instantiateHelper = new Function("globalThis", `${helperSource}\nreturn _BabylonUMDLoadEditorAsync;`);
+
+        const cdnPath = "guiEditor/babylon.guiEditor.js";
+        const createStub = (onLoad: () => Promise<void>) => {
+            const stub: Record<string, any> = {
+                BABYLON: { Tools: { _DefaultCdnUrl: "https://cdn.babylonjs.com", LoadBabylonScriptAsync: onLoad } },
+            };
+            return stub;
+        };
+
+        // Concurrent imports share one script injection, and the global is returned once loading completes.
+        let loadCount = 0;
+        let completeLoad = () => {};
+        const stub = createStub(() => {
+            loadCount++;
+            return new Promise<void>((resolve) => {
+                completeLoad = () => {
+                    stub.GUIEDITOR = { GUIEditor: {} };
+                    resolve();
+                };
+            });
+        });
+        const loadEditorAsync = instantiateHelper(stub);
+
+        const first = loadEditorAsync("GUIEDITOR", cdnPath);
+        const second = loadEditorAsync("GUIEDITOR", cdnPath);
+        expect(second).toBe(first);
+        expect(loadCount).toBe(1);
+
+        completeLoad();
+        await expect(first).resolves.toBe(stub.GUIEDITOR);
+
+        // Once the global exists the CDN is not hit again.
+        await expect(loadEditorAsync("GUIEDITOR", cdnPath)).resolves.toBe(stub.GUIEDITOR);
+        expect(loadCount).toBe(1);
+
+        // A failed load is not cached, so a later attempt retries instead of replaying the rejection forever.
+        let failingLoadCount = 0;
+        const failingStub = createStub(() => {
+            failingLoadCount++;
+            return failingLoadCount === 1 ? Promise.reject(new Error("network error")) : Promise.resolve();
+        });
+        const loadFailingEditorAsync = instantiateHelper(failingStub);
+
+        await expect(loadFailingEditorAsync("GUIEDITOR", cdnPath)).rejects.toThrow("network error");
+        // The retry loads successfully but the bundle defines no global, which surfaces as a descriptive error.
+        await expect(loadFailingEditorAsync("GUIEDITOR", cdnPath)).rejects.toThrow("did not define the expected global");
+        expect(failingLoadCount).toBe(2);
     });
 });

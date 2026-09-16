@@ -10,6 +10,7 @@ import { FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { BoundProperty } from "../boundProperty";
 import { useObservableArray } from "../../../hooks/useObservableArray";
+import { SortAndRefreshParticleGradients } from "./particleGradientUtils";
 
 const useStyles = makeStyles({
     subsection: {
@@ -73,7 +74,7 @@ export const ParticleSystemRotationProperties: FunctionComponent<{ particleSyste
                             system.forceRefreshGradients();
                         }}
                         onChange={(_gradient: FactorGradient) => {
-                            system.forceRefreshGradients();
+                            SortAndRefreshParticleGradients(system, system.getAngularSpeedGradients());
                         }}
                     />
                 </>

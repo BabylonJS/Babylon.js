@@ -5,7 +5,6 @@ interface IIESData {
     tilt?: {};
     numberOfLights?: number;
     lumensPerLamp?: number;
-    candelaMultiplier?: number;
     numberOfVerticalAngles: number;
     numberOfHorizontalAngles: number;
     horizontalAngles: number[];
@@ -15,9 +14,6 @@ interface IIESData {
     width?: number;
     length?: number;
     height?: number;
-    ballastFactor?: number;
-    fileGenerationType?: number;
-    inputWatts?: number;
     candelaValues: number[][];
 }
 
@@ -134,7 +130,6 @@ export function LoadIESData(uint8Array: Uint8Array): IIESTextureData {
     const header = LineToArray(dataPointer.lines[dataPointer.index++]);
     data.numberOfLights = header[0];
     data.lumensPerLamp = header[1];
-    data.candelaMultiplier = header[2];
     data.numberOfVerticalAngles = header[3];
     data.numberOfHorizontalAngles = header[4];
     data.photometricType = header[5]; // We ignore cylindrical type for now. Will add support later if needed
@@ -143,11 +138,11 @@ export function LoadIESData(uint8Array: Uint8Array): IIESTextureData {
     data.length = header[8];
     data.height = header[9];
 
-    // Additional data
-    const additionalData = LineToArray(dataPointer.lines[dataPointer.index++]);
-    data.ballastFactor = additionalData[0];
-    data.fileGenerationType = additionalData[1];
-    data.inputWatts = additionalData[2];
+    // The candela multiplier and ballast factors are global scales that cancel when
+    // this relative profile is normalized. The second value below is a ballast-lamp
+    // factor only in LM-63-1986/1991, is reserved in 1995/2002, and is file-generation
+    // metadata in 2019, so none of this record affects the texture data.
+    dataPointer.index++;
 
     // Prepare arrays
     for (let index = 0; index < data.numberOfHorizontalAngles; index++) {
@@ -165,11 +160,10 @@ export function LoadIESData(uint8Array: Uint8Array): IIESTextureData {
         ReadArray(dataPointer, data.numberOfVerticalAngles, data.candelaValues[index]);
     }
 
-    // Evaluate candela values
+    // Find the maximum candela value
     let maxCandela = -1;
     for (let index = 0; index < data.numberOfHorizontalAngles; index++) {
         for (let subIndex = 0; subIndex < data.numberOfVerticalAngles; subIndex++) {
-            data.candelaValues[index][subIndex] *= data.candelaValues[index][subIndex] * data.candelaMultiplier * data.ballastFactor * data.fileGenerationType;
             maxCandela = Math.max(maxCandela, data.candelaValues[index][subIndex]);
         }
     }

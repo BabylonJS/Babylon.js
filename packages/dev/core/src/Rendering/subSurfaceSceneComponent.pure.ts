@@ -16,7 +16,7 @@ export class SubSurfaceSceneComponent implements ISceneSerializableComponent {
     /**
      * The component name helpful to identify the component in the list of scene components.
      */
-    public readonly name = SceneComponentConstants.NAME_PREPASSRENDERER;
+    public readonly name = SceneComponentConstants.NAME_SUBSURFACE;
 
     /**
      * The scene the component belongs to.

@@ -69,11 +69,15 @@ export class BoundingSphere {
      * @returns the current bounding box
      */
     public scale(factor: number): BoundingSphere {
-        const newRadius = this.radius * factor;
         const tmpVectors = BoundingSphere._TmpVector3;
-        const tempRadiusVector = tmpVectors[0].setAll(newRadius);
-        const min = this.center.subtractToRef(tempRadiusVector, tmpVectors[1]);
-        const max = this.center.addToRef(tempRadiusVector, tmpVectors[2]);
+        const diff = this.maximum.subtractToRef(this.minimum, tmpVectors[0]);
+        const len = diff.length();
+        diff.normalizeFromLength(len);
+        const distance = len * factor;
+        const newRadius = diff.scaleInPlace(distance * 0.5);
+
+        const min = this.center.subtractToRef(newRadius, tmpVectors[1]);
+        const max = this.center.addToRef(newRadius, tmpVectors[2]);
 
         this.reConstruct(min, max, this._worldMatrix);
 

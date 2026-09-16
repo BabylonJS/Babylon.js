@@ -88,7 +88,9 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
 
     public override _doOperation(context: FlowGraphContext): P {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        const value = accessorContainer.info.get(accessorContainer.object) as P;
+        // Pass the context as the accessor payload so context-aware object-model accessors, such as
+        // one validating a delay handle against the runtime active-delay set, can resolve.
+        const value = accessorContainer.info.get(accessorContainer.object, undefined, context) as P;
         const object = accessorContainer.info.getTarget?.(accessorContainer.object);
         const propertyName = accessorContainer.info.getPropertyName?.[0](accessorContainer.object);
         if (!object) {
@@ -108,13 +110,19 @@ export class FlowGraphJsonPointerParserBlock<P extends any, O extends FlowGraphA
         if (type.startsWith("Color")) {
             value = ToColor(value as Vector4, type) as unknown as P;
         }
+        // Unwrap FlowGraphInteger to plain number for numeric setters
+        if (typeof (value as any)?.value === "number" && (value as any)?.getClassName?.() === "FlowGraphInteger") {
+            value = (value as any).value as unknown as P;
+        }
         accessorContainer.info.set?.(value, accessorContainer.object);
     }
 
     private _getPropertyValue(_target: O, _propertyName: string, context: FlowGraphContext): P | undefined {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
         const type = accessorContainer.info.type;
-        const value = accessorContainer.info.get(accessorContainer.object);
+        // Pass the context as the accessor payload (see _doOperation) so context-aware accessors
+        // can resolve.
+        const value = accessorContainer.info.get(accessorContainer.object, undefined, context);
         if (type.startsWith("Color")) {
             return FromColor(value as Color3 | Color4) as unknown as P;
         }

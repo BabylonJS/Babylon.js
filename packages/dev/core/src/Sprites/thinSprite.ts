@@ -130,7 +130,7 @@ export class ThinSprite {
                 if (this._loopAnimation) {
                     this.cellIndex = this._direction > 0 ? this._fromIndex : this._toIndex;
                 } else {
-                    this.cellIndex = this._toIndex;
+                    this.cellIndex = this._direction > 0 ? this._toIndex : this._fromIndex;
                     this._animationStarted = false;
                     if (this._onBaseAnimationEnd) {
                         this._onBaseAnimationEnd();

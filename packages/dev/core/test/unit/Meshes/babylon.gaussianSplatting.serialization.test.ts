@@ -130,6 +130,7 @@ describe("GaussianSplatting serialization", () => {
         const proxies = compound.addParts([sourceA, sourceB], false);
         proxies[1].position = new Vector3(7, 8, 9);
         proxies[1].visibility = 0.25;
+        proxies[1].setEnabled(false);
         proxies[1].computeWorldMatrix(true);
 
         const serialized = compound.serialize();
@@ -147,13 +148,17 @@ describe("GaussianSplatting serialization", () => {
         expect(parsed).toBeInstanceOf(GaussianSplattingCompoundMesh);
         expect(parsed.partCount).toBe(2);
         expect(parsedProxies).toHaveLength(2);
+        expect(parsedProxies[1].isEnabled()).toBe(false);
         expect(parsedProxies[1].visibility).toBeCloseTo(0.25);
+        expect(parsed.getPartVisibility(1)).toBe(0);
         expect(parsedProxies[1].position.asArray()).toEqual([7, 8, 9]);
 
         expect(() => parsed.removePart(0)).not.toThrow();
         expect(parsed.partCount).toBe(1);
 
         const rebuiltProxy = (parsed as any)._partProxies.filter(Boolean)[0];
+        rebuiltProxy.setEnabled(true);
+        expect(parsed.getPartVisibility(0)).toBeCloseTo(0.25);
         const rebuiltRetainedPart = (parsed as any)._createRetainedPartSource(rebuiltProxy);
         expect(ArrayBuffer.isView(rebuiltRetainedPart._splatsData)).toBe(true);
         expect(rebuiltRetainedPart._splatsData.buffer).toBe((parsed as any)._splatsData);

@@ -759,6 +759,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 uniforms: GaussianSplattingMaterial._VoxelUniforms,
                 samplers: GaussianSplattingMaterial._VoxelSamplers,
                 uniformBuffers: GaussianSplattingMaterial._UniformBuffers,
+                // WebGPU accumulates non-binary voxel opacity via atomicMax into this storage buffer.
+                storageBuffers: shaderLanguage === ShaderLanguage.WGSL ? ["voxelOpacityBuffer"] : [],
                 shaderLanguage: shaderLanguage,
                 defines: defines,
                 needAlphaBlending: false,

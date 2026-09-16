@@ -427,8 +427,18 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 #ifdef PREPASS
 #if SCENE_MRT_COUNT > 0
-	var writeGeometryInfo: f32 = select(0.0, 1.0, color.a > 0.4);
+	#ifdef ALPHATEST
+		var writeGeometryInfo: f32 = 1.0;
+	#else
+		var writeGeometryInfo: f32 = select(0.0, 1.0, color.a > 0.4);
+	#endif
 	var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
+	#ifdef PREPASS_MESH_BLEND_TAG
+		var meshBlendTagOutput: vec4<u32> = vec4u(0u);
+		if (writeGeometryInfo > 0.0) {
+			meshBlendTagOutput = vec4u(u32(uniforms.meshBlendTag), 0u, 0u, 0u);
+		}
+	#endif
 
     #ifdef PREPASS_COLOR
     	fragData[PREPASS_COLOR_INDEX] = color; // We can't split irradiance on std material
@@ -436,6 +446,10 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 
     #ifdef PREPASS_POSITION
     	fragData[PREPASS_POSITION_INDEX] = vec4f(fragmentInputs.vPositionW, writeGeometryInfo);
+    #endif
+
+    #ifdef PREPASS_OBJECT_ID
+        fragData[PREPASS_OBJECT_ID_INDEX] = encodeObjectId(uniforms.objectId) * writeGeometryInfo;
     #endif
 
 	#ifdef PREPASS_LOCAL_POSITION
@@ -500,30 +514,7 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 		#endif
 	#endif
 
-	#if SCENE_MRT_COUNT > 0
-		fragmentOutputs.fragData0 = fragData[0];
-	#endif
-	#if SCENE_MRT_COUNT > 1
-		fragmentOutputs.fragData1 = fragData[1];
-	#endif
-	#if SCENE_MRT_COUNT > 2
-		fragmentOutputs.fragData2 = fragData[2];
-	#endif
-	#if SCENE_MRT_COUNT > 3
-		fragmentOutputs.fragData3 = fragData[3];
-	#endif
-	#if SCENE_MRT_COUNT > 4
-		fragmentOutputs.fragData4 = fragData[4];
-	#endif
-	#if SCENE_MRT_COUNT > 5
-		fragmentOutputs.fragData5 = fragData[5];
-	#endif
-	#if SCENE_MRT_COUNT > 6
-		fragmentOutputs.fragData6 = fragData[6];
-	#endif
-	#if SCENE_MRT_COUNT > 7
-		fragmentOutputs.fragData7 = fragData[7];
-	#endif
+	#include<meshBlendTagFragmentOutput>[0..8]
 #endif
 #endif
 

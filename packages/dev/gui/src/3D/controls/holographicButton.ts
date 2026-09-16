@@ -2,12 +2,12 @@ import { Button3D } from "./button3D";
 
 import { type Nullable } from "core/types";
 import { type Observer } from "core/Misc/observable";
-import { Vector3 } from "core/Maths/math.vector";
-import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Vector3 } from "core/Maths/math.vector.pure";
+import { RegisterStandardMaterial, StandardMaterial } from "core/Materials/standardMaterial.pure";
 import { type TransformNode } from "core/Meshes/transformNode";
-import { Mesh } from "core/Meshes/mesh";
-import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
-import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { Mesh } from "core/Meshes/mesh.pure";
+import { CreatePlane } from "core/Meshes/Builders/planeBuilder.pure";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder.pure";
 import { FadeInOutBehavior } from "core/Behaviors/Meshes/fadeInOutBehavior";
 import { type Scene } from "core/scene";
 
@@ -17,7 +17,7 @@ import { Image } from "../../2D/controls/image.pure";
 import { TextBlock } from "../../2D/controls/textBlock.pure";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import { type Control3D } from "./control3D";
-import { Color3 } from "core/Maths/math.color";
+import { Color3 } from "core/Maths/math.color.pure";
 import { IsDocumentAvailable } from "core/Misc/domManagement";
 
 /**
@@ -99,6 +99,7 @@ export class HolographicButton extends Button3D {
             this._tooltipMesh.parent = this._backPlate;
 
             // Create text texture for the tooltip
+            RegisterStandardMaterial();
             this._tooltipTexture = AdvancedDynamicTexture.CreateForMesh(this._tooltipMesh);
             this._tooltipTextBlock = new TextBlock();
             this._tooltipTextBlock.scaleY = 3;

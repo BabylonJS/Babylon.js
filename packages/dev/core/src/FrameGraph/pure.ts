@@ -32,6 +32,7 @@ export * from "./Tasks/PostProcesses/fxaaTask";
 export * from "./Tasks/PostProcesses/grainTask";
 export * from "./Tasks/PostProcesses/imageProcessingTask";
 export * from "./Tasks/PostProcesses/motionBlurTask";
+export * from "./Tasks/PostProcesses/meshBlendingTask";
 export * from "./Tasks/PostProcesses/passTask";
 export * from "./Tasks/PostProcesses/postProcessTask";
 export * from "./Tasks/PostProcesses/sharpenTask";
