@@ -17,6 +17,7 @@ import { FlowGraphTypes } from "core/FlowGraph/flowGraphRichTypes.pure";
 import { type Material } from "core/Materials/material";
 import { type Node } from "core/node";
 import { type Camera } from "core/Cameras/camera";
+import { Matrix } from "core/Maths/math.vector.pure";
 import { type IGLTF } from "../../glTFLoaderInterfaces";
 import {
     GetInteractivityOperationRegistry,
@@ -350,6 +351,33 @@ function _FindDataInput(blocks: readonly FlowGraphBlock[], nodeIndex: number, so
 
 function _NormalizeValue(value: unknown): unknown[] | undefined {
     return _NormalizeKHRInteractivityRuntimeValue(value);
+}
+
+function _CreateTypedRuntimeValueSnapshot(
+    graph: IKHRInteractivity_Graph,
+    type: number | undefined,
+    value: unknown
+): ReturnType<typeof _CreateKHRInteractivityRuntimeValueSnapshot> {
+    const signature = type === undefined ? undefined : graph.types?.[type]?.signature;
+    const components = Array.isArray(value) ? value : _NormalizeValue(value);
+    return _CreateKHRInteractivityRuntimeValueSnapshot(signature === "float4x4" && components ? Matrix.FromArray(components as number[]) : components);
+}
+
+function _CreateEventSchemaRuntimeSnapshot(value: unknown): ReturnType<typeof _CreateKHRInteractivityRuntimeValueSnapshot> {
+    const runtimeSchema = Array.isArray(value)
+        ? value.map((entry) => {
+              if (entry === null || typeof entry !== "object") {
+                  return entry;
+              }
+              const definition = entry as { type?: unknown; value?: unknown };
+              const runtimeValue =
+                  definition.type === FlowGraphTypes.Matrix && Array.isArray(definition.value)
+                      ? Array.from(Matrix.FromArray(definition.value as number[]).asArray())
+                      : definition.value;
+              return definition.value === undefined ? entry : { ...definition, value: runtimeValue };
+          })
+        : value;
+    return _CreateKHRInteractivityRuntimeValueSnapshot(runtimeSchema);
 }
 
 function _ValuesEqual(left: readonly unknown[] | undefined, right: readonly unknown[] | undefined): boolean {
@@ -1216,7 +1244,18 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                             (block as { executionSignals?: unknown[] }).executionSignals?.length ??
                             block.config?.[key])
                           : block.config?.[key];
-                if (!_JsonEquivalent(current, expected)) {
+                const runtimeExpected =
+                    _GetOwn(blockProvenance?.generatedConfigurationRuntime, key) ?? (key === "eventData" ? _CreateEventSchemaRuntimeSnapshot(expected) : undefined);
+                const currentRuntime = runtimeExpected
+                    ? key === "eventData"
+                        ? _CreateEventSchemaRuntimeSnapshot(current)
+                        : _CreateKHRInteractivityRuntimeValueSnapshot(current)
+                    : undefined;
+                if (
+                    runtimeExpected
+                        ? runtimeExpected.unrepresentable || currentRuntime?.unrepresentable || currentRuntime?.runtimeValueFingerprint !== runtimeExpected.runtimeValueFingerprint
+                        : !_JsonEquivalent(current, expected)
+                ) {
                     _PushDiagnostic(diagnostics, {
                         code: "CONFIGURATION_UNREPRESENTABLE",
                         graphIndex,
@@ -1860,6 +1899,22 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         }
         const socketProvenance = _GetSocketProvenance(input);
         const current = _NormalizeValue((input as any)._defaultValue);
+        const currentSnapshot = _CreateKHRInteractivityRuntimeValueSnapshot((input as any)._defaultValue);
+        const legacyRuntimeSnapshot =
+            socketProvenance?.sourceValue && !("node" in socketProvenance.sourceValue)
+                ? _CreateTypedRuntimeValueSnapshot(graph, socketProvenance.sourceValue.type, socketProvenance.runtimeValue ?? socketProvenance.sourceValue.value)
+                : undefined;
+        const importedRuntimeSnapshot = socketProvenance?.runtimeValueSnapshot ?? legacyRuntimeSnapshot;
+        if (
+            !input.isConnected() &&
+            importedRuntimeSnapshot &&
+            !importedRuntimeSnapshot.unrepresentable &&
+            !currentSnapshot.unrepresentable &&
+            currentSnapshot.runtimeValueFingerprint === importedRuntimeSnapshot.runtimeValueFingerprint &&
+            socketProvenance.sourceValue
+        ) {
+            return _CloneJson(socketProvenance.sourceValue);
+        }
         if (!input.isConnected() && socketProvenance?.runtimeValue && _ValuesEqual(current, socketProvenance.runtimeValue) && socketProvenance.sourceValue) {
             return _CloneJson(socketProvenance.sourceValue);
         }
@@ -2007,6 +2062,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                 const block = _GetConfigurationBlock(logicalNode, property);
                 const runtimeEventData = NormalizeInteractivityEventDataConfiguration(block?.config?.eventData);
                 const runtimeSchema = runtimeEventData === undefined ? [] : runtimeEventData;
+                const blockProvenance = block ? _GetBlockProvenance(block) : undefined;
+                const importTimeSchema = _GetOwn(blockProvenance?.generatedConfigurationRuntime, "eventData");
+                const preservesImportedEvent = provenance && _JsonEquivalent(block?.config?.[property.name], provenance.runtimeValue);
                 const eventSchema = Object.entries(event?.values ?? {})
                     .map(([id, value]) => ({
                         id,
@@ -2014,7 +2072,13 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
                         ...(value.value === undefined ? {} : { value: value.value.slice() }),
                     }))
                     .sort((left, right) => left.id.localeCompare(right.id));
-                if (!_JsonEquivalent(runtimeSchema, eventSchema)) {
+                const currentSchema = _CreateEventSchemaRuntimeSnapshot(runtimeSchema);
+                const expectedSchema = _CreateEventSchemaRuntimeSnapshot(eventSchema);
+                const schemaMatches =
+                    preservesImportedEvent && importTimeSchema
+                        ? !importTimeSchema.unrepresentable && !currentSchema.unrepresentable && currentSchema.runtimeValueFingerprint === importTimeSchema.runtimeValueFingerprint
+                        : !currentSchema.unrepresentable && !expectedSchema.unrepresentable && currentSchema.runtimeValueFingerprint === expectedSchema.runtimeValueFingerprint;
+                if (!schemaMatches) {
                     _PushDiagnostic(diagnostics, {
                         code: "CONFIGURATION_UNREPRESENTABLE",
                         graphIndex,

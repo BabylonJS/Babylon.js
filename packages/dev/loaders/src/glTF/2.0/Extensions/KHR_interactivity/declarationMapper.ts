@@ -343,8 +343,8 @@ export function NormalizeInteractivityEventDataConfiguration(value: unknown): un
             return entry.slice();
         }
         if (entry !== null && typeof entry === "object") {
-            if (typeof (entry as { asArray?: () => unknown[] }).asArray === "function") {
-                return (entry as { asArray: () => unknown[] }).asArray();
+            if (typeof (entry as { asArray?: () => ArrayLike<unknown> }).asArray === "function") {
+                return Array.from((entry as { asArray: () => ArrayLike<unknown> }).asArray());
             }
             if (Object.prototype.hasOwnProperty.call(entry, "value")) {
                 const nested = (entry as { value: unknown }).value;

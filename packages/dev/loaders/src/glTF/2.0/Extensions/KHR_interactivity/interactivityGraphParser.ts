@@ -98,8 +98,24 @@ export function _CaptureKHRInteractivityRuntimeInputDefaults(flowGraph: FlowGrap
         if (!provenance) {
             continue;
         }
+        if (Object.prototype.hasOwnProperty.call(provenance.generatedConfiguration ?? {}, "eventData")) {
+            provenance.generatedConfigurationRuntime ||= {};
+            if (!Object.prototype.hasOwnProperty.call(provenance.generatedConfigurationRuntime, "eventData")) {
+                Object.defineProperty(provenance.generatedConfigurationRuntime, "eventData", {
+                    configurable: true,
+                    enumerable: true,
+                    value: _CreateKHRInteractivityRuntimeValueSnapshot(NormalizeInteractivityEventDataConfiguration(block.config?.eventData)),
+                    writable: true,
+                });
+            }
+        }
         for (const input of block.dataInputs) {
-            if (input.isConnected() || input.metadata?.khrInteractivity) {
+            if (input.isConnected()) {
+                continue;
+            }
+            const socketProvenance = input.metadata?.khrInteractivity as IKHRInteractivitySocketProvenance | undefined;
+            if (socketProvenance) {
+                socketProvenance.runtimeValueSnapshot ??= _CreateKHRInteractivityRuntimeValueSnapshot((input as any)._defaultValue);
                 continue;
             }
             if (provenance.generatedInputDefaults && Object.prototype.hasOwnProperty.call(provenance.generatedInputDefaults, input.name)) {

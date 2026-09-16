@@ -1902,6 +1902,64 @@ describe("KHR_interactivity FlowGraph export", () => {
         expect(plan.build(context)).toEqual({ graphs: [graph] });
     });
 
+    it.each(["event/send", "event/receive"])("round-trips an untouched fractional Matrix default for %s and rejects a genuine edit", async (operation) => {
+        const matrixDefault = [0.1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "float4x4" }],
+            events: [{ id: "event", values: { payload: { type: 0, value: matrixDefault } } }],
+            declarations: [{ op: operation }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { event: { value: [0] } },
+                    ...(operation === "event/send" ? { values: { payload: { type: 0, value: matrixDefault } } } : {}),
+                },
+            ],
+        };
+        const plan = await CreatePlan({ graphs: [graph] });
+        const block = coordinator.flowGraphs[0].getAllBlocks()[0];
+        delete block.metadata.khrInteractivity.generatedConfigurationRuntime;
+        block.dataInputs.forEach((input) => {
+            if (input.metadata?.khrInteractivity) {
+                delete input.metadata.khrInteractivity.runtimeValueSnapshot;
+            }
+        });
+
+        expect((block.config!.eventData.payload.value as Matrix).asArray()[0]).not.toBe(matrixDefault[0]);
+        expect(plan.analyze().diagnostics).toEqual([]);
+        expect(plan.build(context)).toEqual({ graphs: [graph] });
+
+        block.config!.eventData.payload.value = Matrix.FromArray([0.2, ...matrixDefault.slice(1)]);
+
+        expect(plan.analyze()).toMatchObject({
+            representable: false,
+            diagnostics: expect.arrayContaining([
+                expect.objectContaining({
+                    code: "CONFIGURATION_UNREPRESENTABLE",
+                    path: expect.stringContaining("/config/eventData"),
+                }),
+            ]),
+        });
+    });
+
+    it("accepts selecting an equivalent event with a fractional Matrix default", async () => {
+        const matrixDefault = [0.1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "float4x4" }],
+            events: [
+                { id: "a", values: { payload: { type: 0, value: matrixDefault } } },
+                { id: "b", values: { payload: { type: 0, value: matrixDefault } } },
+            ],
+            declarations: [{ op: "event/receive" }],
+            nodes: [{ declaration: 0, configuration: { event: { value: [0] } } }],
+        };
+        const plan = await CreatePlan({ graphs: [graph] });
+        coordinator.flowGraphs[0].getAllBlocks()[0].config!.eventId = "b";
+
+        expect(plan.analyze().diagnostics).toEqual([]);
+        expect(plan.build(context).graphs[0].nodes![0].configuration!.event.value).toEqual([1]);
+    });
+
     it("rejects selecting a custom event whose payload schema does not match the runtime block", async () => {
         const graph: IKHRInteractivity_Graph = {
             types: [{ signature: "int" }],

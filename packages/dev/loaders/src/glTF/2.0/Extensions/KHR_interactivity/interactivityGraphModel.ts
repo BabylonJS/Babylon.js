@@ -78,6 +78,8 @@ export interface IKHRInteractivityBlockProvenance {
     configuration?: Record<string, IKHRInteractivityConfigurationProvenance>;
     /** Importer-generated primitive configuration that must remain unchanged for inverse export. */
     generatedConfiguration?: Record<string, unknown>;
+    /** Runtime fingerprints for generated configuration that changes representation while parsing. */
+    generatedConfigurationRuntime?: Record<string, IKHRInteractivityInputDefaultProvenance>;
     /** Importer-generated unconnected input defaults that have no authored KHR socket representation. */
     generatedInputDefaults?: Record<string, IKHRInteractivityInputDefaultProvenance>;
 }
@@ -209,6 +211,8 @@ export interface IKHRInteractivitySocketProvenance extends IKHRInteractivityBloc
     sourceValue?: IKHRInteractivity_Variable | IKHRInteractivity_OutputSocketReference;
     /** Lowered inline runtime value immediately after import. */
     runtimeValue?: unknown[];
+    /** Type-tagged runtime fingerprint used to distinguish parsing precision changes from edits. */
+    runtimeValueSnapshot?: IKHRInteractivityInputDefaultProvenance;
 }
 
 /**
