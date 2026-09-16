@@ -2074,7 +2074,27 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             extensionsRequired: ["KHR_interactivity"],
             extensions: {
                 KHR_interactivity: {
-                    graphs: [{ name: "Interaction", declarations: [{ op: "event/onStart" }], nodes: [{ declaration: 0 }] }],
+                    graphs: [
+                        {
+                            name: "Interaction",
+                            types: [{ signature: "float" }, { signature: "float2" }],
+                            variables: [{ type: 0, value: [1] }],
+                            declarations: [{ op: "event/onStart" }, { op: "variable/interpolate" }],
+                            nodes: [
+                                { declaration: 0, flows: { out: { node: 1 } } },
+                                {
+                                    declaration: 1,
+                                    configuration: { variable: { value: [0] }, useSlerp: { value: [false] } },
+                                    values: {
+                                        value: { type: 0, value: [5] },
+                                        duration: { type: 0, value: [1] },
+                                        p1: { type: 1, value: [0, 0] },
+                                        p2: { type: 1, value: [1, 1] },
+                                    },
+                                },
+                            ],
+                        },
+                    ],
                 },
             },
         };
@@ -2084,7 +2104,19 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             dataTransfer.items.add(file);
             (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
         }, source);
-        await expect.poll(async () => await fge.getNodeCount()).toBe(1);
+        await expect.poll(async () => await fge.getNodeCount()).toBe(6);
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON?.FlowGraphEditor?._CurrentState;
+                        const playAnimation = state?.flowGraph
+                            ?.getAllBlocks()
+                            .find((block: any) => block.metadata?.khrInteractivity?.operation === "variable/interpolate" && block.metadata?.khrInteractivity?.role === 2);
+                        return playAnimation?.metadata?.khrInteractivity?.generatedInputDefaults?.speed?.runtimeValueFingerprint;
+                    })
+            )
+            .toBeDefined();
         const importedScene = await GetSceneContextSnapshot(page);
         const snippetInput = page.getByPlaceholder("Playground ID or URL...");
         await snippetInput.fill("ABC123");
@@ -2111,7 +2143,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
         }, exportedGltf);
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "roundTrip.gltf"');
-        await expect.poll(async () => await fge.getNodeCount()).toBe(1);
+        await expect.poll(async () => await fge.getNodeCount()).toBe(6);
 
         const glbDownloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename().endsWith(".glb"));
         await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
@@ -2129,7 +2161,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
         }, Array.from(exportedGlb));
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "roundTrip.glb"');
-        await expect.poll(async () => await fge.getNodeCount()).toBe(1);
+        await expect.poll(async () => await fge.getNodeCount()).toBe(6);
 
         const beforeUndock = await page.evaluate(() => {
             const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;

@@ -2,8 +2,16 @@ import { FlowGraphState } from "core/FlowGraph/flowGraph";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
+import { type IKHRInteractivity_Graph } from "babylonjs-gltf2interface";
 import { GlobalState } from "flow-graph-editor/globalState";
 import { SerializationTools } from "flow-graph-editor/serializationTools";
+import { _RegisterKHRInteractivityRuntime } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
+import {
+    _CaptureKHRInteractivityRuntimeInputDefaults,
+    CreateKHRInteractivityDocument,
+    CreateKHRInteractivityExportPlan,
+    InteractivityGraphToFlowGraphParser,
+} from "loaders/glTF/2.0/Extensions/KHR_interactivity/pure";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 afterEach(() => {
@@ -49,6 +57,15 @@ describe("SerializationTools coordinator ownership", () => {
         const scene = new Scene(engine);
         const globalState = new GlobalState(scene);
         const serializedGraph = { rightHanded: true, allBlocks: [], executionContexts: [] };
+        vi.stubGlobal("BABYLON", {
+            GLTF2: {
+                Loader: {
+                    Extensions: {
+                        _CaptureKHRInteractivityRuntimeInputDefaults,
+                    },
+                },
+            },
+        });
 
         const importedState = await SerializationTools.DeserializeToStateAsync(serializedGraph, scene, undefined, { sourceFormat: "KHR_interactivity" });
         SerializationTools.ApplyDeserializedState(importedState, globalState);
@@ -62,6 +79,79 @@ describe("SerializationTools coordinator ownership", () => {
         expect(globalState.hasImportScopedRuntime).toBe(false);
 
         ordinaryState.coordinator.dispose();
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("captures generated defaults for KHR parse-only imports without rebaselining later edits", async () => {
+        _RegisterKHRInteractivityRuntime();
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const sourceGLTF = {};
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "float" }, { signature: "float2" }],
+            variables: [{ type: 0, value: [1] }],
+            declarations: [{ op: "variable/interpolate" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { variable: { value: [0] }, useSlerp: { value: [false] } },
+                    values: {
+                        value: { type: 0, value: [5] },
+                        duration: { type: 0, value: [1] },
+                        p1: { type: 1, value: [0, 0] },
+                        p2: { type: 1, value: [1, 1] },
+                    },
+                },
+            ],
+        };
+        const document = CreateKHRInteractivityDocument({ graphs: [graph] });
+        const graphModel = document.graphs[0];
+        expect(graphModel.valid).toBe(true);
+        const serializedGraph = new InteractivityGraphToFlowGraphParser(
+            graphModel.effectiveSource,
+            sourceGLTF,
+            60,
+            graphModel.index,
+            undefined,
+            graphModel.declarations,
+            graphModel.source
+        ).serializeToFlowGraph();
+        vi.stubGlobal("BABYLON", {
+            GLTF2: {
+                Loader: {
+                    Extensions: {
+                        _CaptureKHRInteractivityRuntimeInputDefaults,
+                        CreateKHRInteractivityExportPlan,
+                    },
+                },
+            },
+        });
+
+        const state = await SerializationTools.DeserializeToStateAsync(serializedGraph, scene, undefined, { sourceFormat: "KHR_interactivity" });
+        const globalState = new GlobalState(scene);
+        globalState.coordinator = state.coordinator;
+        globalState.khrInteractivityImportResult = { document, glTF: sourceGLTF } as any;
+        const playAnimation = state.coordinator.flowGraphs[0]
+            .getAllBlocks()
+            .find((block) => block.metadata?.khrInteractivity?.operation === "variable/interpolate" && block.metadata?.khrInteractivity?.role === 2)!;
+        const importedSnapshot = playAnimation.metadata.khrInteractivity.generatedInputDefaults.speed;
+
+        expect(importedSnapshot).toBeDefined();
+        expect(SerializationTools.AnalyzeKhrInteractivityExport(globalState)).toMatchObject({
+            representable: true,
+            nodes: [expect.objectContaining({ operation: "variable/interpolate", classification: "inverse-composite" })],
+        });
+
+        (playAnimation.getDataInput("speed") as any)._defaultValue = 2;
+
+        expect(SerializationTools.AnalyzeKhrInteractivityExport(globalState)).toMatchObject({
+            representable: false,
+            diagnostics: [expect.objectContaining({ code: "INPUT_DEFAULT_UNREPRESENTABLE", socket: "speed" })],
+        });
+        expect(playAnimation.metadata.khrInteractivity.generatedInputDefaults.speed).toBe(importedSnapshot);
+
+        state.coordinator.dispose();
         scene.dispose();
         engine.dispose();
     });

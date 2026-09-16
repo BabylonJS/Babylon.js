@@ -11,7 +11,12 @@ import { Logger } from "core/Misc/logger";
 import { Constants } from "core/Engines/constants";
 import { type ISerializedFlowGraph } from "core/FlowGraph/typeDefinitions";
 import { FetchSnippet, type ISnippetServerResponse } from "@tools/snippet-loader";
-import { type CreateKHRInteractivityExportPlan, type IKHRInteractivityExportAnalysis, type KHRInteractivityExportPlan } from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
+import {
+    type _CaptureKHRInteractivityRuntimeInputDefaults,
+    type CreateKHRInteractivityExportPlan,
+    type IKHRInteractivityExportAnalysis,
+    type KHRInteractivityExportPlan,
+} from "loaders/glTF/2.0/Extensions/KHR_interactivity.pure";
 
 function _CreateKhrExportError(diagnostics: IKHRInteractivityExportAnalysis["diagnostics"]): Error & { diagnostics: IKHRInteractivityExportAnalysis["diagnostics"] } {
     const error = new Error(diagnostics.map((diagnostic) => `${diagnostic.path}: ${diagnostic.message}`).join("\n")) as Error & {
@@ -31,6 +36,15 @@ function _CreateKhrExportPlan(
         throw new Error("CreateKHRInteractivityExportPlan is not available.");
     }
     return factory(flowGraphs, options);
+}
+
+function _CaptureKhrInteractivityRuntimeInputDefaults(flowGraph: Parameters<typeof _CaptureKHRInteractivityRuntimeInputDefaults>[0]): void {
+    const capture = (globalThis as any).BABYLON?.GLTF2?.Loader?.Extensions?._CaptureKHRInteractivityRuntimeInputDefaults as
+        typeof _CaptureKHRInteractivityRuntimeInputDefaults | undefined;
+    if (!capture) {
+        throw new Error("_CaptureKHRInteractivityRuntimeInputDefaults is not available.");
+    }
+    capture(flowGraph);
 }
 
 function _CreateKhrExportPlanForImport(globalState: GlobalState): KHRInteractivityExportPlan | undefined {
@@ -298,6 +312,9 @@ export class SerializationTools {
                 SerializationTools.PreserveUnresolvedNames(parsedGraph, graphData);
                 SerializationTools.PreserveUnresolvedVariables(parsedGraph, graphData);
                 SerializationTools.SyncConnectionValuesToDefaults(parsedGraph);
+                if (options?.sourceFormat === "KHR_interactivity") {
+                    _CaptureKhrInteractivityRuntimeInputDefaults(parsedGraph);
+                }
                 if ((graphData as any).editorData) {
                     (parsedGraph as any)._editorData = (graphData as any).editorData;
                 }

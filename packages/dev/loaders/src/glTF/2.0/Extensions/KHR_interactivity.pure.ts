@@ -32,6 +32,7 @@ import {
 import { type FlowGraph } from "core/FlowGraph/flowGraph";
 
 export * from "./KHR_interactivity/interactivityGraphExporter";
+export { _CaptureKHRInteractivityRuntimeInputDefaults } from "./KHR_interactivity/interactivityGraphParser";
 
 const NAME = "KHR_interactivity";
 
