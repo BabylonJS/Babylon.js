@@ -19,6 +19,9 @@ export interface EngineFeatures {
     /** Indicates that prefiltered mipmaps can be generated in some processes (for eg when loading an HDR cube texture) */
     allowTexturePrefiltering: boolean;
 
+    /** Indicates that both KTX and KTX2 cube containers can be loaded without separate face URLs (false by default) */
+    supportKTXCubeTexture?: boolean;
+
     /** Indicates to track the usage of ubos and to create new ones as necessary during a frame duration */
     trackUbosInFrame: boolean;
 

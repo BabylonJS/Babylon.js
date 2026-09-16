@@ -48,6 +48,17 @@ declare module "../../../Engines/thinNativeEngine.pure" {
          * Completes the same load contract as the Web engines: onLoad receives the
          * InternalTexture, `_source` is CubePrefiltered, and an empty spherical
          * polynomial is installed when createPolynomials is false.
+         * @param rootUrl defines the url where the file to load is located
+         * @param scene defines the current scene
+         * @param lodScale defines scale to apply to the mip map selection
+         * @param lodOffset defines offset to apply to the mip map selection
+         * @param onLoad defines an optional callback raised when the texture is loaded
+         * @param onError defines an optional callback raised if there is an issue to load the texture
+         * @param format defines the format of the data
+         * @param forcedExtension defines the extension to use to pick the right loader
+         * @param createPolynomials defines whether to create spherical polynomial harmonics for the texture
+         * @param buffer defines the data buffer to load instead of loading the rootUrl
+         * @returns the cube texture as an InternalTexture
          */
         createPrefilteredCubeTexture(
             rootUrl: string,
@@ -58,7 +69,8 @@ declare module "../../../Engines/thinNativeEngine.pure" {
             onError?: Nullable<(message?: string, exception?: any) => void>,
             format?: number,
             forcedExtension?: any,
-            createPolynomials?: boolean
+            createPolynomials?: boolean,
+            buffer?: Nullable<ArrayBufferView>
         ): InternalTexture;
     }
 }

@@ -219,6 +219,7 @@ export class NullEngine extends Engine {
             supportShadowSamplers: false,
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: false,
+            supportKTXCubeTexture: false,
             trackUbosInFrame: false,
             checkUbosContentBeforeUpload: false,
             supportCSM: false,

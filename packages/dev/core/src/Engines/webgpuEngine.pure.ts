@@ -1011,6 +1011,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             supportShadowSamplers: true,
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: true,
+            supportKTXCubeTexture: false,
             trackUbosInFrame: true,
             checkUbosContentBeforeUpload: true,
             supportCSM: true,
@@ -2784,6 +2785,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param format defines the format of the data
      * @param forcedExtension defines the extension to use to pick the right loader
      * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
+     * @param buffer defines the data buffer to load instead of loading the rootUrl
      * @returns the cube texture as an InternalTexture
      */
     public override createPrefilteredCubeTexture(
@@ -2795,7 +2797,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         onError: Nullable<(message?: string, exception?: any) => void> = null,
         format?: number,
         forcedExtension: any = null,
-        createPolynomials: boolean = true
+        createPolynomials: boolean = true,
+        buffer: Nullable<ArrayBufferView> = null
     ): InternalTexture {
         const callback = (loadData: any) => {
             if (!loadData) {
@@ -2818,7 +2821,23 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             }
         };
 
-        return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset);
+        return this.createCubeTexture(
+            rootUrl,
+            scene,
+            null,
+            false,
+            callback,
+            onError,
+            format,
+            forcedExtension,
+            createPolynomials,
+            lodScale,
+            lodOffset,
+            null,
+            undefined,
+            false,
+            buffer
+        );
     }
 
     /**
