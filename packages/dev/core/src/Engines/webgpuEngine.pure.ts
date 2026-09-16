@@ -1344,7 +1344,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         return new WebGPUShaderProcessingContext(shaderLanguage, pureMode);
     }
 
-    private _getCurrentRenderPass(): GPURenderPassEncoder {
+    /** @internal */
+    public override _getCurrentRenderPass(): GPURenderPassEncoder {
         if (this._currentRenderTarget && !this._currentRenderPass) {
             // delayed creation of the render target pass, but we now need to create it as we are requested the render pass
             this._startRenderTargetRenderPass(this._currentRenderTarget, false, null, false, false);

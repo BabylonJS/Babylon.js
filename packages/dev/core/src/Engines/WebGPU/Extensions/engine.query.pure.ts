@@ -50,8 +50,9 @@ export function RegisterEnginesWebGPUExtensionsEngineQuery(): void {
 
     ThinWebGPUEngine.prototype.beginOcclusionQuery = function (algorithmType: number, query: OcclusionQuery): boolean {
         if (this.compatibilityMode) {
+            const renderPass = this._getCurrentRenderPass();
             if (this._occlusionQuery.canBeginQuery(query as number)) {
-                this._currentRenderPass?.beginOcclusionQuery(query as number);
+                renderPass.beginOcclusionQuery(query as number);
                 return true;
             }
         } else {

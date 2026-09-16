@@ -44,6 +44,9 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
     /** @internal */
     public _currentRenderPass: Nullable<GPURenderPassEncoder> = null;
 
+    /** @internal */
+    public abstract _getCurrentRenderPass(): GPURenderPassEncoder;
+
     protected _snapshotRendering: WebGPUSnapshotRendering;
     protected _snapshotRenderingMode = Constants.SNAPSHOTRENDERING_STANDARD;
 
