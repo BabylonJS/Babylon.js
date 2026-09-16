@@ -724,14 +724,13 @@ function ReadCurrentNodeGeometry(globalState: GlobalState): ISerializedGeometry 
 }
 
 export function ReconcileNodeGeometryWebMcpHistory(globalState: GlobalState): void {
-    const cache = CurrentGeometryCache.get(globalState);
     const editorMap = globalState.nodeGeometry.editorData?.map;
-    if (!cache || !editorMap) {
+    if (!editorMap) {
         return;
     }
 
     ReconcileCurrentGeometryCache(
-        cache,
+        GetOrCreateCurrentGeometryCache(globalState),
         globalState.nodeGeometry.attachedBlocks.map((block) => block.uniqueId),
         editorMap
     );

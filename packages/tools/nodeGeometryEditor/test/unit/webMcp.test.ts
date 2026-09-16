@@ -535,6 +535,64 @@ describe("Node Geometry WebMCP", () => {
         historyStack.dispose();
     });
 
+    it("keeps blocks addressable when undo precedes the first WebMCP read", async () => {
+        const state = CreateTestState([], vi.fn());
+        const controller = new AbortController();
+        const nodeGeometry = new NodeGeometry("cold history");
+        const box = new BoxBlock("Box");
+        nodeGeometry.attachedBlocks.push(box);
+        state.nodeGeometry = nodeGeometry;
+        state.onGetNodeFromBlock = () => ({ x: 10, y: 20, isCollapsed: false }) as ReturnType<GlobalState["onGetNodeFromBlock"]>;
+        state.storeEditorData = vi.fn();
+        state.stateManager.onUpdateRequiredObservable = new Observable<void>();
+        state.stateManager.onRebuildRequiredObservable = new Observable<void>();
+        state.stateManager.onNodeMovedObservable = new Observable<void>();
+        state.stateManager.onNewNodeCreatedObservable = new Observable<void>();
+        state.stateManager.onSelectionChangedObservable = new Observable();
+        state.onClearUndoStack = new Observable<void>();
+        state.onResetRequiredObservable = new Observable<boolean>();
+        state.onResetRequiredObservable.add(() => {
+            SerializationTools.UpdateLocations(nodeGeometry, state);
+        });
+
+        const historyStack = CreateNodeGeometryHistoryStack(state);
+        await historyStack.storeAsync();
+        box.name = "Changed";
+        await historyStack.storeAsync();
+
+        historyStack.undo();
+        expect(nodeGeometry.editorData.map).toBeUndefined();
+
+        const tools = CreateNodeGeometryWebMcpTools(state);
+        const getTool = FindTool(tools, "get_current_node_geometry");
+        const setPropertiesTool = FindTool(tools, "set_block_properties");
+        const firstRead = getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry;
+        const firstLogicalId = firstRead.blocks[0].id;
+
+        historyStack.redo();
+        expect(nodeGeometry.editorData.map).toBeUndefined();
+        const redoRuntimeId = nodeGeometry.attachedBlocks[0].uniqueId;
+        const secondRead = getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry;
+        expect(secondRead.blocks[0]).toMatchObject({ id: firstLogicalId, name: "Changed" });
+
+        state.webMcpEditor = {
+            applyIncrementalUpdate: vi.fn((_before, after) => {
+                nodeGeometry.attachedBlocks[0].name = after.blocks[0].name;
+                return new Map([[firstLogicalId, redoRuntimeId]]);
+            }),
+        } as unknown as GlobalState["webMcpEditor"];
+
+        expect(setPropertiesTool.execute({ blockId: firstLogicalId, properties: { name: "Updated after cold history" } }, { signal: controller.signal })).toMatchObject({
+            success: true,
+            blockCount: 1,
+        });
+        expect((getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry).blocks[0]).toMatchObject({
+            id: firstLogicalId,
+            name: "Updated after cold history",
+        });
+        historyStack.dispose();
+    });
+
     it("preserves Teleport and frame references across replacement round trips", () => {
         const state = CreateTestState([], vi.fn());
         const controller = new AbortController();
