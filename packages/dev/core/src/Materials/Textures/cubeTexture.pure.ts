@@ -306,7 +306,7 @@ export class CubeTexture extends BaseTexture {
         const lastDot = url.lastIndexOf(".");
         const extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
         const isDDS = extension.indexOf(".dds") === 0;
-        const isKTX = extension.indexOf(".ktx") === 0;
+        const isKTX = extension.indexOf(".ktx") === 0 && this._getEngine()?._features.supportKTXCubeTexture;
         const isEnv = extension.indexOf(".env") === 0;
         const isBasis = extension.indexOf(".basis") === 0;
 
@@ -452,7 +452,8 @@ export class CubeTexture extends BaseTexture {
                     errorHandler,
                     this._format,
                     this._forcedExtension,
-                    this._createPolynomials
+                    this._createPolynomials,
+                    this._buffer
                 );
             } else {
                 this._texture = this._getEngine()!.createCubeTexture(

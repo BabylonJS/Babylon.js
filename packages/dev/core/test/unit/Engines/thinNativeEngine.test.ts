@@ -182,26 +182,27 @@ describe("ThinNativeEngine", () => {
             RegisterNativeEngineCubeTexture();
 
             const hardwareResource = { id: "native-cube" };
-            const engine = Object.create(ThinNativeEngine.prototype) as NativeCubeEngine;
-            engine._internalTexturesCache = [];
-            engine._doNotHandleContextLost = true;
-            engine._getUseSRGBBuffer = () => false;
-            engine._createHardwareTexture = () =>
-                ({
+            const engine = Object.assign(Object.create(ThinNativeEngine.prototype), {
+                _internalTexturesCache: [],
+                _features: { supportKTXCubeTexture: true },
+                _doNotHandleContextLost: true,
+                _getUseSRGBBuffer: () => false,
+                _createHardwareTexture: (): IHardwareTextureWrapper => ({
                     underlyingResource: hardwareResource,
                     setUsage() {},
                     set() {},
                     reset() {},
                     release() {},
-                }) as IHardwareTextureWrapper;
-            engine._engine = {
-                loadCubeTexture: vi.fn((_texture, _data, _generateMipMaps, _invertY, _srgb, onSuccess: (sp?: ArrayLike<number>) => void) => {
-                    onSuccess(undefined);
                 }),
-                getTextureWidth: () => textureSize,
-                getTextureHeight: () => textureSize,
-            };
-            engine._loadFileAsync = vi.fn(async () => new ArrayBuffer(8));
+                _engine: {
+                    loadCubeTexture: vi.fn((_texture, _data, _generateMipMaps, _invertY, _srgb, onSuccess: (sp?: ArrayLike<number>) => void) => {
+                        onSuccess(undefined);
+                    }),
+                    getTextureWidth: () => textureSize,
+                    getTextureHeight: () => textureSize,
+                },
+                _loadFileAsync: vi.fn(async () => new ArrayBuffer(8)),
+            }) as NativeCubeEngine;
 
             return engine;
         };
@@ -286,6 +287,49 @@ describe("ThinNativeEngine", () => {
             expect(engine._loadFileAsync).toHaveBeenCalledWith(url, undefined, true);
             expect(engine._engine.loadCubeTexture.mock.calls[0][1]).toHaveLength(1);
             expect(cube.isReady()).toBe(true);
+        });
+
+        it.each([".dds", ".ktx", ".ktx2"])("loads and rebuilds a public prefiltered %s CubeTexture from its buffer without fetching", async (extension) => {
+            const engine = createCubeEngine(256);
+            engine._doNotHandleContextLost = false;
+            const bytes = new Uint8Array([99, 1, 2, 3, 88]);
+            const buffer = new DataView(bytes.buffer, 1, 3);
+            const onLoad = vi.fn();
+            const cube = new CubeTexture("buffered-environment", engine, { prefiltered: true, forcedExtension: extension, buffer, onLoad });
+            const texture = cube.getInternalTexture()!;
+
+            await flushAsync();
+
+            expect(engine._loadFileAsync).not.toHaveBeenCalled();
+            expect(texture._buffer).toBe(buffer);
+            expect(texture._source).toBe(InternalTextureSource.CubePrefiltered);
+            expect(cube.getSize()).toEqual({ width: 256, height: 256 });
+            expect(cube.isReady()).toBe(true);
+            expect(onLoad).toHaveBeenCalledTimes(1);
+
+            for (let rebuild = 0; rebuild < 2; rebuild++) {
+                texture._rebuild();
+                expect(cube.isReady()).toBe(false);
+
+                await flushAsync();
+
+                expect(cube.isReady()).toBe(true);
+                expect(cube.getInternalTexture()).toBe(texture);
+                expect(texture._buffer).toBe(buffer);
+                expect(texture._source).toBe(InternalTextureSource.CubePrefiltered);
+                expect(engine._internalTexturesCache).toEqual([texture]);
+                expect(engine._loadFileAsync).not.toHaveBeenCalled();
+            }
+
+            expect(engine._engine.loadCubeTexture).toHaveBeenCalledTimes(3);
+            for (const call of engine._engine.loadCubeTexture.mock.calls) {
+                const data = call[1] as Uint8Array[];
+                expect(data).toHaveLength(1);
+                expect(Array.from(data[0])).toEqual([1, 2, 3]);
+                expect(data[0].buffer).toBe(bytes.buffer);
+                expect(data[0].byteOffset).toBe(buffer.byteOffset);
+                expect(data[0].byteLength).toBe(buffer.byteLength);
+            }
         });
 
         it.each([".ktx", ".ktx2"])("honors a forced %s extension without generating face URLs", async (forcedExtension) => {

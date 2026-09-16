@@ -271,7 +271,8 @@ export function RegisterNativeEngineCubeTexture(): void {
         onError: Nullable<(message?: string, exception?: any) => void> = null,
         format?: number,
         forcedExtension: any = null,
-        createPolynomials: boolean = true
+        createPolynomials: boolean = true,
+        buffer: Nullable<ArrayBufferView> = null
     ): InternalTexture {
         const texture = new InternalTexture(this, InternalTextureSource.CubePrefiltered);
         if (!createPolynomials) {
@@ -294,7 +295,10 @@ export function RegisterNativeEngineCubeTexture(): void {
             createPolynomials,
             lodScale,
             lodOffset,
-            texture
+            texture,
+            undefined,
+            false,
+            buffer
         );
     };
 }

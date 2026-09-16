@@ -827,6 +827,7 @@ export class ThinEngine extends AbstractEngine {
             supportShadowSamplers: this._webGLVersion !== 1,
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: this._webGLVersion !== 1,
+            supportKTXCubeTexture: false,
             trackUbosInFrame: false,
             checkUbosContentBeforeUpload: false,
             supportCSM: this._webGLVersion !== 1,
