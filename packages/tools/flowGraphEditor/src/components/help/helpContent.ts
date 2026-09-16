@@ -457,13 +457,19 @@ export const HelpTopics: IHelpTopic[] = [
     },
     {
         id: "gltf-import-export",
-        title: "glTF Import",
+        title: "glTF Import and Export",
         sections: [
             {
                 heading: "Importing from glTF",
                 html: `<p>Drop a <code>.glb</code> or <code>.gltf</code> file on the scene preview pane. If the file contains a <strong>KHR_interactivity</strong> extension, the flow graph is automatically loaded into the editor.</p>
 <p>Files that contain a <strong>BABYLON_flow_graph</strong> custom extension are also detected and imported on drop.</p>
 <p>Alternatively, use the <strong>Load glTF</strong> button in the FILE section to load only the flow graph (no scene).</p>`,
+            },
+            {
+                heading: "Exporting KHR_interactivity",
+                html: `<p>Use <strong>Export KHR glTF</strong> or <strong>Export KHR GLB</strong> to export an imported graph set through the standards-compliant <code>KHR_interactivity</code> serializer. The editor validates every logical node and imported composite before export and reports the exact graph, node, or socket that cannot be represented.</p>
+<p>Imported multi-block operations must remain structurally intact. Unknown operations supplied by additional glTF extensions remain typed no-op blocks and round-trip without claiming runtime support.</p>
+<p><strong>Export BABYLON_flow_graph GLB</strong> remains a separate Babylon-specific option for ordinary Flow Graph JSON. It does not emit <code>KHR_interactivity</code>.</p>`,
             },
         ],
     },

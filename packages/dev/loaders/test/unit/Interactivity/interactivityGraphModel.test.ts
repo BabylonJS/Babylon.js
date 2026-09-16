@@ -13,8 +13,137 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { Scene } from "core/scene";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
+import { addNewInteractivityFlowGraphMapping, getMappingForDeclaration } from "../../../src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper";
 
 describe("KHR_interactivity canonical import model", () => {
+    it("treats prototype-like registry keys as ordinary own properties", () => {
+        expect(getMappingForDeclaration({ op: "__proto__" }, false)).toBeUndefined();
+        expect(getMappingForDeclaration({ op: "constructor" }, false)).toBeUndefined();
+        expect(getMappingForDeclaration({ op: "toString" }, false)).toBeUndefined();
+
+        const mapping = { blocks: [] };
+        addNewInteractivityFlowGraphMapping("pollutedMapping", "__proto__", mapping);
+
+        expect(({} as any).pollutedMapping).toBeUndefined();
+        expect(getMappingForDeclaration({ op: "pollutedMapping", extension: "__proto__" }, false)).toBe(mapping);
+    });
+
+    it("reports malformed nested dictionaries without throwing", () => {
+        const graph = {
+            types: [{ signature: "int" }],
+            events: [{ values: { payload: null, scalar: { type: 0, value: "bad" } } }],
+            declarations: [
+                {
+                    op: "vendor/doThing",
+                    extension: "EXT_vendor",
+                    inputValueSockets: { input: null },
+                },
+            ],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { option: null, scalar: { value: "bad" } },
+                    values: { input: null, scalar: { type: 0, value: "bad" } },
+                    flows: { done: null },
+                },
+            ],
+        } as unknown as IKHRInteractivity_Graph;
+
+        const model = CreateKHRInteractivityGraphModel(graph);
+
+        expect(model.valid).toBe(false);
+        expect(model.diagnostics.map((diagnostic) => diagnostic.path)).toEqual(
+            expect.arrayContaining([
+                expect.stringContaining("/events/0/values/payload"),
+                expect.stringContaining("/events/0/values/scalar/value"),
+                expect.stringContaining("/declarations/0/inputValueSockets/input"),
+                expect.stringContaining("/nodes/0/configuration/option"),
+                expect.stringContaining("/nodes/0/configuration/scalar/value"),
+                expect.stringContaining("/nodes/0/values/input"),
+                expect.stringContaining("/nodes/0/values/scalar/value"),
+                expect.stringContaining("/nodes/0/flows/done"),
+            ])
+        );
+    });
+
+    it("rejects a wrong assertion for a fixed output signature even when the correct type is absent", () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }],
+            declarations: [{ op: "math/eq" }, { op: "flow/branch" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    values: {
+                        a: { type: 0, value: [1] },
+                        b: { type: 0, value: [1] },
+                    },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        condition: { node: 0, type: 0 },
+                    },
+                },
+            ],
+        };
+
+        const model = CreateKHRInteractivityGraphModel(graph);
+
+        expect(model.valid).toBe(false);
+        expect(model.diagnostics).toContainEqual(expect.objectContaining({ path: expect.stringContaining("/values/condition/type") }));
+    });
+
+    it("rejects wrong output assertions for fixed-shape combine operations", () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "int" }, { signature: "float" }],
+            declarations: [{ op: "math/combine2" }, { op: "math/abs" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    values: {
+                        a: { type: 1, value: [1] },
+                        b: { type: 1, value: [2] },
+                    },
+                },
+                {
+                    declaration: 1,
+                    values: {
+                        a: { node: 0, type: 0 },
+                    },
+                },
+            ],
+        };
+
+        const model = CreateKHRInteractivityGraphModel(graph);
+
+        expect(model.valid).toBe(false);
+        expect(model.diagnostics).toContainEqual(expect.objectContaining({ path: expect.stringContaining("/values/a/type") }));
+    });
+
+    it("applies the ratified default for unsupported quaternion rotation orders", () => {
+        const graph: IKHRInteractivity_Graph = {
+            types: [{ signature: "float" }],
+            declarations: [{ op: "math/quatFromAngles" }],
+            nodes: [
+                {
+                    declaration: 0,
+                    configuration: { order: { value: ["invalid"] } },
+                    values: {
+                        x: { type: 0, value: [0] },
+                        y: { type: 0, value: [0] },
+                        z: { type: 0, value: [0] },
+                    },
+                },
+            ],
+        };
+
+        const model = CreateKHRInteractivityGraphModel(graph);
+
+        expect(model.valid).toBe(true);
+        expect(model.diagnostics).toContainEqual(expect.objectContaining({ severity: "warning", path: expect.stringContaining("/configuration/order") }));
+        expect(model.effectiveSource.nodes![0].configuration!.order.value).toEqual(["yxz"]);
+    });
+
     it("preserves graph names, extensions, extras, and the selected default graph", () => {
         const extension: IKHRInteractivity = {
             graph: 1,
@@ -755,7 +884,7 @@ describe("KHR_interactivity canonical import model", () => {
         }
     });
 
-    it("filters flow/switch outputs to effective configured cases", () => {
+    it("treats unconfigured flow/switch outputs as inert no-ops", () => {
         const graph: IKHRInteractivity_Graph = {
             types: [{ signature: "int" }],
             declarations: [{ op: "flow/switch" }, { op: "flow/sequence" }],
@@ -784,8 +913,8 @@ describe("KHR_interactivity canonical import model", () => {
 
         expect(block.signalOutputs.map((socket) => socket.name)).toEqual(expect.arrayContaining(["out_1", "default"]));
         expect(block.signalOutputs.some((socket) => socket.name === "out_9")).toBe(false);
-        expect(model.valid).toBe(false);
-        expect(model.diagnostics).toContainEqual(expect.objectContaining({ path: expect.stringContaining("/flows/9"), severity: "error" }));
+        expect(model.valid).toBe(true);
+        expect(model.diagnostics).not.toContainEqual(expect.objectContaining({ path: expect.stringContaining("/flows/9") }));
 
         const invalidGraph = CloneKHRInteractivityGraph(graph);
         invalidGraph.nodes![0].configuration!.cases!.value = [2147483648];
@@ -1212,6 +1341,11 @@ describe("KHR_interactivity canonical import model", () => {
 
         expect(JSON.stringify(graph)).toBe(before);
         expect(serialized.name).toBe("Named graph");
+        expect(serialized.metadata.khrInteractivity).toEqual({
+            graphIndex: 3,
+            specificationCommit: KHR_INTERACTIVITY_SPECIFICATION_COMMIT,
+            source: graph,
+        });
         expect(serialized.allBlocks[0].metadata.khrInteractivity).toEqual({
             graphIndex: 3,
             nodeIndex: 0,
@@ -1220,6 +1354,37 @@ describe("KHR_interactivity canonical import model", () => {
             role: 0,
             sourcePath: "/extensions/KHR_interactivity/graphs/3/nodes/0",
         });
+        expect(serialized.allBlocks[0].dataInputs[0].metadata.khrInteractivity).toEqual({
+            graphIndex: 3,
+            nodeIndex: 0,
+            declarationIndex: 0,
+            operation: "math/abs",
+            role: 0,
+            sourcePath: "/extensions/KHR_interactivity/graphs/3/nodes/0",
+            kind: "value",
+            direction: "input",
+            socket: "a",
+            sourceValue: { type: 0, value: [1] },
+            runtimeValue: [1],
+        });
+        expect(serialized.allBlocks[0].dataInputs[0].defaultValue).toEqual({ type: "number", value: [1] });
+    });
+
+    it("retains canonical source provenance when runtime lowering uses effective defaults", () => {
+        const source: IKHRInteractivity_Graph = {
+            declarations: [{ op: "debug/log" }],
+            nodes: [{ declaration: 0, configuration: { severity: { value: [99] } } }],
+        };
+        const model = CreateKHRInteractivityGraphModel(source);
+        expect(model.valid).toBe(true);
+        expect(model.effectiveSource.nodes![0].configuration).toEqual({
+            severity: { value: [0] },
+            message: { value: [""] },
+        });
+
+        const serialized = new InteractivityGraphToFlowGraphParser(model.effectiveSource, {} as any, 60, 0, undefined, model.declarations, model.source).serializeToFlowGraph();
+
+        expect(serialized.metadata.khrInteractivity.source).toEqual(source);
     });
 
     it("lowers an unsupported extension operation to an inspectable no-op block", () => {
