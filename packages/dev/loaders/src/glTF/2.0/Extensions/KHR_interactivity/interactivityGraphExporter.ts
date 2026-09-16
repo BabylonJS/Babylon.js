@@ -1898,11 +1898,12 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             return rebuiltReference;
         }
         const socketProvenance = _GetSocketProvenance(input);
+        const sourceProvenanceValue = socketProvenance?.sourceValue;
         const current = _NormalizeValue((input as any)._defaultValue);
         const currentSnapshot = _CreateKHRInteractivityRuntimeValueSnapshot((input as any)._defaultValue);
         const legacyRuntimeSnapshot =
-            socketProvenance?.sourceValue && !("node" in socketProvenance.sourceValue)
-                ? _CreateTypedRuntimeValueSnapshot(graph, socketProvenance.sourceValue.type, socketProvenance.runtimeValue ?? socketProvenance.sourceValue.value)
+            sourceProvenanceValue && !("node" in sourceProvenanceValue)
+                ? _CreateTypedRuntimeValueSnapshot(graph, sourceProvenanceValue.type, socketProvenance?.runtimeValue ?? sourceProvenanceValue.value)
                 : undefined;
         const importedRuntimeSnapshot = socketProvenance?.runtimeValueSnapshot ?? legacyRuntimeSnapshot;
         if (
@@ -1911,9 +1912,9 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             !importedRuntimeSnapshot.unrepresentable &&
             !currentSnapshot.unrepresentable &&
             currentSnapshot.runtimeValueFingerprint === importedRuntimeSnapshot.runtimeValueFingerprint &&
-            socketProvenance.sourceValue
+            sourceProvenanceValue
         ) {
-            return _CloneJson(socketProvenance.sourceValue);
+            return _CloneJson(sourceProvenanceValue);
         }
         if (!input.isConnected() && socketProvenance?.runtimeValue && _ValuesEqual(current, socketProvenance.runtimeValue) && socketProvenance.sourceValue) {
             return _CloneJson(socketProvenance.sourceValue);
