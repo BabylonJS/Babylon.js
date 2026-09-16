@@ -65,6 +65,10 @@ export function RegisterAbstractEngineQuery(): void {
         return 0;
     };
 
+    AbstractEngine.prototype.isOcclusionQueryVisible = function (query: OcclusionQuery): boolean {
+        return this.getQueryResult(query) > 0;
+    };
+
     AbstractEngine.prototype.beginOcclusionQuery = function (algorithmType: number, query: OcclusionQuery): boolean {
         // Do nothing. Must be implemented by child classes
         return false;
@@ -188,11 +192,9 @@ export function RegisterAbstractEngineQuery(): void {
         if (this.isOcclusionQueryInProgress && this._occlusionQuery !== null && this._occlusionQuery !== undefined) {
             const isOcclusionQueryAvailable = engine.isQueryResultAvailable(this._occlusionQuery);
             if (isOcclusionQueryAvailable) {
-                const occlusionQueryResult = engine.getQueryResult(this._occlusionQuery);
-
                 dataStorage.isOcclusionQueryInProgress = false;
                 dataStorage.occlusionInternalRetryCounter = 0;
-                dataStorage.isOccluded = occlusionQueryResult > 0 ? false : true;
+                dataStorage.isOccluded = !engine.isOcclusionQueryVisible(this._occlusionQuery);
             } else {
                 dataStorage.occlusionInternalRetryCounter++;
 
