@@ -11,6 +11,7 @@ export * from "./KHR_materials_dispersion.pure";
 export * from "./KHR_materials_emissive_strength.pure";
 export * from "./KHR_materials_ior.pure";
 export * from "./KHR_materials_iridescence.pure";
+export * from "./KHR_materials_retroreflection.pure";
 export * from "./KHR_materials_sheen.pure";
 export * from "./KHR_materials_fuzz.pure";
 export * from "./KHR_materials_specular.pure";
