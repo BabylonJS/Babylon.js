@@ -20,6 +20,17 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 		vec3 direction = lightData.xyz - vPositionW;
 
 		attenuation = max(0., 1.0 - length(direction) / range);
+#ifndef NDOTL
+		// Outside the point light's range both color terms are zero. Keep the
+		// full path when a caller also consumes the unattenuated N dot L.
+		if (attenuation == 0.) {
+			result.diffuse = vec3(0.);
+#ifdef SPECULARTERM
+			result.specular = vec3(0.);
+#endif
+			return result;
+		}
+#endif
 		lightVectorW = normalize(direction);
 	}
 	else
