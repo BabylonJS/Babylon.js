@@ -1060,12 +1060,14 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
 
         for (const other of others) {
-            if (!other._splatsData) {
-                continue;
-            }
-
+            // A reserved-empty streaming source carries no CPU data but still owns its slot in the atlas (its
+            // GPU rows are decoded later). Advance past that slot regardless of data so a real source appended
+            // after it lands at the offset its proxy's _splatsDataOffset points to — matching the unconditional
+            // GPU dstOffset advance in _addPartsInternal (and the SH loop below).
             const splatByteLength = other._vertexCount * _GaussianSplattingBytesPerSplat;
-            mergedSplatsData.set(GaussianSplattingMeshBase._GetSplatDataBytes(other._splatsData).subarray(0, splatByteLength), splatByteOffset);
+            if (other._splatsData) {
+                mergedSplatsData.set(GaussianSplattingMeshBase._GetSplatDataBytes(other._splatsData).subarray(0, splatByteLength), splatByteOffset);
+            }
             splatByteOffset += splatByteLength;
         }
 
