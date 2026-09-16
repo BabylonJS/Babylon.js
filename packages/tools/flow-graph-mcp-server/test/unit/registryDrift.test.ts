@@ -37,6 +37,13 @@ const CONSTRUCTION_CONFIG: Record<string, object> = {
 const isDynamicPort = (name: string): boolean => /_\d+$/.test(name);
 
 describe("Flow Graph MCP Server – Registry Drift", () => {
+    it("documents custom-event payload defaults", () => {
+        for (const key of ["SendCustomEvent", "ReceiveCustomEvent"]) {
+            expect(FlowGraphBlockRegistry[key].config?.eventData).toContain("value?: unknown");
+            expect(FlowGraphBlockRegistry[key].config?.eventData).toContain("optional serialized default");
+        }
+    });
+
     it("intentionally omits loader-created import-only blocks", () => {
         const creatableClassNames = Object.values(FlowGraphBlockRegistry).map((block) => block.className);
         expect(creatableClassNames).not.toEqual(expect.arrayContaining([...FlowGraphImportOnlyBlockClassNames]));
