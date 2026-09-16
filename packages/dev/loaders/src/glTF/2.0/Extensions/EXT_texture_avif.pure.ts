@@ -51,7 +51,8 @@ export class EXT_texture_avif implements IGLTFLoaderExtension {
                     assign(babylonTexture);
                 },
                 undefined,
-                !texture._textureInfo.nonColorData
+                !texture._textureInfo.nonColorData,
+                texture
             );
         });
     }

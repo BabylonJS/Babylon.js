@@ -7,7 +7,7 @@ import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { registerGLTFExtension, unregisterGLTFExtension, registeredGLTFExtensions } from "../glTFLoaderExtensionRegistry";
 import { type GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import { AddObjectAccessorToKey, GetPathToObjectConverter } from "./objectModelMapping";
-import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
+import { _CaptureKHRInteractivityRuntimeInputDefaults, InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
 import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 import { Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { type Scene } from "core/scene";
@@ -30,6 +30,8 @@ import {
     type IKHRInteractivityGraphModel,
 } from "./KHR_interactivity/interactivityGraphModel";
 import { type FlowGraph } from "core/FlowGraph/flowGraph";
+
+export * from "./KHR_interactivity/interactivityGraphExporter";
 
 const NAME = "KHR_interactivity";
 
@@ -63,6 +65,8 @@ export interface IKHRInteractivityImportResult {
     pathConverter: CompositePathToObjectConverter<IObjectAccessor>;
     /** Live glTF loader data used by glTF data-provider blocks. */
     glTF: GLTFLoader["gltf"];
+    /** Scene that owns the imported asset and its runtime object mappings, when retained by the importer. */
+    scene?: Scene;
     /** Host resolver that supplies KHR reference semantics to executable graphs. */
     hostResolver: InteractivityHostResolver;
 }
@@ -172,6 +176,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             graphs: [],
             pathConverter,
             glTF: this._loader.gltf,
+            scene,
             hostResolver: new InteractivityHostResolver(),
         };
         importResults.push(result);
@@ -195,7 +200,8 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                         this._loader.parent.targetFps,
                         graphModel.index,
                         supportedExtensions,
-                        strictValidation ? graphModel.declarations : undefined
+                        strictValidation ? graphModel.declarations : undefined,
+                        graphModel.source
                     );
                     const serializedFlowGraph = parser.serializeToFlowGraph();
                     graphResult.serializedFlowGraph = serializedFlowGraph;
@@ -206,6 +212,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                     coordinator.dispatchEventsSynchronously = false;
                     graphResult.coordinator = coordinator;
                     graphResult.flowGraph = await ParseFlowGraphAsync(serializedFlowGraph, { coordinator, pathConverter });
+                    _CaptureKHRInteractivityRuntimeInputDefaults(graphResult.flowGraph);
                     if (autoStart && graphModel.index === document.defaultGraphIndex) {
                         coordinator.start();
                     }

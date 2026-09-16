@@ -5,10 +5,59 @@
 
 import { type FlowGraph } from "core/FlowGraph/flowGraph";
 import { type FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { type FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphBlockNames } from "core/FlowGraph/Blocks/flowGraphBlockNames";
 import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { FlowGraphInteger } from "core/FlowGraph/CustomTypes/flowGraphInteger";
+
+/**
+ * Sets a runtime variable and records an explicit editor-authored default when the variable
+ * originates from a canonical KHR_interactivity graph.
+ * @param flowGraph graph containing the variable
+ * @param context execution context to update
+ * @param name variable name
+ * @param value authored value
+ */
+export function SetVariableAuthoringValue(flowGraph: FlowGraph, context: FlowGraphContext, name: string, value: unknown): void {
+    context.setVariable(name, value);
+    const match = /^staticVariable_(0|[1-9]\d*)$/.exec(name);
+    const provenance = flowGraph.metadata?.khrInteractivity;
+    if (!match) {
+        if (provenance?.source) {
+            provenance.authoredVariableStructureChanged = true;
+        }
+        return;
+    }
+    if (!provenance?.source?.variables) {
+        return;
+    }
+    const index = parseInt(match[1], 10);
+    const variable = provenance.source.variables[index];
+    if (!variable) {
+        return;
+    }
+    const authoredType = context.getVariableType(name);
+    const authoredAsReference = authoredType ? IsSceneObjectType(authoredType as VariableTypeName) : false;
+    let components: unknown[];
+    if (Array.isArray(value)) {
+        components = value.slice();
+    } else if (value && typeof value === "object" && typeof (value as { asArray?: () => unknown[] }).asArray === "function") {
+        components = (value as { asArray: () => unknown[] }).asArray();
+    } else if (value instanceof FlowGraphInteger) {
+        components = [value.value];
+    } else if (value === undefined && (provenance.source.types?.[variable.type]?.signature === "ref" || authoredAsReference)) {
+        components = [""];
+    } else {
+        components = [value];
+    }
+    provenance.authoredVariableValues ||= {};
+    provenance.authoredVariableValues[index] = components;
+    if (authoredType) {
+        provenance.authoredVariableTypes ||= {};
+        provenance.authoredVariableTypes[index] = authoredType;
+    }
+}
 
 // -------------------------------------------------------
 // Variable type system (editor-side)
@@ -487,6 +536,9 @@ export function RenameVariable(fg: FlowGraph, oldName: string, newName: string):
     if (!newName || newName === oldName) {
         return;
     }
+    if (fg.metadata?.khrInteractivity?.source) {
+        fg.metadata.khrInteractivity.authoredVariableStructureChanged = true;
+    }
 
     for (const block of fg.getAllBlocks()) {
         const className = block.getClassName();
@@ -532,6 +584,9 @@ export function RenameVariable(fg: FlowGraph, oldName: string, newName: string):
  * @param name - The variable name to delete.
  */
 export function DeleteVariable(fg: FlowGraph, name: string): void {
+    if (fg.metadata?.khrInteractivity?.source) {
+        fg.metadata.khrInteractivity.authoredVariableStructureChanged = true;
+    }
     const blocksToRemove: FlowGraphBlock[] = [];
 
     for (const block of fg.getAllBlocks()) {
@@ -590,6 +645,13 @@ export function FormatVariableValue(val: unknown): string {
     }
     if (val === null) {
         return "null";
+    }
+    if (Array.isArray(val)) {
+        try {
+            return JSON.stringify(val);
+        } catch {
+            return "[object]";
+        }
     }
     if (typeof val === "object") {
         if (typeof (val as any).toString === "function" && (val as any).toString !== Object.prototype.toString) {

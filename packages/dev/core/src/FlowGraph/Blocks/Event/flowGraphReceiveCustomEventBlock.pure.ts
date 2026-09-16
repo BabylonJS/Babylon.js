@@ -11,6 +11,7 @@ import { type IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlockNames } from "../flowGraphBlockNames";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { defaultValueSerializationFunction } from "../../serialization";
 /**
  * Parameters used to create a FlowGraphReceiveCustomEventBlock.
  */
@@ -24,7 +25,7 @@ export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGra
      * The names of the data outputs for that event. Should be in the same order as the event data in
      * SendCustomEvent
      */
-    eventData: { [key: string]: { type: RichType<any> } };
+    eventData: { [key: string]: { type: RichType<any>; value?: any } };
 }
 
 /**
@@ -64,7 +65,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     ) {
         super(config);
         // use event data to register data outputs
-        for (const key in this.config.eventData) {
+        for (const key of Object.keys(this.config.eventData ?? {})) {
             const entry = this.config.eventData[key];
             // Handle deserialized config where type may be a string typeName, a plain object
             // with a typeName property (from old JSON serialization), or a proper RichType instance.
@@ -102,7 +103,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
                 // Drive the outputs from the configured payload schema rather than from the incoming
                 // keys, so a key the sender omitted (or sent as undefined) resets to its configured
                 // default instead of retaining the value from a previous dispatch.
-                for (const key in this.config.eventData) {
+                for (const key of Object.keys(this.config.eventData ?? {})) {
                     const output = this.getDataOutput(key);
                     if (!output) {
                         continue;
@@ -127,7 +128,10 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
      * @returns the default value for that key
      */
     private _getEventDataDefault(key: string): any {
-        const entry = this.config.eventData?.[key] as { type: RichType<any>; value?: any } | undefined;
+        const entry =
+            this.config.eventData && Object.prototype.hasOwnProperty.call(this.config.eventData, key)
+                ? (this.config.eventData[key] as { type: RichType<any>; value?: any })
+                : undefined;
         return entry?.value !== undefined ? entry.value : entry?.type?.defaultValue;
     }
     public override _cancelPendingTasks(context: FlowGraphContext): void {
@@ -147,9 +151,19 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     public override serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
         // Override the eventData in config to store typeName strings instead of RichType instances
-        const serializedEventData: any = {};
-        for (const key in this.config.eventData) {
-            serializedEventData[key] = { type: this.config.eventData[key].type.typeName };
+        const serializedEventData: any = Object.create(null);
+        for (const key of Object.keys(this.config.eventData ?? {})) {
+            const entry = this.config.eventData[key];
+            const serializedEntry: { type: string; value?: unknown } = { type: entry.type.typeName };
+            if (entry.value !== undefined) {
+                defaultValueSerializationFunction("value", entry.value, serializedEntry);
+            }
+            Object.defineProperty(serializedEventData, key, {
+                configurable: true,
+                enumerable: true,
+                value: serializedEntry,
+                writable: true,
+            });
         }
         serializationObject.config.eventData = serializedEventData;
     }
