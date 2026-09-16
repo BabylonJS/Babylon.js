@@ -67,11 +67,15 @@ uniform vTangentSpaceParams: vec2f;
 #if defined(ALPHATEST) && defined(NEED_UV)
 var diffuseSamplerSampler: sampler;
 var diffuseSampler: texture_2d<f32>;
+uniform alphaCutOff: f32;
 #endif
 
 #ifdef OBJECT_ID
 uniform objectId: f32;
 #include<objectIdFunctions>
+#endif
+#ifdef MESH_BLEND_TAG
+uniform meshBlendTag: i32;
 #endif
 
 #include<clipPlaneFragmentDeclaration>
@@ -120,7 +124,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #include<clipPlaneFragment>
 
     #ifdef ALPHATEST
-        if (textureSample(diffuseSampler, diffuseSamplerSampler, input.vUV).a < 0.4) {
+        if (textureSample(diffuseSampler, diffuseSamplerSampler, input.vUV).a < uniforms.alphaCutOff) {
             discard;
         }
     #endif
@@ -337,27 +341,59 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
 
     #if SCENE_MRT_COUNT > 0
-        fragmentOutputs.fragData0 = fragData[0];
+        #if defined(MESH_BLEND_TAG) && MESH_BLEND_TAG_INDEX == 0
+            fragmentOutputs.fragData0 = vec4u(u32(uniforms.meshBlendTag), 0u, 0u, 0u);
+        #else
+            fragmentOutputs.fragData0 = fragData[0];
+        #endif
     #endif
     #if SCENE_MRT_COUNT > 1
-        fragmentOutputs.fragData1 = fragData[1];
+        #if defined(MESH_BLEND_TAG) && MESH_BLEND_TAG_INDEX == 1
+            fragmentOutputs.fragData1 = vec4u(u32(uniforms.meshBlendTag), 0u, 0u, 0u);
+        #else
+            fragmentOutputs.fragData1 = fragData[1];
+        #endif
     #endif
     #if SCENE_MRT_COUNT > 2
-        fragmentOutputs.fragData2 = fragData[2];
+        #if defined(MESH_BLEND_TAG) && MESH_BLEND_TAG_INDEX == 2
+            fragmentOutputs.fragData2 = vec4u(u32(uniforms.meshBlendTag), 0u, 0u, 0u);
+        #else
+            fragmentOutputs.fragData2 = fragData[2];
+        #endif
     #endif
     #if SCENE_MRT_COUNT > 3
-        fragmentOutputs.fragData3 = fragData[3];
+        #if defined(MESH_BLEND_TAG) && MESH_BLEND_TAG_INDEX == 3
+            fragmentOutputs.fragData3 = vec4u(u32(uniforms.meshBlendTag), 0u, 0u, 0u);
+        #else
+            fragmentOutputs.fragData3 = fragData[3];
+        #endif
     #endif
     #if SCENE_MRT_COUNT > 4
-        fragmentOutputs.fragData4 = fragData[4];
+        #if defined(MESH_BLEND_TAG) && MESH_BLEND_TAG_INDEX == 4
+            fragmentOutputs.fragData4 = vec4u(u32(uniforms.meshBlendTag), 0u, 0u, 0u);
+        #else
+            fragmentOutputs.fragData4 = fragData[4];
+        #endif
     #endif
     #if SCENE_MRT_COUNT > 5
-        fragmentOutputs.fragData5 = fragData[5];
+        #if defined(MESH_BLEND_TAG) && MESH_BLEND_TAG_INDEX == 5
+            fragmentOutputs.fragData5 = vec4u(u32(uniforms.meshBlendTag), 0u, 0u, 0u);
+        #else
+            fragmentOutputs.fragData5 = fragData[5];
+        #endif
     #endif
     #if SCENE_MRT_COUNT > 6
-        fragmentOutputs.fragData6 = fragData[6];
+        #if defined(MESH_BLEND_TAG) && MESH_BLEND_TAG_INDEX == 6
+            fragmentOutputs.fragData6 = vec4u(u32(uniforms.meshBlendTag), 0u, 0u, 0u);
+        #else
+            fragmentOutputs.fragData6 = fragData[6];
+        #endif
     #endif
     #if SCENE_MRT_COUNT > 7
-        fragmentOutputs.fragData7 = fragData[7];
+        #if defined(MESH_BLEND_TAG) && MESH_BLEND_TAG_INDEX == 7
+            fragmentOutputs.fragData7 = vec4u(u32(uniforms.meshBlendTag), 0u, 0u, 0u);
+        #else
+            fragmentOutputs.fragData7 = fragData[7];
+        #endif
     #endif
 }

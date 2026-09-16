@@ -834,6 +834,11 @@ export class Constants {
      */
     public static readonly PREPASS_OBJECT_ID_TEXTURE_TYPE = 15;
 
+    /**
+     * Constant used to retrieve the packed mesh-blending tag texture index in geometry rendering textures.
+     */
+    public static readonly PREPASS_MESH_BLEND_TAG_TEXTURE_TYPE = 16;
+
     /** Flag to create a readable buffer (the buffer can be the source of a copy) */
     public static readonly BUFFER_CREATIONFLAG_READ = 1;
     /** Flag to create a writable buffer (the buffer can be the destination of a copy) */

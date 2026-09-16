@@ -47,6 +47,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         this.registerOutput("geomVelocity", NodeRenderGraphBlockConnectionPointTypes.TextureVelocity);
         this.registerOutput("geomLinearVelocity", NodeRenderGraphBlockConnectionPointTypes.TextureLinearVelocity);
         this.registerOutput("geomObjectId", NodeRenderGraphBlockConnectionPointTypes.TextureObjectId);
+        this.registerOutput("geomMeshBlendTag", NodeRenderGraphBlockConnectionPointTypes.TextureMeshBlendTag);
 
         this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, frameGraph, scene, { doNotChangeAspectRatio, enableClusteredLights });
     }
@@ -327,7 +328,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
     }
 
     /**
-     * Gets the world geometry normal component
+     * Gets the world geometry normal component, encoded from [-1, 1] to [0, 1]
      */
     public get geomWorldNormal(): NodeRenderGraphConnectionPoint {
         return this._outputs[8];
@@ -382,6 +383,13 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         return this._outputs[15];
     }
 
+    /**
+     * Gets the packed mesh-blending tag component.
+     */
+    public get geomMeshBlendTag(): NodeRenderGraphConnectionPoint {
+        return this._outputs[16];
+    }
+
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
@@ -399,6 +407,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
             this.geomVelocity.isConnected,
             this.geomLinearVelocity.isConnected,
             this.geomObjectId.isConnected,
+            this.geomMeshBlendTag.isConnected,
         ];
 
         this.geomIrradiance.value = this._frameGraphTask.geometryIrradianceTexture;
@@ -414,6 +423,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
         this.geomVelocity.value = this._frameGraphTask.geometryVelocityTexture;
         this.geomLinearVelocity.value = this._frameGraphTask.geometryLinearVelocityTexture;
         this.geomObjectId.value = this._frameGraphTask.geometryObjectIdTexture;
+        this.geomMeshBlendTag.value = this._frameGraphTask.geometryMeshBlendTagTexture;
 
         this._frameGraphTask.textureDescriptions = [];
 
@@ -431,6 +441,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
             this.velocityFormat,
             this.linearVelocityFormat,
             Constants.TEXTUREFORMAT_RGBA,
+            Constants.TEXTUREFORMAT_RED_INTEGER,
         ];
         const textureTypes = [
             this.irradianceType,
@@ -445,6 +456,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
             this.reflectivityType,
             this.velocityType,
             this.linearVelocityType,
+            Constants.TEXTURETYPE_UNSIGNED_BYTE,
             Constants.TEXTURETYPE_UNSIGNED_BYTE,
         ];
         const bufferTypes = [
@@ -461,6 +473,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBaseObj
             Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
             Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE,
             Constants.PREPASS_OBJECT_ID_TEXTURE_TYPE,
+            Constants.PREPASS_MESH_BLEND_TAG_TEXTURE_TYPE,
         ];
 
         for (let i = 0; i < textureActivation.length; i++) {

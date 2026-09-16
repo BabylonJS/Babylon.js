@@ -160,6 +160,7 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         const vec4 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
         const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
         state._emitFunctionFromInclude("helperFunctions", comments);
+        state._emitUniformFromString("meshBlendTag", NodeMaterialBlockConnectionPointTypes.Int, "PREPASS_MESH_BLEND_TAG");
 
         state.compilationString += `#if defined(PREPASS)\r\n`;
         state.compilationString += isWebGPU ? `var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;\r\n` : `vec4 fragData[SCENE_MRT_COUNT];\r\n`;
@@ -252,8 +253,22 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\r\n`;
 
         for (let index = 0; index < 8; index++) {
-            state.compilationString += `#if SCENE_MRT_COUNT > ${index} && (!defined(PREPASS_COLOR) || PREPASS_COLOR_INDEX != ${index}) && (!defined(PREPASS_OBJECT_ID) || PREPASS_OBJECT_ID_INDEX != ${index})\r\n`;
-            state.compilationString += `${this._getFragData(isWebGPU, index)} = fragData[${index}];\r\n`;
+            state.compilationString += `#if SCENE_MRT_COUNT > ${index} && (!defined(PREPASS_COLOR) || PREPASS_COLOR_INDEX != ${index}) && (!defined(PREPASS_OBJECT_ID) || PREPASS_OBJECT_ID_INDEX != ${index}) && (!defined(PREPASS_MESH_BLEND_TAG) || PREPASS_MESH_BLEND_TAG_INDEX != ${index})\r\n`;
+            state.compilationString += isWebGPU
+                ? `${this._getFragData(true, index)} = fragData[${index}];\r\n`
+                : `WRITE_GEOMETRY_FRAGMENT_OUTPUT(${index}, fragData[${index}]);\r\n`;
+            state.compilationString += `#endif\r\n`;
+        }
+
+        if (isWebGPU) {
+            for (let index = 0; index < 8; index++) {
+                state.compilationString += `#if defined(PREPASS_MESH_BLEND_TAG) && PREPASS_MESH_BLEND_TAG_INDEX == ${index}\r\n`;
+                state.compilationString += `fragmentOutputs.fragData${index} = vec4u(u32(uniforms.meshBlendTag), 0u, 0u, 0u);\r\n`;
+                state.compilationString += `#endif\r\n`;
+            }
+        } else {
+            state.compilationString += `#ifdef PREPASS_MESH_BLEND_TAG\r\n`;
+            state.compilationString += `meshBlendTagOutput = uvec4(uint(meshBlendTag), 0u, 0u, 0u);\r\n`;
             state.compilationString += `#endif\r\n`;
         }
 

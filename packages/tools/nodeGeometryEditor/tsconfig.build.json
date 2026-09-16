@@ -11,13 +11,21 @@
             "serializers/*": ["../../dev/serializers/dist/*"],
             "materials/*": ["../../dev/materials/dist/*"],
             "shared-ui-components/*": ["../../dev/sharedUiComponents/dist/*"],
-            "node-geometry-editor/*": ["../../tools/nodeGeometryEditor/src/*"]
+            "node-geometry-editor/*": ["../../tools/nodeGeometryEditor/src/*"],
+            "@tools/mcp-server-core/webMcp": ["../../tools/mcp-server-core/dist/webMcp"],
+            "@tools/nge-mcp-common": ["../../tools/ngeMcpCommon/dist"]
         }
     },
 
     "references": [
         {
             "path": "../../dev/core/tsconfig.build.json"
+        },
+        {
+            "path": "../mcp-server-core/tsconfig.build.json"
+        },
+        {
+            "path": "../ngeMcpCommon/tsconfig.build.json"
         }
     ],
 

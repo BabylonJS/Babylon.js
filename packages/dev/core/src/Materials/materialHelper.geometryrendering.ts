@@ -7,10 +7,20 @@ import { Matrix } from "core/Maths/math.vector.pure";
  *
  * IDs must be unsigned integers supported by the object ID texture format. ID 0 is reserved for background or excluded meshes.
  * RGBA textures support IDs up to 0xFFFFFF, while RED textures support IDs up to 0xFF.
+ * Instances and thin instances use the source mesh ID, and this callback receives the source mesh for instanced draws.
  * This callback runs in the render hot path and may be called multiple times for the same mesh in a frame.
  * It should avoid allocations and return a consistent value for a mesh during a render.
  */
 export type GeometryRenderingObjectIdProvider = (mesh: AbstractMesh) => number;
+
+/**
+ * Provides the packed mesh-blending tag written by geometry rendering for a mesh.
+ *
+ * Tags must be 0 or contain a group ID between 1 and 63 in their low six bits. Tag 0 disables mesh blending.
+ * Instances and thin instances use the source mesh tag. This callback receives the source mesh for instanced draws.
+ * It runs in the render hot path and should avoid allocations and return a consistent value during a render.
+ */
+export type GeometryRenderingMeshBlendTagProvider = (mesh: AbstractMesh) => number;
 
 /** @internal */
 export function _GetGeometryRenderingObjectId(mesh: AbstractMesh, provider: GeometryRenderingObjectIdProvider, maxObjectId = 0xffffff): number {
@@ -21,6 +31,17 @@ export function _GetGeometryRenderingObjectId(mesh: AbstractMesh, provider: Geom
     }
 
     return objectId;
+}
+
+/** @internal */
+export function _GetGeometryRenderingMeshBlendTag(mesh: AbstractMesh, provider: GeometryRenderingMeshBlendTagProvider): number {
+    const tag = provider(mesh);
+
+    if (!Number.isInteger(tag) || tag < 0 || tag > 0xff || (tag !== 0 && (tag & 0x3f) === 0)) {
+        throw new Error(`Invalid geometry mesh-blending tag ${tag} for mesh "${mesh.name}". Tags must be 0 or contain a group ID between 1 and 63.`);
+    }
+
+    return tag;
 }
 
 /**
@@ -102,6 +123,11 @@ export type GeometryRenderingConfiguration = {
      * Whether the object ID texture uses the RED format.
      */
     objectIdIsRedFormat: boolean;
+
+    /**
+     * Provides the packed mesh-blending tag written for each rendered mesh.
+     */
+    meshBlendTagProvider?: GeometryRenderingMeshBlendTagProvider;
 };
 
 /**
@@ -224,6 +250,13 @@ export class MaterialHelperGeometryRendering {
             define: "PREPASS_OBJECT_ID",
             defineIndex: "PREPASS_OBJECT_ID_INDEX",
         },
+        {
+            type: Constants.PREPASS_MESH_BLEND_TAG_TEXTURE_TYPE,
+            name: "MeshBlendTag",
+            clearType: GeometryRenderingTextureClearType.Zero,
+            define: "PREPASS_MESH_BLEND_TAG",
+            defineIndex: "PREPASS_MESH_BLEND_TAG_INDEX",
+        },
     ];
 
     private static _Configurations: { [renderPassId: number]: GeometryRenderingConfiguration } = {};
@@ -271,7 +304,7 @@ export class MaterialHelperGeometryRendering {
      * @param _samplers The array of samplers to add to.
      */
     public static AddUniformsAndSamplers(uniforms: string[], _samplers: string[]) {
-        uniforms.push("previousWorld", "previousViewProjection", "mPreviousBones", "objectId");
+        uniforms.push("previousWorld", "previousViewProjection", "mPreviousBones", "objectId", "meshBlendTag");
     }
 
     /**
@@ -366,6 +399,11 @@ export class MaterialHelperGeometryRendering {
                 );
             }
             effect.setFloat("objectId", objectId);
+        }
+
+        if (configuration.defines["PREPASS_MESH_BLEND_TAG_INDEX"] !== undefined) {
+            const meshBlendTag = configuration.meshBlendTagProvider ? _GetGeometryRenderingMeshBlendTag(mesh, configuration.meshBlendTagProvider) : mesh.meshBlendingTag;
+            effect.setInt("meshBlendTag", meshBlendTag);
         }
 
         if (configuration.defines["PREPASS_VELOCITY_INDEX"] !== undefined || configuration.defines["PREPASS_VELOCITY_LINEAR_INDEX"] !== undefined) {

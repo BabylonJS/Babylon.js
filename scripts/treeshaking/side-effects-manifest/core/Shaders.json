@@ -279,6 +279,7 @@
         "Shaders/lod.fragment.ts": ["shader-store-write"],
         "Shaders/lod3D.fragment.ts": ["shader-store-write"],
         "Shaders/lodCube.fragment.ts": ["shader-store-write"],
+        "Shaders/meshBlending.fragment.ts": ["shader-store-write"],
         "Shaders/meshUVSpaceRenderer.fragment.ts": ["shader-store-write"],
         "Shaders/meshUVSpaceRenderer.vertex.ts": ["shader-store-write"],
         "Shaders/meshUVSpaceRendererFinaliser.fragment.ts": ["shader-store-write"],
