@@ -1,26 +1,25 @@
 
-### Addons
-
-- Add new MultiTexture class - [_New Feature_] by [abogartz](https://github.com/abogartz) ([#18822](https://github.com/BabylonJS/Babylon.js/pull/18822))
-
 ### Core
 
-- Decouple Gaussian classification for effective tree shaking - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18909](https://github.com/BabylonJS/Babylon.js/pull/18909))
-- Add dithered tile fade material plugin - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18902](https://github.com/BabylonJS/Babylon.js/pull/18902))
-- Add new MultiTexture class - [_New Feature_] by [abogartz](https://github.com/abogartz) ([#18822](https://github.com/BabylonJS/Babylon.js/pull/18822))
-- Fluid renderer: per-particle size for GPUParticleSystem + fix GPU particle quad offsets - [_Bug Fix_] by [tini2n](https://github.com/tini2n) ([#18888](https://github.com/BabylonJS/Babylon.js/pull/18888))
-- Improve USD materials, instancing, morphs, and skinning - [_Bug Fix_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18900](https://github.com/BabylonJS/Babylon.js/pull/18900))
+- Fix: DoF seam (WebGL) and shader-compile crash (WebGPU) in LensRenderingPipeline - [_Bug Fix_] by [raymondyfei](https://github.com/raymondyfei) ([#18904](https://github.com/BabylonJS/Babylon.js/pull/18904))
+- Add mesh blending post process - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18915](https://github.com/BabylonJS/Babylon.js/pull/18915))
+- Widen input types in ProceduralTexture uniform setters - by [BarthPaleologue](https://github.com/BarthPaleologue) ([#18916](https://github.com/BabylonJS/Babylon.js/pull/18916))
+- Add ratified KHR_interactivity Phase 1 support - by [RaananW](https://github.com/RaananW) ([#18903](https://github.com/BabylonJS/Babylon.js/pull/18903))
+
+### Inspector
+
+- Add mesh blending post process - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18915](https://github.com/BabylonJS/Babylon.js/pull/18915))
+- Add Inspector Lite text and sprite layer support - [_New Feature_] by [ryantrem](https://github.com/ryantrem) ([#18905](https://github.com/BabylonJS/Babylon.js/pull/18905))
 
 ### Loaders
 
-- FBX loader: full format coverage, animation fidelity, DCC materials, NURBS, constraints - by [Pryme8](https://github.com/Pryme8) ([#18907](https://github.com/BabylonJS/Babylon.js/pull/18907))
-- Improve USD materials, instancing, morphs, and skinning - [_Bug Fix_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18900](https://github.com/BabylonJS/Babylon.js/pull/18900))
-- chore(deps): update dependencies securely - by [RaananW](https://github.com/RaananW) ([#18899](https://github.com/BabylonJS/Babylon.js/pull/18899))
+- Improve Gaussian splatting coarse-first streaming and local-space culling - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18910](https://github.com/BabylonJS/Babylon.js/pull/18910))
+- Add ratified KHR_interactivity Phase 1 support - by [RaananW](https://github.com/RaananW) ([#18903](https://github.com/BabylonJS/Babylon.js/pull/18903))
 
-### Sandbox
+### Node Geometry Editor
 
-- Improve USD materials, instancing, morphs, and skinning - [_Bug Fix_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18900](https://github.com/BabylonJS/Babylon.js/pull/18900))
+- Add WebMCP support to Node Geometry Editor - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18911](https://github.com/BabylonJS/Babylon.js/pull/18911))
 
-### Viewer
+### Node Render Graph Editor
 
-- Decouple Gaussian classification for effective tree shaking - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18909](https://github.com/BabylonJS/Babylon.js/pull/18909))
+- Add mesh blending post process - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18915](https://github.com/BabylonJS/Babylon.js/pull/18915))
