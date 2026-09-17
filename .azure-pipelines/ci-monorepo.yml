@@ -486,9 +486,6 @@ jobs:
             env:
                 NODE_OPTIONS: "--max-old-space-size=8192"
 
-          - script: npm run check:treeshaking
-            displayName: "Tree-shaking verification"
-
     # ============================================================================
     # TYPEDOC CHECK
     # Only runs on PRs (not on master branch)

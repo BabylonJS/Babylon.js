@@ -11,6 +11,35 @@ This package contains the Playwright-based test suites for Babylon.js:
 
 ## Running Tests Locally
 
+### Linting
+
+Run `npm run lint:check` from the repository root to lint production source and
+`*.test.*` / `*.spec.*` files under package `test` directories. Vitest unit tests
+have their own rules and globals; browser tests do not inherit Vitest rules.
+Tests use syntax-only TypeScript linting rather than production public-API
+conventions. JSON fixtures are formatted by Prettier, not parsed by ESLint.
+
+Formatting remains a separate check: `npm run format:check`. Use
+`npm run format` to fix source formatting. `npm run lint:advisory` also runs
+warning-level rules that normal quiet lint commands omit.
+
+For a fast local check, `npm run lint:changed` includes tracked changes and
+untracked lintable files relative to the branch's merge base. Use `-- --base <ref>`
+to select a different base, or `npm run lint:changed:fix` for ESLint autofixes.
+Changes to lint configuration or dependencies trigger a full, uncached lint.
+Changed-file and cached linting are development shortcuts: imported type changes
+can affect unchanged consumers, so CI runs the full scope without a file cache.
+Typed lint rules do not replace the TypeScript compiler/build checks.
+
+The rollout keeps test-style policies, sparse-array checks, and newly discovered
+nested PURE-annotation candidates advisory. Never annotate an effectful call
+just to silence a diagnostic; review whether it should move into registration.
+A small, explicitly listed set of legacy Promise-cache declarations, an existing async
+Promise executor, and assertion patterns unsupported by the installed Vitest
+rule retain nonblocking exceptions in `eslint.config.mjs`. Other source and
+test files get the strengthened checks. Generated Smart Filter blocks are
+excluded; lint their generator instead.
+
 ### Visualization tests (local browser)
 
 ```bash
