@@ -249,7 +249,6 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
     const fragmentShaderWithNoFunctionBodies = RemoveFunctionBodies(fragmentShader);
 
     // Collect uniform, const, and function names which need to be decorated
-    // eslint-disable-next-line prettier/prettier
     const uniformNames = uniforms.map((uniform) => uniform.name);
     log(`Uniforms found: ${JSON.stringify(uniforms)}`);
     const consts = [...fragmentShader.matchAll(/\S*const\s+\w*\s+(\w*)\s*=.*;/g)].map((match) => match[1]);

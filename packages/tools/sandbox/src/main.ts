@@ -32,6 +32,7 @@ if (import.meta.env.DEV) {
     // then show immediately. The inspector index attaches Scene.debugLayer as a side effect.
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (async () => {
+        // eslint-disable-next-line no-restricted-syntax -- This entry point registers the dev Inspector's debug-layer side effects.
         await import("inspector/index");
         Sandbox.Show(HostElement, { version: "dev", bundles: [] });
     })();
