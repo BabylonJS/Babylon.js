@@ -19,21 +19,30 @@ have their own rules and globals; browser tests do not inherit Vitest rules.
 Tests use syntax-only TypeScript linting rather than production public-API
 conventions. JSON fixtures are formatted by Prettier, not parsed by ESLint.
 
-Formatting remains a separate check: `npm run format:check`. Use
-`npm run format` to fix source formatting. `npm run lint:advisory` also runs
+Formatting remains a separate check: `npm run format:check`. Local formatting,
+pre-commit, and the CI Formatting step share the source/test scopes in
+`scripts/lint-globs.mjs`, including JSON under package `test` directories.
+Prettier overrides preserve the existing two-space `JSON.stringify` layout of
+serialized NME fixtures and bundle-size baselines.
+Use `npm run format` to fix formatting. `npm run lint:advisory` also runs
 warning-level rules that normal quiet lint commands omit.
 
 For a fast local check, `npm run lint:changed` includes tracked changes and
 untracked lintable files relative to the branch's merge base. Use `-- --base <ref>`
 to select a different base, or `npm run lint:changed:fix` for ESLint autofixes.
 Changes to lint configuration or dependencies trigger a full, uncached lint.
+Plugin source, package metadata, and compiler configuration changes also rebuild
+the plugin before changed-file linting consumes its compiled rules.
+Pre-commit uses the same rebuilding logic: staged plugin source edits rebuild
+the plugin before a full, uncached lint of source and tests.
 Changed-file and cached linting are development shortcuts: imported type changes
 can affect unchanged consumers, so CI runs the full scope without a file cache.
 Typed lint rules do not replace the TypeScript compiler/build checks.
 
 The rollout keeps test-style policies, sparse-array checks, and newly discovered
-nested PURE-annotation candidates advisory. Never annotate an effectful call
-just to silence a diagnostic; review whether it should move into registration.
+PURE-annotation candidates (including exported initializers) advisory. Never
+annotate an effectful call just to silence a diagnostic; review whether it
+should move into registration.
 A small, explicitly listed set of legacy Promise-cache declarations, an existing async
 Promise executor, and assertion patterns unsupported by the installed Vitest
 rule retain nonblocking exceptions in `eslint.config.mjs`. Other source and

@@ -112,8 +112,8 @@
         "prepare": "npm run build:tools && npm rebuild @dev/build-tools && npm run build:assets && npm run build:test-tools && node scripts/setupGitHooks.mjs",
         "clean": "npx nx run-many --outputStyle=static --target=clean --all --exclude=@babylonjs/root && npm run build:tools",
         "format": "npm run format:fix",
-        "format:check": "prettier --check \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
-        "format:fix": "prettier --write \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
+        "format:check": "node scripts/format.mjs --check",
+        "format:fix": "node scripts/format.mjs --write",
         "lint": "npm run lint:check",
         "lint:check": "node scripts/lint.mjs --quiet --cache && npm run check:treeshaking && npm run check:side-effects-sync",
         "lint:advisory": "node scripts/lint.mjs --no-cache",
@@ -126,17 +126,6 @@
         "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps",
         "start": "npx nx run-many --targets watch:dev:skip-compile serve --projects @babylonjs/root @tools/babylon-server --parallel 2 --skipNxCache true --outputStyle stream",
         "start:devhost": "npm run serve -w @tools/dev-host"
-    },
-    "lint-staged": {
-        "packages/**/src/**/*.{ts,tsx,js}": [
-            "prettier --write",
-            "eslint --quiet --cache --no-warn-ignored"
-        ],
-        "packages/**/test/**/*.{test,spec}.{ts,tsx,js}": [
-            "prettier --write",
-            "eslint --quiet --cache --no-warn-ignored"
-        ],
-        "packages/**/src/**/*.{json,scss,css}": "prettier --write"
     },
     "engines": {
         "node": "^20.19.0 || >=22.13.0 <23.0.0 || >=24.0.0 <25.0.0",

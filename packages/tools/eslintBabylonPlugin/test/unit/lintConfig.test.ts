@@ -1,9 +1,56 @@
 import { ESLint } from "eslint";
+import { spawnSync, type SpawnSyncOptions } from "node:child_process";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
+import { runFormat } from "../../../../../scripts/format.mjs";
+import { FormatFiles, FormatOnlyFiles, LintFiles } from "../../../../../scripts/lint-globs.mjs";
+import stagedConfig from "../../../../../lint-staged.config.mjs";
 
 const RepoRoot = fileURLToPath(new URL("../../../../../", import.meta.url));
 const SourceFile = "packages/dev/core/src/Misc/logger.ts";
+
+describe("repository formatting configuration", () => {
+    it("shares source, test-code, and JSON scopes across local commands, CI, and pre-commit", () => {
+        expect(FormatFiles).toEqual([...LintFiles, ...FormatOnlyFiles]);
+        const commands = JSON.parse(readFileSync(path.join(RepoRoot, "package.json"), "utf8")).scripts;
+        expect(commands["format:check"]).toBe("node scripts/format.mjs --check");
+        expect(commands["format:fix"]).toBe("node scripts/format.mjs --write");
+        expect(readFileSync(path.join(RepoRoot, ".azure-pipelines/ci-monorepo.yml"), "utf8")).toContain("- script: npm run format:check");
+        for (const pattern of FormatOnlyFiles) {
+            expect(stagedConfig[pattern]).toBe("prettier --write");
+        }
+    });
+
+    it("detects and fixes unformatted test code and test JSON through the full formatting command", () => {
+        const cwd = mkdtempSync(path.join(import.meta.dirname, ".format-fixture-"));
+        try {
+            for (const [file, content] of [
+                ["packages/a/src/source.ts", "export const Value = 1;\n"],
+                ["packages/a/src/data.json", "{}\n"],
+                ["packages/a/test/unit/example.test.ts", 'it("works",()=>{expect(1).toBe(1)})'],
+                ["packages/a/test/fixtures/data.json", '{"value":1}'],
+            ]) {
+                const fullPath = path.join(cwd, file);
+                mkdirSync(path.dirname(fullPath), { recursive: true });
+                writeFileSync(fullPath, content);
+            }
+            const options = {
+                cwd,
+                spawnSyncImpl: (command: string, args: string[], spawnOptions: SpawnSyncOptions) => spawnSync(command, args, { ...spawnOptions, encoding: "utf8", stdio: "pipe" }),
+            };
+            const check = runFormat(["--check"], options);
+            expect(check.status).toBe(1);
+            expect(check.stderr).toContain("example.test.ts");
+            expect(check.stderr.replaceAll("\\", "/")).toContain("test/fixtures/data.json");
+            expect(runFormat(["--write"], options).status).toBe(0);
+            expect(runFormat(["--check"], options).status).toBe(0);
+        } finally {
+            rmSync(cwd, { recursive: true, force: true });
+        }
+    });
+});
 
 describe("repository lint configuration", () => {
     const eslint = new ESLint({
@@ -22,6 +69,13 @@ describe("repository lint configuration", () => {
         expect(config.rules["import/no-internal-modules"]).toBeUndefined();
         expect(Object.keys(config.rules).filter((rule) => rule.startsWith("vitest/"))).toEqual([]);
         expect(config.languageOptions.parserOptions.projectService).toBe(true);
+    });
+
+    it("preserves required braces after the Prettier override", async () => {
+        const [result] = await eslint.lintText("export function Clamp(value: number): number { if (value < 0) return 0; return value; }", { filePath: SourceFile });
+        expect(result.messages.map((message) => message.ruleId)).toContain("curly");
+        const testConfig = await eslint.calculateConfigForFile("packages/dev/core/test/unit/Misc/observable.test.ts");
+        expect(testConfig.rules.curly[0]).toBe(0);
     });
 
     it("enforces focused tests and valid assertions without production type-service costs", async () => {
@@ -60,6 +114,16 @@ describe("repository lint configuration", () => {
         const config = await eslint.calculateConfigForFile("packages/dev/core/src/scene.pure.ts");
         expect(config.rules["babylonjs/require-pure-annotation"][0]).toBe(2);
         expect(config.rules["babylonjs/require-nested-pure-annotation"][0]).toBe(1);
+    });
+
+    it("reports exported PURE initializers exactly once as advisory without autofixes", async () => {
+        const pureLint = new ESLint({
+            cwd: RepoRoot,
+            ruleFilter: ({ ruleId }) => ruleId === "babylonjs/require-pure-annotation" || ruleId === "babylonjs/require-nested-pure-annotation",
+        });
+        const [result] = await pureLint.lintText("export const Value = new Widget();", { filePath: "packages/dev/core/src/scene.pure.ts" });
+        expect(result.messages).toEqual([expect.objectContaining({ ruleId: "babylonjs/require-nested-pure-annotation", severity: 1 })]);
+        expect(result.messages[0].fix).toBeUndefined();
     });
 
     it.each([

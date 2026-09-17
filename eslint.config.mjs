@@ -311,7 +311,6 @@ export default defineConfig(
 
             // Errors
             "no-throw-literal": "error",
-            curly: "error",
         },
     },
 
@@ -837,5 +836,13 @@ export default defineConfig(
             "babylonjs/no-super-in-accessor": "error",
         },
     },
-    eslintConfigPrettier
+    eslintConfigPrettier,
+    {
+        files: LintSourceFiles,
+        ignores: testSourceFiles,
+        // Requiring all braces is compatible with Prettier and remains a blocking policy.
+        rules: {
+            curly: ["error", "all"],
+        },
+    }
 );

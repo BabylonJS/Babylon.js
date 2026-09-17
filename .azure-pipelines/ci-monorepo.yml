@@ -478,7 +478,7 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npx prettier --list-different "./packages/**/src/**/*.{ts,tsx,js,json,scss,css}"
+          - script: npm run format:check
             displayName: "Formatting"
 
           - script: npm run lint:check-ci

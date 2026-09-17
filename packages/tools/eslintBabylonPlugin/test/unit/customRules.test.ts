@@ -2,6 +2,7 @@ import { RuleTester } from "eslint";
 import * as fs from "fs";
 import * as path from "path";
 import * as tsParser from "@typescript-eslint/parser";
+import { afterEach, describe, expect, test } from "vitest";
 import plugin from "../../src/index";
 import { SideEffectsManifestLoader } from "../../src/SideEffectsManifest";
 
@@ -244,6 +245,10 @@ ruleTester.run("require-pure-annotation", plugin.rules["require-pure-annotation"
     valid: [
         {
             filename: packageSourceFile("core"),
+            code: `export const value = new Widget();`,
+        },
+        {
+            filename: packageSourceFile("core"),
             code: `const value = condition ? new Widget() : null;`,
         },
         {
@@ -313,6 +318,12 @@ ruleTester.run("require-nested-pure-annotation", plugin.rules["require-nested-pu
         },
     ],
     invalid: [
+        {
+            filename: packageSourceFile("core"),
+            code: `export const value = new Widget();`,
+            errors: [{ messageId: "nested-pure-review" }],
+            output: null,
+        },
         {
             filename: packageSourceFile("core"),
             code: `const value = condition ? new Widget() : null;`,

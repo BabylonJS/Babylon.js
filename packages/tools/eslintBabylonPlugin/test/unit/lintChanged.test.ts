@@ -1,11 +1,21 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { globSync } from "glob";
 import path from "node:path";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import lintStagedConfig from "../../../../../lint-staged.config.mjs";
 import { isLintFile, LintFiles, LintSourceFiles, LintTestFiles } from "../../../../../scripts/lint-globs.mjs";
-import { parseArguments, requiresFullLint, runChangedLint, splitNullDelimited } from "../../../../../scripts/lint-changed.mjs";
+import { parseArguments, requiresFullLint, runChangedLint, runStagedLint, splitNullDelimited } from "../../../../../scripts/lint-changed.mjs";
 import { chunkFileArguments, completeChildProcess, runFullLint } from "../../../../../scripts/lint.mjs";
 
 const RepoRoot = path.resolve(import.meta.dirname, "../../../../..");
+const PluginBuildConfigFiles = [
+    "packages/tools/eslintBabylonPlugin/package.json",
+    "packages/tools/eslintBabylonPlugin/tsconfig.json",
+    "packages/tools/eslintBabylonPlugin/tsconfig.build.json",
+    "packages/tools/eslintBabylonPlugin/tsconfig.future.json",
+    "tsconfig.build.json",
+];
 let fixtureRoot: string | undefined;
 
 const writeFixture = (file: string, contents: string) => {
@@ -100,7 +110,10 @@ describe("changed lint execution", () => {
         writeFixture("packages/a/src/work tree.ts", "export const value = 2;\n");
         writeFixture("packages/a/src/-leading.ts", "export const value = 2;\n");
         rmSync(path.join(fixtureRoot!, "packages/a/src/deleted.ts"));
-        writeFixture("packages/a/src/unicode-λ\nfile.ts", "export const value = 1;\n");
+        writeFixture("packages/a/src/unicode-λ file.ts", "export const value = 1;\n");
+        if (process.platform !== "win32") {
+            writeFixture("packages/a/src/newline\nfile.ts", "export const value = 1;\n");
+        }
         writeFixture("packages/a/test/new file.test.ts", "it('works', () => {});\n");
         writeFixture("packages/a/test/not-a-test.ts", "export {};\n");
         writeFixture("packages/a/loose.ts", "export {};\n");
@@ -124,7 +137,8 @@ describe("changed lint execution", () => {
             "packages/a/src/-leading.ts",
             "packages/a/src/staged.ts",
             "packages/a/src/work tree.ts",
-            "packages/a/src/unicode-λ\nfile.ts",
+            ...(process.platform === "win32" ? [] : ["packages/a/src/newline\nfile.ts"]),
+            "packages/a/src/unicode-λ file.ts",
             "packages/a/test/new file.test.ts",
         ]);
         expect(calls[0].args).not.toContain("packages/a/src/deleted.ts");
@@ -200,8 +214,10 @@ describe("changed lint execution", () => {
 
     it.each([
         "eslint.config.mjs",
+        "lint-staged.config.mjs",
         "package.json",
         "package-lock.json",
+        "scripts/format.mjs",
         "tsconfig.test.json",
         "packages/dev/core/package.json",
         "packages/dev/core/tsconfig.build.json",
@@ -210,11 +226,124 @@ describe("changed lint execution", () => {
         "scripts/lint-globs.mjs",
         "scripts/lint-changed.mjs",
         "tsdoc.json",
+        ...PluginBuildConfigFiles,
         "packages/tools/eslintBabylonPlugin/src/nested\nfolder/rule.ts",
         "scripts/treeshaking/side-effects-manifest/core/rendering.json",
         "scripts/treeshaking/side-effects-manifest.json",
     ])("treats %s as a full-lint trigger", (file) => {
         expect(requiresFullLint(file)).toBe(true);
+    });
+});
+
+describe("staged lint execution", () => {
+    it("uses one staged batch for source and test files without broadening the test scope", () => {
+        fixtureRoot = mkdtempSync(path.join(import.meta.dirname, ".lint-changed-test-repo-"));
+        const files = ["packages/a/src/source.ts", "packages/a/src/nested/source.js", "packages/a/test/nested/check.test.ts", "packages/a/test/check.spec.tsx"];
+        for (const file of [...files, "packages/a/test/helper.ts", "packages/a/src/fixture.json"]) {
+            writeFixture(file, "");
+        }
+        const patterns = Object.keys(lintStagedConfig).filter((pattern) => Array.isArray(lintStagedConfig[pattern]));
+        expect(patterns).toHaveLength(1);
+        expect(globSync(patterns, { cwd: fixtureRoot }).sort()).toEqual(files.sort());
+        expect(lintStagedConfig[patterns[0]]).toEqual(["prettier --write", "node scripts/lint-changed.mjs --staged"]);
+        const formatOnlyCommands = Object.values(lintStagedConfig).filter((commands) => typeof commands === "string");
+        expect(formatOnlyCommands.length).toBeGreaterThan(0);
+        expect(new Set(formatOnlyCommands)).toEqual(new Set(["prettier --write"]));
+    });
+
+    it("rebuilds staged plugin sources before uncached lint of every source and test file", () => {
+        const calls: string[][] = [];
+        runStagedLint([path.join(RepoRoot, "packages/tools/eslintBabylonPlugin/src/index.ts"), path.join(RepoRoot, "packages/a/test/check.test.ts")], {
+            cwd: RepoRoot,
+            eslintPath: "local-eslint.js",
+            typescriptPath: "local-tsc.js",
+            log: () => {},
+            spawnSyncImpl: (_command: string, args: string[]) => {
+                calls.push(args);
+                return { status: 0, signal: null };
+            },
+        });
+        expect(calls).toEqual([
+            ["local-tsc.js", "-b", "packages/tools/eslintBabylonPlugin/tsconfig.build.json"],
+            ["local-eslint.js", "--quiet", "--no-warn-ignored", "--no-cache", "--", ...LintFiles],
+        ]);
+    });
+
+    it("stops when the plugin build fails rather than using stale rules", () => {
+        const spawn = vi.fn(() => ({ status: 2, signal: null }));
+        const result = runStagedLint(["packages/tools/eslintBabylonPlugin/src/index.ts"], {
+            cwd: RepoRoot,
+            typescriptPath: "local-tsc.js",
+            spawnSyncImpl: spawn,
+            log: () => {},
+        });
+        expect(result.status).toBe(2);
+        expect(spawn).toHaveBeenCalledTimes(1);
+    });
+
+    it.each(PluginBuildConfigFiles)("rebuilds for staged plugin build config %s before uncached full lint", (file) => {
+        const calls: string[][] = [];
+        runStagedLint([file], {
+            cwd: RepoRoot,
+            eslintPath: "local-eslint.js",
+            typescriptPath: "local-tsc.js",
+            log: () => {},
+            spawnSyncImpl: (_command: string, args: string[]) => {
+                calls.push(args);
+                return { status: 0, signal: null };
+            },
+        });
+        expect(calls).toEqual([
+            ["local-tsc.js", "-b", "packages/tools/eslintBabylonPlugin/tsconfig.build.json"],
+            ["local-eslint.js", "--quiet", "--no-warn-ignored", "--no-cache", "--", ...LintFiles],
+        ]);
+    });
+
+    it.each(PluginBuildConfigFiles)("stops after a failed rebuild for staged plugin build config %s", (file) => {
+        const spawn = vi.fn(() => ({ status: 2, signal: null }));
+        const result = runStagedLint([file], {
+            cwd: RepoRoot,
+            typescriptPath: "local-tsc.js",
+            spawnSyncImpl: spawn,
+            log: () => {},
+        });
+        expect(result.status).toBe(2);
+        expect(spawn).toHaveBeenCalledTimes(1);
+    });
+
+    it.each(["lint-staged.config.mjs", "scripts/format.mjs"])("runs uncached full lint without rebuilding the plugin for %s", (file) => {
+        const calls: string[][] = [];
+        runStagedLint([file], {
+            cwd: RepoRoot,
+            eslintPath: "local-eslint.js",
+            log: () => {},
+            spawnSyncImpl: (_command: string, args: string[]) => {
+                calls.push(args);
+                return { status: 0, signal: null };
+            },
+        });
+        expect(calls).toEqual([["local-eslint.js", "--quiet", "--no-warn-ignored", "--no-cache", "--", ...LintFiles]]);
+    });
+
+    it("lints only the supplied ordinary files and preserves unusual filenames", () => {
+        const calls: string[][] = [];
+        const file = "packages/a/src/name with space\nand-λ.ts";
+        runStagedLint([path.join(RepoRoot, file), file], {
+            cwd: RepoRoot,
+            eslintPath: "local-eslint.js",
+            log: () => {},
+            spawnSyncImpl: (_command: string, args: string[]) => {
+                calls.push(args);
+                return { status: 0, signal: null };
+            },
+        });
+        expect(calls).toEqual([["local-eslint.js", "--quiet", "--no-warn-ignored", "--cache", "--", file]]);
+    });
+
+    it.each([{ args: [] }, { args: ["--fix"] }])("rejects invalid staged arguments: $args", ({ args }) => {
+        const result = spawnSync(process.execPath, [path.join(RepoRoot, "scripts/lint-changed.mjs"), "--staged", ...args], { encoding: "utf8" });
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain("--staged requires file paths");
     });
 });
 
