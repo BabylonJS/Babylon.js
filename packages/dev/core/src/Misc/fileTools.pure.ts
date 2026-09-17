@@ -216,6 +216,30 @@ export const LoadImage = (
         return null;
     }
 
+    if (engine?._features.forceBitmapOverHTMLImageElement && typeof input !== "string" && typeof Blob !== "undefined") {
+        let blob: Blob;
+
+        if (input instanceof Blob) {
+            blob = input;
+        } else {
+            const source = input instanceof ArrayBuffer ? input : GetBlobBufferSource(input);
+            blob = new Blob([source], { type: mimeType });
+        }
+
+        engine
+            .createImageBitmap(blob, { premultiplyAlpha: "none", colorSpaceConversion: "none", ...imageBitmapOptions })
+            // eslint-disable-next-line github/no-then
+            .then(onLoad)
+            // eslint-disable-next-line github/no-then
+            .catch((reason) => {
+                if (onError) {
+                    onError("Error while trying to load image: " + input, reason);
+                }
+            });
+
+        return null;
+    }
+
     let url: string;
     let usingObjectURL = false;
 

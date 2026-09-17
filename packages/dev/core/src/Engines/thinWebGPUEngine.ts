@@ -34,6 +34,8 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
     public _cacheRenderPipeline: WebGPUCacheRenderPipeline;
     /** @internal */
     public _occlusionQuery: WebGPUOcclusionQuery;
+    /** @internal */
+    public _occlusionQueryActive = false;
 
     // Frame Life Cycle (recreated each frame)
     /** @internal */
@@ -43,6 +45,11 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
 
     /** @internal */
     public _currentRenderPass: Nullable<GPURenderPassEncoder> = null;
+
+    /** @internal */
+    public _getCurrentRenderPass(): Nullable<GPURenderPassEncoder> {
+        return this._currentRenderPass;
+    }
 
     protected _snapshotRendering: WebGPUSnapshotRendering;
     protected _snapshotRenderingMode = Constants.SNAPSHOTRENDERING_STANDARD;

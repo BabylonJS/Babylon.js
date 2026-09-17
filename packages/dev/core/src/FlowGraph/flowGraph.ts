@@ -118,6 +118,11 @@ export class FlowGraph {
     public uniqueId: string;
 
     /**
+     * Optional host-format metadata associated with this graph.
+     */
+    public metadata?: any;
+
+    /**
      * Define the URL to load the flow graph editor script from.
      */
     public static EditorURL = `${Tools._DefaultCdnUrl}/v${AbstractEngine.Version}/flowGraphEditor/babylon.flowGraphEditor.js`;
@@ -690,6 +695,9 @@ export class FlowGraph {
     public serialize(serializationObject: any = {}, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject.name = this.name;
         serializationObject.uniqueId = this.uniqueId;
+        if (this.metadata !== undefined) {
+            serializationObject.metadata = this.metadata;
+        }
         serializationObject.allBlocks = [];
         // Collect all blocks: traversal-reachable ones plus any registered
         // orphans in _allBlocks (e.g. disconnected blocks in the editor).

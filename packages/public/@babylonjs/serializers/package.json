@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/serializers",
-    "version": "9.26.2",
+    "version": "9.27.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -18,10 +18,10 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "9.26.2",
+        "@babylonjs/core": "9.27.0",
         "@dev/build-tools": "^1.0.0",
         "@dev/serializers": "^1.0.0",
-        "babylonjs-gltf2interface": "9.26.2"
+        "babylonjs-gltf2interface": "9.27.0"
     },
     "peerDependencies": {
         "@babylonjs/core": "^9.0.0",
@@ -46,6 +46,7 @@
         "glTF/2.0/Extensions/EXT_texture_avif.js",
         "glTF/2.0/Extensions/EXT_texture_webp.js",
         "glTF/2.0/Extensions/KHR_draco_mesh_compression.js",
+        "glTF/2.0/Extensions/KHR_interactivity.js",
         "glTF/2.0/Extensions/KHR_lights_punctual.js",
         "glTF/2.0/Extensions/KHR_materials_anisotropy.js",
         "glTF/2.0/Extensions/KHR_materials_diffuse_roughness.js",

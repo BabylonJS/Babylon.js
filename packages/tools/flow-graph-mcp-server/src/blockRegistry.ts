@@ -330,7 +330,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         dataOutputs: [],
         config: {
             eventId: "string — the custom event identifier",
-            eventData: "Record<string, { type: RichType }> — dynamic data inputs are created from this",
+            eventData: "Record<string, { type: RichType; value?: unknown }> — dynamic data inputs are created from this; value is the optional serialized default",
         },
     },
 
@@ -354,7 +354,7 @@ export const FlowGraphBlockRegistry: Record<string, IFlowGraphBlockTypeInfo> = {
         ],
         config: {
             eventId: "string — must match the sender's eventId",
-            eventData: "Record<string, { type: RichType }> — dynamic data outputs are created from this",
+            eventData: "Record<string, { type: RichType; value?: unknown }> — dynamic data outputs are created from this; value is the optional serialized default",
         },
     },
 

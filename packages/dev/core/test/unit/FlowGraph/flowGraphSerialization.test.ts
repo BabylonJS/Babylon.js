@@ -7,16 +7,20 @@ import {
     FlowGraphConstantBlock,
     FlowGraphCoordinator,
     FlowGraphGetVariableBlock,
+    FlowGraphInteger,
     FlowGraphConsoleLogBlock,
     FlowGraphDivideBlock,
     FlowGraphMultiGateBlock,
     FlowGraphMultiplyBlock,
     FlowGraphPlayAnimationBlock,
     FlowGraphSceneReadyEventBlock,
+    FlowGraphSendCustomEventBlock,
+    FlowGraphReceiveCustomEventBlock,
     FlowGraphSetPropertyBlock,
     FlowGraphSubtractBlock,
     FlowGraphStopAnimationBlock,
     RichTypeNumber,
+    RichTypeFlowGraphInteger,
     RichTypeVector3,
     ParseGraphDataConnection,
     ParseFlowGraphBlockWithClassType,
@@ -31,7 +35,7 @@ import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { FlowGraphEventType } from "core/FlowGraph/flowGraphEventType";
 import { FlowGraphPathConverter } from "core/FlowGraph/flowGraphPathConverter";
-import { defaultValueSerializationFunction } from "core/FlowGraph/serialization";
+import { defaultValueParseFunction, defaultValueSerializationFunction } from "core/FlowGraph/serialization";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Vector3 } from "core/Maths";
 import { Mesh } from "core/Meshes";
@@ -72,6 +76,7 @@ describe("Flow Graph Serialization", () => {
         const block = {} as any;
         block.uniqueId = "test";
         const connection = new FlowGraphDataConnection("test", FlowGraphConnectionType.Input, block, RichTypeNumber);
+        connection.metadata = { source: { socket: "value" } };
         const serialized: any = {};
         connection.serialize(serialized);
 
@@ -82,6 +87,7 @@ describe("Flow Graph Serialization", () => {
         expect(serialized.className).toEqual("FlowGraphDataConnection");
         expect(serialized.richType.typeName).toEqual("number");
         expect(serialized.richType.defaultValue).toEqual(0);
+        expect(serialized.metadata).toEqual(connection.metadata);
 
         const parsed = ParseGraphDataConnection(serialized, block, FlowGraphDataConnection);
         expect(parsed.uniqueId).toEqual(connection.uniqueId);
@@ -90,6 +96,7 @@ describe("Flow Graph Serialization", () => {
         expect(parsed.getClassName()).toEqual("FlowGraphDataConnection");
         expect(parsed.richType.typeName).toEqual("number");
         expect(parsed.richType.defaultValue).toEqual(0);
+        expect(parsed.metadata).toEqual(connection.metadata);
 
         const connection2 = new FlowGraphDataConnection("test2", FlowGraphConnectionType.Output, block, RichTypeNumber);
         connection.connectTo(connection2);
@@ -118,12 +125,184 @@ describe("Flow Graph Serialization", () => {
         expect(parsed3.richType.defaultValue.z).toEqual(0);
     });
 
+    it("preserves prototype-like custom event payload ids as own properties", () => {
+        const emptyReceive = new FlowGraphReceiveCustomEventBlock({ eventId: "event", eventData: {} });
+        const legacySerializedReceive: any = {};
+        emptyReceive.serialize(legacySerializedReceive);
+        legacySerializedReceive.config.eventData = [
+            {
+                eventData: true,
+                id: "__proto__",
+                type: "number",
+                value: { type: "number", value: [5] },
+            },
+        ];
+        const parsedLegacyReceive = ParseFlowGraphBlockWithClassType(legacySerializedReceive, { scene }, FlowGraphReceiveCustomEventBlock) as FlowGraphReceiveCustomEventBlock;
+        const eventData = parsedLegacyReceive.config.eventData;
+        expect(Object.prototype.hasOwnProperty.call(eventData, "__proto__")).toBe(true);
+        Object.defineProperty(eventData, "position", {
+            configurable: true,
+            enumerable: true,
+            value: { type: RichTypeVector3, value: new Vector3(1, 2, 3) },
+            writable: true,
+        });
+
+        const send = new FlowGraphSendCustomEventBlock({ eventId: "event", eventData });
+        const receive = new FlowGraphReceiveCustomEventBlock({ eventId: "event", eventData });
+        expect(send.getDataInput("__proto__")).toBeDefined();
+        expect(receive.getDataOutput("__proto__")).toBeDefined();
+
+        const serialized: any = {};
+        send.serialize(serialized);
+        expect(Object.prototype.hasOwnProperty.call(serialized.config.eventData, "__proto__")).toBe(true);
+
+        const serializedReceive: any = {};
+        receive.serialize(serializedReceive);
+        expect(Object.prototype.hasOwnProperty.call(serializedReceive.config.eventData, "__proto__")).toBe(true);
+        expect(serializedReceive.config.eventData["__proto__"].value).toBe(5);
+        const parsedReceive = ParseFlowGraphBlockWithClassType(serializedReceive, { scene }, FlowGraphReceiveCustomEventBlock) as FlowGraphReceiveCustomEventBlock;
+        expect(parsedReceive.config.eventData.position.value).toEqual(new Vector3(1, 2, 3));
+    });
+
+    it("passes the complete custom event schema to an explicit value parser", () => {
+        const receive = new FlowGraphReceiveCustomEventBlock({
+            eventId: "event",
+            eventData: { score: { type: RichTypeNumber, value: 5 } },
+        });
+        const serialized: any = {};
+        receive.serialize(serialized);
+        const valueParseFunction = vi.fn((key: string, serializationObject: any, assetsContainer: any, parseScene: Scene) => {
+            if (key === "eventData") {
+                return { score: { type: RichTypeNumber, value: 42 } };
+            }
+            return defaultValueParseFunction(key, serializationObject, assetsContainer, parseScene);
+        });
+
+        const parsed = ParseFlowGraphBlockWithClassType(serialized, { scene, valueParseFunction }, FlowGraphReceiveCustomEventBlock) as FlowGraphReceiveCustomEventBlock;
+
+        expect(valueParseFunction).toHaveBeenCalledWith("eventData", serialized.config, scene, scene);
+        expect(parsed.config.eventData.score.value).toBe(42);
+    });
+
+    it("applies scoped event decoding across Send and Receive when an explicit value parser delegates to the default", () => {
+        const eventData = { value: { type: RichTypeNumber, value: 5 } };
+        const send = new FlowGraphSendCustomEventBlock({ eventId: "event", eventData });
+        const receive = new FlowGraphReceiveCustomEventBlock({
+            eventId: "event",
+            eventData,
+        });
+        const valueParseFunction = vi.fn(defaultValueParseFunction);
+        const serializedSend: any = {};
+        send.serialize(serializedSend);
+        const serializedReceive: any = {};
+        receive.serialize(serializedReceive);
+
+        const parsedSend = ParseFlowGraphBlockWithClassType(serializedSend, { scene, valueParseFunction }, FlowGraphSendCustomEventBlock) as FlowGraphSendCustomEventBlock;
+        const parsedReceive = ParseFlowGraphBlockWithClassType(
+            serializedReceive,
+            { scene, valueParseFunction },
+            FlowGraphReceiveCustomEventBlock
+        ) as FlowGraphReceiveCustomEventBlock;
+
+        expect(valueParseFunction).toHaveBeenCalledWith("eventData", serializedSend.config, scene, scene);
+        expect(valueParseFunction).toHaveBeenCalledWith("eventData", serializedReceive.config, scene, scene);
+        expect(parsedSend.getDataInput("value")).toBeDefined();
+        expect(parsedReceive.getDataOutput("value")).toBeDefined();
+        expect(parsedSend.config.eventData.value.value).toBe(5);
+        expect(parsedReceive.config.eventData.value.value).toBe(5);
+    });
+
+    it("applies delegated scoped event decoding to importer-shaped arrays across Send and Receive", () => {
+        const send = new FlowGraphSendCustomEventBlock({ eventId: "event", eventData: {} });
+        const receive = new FlowGraphReceiveCustomEventBlock({ eventId: "event", eventData: {} });
+        const serializedSend: any = {};
+        const serializedReceive: any = {};
+        send.serialize(serializedSend);
+        receive.serialize(serializedReceive);
+        const eventData = [
+            {
+                eventData: true,
+                id: "score",
+                type: "number",
+                value: { type: "number", value: [5] },
+            },
+        ];
+        serializedSend.config.eventData = eventData;
+        serializedReceive.config.eventData = eventData;
+        const valueParseFunction = vi.fn((key: string, serializationObject: any, assetsContainer: any, parseScene: Scene) =>
+            defaultValueParseFunction(key, serializationObject, assetsContainer, parseScene)
+        );
+
+        const parsedSend = ParseFlowGraphBlockWithClassType(serializedSend, { scene, valueParseFunction }, FlowGraphSendCustomEventBlock) as FlowGraphSendCustomEventBlock;
+        const parsedReceive = ParseFlowGraphBlockWithClassType(
+            serializedReceive,
+            { scene, valueParseFunction },
+            FlowGraphReceiveCustomEventBlock
+        ) as FlowGraphReceiveCustomEventBlock;
+
+        expect(parsedSend.getDataInput("score")).toBeDefined();
+        expect(parsedReceive.getDataOutput("score")).toBeDefined();
+        expect(parsedSend.getDataInput("0")).toBeUndefined();
+        expect(parsedReceive.getDataOutput("0")).toBeUndefined();
+        expect(parsedSend.config.eventData.score.value).toBe(5);
+        expect(parsedReceive.config.eventData.score.value).toBe(5);
+    });
+
+    it("preserves a typed default reconstructed by an in-place custom event parser", () => {
+        const receive = new FlowGraphReceiveCustomEventBlock({
+            eventId: "event",
+            eventData: { value: { type: RichTypeFlowGraphInteger, value: new FlowGraphInteger(5) } },
+        });
+        const serialized: any = {};
+        receive.serialize(serialized);
+        const valueParseFunction = vi.fn((key: string, serializationObject: any, assetsContainer: any, parseScene: Scene) => {
+            if (key === "eventData") {
+                serializationObject.eventData.value.type = RichTypeFlowGraphInteger;
+                serializationObject.eventData.value.value = new FlowGraphInteger(5);
+                return serializationObject.eventData;
+            }
+            return defaultValueParseFunction(key, serializationObject, assetsContainer, parseScene);
+        });
+
+        const parsed = ParseFlowGraphBlockWithClassType(serialized, { scene, valueParseFunction }, FlowGraphReceiveCustomEventBlock) as FlowGraphReceiveCustomEventBlock;
+
+        expect(parsed.config.eventData.value.value).toBeInstanceOf(FlowGraphInteger);
+        expect(parsed.config.eventData.value.value.value).toBe(5);
+    });
+
+    it("round-trips Send and Receive custom-event sockets named value through a full graph parse", () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const eventData = { value: { type: RichTypeNumber, value: 5 } };
+        const send = new FlowGraphSendCustomEventBlock({ eventId: "event", eventData });
+        const receive = new FlowGraphReceiveCustomEventBlock({ eventId: "event", eventData });
+        graph.addBlock(send);
+        graph.addBlock(receive);
+        graph.addEventBlock(receive);
+        const serialized: any = {};
+        graph.serialize(serialized);
+
+        const parsed = ParseFlowGraph(
+            serialized,
+            { coordinator },
+            serialized.allBlocks.map((block: any) => (block.className === send.getClassName() ? FlowGraphSendCustomEventBlock : FlowGraphReceiveCustomEventBlock))
+        );
+        const parsedSend = parsed.getAllBlocks().find((block) => block.getClassName() === send.getClassName()) as FlowGraphSendCustomEventBlock;
+        const parsedReceive = parsed.getAllBlocks().find((block) => block.getClassName() === receive.getClassName()) as FlowGraphReceiveCustomEventBlock;
+
+        expect(parsedSend.getDataInput("value")).toBeDefined();
+        expect(parsedReceive.getDataOutput("value")).toBeDefined();
+        expect(parsedSend.config.eventData.value.value).toBe(5);
+        expect(parsedReceive.config.eventData.value.value).toBe(5);
+    });
+
     it("Serializes and parses a block", () => {
         // Serialize a block with path
         // const mockContext: any = vi.mock("core/FlowGraph/flowGraphContext") as any;
         // const pathConverter = new FlowGraphPathConverter(mockContext);
 
         const block = new FlowGraphPlayAnimationBlock();
+        block.metadata = { source: { node: 3 } };
 
         const serialized: any = {};
         block.serialize(serialized);
@@ -133,6 +312,7 @@ describe("Flow Graph Serialization", () => {
         expect(serialized.dataInputs.length).toEqual(block.dataInputs.length);
         expect(serialized.dataOutputs.length).toEqual(block.dataOutputs.length);
         expect(serialized.className).toEqual("FlowGraphPlayAnimationBlock");
+        expect(serialized.metadata).toEqual(block.metadata);
 
         const parsed = ParseFlowGraphBlockWithClassType(serialized, { scene }, FlowGraphPlayAnimationBlock);
         expect(parsed.uniqueId).toEqual(block.uniqueId);
@@ -141,6 +321,7 @@ describe("Flow Graph Serialization", () => {
         expect(parsed.dataOutputs.length).toEqual(block.dataOutputs.length);
         expect((parsed as FlowGraphExecutionBlock).signalInputs.length).toEqual(block.signalInputs.length);
         expect((parsed as FlowGraphExecutionBlock).signalOutputs.length).toEqual(block.signalOutputs.length);
+        expect(parsed.metadata).toEqual(block.metadata);
 
         // Serialize a block with configuration
         const multiGateBlock = new FlowGraphMultiGateBlock({ outputSignalCount: 3, name: "MultiGate" });
@@ -209,12 +390,30 @@ describe("Flow Graph Serialization", () => {
         expect(parsed.getVariable("test4").uniqueId).toEqual(mesh.uniqueId);
     });
 
+    it.each([
+        ["ordinary object", { score: 42 }],
+        ["ordinary object with a value property", { value: 5 }],
+        ["typed value", new Vector3(1, 2, 3)],
+    ])("preserves an %s stored in a context variable named eventData", (_description, value) => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const context = graph.createContext();
+        context.setVariable("eventData", value);
+
+        const serialized: any = {};
+        context.serialize(serialized);
+        const parsed = ParseFlowGraphContext(serialized, { graph });
+
+        expect(parsed.getVariable("eventData")).toEqual(value);
+    });
+
     it("Serializes and parses a graph", async () => {
         const mockContext: any = {};
         const pathConverter = new FlowGraphPathConverter(mockContext);
 
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = coordinator.createGraph();
+        graph.metadata = { source: { graph: 2 } };
         const context = graph.createContext();
 
         context.setVariable("test", 42);
@@ -235,6 +434,7 @@ describe("Flow Graph Serialization", () => {
         expect(serialized.allBlocks.length).toBe(3);
 
         const parsed = await ParseFlowGraphAsync(serialized, { coordinator, pathConverter });
+        expect(parsed.metadata).toEqual(graph.metadata);
         expect(parsed._eventBlocks[FlowGraphEventType.SceneReady].length).toBe(1);
         parsed.start();
 
