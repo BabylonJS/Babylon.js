@@ -22,18 +22,11 @@ declare module "../../Engines/abstractEngine.pure" {
         /**
          * Gets the backend-specific value of a query.
          * For an available occlusion query, only zero (no samples passed) versus a positive value (samples passed) is portable across backends.
-         * The magnitude of a positive value is backend-dependent and should not be relied upon. Use isOcclusionQueryVisible when only visibility is needed.
+         * The magnitude of a positive value is backend-dependent and should not be relied upon.
          * @param query defines the query to check
          * @returns the raw backend query value
          */
         getQueryResult(query: OcclusionQuery): number;
-        /**
-         * Checks whether an available occlusion query indicates that any samples passed.
-         * This normalizes backend-specific query values without changing the raw value returned by getQueryResult.
-         * @param query defines the occlusion query to check
-         * @returns true when the query result is greater than zero, otherwise false
-         */
-        isOcclusionQueryVisible(query: OcclusionQuery): boolean;
         /**
          * Initiates an occlusion query
          * @param algorithmType defines the algorithm to use
