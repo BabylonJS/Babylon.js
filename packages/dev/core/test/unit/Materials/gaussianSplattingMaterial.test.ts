@@ -97,4 +97,24 @@ describe("GaussianSplattingMaterial", () => {
         expect(setFloat2).toHaveBeenCalledWith("focal", expect.closeTo(leftFocal, 10), expect.closeTo(leftFocal, 10));
         expect(setFloat2).toHaveBeenCalledWith("focal", expect.closeTo(rightFocal, 10), expect.closeTo(rightFocal, 10));
     });
+
+    it("keeps focal axes square for a side-by-side rig camera", () => {
+        const rigParent = new FreeCamera("rigParent", Vector3.Zero(), scene);
+        const rigCamera = new FreeCamera("rigCamera", Vector3.Zero(), scene);
+        const secondRigCamera = new FreeCamera("secondRigCamera", Vector3.Zero(), scene);
+        rigCamera.fov = 0.8;
+        rigCamera.fovMode = Camera.FOVMODE_HORIZONTAL_FIXED;
+        rigCamera.viewport.width = 0.5;
+        rigCamera.rigParent = rigParent;
+        secondRigCamera.rigParent = rigParent;
+        rigParent._rigCameras.push(rigCamera, secondRigCamera);
+        scene.activeCamera = rigCamera;
+
+        GaussianSplattingMaterial.BindEffect({ material } as unknown as Mesh, effect, scene);
+
+        const eyeWidth = engine.getRenderWidth() * rigCamera.viewport.width;
+        const expectedFocal = eyeWidth / 2 / Math.tan(rigCamera.fov / 2);
+        expect(setFloat2).toHaveBeenCalledWith("invViewport", 1 / (eyeWidth / 2), 1 / engine.getRenderHeight());
+        expect(setFloat2).toHaveBeenCalledWith("focal", expect.closeTo(expectedFocal, 10), expect.closeTo(expectedFocal, 10));
+    });
 });

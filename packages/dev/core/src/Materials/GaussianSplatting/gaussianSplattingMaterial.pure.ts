@@ -257,8 +257,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
     ];
     private _sourceMesh: GaussianSplattingMesh | null = null;
 
-    private static _BindViewportAndFocal(effect: Effect, camera: Camera | null, renderWidth: number, renderHeight: number): void {
-        effect.setFloat2("invViewport", 1 / renderWidth, 1 / renderHeight);
+    private static _BindViewportAndFocal(effect: Effect, camera: Camera | null, renderWidth: number, renderHeight: number, invViewportWidth = renderWidth): void {
+        effect.setFloat2("invViewport", 1 / invViewportWidth, 1 / renderHeight);
 
         if (camera) {
             const projection = camera.getProjectionMatrix();
@@ -483,7 +483,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         // check if rigcamera, get number of rigs
         const numberOfRigs = camera?.rigParent?.rigCameras.length || 1;
 
-        GaussianSplattingMaterial._BindViewportAndFocal(effect, camera, renderWidth / numberOfRigs, renderHeight);
+        GaussianSplattingMaterial._BindViewportAndFocal(effect, camera, renderWidth, renderHeight, renderWidth / numberOfRigs);
         effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
         effect.setFloat("minPixelSize", gsMaterial ? gsMaterial.minPixelSize : GaussianSplattingMaterial.MinPixelSize);
         effect.setFloat("alpha", gsMaterial.alpha);
