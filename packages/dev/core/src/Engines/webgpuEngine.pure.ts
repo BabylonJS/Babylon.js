@@ -1349,6 +1349,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     /** @internal */
     public override _getCurrentRenderPass(): GPURenderPassEncoder {
+        let depthFunction: Nullable<number> | undefined;
+
         if (
             this.compatibilityMode &&
             this._currentRenderPass &&
@@ -1357,6 +1359,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this._occlusionQuery?.hasQueries &&
             this._getCurrentRenderPassWrapper().renderPassDescriptor?.occlusionQuerySet !== this._occlusionQuery.querySet
         ) {
+            depthFunction = this._depthCullingState.depthFunc;
             this._snapshotRendering.handleRenderPassRestart();
             this._endCurrentRenderPass();
         }
@@ -1366,6 +1369,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this._startRenderTargetRenderPass(this._currentRenderTarget, false, null, false, false);
         } else if (!this._currentRenderPass) {
             this._startMainRenderPass(false);
+        }
+
+        if (depthFunction !== undefined) {
+            this._depthCullingState.depthFunc = depthFunction;
         }
 
         return this._currentRenderPass!;

@@ -9,6 +9,7 @@ import { WebGPUSnapshotRendering } from "core/Engines/WebGPU/webgpuSnapshotRende
 import { WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRenderTargetWrapper";
 import { type WebGPUHardwareTexture } from "core/Engines/WebGPU/webgpuHardwareTexture";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
+import { RegisterAbstractEngineStates } from "core/Engines/AbstractEngine/abstractEngine.states.pure";
 import { describe, expect, it, vi } from "vitest";
 
 type RenderPassDescriptor = Parameters<GPUCommandEncoder["beginRenderPass"]>[0];
@@ -34,6 +35,9 @@ interface WebGPUEngineRenderPassInternals {
     };
     _occlusionQuery: ThinWebGPUEngine["_occlusionQuery"];
     _occlusionQueryActive: boolean;
+    _depthCullingState: {
+        depthFunc: number | null;
+    };
     _bundleList: WebGPUBundleList;
     _snapshotRendering: {
         handleRenderPassRestart(): void;
@@ -144,6 +148,7 @@ describe("WebGPU engine queries", () => {
             hasQueries: true,
             querySet,
         } as ThinWebGPUEngine["_occlusionQuery"];
+        engine._depthCullingState = { depthFunc: Constants.LEQUAL };
         engine._snapshotRendering = { handleRenderPassRestart: vi.fn() };
         engine._endCurrentRenderPass = vi.fn(() => {
             engine._currentRenderPass = null;
@@ -193,6 +198,7 @@ describe("WebGPU engine queries", () => {
             engine._mainRenderPassWrapper = {
                 renderPassDescriptor: { occlusionQuerySet: engine._occlusionQuery.querySet },
             };
+            engine._depthCullingState = { depthFunc: Constants.LEQUAL };
             engine._snapshotRendering = { handleRenderPassRestart: vi.fn() };
             engine._endCurrentRenderPass = vi.fn(() => {
                 engine._currentRenderPass = null;
@@ -317,7 +323,9 @@ describe("WebGPU engine queries", () => {
         }
     });
 
-    it("preserves the selected 3D render target slice when restarting a compatibility pass", () => {
+    it("preserves render state when restarting a 3D compatibility render target pass", () => {
+        RegisterAbstractEngineStates();
+
         const engine = Object.create(WebGPUEngine.prototype) as WebGPUEngineRenderPassInternals;
         const colorTexture = {} as GPUTexture;
         const colorView = {} as GPUTextureView;
@@ -376,7 +384,8 @@ describe("WebGPU engine queries", () => {
         engine._timestampIndex = 0;
         engine._internalFrameCounter = 0;
         engine._frameId = 1;
-        Object.defineProperty(engine, "useReverseDepthBuffer", { value: false });
+        Object.defineProperty(engine, "useReverseDepthBuffer", { value: true });
+        engine._depthCullingState = { depthFunc: Constants.LEQUAL };
         engine._stencilStateComposer = { enabled: true };
         engine._endCurrentRenderPass = vi.fn(() => {
             engine._currentRenderPass = null;
@@ -386,6 +395,8 @@ describe("WebGPU engine queries", () => {
         engine._resetRenderPassStates = vi.fn();
 
         engine._startRenderTargetRenderPass(renderTarget, false, null, false, false);
+        expect(engine._depthCullingState.depthFunc).toBe(Constants.GEQUAL);
+        engine._depthCullingState.depthFunc = Constants.ALWAYS;
         engine._occlusionQuery = {
             hasQueries: true,
             querySet,
@@ -399,5 +410,6 @@ describe("WebGPU engine queries", () => {
         expect(restartedColorAttachment.depthSlice).toBe(5);
         expect(restartedColorAttachment.loadOp).toBe("load");
         expect(renderPasses[1].occlusionQuerySet).toBe(querySet);
+        expect(engine._depthCullingState.depthFunc).toBe(Constants.ALWAYS);
     });
 });
