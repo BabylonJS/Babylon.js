@@ -109,6 +109,7 @@ interface IWebGPURenderPassWrapper {
     renderPassDescriptor: Nullable<GPURenderPassDescriptor>;
 
     colorAttachmentViewDescriptor: Nullable<GPUTextureViewDescriptor>;
+    colorAttachmentDepthSlice: number | undefined;
     depthAttachmentViewDescriptor: Nullable<GPUTextureViewDescriptor>;
     colorAttachmentGPUTextures: (WebGPUHardwareTexture | null)[];
     depthTextureFormat: GPUTextureFormat | undefined;
@@ -397,6 +398,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     private _mainRenderPassWrapper: IWebGPURenderPassWrapper = {
         renderPassDescriptor: null,
         colorAttachmentViewDescriptor: null,
+        colorAttachmentDepthSlice: undefined,
         depthAttachmentViewDescriptor: null,
         colorAttachmentGPUTextures: [],
         depthTextureFormat: undefined,
@@ -404,6 +406,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     private _rttRenderPassWrapper: IWebGPURenderPassWrapper = {
         renderPassDescriptor: null,
         colorAttachmentViewDescriptor: null,
+        colorAttachmentDepthSlice: undefined,
         depthAttachmentViewDescriptor: null,
         colorAttachmentGPUTextures: [],
         depthTextureFormat: undefined,
@@ -1347,6 +1350,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /** @internal */
     public override _getCurrentRenderPass(): GPURenderPassEncoder {
         if (
+            this.compatibilityMode &&
             this._currentRenderPass &&
             this._occlusionQuery?.hasQueries &&
             this._getCurrentRenderPassWrapper().renderPassDescriptor?.occlusionQuerySet !== this._occlusionQuery.querySet
@@ -3350,14 +3354,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             if (internalTexture) {
                 const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
                 const gpuTexture = gpuWrapper.underlyingResource!;
-                const layerIndex = this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer;
-
-                let depthSlice: number | undefined = undefined;
-
-                if (rtWrapper.is3D) {
-                    depthSlice = this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer;
-                    this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer = 0;
-                }
+                const depthSlice = rtWrapper.is3D ? this._rttRenderPassWrapper.colorAttachmentDepthSlice : undefined;
+                const layerIndex = depthSlice ?? this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer;
 
                 const gpuMSAATexture = useMSAA ? gpuWrapper.getMSAATexture(sampleCount, layerIndex) : undefined;
                 const colorTextureView = this._cacheTextureViews.getView(gpuTexture, this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
@@ -3516,11 +3514,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             format: this._colorFormat as GPUTextureFormat,
             dimension: texture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
-            baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
+            baseArrayLayer: texture.is3D ? 0 : texture.isCube ? layer * 6 + faceIndex : layer,
             baseMipLevel: lodLevel,
             arrayLayerCount: 1,
             aspect: WebGPUConstants.TextureAspect.All,
         };
+        this._rttRenderPassWrapper.colorAttachmentDepthSlice = texture.is3D ? layer : undefined;
 
         this._rttRenderPassWrapper.depthAttachmentViewDescriptor = {
             label: texture.label ? texture.label + " - Depth Attachment View" : "RTT - Depth Attachment View",
