@@ -972,6 +972,57 @@ jobs:
                 runBranch: "refs/heads/master"
                 path: "$(Pipeline.Workspace)"
 
+          - pwsh: |
+                $ErrorActionPreference = "Stop"
+                $artifactRoot = "$(Pipeline.Workspace)\BabylonNativeNightlyUnitTests"
+                [xml]$project = Get-Content -LiteralPath "$artifactRoot\UnitTests.vcxproj" -Raw
+                $definitions = $project.Project.ItemDefinitionGroup.ClCompile.PreprocessorDefinitions -join ";"
+                $fontPaths = @([regex]::Matches($definitions, '(?:^|;)CANVAS_TEST_FONT_PATH="([^"]+)"(?=;|$)') |
+                    ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique)
+                if ($fontPaths.Count -eq 0 -and $definitions -notmatch "CANVAS_TEST_FONT_PATH") {
+                    Write-Host "Native artifact does not require an external Canvas test font."
+                    exit 0
+                }
+                if ($fontPaths.Count -ne 1) {
+                    throw "Expected one Canvas test font path in the Native artifact."
+                }
+
+                # Older Native artifacts embed the producer's source path instead of packaging the font.
+                $fontRoot = if ([IO.Path]::IsPathFullyQualified($fontPaths[0])) {
+                    "$(Build.SourcesDirectory)"
+                } else {
+                    "$artifactRoot\RelWithDebInfo"
+                }
+                $fontRoot = [IO.Path]::GetFullPath($fontRoot).TrimEnd('\') + '\'
+                $fontPath = [IO.Path]::GetFullPath($fontPaths[0], $fontRoot)
+                if (-not $fontPath.StartsWith($fontRoot, [StringComparison]::OrdinalIgnoreCase) -or
+                    [IO.Path]::GetFileName($fontPath) -ne "droidsans.ttf") {
+                    throw "Native font fixture path is outside its expected workspace: $fontPath"
+                }
+
+                $fontHash = "4E2371BC0E4CF6983342E150412F140DA79D674C9BE0B56458401F581072ECD3"
+                if (-not (Test-Path -LiteralPath $fontPath -PathType Leaf)) {
+                    $download = New-TemporaryFile
+                    try {
+                        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/bkaradzic/bgfx/f446c319d65b5e9a4d4070100e3fc571f5b35ea5/examples/runtime/font/droidsans.ttf" -OutFile $download.FullName
+                        if ((Get-FileHash -LiteralPath $download.FullName -Algorithm SHA256).Hash -ne $fontHash) {
+                            throw "Downloaded Native font fixture checksum does not match."
+                        }
+                        New-Item -ItemType Directory -Force -Path ([IO.Path]::GetDirectoryName($fontPath)) | Out-Null
+                        Move-Item -LiteralPath $download.FullName -Destination $fontPath
+                    } finally {
+                        if (Test-Path -LiteralPath $download.FullName) {
+                            Remove-Item -LiteralPath $download.FullName
+                        }
+                    }
+                }
+                if ((Get-FileHash -LiteralPath $fontPath -Algorithm SHA256).Hash -ne $fontHash) {
+                    throw "Native font fixture checksum does not match: $fontPath"
+                }
+                Write-Host "Native Canvas test font is ready: $fontPath"
+            displayName: "Prepare Native unit-test font"
+            retryCountOnTaskFailure: 3
+
           - script: |
                 for /f %%i in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere" -property instanceId') do (
                   reg add HKCU\Software\Microsoft\VisualStudio\Debugger\JIT\{F200A7E7-DEA5-11D0-B854-00A0244A1DE2}\%%i /f /v Disabled /t REG_DWORD /d 1
