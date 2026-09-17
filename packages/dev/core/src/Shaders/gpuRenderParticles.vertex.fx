@@ -4,7 +4,9 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform vec2 translationPivot;
 uniform vec3 worldOffset;
+#ifdef LOCAL
 uniform mat4 emitterWM;
+#endif
 
 #ifdef PREPASS
 uniform vec2 cameraInfo;
@@ -87,14 +89,6 @@ vec3 particleBasePosition() {
 #endif
 }
 
-vec3 particleDirection(vec3 directionValue) {
-#ifdef LOCAL
-	return (emitterWM * vec4(directionValue, 0.0)).xyz;
-#else
-	return directionValue;
-#endif
-}
-
 vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 	vec3 xaxis = normalize(cross(vec3(0., 1.0, 0.), yaxis));
 	vec3 zaxis = normalize(cross(yaxis, xaxis));
@@ -112,9 +106,9 @@ vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 #ifdef BILLBOARDSTRETCHED
 vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
 #ifdef BILLBOARDSTRETCHED_LOCAL
-	vec3 stretchDirection = particleDirection(initialDirection);
+	vec3 stretchDirection = initialDirection;
 #else
-	vec3 stretchDirection = particleDirection(direction);
+	vec3 stretchDirection = direction;
 #endif
 	vec3 normalizedToCamera = normalize(toCamera);
 	vec3 normalizedCrossDirToCamera = normalize(cross(normalize(stretchDirection), normalizedToCamera));
@@ -202,7 +196,7 @@ void main() {
 		rotatedCorner.y = 0.;
         rotatedCorner.xz += translationPivot;
 
-		vec3 yaxis = particleBasePosition() - eyePosition;
+		vec3 yaxis = (position + worldOffset) - eyePosition;
 		yaxis.y = 0.;
 		vPositionW = rotate(normalize(yaxis), rotatedCorner.xyz);
 #ifdef PREPASS
@@ -216,13 +210,13 @@ void main() {
 		rotatedCorner.z = 0.;
         rotatedCorner.xy += translationPivot;
 
-		vec3 toCamera = particleBasePosition() - eyePosition;
+		vec3 toCamera = (position + worldOffset) - eyePosition;
 		vPositionW = rotateAlign(toCamera, rotatedCorner.xyz);
 #ifdef PREPASS
 	#ifdef BILLBOARDSTRETCHED_LOCAL
-		geometryNormalW = stretchedNormal(toCamera, particleDirection(initialDirection));
+		geometryNormalW = stretchedNormal(toCamera, initialDirection);
 	#else
-		geometryNormalW = stretchedNormal(toCamera, particleDirection(direction));
+		geometryNormalW = stretchedNormal(toCamera, direction);
 	#endif
 #endif
 
@@ -255,7 +249,7 @@ void main() {
 	rotatedCorner.z = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
     rotatedCorner.xz += translationPivot;
 
-	vec3 yaxis = normalize(particleDirection(initialDirection));
+	vec3 yaxis = normalize(initialDirection);
 	vPositionW = rotate(yaxis, rotatedCorner);
 #ifdef PREPASS
 	geometryNormalW = yaxis;

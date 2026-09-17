@@ -9,6 +9,7 @@ uniform vec4 textureMask;
 uniform sampler2D diffuseSampler;
 
 #ifdef PREPASS
+uniform float geometryZeroAlphaDiscard;
 #ifdef PREPASS_POSITION
 varying vec3 vGeometryPositionW;
 #endif
@@ -87,7 +88,7 @@ void main(void) {
 
 #ifdef PREPASS
 	vec4 geometryColor = gl_FragColor;
-	if (geometryColor.a <= 0.0) {
+	if (geometryColor.a <= 0.0 && geometryZeroAlphaDiscard > 0.0) {
 		discard;
 	}
 	#ifdef PREPASS_POSITION

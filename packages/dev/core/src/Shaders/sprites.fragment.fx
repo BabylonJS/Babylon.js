@@ -8,9 +8,16 @@ uniform bool alphaTest;
 
 varying vec4 vColor;
 #ifdef PREPASS
+uniform float geometryZeroAlphaDiscard;
+#ifdef PREPASS_POSITION
 varying vec3 vPositionW;
+#endif
+#ifdef PREPASS_NORMAL
 varying vec3 vNormalV;
+#endif
+#ifdef PREPASS_WORLD_NORMAL
 varying vec3 vNormalW;
+#endif
 #endif
 
 // Samplers
@@ -60,8 +67,10 @@ void main(void) {
 	color *= vColor;
 
 #ifdef PREPASS
+	#if defined(PREPASS_ALBEDO) || defined(PREPASS_ALBEDO_SQRT)
 	vec3 geometryAlbedo = toLinearSpace(color.rgb);
-	if (fAlphaTest == 0.0 && color.a == 0.0) {
+	#endif
+	if (fAlphaTest == 0.0 && color.a == 0.0 && geometryZeroAlphaDiscard > 0.0) {
 		discard;
 	}
 #endif

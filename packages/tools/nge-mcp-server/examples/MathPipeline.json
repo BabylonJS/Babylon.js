@@ -258,7 +258,10 @@
         },
         {
           "name": "positions",
-          "displayName": "positions"
+          "displayName": "positions",
+          "inputName": "positions",
+          "targetBlockId": 8,
+          "targetConnectionName": "output"
         }
       ],
       "outputs": [
@@ -310,7 +313,7 @@
     "locations": [
       {
         "blockId": 1,
-        "x": 340,
+        "x": 1360,
         "y": 0
       },
       {
@@ -320,47 +323,47 @@
       },
       {
         "blockId": 3,
-        "x": 0,
-        "y": 180
+        "x": 340,
+        "y": 0
       },
       {
         "blockId": 4,
-        "x": 0,
-        "y": 360
+        "x": 340,
+        "y": 180
       },
       {
         "blockId": 5,
-        "x": 0,
-        "y": 540
-      },
-      {
-        "blockId": 6,
-        "x": 0,
-        "y": 720
-      },
-      {
-        "blockId": 7,
-        "x": 0,
-        "y": 900
-      },
-      {
-        "blockId": 8,
-        "x": 0,
-        "y": 1080
-      },
-      {
-        "blockId": 9,
         "x": 680,
         "y": 0
       },
       {
-        "blockId": 10,
+        "blockId": 6,
         "x": 1020,
         "y": 0
       },
       {
-        "blockId": 11,
+        "blockId": 7,
+        "x": 1020,
+        "y": 180
+      },
+      {
+        "blockId": 8,
         "x": 1360,
+        "y": 180
+      },
+      {
+        "blockId": 9,
+        "x": 1700,
+        "y": 0
+      },
+      {
+        "blockId": 10,
+        "x": 2040,
+        "y": 0
+      },
+      {
+        "blockId": 11,
+        "x": 2380,
         "y": 0
       }
     ]

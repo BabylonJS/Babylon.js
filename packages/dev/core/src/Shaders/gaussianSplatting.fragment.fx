@@ -15,6 +15,7 @@ varying vec4 vColor;
 varying vec2 vPosition;
 
 #ifdef PREPASS
+uniform float geometryZeroAlphaDiscard;
 #ifdef PREPASS_POSITION
 varying vec3 vGeometryPositionW;
 #endif
@@ -56,7 +57,7 @@ void main () {
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
 #ifdef PREPASS
-    if (finalColor.a <= 0.0) {
+    if (finalColor.a <= 0.0 && geometryZeroAlphaDiscard > 0.0) {
         discard;
     }
     vec4 geometryColor = finalColor;

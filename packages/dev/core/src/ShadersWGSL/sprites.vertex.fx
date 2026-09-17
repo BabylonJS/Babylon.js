@@ -10,9 +10,15 @@ attribute color: vec4f;
 uniform view: mat4x4f;
 uniform projection: mat4x4f;
 #ifdef PREPASS
+#if defined(PREPASS_POSITION) || defined(PREPASS_WORLD_NORMAL)
 uniform invView: mat4x4f;
+#endif
+#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
 uniform cameraInfo: vec2f;
+#endif
+#if defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL)
 uniform spriteNormalSign: f32;
+#endif
 #endif
 #if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
 attribute previousPosition: vec4f;
@@ -25,12 +31,24 @@ uniform previousProjection: mat4x4f;
 varying vUV: vec2f;
 varying vColor: vec4f;
 #ifdef PREPASS
+#ifdef PREPASS_POSITION
 varying vPositionW: vec3f;
+#endif
+#ifdef PREPASS_LOCAL_POSITION
 varying vPosition: vec3f;
+#endif
+#ifdef PREPASS_DEPTH
 varying vViewPos: vec3f;
+#endif
+#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
 varying vNormViewDepth: f32;
+#endif
+#ifdef PREPASS_NORMAL
 varying vNormalV: vec3f;
+#endif
+#ifdef PREPASS_WORLD_NORMAL
 varying vNormalW: vec3f;
+#endif
 #endif
 #if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
 varying vCurrentPosition: vec4f;
@@ -67,15 +85,26 @@ fn main(input : VertexInputs) -> FragmentInputs {
 	vertexOutputs.position = uniforms.projection * vec4f(viewPos, 1.0);   
 
 #ifdef PREPASS
+	#ifdef PREPASS_POSITION
 	var worldPos: vec4f = uniforms.invView * vec4f(viewPos, 1.0);
-	var normalV: vec3f = vec3f(0.0, 0.0, uniforms.spriteNormalSign);
 	vertexOutputs.vPositionW = worldPos.xyz / worldPos.w;
+	#endif
+	#ifdef PREPASS_LOCAL_POSITION
 	// Sprite local position is the angle-rotated billboard-plane offset from the sprite center.
 	vertexOutputs.vPosition = rotatedCorner;
+	#endif
+	#ifdef PREPASS_DEPTH
 	vertexOutputs.vViewPos = viewPos;
+	#endif
+	#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
 	vertexOutputs.vNormViewDepth = (viewPos.z - uniforms.cameraInfo.x) / (uniforms.cameraInfo.y - uniforms.cameraInfo.x);
-	vertexOutputs.vNormalV = normalV;
-	vertexOutputs.vNormalW = normalize((uniforms.invView * vec4f(normalV, 0.0)).xyz);
+	#endif
+	#ifdef PREPASS_NORMAL
+	vertexOutputs.vNormalV = vec3f(0.0, 0.0, uniforms.spriteNormalSign);
+	#endif
+	#ifdef PREPASS_WORLD_NORMAL
+	vertexOutputs.vNormalW = normalize((uniforms.invView * vec4f(0.0, 0.0, uniforms.spriteNormalSign, 0.0)).xyz);
+	#endif
 #endif
 
 #if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)

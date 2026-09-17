@@ -4,9 +4,16 @@ uniform alphaTest: i32;
 
 varying vColor: vec4f;
 #ifdef PREPASS
+uniform geometryZeroAlphaDiscard: f32;
+#ifdef PREPASS_POSITION
 varying vPositionW: vec3f;
+#endif
+#ifdef PREPASS_NORMAL
 varying vNormalV: vec3f;
+#endif
+#ifdef PREPASS_WORLD_NORMAL
 varying vNormalW: vec3f;
+#endif
 #endif
 
 // Samplers
@@ -58,8 +65,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	color *= input.vColor;
 
 #ifdef PREPASS
+	#if defined(PREPASS_ALBEDO) || defined(PREPASS_ALBEDO_SQRT)
 	var geometryAlbedo: vec3f = toLinearSpaceVec3(color.rgb);
-	if (fAlphaTest == 0.0 && color.a == 0.0) {
+	#endif
+	if (fAlphaTest == 0.0 && color.a == 0.0 && uniforms.geometryZeroAlphaDiscard > 0.0) {
 		discard;
 	}
 #endif

@@ -6,6 +6,7 @@ var diffuseSamplerSampler: sampler;
 var diffuseSampler: texture_2d<f32>;
 
 #ifdef PREPASS
+uniform geometryZeroAlphaDiscard: f32;
 #ifdef PREPASS_POSITION
 varying vGeometryPositionW: vec3f;
 #endif
@@ -84,7 +85,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
 #ifdef PREPASS
 	let geometryColor: vec4f = baseColor;
-	if (geometryColor.a <= 0.0) {
+	if (geometryColor.a <= 0.0 && uniforms.geometryZeroAlphaDiscard > 0.0) {
 		discard;
 	}
 	#ifdef PREPASS_POSITION

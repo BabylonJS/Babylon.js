@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { Constants } from "core/Engines/constants";
 import { NullEngine } from "core/Engines/nullEngine";
 import { type IEffectCreationOptions } from "core/Materials/effect";
+import { type DrawWrapper } from "core/Materials/drawWrapper";
 import { MaterialHelperGeometryRendering } from "core/Materials/materialHelper.geometryrendering";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { ParticleSystem } from "core/Particles/particleSystem";
@@ -13,6 +14,7 @@ import { Scene } from "core/scene";
 import "core/Particles/webgl2ParticleSystem";
 import "core/Shaders/particles.vertex";
 import "core/Shaders/particles.fragment";
+import "core/Engines/AbstractEngine/abstractEngine.renderPass";
 
 describe("Particle neutral velocity shader contract", () => {
     const sourceDirectory = fileURLToPath(new URL("../../../src/", import.meta.url));
@@ -112,5 +114,27 @@ describe("Particle system geometry rendering effects", () => {
             expect(options.defines).toContain(`#define ${define}`);
         }
         particleSystem.dispose();
+    });
+
+    it.each(["CPU", "GPU"] as const)("releases %s render-pass wrappers when the pass is disposed", (kind) => {
+        const renderPassId = engine.createRenderPassId("particle pass");
+        engine._features.supportRenderPasses = true;
+        engine.currentRenderPassId = renderPassId;
+        const configuration = MaterialHelperGeometryRendering.CreateConfiguration(renderPassId);
+        configuration.defines.PREPASS_COLOR_INDEX = 0;
+        MaterialHelperGeometryRendering._PrepareConfiguration(renderPassId, [1], [1]);
+        const system = kind === "CPU" ? new ParticleSystem("CPU", 4, scene) : new GPUParticleSystem("GPU", { capacity: 4 }, scene);
+        const internals = system as unknown as {
+            _getWrapper: (blendMode: number) => DrawWrapper;
+            _drawWrappers: DrawWrapper[][];
+        };
+
+        const wrapper = internals._getWrapper(system.blendMode);
+        engine.releaseRenderPassId(renderPassId);
+
+        expect(internals._drawWrappers[renderPassId]).toBeUndefined();
+        expect(wrapper.effect).toBeNull();
+        MaterialHelperGeometryRendering.DeleteConfiguration(renderPassId);
+        system.dispose();
     });
 });

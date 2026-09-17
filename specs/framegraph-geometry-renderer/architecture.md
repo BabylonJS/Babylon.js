@@ -50,7 +50,7 @@ Object-ID and mesh-tag providers remain mesh APIs. Sprites and particle systems 
 
 ## Transparency
 
-This implementation retains the geometry renderer's existing single-pass, approximate transparency convention. It does not add opacity-qualified geometry subpasses or change beauty blending. Shared geometry output coverage uses the existing `alpha > 0.4` convention. Fully transparent color fragments do not write new geometry values.
+This implementation retains the geometry renderer's existing single-pass, approximate transparency convention. It does not add opacity-qualified geometry subpasses or change beauty blending. Shared geometry output coverage uses the existing `alpha > 0.4` convention. Zero-alpha fragments are discarded only when the active blend equation makes their beauty contribution zero, or when no beauty output exists. Alpha-independent additive and premultiplied color contributions are preserved.
 
 Overlapping transparent primitives can blend or replace geometry values differently from beauty. A single G-buffer cannot represent all translucent layers. In particular, integer tags cannot be alpha blended, and geometry alpha is not a general-purpose normalized validity mask. Applications that require a coherent opaque surface should render overlapping transparency after geometry-dependent effects.
 
@@ -72,7 +72,7 @@ Gaussian motion includes camera/source transforms and compound-part transform hi
 
 Compound motion requires an additional previous-world matrix per part. Its maximum part count can therefore be lower on engines with small vertex-uniform limits; unsupported counts are rejected explicitly rather than dropping parts.
 
-Effect variants and VAOs are cached by their render pass/layout. Graph rebuilds invalidate changed shader layouts. Temporal data is initialized on first use and reset when the corresponding renderer/history is recreated or no longer has a continuous prior frame.
+Effect variants and VAOs are cached by their render pass/layout and released with the render pass. Graph rebuilds invalidate temporal state even when shader layouts are unchanged. Temporal data is initialized on first use and reset when the corresponding renderer/history is recreated or no longer has a continuous prior frame. Compound previous transforms remain stable across repeated binds within one frame.
 
 ## Beauty-only diagnostics
 

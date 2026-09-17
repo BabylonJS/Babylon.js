@@ -188,10 +188,14 @@ void main () {
 #ifdef PREPASS
 #if defined(PREPASS_POSITION) || defined(PREPASS_LOCAL_POSITION) || defined(PREPASS_DEPTH) || defined(PREPASS_NORMALIZED_VIEW_DEPTH) || defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL) || defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
     vec3 geometrySplatViewPosition = (view * worldPos).xyz;
+#endif
+#if defined(PREPASS_POSITION) || defined(PREPASS_LOCAL_POSITION) || defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
     vec4 geometryPlaneViewPosition = inverseProjection * gl_Position;
     geometryPlaneViewPosition /= geometryPlaneViewPosition.w;
     vec3 geometryPlanePositionW = worldPos.xyz + transpose(mat3(view)) * (geometryPlaneViewPosition.xyz - geometrySplatViewPosition);
-    vec3 geometryPlanePositionL = splat.center.xyz + inverseMat3(mat3(splatWorld)) * (geometryPlanePositionW - worldPos.xyz);
+    #if defined(PREPASS_LOCAL_POSITION) || defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
+        vec3 geometryPlanePositionL = splat.center.xyz + inverseMat3(mat3(splatWorld)) * (geometryPlanePositionW - worldPos.xyz);
+    #endif
 #endif
 #ifdef PREPASS_POSITION
     vGeometryPositionW = geometryPlanePositionW;
@@ -200,10 +204,10 @@ void main () {
     vGeometryPositionL = geometryPlanePositionL;
 #endif
 #ifdef PREPASS_DEPTH
-    vGeometryViewDepth = geometryPlaneViewPosition.z;
+    vGeometryViewDepth = geometrySplatViewPosition.z;
 #endif
 #ifdef PREPASS_NORMALIZED_VIEW_DEPTH
-    vGeometryNormalizedViewDepth = (geometryPlaneViewPosition.z - geometryDepthRange.x) / (geometryDepthRange.y - geometryDepthRange.x);
+    vGeometryNormalizedViewDepth = (geometrySplatViewPosition.z - geometryDepthRange.x) / (geometryDepthRange.y - geometryDepthRange.x);
 #endif
 #if defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL)
     // Gaussian splats do not define a surface normal, so use the rendered camera-facing plane normal.

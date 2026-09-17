@@ -40,6 +40,25 @@ function getPlaygroundSourceInfo(codeFile) {
     return { language: "JS", entry: "index.js" };
 }
 
+function parseExistingId(args) {
+    const idIndex = args.indexOf("--id");
+    if (idIndex === -1) {
+        return undefined;
+    }
+
+    if (args.lastIndexOf("--id") !== idIndex) {
+        throw new Error("--id can only be specified once");
+    }
+
+    const match = /^#?([A-Za-z0-9]+)(?:#\d+)?$/.exec(args[idIndex + 1] ?? "");
+    if (!match) {
+        throw new Error('--id requires a snippet ID or playgroundId, for example "ABC123" or "#ABC123#0"');
+    }
+
+    args.splice(idIndex, 2);
+    return match[1].toUpperCase();
+}
+
 function saveSnippet(code, codeFile, name, description, tags, existingId) {
     const { language, entry } = getPlaygroundSourceInfo(codeFile);
     const v2Manifest = {
@@ -112,19 +131,7 @@ function saveSnippet(code, codeFile, name, description, tags, existingId) {
 
 async function main() {
     const args = process.argv.slice(2);
-    const idIndex = args.indexOf("--id");
-    let existingId;
-    if (idIndex !== -1) {
-        if (args.lastIndexOf("--id") !== idIndex) {
-            throw new Error("--id can only be specified once");
-        }
-        const match = /^#?([A-Za-z0-9]+)(?:#\d+)?$/.exec(args[idIndex + 1] ?? "");
-        if (!match) {
-            throw new Error('--id requires a snippet ID or playgroundId, for example "ABC123" or "#ABC123#0"');
-        }
-        existingId = match[1];
-        args.splice(idIndex, 2);
-    }
+    const existingId = parseExistingId(args);
     const codeFile = args[0];
     if (!codeFile) {
         console.error("Usage: node .github/scripts/visual-testing/save-snippet.js <code-file> [name] [description] [tags] [--id <playgroundId>]");
@@ -144,7 +151,11 @@ async function main() {
     await saveSnippet(code, codeFile, name, description, tags, existingId);
 }
 
-main().catch((err) => {
-    console.error(err);
-    process.exit(1);
-});
+if (require.main === module) {
+    main().catch((err) => {
+        console.error(err);
+        process.exit(1);
+    });
+}
+
+module.exports = { parseExistingId, saveSnippet };

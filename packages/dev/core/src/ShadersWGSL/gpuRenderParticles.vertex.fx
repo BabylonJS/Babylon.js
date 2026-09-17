@@ -2,7 +2,9 @@ uniform view: mat4x4f;
 uniform projection: mat4x4f;
 uniform translationPivot: vec2f;
 uniform worldOffset: vec3f;
+#ifdef LOCAL
 uniform emitterWM: mat4x4f;
+#endif
 
 #ifdef PREPASS
 uniform cameraInfo: vec2f;
@@ -86,14 +88,6 @@ fn particleBasePosition() -> vec3f {
 #endif
 }
 
-fn particleDirection(directionValue: vec3f) -> vec3f {
-#ifdef LOCAL
-    return (uniforms.emitterWM * vec4f(directionValue, 0.0)).xyz;
-#else
-    return directionValue;
-#endif
-}
-
 fn rotate(yaxis: vec3f, rotatedCorner: vec3f) -> vec3f {
     let xaxis: vec3f = normalize(cross(vec3f(0.0, 1.0, 0.0), yaxis));
     let zaxis: vec3f = normalize(cross(yaxis, xaxis));
@@ -104,9 +98,9 @@ fn rotate(yaxis: vec3f, rotatedCorner: vec3f) -> vec3f {
 #ifdef BILLBOARDSTRETCHED
 fn rotateAlign(toCamera: vec3f, rotatedCorner: vec3f) -> vec3f {
 #ifdef BILLBOARDSTRETCHED_LOCAL
-    let stretchDirection: vec3f = particleDirection(vertexInputs.initialDirection);
+    let stretchDirection: vec3f = vertexInputs.initialDirection;
 #else
-    let stretchDirection: vec3f = particleDirection(vertexInputs.direction);
+    let stretchDirection: vec3f = vertexInputs.direction;
 #endif
     let normalizedToCamera: vec3f = normalize(toCamera);
     let normalizedCrossDirToCamera: vec3f = normalize(cross(normalize(stretchDirection), normalizedToCamera));
@@ -177,7 +171,7 @@ fn main(input: VertexInputs) -> FragmentInputs {
     rotatedCorner.x += uniforms.translationPivot.x;
     rotatedCorner.z += uniforms.translationPivot.y;
 
-    var yaxis: vec3f = particleBasePosition() - uniforms.eyePosition;
+    var yaxis: vec3f = vertexInputs.position + uniforms.worldOffset - uniforms.eyePosition;
     yaxis.y = 0.0;
     vertexOutputs.vPositionW = rotate(normalize(yaxis), rotatedCorner.xyz);
 #ifdef PREPASS
@@ -192,13 +186,13 @@ fn main(input: VertexInputs) -> FragmentInputs {
     rotatedCorner.x += uniforms.translationPivot.x;
     rotatedCorner.y += uniforms.translationPivot.y;
 
-    let toCamera: vec3f = particleBasePosition() - uniforms.eyePosition;
+    let toCamera: vec3f = vertexInputs.position + uniforms.worldOffset - uniforms.eyePosition;
     vertexOutputs.vPositionW = rotateAlign(toCamera, rotatedCorner.xyz);
 #ifdef PREPASS
 #ifdef BILLBOARDSTRETCHED_LOCAL
-    geometryNormalW = stretchedNormal(toCamera, particleDirection(vertexInputs.initialDirection));
+    geometryNormalW = stretchedNormal(toCamera, vertexInputs.initialDirection);
 #else
-    geometryNormalW = stretchedNormal(toCamera, particleDirection(vertexInputs.direction));
+    geometryNormalW = stretchedNormal(toCamera, vertexInputs.direction);
 #endif
 #endif
 
@@ -225,7 +219,7 @@ fn main(input: VertexInputs) -> FragmentInputs {
     rotatedCorner.x += uniforms.translationPivot.x;
     rotatedCorner.z += uniforms.translationPivot.y;
 
-    let yaxis: vec3f = normalize(particleDirection(vertexInputs.initialDirection));
+    let yaxis: vec3f = normalize(vertexInputs.initialDirection);
     vertexOutputs.vPositionW = rotate(yaxis, rotatedCorner);
 #ifdef PREPASS
     geometryNormalW = yaxis;

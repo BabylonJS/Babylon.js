@@ -104,6 +104,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             "The type is determined by `additionalConstructionParameters[0]` (a NodeRenderGraphBlockConnectionPointTypes enum value). " +
             "Common type values: Texture=1, TextureDepthStencilAttachment=8, Camera=0x01000000, ObjectList=0x02000000, ShadowLight=0x00400000. " +
             "Set `isExternal=true` so Babylon auto-fills the value from the scene at build time. " +
+            "For ObjectList values, omitted or null `spriteManagers` means all scene managers; an empty array means none. " +
             "For texture inputs you must provide `creationOptions` with size/format/samples; " +
             "use the `set_block_properties` tool to set these fields after adding the block.",
         inputs: [],
@@ -198,6 +199,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             "This is the primary rasterisation block — almost every graph needs one. " +
             "Connect a cleared colour texture to `target`, a depth attachment to `depth`, " +
             "a Camera input to `camera`, and a (possibly culled) ObjectList to `objects`. " +
+            "When `ObjectList.spriteManagers` is omitted or null, all scene sprite managers are rendered; an empty array renders none. " +
             "Optional `shadowGenerators` port accepts a ShadowGenerator or ResourceContainer of shadow generators.",
         inputs: [
             { name: "target", type: "AutoDetect" },
@@ -233,7 +235,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             "Renders scene geometry into a multi-render target (G-Buffer), producing typed geometry textures " +
             "(view-depth, normals, albedo, reflectivity, positions, velocity, etc.). " +
             "Supports Gaussian splats and optional sprite/particle geometry. Bounding boxes, edges, and outlines/overlays contribute only to colour. " +
-            "The object list can select sprite managers with its optional `spriteManagers` array. " +
+            "When `ObjectList.spriteManagers` is omitted or null, all scene sprite managers are rendered; an empty array renders none. " +
             "Use these outputs as inputs for deferred shading techniques such as SSR, SSAO, or custom deferred passes. " +
             "The `target` port for the colour attachment is OPTIONAL for this block.",
         inputs: [
@@ -361,6 +363,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         description:
             "Culls an ObjectList using a camera frustum and returns a reduced ObjectList " +
             "containing only the visible meshes while preserving its particle systems and sprite managers. " +
+            "An omitted or null `spriteManagers` selection means all scene managers; an empty array means none. " +
             "Use this before passing objects to an ObjectRendererBlock for better performance.",
         inputs: [
             { name: "camera", type: "Camera" },

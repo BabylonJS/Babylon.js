@@ -15,8 +15,9 @@ import { Logger } from "../Misc/logger";
 import { BindLogDepth } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { Matrix, Vector3 } from "../Maths/math.vector.pure";
-import { MaterialHelperGeometryRendering } from "../Materials/materialHelper.geometryrendering";
+import { MaterialHelperGeometryRendering, type GeometryRenderingConfiguration } from "../Materials/materialHelper.geometryrendering";
 import { type Effect, type IEffectCreationOptions } from "../Materials/effect";
+import { Observable, type Observer } from "../Misc/observable.pure";
 
 type SpriteRendererSpriteHistory = {
     previousX: number;
@@ -48,6 +49,7 @@ type SpriteRendererDrawCache = {
     drawWrapperDepth: DrawWrapper;
     defines: string;
     geometryDefines?: string;
+    geometryConfiguration?: GeometryRenderingConfiguration;
     variantKey: number;
     vertexBuffers: { [key: string]: VertexBuffer };
     vertexArrayObject?: WebGLVertexArrayObject;
@@ -55,6 +57,9 @@ type SpriteRendererDrawCache = {
     usesVelocity: boolean;
     usesObjectId: boolean;
     usesMeshBlendTag: boolean;
+    usesInverseView: boolean;
+    usesNormals: boolean;
+    usesNormalizedDepth: boolean;
     cameraHistories?: WeakMap<object, SpriteRendererCameraHistory>;
 };
 
@@ -218,6 +223,7 @@ export class SpriteRenderer {
     private _drawCaches: Array<SpriteRendererDrawCache | undefined> = [];
     private _inverseViewMatrix: Nullable<Matrix> = null;
     private _isDisposed = false;
+    private _renderPassObserver: Nullable<Observer<number>> = null;
 
     /**
      * Creates a new sprite renderer
@@ -333,10 +339,11 @@ export class SpriteRenderer {
     private _getDrawCache(renderPassId: number): SpriteRendererDrawCache {
         const fogEnabled = !!(this._scene && this._scene.fogEnabled && this._scene.fogMode !== 0 && this._fogEnabled);
         const variantKey = (this._pixelPerfect ? 1 : 0) | (fogEnabled ? 2 : 0) | (this._useLogarithmicDepth ? 4 : 0);
-        const geometryDefines = MaterialHelperGeometryRendering.GetConfiguration(renderPassId)?._defines;
+        const geometryConfiguration = MaterialHelperGeometryRendering.GetConfiguration(renderPassId);
+        const geometryDefines = geometryConfiguration?._defines;
         let cache = this._drawCaches[renderPassId];
 
-        if (cache?.variantKey === variantKey && cache.geometryDefines === geometryDefines) {
+        if (cache?.variantKey === variantKey && cache.geometryDefines === geometryDefines && cache.geometryConfiguration === geometryConfiguration) {
             return cache;
         }
 
@@ -390,6 +397,7 @@ export class SpriteRenderer {
             "previousProjection",
             "objectId",
             "meshBlendTag",
+            "geometryZeroAlphaDiscard",
         ];
         const drawWrapperBase = new DrawWrapper(this._engine);
         const drawWrapperDepth = new DrawWrapper(this._engine, false);
@@ -427,15 +435,29 @@ export class SpriteRenderer {
             drawWrapperDepth,
             defines: joinedDefines,
             geometryDefines,
+            geometryConfiguration,
             variantKey,
             vertexBuffers,
             usesGeometryRendering,
             usesVelocity,
             usesObjectId,
             usesMeshBlendTag,
+            usesInverseView: geometryConfiguration?.defines.PREPASS_POSITION_INDEX !== undefined || geometryConfiguration?.defines.PREPASS_WORLD_NORMAL_INDEX !== undefined,
+            usesNormals: geometryConfiguration?.defines.PREPASS_NORMAL_INDEX !== undefined || geometryConfiguration?.defines.PREPASS_WORLD_NORMAL_INDEX !== undefined,
+            usesNormalizedDepth: geometryConfiguration?.defines.PREPASS_NORMALIZED_VIEW_DEPTH_INDEX !== undefined,
             cameraHistories: usesVelocity ? new WeakMap<object, SpriteRendererCameraHistory>() : undefined,
         };
         this._drawCaches[renderPassId] = cache;
+        if (renderPassId !== Constants.RENDERPASS_MAIN && !this._renderPassObserver) {
+            this._renderPassObserver = (this._engine._onReleaseRenderPassObservable ??= new Observable<number>()).add((id) => {
+                const releasedCache = this._drawCaches[id];
+                if (releasedCache) {
+                    this._disposeDrawCache(releasedCache);
+                    delete this._drawCaches[id];
+                    this._disposePreviousVertexBufferIfUnused();
+                }
+            });
+        }
         this._disposePreviousVertexBufferIfUnused();
 
         return cache;
@@ -519,12 +541,20 @@ export class SpriteRenderer {
                 frameId,
             };
             cache.cameraHistories!.set(cameraKey, history);
-        } else if (history.frameId !== frameId) {
-            history.previousView.copyFrom(history.currentView);
-            history.previousProjection.copyFrom(history.currentProjection);
+        } else {
+            if (history.frameId !== frameId) {
+                if (history.frameId === frameId - 1) {
+                    history.previousView.copyFrom(history.currentView);
+                    history.previousProjection.copyFrom(history.currentProjection);
+                } else {
+                    Matrix.FromArrayToRef(viewMatrix.asArray(), 0, history.previousView);
+                    Matrix.FromArrayToRef(projectionMatrix.asArray(), 0, history.previousProjection);
+                    history.sprites = new WeakMap<ThinSprite, SpriteRendererSpriteHistory>();
+                }
+                history.frameId = frameId;
+            }
             Matrix.FromArrayToRef(viewMatrix.asArray(), 0, history.currentView);
             Matrix.FromArrayToRef(projectionMatrix.asArray(), 0, history.currentProjection);
-            history.frameId = frameId;
         }
 
         return history;
@@ -533,6 +563,10 @@ export class SpriteRenderer {
     private _prepareSpriteHistory(history: SpriteRendererCameraHistory, sprite: ThinSprite, frameId: number): Nullable<SpriteRendererSpriteHistory> {
         const spriteHistory = history.sprites.get(sprite);
         if (spriteHistory && spriteHistory.frameId !== frameId) {
+            if (spriteHistory.frameId !== frameId - 1) {
+                history.sprites.delete(sprite);
+                return null;
+            }
             spriteHistory.previousX = spriteHistory.currentX;
             spriteHistory.previousY = spriteHistory.currentY;
             spriteHistory.previousZ = spriteHistory.currentZ;
@@ -634,7 +668,8 @@ export class SpriteRenderer {
 
         const useRightHandedSystem = !!(this._scene && this._scene.useRightHandedSystem);
         const frameId = this._scene?.getFrameId() ?? engine.frameId;
-        const cameraHistory = drawCache.usesVelocity ? this._getCameraHistory(drawCache, viewMatrix, projectionMatrix, frameId) : null;
+        const usesVelocity = drawCache.usesVelocity;
+        const cameraHistory = usesVelocity ? this._getCameraHistory(drawCache, viewMatrix, projectionMatrix, frameId) : null;
 
         // Sprites
         const max = Math.min(this._capacity, sprites.length);
@@ -653,11 +688,11 @@ export class SpriteRenderer {
             const baseSize = this.texture.getBaseSize(); // This could be change by the user inside the animate callback (like onAnimationEnd)
             const spriteHistory = cameraHistory ? this._prepareSpriteHistory(cameraHistory, sprite, frameId) : null;
 
-            this._appendSpriteVertex(offset++, sprite, 0, 0, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset, spriteHistory);
+            this._appendSpriteVertex(offset++, sprite, 0, 0, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset, spriteHistory, usesVelocity);
             if (!this._useInstancing) {
-                this._appendSpriteVertex(offset++, sprite, 1, 0, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset, spriteHistory);
-                this._appendSpriteVertex(offset++, sprite, 1, 1, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset, spriteHistory);
-                this._appendSpriteVertex(offset++, sprite, 0, 1, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset, spriteHistory);
+                this._appendSpriteVertex(offset++, sprite, 1, 0, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset, spriteHistory, usesVelocity);
+                this._appendSpriteVertex(offset++, sprite, 1, 1, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset, spriteHistory, usesVelocity);
+                this._appendSpriteVertex(offset++, sprite, 0, 1, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset, spriteHistory, usesVelocity);
             }
 
             if (cameraHistory) {
@@ -670,7 +705,7 @@ export class SpriteRenderer {
         }
 
         this._buffer.update(this._vertexData);
-        if (drawCache.usesVelocity) {
+        if (usesVelocity) {
             this._previousBuffer!.update(this._previousVertexData!);
         }
 
@@ -688,13 +723,18 @@ export class SpriteRenderer {
         effect.setMatrix("projection", projectionMatrix);
 
         if (drawCache.usesGeometryRendering) {
-            this._inverseViewMatrix ??= Matrix.Identity();
-            Matrix.FromArrayToRef(viewMatrix.asArray(), 0, this._inverseViewMatrix).invertToRef(this._inverseViewMatrix);
-            effect.setMatrix("invView", this._inverseViewMatrix);
-            effect.setFloat("spriteNormalSign", useRightHandedSystem ? 1 : -1);
-
-            const camera = this._scene?.activeCamera;
-            effect.setFloat2("cameraInfo", camera?.minZ ?? 0, camera?.maxZ ?? 1);
+            if (drawCache.usesInverseView) {
+                this._inverseViewMatrix ??= Matrix.Identity();
+                Matrix.FromArrayToRef(viewMatrix.asArray(), 0, this._inverseViewMatrix).invertToRef(this._inverseViewMatrix);
+                effect.setMatrix("invView", this._inverseViewMatrix);
+            }
+            if (drawCache.usesNormals) {
+                effect.setFloat("spriteNormalSign", useRightHandedSystem ? 1 : -1);
+            }
+            if (drawCache.usesNormalizedDepth) {
+                const camera = this._scene?.activeCamera;
+                effect.setFloat2("cameraInfo", camera?.minZ ?? 0, camera?.maxZ ?? 1);
+            }
 
             if (drawCache.usesObjectId) {
                 effect.setFloat("objectId", 0);
@@ -741,14 +781,20 @@ export class SpriteRenderer {
         }
 
         engine.setAlphaMode(this.blendMode);
-        if (MaterialHelperGeometryRendering._BindAttachmentsForEffect(engine, effect)) {
-            if (this._useInstancing) {
-                engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, offset);
-            } else {
-                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, (offset / 4) * 6);
-            }
+        if (drawCache.usesGeometryRendering) {
+            MaterialHelperGeometryRendering._BindZeroAlphaDiscard(engine, effect);
         }
-        MaterialHelperGeometryRendering._RestoreAttachments(engine);
+        try {
+            if (MaterialHelperGeometryRendering._BindAttachmentsForEffect(engine, effect)) {
+                if (this._useInstancing) {
+                    engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, offset);
+                } else {
+                    engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, (offset / 4) * 6);
+                }
+            }
+        } finally {
+            MaterialHelperGeometryRendering._RestoreAttachments(engine);
+        }
 
         if (this.autoResetAlpha) {
             engine.setAlphaMode(Constants.ALPHA_DISABLE);
@@ -771,7 +817,8 @@ export class SpriteRenderer {
         useRightHandedSystem: boolean,
         customSpriteUpdate: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>,
         floatingOriginOffset: Vector3,
-        spriteHistory: Nullable<SpriteRendererSpriteHistory>
+        spriteHistory: Nullable<SpriteRendererSpriteHistory>,
+        writeHistory: boolean
     ): void {
         let arrayOffset = index * this._vertexBufferSize;
 
@@ -838,7 +885,7 @@ export class SpriteRenderer {
         this._vertexData[arrayOffset + 16] = sprite.color.b;
         this._vertexData[arrayOffset + 17] = sprite.color.a;
 
-        if (this._previousVertexData) {
+        if (writeHistory && this._previousVertexData) {
             const previousArrayOffset = index * 6;
             this._previousVertexData[previousArrayOffset] = spriteHistory?.previousX ?? sprite.position.x - floatingOriginOffset.x;
             this._previousVertexData[previousArrayOffset + 1] = spriteHistory?.previousY ?? sprite.position.y - floatingOriginOffset.y;
@@ -881,6 +928,12 @@ export class SpriteRenderer {
             }
         }
 
+        for (const cache of this._drawCaches) {
+            if (cache?.usesVelocity) {
+                cache.cameraHistories = new WeakMap<object, SpriteRendererCameraHistory>();
+            }
+        }
+
         this._buffer._rebuild();
 
         for (const key in this._vertexBuffers) {
@@ -896,6 +949,8 @@ export class SpriteRenderer {
      * Release associated resources
      */
     public dispose(): void {
+        this._engine._onReleaseRenderPassObservable?.remove(this._renderPassObserver);
+        this._renderPassObserver = null;
         this._disposeDrawCaches();
 
         if (this._buffer) {

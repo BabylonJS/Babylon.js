@@ -2527,6 +2527,9 @@ export abstract class AbstractEngine {
     public _renderPassNames: string[] = ["main"];
 
     /** @internal */
+    public _onReleaseRenderPassObservable: Nullable<Observable<number>> = null;
+
+    /** @internal */
     public abstract _createHardwareTexture(): IHardwareTextureWrapper;
 
     /**
@@ -2835,6 +2838,8 @@ export abstract class AbstractEngine {
         // Observables
         this.onBeginFrameObservable.clear();
         this.onEndFrameObservable.clear();
+        this._onReleaseRenderPassObservable?.clear();
+        this._onReleaseRenderPassObservable = null;
     }
 
     /**

@@ -192,6 +192,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _linesIndexBuffer: Nullable<DataBuffer>;
     private _linesIndexBufferUseInstancing: Nullable<DataBuffer>;
     private _drawWrappers: DrawWrapper[][]; // first index is render pass id, second index is blend mode
+    private _renderPassObserver: Nullable<Observer<number>> = null;
     /** @internal */
     public _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
     /** @internal */
@@ -1953,6 +1954,17 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         let drawWrappers = this._drawWrappers[currentRenderPassId];
         if (!drawWrappers) {
             drawWrappers = this._drawWrappers[currentRenderPassId] = [];
+            if (currentRenderPassId !== Constants.RENDERPASS_MAIN && !this._renderPassObserver) {
+                this._renderPassObserver = (this._engine._onReleaseRenderPassObservable ??= new Observable<number>()).add((id) => {
+                    const releasedWrappers = this._drawWrappers[id];
+                    if (releasedWrappers) {
+                        for (const wrapper of releasedWrappers) {
+                            wrapper?.dispose();
+                        }
+                        delete this._drawWrappers[id];
+                    }
+                });
+            }
         }
         let drawWrapper = drawWrappers[blendMode];
         if (!drawWrapper) {
@@ -1971,7 +1983,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
             this.fillUniformsAttributesAndSamplerNames(effectCreationOption, attributesNamesOrOptions, samplers);
             if (geometryRendering) {
-                effectCreationOption.push("cameraInfo", "inverseEmitterWM", "objectId", "meshBlendTag");
+                effectCreationOption.push("cameraInfo", "inverseEmitterWM", "objectId", "meshBlendTag", "geometryZeroAlphaDiscard");
             }
 
             drawWrapper.setEffect(
@@ -2321,6 +2333,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         // Draw order
         this._setEngineBasedOnBlendMode(blendMode);
 
+        if (effect._multiTarget) {
+            MaterialHelperGeometryRendering._BindZeroAlphaDiscard(engine, effect);
+        }
         let rendered = false;
         try {
             if (MaterialHelperGeometryRendering._BindAttachmentsForEffect(engine, effect)) {
@@ -2393,6 +2408,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      * @param disposeEndSubEmitters defines if the end type sub-emitters must be disposed as well (false by default)
      */
     public dispose(disposeTexture = true, disposeAttachedSubEmitters = false, disposeEndSubEmitters = false): void {
+        this._engine._onReleaseRenderPassObservable?.remove(this._renderPassObserver);
+        this._renderPassObserver = null;
         this.resetDrawCache();
 
         if (this._vertexBuffer) {

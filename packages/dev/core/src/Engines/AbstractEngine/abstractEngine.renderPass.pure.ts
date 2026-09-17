@@ -43,5 +43,6 @@ export function RegisterAbstractEngineRenderPass(): void {
                 }
             }
         }
+        this._onReleaseRenderPassObservable?.notifyObservers(id);
     };
 }

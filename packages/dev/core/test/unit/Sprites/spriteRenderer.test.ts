@@ -9,6 +9,9 @@ import { type DrawWrapper } from "core/Materials/drawWrapper";
 import { type Effect, type IEffectCreationOptions } from "core/Materials/effect";
 import { type VertexBuffer } from "core/Buffers/buffer";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
+import "core/Engines/Extensions/engine.multiRender";
+import "core/Engines/AbstractEngine/abstractEngine.renderPass";
 import "core/Shaders/sprites.vertex";
 import "core/Shaders/sprites.fragment";
 
@@ -20,15 +23,29 @@ type SpriteRendererDrawCache = {
     vertexBuffers: { [key: string]: VertexBuffer };
     vertexArrayObject?: WebGLVertexArrayObject;
     usesVelocity: boolean;
+    usesInverseView: boolean;
+};
+
+type SpriteHistory = { previousX: number; currentX: number; frameId: number };
+type CameraHistory = {
+    previousView: Matrix;
+    currentView: Matrix;
+    sprites: WeakMap<ThinSprite, SpriteHistory>;
 };
 
 type SpriteRendererInternals = {
     _shadersLoaded: boolean;
     _useVAO: boolean;
     _previousBuffer: unknown;
+    _previousVertexData: Float32Array;
+    _drawCaches: Array<SpriteRendererDrawCache | undefined>;
     _getDrawCache: (renderPassId: number) => SpriteRendererDrawCache;
     _bindVertexBuffers: (cache: SpriteRendererDrawCache, effect: Effect) => void;
     _animateSprite: (sprite: ThinSprite, deltaTime: number) => void;
+    _getCameraHistory: (cache: SpriteRendererDrawCache, view: Matrix, projection: Matrix, frameId: number) => CameraHistory;
+    _prepareSpriteHistory: (history: CameraHistory, sprite: ThinSprite, frameId: number) => SpriteHistory | null;
+    _updateSpriteHistory: (history: CameraHistory, sprite: ThinSprite, previous: SpriteHistory | null, origin: Vector3, frameId: number) => void;
+    _appendSpriteVertex: (...args: unknown[]) => void;
 };
 
 const createReadyEffect = (engine: NullEngine): Effect =>
@@ -37,6 +54,12 @@ const createReadyEffect = (engine: NullEngine): Effect =>
         dispose: vi.fn(),
         getEngine: () => engine,
         isReady: () => true,
+        setTexture: vi.fn(),
+        setMatrix: vi.fn(),
+        setFloat: vi.fn(),
+        setInt: vi.fn(),
+        setFloat2: vi.fn(),
+        setBool: vi.fn(),
     }) as unknown as Effect;
 
 describe("SpriteRenderer geometry rendering", () => {
@@ -87,7 +110,7 @@ describe("SpriteRenderer geometry rendering", () => {
         configuration.defines.PREPASS_VELOCITY_LINEAR_INDEX = 1;
         configuration.defines.PREPASS_OBJECT_ID_INDEX = 2;
         configuration.defines.PREPASS_MESH_BLEND_TAG_INDEX = 3;
-        MaterialHelperGeometryRendering._PrepareConfiguration(renderPassId, [0, 1, 2, 3], [0]);
+        MaterialHelperGeometryRendering._PrepareConfiguration(renderPassId, [1, 2, 3, 4], [1, 0, 0, 0]);
         renderPassIds.push(renderPassId);
     };
 
@@ -180,5 +203,88 @@ describe("SpriteRenderer geometry rendering", () => {
         internals._animateSprite(sprite, 16);
 
         expect(animate).toHaveBeenCalledTimes(2);
+    });
+
+    it("invalidates temporal state when an identical layout is rebuilt", async () => {
+        const { internals } = await createRenderer();
+        configureGeometryPass(44);
+        const first = internals._getDrawCache(44);
+        configureGeometryPass(44);
+
+        expect(internals._getDrawCache(44)).not.toBe(first);
+        expect(first.drawWrapperBase.effect).toBeNull();
+    });
+
+    it("resets missing-frame sprite and camera histories", async () => {
+        const { internals } = await createRenderer();
+        configureGeometryPass(45);
+        const cache = internals._getDrawCache(45);
+        const projection = Matrix.Identity();
+        const view = Matrix.Identity();
+        const history = internals._getCameraHistory(cache, view, projection, 1);
+        const sprite = new ThinSprite();
+        internals._updateSpriteHistory(history, sprite, null, Vector3.Zero(), 1);
+        Matrix.TranslationToRef(1, 0, 0, view);
+        internals._getCameraHistory(cache, view, projection, 2);
+        Matrix.TranslationToRef(2, 0, 0, view);
+        internals._getCameraHistory(cache, view, projection, 3);
+
+        expect(internals._prepareSpriteHistory(history, sprite, 3)).toBeNull();
+        internals._updateSpriteHistory(history, sprite, null, Vector3.Zero(), 3);
+        Matrix.TranslationToRef(5, 0, 0, view);
+        internals._getCameraHistory(cache, view, projection, 5);
+        expect(history.previousView.m[12]).toBe(5);
+        expect(history.sprites.get(sprite)).toBeUndefined();
+    });
+
+    it("releases pass caches and the last velocity buffer with their render pass", async () => {
+        const { engine, internals } = await createRenderer();
+        const id = engine.createRenderPassId("sprites");
+        configureGeometryPass(id);
+        const cache = internals._getDrawCache(id);
+        expect(internals._previousBuffer).not.toBeNull();
+
+        engine.releaseRenderPassId(id);
+
+        expect(internals._drawCaches[id]).toBeUndefined();
+        expect(cache.drawWrapperBase.effect).toBeNull();
+        expect(internals._previousBuffer).toBeNull();
+    });
+
+    it("does not fill motion data for an ordinary draw after a velocity variant", async () => {
+        const { renderer, internals } = await createRenderer();
+        renderer.cellWidth = renderer.cellHeight = 1;
+        configureGeometryPass(46);
+        internals._getDrawCache(46);
+        internals._previousVertexData.fill(123);
+
+        internals._appendSpriteVertex(0, new ThinSprite(), 0, 0, { width: 1, height: 1 }, false, null, Vector3.Zero(), null, false);
+
+        expect(internals._previousVertexData.every((value) => value === 123)).toBe(true);
+    });
+
+    it("restores the beauty attachment if a sprite draw throws", async () => {
+        const { engine, scene, renderer, internals } = await createRenderer();
+        const id = engine.createRenderPassId("throwing draw");
+        configureGeometryPass(id);
+        engine._features.supportRenderPasses = true;
+        engine.currentRenderPassId = id;
+        renderer.texture = RawTexture.CreateRGBATexture(new Uint8Array([255, 255, 255, 255]), 1, 1, scene);
+        vi.spyOn(renderer.texture, "isReady").mockReturnValue(true);
+        renderer.cellWidth = renderer.cellHeight = 1;
+        renderer.disableDepthWrite = true;
+        const cache = internals._getDrawCache(id);
+        cache.drawWrapperBase.effect!._multiTarget = true;
+        vi.spyOn(engine, "enableEffect").mockImplementation(() => {});
+        const bindAttachments = vi.spyOn(engine, "bindAttachments").mockImplementation(() => {});
+        vi.spyOn(engine, "drawArraysType").mockImplementation(() => {
+            throw new Error("draw failed");
+        });
+        vi.spyOn(engine, "drawElementsType").mockImplementation(() => {
+            throw new Error("draw failed");
+        });
+
+        expect(() => renderer.render([new ThinSprite()], 16, Matrix.Identity(), Matrix.Identity())).toThrow("draw failed");
+        expect(bindAttachments).toHaveBeenLastCalledWith([1, 0, 0, 0]);
     });
 });

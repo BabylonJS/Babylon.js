@@ -191,12 +191,16 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #ifdef PREPASS
 #if defined(PREPASS_POSITION) || defined(PREPASS_LOCAL_POSITION) || defined(PREPASS_DEPTH) || defined(PREPASS_NORMALIZED_VIEW_DEPTH) || defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL) || defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
     let geometrySplatViewPosition = (scene.view * worldPos).xyz;
+    let viewRotation = mat3x3f(scene.view[0].xyz, scene.view[1].xyz, scene.view[2].xyz);
+#endif
+#if defined(PREPASS_POSITION) || defined(PREPASS_LOCAL_POSITION) || defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
     var geometryPlaneViewPosition = scene.inverseProjection * vertexOutputs.position;
     geometryPlaneViewPosition /= geometryPlaneViewPosition.w;
-    let viewRotation = mat3x3f(scene.view[0].xyz, scene.view[1].xyz, scene.view[2].xyz);
-    let splatWorldRotation = mat3x3f(splatWorld[0].xyz, splatWorld[1].xyz, splatWorld[2].xyz);
     let geometryPlanePositionW = worldPos.xyz + transpose(viewRotation) * (geometryPlaneViewPosition.xyz - geometrySplatViewPosition);
-    let geometryPlanePositionL = splat.center.xyz + inverseMat3(splatWorldRotation) * (geometryPlanePositionW - worldPos.xyz);
+    #if defined(PREPASS_LOCAL_POSITION) || defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
+        let splatWorldRotation = mat3x3f(splatWorld[0].xyz, splatWorld[1].xyz, splatWorld[2].xyz);
+        let geometryPlanePositionL = splat.center.xyz + inverseMat3(splatWorldRotation) * (geometryPlanePositionW - worldPos.xyz);
+    #endif
 #endif
 #ifdef PREPASS_POSITION
     vertexOutputs.vGeometryPositionW = geometryPlanePositionW;
@@ -205,10 +209,10 @@ fn main(input : VertexInputs) -> FragmentInputs {
     vertexOutputs.vGeometryPositionL = geometryPlanePositionL;
 #endif
 #ifdef PREPASS_DEPTH
-    vertexOutputs.vGeometryViewDepth = geometryPlaneViewPosition.z;
+    vertexOutputs.vGeometryViewDepth = geometrySplatViewPosition.z;
 #endif
 #ifdef PREPASS_NORMALIZED_VIEW_DEPTH
-    vertexOutputs.vGeometryNormalizedViewDepth = (geometryPlaneViewPosition.z - uniforms.geometryDepthRange.x) / (uniforms.geometryDepthRange.y - uniforms.geometryDepthRange.x);
+    vertexOutputs.vGeometryNormalizedViewDepth = (geometrySplatViewPosition.z - uniforms.geometryDepthRange.x) / (uniforms.geometryDepthRange.y - uniforms.geometryDepthRange.x);
 #endif
 #if defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL)
     // Gaussian splats do not define a surface normal, so use the rendered camera-facing plane normal.

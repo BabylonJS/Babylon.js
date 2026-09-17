@@ -33,6 +33,8 @@ import { Engine } from "../../Engines/engine.pure";
 import { RegisterClass } from "../../Misc/typeStore";
 import { PrepassDefinesMixin } from "../prepass.defines";
 import { MaterialHelperGeometryRendering, type GeometryRenderingConfiguration } from "../materialHelper.geometryrendering";
+import { Observable, type Observer } from "../../Misc/observable.pure";
+import { type Nullable } from "../../types";
 
 /**
  * Computes the maximum number of Gaussian Splatting compound parts supported by the given engine.
@@ -120,7 +122,7 @@ class GaussianSplattingMaterialDefines extends GaussianSplattingMaterialDefinesB
 
 interface IGaussianSplattingPartMotionHistory {
     configuration: GeometryRenderingConfiguration;
-    previousPartWorldMatrices: Matrix[];
+    currentPartWorldMatrices: Matrix[];
     previousPartWorldData: Float32Array;
     lastUpdateFrameId: number;
 }
@@ -246,6 +248,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "world",
         "view",
         "projection",
+        "inverseProjection",
         "vFogInfos",
         "vFogColor",
         "logarithmicDepthConstant",
@@ -258,6 +261,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "alpha",
         "depthValues",
         "geometryDepthRange",
+        "geometryZeroAlphaDiscard",
         "partWorld",
         "previousPartWorld",
         "partVisibility",
@@ -275,6 +279,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
     private _inverseProjection = Matrix.Identity();
     private _geometryProjectionUpdateFlag = -1;
     private _partMotionHistory = new Map<number, IGaussianSplattingPartMotionHistory>();
+    private _renderPassObserver: Nullable<Observer<number>> = null;
     /**
      * Checks whether the material is ready to be rendered for a given mesh.
      * @param mesh The mesh to render
@@ -569,17 +574,11 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         MaterialHelperGeometryRendering.Bind(renderPassId, effect, sourceMesh, sourceMesh.getWorldMatrix(), this);
+        MaterialHelperGeometryRendering._BindZeroAlphaDiscard(engine, effect);
 
         const camera = scene.activeCamera;
         if (camera) {
-            if (
-                defines.PREPASS_POSITION ||
-                defines.PREPASS_LOCAL_POSITION ||
-                defines.PREPASS_DEPTH ||
-                defines.PREPASS_NORMALIZED_VIEW_DEPTH ||
-                defines.PREPASS_VELOCITY ||
-                defines.PREPASS_VELOCITY_LINEAR
-            ) {
+            if (defines.PREPASS_POSITION || defines.PREPASS_LOCAL_POSITION || defines.PREPASS_VELOCITY || defines.PREPASS_VELOCITY_LINEAR) {
                 const projection = camera.getProjectionMatrix();
                 if (projection.updateFlag !== this._geometryProjectionUpdateFlag) {
                     projection.invertToRef(this._inverseProjection);
@@ -602,34 +601,49 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         const partCount = sourceMesh.partCount;
         let history = this._partMotionHistory.get(renderPassId);
-        if (!history || history.configuration !== configuration || history.previousPartWorldMatrices.length !== partCount) {
+        if (!history || history.configuration !== configuration || history.currentPartWorldMatrices.length !== partCount) {
             if (partCount > defines.MAX_PART_COUNT) {
                 throw new Error(`GaussianSplattingMaterial "${this.name}": geometry velocity supports at most ${defines.MAX_PART_COUNT} compound parts on this engine`);
             }
-            const previousPartWorldMatrices = new Array<Matrix>(partCount);
+            const currentPartWorldMatrices = new Array<Matrix>(partCount);
             for (let i = 0; i < partCount; i++) {
-                previousPartWorldMatrices[i] = sourceMesh.getWorldMatrixForPart(i).clone();
+                currentPartWorldMatrices[i] = sourceMesh.getWorldMatrixForPart(i).clone();
             }
             history = {
                 configuration,
-                previousPartWorldMatrices,
+                currentPartWorldMatrices,
                 previousPartWorldData: new Float32Array(partCount * 16),
                 lastUpdateFrameId: -1,
             };
             this._partMotionHistory.set(renderPassId, history);
+            this._renderPassObserver ??= (engine._onReleaseRenderPassObservable ??= new Observable<number>()).add((id) => this._partMotionHistory.delete(id));
         }
-
-        for (let i = 0; i < partCount; i++) {
-            history.previousPartWorldMatrices[i].toArray(history.previousPartWorldData, i * 16);
-        }
-        effect.setMatrices("previousPartWorld", history.previousPartWorldData);
 
         if (history.lastUpdateFrameId !== engine.frameId) {
-            history.lastUpdateFrameId = engine.frameId;
+            const consecutiveFrame = history.lastUpdateFrameId === engine.frameId - 1;
             for (let i = 0; i < partCount; i++) {
-                history.previousPartWorldMatrices[i].copyFrom(sourceMesh.getWorldMatrixForPart(i));
+                const previous = consecutiveFrame ? history.currentPartWorldMatrices[i] : sourceMesh.getWorldMatrixForPart(i);
+                previous.toArray(history.previousPartWorldData, i * 16);
             }
+            history.lastUpdateFrameId = engine.frameId;
         }
+        effect.setMatrices("previousPartWorld", history.previousPartWorldData);
+        for (let i = 0; i < partCount; i++) {
+            history.currentPartWorldMatrices[i].copyFrom(sourceMesh.getWorldMatrixForPart(i));
+        }
+    }
+
+    /**
+     * Releases the material and its render-pass motion histories.
+     * @param forceDisposeEffect whether associated effects should be disposed
+     * @param forceDisposeTextures whether associated textures should be disposed
+     * @param notBoundToMesh whether mesh references can be left unchanged
+     */
+    public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
+        this.getScene().getEngine()._onReleaseRenderPassObservable?.remove(this._renderPassObserver);
+        this._renderPassObserver = null;
+        this._partMotionHistory.clear();
+        super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
     }
 
     /**

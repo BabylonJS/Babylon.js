@@ -374,6 +374,27 @@ export class MaterialHelperGeometryRendering {
         return configuration.defines["PREPASS_COLOR_INDEX"] !== undefined;
     }
 
+    /** @internal */
+    public static _IsColorAttachmentEnabled(engine: AbstractEngine): boolean {
+        const configuration = MaterialHelperGeometryRendering._Configurations[engine.currentRenderPassId];
+        return !configuration?._colorAttachments || configuration.defines["PREPASS_COLOR_INDEX"] !== undefined;
+    }
+
+    /** @internal */
+    public static _BindZeroAlphaDiscard(engine: AbstractEngine, effect: Effect): void {
+        const configuration = MaterialHelperGeometryRendering._Configurations[engine.currentRenderPassId];
+        if (!configuration) {
+            return;
+        }
+        const alphaMode = engine.getAlphaMode();
+        const discard =
+            configuration.defines["PREPASS_COLOR_INDEX"] === undefined ||
+            alphaMode === Constants.ALPHA_COMBINE ||
+            alphaMode === Constants.ALPHA_ADD ||
+            alphaMode === Constants.ALPHA_LAYER_ACCUMULATE;
+        effect.setFloat("geometryZeroAlphaDiscard", discard ? 1 : 0);
+    }
+
     /**
      * Adds uniforms and samplers for geometry rendering.
      * @param uniforms The array of uniforms to add to.

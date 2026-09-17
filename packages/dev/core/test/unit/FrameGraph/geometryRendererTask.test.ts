@@ -17,6 +17,8 @@ import { Mesh } from "core/Meshes/mesh";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
 import { type Effect } from "core/Materials/effect";
+import { OutlineRenderer } from "core/Rendering/outlineRenderer";
+import { type SubMesh } from "core/Meshes/subMesh";
 
 describe("FrameGraphGeometryRendererTask object IDs", () => {
     let engine: NullEngine;
@@ -302,6 +304,52 @@ describe("FrameGraphGeometryRendererTask attachment routing", () => {
         MaterialHelperGeometryRendering._RestoreAttachments(engine);
         expect(defines).toEqual([]);
         expect(engine.bindAttachments).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        { mode: Constants.ALPHA_COMBINE, discard: 1 },
+        { mode: Constants.ALPHA_ADD, discard: 1 },
+        { mode: Constants.ALPHA_LAYER_ACCUMULATE, discard: 1 },
+        { mode: Constants.ALPHA_ONEONE, discard: 0 },
+        { mode: Constants.ALPHA_PREMULTIPLIED, discard: 0 },
+        { mode: Constants.ALPHA_DISABLE, discard: 0 },
+    ])("preserves zero-alpha beauty contributions for alpha mode $mode", ({ mode, discard }) => {
+        const renderPassId = task.objectRenderer.renderPassId;
+        const configuration = MaterialHelperGeometryRendering.CreateConfiguration(renderPassId);
+        configuration.defines.PREPASS_COLOR_INDEX = 0;
+        engine.currentRenderPassId = renderPassId;
+        vi.spyOn(engine, "getAlphaMode").mockReturnValue(mode);
+        const setFloat = vi.fn();
+        const effect = { setFloat } as unknown as Effect;
+
+        MaterialHelperGeometryRendering._BindZeroAlphaDiscard(engine, effect);
+        expect(setFloat).toHaveBeenLastCalledWith("geometryZeroAlphaDiscard", discard);
+
+        delete configuration.defines.PREPASS_COLOR_INDEX;
+        MaterialHelperGeometryRendering._BindZeroAlphaDiscard(engine, effect);
+        expect(setFloat).toHaveBeenLastCalledWith("geometryZeroAlphaDiscard", 1);
+    });
+
+    it("does not rebind attachments for disabled mesh diagnostics or a geometry-only pass", () => {
+        const outline = new OutlineRenderer(scene);
+        const mesh = MeshBuilder.CreateBox("mesh", {}, scene);
+        const hooks = outline as unknown as {
+            _beforeRenderingMesh: (mesh: Mesh, subMesh: SubMesh, batch: unknown) => void;
+            _afterRenderingMesh: (mesh: Mesh, subMesh: SubMesh, batch: unknown) => void;
+        };
+        hooks._beforeRenderingMesh(mesh, mesh.subMeshes[0], {});
+        hooks._afterRenderingMesh(mesh, mesh.subMeshes[0], {});
+        expect(engine.bindAttachments).not.toHaveBeenCalled();
+
+        const id = task.objectRenderer.renderPassId;
+        MaterialHelperGeometryRendering.CreateConfiguration(id);
+        MaterialHelperGeometryRendering._PrepareConfiguration(id, [1], [0]);
+        engine.currentRenderPassId = id;
+        mesh.renderOutline = true;
+        hooks._beforeRenderingMesh(mesh, mesh.subMeshes[0], {});
+        hooks._afterRenderingMesh(mesh, mesh.subMeshes[0], {});
+        expect(engine.bindAttachments).not.toHaveBeenCalled();
+        outline.dispose();
     });
 
     it("initializes motion history and keeps the previous world matrix stable within a frame", () => {

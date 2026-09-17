@@ -367,7 +367,7 @@ export class OutlineRenderer implements ISceneComponent {
     }
 
     private _beforeRenderingMesh(mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch): void {
-        if (!this.enabled || !MaterialHelperGeometryRendering._BindColorAttachments(this._engine)) {
+        if (!this.enabled || (!mesh.renderOutline && !mesh.renderOverlay) || !MaterialHelperGeometryRendering._IsColorAttachmentEnabled(this._engine)) {
             return;
         }
 
@@ -406,7 +406,7 @@ export class OutlineRenderer implements ISceneComponent {
     }
 
     private _afterRenderingMesh(mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch): void {
-        if (!this.enabled || !MaterialHelperGeometryRendering._BindColorAttachments(this._engine)) {
+        if (!this.enabled || (!mesh.renderOutline && !mesh.renderOverlay) || !MaterialHelperGeometryRendering._IsColorAttachmentEnabled(this._engine)) {
             return;
         }
 

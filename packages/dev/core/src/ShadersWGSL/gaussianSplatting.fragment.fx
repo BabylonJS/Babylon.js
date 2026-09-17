@@ -12,6 +12,7 @@ varying vColor: vec4f;
 varying vPosition: vec2f;
 
 #ifdef PREPASS
+uniform geometryZeroAlphaDiscard: f32;
 #ifdef PREPASS_POSITION
 varying vGeometryPositionW: vec3f;
 #endif
@@ -54,7 +55,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
 #ifdef PREPASS
-    if (finalColor.a <= 0.0) {
+    if (finalColor.a <= 0.0 && uniforms.geometryZeroAlphaDiscard > 0.0) {
         discard;
     }
     let geometryColor = finalColor;

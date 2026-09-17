@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type Immutable, type Nullable, type float, type DataArray } from "../types";
 import { type Color3Gradient, type IValueGradient, type FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
-import { Observable } from "../Misc/observable.pure";
+import { Observable, type Observer } from "../Misc/observable.pure";
 import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector.pure";
 import { Color4, TmpColors } from "../Maths/math.color.pure";
 import { Lerp } from "../Maths/math.scalar.functions";
@@ -96,6 +96,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _randomTextureSize: number;
     private _actualFrame = 0;
     private _drawWrappers: DrawWrapper[][]; // first index is render pass id, second index is blend mode
+    private _renderPassObserver: Nullable<Observer<number>> = null;
     private _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
     private _renderShadersLoaded = false;
 
@@ -1603,6 +1604,17 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         let drawWrappers = this._drawWrappers[currentRenderPassId];
         if (!drawWrappers) {
             drawWrappers = this._drawWrappers[currentRenderPassId] = [];
+            if (currentRenderPassId !== Constants.RENDERPASS_MAIN && !this._renderPassObserver) {
+                this._renderPassObserver = (this._engine._onReleaseRenderPassObservable ??= new Observable<number>()).add((id) => {
+                    const releasedWrappers = this._drawWrappers[id];
+                    if (releasedWrappers) {
+                        for (const wrapper of releasedWrappers) {
+                            wrapper?.dispose();
+                        }
+                        delete this._drawWrappers[id];
+                    }
+                });
+            }
         }
         let drawWrapper = drawWrappers[blendMode];
         if (!drawWrapper) {
@@ -1621,7 +1633,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
             this.fillUniformsAttributesAndSamplerNames(uniforms, attributes, samplers);
             if (geometryRendering) {
-                uniforms.push("cameraInfo", "inverseEmitterWM", "objectId", "meshBlendTag");
+                uniforms.push("cameraInfo", "inverseEmitterWM", "objectId", "meshBlendTag", "geometryZeroAlphaDiscard");
             }
 
             const shaderLanguage = this._engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
@@ -2158,7 +2170,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         effect.setVector2("translationPivot", this.translationPivot);
         const worldOffset = this.worldOffset.subtractToRef(this._scene?.floatingOriginOffset || Vector3.ZeroReadOnly, TmpVectors.Vector3[0]);
         effect.setVector3("worldOffset", worldOffset);
-        effect.setMatrix("emitterWM", emitterWM);
+        if (this.isLocal) {
+            effect.setMatrix("emitterWM", emitterWM);
+        }
         if (this._colorGradientsTexture) {
             effect.setTexture("colorGradientSampler", this._colorGradientsTexture);
         } else {
@@ -2207,6 +2221,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         // Draw order
         this._setEngineBasedOnBlendMode(blendMode);
 
+        if (effect._multiTarget) {
+            MaterialHelperGeometryRendering._BindZeroAlphaDiscard(this._engine, effect);
+        }
         let rendered = false;
         try {
             if (MaterialHelperGeometryRendering._BindAttachmentsForEffect(this._engine, effect)) {
@@ -2592,6 +2609,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
+        this._engine._onReleaseRenderPassObservable?.remove(this._renderPassObserver);
+        this._renderPassObserver = null;
         for (const drawWrappers of this._drawWrappers) {
             if (!drawWrappers) {
                 continue;
