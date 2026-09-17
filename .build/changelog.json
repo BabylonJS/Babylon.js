@@ -1,285 +1,67 @@
 {
-    "fromTag": "9.26.1",
+    "fromTag": "9.26.2",
     "changelog": {
-        "9.26.1": [
+        "9.27.0": [
             {
-                "pr": "18909",
-                "title": "Decouple Gaussian classification for effective tree shaking",
-                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Motivation\n\nGeneric rendering code such as `DepthRenderer` imported `IsGaussianSplattingClassName` from the full Gaussian Splatting mesh implementation. In flattened Rollup bundles, that small runtime import could retain the complete Gaussian Splatting dependency tree even when no Gaussian classes were used.\n\nThis follows up on #18707, which centralized the classification needed for streamed splats, and the pure-module work in #18867.\n\n## Changes\n\n- Move Gaussian class-name classification into a dependency-light `gaussianSplatting.functions.ts` module.\n- Add an inherited `_isGaussianSplatting` capability, defaulting to `false` on `AbstractMesh` and overridden by `GaussianSplattingMeshBase`.\n- Update rendering, geometry buffer, GPU picking, IBL shadows, snapshot rendering, node material, and Viewer consumers to use the lightweight predicate.\n- Preserve `IsGaussianSplattingClassName` at its existing `gaussianSplattingMesh` export path for source and runtime compatibility.\n- Add focused Rollup and Webpack assertions that retaining `DepthRenderer` does not retain Gaussian mesh implementations.\n- Extend bundle smoke tests and tree-shaking guidance to prevent similar feature-implementation imports.\n\n## Validation\n\n- `npm run format:check`\n- `npm run lint:check`\n- `npm run test:unit` — 359 files, 5,054 tests passed\n- Core Rollup/Webpack bundle smoke tests\n- Focused Rollup/Webpack `DepthRenderer` isolation regression\n- Viewer TypeScript build\n- Devhost browser validation of capability and non-capability meshes",
+                "pr": "18914",
+                "title": "Add KHR_interactivity export support",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Overview\n\nImplements Phase 2 of ratified `KHR_interactivity` support, building on the canonical import model introduced by #18903. Babylon.js can now export imported and representably edited interactivity graphs as standards-compliant glTF or GLB without serializing Babylon FlowGraph JSON as KHR data.\n\n## What changed\n\n- Adds a real, tree-shake-safe `KHR_interactivity` glTF serializer extension and typed `IExportOptions.khrInteractivity` provider API.\n- Adds a canonical inverse exporter with explicit representability analysis and structured graph/node/socket diagnostics.\n- Preserves exact operations, declarations, configurations, defaults, dynamic sockets, variables, events, graph metadata, extension-defined typed no-ops, and source provenance.\n- Inverts one-to-many Phase 1 composites only while their operation/role membership and internal wiring remain valid.\n- Deterministically topologically orders value and flow dependencies and rejects cycles that cannot satisfy ratified earlier-value/later-flow ordering.\n- Remaps references to exported nodes, animations, cameras, materials, meshes, textures, images, samplers, skins, and scenes, including BasisU/WebP/AVIF-selected image sources.\n- Preserves no-op root nodes during KHR export so identity-node references survive final serializer remapping.\n- Scopes custom-event payload decoding to Send/Receive block configuration while preserving explicit, delegated, and in-place custom parser callbacks, ordinary object/typed context variables named `eventData`, and payload sockets named `value`.\n- Emits companion hoverability, selectability, and visibility extensions and maintains `extensionsUsed` / `extensionsRequired` from actual graph content.\n- Adds separate Flow Graph Editor actions for **Export KHR glTF**, **Export KHR GLB**, and legacy **BABYLON_flow_graph GLB**.\n- Protects imported KHR editor state from destructive preview-scene replacement and retains the exact scene, engine canvas, resize lifecycle, single-window frame scheduling, and snippet reset behavior across preview-pane undock/redock.\n- Reports actionable export errors without mutating the live graph.\n\nThe lossless path intentionally requires the neutral Phase 1 canonical KHR document and provenance. Arbitrary Babylon FlowGraphs with no KHR provenance are rejected rather than approximated. Structural variable edits and extension-backed pointer properties that cannot be preserved exactly are likewise diagnosed and rejected.\n\n## End-to-end testing method\n\nThe Playwright test uses the real locally served Flow Graph Editor, Babylon loader, serializer, browser download API, and drag/drop import path:\n\n1. Open FGE and wait for the real editor to initialize.\n2. Drop a valid glTF containing a ratified `KHR_interactivity` graph onto the editor and verify that its node is reconstructed.\n3. Attempt to replace the preview scene and verify that FGE preserves the KHR import-owned scene/runtime state.\n4. Click **Export KHR glTF**, capture the browser download, parse the file, and verify the canonical graph plus `extensionsUsed` / `extensionsRequired`.\n5. Load the downloaded `.gltf` in an isolated Babylon engine with `KHR_interactivity.strictValidation: true`, assert one import result and zero strict errors, then drop it back into FGE and verify the real editor import reconstructs the graph.\n6. Click **Export KHR GLB**, capture the binary download, verify its GLB magic header, strictly load it in the isolated engine with zero errors, then drop it back into FGE and verify graph reconstruction.\n7. Undock the live Scene Preview pane, verify the engine canvas moves to the popup document, resize the popup and assert engine render dimensions match canvas client dimensions, then close it and verify the same scene UID/canvas return, frame IDs continue advancing, and engine frames sampled across 12 browser RAF ticks stay within one render chain.\n8. In the mocked Playground-snippet scenario, undock/redock without recreating the retained scene, then use Reset and verify the persisted snippet ID reloads the snippet and restores its original state.\n9. Add an editor-only block with no KHR inverse mapping, retry export, and verify the UI displays a precise diagnostic instead of producing a lossy file.\n\nThe main browser scenario is in `packages/tools/flowGraphEditor/test/playwright/flowGraphEditor.test.ts` under `exports and re-imports ratified KHR_interactivity glTF and GLB with actionable diagnostics`; the snippet-remount coverage is under `loads and resets a mocked preview scene snippet`.\n\n## Validation\n\n- Full development build and affected package compiles\n- Full unit suite: **370 files, 5,424 passed, 1 expected failure, 32 skipped**\n- KHR / FlowGraph suite: **905 passed**\n- Focused FlowGraph/KHR/editor-unit regression suite after review: **849/849 passed**\n- Full Flow Graph Editor Playwright suite: **111/111 passed**\n- Focused post-review glTF/GLB strict export/re-import, resize-aware redock, continued-frame, single-RAF-chain, and snippet-reset E2E: passed\n- Right-handed identity-root serializer integration regression: passed\n- Context serialization regressions for ordinary objects (including `{ value: 5 }`) and typed values named `eventData`: passed\n- Explicit/delegating/in-place custom parser regressions, including a reconstructed `FlowGraphInteger` default and graph-level Send/Receive sockets named `value`: passed\n- Pinned official July pre-ratification compatibility corpus: **175 passed, 1 documented skip**\n- Format and lint/ratchets: passed\n- TypeDoc: passed\n- Tree-shaking verification: **16/16 passed**\n- Rollup and Webpack tree-shaking smoke tests: passed\n- Side-effect manifest synchronization: passed for core, GUI, loaders, and serializers\n- Flow Graph MCP registry drift tests: **3/3 passed**\n- Public `@babylonjs/mcp-servers` package build: passed\n\nThe July Khronos asset corpus is used only as pre-ratification compatibility coverage. Ratified behavior is validated against the canonical schema/spec snapshot merged by Phase 1.\n\n## Review\n\nAn independent GPT-5.6 Sol review traced the complete branch under both Babylon.js-instruction and agnostic engineering lenses. All findings were fixed and covered by regressions; the final follow-up reported no remaining high-confidence findings.",
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    ".github/instructions/tree-shaking.instructions.md",
-                    "packages/dev/core/src/Collisions/gpuPicker.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock.pure.ts",
-                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplatting.functions.ts",
-                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.pure.ts",
-                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
-                    "packages/dev/core/src/Meshes/abstractMesh.pure.ts",
-                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts",
-                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.pure.ts",
-                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.pure.ts",
-                    "packages/dev/core/src/Rendering/depthRenderer.pure.ts",
-                    "packages/dev/core/src/Rendering/geometryBufferRenderer.pure.ts",
-                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.functions.test.ts",
-                    "packages/tools/tests/test/unit/treeShakingSideEffects.test.ts",
-                    "packages/tools/viewer/src/full/viewer.ts",
-                    "scripts/treeshaking/bundleSmokeTest.mjs"
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSendCustomEventBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphParser.ts",
+                    "packages/dev/core/src/FlowGraph/serialization.ts",
+                    "packages/dev/core/src/FlowGraph/typeDefinitions.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphSerialization.test.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_texture_avif.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_texture_webp.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/index.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphExporter.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphModel.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_texture_basisu.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoaderInterfaces.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivityGraphExporter.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivityGraphModel.test.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_interactivity.pure.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_interactivity.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/pure.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFSerializer.ts",
+                    "packages/dev/serializers/test/integration/glTFSerializer.test.ts",
+                    "packages/dev/serializers/test/unit/glTF/khrInteractivity.test.ts",
+                    "packages/public/@babylonjs/serializers/package.json",
+                    "packages/tools/flow-graph-mcp-server/src/blockRegistry.ts",
+                    "packages/tools/flow-graph-mcp-server/test/unit/registryDrift.test.ts",
+                    "packages/tools/flowGraphEditor/src/components/help/helpContent.ts",
+                    "packages/tools/flowGraphEditor/src/components/preview/scenePreviewComponent.tsx",
+                    "packages/tools/flowGraphEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/flowGraphEditor/src/components/variables/variablesPanelComponent.tsx",
+                    "packages/tools/flowGraphEditor/src/globalState.ts",
+                    "packages/tools/flowGraphEditor/src/serializationTools.ts",
+                    "packages/tools/flowGraphEditor/src/variableUtils.ts",
+                    "packages/tools/flowGraphEditor/test/playwright/flowGraphEditor.test.ts",
+                    "packages/tools/flowGraphEditor/test/unit/serializationTools.test.ts",
+                    "packages/tools/flowGraphEditor/test/unit/variableUtils.test.ts",
+                    "scripts/treeshaking/side-effects-manifest/serializers/glTF.json"
                 ],
                 "tags": [
-                    "bug",
-                    "optimizations",
-                    "viewer",
-                    "build",
-                    "Gaussian Splatting"
-                ]
-            },
-            {
-                "pr": "18902",
-                "title": "Add dithered tile fade material plugin",
-                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\nAdds an opaque dithered fade plugin for tile LOD transitions on Standard and PBR materials.\n\nSupports independent bounds for meshes, hardware `InstancedMesh` batches, and thin-instance batches, including reusable bulk thin-instance updates for per-frame tile transitions. The plugin covers color and integrated prepass outputs; standalone shadow, depth, picking, outline, and custom passes remain renderer-managed.\n\nIncludes focused unit coverage plus a textured BoomBox Playground and WebGL2/WebGPU visual baseline demonstrating complementary mesh fades and independent hardware-instance fades.",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/ditheredTileFadeMaterialPlugin.ts",
-                    "packages/dev/core/src/Materials/index.ts",
-                    "packages/dev/core/src/Materials/pure.ts",
-                    "packages/dev/core/test/unit/Materials/babylon.ditheredTileFadeMaterialPlugin.test.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/ditheredTileFadeMaterialPlugin.png",
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": [
+                    "loaders",
                     "new feature"
                 ]
-            },
-            {
-                "pr": "18822",
-                "title": "Add new MultiTexture class",
-                "description": "This class adds the ability to load multiple textures at once that get combined at the shader level. It uses `RawTexture2DArray` (WebGL2+ only) and adds methods to add, remove, insert, and update layers. \r\n\r\nUsage:\r\n\r\n```\r\nconst allTextures = [\r\n        'http://localhost:3000/textures/Rock064_1K-JPG/Rock064_1K-JPG_Color.jpg',\r\n        'http://localhost:3000/textures/Rock064_1K-JPG/01_yellow_star.png'\r\n    ]\r\n    const mat = new BABYLON.PBRMaterial('mat', scene);\r\n    let mt = new BABYLON.MultiTexture(\"myMT\", allTextures, scene, {width: 128, height: 128})\r\n    mat.bumpTexture = new BABYLON.Texture(\"http://localhost:3000/textures/Rock064_1K-JPG/Rock064_1K-JPG_NormalDX.jpg\", scene)\r\n    mat.metallicTexture = new BABYLON.Texture(\"http://localhost:3000/textures/Rock064_1K-JPG/Rock064_1K-JPG_Roughness.jpg\", scene)\r\n    mat.albedoTexture = mt;   \r\n   \r\n    mt.blendMode = BABYLON.MultiBlendMode.ALPHA_BLEND\r\n```\r\n<img width=\"294\" height=\"295\" alt=\"image\" src=\"https://github.com/user-attachments/assets/aa3f5769-b5d3-4726-939e-a8617665be54\" />\r\n<img width=\"305\" height=\"267\" alt=\"image\" src=\"https://github.com/user-attachments/assets/fa332121-2283-46d6-9abf-77292558b0f2\" />\r\n",
-                "author": {
-                    "name": "abogartz",
-                    "url": "https://github.com/abogartz"
-                },
-                "files": [
-                    "packages/dev/addons/src/index.ts",
-                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeAdd.fragment.fx",
-                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeAlphaBlend.fragment.fx",
-                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeAlphaMax.fragment.fx",
-                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeMultiply.fragment.fx",
-                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeScreen.fragment.fx",
-                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeSubtract.fragment.fx",
-                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeAdd.fragment.fx",
-                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeAlphaBlend.fragment.fx",
-                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeAlphaMax.fragment.fx",
-                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeMultiply.fragment.fx",
-                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeScreen.fragment.fx",
-                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeSubtract.fragment.fx",
-                    "packages/dev/addons/src/multiTexture/index.ts",
-                    "packages/dev/addons/src/multiTexture/multiTexture.ts",
-                    "packages/dev/addons/test/unit/multiTexture/multiTexture.test.ts",
-                    "packages/dev/core/src/Engines/Extensions/index.ts",
-                    "packages/dev/core/src/Engines/Extensions/pure.ts",
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/index.ts",
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/pure.ts",
-                    "packages/dev/core/src/Materials/Textures/rawTexture2DArray.functions.ts",
-                    "packages/tools/tests/test/playwright/multiTexture.utils.ts",
-                    "packages/tools/tests/test/playwright/multiTexture.webgl2.test.ts",
-                    "packages/tools/tests/test/playwright/multiTexture.webgpu.test.ts",
-                    "packages/tools/tests/test/playwright/multiTextureOpsEquivalence.webgl2.test.ts",
-                    "packages/tools/tests/test/playwright/multiTextureOpsEquivalence.webgpu.test.ts"
-                ],
-                "tags": [
-                    "new feature"
-                ]
-            },
-            {
-                "pr": "18888",
-                "title": "Fluid renderer: per-particle size for GPUParticleSystem + fix GPU particle quad offsets",
-                "description": "Follow-up to #18863.\r\n\r\n- **Fluid renderer: support per-particle size for GPUParticleSystem**\r\n- **Fluid renderer: fix quad offsets for GPUParticleSystem**\r\n- **Add visualization tests for fluid GPU particle system sizing**\r\n\r\n### Per-particle size now works with `GPUParticleSystem`\r\n`GPUParticleSystem` stores its `size` attribute as `vec3 (baseSize, scaleX, scaleY)`, so the fluid depth/thickness vertex shaders (GLSL + WGSL) now get a `FLUIDRENDERING_PER_PARTICLE_SIZE_VEC3` define and compute `size.yz * size.x`, matching `gpuRenderParticles.vertex.fx`. The previous warning + uniform-size fallback for GPU systems is removed. A small overridable hook (`_getPerParticleSizeAttributeSize()`) selects the layout.\r\n\r\n`FluidRenderingObject.UsePerParticleSizeAttribute` is still opt-in and off by default; nothing changes unless it is enabled.\r\n\r\n### Fixes a pre-existing bug with `GPUParticleSystem` (independent of the flag)\r\n`GPUParticleSystem`'s sprite `offset` quad is centered (`[-0.5, 0.5]`) while the fluid shaders assume the CPU `ParticleSystem` convention (`[0, 1]`: `offset - 0.5` for the corner, `uv = offset`). Each quad was shifted by half a particle and only a quarter of the sphere survived the discard.\r\n\r\n#### Update:\r\nThe fix is shader-side: a new overridable hook (`_usesCenteredOffsetAttribute()`, true for `GPUParticleSystem`) adds a `FLUIDRENDERING_CENTERED_OFFSET` define, and the depth/thickness vertex shaders (GLSL + WGSL) normalize the offset with `offset + 0.5` before computing the corner position and UV. The particle system's own buffers stay the single source of truth: no wrapper-owned buffer, no per-draw lookup, no extra disposal or context-restore handling. This applies to both the per-particle and uniform-size paths.\r\n\r\n### Tests\r\n- Unit tests: vec2 attribute for `ParticleSystem`, vec3 for `GPUParticleSystem`, uniform when the flag is off; `FLUIDRENDERING_CENTERED_OFFSET` is asserted present for GPU systems (with and without the flag) and absent for CPU systems.\r\n- Four new visualization tests, passing on WebGL2 and WebGPU; existing fluid tests unchanged:\r\n  - `#M9FSIH#1` (static scene): per-particle sizes vs. uniform-size fallback.\r\n  - `#M9FSIH#4` (static scene, `scaleX = 1.5`, `scaleY = 0.75`): per-particle vs. uniform, covering the `vec3(baseSize, scaleX, scaleY)` path.\r\n\r\n### Playground\r\nAnimated demo: https://playground.babylonjs.com/#M9FSIH#2 (on the current release it shows the quarter-sphere bug; correct with this PR's snapshot build).\r\n\r\n### Noticed, not addressed here\r\n`addParticleSystem(gpuPs, /*generateDiffuseTexture*/ false)` renders nothing, because `GPUParticleSystem`'s emission bookkeeping lives in `render()`, which the fluid renderer replaces with a no-op. Happy to look at it in a separate PR if wanted.\r\n",
-                "author": {
-                    "name": "tini2n",
-                    "url": "https://github.com/tini2n"
-                },
-                "files": [
-                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObject.ts",
-                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObjectParticleSystem.ts",
-                    "packages/dev/core/src/Shaders/fluidRenderingParticleDepth.vertex.fx",
-                    "packages/dev/core/src/Shaders/fluidRenderingParticleThickness.vertex.fx",
-                    "packages/dev/core/src/ShadersWGSL/fluidRenderingParticleDepth.vertex.fx",
-                    "packages/dev/core/src/ShadersWGSL/fluidRenderingParticleThickness.vertex.fx",
-                    "packages/dev/core/test/unit/Rendering/fluidRenderingObjectParticleSystem.test.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/fluidGpuParticleSystemPerParticleSize.png",
-                    "packages/tools/tests/test/visualization/ReferenceImages/fluidGpuParticleSystemPerParticleSizeAsymmetricScale.png",
-                    "packages/tools/tests/test/visualization/ReferenceImages/fluidGpuParticleSystemUniformSize.png",
-                    "packages/tools/tests/test/visualization/ReferenceImages/fluidGpuParticleSystemUniformSizeAsymmetricScale.png",
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": [
-                    "bug",
-                    "particles"
-                ]
-            },
-            {
-                "pr": "18907",
-                "title": "FBX loader: full format coverage, animation fidelity, DCC materials, NURBS, constraints",
-                "description": "## The short version\n\nFBX is still the file everybody actually has. Every Maya, Max, MotionBuilder, Blender and Mixamo pipeline spits\none out, and half the models people try to drag into the sandbox are FBX. The pure TS loader that landed in 9.26\nwas a great start, so I spent some time seeing how far it could go. This PR takes it from \"loads a lot of files\"\nto \"loads all of them, and they look and move like they did in the DCC\".\n\nNothing changes for existing users: the defaults are the 9.26 behaviour, and everything new sits behind options,\nbundled as `preset: \"full\"` for people who want all of it in one line.\n\nI did not want to guess at any of this, so every change was checked against ufbx (the C FBX parser that has\nfeature parity with the Autodesk SDK) on its test corpus: 683 real files from Maya, 3ds Max, MotionBuilder,\nBlender and ZBrush, versions FBX 3000 through 7700, ASCII and binary. Before: 501 of those files loaded.\nAfter: all of them, with transforms, triangle counts, animation samples, camera FOVs and lights matching ufbx\nto the third decimal.\n\n## What changed\n\n**File formats.** FBX 6.0/6.1 was only partly working (transform animation loaded, but lights, cameras, skins\nand blend shapes were silently dropped). FBX 5.x and older did not load at all. Both work now: the old files get\nrewritten into the 6.x layout on load so the rest of the loader does not have to care. Big-endian binaries,\nevery weird ASCII number spelling (`1.#INF`, `nan(ind)`, `&quot;`), files with no `Objects` block, cameras that are\nnever connected to anything: all handled.\n\n**Animation.** This is where most of the work went. Curves keep their real tangents (Bezier, TCB, auto,\nweighted, broken), pre/post extrapolation works, animation layers blend the way MotionBuilder blends them\n(additive and override, accumulation modes, animated layer weights), step keys stay stepped, negative clip starts\nare fine, and the file's frame rate is used instead of 30. Node transforms are built from the exact FBX TRS chain\nwith pivots and offsets instead of decomposing matrices, and the RrSs / Rrs inherit modes work for both plain\nnodes and rig bones. Visibility, camera, light, material, blend shape weight and even user property animation\ncome through as Babylon animations. Clips that span days (yes, the corpus has those) used to bake millions of\nkeys; sampling is now capped per key segment and they load in milliseconds.\n\n**Materials.** Every material flavour the big DCCs write: Lambert/Phong, Maya Standard Surface (Arnold and\nOSL), 3ds Max Physical, 3ds Max PBR (metal/rough and spec/gloss), glTF, OpenPBR, Stingray PBS. They all resolve\ninto one material model and come out as `StandardMaterial` by default, or as `PBRMaterial` for the PBR ones with\n`materials: \"auto\"` (or force either). Texture wrap modes and the old 6.x \"texture per layer element\" assignment\nwork too. Layered textures are approximated by their first layer and reported; Babylon has no layer blending to\nmap them onto.\n\n**Geometry.** Vertex welding (the old loader produced one vertex per polygon corner), optional geometry sharing\nbetween instanced models, an optional unit scale, and the missing geometry types: NURBS surfaces get tessellated\ninto meshes with the same subdivision the file asks for (a skin or blend shape bound to one is reported and left\noff, since the tessellated mesh has no control point mapping), NURBS curves and `Line` geometry become\n`LinesMesh` when asked. LOD groups map to Babylon LOD levels honouring each level's show/hide/use-LOD mode,\ndisplay layers hide their members, selection sets and user properties land in metadata. The ear clipper was cubic in vertex count and took 82 seconds on a maze made of huge n-gons; it is\nnow a linked-ring clipper that does the same file in 2 seconds with identical output.\n\n**Cameras and lights.** Field of view now follows the SDK's aspect, aperture and gate fit rules (it matches to\nthe millidegree across every camera in the corpus), roll and ortho size are right, lights get their range from\nfar attenuation, and with `attachCamerasAndLights` both follow the node they belong to when it is animated.\n\n**Constraints.** Aim, parent, position, rotation and scale constraints are recorded as metadata, and with\n`constraints: \"apply\"` solved every frame: one solver per scene brackets the scene's animation phase (restores the\nunconstrained transforms before animations run, captures and solves after), orders the constraints so a constraint\nwhose target (or parent) is driven by another one is solved after it, reports cycles, blends from what animation\nproduced this frame (so a 50% weight stays 50%, whatever value animation wrote), and allocates nothing per frame.\nIK stays metadata.\n\n**Diagnostics.** Anything the loader has to skip or approximate is reported through an `onWarning` option and\nstored as `fbxDiagnostics` on the root node. Nothing fails silently anymore, and nothing that does work is\nreported as unsupported.\n\n## How it was tested\n\n- The ufbx corpus harness (in my repo, linked below): loads all 683 files with a `NullEngine` and compares\n  against a JSON dump from ufbx itself. 673 of 673 valid files load, triangle counts match on 672, rest\n  transforms match on 3920 of 3929 nodes, animation samples on 4358 of 4370, cameras and lights on all of them.\n  The leftovers are deliberate conventions and synthetic torture files (duplicate ids, names made of quotes, NaN\n  transforms), documented in the tests.\n- Babylon's own 18 FBX visualization playgrounds, replayed with this loader on WebGL2 and pixel-diffed against\n  the reference images in the repo: all 18 within 0.5% of pixels (antialiasing noise). This is the check that\n  caught the one real bug the headless harness could not: parenting cameras to their nodes put them under the\n  root's handedness flip and rendered a mirrored image. Fixed with a pivot, and there is a unit test for it now.\n- Every corpus file rendered on a real GPU: no exceptions, no shader errors.\n- `npm run build:source`, `npm run lint:check`, the TypeDoc check and the side-effects manifest are clean. The 109\n  FBX unit tests in this repo pass: 80 existing (two with expectations updated, see below) and 29 new ones that\n  pin every fix and every public option in this PR (ids beyond 2^53, negative clips, Properties60 layouts, legacy\n  GlobalSettings, the constraint solver, layered property animation, LOD display modes, NURBS deformers, texture\n  creation, diagnostics, presets).\n- 478 vitest tests in my repo, including a copy of this repo's FBX unit tests, parser edge cases, feature tests\n  and 43 corpus fixtures against oracle dumps.\n\n## Things reviewers should know\n\nDefaults are the 9.26 behaviour. Everything that changes what a scene looks like is an option, and\n`preset: \"full\"` sets them all at once:\n\n| Option                   | default (`\"compatible\"`) | `preset: \"full\"` |\n| ------------------------ | ------------------------ | ---------------- |\n| `materials`              | `\"standard\"`             | `\"auto\"`         |\n| `shareGeometry`          | `false`                  | `true`           |\n| `curves`                 | `\"skip\"`                 | `\"lines\"`        |\n| `constraints`            | `\"metadata\"`             | `\"apply\"`        |\n| `rebaseAnimations`       | `true`                   | `false`          |\n| `attachCamerasAndLights` | `false`                  | `true`           |\n\nOther things worth knowing:\n\n- New metadata keys on nodes, meshes, materials, cameras and lights, all prefixed `fbx`.\n- Object ids beyond 2^53 are accepted (real exporters write them) and kept distinct: the parsers keep the exact\n  digits and the connection resolver keys them by that text, so two ids that round to the same double never\n  collide. Synthetic ids for legacy objects are allocated outside the ids the file uses.\n- Two unit test expectations changed: the unsafe-id tests above, and a layer with override blending at a 50%\n  weight is evaluated instead of flagged as unsupported.\n- Joint children stay in the node hierarchy instead of being attached to bones.\n\nNot in this PR: IK solving, stereo cameras, audio clips, cache deformers, NURBS trim curves, texture layer\nblending, deformers on NURBS surfaces. They are all reported as warnings rather than dropped silently.\n\nThis is a big diff. It is one commit here because the pieces lean on each other, but I have it split into ten\nself-contained batches on my side (parsing, animation curves, inherit modes, materials, geometry, cameras and\nproperty animation, scene features, NURBS, legacy formats, constraints) and can open them one at a time if that\nis easier to review.\n\nThe corpus harness, the ufbx oracle, the GPU viewer and the playground replay live here:\nhttps://github.com/Pryme8/babylon-fbx-loader (the corpus files themselves are ufbx's, not committed to Babylon).\n\nCredit where it is due: I built this with Claude Code (Anthropic's Claude) doing a big share of the work with me,\nfrom porting the ufbx semantics to writing the corpus harness and the viewer, while I steered, tested and made the\ncalls on what goes in. It is listed as a co-author on the commit.\n",
-                "author": {
-                    "name": "Pryme8",
-                    "url": "https://github.com/Pryme8"
-                },
-                "files": [
-                    "packages/dev/loaders/src/FBX/fbxConstraintBehavior.ts",
-                    "packages/dev/loaders/src/FBX/fbxFileLoader.pure.ts",
-                    "packages/dev/loaders/src/FBX/index.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/animation.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/animationCurve.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/blendShapes.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/connections.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/constraints.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/fbxInterpreter.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/geometry.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/legacyDocument.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/materialModel.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/materials.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/nodeTransform.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/nurbs.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/propertyTemplates.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/rig.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/sceneDiagnostics.ts",
-                    "packages/dev/loaders/src/FBX/interpreter/skeleton.ts",
-                    "packages/dev/loaders/src/FBX/parsers/fbxAsciiParser.ts",
-                    "packages/dev/loaders/src/FBX/parsers/fbxBinaryParser.ts",
-                    "packages/dev/loaders/src/FBX/pure.ts",
-                    "packages/dev/loaders/src/FBX/types/fbxTypes.ts",
-                    "packages/dev/loaders/test/unit/FBX/fbxConstraintBehavior.test.ts",
-                    "packages/dev/loaders/test/unit/FBX/interpreter/animation.test.ts",
-                    "packages/dev/loaders/test/unit/FBX/interpreter/connections.test.ts",
-                    "packages/dev/loaders/test/unit/FBX/interpreter/legacyDocument.test.ts",
-                    "packages/dev/loaders/test/unit/FBX/interpreter/propertyTemplates.test.ts",
-                    "packages/dev/loaders/test/unit/FBX/loaderBehavior.test.ts",
-                    "packages/dev/loaders/test/unit/FBX/parsers/fbxBinaryParser.test.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "18900",
-                "title": "Improve USD materials, instancing, morphs, and skinning",
-                "description": "## Summary\n\nThis PR updates the Babylon.js USD loader and Sandbox runtime to consume immutable **protocol v5** emitted by `BabylonJS/babylon-usd-importer`. The released `/babylonUsdImporter/4/` runtime remains byte-for-byte unchanged.\n\nCompanion importer PRs:\n\n- Features: https://github.com/BabylonJS/babylon-usd-importer/pull/1\n- Protocol v5: https://github.com/BabylonJS/babylon-usd-importer/pull/2\n\nThe merged v5 source is `2baa7a087bad28498378dacf50d22f46c54eacc3`, tagged `v5`; the original shipped v4 source is tagged `v4`.\n\n### `UsdPreviewSurface` texture fidelity\n\n- Support independent base color, opacity, normal, metallic, roughness, occlusion, and emissive bindings.\n- Preserve selected texture output channels, source color space, and float4 scale/bias.\n- Use Babylon's existing packed metallic/roughness channel path when compatible.\n- Map separate roughness textures to `microSurfaceTexture` and separate occlusion textures to `ambientTexture`.\n- Use `TextureProcessor` only when channel extraction or scale/bias processing is required, cache processed results, and preserve UV rotation centers.\n- Generate mipmapped, trilinear processed textures where supported, preserve HDR emissive range with float/half-float output and material factors, and use a WebGL1-safe NPOT fallback.\n- Keep cancellation, rollback, direct-scene loading, and detached `AssetContainer` ownership safe for asynchronously processed textures.\n\n### Skeleton and skinning fixes\n\n- Construct Babylon bones with separate local rest and bind matrices.\n- Consume the runtime that places skinned geometry in Skeleton object space after applying `geomBindTransform`.\n- Fix off-axis joint animation when USD bind and rest poses differ.\n- Fix skinned submeshes whose authored garment/button transforms were previously applied twice.\n\n### High-performance point instancing\n\n- Register Babylon thin-instance support as a loader dependency.\n- Consume one contiguous matrix block per prototype with `mesh.thinInstanceSetBuffer(\"matrix\", ...)`.\n- Avoid allocating one `InstancedMesh` per USD point-instancer placement.\n- Validate ranges and reject duplicate/mixed classic and thin-instance batches for the same source.\n\nThe local Pixar PointInstancedMedCity benchmark loads as 8 source meshes and 40,000 GPU thin instances with no classic instance allocations, in about 1.6 seconds end to end on the development machine.\n\n### Morph targets and animation\n\n- Create and own `MorphTargetManager` instances through the loader's direct and detached container paths.\n- Materialize full post-weld target positions and optional normals from data-buffer views.\n- Preserve USD primary shapes and in-between shapes as separate Babylon morph targets.\n- Animate resolved influences with float animation tracks.\n- Keep texture-backed managers dynamically compacted and pin only the small vertex-attribute fallback where zero crossings would otherwise recompile shaders.\n- Use globally unique target IDs and validate target/animation metadata.\n\nThe local Pixar `HumanFemale.keepAlive` benchmark loads with:\n\n- 89 meshes\n- 28 texture-backed morph managers\n- 1,906 morph targets\n- 1,906 influence tracks\n- visible influence changes across the animation\n\n### Tests and runtime assets\n\n- Expanded USD protocol/materializer unit coverage, including malformed range rollback.\n- Real USDA/USDC/USDZ Sandbox regressions for materials, bind poses, point instancers, and morph animation.\n- GPU pixel-readback coverage for asymmetric HDR emissive processing, output mipmaps, and sampling.\n- New immutable protocol-v5 runtime directory pinned to the merged importer commit with SHA-256 documentation.\n\n## Validation\n\n- 39 focused USD loader/materializer unit tests plus 44 TextureProcessor tests.\n- Loader TypeScript compilation.\n- Tree-shaking verification: all 16 checks pass.\n- Local Sandbox validation for real USDA, USDC, USDZ, PointInstancedMedCity, HumanFemale, and animated skeleton repros, including four shipped-WASM integration tests.\n\nPrivate benchmark and repro assets are not committed.\n\n## Current limitations\n\n- MaterialX is intentionally not added by this PR.\n- Nested USD point instancers are unsupported.\n- Multi-frame point-instancer attributes are currently frozen at their first authored frame by the importer.\n",
-                "author": {
-                    "name": "SergioRZMasson",
-                    "url": "https://github.com/SergioRZMasson"
-                },
-                "files": [
-                    ".azure-pipelines/ci-monorepo.yml",
-                    ".azure-pipelines/templates/wait-for-snapshot.yml",
-                    "packages/dev/core/src/Materials/Textures/textureProcessor.ts",
-                    "packages/dev/core/test/unit/Materials/Textures/textureProcessor.test.ts",
-                    "packages/dev/loaders/src/USD/usdCommandProtocol.ts",
-                    "packages/dev/loaders/src/USD/usdFileLoader.pure.ts",
-                    "packages/dev/loaders/src/USD/usdSceneMaterializer.ts",
-                    "packages/dev/loaders/test/unit/USD/usdFileLoader.test.ts",
-                    "packages/dev/loaders/test/unit/USD/usdSceneMaterializer.test.ts",
-                    "packages/dev/loaders/test/unit/USD/usdTestUtils.ts",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/5/README.md",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/5/babylon-usd-importer.data",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/5/babylon-usd-importer.js",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/5/babylon-usd-importer.wasm",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/5/babylon-usd-importer.worker.js",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/5/openusd.license",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/5/tbb.license",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/5/zlib.license",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/README.md",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/asymmetric.png",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/bind-pose.usda",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/material-textures.usda",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/material-textures.usdc",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/material-textures.usdz",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/morph-targets.usda",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/point-instancer.usda",
-                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/texture.png",
-                    "packages/tools/sandbox/src/tools/usdFileInput.ts",
-                    "packages/tools/sandbox/test/interaction.sandbox.test.ts",
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": [
-                    "bug",
-                    "new feature",
-                    "breaking change"
-                ]
-            },
-            {
-                "pr": "18901",
-                "title": "Add Babylon Lite scene entities to Inspector v2",
-                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\n- refactor Fluent vector, quaternion, and color editors around runtime-neutral controlled primitives\n- add reusable Babylon Lite property editors through `@babylonjs/shared-ui-components/lite` while preserving existing Full APIs\n- add hierarchical Lite scene nodes with transforms, metadata, visibility, reparenting, removal, and topology/selection reconciliation\n- add Lite cameras, directional/point/spot/hemispheric lights, and identity-only shadow generators to Explorer and Properties\n- make Lite light color, intensity, range, and exponent edits refresh GPU light data immediately\n- expand the Lite Inspector test app and focused unit coverage\n\n## Behavior\n\nThe Lite Inspector now exposes the primary P2 scene-entity workflows with Full-equivalent outcomes where Babylon Lite has public support. Shadow generators remain identity/display-only because Babylon Lite does not expose editable internals. Bounding boxes/gizmos and editor hand-offs remain deferred to later parity milestones.\n\n## Review follow-up\n\n- addressed all six automated inline recommendations in `80fc942561`\n- added regression coverage for input compatibility and explicit precision formatting\n- prevented quaternion-only props from leaking into the shared tensor property line\n- guarded persistence warnings in console-less environments\n- removed redundant scene ownership traversal\n- attached Lite test-app camera controls with teardown cleanup in `4989d98e4e`\n- resolved all six review threads\n\n## Visual changes\n\nThe Lite Explorer now presents the scene hierarchy, cameras, lights, shadow generators, materials, and textures with Full Inspector color conventions. Light properties support live vector, color, and intensity editing.\n\n![Babylon Lite Inspector Explorer and directional light properties](https://github.com/user-attachments/assets/abfb8337-b423-4204-94ca-dbcf1b86d3e5)\n\n## Validation\n\n- `npm run format:check`\n- `npm run lint:check`\n- focused shared UI and Inspector Lite unit tests: 24 passing\n- published shared UI Lite entry bundle smoke test verifies no Babylon Core runtime dependency\n- shared UI package and Inspector TypeScript compilation\n- visible Microsoft Edge validation of hierarchy, properties, icon colors, PBR rendering, live light color/intensity updates, and camera controls\n- Azure Unit CI executed 5,006 passing tests; its red result is caused by 16 asynchronous shader-import `EnvironmentTeardownError`s after Vitest teardown, with the aggregate Monorepo check reflecting that same flake",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "package-lock.json",
-                    "packages/dev/inspector-v2/src/components/properties/boundProperty.tsx",
-                    "packages/dev/inspector-v2/src/components/properties/metadataProperties.tsx",
-                    "packages/dev/inspector-v2/src/lite/components/properties/cameraProperties.tsx",
-                    "packages/dev/inspector-v2/src/lite/components/properties/lightProperties.tsx",
-                    "packages/dev/inspector-v2/src/lite/components/properties/sceneNodeProperties.tsx",
-                    "packages/dev/inspector-v2/src/lite/inspector.tsx",
-                    "packages/dev/inspector-v2/src/lite/sceneEntityUtils.ts",
-                    "packages/dev/inspector-v2/src/lite/services/panes/properties/cameraPropertiesService.tsx",
-                    "packages/dev/inspector-v2/src/lite/services/panes/properties/lightPropertiesService.tsx",
-                    "packages/dev/inspector-v2/src/lite/services/panes/properties/meshPropertiesService.tsx",
-                    "packages/dev/inspector-v2/src/lite/services/panes/properties/sceneNodePropertiesService.tsx",
-                    "packages/dev/inspector-v2/src/lite/services/panes/properties/shadowGeneratorPropertiesService.tsx",
-                    "packages/dev/inspector-v2/src/lite/services/panes/scene/cameraExplorerService.tsx",
-                    "packages/dev/inspector-v2/src/lite/services/panes/scene/lightExplorerService.tsx",
-                    "packages/dev/inspector-v2/src/lite/services/panes/scene/meshExplorerService.tsx",
-                    "packages/dev/inspector-v2/src/lite/services/panes/scene/sceneSelectionUtils.ts",
-                    "packages/dev/inspector-v2/src/lite/services/panes/scene/shadowGeneratorExplorerService.tsx",
-                    "packages/dev/inspector-v2/test/app/lite.ts",
-                    "packages/dev/inspector-v2/test/unit/liteExplorerServices.test.ts",
-                    "packages/dev/inspector-v2/test/unit/liteMeshPropertiesService.test.tsx",
-                    "packages/dev/inspector-v2/test/unit/liteSceneEntities.test.ts",
-                    "packages/dev/inspector-v2/test/unit/runtimeNeutralPropertyLines.test.tsx",
-                    "packages/dev/sharedUiComponents/package.json",
-                    "packages/dev/sharedUiComponents/src/copyCommandToClipboard.ts",
-                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLines/colorPropertyLine.tsx",
-                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLines/colorPropertyLineCore.tsx",
-                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLines/vectorPropertyLine.tsx",
-                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLines/vectorPropertyLineCore.tsx",
-                    "packages/dev/sharedUiComponents/src/fluent/primitives/accordion.contexts.tsx",
-                    "packages/dev/sharedUiComponents/src/fluent/primitives/spinButton.tsx",
-                    "packages/dev/sharedUiComponents/src/fluent/primitives/structuralColorPicker.tsx",
-                    "packages/dev/sharedUiComponents/src/lite/fluent/hoc/propertyLines/colorPropertyLine.tsx",
-                    "packages/dev/sharedUiComponents/src/lite/fluent/hoc/propertyLines/vectorPropertyLine.tsx",
-                    "packages/dev/sharedUiComponents/src/lite/index.ts",
-                    "packages/dev/sharedUiComponents/test/unit/copyCommandToClipboard.test.ts",
-                    "packages/dev/sharedUiComponents/test/unit/liteEntryPoint.test.ts",
-                    "packages/public/@babylonjs/shared-ui-components/package.json"
-                ],
-                "tags": [
-                    "inspector",
-                    "new feature",
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "18899",
-                "title": "chore(deps): update dependencies securely",
-                "description": "## Summary\n\n- Update Vite to 8.2.2, Vitest and coverage to 4.1.11, and `@adobe/spz` to 0.2.3.\n- Add targeted transitive overrides for `@humanfs/node` 0.16.8, Nx's `smol-toml` 1.7.1, and `@puppeteer/browsers` 3.0.2.\n- Keep MemLab on its compatible Puppeteer 24.31.0 runtime while removing the vulnerable `extract-zip` dependency chain.\n- Resolve Tabster through its existing ESM entry for Fluent UI unit tests under Vitest 4.1.11.\n\n## Security audit\n\n- Before: 19 findings (14 high, 5 moderate).\n- After: 0 informational, 0 low, 0 moderate, 0 high, 0 critical; 0 total.\n- Command: `npx -y npm@11.18.0 audit --json`.\n- The audit includes all workspaces, development dependencies, and severities.\n\n## Seven-day release-age policy\n\n- Frozen run time: `2026-09-10T09:52:59Z`.\n- Cutoff: `2026-09-03T09:52:59Z`.\n- Compared the final lockfile with the baseline and checked all 163 newly resolved external registry versions with the release-age helper.\n- All 163 versions were published on or before the cutoff. `@puppeteer/browsers@3.0.2`, for example, was published `2026-05-15T11:51:19.116Z`.\n\n## Under-seven-day security exceptions\n\nNone.\n\n## Deferred recent releases\n\n- `@babylonjs/lite@1.28.0` was published `2026-09-07T08:07:40.298Z` and remains deferred until `2026-09-14T08:07:40.298Z`.\n\n## Validation\n\n- Normal npm 11.18.0 install completed with zero vulnerabilities and left `package-lock.json` byte-for-byte unchanged.\n- Final full audit: all severity counts zero.\n- Final exact-version release-age check: 163/163 eligible.\n- `npm run format:check`\n- `npm run lint:check`\n- `npm run build:dev`\n- `npm run test:unit` — 354 files, 5,020 passing tests, 1 expected failure, 30 skipped.\n- `npm run test:unit -w @tools/memory-leak-tests` — 3 files, 22 tests.\n- `npm run test -w @tools/memory-leak-tests -- --scenario core-playground-2FDQT5-1508` — zero leaks.",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "package-lock.json",
-                    "package.json",
-                    "packages/dev/loaders/package.json",
-                    "vitest.config.mts"
-                ],
-                "tags": []
             }
         ],
         "9.26.2": [
@@ -647,6 +429,287 @@
                     "bug",
                     "skip changelog"
                 ]
+            }
+        ],
+        "9.26.1": [
+            {
+                "pr": "18909",
+                "title": "Decouple Gaussian classification for effective tree shaking",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Motivation\n\nGeneric rendering code such as `DepthRenderer` imported `IsGaussianSplattingClassName` from the full Gaussian Splatting mesh implementation. In flattened Rollup bundles, that small runtime import could retain the complete Gaussian Splatting dependency tree even when no Gaussian classes were used.\n\nThis follows up on #18707, which centralized the classification needed for streamed splats, and the pure-module work in #18867.\n\n## Changes\n\n- Move Gaussian class-name classification into a dependency-light `gaussianSplatting.functions.ts` module.\n- Add an inherited `_isGaussianSplatting` capability, defaulting to `false` on `AbstractMesh` and overridden by `GaussianSplattingMeshBase`.\n- Update rendering, geometry buffer, GPU picking, IBL shadows, snapshot rendering, node material, and Viewer consumers to use the lightweight predicate.\n- Preserve `IsGaussianSplattingClassName` at its existing `gaussianSplattingMesh` export path for source and runtime compatibility.\n- Add focused Rollup and Webpack assertions that retaining `DepthRenderer` does not retain Gaussian mesh implementations.\n- Extend bundle smoke tests and tree-shaking guidance to prevent similar feature-implementation imports.\n\n## Validation\n\n- `npm run format:check`\n- `npm run lint:check`\n- `npm run test:unit` — 359 files, 5,054 tests passed\n- Core Rollup/Webpack bundle smoke tests\n- Focused Rollup/Webpack `DepthRenderer` isolation regression\n- Viewer TypeScript build\n- Devhost browser validation of capability and non-capability meshes",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".github/instructions/tree-shaking.instructions.md",
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock.pure.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplatting.functions.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.pure.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.pure.ts",
+                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.pure.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.pure.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.pure.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.pure.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.functions.test.ts",
+                    "packages/tools/tests/test/unit/treeShakingSideEffects.test.ts",
+                    "packages/tools/viewer/src/full/viewer.ts",
+                    "scripts/treeshaking/bundleSmokeTest.mjs"
+                ],
+                "tags": [
+                    "bug",
+                    "optimizations",
+                    "viewer",
+                    "build",
+                    "Gaussian Splatting"
+                ]
+            },
+            {
+                "pr": "18902",
+                "title": "Add dithered tile fade material plugin",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\nAdds an opaque dithered fade plugin for tile LOD transitions on Standard and PBR materials.\n\nSupports independent bounds for meshes, hardware `InstancedMesh` batches, and thin-instance batches, including reusable bulk thin-instance updates for per-frame tile transitions. The plugin covers color and integrated prepass outputs; standalone shadow, depth, picking, outline, and custom passes remain renderer-managed.\n\nIncludes focused unit coverage plus a textured BoomBox Playground and WebGL2/WebGPU visual baseline demonstrating complementary mesh fades and independent hardware-instance fades.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/ditheredTileFadeMaterialPlugin.ts",
+                    "packages/dev/core/src/Materials/index.ts",
+                    "packages/dev/core/src/Materials/pure.ts",
+                    "packages/dev/core/test/unit/Materials/babylon.ditheredTileFadeMaterialPlugin.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/ditheredTileFadeMaterialPlugin.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "18822",
+                "title": "Add new MultiTexture class",
+                "description": "This class adds the ability to load multiple textures at once that get combined at the shader level. It uses `RawTexture2DArray` (WebGL2+ only) and adds methods to add, remove, insert, and update layers. \r\n\r\nUsage:\r\n\r\n```\r\nconst allTextures = [\r\n        'http://localhost:3000/textures/Rock064_1K-JPG/Rock064_1K-JPG_Color.jpg',\r\n        'http://localhost:3000/textures/Rock064_1K-JPG/01_yellow_star.png'\r\n    ]\r\n    const mat = new BABYLON.PBRMaterial('mat', scene);\r\n    let mt = new BABYLON.MultiTexture(\"myMT\", allTextures, scene, {width: 128, height: 128})\r\n    mat.bumpTexture = new BABYLON.Texture(\"http://localhost:3000/textures/Rock064_1K-JPG/Rock064_1K-JPG_NormalDX.jpg\", scene)\r\n    mat.metallicTexture = new BABYLON.Texture(\"http://localhost:3000/textures/Rock064_1K-JPG/Rock064_1K-JPG_Roughness.jpg\", scene)\r\n    mat.albedoTexture = mt;   \r\n   \r\n    mt.blendMode = BABYLON.MultiBlendMode.ALPHA_BLEND\r\n```\r\n<img width=\"294\" height=\"295\" alt=\"image\" src=\"https://github.com/user-attachments/assets/aa3f5769-b5d3-4726-939e-a8617665be54\" />\r\n<img width=\"305\" height=\"267\" alt=\"image\" src=\"https://github.com/user-attachments/assets/fa332121-2283-46d6-9abf-77292558b0f2\" />\r\n",
+                "author": {
+                    "name": "abogartz",
+                    "url": "https://github.com/abogartz"
+                },
+                "files": [
+                    "packages/dev/addons/src/index.ts",
+                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeAdd.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeAlphaBlend.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeAlphaMax.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeMultiply.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeScreen.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeSubtract.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeAdd.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeAlphaBlend.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeAlphaMax.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeMultiply.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeScreen.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeSubtract.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/index.ts",
+                    "packages/dev/addons/src/multiTexture/multiTexture.ts",
+                    "packages/dev/addons/test/unit/multiTexture/multiTexture.test.ts",
+                    "packages/dev/core/src/Engines/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/Extensions/pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/pure.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture2DArray.functions.ts",
+                    "packages/tools/tests/test/playwright/multiTexture.utils.ts",
+                    "packages/tools/tests/test/playwright/multiTexture.webgl2.test.ts",
+                    "packages/tools/tests/test/playwright/multiTexture.webgpu.test.ts",
+                    "packages/tools/tests/test/playwright/multiTextureOpsEquivalence.webgl2.test.ts",
+                    "packages/tools/tests/test/playwright/multiTextureOpsEquivalence.webgpu.test.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "18888",
+                "title": "Fluid renderer: per-particle size for GPUParticleSystem + fix GPU particle quad offsets",
+                "description": "Follow-up to #18863.\r\n\r\n- **Fluid renderer: support per-particle size for GPUParticleSystem**\r\n- **Fluid renderer: fix quad offsets for GPUParticleSystem**\r\n- **Add visualization tests for fluid GPU particle system sizing**\r\n\r\n### Per-particle size now works with `GPUParticleSystem`\r\n`GPUParticleSystem` stores its `size` attribute as `vec3 (baseSize, scaleX, scaleY)`, so the fluid depth/thickness vertex shaders (GLSL + WGSL) now get a `FLUIDRENDERING_PER_PARTICLE_SIZE_VEC3` define and compute `size.yz * size.x`, matching `gpuRenderParticles.vertex.fx`. The previous warning + uniform-size fallback for GPU systems is removed. A small overridable hook (`_getPerParticleSizeAttributeSize()`) selects the layout.\r\n\r\n`FluidRenderingObject.UsePerParticleSizeAttribute` is still opt-in and off by default; nothing changes unless it is enabled.\r\n\r\n### Fixes a pre-existing bug with `GPUParticleSystem` (independent of the flag)\r\n`GPUParticleSystem`'s sprite `offset` quad is centered (`[-0.5, 0.5]`) while the fluid shaders assume the CPU `ParticleSystem` convention (`[0, 1]`: `offset - 0.5` for the corner, `uv = offset`). Each quad was shifted by half a particle and only a quarter of the sphere survived the discard.\r\n\r\n#### Update:\r\nThe fix is shader-side: a new overridable hook (`_usesCenteredOffsetAttribute()`, true for `GPUParticleSystem`) adds a `FLUIDRENDERING_CENTERED_OFFSET` define, and the depth/thickness vertex shaders (GLSL + WGSL) normalize the offset with `offset + 0.5` before computing the corner position and UV. The particle system's own buffers stay the single source of truth: no wrapper-owned buffer, no per-draw lookup, no extra disposal or context-restore handling. This applies to both the per-particle and uniform-size paths.\r\n\r\n### Tests\r\n- Unit tests: vec2 attribute for `ParticleSystem`, vec3 for `GPUParticleSystem`, uniform when the flag is off; `FLUIDRENDERING_CENTERED_OFFSET` is asserted present for GPU systems (with and without the flag) and absent for CPU systems.\r\n- Four new visualization tests, passing on WebGL2 and WebGPU; existing fluid tests unchanged:\r\n  - `#M9FSIH#1` (static scene): per-particle sizes vs. uniform-size fallback.\r\n  - `#M9FSIH#4` (static scene, `scaleX = 1.5`, `scaleY = 0.75`): per-particle vs. uniform, covering the `vec3(baseSize, scaleX, scaleY)` path.\r\n\r\n### Playground\r\nAnimated demo: https://playground.babylonjs.com/#M9FSIH#2 (on the current release it shows the quarter-sphere bug; correct with this PR's snapshot build).\r\n\r\n### Noticed, not addressed here\r\n`addParticleSystem(gpuPs, /*generateDiffuseTexture*/ false)` renders nothing, because `GPUParticleSystem`'s emission bookkeeping lives in `render()`, which the fluid renderer replaces with a no-op. Happy to look at it in a separate PR if wanted.\r\n",
+                "author": {
+                    "name": "tini2n",
+                    "url": "https://github.com/tini2n"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObject.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObjectParticleSystem.ts",
+                    "packages/dev/core/src/Shaders/fluidRenderingParticleDepth.vertex.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingParticleThickness.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/fluidRenderingParticleDepth.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/fluidRenderingParticleThickness.vertex.fx",
+                    "packages/dev/core/test/unit/Rendering/fluidRenderingObjectParticleSystem.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fluidGpuParticleSystemPerParticleSize.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fluidGpuParticleSystemPerParticleSizeAsymmetricScale.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fluidGpuParticleSystemUniformSize.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fluidGpuParticleSystemUniformSizeAsymmetricScale.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "18907",
+                "title": "FBX loader: full format coverage, animation fidelity, DCC materials, NURBS, constraints",
+                "description": "## The short version\n\nFBX is still the file everybody actually has. Every Maya, Max, MotionBuilder, Blender and Mixamo pipeline spits\none out, and half the models people try to drag into the sandbox are FBX. The pure TS loader that landed in 9.26\nwas a great start, so I spent some time seeing how far it could go. This PR takes it from \"loads a lot of files\"\nto \"loads all of them, and they look and move like they did in the DCC\".\n\nNothing changes for existing users: the defaults are the 9.26 behaviour, and everything new sits behind options,\nbundled as `preset: \"full\"` for people who want all of it in one line.\n\nI did not want to guess at any of this, so every change was checked against ufbx (the C FBX parser that has\nfeature parity with the Autodesk SDK) on its test corpus: 683 real files from Maya, 3ds Max, MotionBuilder,\nBlender and ZBrush, versions FBX 3000 through 7700, ASCII and binary. Before: 501 of those files loaded.\nAfter: all of them, with transforms, triangle counts, animation samples, camera FOVs and lights matching ufbx\nto the third decimal.\n\n## What changed\n\n**File formats.** FBX 6.0/6.1 was only partly working (transform animation loaded, but lights, cameras, skins\nand blend shapes were silently dropped). FBX 5.x and older did not load at all. Both work now: the old files get\nrewritten into the 6.x layout on load so the rest of the loader does not have to care. Big-endian binaries,\nevery weird ASCII number spelling (`1.#INF`, `nan(ind)`, `&quot;`), files with no `Objects` block, cameras that are\nnever connected to anything: all handled.\n\n**Animation.** This is where most of the work went. Curves keep their real tangents (Bezier, TCB, auto,\nweighted, broken), pre/post extrapolation works, animation layers blend the way MotionBuilder blends them\n(additive and override, accumulation modes, animated layer weights), step keys stay stepped, negative clip starts\nare fine, and the file's frame rate is used instead of 30. Node transforms are built from the exact FBX TRS chain\nwith pivots and offsets instead of decomposing matrices, and the RrSs / Rrs inherit modes work for both plain\nnodes and rig bones. Visibility, camera, light, material, blend shape weight and even user property animation\ncome through as Babylon animations. Clips that span days (yes, the corpus has those) used to bake millions of\nkeys; sampling is now capped per key segment and they load in milliseconds.\n\n**Materials.** Every material flavour the big DCCs write: Lambert/Phong, Maya Standard Surface (Arnold and\nOSL), 3ds Max Physical, 3ds Max PBR (metal/rough and spec/gloss), glTF, OpenPBR, Stingray PBS. They all resolve\ninto one material model and come out as `StandardMaterial` by default, or as `PBRMaterial` for the PBR ones with\n`materials: \"auto\"` (or force either). Texture wrap modes and the old 6.x \"texture per layer element\" assignment\nwork too. Layered textures are approximated by their first layer and reported; Babylon has no layer blending to\nmap them onto.\n\n**Geometry.** Vertex welding (the old loader produced one vertex per polygon corner), optional geometry sharing\nbetween instanced models, an optional unit scale, and the missing geometry types: NURBS surfaces get tessellated\ninto meshes with the same subdivision the file asks for (a skin or blend shape bound to one is reported and left\noff, since the tessellated mesh has no control point mapping), NURBS curves and `Line` geometry become\n`LinesMesh` when asked. LOD groups map to Babylon LOD levels honouring each level's show/hide/use-LOD mode,\ndisplay layers hide their members, selection sets and user properties land in metadata. The ear clipper was cubic in vertex count and took 82 seconds on a maze made of huge n-gons; it is\nnow a linked-ring clipper that does the same file in 2 seconds with identical output.\n\n**Cameras and lights.** Field of view now follows the SDK's aspect, aperture and gate fit rules (it matches to\nthe millidegree across every camera in the corpus), roll and ortho size are right, lights get their range from\nfar attenuation, and with `attachCamerasAndLights` both follow the node they belong to when it is animated.\n\n**Constraints.** Aim, parent, position, rotation and scale constraints are recorded as metadata, and with\n`constraints: \"apply\"` solved every frame: one solver per scene brackets the scene's animation phase (restores the\nunconstrained transforms before animations run, captures and solves after), orders the constraints so a constraint\nwhose target (or parent) is driven by another one is solved after it, reports cycles, blends from what animation\nproduced this frame (so a 50% weight stays 50%, whatever value animation wrote), and allocates nothing per frame.\nIK stays metadata.\n\n**Diagnostics.** Anything the loader has to skip or approximate is reported through an `onWarning` option and\nstored as `fbxDiagnostics` on the root node. Nothing fails silently anymore, and nothing that does work is\nreported as unsupported.\n\n## How it was tested\n\n- The ufbx corpus harness (in my repo, linked below): loads all 683 files with a `NullEngine` and compares\n  against a JSON dump from ufbx itself. 673 of 673 valid files load, triangle counts match on 672, rest\n  transforms match on 3920 of 3929 nodes, animation samples on 4358 of 4370, cameras and lights on all of them.\n  The leftovers are deliberate conventions and synthetic torture files (duplicate ids, names made of quotes, NaN\n  transforms), documented in the tests.\n- Babylon's own 18 FBX visualization playgrounds, replayed with this loader on WebGL2 and pixel-diffed against\n  the reference images in the repo: all 18 within 0.5% of pixels (antialiasing noise). This is the check that\n  caught the one real bug the headless harness could not: parenting cameras to their nodes put them under the\n  root's handedness flip and rendered a mirrored image. Fixed with a pivot, and there is a unit test for it now.\n- Every corpus file rendered on a real GPU: no exceptions, no shader errors.\n- `npm run build:source`, `npm run lint:check`, the TypeDoc check and the side-effects manifest are clean. The 109\n  FBX unit tests in this repo pass: 80 existing (two with expectations updated, see below) and 29 new ones that\n  pin every fix and every public option in this PR (ids beyond 2^53, negative clips, Properties60 layouts, legacy\n  GlobalSettings, the constraint solver, layered property animation, LOD display modes, NURBS deformers, texture\n  creation, diagnostics, presets).\n- 478 vitest tests in my repo, including a copy of this repo's FBX unit tests, parser edge cases, feature tests\n  and 43 corpus fixtures against oracle dumps.\n\n## Things reviewers should know\n\nDefaults are the 9.26 behaviour. Everything that changes what a scene looks like is an option, and\n`preset: \"full\"` sets them all at once:\n\n| Option                   | default (`\"compatible\"`) | `preset: \"full\"` |\n| ------------------------ | ------------------------ | ---------------- |\n| `materials`              | `\"standard\"`             | `\"auto\"`         |\n| `shareGeometry`          | `false`                  | `true`           |\n| `curves`                 | `\"skip\"`                 | `\"lines\"`        |\n| `constraints`            | `\"metadata\"`             | `\"apply\"`        |\n| `rebaseAnimations`       | `true`                   | `false`          |\n| `attachCamerasAndLights` | `false`                  | `true`           |\n\nOther things worth knowing:\n\n- New metadata keys on nodes, meshes, materials, cameras and lights, all prefixed `fbx`.\n- Object ids beyond 2^53 are accepted (real exporters write them) and kept distinct: the parsers keep the exact\n  digits and the connection resolver keys them by that text, so two ids that round to the same double never\n  collide. Synthetic ids for legacy objects are allocated outside the ids the file uses.\n- Two unit test expectations changed: the unsafe-id tests above, and a layer with override blending at a 50%\n  weight is evaluated instead of flagged as unsupported.\n- Joint children stay in the node hierarchy instead of being attached to bones.\n\nNot in this PR: IK solving, stereo cameras, audio clips, cache deformers, NURBS trim curves, texture layer\nblending, deformers on NURBS surfaces. They are all reported as warnings rather than dropped silently.\n\nThis is a big diff. It is one commit here because the pieces lean on each other, but I have it split into ten\nself-contained batches on my side (parsing, animation curves, inherit modes, materials, geometry, cameras and\nproperty animation, scene features, NURBS, legacy formats, constraints) and can open them one at a time if that\nis easier to review.\n\nThe corpus harness, the ufbx oracle, the GPU viewer and the playground replay live here:\nhttps://github.com/Pryme8/babylon-fbx-loader (the corpus files themselves are ufbx's, not committed to Babylon).\n\nCredit where it is due: I built this with Claude Code (Anthropic's Claude) doing a big share of the work with me,\nfrom porting the ufbx semantics to writing the corpus harness and the viewer, while I steered, tested and made the\ncalls on what goes in. It is listed as a co-author on the commit.\n",
+                "author": {
+                    "name": "Pryme8",
+                    "url": "https://github.com/Pryme8"
+                },
+                "files": [
+                    "packages/dev/loaders/src/FBX/fbxConstraintBehavior.ts",
+                    "packages/dev/loaders/src/FBX/fbxFileLoader.pure.ts",
+                    "packages/dev/loaders/src/FBX/index.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/animation.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/animationCurve.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/blendShapes.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/connections.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/constraints.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/fbxInterpreter.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/geometry.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/legacyDocument.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/materialModel.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/materials.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/nodeTransform.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/nurbs.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/propertyTemplates.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/rig.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/sceneDiagnostics.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/skeleton.ts",
+                    "packages/dev/loaders/src/FBX/parsers/fbxAsciiParser.ts",
+                    "packages/dev/loaders/src/FBX/parsers/fbxBinaryParser.ts",
+                    "packages/dev/loaders/src/FBX/pure.ts",
+                    "packages/dev/loaders/src/FBX/types/fbxTypes.ts",
+                    "packages/dev/loaders/test/unit/FBX/fbxConstraintBehavior.test.ts",
+                    "packages/dev/loaders/test/unit/FBX/interpreter/animation.test.ts",
+                    "packages/dev/loaders/test/unit/FBX/interpreter/connections.test.ts",
+                    "packages/dev/loaders/test/unit/FBX/interpreter/legacyDocument.test.ts",
+                    "packages/dev/loaders/test/unit/FBX/interpreter/propertyTemplates.test.ts",
+                    "packages/dev/loaders/test/unit/FBX/loaderBehavior.test.ts",
+                    "packages/dev/loaders/test/unit/FBX/parsers/fbxBinaryParser.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18900",
+                "title": "Improve USD materials, instancing, morphs, and skinning",
+                "description": "## Summary\n\nThis PR updates the Babylon.js USD loader and Sandbox runtime to consume immutable **protocol v5** emitted by `BabylonJS/babylon-usd-importer`. The released `/babylonUsdImporter/4/` runtime remains byte-for-byte unchanged.\n\nCompanion importer PRs:\n\n- Features: https://github.com/BabylonJS/babylon-usd-importer/pull/1\n- Protocol v5: https://github.com/BabylonJS/babylon-usd-importer/pull/2\n\nThe merged v5 source is `2baa7a087bad28498378dacf50d22f46c54eacc3`, tagged `v5`; the original shipped v4 source is tagged `v4`.\n\n### `UsdPreviewSurface` texture fidelity\n\n- Support independent base color, opacity, normal, metallic, roughness, occlusion, and emissive bindings.\n- Preserve selected texture output channels, source color space, and float4 scale/bias.\n- Use Babylon's existing packed metallic/roughness channel path when compatible.\n- Map separate roughness textures to `microSurfaceTexture` and separate occlusion textures to `ambientTexture`.\n- Use `TextureProcessor` only when channel extraction or scale/bias processing is required, cache processed results, and preserve UV rotation centers.\n- Generate mipmapped, trilinear processed textures where supported, preserve HDR emissive range with float/half-float output and material factors, and use a WebGL1-safe NPOT fallback.\n- Keep cancellation, rollback, direct-scene loading, and detached `AssetContainer` ownership safe for asynchronously processed textures.\n\n### Skeleton and skinning fixes\n\n- Construct Babylon bones with separate local rest and bind matrices.\n- Consume the runtime that places skinned geometry in Skeleton object space after applying `geomBindTransform`.\n- Fix off-axis joint animation when USD bind and rest poses differ.\n- Fix skinned submeshes whose authored garment/button transforms were previously applied twice.\n\n### High-performance point instancing\n\n- Register Babylon thin-instance support as a loader dependency.\n- Consume one contiguous matrix block per prototype with `mesh.thinInstanceSetBuffer(\"matrix\", ...)`.\n- Avoid allocating one `InstancedMesh` per USD point-instancer placement.\n- Validate ranges and reject duplicate/mixed classic and thin-instance batches for the same source.\n\nThe local Pixar PointInstancedMedCity benchmark loads as 8 source meshes and 40,000 GPU thin instances with no classic instance allocations, in about 1.6 seconds end to end on the development machine.\n\n### Morph targets and animation\n\n- Create and own `MorphTargetManager` instances through the loader's direct and detached container paths.\n- Materialize full post-weld target positions and optional normals from data-buffer views.\n- Preserve USD primary shapes and in-between shapes as separate Babylon morph targets.\n- Animate resolved influences with float animation tracks.\n- Keep texture-backed managers dynamically compacted and pin only the small vertex-attribute fallback where zero crossings would otherwise recompile shaders.\n- Use globally unique target IDs and validate target/animation metadata.\n\nThe local Pixar `HumanFemale.keepAlive` benchmark loads with:\n\n- 89 meshes\n- 28 texture-backed morph managers\n- 1,906 morph targets\n- 1,906 influence tracks\n- visible influence changes across the animation\n\n### Tests and runtime assets\n\n- Expanded USD protocol/materializer unit coverage, including malformed range rollback.\n- Real USDA/USDC/USDZ Sandbox regressions for materials, bind poses, point instancers, and morph animation.\n- GPU pixel-readback coverage for asymmetric HDR emissive processing, output mipmaps, and sampling.\n- New immutable protocol-v5 runtime directory pinned to the merged importer commit with SHA-256 documentation.\n\n## Validation\n\n- 39 focused USD loader/materializer unit tests plus 44 TextureProcessor tests.\n- Loader TypeScript compilation.\n- Tree-shaking verification: all 16 checks pass.\n- Local Sandbox validation for real USDA, USDC, USDZ, PointInstancedMedCity, HumanFemale, and animated skeleton repros, including four shipped-WASM integration tests.\n\nPrivate benchmark and repro assets are not committed.\n\n## Current limitations\n\n- MaterialX is intentionally not added by this PR.\n- Nested USD point instancers are unsupported.\n- Multi-frame point-instancer attributes are currently frozen at their first authored frame by the importer.\n",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml",
+                    ".azure-pipelines/templates/wait-for-snapshot.yml",
+                    "packages/dev/core/src/Materials/Textures/textureProcessor.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/textureProcessor.test.ts",
+                    "packages/dev/loaders/src/USD/usdCommandProtocol.ts",
+                    "packages/dev/loaders/src/USD/usdFileLoader.pure.ts",
+                    "packages/dev/loaders/src/USD/usdSceneMaterializer.ts",
+                    "packages/dev/loaders/test/unit/USD/usdFileLoader.test.ts",
+                    "packages/dev/loaders/test/unit/USD/usdSceneMaterializer.test.ts",
+                    "packages/dev/loaders/test/unit/USD/usdTestUtils.ts",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/README.md",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/babylon-usd-importer.data",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/babylon-usd-importer.js",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/babylon-usd-importer.wasm",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/babylon-usd-importer.worker.js",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/openusd.license",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/tbb.license",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/zlib.license",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/README.md",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/asymmetric.png",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/bind-pose.usda",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/material-textures.usda",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/material-textures.usdc",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/material-textures.usdz",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/morph-targets.usda",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/point-instancer.usda",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/texture.png",
+                    "packages/tools/sandbox/src/tools/usdFileInput.ts",
+                    "packages/tools/sandbox/test/interaction.sandbox.test.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "new feature",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "18901",
+                "title": "Add Babylon Lite scene entities to Inspector v2",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\n- refactor Fluent vector, quaternion, and color editors around runtime-neutral controlled primitives\n- add reusable Babylon Lite property editors through `@babylonjs/shared-ui-components/lite` while preserving existing Full APIs\n- add hierarchical Lite scene nodes with transforms, metadata, visibility, reparenting, removal, and topology/selection reconciliation\n- add Lite cameras, directional/point/spot/hemispheric lights, and identity-only shadow generators to Explorer and Properties\n- make Lite light color, intensity, range, and exponent edits refresh GPU light data immediately\n- expand the Lite Inspector test app and focused unit coverage\n\n## Behavior\n\nThe Lite Inspector now exposes the primary P2 scene-entity workflows with Full-equivalent outcomes where Babylon Lite has public support. Shadow generators remain identity/display-only because Babylon Lite does not expose editable internals. Bounding boxes/gizmos and editor hand-offs remain deferred to later parity milestones.\n\n## Review follow-up\n\n- addressed all six automated inline recommendations in `80fc942561`\n- added regression coverage for input compatibility and explicit precision formatting\n- prevented quaternion-only props from leaking into the shared tensor property line\n- guarded persistence warnings in console-less environments\n- removed redundant scene ownership traversal\n- attached Lite test-app camera controls with teardown cleanup in `4989d98e4e`\n- resolved all six review threads\n\n## Visual changes\n\nThe Lite Explorer now presents the scene hierarchy, cameras, lights, shadow generators, materials, and textures with Full Inspector color conventions. Light properties support live vector, color, and intensity editing.\n\n![Babylon Lite Inspector Explorer and directional light properties](https://github.com/user-attachments/assets/abfb8337-b423-4204-94ca-dbcf1b86d3e5)\n\n## Validation\n\n- `npm run format:check`\n- `npm run lint:check`\n- focused shared UI and Inspector Lite unit tests: 24 passing\n- published shared UI Lite entry bundle smoke test verifies no Babylon Core runtime dependency\n- shared UI package and Inspector TypeScript compilation\n- visible Microsoft Edge validation of hierarchy, properties, icon colors, PBR rendering, live light color/intensity updates, and camera controls\n- Azure Unit CI executed 5,006 passing tests; its red result is caused by 16 asynchronous shader-import `EnvironmentTeardownError`s after Vitest teardown, with the aggregate Monorepo check reflecting that same flake",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/inspector-v2/src/components/properties/boundProperty.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/metadataProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/components/properties/cameraProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/components/properties/lightProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/components/properties/sceneNodeProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/inspector.tsx",
+                    "packages/dev/inspector-v2/src/lite/sceneEntityUtils.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/cameraPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/lightPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/meshPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/sceneNodePropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/shadowGeneratorPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/cameraExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/lightExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/meshExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/sceneSelectionUtils.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/shadowGeneratorExplorerService.tsx",
+                    "packages/dev/inspector-v2/test/app/lite.ts",
+                    "packages/dev/inspector-v2/test/unit/liteExplorerServices.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteMeshPropertiesService.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteSceneEntities.test.ts",
+                    "packages/dev/inspector-v2/test/unit/runtimeNeutralPropertyLines.test.tsx",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/dev/sharedUiComponents/src/copyCommandToClipboard.ts",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLines/colorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLines/colorPropertyLineCore.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLines/vectorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLines/vectorPropertyLineCore.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/accordion.contexts.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/spinButton.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/structuralColorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/lite/fluent/hoc/propertyLines/colorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/lite/fluent/hoc/propertyLines/vectorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/lite/index.ts",
+                    "packages/dev/sharedUiComponents/test/unit/copyCommandToClipboard.test.ts",
+                    "packages/dev/sharedUiComponents/test/unit/liteEntryPoint.test.ts",
+                    "packages/public/@babylonjs/shared-ui-components/package.json"
+                ],
+                "tags": [
+                    "inspector",
+                    "new feature",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "18899",
+                "title": "chore(deps): update dependencies securely",
+                "description": "## Summary\n\n- Update Vite to 8.2.2, Vitest and coverage to 4.1.11, and `@adobe/spz` to 0.2.3.\n- Add targeted transitive overrides for `@humanfs/node` 0.16.8, Nx's `smol-toml` 1.7.1, and `@puppeteer/browsers` 3.0.2.\n- Keep MemLab on its compatible Puppeteer 24.31.0 runtime while removing the vulnerable `extract-zip` dependency chain.\n- Resolve Tabster through its existing ESM entry for Fluent UI unit tests under Vitest 4.1.11.\n\n## Security audit\n\n- Before: 19 findings (14 high, 5 moderate).\n- After: 0 informational, 0 low, 0 moderate, 0 high, 0 critical; 0 total.\n- Command: `npx -y npm@11.18.0 audit --json`.\n- The audit includes all workspaces, development dependencies, and severities.\n\n## Seven-day release-age policy\n\n- Frozen run time: `2026-09-10T09:52:59Z`.\n- Cutoff: `2026-09-03T09:52:59Z`.\n- Compared the final lockfile with the baseline and checked all 163 newly resolved external registry versions with the release-age helper.\n- All 163 versions were published on or before the cutoff. `@puppeteer/browsers@3.0.2`, for example, was published `2026-05-15T11:51:19.116Z`.\n\n## Under-seven-day security exceptions\n\nNone.\n\n## Deferred recent releases\n\n- `@babylonjs/lite@1.28.0` was published `2026-09-07T08:07:40.298Z` and remains deferred until `2026-09-14T08:07:40.298Z`.\n\n## Validation\n\n- Normal npm 11.18.0 install completed with zero vulnerabilities and left `package-lock.json` byte-for-byte unchanged.\n- Final full audit: all severity counts zero.\n- Final exact-version release-age check: 163/163 eligible.\n- `npm run format:check`\n- `npm run lint:check`\n- `npm run build:dev`\n- `npm run test:unit` — 354 files, 5,020 passing tests, 1 expected failure, 30 skipped.\n- `npm run test:unit -w @tools/memory-leak-tests` — 3 files, 22 tests.\n- `npm run test -w @tools/memory-leak-tests -- --scenario core-playground-2FDQT5-1508` — zero leaks.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/loaders/package.json",
+                    "vitest.config.mts"
+                ],
+                "tags": []
             }
         ],
         "9.26.0": [
