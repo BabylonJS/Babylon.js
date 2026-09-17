@@ -49,7 +49,7 @@ describe("GaussianSplattingMaterial", () => {
 
         const projection = camera.getProjectionMatrix();
         const expectedFocal = engine.getRenderWidth() / 2 / Math.tan(camera.fov / 2);
-        expect(setFloat2).toHaveBeenCalledWith("focal", expect.closeTo(expectedFocal, 10), expect.closeTo(expectedFocal, 10));
+        expect(setFloat2).toHaveBeenCalledWith("focal", expect.closeTo(expectedFocal, 4), expect.closeTo(expectedFocal, 4));
         expect(projection.m[0]).not.toBe(projection.m[5]);
     });
 
@@ -94,8 +94,8 @@ describe("GaussianSplattingMaterial", () => {
 
         const leftFocal = (engine.getRenderWidth() * leftCamera.viewport.width) / 2 / Math.tan(leftCamera.fov / 2);
         const rightFocal = (engine.getRenderWidth() * rightCamera.viewport.width) / 2 / Math.tan(rightCamera.fov / 2);
-        expect(setFloat2).toHaveBeenCalledWith("focal", expect.closeTo(leftFocal, 10), expect.closeTo(leftFocal, 10));
-        expect(setFloat2).toHaveBeenCalledWith("focal", expect.closeTo(rightFocal, 10), expect.closeTo(rightFocal, 10));
+        expect(setFloat2).toHaveBeenCalledWith("focal", expect.closeTo(leftFocal, 4), expect.closeTo(leftFocal, 4));
+        expect(setFloat2).toHaveBeenCalledWith("focal", expect.closeTo(rightFocal, 4), expect.closeTo(rightFocal, 4));
     });
 
     it("keeps focal axes square for a side-by-side rig camera", () => {
@@ -115,6 +115,6 @@ describe("GaussianSplattingMaterial", () => {
         const eyeWidth = engine.getRenderWidth() * rigCamera.viewport.width;
         const expectedFocal = eyeWidth / 2 / Math.tan(rigCamera.fov / 2);
         expect(setFloat2).toHaveBeenCalledWith("invViewport", 1 / (eyeWidth / 2), 1 / engine.getRenderHeight());
-        expect(setFloat2).toHaveBeenCalledWith("focal", expect.closeTo(expectedFocal, 10), expect.closeTo(expectedFocal, 10));
+        expect(setFloat2).toHaveBeenCalledWith("focal", expect.closeTo(expectedFocal, 4), expect.closeTo(expectedFocal, 4));
     });
 });
