@@ -1353,6 +1353,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this.compatibilityMode &&
             this._currentRenderPass &&
             !this._occlusionQueryActive &&
+            !this._snapshotRendering.play &&
             this._occlusionQuery?.hasQueries &&
             this._getCurrentRenderPassWrapper().renderPassDescriptor?.occlusionQuerySet !== this._occlusionQuery.querySet
         ) {

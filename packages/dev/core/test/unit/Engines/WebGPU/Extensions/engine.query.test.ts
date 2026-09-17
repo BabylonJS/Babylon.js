@@ -5,6 +5,7 @@ import { WebGPUBundleList } from "core/Engines/WebGPU/webgpuBundleList";
 import { RegisterEnginesWebGPUExtensionsEngineQuery } from "core/Engines/WebGPU/Extensions/engine.query.pure";
 import { type WebGPUBufferManager } from "core/Engines/WebGPU/webgpuBufferManager";
 import { WebGPUOcclusionQuery } from "core/Engines/WebGPU/webgpuOcclusionQuery";
+import { WebGPUSnapshotRendering } from "core/Engines/WebGPU/webgpuSnapshotRendering";
 import { WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRenderTargetWrapper";
 import { type WebGPUHardwareTexture } from "core/Engines/WebGPU/webgpuHardwareTexture";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
@@ -256,6 +257,64 @@ describe("WebGPU engine queries", () => {
         expect(renderPass.beginOcclusionQuery).toHaveBeenCalledExactlyOnceWith(11);
         expect(renderPass.endOcclusionQuery).toHaveBeenCalledOnce();
         expect(calls).toEqual(["begin", "end"]);
+    });
+
+    it("defers a query-set restart during snapshot playback", () => {
+        vi.useFakeTimers();
+        try {
+            const engine = Object.create(WebGPUEngine.prototype) as WebGPUEngineRenderPassInternals;
+            const bundleList = new WebGPUBundleList({} as GPUDevice);
+            const snapshot = new WebGPUSnapshotRendering(engine as unknown as WebGPUEngine, Constants.SNAPSHOTRENDERING_STANDARD, bundleList);
+            const targetBundle = {} as GPURenderBundle;
+            const canvasBundle = {} as GPURenderBundle;
+            const recordedTargetPass = { executeBundles: vi.fn() } as unknown as GPURenderPassEncoder;
+            const recordedCanvasPass = { executeBundles: vi.fn() } as unknown as GPURenderPassEncoder;
+            const playbackTargetPass = { executeBundles: vi.fn() } as unknown as GPURenderPassEncoder;
+            const playbackCanvasPass = { executeBundles: vi.fn() } as unknown as GPURenderPassEncoder;
+            const device = {
+                createQuerySet: vi.fn(() => ({ destroy: vi.fn() }) as unknown as GPUQuerySet),
+            } as unknown as GPUDevice;
+            const bufferManager = {
+                createRawBuffer: vi.fn(() => ({}) as GPUBuffer),
+                releaseBuffer: vi.fn(),
+            } as unknown as WebGPUBufferManager;
+
+            snapshot.enabled = true;
+            bundleList.addBundle(targetBundle);
+            snapshot.endRenderPass(recordedTargetPass);
+            bundleList.addBundle(canvasBundle);
+            snapshot.endRenderPass(recordedCanvasPass);
+            snapshot.endFrame();
+            expect(snapshot.play).toBe(true);
+
+            Object.defineProperty(engine, "compatibilityMode", { value: true });
+            engine._frameId = 1;
+            engine._occlusionQuery = new WebGPUOcclusionQuery(engine as unknown as WebGPUEngine, device, bufferManager, 1, 1);
+            const oldQuerySet = engine._occlusionQuery.querySet;
+            engine._currentRenderTarget = {} as WebGPURenderTargetWrapper;
+            engine._currentRenderPass = playbackTargetPass;
+            engine._rttRenderPassWrapper = {
+                renderPassDescriptor: { colorAttachments: [], occlusionQuerySet: oldQuerySet },
+            } as WebGPUEngineRenderPassInternals["_rttRenderPassWrapper"];
+            engine._occlusionQueryActive = false;
+            engine._snapshotRendering = snapshot;
+            engine._endCurrentRenderPass = vi.fn();
+
+            engine._occlusionQuery.createQuery();
+            engine._occlusionQuery.createQuery();
+            expect(engine._occlusionQuery.querySet).not.toBe(oldQuerySet);
+            expect(engine._getCurrentRenderPass()).toBe(playbackTargetPass);
+            expect(engine._endCurrentRenderPass).not.toHaveBeenCalled();
+
+            snapshot.endRenderPass(playbackTargetPass);
+            snapshot.endRenderPass(playbackCanvasPass);
+
+            expect(playbackTargetPass.executeBundles).toHaveBeenCalledExactlyOnceWith([targetBundle]);
+            expect(playbackCanvasPass.executeBundles).toHaveBeenCalledExactlyOnceWith([canvasBundle]);
+        } finally {
+            vi.runAllTimers();
+            vi.useRealTimers();
+        }
     });
 
     it("preserves the selected 3D render target slice when restarting a compatibility pass", () => {
