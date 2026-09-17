@@ -1346,6 +1346,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     /** @internal */
     public override _getCurrentRenderPass(): GPURenderPassEncoder {
+        if (
+            this._currentRenderPass &&
+            this._occlusionQuery?.hasQueries &&
+            this._getCurrentRenderPassWrapper().renderPassDescriptor?.occlusionQuerySet !== this._occlusionQuery.querySet
+        ) {
+            this._endCurrentRenderPass();
+        }
+
         if (this._currentRenderTarget && !this._currentRenderPass) {
             // delayed creation of the render target pass, but we now need to create it as we are requested the render pass
             this._startRenderTargetRenderPass(this._currentRenderTarget, false, null, false, false);

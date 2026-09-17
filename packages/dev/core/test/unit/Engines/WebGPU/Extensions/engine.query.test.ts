@@ -1,7 +1,22 @@
 import { ThinWebGPUEngine } from "core/Engines/thinWebGPUEngine";
+import { WebGPUEngine } from "core/Engines/webgpuEngine.pure";
 import { WebGPURenderItemBeginOcclusionQuery } from "core/Engines/WebGPU/webgpuBundleList";
 import { RegisterEnginesWebGPUExtensionsEngineQuery } from "core/Engines/WebGPU/Extensions/engine.query.pure";
 import { describe, expect, it, vi } from "vitest";
+
+interface WebGPUEngineRenderPassInternals {
+    _currentRenderTarget: null;
+    _currentRenderPass: GPURenderPassEncoder | null;
+    _mainRenderPassWrapper: {
+        renderPassDescriptor: {
+            occlusionQuerySet?: GPUQuerySet;
+        };
+    };
+    _occlusionQuery: ThinWebGPUEngine["_occlusionQuery"];
+    _endCurrentRenderPass(): number;
+    _startMainRenderPass(setClearStates: boolean): void;
+    _getCurrentRenderPass(): GPURenderPassEncoder;
+}
 
 describe("WebGPU engine queries", () => {
     it("creates a compatibility-mode render pass before beginning an occlusion query", () => {
@@ -62,6 +77,33 @@ describe("WebGPU engine queries", () => {
 
         expect(engine.beginOcclusionQuery(0, 9)).toBe(false);
         expect(engine._occlusionQuery.canBeginQuery).not.toHaveBeenCalled();
+    });
+
+    it("restarts an existing pass when it does not contain the current occlusion query set", () => {
+        const engine = Object.create(WebGPUEngine.prototype) as WebGPUEngineRenderPassInternals;
+        const oldRenderPass = {} as GPURenderPassEncoder;
+        const newRenderPass = {} as GPURenderPassEncoder;
+        const querySet = {} as GPUQuerySet;
+        const renderPassDescriptor: { occlusionQuerySet?: GPUQuerySet } = {};
+        engine._currentRenderTarget = null;
+        engine._currentRenderPass = oldRenderPass;
+        engine._mainRenderPassWrapper = { renderPassDescriptor };
+        engine._occlusionQuery = {
+            hasQueries: true,
+            querySet,
+        } as ThinWebGPUEngine["_occlusionQuery"];
+        engine._endCurrentRenderPass = vi.fn(() => {
+            engine._currentRenderPass = null;
+            return 2;
+        });
+        engine._startMainRenderPass = vi.fn(() => {
+            renderPassDescriptor.occlusionQuerySet = querySet;
+            engine._currentRenderPass = newRenderPass;
+        });
+
+        expect(engine._getCurrentRenderPass()).toBe(newRenderPass);
+        expect(engine._endCurrentRenderPass).toHaveBeenCalledOnce();
+        expect(engine._startMainRenderPass).toHaveBeenCalledExactlyOnceWith(false);
     });
 
     it("keeps recording occlusion queries in the bundle list outside compatibility mode", () => {
