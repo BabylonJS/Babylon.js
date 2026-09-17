@@ -91,6 +91,7 @@
         #define WRITE_GEOMETRY_FRAGMENT_OUTPUT(INDEX, VALUE) gl_FragData[INDEX] = VALUE
     #endif
 highp vec4 gl_FragColor;
+#ifndef PREPASS_CUSTOM_VARYINGS
 #ifdef PREPASS_LOCAL_POSITION
     varying highp vec3 vPosition;
 #endif
@@ -100,9 +101,10 @@ highp vec4 gl_FragColor;
 #ifdef PREPASS_NORMALIZED_VIEW_DEPTH
     varying highp float vNormViewDepth;
 #endif
-#if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
+#if (defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)) && !defined(PREPASS_VELOCITY_ZERO)
     varying highp vec4 vCurrentPosition;
     varying highp vec4 vPreviousPosition;
+#endif
 #endif
 #ifdef PREPASS_OBJECT_ID
     uniform highp float objectId;

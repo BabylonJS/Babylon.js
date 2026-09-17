@@ -1,4 +1,5 @@
 #ifdef PREPASS
+#ifndef PREPASS_CUSTOM_VARYINGS
 #ifdef PREPASS_LOCAL_POSITION
 varying vPosition : vec3f;
 #endif
@@ -8,9 +9,10 @@ varying vPosition : vec3f;
 #ifdef PREPASS_NORMALIZED_VIEW_DEPTH
     varying vNormViewDepth: f32;
 #endif
-#if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
+#if (defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)) && !defined(PREPASS_VELOCITY_ZERO)
     varying vCurrentPosition: vec4f;
     varying vPreviousPosition: vec4f;
+#endif
 #endif
 #ifdef PREPASS_OBJECT_ID
     uniform objectId: f32;

@@ -40,6 +40,7 @@ import { type AbstractMesh } from "../Meshes/abstractMesh.pure";
 import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
 import { MeshParticleEmitter } from "./EmitterTypes/meshParticleEmitter";
 import { type Texture } from "core/Materials/Textures/texture.pure";
+import { MaterialHelperGeometryRendering } from "../Materials/materialHelper.geometryrendering";
 
 /**
  * This represents a GPU particle system in Babylon
@@ -94,7 +95,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     private _randomTextureSize: number;
     private _actualFrame = 0;
-    private _drawWrappers: { [blendMode: number]: DrawWrapper };
+    private _drawWrappers: DrawWrapper[][]; // first index is render pass id, second index is blend mode
     private _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
     private _renderShadersLoaded = false;
 
@@ -685,9 +686,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Resets the draw wrappers cache
      */
     public resetDrawCache(): void {
-        for (const blendMode in this._drawWrappers) {
-            const drawWrapper = this._drawWrappers[blendMode];
-            drawWrapper.drawContext?.reset();
+        for (const drawWrappers of this._drawWrappers) {
+            if (!drawWrappers) {
+                continue;
+            }
+            for (const drawWrapper of drawWrappers) {
+                drawWrapper?.drawContext?.reset();
+            }
         }
     }
 
@@ -1108,10 +1113,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._customWrappers = { 0: new DrawWrapper(this._engine) };
         this._customWrappers[0]!.effect = customEffect;
 
-        this._drawWrappers = { 0: new DrawWrapper(this._engine) };
-        if (this._drawWrappers[0].drawContext) {
-            this._drawWrappers[0].drawContext.useInstancing = true;
-        }
+        this._drawWrappers = [];
 
         this._createIndexBuffer();
 
@@ -1594,13 +1596,21 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this.fillDefines(defines, blendMode);
 
         // Effect
-        let drawWrapper = this._drawWrappers[blendMode];
+        const currentRenderPassId = this._engine._features.supportRenderPasses ? this._engine.currentRenderPassId : Constants.RENDERPASS_MAIN;
+        const geometryRendering = MaterialHelperGeometryRendering._PrepareStringDefines(currentRenderPassId, defines);
+        const geometryRenderingConfiguration = geometryRendering ? MaterialHelperGeometryRendering.GetConfiguration(currentRenderPassId) : undefined;
+
+        let drawWrappers = this._drawWrappers[currentRenderPassId];
+        if (!drawWrappers) {
+            drawWrappers = this._drawWrappers[currentRenderPassId] = [];
+        }
+        let drawWrapper = drawWrappers[blendMode];
         if (!drawWrapper) {
             drawWrapper = new DrawWrapper(this._engine);
             if (drawWrapper.drawContext) {
                 drawWrapper.drawContext.useInstancing = true;
             }
-            this._drawWrappers[blendMode] = drawWrapper;
+            drawWrappers[blendMode] = drawWrapper;
         }
 
         const join = defines.join("\n");
@@ -1610,6 +1620,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             const samplers: Array<string> = [];
 
             this.fillUniformsAttributesAndSamplerNames(uniforms, attributes, samplers);
+            if (geometryRendering) {
+                uniforms.push("cameraInfo", "inverseEmitterWM", "objectId", "meshBlendTag");
+            }
 
             const shaderLanguage = this._engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL;
             drawWrapper.setEffect(
@@ -1621,6 +1634,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                         samplers,
                         defines: join,
                         shaderLanguage,
+                        multiTarget: geometryRendering,
+                        indexParameters: geometryRendering ? { buffersCount: geometryRenderingConfiguration?._mrtCount ?? 0 } : undefined,
                         extraInitializationsAsync: this._renderShadersLoaded
                             ? undefined
                             : async () => {
@@ -1638,6 +1653,24 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         return drawWrapper;
+    }
+
+    private _bindGeometryRendering(effect: Effect, emitterWM: Matrix): void {
+        const renderPassId = this._engine._features.supportRenderPasses ? this._engine.currentRenderPassId : Constants.RENDERPASS_MAIN;
+        const configuration = MaterialHelperGeometryRendering.GetConfiguration(renderPassId);
+        if (!configuration?._defines) {
+            return;
+        }
+
+        effect.setFloat("objectId", 0);
+        effect.setInt("meshBlendTag", 0);
+
+        const camera = this._scene?.activeCamera;
+        effect.setFloat2("cameraInfo", camera?.minZ ?? 0, camera?.maxZ ?? 1);
+        if (this.isLocal) {
+            emitterWM.invertToRef(TmpVectors.Matrix[2]);
+            effect.setMatrix("inverseEmitterWM", TmpVectors.Matrix[2]);
+        }
     }
 
     /**
@@ -2119,14 +2152,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._engine.enableEffect(drawWrapper);
         const viewMatrix = this._scene?.getViewMatrix() || Matrix.IdentityReadOnly;
         effect.setMatrix("view", viewMatrix);
-        effect.setMatrix("projection", this.defaultProjectionMatrix ?? this._scene!.getProjectionMatrix());
+        const projectionMatrix = this.defaultProjectionMatrix ?? this._scene!.getProjectionMatrix();
+        effect.setMatrix("projection", projectionMatrix);
         effect.setTexture("diffuseSampler", this.particleTexture);
         effect.setVector2("translationPivot", this.translationPivot);
         const worldOffset = this.worldOffset.subtractToRef(this._scene?.floatingOriginOffset || Vector3.ZeroReadOnly, TmpVectors.Vector3[0]);
         effect.setVector3("worldOffset", worldOffset);
-        if (this.isLocal) {
-            effect.setMatrix("emitterWM", emitterWM);
-        }
+        effect.setMatrix("emitterWM", emitterWM);
         if (this._colorGradientsTexture) {
             effect.setTexture("colorGradientSampler", this._colorGradientsTexture);
         } else {
@@ -2154,9 +2186,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         if (defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {
-            const invView = viewMatrix.clone();
-            invView.invert();
-            effect.setMatrix("invView", invView);
+            viewMatrix.invertToRef(TmpVectors.Matrix[1]);
+            effect.setMatrix("invView", TmpVectors.Matrix[1]);
+        }
+
+        if (effect._multiTarget) {
+            this._bindGeometryRendering(effect, emitterWM);
         }
 
         // Log. depth
@@ -2172,18 +2207,24 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         // Draw order
         this._setEngineBasedOnBlendMode(blendMode);
 
-        // Bind source VAO
-        this._platform.bindDrawBuffers(this._targetIndex, effect, this._scene?.forceWireframe ? this._linesIndexBufferUseInstancing : null);
+        let rendered = false;
+        try {
+            if (MaterialHelperGeometryRendering._BindAttachmentsForEffect(this._engine, effect)) {
+                this._platform.bindDrawBuffers(this._targetIndex, effect, this._scene?.forceWireframe ? this._linesIndexBufferUseInstancing : null);
 
-        if (this._onBeforeDrawParticlesObservable) {
-            this._onBeforeDrawParticlesObservable.notifyObservers(effect);
-        }
+                if (this._onBeforeDrawParticlesObservable) {
+                    this._onBeforeDrawParticlesObservable.notifyObservers(effect);
+                }
 
-        // Render
-        if (this._scene?.forceWireframe) {
-            this._engine.drawElementsType(Constants.MATERIAL_LineStripDrawMode, 0, 10, this._currentActiveCount);
-        } else {
-            this._engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._currentActiveCount);
+                if (this._scene?.forceWireframe) {
+                    this._engine.drawElementsType(Constants.MATERIAL_LineStripDrawMode, 0, 10, this._currentActiveCount);
+                } else {
+                    this._engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._currentActiveCount);
+                }
+                rendered = true;
+            }
+        } finally {
+            MaterialHelperGeometryRendering._RestoreAttachments(this._engine);
         }
         this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
 
@@ -2191,7 +2232,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this._engine.unbindInstanceAttributes();
         }
 
-        return this._currentActiveCount;
+        return rendered ? this._currentActiveCount : 0;
     }
 
     /** @internal */
@@ -2551,12 +2592,16 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
      */
     public dispose(disposeTexture = true): void {
-        for (const blendMode in this._drawWrappers) {
-            const drawWrapper = this._drawWrappers[blendMode];
-            drawWrapper.dispose();
+        for (const drawWrappers of this._drawWrappers) {
+            if (!drawWrappers) {
+                continue;
+            }
+            for (const drawWrapper of drawWrappers) {
+                drawWrapper?.dispose();
+            }
         }
 
-        this._drawWrappers = {};
+        this._drawWrappers = [];
 
         if (this._scene) {
             const index = this._scene.particleSystems.indexOf(this);

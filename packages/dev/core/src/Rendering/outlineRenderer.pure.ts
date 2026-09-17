@@ -15,6 +15,7 @@ import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttrib
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { type IEffectCreationOptions } from "core/Materials/effect.pure";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { MaterialHelperGeometryRendering } from "../Materials/materialHelper.geometryrendering";
 
 /**
  * This class is responsible to draw the outline/overlay of meshes.
@@ -120,6 +121,9 @@ export class OutlineRenderer implements ISceneComponent {
 
         const scene = this.scene;
         const engine = scene.getEngine();
+        if (!MaterialHelperGeometryRendering._BindColorAttachments(engine)) {
+            return;
+        }
 
         const hardwareInstancedRendering =
             engine.getCaps().instancedArrays &&
@@ -363,7 +367,7 @@ export class OutlineRenderer implements ISceneComponent {
     }
 
     private _beforeRenderingMesh(mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch): void {
-        if (!this.enabled) {
+        if (!this.enabled || !MaterialHelperGeometryRendering._BindColorAttachments(this._engine)) {
             return;
         }
 
@@ -402,7 +406,7 @@ export class OutlineRenderer implements ISceneComponent {
     }
 
     private _afterRenderingMesh(mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch): void {
-        if (!this.enabled) {
+        if (!this.enabled || !MaterialHelperGeometryRendering._BindColorAttachments(this._engine)) {
             return;
         }
 

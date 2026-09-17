@@ -63,6 +63,10 @@ export class ThinSprite {
     public _xSize: number;
     /** @internal */
     public _ySize: number;
+    /** @internal */
+    public _animationFrameId = -1;
+    /** @internal */
+    public _animationSceneId = -1;
 
     private _animationStarted = false;
     protected _loopAnimation = false;

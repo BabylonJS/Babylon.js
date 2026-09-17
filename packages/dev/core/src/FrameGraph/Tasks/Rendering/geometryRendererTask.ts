@@ -202,11 +202,13 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
 
     /**
      * The velocity output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     * Built-in CPU/GPU particles write neutral velocity (0.5, 0.5); their motion is not represented.
      */
     public readonly geometryVelocityTexture: FrameGraphTextureHandle;
 
     /**
      * The linear velocity output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     * Built-in CPU/GPU particles write neutral velocity (0, 0); their motion is not represented.
      */
     public readonly geometryLinearVelocityTexture: FrameGraphTextureHandle;
 
@@ -240,6 +242,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
 
     private _clearAttachmentsLayout: Map<GeometryRenderingTextureClearType, number[]>;
     private _allAttachmentsLayout: number[];
+    private _colorAttachmentsLayout: number[];
 
     /**
      * Constructs a new geometry renderer task.
@@ -263,7 +266,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
                 return !!preWarm;
             }
 
-            return mesh.isReady(refreshRate === 0);
+            return mesh.isReady(!!preWarm || refreshRate === 0);
         };
 
         this._renderer.onBeforeRenderingManagerRenderObservable.add(() => {
@@ -274,6 +277,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
 
         this._clearAttachmentsLayout = new Map();
         this._allAttachmentsLayout = [];
+        this._colorAttachmentsLayout = [];
 
         this.geometryIrradianceTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryViewDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
@@ -345,12 +349,13 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         const pass = super.record(skipCreationOfDisabledPasses, additionalExecute) as FrameGraphRenderPass;
 
         const outputTextureHandles = pass.renderTarget as FrameGraphTextureHandle[];
+        const targetTextureCount = this._getTargetTextureCount();
 
         let needPreviousWorldMatrices = false;
 
         for (let i = 0; i < this.textureDescriptions.length; i++) {
             const description = this.textureDescriptions[i];
-            const handle = outputTextureHandles[i];
+            const handle = outputTextureHandles[targetTextureCount + i];
             const index = MaterialHelperGeometryRendering.GeometryTextureDescriptions.findIndex((f) => f.type === description.type);
             const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
 
@@ -447,7 +452,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             if (!_IsMeshBlendingSupported(engine)) {
                 throw new Error(`FrameGraphGeometryRendererTask ${this.name}: mesh-blending tag textures require WebGL2 or WebGPU`);
             }
-            if (this.renderTransparentMeshes && !engine.isWebGPU && !engine.getCaps().blendParametersPerTarget) {
+            if ((this.renderTransparentMeshes || this.renderSprites || this.renderParticles) && !engine.isWebGPU && !engine.getCaps().blendParametersPerTarget) {
                 throw new Error(`FrameGraphGeometryRendererTask ${this.name}: transparent mesh-blending tags require per-target blend parameters`);
             }
             if (this.samples !== 1) {
@@ -527,6 +532,14 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
 
         const handles: FrameGraphTextureHandle[] = [];
 
+        if (this.targetTexture !== undefined) {
+            if (Array.isArray(this.targetTexture)) {
+                handles.push(...this.targetTexture);
+            } else {
+                handles.push(this.targetTexture);
+            }
+        }
+
         if (this.textureDescriptions.length > 0) {
             const baseHandle = this._frameGraph.textureManager.createRenderTargetTexture(this.name, {
                 size: this.size,
@@ -546,14 +559,6 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             }
         }
 
-        if (this.targetTexture !== undefined) {
-            if (Array.isArray(this.targetTexture)) {
-                handles.push(...this.targetTexture);
-            } else {
-                handles.push(this.targetTexture);
-            }
-        }
-
         return handles;
     }
 
@@ -569,12 +574,17 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         context.restoreDefaultFramebuffer();
         context.popDebugGroup();
 
-        return this._allAttachmentsLayout;
+        return this._colorAttachmentsLayout;
+    }
+
+    private _getTargetTextureCount(): number {
+        return this.targetTexture === undefined ? 0 : Array.isArray(this.targetTexture) ? this.targetTexture.length : 1;
     }
 
     private _buildClearAttachmentsLayout() {
         const clearAttachmentsLayout = new Map<GeometryRenderingTextureClearType, boolean[]>();
-        const allAttachmentsLayout: boolean[] = [];
+        const targetTextureCount = this._getTargetTextureCount();
+        const allAttachmentsLayout: boolean[] = new Array(targetTextureCount).fill(true);
 
         for (let i = 0; i < this.textureDescriptions.length; i++) {
             const description = this.textureDescriptions[i];
@@ -589,7 +599,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             if (layout === undefined) {
                 layout = [];
                 clearAttachmentsLayout.set(clearType, layout);
-                for (let j = 0; j < i; j++) {
+                for (let j = 0; j < targetTextureCount + i; j++) {
                     layout[j] = false;
                 }
             }
@@ -601,16 +611,6 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             allAttachmentsLayout.push(true);
         }
 
-        if (this.targetTexture !== undefined) {
-            const targetTextureCount = Array.isArray(this.targetTexture) ? this.targetTexture.length : 1;
-            for (let index = 0; index < targetTextureCount; index++) {
-                clearAttachmentsLayout.forEach((layout) => {
-                    layout.push(false);
-                });
-                allAttachmentsLayout.push(true);
-            }
-        }
-
         this._clearAttachmentsLayout = new Map();
 
         clearAttachmentsLayout.forEach((layout, clearType) => {
@@ -618,17 +618,19 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         });
 
         this._allAttachmentsLayout = this._engine.buildTextureLayout(allAttachmentsLayout);
+        this._colorAttachmentsLayout = this._engine.buildTextureLayout(allAttachmentsLayout.map((_, index) => targetTextureCount > 0 && index === 0));
     }
 
     private _registerForRenderPassId(renderPassId: number) {
         const configuration = MaterialHelperGeometryRendering.CreateConfiguration(renderPassId);
+        const targetTextureCount = this._getTargetTextureCount();
 
         for (let i = 0; i < this.textureDescriptions.length; i++) {
             const description = this.textureDescriptions[i];
             const index = MaterialHelperGeometryRendering.GeometryTextureDescriptions.findIndex((f) => f.type === description.type);
             const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
 
-            configuration.defines[geometryDescription.defineIndex] = i;
+            configuration.defines[geometryDescription.defineIndex] = targetTextureCount + i;
             if (description.type === Constants.PREPASS_OBJECT_ID_TEXTURE_TYPE) {
                 configuration.objectIdIsRedFormat = description.textureFormat === Constants.TEXTUREFORMAT_RED;
             } else if (description.type === Constants.PREPASS_MESH_BLEND_TAG_TEXTURE_TYPE) {
@@ -636,11 +638,12 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             }
         }
 
-        if (this.targetTexture !== undefined) {
-            configuration.defines["PREPASS_COLOR_INDEX"] = this.textureDescriptions.length;
+        if (targetTextureCount > 0) {
+            configuration.defines["PREPASS_COLOR_INDEX"] = 0;
         }
 
         configuration.reverseCulling = this.reverseCulling;
         configuration.objectIdProvider = this.objectIdProvider;
+        MaterialHelperGeometryRendering._PrepareConfiguration(renderPassId, this._allAttachmentsLayout, this._colorAttachmentsLayout);
     }
 }

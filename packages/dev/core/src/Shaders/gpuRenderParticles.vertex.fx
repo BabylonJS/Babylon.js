@@ -4,8 +4,31 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform vec2 translationPivot;
 uniform vec3 worldOffset;
-#ifdef LOCAL
 uniform mat4 emitterWM;
+
+#ifdef PREPASS
+uniform vec2 cameraInfo;
+#ifdef LOCAL
+uniform mat4 inverseEmitterWM;
+#endif
+#ifdef PREPASS_POSITION
+varying vec3 vGeometryPositionW;
+#endif
+#ifdef PREPASS_WORLD_NORMAL
+varying vec3 vGeometryNormalW;
+#endif
+#ifdef PREPASS_NORMAL
+varying vec3 vGeometryNormalV;
+#endif
+#ifdef PREPASS_LOCAL_POSITION
+varying vec3 vPosition;
+#endif
+#ifdef PREPASS_DEPTH
+varying vec3 vViewPos;
+#endif
+#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
+varying float vNormViewDepth;
+#endif
 #endif
 
 // Particles state
@@ -56,6 +79,22 @@ uniform vec3 sheetInfos;
 	uniform vec3 eyePosition;
 #endif
 
+vec3 particleBasePosition() {
+#ifdef LOCAL
+	return (emitterWM * vec4(position, 1.0)).xyz + worldOffset;
+#else
+	return position + worldOffset;
+#endif
+}
+
+vec3 particleDirection(vec3 directionValue) {
+#ifdef LOCAL
+	return (emitterWM * vec4(directionValue, 0.0)).xyz;
+#else
+	return directionValue;
+#endif
+}
+
 vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 	vec3 xaxis = normalize(cross(vec3(0., 1.0, 0.), yaxis));
 	vec3 zaxis = normalize(cross(yaxis, xaxis));
@@ -67,27 +106,24 @@ vec3 rotate(vec3 yaxis, vec3 rotatedCorner) {
 	mat3 rotMatrix =  mat3(row0, row1, row2);
 
 	vec3 alignedCorner = rotMatrix * rotatedCorner;
-	#ifdef LOCAL
-		return ((emitterWM * vec4(position, 1.0)).xyz + worldOffset) + alignedCorner;
-	#else
-		return (position + worldOffset) + alignedCorner;
-	#endif
+	return particleBasePosition() + alignedCorner;
 }
 
 #ifdef BILLBOARDSTRETCHED
 vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
-	vec3 normalizedToCamera = normalize(toCamera);
 #ifdef BILLBOARDSTRETCHED_LOCAL
-	vec3 normalizedCrossDirToCamera = normalize(cross(normalize(initialDirection), normalizedToCamera));
+	vec3 stretchDirection = particleDirection(initialDirection);
 #else
-	vec3 normalizedCrossDirToCamera = normalize(cross(normalize(direction), normalizedToCamera));
+	vec3 stretchDirection = particleDirection(direction);
 #endif
+	vec3 normalizedToCamera = normalize(toCamera);
+	vec3 normalizedCrossDirToCamera = normalize(cross(normalize(stretchDirection), normalizedToCamera));
 
 	vec3 row0 = vec3(normalizedCrossDirToCamera.x, normalizedCrossDirToCamera.y, normalizedCrossDirToCamera.z);
 	vec3 row2 = vec3(normalizedToCamera.x, normalizedToCamera.y, normalizedToCamera.z);
 
 #ifdef BILLBOARDSTRETCHED_LOCAL
-	vec3 row1 = normalize(initialDirection);
+	vec3 row1 = normalize(stretchDirection);
 #else
 	vec3 crossProduct = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
 	vec3 row1 = vec3(crossProduct.x, crossProduct.y, crossProduct.z);
@@ -96,15 +132,25 @@ vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
 	mat3 rotMatrix =  mat3(row0, row1, row2);
 
 	vec3 alignedCorner = rotMatrix * rotatedCorner;
-	#ifdef LOCAL
-		return ((emitterWM * vec4(position, 1.0)).xyz + worldOffset) + alignedCorner;
-	#else
-		return (position + worldOffset) + alignedCorner;
-	#endif
+	return particleBasePosition() + alignedCorner;
+}
+
+vec3 stretchedNormal(vec3 toCamera, vec3 stretchDirection) {
+	vec3 normalizedToCamera = normalize(toCamera);
+	vec3 normalizedCrossDirToCamera = normalize(cross(normalize(stretchDirection), normalizedToCamera));
+#ifdef BILLBOARDSTRETCHED_LOCAL
+	vec3 row1 = normalize(stretchDirection);
+#else
+	vec3 row1 = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
+#endif
+	return normalize(cross(normalizedCrossDirToCamera, row1));
 }
 #endif
 
 void main() {
+#ifdef PREPASS
+	vec3 geometryNormalW;
+#endif
 
 #ifdef EMITRATECTRL
   // Skip dead particles (age >= life means particle has expired).
@@ -156,9 +202,12 @@ void main() {
 		rotatedCorner.y = 0.;
         rotatedCorner.xz += translationPivot;
 
-		vec3 yaxis = (position + worldOffset) - eyePosition;
+		vec3 yaxis = particleBasePosition() - eyePosition;
 		yaxis.y = 0.;
 		vPositionW = rotate(normalize(yaxis), rotatedCorner.xyz);
+#ifdef PREPASS
+		geometryNormalW = normalize(yaxis);
+#endif
 
 		vec4 viewPosition = (view * vec4(vPositionW, 1.0));
 	#elif defined(BILLBOARDSTRETCHED)
@@ -167,8 +216,15 @@ void main() {
 		rotatedCorner.z = 0.;
         rotatedCorner.xy += translationPivot;
 
-		vec3 toCamera = (position + worldOffset) - eyePosition;
+		vec3 toCamera = particleBasePosition() - eyePosition;
 		vPositionW = rotateAlign(toCamera, rotatedCorner.xyz);
+#ifdef PREPASS
+	#ifdef BILLBOARDSTRETCHED_LOCAL
+		geometryNormalW = stretchedNormal(toCamera, particleDirection(initialDirection));
+	#else
+		geometryNormalW = stretchedNormal(toCamera, particleDirection(direction));
+	#endif
+#endif
 
 		vec4 viewPosition = (view * vec4(vPositionW, 1.0));
 	#else
@@ -186,6 +242,9 @@ void main() {
 		#endif
 
         vPositionW = (invView * viewPosition).xyz;
+#ifdef PREPASS
+		geometryNormalW = normalize((invView * vec4(0.0, 0.0, 1.0, 0.0)).xyz);
+#endif
 	#endif
 
 #else
@@ -196,8 +255,11 @@ void main() {
 	rotatedCorner.z = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
     rotatedCorner.xz += translationPivot;
 
-	vec3 yaxis = normalize(initialDirection);
+	vec3 yaxis = normalize(particleDirection(initialDirection));
 	vPositionW = rotate(yaxis, rotatedCorner);
+#ifdef PREPASS
+	geometryNormalW = yaxis;
+#endif
 
     // Expand position
     vec4 viewPosition = view * vec4(vPositionW, 1.0);
@@ -211,4 +273,38 @@ void main() {
 	#include<clipPlaneVertex>
 	#include<fogVertex>
 	#include<logDepthVertex>
+
+#ifdef PREPASS
+	vec4 geometryViewPosition = view * vec4(vPositionW, 1.0);
+#if defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL)
+	vec3 geometryNormalV = normalize((view * vec4(geometryNormalW, 0.0)).xyz);
+	vec3 geometryViewDirection = projection[3][3] == 0.0 ? geometryViewPosition.xyz : vec3(0.0, 0.0, geometryViewPosition.z);
+	if (dot(geometryNormalV, geometryViewDirection) > 0.0) {
+		geometryNormalV = -geometryNormalV;
+		geometryNormalW = -geometryNormalW;
+	}
+#endif
+#ifdef PREPASS_POSITION
+	vGeometryPositionW = vPositionW;
+#endif
+#ifdef PREPASS_WORLD_NORMAL
+	vGeometryNormalW = normalize(geometryNormalW);
+#endif
+#ifdef PREPASS_NORMAL
+	vGeometryNormalV = geometryNormalV;
+#endif
+#ifdef PREPASS_LOCAL_POSITION
+	#ifdef LOCAL
+		vPosition = (inverseEmitterWM * vec4(vPositionW - worldOffset, 1.0)).xyz;
+	#else
+		vPosition = vPositionW;
+	#endif
+#endif
+#ifdef PREPASS_DEPTH
+	vViewPos = geometryViewPosition.xyz;
+#endif
+#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
+	vNormViewDepth = (geometryViewPosition.z - cameraInfo.x) / (cameraInfo.y - cameraInfo.x);
+#endif
+#endif
 }

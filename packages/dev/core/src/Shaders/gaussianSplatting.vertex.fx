@@ -19,6 +19,19 @@ uniform float minPixelSize;
 uniform vec3 eyePosition;
 uniform float alpha;
 
+#ifdef PREPASS
+#if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
+uniform mat4 previousWorld;
+uniform mat4 previousViewProjection;
+#if IS_COMPOUND
+uniform mat4 previousPartWorld[MAX_PART_COUNT];
+#endif
+#endif
+#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
+uniform vec2 geometryDepthRange;
+#endif
+#endif
+
 #if IS_COMPOUND
 uniform mat4 partWorld[MAX_PART_COUNT];
 uniform float partVisibility[MAX_PART_COUNT];
@@ -72,6 +85,34 @@ uniform sampler2D partIndicesTexture;
 varying vec4 vColor;
 varying vec2 vPosition;
 
+#ifdef PREPASS
+#ifdef PREPASS_POSITION
+varying vec3 vGeometryPositionW;
+#endif
+#ifdef PREPASS_LOCAL_POSITION
+varying vec3 vGeometryPositionL;
+#endif
+#ifdef PREPASS_DEPTH
+varying float vGeometryViewDepth;
+#endif
+#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
+varying float vGeometryNormalizedViewDepth;
+#endif
+#ifdef PREPASS_NORMAL
+varying vec3 vGeometryNormalV;
+#endif
+#ifdef PREPASS_WORLD_NORMAL
+varying vec3 vGeometryNormalW;
+#endif
+#if defined(PREPASS_ALBEDO) || defined(PREPASS_ALBEDO_SQRT)
+varying vec3 vGeometryAlbedo;
+#endif
+#if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
+varying vec4 vGeometryCurrentPosition;
+varying vec4 vGeometryPreviousPosition;
+#endif
+#endif
+
 #define CUSTOM_VERTEX_DEFINITIONS
 
 #include<gaussianSplatting>
@@ -95,6 +136,10 @@ void main () {
 
     vColor = splat.color;
     vPosition = position.xy;
+
+#if defined(PREPASS_ALBEDO) || defined(PREPASS_ALBEDO_SQRT)
+    vGeometryAlbedo = splat.color.xyz;
+#endif
 
 #if SH_DEGREE > 0
     mat3 worldRot = mat3(splatWorld);
@@ -139,6 +184,47 @@ void main () {
 #define CUSTOM_VERTEX_UPDATE
 
     gl_Position = gaussianSplatting(position.xy, worldPos.xyz, scale, covA, covB, splatWorld, view, projection);
+
+#ifdef PREPASS
+#if defined(PREPASS_POSITION) || defined(PREPASS_LOCAL_POSITION) || defined(PREPASS_DEPTH) || defined(PREPASS_NORMALIZED_VIEW_DEPTH) || defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL) || defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
+    vec3 geometrySplatViewPosition = (view * worldPos).xyz;
+    vec4 geometryPlaneViewPosition = inverseProjection * gl_Position;
+    geometryPlaneViewPosition /= geometryPlaneViewPosition.w;
+    vec3 geometryPlanePositionW = worldPos.xyz + transpose(mat3(view)) * (geometryPlaneViewPosition.xyz - geometrySplatViewPosition);
+    vec3 geometryPlanePositionL = splat.center.xyz + inverseMat3(mat3(splatWorld)) * (geometryPlanePositionW - worldPos.xyz);
+#endif
+#ifdef PREPASS_POSITION
+    vGeometryPositionW = geometryPlanePositionW;
+#endif
+#ifdef PREPASS_LOCAL_POSITION
+    vGeometryPositionL = geometryPlanePositionL;
+#endif
+#ifdef PREPASS_DEPTH
+    vGeometryViewDepth = geometryPlaneViewPosition.z;
+#endif
+#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
+    vGeometryNormalizedViewDepth = (geometryPlaneViewPosition.z - geometryDepthRange.x) / (geometryDepthRange.y - geometryDepthRange.x);
+#endif
+#if defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL)
+    // Gaussian splats do not define a surface normal, so use the rendered camera-facing plane normal.
+    vec3 geometryNormalV = vec3(0.0, 0.0, geometrySplatViewPosition.z < 0.0 ? 1.0 : -1.0);
+    vec3 geometryNormalW = normalize(transpose(mat3(view)) * geometryNormalV);
+    #ifdef PREPASS_NORMAL
+        vGeometryNormalV = geometryNormalV;
+    #endif
+    #ifdef PREPASS_WORLD_NORMAL
+        vGeometryNormalW = geometryNormalW;
+    #endif
+#endif
+#if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
+    vGeometryCurrentPosition = gl_Position;
+    #if IS_COMPOUND
+        vGeometryPreviousPosition = previousViewProjection * previousPartWorld[splat.partIndex] * vec4(geometryPlanePositionL, 1.0);
+    #else
+        vGeometryPreviousPosition = previousViewProjection * previousWorld * vec4(geometryPlanePositionL, 1.0);
+    #endif
+#endif
+#endif
 
 #include<clipPlaneVertex>
 #include<fogVertex>

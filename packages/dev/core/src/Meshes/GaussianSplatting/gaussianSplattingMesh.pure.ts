@@ -314,6 +314,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     private _partIndicesTexture: Nullable<BaseTexture> = null;
     private _partIndices: Nullable<Uint8Array> = null;
+    private _partWorldData = new Float32Array(0);
+    private readonly _partVisibilityData: number[] = [];
 
     /** Gets the part indices texture used for compound rendering */
     public get partIndicesTexture() {
@@ -580,14 +582,19 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             return;
         }
         effect.setTexture("partIndicesTexture", this._partIndicesTexture);
-        const partWorldData = new Float32Array(this.partCount * 16);
+        const partWorldDataLength = this.partCount * 16;
+        if (this._partWorldData.length !== partWorldDataLength) {
+            this._partWorldData = new Float32Array(partWorldDataLength);
+        }
+        const partWorldData = this._partWorldData;
         for (let i = 0; i < this.partCount; i++) {
             this._partMatrices[i].toArray(partWorldData, i * 16);
         }
         effect.setMatrices("partWorld", partWorldData);
-        const partVisibilityData: number[] = [];
+        const partVisibilityData = this._partVisibilityData;
+        partVisibilityData.length = this.partCount;
         for (let i = 0; i < this.partCount; i++) {
-            partVisibilityData.push(this._partVisibility[i] ?? 1.0);
+            partVisibilityData[i] = this._partVisibility[i] ?? 1.0;
         }
         effect.setArray("partVisibility", partVisibilityData);
     }

@@ -160,7 +160,7 @@ server.registerResource("enums", "nrg://enums", {}, async (uri) => ({
                 "| ShadowGenerator | 0x00200000 | 2097152 | Shadow generator output |",
                 "| ShadowLight | 0x00400000 | 4194304 | Directional/spot/point light for shadow casting |",
                 "| Camera | 0x01000000 | 16777216 | Scene camera |",
-                "| ObjectList | 0x02000000 | 33554432 | List of renderable objects/meshes |",
+                "| ObjectList | 0x02000000 | 33554432 | List of meshes, particle systems, and sprite managers |",
                 "| Object | 0x80000000 | 2147483648 | Generic internal task object (e.g. ObjectRendererTask) |",
                 "| AutoDetect | 0x10000000 | 268435456 | Type is resolved automatically at build time |",
                 "| BasedOnInput | 0x20000000 | 536870912 | Output type mirrors a specific input |",

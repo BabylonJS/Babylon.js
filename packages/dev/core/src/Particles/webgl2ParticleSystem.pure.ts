@@ -21,8 +21,9 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
     private _updateEffect: Effect;
     private _updateEffectOptions: IEffectCreationOptions;
     private _renderVAO: WebGLVertexArrayObject[] = [];
+    private _renderVAOEffects: Effect[] = [];
     private _updateVAO: WebGLVertexArrayObject[] = [];
-    private _renderVertexBuffers: { [key: string]: VertexBuffer };
+    private _renderVertexBuffers: Array<{ [key: string]: VertexBuffer }> = [];
     private _baseUniformsNamesLength: number;
 
     /** @internal */
@@ -111,7 +112,9 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
     public contextLost(): void {
         this._updateEffect = undefined as any;
         this._renderVAO.length = 0;
+        this._renderVAOEffects.length = 0;
         this._updateVAO.length = 0;
+        this._renderVertexBuffers.length = 0;
     }
 
     /** @internal */
@@ -194,10 +197,12 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
     public createVertexBuffers(updateBuffer: Buffer, renderVertexBuffers: { [key: string]: VertexBuffer }): void {
         this._updateVAO.push(this._createUpdateVAO(updateBuffer));
 
-        this._renderVAO.push(this._engine.recordVertexArrayObject(renderVertexBuffers, null, this._parent._getWrapper(this._parent.blendMode).effect!));
+        const renderEffect = this._parent._getWrapper(this._parent.blendMode).effect!;
+        this._renderVAO.push(this._engine.recordVertexArrayObject(renderVertexBuffers, null, renderEffect));
+        this._renderVAOEffects.push(renderEffect);
         this._engine.bindArrayBuffer(null);
 
-        this._renderVertexBuffers = renderVertexBuffers;
+        this._renderVertexBuffers.push(renderVertexBuffers);
     }
 
     /** @internal */
@@ -207,8 +212,8 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
 
     /** @internal */
     public bindDrawBuffers(index: number, effect: Effect, indexBuffer: Nullable<DataBuffer>): void {
-        if (indexBuffer) {
-            this._engine.bindBuffers(this._renderVertexBuffers, indexBuffer, effect);
+        if (indexBuffer || this._renderVAOEffects[index] !== effect) {
+            this._engine.bindBuffers(this._renderVertexBuffers[index], indexBuffer, effect);
         } else {
             this._engine.bindVertexArrayObject(this._renderVAO[index], null);
         }
@@ -295,6 +300,8 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
             this._engine.releaseVertexArrayObject(this._renderVAO[index]);
         }
         this._renderVAO.length = 0;
+        this._renderVAOEffects.length = 0;
+        this._renderVertexBuffers.length = 0;
     }
 
     private _createUpdateVAO(source: Buffer): WebGLVertexArrayObject {

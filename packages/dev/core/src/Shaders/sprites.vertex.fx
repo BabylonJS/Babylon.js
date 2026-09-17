@@ -9,10 +9,33 @@ attribute vec4 color;
 // Uniforms
 uniform mat4 view;
 uniform mat4 projection;
+#ifdef PREPASS
+uniform mat4 invView;
+uniform vec2 cameraInfo;
+uniform float spriteNormalSign;
+#endif
+#if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
+attribute vec4 previousPosition;
+attribute vec2 previousOptions;
+uniform mat4 previousView;
+uniform mat4 previousProjection;
+#endif
 
 // Output
 varying vec2 vUV;
 varying vec4 vColor;
+#ifdef PREPASS
+varying vec3 vPositionW;
+varying vec3 vPosition;
+varying vec3 vViewPos;
+varying float vNormViewDepth;
+varying vec3 vNormalV;
+varying vec3 vNormalW;
+#endif
+#if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
+varying vec4 vCurrentPosition;
+varying vec4 vPreviousPosition;
+#endif
 
 #include<fogVertexDeclaration>
 #include<logDepthDeclaration>
@@ -42,6 +65,30 @@ void main(void) {
 	// Position
 	viewPos += rotatedCorner;
 	gl_Position = projection * vec4(viewPos, 1.0);   
+
+#ifdef PREPASS
+	vec4 worldPos = invView * vec4(viewPos, 1.0);
+	vec3 normalV = vec3(0.0, 0.0, spriteNormalSign);
+	vPositionW = worldPos.xyz / worldPos.w;
+	// Sprite local position is the angle-rotated billboard-plane offset from the sprite center.
+	vPosition = rotatedCorner;
+	vViewPos = viewPos;
+	vNormViewDepth = (viewPos.z - cameraInfo.x) / (cameraInfo.y - cameraInfo.x);
+	vNormalV = normalV;
+	vNormalW = normalize((invView * vec4(normalV, 0.0)).xyz);
+#endif
+
+#if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
+	vec3 previousViewPos = (previousView * vec4(previousPosition.xyz, 1.0)).xyz;
+	vec2 previousCornerPos = vec2(offset.x - 0.5, offset.y - 0.5) * previousOptions;
+	vec3 previousRotatedCorner;
+	previousRotatedCorner.x = previousCornerPos.x * cos(previousPosition.w) - previousCornerPos.y * sin(previousPosition.w);
+	previousRotatedCorner.y = previousCornerPos.x * sin(previousPosition.w) + previousCornerPos.y * cos(previousPosition.w);
+	previousRotatedCorner.z = 0.0;
+	previousViewPos += previousRotatedCorner;
+	vCurrentPosition = gl_Position;
+	vPreviousPosition = previousProjection * vec4(previousViewPos, 1.0);
+#endif
 
 	// Color
 	vColor = color;

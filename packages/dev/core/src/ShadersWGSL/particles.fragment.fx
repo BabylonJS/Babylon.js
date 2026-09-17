@@ -5,6 +5,19 @@ uniform textureMask: vec4f;
 var diffuseSamplerSampler: sampler;
 var diffuseSampler: texture_2d<f32>;
 
+#ifdef PREPASS
+#ifdef PREPASS_POSITION
+varying vGeometryPositionW: vec3f;
+#endif
+#ifdef PREPASS_WORLD_NORMAL
+varying vGeometryNormalW: vec3f;
+#endif
+#ifdef PREPASS_NORMAL
+varying vGeometryNormalV: vec3f;
+#endif
+#endif
+#define PREPASS_VELOCITY_ZERO
+#include<prePassDeclaration>[SCENE_MRT_COUNT]
 #include<clipPlaneFragmentDeclaration>
 
 #include<imageProcessingDeclaration>
@@ -34,6 +47,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
 	var textureColor: vec4f = textureSample(diffuseSampler, diffuseSamplerSampler, input.vUV);
 	var baseColor: vec4f = (textureColor * uniforms.textureMask + ( vec4f(1., 1., 1., 1.) - uniforms.textureMask)) * input.vColor;
+#ifdef PREPASS
+	let geometryAlbedo: vec3f = toLinearSpaceVec3(baseColor.rgb);
+#endif
 
 	#ifdef RAMPGRADIENT
 		var alpha: f32 = baseColor.a;
@@ -66,7 +82,33 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	#endif
 #endif
 
+#ifdef PREPASS
+	let geometryColor: vec4f = baseColor;
+	if (geometryColor.a <= 0.0) {
+		discard;
+	}
+	#ifdef PREPASS_POSITION
+		let geometryPositionW: vec3f = input.vGeometryPositionW;
+	#endif
+	#ifdef PREPASS_LOCAL_POSITION
+		let geometryPositionL: vec3f = input.vPosition;
+	#endif
+	#ifdef PREPASS_DEPTH
+		let geometryViewDepth: f32 = input.vViewPos.z;
+	#endif
+	#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
+		let geometryNormalizedViewDepth: f32 = input.vNormViewDepth;
+	#endif
+	#ifdef PREPASS_NORMAL
+		let geometryNormalV: vec3f = normalize(input.vGeometryNormalV);
+	#endif
+	#ifdef PREPASS_WORLD_NORMAL
+		let geometryNormalW: vec3f = normalize(input.vGeometryNormalW);
+	#endif
+	#include<geometryRenderingFragment>
+#else
 	fragmentOutputs.color = baseColor;
+#endif
 
 #define CUSTOM_FRAGMENT_MAIN_END
 

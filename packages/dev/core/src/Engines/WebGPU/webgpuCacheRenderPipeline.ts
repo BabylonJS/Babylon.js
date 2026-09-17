@@ -1109,7 +1109,7 @@ export abstract class WebGPUCacheRenderPipeline {
                     const colorBlend = this._getColorBlendState(i < this._numAlphaBlendTargetsEnabled ? i : 0);
 
                     const isIntegerFormat = format.endsWith("uint") || format.endsWith("sint");
-                    if (!isIntegerFormat && alphaBlend && colorBlend) {
+                    if (descr.writeMask !== 0 && !isIntegerFormat && alphaBlend && colorBlend) {
                         descr.blend = {
                             alpha: alphaBlend,
                             color: colorBlend,

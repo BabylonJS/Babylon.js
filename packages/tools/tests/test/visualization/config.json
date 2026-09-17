@@ -3858,6 +3858,46 @@
             "dependsOn": ["FrameGraph", "Materials", "Meshes", "NodeMaterial", "PBR", "Rendering", "Shaders", "Textures"]
         },
         {
+            "title": "FrameGraph geometry renderer - Beauty",
+            "playgroundId": "#PVK3RV#2",
+            "referenceImage": "framegraph-geometry-renderers-beauty.png",
+            "errorRatio": 0.5,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "GaussianSplatting", "Lights", "Materials", "Meshes", "Particles", "Sprites", "Textures"]
+        },
+        {
+            "title": "FrameGraph object renderer - Beauty reference",
+            "playgroundId": "#1OC90Y#1",
+            "referenceImage": "framegraph-geometry-renderers-beauty.png",
+            "errorRatio": 0.5,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "GaussianSplatting", "Lights", "Materials", "Meshes", "Particles", "Sprites", "Textures"]
+        },
+        {
+            "title": "FrameGraph geometry renderer - Normals",
+            "playgroundId": "#Z6QI9V#2",
+            "referenceImage": "framegraph-geometry-renderers-normals.png",
+            "errorRatio": 0.5,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "GaussianSplatting", "Lights", "Materials", "Meshes", "Particles", "Sprites", "Textures"]
+        },
+        {
+            "title": "FrameGraph geometry renderer - Geometry only",
+            "playgroundId": "#RT0TA2#2",
+            "referenceImage": "framegraph-geometry-renderers-geometry-only.png",
+            "errorRatio": 0.5,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "GaussianSplatting", "Lights", "Materials", "Meshes", "Particles", "Sprites", "Textures"]
+        },
+        {
+            "title": "FrameGraph geometry renderer - NRGE",
+            "playgroundId": "#NIXFAQ#2",
+            "referenceImage": "framegraph-geometry-renderers-nrge.png",
+            "errorRatio": 0.5,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "GaussianSplatting", "Lights", "Materials", "Meshes", "Particles", "Sprites", "Textures"]
+        },
+        {
             "title": "FrameGraph selection outline",
             "playgroundId": "#E1F0GP#4",
             "dependsOn": ["FrameGraph", "Loaders", "Meshes", "Particles", "Textures", "glTF"]
