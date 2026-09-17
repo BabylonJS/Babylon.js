@@ -184,7 +184,6 @@ describe("ThinNativeEngine", () => {
             const hardwareResource = { id: "native-cube" };
             const engine = Object.assign(Object.create(ThinNativeEngine.prototype), {
                 _internalTexturesCache: [],
-                _features: { supportKTXCubeTexture: true },
                 _doNotHandleContextLost: true,
                 _getUseSRGBBuffer: () => false,
                 _createHardwareTexture: (): IHardwareTextureWrapper => ({
@@ -220,7 +219,7 @@ describe("ThinNativeEngine", () => {
             let loadedObserverCalls = 0;
 
             const texture = engine.createCubeTexture(
-                "container.ktx2",
+                "container.dds",
                 null,
                 null,
                 true,
@@ -255,12 +254,12 @@ describe("ThinNativeEngine", () => {
             expect(texture.onLoadedObservable.hasObservers()).toBe(false);
         });
 
-        it.each([".ktx", ".ktx2"])("loads a public %s CubeTexture from the supplied buffer without fetching faces", async (extension) => {
+        it.each(["environment.dds", "environment.dds?version=1"])("loads a public DDS CubeTexture from a buffer at %s without fetching faces", async (url) => {
             const engine = createCubeEngine(256);
             const bytes = new Uint8Array([99, 1, 2, 3, 88]);
             const buffer = new DataView(bytes.buffer, 1, 3);
             const onLoad = vi.fn();
-            const cube = new CubeTexture(`environment${extension}`, engine, { buffer, onLoad });
+            const cube = new CubeTexture(url, engine, { buffer, onLoad });
 
             await flushAsync();
 
@@ -276,26 +275,34 @@ describe("ThinNativeEngine", () => {
             expect(onLoad).toHaveBeenCalledTimes(1);
         });
 
-        it.each([".ktx", ".ktx2"])("loads a public %s CubeTexture as one container URL", async (extension) => {
+        it.each([
+            { extension: ".ktx", buffered: false },
+            { extension: ".ktx", buffered: true },
+            { extension: ".ktx2", buffered: false },
+            { extension: ".ktx2", buffered: true },
+        ])("keeps standard six-face routing for $extension (buffered=$buffered)", async ({ extension, buffered }) => {
             const engine = createCubeEngine();
             const url = `environment${extension}?version=1`;
-            const cube = new CubeTexture(url, engine);
+            const buffer = buffered ? new Uint8Array([1, 2, 3, 4]) : undefined;
+            const cube = new CubeTexture(url, engine, { buffer });
 
             await flushAsync();
 
-            expect(engine._loadFileAsync).toHaveBeenCalledTimes(1);
-            expect(engine._loadFileAsync).toHaveBeenCalledWith(url, undefined, true);
-            expect(engine._engine.loadCubeTexture.mock.calls[0][1]).toHaveLength(1);
+            expect(engine._loadFileAsync).toHaveBeenCalledTimes(6);
+            expect(engine._loadFileAsync).toHaveBeenNthCalledWith(1, `${url}_px.jpg`, undefined, true);
+            expect(engine._loadFileAsync).toHaveBeenNthCalledWith(2, `${url}_nx.jpg`, undefined, true);
+            expect(engine._loadFileAsync).not.toHaveBeenCalledWith(url, undefined, true);
+            expect(engine._engine.loadCubeTexture.mock.calls[0][1]).toHaveLength(6);
             expect(cube.isReady()).toBe(true);
         });
 
-        it.each([".dds", ".ktx", ".ktx2"])("loads and rebuilds a public prefiltered %s CubeTexture from its buffer without fetching", async (extension) => {
+        it("loads and rebuilds a public prefiltered DDS CubeTexture from its buffer without fetching", async () => {
             const engine = createCubeEngine(256);
             engine._doNotHandleContextLost = false;
             const bytes = new Uint8Array([99, 1, 2, 3, 88]);
             const buffer = new DataView(bytes.buffer, 1, 3);
             const onLoad = vi.fn();
-            const cube = new CubeTexture("buffered-environment", engine, { prefiltered: true, forcedExtension: extension, buffer, onLoad });
+            const cube = new CubeTexture("buffered-environment", engine, { prefiltered: true, forcedExtension: ".dds", buffer, onLoad });
             const texture = cube.getInternalTexture()!;
 
             await flushAsync();
@@ -332,22 +339,53 @@ describe("ThinNativeEngine", () => {
             }
         });
 
-        it.each([".ktx", ".ktx2"])("honors a forced %s extension without generating face URLs", async (forcedExtension) => {
+        it.each([".ktx", ".ktx2"])("keeps standard face URLs for a forced %s extension", async (forcedExtension) => {
             const engine = createCubeEngine();
             const cube = new CubeTexture("environment.bin", engine, { forcedExtension });
 
             await flushAsync();
 
-            expect(engine._loadFileAsync).toHaveBeenCalledTimes(1);
-            expect(engine._loadFileAsync).toHaveBeenCalledWith("environment.bin", undefined, true);
-            expect(engine._engine.loadCubeTexture.mock.calls[0][1]).toHaveLength(1);
+            expect(engine._loadFileAsync).toHaveBeenCalledTimes(6);
+            expect(engine._loadFileAsync).toHaveBeenNthCalledWith(1, "environment.bin_px.jpg", undefined, true);
+            expect(engine._loadFileAsync).toHaveBeenNthCalledWith(2, "environment.bin_nx.jpg", undefined, true);
+            expect(engine._loadFileAsync).not.toHaveBeenCalledWith("environment.bin", undefined, true);
+            expect(engine._engine.loadCubeTexture.mock.calls[0][1]).toHaveLength(6);
             expect(cube.isReady()).toBe(true);
         });
 
-        it("prioritizes a supplied container buffer over generated face URLs", async () => {
+        it.each([".ktx", ".ktx2"])("rejects direct single-file %s cube loads, including supplied buffers", (extension) => {
+            const engine = createCubeEngine();
+            for (const buffer of [null, new Uint8Array([1, 2, 3, 4])]) {
+                expect(() =>
+                    engine.createCubeTexture(`environment${extension}`, null, null, false, null, null, undefined, null, false, 0, 0, null, undefined, false, buffer)
+                ).toThrow("Cannot load cubemap because 6 files were not defined");
+            }
+            expect(engine._loadFileAsync).not.toHaveBeenCalled();
+            expect(engine._engine.loadCubeTexture).not.toHaveBeenCalled();
+        });
+
+        it.each([".ktx", ".ktx2"])("rejects public prefiltered %s containers instead of adding a Native-only route", (extension) => {
+            const engine = createCubeEngine();
+            for (const forced of [false, true]) {
+                for (const buffer of [undefined, new Uint8Array([1, 2, 3, 4])]) {
+                    expect(
+                        () =>
+                            new CubeTexture(forced ? "environment.bin" : `environment${extension}`, engine, {
+                                prefiltered: true,
+                                forcedExtension: forced ? extension : undefined,
+                                buffer,
+                            })
+                    ).toThrow("Cannot load cubemap because 6 files were not defined");
+                }
+            }
+            expect(engine._loadFileAsync).not.toHaveBeenCalled();
+            expect(engine._engine.loadCubeTexture).not.toHaveBeenCalled();
+        });
+
+        it("uses a supplied DDS buffer with a forced extension instead of fetching", async () => {
             const engine = createCubeEngine();
             const buffer = new Uint8Array([1, 2, 3, 4]);
-            const cube = new CubeTexture("cached-environment", engine, { buffer });
+            const cube = new CubeTexture("cached-environment", engine, { forcedExtension: ".dds", buffer });
 
             await flushAsync();
 
@@ -416,7 +454,7 @@ describe("ThinNativeEngine", () => {
             const engine = createCubeEngine(64);
             const onLoad = vi.fn();
 
-            const texture = engine.createPrefilteredCubeTexture("prefiltered.ktx2", null, 0.8, 0, onLoad, null, undefined, null, createPolynomials);
+            const texture = engine.createPrefilteredCubeTexture("prefiltered.dds", null, 0.8, 0, onLoad, null, undefined, null, createPolynomials);
 
             await flushAsync();
 
@@ -435,7 +473,7 @@ describe("ThinNativeEngine", () => {
             });
             const computePolynomial = vi.spyOn(CubeMapToSphericalPolynomialTools, "ConvertCubeMapTextureToSphericalPolynomial").mockReturnValue(null);
             const onLoad = vi.fn();
-            const cube = new CubeTexture("prefiltered.ktx2", engine, { prefiltered: true, createPolynomials, onLoad });
+            const cube = new CubeTexture("prefiltered.dds", engine, { prefiltered: true, createPolynomials, onLoad });
             const texture = cube.getInternalTexture()!;
             const observer = vi.fn((loadedCube: CubeTexture) => ({
                 source: loadedCube.getInternalTexture()?._source,

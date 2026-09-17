@@ -392,7 +392,6 @@ export class ThinNativeEngine extends ThinEngine {
             supportShadowSamplers: false,
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: false,
-            supportKTXCubeTexture: true,
             trackUbosInFrame: false,
             checkUbosContentBeforeUpload: false,
             supportCSM: false,

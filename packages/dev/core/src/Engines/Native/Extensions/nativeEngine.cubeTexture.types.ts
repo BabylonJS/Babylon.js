@@ -7,7 +7,7 @@ declare module "../../../Engines/thinNativeEngine.pure" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     export interface ThinNativeEngine {
         /**
-         * Creates a cube texture
+         * Creates a cube texture from six face images or a single DDS/env container.
          * @param rootUrl defines the url where the files to load is located
          * @param scene defines the current scene
          * @param files defines the list of files to load (1 per face)
@@ -22,7 +22,7 @@ declare module "../../../Engines/thinNativeEngine.pure" {
          * @param fallback defines texture to use while falling back when (compressed) texture file not found.
          * @param loaderOptions options to be passed to the loader
          * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
-         * @param buffer defines the data buffer to load instead of loading the rootUrl
+         * @param buffer defines the DDS or env data buffer to load instead of loading the rootUrl
          * @returns the cube texture as an InternalTexture
          */
         createCubeTexture(
@@ -57,7 +57,7 @@ declare module "../../../Engines/thinNativeEngine.pure" {
          * @param format defines the format of the data
          * @param forcedExtension defines the extension to use to pick the right loader
          * @param createPolynomials defines whether to create spherical polynomial harmonics for the texture
-         * @param buffer defines the data buffer to load instead of loading the rootUrl
+         * @param buffer defines the DDS or env data buffer to load instead of loading the rootUrl
          * @returns the cube texture as an InternalTexture
          */
         createPrefilteredCubeTexture(

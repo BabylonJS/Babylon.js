@@ -306,7 +306,6 @@ export class CubeTexture extends BaseTexture {
         const lastDot = url.lastIndexOf(".");
         const extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
         const isDDS = extension.indexOf(".dds") === 0;
-        const isKTX = extension.indexOf(".ktx") === 0 && this._getEngine()?._features.supportKTXCubeTexture;
         const isEnv = extension.indexOf(".env") === 0;
         const isBasis = extension.indexOf(".basis") === 0;
 
@@ -326,7 +325,7 @@ export class CubeTexture extends BaseTexture {
         if (files) {
             this._files = files;
         } else {
-            if (!isBasis && !isEnv && !isDDS && !isKTX && !extensions) {
+            if (!isBasis && !isEnv && !isDDS && !extensions) {
                 extensions = ["_px.jpg", "_py.jpg", "_pz.jpg", "_nx.jpg", "_ny.jpg", "_nz.jpg"];
             }
 
