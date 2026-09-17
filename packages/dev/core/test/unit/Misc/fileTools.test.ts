@@ -39,6 +39,30 @@ describe("LoadImage", () => {
         engine.dispose();
     });
 
+    it("decodes an ArrayBuffer directly without creating an object URL", async () => {
+        const engine = new BitmapNullEngine();
+        const imageBitmap = { width: 1, height: 1, close: vi.fn() } as unknown as ImageBitmap;
+        const createImageBitmapSpy = vi.spyOn(engine, "createImageBitmap").mockResolvedValue(imageBitmap);
+        const createObjectURLSpy = vi.spyOn(URL, "createObjectURL");
+        const source = new Uint8Array([1, 2]).buffer;
+
+        await new Promise<HTMLImageElement | ImageBitmap>((resolve, reject) => {
+            LoadImage(source, resolve, (_message, exception) => reject(exception), null, "image/png", undefined, engine);
+        });
+
+        expect(createObjectURLSpy).not.toHaveBeenCalled();
+
+        const blob = createImageBitmapSpy.mock.calls[0][0] as Blob;
+        expect(blob.type).toBe("image/png");
+        expect(Array.from(new Uint8Array(await blob.arrayBuffer()))).toEqual([1, 2]);
+        expect(createImageBitmapSpy).toHaveBeenCalledExactlyOnceWith(blob, {
+            premultiplyAlpha: "none",
+            colorSpaceConversion: "none",
+        });
+
+        engine.dispose();
+    });
+
     it("decodes a Blob directly without creating an object URL", async () => {
         const engine = new BitmapNullEngine();
         const imageBitmap = { width: 1, height: 1, close: vi.fn() } as unknown as ImageBitmap;
