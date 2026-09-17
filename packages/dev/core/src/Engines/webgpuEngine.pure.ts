@@ -1016,7 +1016,6 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             supportShadowSamplers: true,
             uniformBufferHardCheckMatrix: false,
             allowTexturePrefiltering: true,
-            supportKTXCubeTexture: false,
             trackUbosInFrame: true,
             checkUbosContentBeforeUpload: true,
             supportCSM: true,

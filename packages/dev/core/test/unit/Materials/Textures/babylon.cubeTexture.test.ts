@@ -56,10 +56,13 @@ describe("CubeTexture", () => {
         { name: "WebGPU", createCubeTexture: WebGPUEngine.prototype.createCubeTexture, createPrefilteredCubeTexture: WebGPUEngine.prototype.createPrefilteredCubeTexture },
     ])("$name cube loading", ({ createCubeTexture, createPrefilteredCubeTexture }) => {
         it.each([
+            { url: "environment.ktx", forcedExtension: undefined },
+            { url: "environment.ktx?version=1", forcedExtension: undefined },
+            { url: "environment.bin", forcedExtension: ".ktx" },
             { url: "environment.ktx2", forcedExtension: undefined },
             { url: "environment.ktx2?version=1", forcedExtension: undefined },
             { url: "environment.bin", forcedExtension: ".ktx2" },
-        ])("does not route $url into the KTX1-only cube parser", async ({ url, forcedExtension }) => {
+        ])("does not route $url as a single-file KTX cube", async ({ url, forcedExtension }) => {
             vi.spyOn(engine, "createCubeTexture").mockImplementation((...args) => createCubeTexture.call(engine, ...args));
             const loadFile = vi.spyOn(engine, "_loadFile").mockImplementation(vi.fn());
             const loadCubeData = vi.spyOn(_KTXTextureLoader.prototype, "loadCubeData");
