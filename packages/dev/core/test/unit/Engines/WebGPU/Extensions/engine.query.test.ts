@@ -50,6 +50,20 @@ describe("WebGPU engine queries", () => {
         expect(renderPass.beginOcclusionQuery).not.toHaveBeenCalled();
     });
 
+    it("returns false when a compatibility-mode engine cannot provide a render pass", () => {
+        RegisterEnginesWebGPUExtensionsEngineQuery();
+
+        const engine = Object.create(ThinWebGPUEngine.prototype) as ThinWebGPUEngine;
+        engine.compatibilityMode = true;
+        engine._currentRenderPass = null;
+        engine._occlusionQuery = {
+            canBeginQuery: vi.fn(),
+        } as unknown as ThinWebGPUEngine["_occlusionQuery"];
+
+        expect(engine.beginOcclusionQuery(0, 9)).toBe(false);
+        expect(engine._occlusionQuery.canBeginQuery).not.toHaveBeenCalled();
+    });
+
     it("keeps recording occlusion queries in the bundle list outside compatibility mode", () => {
         RegisterEnginesWebGPUExtensionsEngineQuery();
 
