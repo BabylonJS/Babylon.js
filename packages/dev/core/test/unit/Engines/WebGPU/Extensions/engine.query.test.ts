@@ -3,6 +3,8 @@ import { WebGPUEngine } from "core/Engines/webgpuEngine.pure";
 import { Constants } from "core/Engines/constants";
 import { WebGPUBundleList } from "core/Engines/WebGPU/webgpuBundleList";
 import { RegisterEnginesWebGPUExtensionsEngineQuery } from "core/Engines/WebGPU/Extensions/engine.query.pure";
+import { type WebGPUBufferManager } from "core/Engines/WebGPU/webgpuBufferManager";
+import { WebGPUOcclusionQuery } from "core/Engines/WebGPU/webgpuOcclusionQuery";
 import { WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRenderTargetWrapper";
 import { type WebGPUHardwareTexture } from "core/Engines/WebGPU/webgpuHardwareTexture";
 import { type InternalTexture } from "core/Materials/Textures/internalTexture";
@@ -30,7 +32,11 @@ interface WebGPUEngineRenderPassInternals {
         depthTextureFormat: WebGPUHardwareTexture["format"] | undefined;
     };
     _occlusionQuery: ThinWebGPUEngine["_occlusionQuery"];
+    _occlusionQueryActive: boolean;
     _bundleList: WebGPUBundleList;
+    _snapshotRendering: {
+        handleRenderPassRestart(): void;
+    };
     _cacheTextureViews: {
         getView(texture: GPUTexture, descriptor: TextureViewDescriptor): GPUTextureView;
     };
@@ -88,6 +94,7 @@ describe("WebGPU engine queries", () => {
         const engine = Object.create(ThinWebGPUEngine.prototype) as ThinWebGPUEngine;
         const renderPass = {
             beginOcclusionQuery: vi.fn(),
+            endOcclusionQuery: vi.fn(),
         } as unknown as GPURenderPassEncoder;
         engine.compatibilityMode = true;
         engine._currentRenderPass = null;
@@ -103,6 +110,9 @@ describe("WebGPU engine queries", () => {
         expect(engine._getCurrentRenderPass).toHaveBeenCalledOnce();
         expect(engine._occlusionQuery.canBeginQuery).toHaveBeenCalledExactlyOnceWith(7);
         expect(renderPass.beginOcclusionQuery).not.toHaveBeenCalled();
+
+        engine.endOcclusionQuery();
+        expect(renderPass.endOcclusionQuery).not.toHaveBeenCalled();
     });
 
     it("returns false when a compatibility-mode engine cannot provide a render pass", () => {
@@ -133,6 +143,7 @@ describe("WebGPU engine queries", () => {
             hasQueries: true,
             querySet,
         } as ThinWebGPUEngine["_occlusionQuery"];
+        engine._snapshotRendering = { handleRenderPassRestart: vi.fn() };
         engine._endCurrentRenderPass = vi.fn(() => {
             engine._currentRenderPass = null;
             return 2;
@@ -143,8 +154,74 @@ describe("WebGPU engine queries", () => {
         });
 
         expect(engine._getCurrentRenderPass()).toBe(newRenderPass);
+        expect(engine._snapshotRendering.handleRenderPassRestart).toHaveBeenCalledOnce();
         expect(engine._endCurrentRenderPass).toHaveBeenCalledOnce();
         expect(engine._startMainRenderPass).toHaveBeenCalledExactlyOnceWith(false);
+    });
+
+    it("keeps an active compatibility query on its pass when the real allocator grows", () => {
+        vi.useFakeTimers();
+        try {
+            RegisterEnginesWebGPUExtensionsEngineQuery();
+
+            const engine = Object.create(WebGPUEngine.prototype) as WebGPUEngineRenderPassInternals;
+            const oldRenderPass = {
+                beginOcclusionQuery: vi.fn(),
+                endOcclusionQuery: vi.fn(),
+            } as unknown as GPURenderPassEncoder;
+            const newRenderPass = {} as GPURenderPassEncoder;
+            const querySets: GPUQuerySet[] = [];
+            const device = {
+                createQuerySet: vi.fn(() => {
+                    const querySet = { destroy: vi.fn() } as unknown as GPUQuerySet;
+                    querySets.push(querySet);
+                    return querySet;
+                }),
+            } as unknown as GPUDevice;
+            const bufferManager = {
+                createRawBuffer: vi.fn(() => ({}) as GPUBuffer),
+                releaseBuffer: vi.fn(),
+            } as unknown as WebGPUBufferManager;
+
+            Object.defineProperty(engine, "compatibilityMode", { value: true });
+            engine._currentRenderTarget = null;
+            engine._currentRenderPass = oldRenderPass;
+            engine._occlusionQueryActive = false;
+            engine._occlusionQuery = new WebGPUOcclusionQuery(engine as unknown as WebGPUEngine, device, bufferManager, 1, 1);
+            engine._frameId = 1;
+            engine._mainRenderPassWrapper = {
+                renderPassDescriptor: { occlusionQuerySet: engine._occlusionQuery.querySet },
+            };
+            engine._snapshotRendering = { handleRenderPassRestart: vi.fn() };
+            engine._endCurrentRenderPass = vi.fn(() => {
+                engine._currentRenderPass = null;
+                return 2;
+            });
+            engine._startMainRenderPass = vi.fn(() => {
+                engine._mainRenderPassWrapper.renderPassDescriptor.occlusionQuerySet = engine._occlusionQuery.querySet;
+                engine._currentRenderPass = newRenderPass;
+            });
+
+            const query = engine._occlusionQuery.createQuery();
+            expect(engine.beginOcclusionQuery(0, query)).toBe(true);
+            expect(engine._occlusionQueryActive).toBe(true);
+
+            engine._occlusionQuery.createQuery();
+            expect(engine._occlusionQuery.querySet).toBe(querySets[1]);
+            expect(engine._getCurrentRenderPass()).toBe(oldRenderPass);
+            expect(engine._endCurrentRenderPass).not.toHaveBeenCalled();
+
+            engine.endOcclusionQuery();
+            expect(oldRenderPass.endOcclusionQuery).toHaveBeenCalledOnce();
+            expect(engine._occlusionQueryActive).toBe(false);
+
+            expect(engine._getCurrentRenderPass()).toBe(newRenderPass);
+            expect(engine._endCurrentRenderPass).toHaveBeenCalledOnce();
+            expect(engine._startMainRenderPass).toHaveBeenCalledExactlyOnceWith(false);
+        } finally {
+            vi.runAllTimers();
+            vi.useRealTimers();
+        }
     });
 
     it("keeps a bundled occlusion query within one render pass outside compatibility mode", () => {
@@ -223,6 +300,8 @@ describe("WebGPU engine queries", () => {
             hasQueries: false,
             querySet,
         } as ThinWebGPUEngine["_occlusionQuery"];
+        engine._occlusionQueryActive = false;
+        engine._snapshotRendering = { handleRenderPassRestart: vi.fn() };
         engine._cacheTextureViews = {
             getView: vi.fn((_texture, descriptor) => {
                 expect(descriptor.baseArrayLayer).toBe(0);

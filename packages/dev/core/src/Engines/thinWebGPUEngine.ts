@@ -34,6 +34,8 @@ export abstract class ThinWebGPUEngine extends AbstractEngine {
     public _cacheRenderPipeline: WebGPUCacheRenderPipeline;
     /** @internal */
     public _occlusionQuery: WebGPUOcclusionQuery;
+    /** @internal */
+    public _occlusionQueryActive = false;
 
     // Frame Life Cycle (recreated each frame)
     /** @internal */
