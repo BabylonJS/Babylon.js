@@ -1142,6 +1142,9 @@ export class GaussianSplattingMeshBase extends Mesh {
         this._material.backFaceCulling = false;
         this._material.cullBackFaces = false;
         value.resetDrawCache();
+        this._cameraViewInfos?.forEach((cameraViewInfo) => {
+            cameraViewInfo.mesh.material = value;
+        });
     }
 
     /**
@@ -1441,7 +1444,7 @@ export class GaussianSplattingMeshBase extends Mesh {
                 const cameraMesh = new Mesh(this.name + "_cameraMesh_" + cameraId, this._scene);
                 cameraMesh.doNotSerialize = true;
                 // not visible with inspector or the scene graph
-                cameraMesh.reservedDataStore = { hidden: true };
+                cameraMesh.reservedDataStore = { hidden: true, _gaussianSplattingSourceMesh: this };
                 cameraMesh.setEnabled(false);
                 cameraMesh.material = this.material;
                 if (cameraMesh.material && cameraMesh.material instanceof GaussianSplattingMaterial) {

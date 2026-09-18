@@ -244,7 +244,11 @@ describe("staged lint execution", () => {
         }
         const patterns = Object.keys(lintStagedConfig).filter((pattern) => Array.isArray(lintStagedConfig[pattern]));
         expect(patterns).toHaveLength(1);
-        expect(globSync(patterns, { cwd: fixtureRoot }).sort()).toEqual(files.sort());
+        expect(
+            globSync(patterns, { cwd: fixtureRoot })
+                .map((file) => file.replace(/\\/g, "/"))
+                .sort()
+        ).toEqual(files.sort());
         expect(lintStagedConfig[patterns[0]]).toEqual(["prettier --write", "node scripts/lint-changed.mjs --staged"]);
         const formatOnlyCommands = Object.values(lintStagedConfig).filter((commands) => typeof commands === "string");
         expect(formatOnlyCommands.length).toBeGreaterThan(0);

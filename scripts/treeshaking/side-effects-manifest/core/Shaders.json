@@ -43,6 +43,7 @@
         "Shaders/ShadersInclude/gaussianSplattingFragmentDeclaration.ts": ["bare-import", "shader-store-write"],
         "Shaders/ShadersInclude/gaussianSplattingUboDeclaration.ts": ["bare-import", "shader-store-write"],
         "Shaders/ShadersInclude/gaussianSplattingVertexDeclaration.ts": ["shader-store-write"],
+        "Shaders/ShadersInclude/geometryRenderingFragment.ts": ["shader-store-write"],
         "Shaders/ShadersInclude/geometryUboDeclaration.ts": ["bare-import", "shader-store-write"],
         "Shaders/ShadersInclude/geometryVertexDeclaration.ts": ["shader-store-write"],
         "Shaders/ShadersInclude/harmonicsFunctions.ts": ["shader-store-write"],

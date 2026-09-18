@@ -16,6 +16,9 @@ import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { Mesh } from "core/Meshes/mesh";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { Scene } from "core/scene";
+import { type Effect } from "core/Materials/effect";
+import { OutlineRenderer } from "core/Rendering/outlineRenderer";
+import { type SubMesh } from "core/Meshes/subMesh";
 
 describe("FrameGraphGeometryRendererTask object IDs", () => {
     let engine: NullEngine;
@@ -190,6 +193,192 @@ describe("FrameGraphGeometryRendererTask object IDs", () => {
         } finally {
             MaterialHelperGeometryRendering.DeleteConfiguration(renderPassId);
         }
+    });
+});
+
+describe("FrameGraphGeometryRendererTask attachment routing", () => {
+    let engine: NullEngine;
+    let scene: Scene;
+    let frameGraph: FrameGraph;
+    let task: FrameGraphGeometryRendererTask;
+
+    beforeEach(() => {
+        engine = new NullEngine();
+        engine.getCaps().maxDrawBuffers = 8;
+        engine.getCaps().drawBuffersExtension = true;
+        vi.spyOn(engine, "buildTextureLayout").mockImplementation((enabled) => enabled.map((value, index) => (value ? index + 1 : 0)));
+        vi.spyOn(engine, "bindAttachments").mockImplementation(() => {});
+        scene = new Scene(engine);
+        frameGraph = new FrameGraph(scene);
+        task = new FrameGraphGeometryRendererTask("geometry", frameGraph, scene);
+        task.camera = new FreeCamera("camera", new Vector3(0, 0, -5), scene);
+        task.objectList = { meshes: [], particleSystems: [] };
+        task.textureDescriptions = [
+            { type: Constants.PREPASS_NORMAL_TEXTURE_TYPE, textureType: Constants.TEXTURETYPE_HALF_FLOAT, textureFormat: Constants.TEXTUREFORMAT_RGBA },
+            { type: Constants.PREPASS_DEPTH_TEXTURE_TYPE, textureType: Constants.TEXTURETYPE_FLOAT, textureFormat: Constants.TEXTUREFORMAT_RED },
+        ];
+        frameGraph.addTask(task);
+        vi.spyOn(frameGraph.textureManager, "_allocateTextures").mockImplementation(() => {});
+        vi.spyOn(task, "_initializePasses").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it.each([1, 2])("keeps %i target textures before geometry attachments", async (targetCount) => {
+        const targets = Array.from({ length: targetCount }, (_, index) =>
+            frameGraph.textureManager.createRenderTargetTexture(`color${index}`, {
+                size: { width: 100, height: 100 },
+                sizeIsPercentage: true,
+                options: { createMipMaps: false, samples: 1, types: [Constants.TEXTURETYPE_UNSIGNED_BYTE], formats: [Constants.TEXTUREFORMAT_RGBA] },
+            })
+        );
+        task.targetTexture = targetCount === 1 ? targets[0] : targets;
+        const record = vi.spyOn(task, "record");
+
+        await frameGraph.buildAsync(false);
+
+        const configuration = MaterialHelperGeometryRendering.GetConfiguration(task.objectRenderer.renderPassId);
+        expect(configuration.defines.PREPASS_COLOR_INDEX).toBe(0);
+        expect(configuration.defines.PREPASS_NORMAL_INDEX).toBe(targetCount);
+        expect(configuration.defines.PREPASS_DEPTH_INDEX).toBe(targetCount + 1);
+        expect(configuration._mrtCount).toBe(targetCount + 2);
+        expect(record.mock.results[0].value.renderTarget.slice(0, targetCount)).toEqual(targets);
+        expect(frameGraph.textureManager.getTextureDescription(task.geometryViewDepthTexture).options.formats).toEqual([Constants.TEXTUREFORMAT_RED]);
+    });
+
+    it("routes geometry effects to all attachments and restores beauty before auxiliary draws", async () => {
+        task.targetTexture = frameGraph.textureManager.createRenderTargetTexture("color", {
+            size: { width: 100, height: 100 },
+            sizeIsPercentage: true,
+            options: { createMipMaps: false, samples: 1, types: [Constants.TEXTURETYPE_UNSIGNED_BYTE], formats: [Constants.TEXTUREFORMAT_RGBA] },
+        });
+        await frameGraph.buildAsync(false);
+        engine.currentRenderPassId = task.objectRenderer.renderPassId;
+
+        expect(MaterialHelperGeometryRendering._BindAttachmentsForEffect(engine, { _multiTarget: true })).toBe(true);
+        expect(engine.bindAttachments).toHaveBeenLastCalledWith([1, 2, 3]);
+        MaterialHelperGeometryRendering._RestoreAttachments(engine);
+        expect(engine.bindAttachments).toHaveBeenLastCalledWith([1, 0, 0]);
+        expect(MaterialHelperGeometryRendering._BindAttachmentsForEffect(engine, { _multiTarget: false })).toBe(true);
+        expect(engine.bindAttachments).toHaveBeenLastCalledWith([1, 0, 0]);
+    });
+
+    it("does not draw a single-output custom effect into a geometry-only target", async () => {
+        await frameGraph.buildAsync(false);
+        engine.currentRenderPassId = task.objectRenderer.renderPassId;
+
+        expect(MaterialHelperGeometryRendering._BindAttachmentsForEffect(engine, { _multiTarget: false })).toBe(false);
+        expect(engine.bindAttachments).toHaveBeenLastCalledWith([0, 0]);
+        expect(MaterialHelperGeometryRendering._BindAttachmentsForEffect(engine, { _multiTarget: true })).toBe(true);
+        expect(engine.bindAttachments).toHaveBeenLastCalledWith([1, 2]);
+    });
+
+    it("prepares standalone effect defines from the same recorded layout", async () => {
+        await frameGraph.buildAsync(false);
+        const defines: string[] = [];
+
+        expect(MaterialHelperGeometryRendering._PrepareStringDefines(task.objectRenderer.renderPassId, defines)).toBe(true);
+        expect(defines.join("\n")).toContain("#define PREPASS_NORMAL_INDEX 0");
+        expect(defines.join("\n")).toContain("#define PREPASS_DEPTH_INDEX 1");
+        expect(defines.join("\n")).toContain("#define SCENE_MRT_COUNT 2");
+        expect(defines.join("\n")).not.toContain("#define PREPASS_COLOR");
+    });
+
+    it("performs complete material checks while preparing the geometry renderer", () => {
+        const mesh = new Mesh("mesh", scene);
+        const isReady = vi.spyOn(mesh, "isReady").mockReturnValue(true);
+
+        expect(task.objectRenderer.customIsReadyFunction(mesh, 1, true)).toBe(true);
+        expect(isReady).toHaveBeenLastCalledWith(true);
+        expect(task.objectRenderer.customIsReadyFunction(mesh, 1, false)).toBe(true);
+        expect(isReady).toHaveBeenLastCalledWith(false);
+    });
+
+    it("does not change attachments outside a geometry render pass", () => {
+        const defines: string[] = [];
+        expect(MaterialHelperGeometryRendering._PrepareStringDefines(engine.currentRenderPassId, defines)).toBe(false);
+        expect(MaterialHelperGeometryRendering._BindAttachmentsForEffect(engine, { _multiTarget: false })).toBe(true);
+        MaterialHelperGeometryRendering._RestoreAttachments(engine);
+        expect(defines).toEqual([]);
+        expect(engine.bindAttachments).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        { mode: Constants.ALPHA_COMBINE, discard: 1 },
+        { mode: Constants.ALPHA_ADD, discard: 1 },
+        { mode: Constants.ALPHA_LAYER_ACCUMULATE, discard: 1 },
+        { mode: Constants.ALPHA_ONEONE, discard: 0 },
+        { mode: Constants.ALPHA_PREMULTIPLIED, discard: 0 },
+        { mode: Constants.ALPHA_DISABLE, discard: 0 },
+    ])("preserves zero-alpha beauty contributions for alpha mode $mode", ({ mode, discard }) => {
+        const renderPassId = task.objectRenderer.renderPassId;
+        const configuration = MaterialHelperGeometryRendering.CreateConfiguration(renderPassId);
+        configuration.defines.PREPASS_COLOR_INDEX = 0;
+        engine.currentRenderPassId = renderPassId;
+        vi.spyOn(engine, "getAlphaMode").mockReturnValue(mode);
+        const setFloat = vi.fn();
+        const effect = { setFloat } as unknown as Effect;
+
+        MaterialHelperGeometryRendering._BindZeroAlphaDiscard(engine, effect);
+        expect(setFloat).toHaveBeenLastCalledWith("geometryZeroAlphaDiscard", discard);
+
+        delete configuration.defines.PREPASS_COLOR_INDEX;
+        MaterialHelperGeometryRendering._BindZeroAlphaDiscard(engine, effect);
+        expect(setFloat).toHaveBeenLastCalledWith("geometryZeroAlphaDiscard", 1);
+    });
+
+    it("does not rebind attachments for disabled mesh diagnostics or a geometry-only pass", () => {
+        const outline = new OutlineRenderer(scene);
+        const mesh = MeshBuilder.CreateBox("mesh", {}, scene);
+        const hooks = outline as unknown as {
+            _beforeRenderingMesh: (mesh: Mesh, subMesh: SubMesh, batch: unknown) => void;
+            _afterRenderingMesh: (mesh: Mesh, subMesh: SubMesh, batch: unknown) => void;
+        };
+        hooks._beforeRenderingMesh(mesh, mesh.subMeshes[0], {});
+        hooks._afterRenderingMesh(mesh, mesh.subMeshes[0], {});
+        expect(engine.bindAttachments).not.toHaveBeenCalled();
+
+        const id = task.objectRenderer.renderPassId;
+        MaterialHelperGeometryRendering.CreateConfiguration(id);
+        MaterialHelperGeometryRendering._PrepareConfiguration(id, [1], [0]);
+        engine.currentRenderPassId = id;
+        mesh.renderOutline = true;
+        hooks._beforeRenderingMesh(mesh, mesh.subMeshes[0], {});
+        hooks._afterRenderingMesh(mesh, mesh.subMeshes[0], {});
+        expect(engine.bindAttachments).not.toHaveBeenCalled();
+        outline.dispose();
+    });
+
+    it("initializes motion history and keeps the previous world matrix stable within a frame", () => {
+        const mesh = new Mesh("moving mesh", scene);
+        const material = new StandardMaterial("material", scene);
+        const renderPassId = task.objectRenderer.renderPassId;
+        const configuration = MaterialHelperGeometryRendering.CreateConfiguration(renderPassId);
+        configuration.defines.PREPASS_VELOCITY_INDEX = 0;
+        scene.setTransformMatrix(Matrix.Identity(), Matrix.Identity());
+        const frameId = vi.spyOn(engine, "frameId", "get").mockReturnValue(0);
+        const matrices: { [name: string]: Matrix } = {};
+        const effect = {
+            setMatrix: (name: string, value: Matrix) => {
+                matrices[name] = value.clone();
+            },
+        } as unknown as Effect;
+
+        MaterialHelperGeometryRendering.Bind(renderPassId, effect, mesh, Matrix.Translation(1, 0, 0), material);
+        const previousWorld = configuration.previousWorldMatrices[mesh.uniqueId];
+        expect(matrices.previousViewProjection.isIdentity()).toBe(true);
+        expect(matrices.previousWorld.m[12]).toBe(1);
+
+        MaterialHelperGeometryRendering.Bind(renderPassId, effect, mesh, Matrix.Translation(2, 0, 0), material);
+        expect(matrices.previousWorld.m[12]).toBe(1);
+
+        frameId.mockReturnValue(1);
+        MaterialHelperGeometryRendering.Bind(renderPassId, effect, mesh, Matrix.Translation(3, 0, 0), material);
+        expect(matrices.previousWorld.m[12]).toBe(2);
+        expect(configuration.previousWorldMatrices[mesh.uniqueId]).toBe(previousWorld);
     });
 });
 

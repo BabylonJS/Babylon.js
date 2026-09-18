@@ -4,6 +4,7 @@ import { Constants } from "core/Engines/constants";
 import { type Effect } from "core/Materials/effect";
 import { type VertexBuffer } from "core/Buffers/buffer";
 import { type WebGPUPipelineContext } from "core/Engines/WebGPU/webgpuPipelineContext";
+import { type InternalTexture } from "core/Materials/Textures/internalTexture";
 import { RegisterEnginesWebGPUExtensionsEngineAlphaToCoverage } from "core/Engines/WebGPU/Extensions/engine.alphaToCoverage.pure";
 
 // Minimal mock types for the pipeline cache tests
@@ -73,6 +74,23 @@ describe("WebGPUCacheRenderPipeline", () => {
     });
 
     describe("getRenderPipeline", () => {
+        it.each(["r32float", "r8uint"] as const)("does not enable blending on a write-masked %s attachment", (format) => {
+            const textures = ["rgba8unorm", format].map((textureFormat) => ({ _hardwareTexture: { format: textureFormat } }) as unknown as InternalTexture);
+            cache.setMRT(textures);
+            cache.setMRTAttachments([1, 0]);
+            cache.setAlphaBlendEnabled([true], 1);
+
+            cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
+
+            expect(device.createRenderPipeline).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    fragment: expect.objectContaining({
+                        targets: [expect.objectContaining({ format: "rgba8unorm", writeMask: 15, blend: expect.any(Object) }), { format, writeMask: 0 }],
+                    }),
+                })
+            );
+        });
+
         it("should create a pipeline on cache miss", () => {
             const pipeline = cache.getRenderPipeline(Constants.MATERIAL_TriangleFillMode, effect, 1, 0);
 

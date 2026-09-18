@@ -35,6 +35,7 @@
         "ShadersWGSL/ShadersInclude/gaussianSplattingFragmentDeclaration.ts": ["bare-import", "shader-store-write"],
         "ShadersWGSL/ShadersInclude/gaussianSplattingUboDeclaration.ts": ["bare-import", "shader-store-write"],
         "ShadersWGSL/ShadersInclude/gaussianSplattingVertexDeclaration.ts": ["shader-store-write"],
+        "ShadersWGSL/ShadersInclude/geometryRenderingFragment.ts": ["bare-import", "shader-store-write"],
         "ShadersWGSL/ShadersInclude/harmonicsFunctions.ts": ["shader-store-write"],
         "ShadersWGSL/ShadersInclude/hdrFilteringFunctions.ts": ["shader-store-write"],
         "ShadersWGSL/ShadersInclude/helperFunctions.ts": ["shader-store-write"],

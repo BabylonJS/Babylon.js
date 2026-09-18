@@ -12,6 +12,8 @@ import { Logger } from "core/Misc/logger";
 
 // Side-effect import to register the WebGL2ParticleSystem class
 import "core/Particles/webgl2ParticleSystem";
+import "core/Shaders/particles.vertex";
+import "core/Shaders/particles.fragment";
 
 describe("GPUParticleSystem.fromParticleSystem", () => {
     let engine: NullEngine;
