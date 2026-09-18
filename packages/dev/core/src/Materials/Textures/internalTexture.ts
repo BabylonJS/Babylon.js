@@ -555,7 +555,9 @@ export class InternalTexture extends TextureSampler {
                     },
                     null,
                     this.format,
-                    this._extension
+                    this._extension,
+                    undefined,
+                    ArrayBuffer.isView(this._buffer) ? this._buffer : null
                 );
                 proxy._sphericalPolynomial = this._sphericalPolynomial;
                 return;
