@@ -8,7 +8,7 @@ import { type UniformBuffer } from "../uniformBuffer";
 import { type MaterialDefines } from "../materialDefines";
 import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { ShaderLanguage } from "../shaderLanguage";
-import { GetGaussianSplattingMaxPartCount, type GaussianSplattingMaterial } from "./gaussianSplattingMaterial.pure";
+import { GetGaussianSplattingMaxPartCount, GetPartIndexVaryingDeclaration, type GaussianSplattingMaterial } from "./gaussianSplattingMaterial.pure";
 import { RegisterClass } from "../../Misc/typeStore";
 
 /**
@@ -192,7 +192,7 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
     private _getCustomCodeGLSL(shaderType: string): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
             return {
-                CUSTOM_VERTEX_DEFINITIONS: `varying float vPartIndex;`,
+                CUSTOM_VERTEX_DEFINITIONS: GetPartIndexVaryingDeclaration(ShaderLanguage.GLSL),
                 CUSTOM_VERTEX_UPDATE: `
 #if IS_COMPOUND
     vPartIndex = float(splat.partIndex);
@@ -204,7 +204,7 @@ export class GaussianSplattingGpuPickingMaterialPlugin extends MaterialPluginBas
         } else if (shaderType === "fragment") {
             return {
                 CUSTOM_FRAGMENT_DEFINITIONS: `
-varying float vPartIndex;
+${GetPartIndexVaryingDeclaration(ShaderLanguage.GLSL)}
 #if IS_COMPOUND
 uniform vec3 partPickingColors[${this._maxPartCount}];
 #else
@@ -228,7 +228,7 @@ uniform vec3 pickingColor;
     private _getCustomCodeWGSL(shaderType: string): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
             return {
-                CUSTOM_VERTEX_DEFINITIONS: `varying vPartIndex: f32;`,
+                CUSTOM_VERTEX_DEFINITIONS: GetPartIndexVaryingDeclaration(ShaderLanguage.WGSL),
                 CUSTOM_VERTEX_UPDATE: `
 #if IS_COMPOUND
     vertexOutputs.vPartIndex = f32(splat.partIndex);
@@ -240,7 +240,7 @@ uniform vec3 pickingColor;
         } else if (shaderType === "fragment") {
             return {
                 CUSTOM_FRAGMENT_DEFINITIONS: `
-varying vPartIndex: f32;
+${GetPartIndexVaryingDeclaration(ShaderLanguage.WGSL)}
 #if IS_COMPOUND
 uniform partPickingColors: array<vec3f, ${this._maxPartCount}>;
 #else

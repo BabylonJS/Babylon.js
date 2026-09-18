@@ -62,6 +62,27 @@ export function GetGaussianSplattingMaxPartCount(engine: AbstractEngine): number
 export const GaussianSplattingMaxPartCount = 128;
 
 /**
+ * Returns an include-guarded declaration of the `vPartIndex` varying shared by the Gaussian
+ * Splatting material plugins (debug, solid-color, GPU picking). More than one of these plugins can
+ * be attached to the same material at once; each needs `vPartIndex` to carry `splat.partIndex` from
+ * the vertex to the fragment stage. Without a guard each plugin injects its own `varying vPartIndex`,
+ * which is a duplicate declaration — fatal under WGSL ("redefinition of 'vPartIndex'"). The guard
+ * makes the declaration idempotent so exactly one survives regardless of how many plugins inject it.
+ * Inject the result at a CUSTOM_VERTEX_DEFINITIONS / CUSTOM_FRAGMENT_DEFINITIONS point.
+ * @param shaderLanguage - The shader language the host material is compiling.
+ * @returns The guarded `vPartIndex` varying declaration.
+ */
+export function GetPartIndexVaryingDeclaration(shaderLanguage: ShaderLanguage): string {
+    const decl = shaderLanguage === ShaderLanguage.WGSL ? "varying vPartIndex: f32;" : "varying float vPartIndex;";
+    return `
+#if !defined(VPARTINDEX_VARYING_DECLARED)
+#define VPARTINDEX_VARYING_DECLARED
+${decl}
+#endif
+`;
+}
+
+/**
  * @internal
  */
 class GaussianSplattingMaterialDefinesBase extends PrepassDefinesMixin(MaterialDefines) {}

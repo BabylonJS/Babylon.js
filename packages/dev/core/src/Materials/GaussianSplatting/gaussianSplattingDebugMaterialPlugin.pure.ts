@@ -11,7 +11,7 @@ import { ShaderLanguage } from "../shaderLanguage";
 import { RegisterClass } from "../../Misc/typeStore";
 import { type Vector3 } from "../../Maths/math.vector";
 import { Logger } from "../../Misc/logger";
-import { type GaussianSplattingMaterial, GetGaussianSplattingMaxPartCount } from "./gaussianSplattingMaterial.pure";
+import { type GaussianSplattingMaterial, GetGaussianSplattingMaxPartCount, GetPartIndexVaryingDeclaration } from "./gaussianSplattingMaterial.pure";
 import { RawTexture } from "../Textures/rawTexture";
 import { Constants } from "../../Engines/constants";
 
@@ -460,7 +460,7 @@ uniform float dbgOpacityScale;
 #endif
 #if defined(GS_DBG_ENABLED) && IS_COMPOUND
 uniform sampler2D dbgPartData;
-varying float vPartIndex;
+${GetPartIndexVaryingDeclaration(ShaderLanguage.GLSL)}
 #endif
 `,
                 CUSTOM_VERTEX_UPDATE: `
@@ -539,7 +539,7 @@ varying float vPartIndex;
                 CUSTOM_FRAGMENT_DEFINITIONS: `
 #if defined(GS_DBG_ENABLED) && IS_COMPOUND
 uniform sampler2D dbgPartData;
-varying float vPartIndex;
+${GetPartIndexVaryingDeclaration(ShaderLanguage.GLSL)}
 #endif
 `,
                 CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
@@ -575,7 +575,7 @@ uniform dbgOpacityScale: f32;
 #endif
 #if defined(GS_DBG_ENABLED) && IS_COMPOUND
 var dbgPartData: texture_2d<f32>;
-varying vPartIndex: f32;
+${GetPartIndexVaryingDeclaration(ShaderLanguage.WGSL)}
 #endif
 `,
                 CUSTOM_VERTEX_UPDATE: `
@@ -654,7 +654,7 @@ varying vPartIndex: f32;
                 CUSTOM_FRAGMENT_DEFINITIONS: `
 #if defined(GS_DBG_ENABLED) && IS_COMPOUND
 var dbgPartData: texture_2d<f32>;
-varying vPartIndex: f32;
+${GetPartIndexVaryingDeclaration(ShaderLanguage.WGSL)}
 #endif
 `,
                 CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
