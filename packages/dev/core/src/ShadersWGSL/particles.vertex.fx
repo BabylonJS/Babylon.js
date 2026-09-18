@@ -24,8 +24,9 @@ uniform translationPivot: vec2f;
 
 #ifdef PREPASS
 uniform cameraInfo: vec2f;
-#ifdef LOCAL
+#if defined(LOCAL) && defined(PREPASS_LOCAL_POSITION)
 uniform inverseEmitterWM: mat4x4f;
+uniform geometryWorldOffset: vec3f;
 #endif
 #ifdef PREPASS_POSITION
 varying vGeometryPositionW: vec3f;
@@ -245,7 +246,12 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #endif
 #ifdef PREPASS_LOCAL_POSITION
 	#ifdef LOCAL
-		vertexOutputs.vPosition = (uniforms.inverseEmitterWM * vec4f(vPositionW, 1.0)).xyz;
+		var geometryRenderPosition = vPositionW;
+		#if defined(BILLBOARD) && !defined(BILLBOARDY) && !defined(BILLBOARDSTRETCHED)
+			// invView can contain absolute camera translation in floating-origin mode.
+			geometryRenderPosition = vertexInputs.position + (uniforms.invView * vec4f(rotatedCorner, 0.0)).xyz;
+		#endif
+		vertexOutputs.vPosition = (uniforms.inverseEmitterWM * vec4f(geometryRenderPosition - uniforms.geometryWorldOffset, 1.0)).xyz;
 	#else
 		vertexOutputs.vPosition = vPositionW;
 	#endif

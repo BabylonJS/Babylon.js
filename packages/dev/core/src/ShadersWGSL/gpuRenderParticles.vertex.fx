@@ -258,7 +258,11 @@ fn main(input: VertexInputs) -> FragmentInputs {
 #endif
 #ifdef PREPASS_LOCAL_POSITION
 #ifdef LOCAL
-    vertexOutputs.vPosition = (uniforms.inverseEmitterWM * vec4f(vertexOutputs.vPositionW - uniforms.worldOffset, 1.0)).xyz;
+    var geometryRenderPosition = vertexOutputs.vPositionW;
+    #if defined(BILLBOARD) && !defined(BILLBOARDY) && !defined(BILLBOARDSTRETCHED)
+        geometryRenderPosition = particleBasePosition() + (uniforms.invView * vec4f(rotatedCorner.xyz, 0.0)).xyz;
+    #endif
+    vertexOutputs.vPosition = (uniforms.inverseEmitterWM * vec4f(geometryRenderPosition - uniforms.worldOffset, 1.0)).xyz;
 #else
     vertexOutputs.vPosition = vertexOutputs.vPositionW;
 #endif

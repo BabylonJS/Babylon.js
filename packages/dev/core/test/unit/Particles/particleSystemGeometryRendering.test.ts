@@ -4,11 +4,13 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Constants } from "core/Engines/constants";
 import { NullEngine } from "core/Engines/nullEngine";
-import { type IEffectCreationOptions } from "core/Materials/effect";
+import { type Effect, type IEffectCreationOptions } from "core/Materials/effect";
 import { type DrawWrapper } from "core/Materials/drawWrapper";
 import { MaterialHelperGeometryRendering } from "core/Materials/materialHelper.geometryrendering";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { ParticleSystem } from "core/Particles/particleSystem";
+import { Particle } from "core/Particles/particle";
+import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
 
 import "core/Particles/webgl2ParticleSystem";
@@ -29,6 +31,18 @@ describe("Particle neutral velocity shader contract", () => {
         expect(neutralDefine).toBeLessThan(fragment.indexOf("#include<prePassDeclaration>"));
         expect(fragment).not.toMatch(/\bgeometry(Current|Previous)Position\b/);
         expect(vertex).not.toMatch(/\b(previousPosition|previousView|previousProjection|vCurrentPosition|vPreviousPosition|geometryHistoryReset)\b/);
+    });
+
+    it.each(["Shaders", "ShadersWGSL"])("%s removes the CPU render-space offset before reconstructing local position", (directory) => {
+        const vertex = readFileSync(join(sourceDirectory, directory, "particles.vertex.fx"), "utf8");
+        expect(vertex).toMatch(/inverseEmitterWM\s*\*\s*vec4f?\(geometryRenderPosition - (?:uniforms\.)?geometryWorldOffset, 1\.0\)/);
+        expect(vertex).toMatch(/geometryRenderPosition = (?:vertexInputs\.)?position \+ \((?:uniforms\.)?invView \* vec4f?\(rotatedCorner, 0\.0\)\)\.xyz/);
+    });
+
+    it.each(["Shaders", "ShadersWGSL"])("%s uses the same render-space billboard conversion for GPU local positions", (directory) => {
+        const vertex = readFileSync(join(sourceDirectory, directory, "gpuRenderParticles.vertex.fx"), "utf8");
+        expect(vertex).toMatch(/geometryRenderPosition = particleBasePosition\(\) \+ \((?:uniforms\.)?invView \* vec4f?\(rotatedCorner\.xyz, 0\.0\)\)\.xyz/);
+        expect(vertex).toMatch(/inverseEmitterWM\s*\*\s*vec4f?\(geometryRenderPosition - (?:uniforms\.)?worldOffset, 1\.0\)/);
     });
 });
 
@@ -135,6 +149,86 @@ describe("Particle system geometry rendering effects", () => {
         expect(internals._drawWrappers[renderPassId]).toBeUndefined();
         expect(wrapper.effect).toBeNull();
         MaterialHelperGeometryRendering.DeleteConfiguration(renderPassId);
+        system.dispose();
+    });
+
+    it.each([
+        { name: "zero offsets", world: [0, 0, 0], origin: [0, 0, 0] },
+        { name: "world offset", world: [7, -2, 4], origin: [0, 0, 0] },
+        { name: "floating origin", world: [0, 0, 0], origin: [100, -40, 70] },
+        { name: "combined offsets", world: [7, -2, 4], origin: [100, -40, 70] },
+    ])("reconstructs CPU emitter-local positions with $name", ({ world, origin }) => {
+        const configuration = MaterialHelperGeometryRendering.CreateConfiguration(Constants.RENDERPASS_MAIN);
+        configuration.defines.PREPASS_COLOR_INDEX = 0;
+        configuration.defines.PREPASS_LOCAL_POSITION_INDEX = 1;
+        MaterialHelperGeometryRendering._PrepareConfiguration(Constants.RENDERPASS_MAIN, [1, 2], [1, 0]);
+        const particleSystem = new ParticleSystem("local particles", 1, scene);
+        particleSystem.isLocal = true;
+        particleSystem.worldOffset.copyFromFloats(world[0], world[1], world[2]);
+        vi.spyOn(scene, "floatingOriginOffset", "get").mockReturnValue(new Vector3(origin[0], origin[1], origin[2]));
+        const emitterWorld = Matrix.Compose(new Vector3(2, 3, 4), Quaternion.RotationYawPitchRoll(0.4, 0.2, 0.1), new Vector3(21, -6, 13));
+        emitterWorld.invertToRef(particleSystem._emitterInverseWorldMatrix);
+        const expectedLocal = new Vector3(-1.5, 2.25, 0.75);
+        const particle = new Particle(particleSystem);
+        Vector3.TransformCoordinatesToRef(expectedLocal, emitterWorld, particle.position);
+        particleSystem._appendParticleVertex(0, particle, 0, 0);
+
+        const boundOffset = Vector3.Zero();
+        const boundInverse = Matrix.Identity();
+        const setVector3 = vi.fn((name: string, value: Vector3) => {
+            if (name === "geometryWorldOffset") boundOffset.copyFrom(value);
+        });
+        const effect = {
+            setFloat: vi.fn(),
+            setInt: vi.fn(),
+            setFloat2: vi.fn(),
+            setVector3,
+            setMatrix: (name: string, value: Matrix) => {
+                if (name === "inverseEmitterWM") boundInverse.copyFrom(value);
+            },
+        } as unknown as Effect;
+        const internals = particleSystem as unknown as {
+            _bindGeometryRendering: (effect: Effect) => void;
+            _vertexData: Float32Array;
+            _getWrapper: (blendMode: number) => DrawWrapper;
+        };
+        const createEffectSpy = vi.spyOn(engine, "createEffect");
+        internals._getWrapper(particleSystem.blendMode);
+        expect(getLastEffectOptions(createEffectSpy).uniformsNames).toContain("geometryWorldOffset");
+        internals._bindGeometryRendering(effect);
+        expect(setVector3).toHaveBeenCalledWith("geometryWorldOffset", expect.any(Vector3));
+        expect(boundOffset.asArray()).toEqual(world.map((value, index) => value - origin[index]));
+
+        const renderPosition = Vector3.FromArray(internals._vertexData);
+        const localPosition = Vector3.TransformCoordinates(renderPosition.subtract(boundOffset), boundInverse);
+        expect(localPosition.x).toBeCloseTo(expectedLocal.x, 4);
+        expect(localPosition.y).toBeCloseTo(expectedLocal.y, 4);
+        expect(localPosition.z).toBeCloseTo(expectedLocal.z, 4);
+        particleSystem.dispose();
+    });
+
+    it.each([
+        { isLocal: false, localOutput: true },
+        { isLocal: true, localOutput: false },
+    ])("does not bind an unused local-position conversion ($isLocal/$localOutput)", ({ isLocal, localOutput }) => {
+        const configuration = MaterialHelperGeometryRendering.CreateConfiguration(Constants.RENDERPASS_MAIN);
+        configuration.defines.PREPASS_COLOR_INDEX = 0;
+        configuration.defines[localOutput ? "PREPASS_LOCAL_POSITION_INDEX" : "PREPASS_POSITION_INDEX"] = 1;
+        MaterialHelperGeometryRendering._PrepareConfiguration(Constants.RENDERPASS_MAIN, [1, 2], [1, 0]);
+        const system = new ParticleSystem("CPU", 1, scene);
+        system.isLocal = isLocal;
+        const internals = system as unknown as {
+            _getWrapper: (blendMode: number) => DrawWrapper;
+            _bindGeometryRendering: (effect: Effect) => void;
+        };
+        const createEffectSpy = vi.spyOn(engine, "createEffect");
+        internals._getWrapper(system.blendMode);
+        expect(getLastEffectOptions(createEffectSpy).uniformsNames).not.toContain("geometryWorldOffset");
+        const setVector3 = vi.fn();
+        const setMatrix = vi.fn();
+        internals._bindGeometryRendering({ setVector3, setMatrix, setFloat: vi.fn(), setInt: vi.fn(), setFloat2: vi.fn() } as unknown as Effect);
+        expect(setVector3).not.toHaveBeenCalled();
+        expect(setMatrix).not.toHaveBeenCalled();
         system.dispose();
     });
 });

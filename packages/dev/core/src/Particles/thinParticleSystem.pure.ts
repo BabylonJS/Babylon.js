@@ -1983,7 +1983,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
             this.fillUniformsAttributesAndSamplerNames(effectCreationOption, attributesNamesOrOptions, samplers);
             if (geometryRendering) {
-                effectCreationOption.push("cameraInfo", "inverseEmitterWM", "objectId", "meshBlendTag", "geometryZeroAlphaDiscard");
+                effectCreationOption.push("cameraInfo", "objectId", "meshBlendTag", "geometryZeroAlphaDiscard");
+                if (this.isLocal && geometryRenderingConfiguration?.defines.PREPASS_LOCAL_POSITION_INDEX !== undefined) {
+                    effectCreationOption.push("inverseEmitterWM", "geometryWorldOffset");
+                }
             }
 
             drawWrapper.setEffect(
@@ -2019,8 +2022,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         const camera = this._scene?.activeCamera;
         effect.setFloat2("cameraInfo", camera?.minZ ?? 0, camera?.maxZ ?? 1);
-        if (this.isLocal) {
+        if (this.isLocal && configuration.defines.PREPASS_LOCAL_POSITION_INDEX !== undefined) {
             effect.setMatrix("inverseEmitterWM", this._emitterInverseWorldMatrix);
+            const renderOffset = this.worldOffset.subtractToRef(this._scene?.floatingOriginOffset || Vector3.ZeroReadOnly, TmpVectors.Vector3[0]);
+            effect.setVector3("geometryWorldOffset", renderOffset);
         }
     }
 

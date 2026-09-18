@@ -45,6 +45,7 @@ Only requested channels are emitted. The built-in sprite, particle, and Gaussian
 Unlit renderers write neutral reflectivity and irradiance. Gaussian base/DC color is a useful color proxy, not recovered PBR albedo. Depth outputs retain the existing view, normalized-view, and screen-space conventions.
 
 Normals of two-sided particle primitives face the visible side for both perspective and orthographic cameras.
+Emitter-local particle positions exclude `worldOffset` and floating-origin shifts, including camera-facing billboard expansion.
 
 Object-ID and mesh-tag providers remain mesh APIs. Sprites and particle systems do not pass synthetic meshes to those callbacks. Gaussian camera meshes use the logical source mesh's identity. Compound splats use the compound source identity, not distinct per-part IDs.
 

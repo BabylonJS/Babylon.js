@@ -289,7 +289,11 @@ void main() {
 #endif
 #ifdef PREPASS_LOCAL_POSITION
 	#ifdef LOCAL
-		vPosition = (inverseEmitterWM * vec4(vPositionW - worldOffset, 1.0)).xyz;
+		vec3 geometryRenderPosition = vPositionW;
+		#if defined(BILLBOARD) && !defined(BILLBOARDY) && !defined(BILLBOARDSTRETCHED)
+			geometryRenderPosition = particleBasePosition() + (invView * vec4(rotatedCorner.xyz, 0.0)).xyz;
+		#endif
+		vPosition = (inverseEmitterWM * vec4(geometryRenderPosition - worldOffset, 1.0)).xyz;
 	#else
 		vPosition = vPositionW;
 	#endif

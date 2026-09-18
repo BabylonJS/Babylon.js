@@ -24,8 +24,9 @@ uniform vec2 translationPivot;
 
 #ifdef PREPASS
 uniform vec2 cameraInfo;
-#ifdef LOCAL
+#if defined(LOCAL) && defined(PREPASS_LOCAL_POSITION)
 uniform mat4 inverseEmitterWM;
+uniform vec3 geometryWorldOffset;
 #endif
 #ifdef PREPASS_POSITION
 varying vec3 vGeometryPositionW;
@@ -247,7 +248,12 @@ void main(void) {
 #endif
 #ifdef PREPASS_LOCAL_POSITION
 	#ifdef LOCAL
-		vPosition = (inverseEmitterWM * vec4(vPositionW, 1.0)).xyz;
+		vec3 geometryRenderPosition = vPositionW;
+		#if defined(BILLBOARD) && !defined(BILLBOARDY) && !defined(BILLBOARDSTRETCHED)
+			// invView can contain absolute camera translation in floating-origin mode.
+			geometryRenderPosition = position + (invView * vec4(rotatedCorner, 0.0)).xyz;
+		#endif
+		vPosition = (inverseEmitterWM * vec4(geometryRenderPosition - geometryWorldOffset, 1.0)).xyz;
 	#else
 		vPosition = vPositionW;
 	#endif
