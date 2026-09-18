@@ -1111,6 +1111,11 @@ interface IKHRMaterialsIridescence {
     iridescenceThicknessTexture?: ITextureInfo;
 }
 
+interface IKHRMaterialsRetroreflection {
+    retroreflectionFactor?: number;
+    retroreflectionTexture?: ITextureInfo;
+}
+
 /** @internal */
 interface IKHRMaterialsAnisotropy {
     anisotropyStrength?: number;

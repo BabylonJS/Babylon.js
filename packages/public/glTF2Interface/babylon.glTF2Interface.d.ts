@@ -1138,6 +1138,12 @@ declare namespace BABYLON.GLTF2 {
     }
 
     /** @internal */
+    interface IKHRMaterialsRetroreflection {
+        retroreflectionFactor?: number;
+        retroreflectionTexture?: ITextureInfo;
+    }
+
+    /** @internal */
     interface IKHRMaterialsAnisotropy {
         anisotropyStrength?: number;
         anisotropyRotation?: number;
