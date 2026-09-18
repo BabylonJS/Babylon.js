@@ -67,8 +67,8 @@ variables:
       value: "chrome@143:OSX Sonoma"
     - name: system.debug
       value: false
-    # Stable, cacheable locations (see templates/cache-steps.yml). Kept outside
-    # the repo working dir so Cache@2 can restore/save them across runs & reruns.
+    # Stable tool-cache locations outside the repo working dir. Cache@2 persists
+    # npm/Playwright across runs; Nx uses its directory only within each job.
     - name: npm_config_cache
       value: $(Pipeline.Workspace)/.npm
     - name: NX_CACHE_DIRECTORY

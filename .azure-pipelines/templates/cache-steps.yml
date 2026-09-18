@@ -6,6 +6,7 @@
 #
 # Uses these pipeline-level cache path variables (see ci-monorepo.yml):
 #   - npm_config_cache          e.g. $(Pipeline.Workspace)/.npm
+#   - NX_CACHE_DIRECTORY        e.g. $(Pipeline.Workspace)/.nxcache (job-local)
 #   - PLAYWRIGHT_BROWSERS_PATH  e.g. $(Pipeline.Workspace)/.playwright
 #
 # Cache keys:
