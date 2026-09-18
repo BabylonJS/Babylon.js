@@ -60,8 +60,7 @@ const BlockInputOptionalProperty = `    /**
 `;
 const BlockGetShaderBindingVars = `        const ${CAMEL_CASE_UNIFORM} = this._confirmRuntimeDataSupplied(this.${CAMEL_CASE_UNIFORM});`;
 
-const FileTemplate = `/* eslint-disable prettier/prettier */
-// ************************************************************
+const FileTemplate = `// ************************************************************
 // Note: this file is auto-generated, do not modify it directly
 // ************************************************************
 
