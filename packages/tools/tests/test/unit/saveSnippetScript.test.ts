@@ -5,7 +5,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 const https = require("node:https") as typeof import("node:https");
 const { parseExistingId, saveSnippet } = require("../../../../../.github/scripts/visual-testing/save-snippet.js") as {
     parseExistingId: (args: string[]) => string | undefined;
-    saveSnippet: (code: string, codeFile: string, name?: string, description?: string, tags?: string, existingId?: string) => Promise<{
+    saveSnippet: (
+        code: string,
+        codeFile: string,
+        name?: string,
+        description?: string,
+        tags?: string,
+        existingId?: string
+    ) => Promise<{
         id: string;
         version: number;
     }>;
@@ -13,26 +20,24 @@ const { parseExistingId, saveSnippet } = require("../../../../../.github/scripts
 
 function mockSnippetResponse(result: { id: string; version: number }) {
     let requestBody = "";
-    const requestSpy = vi.spyOn(https, "request").mockImplementation(
-        ((options: RequestOptions, callback: (response: IncomingMessage) => void) => {
-            const request = new EventEmitter() as EventEmitter & {
-                write: (data: string) => boolean;
-                end: () => void;
-            };
-            request.write = vi.fn((data: string) => {
-                requestBody = data;
-                return true;
-            });
-            request.end = vi.fn(() => {
-                const response = new EventEmitter() as EventEmitter & { statusCode: number };
-                response.statusCode = 200;
-                callback(response as IncomingMessage);
-                response.emit("data", JSON.stringify(result));
-                response.emit("end");
-            });
-            return request as unknown as ClientRequest;
-        }) as typeof https.request
-    );
+    const requestSpy = vi.spyOn(https, "request").mockImplementation(((options: RequestOptions, callback: (response: IncomingMessage) => void) => {
+        const request = new EventEmitter() as EventEmitter & {
+            write: (data: string) => boolean;
+            end: () => void;
+        };
+        request.write = vi.fn((data: string) => {
+            requestBody = data;
+            return true;
+        });
+        request.end = vi.fn(() => {
+            const response = new EventEmitter() as EventEmitter & { statusCode: number };
+            response.statusCode = 200;
+            callback(response as IncomingMessage);
+            response.emit("data", JSON.stringify(result));
+            response.emit("end");
+        });
+        return request as unknown as ClientRequest;
+    }) as typeof https.request);
 
     return {
         requestSpy,

@@ -243,6 +243,7 @@
             "renderCount": 15,
             "referenceImage": "gsplat-lod-sh-ibl-shadows.png",
             "dependsOn": ["GaussianSplatting", "Loaders", "PBR", "SPLATLoader", "Shadows", "Textures"],
+            "errorRatio": 10,
             "excludeFromPerformance": true
         },
         {

@@ -70,7 +70,7 @@ describe("GaussianSplatting - Native sorting with disableDepthSort", () => {
 
         scene.dispose();
         engine.dispose();
-        // Generous timeout: each test in this suite pays the full core re-import cost because vi.resetModules() runs in beforeEach.
+        // Generous timeout: each test in this suite pays the full core re-import cost because vi.resetModules() runs in beforeEach.
     }, 30000);
 
     it("does not run the native sort at all when depth sort is disabled", async () => {

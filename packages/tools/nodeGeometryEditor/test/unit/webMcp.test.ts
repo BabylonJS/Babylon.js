@@ -182,12 +182,7 @@ function CreateLiveEditorHarness() {
         selectedLink: null,
         findNodeFromData: (block: NodeGeometryBlock) => nodes.find((node) => node.content.data === block),
         removeDataFromCache: vi.fn(),
-        connectNodes: (
-            _sourceNode: (typeof nodes)[number],
-            source: ConnectionPointPortData,
-            _targetNode: (typeof nodes)[number],
-            target: ConnectionPointPortData
-        ) => {
+        connectNodes: (_sourceNode: (typeof nodes)[number], source: ConnectionPointPortData, _targetNode: (typeof nodes)[number], target: ConnectionPointPortData) => {
             source.connectTo(target);
             const link = {
                 source,
@@ -454,9 +449,9 @@ describe("Node Geometry WebMCP", () => {
 
         const replacementBlock = addTool.execute({ blockType: "SphereBlock" }, { signal: controller.signal }) as { block: { id: number } };
         expect(replacementBlock.block.id).toBe(2);
-        expect(() =>
-            setPropertiesTool.execute({ blockId: firstBlock.block.id, properties: { name: "stale handle" } }, { signal: controller.signal })
-        ).toThrow("Block 1 not found.");
+        expect(() => setPropertiesTool.execute({ blockId: firstBlock.block.id, properties: { name: "stale handle" } }, { signal: controller.signal })).toThrow(
+            "Block 1 not found."
+        );
     });
 
     it("keeps known and first-discovered blocks addressable across real editor undo and redo rebuilds", async () => {
@@ -510,14 +505,10 @@ describe("Node Geometry WebMCP", () => {
         expect(redoGeometry.blocks.find((block) => block.name === "Changed")?.id).toBe(firstDiscoveredLogicalId);
 
         historyStack.undo();
-        expect((getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry).blocks.find((block) => block.name === "Sphere")?.id).toBe(
-            firstDiscoveredLogicalId
-        );
+        expect((getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry).blocks.find((block) => block.name === "Sphere")?.id).toBe(firstDiscoveredLogicalId);
         historyStack.redo();
         const finalRedoRuntimeIds = nodeGeometry.attachedBlocks.map((block) => block.uniqueId);
-        expect((getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry).blocks.find((block) => block.name === "Changed")?.id).toBe(
-            firstDiscoveredLogicalId
-        );
+        expect((getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry).blocks.find((block) => block.name === "Changed")?.id).toBe(firstDiscoveredLogicalId);
 
         state.webMcpEditor = {
             applyIncrementalUpdate: vi.fn((_before, after) => {
@@ -527,9 +518,10 @@ describe("Node Geometry WebMCP", () => {
             }),
         } as unknown as GlobalState["webMcpEditor"];
 
-        expect(
-            setPropertiesTool.execute({ blockId: firstDiscoveredLogicalId, properties: { name: "Updated after history" } }, { signal: controller.signal })
-        ).toMatchObject({ success: true, blockCount: 2 });
+        expect(setPropertiesTool.execute({ blockId: firstDiscoveredLogicalId, properties: { name: "Updated after history" } }, { signal: controller.signal })).toMatchObject({
+            success: true,
+            blockCount: 2,
+        });
         const updatedGeometry = getTool.execute({}, { signal: controller.signal }) as ISerializedGeometry;
         expect(updatedGeometry.blocks.find((block) => block.id === firstDiscoveredLogicalId)?.name).toBe("Updated after history");
         historyStack.dispose();
@@ -852,12 +844,13 @@ describe("Node Geometry WebMCP", () => {
         const manager = new GeometryGraphManager();
         manager.createGeometry("validationDependencyOrder");
 
-        const trueId = (manager.addBlock("validationDependencyOrder", "GeometryInputBlock", "true", { type: "Vector3", value: { x: 0, y: 0, z: 0 } }) as any)
-            .block.id;
-        const falseId = (manager.addBlock("validationDependencyOrder", "GeometryInputBlock", "false", {
-            type: "Vector3",
-            value: { x: 1, y: 1, z: 1 },
-        }) as any).block.id;
+        const trueId = (manager.addBlock("validationDependencyOrder", "GeometryInputBlock", "true", { type: "Vector3", value: { x: 0, y: 0, z: 0 } }) as any).block.id;
+        const falseId = (
+            manager.addBlock("validationDependencyOrder", "GeometryInputBlock", "false", {
+                type: "Vector3",
+                value: { x: 1, y: 1, z: 1 },
+            }) as any
+        ).block.id;
         const rightId = (manager.addBlock("validationDependencyOrder", "GeometryInputBlock", "right", { type: "Float", value: 1 }) as any).block.id;
         const mathId = (manager.addBlock("validationDependencyOrder", "MathBlock", "math") as any).block.id;
         const conditionId = (manager.addBlock("validationDependencyOrder", "ConditionBlock", "condition") as any).block.id;
@@ -890,10 +883,12 @@ describe("Node Geometry WebMCP", () => {
         const manager = new GeometryGraphManager();
         manager.createGeometry("sharedValidationDependencies");
 
-        let sourceId = (manager.addBlock("sharedValidationDependencies", "GeometryInputBlock", "source", {
-            type: "Vector3",
-            value: { x: 1, y: 1, z: 1 },
-        }) as any).block.id;
+        let sourceId = (
+            manager.addBlock("sharedValidationDependencies", "GeometryInputBlock", "source", {
+                type: "Vector3",
+                value: { x: 1, y: 1, z: 1 },
+            }) as any
+        ).block.id;
         for (let index = 0; index < 12; index++) {
             const mathId = (manager.addBlock("sharedValidationDependencies", "MathBlock", `math ${index}`) as any).block.id;
             expect(manager.connectBlocks("sharedValidationDependencies", sourceId, "output", mathId, "left")).toBe("OK");
