@@ -274,4 +274,10 @@ export function registerBuiltInGLTFExtensions() {
         const { KHR_materials_volume_scatter } = await import("./KHR_materials_volume_scatter.pure");
         return new KHR_materials_volume_scatter(loader);
     });
+
+    unregisterGLTFExtension("KHR_materials_scatter");
+    registerGLTFExtension("KHR_materials_scatter", true, async (loader) => {
+        const { KHR_materials_scatter } = await import("./KHR_materials_scatter");
+        return new KHR_materials_scatter(loader);
+    });
 }

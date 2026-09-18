@@ -601,9 +601,11 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
     private async _stageFlowGraphsFromSceneAsync(scene: Scene): Promise<Nullable<IStagedKhrInteractivityImport>> {
         const getImportResult = (globalThis as any).BABYLON?.GLTF2?.Loader?.Extensions?.GetKHRInteractivityImportResult as
-            ((scene: Scene) => IKHRInteractivityImportResult | undefined) | undefined;
+            | ((scene: Scene) => IKHRInteractivityImportResult | undefined)
+            | undefined;
         const getImportResults = (globalThis as any).BABYLON?.GLTF2?.Loader?.Extensions?.GetKHRInteractivityImportResults as
-            ((scene: Scene) => readonly IKHRInteractivityImportResult[]) | undefined;
+            | ((scene: Scene) => readonly IKHRInteractivityImportResult[])
+            | undefined;
         const importResults = getImportResults?.(scene);
         const importResult = importResults?.[importResults.length - 1] ?? getImportResult?.(scene);
         if (!importResult) {

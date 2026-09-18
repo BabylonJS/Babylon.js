@@ -1123,7 +1123,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty")
     accessor geometryThickness: number;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _geometryThickness: Property<number> = new Property<number>("geometry_thickness", 0.0, "vGeometryThickness", 1, 0);
+    private _geometryThickness: Property<number> = new Property<number>("geometry_thickness", 1.0, "vGeometryThickness", 1, 0);
 
     /**
      * Defines the thickness of the material's geometry.
