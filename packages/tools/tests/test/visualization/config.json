@@ -3898,6 +3898,22 @@
             "dependsOn": ["Cameras", "FrameGraph", "GaussianSplatting", "Lights", "Materials", "Meshes", "Particles", "Sprites", "Textures"]
         },
         {
+            "title": "FrameGraph geometry renderer - Gaussian mesh",
+            "playgroundId": "#RQLLM5#0",
+            "referenceImage": "framegraph-geometry-gaussian-mesh.png",
+            "errorRatio": 0.5,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "GaussianSplatting", "Loaders", "SPLATLoader", "Textures"]
+        },
+        {
+            "title": "FrameGraph object renderer - Gaussian mesh reference",
+            "playgroundId": "#5F1T3C#0",
+            "referenceImage": "framegraph-geometry-gaussian-mesh.png",
+            "errorRatio": 0.5,
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Cameras", "FrameGraph", "GaussianSplatting", "Loaders", "SPLATLoader", "Textures"]
+        },
+        {
             "title": "FrameGraph selection outline",
             "playgroundId": "#E1F0GP#4",
             "dependsOn": ["FrameGraph", "Loaders", "Meshes", "Particles", "Textures", "glTF"]

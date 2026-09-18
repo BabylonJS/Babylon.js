@@ -93,8 +93,11 @@ Custom particle and line effects retain their existing APIs and beauty-only fall
 - [World-normal outputs](https://playground.babylonjs.com/#Z6QI9V#2)
 - [Geometry-only output with an integer attachment at slot zero](https://playground.babylonjs.com/#RT0TA2#2)
 - [NRGE geometry renderer](https://playground.babylonjs.com/#NIXFAQ#2)
+- [Dedicated Gaussian mesh](https://playground.babylonjs.com/#RQLLM5#0)
+- [Gaussian mesh object-renderer reference](https://playground.babylonjs.com/#5F1T3C#0)
 
 The regular object-renderer scene uses no geometry renderer task and shares the same beauty reference image with the geometry-renderer scene.
+The dedicated Gaussian model and its object-renderer counterpart also share one reference image.
 
 These asynchronous Playgrounds complete readiness checks and populate the explicitly requested particles before returning. They do not render scene frames during preparation, and their visualization entries do not specify `renderCount`.
 
