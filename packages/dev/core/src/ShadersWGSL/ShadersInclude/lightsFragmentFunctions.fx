@@ -20,6 +20,17 @@ fn computeLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4f, diff
 		var direction: vec3f = lightData.xyz - fragmentInputs.vPositionW;
 
 		attenuation = max(0., 1.0 - length(direction) / range);
+#ifndef NDOTL
+		// Outside the point light's range both color terms are zero. Keep the
+		// full path when a caller also consumes the unattenuated N dot L.
+		if (attenuation == 0.) {
+			result.diffuse = vec3f(0.);
+#ifdef SPECULARTERM
+			result.specular = vec3f(0.);
+#endif
+			return result;
+		}
+#endif
 		lightVectorW = normalize(direction);
 	}
 	else
