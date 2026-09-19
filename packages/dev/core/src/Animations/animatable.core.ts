@@ -732,6 +732,10 @@ function ProcessLateAnimationBindings(scene: Scene): void {
                             } else {
                                 finalValue = originalAnimation.currentValue * scale;
                             }
+                        } else if ((holder.animations.length > 1 || holder.additiveAnimations.length > 0) && originalAnimation.currentValue.clone) {
+                            // Copied rather than aliased: the entries that follow add into finalValue, and one of them
+                            // may be this very animation, whose current value must not add into itself.
+                            finalValue = originalAnimation.currentValue.clone();
                         } else {
                             finalValue = originalAnimation.currentValue;
                         }
@@ -894,6 +898,24 @@ export function AddAnimationExtensions(sceneClass: typeof Scene, boneClass: type
     }
 
     sceneClass.prototype._animate = function (customDeltaTime?: number): void {
+        // The records the last step's bindings processed have been read by now and must not outlive that step. Those
+        // made since - between steps, with bindings still pending - move to the front and stay.
+        const writes = this._animationWrites;
+        const count = this._animationWriteCount;
+        let kept = 0;
+        for (let index = this._animationStepWriteCount; index < count; index++, kept++) {
+            const write = writes[kept];
+            writes[kept] = writes[index];
+            writes[index] = write;
+        }
+        for (let index = kept; index < count; index++) {
+            const write = writes[index];
+            write.runtimeAnimation = null;
+            write.target = null;
+        }
+        this._animationWriteCount = kept;
+        this._animationStepWriteCount = 0;
+        this._animationStepEvaluated = false;
         if (!this.animationsEnabled) {
             return;
         }
@@ -917,6 +939,7 @@ export function AddAnimationExtensions(sceneClass: typeof Scene, boneClass: type
 
         this._animationTime += this.deltaTime;
         const animationTime = this._animationTime;
+        this._animationStepEvaluated = true;
 
         for (let index = 0; index < animatables.length; index++) {
             const animatable = animatables[index];
@@ -928,6 +951,7 @@ export function AddAnimationExtensions(sceneClass: typeof Scene, boneClass: type
 
         // Late animation bindings
         ProcessLateAnimationBindings(this);
+        this._animationStepWriteCount = this._animationWriteCount;
     };
 
     sceneClass.prototype.sortActiveAnimatables = function (): void {
