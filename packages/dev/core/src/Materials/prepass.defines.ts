@@ -41,6 +41,8 @@ export function PrepassDefinesMixin<Tbase extends PrepassDefinesMixinConstructor
         public PREPASS_OBJECT_ID = false;
         public PREPASS_OBJECT_ID_INDEX = -1;
         public PREPASS_OBJECT_ID_R8 = false;
+        public PREPASS_MESH_BLEND_TAG = false;
+        public PREPASS_MESH_BLEND_TAG_INDEX = -1;
         public SCENE_MRT_COUNT = 0;
     };
 }

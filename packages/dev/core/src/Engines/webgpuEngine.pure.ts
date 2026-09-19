@@ -55,6 +55,7 @@ import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import { type WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
 import { type WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 import { AlphaState } from "../States/alphaCullingState";
+import { IsIntegerTextureFormat, IsUnsignedIntegerTextureType } from "../Materials/Textures/textureHelper.functions";
 
 import { type VideoTexture } from "../Materials/Textures/videoTexture.pure";
 import { type RenderTargetTexture } from "../Materials/Textures/renderTargetTexture.pure";
@@ -101,12 +102,14 @@ const ViewDescriptorSwapChain: GPUTextureViewDescriptor = {
     arrayLayerCount: 1,
 };
 const TempColor4 = /*#__PURE__*/ new Color4();
+const TempColor4SignedInteger = /*#__PURE__*/ new Color4();
 
 /** @internal */
 interface IWebGPURenderPassWrapper {
     renderPassDescriptor: Nullable<GPURenderPassDescriptor>;
 
     colorAttachmentViewDescriptor: Nullable<GPUTextureViewDescriptor>;
+    colorAttachmentDepthSlice: number | undefined;
     depthAttachmentViewDescriptor: Nullable<GPUTextureViewDescriptor>;
     colorAttachmentGPUTextures: (WebGPUHardwareTexture | null)[];
     depthTextureFormat: GPUTextureFormat | undefined;
@@ -395,6 +398,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     private _mainRenderPassWrapper: IWebGPURenderPassWrapper = {
         renderPassDescriptor: null,
         colorAttachmentViewDescriptor: null,
+        colorAttachmentDepthSlice: undefined,
         depthAttachmentViewDescriptor: null,
         colorAttachmentGPUTextures: [],
         depthTextureFormat: undefined,
@@ -402,6 +406,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     private _rttRenderPassWrapper: IWebGPURenderPassWrapper = {
         renderPassDescriptor: null,
         colorAttachmentViewDescriptor: null,
+        colorAttachmentDepthSlice: undefined,
         depthAttachmentViewDescriptor: null,
         colorAttachmentGPUTextures: [],
         depthTextureFormat: undefined,
@@ -1342,12 +1347,32 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         return new WebGPUShaderProcessingContext(shaderLanguage, pureMode);
     }
 
-    private _getCurrentRenderPass(): GPURenderPassEncoder {
+    /** @internal */
+    public override _getCurrentRenderPass(): GPURenderPassEncoder {
+        let depthFunction: Nullable<number> | undefined;
+
+        if (
+            this.compatibilityMode &&
+            this._currentRenderPass &&
+            !this._occlusionQueryActive &&
+            !this._snapshotRendering.play &&
+            this._occlusionQuery?.hasQueries &&
+            this._getCurrentRenderPassWrapper().renderPassDescriptor?.occlusionQuerySet !== this._occlusionQuery.querySet
+        ) {
+            depthFunction = this._depthCullingState.depthFunc;
+            this._snapshotRendering.handleRenderPassRestart();
+            this._endCurrentRenderPass();
+        }
+
         if (this._currentRenderTarget && !this._currentRenderPass) {
             // delayed creation of the render target pass, but we now need to create it as we are requested the render pass
             this._startRenderTargetRenderPass(this._currentRenderTarget, false, null, false, false);
         } else if (!this._currentRenderPass) {
             this._startMainRenderPass(false);
+        }
+
+        if (depthFunction !== undefined) {
+            this._depthCullingState.depthFunc = depthFunction;
         }
 
         return this._currentRenderPass!;
@@ -1604,6 +1629,18 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         const hasScissor = this._scissorIsActive();
+
+        if (backBuffer && color && hasScissor && this._currentRenderTarget) {
+            const textures = this._currentRenderTarget.textures;
+            const attachments = this._mrtAttachments;
+            if (textures) {
+                for (let index = 0; index < textures.length; index++) {
+                    if ((!attachments || attachments[index] !== 0) && IsIntegerTextureFormat(textures[index].format)) {
+                        throw new Error("WebGPUEngine.clear: scissored clears of integer color attachments are not supported");
+                    }
+                }
+            }
+        }
 
         // We need to recreate the render pass so that the new parameters for clear color / depth / stencil are taken into account
         if (this._currentRenderTarget) {
@@ -3259,11 +3296,16 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         const clearColorForIntegerRt = TempColor4;
+        const clearColorForSignedIntegerRt = TempColor4SignedInteger;
         if (clearColor) {
             clearColorForIntegerRt.r = clearColor.r * 255;
             clearColorForIntegerRt.g = clearColor.g * 255;
             clearColorForIntegerRt.b = clearColor.b * 255;
             clearColorForIntegerRt.a = clearColor.a * 255;
+            clearColorForSignedIntegerRt.r = Math.round(clearColor.r);
+            clearColorForSignedIntegerRt.g = Math.round(clearColor.g);
+            clearColorForSignedIntegerRt.b = Math.round(clearColor.b);
+            clearColorForSignedIntegerRt.a = Math.round(clearColor.a);
         }
 
         const mustClearColor = setClearStates && clearColor;
@@ -3297,7 +3339,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         format: gpuMRTWrapper.format,
                         baseArrayLayer: 0,
                     };
-                    const isRtInteger = mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
+                    const isRtInteger = IsIntegerTextureFormat(mrtTexture.format);
+                    const isRtUnsignedInteger = IsUnsignedIntegerTextureType(mrtTexture.type);
 
                     const colorTextureView = this._cacheTextureViews.getView(gpuMRTTexture, viewDescriptor);
                     const colorMSAATextureView = gpuMSAATexture ? this._cacheTextureViews.getView(gpuMSAATexture, msaaViewDescriptor) : undefined;
@@ -3306,7 +3349,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture && !rtWrapper.disableAutomaticMSAAResolve && rtWrapper.resolveMSAAColors ? colorTextureView : undefined,
                         depthSlice,
-                        clearValue: index !== 0 && mustClearColor ? (isRtInteger ? clearColorForIntegerRt : clearColor) : undefined,
+                        clearValue:
+                            index !== 0 && mustClearColor ? (isRtInteger ? (isRtUnsignedInteger ? clearColorForIntegerRt : clearColorForSignedIntegerRt) : clearColor) : undefined,
                         loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                         storeOp: WebGPUConstants.StoreOp.Store,
                     });
@@ -3320,27 +3364,22 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             if (internalTexture) {
                 const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
                 const gpuTexture = gpuWrapper.underlyingResource!;
-                const layerIndex = this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer;
-
-                let depthSlice: number | undefined = undefined;
-
-                if (rtWrapper.is3D) {
-                    depthSlice = this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer;
-                    this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer = 0;
-                }
+                const depthSlice = rtWrapper.is3D ? this._rttRenderPassWrapper.colorAttachmentDepthSlice : undefined;
+                const layerIndex = depthSlice ?? this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer;
 
                 const gpuMSAATexture = useMSAA ? gpuWrapper.getMSAATexture(sampleCount, layerIndex) : undefined;
                 const colorTextureView = this._cacheTextureViews.getView(gpuTexture, this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const colorMSAATextureView = gpuMSAATexture
                     ? this._cacheTextureViews.getView(gpuMSAATexture, this._rttRenderPassWrapper.colorAttachmentViewDescriptor!)
                     : undefined;
-                const isRtInteger = internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
+                const isRtInteger = IsIntegerTextureFormat(internalTexture.format);
+                const isRtUnsignedInteger = IsUnsignedIntegerTextureType(internalTexture.type);
 
                 colorAttachments.push({
                     view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                     resolveTarget: gpuMSAATexture && !rtWrapper.disableAutomaticMSAAResolve && rtWrapper.resolveMSAAColors ? colorTextureView : undefined,
                     depthSlice,
-                    clearValue: mustClearColor ? (isRtInteger ? clearColorForIntegerRt : clearColor) : undefined,
+                    clearValue: mustClearColor ? (isRtInteger ? (isRtUnsignedInteger ? clearColorForIntegerRt : clearColorForSignedIntegerRt) : clearColor) : undefined,
                     loadOp: mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                     storeOp: WebGPUConstants.StoreOp.Store,
                 });
@@ -3485,11 +3524,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             format: this._colorFormat as GPUTextureFormat,
             dimension: texture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
-            baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
+            baseArrayLayer: texture.is3D ? 0 : texture.isCube ? layer * 6 + faceIndex : layer,
             baseMipLevel: lodLevel,
             arrayLayerCount: 1,
             aspect: WebGPUConstants.TextureAspect.All,
         };
+        this._rttRenderPassWrapper.colorAttachmentDepthSlice = texture.is3D ? layer : undefined;
 
         this._rttRenderPassWrapper.depthAttachmentViewDescriptor = {
             label: texture.label ? texture.label + " - Depth Attachment View" : "RTT - Depth Attachment View",

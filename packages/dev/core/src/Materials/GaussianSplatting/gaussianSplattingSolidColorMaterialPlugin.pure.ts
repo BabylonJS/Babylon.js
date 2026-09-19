@@ -10,7 +10,7 @@ import { serialize } from "../../Misc/decorators";
 import { type Color3 } from "../../Maths/math.color.pure";
 import { MaterialPluginBase } from "../materialPluginBase.pure";
 import { ShaderLanguage } from "../shaderLanguage";
-import { GetGaussianSplattingMaxPartCount, type GaussianSplattingMaterial } from "./gaussianSplattingMaterial.pure";
+import { GetGaussianSplattingMaxPartCount, GetPartIndexVaryingDeclaration, type GaussianSplattingMaterial } from "./gaussianSplattingMaterial.pure";
 import { RegisterClass } from "../../Misc/typeStore";
 
 /**
@@ -124,7 +124,7 @@ export class GaussianSplattingSolidColorMaterialPlugin extends MaterialPluginBas
     private _getCustomCodeGLSL(shaderType: string, maxPartCount: number): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
             return {
-                CUSTOM_VERTEX_DEFINITIONS: `varying float vPartIndex;`,
+                CUSTOM_VERTEX_DEFINITIONS: GetPartIndexVaryingDeclaration(ShaderLanguage.GLSL),
                 CUSTOM_VERTEX_UPDATE: `
 #if IS_COMPOUND
     vPartIndex = float(splat.partIndex);
@@ -136,7 +136,7 @@ export class GaussianSplattingSolidColorMaterialPlugin extends MaterialPluginBas
         } else if (shaderType === "fragment") {
             return {
                 CUSTOM_FRAGMENT_DEFINITIONS: `
-varying float vPartIndex;
+${GetPartIndexVaryingDeclaration(ShaderLanguage.GLSL)}
 uniform float solidColorEnabled;
 uniform vec3 partColors[${maxPartCount}];
                 `,
@@ -154,7 +154,7 @@ if (solidColorEnabled > 0.5) {
     private _getCustomCodeWGSL(shaderType: string, maxPartCount: number): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
             return {
-                CUSTOM_VERTEX_DEFINITIONS: `varying vPartIndex: f32;`,
+                CUSTOM_VERTEX_DEFINITIONS: GetPartIndexVaryingDeclaration(ShaderLanguage.WGSL),
                 CUSTOM_VERTEX_UPDATE: `
 #if IS_COMPOUND
     vertexOutputs.vPartIndex = f32(splat.partIndex);
@@ -166,7 +166,7 @@ if (solidColorEnabled > 0.5) {
         } else if (shaderType === "fragment") {
             return {
                 CUSTOM_FRAGMENT_DEFINITIONS: `
-varying vPartIndex: f32;
+${GetPartIndexVaryingDeclaration(ShaderLanguage.WGSL)}
 uniform solidColorEnabled: f32;
 uniform partColors: array<vec3f, ${maxPartCount}>;
                 `,

@@ -1,4 +1,4 @@
-import { type MaterialDefines, type Effect, type Mesh, type AbstractMesh, type Material } from "core/index";
+import { type MaterialDefines, type Effect, type Mesh, type AbstractMesh, type Material, type AbstractEngine } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { Matrix } from "core/Maths/math.vector.pure";
 
@@ -7,10 +7,20 @@ import { Matrix } from "core/Maths/math.vector.pure";
  *
  * IDs must be unsigned integers supported by the object ID texture format. ID 0 is reserved for background or excluded meshes.
  * RGBA textures support IDs up to 0xFFFFFF, while RED textures support IDs up to 0xFF.
+ * Instances and thin instances use the source mesh ID, and this callback receives the source mesh for instanced draws.
  * This callback runs in the render hot path and may be called multiple times for the same mesh in a frame.
  * It should avoid allocations and return a consistent value for a mesh during a render.
  */
 export type GeometryRenderingObjectIdProvider = (mesh: AbstractMesh) => number;
+
+/**
+ * Provides the packed mesh-blending tag written by geometry rendering for a mesh.
+ *
+ * Tags must be 0 or contain a group ID between 1 and 63 in their low six bits. Tag 0 disables mesh blending.
+ * Instances and thin instances use the source mesh tag. This callback receives the source mesh for instanced draws.
+ * It runs in the render hot path and should avoid allocations and return a consistent value during a render.
+ */
+export type GeometryRenderingMeshBlendTagProvider = (mesh: AbstractMesh) => number;
 
 /** @internal */
 export function _GetGeometryRenderingObjectId(mesh: AbstractMesh, provider: GeometryRenderingObjectIdProvider, maxObjectId = 0xffffff): number {
@@ -21,6 +31,17 @@ export function _GetGeometryRenderingObjectId(mesh: AbstractMesh, provider: Geom
     }
 
     return objectId;
+}
+
+/** @internal */
+export function _GetGeometryRenderingMeshBlendTag(mesh: AbstractMesh, provider: GeometryRenderingMeshBlendTagProvider): number {
+    const tag = provider(mesh);
+
+    if (!Number.isInteger(tag) || tag < 0 || tag > 0xff || (tag !== 0 && (tag & 0x3f) === 0)) {
+        throw new Error(`Invalid geometry mesh-blending tag ${tag} for mesh "${mesh.name}". Tags must be 0 or contain a group ID between 1 and 63.`);
+    }
+
+    return tag;
 }
 
 /**
@@ -53,6 +74,24 @@ export const enum GeometryRenderingTextureClearType {
  * A configuration is created for each rendering pass a geometry rendering is used in.
  */
 export type GeometryRenderingConfiguration = {
+    /** @internal */
+    _attachments?: number[];
+
+    /** @internal */
+    _colorAttachments?: number[];
+
+    /** @internal */
+    _mrtCount?: number;
+
+    /** @internal */
+    _defines?: string;
+
+    /** @internal */
+    _currentWorldMatrices?: { [index: number]: Matrix };
+
+    /** @internal */
+    _worldMatrixFrameIds?: { [index: number]: number };
+
     /**
      * Defines used for the geometry rendering.
      */
@@ -102,6 +141,11 @@ export type GeometryRenderingConfiguration = {
      * Whether the object ID texture uses the RED format.
      */
     objectIdIsRedFormat: boolean;
+
+    /**
+     * Provides the packed mesh-blending tag written for each rendered mesh.
+     */
+    meshBlendTagProvider?: GeometryRenderingMeshBlendTagProvider;
 };
 
 /**
@@ -224,6 +268,13 @@ export class MaterialHelperGeometryRendering {
             define: "PREPASS_OBJECT_ID",
             defineIndex: "PREPASS_OBJECT_ID_INDEX",
         },
+        {
+            type: Constants.PREPASS_MESH_BLEND_TAG_TEXTURE_TYPE,
+            name: "MeshBlendTag",
+            clearType: GeometryRenderingTextureClearType.Zero,
+            define: "PREPASS_MESH_BLEND_TAG",
+            defineIndex: "PREPASS_MESH_BLEND_TAG_INDEX",
+        },
     ];
 
     private static _Configurations: { [renderPassId: number]: GeometryRenderingConfiguration } = {};
@@ -265,13 +316,92 @@ export class MaterialHelperGeometryRendering {
         return MaterialHelperGeometryRendering._Configurations[renderPassId];
     }
 
+    /** @internal */
+    public static _PrepareConfiguration(renderPassId: number, attachments: number[], colorAttachments: number[]): void {
+        const configuration = MaterialHelperGeometryRendering._Configurations[renderPassId];
+        configuration._attachments = attachments;
+        configuration._colorAttachments = colorAttachments;
+        configuration._mrtCount = attachments.length;
+
+        let defines = "#define PREPASS\n";
+        for (const description of MaterialHelperGeometryRendering.GeometryTextureDescriptions) {
+            const index = configuration.defines[description.defineIndex];
+            if (index !== undefined) {
+                defines += `#define ${description.define}\n#define ${description.defineIndex} ${index}\n`;
+            }
+        }
+        if (configuration.objectIdIsRedFormat) {
+            defines += "#define PREPASS_OBJECT_ID_R8\n";
+        }
+        configuration._defines = defines + `#define SCENE_MRT_COUNT ${attachments.length}\n`;
+    }
+
+    /** @internal */
+    public static _PrepareStringDefines(renderPassId: number, defines: string[]): boolean {
+        const configuration = MaterialHelperGeometryRendering._Configurations[renderPassId];
+        if (!configuration?._defines) {
+            return false;
+        }
+        defines.push(configuration._defines);
+        return true;
+    }
+
+    /** @internal */
+    public static _BindAttachmentsForEffect(engine: AbstractEngine, effect: Pick<Effect, "_multiTarget">): boolean {
+        const configuration = MaterialHelperGeometryRendering._Configurations[engine.currentRenderPassId];
+        if (!configuration?._attachments) {
+            return true;
+        }
+        engine.bindAttachments(effect._multiTarget ? configuration._attachments : configuration._colorAttachments!);
+        return effect._multiTarget || configuration.defines["PREPASS_COLOR_INDEX"] !== undefined;
+    }
+
+    /** @internal */
+    public static _RestoreAttachments(engine: AbstractEngine): void {
+        const configuration = MaterialHelperGeometryRendering._Configurations[engine.currentRenderPassId];
+        if (configuration?._colorAttachments) {
+            engine.bindAttachments(configuration._colorAttachments);
+        }
+    }
+
+    /** @internal */
+    public static _BindColorAttachments(engine: AbstractEngine): boolean {
+        const configuration = MaterialHelperGeometryRendering._Configurations[engine.currentRenderPassId];
+        if (!configuration?._colorAttachments) {
+            return true;
+        }
+        engine.bindAttachments(configuration._colorAttachments);
+        return configuration.defines["PREPASS_COLOR_INDEX"] !== undefined;
+    }
+
+    /** @internal */
+    public static _IsColorAttachmentEnabled(engine: AbstractEngine): boolean {
+        const configuration = MaterialHelperGeometryRendering._Configurations[engine.currentRenderPassId];
+        return !configuration?._colorAttachments || configuration.defines["PREPASS_COLOR_INDEX"] !== undefined;
+    }
+
+    /** @internal */
+    public static _BindZeroAlphaDiscard(engine: AbstractEngine, effect: Effect): void {
+        const configuration = MaterialHelperGeometryRendering._Configurations[engine.currentRenderPassId];
+        if (!configuration) {
+            return;
+        }
+        const alphaMode = engine.getAlphaMode();
+        const discard =
+            configuration.defines["PREPASS_COLOR_INDEX"] === undefined ||
+            alphaMode === Constants.ALPHA_COMBINE ||
+            alphaMode === Constants.ALPHA_ADD ||
+            alphaMode === Constants.ALPHA_LAYER_ACCUMULATE;
+        effect.setFloat("geometryZeroAlphaDiscard", discard ? 1 : 0);
+    }
+
     /**
      * Adds uniforms and samplers for geometry rendering.
      * @param uniforms The array of uniforms to add to.
      * @param _samplers The array of samplers to add to.
      */
     public static AddUniformsAndSamplers(uniforms: string[], _samplers: string[]) {
-        uniforms.push("previousWorld", "previousViewProjection", "mPreviousBones", "objectId");
+        uniforms.push("previousWorld", "previousViewProjection", "mPreviousBones", "objectId", "meshBlendTag");
     }
 
     /**
@@ -328,7 +458,7 @@ export class MaterialHelperGeometryRendering {
         }
 
         defines["PREPASS_OBJECT_ID_R8"] = configuration.objectIdIsRedFormat;
-        defines["SCENE_MRT_COUNT"] = numMRT;
+        defines["SCENE_MRT_COUNT"] = configuration._mrtCount ?? numMRT;
 
         defines["BONES_VELOCITY_ENABLED"] =
             mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton && !mesh.skeleton.isUsingTextureForMatrices && configuration.excludedSkinnedMesh.indexOf(mesh) === -1;
@@ -368,17 +498,29 @@ export class MaterialHelperGeometryRendering {
             effect.setFloat("objectId", objectId);
         }
 
+        if (configuration.defines["PREPASS_MESH_BLEND_TAG_INDEX"] !== undefined) {
+            const meshBlendTag = configuration.meshBlendTagProvider ? _GetGeometryRenderingMeshBlendTag(mesh, configuration.meshBlendTagProvider) : mesh.meshBlendingTag;
+            effect.setInt("meshBlendTag", meshBlendTag);
+        }
+
         if (configuration.defines["PREPASS_VELOCITY_INDEX"] !== undefined || configuration.defines["PREPASS_VELOCITY_LINEAR_INDEX"] !== undefined) {
-            if (!configuration.previousWorldMatrices[mesh.uniqueId]) {
+            const currentWorldMatrices = (configuration._currentWorldMatrices ??= {});
+            const worldMatrixFrameIds = (configuration._worldMatrixFrameIds ??= {});
+            if (!currentWorldMatrices[mesh.uniqueId]) {
+                currentWorldMatrices[mesh.uniqueId] = world.clone();
                 configuration.previousWorldMatrices[mesh.uniqueId] = world.clone();
             }
-
-            if (!configuration.previousViewProjection) {
-                configuration.previousViewProjection = scene.getTransformMatrix().clone();
-                configuration.currentViewProjection = scene.getTransformMatrix().clone();
+            if (worldMatrixFrameIds[mesh.uniqueId] !== engine.frameId) {
+                configuration.previousWorldMatrices[mesh.uniqueId].copyFrom(currentWorldMatrices[mesh.uniqueId]);
+                worldMatrixFrameIds[mesh.uniqueId] = engine.frameId;
             }
+            currentWorldMatrices[mesh.uniqueId].copyFrom(world);
 
-            if (configuration.currentViewProjection.updateFlag !== scene.getTransformMatrix().updateFlag) {
+            if (configuration.lastUpdateFrameId === -1) {
+                configuration.lastUpdateFrameId = engine.frameId;
+                configuration.previousViewProjection.copyFrom(scene.getTransformMatrix());
+                configuration.currentViewProjection.copyFrom(scene.getTransformMatrix());
+            } else if (configuration.currentViewProjection.updateFlag !== scene.getTransformMatrix().updateFlag) {
                 // First update of the prepass configuration for this rendering pass
                 configuration.lastUpdateFrameId = engine.frameId;
                 configuration.previousViewProjection.copyFrom(configuration.currentViewProjection);
@@ -391,8 +533,6 @@ export class MaterialHelperGeometryRendering {
 
             effect.setMatrix("previousWorld", configuration.previousWorldMatrices[mesh.uniqueId]);
             effect.setMatrix("previousViewProjection", configuration.previousViewProjection);
-
-            configuration.previousWorldMatrices[mesh.uniqueId] = world.clone();
 
             if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 const skeleton = mesh.skeleton;

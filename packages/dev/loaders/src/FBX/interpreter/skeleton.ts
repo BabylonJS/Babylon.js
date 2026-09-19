@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention, jsdoc/require-param, jsdoc/require-returns */
-import { type FBXNode, findChildByName, getPropertyValue, cleanFBXName } from "../types/fbxTypes";
+import { extractNodeTransform, type FBXNodeTransformData } from "./nodeTransform";
+import { getPropertyTemplate, type FBXPropertyTemplate, type FBXPropertyTemplateMap } from "./propertyTemplates";
+import { type FBXNode, findChildByName, getPropertyValue, cleanFBXName, getNodeArray } from "../types/fbxTypes";
 
 import { type FBXObjectMap, getChildren } from "./connections";
 
@@ -85,7 +87,11 @@ export interface FBXSkinData {
  * Extract all skin deformers from the FBX scene.
  * Returns skin data including bone hierarchy and vertex weights.
  */
-export function extractSkins(objectMap: FBXObjectMap): FBXSkinData[] {
+// Template used to resolve bone transform defaults while extractSkins runs (bones are Models).
+let currentModelTemplate: FBXPropertyTemplate | undefined;
+
+export function extractSkins(objectMap: FBXObjectMap, propertyTemplates?: FBXPropertyTemplateMap): FBXSkinData[] {
+    currentModelTemplate = propertyTemplates ? (getPropertyTemplate(propertyTemplates, "Model", "FbxNode") ?? getPropertyTemplate(propertyTemplates, "Model")) : undefined;
     const skins: FBXSkinData[] = [];
 
     for (const [id, node] of Array.from(objectMap.objects)) {
@@ -275,7 +281,7 @@ function extractBindPoseMatrices(geometryId: number, objectMap: FBXObjectMap): M
             const nodeChild = findChildByName(poseChild, "Node");
             const matrixChild = findChildByName(poseChild, "Matrix");
             const nodeId = nodeChild?.properties[0]?.value;
-            const matrixValue = matrixChild?.properties[0]?.value;
+            const matrixValue = getNodeArray(matrixChild);
             if (typeof nodeId !== "number") {
                 continue;
             }
@@ -358,101 +364,8 @@ export function isSkeletonModel(modelNode: FBXNode): boolean {
     return subType === "Root" || subType === "LimbNode";
 }
 
-export function extractBoneTransform(modelNode: FBXNode): {
-    translation: [number, number, number];
-    rotation: [number, number, number];
-    preRotation: [number, number, number];
-    postRotation: [number, number, number];
-    rotationPivot: [number, number, number];
-    scalingPivot: [number, number, number];
-    rotationOffset: [number, number, number];
-    scalingOffset: [number, number, number];
-    scale: [number, number, number];
-    rotationOrder: number;
-    inheritType: number;
-} {
-    const translation: [number, number, number] = [0, 0, 0];
-    const rotation: [number, number, number] = [0, 0, 0];
-    const preRotation: [number, number, number] = [0, 0, 0];
-    const postRotation: [number, number, number] = [0, 0, 0];
-    const rotationPivot: [number, number, number] = [0, 0, 0];
-    const scalingPivot: [number, number, number] = [0, 0, 0];
-    const rotationOffset: [number, number, number] = [0, 0, 0];
-    const scalingOffset: [number, number, number] = [0, 0, 0];
-    const scale: [number, number, number] = [1, 1, 1];
-    let rotationOrder = 0;
-    let inheritType = 1;
-
-    const props70 = findChildByName(modelNode, "Properties70");
-    if (!props70) {
-        return { translation, rotation, preRotation, postRotation, rotationPivot, scalingPivot, rotationOffset, scalingOffset, scale, rotationOrder, inheritType };
-    }
-
-    for (const p of props70.children) {
-        if (p.name !== "P") {
-            continue;
-        }
-        const propName = getPropertyValue<string>(p, 0);
-        if (!propName) {
-            continue;
-        }
-
-        switch (propName) {
-            case "Lcl Translation":
-                translation[0] = toNumber(p.properties[4]?.value) ?? 0;
-                translation[1] = toNumber(p.properties[5]?.value) ?? 0;
-                translation[2] = toNumber(p.properties[6]?.value) ?? 0;
-                break;
-            case "Lcl Rotation":
-                rotation[0] = toNumber(p.properties[4]?.value) ?? 0;
-                rotation[1] = toNumber(p.properties[5]?.value) ?? 0;
-                rotation[2] = toNumber(p.properties[6]?.value) ?? 0;
-                break;
-            case "PreRotation":
-                preRotation[0] = toNumber(p.properties[4]?.value) ?? 0;
-                preRotation[1] = toNumber(p.properties[5]?.value) ?? 0;
-                preRotation[2] = toNumber(p.properties[6]?.value) ?? 0;
-                break;
-            case "PostRotation":
-                postRotation[0] = toNumber(p.properties[4]?.value) ?? 0;
-                postRotation[1] = toNumber(p.properties[5]?.value) ?? 0;
-                postRotation[2] = toNumber(p.properties[6]?.value) ?? 0;
-                break;
-            case "RotationPivot":
-                rotationPivot[0] = toNumber(p.properties[4]?.value) ?? 0;
-                rotationPivot[1] = toNumber(p.properties[5]?.value) ?? 0;
-                rotationPivot[2] = toNumber(p.properties[6]?.value) ?? 0;
-                break;
-            case "ScalingPivot":
-                scalingPivot[0] = toNumber(p.properties[4]?.value) ?? 0;
-                scalingPivot[1] = toNumber(p.properties[5]?.value) ?? 0;
-                scalingPivot[2] = toNumber(p.properties[6]?.value) ?? 0;
-                break;
-            case "RotationOffset":
-                rotationOffset[0] = toNumber(p.properties[4]?.value) ?? 0;
-                rotationOffset[1] = toNumber(p.properties[5]?.value) ?? 0;
-                rotationOffset[2] = toNumber(p.properties[6]?.value) ?? 0;
-                break;
-            case "ScalingOffset":
-                scalingOffset[0] = toNumber(p.properties[4]?.value) ?? 0;
-                scalingOffset[1] = toNumber(p.properties[5]?.value) ?? 0;
-                scalingOffset[2] = toNumber(p.properties[6]?.value) ?? 0;
-                break;
-            case "Lcl Scaling":
-                scale[0] = toNumber(p.properties[4]?.value) ?? 1;
-                scale[1] = toNumber(p.properties[5]?.value) ?? 1;
-                scale[2] = toNumber(p.properties[6]?.value) ?? 1;
-                break;
-            case "RotationOrder":
-                rotationOrder = toNumber(p.properties[4]?.value) ?? 0;
-                break;
-            case "InheritType":
-                inheritType = toNumber(p.properties[4]?.value) ?? 1;
-                break;
-        }
-    }
-
-    return { translation, rotation, preRotation, postRotation, rotationPivot, scalingPivot, rotationOffset, scalingOffset, scale, rotationOrder, inheritType };
+export function extractBoneTransform(modelNode: FBXNode, template?: FBXPropertyTemplate): FBXNodeTransformData {
+    return extractNodeTransform(modelNode, template ?? currentModelTemplate);
 }
 
 function extractClusterMatrices(clusterNode: FBXNode): {
@@ -468,7 +381,7 @@ function extractClusterMatrices(clusterNode: FBXNode): {
 
     const transformNode = findChildByName(clusterNode, "Transform");
     if (transformNode && transformNode.properties[0]) {
-        const val = transformNode.properties[0].value;
+        const val = getNodeArray(transformNode);
         if (val instanceof Float64Array && val.length === 16) {
             bindPoseMatrix = val;
         } else if (val instanceof Float32Array && val.length === 16) {
@@ -478,7 +391,7 @@ function extractClusterMatrices(clusterNode: FBXNode): {
 
     const transformLinkNode = findChildByName(clusterNode, "TransformLink");
     if (transformLinkNode && transformLinkNode.properties[0]) {
-        const val = transformLinkNode.properties[0].value;
+        const val = getNodeArray(transformLinkNode);
         if (val instanceof Float64Array && val.length === 16) {
             transformLinkMatrix = val;
         } else if (val instanceof Float32Array && val.length === 16) {
@@ -488,7 +401,7 @@ function extractClusterMatrices(clusterNode: FBXNode): {
 
     const transformAssociateModelNode = findChildByName(clusterNode, "TransformAssociateModel");
     if (transformAssociateModelNode && transformAssociateModelNode.properties[0]) {
-        const val = transformAssociateModelNode.properties[0].value;
+        const val = getNodeArray(transformAssociateModelNode);
         if (val instanceof Float64Array && val.length === 16) {
             transformAssociateModelMatrix = val;
         } else if (val instanceof Float32Array && val.length === 16) {
@@ -595,7 +508,7 @@ function extractVertexWeights(
             continue;
         }
 
-        const indexes = toInt32Array(indexesNode.properties[0]?.value);
+        const indexes = toInt32Array(getNodeArray(indexesNode));
         if (!indexes) {
             continue;
         }
@@ -629,8 +542,8 @@ function extractVertexWeights(
             continue;
         }
 
-        const indexes = toInt32Array(indexesNode.properties[0]?.value);
-        const weights = toFloat64Array(weightsNode.properties[0]?.value);
+        const indexes = toInt32Array(getNodeArray(indexesNode));
+        const weights = toFloat64Array(getNodeArray(weightsNode));
         if (!indexes || !weights) {
             continue;
         }
@@ -672,13 +585,6 @@ function extractVertexWeights(
 }
 
 // ── Utilities ──────────────────────────────────────────────────────────────────
-
-function toNumber(value: unknown): number | undefined {
-    if (typeof value === "number") {
-        return value;
-    }
-    return undefined;
-}
 
 function toInt32Array(value: unknown): Int32Array | null {
     if (value instanceof Int32Array) {

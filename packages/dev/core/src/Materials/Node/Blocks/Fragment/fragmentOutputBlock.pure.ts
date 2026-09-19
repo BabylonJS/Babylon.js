@@ -107,6 +107,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         state._excludeVariableName("logarithmicDepthConstant");
         state._excludeVariableName("vFragmentDepth");
         state._excludeVariableName("objectId");
+        state._excludeVariableName("meshBlendTag");
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
     }
@@ -165,7 +166,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
     private _writePrePassOutput(state: NodeMaterialBuildState, define: string, indexDefine: string, value: string): string {
         if (state.shaderLanguage !== ShaderLanguage.WGSL) {
-            return `#ifdef ${define}\r\ngl_FragData[${indexDefine}] = ${value};\r\n#endif\r\n`;
+            return `#ifdef ${define}\r\nWRITE_GEOMETRY_FRAGMENT_OUTPUT(${indexDefine}, ${value});\r\n#endif\r\n`;
         }
 
         let code = "";
@@ -231,6 +232,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("helperFunctions", comments);
         state._emitFunctionFromInclude("objectIdFunctions", comments, { define: "PREPASS_OBJECT_ID" });
         state._emitUniformFromString("objectId", NodeMaterialBlockConnectionPointTypes.Float, "PREPASS_OBJECT_ID");
+        state._emitUniformFromString("meshBlendTag", NodeMaterialBlockConnectionPointTypes.Int, "PREPASS_MESH_BLEND_TAG");
 
         const outputString = this._getOutputString(state);
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
@@ -306,6 +308,18 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         state.compilationString += `#if defined(PREPASS)\r\n`;
         state.compilationString += this._writePrePassOutput(state, "PREPASS_COLOR", "PREPASS_COLOR_INDEX", outputString);
         state.compilationString += this._writePrePassOutput(state, "PREPASS_OBJECT_ID", "PREPASS_OBJECT_ID_INDEX", `encodeObjectId(${uniformPrefix}objectId)`);
+        if (isWebGPU) {
+            state.compilationString += this._writePrePassOutput(
+                state,
+                "PREPASS_MESH_BLEND_TAG",
+                "PREPASS_MESH_BLEND_TAG_INDEX",
+                `vec4u(u32(${uniformPrefix}meshBlendTag), 0u, 0u, 0u)`
+            );
+        } else {
+            state.compilationString += `#ifdef PREPASS_MESH_BLEND_TAG\r\n`;
+            state.compilationString += `meshBlendTagOutput = uvec4(uint(${uniformPrefix}meshBlendTag), 0u, 0u, 0u);\r\n`;
+            state.compilationString += `#endif\r\n`;
+        }
         state.compilationString += `#endif\r\n`;
 
         return this;

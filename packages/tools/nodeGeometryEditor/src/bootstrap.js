@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 /* global BABYLON */
 import { ParseDataSnippetResponse } from "@tools/snippet-loader/parseDataSnippetResponse";
+import { DecodeNodeGeometryUrlHash } from "./encodedGeometryUrl";
 
 var cdnPort = 1337;
 let snippetUrl = "https://snippet.babylonjs.com";
@@ -116,6 +117,10 @@ checkBabylonVersionAsync().then(() => {
         let editorDisplayed = false;
 
         let cleanHash = function () {
+            if (location.hash.startsWith("#nge=")) {
+                return;
+            }
+
             let splits = decodeURIComponent(location.hash.substr(1)).split("#");
 
             if (splits.length > 2) {
@@ -125,12 +130,24 @@ checkBabylonVersionAsync().then(() => {
             location.hash = splits.join("#");
         };
 
-        let loadSnippetFromHashAsync = function () {
+        let loadGeometryFromHashAsync = function () {
             cleanHash();
             previousHash = location.hash;
 
             return new Promise((resolve, reject) => {
                 let hash = location.hash.substr(1);
+                try {
+                    const encodedGeometry = DecodeNodeGeometryUrlHash(hash, window);
+                    if (encodedGeometry !== undefined) {
+                        currentSnippetToken = null;
+                        resolve(encodedGeometry);
+                        return;
+                    }
+                } catch (err) {
+                    reject(new Error("Unable to decode node geometry URL.", { cause: err }));
+                    return;
+                }
+
                 currentSnippetToken = hash.split("#")[0];
 
                 let xmlHttp = new XMLHttpRequest();
@@ -167,7 +184,7 @@ checkBabylonVersionAsync().then(() => {
 
         let checkHash = function () {
             if (location.hash && previousHash != location.hash) {
-                loadSnippetFromHashAsync()
+                loadGeometryFromHashAsync()
                     .then((serializationObject) => {
                         customLoadObservable.notifyObservers(serializationObject);
                     })
@@ -241,7 +258,7 @@ checkBabylonVersionAsync().then(() => {
 
             nodeGeometry = new BABYLON.NodeGeometry("node");
             if (location.hash) {
-                loadSnippetFromHashAsync()
+                loadGeometryFromHashAsync()
                     .then((serializationObject) => {
                         applySerializedGeometry(serializationObject);
                         showEditor();

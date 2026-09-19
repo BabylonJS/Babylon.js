@@ -71,7 +71,13 @@ Saved: #ABC123#0
 
 If saving the snippet fails because the snippet server is unavailable or blocked from the current environment, stop and ask the user for help. Do not switch a standard visualization test to `scriptToRun` or another local-only workaround unless the user explicitly asks for that.
 
-If you need to revise the snippet, edit the temp file and run `save-snippet.js` again. The snippet server will create a new revision, such as `#ABC123#1`.
+If you need to revise a snippet, edit the temp file and pass its existing ID with `--id`:
+
+```bash
+node .github/scripts/visual-testing/save-snippet.js temp_pg_mytest.js "My Test Name" "Description of test" --id "#ABC123#0"
+```
+
+The snippet server creates a new revision under the same ID, such as `#ABC123#1`. Omitting `--id` creates a new snippet ID.
 
 ## Local Servers
 

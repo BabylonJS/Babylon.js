@@ -16,7 +16,7 @@
  *   TextureNormalizedViewDepth             – geometry normalised depth in view-space
  *   TextureScreenDepth                     – geometry depth in screen-space
  *   TextureViewNormal                      – geometry normals in view-space
- *   TextureWorldNormal                     – geometry normals in world-space
+ *   TextureWorldNormal                     – geometry normals in world-space, encoded in [0, 1]
  *   TextureAlbedo                          – geometry albedo (base-colour) buffer
  *   TextureReflectivity                    – geometry reflectivity buffer
  *   TextureLocalPosition                   – geometry positions in local-space
@@ -26,10 +26,11 @@
  *   TextureIrradiance                      – irradiance buffer
  *   TextureAlbedoSqrt                      – sqrt-encoded albedo buffer
  *   TextureObjectId                        – 24-bit RGBA object ID buffer
+ *   TextureMeshBlendTag                    – packed R8UI mesh-blending tag buffer
  *
  * Non-texture types:
  *   Camera       – a Babylon.js Camera object (provided by an InputBlock)
- *   ObjectList   – a set of meshes/particle-systems (provided by InputBlock or CullObjects)
+ *   ObjectList   – a set of meshes, particle systems, and sprite managers (provided by InputBlock or CullObjects)
  *   ShadowLight  – a shadow-casting light (provided by an InputBlock)
  *   ShadowGenerator – output of a shadow-generator block
  *   ResourceContainer – groups multiple texture handles for dependency tracking
@@ -103,6 +104,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             "The type is determined by `additionalConstructionParameters[0]` (a NodeRenderGraphBlockConnectionPointTypes enum value). " +
             "Common type values: Texture=1, TextureDepthStencilAttachment=8, Camera=0x01000000, ObjectList=0x02000000, ShadowLight=0x00400000. " +
             "Set `isExternal=true` so Babylon auto-fills the value from the scene at build time. " +
+            "For ObjectList values, omitted or null `spriteManagers` means all scene managers; an empty array means none. " +
             "For texture inputs you must provide `creationOptions` with size/format/samples; " +
             "use the `set_block_properties` tool to set these fields after adding the block.",
         inputs: [],
@@ -193,10 +195,11 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         className: "NodeRenderGraphObjectRendererBlock",
         category: "Rendering",
         description:
-            "Renders a list of scene objects (meshes, particles) to a colour target using a camera. " +
+            "Renders a list of scene objects (meshes, particle systems, and sprite managers) to a colour target using a camera. " +
             "This is the primary rasterisation block — almost every graph needs one. " +
             "Connect a cleared colour texture to `target`, a depth attachment to `depth`, " +
             "a Camera input to `camera`, and a (possibly culled) ObjectList to `objects`. " +
+            "When `ObjectList.spriteManagers` is omitted or null, all scene sprite managers are rendered; an empty array renders none. " +
             "Optional `shadowGenerators` port accepts a ShadowGenerator or ResourceContainer of shadow generators.",
         inputs: [
             { name: "target", type: "AutoDetect" },
@@ -231,6 +234,8 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         description:
             "Renders scene geometry into a multi-render target (G-Buffer), producing typed geometry textures " +
             "(view-depth, normals, albedo, reflectivity, positions, velocity, etc.). " +
+            "Supports Gaussian splats and optional sprite/particle geometry. Bounding boxes, edges, and outlines/overlays contribute only to colour. " +
+            "When `ObjectList.spriteManagers` is omitted or null, all scene sprite managers are rendered; an empty array renders none. " +
             "Use these outputs as inputs for deferred shading techniques such as SSR, SSAO, or custom deferred passes. " +
             "The `target` port for the colour attachment is OPTIONAL for this block.",
         inputs: [
@@ -258,6 +263,7 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             { name: "geomVelocity", type: "TextureVelocity" },
             { name: "geomLinearVelocity", type: "TextureLinearVelocity" },
             { name: "geomObjectId", type: "TextureObjectId" },
+            { name: "geomMeshBlendTag", type: "TextureMeshBlendTag" },
         ],
         properties: {
             doNotChangeAspectRatio: "boolean – do not change aspect ratio (default: true) — additionalConstructionParameters[0]",
@@ -265,6 +271,10 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
             depthTest: "boolean",
             depthWrite: "boolean",
             width: "number – G-buffer width in pixels (or percentage when sizeInPercentage=true)",
+            renderParticles: "boolean - render particle systems and their geometry outputs (default: false)",
+            renderSprites: "boolean - render selected sprite managers and their geometry outputs (default: false)",
+            enableBoundingBoxRendering: "boolean - render bounding boxes into colour only (default: false)",
+            enableOutlineRendering: "boolean - render mesh outlines/overlays into colour only (default: false)",
             height: "number – G-buffer height",
             sizeInPercentage: "boolean – use width/height as screen percentage (default: true)",
             samples: "number – MSAA sample count (default: 1)",
@@ -352,7 +362,8 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         category: "Culling",
         description:
             "Culls an ObjectList using a camera frustum and returns a reduced ObjectList " +
-            "containing only the visible objects. " +
+            "containing only the visible meshes while preserving its particle systems and sprite managers. " +
+            "An omitted or null `spriteManagers` selection means all scene managers; an empty array means none. " +
             "Use this before passing objects to an ObjectRendererBlock for better performance.",
         inputs: [
             { name: "camera", type: "Camera" },
@@ -711,6 +722,38 @@ export const BlockRegistry: Record<string, IBlockTypeInfo> = {
         properties: {
             ridge: "number – ridge curvature strength (default: 1)",
             valley: "number – valley curvature strength (default: 1)",
+        },
+    },
+
+    NodeRenderGraphMeshBlendingPostProcessBlock: {
+        className: "NodeRenderGraphMeshBlendingPostProcessBlock",
+        category: "PostProcess",
+        description:
+            "Blends source colors across seams between different nonzero mesh groups using packed R8UI mesh tags and depth. Optional linear geometry albedo enables shadow estimation. Low quality interpolates in sRGB; Medium and above use OKLab.",
+        inputs: [
+            { name: "source", type: "AutoDetect" },
+            { name: "target", type: "AutoDetect", isOptional: true },
+            { name: "camera", type: "Camera" },
+            { name: "geomDepth", type: "AutoDetect" },
+            { name: "geomAlbedo", type: "TextureAlbedo", isOptional: true },
+            { name: "geomMeshBlendTag", type: "TextureMeshBlendTag" },
+            { name: "dependencies", type: "AutoDetect", isOptional: true },
+        ],
+        outputs: [{ name: "output", type: "BasedOnInput" }],
+        properties: {
+            quality:
+                "number – compile-time quality variant (0=Low, 1=Medium, 2=High, 3=Cinematic; default: 1). High and Cinematic enable close-neighbor fallback, tiny-object protection, and secondary-target blending.",
+            smallWorldRadius: "number – small-class authored world radius (default: 0.06)",
+            smallMinimumProjectedRadius: "number – small-class minimum physical-pixel radius (default: 1.5)",
+            mediumWorldRadius: "number – medium-class authored world radius (default: 0.1)",
+            mediumMinimumProjectedRadius: "number – medium-class minimum physical-pixel radius (default: 3)",
+            largeWorldRadius: "number – large-class authored world radius (default: 0.2)",
+            largeMinimumProjectedRadius: "number – large-class minimum physical-pixel radius (default: 3)",
+            extraLargeWorldRadius: "number – extra-large-class authored world radius (default: 0.3)",
+            extraLargeMinimumProjectedRadius: "number – extra-large-class minimum physical-pixel radius (default: 5)",
+            slopeFactor: "number – contact-slope narrowing factor; 1 disables narrowing (default: 2)",
+            debugMode:
+                "number – debug visualization (0=Off, 1=PackedTag, 2=CandidateDirectionDistance, 3=SeamFade, 4=RejectionReason, 5=StageWork, 6=Continuation, 7=TinyObject, 8=MultiTarget, 9=TargetColor, 10=ShadowAttenuation, 11=ColorInterpolation, 12=WorldPosition; default: 0)",
         },
     },
 

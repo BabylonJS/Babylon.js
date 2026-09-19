@@ -7,10 +7,12 @@ import {
     type FrameGraphRenderContext,
     type FrameGraphRenderPass,
     type ObjectRenderer,
+    type GeometryRenderingMeshBlendTagProvider,
 } from "core/index";
 import { Color4 } from "core/Maths/math.color.pure";
 import { MaterialHelperGeometryRendering, GeometryRenderingTextureClearType, type GeometryRenderingObjectIdProvider } from "core/Materials/materialHelper.geometryrendering";
 import { Constants } from "core/Engines/constants";
+import { _IsMeshBlendingSupported } from "../../../Meshes/meshBlendingTag";
 import { FrameGraphObjectRendererTask } from "./objectRendererTask";
 
 /**
@@ -99,6 +101,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
     public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
 
     private _objectIdProvider?: GeometryRenderingObjectIdProvider;
+    private _meshBlendTagProvider?: GeometryRenderingMeshBlendTagProvider;
 
     /**
      * Provides the object ID written for each rendered mesh.
@@ -109,7 +112,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
      * Instances use the ID of their source mesh. Default IDs are only stable for the lifetime of the current scene and should not be persisted.
      * When using a RED texture, provide a custom ID if mesh unique IDs can exceed 0xFF.
      * The provider runs in the render hot path and may be called multiple times for the same mesh in a frame.
-     * @see https://playground.babylonjs.com/#00T6WJ#0
+     * @see https://playground.babylonjs.com/?version=preview#00T6WJ#0
      */
     public get objectIdProvider(): GeometryRenderingObjectIdProvider | undefined {
         return this._objectIdProvider;
@@ -121,6 +124,27 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         const configuration = MaterialHelperGeometryRendering.GetConfiguration(this._renderer.renderPassId);
         if (configuration) {
             configuration.objectIdProvider = value;
+        }
+    }
+
+    /**
+     * Provides the packed mesh-blending tag written for each rendered mesh.
+     *
+     * Tags must be 0 or contain a group ID between 1 and 63 in their low six bits. Tag 0 disables mesh blending.
+     * By default, meshes use their `meshBlendingTag` property. Instances and thin instances use the source mesh tag.
+     * The provider runs in the render hot path and receives the source mesh for instanced draws.
+     * It should avoid allocations and return a consistent value for a mesh during a render.
+     */
+    public get meshBlendTagProvider(): GeometryRenderingMeshBlendTagProvider | undefined {
+        return this._meshBlendTagProvider;
+    }
+
+    public set meshBlendTagProvider(value: GeometryRenderingMeshBlendTagProvider | undefined) {
+        this._meshBlendTagProvider = value;
+
+        const configuration = MaterialHelperGeometryRendering.GetConfiguration(this._renderer.renderPassId);
+        if (configuration) {
+            configuration.meshBlendTagProvider = value;
         }
     }
 
@@ -151,7 +175,8 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
     public readonly geometryViewNormalTexture: FrameGraphTextureHandle;
 
     /**
-     * The normal (in world space) output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     * The normal (in world space, encoded from [-1, 1] to [0, 1]) output texture.
+     * Will point to a valid texture only if that texture has been requested in textureDescriptions!
      */
     public readonly geometryWorldNormalTexture: FrameGraphTextureHandle;
 
@@ -177,11 +202,13 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
 
     /**
      * The velocity output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     * Built-in CPU/GPU particles write neutral velocity (0.5, 0.5); their motion is not represented.
      */
     public readonly geometryVelocityTexture: FrameGraphTextureHandle;
 
     /**
      * The linear velocity output texture. Will point to a valid texture only if that texture has been requested in textureDescriptions!
+     * Built-in CPU/GPU particles write neutral velocity (0, 0); their motion is not represented.
      */
     public readonly geometryLinearVelocityTexture: FrameGraphTextureHandle;
 
@@ -191,6 +218,13 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
      * Decode RED values with `round(value * 255.0)`.
      */
     public readonly geometryObjectIdTexture: FrameGraphTextureHandle;
+
+    /**
+     * The packed, single-sample R8UI mesh-blending tag output texture for WebGL2 and WebGPU.
+     *
+     * Opaque, alpha-tested, and caller-selected transparent meshes are supported.
+     */
+    public readonly geometryMeshBlendTagTexture: FrameGraphTextureHandle;
 
     /**
      * Gets or sets the name of the task.
@@ -208,6 +242,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
 
     private _clearAttachmentsLayout: Map<GeometryRenderingTextureClearType, number[]>;
     private _allAttachmentsLayout: number[];
+    private _colorAttachmentsLayout: number[];
 
     /**
      * Constructs a new geometry renderer task.
@@ -231,7 +266,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
                 return !!preWarm;
             }
 
-            return mesh.isReady(refreshRate === 0);
+            return mesh.isReady(!!preWarm || refreshRate === 0);
         };
 
         this._renderer.onBeforeRenderingManagerRenderObservable.add(() => {
@@ -242,6 +277,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
 
         this._clearAttachmentsLayout = new Map();
         this._allAttachmentsLayout = [];
+        this._colorAttachmentsLayout = [];
 
         this.geometryIrradianceTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryViewDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
@@ -256,6 +292,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         this.geometryVelocityTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryLinearVelocityTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.geometryObjectIdTexture = this._frameGraph.textureManager.createDanglingHandle();
+        this.geometryMeshBlendTagTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
     /**
@@ -312,12 +349,13 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         const pass = super.record(skipCreationOfDisabledPasses, additionalExecute) as FrameGraphRenderPass;
 
         const outputTextureHandles = pass.renderTarget as FrameGraphTextureHandle[];
+        const targetTextureCount = this._getTargetTextureCount();
 
         let needPreviousWorldMatrices = false;
 
         for (let i = 0; i < this.textureDescriptions.length; i++) {
             const description = this.textureDescriptions[i];
-            const handle = outputTextureHandles[i];
+            const handle = outputTextureHandles[targetTextureCount + i];
             const index = MaterialHelperGeometryRendering.GeometryTextureDescriptions.findIndex((f) => f.type === description.type);
             const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
 
@@ -363,6 +401,9 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
                 case Constants.PREPASS_OBJECT_ID_TEXTURE_TYPE:
                     this._frameGraph.textureManager.resolveDanglingHandle(this.geometryObjectIdTexture, handle);
                     break;
+                case Constants.PREPASS_MESH_BLEND_TAG_TEXTURE_TYPE:
+                    this._frameGraph.textureManager.resolveDanglingHandle(this.geometryMeshBlendTagTexture, handle);
+                    break;
             }
         }
 
@@ -401,6 +442,24 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             const isSupportedFormat = objectIdDescription.textureFormat === Constants.TEXTUREFORMAT_RGBA || objectIdDescription.textureFormat === Constants.TEXTUREFORMAT_RED;
             if (objectIdDescription.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE || !isSupportedFormat) {
                 throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object ID textures must use TEXTURETYPE_UNSIGNED_BYTE with TEXTUREFORMAT_RGBA or TEXTUREFORMAT_RED`);
+            }
+        }
+
+        const meshBlendTagIndex = this.textureDescriptions.findIndex((description) => description.type === Constants.PREPASS_MESH_BLEND_TAG_TEXTURE_TYPE);
+        if (meshBlendTagIndex !== -1) {
+            const description = this.textureDescriptions[meshBlendTagIndex];
+            const engine = this._engine;
+            if (!_IsMeshBlendingSupported(engine)) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: mesh-blending tag textures require WebGL2 or WebGPU`);
+            }
+            if ((this.renderTransparentMeshes || this.renderSprites || this.renderParticles) && !engine.isWebGPU && !engine.getCaps().blendParametersPerTarget) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: transparent mesh-blending tags require per-target blend parameters`);
+            }
+            if (this.samples !== 1) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: mesh-blending tag textures require samples to be 1`);
+            }
+            if (description.textureType !== Constants.TEXTURETYPE_UNSIGNED_BYTE || description.textureFormat !== Constants.TEXTUREFORMAT_RED_INTEGER) {
+                throw new Error(`FrameGraphGeometryRendererTask ${this.name}: mesh-blending tag textures must use TEXTURETYPE_UNSIGNED_BYTE with TEXTUREFORMAT_RED_INTEGER`);
             }
         }
 
@@ -473,6 +532,14 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
 
         const handles: FrameGraphTextureHandle[] = [];
 
+        if (this.targetTexture !== undefined) {
+            if (Array.isArray(this.targetTexture)) {
+                handles.push(...this.targetTexture);
+            } else {
+                handles.push(this.targetTexture);
+            }
+        }
+
         if (this.textureDescriptions.length > 0) {
             const baseHandle = this._frameGraph.textureManager.createRenderTargetTexture(this.name, {
                 size: this.size,
@@ -492,14 +559,6 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             }
         }
 
-        if (this.targetTexture !== undefined) {
-            if (Array.isArray(this.targetTexture)) {
-                handles.push(...this.targetTexture);
-            } else {
-                handles.push(this.targetTexture);
-            }
-        }
-
         return handles;
     }
 
@@ -515,12 +574,17 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         context.restoreDefaultFramebuffer();
         context.popDebugGroup();
 
-        return this._allAttachmentsLayout;
+        return this._colorAttachmentsLayout;
+    }
+
+    private _getTargetTextureCount(): number {
+        return this.targetTexture === undefined ? 0 : Array.isArray(this.targetTexture) ? this.targetTexture.length : 1;
     }
 
     private _buildClearAttachmentsLayout() {
         const clearAttachmentsLayout = new Map<GeometryRenderingTextureClearType, boolean[]>();
-        const allAttachmentsLayout: boolean[] = [];
+        const targetTextureCount = this._getTargetTextureCount();
+        const allAttachmentsLayout: boolean[] = new Array(targetTextureCount).fill(true);
 
         for (let i = 0; i < this.textureDescriptions.length; i++) {
             const description = this.textureDescriptions[i];
@@ -535,32 +599,13 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
             if (layout === undefined) {
                 layout = [];
                 clearAttachmentsLayout.set(clearType, layout);
-                for (let j = 0; j < i; j++) {
+                for (let j = 0; j < targetTextureCount + i; j++) {
                     layout[j] = false;
                 }
             }
 
             clearAttachmentsLayout.forEach((layout, layoutClearType) => {
                 layout.push(layoutClearType === clearType);
-            });
-
-            allAttachmentsLayout.push(true);
-        }
-
-        if (this.targetTexture !== undefined) {
-            // We don't clear the target texture, but we need to add a layout for it in clearAttachmentsLayout to be able to use clearColorAttachments with the correct number of attachments in _prepareRendering.
-            // We also need to add a value in allAttachmentsLayout for the target texture.
-            let layout = clearAttachmentsLayout.get(GeometryRenderingTextureClearType.Zero);
-            if (layout === undefined) {
-                layout = [];
-                clearAttachmentsLayout.set(GeometryRenderingTextureClearType.Zero, layout);
-                for (let j = 0; j < this.textureDescriptions.length - 1; j++) {
-                    layout[j] = false;
-                }
-            }
-
-            clearAttachmentsLayout.forEach((layout) => {
-                layout.push(false);
             });
 
             allAttachmentsLayout.push(true);
@@ -573,27 +618,32 @@ export class FrameGraphGeometryRendererTask extends FrameGraphObjectRendererTask
         });
 
         this._allAttachmentsLayout = this._engine.buildTextureLayout(allAttachmentsLayout);
+        this._colorAttachmentsLayout = this._engine.buildTextureLayout(allAttachmentsLayout.map((_, index) => targetTextureCount > 0 && index === 0));
     }
 
     private _registerForRenderPassId(renderPassId: number) {
         const configuration = MaterialHelperGeometryRendering.CreateConfiguration(renderPassId);
+        const targetTextureCount = this._getTargetTextureCount();
 
         for (let i = 0; i < this.textureDescriptions.length; i++) {
             const description = this.textureDescriptions[i];
             const index = MaterialHelperGeometryRendering.GeometryTextureDescriptions.findIndex((f) => f.type === description.type);
             const geometryDescription = MaterialHelperGeometryRendering.GeometryTextureDescriptions[index];
 
-            configuration.defines[geometryDescription.defineIndex] = i;
+            configuration.defines[geometryDescription.defineIndex] = targetTextureCount + i;
             if (description.type === Constants.PREPASS_OBJECT_ID_TEXTURE_TYPE) {
                 configuration.objectIdIsRedFormat = description.textureFormat === Constants.TEXTUREFORMAT_RED;
+            } else if (description.type === Constants.PREPASS_MESH_BLEND_TAG_TEXTURE_TYPE) {
+                configuration.meshBlendTagProvider = this.meshBlendTagProvider;
             }
         }
 
-        if (this.targetTexture !== undefined) {
-            configuration.defines["PREPASS_COLOR_INDEX"] = this.textureDescriptions.length;
+        if (targetTextureCount > 0) {
+            configuration.defines["PREPASS_COLOR_INDEX"] = 0;
         }
 
         configuration.reverseCulling = this.reverseCulling;
         configuration.objectIdProvider = this.objectIdProvider;
+        MaterialHelperGeometryRendering._PrepareConfiguration(renderPassId, this._allAttachmentsLayout, this._colorAttachmentsLayout);
     }
 }

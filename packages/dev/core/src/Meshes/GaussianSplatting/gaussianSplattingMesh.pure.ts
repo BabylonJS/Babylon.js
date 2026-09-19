@@ -19,6 +19,8 @@ import { BoundingInfo } from "../../Culling/boundingInfo";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
 import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 
+export { IsGaussianSplattingClassName } from "./gaussianSplatting.functions";
+
 const _GaussianSplattingBytesPerSplat = 32;
 const _GaussianSplattingBytesPerShTexel = 16;
 
@@ -312,6 +314,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     private _partIndicesTexture: Nullable<BaseTexture> = null;
     private _partIndices: Nullable<Uint8Array> = null;
+    private _partWorldData = new Float32Array(0);
+    private readonly _partVisibilityData: number[] = [];
 
     /** Gets the part indices texture used for compound rendering */
     public get partIndicesTexture() {
@@ -578,14 +582,19 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             return;
         }
         effect.setTexture("partIndicesTexture", this._partIndicesTexture);
-        const partWorldData = new Float32Array(this.partCount * 16);
+        const partWorldDataLength = this.partCount * 16;
+        if (this._partWorldData.length !== partWorldDataLength) {
+            this._partWorldData = new Float32Array(partWorldDataLength);
+        }
+        const partWorldData = this._partWorldData;
         for (let i = 0; i < this.partCount; i++) {
             this._partMatrices[i].toArray(partWorldData, i * 16);
         }
         effect.setMatrices("partWorld", partWorldData);
-        const partVisibilityData: number[] = [];
+        const partVisibilityData = this._partVisibilityData;
+        partVisibilityData.length = this.partCount;
         for (let i = 0; i < this.partCount; i++) {
-            partVisibilityData.push(this._partVisibility[i] ?? 1.0);
+            partVisibilityData[i] = this._partVisibility[i] ?? 1.0;
         }
         effect.setArray("partVisibility", partVisibilityData);
     }
@@ -1058,12 +1067,14 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
 
         for (const other of others) {
-            if (!other._splatsData) {
-                continue;
-            }
-
+            // A reserved-empty streaming source carries no CPU data but still owns its slot in the atlas (its
+            // GPU rows are decoded later). Advance past that slot regardless of data so a real source appended
+            // after it lands at the offset its proxy's _splatsDataOffset points to — matching the unconditional
+            // GPU dstOffset advance in _addPartsInternal (and the SH loop below).
             const splatByteLength = other._vertexCount * _GaussianSplattingBytesPerSplat;
-            mergedSplatsData.set(GaussianSplattingMeshBase._GetSplatDataBytes(other._splatsData).subarray(0, splatByteLength), splatByteOffset);
+            if (other._splatsData) {
+                mergedSplatsData.set(GaussianSplattingMeshBase._GetSplatDataBytes(other._splatsData).subarray(0, splatByteLength), splatByteOffset);
+            }
             splatByteOffset += splatByteLength;
         }
 
@@ -2399,22 +2410,6 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     public static override Parse(parsedMesh: any, scene: Scene): GaussianSplattingMesh {
         return GaussianSplattingMesh._ParseInternal(parsedMesh, scene, GaussianSplattingMesh);
     }
-}
-
-/**
- * True when `className` (from `AbstractMesh.getClassName()`) identifies a Gaussian Splatting mesh whose
- * `position.z` vertex attribute encodes a splat index rather than world-space Z: `"GaussianSplattingMesh"`
- * (also returned by {@link GaussianSplattingCompoundMesh}, which deliberately does not override
- * `getClassName()`) and `"GaussianSplattingStream"` (which does override it, to remain distinguishable for
- * other purposes). Rendering-pipeline code that must treat any Gaussian Splatting mesh differently from an
- * ordinary mesh (geometry buffer, depth pre-pass, GPU picking, IBL voxelization, snapshot rendering, ...)
- * should use this instead of a literal string comparison, so a future splat mesh subclass only needs to be
- * added here once.
- * @param className the mesh class name to test, e.g. from `AbstractMesh.getClassName()`
- * @returns true if the class name identifies a Gaussian Splatting mesh
- */
-export function IsGaussianSplattingClassName(className: string): boolean {
-    return className === "GaussianSplattingMesh" || className === "GaussianSplattingStream";
 }
 
 let _Registered = false;

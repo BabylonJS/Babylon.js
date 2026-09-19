@@ -571,7 +571,7 @@ export class GLTFLoader implements IGLTFLoader {
                     promises.push(this._compileShadowGeneratorsAsync());
                 }
 
-                const resultPromise = Promise.all(promises).then(() => {
+                const resultPromise = Promise.all(promises).then(async () => {
                     if (this._rootBabylonMesh && this._rootBabylonMesh !== this._parent.customRootNode) {
                         this._rootBabylonMesh.setEnabled(true);
                     }
@@ -592,7 +592,7 @@ export class GLTFLoader implements IGLTFLoader {
                         this._completePromises.push(adapter.finalizeAsync(this));
                     }
 
-                    this._extensionsOnReady();
+                    await this._extensionsOnReadyAsync();
                     this._parent._setState(GLTFLoaderState.READY);
                     if (!this._skipStartAnimationStep) {
                         this._startAnimations();
@@ -2607,7 +2607,13 @@ export class GLTFLoader implements IGLTFLoader {
     public loadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void = () => {}): Promise<BaseTexture> {
         const extensionPromise = this._extensionsLoadTextureInfoAsync(context, textureInfo, assign);
         if (extensionPromise) {
-            return extensionPromise;
+            return extensionPromise.then((babylonTexture) => {
+                const texture = this._gltf.textures?.[textureInfo.index];
+                if (texture) {
+                    this._trackTexture(texture, babylonTexture);
+                }
+                return babylonTexture;
+            });
         }
 
         this.logOpen(`${context}`);
@@ -2635,7 +2641,11 @@ export class GLTFLoader implements IGLTFLoader {
      * @internal
      */
     public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void = () => {}): Promise<BaseTexture> {
-        const extensionPromise = this._extensionsLoadTextureAsync(context, texture, assign);
+        const trackAndAssign = (babylonTexture: BaseTexture) => {
+            this._trackTexture(texture, babylonTexture);
+            assign(babylonTexture);
+        };
+        const extensionPromise = this._extensionsLoadTextureAsync(context, texture, trackAndAssign);
         if (extensionPromise) {
             return extensionPromise;
         }
@@ -2644,11 +2654,35 @@ export class GLTFLoader implements IGLTFLoader {
 
         const sampler = texture.sampler == undefined ? GLTFLoader.DefaultSampler : ArrayItem.Get(`${context}/sampler`, this._gltf.samplers, texture.sampler);
         const image = ArrayItem.Get(`${context}/source`, this._gltf.images, texture.source);
-        const promise = this._createTextureAsync(context, sampler, image, assign, undefined, !texture._textureInfo.nonColorData);
+        const promise = this._createTextureAsync(context, sampler, image, trackAndAssign, undefined, !texture._textureInfo.nonColorData, texture);
 
         this.logClose();
 
         return promise;
+    }
+
+    private _trackTexture(texture: ITexture, babylonTexture: BaseTexture, imageIndex?: number, samplerIndex?: number): void {
+        texture._babylonTextures ||= [];
+        if (!texture._babylonTextures.includes(babylonTexture)) {
+            texture._babylonTextures.push(babylonTexture);
+        }
+        texture._babylonTextureSources ||= [];
+        const existing = texture._babylonTextureSources.find((source) => source.babylonTexture === babylonTexture);
+        const fallback = texture._babylonTextureSources[texture._babylonTextureSources.length - 1];
+        const resolvedImageIndex = imageIndex ?? existing?.imageIndex ?? fallback?.imageIndex;
+        if (resolvedImageIndex === undefined) {
+            return;
+        }
+        if (existing) {
+            existing.imageIndex = resolvedImageIndex;
+            existing.samplerIndex = samplerIndex ?? existing.samplerIndex ?? fallback?.samplerIndex;
+        } else {
+            texture._babylonTextureSources.push({
+                babylonTexture,
+                imageIndex: resolvedImageIndex,
+                samplerIndex: samplerIndex ?? fallback?.samplerIndex,
+            });
+        }
     }
 
     /**
@@ -2660,7 +2694,8 @@ export class GLTFLoader implements IGLTFLoader {
         image: IImage,
         assign: (babylonTexture: BaseTexture) => void = () => {},
         textureLoaderOptions?: unknown,
-        useSRGBBuffer?: boolean
+        useSRGBBuffer?: boolean,
+        sourceTexture?: ITexture
     ): Promise<BaseTexture> {
         const samplerData = this._loadSampler(`/samplers/${sampler.index}`, sampler);
 
@@ -2687,6 +2722,9 @@ export class GLTFLoader implements IGLTFLoader {
             useSRGBBuffer: !!useSRGBBuffer && this._parent.useSRGBBuffers,
         };
         const babylonTexture = new Texture(null, this._babylonScene, textureCreationOptions);
+        if (sourceTexture) {
+            this._trackTexture(sourceTexture, babylonTexture, image.index, sampler.index >= 0 ? sampler.index : undefined);
+        }
         babylonTexture._parentContainer = this._assetContainer;
         this._babylonScene._blockEntityCollection = false;
         promises.push(deferred.promise);
@@ -3044,8 +3082,13 @@ export class GLTFLoader implements IGLTFLoader {
         this._forEachExtensions((extension) => extension.onLoading && extension.onLoading());
     }
 
-    private _extensionsOnReady(): void {
-        this._forEachExtensions((extension) => extension.onReady && extension.onReady());
+    private async _extensionsOnReadyAsync(): Promise<void> {
+        for (const extension of this._extensions) {
+            if (extension.enabled && extension.onReady) {
+                // eslint-disable-next-line no-await-in-loop -- extension order can define readiness dependencies
+                await extension.onReady();
+            }
+        }
     }
 
     private _extensionsLoadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {

@@ -37,9 +37,10 @@ export class InteractivityRefPathToObjectConverter implements IPathToObjectConve
      * @returns an object accessor whose `get` validates the reference
      */
     public convert(path: string): IObjectInfo<IObjectAccessor> {
+        const isEmptyEventReference = path === EventReferencePrefix;
         const normalized = path.endsWith("/") ? path.slice(0, -1) : path;
 
-        if (normalized.startsWith(EventReferencePrefix)) {
+        if (isEmptyEventReference || normalized.startsWith(EventReferencePrefix)) {
             const key = normalized.substring(EventReferencePrefix.length);
             return {
                 object: RefValidityTarget,
@@ -48,7 +49,7 @@ export class InteractivityRefPathToObjectConverter implements IPathToObjectConve
                     isReadOnly: true,
                     // A non-empty key means a real event reference was supplied (the
                     // template substitution rejects null refs before we get here).
-                    get: () => (key.length > 0 ? normalized : undefined),
+                    get: () => (isEmptyEventReference ? path : key.length > 0 ? normalized : undefined),
                     getTarget: () => RefValidityTarget,
                 },
             };

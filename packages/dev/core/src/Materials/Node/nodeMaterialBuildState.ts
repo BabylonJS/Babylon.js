@@ -213,9 +213,34 @@ export class NodeMaterialBuildState {
             this.compilationString = "#if defined(WEBGL2) || defined(WEBGPU)\nprecision highp sampler2DArray;\n#endif\n" + this.compilationString;
 
             if (isFragmentMode) {
-                this.compilationString =
-                    "#if defined(PREPASS)\r\n#extension GL_EXT_draw_buffers : require\r\nlayout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n#endif\r\n" +
-                    this.compilationString;
+                let prePassDeclaration = "#if defined(PREPASS)\r\n" + "#extension GL_EXT_draw_buffers : require\r\n" + "#ifdef PREPASS_MESH_BLEND_TAG\r\n";
+
+                for (let index = 0; index < 8; index++) {
+                    prePassDeclaration += `#if SCENE_MRT_COUNT > ${index}\r\n`;
+                    prePassDeclaration += `#if PREPASS_MESH_BLEND_TAG_INDEX == ${index}\r\n`;
+                    prePassDeclaration += `layout(location = ${index}) out highp uvec4 meshBlendTagOutput;\r\n`;
+                    prePassDeclaration += "#else\r\n";
+                    prePassDeclaration += `layout(location = ${index}) out highp vec4 glFragData${index};\r\n`;
+                    prePassDeclaration += "#endif\r\n";
+                    prePassDeclaration += "#endif\r\n";
+                }
+
+                prePassDeclaration += "void writeGeometryFragmentOutput(highp int index, highp vec4 value) {\r\n";
+                for (let index = 0; index < 8; index++) {
+                    prePassDeclaration += `#if SCENE_MRT_COUNT > ${index} && PREPASS_MESH_BLEND_TAG_INDEX != ${index}\r\n`;
+                    prePassDeclaration += `if (index == ${index}) { glFragData${index} = value; }\r\n`;
+                    prePassDeclaration += "#endif\r\n";
+                }
+                prePassDeclaration += "}\r\n";
+                prePassDeclaration += "#define WRITE_GEOMETRY_FRAGMENT_OUTPUT(INDEX, VALUE) writeGeometryFragmentOutput(INDEX, VALUE)\r\n";
+                prePassDeclaration += "#else\r\n";
+                prePassDeclaration += "layout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\n";
+                prePassDeclaration += "#define WRITE_GEOMETRY_FRAGMENT_OUTPUT(INDEX, VALUE) gl_FragData[INDEX] = VALUE\r\n";
+                prePassDeclaration += "#endif\r\n";
+                prePassDeclaration += "highp vec4 gl_FragColor;\r\n";
+                prePassDeclaration += "#endif\r\n";
+
+                this.compilationString = prePassDeclaration + this.compilationString;
             }
 
             for (const extensionName in this.extensions) {

@@ -1,37 +1,18 @@
 
 ### Core
 
-- Add OpenUSD WebAssembly scene loader - [_New Feature_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18882](https://github.com/BabylonJS/Babylon.js/pull/18882))
-- Add object ID geometry textures - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18879](https://github.com/BabylonJS/Babylon.js/pull/18879))
-- Add opt-out for iOS ringer switch audio workaround - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18886](https://github.com/BabylonJS/Babylon.js/pull/18886))
-- WebGPU: key the leftover uniform buffer slots on the draw context, not on draw order - by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18880](https://github.com/BabylonJS/Babylon.js/pull/18880))
-- Feat: Add IBL Shadows support to ShadowOnlyMaterial - [_New Feature_] by [raymondyfei](https://github.com/raymondyfei) ([#18873](https://github.com/BabylonJS/Babylon.js/pull/18873))
-
-### GUI
-
-- fixes Bounty #9: Add FlexPanel and em/rem GUI units - by [Yabuku-xD](https://github.com/Yabuku-xD) ([#18881](https://github.com/BabylonJS/Babylon.js/pull/18881))
+- Add normalized occlusion query visibility API - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18919](https://github.com/BabylonJS/Babylon.js/pull/18919))
+- Frame graph: support Gaussian splats, sprites, and particles in geometry rendering - by [Popov72](https://github.com/Popov72) ([#18930](https://github.com/BabylonJS/Babylon.js/pull/18930))
+- WGSL: pass shadowTexture to computeShadowWithCSMPCF1 in the cascade blend branch - [_Bug Fix_] by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18920](https://github.com/BabylonJS/Babylon.js/pull/18920))
+- Avoid blob URL round-trip for in-memory ImageBitmap sources - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18924](https://github.com/BabylonJS/Babylon.js/pull/18924))
+- Fix Gaussian splatting with horizontal fixed FOV - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18921](https://github.com/BabylonJS/Babylon.js/pull/18921))
+- Fix WebGPU occlusion query begin sequencing - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18918](https://github.com/BabylonJS/Babylon.js/pull/18918))
+- Fix: static Gaussian Splatting part disappears after compacting a streaming compound - by [raymondyfei](https://github.com/raymondyfei) ([#18917](https://github.com/BabylonJS/Babylon.js/pull/18917))
 
 ### Inspector
 
-- Add Gaussian splatting stream diagnostics to Inspector V2 - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18885](https://github.com/BabylonJS/Babylon.js/pull/18885))
-- Feat: HDR output & cloudiness for SkyMaterial - by [raymondyfei](https://github.com/raymondyfei) ([#18897](https://github.com/BabylonJS/Babylon.js/pull/18897))
-- Add Inspector v2 Explorer contribution APIs - by [ryantrem](https://github.com/ryantrem) ([#18898](https://github.com/BabylonJS/Babylon.js/pull/18898))
-- Add initial Babylon Lite support to Inspector v2 - [_New Feature_] by [ryantrem](https://github.com/ryantrem) ([#18889](https://github.com/BabylonJS/Babylon.js/pull/18889))
-
-### Loaders
-
-- Add Gaussian splatting stream diagnostics to Inspector V2 - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#18885](https://github.com/BabylonJS/Babylon.js/pull/18885))
-- Add OpenUSD WebAssembly scene loader - [_New Feature_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18882](https://github.com/BabylonJS/Babylon.js/pull/18882))
-
-### Materials
-
-- Feat: HDR output & cloudiness for SkyMaterial - by [raymondyfei](https://github.com/raymondyfei) ([#18897](https://github.com/BabylonJS/Babylon.js/pull/18897))
-- Feat: Add IBL Shadows support to ShadowOnlyMaterial - [_New Feature_] by [raymondyfei](https://github.com/raymondyfei) ([#18873](https://github.com/BabylonJS/Babylon.js/pull/18873))
+- Inspector v2: Display mesh bounding box dimensions - [_New Feature_] by [Jeggery](https://github.com/Jeggery) ([#18875](https://github.com/BabylonJS/Babylon.js/pull/18875))
 
 ### Node Render Graph Editor
 
-- Add object ID geometry textures - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#18879](https://github.com/BabylonJS/Babylon.js/pull/18879))
-
-### Sandbox
-
-- Add OpenUSD WebAssembly scene loader - [_New Feature_] by [SergioRZMasson](https://github.com/SergioRZMasson) ([#18882](https://github.com/BabylonJS/Babylon.js/pull/18882))
+- Frame graph: support Gaussian splats, sprites, and particles in geometry rendering - by [Popov72](https://github.com/Popov72) ([#18930](https://github.com/BabylonJS/Babylon.js/pull/18930))

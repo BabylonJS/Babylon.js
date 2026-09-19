@@ -15,6 +15,7 @@ import { Color4 } from "../Maths/math.color.pure";
 import { _WarnImport } from "../Misc/devTools";
 import { type Observer } from "../Misc/observable.pure";
 import { type AbstractEngine } from "../Engines/abstractEngine.pure";
+import { type ThinEngine } from "../Engines/thinEngine.pure";
 import { type Nullable } from "../types";
 import { Material } from "../Materials/material.pure";
 import { MaterialFlags } from "../Materials/materialFlags";
@@ -31,8 +32,14 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { type OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial.pure";
 import { type IblShadowsRenderPipeline } from "./IBLShadows/iblShadowsRenderPipeline.pure";
 import { RegisterGeometryBufferRendererSceneComponent } from "./geometryBufferRendererSceneComponent.pure";
-import { IsGaussianSplattingClassName } from "../Meshes/GaussianSplatting/gaussianSplattingMesh.pure";
-import { _GetGeometryRenderingObjectId, type GeometryRenderingObjectIdProvider } from "../Materials/materialHelper.geometryrendering";
+import { _IsGaussianSplattingMesh } from "../Meshes/GaussianSplatting/gaussianSplatting.functions";
+import { _IsMeshBlendingSupported } from "../Meshes/meshBlendingTag";
+import {
+    _GetGeometryRenderingMeshBlendTag,
+    _GetGeometryRenderingObjectId,
+    type GeometryRenderingMeshBlendTagProvider,
+    type GeometryRenderingObjectIdProvider,
+} from "../Materials/materialHelper.geometryrendering";
 
 /** @internal */
 interface ISavedTransformationMatrix {
@@ -70,6 +77,7 @@ export const Uniforms = [
     "mBones",
     "viewProjection",
     "diffuseMatrix",
+    "alphaCutOff",
     "view",
     "previousWorld",
     "previousViewProjection",
@@ -96,6 +104,7 @@ export const Uniforms = [
     "morphTargetTextureIndices",
     "boneTextureInfo",
     "objectId",
+    "meshBlendTag",
 ];
 
 /**
@@ -158,6 +167,11 @@ export class GeometryBufferRenderer {
     public static readonly OBJECT_ID_TEXTURE_TYPE = 8;
 
     /**
+     * Constant used to retrieve the packed mesh-blending tag texture index in the G-Buffer textures array.
+     */
+    public static readonly MESH_BLEND_TAG_TEXTURE_TYPE = 9;
+
+    /**
      * Dictionary used to store the previous transformation matrices of each rendered mesh
      * in order to compute objects velocities when enableVelocity is set to "true"
      * @internal
@@ -175,8 +189,19 @@ export class GeometryBufferRenderer {
      */
     public excludedSkinnedMeshesFromVelocity: AbstractMesh[] = [];
 
+    private _renderTransparentMeshes = true;
+
     /** Gets or sets a boolean indicating if transparent meshes should be rendered */
-    public renderTransparentMeshes = true;
+    public get renderTransparentMeshes(): boolean {
+        return this._renderTransparentMeshes;
+    }
+
+    public set renderTransparentMeshes(value: boolean) {
+        if (value && this._enableMeshBlendTag && !this._scene.getEngine().getCaps().blendParametersPerTarget) {
+            throw new Error("GeometryBufferRenderer: transparent mesh-blending tags require per-target blend parameters");
+        }
+        this._renderTransparentMeshes = value;
+    }
 
     /**
      * Provides the object ID written for each rendered mesh.
@@ -185,9 +210,19 @@ export class GeometryBufferRenderer {
      * Instances use the ID of their source mesh. The default is the mesh unique ID.
      * Default IDs are only stable for the lifetime of the current scene and should not be persisted.
      * The provider runs in the render hot path and may be called multiple times for the same mesh in a frame.
-     * @see https://playground.babylonjs.com/#REC26C#0
+     * @see https://playground.babylonjs.com/?version=preview#SQXZ3X#1
      */
     public objectIdProvider?: GeometryRenderingObjectIdProvider;
+
+    /**
+     * Provides the packed mesh-blending tag written for each rendered mesh.
+     *
+     * Tags must be 0 or contain a group ID between 1 and 63 in their low six bits. Tag 0 disables mesh blending.
+     * By default, meshes use their `meshBlendingTag` property. Instances and thin instances use the source mesh tag.
+     * The provider runs in the render hot path and receives the source mesh for instanced draws.
+     * It should avoid allocations and return a consistent value for a mesh during a render.
+     */
+    public meshBlendTagProvider?: GeometryRenderingMeshBlendTagProvider;
 
     /**
      * Gets or sets a boolean indicating if normals should be generated in world space (default: false, meaning normals are generated in view space)
@@ -217,6 +252,7 @@ export class GeometryBufferRenderer {
     private _enableScreenspaceDepth: boolean = false;
     private _enableIrradiance: boolean = false;
     private _enableObjectId: boolean = false;
+    private _enableMeshBlendTag: boolean = false;
     private _depthFormat: number;
     private _clearColor = new Color4(0, 0, 0, 0);
     private _clearDepthColor = new Color4(0, 0, 0, 1); // sets an invalid value by default - depth in the depth texture is view.z, so 0 is not possible because view.z can't be less than camera.minZ
@@ -230,6 +266,7 @@ export class GeometryBufferRenderer {
     private _screenspaceDepthIndex: number = -1;
     private _irradianceIndex: number = -1;
     private _objectIdIndex: number = -1;
+    private _meshBlendTagIndex: number = -1;
 
     private _linkedWithPrePass: boolean = false;
     private _prePassRenderer: PrePassRenderer;
@@ -244,6 +281,10 @@ export class GeometryBufferRenderer {
      * This method should only be called by the PrePassRenderer itself
      */
     public _linkPrePassRenderer(prePassRenderer: PrePassRenderer) {
+        if (this._enableObjectId || this._enableMeshBlendTag) {
+            throw new Error("GeometryBufferRenderer: object ID and mesh-blending tag textures are not supported when linked to the PrePassRenderer");
+        }
+
         this._linkedWithPrePass = true;
         this._prePassRenderer = prePassRenderer;
 
@@ -280,6 +321,7 @@ export class GeometryBufferRenderer {
         this._enableScreenspaceDepth = false;
         this._enableIrradiance = false;
         this._enableObjectId = false;
+        this._enableMeshBlendTag = false;
         this._attachmentsFromPrePass = [];
     }
 
@@ -316,6 +358,9 @@ export class GeometryBufferRenderer {
         } else if (geometryBufferType === GeometryBufferRenderer.OBJECT_ID_TEXTURE_TYPE) {
             this._objectIdIndex = index;
             this._enableObjectId = true;
+        } else if (geometryBufferType === GeometryBufferRenderer.MESH_BLEND_TAG_TEXTURE_TYPE) {
+            this._meshBlendTagIndex = index;
+            this._enableMeshBlendTag = true;
         }
     }
 
@@ -384,6 +429,8 @@ export class GeometryBufferRenderer {
                 return this._irradianceIndex;
             case GeometryBufferRenderer.OBJECT_ID_TEXTURE_TYPE:
                 return this._objectIdIndex;
+            case GeometryBufferRenderer.MESH_BLEND_TAG_TEXTURE_TYPE:
+                return this._meshBlendTagIndex;
             default:
                 return -1;
         }
@@ -561,7 +608,7 @@ export class GeometryBufferRenderer {
      *
      * Object ID rendering currently requires a single-sample G buffer.
      * Object ID rendering is not supported when the G buffer is linked to the PrePassRenderer.
-     * @see https://playground.babylonjs.com/#REC26C#0
+     * @see https://playground.babylonjs.com/?version=preview#SQXZ3X#1
      */
     public set enableObjectId(enable: boolean) {
         if (enable && this._linkedWithPrePass) {
@@ -584,6 +631,63 @@ export class GeometryBufferRenderer {
         this._enableObjectId = enable;
         if (!enable) {
             this._objectIdIndex = -1;
+        }
+
+        if (!this._linkedWithPrePass) {
+            this.dispose();
+            this._createRenderTargets();
+        }
+    }
+
+    /**
+     * Gets whether packed mesh-blending tags are enabled for the G buffer.
+     */
+    public get enableMeshBlendingTag(): boolean {
+        return this._enableMeshBlendTag;
+    }
+
+    /**
+     * Sets whether packed mesh-blending tags are enabled for the G buffer.
+     *
+     * Mesh-blending tags use a single-sample R8UI color attachment and are supported on WebGL2 and WebGPU.
+     * Transparent rendering remains controlled by renderTransparentMeshes. Applications are responsible for
+     * ensuring that transparent draws do not invalidate the SceneColor and geometry-input correspondence required
+     * by the mesh-blending pass. On WebGL2, transparent rendering with this output requires per-target blend parameters.
+     *
+     * Enabling or disabling this output rebuilds the renderer's targets. The application retains ownership
+     * of the GeometryBufferRenderer and of every post process that consumes the output.
+     */
+    public set enableMeshBlendingTag(enable: boolean) {
+        if (this._enableMeshBlendTag === enable) {
+            return;
+        }
+
+        if (enable) {
+            const engine = this._scene.getEngine() as ThinEngine;
+            if (!_IsMeshBlendingSupported(engine)) {
+                throw new Error("GeometryBufferRenderer: mesh-blending tag textures require WebGL2 or WebGPU");
+            }
+            if (this.renderTransparentMeshes && !engine.isWebGPU && !engine.getCaps().blendParametersPerTarget) {
+                throw new Error("GeometryBufferRenderer: transparent mesh-blending tags require per-target blend parameters");
+            }
+            if (this._linkedWithPrePass) {
+                throw new Error("GeometryBufferRenderer: mesh-blending tag textures are not supported when linked to the PrePassRenderer");
+            }
+            if (this.samples !== 1) {
+                throw new Error("GeometryBufferRenderer: mesh-blending tag textures require samples to be 1");
+            }
+            if (!this._enableMeshBlendTag) {
+                const maxDrawBuffers = Math.min(engine.getCaps().maxDrawBuffers ?? 1, 8);
+                const attachmentCount = this._assignRenderTargetIndices()[0] + 1;
+                if (engine.getCaps().drawBuffersExtension && attachmentCount > maxDrawBuffers) {
+                    throw new Error(`GeometryBufferRenderer: ${attachmentCount} color attachments were requested, but this engine supports at most ${maxDrawBuffers}`);
+                }
+            }
+        }
+
+        this._enableMeshBlendTag = enable;
+        if (!enable) {
+            this._meshBlendTagIndex = -1;
         }
 
         if (!this._linkedWithPrePass) {
@@ -703,7 +807,7 @@ export class GeometryBufferRenderer {
         // The generic geometry.vertex shader misreads this as world coordinates, producing
         // garbage positions and normals, and thus they should be excluded from the G-buffer
         // rendering.
-        if (IsGaussianSplattingClassName(subMesh.getMesh().getClassName())) {
+        if (_IsGaussianSplattingMesh(subMesh.getMesh())) {
             return false;
         }
 
@@ -1022,6 +1126,11 @@ export class GeometryBufferRenderer {
             defines.push("#define OBJECT_ID_INDEX " + this._objectIdIndex);
         }
 
+        if (this._enableMeshBlendTag) {
+            defines.push("#define MESH_BLEND_TAG");
+            defines.push("#define MESH_BLEND_TAG_INDEX " + this._meshBlendTagIndex);
+        }
+
         if (this.generateNormalsInWorldSpace) {
             defines.push("#define NORMAL_WORLDSPACE");
         }
@@ -1133,6 +1242,9 @@ export class GeometryBufferRenderer {
         if (this._enableObjectId && value !== 1) {
             throw new Error("GeometryBufferRenderer: object ID textures currently require samples to be 1");
         }
+        if (this._enableMeshBlendTag && value !== 1) {
+            throw new Error("GeometryBufferRenderer: mesh-blending tag textures require samples to be 1");
+        }
 
         this._multiRenderTarget.samples = value;
     }
@@ -1224,6 +1336,17 @@ export class GeometryBufferRenderer {
             });
         }
 
+        if (this._enableMeshBlendTag) {
+            this._meshBlendTagIndex = count;
+            count++;
+            textureNames.push("gBuffer_MeshBlendTag");
+            textureTypesAndFormats.push({
+                textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                textureFormat: Constants.TEXTUREFORMAT_RED_INTEGER,
+                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            });
+        }
+
         return [count, textureNames, textureTypesAndFormats];
     }
 
@@ -1243,10 +1366,7 @@ export class GeometryBufferRenderer {
             type = Constants.TEXTURETYPE_HALF_FLOAT;
         }
 
-        const dimensions =
-            (this._ratioOrDimensions as any).width !== undefined
-                ? (this._ratioOrDimensions as { width: number; height: number })
-                : { width: engine.getRenderWidth() * (this._ratioOrDimensions as number), height: engine.getRenderHeight() * (this._ratioOrDimensions as number) };
+        const dimensions = this._getRenderTargetDimensions();
 
         const textureTypes: number[] = [];
         const textureFormats: number[] = [];
@@ -1301,22 +1421,17 @@ export class GeometryBufferRenderer {
         const attachmentsDepthOnly = engine.buildTextureLayout(layoutAttachmentsDepthOnly);
 
         this._multiRenderTarget.onClearObservable.add((engine) => {
-            engine.bindAttachments(this.useSpecificClearForDepthTexture ? attachmentsAllButDepth : attachmentsAll);
-            engine.clear(this._clearColor, true, true, true);
+            const colorAttachments = this.useSpecificClearForDepthTexture ? attachmentsAllButDepth : attachmentsAll;
+            engine.clearAttachments(this._clearColor, colorAttachments, true, true, true);
             if (this.useSpecificClearForDepthTexture) {
-                engine.bindAttachments(attachmentsDepthOnly);
-                engine.clear(this._clearDepthColor, true, true, true);
+                engine.clearAttachments(this._clearDepthColor, attachmentsDepthOnly, true, false, false);
             }
             engine.bindAttachments(attachmentsAll);
         });
 
         this._resizeObserver = engine.onResizeObservable.add(() => {
             if (this._multiRenderTarget) {
-                const dimensions =
-                    (this._ratioOrDimensions as any).width !== undefined
-                        ? (this._ratioOrDimensions as { width: number; height: number })
-                        : { width: engine.getRenderWidth() * (this._ratioOrDimensions as number), height: engine.getRenderHeight() * (this._ratioOrDimensions as number) };
-                this._multiRenderTarget.resize(dimensions);
+                this._multiRenderTarget.resize(this._getRenderTargetDimensions());
             }
         });
 
@@ -1405,6 +1520,7 @@ export class GeometryBufferRenderer {
                     if (alphaTexture) {
                         effect.setTexture("diffuseSampler", alphaTexture);
                         effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        effect.setFloat("alphaCutOff", material.alphaCutOff ?? 0.4);
                     }
                 }
 
@@ -1642,6 +1758,11 @@ export class GeometryBufferRenderer {
                     effect.setFloat("objectId", objectId);
                 }
 
+                if (this._enableMeshBlendTag) {
+                    const meshBlendTag = this.meshBlendTagProvider ? _GetGeometryRenderingMeshBlendTag(renderingMesh, this.meshBlendTagProvider) : renderingMesh.meshBlendingTag;
+                    effect.setInt("meshBlendTag", meshBlendTag);
+                }
+
                 if (hardwareInstancedRendering && renderingMesh.hasThinInstances) {
                     effect.setMatrix("world", world);
                 }
@@ -1728,6 +1849,21 @@ export class GeometryBufferRenderer {
                 }
             }
             engine.setDepthWrite(true);
+        };
+    }
+
+    private _getRenderTargetDimensions(): { width: number; height: number } {
+        if (typeof this._ratioOrDimensions === "object") {
+            return {
+                width: Math.max(1, Math.floor(this._ratioOrDimensions.width)),
+                height: Math.max(1, Math.floor(this._ratioOrDimensions.height)),
+            };
+        }
+
+        const engine = this._scene.getEngine();
+        return {
+            width: Math.max(1, Math.floor(engine.getRenderWidth() * this._ratioOrDimensions)),
+            height: Math.max(1, Math.floor(engine.getRenderHeight() * this._ratioOrDimensions)),
         };
     }
 

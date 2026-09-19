@@ -70,6 +70,25 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
      */
     public setDefaultValue() {
         switch (this.type) {
+            case NodeRenderGraphBlockConnectionPointTypes.TextureMeshBlendTag: {
+                const options: FrameGraphTextureCreationOptions = {
+                    size: { width: 100, height: 100 },
+                    options: {
+                        createMipMaps: false,
+                        targetTypes: [Constants.TEXTURE_2D],
+                        types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
+                        formats: [Constants.TEXTUREFORMAT_RED_INTEGER],
+                        layerCounts: [0],
+                        samples: 1,
+                        useSRGBBuffers: [false],
+                        creationFlags: [0],
+                    },
+                    sizeIsPercentage: true,
+                    isHistoryTexture: false,
+                };
+                this.creationOptions = options;
+                break;
+            }
             case NodeRenderGraphBlockConnectionPointTypes.Texture:
             case NodeRenderGraphBlockConnectionPointTypes.TextureViewDepth:
             case NodeRenderGraphBlockConnectionPointTypes.TextureScreenDepth:
@@ -124,7 +143,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                 break;
             }
             case NodeRenderGraphBlockConnectionPointTypes.ObjectList:
-                this.value = { meshes: null, particleSystems: null };
+                this.value = { meshes: null, particleSystems: null, spriteManagers: null };
                 this.isExternal = true;
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.Camera:

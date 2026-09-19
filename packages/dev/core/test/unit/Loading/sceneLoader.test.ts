@@ -973,15 +973,13 @@ describe("SceneLoader", () => {
         it("instantiates a plugin from a synchronous factory", async () => {
             const { name, extension } = nextPluginIdentity("factorysync");
             const importMeshAsync = vi.fn(() => Promise.resolve(createEmptyAsyncResult()));
-            const createPlugin = vi.fn(
-                (): ISceneLoaderPluginAsync => ({
-                    name,
-                    extensions: extension,
-                    importMeshAsync,
-                    loadAsync: () => Promise.resolve(),
-                    loadAssetContainerAsync: (s) => Promise.resolve(new AssetContainer(s)),
-                })
-            );
+            const createPlugin = vi.fn((): ISceneLoaderPluginAsync => ({
+                name,
+                extensions: extension,
+                importMeshAsync,
+                loadAsync: () => Promise.resolve(),
+                loadAssetContainerAsync: (s) => Promise.resolve(new AssetContainer(s)),
+            }));
             const factory: ISceneLoaderPluginFactory = { name, extensions: extension, createPlugin };
             RegisterSceneLoaderPlugin(factory);
 
@@ -994,15 +992,14 @@ describe("SceneLoader", () => {
         it("instantiates a plugin from an asynchronous factory", async () => {
             const { name, extension } = nextPluginIdentity("factoryasync");
             const importMeshAsync = vi.fn(() => Promise.resolve(createEmptyAsyncResult()));
-            const createPlugin = vi.fn(
-                (): Promise<ISceneLoaderPluginAsync> =>
-                    Promise.resolve({
-                        name,
-                        extensions: extension,
-                        importMeshAsync,
-                        loadAsync: () => Promise.resolve(),
-                        loadAssetContainerAsync: (s) => Promise.resolve(new AssetContainer(s)),
-                    })
+            const createPlugin = vi.fn((): Promise<ISceneLoaderPluginAsync> =>
+                Promise.resolve({
+                    name,
+                    extensions: extension,
+                    importMeshAsync,
+                    loadAsync: () => Promise.resolve(),
+                    loadAssetContainerAsync: (s) => Promise.resolve(new AssetContainer(s)),
+                })
             );
             const factory: ISceneLoaderPluginFactory = { name, extensions: extension, createPlugin };
             RegisterSceneLoaderPlugin(factory);

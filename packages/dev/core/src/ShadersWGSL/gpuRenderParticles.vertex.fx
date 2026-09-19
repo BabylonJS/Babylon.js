@@ -6,6 +6,31 @@ uniform worldOffset: vec3f;
 uniform emitterWM: mat4x4f;
 #endif
 
+#ifdef PREPASS
+uniform cameraInfo: vec2f;
+#ifdef LOCAL
+uniform inverseEmitterWM: mat4x4f;
+#endif
+#ifdef PREPASS_POSITION
+varying vGeometryPositionW: vec3f;
+#endif
+#ifdef PREPASS_WORLD_NORMAL
+varying vGeometryNormalW: vec3f;
+#endif
+#ifdef PREPASS_NORMAL
+varying vGeometryNormalV: vec3f;
+#endif
+#ifdef PREPASS_LOCAL_POSITION
+varying vPosition: vec3f;
+#endif
+#ifdef PREPASS_DEPTH
+varying vViewPos: vec3f;
+#endif
+#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
+varying vNormViewDepth: f32;
+#endif
+#endif
+
 // Particles state
 attribute position: vec3f;
 attribute age: f32;
@@ -72,22 +97,40 @@ fn rotate(yaxis: vec3f, rotatedCorner: vec3f) -> vec3f {
 
 #ifdef BILLBOARDSTRETCHED
 fn rotateAlign(toCamera: vec3f, rotatedCorner: vec3f) -> vec3f {
-    let normalizedToCamera: vec3f = normalize(toCamera);
 #ifdef BILLBOARDSTRETCHED_LOCAL
-    let normalizedCrossDirToCamera: vec3f = normalize(cross(normalize(vertexInputs.initialDirection), normalizedToCamera));
-    let row1: vec3f = normalize(vertexInputs.initialDirection);
+    let stretchDirection: vec3f = vertexInputs.initialDirection;
 #else
-    let normalizedCrossDirToCamera: vec3f = normalize(cross(normalize(vertexInputs.direction), normalizedToCamera));
+    let stretchDirection: vec3f = vertexInputs.direction;
+#endif
+    let normalizedToCamera: vec3f = normalize(toCamera);
+    let normalizedCrossDirToCamera: vec3f = normalize(cross(normalize(stretchDirection), normalizedToCamera));
+#ifdef BILLBOARDSTRETCHED_LOCAL
+    let row1: vec3f = normalize(stretchDirection);
+#else
     let row1: vec3f = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
 #endif
 
     let rotMatrix: mat3x3f = mat3x3f(normalizedCrossDirToCamera, row1, normalizedToCamera);
     return particleBasePosition() + rotMatrix * rotatedCorner;
 }
+
+fn stretchedNormal(toCamera: vec3f, stretchDirection: vec3f) -> vec3f {
+    let normalizedToCamera: vec3f = normalize(toCamera);
+    let normalizedCrossDirToCamera: vec3f = normalize(cross(normalize(stretchDirection), normalizedToCamera));
+#ifdef BILLBOARDSTRETCHED_LOCAL
+    let row1: vec3f = normalize(stretchDirection);
+#else
+    let row1: vec3f = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
+#endif
+    return normalize(cross(normalizedCrossDirToCamera, row1));
+}
 #endif
 
 @vertex
 fn main(input: VertexInputs) -> FragmentInputs {
+#ifdef PREPASS
+    var geometryNormalW: vec3f;
+#endif
 #ifdef EMITRATECTRL
     let shouldCullParticle: bool = vertexInputs.life > 0.0 && vertexInputs.age >= vertexInputs.life;
 #endif
@@ -131,6 +174,9 @@ fn main(input: VertexInputs) -> FragmentInputs {
     var yaxis: vec3f = vertexInputs.position + uniforms.worldOffset - uniforms.eyePosition;
     yaxis.y = 0.0;
     vertexOutputs.vPositionW = rotate(normalize(yaxis), rotatedCorner.xyz);
+#ifdef PREPASS
+    geometryNormalW = normalize(yaxis);
+#endif
 
     let viewPosition: vec4f = uniforms.view * vec4f(vertexOutputs.vPositionW, 1.0);
 #elif defined(BILLBOARDSTRETCHED)
@@ -142,6 +188,13 @@ fn main(input: VertexInputs) -> FragmentInputs {
 
     let toCamera: vec3f = vertexInputs.position + uniforms.worldOffset - uniforms.eyePosition;
     vertexOutputs.vPositionW = rotateAlign(toCamera, rotatedCorner.xyz);
+#ifdef PREPASS
+#ifdef BILLBOARDSTRETCHED_LOCAL
+    geometryNormalW = stretchedNormal(toCamera, vertexInputs.initialDirection);
+#else
+    geometryNormalW = stretchedNormal(toCamera, vertexInputs.direction);
+#endif
+#endif
 
     let viewPosition: vec4f = uniforms.view * vec4f(vertexOutputs.vPositionW, 1.0);
 #else
@@ -153,6 +206,9 @@ fn main(input: VertexInputs) -> FragmentInputs {
 
     let viewPosition: vec4f = uniforms.view * vec4f(particleBasePosition(), 1.0) + rotatedCorner;
     vertexOutputs.vPositionW = (uniforms.invView * viewPosition).xyz;
+#ifdef PREPASS
+    geometryNormalW = normalize((uniforms.invView * vec4f(0.0, 0.0, 1.0, 0.0)).xyz);
+#endif
 #endif
 
 #else
@@ -165,6 +221,9 @@ fn main(input: VertexInputs) -> FragmentInputs {
 
     let yaxis: vec3f = normalize(vertexInputs.initialDirection);
     vertexOutputs.vPositionW = rotate(yaxis, rotatedCorner);
+#ifdef PREPASS
+    geometryNormalW = yaxis;
+#endif
 
     let viewPosition: vec4f = uniforms.view * vec4f(vertexOutputs.vPositionW, 1.0);
 #endif
@@ -178,12 +237,61 @@ fn main(input: VertexInputs) -> FragmentInputs {
     #include<fogVertex>
     #include<logDepthVertex>
 
+#ifdef PREPASS
+    let geometryViewPosition: vec4f = uniforms.view * vec4f(vertexOutputs.vPositionW, 1.0);
+#if defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL)
+    var geometryNormalV = normalize((uniforms.view * vec4f(geometryNormalW, 0.0)).xyz);
+    let geometryViewDirection = select(vec3f(0.0, 0.0, geometryViewPosition.z), geometryViewPosition.xyz, uniforms.projection[3][3] == 0.0);
+    if (dot(geometryNormalV, geometryViewDirection) > 0.0) {
+        geometryNormalV = -geometryNormalV;
+        geometryNormalW = -geometryNormalW;
+    }
+#endif
+#ifdef PREPASS_POSITION
+    vertexOutputs.vGeometryPositionW = vertexOutputs.vPositionW;
+#endif
+#ifdef PREPASS_WORLD_NORMAL
+    vertexOutputs.vGeometryNormalW = normalize(geometryNormalW);
+#endif
+#ifdef PREPASS_NORMAL
+    vertexOutputs.vGeometryNormalV = geometryNormalV;
+#endif
+#ifdef PREPASS_LOCAL_POSITION
+#ifdef LOCAL
+    var geometryRenderPosition = vertexOutputs.vPositionW;
+    #if defined(BILLBOARD) && !defined(BILLBOARDY) && !defined(BILLBOARDSTRETCHED)
+        geometryRenderPosition = particleBasePosition() + (uniforms.invView * vec4f(rotatedCorner.xyz, 0.0)).xyz;
+    #endif
+    vertexOutputs.vPosition = (uniforms.inverseEmitterWM * vec4f(geometryRenderPosition - uniforms.worldOffset, 1.0)).xyz;
+#else
+    vertexOutputs.vPosition = vertexOutputs.vPositionW;
+#endif
+#endif
+#ifdef PREPASS_DEPTH
+    vertexOutputs.vViewPos = geometryViewPosition.xyz;
+#endif
+#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
+    vertexOutputs.vNormViewDepth = (geometryViewPosition.z - uniforms.cameraInfo.x) / (uniforms.cameraInfo.y - uniforms.cameraInfo.x);
+#endif
+#endif
+
 #ifdef EMITRATECTRL
     if (shouldCullParticle) {
         vertexOutputs.position = vec4f(0.0, 0.0, 2.0, 1.0);
         vertexOutputs.vColor = vec4f(0.0);
         vertexOutputs.vUV = vec2f(0.0);
         vertexOutputs.vPositionW = vec3f(0.0);
+#ifdef PREPASS
+#ifdef PREPASS_POSITION
+        vertexOutputs.vGeometryPositionW = vec3f(0.0);
+#endif
+#ifdef PREPASS_WORLD_NORMAL
+        vertexOutputs.vGeometryNormalW = vec3f(0.0);
+#endif
+#ifdef PREPASS_NORMAL
+        vertexOutputs.vGeometryNormalV = vec3f(0.0);
+#endif
+#endif
     }
 #endif
 }

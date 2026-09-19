@@ -1,6 +1,1039 @@
 {
-    "fromTag": "9.25.0",
+    "fromTag": "9.27.0",
     "changelog": {
+        "9.27.0": [
+            {
+                "pr": "18914",
+                "title": "Add KHR_interactivity export support",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Overview\n\nImplements Phase 2 of ratified `KHR_interactivity` support, building on the canonical import model introduced by #18903. Babylon.js can now export imported and representably edited interactivity graphs as standards-compliant glTF or GLB without serializing Babylon FlowGraph JSON as KHR data.\n\n## What changed\n\n- Adds a real, tree-shake-safe `KHR_interactivity` glTF serializer extension and typed `IExportOptions.khrInteractivity` provider API.\n- Adds a canonical inverse exporter with explicit representability analysis and structured graph/node/socket diagnostics.\n- Preserves exact operations, declarations, configurations, defaults, dynamic sockets, variables, events, graph metadata, extension-defined typed no-ops, and source provenance.\n- Inverts one-to-many Phase 1 composites only while their operation/role membership and internal wiring remain valid.\n- Deterministically topologically orders value and flow dependencies and rejects cycles that cannot satisfy ratified earlier-value/later-flow ordering.\n- Remaps references to exported nodes, animations, cameras, materials, meshes, textures, images, samplers, skins, and scenes, including BasisU/WebP/AVIF-selected image sources.\n- Preserves no-op root nodes during KHR export so identity-node references survive final serializer remapping.\n- Scopes custom-event payload decoding to Send/Receive block configuration while preserving explicit, delegated, and in-place custom parser callbacks, ordinary object/typed context variables named `eventData`, and payload sockets named `value`.\n- Emits companion hoverability, selectability, and visibility extensions and maintains `extensionsUsed` / `extensionsRequired` from actual graph content.\n- Adds separate Flow Graph Editor actions for **Export KHR glTF**, **Export KHR GLB**, and legacy **BABYLON_flow_graph GLB**.\n- Protects imported KHR editor state from destructive preview-scene replacement and retains the exact scene, engine canvas, resize lifecycle, single-window frame scheduling, and snippet reset behavior across preview-pane undock/redock.\n- Reports actionable export errors without mutating the live graph.\n\nThe lossless path intentionally requires the neutral Phase 1 canonical KHR document and provenance. Arbitrary Babylon FlowGraphs with no KHR provenance are rejected rather than approximated. Structural variable edits and extension-backed pointer properties that cannot be preserved exactly are likewise diagnosed and rejected.\n\n## End-to-end testing method\n\nThe Playwright test uses the real locally served Flow Graph Editor, Babylon loader, serializer, browser download API, and drag/drop import path:\n\n1. Open FGE and wait for the real editor to initialize.\n2. Drop a valid glTF containing a ratified `KHR_interactivity` graph onto the editor and verify that its node is reconstructed.\n3. Attempt to replace the preview scene and verify that FGE preserves the KHR import-owned scene/runtime state.\n4. Click **Export KHR glTF**, capture the browser download, parse the file, and verify the canonical graph plus `extensionsUsed` / `extensionsRequired`.\n5. Load the downloaded `.gltf` in an isolated Babylon engine with `KHR_interactivity.strictValidation: true`, assert one import result and zero strict errors, then drop it back into FGE and verify the real editor import reconstructs the graph.\n6. Click **Export KHR GLB**, capture the binary download, verify its GLB magic header, strictly load it in the isolated engine with zero errors, then drop it back into FGE and verify graph reconstruction.\n7. Undock the live Scene Preview pane, verify the engine canvas moves to the popup document, resize the popup and assert engine render dimensions match canvas client dimensions, then close it and verify the same scene UID/canvas return, frame IDs continue advancing, and engine frames sampled across 12 browser RAF ticks stay within one render chain.\n8. In the mocked Playground-snippet scenario, undock/redock without recreating the retained scene, then use Reset and verify the persisted snippet ID reloads the snippet and restores its original state.\n9. Add an editor-only block with no KHR inverse mapping, retry export, and verify the UI displays a precise diagnostic instead of producing a lossy file.\n\nThe main browser scenario is in `packages/tools/flowGraphEditor/test/playwright/flowGraphEditor.test.ts` under `exports and re-imports ratified KHR_interactivity glTF and GLB with actionable diagnostics`; the snippet-remount coverage is under `loads and resets a mocked preview scene snippet`.\n\n## Validation\n\n- Full development build and affected package compiles\n- Full unit suite: **370 files, 5,424 passed, 1 expected failure, 32 skipped**\n- KHR / FlowGraph suite: **905 passed**\n- Focused FlowGraph/KHR/editor-unit regression suite after review: **849/849 passed**\n- Full Flow Graph Editor Playwright suite: **111/111 passed**\n- Focused post-review glTF/GLB strict export/re-import, resize-aware redock, continued-frame, single-RAF-chain, and snippet-reset E2E: passed\n- Right-handed identity-root serializer integration regression: passed\n- Context serialization regressions for ordinary objects (including `{ value: 5 }`) and typed values named `eventData`: passed\n- Explicit/delegating/in-place custom parser regressions, including a reconstructed `FlowGraphInteger` default and graph-level Send/Receive sockets named `value`: passed\n- Pinned official July pre-ratification compatibility corpus: **175 passed, 1 documented skip**\n- Format and lint/ratchets: passed\n- TypeDoc: passed\n- Tree-shaking verification: **16/16 passed**\n- Rollup and Webpack tree-shaking smoke tests: passed\n- Side-effect manifest synchronization: passed for core, GUI, loaders, and serializers\n- Flow Graph MCP registry drift tests: **3/3 passed**\n- Public `@babylonjs/mcp-servers` package build: passed\n\nThe July Khronos asset corpus is used only as pre-ratification compatibility coverage. Ratified behavior is validated against the canonical schema/spec snapshot merged by Phase 1.\n\n## Review\n\nAn independent GPT-5.6 Sol review traced the complete branch under both Babylon.js-instruction and agnostic engineering lenses. All findings were fixed and covered by regressions; the final follow-up reported no remaining high-confidence findings.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSendCustomEventBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphParser.ts",
+                    "packages/dev/core/src/FlowGraph/serialization.ts",
+                    "packages/dev/core/src/FlowGraph/typeDefinitions.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphSerialization.test.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_texture_avif.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_texture_webp.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/index.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphExporter.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphModel.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_texture_basisu.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoaderInterfaces.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivityGraphExporter.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivityGraphModel.test.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_interactivity.pure.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_interactivity.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/pure.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFAnimation.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFSerializer.ts",
+                    "packages/dev/serializers/test/integration/glTFSerializer.test.ts",
+                    "packages/dev/serializers/test/unit/glTF/khrInteractivity.test.ts",
+                    "packages/public/@babylonjs/serializers/package.json",
+                    "packages/tools/flow-graph-mcp-server/src/blockRegistry.ts",
+                    "packages/tools/flow-graph-mcp-server/test/unit/registryDrift.test.ts",
+                    "packages/tools/flowGraphEditor/src/components/help/helpContent.ts",
+                    "packages/tools/flowGraphEditor/src/components/preview/scenePreviewComponent.tsx",
+                    "packages/tools/flowGraphEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/flowGraphEditor/src/components/variables/variablesPanelComponent.tsx",
+                    "packages/tools/flowGraphEditor/src/globalState.ts",
+                    "packages/tools/flowGraphEditor/src/serializationTools.ts",
+                    "packages/tools/flowGraphEditor/src/variableUtils.ts",
+                    "packages/tools/flowGraphEditor/test/playwright/flowGraphEditor.test.ts",
+                    "packages/tools/flowGraphEditor/test/unit/serializationTools.test.ts",
+                    "packages/tools/flowGraphEditor/test/unit/variableUtils.test.ts",
+                    "scripts/treeshaking/side-effects-manifest/serializers/glTF.json"
+                ],
+                "tags": [
+                    "loaders",
+                    "new feature"
+                ]
+            }
+        ],
+        "9.27.1": [
+            {
+                "pr": "18919",
+                "title": "Add normalized occlusion query visibility API",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nAdd a backend-neutral `AbstractEngine.isOcclusionQueryVisible(query)` API for callers that need occlusion visibility without depending on backend-specific query-result magnitude.\n\n- implements the portable visibility contract once as `getQueryResult(query) > 0`\n- keeps `getQueryResult()` unchanged for existing raw-result consumers\n- updates Babylon's mesh occlusion path to use the normalized API\n- documents both the raw and normalized contracts\n- tests zero, several positive values, and inheritance across the WebGL and WebGPU engine abstractions\n\n## Why a separate API\n\nWebGL `ANY_SAMPLES_PASSED(_CONSERVATIVE)` results are effectively GLuint booleans and commonly appear as `0` or `1`. Babylon's WebGPU implementation converts the backend `u64` query value with `Number(...)`, so a visible result may be a positive value greater than `1`.\n\nNormalizing `getQueryResult()` itself to `0`/`1` or changing its return type to boolean could break callers that consume the existing raw backend value. The new method is additive and gives callers one portable visibility contract without changing that behavior.\n\nCallers that only need visibility can migrate from backend-specific result handling to:\n\n```ts\nconst isVisible = engine.isOcclusionQueryVisible(query);\n```\n\nThe method belongs on the shared `AbstractEngine` query abstraction, so WebGL and WebGPU inherit the same interpretation. Babylon's own mesh path uses it as the canonical consumer. This PR does not change render-pass creation or `beginOcclusionQuery` sequencing.\n\n## Validation\n\n- focused occlusion-query unit tests: 5 passed\n- `@dev/core` TypeScript compilation passed\n- targeted Prettier and ESLint passed\n- repository `format:check` passed\n- repository `lint:check` passed\n- repository unit suite: 5,682 passed, 1 expected failure; one unrelated UMD test hit its 5-second timeout and passed when rerun alone (5/5)\n- prior devhost validation confirmed runtime registration through the query side-effect module\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.query.pure.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.query.types.ts",
+                    "packages/dev/core/test/unit/Engines/abstractEngineQuery.test.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "18925",
+                "title": "Stop persisting invalid Nx cache in CI",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Context\n\nMonorepo CI jobs have been completing with a silent post-job failure while Azure Pipelines saves the Nx computation cache. In build [59703](https://dev.azure.com/babylonjs/ContinousIntegration/_build/results?buildId=59703), startup cleanup reduced disk usage from 84% to 44%, but `Cache@2` later restored and attempted to archive a 19.5 GB Nx cache. The temporary uncompressed tar exhausted the hosted agent's 72 GB OS disk.\n\nNx 22 stores its cache database metadata outside `NX_CACHE_DIRECTORY` and keys it to the machine. Azure restored only the artifact directory on each new hosted agent, so Nx reported the restored content as unrecognized and could neither use nor prune it. The configured 4 GB limit therefore did not constrain the restored payload.\n\n## Change\n\n- Stop restoring and saving `NX_CACHE_DIRECTORY` through Azure `Cache@2`.\n- Retain npm and Playwright pipeline caches.\n- Retain the existing hosted-agent disk cleanup.\n- Retain Nx's bounded 4 GB local cache within each job.\n- Remove the obsolete Nx cache template parameters from the Build, ES6, and ES6Tools jobs.\n\nThis removes both the unusable 19.5 GB restore and the duplicate post-job tar write that caused the disk failure.\n\n## Validation\n\n- Parsed all changed Azure Pipeline YAML files successfully.\n- Verified no `Cache Nx computation`, `nxCacheKey`, or `nx: true` pipeline configuration remains.\n- `npm run format:check`\n- `npm run lint:check`\n- `npm run test:unit` — 5,658 passed, 1 expected failure, 64 skipped\n\n---------\n\nCo-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml",
+                    ".azure-pipelines/templates/cache-steps.yml",
+                    ".azure-pipelines/templates/free-disk-space.yml"
+                ],
+                "tags": [
+                    "bug",
+                    "build",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "18930",
+                "title": "Frame graph: support Gaussian splats, sprites, and particles in geometry rendering",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\n## Summary\r\n\r\nExtend `FrameGraphGeometryRendererTask` so its beauty output includes the supported scene renderers while its MRT geometry outputs remain correctly typed and isolated.\r\n\r\n- Add native GLSL/WGSL geometry outputs for Gaussian splats, sprites, and CPU/GPU particles.\r\n- Render bounding boxes, edges, outlines, and overlays into beauty only, without contaminating geometry attachments.\r\n- Add optional `FrameGraphObjectList.spriteManagers` selection and propagate it through culling, NRGE, and MCP metadata. Omitted/null selects scene managers; an empty array selects none.\r\n- Prepare render-pass-specific resources before the first frame, and manage effect/VAO/motion-cache lifetime across rebuilds and pass disposal.\r\n\r\n## Behavior and scope\r\n\r\nExisting opt-in defaults are preserved. CPU/GPU particles write neutral velocity values; sprite and Gaussian motion outputs remain supported. Translucent geometry retains the existing single-pass approximation. Automatic Gaussian geometry output covers `GaussianSplattingMaterial`; custom Gaussian NodeMaterial graphs retain their explicitly connected prepass outputs.\r\n\r\nThe implementation also preserves zero-alpha additive beauty contributions, supports non-UBO Gaussian geometry bindings, and avoids unnecessary work for unrequested outputs.\r\n\r\n## Validation\r\n\r\n- Repository formatting, source build, full typed/advisory lint, and tree-shaking checks.\r\n- Full unit suite: 398 files, 5,947 passing tests and one expected failure, including regressions for attachment routing, readiness, selection, cache disposal, motion history, blend behavior, and snippet revision handling.\r\n- Seven first-frame visualization cases on both WebGL2 and WebGPU (14 passing runs), without `renderCount`.\r\n- Byte-for-byte beauty comparisons between geometry and regular object-renderer paths, including the 786,233-splat Gaussian model.\r\n\r\nLocal unit runs use a 30-second timeout for cold module imports. Full typed lint used a verified 16 GB heap and reported zero errors; existing repository advisory warnings remain. Windows path assertions were normalized so the relevant test fixtures run on Windows.\r\n\r\nThe branch includes current `master`. The merge preserves the upstream per-axis Gaussian focal correction from BabylonJS/Babylon.js#18921; the synthetic orthographic references were refreshed for that corrected footprint. Geometry and ordinary beauty outputs remain identical.\r\n\r\n## Playgrounds\r\n\r\nUse this PR's snapshot or a local build; the released engine does not yet include the new MRT support.\r\n\r\n- [Mixed renderers: geometry beauty](https://playground.babylonjs.com/#PVK3RV#2)\r\n- [Mixed renderers: regular beauty reference](https://playground.babylonjs.com/#1OC90Y#1)\r\n- [Gaussian model: geometry renderer](https://playground.babylonjs.com/#RQLLM5#0)\r\n- [Gaussian model: regular renderer reference](https://playground.babylonjs.com/#5F1T3C#0)\r\n\r\nSee `specs/framegraph-geometry-renderer/architecture.md` for output conventions and limitations.\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    ".github/instructions/playground-workflow.md",
+                    ".github/scripts/visual-testing/save-snippet.js",
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.renderPass.pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.pure.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/baseObjectRendererBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/inputBlock.pure.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Types/nodeRenderGraphTypes.ts",
+                    "packages/dev/core/src/FrameGraph/Node/nodeRenderGraph.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Layers/selectionOutlineTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Misc/cullObjectsTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Misc/lightingVolumeTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/geometryRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/objectRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphObjectList.ts",
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.pure.ts",
+                    "packages/dev/core/src/Materials/materialHelper.geometryrendering.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.pure.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/src/Meshes/mesh.pure.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.pure.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.pure.ts",
+                    "packages/dev/core/src/Particles/webgl2ParticleSystem.pure.ts",
+                    "packages/dev/core/src/Rendering/boundingBoxRenderer.pure.ts",
+                    "packages/dev/core/src/Rendering/edgesRenderer.pure.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.pure.ts",
+                    "packages/dev/core/src/Rendering/renderingManager.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplattingVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/geometryRenderingFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/prePassDeclaration.fx",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.fragment.fx",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx",
+                    "packages/dev/core/src/Shaders/gpuRenderParticles.fragment.fx",
+                    "packages/dev/core/src/Shaders/gpuRenderParticles.vertex.fx",
+                    "packages/dev/core/src/Shaders/particles.fragment.fx",
+                    "packages/dev/core/src/Shaders/particles.vertex.fx",
+                    "packages/dev/core/src/Shaders/sprites.fragment.fx",
+                    "packages/dev/core/src/Shaders/sprites.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/geometryRenderingFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/gaussianSplatting.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/gaussianSplatting.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/gpuRenderParticles.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/gpuRenderParticles.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/particles.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/particles.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/sprites.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/sprites.vertex.fx",
+                    "packages/dev/core/src/Sprites/spriteManager.ts",
+                    "packages/dev/core/src/Sprites/spriteRenderer.ts",
+                    "packages/dev/core/src/Sprites/thinSprite.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuCacheRenderPipeline.test.ts",
+                    "packages/dev/core/test/unit/FrameGraph/cullObjectsTask.test.ts",
+                    "packages/dev/core/test/unit/FrameGraph/geometryRendererBlock.test.ts",
+                    "packages/dev/core/test/unit/FrameGraph/geometryRendererTask.test.ts",
+                    "packages/dev/core/test/unit/FrameGraph/nodeRenderGraphObjectListInput.test.ts",
+                    "packages/dev/core/test/unit/FrameGraph/objectRendererTask.spriteManagers.test.ts",
+                    "packages/dev/core/test/unit/Materials/babylon.gaussianSplatting.geometryRendering.test.ts",
+                    "packages/dev/core/test/unit/Particles/gpuParticleFromCPU.test.ts",
+                    "packages/dev/core/test/unit/Particles/particleSystemGeometryRendering.test.ts",
+                    "packages/dev/core/test/unit/Rendering/objectRenderer.spriteManagers.test.ts",
+                    "packages/dev/core/test/unit/Sprites/spriteRenderer.test.ts",
+                    "packages/tools/eslintBabylonPlugin/test/unit/lintChanged.test.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx",
+                    "packages/tools/nrge-mcp-server/src/blockRegistry.ts",
+                    "packages/tools/nrge-mcp-server/src/index.ts",
+                    "packages/tools/tests/test/unit/saveSnippetScript.test.ts",
+                    "packages/tools/tests/test/unit/treeShakingSideEffects.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/framegraph-geometry-gaussian-mesh.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/framegraph-geometry-renderers-beauty.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/framegraph-geometry-renderers-geometry-only.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/framegraph-geometry-renderers-normals.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/framegraph-geometry-renderers-nrge.png",
+                    "packages/tools/tests/test/visualization/config.json",
+                    "scripts/treeshaking/side-effects-manifest/core/Shaders.json",
+                    "scripts/treeshaking/side-effects-manifest/core/ShadersWGSL.json",
+                    "specs/framegraph-geometry-renderer/architecture.md"
+                ],
+                "tags": [
+                    "enhancement",
+                    "optimizations",
+                    "particles",
+                    "nrge",
+                    "frame graph",
+                    "Gaussian Splatting"
+                ]
+            },
+            {
+                "pr": "18920",
+                "title": "WGSL: pass shadowTexture to computeShadowWithCSMPCF1 in the cascade blend branch",
+                "description": "## Problem\n\nOn WebGPU, a `CascadedShadowGenerator` using PCF with `filteringQuality = ShadowGenerator.QUALITY_LOW` produces invalid WGSL for every shadow receiver. The cascade-blend branch in `ShadersWGSL/ShadersInclude/lightFragment.fx` passes an empty argument where the shadow texture belongs:\n\n```\nnextShadow = computeShadowWithCSMPCF1(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], , shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);\n```\n\nThe shader module fails to parse (`expected expression for function call`), the render pipeline is invalid, and the command buffer is rejected every frame. The whole frame is dropped, not only the receivers. The branch compiles whenever `cascadeBlendPercentage` is non-zero (default 0.1).\n\n## Change\n\nPass `shadowTexture{X}` to `computeShadowWithCSMPCF1` in the cascade-blend branch. This matches the non-blend PCF1 call above it, the PCF3/PCF5 blend calls beside it, and the GLSL include.\n\n## Repro\n\n- Playground (WebGPU engine): https://playground.babylonjs.com/#UE4NN0#4\n  - `QUALITY_LOW`: nothing renders, WGSL parse errors in the console.\n  - `QUALITY_MEDIUM`: the same scene renders with shadows.\n- Confirmed on v9.26.2. Also reproduced locally on 9.17.1: 972 WebGPU validation errors at `QUALITY_LOW`, 0 at `QUALITY_MEDIUM`.\n\nAssociated forum thread: https://forum.babylonjs.com/t/bug-webgpu-cascadedshadowgenerator-with-pcf-quality-low-generates-invalid-wgsl-missing-shadowtexture-argument/64114\n\n## Validation\n\n- The only change is one argument in one WGSL include; the function signature `computeShadowWithCSMPCF1(layer, vPositionFromLight, depthMetric, shadowTexture, shadowSampler, darkness, frustumEdgeFalloff)` already expects it.\n- The bug was found in production (a shadow-quality switch crashed rendering). Our app works around it by avoiding `QUALITY_LOW` with cascades.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+                "author": {
+                    "name": "increasinglyHuman",
+                    "url": "https://github.com/increasinglyHuman"
+                },
+                "files": [
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "18923",
+                "title": "Improve lint performance, coverage, and correctness",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nImprove lint performance, correctness coverage, and local workflow reliability without adding packages or upgrading dependency versions.\n\n- Separate Prettier from ESLint, replace the filesystem-backed import restriction with syntax-based checks, and remove duplicate tree-shaking work from CI.\n- Include previously excluded unit/browser tests using syntax-only linting, scope Vitest rules to unit tests, and strengthen precision, fallthrough, async Promise executor, and Promise-condition checks.\n- Harden custom rules for four-package side-effect manifests, dynamic wrapper imports, and canvas save/restore state. Add an advisory nested PURE-initializer rule without autofixes.\n- Share source/test scopes across full and changed-file lint. Handle untracked/deleted/renamed files and unusual filenames, resolve local binaries, rebuild changed plugin sources, and force uncached full lint after configuration/dependency changes.\n- Remove unused direct `eslint-plugin-prettier` / `eslint-plugin-tsdoc` dependencies, obsolete suppressions, and update workflow documentation. `eslint-plugin-prettier` remains a transitive dependency.\n- Follow up on review feedback: preserve blocking braces after the Prettier override; rebuild plugin source/configuration changes before linting; use one shared formatting scope for local commands, hooks, and CI; and keep real newline-filename tests POSIX-only.\n\n## Benchmark\n\nThree sequential runs per variant/mode on the same Apple M2 Pro / 32 GiB / macOS arm64 checkout. Node 24.19.0, ESLint 10.7.0, typescript-eslint 8.69.0, Prettier 3.9.6; `NODE_OPTIONS=--max-old-space-size=8192`. Results are medians, not a CI performance guarantee.\n\n| Measurement | Before | After | Difference |\n| --- | ---: | ---: | ---: |\n| Full lint, cold ESLint cache | 180.77 s | 161.39 s | **19.38 s less / 10.7% reduction** |\n| Full lint, warm ESLint cache | 1.78 s | 2.46 s | **0.68 s more / 38.0% increase** |\n| Files covered | 4,903 | 5,367 | **464 more / 9.5% increase** |\n\nThe source-only standalone formatting command took **26.88 s** (median) in this refreshed series. The final expanded formatting scope takes **30.81 s**, adding executable tests and test JSON. Formatting was already a separate repository/CI check; this change removes its duplicate execution inside ESLint. Warm-cache lint is slightly slower in absolute terms, so this is not a universal speedup.\n\nThese lint measurements were refreshed after restoring `curly`. Later follow-ups change hook/build-input handling, formatting scopes, and regression tests, not the measured full-lint rules or file scope. The initial series reported 216.34 → 157.30 s (27.3% cold improvement) and 1.66 → 2.35 s warm; this repeat reports 10.7% cold improvement, illustrating local timing variability rather than a guaranteed speedup.\n\nRaw samples in seconds:\n\n| Measurement | Before samples | After samples |\n| --- | --- | --- |\n| Cold ESLint cache | 207.163, 175.268, 180.772 | 168.751, 161.386, 161.390 |\n| Warm ESLint cache | 1.830, 1.781, 1.736 | 3.860, 2.459, 2.447 |\n| Source-only Prettier check | 26.876, 27.137, 26.841 | Same standalone command |\n| Expanded Prettier check | Not previously enforced | 30.665, 31.707, 30.809 |\n\nMethod:\n\n- Reconstruct the original `eslint.config.mjs` and custom plugin from base commit `6902089ad9842cf8df81008110fcb713a72d3274`, using the same installed dependencies and generated assets as the updated variant.\n- Restore the original generator's file-level Prettier suppression on ten generated Smart Filter outputs for **both** variants during the benchmark. The PR removes that generated directive and ignores these generated files in ESLint instead. Restore the generated outputs after measurement.\n- Run the original source glob (`packages/**/src/**/*.{ts,tsx,js,json}`) against the original config/plugin and `node scripts/lint.mjs` against the updated config/plugin. Both use `--quiet`, JSON output, and isolated cache paths. Each process starts fresh.\n- Alternate variant order across three rounds. Cold runs each start with a new, empty ESLint cache; warm runs reuse each variant's third cold cache. File counts come from the cache, not the quiet formatter's error-only results.\n- No competing builds/tests were launched during timing. OS filesystem caches were not flushed. These are full-scope workflow comparisons: the updated scope includes additional tests and excludes generated blocks. Tree-shaking and cycle checks are outside the timings.\n- All twelve measured lint invocations and six formatting invocations exited successfully with zero lint errors. The expanded formatting samples were collected separately after all build/test processes finished.\n\n## Rollout and limitations\n\n- New test-style policies, sparse-array checks, and nested/exported PURE candidates are advisory, exposed through `npm run lint:advisory`; normal `--quiet` commands do not execute warning rules. Existing blocking coverage is preserved; exported candidates have explicit no-autofix regression coverage.\n- Narrow existing Promise-cache, async-executor, and unsupported Vitest assertion cases retain documented exceptions. Do not annotate effectful code as PURE just to silence warnings.\n- The canvas rule is bounded structural analysis, not complete interprocedural/control-flow verification.\n- Preserve Sandbox's intentional dev Inspector entry-point import with a documented suppression; it registers the debug layer.\n- Cached and changed-file lint are local shortcuts. CI remains uncached because imported-type changes can affect unchanged consumers.\n- `lint:cycles` is unchanged. Pinning `dpdm` remains deferred because adding a package requires approval.\n- Local formatting, pre-commit, and CI now cover the same source, executable-test, and test-JSON globs. Nineteen existing test/fixture files receive formatting-only normalization; narrow Prettier overrides retain the original two-space serialized JSON layout rather than introducing large fixture diffs.\n- NME fixture writers now emit the final newline required by the formatting check, so running those tests does not undo formatting.\n\n## Validation\n\n- `npm run build:source` passed after building the existing local `@tools/snippet-loader` workspace output with `npm run build:snippet-loader`. No package installation was needed.\n- `npm run lint:check` passed, including all 16 tree-shaking checks and four-package side-effects synchronization.\n- `npm run lint:advisory` passed with **0 errors / 13,694 nonblocking warnings**. These expose rollout debt, predominantly unused disable directives and missing JSDoc; this PR does not claim a warning-clean repository.\n- `npm run format:check` passed.\n- `npm run test:unit -- --maxWorkers=2 --reporter=dot` passed: **383 files, 5,794 passed tests, 1 expected failure, 32 skipped**. Includes 148 focused lint-tooling regressions.\n- After aligning NME fixture writers with the final-newline policy, reran the lint-tooling and affected NME suites: **183 selected tests passed**, including the 148 lint regressions. Existing missing-sample guards in the NME suites remain unchanged.\n- Final `lint:check`, tooling formatting, generated-fixture formatting, and three expanded `format:check` runs passed. The real pre-commit hook also passed using the new shared configuration.\n- Full uncached ESLint, lint configuration type checking, changed tooling formatting, and `git diff --check` passed.\n- Generated test examples and benchmark-only files were cleaned up.\n- Lockfile comparison confirms **zero added packages and zero changed package versions**.\n- The complete `lint:check-ci` command was not invoked locally because its unchanged `lint:cycles` command can download unpinned `dpdm`; approval to add/pin that package has not been granted.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml",
+                    ".github/copilot-instructions.md",
+                    ".prettierrc",
+                    "eslint.config.mjs",
+                    "lint-staged.config.mjs",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphAudioBlocks.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphPhysicsBlocks.test.ts",
+                    "packages/dev/core/test/unit/Lights/babylon.spotLight.test.ts",
+                    "packages/dev/core/test/unit/Loading/sceneLoader.test.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.nativeDisableDepthSort.test.ts",
+                    "packages/dev/core/test/unit/Scene/babylon.scene.test.ts",
+                    "packages/dev/core/test/unit/XR/webXRDepthSensing.shaders.test.ts",
+                    "packages/dev/gui/test/unit/lineLayout.test.ts",
+                    "packages/dev/loaders/test/unit/glTF/KHR_materials_transmission.test.ts",
+                    "packages/dev/serializers/test/unit/USDZ/usdzExporter.test.ts",
+                    "packages/dev/serializers/test/unit/glTF/glTFMaterialExporter.test.ts",
+                    "packages/dev/smartFilters/src/utils/buildTools/convertGlslIntoBlock.ts",
+                    "packages/dev/smartFilters/src/utils/buildTools/shaderConverter.ts",
+                    "packages/tools/eslintBabylonPlugin/src/SideEffectsManifest.ts",
+                    "packages/tools/eslintBabylonPlugin/src/index.ts",
+                    "packages/tools/eslintBabylonPlugin/test/unit/customRules.test.ts",
+                    "packages/tools/eslintBabylonPlugin/test/unit/lintChanged.test.ts",
+                    "packages/tools/eslintBabylonPlugin/test/unit/lintConfig.test.ts",
+                    "packages/tools/nme-mcp-server/test/unit/fixtures/pbrMaterial.json",
+                    "packages/tools/nme-mcp-server/test/unit/fixtures/roundtrip-bricks.json",
+                    "packages/tools/nme-mcp-server/test/unit/fixtures/roundtrip-grass.json",
+                    "packages/tools/nme-mcp-server/test/unit/fixtures/roundtrip-psychedelic.json",
+                    "packages/tools/nme-mcp-server/test/unit/fixtures/roundtrip-purple-fire-bricks.json",
+                    "packages/tools/nme-mcp-server/test/unit/fixtures/roundtrip-purple-fire.json",
+                    "packages/tools/nme-mcp-server/test/unit/fixtures/simpleColor.json",
+                    "packages/tools/nme-mcp-server/test/unit/graphManager.test.ts",
+                    "packages/tools/nodeGeometryEditor/test/unit/webMcp.test.ts",
+                    "packages/tools/sandbox/src/main.ts",
+                    "packages/tools/tests/README.md",
+                    "scripts/format.mjs",
+                    "scripts/lint-changed.mjs",
+                    "scripts/lint-globs.mjs",
+                    "scripts/lint.mjs"
+                ],
+                "tags": [
+                    "optimizations",
+                    "build",
+                    "sandbox",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "18924",
+                "title": "Avoid blob URL round-trip for in-memory ImageBitmap sources",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Context\n\nEmbedded images in a GLB already exist as bytes in memory. The glTF loader passes those bytes to the texture pipeline as an `ArrayBufferView`, but `LoadImage` previously converted every in-memory source into a `blob:` URL before choosing how to decode it.\n\nThat produced different CSP requirements depending on the rendering backend:\n\n- WebGL2 assigned the `blob:` URL to an image element, so it was governed by `img-src`.\n- WebGPU forces ImageBitmap decoding, so it loaded the same `blob:` URL through `LoadFile`/XHR before reconstructing a Blob and calling `createImageBitmap`. That made the in-memory image subject to `connect-src blob:`.\n\nAs a result, switching an application from WebGL2 to WebGPU could make the same embedded GLB fail under an otherwise valid CSP, even though no additional network access was required.\n\n## Change\n\nWhen an engine requires ImageBitmap decoding and the source is already an `ArrayBuffer`, `ArrayBufferView`, or `Blob`, `LoadImage` now passes a Blob directly to `createImageBitmap`.\n\nReal string URLs continue through the existing file-loading path, preserving URL preprocessing, offline-provider support, and custom request handling.\n\nThis removes the redundant object URL and XHR round-trip for embedded textures, so WebGPU no longer requires `connect-src blob:` for this in-memory path.\n\n## Validation\n\n- Added focused coverage for `ArrayBufferView` and Blob inputs, including sliced typed-array data.\n- Verified that neither path calls `URL.createObjectURL`.\n- `npm run format:check`\n- `npm run lint:check`\n- `npm run test:unit`",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.pure.ts",
+                    "packages/dev/core/test/unit/Misc/fileTools.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "optimizations"
+                ]
+            },
+            {
+                "pr": "18921",
+                "title": "Fix Gaussian splatting with horizontal fixed FOV",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\n## Summary\r\n\r\n- Derive the Gaussian splatting focal length independently for each axis from the active camera projection matrix and viewport dimensions.\r\n- Preserve the existing full-viewport and `1000` focal fallbacks when no active camera is available.\r\n- Cover horizontal fixed FOV, orthographic projection, null-camera binding, and multi-camera rendering.\r\n\r\n## Motivation\r\n\r\nWith `Camera.FOVMODE_HORIZONTAL_FIXED`, the previous calculation used the vertical projection scale and multiplied it by the viewport width. Because that projection scale already includes the aspect ratio, very wide windows applied the aspect ratio twice and rendered Gaussian splats oversized and blurry.\r\n\r\nReported on the forum: https://forum.babylonjs.com/t/fovmode-horizontal/64105\r\n\r\n## Validation\r\n\r\n- Pre-commit Prettier and ESLint checks passed.\r\n- The full unit test suite was not run locally.\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.pure.ts",
+                    "packages/dev/core/test/unit/Materials/gaussianSplattingMaterial.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "Gaussian Splatting"
+                ]
+            },
+            {
+                "pr": "18875",
+                "title": "Inspector v2: Display mesh bounding box dimensions",
+                "description": "## Motivation\r\n\r\nThe Sandbox can visualize a Mesh's bounding box, but it does not show its numeric dimensions.\r\n\r\nThis makes it difficult to compare the imported scale of the same model exported as GLB, OBJ, FBX, or other formats. Unit metadata and scale conversion may be handled differently by each format, exporter, or loader, so visually similar imports can have different dimensions in the scene.\r\n\r\n## Changes\r\n\r\n- Adds a read-only `Bounding Box Size` value to the Mesh `General` section.\r\n- Displays world-space dimensions in `[X, Y, Z]` order.\r\n- Shows the value while the Bounding Box gizmo is active.\r\n- Includes descendant Meshes when calculating the bounds.\r\n- Supports geometry-less Mesh roots such as the glTF `__root__` Mesh.\r\n- Preserves the existing vertex-dependent `Display` properties.\r\n- Keeps the feature limited to Meshes because the Bounding Box gizmo does not currently support `TransformNode`.\r\n\r\nThe values are expressed in Babylon.js scene units and make it easier to compare asset scale across imported file formats.\r\n\r\n## Testing\r\n\r\n- Tested with a multi-Mesh glTF asset in the local Sandbox.\r\n- Verified the complete hierarchy bounds on the glTF `__root__` Mesh.\r\n- Verified that the value appears and disappears with the Bounding Box gizmo.\r\n- Verified that `TransformNode` remains unaffected.\r\n- `npm run compile -w @dev/inspector`\r\n- `npm test -w @dev/inspector`\r\n- 80 tests passed.\r\n\r\n\r\nSee the picture below:\r\n\r\n<img width=\"1920\" height=\"917\" alt=\"image\" src=\"https://github.com/user-attachments/assets/d88c8ef4-6d60-4324-a38e-df4d37663003\" />\r\n",
+                "author": {
+                    "name": "Jeggery",
+                    "url": "https://github.com/Jeggery"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/properties/nodes/transformNodeHierarchyBoundingSize.tsx",
+                    "packages/dev/inspector-v2/src/services/panes/properties/transformPropertiesService.tsx",
+                    "packages/dev/inspector-v2/test/unit/transformNodeHierarchyBoundingSize.test.ts"
+                ],
+                "tags": [
+                    "inspector",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "18918",
+                "title": "Fix WebGPU occlusion query begin sequencing",
+                "description": "## What changed\n\n- In WebGPU compatibility mode, create or obtain the current render pass before checking whether an occlusion query can begin.\n- Return `true` only after `beginOcclusionQuery` is recorded, and only record the matching end for a successful begin.\n- Restart a stale compatibility pass when it does not contain the current query set, but never split an active query or snapshot playback across an internal pass boundary.\n- Preserve the active depth comparison when an internal query-set transition rebuilds a render pass, including custom comparisons used with reverse depth.\n- Preserve non-compatibility bundle replay and retain the selected depth slice when a 3D render-target pass is rebuilt.\n- Keep snapshot recording and playback pass indices aligned across query-set transitions.\n- Invoke delayed query-set disposal with `querySet.dispose()`.\n- Add focused regression coverage for lazy pass creation, false begin/end behavior, stale passes, real allocator growth, bundle replay, snapshot playback, reverse-depth state, 3D render-target reconstruction, and delayed disposal.\n\n## Why this is a bug fix\n\nCompatibility-mode render passes are created lazily. A query started from `Mesh.onBeforeBindObservable` could call `beginOcclusionQuery()` before a render pass existed. The optional call on `_currentRenderPass` recorded no begin command, but the method still returned `true`. The following draw then created the pass, and `endOcclusionQuery()` attempted to end a query that had never begun.\n\nCreating the pass first also ensures its descriptor has the active occlusion query set before `canBeginQuery()` checks it. If the set changes, the engine transitions only at a safe boundary. Internal transitions retain the current depth comparison and other reconstructed pass state. Applications no longer need to call the private `_getCurrentRenderPass()` workaround.\n\nThis remains a compatibility-mode sequencing fix. Non-compatibility mode still records begin and end through the bundle list. Query-result semantics and visibility APIs are unchanged.\n\n## Validation\n\n- Focused WebGPU unit tests: 3 files, 13 tests passed\n- `npm run build -w @babylonjs/core` — passed\n- `npm run format:check` — passed\n- `npm run lint:check` — passed, including tree-shaking and side-effects checks\n- Latest completed CI head before this update: build, unit, format/lint, TypeDoc, interaction, memory, performance, WebGL2 visualization, and WebGPU visualization checks passed; the experimental native-tests job failed independently\n\nDevhost was not used because the focused tests directly exercise command recording, real query-set growth, render-pass reconstruction, depth-state preservation, and snapshot bundle replay without requiring a physical WebGPU device.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.query.pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuBundleList.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuSnapshotRendering.ts",
+                    "packages/dev/core/src/Engines/thinWebGPUEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/Extensions/engine.query.test.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuOcclusionQuery.test.ts",
+                    "packages/dev/core/test/unit/Engines/WebGPU/webgpuSnapshotRendering.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "18917",
+                "title": "Fix: static Gaussian Splatting part disappears after compacting a streaming compound",
+                "description": "When a `GaussianSplattingCompoundMesh` mixes streaming parts (reserveStreamingPart) with static parts (addPart), removing a streaming part and calling `compactAtlas()` can silently corrupt the retained CPU splat buffer, causing an unrelated static part to vanish on the next atlas rebuild.\r\n\r\nThe root cause is in `_retainMergedPartData`. It rebuilds the retained `_splatsData` by walking the source parts, but for a reserved-empty streaming region (which carries no CPU data) it did continue without advancing the write offset. Any static part packed after such a region in the same rebuild was then written to the wrong offset — it no longer lined up with its proxy's `_splatsDataOffset`.\r\n\r\nThis stays latent because the GPU atlas is still correct (the GPU-side `dstOffset` in `_addPartsInternal` advances unconditionally, as does the SH retention loop just below). But the next operation that triggers a full rebuild — e.g. adding another part that grows the atlas — reconstructs the static part from _splatsData at its proxy offset, reads zeroed bytes, and the part renders as empty splats and disappears.\r\n\r\nConcrete repro (streamed LOD scene): stream A + stream B + static C loaded; remove stream A (→ tombstone + compactAtlas); the survivors compact to [stream B, static C], and C's bytes land at B's zeroed slot. Loading another splat grows the atlas → C is rebuilt from zeros → C disappears.\r\n\r\n## Fix\r\nAdvance the offset past reserved-empty regions unconditionally, matching the GPU `dstOffset` and SH loops.\r\n\r\n## Test\r\nAdded a regression test in `babylon.gaussianSplatting.streamingPart.test.ts;` fails without the fix, passes with it.",
+                "author": {
+                    "name": "raymondyfei",
+                    "url": "https://github.com/raymondyfei"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.pure.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.streamingPart.test.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18922",
+                "title": "Reduce redundant work in ES6 build postprocessing",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nReduce redundant filesystem work without changing existing build commands, generated package contents, or release/CI orchestration:\n\n- Cache successful relative-import existence checks by resolved path within each `addJsExtensionsToCompiledFiles` invocation. Validation still runs for unchanged files, and the cache is discarded between invocations.\n- Avoid rewriting files when extension rewriting or constant inlining produces identical contents.\n- Add 11 regression cases covering JS/MJS transformations, shared versus distinct dependency paths, missing imports, cache lifetime, unchanged timestamps, and write failures.\n- Document existing incremental and combined watch workflows in `contributing.md`, including their asset/declaration prerequisites.\n\n## Performance\n\nLocal Node.js 24 measurements over 6,671 real core JS/declaration output files; medians from five alternating before/after runs:\n\n| Postprocessing | Before | After | Improvement |\n| --- | ---: | ---: | ---: |\n| First pass | 1,570 ms | 1,193 ms | 24% faster |\n| Repeat pass | 1,453 ms | 519 ms | 64% faster |\n\nFirst-pass existence checks fell from 26,642 to 3,292. Repeat passes perform zero writes instead of 10,011. These figures measure the extension-rewriting and constant-inlining steps, **not the entire build**.\n\nAll measured pass outputs matched. A complete production core rebuild also matched SHA-256 hashes for all 6,681 baseline JS/declaration/WASM/JSON files.\n\n## Validation\n\n- `npm run build:dev` — passed, including assets, TypeScript projects, and server declarations.\n- `npm run build -w @babylonjs/core` — passed; output equivalence confirmed.\n- `npm run format:check` — passed.\n- `npm run lint:check` — passed, including all 16 tree-shaking checks and side-effects synchronization.\n- `npm run test:unit -- --maxWorkers=4` — 381 test files passed; 5,689 passing tests plus one expected failure.\n- Build-tools source/test type-check and focused regression tests — passed.\n- Self-review with both general-engineering and repository-instruction lenses — no findings.\n\nLocal setup note: generated snippet-loader and test-tools prerequisites were rebuilt after the initial script-free dependency install. An existing UMD test timed out under the default concurrent validation load; it passed independently and in the complete four-worker rerun, without changing timeout limits. The existing module-size test reported no size baseline and self-skipped its assertions.\n\nNo public API, dependency, build flag, CI cache, or parallelism changes.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "contributing.md",
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts",
+                    "packages/dev/buildTools/src/prepareEs6Build.ts",
+                    "packages/dev/buildTools/test/unit/postProcessing.test.ts"
+                ],
+                "tags": [
+                    "optimizations",
+                    "build",
+                    "skip changelog"
+                ]
+            }
+        ],
+        "9.26.2": [
+            {
+                "pr": "18911",
+                "title": "Add WebMCP support to Node Geometry Editor",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\n- add browser-native WebMCP support to Node Geometry Editor with 21 tools covering current-document lifecycle, graph editing, discovery, validation, snippets, and shareable URLs\n- extract browser-safe NGE graph operations, block metadata, enums, and concepts into `@tools/nge-mcp-common`, shared by WebMCP and the existing stdio MCP server\n- keep WebMCP and the legacy MCP session workflow available in parallel, with explicit writer arbitration: WebMCP owns mutations by default, while a connected legacy session becomes the exclusive MCP writer; WebMCP reads remain available\n- register tools with the editor lifecycle and deterministic abort-based cleanup, while keeping Node transports and filesystem operations out of the browser bundle\n- document the NGE integration and the staged cross-editor migration plan\n\n## Validation\n\n- `npm run format:check`\n- `npm run lint:check`\n- `npm run test:unit` — 321 files passed, 4,783 tests passed, 1 expected failure, 30 skipped\n- focused NGE WebMCP browser smoke with a simulated `document.modelContext`, including registration of all 21 tools, writer arbitration, create/add/connect/validate flow, stable logical block IDs, and document restoration\n- NGE production Vite build and browser bundle scan for Node transport/filesystem leakage\n\n## Notes\n\nThe available automated browser did not expose Chrome's experimental WebMCP API, so native validation with the browser flag remains pending. The simulated browser integration exercises the same `document.modelContext.registerTool` contract and editor lifecycle path.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/tools/mcp-server-core/README.md",
+                    "packages/tools/mcp-server-core/WEBMCP_MIGRATION_PLAN.md",
+                    "packages/tools/mcp-server-core/package.json",
+                    "packages/tools/mcp-server-core/src/webMcp.ts",
+                    "packages/tools/mcp-server-core/test/unit/webMcp.test.ts",
+                    "packages/tools/mcp-server-core/tsconfig.build.json",
+                    "packages/tools/nge-mcp-server/README.md",
+                    "packages/tools/nge-mcp-server/package.json",
+                    "packages/tools/nge-mcp-server/src/blockRegistry.ts",
+                    "packages/tools/nge-mcp-server/src/geometryGraph.ts",
+                    "packages/tools/nge-mcp-server/src/index.ts",
+                    "packages/tools/nge-mcp-server/test/unit/graphManager.test.ts",
+                    "packages/tools/nge-mcp-server/test/unit/referenceData.test.ts",
+                    "packages/tools/nge-mcp-server/test/unit/registryDrift.test.ts",
+                    "packages/tools/ngeMcpCommon/package.json",
+                    "packages/tools/ngeMcpCommon/src/blockRegistry.ts",
+                    "packages/tools/ngeMcpCommon/src/geometryGraph.ts",
+                    "packages/tools/ngeMcpCommon/src/index.ts",
+                    "packages/tools/ngeMcpCommon/src/referenceData.ts",
+                    "packages/tools/ngeMcpCommon/tsconfig.build.json",
+                    "packages/tools/ngeMcpCommon/tsconfig.json",
+                    "packages/tools/nodeGeometryEditor/README.md",
+                    "packages/tools/nodeGeometryEditor/WEBMCP.md",
+                    "packages/tools/nodeGeometryEditor/package.json",
+                    "packages/tools/nodeGeometryEditor/src/bootstrap.js",
+                    "packages/tools/nodeGeometryEditor/src/components/mcpSession/mcpSessionComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/encodedGeometryUrl.ts",
+                    "packages/tools/nodeGeometryEditor/src/globalState.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/historyTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/nodeGeometryEditor.ts",
+                    "packages/tools/nodeGeometryEditor/src/webMcp.ts",
+                    "packages/tools/nodeGeometryEditor/src/webMcpEditor.ts",
+                    "packages/tools/nodeGeometryEditor/test/unit/webMcp.test.ts",
+                    "packages/tools/nodeGeometryEditor/tsconfig.build.json",
+                    "packages/tools/nodeGeometryEditor/tsconfig.nocomposite.json",
+                    "packages/tools/nodeGeometryEditor/vite.config.ts",
+                    "tsconfig.devpackages.json",
+                    "tsconfig.json"
+                ],
+                "tags": [
+                    "new feature",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "18904",
+                "title": "Fix: DoF seam (WebGL) and shader-compile crash (WebGPU) in LensRenderingPipeline",
+                "description": "`depthOfField.fragment.fx` sampled with implicit-LOD `texture2D` inside blur-level-dependent (non-uniform) control flow. Implicit-LOD sampling derives its mip level from screen-space derivatives, which are only well-defined in uniform control flow. WebGL2 returned garbage LODs at blur-level boundaries → a thin seam; WebGPU rejected it outright (`'textureSample' must only be called from uniform control flow`) → DoF didn't render.\n\n## Fix\nSample the blur taps with an explicit, derivative-free LOD (`TEXTUREFUNC`→`texture2DLodEXT`/`textureLod`, `textureSampleLevel` on WebGPU) so it is legal in non-uniform control flow. The DoF pass runs at 1/4 the resolution of its source (`textureSampler` = highlights pass), so rather than forcing mip 0 it passes `blur_lod = log2(sourceWidth / outputWidth)` — derived from the actual render-target sizes — for the `textureSampler` blur taps, reproducing the minification an implicit lookup would have selected (no aliasing / extra bandwidth). `highlightsSampler` is bound to this pass' own output (same resolution), so it uses lod 0. The direct unblurred sample is hoisted before the divergent branch so it keeps legal implicit per-pixel mip selection. Depth and grain reads stay implicit-LOD (uniform control flow; grain preserves mip selection for a user-supplied texture).\n\nWebGL1 has no `texture2DLodEXT` and falls back to biased `texture2D`, which is still implicit-derivative sampling — so the seam fix does **not** apply on WebGL1 (that engine is excluded from the visualization test).\n\n## Additional\nAdd a \"Lens render pipeline\" visualization test (`#DX6AV#389`) + reference image. It guards against the WebGPU compile regression and serves as integration coverage. A per-seam pixel assertion isn't feasible: the seam is a ~1px screen-space contour, too small a changed-pixel fraction for the harness's ratio-based comparison.\n\n## Before / After the fix\n<img width=\"859\" height=\"908\" alt=\"Screenshot 2026-09-11 at 11 19 36 AM\" src=\"https://github.com/user-attachments/assets/06f10b7b-a5a9-4bd4-ba82-0bc5f1d99caa\" />\n<img width=\"862\" height=\"907\" alt=\"Screenshot 2026-09-11 at 11 19 12 AM\" src=\"https://github.com/user-attachments/assets/d2d6bd83-54f9-4c54-8548-5db415bb33ee\" />\n",
+                "author": {
+                    "name": "raymondyfei",
+                    "url": "https://github.com/raymondyfei"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline.pure.ts",
+                    "packages/dev/core/src/Shaders/depthOfField.fragment.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/lens-render-pipeline.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "18915",
+                "title": "Add mesh blending post process",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\n## Overview\r\n\r\nAdds opt-in mesh blending as a screen-space post-process, inspired by the behavior and parameters demonstrated by [meshblend.lervik.com](https://meshblend.lervik.com/) without using or reproducing its source code.\r\n\r\nFrameGraph and the Node Render Graph Editor are the primary integration paths. A classic post-process wrapper is also provided for applications that already manage the required geometry textures.\r\n\r\n## What changed\r\n\r\n- Adds packed `R8UI` mesh tags containing a six-bit blend group and a two-bit radius class.\r\n- Extends the geometry renderer and FrameGraph geometry task to generate mesh-blending tags alongside the existing geometry outputs.\r\n- Adds a shared thin implementation used by the classic post-process, FrameGraph task, and NRGE block.\r\n- Supports WebGL2 and WebGPU with native GLSL and WGSL shaders.\r\n- Supports four quality levels, orthographic cameras, reverse depth, HDR scene color, alpha-tested meshes, and optional albedo-based shadow attenuation.\r\n- Adds typed mixed integer/float MRT clearing and per-attachment blending handling needed by integer tag targets.\r\n- Adds Inspector and NRGE integration, public API documentation, MCP metadata, focused unit/integration coverage, and ten visualization tests.\r\n\r\nThe effect is opt-in and consumes caller-provided scene color, mesh-tag, and depth textures. Albedo is optional and compiles shadow attenuation out when omitted. Transparent rendering remains caller controlled; unsupported transparent integer-MRT configurations are rejected explicitly.\r\n\r\n## Playgrounds\r\n\r\n- [Coastal cliff scene](https://playground.babylonjs.com/#BJBKKU#11)\r\n- [Classic / FrameGraph / NRGE parity](https://playground.babylonjs.com/#O05LI8#6)\r\n- [Shadow attenuation comparison](https://playground.babylonjs.com/#CYSYH2#7)\r\n- [Focused continuation cases](https://playground.babylonjs.com/#Q46SI1#2)\r\n\r\n## Validation\r\n\r\n- `npm run format:check`\r\n- `npm run lint:check`\r\n- Focused mesh-blending and MRT unit/integration tests\r\n- All ten mesh-blending visualization tests on WebGL2 and WebGPU\r\n- Classic, FrameGraph, and NRGE one-frame parity on both engines\r\n\r\n`npm run test:unit` completed with 5,488 passing tests. The remaining local failures are 34 Windows tree-shaking bundle assertions caused by absolute paths being retained as external imports, plus two unrelated five-second glTF/UMD loader timeouts that reproduce on `upstream/master`. The dedicated `check:treeshaking` and `check:side-effects-sync` gates pass.\r\n\r\n## Current limitations\r\n\r\n- WebGL2 and WebGPU only; Native cannot create the required integer tag render target.\r\n- The classic post-process is runtime-only and is omitted from scene serialization.\r\n- Regular and thin instances intentionally use their source mesh tag.\r\n- Overlapping transparent blended surfaces require caller-managed rendering decisions.\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.pure.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.types.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.types.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Engines/thinEngine.pure.ts",
+                    "packages/dev/core/src/Engines/thinNativeEngine.pure.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.pure.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/meshBlendingPostProcessBlock.pure.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/meshBlendingPostProcessBlock.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/PostProcesses/pure.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock.pure.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/allBlocks.pure.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/index.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/inputBlock.pure.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Blocks/pure.ts",
+                    "packages/dev/core/src/FrameGraph/Node/Types/nodeRenderGraphTypes.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/PostProcesses/meshBlendingTask.ts",
+                    "packages/dev/core/src/FrameGraph/Tasks/Rendering/geometryRendererTask.ts",
+                    "packages/dev/core/src/FrameGraph/frameGraphRenderContext.ts",
+                    "packages/dev/core/src/FrameGraph/index.ts",
+                    "packages/dev/core/src/FrameGraph/pure.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.pure.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/prePassOutputBlock.pure.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.pure.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Textures/textureHelper.functions.ts",
+                    "packages/dev/core/src/Materials/materialHelper.geometryrendering.ts",
+                    "packages/dev/core/src/Materials/prepass.defines.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.pure.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.pure.ts",
+                    "packages/dev/core/src/Meshes/mesh.pure.ts",
+                    "packages/dev/core/src/Meshes/meshBlendingTag.ts",
+                    "packages/dev/core/src/Meshes/pure.ts",
+                    "packages/dev/core/src/PostProcesses/index.ts",
+                    "packages/dev/core/src/PostProcesses/meshBlendingBlueNoise.ts",
+                    "packages/dev/core/src/PostProcesses/meshBlendingPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/pure.ts",
+                    "packages/dev/core/src/PostProcesses/thinMeshBlendingPostProcess.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.pure.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/mrtFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/openpbrBlockPrePass.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockPrePass.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/prePassDeclaration.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx",
+                    "packages/dev/core/src/Shaders/meshBlending.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/meshBlendTagFragmentOutput.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/openpbrBlockPrePass.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockPrePass.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/prePassDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/default.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/geometry.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/meshBlending.fragment.fx",
+                    "packages/dev/core/src/States/alphaCullingState.ts",
+                    "packages/dev/core/test/unit/Engines/thinEngine.test.ts",
+                    "packages/dev/core/test/unit/FrameGraph/geometryRendererTask.test.ts",
+                    "packages/dev/core/test/unit/FrameGraph/meshBlendingTask.test.ts",
+                    "packages/dev/core/test/unit/Materials/Node/meshBlendingTag.test.ts",
+                    "packages/dev/core/test/unit/Meshes/meshBlendingTag.test.ts",
+                    "packages/dev/core/test/unit/PostProcesses/meshBlendingPostProcess.test.ts",
+                    "packages/dev/core/test/unit/Rendering/geometryBufferRenderer.test.ts",
+                    "packages/dev/core/test/unit/States/alphaCullingState.test.ts",
+                    "packages/dev/inspector-v2/src/components/properties/nodes/abstractMeshProperties.tsx",
+                    "packages/public/@babylonjs/core/package.json",
+                    "packages/tools/nodeRenderGraphEditor/src/blockTools.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/registerNodePortDesign.ts",
+                    "packages/tools/nodeRenderGraphEditor/src/graphSystem/registerToDisplayLedger.ts",
+                    "packages/tools/nrge-mcp-server/src/blockRegistry.ts",
+                    "packages/tools/nrge-mcp-server/src/index.ts",
+                    "packages/tools/nrge-mcp-server/test/unit/registryDrift.test.ts",
+                    "packages/tools/tests/test/integration/webgl1MrtClear.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/mesh-blending-alpha-cutoff.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/mesh-blending-classic-framegraph-parity.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/mesh-blending-coastal-cliff.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/mesh-blending-phase4-cinematic.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/mesh-blending-phase4-low.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/mesh-blending-phase5-hdr-scene-color.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/mesh-blending-phase5-shadow-attenuation-disabled.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/mesh-blending-phase5-target-shadow-seam.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/object-id-mesh-tag-framegraph-webgpu-force-glsl.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/object-id-mesh-tag-framegraph.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/object-id-mesh-tag-geometry-buffer-webgpu-force-glsl.png",
+                    "packages/tools/tests/test/visualization/config.json",
+                    "scripts/treeshaking/side-effects-manifest/core/FrameGraph.json",
+                    "scripts/treeshaking/side-effects-manifest/core/Shaders.json",
+                    "scripts/treeshaking/side-effects-manifest/core/ShadersWGSL.json",
+                    "specs/mesh-blending/architecture.md"
+                ],
+                "tags": [
+                    "new feature",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "18916",
+                "title": "Widen input types in ProceduralTexture uniform setters",
+                "description": "Hey there!\r\n\r\nI found a small source of friction when using `ProceduralTexture` when using my own color types. The inputs required the full Babylon type even though it only ever used the rgb fields, so `IColor3Like` also does the job.\r\n\r\nI took the opportunity to widen the other input types in the class where it made sense for the same reasons.\r\n\r\nLet me know if that works for you!",
+                "author": {
+                    "name": "BarthPaleologue",
+                    "url": "https://github.com/BarthPaleologue"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.pure.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18905",
+                "title": "Add Inspector Lite text and sprite layer support",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Overview\n\nAdds standalone Babylon Lite `TextRenderer` and `SpriteRenderer` layer parity to Inspector v2.\n\n## Changes\n\n- Discovers Text and Sprite layers as selectable rendering-context children in draw order.\n- Uses deterministic `Text Layer N` / `Sprite Layer N` names and Full Inspector icon/color conventions.\n- Adds Text and Sprite layer Properties using public Babylon Lite APIs, including visibility, ordering, transforms/view state, opacity, counts, and Sprite atlas metadata.\n- Adds Hide/Show Explorer commands.\n- Uses the shared Explorer selection-reconciliation path when provider notifications remove the final represented occurrence.\n- Keeps observation and discovery Inspector-scoped and disposes providers, commands, watchers, and observables cleanly.\n- Expands the Inspector Lite test app with two ordered Text layers and two ordered Sprite layers.\n\n## Screenshot\n\n![Inspector Lite showing Text and Sprite renderer layers](https://github.com/user-attachments/assets/01808f30-bc89-415a-a08d-1596a2732b2c)\n\n## Validation\n\n- `npm run format:check`\n- `npm run lint:check`\n- `npm run compile -w @dev/inspector`\n- `REUSE_BROWSER=true npm test -- explorerPaneSelection.test.tsx explorerPane.test.tsx explorer.test.tsx liteExplorerServices.test.ts litePropertiesServices.test.tsx liteSceneEntities.test.ts liteMeshPropertiesService.test.tsx defaultSelectionServices.test.ts runtimeNeutralPropertyLines.test.tsx` — 38 tests passed\n- Visible Microsoft Edge validation of hierarchy, ordering, visibility, and property write-back\n\nThe complete unit suite was also run: 5,020 tests passed; remaining failures were unrelated Windows path handling in Webpack tree-shaking tests and an existing BevelBlock timeout.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/inspector-v2/src/components/properties/boundProperty.tsx",
+                    "packages/dev/inspector-v2/src/contexts/propertyContext.ts",
+                    "packages/dev/inspector-v2/src/lite/inspector.tsx",
+                    "packages/dev/inspector-v2/src/lite/renderingLayerUtils.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/spriteLayerPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/textLayerPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/renderingLayerExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/spriteLayerExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/textLayerExplorerService.tsx",
+                    "packages/dev/inspector-v2/test/app/lite.ts",
+                    "packages/dev/inspector-v2/test/unit/explorerPaneSelection.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteExplorerServices.test.ts",
+                    "packages/dev/inspector-v2/test/unit/litePropertiesServices.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/runtimeNeutralPropertyLines.test.tsx"
+                ],
+                "tags": [
+                    "inspector",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "18910",
+                "title": "Improve Gaussian splatting coarse-first streaming and local-space culling",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\nImprove time to first visible geometry for streamed Gaussian splatting while keeping a complete coarse fallback resident. \n\n## Changes\n\n- Add the read-only `minimumResidentSplats` accessor. The minimum includes padding, the included environment, and each distinct **whole coarse source file** once, rather than just the leaf ranges that reference it.\n- Resolve fixed initial residency from `maxResidentSplats` and `memoryBudgetMb`, raising a positive requested limit to the coarse minimum when necessary. Unset limits preserve legacy full residency when the complete source size is known; progressive streams whose finer counts are intentionally deferred use a bounded desktop/mobile memory estimate with coarse-derived refinement headroom.\n- For streams with more than 32 referenced files and at least one finer-only source file, gather coarse metadata and decode/publish the coarse layer before requesting finer metadata or geometry. Each completed coarse source becomes visible immediately. Streams containing only coarse files retain exact source-size and SH metadata regardless of file count.\n- Pin successfully decoded coarse files using the existing residency controller, preserving fallback coverage when finer files fail, cannot fit, or are evicted.\n- Reserve the supported SH layout before unknown finer metadata arrives. SH-enabled progressive streams reserve degree 4 / five packed textures, with the cost included in the residency estimate; streams with complete initial metadata use the actual maximum source SH degree.\n- Build a local-space frustum once per active camera and test immutable local node bounds. Preserve camera-union visibility and hosted proxy transforms, with conservative handling of degenerate planes.\n- Validate residency options before registering the mesh, preserve finite non-positive unset-limit values, clamp positive fractional splat limits to the coarse minimum, and device-clamp large finite memory requests before validating the derived capacity.\n- Pin the environment only after successful decode and position application. Failed environment loads release their allocation for coarse/fine files, and required startup failures reclaim partial resources in both standalone and hosted streams.\n- Report failed position application without publishing invalid decoded ranges.\n\n## Behavior and scope\n\nResidency is a **fixed initial capacity**, not a runtime-resizable buffer. `minimumResidentSplats` is `0` until the required coarse metadata resolves. A requested limit below the minimum is raised with a warning; an unsupported device minimum fails explicitly. Memory figures are combined CPU/GPU estimates, not exact VRAM caps.\n\nLive resizing, sort scheduling changes, eviction-policy redesign, decoded-bound caching, static LOD caches, download prefetch (including optional-environment overlap), and Inspector changes are deliberately deferred. The target San Pietro dataset has no environment; this PR preserves the existing environment-before-coarse ordering for other datasets rather than expanding into the deferred startup pipeline. No visualization config entry or reference PNG is included, as requested.\n\n## Validation\n\nPost-review-feedback checks:\n\n- 67 focused startup, residency-budget, and local-frustum unit tests pass. Eleven newly added regression cases failed before their review fixes and pass with the same assertions afterward.\n- Changed-source ESLint, new-test formatting, all 16 tree-shaking checks, and side-effect synchronization pass.\n- Repository-wide formatting passes.\n- Core and loaders type checks pass using current source and fresh in-memory core declarations, without writing build artifacts.\n- Repository-wide `npm run lint:check` did not finish locally, including a retry with the repository's documented 8 GB CI heap setting, and was stopped. Changed-source ESLint and the separately executed tree-shaking ratchets pass; full-repository lint is not claimed as passing.\n\nThe latest full unit run is **not green**: 362 test files pass and four fail (5,216 tests pass, 41 fail, one expected failure). Failures occur outside this PR's changed files: Windows absolute-path handling/bundler timeouts in `treeShakingSideEffects.test.ts`, plus five-second timeouts in `bevelBlock.test.ts`, `umdRollupCompatibility.test.ts`, and loader `dynamic.test.ts`. Vitest also reports 16 asynchronous shader-teardown errors. An isolated rerun of the three five-second-timeout suites, without increasing timeouts, passes 31 of 32 tests: dynamic loader registration and bevel tests pass, while the UMD glTF2 namespace import still times out. The Windows bundler, UMD/bevel timeout, and shader-teardown failure categories were also observed before these review fixes; unrelated tests/infrastructure have not been changed to mask them.\n\nCoverage includes shared coarse files, pending-to-resolved minimum residency, positive fractional limits, huge finite MB requests, all-coarse streams above the progressive threshold, environment failure reclamation and successful pinning, empty and failed standalone startup cleanup, preserved full residency for known source sizes, desktop/mobile defaults with unknown fine counts, invalid-option cleanup, legacy unset-limit values, coarse pinning, failed fine loads, disposal during decode, deferred fine metadata, conservative SH reservation, and perspective/orthographic multi-camera culling.\n\n### San Pietro browser evidence\n\nImplementation-time browser runs, captured **before the final review and upstream synchronization**, used the actual hosted dataset, not a synthetic substitute:\n\n| Scenario | Resident capacity | Coarse splats rendered | Stable observation | Application errors / context losses |\n| --- | ---: | ---: | ---: | ---: |\n| Standalone, default options | 3,650,538 | 3,120,000 | 103 seconds | 0 / 0 |\n| Hosted in a compound, default options | 3,650,538 | 3,120,000 | 73 seconds | 0 / 0 |\n| Initial `maxResidentSplats: 1` | 3,120,001 | 3,120,000 | 31 seconds | 0 / 0 |\n\nBoth default scenarios displayed coarse geometry before finer geometry requests and subsequently refined. The original all-LOD source total was 265,459,066 splats; the resolved coarse minimum was 3,120,001 including padding. These observations are not a claim of a fresh browser run on the final merged commit.\n\nGPT-6 Astra reviewed the focused changes using both agnostic and repository-instruction lenses; confirmed startup, compatibility, error-reporting, documentation, and coverage issues were fixed locally.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/loaders/src/SPLAT/gaussianSplattingStream.ts",
+                    "packages/dev/loaders/test/unit/SPLAT/gaussianSplattingStreamFrustum.test.ts",
+                    "packages/dev/loaders/test/unit/SPLAT/gaussianSplattingStreamStartup.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "enhancement",
+                    "optimizations",
+                    "loaders",
+                    "Gaussian Splatting"
+                ]
+            },
+            {
+                "pr": "18903",
+                "title": "Add ratified KHR_interactivity Phase 1 support",
+                "description": "## Summary\n\nThis implements Phase 1 support for the ratified `KHR_interactivity` specification across the glTF loader/runtime and Flow Graph Editor.\n\n- adds a canonical, lossless KHR document/graph representation alongside executable FlowGraphs, preserving all graphs, names, declarations, exact types, variables/events, configurations, dynamic sockets, pointers/refs, unsupported extension operations, extras/extensions, and stable source provenance\n- validates ratified graph structure and operation contracts strictly, isolates invalid sibling graphs, rejects unknown core operations, and preserves unsupported additional-extension operations as inspectable typed no-ops\n- honors the root default graph, awaits interactivity readiness as part of loading, suppresses animation autoplay when interactivity is present, and exposes parse-only / `autoStart: false` loading for editor import\n- completes ratified animation-reference and virtual-playhead behavior while preserving legacy generic FlowGraph animation semantics\n- implements real select/hover picking semantics, event-reference outputs, inherited node state, multiple pointer/controller identity, lifecycle propagation, and stable glTF reference resolution\n- imports every graph into Flow Graph Editor tabs, selects the root default, preserves composites and unsupported nodes, supports dynamic sockets, auto-arranges imported graphs, keeps manual sorting compact, and clearly styles generated glTF helpers\n- updates the pinned Khronos compatibility corpus and distinguishes it explicitly from strict ratified production validation\n\n### Compatibility and conformance behavior\n\nThe public API remains compatible, but strict production loading intentionally enforces the ratified specification: invalid core operations or invalid graph contracts reject that graph instead of silently lowering it. Other valid sibling graphs remain available, and an invalid selected graph does not become active.\n\nThe currently pinned Khronos asset revision (`0f24a49f2d861ac666652ce5b8e4181803db9c1f`) predates ratification and includes shapes rejected by the final schema. The Flow Graph Editor uses explicit parse-only compatibility lowering so those assets remain inspectable, while surfacing a single informational compatibility summary. Production loader defaults remain strict.\n\nStandards export is intentionally out of scope for Phase 1; the canonical model/provenance is retained for that Phase 2 work.\n\n## Validation\n\nRun after merging current `origin/master` into this branch:\n\n- `npm install` — completed, zero audit vulnerabilities\n- affected package compiles: `@dev/core`, `@dev/loaders`, `@tools/flow-graph-editor`\n- focused KHR/core/editor/MCP units — **40 files, 798 tests passed**\n- targeted Flow Graph Editor KHR import E2E — **1 passed**\n- `npm run test:unit` — **357 files passed; 5,136 passed, 1 expected failure, 30 skipped**\n- `npm run test:khr-interactivity`\n  - strict/focused unit coverage — **38 files, 806 tests passed**\n  - pinned Khronos browser compatibility corpus — **175 passed, 1 documented skip**\n- `npm run format:check` — passed\n- `npm run lint:check` — passed\n- all tree-shaking checks — **16/16 passed**\n- side-effect manifest/package synchronization — passed\n- browser startup on the merged local build — no page errors\n- manual drag/drop testing of several GLBs, including Khronos BowShooting\n- independent GPT-5.6 Sol reviews of the conformance changes, editor follow-ups, and final upstream merge — no remaining significant findings",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/core/src/Animations/animationGroup.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Utils/flowGraphArrayIndexBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphPointerOutEventBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphPointerOverEventBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneTickEventBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock.pure.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphHostResolver.ts",
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.pure.ts",
+                    "packages/dev/core/src/scene.pure.ts",
+                    "packages/dev/core/test/unit/Animations/babylon.animationGroup.test.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphCoordinator.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphDataNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphEventNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphHostResolver.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphSerialization.test.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity.types.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/declarationMapper.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/flowGraphEventReferenceBlock.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/flowGraphGLTFDataProvider.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/flowGraphObjectReferenceBlock.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/flowGraphUnsupportedInteractivityBlock.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/index.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphModel.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityHostResolver.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/interactivityNodeState.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity/pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_node_hoverability.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_node_selectability.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityRefPathToObjectConverter.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/objectModelMapping.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.pure.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoaderExtension.ts",
+                    "packages/dev/loaders/test/external/KHR_interactivity/khrInteractivityAllAssets.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/animation nodes.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/event nodes.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/flow nodes.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivityGraphModel.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivityPointerTemplate.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/interactivityRefValidity.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/khrInteractivityLoader.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/objectModel.test.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.module.scss",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts",
+                    "packages/tools/flow-graph-mcp-server/src/blockRegistry.ts",
+                    "packages/tools/flow-graph-mcp-server/test/unit/registryDrift.test.ts",
+                    "packages/tools/flowGraphEditor/package.json",
+                    "packages/tools/flowGraphEditor/src/allBlockNames.ts",
+                    "packages/tools/flowGraphEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/flowGraphEditor/src/components/preview/scenePreviewComponent.tsx",
+                    "packages/tools/flowGraphEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/flowGraphEditor/src/globalState.ts",
+                    "packages/tools/flowGraphEditor/src/graphEditor.tsx",
+                    "packages/tools/flowGraphEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/flowGraphEditor/src/graphSystem/blockTypeColors.ts",
+                    "packages/tools/flowGraphEditor/src/graphSystem/display/flowGraphDefaultDisplayManager.ts",
+                    "packages/tools/flowGraphEditor/src/graphSystem/flowGraphLayout.ts",
+                    "packages/tools/flowGraphEditor/src/serializationTools.ts",
+                    "packages/tools/flowGraphEditor/test/playwright/flowGraphEditor.test.ts",
+                    "packages/tools/flowGraphEditor/test/unit/blockTypeColors.test.ts",
+                    "packages/tools/flowGraphEditor/test/unit/flowGraphLayout.test.ts",
+                    "packages/tools/flowGraphEditor/test/unit/serializationTools.test.ts",
+                    "packages/tools/flowGraphEditor/tsconfig.build.json",
+                    "packages/tools/nme-mcp-server/test/unit/nmeParse.test.ts",
+                    "packages/tools/nrge-mcp-server/test/unit/registryDrift.test.ts",
+                    "scripts/khr-interactivity-assets.json",
+                    "scripts/runKHRInteractivityAssetTests.mjs"
+                ],
+                "tags": [
+                    "enhancement",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "18906",
+                "title": "Fix first-frame edge rendering in visualization tests",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\r\n\r\n## Summary\r\n\r\n- Include enabled edge renderers in `ObjectRenderer` readiness checks, including source-shared instance variants.\r\n- Allow visualization tests to override the canvas background for transparent pixels.\r\n- Update the three FrameGraph OIT reference images.\r\n\r\n## Motivation\r\n\r\nThe OIT visualization tests captured their screenshot before the edge-renderer shader was ready, so the committed references omitted the colored line edges visible in the Playground. The geometry-renderer test also composited transparent pixels over the test harness's green background instead of the Playground's white background.\r\n\r\n## Validation\r\n\r\n- Targeted ObjectRenderer unit tests.\r\n- Targeted WebGL2 visualization tests.\r\n- Targeted WebGPU visualization tests.\r\n- Core TypeScript compilation.\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    ".github/instructions/visual-tests-reference.md",
+                    "packages/dev/core/src/Rendering/edgesRenderer.pure.ts",
+                    "packages/dev/core/src/Rendering/objectRenderer.ts",
+                    "packages/dev/core/test/unit/Rendering/objectRenderer.shouldRender.test.ts",
+                    "packages/tools/tests/test/playwright/visualizationPlaywright.utils.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-OIT.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-OIT-Geometry-renderer-.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/FrameGraph-nrge-OIT.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            }
+        ],
+        "9.26.1": [
+            {
+                "pr": "18909",
+                "title": "Decouple Gaussian classification for effective tree shaking",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Motivation\n\nGeneric rendering code such as `DepthRenderer` imported `IsGaussianSplattingClassName` from the full Gaussian Splatting mesh implementation. In flattened Rollup bundles, that small runtime import could retain the complete Gaussian Splatting dependency tree even when no Gaussian classes were used.\n\nThis follows up on #18707, which centralized the classification needed for streamed splats, and the pure-module work in #18867.\n\n## Changes\n\n- Move Gaussian class-name classification into a dependency-light `gaussianSplatting.functions.ts` module.\n- Add an inherited `_isGaussianSplatting` capability, defaulting to `false` on `AbstractMesh` and overridden by `GaussianSplattingMeshBase`.\n- Update rendering, geometry buffer, GPU picking, IBL shadows, snapshot rendering, node material, and Viewer consumers to use the lightweight predicate.\n- Preserve `IsGaussianSplattingClassName` at its existing `gaussianSplattingMesh` export path for source and runtime compatibility.\n- Add focused Rollup and Webpack assertions that retaining `DepthRenderer` does not retain Gaussian mesh implementations.\n- Extend bundle smoke tests and tree-shaking guidance to prevent similar feature-implementation imports.\n\n## Validation\n\n- `npm run format:check`\n- `npm run lint:check`\n- `npm run test:unit` — 359 files, 5,054 tests passed\n- Core Rollup/Webpack bundle smoke tests\n- Focused Rollup/Webpack `DepthRenderer` isolation regression\n- Viewer TypeScript build\n- Devhost browser validation of capability and non-capability meshes",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".github/instructions/tree-shaking.instructions.md",
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/GaussianSplatting/gaussianSplattingBlock.pure.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplatting.functions.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.pure.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMeshBase.pure.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.pure.ts",
+                    "packages/dev/core/src/Misc/snapshotRenderingHelper.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsRenderPipeline.pure.ts",
+                    "packages/dev/core/src/Rendering/IBLShadows/iblShadowsVoxelRenderer.pure.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.pure.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.pure.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.gaussianSplatting.functions.test.ts",
+                    "packages/tools/tests/test/unit/treeShakingSideEffects.test.ts",
+                    "packages/tools/viewer/src/full/viewer.ts",
+                    "scripts/treeshaking/bundleSmokeTest.mjs"
+                ],
+                "tags": [
+                    "bug",
+                    "optimizations",
+                    "viewer",
+                    "build",
+                    "Gaussian Splatting"
+                ]
+            },
+            {
+                "pr": "18902",
+                "title": "Add dithered tile fade material plugin",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\nAdds an opaque dithered fade plugin for tile LOD transitions on Standard and PBR materials.\n\nSupports independent bounds for meshes, hardware `InstancedMesh` batches, and thin-instance batches, including reusable bulk thin-instance updates for per-frame tile transitions. The plugin covers color and integrated prepass outputs; standalone shadow, depth, picking, outline, and custom passes remain renderer-managed.\n\nIncludes focused unit coverage plus a textured BoomBox Playground and WebGL2/WebGPU visual baseline demonstrating complementary mesh fades and independent hardware-instance fades.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/ditheredTileFadeMaterialPlugin.ts",
+                    "packages/dev/core/src/Materials/index.ts",
+                    "packages/dev/core/src/Materials/pure.ts",
+                    "packages/dev/core/test/unit/Materials/babylon.ditheredTileFadeMaterialPlugin.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/ditheredTileFadeMaterialPlugin.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "18822",
+                "title": "Add new MultiTexture class",
+                "description": "This class adds the ability to load multiple textures at once that get combined at the shader level. It uses `RawTexture2DArray` (WebGL2+ only) and adds methods to add, remove, insert, and update layers. \r\n\r\nUsage:\r\n\r\n```\r\nconst allTextures = [\r\n        'http://localhost:3000/textures/Rock064_1K-JPG/Rock064_1K-JPG_Color.jpg',\r\n        'http://localhost:3000/textures/Rock064_1K-JPG/01_yellow_star.png'\r\n    ]\r\n    const mat = new BABYLON.PBRMaterial('mat', scene);\r\n    let mt = new BABYLON.MultiTexture(\"myMT\", allTextures, scene, {width: 128, height: 128})\r\n    mat.bumpTexture = new BABYLON.Texture(\"http://localhost:3000/textures/Rock064_1K-JPG/Rock064_1K-JPG_NormalDX.jpg\", scene)\r\n    mat.metallicTexture = new BABYLON.Texture(\"http://localhost:3000/textures/Rock064_1K-JPG/Rock064_1K-JPG_Roughness.jpg\", scene)\r\n    mat.albedoTexture = mt;   \r\n   \r\n    mt.blendMode = BABYLON.MultiBlendMode.ALPHA_BLEND\r\n```\r\n<img width=\"294\" height=\"295\" alt=\"image\" src=\"https://github.com/user-attachments/assets/aa3f5769-b5d3-4726-939e-a8617665be54\" />\r\n<img width=\"305\" height=\"267\" alt=\"image\" src=\"https://github.com/user-attachments/assets/fa332121-2283-46d6-9abf-77292558b0f2\" />\r\n",
+                "author": {
+                    "name": "abogartz",
+                    "url": "https://github.com/abogartz"
+                },
+                "files": [
+                    "packages/dev/addons/src/index.ts",
+                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeAdd.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeAlphaBlend.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeAlphaMax.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeMultiply.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeScreen.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/Shaders/multiTextureCompositeSubtract.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeAdd.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeAlphaBlend.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeAlphaMax.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeMultiply.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeScreen.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/ShadersWGSL/multiTextureCompositeSubtract.fragment.fx",
+                    "packages/dev/addons/src/multiTexture/index.ts",
+                    "packages/dev/addons/src/multiTexture/multiTexture.ts",
+                    "packages/dev/addons/test/unit/multiTexture/multiTexture.test.ts",
+                    "packages/dev/core/src/Engines/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/Extensions/pure.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/pure.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture2DArray.functions.ts",
+                    "packages/tools/tests/test/playwright/multiTexture.utils.ts",
+                    "packages/tools/tests/test/playwright/multiTexture.webgl2.test.ts",
+                    "packages/tools/tests/test/playwright/multiTexture.webgpu.test.ts",
+                    "packages/tools/tests/test/playwright/multiTextureOpsEquivalence.webgl2.test.ts",
+                    "packages/tools/tests/test/playwright/multiTextureOpsEquivalence.webgpu.test.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "18888",
+                "title": "Fluid renderer: per-particle size for GPUParticleSystem + fix GPU particle quad offsets",
+                "description": "Follow-up to #18863.\r\n\r\n- **Fluid renderer: support per-particle size for GPUParticleSystem**\r\n- **Fluid renderer: fix quad offsets for GPUParticleSystem**\r\n- **Add visualization tests for fluid GPU particle system sizing**\r\n\r\n### Per-particle size now works with `GPUParticleSystem`\r\n`GPUParticleSystem` stores its `size` attribute as `vec3 (baseSize, scaleX, scaleY)`, so the fluid depth/thickness vertex shaders (GLSL + WGSL) now get a `FLUIDRENDERING_PER_PARTICLE_SIZE_VEC3` define and compute `size.yz * size.x`, matching `gpuRenderParticles.vertex.fx`. The previous warning + uniform-size fallback for GPU systems is removed. A small overridable hook (`_getPerParticleSizeAttributeSize()`) selects the layout.\r\n\r\n`FluidRenderingObject.UsePerParticleSizeAttribute` is still opt-in and off by default; nothing changes unless it is enabled.\r\n\r\n### Fixes a pre-existing bug with `GPUParticleSystem` (independent of the flag)\r\n`GPUParticleSystem`'s sprite `offset` quad is centered (`[-0.5, 0.5]`) while the fluid shaders assume the CPU `ParticleSystem` convention (`[0, 1]`: `offset - 0.5` for the corner, `uv = offset`). Each quad was shifted by half a particle and only a quarter of the sphere survived the discard.\r\n\r\n#### Update:\r\nThe fix is shader-side: a new overridable hook (`_usesCenteredOffsetAttribute()`, true for `GPUParticleSystem`) adds a `FLUIDRENDERING_CENTERED_OFFSET` define, and the depth/thickness vertex shaders (GLSL + WGSL) normalize the offset with `offset + 0.5` before computing the corner position and UV. The particle system's own buffers stay the single source of truth: no wrapper-owned buffer, no per-draw lookup, no extra disposal or context-restore handling. This applies to both the per-particle and uniform-size paths.\r\n\r\n### Tests\r\n- Unit tests: vec2 attribute for `ParticleSystem`, vec3 for `GPUParticleSystem`, uniform when the flag is off; `FLUIDRENDERING_CENTERED_OFFSET` is asserted present for GPU systems (with and without the flag) and absent for CPU systems.\r\n- Four new visualization tests, passing on WebGL2 and WebGPU; existing fluid tests unchanged:\r\n  - `#M9FSIH#1` (static scene): per-particle sizes vs. uniform-size fallback.\r\n  - `#M9FSIH#4` (static scene, `scaleX = 1.5`, `scaleY = 0.75`): per-particle vs. uniform, covering the `vec3(baseSize, scaleX, scaleY)` path.\r\n\r\n### Playground\r\nAnimated demo: https://playground.babylonjs.com/#M9FSIH#2 (on the current release it shows the quarter-sphere bug; correct with this PR's snapshot build).\r\n\r\n### Noticed, not addressed here\r\n`addParticleSystem(gpuPs, /*generateDiffuseTexture*/ false)` renders nothing, because `GPUParticleSystem`'s emission bookkeeping lives in `render()`, which the fluid renderer replaces with a no-op. Happy to look at it in a separate PR if wanted.\r\n",
+                "author": {
+                    "name": "tini2n",
+                    "url": "https://github.com/tini2n"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObject.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObjectParticleSystem.ts",
+                    "packages/dev/core/src/Shaders/fluidRenderingParticleDepth.vertex.fx",
+                    "packages/dev/core/src/Shaders/fluidRenderingParticleThickness.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/fluidRenderingParticleDepth.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/fluidRenderingParticleThickness.vertex.fx",
+                    "packages/dev/core/test/unit/Rendering/fluidRenderingObjectParticleSystem.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fluidGpuParticleSystemPerParticleSize.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fluidGpuParticleSystemPerParticleSizeAsymmetricScale.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fluidGpuParticleSystemUniformSize.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/fluidGpuParticleSystemUniformSizeAsymmetricScale.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "18907",
+                "title": "FBX loader: full format coverage, animation fidelity, DCC materials, NURBS, constraints",
+                "description": "## The short version\n\nFBX is still the file everybody actually has. Every Maya, Max, MotionBuilder, Blender and Mixamo pipeline spits\none out, and half the models people try to drag into the sandbox are FBX. The pure TS loader that landed in 9.26\nwas a great start, so I spent some time seeing how far it could go. This PR takes it from \"loads a lot of files\"\nto \"loads all of them, and they look and move like they did in the DCC\".\n\nNothing changes for existing users: the defaults are the 9.26 behaviour, and everything new sits behind options,\nbundled as `preset: \"full\"` for people who want all of it in one line.\n\nI did not want to guess at any of this, so every change was checked against ufbx (the C FBX parser that has\nfeature parity with the Autodesk SDK) on its test corpus: 683 real files from Maya, 3ds Max, MotionBuilder,\nBlender and ZBrush, versions FBX 3000 through 7700, ASCII and binary. Before: 501 of those files loaded.\nAfter: all of them, with transforms, triangle counts, animation samples, camera FOVs and lights matching ufbx\nto the third decimal.\n\n## What changed\n\n**File formats.** FBX 6.0/6.1 was only partly working (transform animation loaded, but lights, cameras, skins\nand blend shapes were silently dropped). FBX 5.x and older did not load at all. Both work now: the old files get\nrewritten into the 6.x layout on load so the rest of the loader does not have to care. Big-endian binaries,\nevery weird ASCII number spelling (`1.#INF`, `nan(ind)`, `&quot;`), files with no `Objects` block, cameras that are\nnever connected to anything: all handled.\n\n**Animation.** This is where most of the work went. Curves keep their real tangents (Bezier, TCB, auto,\nweighted, broken), pre/post extrapolation works, animation layers blend the way MotionBuilder blends them\n(additive and override, accumulation modes, animated layer weights), step keys stay stepped, negative clip starts\nare fine, and the file's frame rate is used instead of 30. Node transforms are built from the exact FBX TRS chain\nwith pivots and offsets instead of decomposing matrices, and the RrSs / Rrs inherit modes work for both plain\nnodes and rig bones. Visibility, camera, light, material, blend shape weight and even user property animation\ncome through as Babylon animations. Clips that span days (yes, the corpus has those) used to bake millions of\nkeys; sampling is now capped per key segment and they load in milliseconds.\n\n**Materials.** Every material flavour the big DCCs write: Lambert/Phong, Maya Standard Surface (Arnold and\nOSL), 3ds Max Physical, 3ds Max PBR (metal/rough and spec/gloss), glTF, OpenPBR, Stingray PBS. They all resolve\ninto one material model and come out as `StandardMaterial` by default, or as `PBRMaterial` for the PBR ones with\n`materials: \"auto\"` (or force either). Texture wrap modes and the old 6.x \"texture per layer element\" assignment\nwork too. Layered textures are approximated by their first layer and reported; Babylon has no layer blending to\nmap them onto.\n\n**Geometry.** Vertex welding (the old loader produced one vertex per polygon corner), optional geometry sharing\nbetween instanced models, an optional unit scale, and the missing geometry types: NURBS surfaces get tessellated\ninto meshes with the same subdivision the file asks for (a skin or blend shape bound to one is reported and left\noff, since the tessellated mesh has no control point mapping), NURBS curves and `Line` geometry become\n`LinesMesh` when asked. LOD groups map to Babylon LOD levels honouring each level's show/hide/use-LOD mode,\ndisplay layers hide their members, selection sets and user properties land in metadata. The ear clipper was cubic in vertex count and took 82 seconds on a maze made of huge n-gons; it is\nnow a linked-ring clipper that does the same file in 2 seconds with identical output.\n\n**Cameras and lights.** Field of view now follows the SDK's aspect, aperture and gate fit rules (it matches to\nthe millidegree across every camera in the corpus), roll and ortho size are right, lights get their range from\nfar attenuation, and with `attachCamerasAndLights` both follow the node they belong to when it is animated.\n\n**Constraints.** Aim, parent, position, rotation and scale constraints are recorded as metadata, and with\n`constraints: \"apply\"` solved every frame: one solver per scene brackets the scene's animation phase (restores the\nunconstrained transforms before animations run, captures and solves after), orders the constraints so a constraint\nwhose target (or parent) is driven by another one is solved after it, reports cycles, blends from what animation\nproduced this frame (so a 50% weight stays 50%, whatever value animation wrote), and allocates nothing per frame.\nIK stays metadata.\n\n**Diagnostics.** Anything the loader has to skip or approximate is reported through an `onWarning` option and\nstored as `fbxDiagnostics` on the root node. Nothing fails silently anymore, and nothing that does work is\nreported as unsupported.\n\n## How it was tested\n\n- The ufbx corpus harness (in my repo, linked below): loads all 683 files with a `NullEngine` and compares\n  against a JSON dump from ufbx itself. 673 of 673 valid files load, triangle counts match on 672, rest\n  transforms match on 3920 of 3929 nodes, animation samples on 4358 of 4370, cameras and lights on all of them.\n  The leftovers are deliberate conventions and synthetic torture files (duplicate ids, names made of quotes, NaN\n  transforms), documented in the tests.\n- Babylon's own 18 FBX visualization playgrounds, replayed with this loader on WebGL2 and pixel-diffed against\n  the reference images in the repo: all 18 within 0.5% of pixels (antialiasing noise). This is the check that\n  caught the one real bug the headless harness could not: parenting cameras to their nodes put them under the\n  root's handedness flip and rendered a mirrored image. Fixed with a pivot, and there is a unit test for it now.\n- Every corpus file rendered on a real GPU: no exceptions, no shader errors.\n- `npm run build:source`, `npm run lint:check`, the TypeDoc check and the side-effects manifest are clean. The 109\n  FBX unit tests in this repo pass: 80 existing (two with expectations updated, see below) and 29 new ones that\n  pin every fix and every public option in this PR (ids beyond 2^53, negative clips, Properties60 layouts, legacy\n  GlobalSettings, the constraint solver, layered property animation, LOD display modes, NURBS deformers, texture\n  creation, diagnostics, presets).\n- 478 vitest tests in my repo, including a copy of this repo's FBX unit tests, parser edge cases, feature tests\n  and 43 corpus fixtures against oracle dumps.\n\n## Things reviewers should know\n\nDefaults are the 9.26 behaviour. Everything that changes what a scene looks like is an option, and\n`preset: \"full\"` sets them all at once:\n\n| Option                   | default (`\"compatible\"`) | `preset: \"full\"` |\n| ------------------------ | ------------------------ | ---------------- |\n| `materials`              | `\"standard\"`             | `\"auto\"`         |\n| `shareGeometry`          | `false`                  | `true`           |\n| `curves`                 | `\"skip\"`                 | `\"lines\"`        |\n| `constraints`            | `\"metadata\"`             | `\"apply\"`        |\n| `rebaseAnimations`       | `true`                   | `false`          |\n| `attachCamerasAndLights` | `false`                  | `true`           |\n\nOther things worth knowing:\n\n- New metadata keys on nodes, meshes, materials, cameras and lights, all prefixed `fbx`.\n- Object ids beyond 2^53 are accepted (real exporters write them) and kept distinct: the parsers keep the exact\n  digits and the connection resolver keys them by that text, so two ids that round to the same double never\n  collide. Synthetic ids for legacy objects are allocated outside the ids the file uses.\n- Two unit test expectations changed: the unsafe-id tests above, and a layer with override blending at a 50%\n  weight is evaluated instead of flagged as unsupported.\n- Joint children stay in the node hierarchy instead of being attached to bones.\n\nNot in this PR: IK solving, stereo cameras, audio clips, cache deformers, NURBS trim curves, texture layer\nblending, deformers on NURBS surfaces. They are all reported as warnings rather than dropped silently.\n\nThis is a big diff. It is one commit here because the pieces lean on each other, but I have it split into ten\nself-contained batches on my side (parsing, animation curves, inherit modes, materials, geometry, cameras and\nproperty animation, scene features, NURBS, legacy formats, constraints) and can open them one at a time if that\nis easier to review.\n\nThe corpus harness, the ufbx oracle, the GPU viewer and the playground replay live here:\nhttps://github.com/Pryme8/babylon-fbx-loader (the corpus files themselves are ufbx's, not committed to Babylon).\n\nCredit where it is due: I built this with Claude Code (Anthropic's Claude) doing a big share of the work with me,\nfrom porting the ufbx semantics to writing the corpus harness and the viewer, while I steered, tested and made the\ncalls on what goes in. It is listed as a co-author on the commit.\n",
+                "author": {
+                    "name": "Pryme8",
+                    "url": "https://github.com/Pryme8"
+                },
+                "files": [
+                    "packages/dev/loaders/src/FBX/fbxConstraintBehavior.ts",
+                    "packages/dev/loaders/src/FBX/fbxFileLoader.pure.ts",
+                    "packages/dev/loaders/src/FBX/index.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/animation.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/animationCurve.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/blendShapes.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/connections.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/constraints.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/fbxInterpreter.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/geometry.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/legacyDocument.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/materialModel.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/materials.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/nodeTransform.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/nurbs.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/propertyTemplates.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/rig.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/sceneDiagnostics.ts",
+                    "packages/dev/loaders/src/FBX/interpreter/skeleton.ts",
+                    "packages/dev/loaders/src/FBX/parsers/fbxAsciiParser.ts",
+                    "packages/dev/loaders/src/FBX/parsers/fbxBinaryParser.ts",
+                    "packages/dev/loaders/src/FBX/pure.ts",
+                    "packages/dev/loaders/src/FBX/types/fbxTypes.ts",
+                    "packages/dev/loaders/test/unit/FBX/fbxConstraintBehavior.test.ts",
+                    "packages/dev/loaders/test/unit/FBX/interpreter/animation.test.ts",
+                    "packages/dev/loaders/test/unit/FBX/interpreter/connections.test.ts",
+                    "packages/dev/loaders/test/unit/FBX/interpreter/legacyDocument.test.ts",
+                    "packages/dev/loaders/test/unit/FBX/interpreter/propertyTemplates.test.ts",
+                    "packages/dev/loaders/test/unit/FBX/loaderBehavior.test.ts",
+                    "packages/dev/loaders/test/unit/FBX/parsers/fbxBinaryParser.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "18900",
+                "title": "Improve USD materials, instancing, morphs, and skinning",
+                "description": "## Summary\n\nThis PR updates the Babylon.js USD loader and Sandbox runtime to consume immutable **protocol v5** emitted by `BabylonJS/babylon-usd-importer`. The released `/babylonUsdImporter/4/` runtime remains byte-for-byte unchanged.\n\nCompanion importer PRs:\n\n- Features: https://github.com/BabylonJS/babylon-usd-importer/pull/1\n- Protocol v5: https://github.com/BabylonJS/babylon-usd-importer/pull/2\n\nThe merged v5 source is `2baa7a087bad28498378dacf50d22f46c54eacc3`, tagged `v5`; the original shipped v4 source is tagged `v4`.\n\n### `UsdPreviewSurface` texture fidelity\n\n- Support independent base color, opacity, normal, metallic, roughness, occlusion, and emissive bindings.\n- Preserve selected texture output channels, source color space, and float4 scale/bias.\n- Use Babylon's existing packed metallic/roughness channel path when compatible.\n- Map separate roughness textures to `microSurfaceTexture` and separate occlusion textures to `ambientTexture`.\n- Use `TextureProcessor` only when channel extraction or scale/bias processing is required, cache processed results, and preserve UV rotation centers.\n- Generate mipmapped, trilinear processed textures where supported, preserve HDR emissive range with float/half-float output and material factors, and use a WebGL1-safe NPOT fallback.\n- Keep cancellation, rollback, direct-scene loading, and detached `AssetContainer` ownership safe for asynchronously processed textures.\n\n### Skeleton and skinning fixes\n\n- Construct Babylon bones with separate local rest and bind matrices.\n- Consume the runtime that places skinned geometry in Skeleton object space after applying `geomBindTransform`.\n- Fix off-axis joint animation when USD bind and rest poses differ.\n- Fix skinned submeshes whose authored garment/button transforms were previously applied twice.\n\n### High-performance point instancing\n\n- Register Babylon thin-instance support as a loader dependency.\n- Consume one contiguous matrix block per prototype with `mesh.thinInstanceSetBuffer(\"matrix\", ...)`.\n- Avoid allocating one `InstancedMesh` per USD point-instancer placement.\n- Validate ranges and reject duplicate/mixed classic and thin-instance batches for the same source.\n\nThe local Pixar PointInstancedMedCity benchmark loads as 8 source meshes and 40,000 GPU thin instances with no classic instance allocations, in about 1.6 seconds end to end on the development machine.\n\n### Morph targets and animation\n\n- Create and own `MorphTargetManager` instances through the loader's direct and detached container paths.\n- Materialize full post-weld target positions and optional normals from data-buffer views.\n- Preserve USD primary shapes and in-between shapes as separate Babylon morph targets.\n- Animate resolved influences with float animation tracks.\n- Keep texture-backed managers dynamically compacted and pin only the small vertex-attribute fallback where zero crossings would otherwise recompile shaders.\n- Use globally unique target IDs and validate target/animation metadata.\n\nThe local Pixar `HumanFemale.keepAlive` benchmark loads with:\n\n- 89 meshes\n- 28 texture-backed morph managers\n- 1,906 morph targets\n- 1,906 influence tracks\n- visible influence changes across the animation\n\n### Tests and runtime assets\n\n- Expanded USD protocol/materializer unit coverage, including malformed range rollback.\n- Real USDA/USDC/USDZ Sandbox regressions for materials, bind poses, point instancers, and morph animation.\n- GPU pixel-readback coverage for asymmetric HDR emissive processing, output mipmaps, and sampling.\n- New immutable protocol-v5 runtime directory pinned to the merged importer commit with SHA-256 documentation.\n\n## Validation\n\n- 39 focused USD loader/materializer unit tests plus 44 TextureProcessor tests.\n- Loader TypeScript compilation.\n- Tree-shaking verification: all 16 checks pass.\n- Local Sandbox validation for real USDA, USDC, USDZ, PointInstancedMedCity, HumanFemale, and animated skeleton repros, including four shipped-WASM integration tests.\n\nPrivate benchmark and repro assets are not committed.\n\n## Current limitations\n\n- MaterialX is intentionally not added by this PR.\n- Nested USD point instancers are unsupported.\n- Multi-frame point-instancer attributes are currently frozen at their first authored frame by the importer.\n",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    ".azure-pipelines/ci-monorepo.yml",
+                    ".azure-pipelines/templates/wait-for-snapshot.yml",
+                    "packages/dev/core/src/Materials/Textures/textureProcessor.ts",
+                    "packages/dev/core/test/unit/Materials/Textures/textureProcessor.test.ts",
+                    "packages/dev/loaders/src/USD/usdCommandProtocol.ts",
+                    "packages/dev/loaders/src/USD/usdFileLoader.pure.ts",
+                    "packages/dev/loaders/src/USD/usdSceneMaterializer.ts",
+                    "packages/dev/loaders/test/unit/USD/usdFileLoader.test.ts",
+                    "packages/dev/loaders/test/unit/USD/usdSceneMaterializer.test.ts",
+                    "packages/dev/loaders/test/unit/USD/usdTestUtils.ts",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/README.md",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/babylon-usd-importer.data",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/babylon-usd-importer.js",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/babylon-usd-importer.wasm",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/babylon-usd-importer.worker.js",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/openusd.license",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/tbb.license",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/5/zlib.license",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/README.md",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/asymmetric.png",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/bind-pose.usda",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/material-textures.usda",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/material-textures.usdc",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/material-textures.usdz",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/morph-targets.usda",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/point-instancer.usda",
+                    "packages/tools/babylonServer/public/babylonUsdImporter/testAssets/texture.png",
+                    "packages/tools/sandbox/src/tools/usdFileInput.ts",
+                    "packages/tools/sandbox/test/interaction.sandbox.test.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "new feature",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "18901",
+                "title": "Add Babylon Lite scene entities to Inspector v2",
+                "description": "> 🤖 *This PR was created by the create-pr skill.*\n\n## Summary\n\n- refactor Fluent vector, quaternion, and color editors around runtime-neutral controlled primitives\n- add reusable Babylon Lite property editors through `@babylonjs/shared-ui-components/lite` while preserving existing Full APIs\n- add hierarchical Lite scene nodes with transforms, metadata, visibility, reparenting, removal, and topology/selection reconciliation\n- add Lite cameras, directional/point/spot/hemispheric lights, and identity-only shadow generators to Explorer and Properties\n- make Lite light color, intensity, range, and exponent edits refresh GPU light data immediately\n- expand the Lite Inspector test app and focused unit coverage\n\n## Behavior\n\nThe Lite Inspector now exposes the primary P2 scene-entity workflows with Full-equivalent outcomes where Babylon Lite has public support. Shadow generators remain identity/display-only because Babylon Lite does not expose editable internals. Bounding boxes/gizmos and editor hand-offs remain deferred to later parity milestones.\n\n## Review follow-up\n\n- addressed all six automated inline recommendations in `80fc942561`\n- added regression coverage for input compatibility and explicit precision formatting\n- prevented quaternion-only props from leaking into the shared tensor property line\n- guarded persistence warnings in console-less environments\n- removed redundant scene ownership traversal\n- attached Lite test-app camera controls with teardown cleanup in `4989d98e4e`\n- resolved all six review threads\n\n## Visual changes\n\nThe Lite Explorer now presents the scene hierarchy, cameras, lights, shadow generators, materials, and textures with Full Inspector color conventions. Light properties support live vector, color, and intensity editing.\n\n![Babylon Lite Inspector Explorer and directional light properties](https://github.com/user-attachments/assets/abfb8337-b423-4204-94ca-dbcf1b86d3e5)\n\n## Validation\n\n- `npm run format:check`\n- `npm run lint:check`\n- focused shared UI and Inspector Lite unit tests: 24 passing\n- published shared UI Lite entry bundle smoke test verifies no Babylon Core runtime dependency\n- shared UI package and Inspector TypeScript compilation\n- visible Microsoft Edge validation of hierarchy, properties, icon colors, PBR rendering, live light color/intensity updates, and camera controls\n- Azure Unit CI executed 5,006 passing tests; its red result is caused by 16 asynchronous shader-import `EnvironmentTeardownError`s after Vitest teardown, with the aggregate Monorepo check reflecting that same flake",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/inspector-v2/src/components/properties/boundProperty.tsx",
+                    "packages/dev/inspector-v2/src/components/properties/metadataProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/components/properties/cameraProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/components/properties/lightProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/components/properties/sceneNodeProperties.tsx",
+                    "packages/dev/inspector-v2/src/lite/inspector.tsx",
+                    "packages/dev/inspector-v2/src/lite/sceneEntityUtils.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/cameraPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/lightPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/meshPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/sceneNodePropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/properties/shadowGeneratorPropertiesService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/cameraExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/lightExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/meshExplorerService.tsx",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/sceneSelectionUtils.ts",
+                    "packages/dev/inspector-v2/src/lite/services/panes/scene/shadowGeneratorExplorerService.tsx",
+                    "packages/dev/inspector-v2/test/app/lite.ts",
+                    "packages/dev/inspector-v2/test/unit/liteExplorerServices.test.ts",
+                    "packages/dev/inspector-v2/test/unit/liteMeshPropertiesService.test.tsx",
+                    "packages/dev/inspector-v2/test/unit/liteSceneEntities.test.ts",
+                    "packages/dev/inspector-v2/test/unit/runtimeNeutralPropertyLines.test.tsx",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/dev/sharedUiComponents/src/copyCommandToClipboard.ts",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLines/colorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLines/colorPropertyLineCore.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLines/vectorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/hoc/propertyLines/vectorPropertyLineCore.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/accordion.contexts.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/spinButton.tsx",
+                    "packages/dev/sharedUiComponents/src/fluent/primitives/structuralColorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/lite/fluent/hoc/propertyLines/colorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/lite/fluent/hoc/propertyLines/vectorPropertyLine.tsx",
+                    "packages/dev/sharedUiComponents/src/lite/index.ts",
+                    "packages/dev/sharedUiComponents/test/unit/copyCommandToClipboard.test.ts",
+                    "packages/dev/sharedUiComponents/test/unit/liteEntryPoint.test.ts",
+                    "packages/public/@babylonjs/shared-ui-components/package.json"
+                ],
+                "tags": [
+                    "inspector",
+                    "new feature",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "18899",
+                "title": "chore(deps): update dependencies securely",
+                "description": "## Summary\n\n- Update Vite to 8.2.2, Vitest and coverage to 4.1.11, and `@adobe/spz` to 0.2.3.\n- Add targeted transitive overrides for `@humanfs/node` 0.16.8, Nx's `smol-toml` 1.7.1, and `@puppeteer/browsers` 3.0.2.\n- Keep MemLab on its compatible Puppeteer 24.31.0 runtime while removing the vulnerable `extract-zip` dependency chain.\n- Resolve Tabster through its existing ESM entry for Fluent UI unit tests under Vitest 4.1.11.\n\n## Security audit\n\n- Before: 19 findings (14 high, 5 moderate).\n- After: 0 informational, 0 low, 0 moderate, 0 high, 0 critical; 0 total.\n- Command: `npx -y npm@11.18.0 audit --json`.\n- The audit includes all workspaces, development dependencies, and severities.\n\n## Seven-day release-age policy\n\n- Frozen run time: `2026-09-10T09:52:59Z`.\n- Cutoff: `2026-09-03T09:52:59Z`.\n- Compared the final lockfile with the baseline and checked all 163 newly resolved external registry versions with the release-age helper.\n- All 163 versions were published on or before the cutoff. `@puppeteer/browsers@3.0.2`, for example, was published `2026-05-15T11:51:19.116Z`.\n\n## Under-seven-day security exceptions\n\nNone.\n\n## Deferred recent releases\n\n- `@babylonjs/lite@1.28.0` was published `2026-09-07T08:07:40.298Z` and remains deferred until `2026-09-14T08:07:40.298Z`.\n\n## Validation\n\n- Normal npm 11.18.0 install completed with zero vulnerabilities and left `package-lock.json` byte-for-byte unchanged.\n- Final full audit: all severity counts zero.\n- Final exact-version release-age check: 163/163 eligible.\n- `npm run format:check`\n- `npm run lint:check`\n- `npm run build:dev`\n- `npm run test:unit` — 354 files, 5,020 passing tests, 1 expected failure, 30 skipped.\n- `npm run test:unit -w @tools/memory-leak-tests` — 3 files, 22 tests.\n- `npm run test -w @tools/memory-leak-tests -- --scenario core-playground-2FDQT5-1508` — zero leaks.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/loaders/package.json",
+                    "vitest.config.mts"
+                ],
+                "tags": []
+            }
+        ],
         "9.26.0": [
             {
                 "pr": "18885",

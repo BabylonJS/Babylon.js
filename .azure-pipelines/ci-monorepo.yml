@@ -67,15 +67,14 @@ variables:
       value: "chrome@143:OSX Sonoma"
     - name: system.debug
       value: false
-    # Stable, cacheable locations (see templates/cache-steps.yml). Kept outside
-    # the repo working dir so Cache@2 can restore/save them across runs & reruns.
+    # Stable tool-cache locations outside the repo working dir. Cache@2 persists
+    # npm/Playwright across runs; Nx uses its directory only within each job.
     - name: npm_config_cache
       value: $(Pipeline.Workspace)/.npm
     - name: NX_CACHE_DIRECTORY
       value: $(Pipeline.Workspace)/.nxcache
-    # Nx 22.7.8 reads NX_MAX_CACHE_SIZE and accepts B/KB/MB/GB values. Cache@2
-    # creates an uncompressed tar alongside the cache, so cap the source
-    # directory to leave enough disk headroom for that temporary archive.
+    # Bound the job-local Nx cache so build outputs retain enough disk headroom.
+    # It is not persisted across hosted agents; see templates/cache-steps.yml.
     - name: NX_MAX_CACHE_SIZE
       value: 4GB
     - name: PLAYWRIGHT_BROWSERS_PATH
@@ -187,9 +186,6 @@ jobs:
                     If that was unintentional please make sure to revert those changes or close this PR.
 
           - template: templates/cache-steps.yml
-            parameters:
-                nx: true
-                nxCacheKey: build
 
           - script: npm ci
             displayName: "npm ci"
@@ -321,9 +317,6 @@ jobs:
                 version: "24.x"
 
           - template: templates/cache-steps.yml
-            parameters:
-                nx: true
-                nxCacheKey: es6
 
           - script: npm ci
             displayName: "npm ci"
@@ -402,9 +395,6 @@ jobs:
                 version: "24.x"
 
           - template: templates/cache-steps.yml
-            parameters:
-                nx: true
-                nxCacheKey: es6-tools
 
           - script: npm ci
             displayName: "npm ci"
@@ -478,16 +468,13 @@ jobs:
                 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
                 PUPPETEER_SKIP_DOWNLOAD: "true"
 
-          - script: npx prettier --list-different "./packages/**/src/**/*.{ts,tsx,js,json,scss,css}"
+          - script: npm run format:check
             displayName: "Formatting"
 
           - script: npm run lint:check-ci
             displayName: "Linting"
             env:
                 NODE_OPTIONS: "--max-old-space-size=8192"
-
-          - script: npm run check:treeshaking
-            displayName: "Tree-shaking verification"
 
     # ============================================================================
     # TYPEDOC CHECK

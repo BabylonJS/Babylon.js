@@ -22,6 +22,32 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform vec2 translationPivot;
 
+#ifdef PREPASS
+uniform vec2 cameraInfo;
+#if defined(LOCAL) && defined(PREPASS_LOCAL_POSITION)
+uniform mat4 inverseEmitterWM;
+uniform vec3 geometryWorldOffset;
+#endif
+#ifdef PREPASS_POSITION
+varying vec3 vGeometryPositionW;
+#endif
+#ifdef PREPASS_WORLD_NORMAL
+varying vec3 vGeometryNormalW;
+#endif
+#ifdef PREPASS_NORMAL
+varying vec3 vGeometryNormalV;
+#endif
+#ifdef PREPASS_LOCAL_POSITION
+varying vec3 vPosition;
+#endif
+#ifdef PREPASS_DEPTH
+varying vec3 vViewPos;
+#endif
+#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
+varying float vNormViewDepth;
+#endif
+#endif
+
 #ifdef ANIMATESHEET
 uniform vec3 particlesInfos; // x (number of rows) y(number of columns) z(rowSize)
 #endif
@@ -82,6 +108,17 @@ vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
 	vec3 alignedCorner = rotMatrix * rotatedCorner;
 	return position + alignedCorner;
 }
+
+vec3 stretchedNormal(vec3 toCamera, vec3 stretchDirection) {
+	vec3 normalizedToCamera = normalize(toCamera);
+	vec3 normalizedCrossDirToCamera = normalize(cross(normalize(stretchDirection), normalizedToCamera));
+#ifdef BILLBOARDSTRETCHED_LOCAL
+	vec3 row1 = normalize(stretchDirection);
+#else
+	vec3 row1 = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
+#endif
+	return normalize(cross(normalizedCrossDirToCamera, row1));
+}
 #endif
 
 
@@ -94,6 +131,9 @@ void main(void) {
 	vec2 cornerPos;
 #ifndef POSITIONW_AS_VARYING
 	vec3 vPositionW;
+#endif
+#ifdef PREPASS
+	vec3 geometryNormalW;
 #endif
 
 	cornerPos = (vec2(offset.x - 0.5, offset.y  - 0.5) - translationPivot) * size;
@@ -112,6 +152,9 @@ void main(void) {
 	yaxis.y = 0.;
 
 	vPositionW = rotate(normalize(yaxis), rotatedCorner);
+#ifdef PREPASS
+	geometryNormalW = normalize(yaxis);
+#endif
 
 	vec3 viewPos = (view * vec4(vPositionW, 1.0)).xyz;
 #elif defined(BILLBOARDSTRETCHED)
@@ -122,6 +165,9 @@ void main(void) {
 
 	vec3 toCamera = position - eyePosition;
 	vPositionW = rotateAlign(toCamera, rotatedCorner);
+#ifdef PREPASS
+	geometryNormalW = stretchedNormal(toCamera, direction);
+#endif
 
 	vec3 viewPos = (view * vec4(vPositionW, 1.0)).xyz;
 #else
@@ -133,6 +179,9 @@ void main(void) {
 	vec3 viewPos = (view * vec4(position, 1.0)).xyz + rotatedCorner;
 
     vPositionW = (invView * vec4(viewPos, 1)).xyz;
+#ifdef PREPASS
+	geometryNormalW = normalize((invView * vec4(0.0, 0.0, 1.0, 0.0)).xyz);
+#endif
 #endif
 
 #ifdef RAMPGRADIENT
@@ -151,6 +200,9 @@ void main(void) {
 
 	vec3 yaxis = normalize(direction);
 	vPositionW = rotate(yaxis, rotatedCorner);
+#ifdef PREPASS
+	geometryNormalW = yaxis;
+#endif
 
 	gl_Position = projection * view * vec4(vPositionW, 1.0);
 #endif
@@ -174,6 +226,45 @@ void main(void) {
 	#include<clipPlaneVertex>
 	#include<fogVertex>
 	#include<logDepthVertex>
+
+#ifdef PREPASS
+	vec4 geometryViewPosition = view * vec4(vPositionW, 1.0);
+#if defined(PREPASS_NORMAL) || defined(PREPASS_WORLD_NORMAL)
+	vec3 geometryNormalV = normalize((view * vec4(geometryNormalW, 0.0)).xyz);
+	vec3 geometryViewDirection = projection[3][3] == 0.0 ? geometryViewPosition.xyz : vec3(0.0, 0.0, geometryViewPosition.z);
+	if (dot(geometryNormalV, geometryViewDirection) > 0.0) {
+		geometryNormalV = -geometryNormalV;
+		geometryNormalW = -geometryNormalW;
+	}
+#endif
+#ifdef PREPASS_POSITION
+	vGeometryPositionW = vPositionW;
+#endif
+#ifdef PREPASS_WORLD_NORMAL
+	vGeometryNormalW = normalize(geometryNormalW);
+#endif
+#ifdef PREPASS_NORMAL
+	vGeometryNormalV = geometryNormalV;
+#endif
+#ifdef PREPASS_LOCAL_POSITION
+	#ifdef LOCAL
+		vec3 geometryRenderPosition = vPositionW;
+		#if defined(BILLBOARD) && !defined(BILLBOARDY) && !defined(BILLBOARDSTRETCHED)
+			// invView can contain absolute camera translation in floating-origin mode.
+			geometryRenderPosition = position + (invView * vec4(rotatedCorner, 0.0)).xyz;
+		#endif
+		vPosition = (inverseEmitterWM * vec4(geometryRenderPosition - geometryWorldOffset, 1.0)).xyz;
+	#else
+		vPosition = vPositionW;
+	#endif
+#endif
+#ifdef PREPASS_DEPTH
+	vViewPos = geometryViewPosition.xyz;
+#endif
+#ifdef PREPASS_NORMALIZED_VIEW_DEPTH
+	vNormViewDepth = (geometryViewPosition.z - cameraInfo.x) / (cameraInfo.y - cameraInfo.x);
+#endif
+#endif
 	
 #define CUSTOM_VERTEX_MAIN_END
 

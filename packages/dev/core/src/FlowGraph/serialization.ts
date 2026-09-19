@@ -5,9 +5,16 @@ import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vec
 import { type Scene } from "../scene";
 import { FlowGraphBlockNames } from "./Blocks/flowGraphBlockNames";
 import { FlowGraphInteger } from "./CustomTypes/flowGraphInteger.pure";
-import { FlowGraphTypes, getRichTypeByFlowGraphType } from "./flowGraphRichTypes.pure";
+import { FlowGraphTypes } from "./flowGraphRichTypes.pure";
 import { type Node } from "core/node";
 import { FlowGraphMatrix2D, FlowGraphMatrix3D } from "./CustomTypes/flowGraphMatrix";
+
+const _DefaultEventDataParseCounts = new WeakMap<object, number>();
+
+/** @internal */
+export function _GetDefaultEventDataParseCount(value: unknown): number {
+    return value !== null && typeof value === "object" ? (_DefaultEventDataParseCounts.get(value) ?? 0) : 0;
+}
 
 function IsVectorClassName(className: string) {
     return (
@@ -166,30 +173,14 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         finalValue = FlowGraphInteger.FromValue(intermediateValue.value);
     } else if (className === FlowGraphTypes.Number || className === FlowGraphTypes.String || className === FlowGraphTypes.Boolean) {
         finalValue = intermediateValue.value[0];
+    } else if (key === "eventData" && intermediateValue !== null && typeof intermediateValue === "object") {
+        _DefaultEventDataParseCounts.set(intermediateValue, _GetDefaultEventDataParseCount(intermediateValue) + 1);
+        finalValue = intermediateValue;
     } else if (intermediateValue && intermediateValue.value !== undefined) {
         finalValue = intermediateValue.value;
     } else {
         if (Array.isArray(intermediateValue)) {
-            // Check if this is an event configuration array (objects with id/eventData)
-            // versus a plain array of primitives (e.g. variable name lists)
-            if (intermediateValue.length > 0 && typeof intermediateValue[0] === "object" && intermediateValue[0] !== null && "eventData" in intermediateValue[0]) {
-                // configuration data of an event
-                finalValue = intermediateValue.reduce((acc, val) => {
-                    if (!val.eventData) {
-                        return acc;
-                    }
-                    acc[val.id] = {
-                        type: getRichTypeByFlowGraphType(val.type),
-                    };
-                    if (typeof val.value !== "undefined") {
-                        acc[val.id].value = defaultValueParseFunction("value", val, assetsContainer, scene);
-                    }
-                    return acc;
-                }, {});
-            } else {
-                // Plain array of primitives — return as-is
-                finalValue = intermediateValue;
-            }
+            finalValue = intermediateValue;
         } else {
             finalValue = intermediateValue;
         }

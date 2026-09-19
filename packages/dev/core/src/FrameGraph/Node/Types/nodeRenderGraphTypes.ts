@@ -85,7 +85,7 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     TextureAlbedoSqrt = 0x00000800,
     /** Depth (in screen space) geometry texture */
     TextureScreenDepth = 0x00001000,
-    /** Normal (in world space) geometry texture */
+    /** Normal (in world space) geometry texture, encoded from [-1, 1] to [0, 1] */
     TextureWorldNormal = 0x00002000,
     /** Position (in local space) geometry texture */
     TextureLocalPosition = 0x00004000,
@@ -95,6 +95,8 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     TextureNormalizedViewDepth = 0x00010000,
     /** Object ID geometry texture */
     TextureObjectId = 0x00020000,
+    /** Packed mesh-blending tag geometry texture */
+    TextureMeshBlendTag = 0x00040000,
 
     /** Bit field for all textures but back buffer depth/stencil */
     TextureAllButBackBufferDepthStencil = 0x000ffffb,
@@ -111,7 +113,7 @@ export enum NodeRenderGraphBlockConnectionPointTypes {
     ShadowLight = 0x00400000,
     /** Camera */
     Camera = 0x01000000,
-    /** List of objects (meshes, particle systems, sprites) */
+    /** List of objects (meshes, particle systems, sprite managers) */
     ObjectList = 0x02000000,
 
     /** Detect type based on connection */

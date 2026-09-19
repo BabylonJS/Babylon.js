@@ -326,10 +326,11 @@ export class FlowGraphContext {
      * Decodes the array index denoted by a reference. Returns `undefined` when no host resolver is
      * configured or the host does not recognise the value as an indexed reference.
      * @param reference the reference to decode
+     * @param collection optional host collection the reference must address
      * @returns the index the reference denotes, or `undefined` when it does not denote one
      */
-    public decodeIndexReference(reference: string): number | undefined {
-        return this._configuration.coordinator.config.hostResolver?.decodeIndexReference?.(reference);
+    public decodeIndexReference(reference: string, collection?: string): number | undefined {
+        return this._configuration.coordinator.config.hostResolver?.decodeIndexReference?.(reference, collection);
     }
 
     /**
@@ -570,7 +571,7 @@ export class FlowGraphContext {
      * @internal
      */
     public _clearPendingBlocks() {
-        for (const block of this._pendingBlocks) {
+        for (const block of this._pendingBlocks.slice()) {
             block._cancelPendingTasks(this);
         }
         this._pendingBlocks.length = 0;

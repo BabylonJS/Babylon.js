@@ -5,7 +5,6 @@ import { NodeListComponent } from "./components/nodeList/nodeListComponent";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent";
 import { Portal } from "./portal";
 import { LogComponent, LogEntry } from "./components/log/logComponent";
-import { DataStorage } from "core/Misc/dataStorage";
 import { type Nullable } from "core/types";
 import { MessageDialog } from "shared-ui-components/components/MessageDialog";
 import { BlockTools } from "./blockTools";
@@ -27,10 +26,13 @@ import { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { GeometryOutputBlock } from "core/Meshes/Node/Blocks/geometryOutputBlock";
 import { type NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
-import { HistoryStack } from "shared-ui-components/historyStack";
+import { type HistoryStack } from "shared-ui-components/historyStack";
 import { SplitContainer } from "shared-ui-components/split/splitContainer";
 import { Splitter } from "shared-ui-components/split/splitter";
 import { ControlledSize, SplitDirection } from "shared-ui-components/split/splitContext";
+import { IsNodeGeometryWebMcpSupported, RegisterNodeGeometryWebMcpToolsAsync } from "./webMcp";
+import { NodeGeometryWebMcpEditor } from "./webMcpEditor";
+import { CreateNodeGeometryHistoryStack } from "./historyTools";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -89,42 +91,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     prepareHistoryStack() {
-        const geometry = this.props.globalState.nodeGeometry;
         const globalState = this.props.globalState;
-
-        const dataProvider = () => {
-            SerializationTools.UpdateLocations(geometry, globalState);
-            return geometry.serialize();
-        };
-
-        const applyUpdate = (data: any) => {
-            globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-            geometry.parseSerializedObject(data);
-
-            globalState.onResetRequiredObservable.notifyObservers(false);
-        };
-
-        // Create the stack
-        this._historyStack = new HistoryStack(dataProvider, applyUpdate);
-        this._historyStack.isEnabled = DataStorage.ReadBoolean("UndoRedo", true);
-        globalState.stateManager.historyStack = this._historyStack;
-
-        // Connect to relevant events
-        globalState.stateManager.onUpdateRequiredObservable.add(() => {
-            void this._historyStack.storeAsync();
-        });
-        globalState.stateManager.onRebuildRequiredObservable.add(() => {
-            void this._historyStack.storeAsync();
-        });
-        globalState.stateManager.onNodeMovedObservable.add(() => {
-            void this._historyStack.storeAsync();
-        });
-        globalState.stateManager.onNewNodeCreatedObservable.add(() => {
-            void this._historyStack.storeAsync();
-        });
-        globalState.onClearUndoStack.add(() => {
-            this._historyStack.reset();
-        });
+        this._historyStack = CreateNodeGeometryHistoryStack(globalState);
     }
 
     override componentDidMount() {
@@ -133,6 +101,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
             this.prepareHistoryStack();
+            this.props.globalState.webMcpEditor = new NodeGeometryWebMcpEditor(
+                this.props.globalState,
+                this._graphCanvas,
+                (block) => this.appendBlock(block),
+                () => this.forceUpdate()
+            );
             this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
             (this.props.globalState as any)._previewManager = this._previewManager;
         }
@@ -143,11 +117,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         this.build();
         this.props.globalState.onClearUndoStack.notifyObservers();
+        void this._registerWebMcpToolsAsync();
     }
 
     override componentWillUnmount() {
         window.removeEventListener("wheel", this.onWheel);
         const globalState = this.props.globalState;
+        globalState.disposeMcpConnections();
 
         if (globalState.hostDocument) {
             globalState.hostDocument.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
@@ -167,6 +143,33 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (this._previewManager) {
             this._previewManager.dispose();
             this._previewManager = null as any;
+        }
+    }
+
+    private async _registerWebMcpToolsAsync(): Promise<void> {
+        const globalState = this.props.globalState;
+        globalState.webMcpRegistrationController?.abort();
+
+        if (!IsNodeGeometryWebMcpSupported(globalState.hostDocument)) {
+            globalState.setWebMcpRegistrationStatus("unsupported");
+            return;
+        }
+
+        const controller = new AbortController();
+        globalState.webMcpRegistrationController = controller;
+        globalState.setWebMcpRegistrationStatus("registering");
+
+        try {
+            const registered = await RegisterNodeGeometryWebMcpToolsAsync(globalState, controller.signal);
+            if (!controller.signal.aborted) {
+                globalState.setWebMcpRegistrationStatus(registered ? "registered" : "unsupported");
+            }
+        } catch (error) {
+            if (!controller.signal.aborted) {
+                globalState.setWebMcpRegistrationStatus("error");
+                globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`WebMCP registration failed: ${error}`, true));
+                controller.abort();
+            }
         }
     }
 

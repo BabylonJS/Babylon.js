@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "9.26.0",
+    "version": "9.27.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -229,6 +229,7 @@
         "FrameGraph/Node/Blocks/PostProcesses/fxaaPostProcessBlock.js",
         "FrameGraph/Node/Blocks/PostProcesses/grainPostProcessBlock.js",
         "FrameGraph/Node/Blocks/PostProcesses/imageProcessingPostProcessBlock.js",
+        "FrameGraph/Node/Blocks/PostProcesses/meshBlendingPostProcessBlock.js",
         "FrameGraph/Node/Blocks/PostProcesses/motionBlurPostProcessBlock.js",
         "FrameGraph/Node/Blocks/PostProcesses/passPostProcessBlock.js",
         "FrameGraph/Node/Blocks/PostProcesses/screenSpaceCurvaturePostProcessBlock.js",

@@ -67,11 +67,15 @@ uniform vec2 vTangentSpaceParams;
 
 #if defined(ALPHATEST) && defined(NEED_UV)
 uniform sampler2D diffuseSampler;
+uniform float alphaCutOff;
 #endif
 
 #ifdef OBJECT_ID
 uniform float objectId;
 #include<objectIdFunctions>
+#endif
+#ifdef MESH_BLEND_TAG
+uniform int meshBlendTag;
 #endif
 
 #include<clipPlaneFragmentDeclaration>
@@ -120,7 +124,7 @@ void main() {
     #include<clipPlaneFragment>
 
     #ifdef ALPHATEST
-        if (texture2D(diffuseSampler, vUV).a < 0.4)
+        if (texture2D(diffuseSampler, vUV).a < alphaCutOff)
             discard;
     #endif
 
@@ -145,21 +149,24 @@ void main() {
     #endif
 
     #ifdef DEPTH
-        gl_FragData[DEPTH_INDEX] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(DEPTH_INDEX, vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0));
     #endif
     #ifdef NORMAL
-        gl_FragData[NORMAL_INDEX] = vec4(normalOutput, 1.0);
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(NORMAL_INDEX, vec4(normalOutput, 1.0));
     #endif
     #ifdef SCREENSPACE_DEPTH
-        gl_FragData[SCREENSPACE_DEPTH_INDEX] = vec4(gl_FragCoord.z, 0.0, 0.0, 1.0);
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(SCREENSPACE_DEPTH_INDEX, vec4(gl_FragCoord.z, 0.0, 0.0, 1.0));
     #endif
 
     #ifdef POSITION
-        gl_FragData[POSITION_INDEX] = vec4(vPositionW, 1.0);
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(POSITION_INDEX, vec4(vPositionW, 1.0));
     #endif
 
     #ifdef OBJECT_ID
-        gl_FragData[OBJECT_ID_INDEX] = encodeObjectId(objectId);
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(OBJECT_ID_INDEX, encodeObjectId(objectId));
+    #endif
+    #ifdef MESH_BLEND_TAG
+        meshBlendTagOutput = uvec4(uint(meshBlendTag), 0u, 0u, 0u);
     #endif
 
     #ifdef VELOCITY
@@ -169,13 +176,13 @@ void main() {
         vec2 velocity = abs(a - b);
         velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
 
-        gl_FragData[VELOCITY_INDEX] = vec4(velocity, 0.0, 1.0);
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(VELOCITY_INDEX, vec4(velocity, 0.0, 1.0));
     #endif
 
     #ifdef VELOCITY_LINEAR
         vec2 velocity = vec2(0.5) * ((vPreviousPosition.xy / vPreviousPosition.w) -
                                     (vCurrentPosition.xy / vCurrentPosition.w));
-        gl_FragData[VELOCITY_LINEAR_INDEX] = vec4(velocity, 0.0, 1.0);
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(VELOCITY_LINEAR_INDEX, vec4(velocity, 0.0, 1.0));
     #endif
 
     #ifdef REFLECTIVITY
@@ -246,7 +253,7 @@ void main() {
                 reflectivity.a *= glossiness; 
             #endif
         #endif
-        gl_FragData[REFLECTIVITY_INDEX] = reflectivity;
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(REFLECTIVITY_INDEX, reflectivity);
     #endif
 
     #ifdef IRRADIANCE
@@ -327,6 +334,6 @@ void main() {
                 irradiance_alpha = min(subsurface_weight + transmission_weight, 1.0);
             #endif
         #endif
-        gl_FragData[IRRADIANCE_INDEX] = vec4(irradiance, irradiance_alpha);
+        WRITE_GEOMETRY_FRAGMENT_OUTPUT(IRRADIANCE_INDEX, vec4(irradiance, irradiance_alpha));
     #endif
 }
