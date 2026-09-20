@@ -1,3 +1,4 @@
+import { Constants } from "core/Engines/constants";
 import { NullEngine } from "core/Engines/nullEngine";
 import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
@@ -81,5 +82,19 @@ describe("GaussianSplatting updateData texture leak", () => {
             expect(scene.textures).not.toContain(texture);
             expect(texture.getInternalTexture()).toBeNull();
         }
+    });
+
+    it("keeps CPU lookup textures on nearest sampling", () => {
+        const mesh = new GaussianSplattingMesh("gs-nearest", null, scene, true);
+        mesh.disableDepthSort = true;
+        mesh.updateData(createMultiSplatData(4));
+
+        const lookupTextures = [mesh.centersTexture, mesh.covariancesATexture, mesh.covariancesBTexture, mesh.colorsTexture];
+        for (const texture of lookupTextures) {
+            expect(texture).not.toBeNull();
+            expect(texture!.samplingMode).toBe(Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        }
+
+        mesh.dispose();
     });
 });
