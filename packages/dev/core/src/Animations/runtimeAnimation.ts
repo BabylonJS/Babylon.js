@@ -28,6 +28,10 @@ export interface IRuntimeAnimationWrite {
     weight: number;
     /** Whether it wrote additively. */
     additive: boolean;
+    /** The factor the value it wrote was blended in with, one once the animation has blended in. */
+    blendingFactor: number;
+    /** Whether a step prologue has already held the record over; a direct write is held over one step and no more. */
+    carried: boolean;
 }
 
 /**
@@ -136,7 +140,6 @@ export class RuntimeAnimation {
     private _playbackTo = 0;
     private _playbackFrames = 0;
     private _playbackProgress = 0;
-    private _playbackBlendingFactor = 1;
     private _playbackSyncRoot: Nullable<Animatable> = null;
     private _playbackJumped = false;
     private _playbackSyncMasterPlayed = 0;
@@ -184,14 +187,6 @@ export class RuntimeAnimation {
      */
     public get _evaluatedProgress(): number {
         return this._playbackProgress;
-    }
-
-    /**
-     * @internal
-     * The blending factor the value last written was blended in with: less than one while the animation blends in.
-     */
-    public get _evaluatedBlendingFactor(): number {
-        return this._playbackBlendingFactor;
     }
 
     /**
@@ -494,12 +489,13 @@ export class RuntimeAnimation {
         const count = this._scene._animationWriteCount++;
         let write = writes[count];
         if (!write) {
-            write = writes[count] = { runtimeAnimation: this, target, weight, additive: false };
+            write = writes[count] = { runtimeAnimation: this, target, weight, additive: false, blendingFactor: 1, carried: false };
         }
         write.runtimeAnimation = this;
         write.target = target;
         write.weight = weight;
         write.additive = this.isAdditive;
+        write.carried = false;
 
         // Set value
         this._currentActiveTarget = destination;
@@ -537,10 +533,12 @@ export class RuntimeAnimation {
             }
 
             const blendingSpeed = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
-            this._playbackBlendingFactor = this._blendingFactor;
+            // The record carries the factor this very write blended in with, so what the step blended can be read
+            // after the step whatever a write made since has moved the animation's own factor on to.
+            write.blendingFactor = this._blendingFactor;
             this._blendingFactor += blendingSpeed;
         } else {
-            this._playbackBlendingFactor = 1;
+            write.blendingFactor = 1;
             if (!this._currentValue) {
                 if (currentValue?.clone) {
                     this._currentValue = currentValue.clone();

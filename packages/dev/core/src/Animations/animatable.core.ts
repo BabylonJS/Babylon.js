@@ -900,13 +900,24 @@ export function AddAnimationExtensions(sceneClass: typeof Scene, boneClass: type
     sceneClass.prototype._animate = function (customDeltaTime?: number): void {
         // The records the last step's bindings processed have been read by now and must not outlive that step. Those
         // made since - between steps, with bindings still pending - move to the front and stay.
+        //
+        // A direct write registered no binding: it is held over one step, to be read there in the order the bindings
+        // resolve, and released by the next. Without that bound a step that returns early - its animations disabled, or
+        // nothing active to animate - would hold every record it has while writes made between steps kept arriving, as
+        // they do from an animation group sampling a virtual timeline. A weighted write is held for as long as the
+        // binding it registered is pending, however many steps pass before one processes it.
         const writes = this._animationWrites;
         const count = this._animationWriteCount;
         let kept = 0;
-        for (let index = this._animationStepWriteCount; index < count; index++, kept++) {
-            const write = writes[kept];
-            writes[kept] = writes[index];
-            writes[index] = write;
+        for (let index = this._animationStepWriteCount; index < count; index++) {
+            const write = writes[index];
+            if (write.carried && write.weight === -1) {
+                continue;
+            }
+            write.carried = true;
+            writes[index] = writes[kept];
+            writes[kept] = write;
+            kept++;
         }
         for (let index = kept; index < count; index++) {
             const write = writes[index];

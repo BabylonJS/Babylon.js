@@ -143,6 +143,8 @@ interface IChannelWriters {
     currentWeights: number[];
     /** Whether each write was additive. */
     currentAdditive: boolean[];
+    /** The factor each write blended in with, one once the animation writing it has blended in. */
+    currentBlending: number[];
 }
 
 /**
@@ -1712,7 +1714,7 @@ export class RootMotionController implements IDisposable {
         if ((clip.source === RootMotionSource.None && !clip.extractsRotation) || !clip._writers) {
             return false;
         }
-        const weight = this._effectiveWeight(clip._writers, runtime) * runtime._evaluatedBlendingFactor;
+        const weight = this._effectiveWeight(clip._writers, runtime);
         if (weight === 0) {
             return false;
         }
@@ -1723,13 +1725,15 @@ export class RootMotionController implements IDisposable {
     }
 
     /**
-     * The share of a playback in the pose the mixer wrote to its channel this frame, following the late animation
+     * The share of a playback in the pose the mixer wrote to its channel this step, following the late animation
      * bindings of the scene: an unweighted animatable writes directly and the last one wins, unless a weighted animatable
      * also animates the channel, in which case the weighted ones replace it - normalized once their weights add up to
      * more than one - and additive ones add their weight on top. A playback that ran to its end this step is among the
      * writers like any other, from its place in the order they wrote; one that did not write this step has no share;
      * one that wrote more than once - re-evaluated by an animation event, say - has the share of all its writes, as the
-     * bindings add them up.
+     * bindings add them up. A playback still blending in wrote that much of its pose, so the share follows the factor
+     * its last write blended in with, taken from the record of that write rather than from the animation, whose own
+     * factor a write made since the step may have moved on.
      * @param writers defines what the mixer wrote to the clip's channel this step
      * @param runtime defines the runtime animation of the clip's clock
      * @returns the share, between 0 and 1
@@ -1740,6 +1744,7 @@ export class RootMotionController implements IDisposable {
         let additives = 0;
         let direct = false;
         let weight = 0;
+        let blending = 1;
         for (let i = 0; i < runtimes.length; i++) {
             if (runtimes[i] !== runtime) {
                 continue;
@@ -1747,6 +1752,7 @@ export class RootMotionController implements IDisposable {
             // The bindings hold one entry per write, added up from the weights as written, but each entry is read with
             // the weight the runtime animation carries when the bindings are processed: that of its last write.
             weight = writers.currentWeights[i];
+            blending = writers.currentBlending[i];
             if (weight < 0) {
                 direct = true;
             } else if (writers.currentAdditive[i]) {
@@ -1759,7 +1765,7 @@ export class RootMotionController implements IDisposable {
         if (direct && !writers.weighted && writers.lastDirect === runtime) {
             share += 1;
         }
-        return share;
+        return share * blending;
     }
 }
 
@@ -1840,7 +1846,16 @@ class SceneRootMotion {
                 }
                 let entry = entries.find((candidate) => candidate.property === clip._clockProperty);
                 if (!entry) {
-                    entry = { property: clip._clockProperty, total: 0, weighted: false, lastDirect: null, current: [], currentWeights: [], currentAdditive: [] };
+                    entry = {
+                        property: clip._clockProperty,
+                        total: 0,
+                        weighted: false,
+                        lastDirect: null,
+                        current: [],
+                        currentWeights: [],
+                        currentAdditive: [],
+                        currentBlending: [],
+                    };
                     entries.push(entry);
                     this._writers.push(entry);
                 }
@@ -1865,6 +1880,7 @@ class SceneRootMotion {
             entry.current.length = 0;
             entry.currentWeights.length = 0;
             entry.currentAdditive.length = 0;
+            entry.currentBlending.length = 0;
         }
         // What the mixer wrote this step: every write of a runtime animation to a target, in order, with the weight and
         // the mode it was made with, recorded as it was made rather than read back afterwards - one whose playback ran
@@ -1897,6 +1913,7 @@ class SceneRootMotion {
                 entry.current.push(runtime);
                 entry.currentWeights.push(weight);
                 entry.currentAdditive.push(write.additive);
+                entry.currentBlending.push(write.blendingFactor);
                 if (weight < 0) {
                     // Direct writers overwrite one another in order, so the last one is the pose.
                     entry.lastDirect = runtime;

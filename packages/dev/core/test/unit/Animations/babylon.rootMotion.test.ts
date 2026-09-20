@@ -1848,6 +1848,30 @@ describe("RootMotion", () => {
             expect(other._animationWrites.length).toBe(0);
         });
 
+        it("holds the direct writes of a playback sampled between steps over one step and no more", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const clip = new RootMotionClip(rig.group);
+            const group = clip.animationGroup;
+            new RootMotionController(rig.character, [clip]);
+            // Sampled after every step, disabled animations included: a step that writes nothing of its own still
+            // lets the writes of the step before it go, or the journal would grow for as long as the sampling ran.
+            group.startWithVirtualTimeline(false, 1, 0, 2 * CycleFrames);
+            scene.animationsEnabled = false;
+            Run(scene, 10);
+            const held = scene._animationWriteCount;
+            Run(scene, 590);
+
+            // One step's hold-over and the writes made since, whatever the scene stood disabled for.
+            expect(held).toBe(2 * group.animatables.length);
+            expect(scene._animationWriteCount).toBe(held);
+
+            group.stop();
+            scene.animationsEnabled = true;
+            Run(scene, 2);
+            expect(scene._animationWriteCount).toBe(0);
+            expect(scene._animationWrites.every((write) => write.runtimeAnimation === null && write.target === null)).toBe(true);
+        });
+
         it("carries on where it was when the scene's animations are enabled again", () => {
             const rig = BuildRig(scene, "rootMotion");
             const { group, controller } = Extract(rig);
@@ -2290,6 +2314,43 @@ describe("RootMotion", () => {
                     expect(rig.character.position.x).toBeCloseTo(0, 6);
                 });
             }
+        }
+
+        for (const controllerFirst of [true, false]) {
+            const order = controllerFirst ? "before" : "after";
+            it(`blends a clip in at the factor the step blended it with, with the controller built ${order} the playback starts`, () => {
+                const rig = BuildRig(scene, "rootMotion");
+                const clip = new RootMotionClip(rig.group);
+                const group = clip.animationGroup;
+                for (const targeted of group.targetedAnimations) {
+                    targeted.animation.enableBlending = true;
+                    targeted.animation.blendingSpeed = 0.1;
+                }
+                const build = () => new RootMotionController(rig.character, [clip]);
+                if (controllerFirst) {
+                    build();
+                }
+                group.startWithVirtualTimeline(false, 1, 0, 2 * CycleFrames);
+                group.weight = 0.5;
+                if (!controllerFirst) {
+                    build();
+                }
+
+                // An animation's blend-in factor advances a step of its blending speed on every write it makes, and
+                // the sampler makes one of its own after each step: the group's own writes land on every other step
+                // of it, from the one the playback started on. The share follows the factor of the write the step
+                // blended with, read from the record of that write rather than from the animation, whose factor the
+                // sampler has moved on by the time the controller reads - whichever of them wrote first.
+                const factors = [0.1, 0.3, 0.5, 0.7, 0.9, 1, 1, 1];
+                // The first tick only establishes where the playback began, so the second carries the progress since.
+                const consumed = [0, 2, 1, 1, 1, 1, 1, 1];
+                let travelled = 0;
+                for (let tick = 0; tick < factors.length; tick++) {
+                    travelled += consumed[tick] * 0.5 * factors[tick] * Speed * 0.016;
+                    Run(scene, 1);
+                    expect(rig.character.position.z).toBeCloseTo(travelled, 6);
+                }
+            });
         }
     });
 
