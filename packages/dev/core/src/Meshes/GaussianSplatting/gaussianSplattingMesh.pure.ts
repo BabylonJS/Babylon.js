@@ -925,7 +925,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     protected override _onUpdateTextures(textureSize: Vector2) {
         const createTextureFromDataU8 = (data: Uint8Array, width: number, height: number, format: number) => {
-            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
+            return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTURETYPE_UNSIGNED_BYTE);
         };
 
         // Keep the part indices texture in sync with _partIndices whenever textures are rebuilt.
@@ -1001,7 +1001,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this._scene,
             false,
             false,
-            Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             Constants.TEXTURETYPE_UNSIGNED_BYTE
         );
         this._partIndicesTexture.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
