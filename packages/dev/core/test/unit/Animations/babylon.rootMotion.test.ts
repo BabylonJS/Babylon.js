@@ -2136,6 +2136,25 @@ describe("RootMotion", () => {
             expect(rig.character.position.z - before).toBeCloseTo(Tick, 6);
         });
 
+        it("reads a jump made after a step's bindings in the step that follows, not in the step it was made in", () => {
+            const rig = BuildRig(scene, "rootMotion");
+            const { group } = Extract(rig);
+            group.start(true);
+            group.weight = 0.8;
+            Run(scene, 32);
+
+            // An observer of the step's own notification, registered before the controller's: its unweighted write
+            // reaches no binding of the step it is made in, so it says nothing about the pose that step blended. It
+            // stands at the front of the next step's records instead, where the bindings of that step replace it.
+            const hips = animatableOf(group, rig.hips);
+            scene.onAfterAnimationsObservable.add(() => hips.goToFrame(hips.getAnimations()[0].currentFrame), undefined, true);
+            const before = rig.character.position.z;
+            Run(scene, 2);
+
+            // One entry of 0.8 over a total clamped to 1, each step: the weighted share the group carries, forwards.
+            expect(rig.character.position.z - before).toBeCloseTo(2 * 0.8 * Tick, 6);
+        });
+
         it("catches up a clock the scene passed over after a callback removed the animatable before it", () => {
             const rig = BuildRig(scene, "rootMotion");
             const { group } = Extract(rig);
@@ -2229,6 +2248,49 @@ describe("RootMotion", () => {
             expect(group.isStarted).toBe(false);
             expect(rig.character.position.z - before).toBeCloseTo(0, 6);
         });
+    });
+
+    describe("virtual timeline", () => {
+        for (const controllerFirst of [true, false]) {
+            const order = controllerFirst ? "before" : "after";
+            for (const weight of [-1, 0.5]) {
+                const kind = weight < 0 ? "an unweighted" : "a weighted";
+                it(`carries ${kind} clip sampled over a virtual range, with the controller built ${order} the playback starts`, () => {
+                    const rig = BuildRig(scene, "rootMotion");
+                    const clip = new RootMotionClip(rig.group);
+                    const group = clip.animationGroup;
+                    const build = () => new RootMotionController(rig.character, [clip]);
+                    if (controllerFirst) {
+                        build();
+                    }
+                    // Twice the clip's own range: the group loops the clip and snaps the pose onto the mapped virtual
+                    // frame after every step, writing the root unweighted from an observer of the step's notification -
+                    // ahead of the controller's own when the controller is built after the playback starts.
+                    group.startWithVirtualTimeline(false, 1, 0, 2 * CycleFrames);
+                    group.weight = weight;
+                    if (!controllerFirst) {
+                        build();
+                    }
+                    // The share of the pose the group carries: the whole of it unweighted, its weight otherwise. The
+                    // sampler's own write never stands in for that weight, whichever order they were built in.
+                    const share = weight < 0 ? 1 : weight;
+
+                    // The virtual timeline stands at frame 30.72, within the clip's first cycle.
+                    Run(scene, 32);
+                    expect(rig.character.position.z).toBeCloseTo((share * Speed * 32 * FramesPerTick) / Fps, 6);
+
+                    // And at 90.24, halfway through the second: the wrap back onto the clip's range is not travel.
+                    Run(scene, 62);
+                    expect(rig.character.position.z).toBeCloseTo((share * Speed * 94 * FramesPerTick) / Fps, 6);
+
+                    // It ends at the virtual end, two whole cycles of the clip.
+                    Run(scene, 32);
+                    expect(group.isStarted).toBe(false);
+                    expect(rig.character.position.z).toBeCloseTo(share * 2 * Speed, 6);
+                    expect(rig.character.position.x).toBeCloseTo(0, 6);
+                });
+            }
+        }
     });
 
     describe("errors", () => {

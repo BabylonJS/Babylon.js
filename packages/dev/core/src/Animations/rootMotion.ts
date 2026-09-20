@@ -125,7 +125,8 @@ interface INodeChannels {
 }
 
 /**
- * What the animation mixer wrote to a root channel this frame, gathered for every clip that follows that channel.
+ * What the animation mixer wrote to a root channel in the last animation step - the writes its late bindings read,
+ * those made after them belonging to the step that follows - gathered for every clip that follows that channel.
  */
 interface IChannelWriters {
     /** The property of the channel. */
@@ -1870,8 +1871,16 @@ class SceneRootMotion {
         // to its end has left the active animatables, one stopped by a callback in the same step has lost its runtime
         // animations, one turned additive since was bound as it wrote, and an animation of several targets wrote each
         // of them. A paused animatable, one not started yet and one parked at a weight of zero wrote nothing.
+        //
+        // Only the writes the step's late bindings read: those of the step itself, up to the point the bindings were
+        // processed. A write made after them - by an observer of this very notification, such as the one an animation
+        // group started on a virtual timeline samples from, or by a callback between steps - reached no binding of this
+        // step, so it says nothing about the pose the step blended. The scene holds such a write over to the front of
+        // the next step's records, where it is read in its place: before that step's writes, which is where it stands
+        // in the order the bindings resolve. Reading it here instead would make the frame's motion depend on whether
+        // the controller was constructed before or after the observer that made it.
         const writes = scene._animationWrites;
-        const count = animated ? scene._animationWriteCount : 0;
+        const count = animated ? scene._animationStepWriteCount : 0;
         for (let i = 0; i < count; i++) {
             const write = writes[i];
             const entries = this._writersByNode.get(write.target);
