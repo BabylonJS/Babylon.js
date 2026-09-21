@@ -491,8 +491,8 @@ describe("Babylon Lite scene resource explorer services", () => {
             SelectionServiceIdentity,
             EngineContextIdentity,
         ]);
-        expect(MaterialExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity]);
-        expect(TextureExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity]);
+        expect(MaterialExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity, LiteSceneResourceIndexServiceIdentity]);
+        expect(TextureExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, LiteSceneResourceIndexServiceIdentity]);
         expect(TextLayerExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, ExplorerServiceIdentity, WatcherServiceIdentity, EngineContextIdentity]);
         expect(SpriteLayerExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, ExplorerServiceIdentity, WatcherServiceIdentity, EngineContextIdentity]);
     });
@@ -528,8 +528,8 @@ describe("Babylon Lite scene resource explorer services", () => {
         } as unknown as IExplorerService;
         const selectionService = { selectedEntity: null } as ISelectionService;
 
-        const redTexture = { width: 1, height: 1 } as Texture2D;
-        const blueTexture = { width: 2, height: 2 } as Texture2D;
+        const redTexture = Object.assign(CreateTexture(1), { width: 1, height: 1 });
+        const blueTexture = Object.assign(CreateTexture(2), { width: 2, height: 2 });
         const standardMaterial = CreateMaterial("standard", "Red Material", redTexture);
         const pbrMaterial = CreateMaterial("pbr", "Blue Material", blueTexture);
         const redMesh = CreateMesh("Red Box", standardMaterial);
@@ -546,10 +546,11 @@ describe("Babylon Lite scene resource explorer services", () => {
             _renderingContexts: [scene],
         } as unknown as EngineContext;
         (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine];
+        const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext)!;
         const registrations = [
             MeshExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, selectionService, { engine } as IEngineContext),
-            MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService),
-            TextureExplorerServiceDefinition.factory(engineExplorerService),
+            MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService, resourceIndexService),
+            TextureExplorerServiceDefinition.factory(engineExplorerService, resourceIndexService),
             TextLayerExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, { engine } as IEngineContext),
         ];
 
@@ -594,8 +595,164 @@ describe("Babylon Lite scene resource explorer services", () => {
         expect(watcherDisposals.get(standardMaterial)).toHaveBeenCalledOnce();
 
         registrations.forEach((registration) => registration?.dispose?.());
+        resourceIndexService.dispose?.();
         expect(dispose).toHaveBeenCalledTimes(4);
         commandDisposals.forEach((commandDispose) => expect(commandDispose).toHaveBeenCalledOnce());
+    });
+
+    it("uses indexed source and wrapper identities for aliases, shared custom slots, and cube textures", () => {
+        const providers: RenderingContextNodeProvider<RenderingContext>[] = [];
+        const engineExplorerService = {
+            addRenderingContextNodeProvider: (provider: RenderingContextNodeProvider<RenderingContext>) => {
+                providers.push(provider);
+                return { dispose: vi.fn() };
+            },
+        } as IEngineExplorerService;
+        const watcherService = {
+            watchProperty: vi.fn(() => ({ dispose: vi.fn() })),
+        } as unknown as IWatcherService;
+        const sharedTexture = CreateTexture(1);
+        const cubeTexture = CreateCubeTexture(2);
+        const customTexture = CreateTexture(3);
+        const standard = Object.assign(CreateMaterial("standard", "Standard", sharedTexture), {
+            _reflectionCubeTexture: cubeTexture,
+        });
+        const shader = Object.assign(CreateMaterial("shader", "Shader"), {
+            uniformDecls: [],
+            samplerDecls: [
+                { name: "shared", type: "texture_2d<f32>" },
+                { name: "custom", type: "texture_2d<f32>" },
+            ],
+            storageBufferDecls: [],
+            attributes: [],
+            defines: [],
+            _textureSlots: new Map([
+                ["shared", { current: sharedTexture }],
+                ["custom", { current: customTexture }],
+            ]),
+        });
+        const node = Object.assign(CreateMaterial("node", "Node"), {
+            inputs: {
+                sharedAlias: { type: "texture2d", texture: sharedTexture },
+            },
+        });
+        const scene = {
+            _kind: "scene",
+            meshes: [
+                CreateMesh("View", CreateMaterialView(standard)),
+                CreateMesh("Duplicate View", CreateMaterialView(standard)),
+                CreateMesh("Shader", shader),
+                CreateMesh("Node", node),
+            ],
+        } as SceneContext;
+        const engine = CreateResourceEngine([scene]);
+        const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext)!;
+
+        MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService, resourceIndexService);
+        TextureExplorerServiceDefinition.factory(engineExplorerService, resourceIndexService);
+
+        const descriptions = providers
+            .filter((provider) => provider.predicate(scene))
+            .sort((left, right) => (left.order ?? 0) - (right.order ?? 0))
+            .flatMap((provider) => provider.getNodes(scene));
+        const tree = BuildExplorerTree(descriptions);
+
+        expect(GetNames(tree.nodes[0].children)).toEqual(["Standard", "Shader", "Node"]);
+        expect(tree.nodes[0].children.map((node) => node.entity)).toEqual([standard, shader, node]);
+        expect(GetNames(tree.nodes[1].children)).toEqual(["Texture 1 (8 x 4)", "Texture 2 (Cube)", "Texture 3 (8 x 4)"]);
+        expect(tree.nodes[1].children.map((node) => node.entity)).toEqual([sharedTexture, cubeTexture, customTexture]);
+        expect(new Set(tree.nodes[1].children.map((node) => node.value)).size).toBe(3);
+
+        const valuesByEntity = new Map(tree.nodes.flatMap((section) => section.children).map((node) => [node.entity, node.value]));
+        scene.meshes.reverse();
+        const refreshedTree = BuildExplorerTree(
+            providers
+                .filter((provider) => provider.predicate(scene))
+                .sort((left, right) => (left.order ?? 0) - (right.order ?? 0))
+                .flatMap((provider) => provider.getNodes(scene))
+        );
+        expect(refreshedTree.nodes[0].children.map((node) => node.entity)).toEqual([node, shader, standard]);
+        expect(refreshedTree.nodes[1].children.map((node) => node.entity)).toEqual([sharedTexture, customTexture, cubeTexture]);
+        for (const resourceNode of refreshedTree.nodes.flatMap((section) => section.children)) {
+            expect(resourceNode.value).toBe(valuesByEntity.get(resourceNode.entity));
+        }
+
+        resourceIndexService.dispose?.();
+    });
+
+    it("refreshes providers through the index seam and safely drops stale or malformed resources", () => {
+        const providers: RenderingContextNodeProvider<RenderingContext>[] = [];
+        const engineExplorerService = {
+            addRenderingContextNodeProvider: (provider: RenderingContextNodeProvider<RenderingContext>) => {
+                providers.push(provider);
+                return { dispose: vi.fn() };
+            },
+        } as IEngineExplorerService;
+        const watcherService = {
+            watchProperty: vi.fn(() => ({ dispose: vi.fn() })),
+        } as unknown as IWatcherService;
+        const texture = CreateTexture(1);
+        const material = CreateMaterial("standard", "Valid", texture);
+        const malformedScene = {
+            _kind: "scene",
+            meshes: [null, {}, { material: {} }, CreateMesh("Valid", material)],
+        } as unknown as SceneContext;
+        const contexts: SceneContext[] = [malformedScene];
+        const engine = CreateResourceEngine(contexts);
+        const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext)!;
+
+        MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService, resourceIndexService);
+        TextureExplorerServiceDefinition.factory(engineExplorerService, resourceIndexService);
+
+        const materialProvider = providers.find((provider) => provider.order === 100)!;
+        const textureProvider = providers.find((provider) => provider.order === 200)!;
+        expect(materialProvider.getSnapshot(malformedScene)).toEqual([material]);
+        expect(textureProvider.getSnapshot(malformedScene)).toEqual([texture]);
+
+        contexts.length = 0;
+        expect(materialProvider.getSnapshot(malformedScene)).toEqual([]);
+        expect(textureProvider.getSnapshot(malformedScene)).toEqual([]);
+        expect(BuildExplorerTree([...materialProvider.getNodes(malformedScene), ...textureProvider.getNodes(malformedScene)]).nodes).toEqual([]);
+
+        resourceIndexService.dispose?.();
+    });
+
+    it("keeps provider refresh and selection identities independent across Inspector instances", () => {
+        const texture = CreateTexture(1);
+        const firstMaterial = CreateMaterial("standard", "First", texture);
+        const secondMaterial = CreateMaterial("standard", "Second", texture);
+        const firstScene = { _kind: "scene", meshes: [CreateMesh("First", firstMaterial)] } as SceneContext;
+        const secondScene = { _kind: "scene", meshes: [CreateMesh("Second", secondMaterial)] } as SceneContext;
+        const createProviders = (scene: SceneContext) => {
+            const providers: RenderingContextNodeProvider<RenderingContext>[] = [];
+            const engineExplorerService = {
+                addRenderingContextNodeProvider: (provider: RenderingContextNodeProvider<RenderingContext>) => {
+                    providers.push(provider);
+                    return { dispose: vi.fn() };
+                },
+            } as IEngineExplorerService;
+            const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([scene]) } as IEngineContext)!;
+            MaterialExplorerServiceDefinition.factory(
+                engineExplorerService,
+                { watchProperty: vi.fn(() => ({ dispose: vi.fn() })) } as unknown as IWatcherService,
+                resourceIndexService
+            );
+            TextureExplorerServiceDefinition.factory(engineExplorerService, resourceIndexService);
+            return { providers, resourceIndexService };
+        };
+        const first = createProviders(firstScene);
+        const second = createProviders(secondScene);
+
+        const firstTree = BuildExplorerTree(first.providers.flatMap((provider) => provider.getNodes(firstScene)));
+        const secondTree = BuildExplorerTree(second.providers.flatMap((provider) => provider.getNodes(secondScene)));
+        expect(firstTree.nodes[0].children[0].entity).toBe(firstMaterial);
+        expect(secondTree.nodes[0].children[0].entity).toBe(secondMaterial);
+        expect(firstTree.nodes[1].children[0].entity).toBe(texture);
+        expect(secondTree.nodes[1].children[0].entity).toBe(texture);
+
+        first.resourceIndexService.dispose?.();
+        expect(second.providers[0].getSnapshot(secondScene)).toEqual([secondMaterial]);
+        second.resourceIndexService.dispose?.();
     });
 
     it("contributes ordered Text and Sprite layers with parity commands and clean disposal", () => {

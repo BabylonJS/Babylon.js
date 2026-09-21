@@ -1,5 +1,4 @@
 import {
-    getMaterialTextureBindings,
     getRenderingContextKind,
     getRenderingContexts,
     inspectMaterial,
@@ -10,7 +9,6 @@ import {
     type MaterialTextureBinding,
     type MaterialTextureBindingId,
     type SceneContext,
-    type Texture2D,
     type TextureInspection,
 } from "@babylonjs/lite";
 
@@ -85,18 +83,39 @@ function IsObject(value: unknown): value is object {
     return typeof value === "object" && value !== null;
 }
 
+function IsMaterialInspection(value: unknown): value is MaterialInspection {
+    return IsObject(value) && "source" in value && IsObject(value.source) && "textureBindings" in value && Array.isArray(value.textureBindings);
+}
+
+function GetPresentTextureEntity(binding: MaterialTextureBinding): object | undefined {
+    if (!IsObject(binding) || !("value" in binding) || !IsObject(binding.value) || binding.value.state !== "present" || !("value" in binding.value)) {
+        return undefined;
+    }
+
+    const value = binding.value.value;
+    return IsObject(value) && "entity" in value && IsObject(value.entity) ? value.entity : undefined;
+}
+
 function GetSceneMaterialInspections(scene: SceneContext): readonly MaterialInspection[] {
     const sources = new Set<Material>();
     const inspections: MaterialInspection[] = [];
+    if (!Array.isArray(scene.meshes)) {
+        return inspections;
+    }
+
     for (const mesh of scene.meshes) {
-        if (!IsObject(mesh.material)) {
+        if (!IsObject(mesh) || !IsObject(mesh.material)) {
             continue;
         }
 
-        const inspection = inspectMaterial(mesh.material);
-        if (IsObject(inspection.source) && !sources.has(inspection.source)) {
-            sources.add(inspection.source);
-            inspections.push(inspection);
+        try {
+            const inspection = inspectMaterial(mesh.material);
+            if (IsMaterialInspection(inspection) && !sources.has(inspection.source)) {
+                sources.add(inspection.source);
+                inspections.push(inspection);
+            }
+        } catch {
+            // Ignore malformed or stale materials that the Lite inspection API cannot inspect.
         }
     }
     return inspections;
@@ -158,14 +177,19 @@ export class LiteSceneResourceIndex {
         const textureDrafts = new Map<object, TextureDraft>();
         for (const material of materialRecords.values()) {
             for (const binding of material.bindings) {
-                if (binding.value.state !== "present" || !IsObject(binding.value.value.entity)) {
+                const entity = GetPresentTextureEntity(binding);
+                if (!entity || typeof binding.id !== "string") {
                     continue;
                 }
 
-                const entity = binding.value.value.entity;
                 let texture = textureDrafts.get(entity);
                 if (!texture) {
-                    const inspection = inspectTexture(entity);
+                    let inspection: TextureInspection | undefined;
+                    try {
+                        inspection = inspectTexture(entity);
+                    } catch {
+                        continue;
+                    }
                     if (!inspection) {
                         continue;
                     }
@@ -201,10 +225,10 @@ export class LiteSceneResourceIndex {
             const textures: ILiteTextureResourceRecord[] = [];
             for (const material of materials) {
                 for (const binding of material.bindings) {
-                    if (binding.value.state !== "present") {
+                    const entity = GetPresentTextureEntity(binding);
+                    if (!entity) {
                         continue;
                     }
-                    const entity = binding.value.value.entity;
                     const record = textureRecords.get(entity);
                     if (record && !seenTextures.has(entity)) {
                         seenTextures.add(entity);
@@ -280,30 +304,4 @@ export class LiteSceneResourceIndex {
         }
         return scenes;
     }
-}
-
-/**
- * Gets the unique materials referenced by a scene's meshes.
- * @param scene The scene to inspect.
- * @returns The referenced materials in mesh order.
- */
-export function GetSceneMaterials(scene: SceneContext): readonly Material[] {
-    return GetSceneMaterialInspections(scene).map((inspection) => inspection.source);
-}
-
-/**
- * Gets the unique textures referenced by a scene's materials.
- * @param scene The scene to inspect.
- * @returns The referenced textures in material order.
- */
-export function GetSceneTextures(scene: SceneContext): readonly Texture2D[] {
-    const textures = new Set<Texture2D>();
-    for (const material of GetSceneMaterials(scene)) {
-        for (const binding of getMaterialTextureBindings(material)) {
-            if (binding.value.state === "present" && binding.value.value.kind === "2d") {
-                textures.add(binding.value.value.entity as Texture2D);
-            }
-        }
-    }
-    return [...textures];
 }
