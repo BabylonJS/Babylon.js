@@ -1,0 +1,199 @@
+/**
+ * @vitest-environment jsdom
+ */
+
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+import { FluentProvider, webLightTheme } from "@fluentui/react-components";
+import { Color3 } from "core/Maths/math.color";
+import { act, isValidElement, type ReactNode } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { MaterialPropertySection } from "shared-ui-components/fluent/hoc/propertyLines/materialPropertyLine";
+import { MaterialTextureBindingPropertyLine, type MaterialTextureBindingModel } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
+import { TextureMetadataProperties } from "shared-ui-components/fluent/hoc/propertyLines/textureMetadataProperties";
+import { BabylonBooleanMaterialPropertyLine, BabylonColor3MaterialPropertyLine } from "../../src/components/properties/materials/materialPropertyAdapters";
+
+vi.hoisted(() => {
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    vi.stubGlobal(
+        "matchMedia",
+        vi.fn(() => ({
+            matches: false,
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+        }))
+    );
+});
+
+vi.stubGlobal("NodeFilter", window.NodeFilter);
+
+describe("material and texture parity cores", () => {
+    const roots: Root[] = [];
+    const containers: HTMLElement[] = [];
+
+    afterEach(() => {
+        roots.splice(0).forEach((root) => act(() => root.unmount()));
+        containers.splice(0).forEach((container) => container.remove());
+    });
+
+    function Render(content: ReactNode): HTMLElement {
+        const container = document.createElement("div");
+        document.body.appendChild(container);
+        containers.push(container);
+        const root = createRoot(container);
+        roots.push(root);
+        act(() => root.render(<FluentProvider theme={webLightTheme}>{content}</FluentProvider>));
+        return container;
+    }
+
+    it("renders controlled scalar, vector, color, option, and readonly material fields", () => {
+        const onBooleanChange = vi.fn();
+        const container = Render(
+            <MaterialPropertySection
+                model={{
+                    fields: [
+                        { kind: "boolean", id: "enabled", label: "Enabled", value: true, onChange: onBooleanChange },
+                        { kind: "number", id: "roughness", label: "Roughness", value: 0.5, onChange: vi.fn(), min: 0, max: 1 },
+                        { kind: "string", id: "name", label: "Name", value: "Material", onChange: vi.fn() },
+                        { kind: "number-options", id: "mode", label: "Mode", value: 1, options: [{ label: "Opaque", value: 1 }], onChange: vi.fn() },
+                        { kind: "vector2", id: "offset", label: "Offset", value: { x: 1, y: 2 }, onChange: vi.fn() },
+                        { kind: "vector3", id: "normal", label: "Normal", value: { x: 0, y: 1, z: 0 }, onChange: vi.fn() },
+                        { kind: "vector4", id: "plane", label: "Plane", value: { x: 0, y: 1, z: 0, w: 2 }, onChange: vi.fn() },
+                        { kind: "color", id: "albedo", label: "Albedo", value: { r: 1, g: 0.5, b: 0 }, onChange: vi.fn() },
+                        { kind: "readonly", id: "family", label: "Family", value: "standard" },
+                    ],
+                }}
+            />
+        );
+
+        expect(container.querySelector<HTMLInputElement>('input[value="Material"]')).not.toBeNull();
+        expect(container.textContent).toContain("[1.00, 2.00]");
+        expect(container.textContent).toContain("[0.00, 1.00, 0.00]");
+        expect(container.textContent).toContain("[0.00, 1.00, 0.00, 2.00]");
+        expect(container.textContent).toContain("standard");
+
+        const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
+        act(() => checkbox?.click());
+        expect(onBooleanChange).toHaveBeenCalledWith(false);
+    });
+
+    it("honors texture kind filtering, directional writes, navigation, and errors", () => {
+        const texture2d = { id: "2d", name: "Albedo", kind: "2d" };
+        const cube = { id: "cube", name: "Environment", kind: "cube" };
+        const clear = vi.fn();
+        const navigate = vi.fn();
+        const model: MaterialTextureBindingModel<typeof cube> = {
+            id: "reflection",
+            label: "Reflection",
+            value: cube,
+            candidates: [texture2d, cube],
+            getId: (texture) => texture.id,
+            getDisplayName: (texture) => texture.name,
+            getKind: (texture) => texture.kind,
+            acceptedKinds: ["cube"],
+            write: { clear },
+            navigate,
+            error: "Binding is stale",
+        };
+        const container = Render(<MaterialTextureBindingPropertyLine model={model} />);
+
+        expect(container.querySelector('[role="alert"]')?.getAttribute("aria-label")).toBe("Reflection: Binding is stale");
+        const link = Array.from(container.querySelectorAll("button")).find((element) => element.textContent?.includes("Environment"));
+        expect(link).toBeDefined();
+        act(() => link?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true })));
+        expect(navigate).toHaveBeenCalledWith(cube);
+
+        const button = container.querySelector<HTMLButtonElement>("button[aria-describedby]");
+        act(() => button?.click());
+        expect(clear).toHaveBeenCalledOnce();
+        expect(container.textContent).not.toContain("Albedo");
+    });
+
+    it("offers accepted assignment candidates without exposing an unsupported clear direction", () => {
+        const texture2d = { id: "2d", name: "Albedo", kind: "2d" };
+        const cube = { id: "cube", name: "Environment", kind: "cube" };
+        const assign = vi.fn();
+        const container = Render(
+            <MaterialTextureBindingPropertyLine
+                model={{
+                    id: "reflection",
+                    label: "Reflection",
+                    value: null,
+                    candidates: [texture2d, cube],
+                    getId: (texture) => texture.id,
+                    getDisplayName: (texture) => texture.name,
+                    getKind: (texture) => texture.kind,
+                    acceptedKinds: ["cube"],
+                    write: { assign },
+                }}
+            />
+        );
+
+        const comboBox = container.querySelector<HTMLInputElement>('[role="combobox"]');
+        act(() => comboBox?.click());
+        const options = Array.from(document.querySelectorAll('[role="option"]'));
+        expect(options.some((option) => option.textContent === "Environment")).toBe(true);
+        expect(options.some((option) => option.textContent === "Albedo")).toBe(false);
+        act(() => options.find((option) => option.textContent === "Environment")?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+        expect(assign).toHaveBeenCalledWith(cube);
+    });
+
+    it("renders metadata-only rows and exposes row and snapshot errors accessibly", () => {
+        const container = Render(
+            <TextureMetadataProperties
+                model={{
+                    error: "Texture unavailable",
+                    rows: [
+                        { id: "width", label: "Width", value: 128, units: "px" },
+                        { id: "cube", label: "Cube", value: true },
+                        { id: "format", label: "Format", error: "Unknown format" },
+                    ],
+                }}
+            />
+        );
+
+        expect(container.textContent).toContain("128 px");
+        expect(container.textContent).toContain("Texture unavailable");
+        expect(container.textContent).toContain("Unavailable");
+        expect(container.querySelectorAll('[role="alert"]')).toHaveLength(2);
+        expect(container.querySelector('[aria-label="Format: Unknown format"]')).not.toBeNull();
+        expect(container.querySelector("canvas")).toBeNull();
+        expect(container.querySelector('input[type="file"]')).toBeNull();
+    });
+
+    it("translates Babylon.js values in the runtime adapter without changing write semantics", () => {
+        const booleanChange = vi.fn();
+        const booleanElement = BabylonBooleanMaterialPropertyLine({ label: "Enabled", value: true, onChange: booleanChange });
+        if (!isValidElement<{ model: { onChange: (value: boolean) => void } }>(booleanElement)) {
+            throw new Error("Expected the Babylon boolean adapter to render a material property line.");
+        }
+        booleanElement.props.model.onChange(false);
+        expect(booleanChange).toHaveBeenCalledWith(false);
+
+        const colorChange = vi.fn();
+        const colorElement = BabylonColor3MaterialPropertyLine({ label: "Color", value: new Color3(0.1, 0.2, 0.3), onChange: colorChange });
+        if (!isValidElement<{ model: { onChange: (value: { r: number; g: number; b: number }) => void } }>(colorElement)) {
+            throw new Error("Expected the Babylon color adapter to render a material property line.");
+        }
+        colorElement.props.model.onChange({ r: 0.4, g: 0.5, b: 0.6 });
+        expect(colorChange).toHaveBeenCalledWith(new Color3(0.4, 0.5, 0.6));
+    });
+
+    it("keeps P4 shared cores isolated from Babylon runtimes and preview dependencies", () => {
+        const root = resolve(process.cwd(), "..");
+        const files = [
+            "sharedUiComponents/src/fluent/hoc/propertyLines/materialPropertyLine.tsx",
+            "sharedUiComponents/src/fluent/hoc/propertyLines/materialTextureBindingPropertyLine.tsx",
+            "sharedUiComponents/src/fluent/hoc/propertyLines/textureMetadataProperties.tsx",
+        ];
+
+        for (const file of files) {
+            const source = readFileSync(`${root}/${file}`, "utf8");
+            expect(source).not.toMatch(/from ["'](?:@babylonjs\/lite|core\/|@dev\/core)/);
+            expect(source).not.toMatch(/texture(?:Preview|Editor|Upload)/i);
+        }
+    });
+});
