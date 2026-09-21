@@ -27,6 +27,7 @@ import { CameraExplorerServiceDefinition } from "./services/panes/scene/cameraEx
 import { LightExplorerServiceDefinition } from "./services/panes/scene/lightExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "./services/panes/scene/meshExplorerService";
+import { LiteSceneResourceIndexServiceDefinition } from "./services/panes/scene/sceneResourceIndexService";
 import { ShadowGeneratorExplorerServiceDefinition } from "./services/panes/scene/shadowGeneratorExplorerService";
 import { SpriteLayerExplorerServiceDefinition } from "./services/panes/scene/spriteLayerExplorerService";
 import { TextLayerExplorerServiceDefinition } from "./services/panes/scene/textLayerExplorerService";
@@ -71,6 +72,7 @@ export function ShowInspector(engine: EngineContext, options: Partial<InspectorO
                 engineContextServiceDefinition,
                 watcherServiceDefinition,
                 EngineExplorerServiceDefinition,
+                LiteSceneResourceIndexServiceDefinition,
                 MeshExplorerServiceDefinition,
                 CameraExplorerServiceDefinition,
                 LightExplorerServiceDefinition,

@@ -1,4 +1,5 @@
 import {
+    type CubeTexture,
     type EngineContext,
     type Material,
     type Mesh,
@@ -48,6 +49,8 @@ import {
 } from "../../src/lite/engineExplorerService";
 import { MaterialExplorerServiceDefinition } from "../../src/lite/services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "../../src/lite/services/panes/scene/meshExplorerService";
+import { LiteSceneResourceIndexServiceDefinition, LiteSceneResourceIndexServiceIdentity } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
+import { LiteSceneResourceIndex } from "../../src/lite/services/panes/scene/sceneResources";
 import { SpriteLayerExplorerServiceDefinition } from "../../src/lite/services/panes/scene/spriteLayerExplorerService";
 import { TextLayerExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textLayerExplorerService";
 import { TextureExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textureExplorerService";
@@ -83,6 +86,41 @@ function CreateMesh(name: string, material: Material): Mesh {
         worldMatrix: new Float32Array(16),
         worldMatrixVersion: 0,
     } as Mesh;
+}
+
+function CreateTexture(seed: number, texture?: GPUTexture): Texture2D {
+    return {
+        texture: texture ?? ({ seed, width: 8, height: 4, format: "rgba8unorm", mipLevelCount: 1 } as unknown as GPUTexture),
+        view: { seed } as unknown as GPUTextureView,
+        sampler: { seed } as unknown as GPUSampler,
+        width: 8,
+        height: 4,
+        _sampleType: "float",
+    };
+}
+
+function CreateCubeTexture(seed: number): CubeTexture {
+    return {
+        _texture: { seed, width: 16, height: 16, format: "rgba8unorm", mipLevelCount: 1 } as unknown as GPUTexture,
+        _view: { seed } as unknown as GPUTextureView,
+        _sampler: { seed } as unknown as GPUSampler,
+    } as CubeTexture;
+}
+
+function CreateMaterialView(source: Material): Material {
+    return Object.create(source, {
+        source: { value: source, enumerable: true },
+        _renderFeatures: { value: { features: 0 }, enumerable: true },
+    }) as Material;
+}
+
+function CreateResourceEngine(scenes: readonly SceneContext[]): EngineContext {
+    const engine = {
+        surfaces: [] as unknown as EngineContext["surfaces"],
+        _renderingContexts: scenes,
+    } as unknown as EngineContext;
+    (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine];
+    return engine;
 }
 
 function GetNames(nodes: readonly ExplorerNode[]): string[] {
@@ -156,6 +194,124 @@ describe("Babylon Lite engine explorer service", () => {
         service.dispose?.();
         expect(topologyWatcherDispose).toHaveBeenCalledOnce();
         expect(registration.dispose).toHaveBeenCalledOnce();
+    });
+
+    describe("Babylon Lite scene resource index", () => {
+        it("indexes source materials, canonical bindings, exact wrappers, consumers, and owning scenes deterministically", () => {
+            const sharedGpuTexture = { width: 8, height: 4, format: "rgba8unorm", mipLevelCount: 1 } as unknown as GPUTexture;
+            const sharedTexture = CreateTexture(1, sharedGpuTexture);
+            const cloneTexture = CreateTexture(2, sharedGpuTexture);
+            const cubeTexture = CreateCubeTexture(3);
+            const standard = Object.assign(CreateMaterial("standard", "Standard", sharedTexture), {
+                _reflectionCubeTexture: cubeTexture,
+            });
+            const shader = Object.assign(CreateMaterial("shader", "Shader"), {
+                uniformDecls: [],
+                samplerDecls: [
+                    { name: "shared", type: "texture_2d<f32>" },
+                    { name: "sharedAgain", type: "texture_2d<f32>" },
+                    { name: "clone", type: "texture_2d<f32>" },
+                ],
+                storageBufferDecls: [],
+                attributes: [],
+                defines: [],
+                _textureSlots: new Map([
+                    ["shared", { current: sharedTexture }],
+                    ["sharedAgain", { current: sharedTexture }],
+                    ["clone", { current: cloneTexture }],
+                ]),
+            });
+            const node = Object.assign(CreateMaterial("node", "Node"), {
+                inputs: {
+                    sharedInput: { type: "texture2d", texture: sharedTexture },
+                },
+            });
+            const sceneA = {
+                _kind: "scene",
+                meshes: [
+                    CreateMesh("Null", null as unknown as Material),
+                    CreateMesh("View", CreateMaterialView(standard)),
+                    CreateMesh("Second View", CreateMaterialView(standard)),
+                    CreateMesh("Shader", shader),
+                    CreateMesh("Duplicate", standard),
+                    CreateMesh("Node", node),
+                ],
+            } as SceneContext;
+            const sceneB = {
+                _kind: "scene",
+                meshes: [CreateMesh("Shared", standard)],
+            } as SceneContext;
+            const index = new LiteSceneResourceIndex(CreateResourceEngine([sceneA, sceneB]));
+            const snapshotA = index.getSceneSnapshot(sceneA);
+            const snapshotB = index.getSceneSnapshot(sceneB);
+
+            expect(snapshotA.materials.map(({ source }) => source)).toEqual([standard, shader, node]);
+            expect(snapshotB.materials.map(({ source }) => source)).toEqual([standard]);
+            expect(snapshotA.materials[0].scenes).toEqual([sceneA, sceneB]);
+            expect(snapshotA.materials[0].inspection.source).toBe(standard);
+            expect(snapshotA.textures.map(({ entity }) => entity)).toEqual([sharedTexture, cubeTexture, cloneTexture]);
+            expect(snapshotA.textures.map(({ ordinal }) => ordinal)).toEqual([1, 2, 3]);
+            expect(snapshotB.textures.map(({ entity }) => entity)).toEqual([sharedTexture, cubeTexture]);
+            expect(index.getTextureRecord(cubeTexture)?.inspection.kind).toBe("cube");
+            expect(index.getTextureRecord(sharedTexture)?.consumers).toEqual([
+                { material: standard, bindingId: "standard.diffuse" },
+                { material: shader, bindingId: "shader.sampler:shared" },
+                { material: shader, bindingId: "shader.sampler:sharedAgain" },
+                { material: node, bindingId: "node.texture:sharedInput" },
+            ]);
+            expect(index.getTextureRecord(cloneTexture)?.entity).toBe(cloneTexture);
+            expect(index.getTextureRecord(cloneTexture)?.entity).not.toBe(sharedTexture);
+        });
+
+        it("retains ordinals across refresh while releasing unreachable strong records", () => {
+            const firstTexture = CreateTexture(1);
+            const secondTexture = CreateTexture(2);
+            const firstMaterial = CreateMaterial("standard", "First", firstTexture);
+            const secondMaterial = CreateMaterial("standard", "Second", secondTexture);
+            const scene = {
+                _kind: "scene",
+                meshes: [CreateMesh("First", firstMaterial), CreateMesh("Second", secondMaterial)],
+            } as SceneContext;
+            const index = new LiteSceneResourceIndex(CreateResourceEngine([scene]));
+            const firstOrdinal = index.getTextureRecord(firstTexture)?.ordinal;
+            const secondOrdinal = index.getTextureRecord(secondTexture)?.ordinal;
+
+            scene.meshes.reverse();
+            index.refresh();
+            expect(index.getSceneSnapshot(scene).textures.map(({ entity }) => entity)).toEqual([secondTexture, firstTexture]);
+            expect(index.getTextureRecord(firstTexture)?.ordinal).toBe(firstOrdinal);
+            expect(index.getTextureRecord(secondTexture)?.ordinal).toBe(secondOrdinal);
+
+            scene.meshes.length = 0;
+            index.refresh();
+            expect(index.getSceneSnapshot(scene)).toMatchObject({ materials: [], textures: [] });
+            expect(index.getMaterialRecord(firstMaterial)).toBeUndefined();
+            expect(index.getTextureRecord(firstTexture)).toBeUndefined();
+        });
+
+        it("keeps service instances and ordinal state independent and disposable", () => {
+            const leadingTexture = CreateTexture(1);
+            const sharedTexture = CreateTexture(2);
+            const sceneA = {
+                _kind: "scene",
+                meshes: [CreateMesh("Leading", CreateMaterial("standard", "Leading", leadingTexture)), CreateMesh("Shared", CreateMaterial("standard", "Shared", sharedTexture))],
+            } as SceneContext;
+            const sceneB = {
+                _kind: "scene",
+                meshes: [CreateMesh("Shared", CreateMaterial("standard", "Shared", sharedTexture))],
+            } as SceneContext;
+            const firstService = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([sceneA]) } as IEngineContext)!;
+            const secondService = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([sceneB]) } as IEngineContext)!;
+
+            expect(LiteSceneResourceIndexServiceDefinition.produces).toEqual([LiteSceneResourceIndexServiceIdentity]);
+            expect(LiteSceneResourceIndexServiceDefinition.consumes).toEqual([EngineContextIdentity]);
+            expect(firstService.index.getTextureRecord(sharedTexture)?.ordinal).toBe(2);
+            expect(secondService.index.getTextureRecord(sharedTexture)?.ordinal).toBe(1);
+
+            firstService.dispose?.();
+            expect(firstService.index.getSceneSnapshot(sceneA)).toMatchObject({ materials: [], textures: [] });
+            expect(secondService.index.getTextureRecord(sharedTexture)?.entity).toBe(sharedTexture);
+        });
     });
 
     it("detects resources transferred between scene contexts", () => {
