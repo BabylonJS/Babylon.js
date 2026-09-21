@@ -4,7 +4,6 @@ import {
     type Material,
     type Mesh,
     type RenderingContext,
-    type SceneNode,
     type SceneContext,
     type Sprite2DLayer,
     type SpriteRenderer,
@@ -17,6 +16,7 @@ import { tokens } from "@fluentui/react-components";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { Observable } from "core/Misc/observable";
 
 vi.hoisted(() => {
     vi.stubGlobal("window", globalThis);
@@ -121,6 +121,44 @@ function CreateResourceEngine(scenes: readonly SceneContext[]): EngineContext {
     } as unknown as EngineContext;
     (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine];
     return engine;
+}
+
+function CreateTopologyWatcherService() {
+    let getValue: (() => unknown) | undefined;
+    let onChanged: ((value: unknown) => void) | undefined;
+    let equals: ((left: unknown, right: unknown) => boolean) | undefined;
+    let previousValue: unknown;
+    const dispose = vi.fn();
+    const watcherService = {
+        watchProperty: vi.fn(() => ({ dispose: vi.fn() })),
+        watchValue: vi.fn((getter: () => unknown, callback: (value: unknown) => void, compare: (left: unknown, right: unknown) => boolean) => {
+            getValue = getter;
+            onChanged = callback;
+            equals = compare;
+            previousValue = getter();
+            return { dispose };
+        }),
+    } as unknown as IWatcherService;
+
+    return {
+        watcherService,
+        dispose,
+        notify: () => {
+            previousValue = getValue?.();
+            onChanged?.(previousValue);
+        },
+        refresh: async () => {
+            if (!getValue || !onChanged || !equals) {
+                throw new Error("Expected the topology watcher to be registered.");
+            }
+            const currentValue = getValue();
+            if (!equals(previousValue, currentValue)) {
+                previousValue = currentValue;
+                onChanged(currentValue);
+            }
+            await Promise.resolve();
+        },
+    };
 }
 
 function GetNames(nodes: readonly ExplorerNode[]): string[] {
@@ -300,17 +338,21 @@ describe("Babylon Lite engine explorer service", () => {
                 _kind: "scene",
                 meshes: [CreateMesh("Shared", CreateMaterial("standard", "Shared", sharedTexture))],
             } as SceneContext;
-            const firstService = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([sceneA]) } as IEngineContext)!;
-            const secondService = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([sceneB]) } as IEngineContext)!;
+            const firstWatcher = CreateTopologyWatcherService();
+            const secondWatcher = CreateTopologyWatcherService();
+            const firstService = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([sceneA]) } as IEngineContext, firstWatcher.watcherService)!;
+            const secondService = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([sceneB]) } as IEngineContext, secondWatcher.watcherService)!;
 
             expect(LiteSceneResourceIndexServiceDefinition.produces).toEqual([LiteSceneResourceIndexServiceIdentity]);
-            expect(LiteSceneResourceIndexServiceDefinition.consumes).toEqual([EngineContextIdentity]);
+            expect(LiteSceneResourceIndexServiceDefinition.consumes).toEqual([EngineContextIdentity, WatcherServiceIdentity]);
             expect(firstService.index.getTextureRecord(sharedTexture)?.ordinal).toBe(2);
             expect(secondService.index.getTextureRecord(sharedTexture)?.ordinal).toBe(1);
 
             firstService.dispose?.();
+            expect(firstWatcher.dispose).toHaveBeenCalledOnce();
             expect(firstService.index.getSceneSnapshot(sceneA)).toMatchObject({ materials: [], textures: [] });
             expect(secondService.index.getTextureRecord(sharedTexture)?.entity).toBe(sharedTexture);
+            secondService.dispose?.();
         });
     });
 
@@ -343,10 +385,12 @@ describe("Babylon Lite engine explorer service", () => {
         const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, {} as ISelectionService, watcherService)!;
         const onNodesChanged = vi.fn();
         PaneRegistrations.at(-1)!.options.onNodesChanged?.add(onNodesChanged);
+        const providerChanged = new Observable<void>();
         const providerRegistration = service.addRenderingContextNodeProvider({
             predicate: (context): context is SceneContext => context === firstScene || context === secondScene,
             getNodes: (scene) => scene.meshes.map((entity) => ({ id: "mesh", entity, getDisplayInfo: () => ({ name: "Mesh" }) })),
             getSnapshot: (scene) => scene.meshes,
+            onChanged: providerChanged,
         });
         const paneNodeProviders = PaneRegistrations.at(-1)!.options.nodeProviders?.items ?? [];
 
@@ -364,6 +408,7 @@ describe("Babylon Lite engine explorer service", () => {
 
         expect(areTopologySnapshotsEqual(beforeTransfer, afterTransfer)).toBe(false);
         expect(onNodesChanged).toHaveBeenCalledOnce();
+        expect(paneNodeProviders.some((provider) => provider.onChanged === providerChanged)).toBe(true);
         notifyTopologyChanged();
         expect(onNodesChanged).toHaveBeenCalledTimes(2);
         expect(GetExplorerNodeChildren(firstScene, [], paneNodeProviders)).toEqual([]);
@@ -459,7 +504,7 @@ describe("Babylon Lite engine explorer service", () => {
 
         const service = EngineExplorerServiceDefinition.factory({ engine } as IEngineContext, {} as IShellService, {} as ISelectionService, watcherService)!;
         const sharedService: IExplorerService = service;
-        const itemCommand = { predicate: (context: unknown): context is Mesh => true, getCommand: () => ({}) };
+        const itemCommand = { predicate: (_context: unknown): _context is Mesh => true, getCommand: () => ({}) };
         const groupCommand = { predicate: (context: unknown): context is "Resources" => context === "Resources", getCommand: () => ({}) };
         const itemRegistration = sharedService.addItemCommand(itemCommand as never);
         const groupRegistration = sharedService.addGroupCommand(groupCommand as never);
@@ -546,7 +591,8 @@ describe("Babylon Lite scene resource explorer services", () => {
             _renderingContexts: [scene],
         } as unknown as EngineContext;
         (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine];
-        const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext)!;
+        const topologyWatcher = CreateTopologyWatcherService();
+        const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext, topologyWatcher.watcherService)!;
         const registrations = [
             MeshExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, selectionService, { engine } as IEngineContext),
             MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService, resourceIndexService),
@@ -600,7 +646,7 @@ describe("Babylon Lite scene resource explorer services", () => {
         commandDisposals.forEach((commandDispose) => expect(commandDispose).toHaveBeenCalledOnce());
     });
 
-    it("uses indexed source and wrapper identities for aliases, shared custom slots, and cube textures", () => {
+    it("uses indexed source and wrapper identities for aliases, shared custom slots, and cube textures", async () => {
         const providers: RenderingContextNodeProvider<RenderingContext>[] = [];
         const engineExplorerService = {
             addRenderingContextNodeProvider: (provider: RenderingContextNodeProvider<RenderingContext>) => {
@@ -646,7 +692,8 @@ describe("Babylon Lite scene resource explorer services", () => {
             ],
         } as SceneContext;
         const engine = CreateResourceEngine([scene]);
-        const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext)!;
+        const topologyWatcher = CreateTopologyWatcherService();
+        const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext, topologyWatcher.watcherService)!;
 
         MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService, resourceIndexService);
         TextureExplorerServiceDefinition.factory(engineExplorerService, resourceIndexService);
@@ -665,6 +712,7 @@ describe("Babylon Lite scene resource explorer services", () => {
 
         const valuesByEntity = new Map(tree.nodes.flatMap((section) => section.children).map((node) => [node.entity, node.value]));
         scene.meshes.reverse();
+        await topologyWatcher.refresh();
         const refreshedTree = BuildExplorerTree(
             providers
                 .filter((provider) => provider.predicate(scene))
@@ -680,7 +728,7 @@ describe("Babylon Lite scene resource explorer services", () => {
         resourceIndexService.dispose?.();
     });
 
-    it("refreshes providers through the index seam and safely drops stale or malformed resources", () => {
+    it("refreshes providers through the observer seam and safely drops stale or malformed resources", async () => {
         const providers: RenderingContextNodeProvider<RenderingContext>[] = [];
         const engineExplorerService = {
             addRenderingContextNodeProvider: (provider: RenderingContextNodeProvider<RenderingContext>) => {
@@ -695,26 +743,130 @@ describe("Babylon Lite scene resource explorer services", () => {
         const material = CreateMaterial("standard", "Valid", texture);
         const malformedScene = {
             _kind: "scene",
-            meshes: [null, {}, { material: {} }, CreateMesh("Valid", material)],
+            meshes: [null, {}, { material: null }, CreateMesh("Valid", material)],
         } as unknown as SceneContext;
         const contexts: SceneContext[] = [malformedScene];
         const engine = CreateResourceEngine(contexts);
-        const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext)!;
+        const topologyWatcher = CreateTopologyWatcherService();
+        const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext, topologyWatcher.watcherService)!;
 
         MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService, resourceIndexService);
         TextureExplorerServiceDefinition.factory(engineExplorerService, resourceIndexService);
 
         const materialProvider = providers.find((provider) => provider.order === 100)!;
         const textureProvider = providers.find((provider) => provider.order === 200)!;
+        expect(materialProvider.onChanged).toBe(resourceIndexService.onChanged);
+        expect(textureProvider.onChanged).toBe(resourceIndexService.onChanged);
         expect(materialProvider.getSnapshot(malformedScene)).toEqual([material]);
         expect(textureProvider.getSnapshot(malformedScene)).toEqual([texture]);
 
         contexts.length = 0;
+        await topologyWatcher.refresh();
         expect(materialProvider.getSnapshot(malformedScene)).toEqual([]);
         expect(textureProvider.getSnapshot(malformedScene)).toEqual([]);
         expect(BuildExplorerTree([...materialProvider.getNodes(malformedScene), ...textureProvider.getNodes(malformedScene)]).nodes).toEqual([]);
 
         resourceIndexService.dispose?.();
+    });
+
+    it("observes topology changes, coalesces notifications, and preserves surviving resource records", async () => {
+        const firstTexture = CreateTexture(1);
+        const secondTexture = CreateTexture(2);
+        const firstMaterial = CreateMaterial("standard", "First", firstTexture);
+        const secondMaterial = CreateMaterial("standard", "Second", secondTexture);
+        const materialView = Object.assign(Object.create(firstMaterial) as Material, {
+            source: firstMaterial,
+            _renderFeatures: { features: 0 },
+        });
+        const mesh = CreateMesh("Mesh", materialView);
+        const firstMeshes = [mesh];
+        const secondMeshes: Mesh[] = [];
+        const firstScene = { _kind: "scene", meshes: firstMeshes } as SceneContext;
+        const secondScene = { _kind: "scene", meshes: secondMeshes } as SceneContext;
+        const scenes = [firstScene, secondScene];
+        const topologyWatcher = CreateTopologyWatcherService();
+        const service = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine(scenes) } as IEngineContext, topologyWatcher.watcherService)!;
+        const changed = vi.fn();
+        service.onChanged.add(changed);
+        const firstTextureOrdinal = service.index.getTextureRecord(firstTexture)?.ordinal;
+
+        (materialView as Material & { source: Material }).source = secondMaterial;
+        topologyWatcher.notify();
+        topologyWatcher.notify();
+        await Promise.resolve();
+
+        expect(changed).toHaveBeenCalledOnce();
+        expect(service.index.getSceneSnapshot(firstScene)).toMatchObject({
+            materials: [{ source: secondMaterial }],
+            textures: [{ entity: secondTexture }],
+        });
+        expect(service.index.getMaterialRecord(firstMaterial)).toBeUndefined();
+        expect(service.index.getTextureRecord(firstTexture)).toBeUndefined();
+
+        (materialView as Material & { source: Material }).source = firstMaterial;
+        await topologyWatcher.refresh();
+        expect(service.index.getMaterialRecord(firstMaterial)?.source).toBe(firstMaterial);
+        expect(service.index.getTextureRecord(firstTexture)?.entity).toBe(firstTexture);
+        expect(service.index.getTextureRecord(firstTexture)?.ordinal).toBe(firstTextureOrdinal);
+
+        (firstMaterial as Material & { diffuseTexture: Texture2D | null }).diffuseTexture = secondTexture;
+        await topologyWatcher.refresh();
+        expect(service.index.getSceneSnapshot(firstScene).textures[0].entity).toBe(secondTexture);
+        expect(service.index.getTextureRecord(firstTexture)).toBeUndefined();
+        (firstMaterial as Material & { diffuseTexture: Texture2D | null }).diffuseTexture = firstTexture;
+        await topologyWatcher.refresh();
+        expect(service.index.getTextureRecord(firstTexture)?.ordinal).toBe(firstTextureOrdinal);
+
+        (firstTexture as Texture2D & { width: number }).width = 32;
+        await topologyWatcher.refresh();
+        expect(changed).toHaveBeenCalledTimes(5);
+
+        mesh.material = secondMaterial;
+        await topologyWatcher.refresh();
+        expect(service.index.getSceneSnapshot(firstScene).materials[0].source).toBe(secondMaterial);
+        mesh.material = materialView;
+        await topologyWatcher.refresh();
+
+        firstMeshes.length = 0;
+        secondMeshes.push(mesh);
+        await topologyWatcher.refresh();
+        expect(service.index.getSceneSnapshot(firstScene)).toMatchObject({ materials: [], textures: [] });
+        expect(service.index.getSceneSnapshot(secondScene).materials[0].source).toBe(firstMaterial);
+        expect(service.index.getMaterialRecord(firstMaterial)?.source).toBe(firstMaterial);
+        expect(service.index.getTextureRecord(firstTexture)?.ordinal).toBe(firstTextureOrdinal);
+
+        secondMeshes.length = 0;
+        await topologyWatcher.refresh();
+        expect(service.index.getSceneSnapshot(secondScene)).toMatchObject({ materials: [], textures: [] });
+        expect(service.index.getMaterialRecord(firstMaterial)).toBeUndefined();
+        expect(service.index.getTextureRecord(firstTexture)).toBeUndefined();
+
+        scenes.splice(scenes.indexOf(secondScene), 1);
+        await topologyWatcher.refresh();
+        expect(service.index.getMaterialRecord(firstMaterial)).toBeUndefined();
+        expect(service.index.getTextureRecord(firstTexture)).toBeUndefined();
+
+        service.dispose?.();
+    });
+
+    it("disposes its watcher and suppresses queued and later notifications", async () => {
+        const texture = CreateTexture(1);
+        const material = CreateMaterial("standard", "Material", texture);
+        const scene = { _kind: "scene", meshes: [CreateMesh("Mesh", material)] } as SceneContext;
+        const topologyWatcher = CreateTopologyWatcherService();
+        const service = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([scene]) } as IEngineContext, topologyWatcher.watcherService)!;
+        const changed = vi.fn();
+        service.onChanged.add(changed);
+
+        topologyWatcher.notify();
+        service.dispose?.();
+        topologyWatcher.notify();
+        await Promise.resolve();
+
+        expect(topologyWatcher.dispose).toHaveBeenCalledOnce();
+        expect(changed).not.toHaveBeenCalled();
+        expect(service.index.getMaterialRecord(material)).toBeUndefined();
+        expect(service.index.getTextureRecord(texture)).toBeUndefined();
     });
 
     it("keeps provider refresh and selection identities independent across Inspector instances", () => {
@@ -731,14 +883,18 @@ describe("Babylon Lite scene resource explorer services", () => {
                     return { dispose: vi.fn() };
                 },
             } as IEngineExplorerService;
-            const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([scene]) } as IEngineContext)!;
+            const topologyWatcher = CreateTopologyWatcherService();
+            const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory(
+                { engine: CreateResourceEngine([scene]) } as IEngineContext,
+                topologyWatcher.watcherService
+            )!;
             MaterialExplorerServiceDefinition.factory(
                 engineExplorerService,
                 { watchProperty: vi.fn(() => ({ dispose: vi.fn() })) } as unknown as IWatcherService,
                 resourceIndexService
             );
             TextureExplorerServiceDefinition.factory(engineExplorerService, resourceIndexService);
-            return { providers, resourceIndexService };
+            return { providers, resourceIndexService, topologyWatcher };
         };
         const first = createProviders(firstScene);
         const second = createProviders(secondScene);

@@ -66,6 +66,12 @@ export interface ILiteSceneResourceSnapshot {
     readonly textures: readonly ILiteTextureResourceRecord[];
 }
 
+/**
+ * A public-state snapshot used to detect resource topology changes.
+ * @internal
+ */
+export type LiteSceneResourceTopologySnapshot = readonly unknown[];
+
 type MaterialDraft = {
     readonly source: Material;
     readonly inspection: MaterialInspection;
@@ -94,6 +100,62 @@ function GetPresentTextureEntity(binding: MaterialTextureBinding): object | unde
 
     const value = binding.value.value;
     return IsObject(value) && "entity" in value && IsObject(value.entity) ? value.entity : undefined;
+}
+
+function AppendInspectionValue(snapshot: unknown[], value: unknown): void {
+    if (!IsObject(value) || !("state" in value)) {
+        snapshot.push("invalid");
+        return;
+    }
+
+    snapshot.push(value.state);
+    if ("reason" in value) {
+        snapshot.push(value.reason);
+    }
+    if ("value" in value) {
+        const inspectionValue = value.value;
+        if (Array.isArray(inspectionValue)) {
+            snapshot.push(...inspectionValue);
+        } else if (IsObject(inspectionValue)) {
+            snapshot.push(
+                "uScale" in inspectionValue ? inspectionValue.uScale : undefined,
+                "vScale" in inspectionValue ? inspectionValue.vScale : undefined,
+                "uOffset" in inspectionValue ? inspectionValue.uOffset : undefined,
+                "vOffset" in inspectionValue ? inspectionValue.vOffset : undefined,
+                "uAng" in inspectionValue ? inspectionValue.uAng : undefined
+            );
+        } else {
+            snapshot.push(inspectionValue);
+        }
+    }
+}
+
+function AppendTextureInspection(snapshot: unknown[], inspection: TextureInspection | undefined): void {
+    if (!inspection) {
+        snapshot.push("stale-texture");
+        return;
+    }
+
+    snapshot.push(inspection.kind, inspection.width, inspection.height, inspection.sampleCategory, inspection.colorSpace);
+    AppendInspectionValue(snapshot, inspection.displayName);
+    AppendInspectionValue(snapshot, inspection.origin);
+    AppendInspectionValue(snapshot, inspection.depthOrLayers);
+    AppendInspectionValue(snapshot, inspection.format);
+    AppendInspectionValue(snapshot, inspection.mipLevelCount);
+    AppendInspectionValue(snapshot, inspection.invertY);
+    AppendInspectionValue(snapshot, inspection.transform);
+    AppendInspectionValue(snapshot, inspection.sampler.addressModeU);
+    AppendInspectionValue(snapshot, inspection.sampler.addressModeV);
+    AppendInspectionValue(snapshot, inspection.sampler.addressModeW);
+    AppendInspectionValue(snapshot, inspection.sampler.minFilter);
+    AppendInspectionValue(snapshot, inspection.sampler.magFilter);
+    AppendInspectionValue(snapshot, inspection.sampler.mipmapFilter);
+    AppendInspectionValue(snapshot, inspection.sampler.maxAnisotropy);
+    AppendInspectionValue(snapshot, inspection.capabilities.dynamicUpdate);
+    AppendInspectionValue(snapshot, inspection.capabilities.htmlReadiness);
+    AppendInspectionValue(snapshot, inspection.capabilities.renderAttachment);
+    AppendInspectionValue(snapshot, inspection.capabilities.released);
+    snapshot.push(inspection.capabilities.sampledDepth);
 }
 
 function GetSceneMaterialInspections(scene: SceneContext): readonly MaterialInspection[] {
@@ -242,6 +304,98 @@ export class LiteSceneResourceIndex {
         this._sceneSnapshots = sceneSnapshots;
         this._materialRecords = materialRecords;
         this._textureRecords = textureRecords;
+    }
+
+    /**
+     * Captures the public identities and binding states that determine the index topology.
+     * @returns A snapshot suitable for comparison with {@link AreTopologySnapshotsEqual}.
+     */
+    public getTopologySnapshot(): LiteSceneResourceTopologySnapshot {
+        const snapshot: unknown[] = [];
+        for (const surface of this._engine.surfaces) {
+            snapshot.push(surface);
+            for (const context of getRenderingContexts(surface)) {
+                snapshot.push(context);
+                if (getRenderingContextKind(context) !== "scene") {
+                    continue;
+                }
+
+                const scene = context as SceneContext;
+                if (!Array.isArray(scene.meshes)) {
+                    snapshot.push("invalid-meshes");
+                    continue;
+                }
+
+                snapshot.push(scene.meshes.length);
+                for (const mesh of scene.meshes) {
+                    snapshot.push(mesh);
+                    if (!IsObject(mesh) || !IsObject(mesh.material)) {
+                        snapshot.push(mesh?.material);
+                        continue;
+                    }
+
+                    snapshot.push(mesh.material);
+                    try {
+                        const inspection = inspectMaterial(mesh.material);
+                        if (!IsMaterialInspection(inspection)) {
+                            snapshot.push("invalid-material");
+                            continue;
+                        }
+
+                        snapshot.push(inspection.source, inspection.family, inspection.displayName, inspection.textureBindings.length);
+                        for (const binding of inspection.textureBindings) {
+                            snapshot.push(
+                                binding.id,
+                                binding.label,
+                                ...binding.acceptedKinds,
+                                binding.sampleCategory,
+                                binding.viewCategory,
+                                ...binding.directions,
+                                binding.mutation.access
+                            );
+                            if (binding.mutation.access === "read-write") {
+                                snapshot.push(binding.mutation.mutation, binding.mutation.postMutation);
+                            } else {
+                                snapshot.push(binding.mutation.reason);
+                            }
+                            AppendInspectionValue(snapshot, binding.value);
+                            AppendInspectionValue(snapshot, binding.transform);
+                            const entity = GetPresentTextureEntity(binding);
+                            snapshot.push(entity);
+                            if (entity) {
+                                try {
+                                    AppendTextureInspection(snapshot, inspectTexture(entity));
+                                } catch {
+                                    AppendTextureInspection(snapshot, undefined);
+                                }
+                            }
+                        }
+                    } catch {
+                        snapshot.push("stale-material");
+                    }
+                }
+            }
+        }
+        return snapshot;
+    }
+
+    /**
+     * Compares two topology snapshots by ordered value identity.
+     * @param left The earlier snapshot.
+     * @param right The later snapshot.
+     * @returns Whether the snapshots represent the same resource topology.
+     */
+    public static AreTopologySnapshotsEqual(left: LiteSceneResourceTopologySnapshot, right: LiteSceneResourceTopologySnapshot): boolean {
+        if (left.length !== right.length) {
+            return false;
+        }
+
+        for (let index = 0; index < left.length; index++) {
+            if (!Object.is(left[index], right[index])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

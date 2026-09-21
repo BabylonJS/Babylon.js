@@ -22,7 +22,6 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [IEngineEx
             order: 100,
             predicate: IsSceneContext,
             getNodes: (scene) => {
-                resourceIndexService.index.refresh();
                 return [
                     CreateSceneExplorerSectionNode(
                         "materials",
@@ -33,9 +32,7 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [IEngineEx
                     ),
                 ];
             },
-            getSnapshot: (scene) => {
-                resourceIndexService.index.refresh();
-                return resourceIndexService.index.getSceneSnapshot(scene).materials.map((record) => record.source);
-            },
+            getSnapshot: (scene) => resourceIndexService.index.getSceneSnapshot(scene).materials.map((record) => record.source),
+            onChanged: resourceIndexService.onChanged,
         }),
 };
