@@ -15,8 +15,8 @@ export class ShaderCodeCursor {
         this._lines.length = 0;
 
         // Open parentheses are carried across lines, so an empty clause keeps its semicolon even when a for loop
-        // header is split over several lines.
-        let parenthesisDepth = 0;
+        // header is split over several lines. Block comments are tracked across lines too, so their content is not counted.
+        const scan = { parenthesisDepth: 0, inBlockComment: false };
 
         for (const line of value) {
             // Skip empty lines
@@ -39,6 +39,7 @@ export class ShaderCodeCursor {
 
             if (trimmedLine.startsWith("//")) {
                 this._lines.push(line);
+                ShaderCodeCursor._ScanCode(scan, trimmedLine);
                 continue;
             }
 
@@ -48,14 +49,14 @@ export class ShaderCodeCursor {
             if (semicolonIndex === -1) {
                 // No semicolon in the line
                 this._lines.push(trimmedLine);
-                parenthesisDepth = ShaderCodeCursor._UpdateParenthesisDepth(parenthesisDepth, trimmedLine);
+                ShaderCodeCursor._ScanCode(scan, trimmedLine);
             } else if (semicolonIndex === trimmedLine.length - 1) {
                 // Single semicolon at the end of the line
                 // If trimmedLine == ";", we must not push, to be backward compatible with the old code!
                 if (trimmedLine.length > 1) {
                     this._lines.push(trimmedLine);
-                    parenthesisDepth = ShaderCodeCursor._UpdateParenthesisDepth(parenthesisDepth, trimmedLine);
-                } else if (parenthesisDepth > 0 && this._lines.length > 0) {
+                    ShaderCodeCursor._ScanCode(scan, trimmedLine);
+                } else if (scan.parenthesisDepth > 0 && this._lines.length > 0) {
                     // Except inside a for loop header, where it is an empty clause
                     this._lines[this._lines.length - 1] += ";";
                 }
@@ -67,8 +68,7 @@ export class ShaderCodeCursor {
                 for (let index = 0; index < split.length; index++) {
                     let subLine = split[index];
                     if (!inComment) {
-                        parenthesisDepth = ShaderCodeCursor._UpdateParenthesisDepth(parenthesisDepth, subLine);
-                        inComment = subLine.includes("//");
+                        inComment = ShaderCodeCursor._ScanCode(scan, subLine);
                     }
 
                     subLine = subLine.trim();
@@ -76,7 +76,7 @@ export class ShaderCodeCursor {
                     if (!subLine) {
                         // An empty statement inside parentheses belongs to a for loop header, as in "for (;;)":
                         // keep its semicolon on the previous line, or the header loses one.
-                        if (parenthesisDepth > 0 && index !== split.length - 1 && this._lines.length > 0) {
+                        if (scan.parenthesisDepth > 0 && index !== split.length - 1 && this._lines.length > 0) {
                             this._lines[this._lines.length - 1] += ";";
                         }
                         continue;
@@ -88,18 +88,33 @@ export class ShaderCodeCursor {
         }
     }
 
-    private static _UpdateParenthesisDepth(depth: number, code: string): number {
-        const commentIndex = code.indexOf("//");
-        if (commentIndex !== -1) {
-            code = code.substring(0, commentIndex);
+    // Updates the parenthesis depth with the code of a line, skipping comments. Returns true if the code ends in a line comment.
+    private static _ScanCode(scan: { parenthesisDepth: number; inBlockComment: boolean }, code: string): boolean {
+        let depth = scan.parenthesisDepth;
+        let lineComment = false;
+        for (let i = 0; i < code.length; i++) {
+            const char = code[i];
+            if (scan.inBlockComment) {
+                if (char === "*" && code[i + 1] === "/") {
+                    scan.inBlockComment = false;
+                    i++;
+                }
+            } else if (char === "/" && code[i + 1] === "*") {
+                scan.inBlockComment = true;
+                i++;
+            } else if (char === "/" && code[i + 1] === "/") {
+                lineComment = true;
+                break;
+            } else if (char === "{" || char === "}") {
+                // A for loop header cannot contain a brace, so a brace ends any header and bounds a miscount to the current block.
+                depth = 0;
+            } else if (char === "(") {
+                depth++;
+            } else if (char === ")") {
+                depth--;
+            }
         }
-        // A for loop header cannot contain a brace, so a brace ends any header and bounds a miscount
-        // (for example a parenthesis in a block comment) to the current block.
-        const braceIndex = Math.max(code.lastIndexOf("{"), code.lastIndexOf("}"));
-        if (braceIndex !== -1) {
-            depth = 0;
-            code = code.substring(braceIndex + 1);
-        }
-        return Math.max(0, depth + code.split("(").length - code.split(")").length);
+        scan.parenthesisDepth = Math.max(0, depth);
+        return lineComment;
     }
 }

@@ -34,6 +34,12 @@ describe("ShaderCodeCursor", () => {
         expect(cursorLines("/* ( */ }\n;\nfloat b = 2.0;")).toEqual(["/* ( */ }", "float b = 2.0;"]);
     });
 
+    it("ignores braces and parentheses in block comments", () => {
+        expect(cursorLines("for (/* } */; ; ) { break; }")).toEqual(["for (/* } */;;", ") { break;", "}"]);
+        expect(cursorLines("for (/* x\n} */\n;\n;\ni++) {")).toEqual(["for (/* x", "} */;;", "i++) {"]);
+        expect(cursorLines("/* ( */\n;\nfloat b = 2.0;")).toEqual(["/* ( */", "float b = 2.0;"]);
+    });
+
     it("still drops empty statements outside parentheses", () => {
         expect(cursorLines("float a = 1.0;; float b = 2.0;")).toEqual(["float a = 1.0;", "float b = 2.0;"]);
     });
