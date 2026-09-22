@@ -144,15 +144,21 @@ describe("material and texture parity cores", () => {
     });
 
     it("renders metadata-only rows and exposes row and snapshot errors accessibly", () => {
+        const navigate = vi.fn();
         const container = Render(
             <TextureMetadataProperties
                 model={{
                     error: "Texture unavailable",
+                    pending: true,
                     rows: [
                         { id: "width", label: "Width", value: 128, units: "px" },
                         { id: "cube", label: "Cube", value: true },
                         { id: "format", label: "Format", error: "Unknown format" },
                     ],
+                    transform: {
+                        fields: [{ kind: "readonly", id: "transform", label: "Transform", value: "Read-only" }],
+                    },
+                    consumers: [{ id: "consumer", label: "Reflection", value: "Sky material", navigate }],
                 }}
             />
         );
@@ -162,6 +168,10 @@ describe("material and texture parity cores", () => {
         expect(container.textContent).toContain("Unavailable");
         expect(container.querySelectorAll('[role="alert"]')).toHaveLength(2);
         expect(container.querySelector('[aria-label="Format: Unknown format"]')).not.toBeNull();
+        expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
+        const consumer = container.querySelector('[aria-label="Open material Sky material, Reflection"]');
+        act(() => consumer?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+        expect(navigate).toHaveBeenCalledOnce();
         expect(container.querySelector("canvas")).toBeNull();
         expect(container.querySelector('input[type="file"]')).toBeNull();
     });

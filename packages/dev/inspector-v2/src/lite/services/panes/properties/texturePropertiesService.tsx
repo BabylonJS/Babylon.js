@@ -1,45 +1,54 @@
-import { type Texture2D } from "@babylonjs/lite";
-import { type FunctionComponent } from "react";
+import { inspectTexture } from "@babylonjs/lite";
+import { createElement, type FunctionComponent } from "react";
 
-import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
-import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
+import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
 import { type ServiceDefinition } from "shared-ui-components/modularTool/modularity/serviceDefinition";
 
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../services/panes/properties/propertiesService";
+import { type ISelectionService, SelectionServiceIdentity } from "../../../../services/selectionService";
+import { type ILiteSceneResourceIndexService, LiteSceneResourceIndexServiceIdentity } from "../scene/sceneResourceIndexService";
 
-function IsTexture2D(entity: unknown): entity is Texture2D {
+const LiteTextureMetadataAdapter = MakeLazyComponent(async () => (await import("./liteTextureMetadataAdapter")).LiteTextureMetadataAdapter, {
+    spinnerLabel: "Loading texture metadata",
+});
+
+function TryInspectTexture(entity: unknown): entity is object {
     if (typeof entity !== "object" || entity === null) {
         return false;
     }
-
-    const texture = entity as Partial<Texture2D>;
-    return typeof texture.width === "number" && typeof texture.height === "number" && texture.texture !== undefined && texture.view !== undefined && texture.sampler !== undefined;
+    try {
+        return inspectTexture(entity) !== undefined;
+    } catch {
+        return false;
+    }
 }
 
-const TextureProperties: FunctionComponent<{ texture: Texture2D }> = (props) => {
-    const { texture } = props;
-
-    return (
-        <>
-            <StringifiedPropertyLine label="Width" value={texture.width} units="px" />
-            <StringifiedPropertyLine label="Height" value={texture.height} units="px" />
-            <BooleanBadgePropertyLine label="Invert Y" value={texture.invertY ?? false} />
-        </>
-    );
-};
-
-export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
+export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ILiteSceneResourceIndexService, ISelectionService]> = {
     friendlyName: "Babylon Lite Texture Properties",
-    consumes: [PropertiesServiceIdentity],
-    factory: (propertiesService) =>
-        propertiesService.addSectionContent({
+    consumes: [PropertiesServiceIdentity, LiteSceneResourceIndexServiceIdentity, SelectionServiceIdentity],
+    factory: (propertiesService, resourceIndexService, selectionService) => {
+        const recognizedTextures = new WeakSet<object>();
+        return propertiesService.addSectionContent({
             key: "Babylon Lite Texture Properties",
-            predicate: IsTexture2D,
+            predicate: (entity: unknown): entity is object => {
+                if (typeof entity !== "object" || entity === null) {
+                    return false;
+                }
+                if (TryInspectTexture(entity) || resourceIndexService.index.getTextureRecord(entity)) {
+                    recognizedTextures.add(entity);
+                    return true;
+                }
+                return recognizedTextures.has(entity);
+            },
             content: [
                 {
                     section: "General",
-                    component: ({ context }) => <TextureProperties texture={context} />,
+                    component: ((props) => {
+                        const { context } = props;
+                        return createElement(LiteTextureMetadataAdapter, { texture: context, resourceIndexService, selectionService });
+                    }) satisfies FunctionComponent<{ context: object }>,
                 },
             ],
-        }),
+        });
+    },
 };

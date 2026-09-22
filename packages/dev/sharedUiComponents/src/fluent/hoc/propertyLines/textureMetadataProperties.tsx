@@ -1,6 +1,9 @@
+import { Body1, makeStyles, tokens } from "@fluentui/react-components";
 import { type FunctionComponent } from "react";
 
 import { BooleanBadgePropertyLine } from "./booleanBadgePropertyLine";
+import { LinkPropertyLine } from "./linkPropertyLine";
+import { MaterialPropertySection, type MaterialPropertySectionModel } from "./materialPropertyLine";
 import { StringifiedPropertyLine } from "./stringifiedPropertyLine";
 import { TextPropertyLine } from "./textPropertyLine";
 
@@ -17,8 +20,27 @@ export type TextureMetadataRow = Readonly<{
 /** Runtime-neutral metadata-only texture snapshot. */
 export type TextureMetadataModel = Readonly<{
     rows: readonly TextureMetadataRow[];
+    consumers?: readonly TextureMetadataConsumerLink[];
+    transform?: MaterialPropertySectionModel;
+    pending?: boolean;
     error?: string;
 }>;
+
+/** A runtime-neutral link from a texture to one of its material consumers. */
+export type TextureMetadataConsumerLink = Readonly<{
+    id: string;
+    label: string;
+    value: string;
+    navigate?: () => void;
+}>;
+
+const useStyles = makeStyles({
+    section: {
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacingVerticalXS,
+    },
+});
 
 /**
  * Displays texture metadata without previewing, reading back, editing, uploading, or exporting texture data.
@@ -27,9 +49,10 @@ export type TextureMetadataModel = Readonly<{
  */
 export const TextureMetadataProperties: FunctionComponent<{ model: TextureMetadataModel }> = (props) => {
     const { model } = props;
+    const classes = useStyles();
 
     return (
-        <div role={model.error ? "alert" : undefined}>
+        <div className={classes.section} role={model.error ? "alert" : undefined} aria-busy={model.pending}>
             {model.error ? <TextPropertyLine label="Error" value={model.error} /> : undefined}
             {model.rows.map((row) => {
                 const description = row.error ? `${row.description ? `${row.description} ` : ""}Error: ${row.error}` : row.description;
@@ -50,6 +73,18 @@ export const TextureMetadataProperties: FunctionComponent<{ model: TextureMetada
                     <div key={row.id}>{content}</div>
                 );
             })}
+            {model.pending ? <Body1 role="status">Applying change…</Body1> : undefined}
+            {model.transform ? <MaterialPropertySection model={model.transform} /> : undefined}
+            {model.consumers?.map((consumer) => (
+                <LinkPropertyLine
+                    key={consumer.id}
+                    label={consumer.label}
+                    uniqueId={consumer.id}
+                    value={consumer.value}
+                    onLink={consumer.navigate}
+                    aria-label={consumer.navigate ? `Open material ${consumer.value}, ${consumer.label}` : undefined}
+                />
+            ))}
         </div>
     );
 };

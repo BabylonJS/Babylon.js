@@ -179,6 +179,7 @@ describe("Babylon Lite properties services", () => {
         const materialResourceIndexService = {
             index: {
                 getMaterialRecord: (candidate: Material) => (candidate === material ? { source: material } : undefined),
+                getTextureRecord: (candidate: object) => (candidate === texture ? { entity: texture } : undefined),
             },
         } as unknown as ILiteSceneResourceIndexService;
 
@@ -186,7 +187,7 @@ describe("Babylon Lite properties services", () => {
             EnginePropertiesServiceDefinition.factory(propertiesService, engineContext),
             RenderingContextPropertiesServiceDefinition.factory(propertiesService, engineContext),
             MaterialPropertiesServiceDefinition.factory(propertiesService, materialResourceIndexService, undefined!),
-            TexturePropertiesServiceDefinition.factory(propertiesService),
+            TexturePropertiesServiceDefinition.factory(propertiesService, materialResourceIndexService, undefined!),
             TextLayerPropertiesServiceDefinition.factory(propertiesService, engineContext),
             SpriteLayerPropertiesServiceDefinition.factory(propertiesService, engineContext),
         ];
@@ -194,7 +195,7 @@ describe("Babylon Lite properties services", () => {
         expect(EnginePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(RenderingContextPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(MaterialPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, LiteSceneResourceIndexServiceIdentity, SelectionServiceIdentity]);
-        expect(TexturePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity]);
+        expect(TexturePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, LiteSceneResourceIndexServiceIdentity, SelectionServiceIdentity]);
         expect(TextLayerPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(SpriteLayerPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(registrations.size).toBe(13);
