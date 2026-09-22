@@ -161,29 +161,9 @@ fn gpsCorrectedBoxMuller(u1 : f32, u2 : f32, alpha : f32) -> vec2f {
     return vec2f(r * cos(theta), r * sin(theta));
 }
 
-// Poisson sample. Exact Knuth for small lambda (where the normal approximation is unstable and
-// over-counts — which shows up as a bright halo around silhouettes made of small edge splats), and
-// Giles' QN3 normal asymptotic approximation (Algorithm 955) for large lambda where Knuth is slow.
+// Poisson sample via Giles' QN3 normal-asymptotic approximation (Algorithm 955, ACM TOMS 42(1),
+// 2016), for all lambda — matching the reference implementation.
 fn gpsPoisson(seed : u32, lambda : f32) -> u32 {
-    if (lambda < 12.0) {
-        let lTarget = exp(-lambda);
-        var k = 0u;
-        var p = 1.0;
-        var st = seed;
-        loop {
-            k += 1u;
-            st = gpsPcg(st);
-            p = p * gpsUnit(st);
-            if (p <= lTarget) {
-                break;
-            }
-            if (k > 300u) {
-                break;
-            }
-        }
-        return k - 1u;
-    }
-
     let st1 = gpsPcg(seed);
     let st2 = gpsPcg(st1);
     let w = gpsBoxMuller(gpsUnit(st1), gpsUnit(st2)).x;
