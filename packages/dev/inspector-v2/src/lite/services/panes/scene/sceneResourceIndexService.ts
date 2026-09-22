@@ -21,6 +21,10 @@ export interface ILiteSceneResourceIndexService extends IService<typeof LiteScen
     readonly index: LiteSceneResourceIndex;
     /** Notifies after the index has applied a topology change. */
     readonly onChanged: IReadonlyObservable<void>;
+    /** Notifies once while the service is being disposed. */
+    readonly onDisposed: IReadonlyObservable<void>;
+    /** Whether this service can still refresh and publish snapshots. */
+    readonly isDisposed: boolean;
     /** Rebuilds the index immediately and notifies mounted consumers. */
     refresh(): void;
 }
@@ -36,6 +40,7 @@ export const LiteSceneResourceIndexServiceDefinition: ServiceDefinition<[ILiteSc
     factory: (engineContext, watcherService) => {
         const index = new LiteSceneResourceIndex(engineContext.engine);
         const onChanged = new Observable<void>();
+        const onDisposed = new Observable<void>();
         let refreshPending = false;
         let isDisposed = false;
         const topologyWatcher = watcherService.watchValue(
@@ -60,6 +65,10 @@ export const LiteSceneResourceIndexServiceDefinition: ServiceDefinition<[ILiteSc
         return {
             index,
             onChanged,
+            onDisposed,
+            get isDisposed() {
+                return isDisposed;
+            },
             refresh: () => {
                 if (!isDisposed) {
                     index.refresh();
@@ -73,6 +82,8 @@ export const LiteSceneResourceIndexServiceDefinition: ServiceDefinition<[ILiteSc
 
                 isDisposed = true;
                 topologyWatcher.dispose();
+                onDisposed.notifyObservers();
+                onDisposed.clear();
                 index.dispose();
                 onChanged.clear();
             },

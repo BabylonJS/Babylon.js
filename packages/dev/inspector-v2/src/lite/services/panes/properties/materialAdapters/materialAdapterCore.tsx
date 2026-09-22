@@ -12,7 +12,8 @@ import {
     type MaterialTextureMutation,
     type TextureBindingKind,
 } from "@babylonjs/lite";
-import { Fragment, type FunctionComponent, useCallback, useState } from "react";
+import { Body1 } from "@fluentui/react-components";
+import { Fragment, type FunctionComponent, useCallback } from "react";
 
 import { MaterialPropertySection, type MaterialMatrix4Value, type MaterialPropertyModel } from "shared-ui-components/fluent/hoc/propertyLines/materialPropertyLine";
 import { MaterialTextureBindingPropertyLine, type MaterialTextureBindingModel } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
@@ -23,6 +24,7 @@ import { usePropertyChangedNotifier } from "../../../../../contexts/propertyCont
 import { type ISelectionService } from "../../../../../services/selectionService";
 import { type ILiteSceneResourceIndexService } from "../../scene/sceneResourceIndexService";
 import { type ILiteMaterialResourceRecord, type ILiteTextureResourceRecord } from "../../scene/sceneResources";
+import { useLatestAsyncOperation } from "../useLatestAsyncOperation";
 
 /** Props shared by each lazily loaded Lite material family adapter. */
 export type LiteMaterialAdapterProps = Readonly<{
@@ -30,12 +32,6 @@ export type LiteMaterialAdapterProps = Readonly<{
     section: MaterialInspectionSection;
     resourceIndexService: ILiteSceneResourceIndexService;
     selectionService: ISelectionService;
-}>;
-
-type MaterialOperationState = Readonly<{
-    id?: string;
-    pending: boolean;
-    error?: string;
 }>;
 
 type MaterialFamilyAdapterProps = LiteMaterialAdapterProps &
@@ -109,7 +105,12 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
         return record ? ({ ...record.inspection, isView } satisfies MaterialInspection) : undefined;
     }, [isView, resourceIndexService, source]);
     const inspection = useObservableState(getInspection, resourceIndexService.onChanged);
-    const [operation, setOperation] = useState<MaterialOperationState>({ pending: false });
+    const isResourceIndexDisposed = useCallback(() => resourceIndexService.isDisposed, [resourceIndexService]);
+    const [operation, runLatestOperation] = useLatestAsyncOperation(
+        material,
+        [resourceIndexService.onChanged, resourceIndexService.onDisposed, selectionService.onSelectedEntityChanged],
+        isResourceIndexDisposed
+    );
     const notifyPropertyChanged = usePropertyChangedNotifier();
 
     if (!inspection || !source) {
@@ -118,24 +119,6 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
     if (inspection.family !== family) {
         return <TextPropertyLine label="Error" value={`The material family changed from ${family} to ${inspection.family ?? "unknown"}.`} />;
     }
-
-    const runOperationAsync = async (id: string, operationCallback: () => Promise<{ changed: boolean }>, oldValue?: unknown, newValue?: unknown) => {
-        setOperation({ id, pending: true });
-        try {
-            const result = await operationCallback();
-            if (result.changed && oldValue !== undefined) {
-                notifyPropertyChanged(source, id, oldValue, newValue);
-            }
-            resourceIndexService.refresh();
-            setOperation({ pending: false });
-        } catch (error) {
-            setOperation({
-                id,
-                pending: false,
-                error: error instanceof Error ? error.message : "The material change failed.",
-            });
-        }
-    };
 
     const getCurrentRecord = (): ILiteMaterialResourceRecord => {
         const record = resourceIndexService.index.getMaterialRecord(source);
@@ -147,15 +130,21 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
 
     const commitProperty = (property: MaterialInspectionProperty, value: MaterialInspectionPropertyValue) => {
         const oldValue = property.value.state === "present" ? property.value.value : undefined;
-        void runOperationAsync(
-            property.id,
-            async () => {
+        runLatestOperation({
+            id: property.id,
+            operationAsync: async () => {
                 const record = getCurrentRecord();
-                return await setMaterialInspectionProperty({ scenes: record.scenes }, material, property.id, value);
+                const scenes = [...record.scenes];
+                return await setMaterialInspectionProperty({ scenes }, material, property.id, value);
             },
-            oldValue,
-            value
-        );
+            onSuccess: (result) => {
+                if (result.changed && oldValue !== undefined) {
+                    notifyPropertyChanged(source, property.id, oldValue, value);
+                }
+                resourceIndexService.refresh();
+            },
+            getErrorMessage: (error) => (error instanceof Error ? error.message : "The material change failed."),
+        });
     };
 
     const toPropertyModel = (property: MaterialInspectionProperty): MaterialPropertyModel => {
@@ -262,11 +251,18 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
     const toTextureModel = (binding: MaterialTextureBinding): MaterialTextureBindingModel<object> => {
         const current = binding.value.state === "present" ? binding.value.value.entity : null;
         const pending = operation.pending && operation.id === binding.id;
-        const mutate = (mutation: MaterialTextureMutation) =>
-            void runOperationAsync(binding.id, async () => {
-                const currentRecord = getCurrentRecord();
-                return await setMaterialInspectionTexture({ scenes: currentRecord.scenes }, material, binding.id, mutation);
+        const mutate = (mutation: MaterialTextureMutation) => {
+            runLatestOperation({
+                id: binding.id,
+                operationAsync: async () => {
+                    const currentRecord = getCurrentRecord();
+                    const scenes = [...currentRecord.scenes];
+                    return await setMaterialInspectionTexture({ scenes }, material, binding.id, mutation);
+                },
+                onSuccess: () => resourceIndexService.refresh(),
+                getErrorMessage: (error) => (error instanceof Error ? error.message : "The material texture change failed."),
             });
+        };
         const canAssign = binding.value.state === "absent" && binding.directions.includes("assign");
         const canReplace = binding.value.state === "present" && binding.directions.includes("replace");
         const canClear = binding.value.state === "present" && binding.directions.includes("clear");
@@ -290,7 +286,10 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
             navigate:
                 current && binding.directions.includes("navigate")
                     ? (texture) => {
-                          selectionService.selectedEntity = texture;
+                          const currentBinding = resourceIndexService.index.getMaterialRecord(source)?.bindings.find((candidate) => candidate.id === binding.id);
+                          if (!resourceIndexService.isDisposed && currentBinding?.value.state === "present" && currentBinding.value.value.entity === texture) {
+                              selectionService.selectedEntity = texture;
+                          }
                       }
                     : undefined,
             pending,
@@ -308,7 +307,7 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
                 </>
             ) : undefined}
             {operation.pending && (properties.some((property) => property.id === operation.id) || textureBindings.some((binding) => binding.id === operation.id)) ? (
-                <TextPropertyLine label="Status" value="Applying change…" />
+                <Body1 role="status">Applying change…</Body1>
             ) : undefined}
             {properties.length ? <MaterialPropertySection model={{ fields: properties }} /> : undefined}
             {textureBindings.map((binding) => (

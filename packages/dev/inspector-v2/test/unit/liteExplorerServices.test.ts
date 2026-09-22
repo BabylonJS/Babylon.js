@@ -856,7 +856,10 @@ describe("Babylon Lite scene resource explorer services", () => {
         const topologyWatcher = CreateTopologyWatcherService();
         const service = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([scene]) } as IEngineContext, topologyWatcher.watcherService)!;
         const changed = vi.fn();
+        const disposed = vi.fn();
         service.onChanged.add(changed);
+        service.onDisposed.add(disposed);
+        expect(service.isDisposed).toBe(false);
 
         topologyWatcher.notify();
         service.dispose?.();
@@ -864,6 +867,8 @@ describe("Babylon Lite scene resource explorer services", () => {
         await Promise.resolve();
 
         expect(topologyWatcher.dispose).toHaveBeenCalledOnce();
+        expect(disposed).toHaveBeenCalledOnce();
+        expect(service.isDisposed).toBe(true);
         expect(changed).not.toHaveBeenCalled();
         expect(service.index.getMaterialRecord(material)).toBeUndefined();
         expect(service.index.getTextureRecord(texture)).toBeUndefined();

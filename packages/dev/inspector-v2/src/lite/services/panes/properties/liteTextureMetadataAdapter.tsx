@@ -8,7 +8,7 @@ import {
     type TextureInspection,
     type TextureInspectionTransform,
 } from "@babylonjs/lite";
-import { type FunctionComponent, useCallback, useState } from "react";
+import { type FunctionComponent, useCallback } from "react";
 
 import {
     TextureMetadataProperties,
@@ -22,16 +22,12 @@ import { useObservableState } from "shared-ui-components/modularTool/hooks/obser
 import { type ISelectionService } from "../../../../services/selectionService";
 import { type ILiteSceneResourceIndexService } from "../scene/sceneResourceIndexService";
 import { type ILiteMaterialResourceRecord, type ILiteTextureResourceRecord } from "../scene/sceneResources";
+import { useLatestAsyncOperation } from "./useLatestAsyncOperation";
 
 export type LiteTextureMetadataAdapterProps = Readonly<{
     texture: object;
     resourceIndexService: ILiteSceneResourceIndexService;
     selectionService: ISelectionService;
-}>;
-
-type TextureOperationState = Readonly<{
-    pending: boolean;
-    error?: string;
 }>;
 
 function FormatValue(value: unknown): string {
@@ -60,6 +56,7 @@ function GetMaterialRecord(resourceIndexService: ILiteSceneResourceIndexService,
 }
 
 function GetConsumerLinks(
+    texture: object,
     record: ILiteTextureResourceRecord | undefined,
     resourceIndexService: ILiteSceneResourceIndexService,
     selectionService: ISelectionService
@@ -78,7 +75,12 @@ function GetConsumerLinks(
             value: materialName,
             navigate: materialRecord
                 ? () => {
-                      selectionService.selectedEntity = materialRecord.source;
+                      const currentRecord = resourceIndexService.index.getTextureRecord(texture);
+                      const currentConsumer = currentRecord?.consumers.find((candidate) => candidate.material === consumer.material && candidate.bindingId === consumer.bindingId);
+                      const currentMaterialRecord = currentConsumer && GetMaterialRecord(resourceIndexService, currentConsumer.material);
+                      if (!resourceIndexService.isDisposed && currentMaterialRecord) {
+                          selectionService.selectedEntity = currentMaterialRecord.source;
+                      }
                   }
                 : undefined,
         };
@@ -159,9 +161,10 @@ function GetMetadataRows(inspection: TextureInspection, ordinal: number | undefi
 
 function GetTransformFields(
     transform: TextureInspectionTransform,
-    disabled: boolean,
+    operationId: string | undefined,
+    pending: boolean,
     error: string | undefined,
-    commit: (transform: TextureInspectionTransform) => void
+    commit: (id: string, transform: TextureInspectionTransform) => void
 ): readonly MaterialPropertyModel[] {
     const definitions = [
         ["uScale", "U Scale"],
@@ -175,9 +178,9 @@ function GetTransformFields(
         id: `transform-${key}`,
         label,
         value: transform[key],
-        disabled,
-        error,
-        onChange: (value: number) => commit({ ...transform, [key]: value }),
+        disabled: pending && operationId === `transform-${key}`,
+        error: operationId === `transform-${key}` ? error : undefined,
+        onChange: (value: number) => commit(`transform-${key}`, { ...transform, [key]: value }),
     }));
 }
 
@@ -201,7 +204,12 @@ export const LiteTextureMetadataAdapter: FunctionComponent<LiteTextureMetadataAd
         }
     }, [resourceIndexService, texture]);
     const snapshot = useObservableState(getSnapshot, resourceIndexService.onChanged);
-    const [operation, setOperation] = useState<TextureOperationState>({ pending: false });
+    const isResourceIndexDisposed = useCallback(() => resourceIndexService.isDisposed, [resourceIndexService]);
+    const [operation, runLatestOperation] = useLatestAsyncOperation(
+        texture,
+        [resourceIndexService.onChanged, resourceIndexService.onDisposed, selectionService.onSelectedEntityChanged],
+        isResourceIndexDisposed
+    );
 
     if (!snapshot) {
         return <TextureMetadataProperties model={{ rows: [], error: "This texture is unavailable or malformed." }} />;
@@ -209,30 +217,31 @@ export const LiteTextureMetadataAdapter: FunctionComponent<LiteTextureMetadataAd
 
     const { inspection, record } = snapshot;
     const canEditTransform = SupportsTransform(record, resourceIndexService);
-    const commitTransform = (transform: TextureInspectionTransform) => {
-        void (async () => {
-            setOperation({ pending: true });
-            try {
-                const scenes = GetConsumerScenes(record, resourceIndexService);
-                await setTextureInspectionTransform({ scenes }, texture, transform);
-                resourceIndexService.refresh();
-                setOperation({ pending: false });
-            } catch (error) {
-                setOperation({ pending: false, error: error instanceof Error ? error.message : "The texture transform change failed." });
-            }
-        })();
+    const commitTransform = (id: string, transform: TextureInspectionTransform) => {
+        runLatestOperation({
+            id,
+            operationAsync: async () => {
+                const currentRecord = resourceIndexService.index.getTextureRecord(texture);
+                if (!currentRecord) {
+                    throw new Error("This texture is no longer available in an inspected scene.");
+                }
+                const scenes = [...GetConsumerScenes(currentRecord, resourceIndexService)];
+                return await setTextureInspectionTransform({ scenes }, texture, transform);
+            },
+            onSuccess: () => resourceIndexService.refresh(),
+            getErrorMessage: (error) => (error instanceof Error ? error.message : "The texture transform change failed."),
+        });
     };
     const model: TextureMetadataModel = {
         rows: GetMetadataRows(inspection, record?.ordinal),
-        consumers: GetConsumerLinks(record, resourceIndexService, selectionService),
+        consumers: GetConsumerLinks(texture, record, resourceIndexService, selectionService),
         pending: operation.pending,
         transform:
             canEditTransform && inspection.transform.state === "present"
                 ? {
-                      fields: GetTransformFields(inspection.transform.value, operation.pending, operation.error, commitTransform),
+                      fields: GetTransformFields(inspection.transform.value, operation.id, operation.pending, operation.error, commitTransform),
                   }
                 : undefined,
-        error: operation.error,
     };
     return <TextureMetadataProperties model={model} />;
 };

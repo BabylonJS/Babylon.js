@@ -56,6 +56,16 @@ vi.stubGlobal("NodeFilter", window.NodeFilter);
 
 const PresentTransform: TextureInspectionTransform = { uScale: 1, vScale: 1, uOffset: 0, vOffset: 0, uAng: 0 };
 
+function MakeDeferred<T>() {
+    let resolve!: (value: T) => void;
+    let reject!: (error: unknown) => void;
+    const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+        resolve = resolvePromise;
+        reject = rejectPromise;
+    });
+    return { promise, resolve, reject };
+}
+
 function Known<T>(value: T) {
     return { state: "known", value } as const;
 }
@@ -133,6 +143,8 @@ function MakeServices(texture: object, inspection: TextureInspection, includeRec
         consumers: [{ material, bindingId: binding.id }],
     } as ILiteTextureResourceRecord;
     const onChanged = new Observable<void>();
+    const onDisposed = new Observable<void>();
+    let isDisposed = false;
     const refresh = vi.fn(() => onChanged.notifyObservers());
     const resourceIndexService = {
         index: {
@@ -140,8 +152,17 @@ function MakeServices(texture: object, inspection: TextureInspection, includeRec
             getMaterialRecord: (candidate: Material) => (candidate === material ? materialRecord : undefined),
         },
         onChanged,
+        onDisposed,
         refresh,
-        dispose: vi.fn(),
+        get isDisposed() {
+            return isDisposed;
+        },
+        dispose: vi.fn(() => {
+            isDisposed = true;
+            onDisposed.notifyObservers();
+            onDisposed.clear();
+            onChanged.clear();
+        }),
     } as unknown as ILiteSceneResourceIndexService;
     let selectedEntity: object | null = texture;
     const selectionService = {
@@ -150,6 +171,7 @@ function MakeServices(texture: object, inspection: TextureInspection, includeRec
         },
         set selectedEntity(value) {
             selectedEntity = value;
+            this.onSelectedEntityChanged.notifyObservers();
         },
         onSelectedEntityChanged: new Observable<void>(),
         dispose: vi.fn(),
@@ -322,6 +344,49 @@ describe("Babylon Lite texture metadata Properties", () => {
         expect(services.resourceIndexService.refresh).not.toHaveBeenCalled();
         expect(container.querySelector('[role="alert"]')?.textContent).toContain("Transform rejected");
         expect(container.querySelector('input[value="1"]')).not.toBeNull();
+    });
+
+    it("disables only the latest transform row and ignores stale completion after index invalidation", async () => {
+        const texture = {};
+        const inspection = MakeInspection("2d");
+        TextureInspectionMocks.snapshots.set(texture, inspection);
+        const first = MakeDeferred<{ changed: boolean }>();
+        const second = MakeDeferred<{ changed: boolean }>();
+        TextureInspectionMocks.setTransform.mockImplementationOnce(() => first.promise).mockImplementationOnce(() => second.promise);
+        const services = MakeServices(texture, inspection);
+        const container = Render(<LiteTextureMetadataAdapter texture={texture} {...services} />);
+        const setInputValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+        const inputs = Array.from(container.querySelectorAll<HTMLInputElement>('input[value="1"]'));
+
+        act(() => {
+            inputs[0].focus();
+            setInputValue.call(inputs[0], "2");
+            inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+            inputs[0].blur();
+            inputs[1].focus();
+            setInputValue.call(inputs[1], "3");
+            inputs[1].dispatchEvent(new Event("input", { bubbles: true }));
+            inputs[1].blur();
+        });
+        const activeInputs = Array.from(container.querySelectorAll<HTMLInputElement>("input"));
+        expect(activeInputs[0].disabled).toBe(false);
+        expect(activeInputs[1].disabled).toBe(true);
+
+        await act(async () => {
+            first.resolve({ changed: true });
+            await first.promise;
+        });
+        expect(services.resourceIndexService.refresh).not.toHaveBeenCalled();
+        expect(container.querySelector('[role="status"]')).not.toBeNull();
+
+        act(() => services.resourceIndexService.onChanged.notifyObservers());
+        await act(async () => {
+            second.reject(new Error("obsolete failure"));
+            await second.promise.catch(() => undefined);
+        });
+        expect(container.textContent).not.toContain("obsolete failure");
+        expect(services.resourceIndexService.refresh).not.toHaveBeenCalled();
+        expect(container.querySelector('[role="status"]')).toBeNull();
     });
 
     it("handles stale and malformed wrappers without throwing", () => {

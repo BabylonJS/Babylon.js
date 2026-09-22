@@ -64,6 +64,16 @@ vi.stubGlobal("NodeFilter", window.NodeFilter);
 
 type RegisteredContent = Parameters<IPropertiesService["addSectionContent"]>[0];
 
+function MakeDeferred<T>() {
+    let resolve!: (value: T) => void;
+    let reject!: (error: unknown) => void;
+    const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+        resolve = resolvePromise;
+        reject = rejectPromise;
+    });
+    return { promise, resolve, reject };
+}
+
 const Editable = { access: "read-write", mutation: "A", postMutation: "none" } as const;
 const ReadOnly = { access: "read-only", reason: "Computed by the shader" } as const;
 
@@ -100,13 +110,29 @@ function MakeResourceService(
 ) {
     const records = recordOrRecords ? (Array.isArray(recordOrRecords) ? recordOrRecords : [recordOrRecords]) : [];
     const onChanged = new Observable<void>();
+    const onDisposed = new Observable<void>();
+    let isDisposed = false;
     const refresh = vi.fn(() => onChanged.notifyObservers());
     const index = {
         getMaterialRecord: (material: Material) => records.find((record) => record.source === material),
         getSceneSnapshot: (scene: SceneContext) => ({ scene, materials: records.filter((record) => record.scenes.includes(scene)), textures }),
         getTextureRecord: (texture: object) => textures.find((candidate) => candidate.entity === texture),
     };
-    return { index, onChanged, refresh, dispose: vi.fn() } as unknown as ILiteSceneResourceIndexService;
+    return {
+        index,
+        onChanged,
+        onDisposed,
+        refresh,
+        get isDisposed() {
+            return isDisposed;
+        },
+        dispose: vi.fn(() => {
+            isDisposed = true;
+            onDisposed.notifyObservers();
+            onDisposed.clear();
+            onChanged.clear();
+        }),
+    } as unknown as ILiteSceneResourceIndexService;
 }
 
 function MakeSelectionService() {
@@ -117,6 +143,7 @@ function MakeSelectionService() {
         },
         set selectedEntity(value) {
             selectedEntity = value;
+            this.onSelectedEntityChanged.notifyObservers();
         },
         onSelectedEntityChanged: new Observable<void>(),
         dispose: vi.fn(),
@@ -406,5 +433,50 @@ describe("Babylon Lite material Properties", () => {
         const staleService = MakeResourceService(undefined);
         const stale = Render(<StandardMaterialAdapter material={sourceA} section="general" resourceIndexService={staleService} selectionService={selection} />);
         expect(stale.textContent).toContain("no longer available");
+    });
+
+    it("ignores stale material completions and invalidates pending work when selection changes", async () => {
+        const material = {} as Material;
+        const scene = {} as SceneContext;
+        const property = MakeProperty("material.name", "general", "Name", "string", "Material");
+        const inspection = MakeInspection(material, "standard", [property]);
+        LiteInspectionMocks.snapshots.set(material, inspection);
+        const resourceService = MakeResourceService({ source: material, inspection, scenes: [scene], bindings: [] });
+        const selectionService = MakeSelectionService();
+        selectionService.selectedEntity = material;
+        const first = MakeDeferred<{ changed: boolean }>();
+        const second = MakeDeferred<{ changed: boolean }>();
+        LiteInspectionMocks.setProperty.mockImplementationOnce(() => first.promise).mockImplementationOnce(() => second.promise);
+        const container = Render(<StandardMaterialAdapter material={material} section="general" resourceIndexService={resourceService} selectionService={selectionService} />);
+        const setInputValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+        const commit = (value: string) => {
+            const input = container.querySelector<HTMLInputElement>("input")!;
+            input.focus();
+            setInputValue.call(input, value);
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            input.blur();
+        };
+
+        act(() => {
+            commit("First");
+            commit("Second");
+        });
+        await act(async () => {
+            first.reject(new Error("obsolete failure"));
+            await first.promise.catch(() => undefined);
+        });
+        expect(container.textContent).toContain("Applying");
+        expect(container.textContent).not.toContain("obsolete failure");
+        expect(resourceService.refresh).not.toHaveBeenCalled();
+
+        act(() => {
+            selectionService.selectedEntity = {};
+        });
+        await act(async () => {
+            second.resolve({ changed: true });
+            await second.promise;
+        });
+        expect(resourceService.refresh).not.toHaveBeenCalled();
+        expect(container.textContent).not.toContain("Applying");
     });
 });
