@@ -1465,6 +1465,13 @@ export class StandardMaterial extends StandardMaterialBase {
                     }
                 }
 
+                // The alpha test compares against alphaCutOff whatever supplies the alpha: a texture, vertex or
+                // instance color, opacity fresnel or the material alpha. Binding it only when a texture carried
+                // alpha left every other case testing against the default of 0, so nothing was ever discarded.
+                if (defines.ALPHATEST) {
+                    ubo.updateFloat("alphaCutOff", this.alphaCutOff);
+                }
+
                 // Textures
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
@@ -1480,10 +1487,6 @@ export class StandardMaterial extends StandardMaterialBase {
                     if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
                         ubo.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
                         BindTextureMatrix(this._opacityTexture, ubo, "opacity");
-                    }
-
-                    if (this._hasAlphaChannel()) {
-                        ubo.updateFloat("alphaCutOff", this.alphaCutOff);
                     }
 
                     BindIBLParameters(scene, defines, ubo, Color3.White(), this._reflectionTexture, false, false, true, false, false, false, this.roughness);
