@@ -161,9 +161,7 @@ function GetMetadataRows(inspection: TextureInspection, ordinal: number | undefi
 
 function GetTransformFields(
     transform: TextureInspectionTransform,
-    operationId: string | undefined,
-    pending: boolean,
-    error: string | undefined,
+    operations: Readonly<Record<string, { pending: boolean; error?: string } | undefined>>,
     commit: (id: string, transform: TextureInspectionTransform) => void
 ): readonly MaterialPropertyModel[] {
     const definitions = [
@@ -173,15 +171,19 @@ function GetTransformFields(
         ["vOffset", "V Offset"],
         ["uAng", "Angle"],
     ] as const;
-    return definitions.map(([key, label]) => ({
-        kind: "number",
-        id: `transform-${key}`,
-        label,
-        value: transform[key],
-        disabled: pending && operationId === `transform-${key}`,
-        error: operationId === `transform-${key}` ? error : undefined,
-        onChange: (value: number) => commit(`transform-${key}`, { ...transform, [key]: value }),
-    }));
+    return definitions.map(([key, label]) => {
+        const id = `transform-${key}`;
+        return {
+            kind: "number",
+            id,
+            label,
+            value: transform[key],
+            disabled: operations[id]?.pending,
+            pending: operations[id]?.pending,
+            error: operations[id]?.error,
+            onChange: (value: number) => commit(id, { ...transform, [key]: value }),
+        };
+    });
 }
 
 /**
@@ -205,7 +207,7 @@ export const LiteTextureMetadataAdapter: FunctionComponent<LiteTextureMetadataAd
     }, [resourceIndexService, texture]);
     const snapshot = useObservableState(getSnapshot, resourceIndexService.onChanged);
     const isResourceIndexDisposed = useCallback(() => resourceIndexService.isDisposed, [resourceIndexService]);
-    const [operation, runLatestOperation] = useLatestAsyncOperation(
+    const [operations, runLatestOperation] = useLatestAsyncOperation(
         texture,
         [resourceIndexService.onChanged, resourceIndexService.onDisposed, selectionService.onSelectedEntityChanged],
         isResourceIndexDisposed
@@ -235,11 +237,10 @@ export const LiteTextureMetadataAdapter: FunctionComponent<LiteTextureMetadataAd
     const model: TextureMetadataModel = {
         rows: GetMetadataRows(inspection, record?.ordinal),
         consumers: GetConsumerLinks(texture, record, resourceIndexService, selectionService),
-        pending: operation.pending,
         transform:
             canEditTransform && inspection.transform.state === "present"
                 ? {
-                      fields: GetTransformFields(inspection.transform.value, operation.id, operation.pending, operation.error, commitTransform),
+                      fields: GetTransformFields(inspection.transform.value, operations, commitTransform),
                   }
                 : undefined,
     };

@@ -105,6 +105,9 @@ describe("material and texture parity cores", () => {
         expect(container.querySelector('[role="alert"]')?.getAttribute("aria-label")).toBe("Reflection: Binding is stale");
         const link = Array.from(container.querySelectorAll("button")).find((element) => element.textContent?.includes("Environment"));
         expect(link).toBeDefined();
+        expect(link?.getAttribute("aria-label")).toBe("Reflection: open Environment");
+        expect(link?.tagName).toBe("BUTTON");
+        expect(link?.tabIndex).toBe(0);
         act(() => link?.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true })));
         expect(navigate).toHaveBeenCalledWith(cube);
 
@@ -135,12 +138,113 @@ describe("material and texture parity cores", () => {
         );
 
         const comboBox = container.querySelector<HTMLInputElement>('[role="combobox"]');
+        expect(comboBox?.getAttribute("aria-label")).toBe("Reflection");
         act(() => comboBox?.click());
         const options = Array.from(document.querySelectorAll('[role="option"]'));
         expect(options.some((option) => option.textContent === "Environment")).toBe(true);
         expect(options.some((option) => option.textContent === "Albedo")).toBe(false);
         act(() => options.find((option) => option.textContent === "Environment")?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
         expect(assign).toHaveBeenCalledWith(cube);
+    });
+
+    it("exposes replace without clear and disables the active binding without hiding its actions", () => {
+        const texture = { id: "current", name: "Current", kind: "2d" };
+        const replacement = { id: "replacement", name: "Replacement", kind: "2d" };
+        const replace = vi.fn();
+        const container = Render(
+            <MaterialTextureBindingPropertyLine
+                model={{
+                    id: "lightmap",
+                    label: "Lightmap",
+                    value: texture,
+                    candidates: [texture, replacement],
+                    getId: (candidate) => candidate.id,
+                    getDisplayName: (candidate) => candidate.name,
+                    getKind: (candidate) => candidate.kind,
+                    acceptedKinds: ["2d"],
+                    write: { assign: replace },
+                    pending: true,
+                }}
+            />
+        );
+
+        expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
+        expect(container.querySelector('[aria-label="Clear Lightmap"]')).toBeNull();
+        const change = container.querySelector<HTMLButtonElement>('[aria-label="Change Lightmap"]');
+        expect(change).not.toBeNull();
+        expect(change?.disabled).toBe(true);
+        expect(container.querySelector('[role="status"]')?.textContent).toBe("Applying…");
+    });
+
+    it("renders a populated read-only binding as navigation only", () => {
+        const texture = { id: "current", name: "Current", kind: "2d" };
+        const navigate = vi.fn();
+        const container = Render(
+            <MaterialTextureBindingPropertyLine
+                model={{
+                    id: "readonly",
+                    label: "Read-only Texture",
+                    value: texture,
+                    candidates: [],
+                    getDisplayName: (candidate) => candidate.name,
+                    getKind: (candidate) => candidate.kind,
+                    acceptedKinds: ["2d"],
+                    navigate,
+                }}
+            />
+        );
+
+        expect(container.querySelector('[aria-label="Read-only Texture: open Current"]')).not.toBeNull();
+        expect(container.querySelector('[aria-label^="Clear "]')).toBeNull();
+        expect(container.querySelector('[aria-label^="Change "]')).toBeNull();
+        expect(container.querySelector('[role="combobox"]')).toBeNull();
+    });
+
+    it("filters candidates with runtime-neutral binding compatibility beyond texture kind", () => {
+        const filterable = { id: "filterable", name: "Filterable", kind: "2d", sample: "float" };
+        const depth = { id: "depth", name: "Depth", kind: "2d", sample: "depth" };
+        const container = Render(
+            <MaterialTextureBindingPropertyLine
+                model={{
+                    id: "shadow",
+                    label: "Shadow Texture",
+                    value: null,
+                    candidates: [filterable, depth],
+                    getId: (texture) => texture.id,
+                    getDisplayName: (texture) => texture.name,
+                    getKind: (texture) => texture.kind,
+                    acceptedKinds: ["2d"],
+                    isCandidateAccepted: (texture) => texture.sample === "depth",
+                    write: { assign: vi.fn() },
+                }}
+            />
+        );
+
+        const comboBox = container.querySelector<HTMLInputElement>('[role="combobox"]')!;
+        act(() => comboBox.click());
+        const options = Array.from(document.querySelectorAll('[role="option"]'));
+        expect(options.some((option) => option.textContent === "Depth")).toBe(true);
+        expect(options.some((option) => option.textContent === "Filterable")).toBe(false);
+    });
+
+    it("announces pending state only on the initiating material control", () => {
+        const container = Render(
+            <MaterialPropertySection
+                model={{
+                    fields: [
+                        { kind: "number", id: "active", label: "Active Value", value: 1, disabled: true, pending: true, onChange: vi.fn() },
+                        { kind: "number", id: "idle", label: "Idle Value", value: 2, onChange: vi.fn() },
+                    ],
+                }}
+            />
+        );
+
+        expect(container.querySelector('[aria-busy="true"]')?.textContent).toContain("Active Value");
+        expect(container.querySelectorAll('[aria-busy="true"]')).toHaveLength(1);
+        expect(container.querySelector('[role="status"]')?.textContent).toBe("Applying Active Value…");
+        const inputs = Array.from(container.querySelectorAll<HTMLInputElement>("input"));
+        expect(inputs[0].disabled).toBe(true);
+        expect(inputs[1].disabled).toBe(false);
     });
 
     it("renders metadata-only rows and exposes row and snapshot errors accessibly", () => {

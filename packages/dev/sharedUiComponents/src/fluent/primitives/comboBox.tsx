@@ -47,6 +47,10 @@ export type ComboBoxProps = PrimitiveProps<string> & {
      */
     label: string;
     /**
+     * Accessible name used when the visible label is supplied by a containing property line.
+     */
+    ariaLabel?: string;
+    /**
      * Options to display as label/value pairs
      */
     options: ComboBoxOption[];
@@ -101,12 +105,14 @@ export const ComboBox = forwardRef<HTMLInputElement, ComboBoxProps>((props, ref)
             <FluentComboBox
                 ref={ref}
                 defaultOpen={props.defaultOpen}
+                disabled={props.disabled}
                 size={size}
                 root={{ className: styles.comboBox }}
                 input={{ className: styles.input }}
                 listbox={{ className: styles.listbox }}
                 onOptionSelect={onOptionSelect}
-                aria-labelledby={comboId}
+                aria-label={props.ariaLabel}
+                aria-labelledby={props.ariaLabel ? undefined : comboId}
                 placeholder="Search.."
                 onChange={(ev) => setQuery(ev.target.value)}
                 value={query}

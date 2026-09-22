@@ -77,7 +77,14 @@ function MakeDeferred<T>() {
 const Editable = { access: "read-write", mutation: "A", postMutation: "none" } as const;
 const ReadOnly = { access: "read-only", reason: "Computed by the shader" } as const;
 
-function MakeProperty(id: string, section: MaterialInspectionSection, label: string, valueType: "string" | "number" | "vec4" | "mat4", value: unknown, access = Editable) {
+function MakeProperty(
+    id: string,
+    section: MaterialInspectionSection,
+    label: string,
+    valueType: "string" | "boolean" | "number" | "enum" | "vec2" | "vec3" | "vec4" | "mat4" | "summary",
+    value: unknown,
+    access = Editable
+) {
     return {
         id,
         section,
@@ -380,6 +387,149 @@ describe("Babylon Lite material Properties", () => {
         );
 
         families.forEach((entry) => expect(container.textContent).toContain(entry.expected));
+    });
+
+    it("maps every finalized property value and access state through the shared controls", () => {
+        const material = {} as Material;
+        const scene = {} as SceneContext;
+        const properties = [
+            MakeProperty("standard.backFaceCulling", "general", "Boolean", "boolean", true),
+            {
+                ...MakeProperty("standard.reflectionCoordMode", "texture-settings", "Enum", "enum", 1),
+                options: [
+                    { label: "Spherical", value: 1 },
+                    { label: "Planar", value: 2 },
+                ],
+            },
+            MakeProperty("standard.uvScale", "transform", "Vector 2", "vec2", [1, 2]),
+            MakeProperty("standard.diffuseColor", "lighting-colors", "Color 3", "vec3", [0.1, 0.2, 0.3]),
+            MakeProperty("shader.uniform:matrix", "general", "Matrix", "mat4", [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
+            MakeProperty("shader.configuration", "general", "Summary", "summary", "Read-only summary", ReadOnly),
+            MakeProperty("standard.uvOffset", "transform", "Absent", "vec2", undefined),
+            {
+                ...MakeProperty("standard.stencil.compare", "stencil", "Unsupported", "enum", undefined, ReadOnly),
+                value: { state: "unsupported", reason: "Stencil is unavailable" },
+            },
+        ];
+        const inspection = MakeInspection(material, "standard", properties);
+        LiteInspectionMocks.snapshots.set(material, inspection);
+        const resourceService = MakeResourceService({ source: material, inspection, scenes: [scene], bindings: [] });
+        const selectionService = MakeSelectionService();
+        const container = Render(
+            <>
+                {(["general", "texture-settings", "transform", "lighting-colors", "stencil"] as const).map((section) => (
+                    <StandardMaterialAdapter key={section} material={material} section={section} resourceIndexService={resourceService} selectionService={selectionService} />
+                ))}
+            </>
+        );
+
+        expect(container.querySelector('input[type="checkbox"]')).not.toBeNull();
+        expect(container.querySelector('[role="combobox"]')).not.toBeNull();
+        expect(container.textContent).toContain("[1.00, 2.00]");
+        expect(container.textContent).toContain("[4 × 4]");
+        expect(container.textContent).toContain("Read-only summary");
+        expect(container.textContent).toContain("Not configured");
+        expect(container.textContent).toContain("Stencil is unavailable");
+    });
+
+    it("places every finalized PBR binding group in its approved section and keeps one-way modes read-only", () => {
+        const material = {} as Material;
+        const scene = {} as SceneContext;
+        const bindingSections = new Map<string, MaterialInspectionSection>([
+            ["pbr.baseColor", "textures"],
+            ["pbr.normal", "textures"],
+            ["pbr.orm", "textures"],
+            ["pbr.occlusion", "textures"],
+            ["pbr.emissive", "textures"],
+            ["pbr.specGloss", "textures"],
+            ["pbr.lightmap", "lightmap"],
+            ["pbr.metallicReflectance", "metallic-reflectance"],
+            ["pbr.reflectance", "metallic-reflectance"],
+            ["pbr.clearCoat", "clear-coat"],
+            ["pbr.clearCoatRoughness", "clear-coat"],
+            ["pbr.clearCoatBump", "clear-coat"],
+            ["pbr.sheen", "sheen"],
+            ["pbr.sheenRoughness", "sheen"],
+            ["pbr.iridescence", "iridescence"],
+            ["pbr.iridescenceThickness", "iridescence"],
+            ["pbr.anisotropy", "anisotropy"],
+            ["pbr.translucencyColor", "subsurface-translucency"],
+            ["pbr.translucencyIntensity", "subsurface-translucency"],
+            ["pbr.thickness", "subsurface-thickness"],
+            ["pbr.transmission", "transmission"],
+        ]);
+        const bindings = [...bindingSections].map(
+            ([id]) =>
+                ({
+                    id,
+                    label: id,
+                    value: { state: "absent" },
+                    acceptedKinds: ["2d"],
+                    sampleCategory: "float",
+                    viewCategory: "2d",
+                    directions: [],
+                    mutation: ReadOnly,
+                    transform: { state: "absent" },
+                }) as MaterialTextureBinding
+        );
+        const modeProperties = [
+            MakeProperty("pbr.mode.unlit", "special-modes", "pbr.mode.unlit", "boolean", true, ReadOnly),
+            MakeProperty("pbr.mode.unlitColor", "special-modes", "pbr.mode.unlitColor", "vec3", [1, 1, 1], ReadOnly),
+            MakeProperty("pbr.mode.gammaAlbedo", "special-modes", "pbr.mode.gammaAlbedo", "boolean", true, ReadOnly),
+            MakeProperty("pbr.mode.skybox", "special-modes", "pbr.mode.skybox", "boolean", true, ReadOnly),
+            MakeProperty("pbr.mode.shadowOnly", "special-modes", "pbr.mode.shadowOnly", "boolean", true, ReadOnly),
+            MakeProperty("pbr.mode.shadowOnlyColor", "special-modes", "pbr.mode.shadowOnlyColor", "vec3", [0, 0, 0], ReadOnly),
+            MakeProperty("pbr.mode.shadowOnlyOpacity", "special-modes", "pbr.mode.shadowOnlyOpacity", "number", 1, ReadOnly),
+            MakeProperty("pbr.mode.shadowOnlyFalloff", "special-modes", "pbr.mode.shadowOnlyFalloff", "number", 0, ReadOnly),
+        ];
+        const properties = modeProperties;
+        const inspection = MakeInspection(material, "pbr", properties, bindings);
+        LiteInspectionMocks.snapshots.set(material, inspection);
+        const resourceService = MakeResourceService({ source: material, inspection, scenes: [scene], bindings });
+        const selectionService = MakeSelectionService();
+
+        for (const section of new Set(bindingSections.values())) {
+            const container = Render(<PbrMaterialAdapter material={material} section={section} resourceIndexService={resourceService} selectionService={selectionService} />);
+            for (const [id, expectedSection] of bindingSections) {
+                expect(container.textContent?.includes(id)).toBe(expectedSection === section);
+            }
+        }
+
+        const modes = Render(<PbrMaterialAdapter material={material} section="special-modes" resourceIndexService={resourceService} selectionService={selectionService} />);
+        modeProperties.forEach(({ id }) => expect(modes.textContent).toContain(id));
+        expect(modes.querySelectorAll("input")).toHaveLength(0);
+    });
+
+    it("filters texture candidates by both accepted kind and sample category", () => {
+        const material = {} as Material;
+        const scene = {} as SceneContext;
+        const filterable = {};
+        const depth = {};
+        const binding = {
+            id: "shader.sampler:shadow",
+            label: "Shadow Sampler",
+            value: { state: "absent" },
+            acceptedKinds: ["2d"],
+            sampleCategory: "depth",
+            viewCategory: "2d",
+            directions: ["assign"],
+            mutation: Editable,
+            transform: { state: "unsupported", reason: "Shader samplers do not use standard transforms." },
+        } as MaterialTextureBinding;
+        const inspection = MakeInspection(material, "shader", [], [binding]);
+        LiteInspectionMocks.snapshots.set(material, inspection);
+        const textures = [
+            { entity: filterable, ordinal: 1, consumers: [], inspection: { kind: "2d", sampleCategory: "float", displayName: { state: "known", value: "Filterable" } } },
+            { entity: depth, ordinal: 2, consumers: [], inspection: { kind: "2d", sampleCategory: "depth", displayName: { state: "known", value: "Depth" } } },
+        ] as unknown as ILiteTextureResourceRecord[];
+        const resourceService = MakeResourceService({ source: material, inspection, scenes: [scene], bindings: [binding] }, textures);
+        const container = Render(<ShaderMaterialAdapter material={material} section="textures" resourceIndexService={resourceService} selectionService={MakeSelectionService()} />);
+
+        const comboBox = container.querySelector<HTMLInputElement>('[role="combobox"]')!;
+        act(() => comboBox.click());
+        const options = Array.from(document.querySelectorAll('[role="option"]'));
+        expect(options.some((option) => option.textContent === "Depth")).toBe(true);
+        expect(options.some((option) => option.textContent === "Filterable")).toBe(false);
     });
 
     it("refreshes unchanged edits, exposes pending/rejected states, preserves selection, and handles stale resources independently", async () => {

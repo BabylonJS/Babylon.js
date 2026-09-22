@@ -23,6 +23,7 @@ export type MaterialTextureBindingModel<TextureT> = Readonly<{
     getDisplayName: (texture: TextureT) => string;
     getKind: (texture: TextureT) => string;
     acceptedKinds: readonly string[];
+    isCandidateAccepted?: (texture: TextureT) => boolean;
     getId?: (texture: TextureT) => string;
     write?: TextureBindingWriteCapabilities<TextureT>;
     navigate?: (texture: TextureT) => void;
@@ -57,8 +58,8 @@ export const MaterialTextureBindingPropertyLine = <TextureT,>(props: { model: Ma
     const classes = useStyles();
     const [editing, setEditing] = useState(false);
     const candidates = useMemo(
-        () => model.candidates.filter((texture) => model.acceptedKinds.includes(model.getKind(texture))),
-        [model.acceptedKinds, model.candidates, model.getKind]
+        () => model.candidates.filter((texture) => model.acceptedKinds.includes(model.getKind(texture)) && (model.isCandidateAccepted?.(texture) ?? true)),
+        [model.acceptedKinds, model.candidates, model.getKind, model.isCandidateAccepted]
     );
     const getId = (texture: TextureT) => model.getId?.(texture) ?? String(model.candidates.indexOf(texture));
     const options = candidates.map((texture) => ({ label: model.getDisplayName(texture), value: getId(texture) }));
@@ -67,21 +68,28 @@ export const MaterialTextureBindingPropertyLine = <TextureT,>(props: { model: Ma
         <div className={classes.content}>
             {model.value && !editing ? (
                 <>
-                    <Link className={classes.link} value={model.getDisplayName(model.value)} onLink={model.navigate ? () => model.navigate?.(model.value!) : undefined} />
+                    <Link
+                        className={classes.link}
+                        value={model.getDisplayName(model.value)}
+                        onLink={model.navigate ? () => model.navigate?.(model.value!) : undefined}
+                        aria-label={model.navigate ? `${model.label}: open ${model.getDisplayName(model.value)}` : undefined}
+                    />
                     {model.write?.clear ? (
                         <Tooltip content="Unlink">
-                            <Button icon={LinkDismissRegular} onClick={() => model.write?.clear?.()} />
+                            <Button icon={LinkDismissRegular} ariaLabel={`Clear ${model.label}`} disabled={model.pending} onClick={() => model.write?.clear?.()} />
                         </Tooltip>
                     ) : undefined}
                     {model.write?.assign ? (
                         <Tooltip content="Edit Link">
-                            <Button icon={LinkEditRegular} onClick={() => setEditing(true)} />
+                            <Button icon={LinkEditRegular} ariaLabel={`Change ${model.label}`} disabled={model.pending} onClick={() => setEditing(true)} />
                         </Tooltip>
                     ) : undefined}
                 </>
             ) : model.write?.assign ? (
                 <ComboBox
                     label=""
+                    ariaLabel={model.label}
+                    disabled={model.pending}
                     value={model.value ? getId(model.value) : ""}
                     options={options}
                     onChange={(id) => {
@@ -100,7 +108,7 @@ export const MaterialTextureBindingPropertyLine = <TextureT,>(props: { model: Ma
     );
 
     return (
-        <div role={model.error ? "alert" : undefined} aria-label={model.error ? `${model.label}: ${model.error}` : undefined}>
+        <div role={model.error ? "alert" : undefined} aria-label={model.error ? `${model.label}: ${model.error}` : undefined} aria-busy={model.pending}>
             {model.expandedContent ? (
                 <PropertyLine label={model.label} uniqueId={model.id} description={model.error} expandedContent={model.expandedContent}>
                     {content}

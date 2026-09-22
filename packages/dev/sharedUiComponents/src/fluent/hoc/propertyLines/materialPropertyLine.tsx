@@ -17,6 +17,7 @@ type MaterialPropertyBase = Readonly<{
     label: string;
     description?: string;
     disabled?: boolean;
+    pending?: boolean;
     error?: string;
 }>;
 
@@ -197,8 +198,9 @@ export const MaterialPropertySection: FunctionComponent<{ model: MaterialPropert
         <div role={model.error ? "alert" : undefined}>
             {model.error ? <TextPropertyLine label="Error" value={model.error} /> : undefined}
             {model.fields.map((field) => (
-                <div key={field.id}>
+                <div key={field.id} aria-busy={field.pending}>
                     <MaterialPropertyLine model={field} />
+                    {field.pending ? <Body1 role="status">{`Applying ${field.label}…`}</Body1> : undefined}
                     {field.error ? <Body1 role="alert">{field.error}</Body1> : undefined}
                 </div>
             ))}

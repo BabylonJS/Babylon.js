@@ -346,7 +346,7 @@ describe("Babylon Lite texture metadata Properties", () => {
         expect(container.querySelector('input[value="1"]')).not.toBeNull();
     });
 
-    it("disables only the latest transform row and ignores stale completion after index invalidation", async () => {
+    it("tracks independent transform rows and ignores stale completion after index invalidation", async () => {
         const texture = {};
         const inspection = MakeInspection("2d");
         TextureInspectionMocks.snapshots.set(texture, inspection);
@@ -369,15 +369,15 @@ describe("Babylon Lite texture metadata Properties", () => {
             inputs[1].blur();
         });
         const activeInputs = Array.from(container.querySelectorAll<HTMLInputElement>("input"));
-        expect(activeInputs[0].disabled).toBe(false);
+        expect(activeInputs[0].disabled).toBe(true);
         expect(activeInputs[1].disabled).toBe(true);
 
         await act(async () => {
             first.resolve({ changed: true });
             await first.promise;
         });
-        expect(services.resourceIndexService.refresh).not.toHaveBeenCalled();
-        expect(container.querySelector('[role="status"]')).not.toBeNull();
+        expect(services.resourceIndexService.refresh).toHaveBeenCalledOnce();
+        expect(container.querySelector('[role="status"]')).toBeNull();
 
         act(() => services.resourceIndexService.onChanged.notifyObservers());
         await act(async () => {
@@ -385,7 +385,7 @@ describe("Babylon Lite texture metadata Properties", () => {
             await second.promise.catch(() => undefined);
         });
         expect(container.textContent).not.toContain("obsolete failure");
-        expect(services.resourceIndexService.refresh).not.toHaveBeenCalled();
+        expect(services.resourceIndexService.refresh).toHaveBeenCalledOnce();
         expect(container.querySelector('[role="status"]')).toBeNull();
     });
 

@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 
-import { act, type FunctionComponent } from "react";
+import { act, type FunctionComponent, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -37,9 +37,12 @@ type HarnessProps = Readonly<{
 
 const Harness: FunctionComponent<HarnessProps> = (props) => {
     const { identity, invalidations, disposed, operations, successes } = props;
-    const [state, run] = useLatestAsyncOperation(identity, invalidations, disposed);
+    const [states, run] = useLatestAsyncOperation(identity, invalidations, disposed);
+    const [latestId, setLatestId] = useState<string>();
+    const state = latestId ? states[latestId] : undefined;
     const start = (id: string) => {
         const deferred = operations.shift()!;
+        setLatestId(id);
         run({
             id,
             operationAsync: () => deferred.promise,
@@ -52,7 +55,7 @@ const Harness: FunctionComponent<HarnessProps> = (props) => {
         <>
             <button onClick={() => start("first")}>First</button>
             <button onClick={() => start("second")}>Second</button>
-            <output>{state.pending ? `pending:${state.id}` : state.error ? `error:${state.id}:${state.error}` : "idle"}</output>
+            <output>{state?.pending ? `pending:${latestId}` : state?.error ? `error:${latestId}:${state.error}` : "idle"}</output>
         </>
     );
 };
@@ -205,5 +208,26 @@ describe("latest asynchronous operation generations", () => {
         expect(firstRender.container.textContent).toContain("idle");
         expect(second.successes).toEqual([]);
         expect(secondRender.container.textContent).toContain("error:second:second failed");
+    });
+
+    it("allows independent rows to complete without superseding each other", async () => {
+        const firstDeferred = MakeDeferred<{ changed: boolean }>();
+        const secondDeferred = MakeDeferred<{ changed: boolean }>();
+        const props = MakeProps([firstDeferred, secondDeferred]);
+        const { container } = Render(props);
+        const [firstButton, secondButton] = Array.from(container.querySelectorAll("button"));
+
+        act(() => {
+            firstButton.click();
+            secondButton.click();
+        });
+        await act(async () => {
+            secondDeferred.resolve({ changed: true });
+            await secondDeferred.promise;
+            firstDeferred.resolve({ changed: true });
+            await firstDeferred.promise;
+        });
+
+        expect(props.successes).toEqual(["second:true", "first:true"]);
     });
 });

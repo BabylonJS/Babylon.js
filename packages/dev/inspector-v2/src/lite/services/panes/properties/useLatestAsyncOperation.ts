@@ -3,9 +3,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 /** State published by the latest asynchronous row operation. */
 export type LatestAsyncOperationState = Readonly<{
-    id?: string;
     pending: boolean;
     error?: string;
+}>;
+
+/** State published independently for each asynchronous row operation. */
+export type LatestAsyncOperationStates = Readonly<Record<string, LatestAsyncOperationState | undefined>>;
+
+type PublishedStates = Readonly<{
+    epoch: number;
+    rows: LatestAsyncOperationStates;
 }>;
 
 type LatestAsyncOperationOptions<ResultT> = Readonly<{
@@ -21,21 +28,23 @@ type LatestAsyncOperationOptions<ResultT> = Readonly<{
  * @param identity The exact entity represented by the mounted adapter.
  * @param invalidationSources Observables that invalidate snapshots or selection ownership.
  * @param isDisposed Returns whether the owning service has been disposed.
- * @returns The latest operation state and a guarded operation runner.
+ * @returns The latest operation state for each row and a guarded operation runner.
  */
 export function useLatestAsyncOperation(
     identity: object,
     invalidationSources: readonly [IReadonlyObservable<void>, IReadonlyObservable<void>, IReadonlyObservable<void>],
     isDisposed: () => boolean
-): readonly [LatestAsyncOperationState, <ResultT>(options: LatestAsyncOperationOptions<ResultT>) => void] {
-    const [state, setState] = useState<LatestAsyncOperationState>({ pending: false });
-    const generationRef = useRef(0);
+): readonly [LatestAsyncOperationStates, <ResultT>(options: LatestAsyncOperationOptions<ResultT>) => void] {
+    const [publishedStates, setPublishedStates] = useState<PublishedStates>({ epoch: -1, rows: {} });
+    const epochRef = useRef(0);
+    const rowGenerationsRef = useRef(new Map<string, number>());
     const mountedRef = useRef(false);
     const identityRef = useRef(identity);
 
     if (identityRef.current !== identity) {
         identityRef.current = identity;
-        generationRef.current++;
+        epochRef.current++;
+        rowGenerationsRef.current.clear();
     }
 
     const [firstInvalidationSource, secondInvalidationSource, thirdInvalidationSource] = invalidationSources;
@@ -43,9 +52,10 @@ export function useLatestAsyncOperation(
     useEffect(() => {
         mountedRef.current = true;
         const invalidate = () => {
-            generationRef.current++;
+            epochRef.current++;
+            rowGenerationsRef.current.clear();
             if (mountedRef.current) {
-                setState({ pending: false });
+                setPublishedStates({ epoch: epochRef.current, rows: {} });
             }
         };
         const sources = [firstInvalidationSource, secondInvalidationSource, thirdInvalidationSource] as const;
@@ -54,7 +64,8 @@ export function useLatestAsyncOperation(
 
         return () => {
             mountedRef.current = false;
-            generationRef.current++;
+            epochRef.current++;
+            rowGenerationsRef.current.clear();
             observers.forEach((observer) => observer.remove());
         };
     }, [identity, firstInvalidationSource, secondInvalidationSource, thirdInvalidationSource]);
@@ -62,21 +73,32 @@ export function useLatestAsyncOperation(
     const run = useCallback(
         <ResultT>(options: LatestAsyncOperationOptions<ResultT>) => {
             const { id, operationAsync, onSuccess, getErrorMessage } = options;
-            const generation = ++generationRef.current;
-            setState({ id, pending: true });
+            const epoch = epochRef.current;
+            const generation = (rowGenerationsRef.current.get(id) ?? 0) + 1;
+            rowGenerationsRef.current.set(id, generation);
+            setPublishedStates((current) => ({
+                epoch,
+                rows: { ...(current.epoch === epoch ? current.rows : {}), [id]: { pending: true } },
+            }));
 
             void (async () => {
                 try {
                     const result = await operationAsync();
-                    if (mountedRef.current && generationRef.current === generation && identityRef.current === identity && !isDisposed()) {
+                    if (mountedRef.current && epochRef.current === epoch && rowGenerationsRef.current.get(id) === generation && identityRef.current === identity && !isDisposed()) {
                         onSuccess?.(result);
-                        if (generationRef.current === generation) {
-                            setState({ pending: false });
+                        if (epochRef.current === epoch && rowGenerationsRef.current.get(id) === generation) {
+                            setPublishedStates((current) => ({
+                                epoch,
+                                rows: { ...(current.epoch === epoch ? current.rows : {}), [id]: { pending: false } },
+                            }));
                         }
                     }
                 } catch (error) {
-                    if (mountedRef.current && generationRef.current === generation && identityRef.current === identity && !isDisposed()) {
-                        setState({ id, pending: false, error: getErrorMessage(error) });
+                    if (mountedRef.current && epochRef.current === epoch && rowGenerationsRef.current.get(id) === generation && identityRef.current === identity && !isDisposed()) {
+                        setPublishedStates((current) => ({
+                            epoch,
+                            rows: { ...(current.epoch === epoch ? current.rows : {}), [id]: { pending: false, error: getErrorMessage(error) } },
+                        }));
                     }
                 }
             })();
@@ -84,5 +106,5 @@ export function useLatestAsyncOperation(
         [identity, isDisposed]
     );
 
-    return [state, run] as const;
+    return [publishedStates.epoch === epochRef.current ? publishedStates.rows : {}, run] as const;
 }

@@ -12,7 +12,6 @@ import {
     type MaterialTextureMutation,
     type TextureBindingKind,
 } from "@babylonjs/lite";
-import { Body1 } from "@fluentui/react-components";
 import { Fragment, type FunctionComponent, useCallback } from "react";
 
 import { MaterialPropertySection, type MaterialMatrix4Value, type MaterialPropertyModel } from "shared-ui-components/fluent/hoc/propertyLines/materialPropertyLine";
@@ -106,7 +105,7 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
     }, [isView, resourceIndexService, source]);
     const inspection = useObservableState(getInspection, resourceIndexService.onChanged);
     const isResourceIndexDisposed = useCallback(() => resourceIndexService.isDisposed, [resourceIndexService]);
-    const [operation, runLatestOperation] = useLatestAsyncOperation(
+    const [operations, runLatestOperation] = useLatestAsyncOperation(
         material,
         [resourceIndexService.onChanged, resourceIndexService.onDisposed, selectionService.onSelectedEntityChanged],
         isResourceIndexDisposed
@@ -164,8 +163,9 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
         const common = {
             id: property.id,
             label: property.label,
-            disabled: operation.pending && operation.id === property.id,
-            error: operation.id === property.id ? operation.error : undefined,
+            disabled: operations[property.id]?.pending,
+            pending: operations[property.id]?.pending,
+            error: operations[property.id]?.error,
         };
         const value = property.value.value;
         switch (property.valueType) {
@@ -250,7 +250,8 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
     const textureBindings = inspection.textureBindings.filter((binding) => (getBindingSection?.(binding) ?? "textures") === section);
     const toTextureModel = (binding: MaterialTextureBinding): MaterialTextureBindingModel<object> => {
         const current = binding.value.state === "present" ? binding.value.value.entity : null;
-        const pending = operation.pending && operation.id === binding.id;
+        const bindingOperation = operations[binding.id];
+        const pending = bindingOperation?.pending ?? false;
         const mutate = (mutation: MaterialTextureMutation) => {
             runLatestOperation({
                 id: binding.id,
@@ -267,7 +268,7 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
         const canReplace = binding.value.state === "present" && binding.directions.includes("replace");
         const canClear = binding.value.state === "present" && binding.directions.includes("clear");
         const write =
-            !pending && binding.mutation.access === "read-write"
+            binding.mutation.access === "read-write"
                 ? {
                       assign: canAssign || canReplace ? (texture: object) => mutate({ direction: canAssign ? "assign" : "replace", texture }) : undefined,
                       clear: canClear ? () => mutate({ direction: "clear" }) : undefined,
@@ -282,6 +283,14 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
             getDisplayName: (texture) => GetTextureDisplayName(resourceIndexService.index.getTextureRecord(texture)),
             getKind: (texture) => (resourceIndexService.index.getTextureRecord(texture)?.inspection.kind ?? "unknown") as TextureBindingKind,
             acceptedKinds: binding.acceptedKinds,
+            isCandidateAccepted: (texture) => {
+                const textureRecord = resourceIndexService.index.getTextureRecord(texture);
+                return (
+                    textureRecord !== undefined &&
+                    binding.acceptedKinds.includes(textureRecord.inspection.kind as TextureBindingKind) &&
+                    textureRecord.inspection.sampleCategory === binding.sampleCategory
+                );
+            },
             write,
             navigate:
                 current && binding.directions.includes("navigate")
@@ -293,7 +302,7 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
                       }
                     : undefined,
             pending,
-            error: operation.id === binding.id ? operation.error : binding.value.state === "unsupported" ? binding.value.reason : undefined,
+            error: bindingOperation?.error ?? (binding.value.state === "unsupported" ? binding.value.reason : undefined),
         };
     };
 
@@ -305,9 +314,6 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
                     <TextPropertyLine label="Selection" value={inspection.isView ? "MaterialView" : "Material"} />
                     {inspection.isView ? <TextPropertyLine label="Source" value={inspection.displayName} /> : undefined}
                 </>
-            ) : undefined}
-            {operation.pending && (properties.some((property) => property.id === operation.id) || textureBindings.some((binding) => binding.id === operation.id)) ? (
-                <Body1 role="status">Applying change…</Body1>
             ) : undefined}
             {properties.length ? <MaterialPropertySection model={{ fields: properties }} /> : undefined}
             {textureBindings.map((binding) => (
