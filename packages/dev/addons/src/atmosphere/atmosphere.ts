@@ -825,9 +825,11 @@ export class Atmosphere implements IDisposable {
         // Registers a material plugin which will allow common materials to sample the atmosphere environment maps e.g.,
         // sky view LUT for glossy reflections and diffuse sky illiminance LUT for irradiance.
         // It also handles aerial perspective application when Atmosphere is not provided with a depth texture.
+        // The registration is global (every material created afterwards, in any engine or scene, is offered to the
+        // factory), so the factory only attaches the plugin to materials of this atmosphere's scene.
         UnregisterMaterialPlugin(MaterialPlugin);
         RegisterMaterialPlugin(MaterialPlugin, (material) => {
-            if (material.getClassName() === "PBRMaterial") {
+            if (material.getClassName() === "PBRMaterial" && material.getScene() === this.scene) {
                 return new AtmospherePBRMaterialPlugin(material, this, this.depthTexture === null);
             }
             return null;
