@@ -53,17 +53,20 @@ export class ShaderCodeCursor {
             } else {
                 // Semicolon in the middle of the line
                 const split = line.split(";");
+                let parenthesisDepth = 0;
 
                 for (let index = 0; index < split.length; index++) {
                     let subLine = split[index];
-
-                    if (!subLine) {
-                        continue;
-                    }
+                    parenthesisDepth += subLine.split("(").length - subLine.split(")").length;
 
                     subLine = subLine.trim();
 
                     if (!subLine) {
+                        // An empty statement inside parentheses belongs to a for loop header, as in "for (;;)":
+                        // keep its semicolon on the previous line, or the header loses one.
+                        if (parenthesisDepth > 0 && index !== split.length - 1) {
+                            this._lines[this._lines.length - 1] += ";";
+                        }
                         continue;
                     }
 
