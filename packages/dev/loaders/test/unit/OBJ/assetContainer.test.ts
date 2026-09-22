@@ -285,7 +285,6 @@ describe("OBJ asset containers and texture loading", () => {
         mockMTL(TexturedMaterial + "map_Ks specular.png\n");
         const pending = holdTextureRequests();
         const loading = new OBJFileLoader({ waitForTextures: true, materialLoadingFailsSilently: false }).loadAssetContainerAsync(scene, TexturedTriangle, "/assets/");
-        const rejection = expect(loading).rejects.toThrow("/assets/color.png: 404 Not Found");
         const onRejected = vi.fn();
         void loading.catch(onRejected);
 
@@ -295,7 +294,7 @@ describe("OBJ asset containers and texture loading", () => {
         expect(onRejected).not.toHaveBeenCalled();
         pending[1][settle]();
 
-        await rejection;
+        await expect(loading).rejects.toThrow("/assets/color.png: 404 Not Found");
         expect(scene._blockEntityCollection).toBe(false);
     });
 
@@ -311,18 +310,17 @@ describe("OBJ asset containers and texture loading", () => {
         container.dispose();
     });
 
-    it("retries a cached texture that failed during a previous waiting load", async () => {
+    it.each([false, true])("retries a cached texture that failed during a previous load with waitForTextures = %s", async (waitForTextures) => {
         mockMTL();
         const pending = holdTextureRequests();
-        const loader = new OBJFileLoader({ waitForTextures: true });
-        const firstLoading = loader.loadAssetContainerAsync(scene, TexturedTriangle, "/assets/");
+        const firstLoading = new OBJFileLoader({ waitForTextures }).loadAssetContainerAsync(scene, TexturedTriangle, "/assets/");
 
         await vi.waitFor(() => expect(pending).toHaveLength(1));
         pending[0].fail();
         const firstContainer = await firstLoading;
         expect(firstContainer.textures[0].loadingError).toBe(true);
 
-        const secondLoading = loader.loadAssetContainerAsync(scene, TexturedTriangle, "/assets/");
+        const secondLoading = new OBJFileLoader({ waitForTextures: true }).loadAssetContainerAsync(scene, TexturedTriangle, "/assets/");
         await vi.waitFor(() => expect(pending).toHaveLength(2));
         expect(pending[1].texture).not.toBe(pending[0].texture);
         pending[1].complete();
@@ -342,7 +340,7 @@ describe("OBJ asset containers and texture loading", () => {
         const applyVertexData = vi.spyOn(VertexData.prototype, "applyToMesh");
         const loader = new OBJFileLoader({ waitForTextures: true, materialLoadingFailsSilently: false });
         const loading = loader.loadAssetContainerAsync(scene, TexturedTriangle, "/assets/");
-        const rejection = expect(loading).rejects.toThrow("/assets/missing.png: 404 Not Found");
+        void loading.catch(() => undefined);
         await vi.waitFor(() => expect(pending).toHaveLength(2));
 
         const mesh = applyVertexData.mock.calls[0][0] as Mesh;
@@ -353,7 +351,7 @@ describe("OBJ asset containers and texture loading", () => {
         const releaseTexture = vi.spyOn(engine, "_releaseTexture");
         expect(sharedInternalTexture._references).toBe(2);
         pending[1].fail();
-        await rejection;
+        await expect(loading).rejects.toThrow("/assets/missing.png: 404 Not Found");
 
         disposals.forEach((dispose) => expect(dispose).toHaveBeenCalled());
         expect(sharedInternalTexture._references).toBe(1);

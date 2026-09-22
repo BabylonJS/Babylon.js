@@ -286,16 +286,16 @@ export class MTLFileLoader {
             texture = new Texture(url, scene, {
                 invertY: invertTextureY,
                 onLoad: deferred?.resolve,
-                onError: deferred
-                    ? (message, exception) => {
-                          if (texture) {
-                              removeFailedTextureFromCache();
-                          } else {
-                              queueMicrotask(removeFailedTextureFromCache);
-                          }
-                          deferred.reject(new Error(`${url}: ${exception?.message || message || "Failed to load texture"}`));
-                      }
-                    : undefined,
+                onError: (message, exception) => {
+                    if (texture) {
+                        removeFailedTextureFromCache();
+                    } else {
+                        queueMicrotask(removeFailedTextureFromCache);
+                    }
+                    if (deferred) {
+                        deferred.reject(new Error(`${url}: ${exception?.message || message || "Failed to load texture"}`));
+                    }
+                },
             });
             texture._parentContainer = assetContainer;
             assetContainer?.textures.push(texture);
