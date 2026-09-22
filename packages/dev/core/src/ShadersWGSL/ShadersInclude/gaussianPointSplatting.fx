@@ -47,6 +47,7 @@ fn gpsInverseMat3(inMatrix : mat3x3f) -> mat3x3f {
 const GPS_SH_C1 : f32 = 0.48860251;
 const GPS_SH_C2 : array<f32, 5> = array<f32, 5>(1.092548430, -1.09254843, 0.315391565, -1.09254843, 0.546274215);
 const GPS_SH_C3 : array<f32, 7> = array<f32, 7>(-0.59004358, 2.890611442, -0.45704579, 0.373176332, -0.45704579, 1.445305721, -0.59004358);
+const GPS_SH_C4 : array<f32, 9> = array<f32, 9>(2.5033429418, -1.7701307698, 0.9461746958, -0.6690465436, 0.1057855469, -0.6690465436, 0.4730873479, -1.7701307698, 0.6258357354);
 
 // Per-Gaussian screen-space state produced by gpsPreprocess and consumed by gpsSplat (64 bytes).
 struct GpsScreen {

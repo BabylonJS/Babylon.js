@@ -751,7 +751,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (!shData || shData.length === 0 || shDegree < 1) {
             return null;
         }
-        const shDim = shDegree === 1 ? 3 : shDegree === 2 ? 8 : 15;
+        const shDim = shDegree === 1 ? 3 : shDegree === 2 ? 8 : shDegree === 3 ? 15 : 24;
         const scalars = shDim * 3;
         const out = new Float32Array(count * scalars);
         for (let i = 0; i < count; i++) {

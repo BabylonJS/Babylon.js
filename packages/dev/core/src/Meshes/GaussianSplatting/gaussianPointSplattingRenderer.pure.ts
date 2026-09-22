@@ -32,7 +32,11 @@ const DepthClearSentinel = 0xffffffff;
 export class GaussianPointSplattingRenderer {
     private readonly _engine: AbstractEngine;
 
-    private _preprocessCs: ComputeShader;
+    // Preprocess is recompiled with a SH_DEGREE define so only the SH bands the asset has are evaluated
+    // (like the classic rasterizer's #if SH_DEGREE). Created in the constructor via _createPreprocessCs.
+    private _preprocessCs!: ComputeShader;
+    private _preprocessBindings!: ComputeBindingMapping;
+    private _preprocessShDegree = -1;
     private _scanBlocksCs: ComputeShader;
     private _scanSumsCs: ComputeShader;
     private _scanAddCs: ComputeShader;
@@ -111,7 +115,7 @@ export class GaussianPointSplattingRenderer {
     constructor(engine: AbstractEngine) {
         this._engine = engine;
 
-        const preprocessBindings: ComputeBindingMapping = {
+        this._preprocessBindings = {
             means: { group: 0, binding: 0 },
             colorOpacity: { group: 0, binding: 1 },
             weights: { group: 0, binding: 2 },
@@ -121,7 +125,7 @@ export class GaussianPointSplattingRenderer {
             sh: { group: 0, binding: 6 },
             parts: { group: 0, binding: 7 },
         };
-        this._preprocessCs = new ComputeShader("gpsPreprocess", engine, "gpsPreprocess", { bindingsMapping: preprocessBindings });
+        this._createPreprocessCs(0);
 
         this._scanBlocksCs = new ComputeShader("gpsScanBlocks", engine, "gpsScanBlocks", {
             bindingsMapping: { weights: { group: 0, binding: 0 }, cdf: { group: 0, binding: 1 }, blockSums: { group: 0, binding: 2 } },
@@ -175,6 +179,20 @@ export class GaussianPointSplattingRenderer {
             3 * Uint32Array.BYTES_PER_ELEMENT,
             Constants.BUFFER_CREATIONFLAG_STORAGE | Constants.BUFFER_CREATIONFLAG_INDIRECT | Constants.BUFFER_CREATIONFLAG_WRITE
         );
+    }
+
+    /**
+     * (Re)creates the preprocess compute shader with a SH_DEGREE define, so only the spherical-harmonics
+     * bands the asset actually has are compiled and evaluated (matching the classic rasterizer). Cheap
+     * and rare — called only when the loaded data's SH degree changes.
+     * @param shDegree the asset's SH degree (0 = view-independent color)
+     */
+    private _createPreprocessCs(shDegree: number): void {
+        this._preprocessShDegree = shDegree;
+        this._preprocessCs = new ComputeShader("gpsPreprocess", this._engine, "gpsPreprocess", {
+            bindingsMapping: this._preprocessBindings,
+            defines: ["#define SH_DEGREE " + shDegree],
+        });
     }
 
     /**
@@ -236,6 +254,10 @@ export class GaussianPointSplattingRenderer {
         this._disposeGaussianBuffers();
         this._gaussianCount = count;
         this._shDegree = sh ? shDegree : 0;
+        // Recompile the preprocess shader if this asset's SH degree differs, so only its bands are built.
+        if (this._shDegree !== this._preprocessShDegree) {
+            this._createPreprocessCs(this._shDegree);
+        }
         if (count === 0) {
             return;
         }
