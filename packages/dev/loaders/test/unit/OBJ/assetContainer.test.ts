@@ -311,6 +311,28 @@ describe("OBJ asset containers and texture loading", () => {
         container.dispose();
     });
 
+    it("retries a cached texture that failed during a previous waiting load", async () => {
+        mockMTL();
+        const pending = holdTextureRequests();
+        const loader = new OBJFileLoader({ waitForTextures: true });
+        const firstLoading = loader.loadAssetContainerAsync(scene, TexturedTriangle, "/assets/");
+
+        await vi.waitFor(() => expect(pending).toHaveLength(1));
+        pending[0].fail();
+        const firstContainer = await firstLoading;
+        expect(firstContainer.textures[0].loadingError).toBe(true);
+
+        const secondLoading = loader.loadAssetContainerAsync(scene, TexturedTriangle, "/assets/");
+        await vi.waitFor(() => expect(pending).toHaveLength(2));
+        expect(pending[1].texture).not.toBe(pending[0].texture);
+        pending[1].complete();
+
+        const secondContainer = await secondLoading;
+        expect(secondContainer.textures[0].isReady()).toBe(true);
+        firstContainer.dispose();
+        secondContainer.dispose();
+    });
+
     it("disposes failed container resources while preserving textures owned by another caller", async () => {
         mockMTL(TexturedMaterial + "map_Ks missing.png\n");
         const pending = holdTextureRequests();

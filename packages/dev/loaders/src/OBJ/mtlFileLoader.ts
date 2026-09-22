@@ -266,14 +266,36 @@ export class MTLFileLoader {
             textureLoadPromises!.push(deferred.promise);
         }
 
+        let texture: Texture | undefined;
+        const removeFailedTextureFromCache = () => {
+            const internalTexture = texture?.getInternalTexture();
+            if (!internalTexture) {
+                return;
+            }
+
+            const texturesCache = scene.getEngine().getLoadedTexturesCache();
+            const cacheIndex = texturesCache.indexOf(internalTexture);
+            if (cacheIndex !== -1) {
+                texturesCache.splice(cacheIndex, 1);
+            }
+        };
+
         const blockEntityCollection = scene._blockEntityCollection;
         scene._blockEntityCollection = !!assetContainer;
-        let texture: Texture;
         try {
             texture = new Texture(url, scene, {
                 invertY: invertTextureY,
                 onLoad: deferred?.resolve,
-                onError: deferred ? (message, exception) => deferred.reject(new Error(`${url}: ${exception?.message || message || "Failed to load texture"}`)) : undefined,
+                onError: deferred
+                    ? (message, exception) => {
+                          if (texture) {
+                              removeFailedTextureFromCache();
+                          } else {
+                              queueMicrotask(removeFailedTextureFromCache);
+                          }
+                          deferred.reject(new Error(`${url}: ${exception?.message || message || "Failed to load texture"}`));
+                      }
+                    : undefined,
             });
             texture._parentContainer = assetContainer;
             assetContainer?.textures.push(texture);
