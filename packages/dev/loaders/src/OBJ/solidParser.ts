@@ -921,7 +921,15 @@ export class SolidParser {
 
                 if (!this._materialNameFromObj) {
                     // Create a material with point cloud on
-                    newMaterial = new StandardMaterial(Geometry.RandomId(), scene);
+                    const blockEntityCollection = scene._blockEntityCollection;
+                    scene._blockEntityCollection = !!assetContainer;
+                    try {
+                        newMaterial = new StandardMaterial(Geometry.RandomId(), scene);
+                        newMaterial._parentContainer = assetContainer;
+                        assetContainer?.materials.push(newMaterial);
+                    } finally {
+                        scene._blockEntityCollection = blockEntityCollection;
+                    }
 
                     newMaterial.pointsCloud = true;
 
@@ -969,10 +977,16 @@ export class SolidParser {
             this._handledMesh = this._meshesFromObj[j];
             //Create a Mesh with the name of the obj mesh
 
+            const blockEntityCollection = scene._blockEntityCollection;
             scene._blockEntityCollection = !!assetContainer;
-            const babylonMesh = new Mesh(this._meshesFromObj[j].name, scene);
-            babylonMesh._parentContainer = assetContainer;
-            scene._blockEntityCollection = false;
+            let babylonMesh: Mesh;
+            try {
+                babylonMesh = new Mesh(this._meshesFromObj[j].name, scene);
+                babylonMesh._parentContainer = assetContainer;
+                assetContainer?.meshes.push(babylonMesh);
+            } finally {
+                scene._blockEntityCollection = blockEntityCollection;
+            }
             this._handledMesh._babylonMesh = babylonMesh;
             // If this is a group mesh, it should have an object mesh as a parent. So look for the first object mesh that appears before it.
             if (!this._handledMesh.isObject) {
@@ -1019,7 +1033,15 @@ export class SolidParser {
                 vertexData.colors = this._handledMesh.colors;
             }
             //Set the data from the VertexBuffer to the current Mesh
-            vertexData.applyToMesh(babylonMesh);
+            const blockEntityCollectionBeforeGeometry = scene._blockEntityCollection;
+            scene._blockEntityCollection = !!assetContainer;
+            try {
+                vertexData.applyToMesh(babylonMesh);
+                babylonMesh.geometry!._parentContainer = assetContainer;
+                assetContainer?.geometries.push(babylonMesh.geometry!);
+            } finally {
+                scene._blockEntityCollection = blockEntityCollectionBeforeGeometry;
+            }
             if (this._loadingOptions.invertY) {
                 babylonMesh.scaling.y *= -1;
             }
