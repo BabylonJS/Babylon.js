@@ -19,6 +19,10 @@ switch (ExpQsp) {
         ImportPromise = import("./flowgraph/main");
         break;
     }
+    case "rootMotion": {
+        ImportPromise = import("./rootMotion/main");
+        break;
+    }
     case "webxrOverWebGPU": {
         ImportPromise = import("./webxrOverWebGPU/main");
         break;
