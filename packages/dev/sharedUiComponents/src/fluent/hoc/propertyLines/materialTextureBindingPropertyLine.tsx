@@ -1,4 +1,4 @@
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { Body1, makeStyles, tokens } from "@fluentui/react-components";
 import { LinkDismissRegular, LinkEditRegular } from "@fluentui/react-icons";
 import { type ReactElement, useMemo, useState } from "react";
 
@@ -26,6 +26,7 @@ export type MaterialTextureBindingModel<TextureT> = Readonly<{
     getId?: (texture: TextureT) => string;
     write?: TextureBindingWriteCapabilities<TextureT>;
     navigate?: (texture: TextureT) => void;
+    pending?: boolean;
     error?: string;
     expandedContent?: ReactElement;
 }>;
@@ -71,7 +72,8 @@ export const MaterialTextureBindingPropertyLine = <TextureT,>(props: { model: Ma
                         <Tooltip content="Unlink">
                             <Button icon={LinkDismissRegular} onClick={() => model.write?.clear?.()} />
                         </Tooltip>
-                    ) : model.write?.assign ? (
+                    ) : undefined}
+                    {model.write?.assign ? (
                         <Tooltip content="Edit Link">
                             <Button icon={LinkEditRegular} onClick={() => setEditing(true)} />
                         </Tooltip>
@@ -93,6 +95,7 @@ export const MaterialTextureBindingPropertyLine = <TextureT,>(props: { model: Ma
             ) : (
                 <Link value="None" />
             )}
+            {model.pending ? <Body1 role="status">Applying…</Body1> : undefined}
         </div>
     );
 

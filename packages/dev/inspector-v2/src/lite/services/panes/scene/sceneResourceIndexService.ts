@@ -21,6 +21,8 @@ export interface ILiteSceneResourceIndexService extends IService<typeof LiteScen
     readonly index: LiteSceneResourceIndex;
     /** Notifies after the index has applied a topology change. */
     readonly onChanged: IReadonlyObservable<void>;
+    /** Rebuilds the index immediately and notifies mounted consumers. */
+    refresh(): void;
 }
 
 /**
@@ -58,6 +60,12 @@ export const LiteSceneResourceIndexServiceDefinition: ServiceDefinition<[ILiteSc
         return {
             index,
             onChanged,
+            refresh: () => {
+                if (!isDisposed) {
+                    index.refresh();
+                    onChanged.notifyObservers();
+                }
+            },
             dispose: () => {
                 if (isDisposed) {
                     return;

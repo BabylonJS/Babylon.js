@@ -1,10 +1,12 @@
-import { type ComponentType, type FunctionComponent } from "react";
+import { Body1 } from "@fluentui/react-components";
+import { type ComponentType, type FunctionComponent, useEffect, useState } from "react";
 
 import { type DropdownOption } from "../../primitives/dropdown";
 import { type PrimitiveProps } from "../../primitives/primitive";
 import { type StructuralColor, type StructuralColorAdapter, StructuralColorPickerPopup } from "../../primitives/structuralColorPicker";
 import { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "./dropdownPropertyLine";
 import { NumberInputPropertyLine, TextInputPropertyLine } from "./inputPropertyLine";
+import { PropertyLine } from "./propertyLine";
 import { SwitchPropertyLine } from "./switchPropertyLine";
 import { TextPropertyLine } from "./textPropertyLine";
 import { ControlledTensorPropertyLine, type TensorValue2, type TensorValue3, type TensorValue4, type TensorValueAdapter } from "./vectorPropertyLineCore";
@@ -24,6 +26,9 @@ type EditableMaterialProperty<ValueT> = MaterialPropertyBase &
         onChange: (value: ValueT) => void;
     }>;
 
+/** A copied column-major 4x4 matrix value. */
+export type MaterialMatrix4Value = readonly [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number];
+
 /** A runtime-neutral model for a controlled material property. */
 export type MaterialPropertyModel =
     | (EditableMaterialProperty<boolean> & Readonly<{ kind: "boolean" }>)
@@ -34,6 +39,7 @@ export type MaterialPropertyModel =
     | (EditableMaterialProperty<TensorValue2> & Readonly<{ kind: "vector2"; min?: number; max?: number; step?: number }>)
     | (EditableMaterialProperty<TensorValue3> & Readonly<{ kind: "vector3"; min?: number; max?: number; step?: number }>)
     | (EditableMaterialProperty<TensorValue4> & Readonly<{ kind: "vector4"; min?: number; max?: number; step?: number }>)
+    | (EditableMaterialProperty<MaterialMatrix4Value> & Readonly<{ kind: "matrix4" }>)
     | (EditableMaterialProperty<StructuralColor> & Readonly<{ kind: "color"; linear?: boolean }>)
     | (MaterialPropertyBase & Readonly<{ kind: "readonly"; value: string }>);
 
@@ -69,6 +75,44 @@ const StructuralColorPicker: ComponentType<PrimitiveProps<StructuralColor> & { i
 const StructuralColorAdapter: ColorPropertyLineAdapter<StructuralColor> = {
     ...StructuralColorValueAdapter,
     picker: StructuralColorPicker,
+};
+
+const Matrix4PropertyLine: FunctionComponent<EditableMaterialProperty<MaterialMatrix4Value>> = (props) => {
+    const { id, label, description, disabled, error, value, onChange } = props;
+    const [draft, setDraft] = useState(value);
+
+    useEffect(() => {
+        setDraft(value);
+    }, [value]);
+
+    return (
+        <PropertyLine
+            label={label}
+            uniqueId={id}
+            description={error ? `${description ? `${description} ` : ""}Error: ${error}` : description}
+            expandedContent={
+                <>
+                    {draft.map((component, index) => (
+                        <NumberInputPropertyLine
+                            key={index}
+                            label={`M${Math.floor(index / 4)}${index % 4}`}
+                            value={component}
+                            disabled={disabled}
+                            onChange={(componentValue) => {
+                                const next = [...draft];
+                                next[index] = componentValue;
+                                const matrix = next as unknown as MaterialMatrix4Value;
+                                setDraft(matrix);
+                                onChange(matrix);
+                            }}
+                        />
+                    ))}
+                </>
+            }
+        >
+            <Body1>[4 × 4]</Body1>
+        </PropertyLine>
+    );
 };
 
 /**
@@ -132,6 +176,8 @@ export const MaterialPropertyLine: FunctionComponent<{ model: MaterialPropertyMo
                     step={model.step}
                 />
             );
+        case "matrix4":
+            return <Matrix4PropertyLine {...model} />;
         case "color":
             return <ControlledColorPropertyLine {...common} value={model.value} onChange={model.onChange} adapter={StructuralColorAdapter} isLinearMode={model.linear} />;
         case "readonly":
@@ -151,7 +197,10 @@ export const MaterialPropertySection: FunctionComponent<{ model: MaterialPropert
         <div role={model.error ? "alert" : undefined}>
             {model.error ? <TextPropertyLine label="Error" value={model.error} /> : undefined}
             {model.fields.map((field) => (
-                <MaterialPropertyLine key={field.id} model={field} />
+                <div key={field.id}>
+                    <MaterialPropertyLine model={field} />
+                    {field.error ? <Body1 role="alert">{field.error}</Body1> : undefined}
+                </div>
             ))}
         </div>
     );

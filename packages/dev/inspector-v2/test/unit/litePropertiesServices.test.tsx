@@ -34,6 +34,7 @@ import { type ISettingsStore, type SettingDescriptor } from "shared-ui-component
 import { BoundProperty, ComputedProperty, DerivedProperty } from "../../src/components/properties/boundProperty";
 import { WatcherContext } from "../../src/contexts/watcherContext";
 import { EngineContextIdentity, type IEngineContext } from "../../src/lite/engineContext";
+import { type ILiteSceneResourceIndexService, LiteSceneResourceIndexServiceIdentity } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
 import { EnginePropertiesServiceDefinition } from "../../src/lite/services/panes/properties/enginePropertiesService";
 import { MaterialPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/materialPropertiesService";
 import { RenderingContextPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/renderingContextPropertiesService";
@@ -41,6 +42,7 @@ import { SpriteLayerPropertiesServiceDefinition } from "../../src/lite/services/
 import { TextLayerPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/textLayerPropertiesService";
 import { TexturePropertiesServiceDefinition } from "../../src/lite/services/panes/properties/texturePropertiesService";
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../src/services/panes/properties/propertiesService";
+import { SelectionServiceIdentity } from "../../src/services/selectionService";
 import { MakeWatcherServiceDefinitions } from "../../src/services/watcherService";
 
 type RegisteredContent = Parameters<IPropertiesService["addSectionContent"]>[0];
@@ -174,11 +176,16 @@ describe("Babylon Lite properties services", () => {
             }),
         } as unknown as IPropertiesService;
         const engineContext = { engine } as IEngineContext;
+        const materialResourceIndexService = {
+            index: {
+                getMaterialRecord: (candidate: Material) => (candidate === material ? { source: material } : undefined),
+            },
+        } as unknown as ILiteSceneResourceIndexService;
 
         const services = [
             EnginePropertiesServiceDefinition.factory(propertiesService, engineContext),
             RenderingContextPropertiesServiceDefinition.factory(propertiesService, engineContext),
-            MaterialPropertiesServiceDefinition.factory(propertiesService),
+            MaterialPropertiesServiceDefinition.factory(propertiesService, materialResourceIndexService, undefined!),
             TexturePropertiesServiceDefinition.factory(propertiesService),
             TextLayerPropertiesServiceDefinition.factory(propertiesService, engineContext),
             SpriteLayerPropertiesServiceDefinition.factory(propertiesService, engineContext),
@@ -186,11 +193,11 @@ describe("Babylon Lite properties services", () => {
 
         expect(EnginePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(RenderingContextPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
-        expect(MaterialPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity]);
+        expect(MaterialPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, LiteSceneResourceIndexServiceIdentity, SelectionServiceIdentity]);
         expect(TexturePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity]);
         expect(TextLayerPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(SpriteLayerPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
-        expect(registrations.size).toBe(9);
+        expect(registrations.size).toBe(13);
 
         expect(registrations.get("Babylon Lite Engine Properties")?.predicate(engine)).toBe(true);
         expect(registrations.get("Babylon Lite Engine Properties")?.predicate(auxiliarySurface)).toBe(false);
@@ -199,7 +206,7 @@ describe("Babylon Lite properties services", () => {
         expect(registrations.get("Babylon Lite Scene Properties")?.predicate(scene)).toBe(true);
         expect(registrations.get("Babylon Lite Text Renderer Properties")?.predicate(textRenderer)).toBe(true);
         expect(registrations.get("Babylon Lite Sprite Renderer Properties")?.predicate(spriteRenderer)).toBe(true);
-        expect(registrations.get("Babylon Lite Material Properties")?.predicate(material)).toBe(true);
+        expect(registrations.get("Babylon Lite standard Material Properties")?.predicate(material)).toBe(true);
         expect(registrations.get("Babylon Lite Texture Properties")?.predicate(texture)).toBe(true);
         expect(registrations.get("Babylon Lite Text Layer Properties")?.predicate(textLayer)).toBe(true);
         expect(registrations.get("Babylon Lite Sprite Layer Properties")?.predicate(spriteLayer)).toBe(true);
@@ -358,13 +365,13 @@ describe("Babylon Lite properties services", () => {
         (engine._renderingContexts as RenderingContext[]).push(legacyUtilityLayer);
         expect(registrations.get("Babylon Lite Scene Properties")?.predicate(unregisteredScene)).toBe(false);
         expect(registrations.get("Babylon Lite Scene Properties")?.predicate(legacyUtilityLayer)).toBe(false);
-        expect(registrations.get("Babylon Lite Material Properties")?.predicate({ name: "Not a material" })).toBe(false);
+        expect(registrations.get("Babylon Lite Unknown Material Properties")?.predicate({ name: "Not a material" })).toBe(false);
         expect(registrations.get("Babylon Lite Texture Properties")?.predicate({ width: 16, height: 8 })).toBe(false);
         expect(registrations.get("Babylon Lite Text Layer Properties")?.predicate({ ...textLayer })).toBe(false);
         expect(registrations.get("Babylon Lite Sprite Layer Properties")?.predicate({ ...spriteLayer })).toBe(false);
 
         services.forEach((service) => service?.dispose?.());
-        expect(disposals).toHaveLength(9);
+        expect(disposals).toHaveLength(13);
         disposals.forEach((dispose) => expect(dispose).toHaveBeenCalledOnce());
     });
 

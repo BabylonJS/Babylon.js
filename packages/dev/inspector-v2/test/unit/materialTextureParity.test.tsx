@@ -49,7 +49,7 @@ describe("material and texture parity cores", () => {
         return container;
     }
 
-    it("renders controlled scalar, vector, color, option, and readonly material fields", () => {
+    it("renders controlled scalar, vector, color, matrix, option, and readonly material fields", () => {
         const onBooleanChange = vi.fn();
         const container = Render(
             <MaterialPropertySection
@@ -62,6 +62,7 @@ describe("material and texture parity cores", () => {
                         { kind: "vector2", id: "offset", label: "Offset", value: { x: 1, y: 2 }, onChange: vi.fn() },
                         { kind: "vector3", id: "normal", label: "Normal", value: { x: 0, y: 1, z: 0 }, onChange: vi.fn() },
                         { kind: "vector4", id: "plane", label: "Plane", value: { x: 0, y: 1, z: 0, w: 2 }, onChange: vi.fn() },
+                        { kind: "matrix4", id: "matrix", label: "Matrix", value: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], onChange: vi.fn() },
                         { kind: "color", id: "albedo", label: "Albedo", value: { r: 1, g: 0.5, b: 0 }, onChange: vi.fn() },
                         { kind: "readonly", id: "family", label: "Family", value: "standard" },
                     ],
@@ -73,6 +74,7 @@ describe("material and texture parity cores", () => {
         expect(container.textContent).toContain("[1.00, 2.00]");
         expect(container.textContent).toContain("[0.00, 1.00, 0.00]");
         expect(container.textContent).toContain("[0.00, 1.00, 0.00, 2.00]");
+        expect(container.textContent).toContain("[4 × 4]");
         expect(container.textContent).toContain("standard");
 
         const checkbox = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
@@ -183,7 +185,7 @@ describe("material and texture parity cores", () => {
     });
 
     it("keeps P4 shared cores isolated from Babylon runtimes and preview dependencies", () => {
-        const root = resolve(process.cwd(), "..");
+        const root = resolve(import.meta.dirname, "../../..");
         const files = [
             "sharedUiComponents/src/fluent/hoc/propertyLines/materialPropertyLine.tsx",
             "sharedUiComponents/src/fluent/hoc/propertyLines/materialTextureBindingPropertyLine.tsx",
