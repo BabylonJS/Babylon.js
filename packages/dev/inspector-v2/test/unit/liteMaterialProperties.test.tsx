@@ -268,6 +268,27 @@ describe("Babylon Lite material accessor descriptors", () => {
         expect((material as any).backFaceCulling).toBe(true);
     });
 
+    it("accepts synchronous rebuild completion and awaits asynchronous rebuild failures", async () => {
+        const material = MakeStandard();
+        const scene = { meshes: [{ material }] } as SceneContext;
+        LiteMocks.rebuild.mockReturnValueOnce(undefined);
+
+        await expect(SetMaterialDescriptorPropertyWithFamily({ scenes: [scene] }, material, "standard.backFaceCulling", false, StandardMaterialDescriptor)).resolves.toEqual({
+            changed: true,
+            mutation: "R",
+            postMutation: "rebuild-material",
+        });
+        expect(LiteMocks.rebuild).toHaveBeenLastCalledWith(scene, material, {
+            rebuildViews: true,
+            rebuildFrameGraph: false,
+        });
+
+        LiteMocks.rebuild.mockRejectedValueOnce(new Error("rebuild failed"));
+        await expect(SetMaterialDescriptorPropertyWithFamily({ scenes: [scene] }, material, "standard.backFaceCulling", true, StandardMaterialDescriptor)).rejects.toThrow(
+            "rebuild failed"
+        );
+    });
+
     it("renders shared controls and exact texture navigation from accessor descriptors", () => {
         const scene = {} as SceneContext;
         const texture = { metadata: { kind: "2d", sampleType: "float", capabilities: {} } };

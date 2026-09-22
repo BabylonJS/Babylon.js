@@ -237,7 +237,12 @@ export const LiteTextureMetadataAdapter: FunctionComponent<LiteTextureMetadataAd
                         return requiresRebuild
                             ? materialRecord.scenes.map(
                                   async (scene) =>
-                                      await Promise.resolve(rebuildMaterial(scene, materialRecord.source, { awaitCompletion: true, rebuildViews: true, rebuildFrameGraph: false }))
+                                      // The repository-pinned Lite declarations predate direct rebuild completion.
+                                      // eslint-disable-next-line @typescript-eslint/await-thenable, @typescript-eslint/return-await
+                                      await rebuildMaterial(scene, materialRecord.source, {
+                                          rebuildViews: true,
+                                          rebuildFrameGraph: false,
+                                      })
                               )
                             : [];
                     })

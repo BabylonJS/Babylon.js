@@ -225,7 +225,6 @@ describe("Babylon Lite texture accessor metadata", () => {
         });
 
         expect(LiteMocks.rebuild).toHaveBeenCalledWith(services.scene, services.material, {
-            awaitCompletion: true,
             rebuildViews: true,
             rebuildFrameGraph: false,
         });

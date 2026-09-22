@@ -19,6 +19,7 @@ const PreviewOrEditorDependency = /(?:texture|material)(?:Preview|Editor)|pixelR
 const BabylonRuntimeImplementation = /from ["'](?:@dev\/core|core\/(?!index["']))/;
 const RemovedLiteInspectionApi =
     /\b(?:inspectMaterial|inspectTexture|getMaterialTextureBindings|setMaterialInspectionProperty|setMaterialInspectionTexture|setTextureInspectionTransform|MaterialInspection|TextureInspection|InspectionDatum|InspectionValue)\b/;
+const RemovedAwaitedRebuildContract = /\b(?:AwaitedRebuildMaterialOptions|awaitCompletion)\b/;
 
 describe("P4 Inspector import boundaries", () => {
     it("keeps every material family and texture metadata adapter behind its own lazy entrypoint", () => {
@@ -57,6 +58,7 @@ describe("P4 Inspector import boundaries", () => {
             expect(source).not.toMatch(PreviewOrEditorDependency);
             expect(source).not.toMatch(BabylonRuntimeImplementation);
             expect(source).not.toMatch(RemovedLiteInspectionApi);
+            expect(source).not.toMatch(RemovedAwaitedRebuildContract);
             expect(source).not.toMatch(/@babylonjs\/lite\/(?:src|dist)\//);
         });
         expect(sources.filter((source) => source.includes('from "core/index"'))).toEqual([expect.stringContaining('import { type IReadonlyObservable } from "core/index"')]);

@@ -451,13 +451,12 @@ async function ExecuteMutationPlan(
         await Promise.all(
             scenes.map(
                 async (scene) =>
-                    await Promise.resolve(
-                        rebuildMaterial(scene, target, {
-                            awaitCompletion: true,
-                            rebuildViews: true,
-                            rebuildFrameGraph: plan.frameGraphParticipationChanged === true,
-                        })
-                    )
+                    // The repository-pinned Lite declarations predate direct rebuild completion.
+                    // eslint-disable-next-line @typescript-eslint/await-thenable, @typescript-eslint/return-await
+                    await rebuildMaterial(scene, target, {
+                        rebuildViews: true,
+                        rebuildFrameGraph: plan.frameGraphParticipationChanged === true,
+                    })
             )
         );
     }
