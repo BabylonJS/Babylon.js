@@ -25,6 +25,11 @@ const CreateScene = (engine: WebGL2NullEngine): Scene => {
 
 const CreateAtmosphere = (scene: Scene): Atmosphere => new Atmosphere("atmosphere", scene, [scene.lights[0] as DirectionalLight]);
 
+// Every atmosphere plugin the material RUNS, not just the one getPlugin() finds by name: a rejected duplicate can
+// still be active, and active plugins inject their shader code.
+const ActiveAtmospherePluginsOf = (material: Material) =>
+    ((material.pluginManager as unknown as { _activePlugins?: { name: string }[] } | undefined)?._activePlugins ?? []).filter((plugin) => plugin.name === PluginName);
+
 const GetAtmosphereOf = (material: Material): Atmosphere | null => {
     const plugin = material.pluginManager?.getPlugin(PluginName) as unknown as { _atmosphere?: Atmosphere } | null;
     return plugin?._atmosphere ?? null;
@@ -62,6 +67,15 @@ describe("Atmosphere material plugin registration", () => {
         expect(GetAtmosphereOf(materialABefore)).toBe(atmosphereA);
         expect(GetAtmosphereOf(materialAAfter)).toBe(atmosphereA);
         expect(GetAtmosphereOf(materialB)).toBe(atmosphereB);
+    });
+
+    it("runs exactly one atmosphere plugin per material when two atmospheres share a scene", () => {
+        const first = CreateAtmosphere(sceneA);
+        CreateAtmosphere(sceneA);
+        const material = new PBRMaterial("shared", sceneA);
+
+        expect(ActiveAtmospherePluginsOf(material)).toHaveLength(1);
+        expect(GetAtmosphereOf(material)).toBe(first);
     });
 
     it.each([

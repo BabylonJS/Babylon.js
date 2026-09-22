@@ -830,9 +830,11 @@ export class Atmosphere implements IDisposable {
         // The registration is global (every material created afterwards, in any engine or scene, is offered to the
         // factory), so the factory only attaches the plugin to materials of this atmosphere's scene. Each instance
         // registers under its own name, so atmospheres in other scenes keep their factories, and dispose() removes
-        // only this one's.
+        // only this one's. With more than one atmosphere in a scene, the first factory to run attaches its plugin and
+        // the others skip the material: a second plugin would activate itself before the manager rejected its
+        // duplicate name, and its shader code would be injected alongside the first's.
         RegisterMaterialPlugin(this._materialPluginName, (material) => {
-            if (material.getClassName() === "PBRMaterial" && material.getScene() === this.scene) {
+            if (material.getClassName() === "PBRMaterial" && material.getScene() === this.scene && !material.pluginManager?.getPlugin("AtmospherePBRMaterialPlugin")) {
                 return new AtmospherePBRMaterialPlugin(material, this, this.depthTexture === null);
             }
             return null;
