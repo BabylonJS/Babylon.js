@@ -125,6 +125,8 @@ export class Atmosphere implements IDisposable {
      */
     public readonly uniqueId = UniqueId++;
 
+    private readonly _materialPluginName = `${MaterialPlugin}-${this.uniqueId}`;
+
     /**
      * Called after the atmosphere variables have been updated for the specified camera.
      */
@@ -826,9 +828,10 @@ export class Atmosphere implements IDisposable {
         // sky view LUT for glossy reflections and diffuse sky illiminance LUT for irradiance.
         // It also handles aerial perspective application when Atmosphere is not provided with a depth texture.
         // The registration is global (every material created afterwards, in any engine or scene, is offered to the
-        // factory), so the factory only attaches the plugin to materials of this atmosphere's scene.
-        UnregisterMaterialPlugin(MaterialPlugin);
-        RegisterMaterialPlugin(MaterialPlugin, (material) => {
+        // factory), so the factory only attaches the plugin to materials of this atmosphere's scene. Each instance
+        // registers under its own name, so atmospheres in other scenes keep their factories, and dispose() removes
+        // only this one's.
+        RegisterMaterialPlugin(this._materialPluginName, (material) => {
             if (material.getClassName() === "PBRMaterial" && material.getScene() === this.scene) {
                 return new AtmospherePBRMaterialPlugin(material, this, this.depthTexture === null);
             }
@@ -916,7 +919,7 @@ export class Atmosphere implements IDisposable {
         this._effectRenderer = null;
         this._atmosphereUniformBufferAsArray.length = 0;
 
-        UnregisterMaterialPlugin(MaterialPlugin);
+        UnregisterMaterialPlugin(this._materialPluginName);
     }
 
     /**
