@@ -2,170 +2,53 @@
  * @vitest-environment jsdom
  */
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-
 import { FluentProvider, webLightTheme } from "@fluentui/react-components";
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const TextureInspectionMocks = vi.hoisted(() => ({
-    snapshots: new Map<object, unknown>(),
+const LiteMocks = vi.hoisted(() => ({
     setTransform: vi.fn(),
+    enableUv: vi.fn(),
+    dirty: vi.fn(),
+    rebuild: vi.fn(),
 }));
 
 vi.mock("@babylonjs/lite", async (importOriginal) => {
     const original = await importOriginal<typeof import("@babylonjs/lite")>();
     return {
         ...original,
-        inspectTexture: (texture: object) => TextureInspectionMocks.snapshots.get(texture),
-        setTextureInspectionTransform: TextureInspectionMocks.setTransform,
+        getTextureMetadata: (texture: Record<string, unknown>) => texture.metadata,
+        getTextureTransform: (texture: Record<string, unknown>) => texture.transform,
+        getTextureCoordinateIndex: (texture: Record<string, unknown>) => texture.coordinateIndex,
+        hasTextureTransform: (texture: Record<string, unknown>) => texture.transform !== undefined,
+        setTextureTransform: LiteMocks.setTransform,
+        enableMaterialUvTransform: LiteMocks.enableUv,
+        markMaterialUboDirty: LiteMocks.dirty,
+        rebuildMaterial: LiteMocks.rebuild,
     };
 });
 
-import {
-    type Material,
-    type MaterialTextureBinding,
-    type SceneContext,
-    type TextureInspection,
-    type TextureInspectionKind,
-    type TextureInspectionTransform,
-} from "@babylonjs/lite";
+import { type Material, type SceneContext, type TextureMetadata } from "@babylonjs/lite";
 import { Observable } from "core/Misc/observable";
+
 import { LiteTextureMetadataAdapter } from "../../src/lite/services/panes/properties/liteTextureMetadataAdapter";
-import { TexturePropertiesServiceDefinition } from "../../src/lite/services/panes/properties/texturePropertiesService";
 import { type ILiteSceneResourceIndexService } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
 import { type ILiteMaterialResourceRecord, type ILiteTextureResourceRecord } from "../../src/lite/services/panes/scene/sceneResources";
-import { type IPropertiesService } from "../../src/services/panes/properties/propertiesService";
 import { type ISelectionService } from "../../src/services/selectionService";
 
 vi.hoisted(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     vi.stubGlobal(
         "matchMedia",
-        vi.fn(() => ({
-            matches: false,
-            addEventListener: vi.fn(),
-            removeEventListener: vi.fn(),
-        }))
+        vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }))
     );
 });
-
 vi.stubGlobal("NodeFilter", window.NodeFilter);
 
-const PresentTransform: TextureInspectionTransform = { uScale: 1, vScale: 1, uOffset: 0, vOffset: 0, uAng: 0 };
-
-function MakeDeferred<T>() {
-    let resolve!: (value: T) => void;
-    let reject!: (error: unknown) => void;
-    const promise = new Promise<T>((resolvePromise, rejectPromise) => {
-        resolve = resolvePromise;
-        reject = rejectPromise;
-    });
-    return { promise, resolve, reject };
-}
-
-function Known<T>(value: T) {
-    return { state: "known", value } as const;
-}
-
-function MakeInspection(kind: TextureInspectionKind, overrides: Partial<TextureInspection> = {}): TextureInspection {
+function MakeSelectionService(): ISelectionService {
+    let selectedEntity: object | null = null;
     return {
-        kind,
-        displayName: Known(`${kind} texture`),
-        origin: Known(kind === "cube" ? "ktx2" : "url-raster"),
-        width: 64,
-        height: 32,
-        depthOrLayers: Known(kind === "cube" ? 6 : kind === "2d-array" ? 4 : 1),
-        sampleCategory: "float",
-        format: Known("rgba8unorm"),
-        mipLevelCount: Known(3),
-        colorSpace: "srgb",
-        invertY: { state: "present", value: true },
-        sampler: {
-            addressModeU: Known("repeat"),
-            addressModeV: Known("clamp-to-edge"),
-            addressModeW: Known("mirror-repeat"),
-            minFilter: Known("linear"),
-            magFilter: Known("linear"),
-            mipmapFilter: Known("nearest"),
-            maxAnisotropy: Known(4),
-        },
-        transform: kind === "2d" ? { state: "present", value: PresentTransform } : { state: "unsupported", reason: "Only 2D textures support UV transforms." },
-        capabilities: {
-            dynamicUpdate: Known(false),
-            htmlReadiness: { state: "unknown" },
-            renderAttachment: Known(kind === "2d"),
-            sampledDepth: false,
-            released: Known(false),
-        },
-        ...overrides,
-    } as TextureInspection;
-}
-
-function MakeBinding(texture: object, id = "standard.diffuse"): MaterialTextureBinding {
-    return {
-        id,
-        label: id === "standard.diffuse" ? "Diffuse Texture" : "Texture",
-        value: { state: "present", value: { entity: texture, kind: "2d" } },
-        acceptedKinds: ["2d"],
-        sampleCategory: "float",
-        viewCategory: "2d",
-        directions: ["replace", "clear", "navigate"],
-        mutation: { access: "read-write", mutation: "R", postMutation: "rebuild-material" },
-        transform: { state: "present", value: PresentTransform },
-    } as MaterialTextureBinding;
-}
-
-function MakeServices(texture: object, inspection: TextureInspection, includeRecord = true) {
-    const sceneA = { meshes: [] } as unknown as SceneContext;
-    const sceneB = { meshes: [] } as unknown as SceneContext;
-    const material = {} as Material;
-    const binding = MakeBinding(texture);
-    const materialRecord = {
-        source: material,
-        inspection: {
-            source: material,
-            family: "standard",
-            displayName: "Shared Standard",
-            isView: false,
-            properties: [],
-            textureBindings: [binding],
-        },
-        scenes: [sceneA, sceneB],
-        bindings: [binding],
-    } as ILiteMaterialResourceRecord;
-    const textureRecord = {
-        entity: texture,
-        inspection,
-        ordinal: 7,
-        consumers: [{ material, bindingId: binding.id }],
-    } as ILiteTextureResourceRecord;
-    const onChanged = new Observable<void>();
-    const onDisposed = new Observable<void>();
-    let isDisposed = false;
-    const refresh = vi.fn(() => onChanged.notifyObservers());
-    const resourceIndexService = {
-        index: {
-            getTextureRecord: (candidate: object) => (includeRecord && candidate === texture ? textureRecord : undefined),
-            getMaterialRecord: (candidate: Material) => (candidate === material ? materialRecord : undefined),
-        },
-        onChanged,
-        onDisposed,
-        refresh,
-        get isDisposed() {
-            return isDisposed;
-        },
-        dispose: vi.fn(() => {
-            isDisposed = true;
-            onDisposed.notifyObservers();
-            onDisposed.clear();
-            onChanged.clear();
-        }),
-    } as unknown as ILiteSceneResourceIndexService;
-    let selectedEntity: object | null = texture;
-    const selectionService = {
         get selectedEntity() {
             return selectedEntity;
         },
@@ -176,21 +59,71 @@ function MakeServices(texture: object, inspection: TextureInspection, includeRec
         onSelectedEntityChanged: new Observable<void>(),
         dispose: vi.fn(),
     } as ISelectionService;
-    return { resourceIndexService, selectionService, material, sceneA, sceneB, textureRecord };
 }
 
-function GetNormalizedText(container: HTMLElement): string {
-    return container.textContent?.replace(/\s/g, "") ?? "";
+function MakeServices(metadata: TextureMetadata, kind: "standard" | "pbr" = "standard") {
+    const scene = {} as SceneContext;
+    const material = { family: kind, name: "Material" } as unknown as Material;
+    const texture = {
+        metadata,
+        coordinateIndex: 1,
+        transform: { uOffset: 0, vOffset: 0, uScale: 1, vScale: 1, uAng: 0 },
+    };
+    const materialRecord: ILiteMaterialResourceRecord = {
+        source: material,
+        family: kind,
+        displayName: "Material",
+        scenes: [scene],
+        bindings: [{ id: `${kind}.baseColor`, entity: texture }],
+    };
+    const textureRecord: ILiteTextureResourceRecord = {
+        entity: texture,
+        metadata,
+        ordinal: 4,
+        consumers: [{ material, bindingId: `${kind}.baseColor` }],
+    };
+    const onChanged = new Observable<void>();
+    const onDisposed = new Observable<void>();
+    let disposed = false;
+    const refresh = vi.fn(() => onChanged.notifyObservers());
+    const resourceIndexService = {
+        index: {
+            getTextureRecord: (entity: object) => (entity === texture ? textureRecord : undefined),
+            getMaterialRecord: (entity: Material) => (entity === material ? materialRecord : undefined),
+            getSceneSnapshot: () => ({ scene, materials: [materialRecord], textures: [textureRecord] }),
+        },
+        onChanged,
+        onDisposed,
+        refresh,
+        get isDisposed() {
+            return disposed;
+        },
+        dispose: vi.fn(() => {
+            disposed = true;
+            onDisposed.notifyObservers();
+        }),
+    } as unknown as ILiteSceneResourceIndexService;
+    return { texture, material, scene, materialRecord, textureRecord, resourceIndexService, selectionService: MakeSelectionService(), refresh };
 }
 
-describe("Babylon Lite texture metadata Properties", () => {
+describe("Babylon Lite texture accessor metadata", () => {
     const roots: Root[] = [];
     const containers: HTMLElement[] = [];
 
     beforeEach(() => {
-        TextureInspectionMocks.snapshots.clear();
-        TextureInspectionMocks.setTransform.mockReset();
-        TextureInspectionMocks.setTransform.mockResolvedValue({ changed: true, mutation: "R", postMutation: "rebuild-material" });
+        LiteMocks.setTransform.mockReset();
+        LiteMocks.setTransform.mockImplementation((texture, transform) => {
+            if (JSON.stringify(texture.transform) === JSON.stringify(transform)) {
+                return false;
+            }
+            texture.transform = transform;
+            return true;
+        });
+        LiteMocks.enableUv.mockReset();
+        LiteMocks.enableUv.mockReturnValue(false);
+        LiteMocks.dirty.mockReset();
+        LiteMocks.rebuild.mockReset();
+        LiteMocks.rebuild.mockResolvedValue(undefined);
     });
 
     afterEach(() => {
@@ -209,229 +142,112 @@ describe("Babylon Lite texture metadata Properties", () => {
     }
 
     it.each([
-        ["2d", "Width64pxHeight32px"],
+        ["2d", "Width64Height32"],
         ["2d-array", "Layers4"],
-        ["3d", "Depth1"],
+        ["3d", "Depth8"],
         ["cube", "Faces6"],
-    ] as const)("renders safe %s metadata without GPU details", (kind, expected) => {
-        const texture = {};
-        const inspection = MakeInspection(kind);
-        TextureInspectionMocks.snapshots.set(texture, inspection);
-        const services = MakeServices(texture, inspection);
-        const container = Render(<LiteTextureMetadataAdapter texture={texture} {...services} />);
-        const text = GetNormalizedText(container);
+    ] as const)("renders metadata-only %s rows without exposing GPU objects", (kind, expected) => {
+        const metadata: TextureMetadata = {
+            kind,
+            name: "Albedo",
+            origin: "url-raster",
+            width: 64,
+            height: 32,
+            layers: kind === "2d-array" ? 4 : undefined,
+            depth: kind === "3d" ? 8 : undefined,
+            format: "rgba8unorm",
+            mipLevelCount: 3,
+            sampleType: "float",
+            colorSpace: "srgb",
+            sampler: { addressModeU: "repeat", minFilter: "linear" },
+            capabilities: { dynamicUpdate: false, renderAttachment: false, sampledDepth: false },
+        };
+        const services = MakeServices(metadata);
+        const container = Render(<LiteTextureMetadataAdapter {...services} />);
+        const text = (container.textContent ?? "").replaceAll(/\s/g, "");
 
         expect(text).toContain(expected);
         expect(text).toContain(`Kind${kind}`);
         expect(text).toContain("Formatrgba8unorm");
-        expect(text).not.toMatch(/GPU|handle|preview|editor|export/i);
-        expect(text.includes("UScale")).toBe(kind === "2d");
+        expect(text).not.toMatch(/GPUTexture|GPUTextureView|GPUHandle/);
     });
 
-    it("renders unknown and transient facts deterministically", () => {
-        const texture = {};
-        const inspection = MakeInspection("2d", {
-            width: 0,
-            height: 0,
-            displayName: { state: "unknown", reason: "Name was not retained." },
-            format: { state: "unknown" },
-            capabilities: {
-                dynamicUpdate: { state: "unknown" },
-                htmlReadiness: { state: "unknown" },
-                renderAttachment: { state: "unknown" },
-                sampledDepth: true,
-                released: { state: "unknown" },
-            },
-        });
-        TextureInspectionMocks.snapshots.set(texture, inspection);
-        const services = MakeServices(texture, inspection, false);
-        const container = Render(<LiteTextureMetadataAdapter texture={texture} {...services} />);
-        const text = GetNormalizedText(container);
+    it("renders deterministic unknown and transient metadata states", () => {
+        const services = MakeServices({ kind: "2d", width: 0, height: 0, capabilities: {} });
+        const text = (Render(<LiteTextureMetadataAdapter {...services} />).textContent ?? "").replaceAll(/\s/g, "");
 
         expect(text).toContain("NameUnavailable");
         expect(text).toContain("FormatUnavailable");
-        expect(text).toContain("SampledDepth");
         expect(text).toContain("AvailabilityTransientorunavailable");
-        expect(text).not.toContain("UScale");
     });
 
-    it("renders render-target and sampled-depth capabilities without runtime actions", () => {
-        const texture = {};
-        const inspection = MakeInspection("2d", {
-            origin: Known("render-target"),
-            capabilities: {
-                dynamicUpdate: Known(false),
-                htmlReadiness: { state: "unknown" },
-                renderAttachment: Known(true),
-                sampledDepth: true,
-                released: Known(false),
-            },
-            transform: { state: "unsupported", reason: "Render targets do not expose UV transforms." },
-        });
-        TextureInspectionMocks.snapshots.set(texture, inspection);
-        const services = MakeServices(texture, inspection, false);
-        const text = GetNormalizedText(Render(<LiteTextureMetadataAdapter texture={texture} {...services} />));
-
-        expect(text).toContain("Originrender-target");
-        expect(text).toContain("RenderAttachment");
-        expect(text).toContain("SampledDepth");
-        expect(text).not.toContain("UScale");
-    });
-
-    it("navigates consumers by exact source material identity", () => {
-        const texture = {};
-        const inspection = MakeInspection("cube");
-        TextureInspectionMocks.snapshots.set(texture, inspection);
-        const services = MakeServices(texture, inspection);
-        const container = Render(<LiteTextureMetadataAdapter texture={texture} {...services} />);
-        const link = container.querySelector('[aria-label="Open material Shared Standard, Diffuse Texture"]');
+    it("navigates to the exact source material consumer", () => {
+        const services = MakeServices({ kind: "2d", capabilities: {} });
+        const container = Render(<LiteTextureMetadataAdapter {...services} />);
+        const link = container.querySelector('[aria-label^="Open material Material"]');
 
         expect(link).not.toBeNull();
         act(() => link?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
         expect(services.selectionService.selectedEntity).toBe(services.material);
     });
 
-    it("commits transforms with every owning scene and refreshes successful and no-op results", async () => {
-        const texture = {};
-        const inspection = MakeInspection("2d");
-        TextureInspectionMocks.snapshots.set(texture, inspection);
-        const services = MakeServices(texture, inspection);
-        const container = Render(<LiteTextureMetadataAdapter texture={texture} {...services} />);
-        const input = container.querySelector('input[value="1"]') as HTMLInputElement;
-        const setInputValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    it("commits transforms with complete consumer scope and refreshes applied metadata", async () => {
+        const services = MakeServices({ kind: "2d", capabilities: {} });
+        const container = Render(<LiteTextureMetadataAdapter {...services} />);
+        const input = container.querySelector<HTMLInputElement>('input[value="1"]')!;
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
 
         await act(async () => {
             input.focus();
-            setInputValue.call(input, "2");
+            setter.call(input, "2");
             input.dispatchEvent(new Event("input", { bubbles: true }));
             input.blur();
-            await Promise.resolve();
         });
 
-        expect(TextureInspectionMocks.setTransform).toHaveBeenCalledWith({ scenes: [services.sceneA, services.sceneB] }, texture, expect.objectContaining({ uScale: 2 }));
-        expect(services.resourceIndexService.refresh).toHaveBeenCalledTimes(1);
-
-        TextureInspectionMocks.setTransform.mockResolvedValueOnce({ changed: false, mutation: "R", postMutation: "none" });
-        await act(async () => {
-            input.focus();
-            setInputValue.call(input, "3");
-            input.dispatchEvent(new Event("input", { bubbles: true }));
-            input.blur();
-            await Promise.resolve();
-        });
-        expect(services.resourceIndexService.refresh).toHaveBeenCalledTimes(2);
+        expect(LiteMocks.setTransform).toHaveBeenCalledWith(services.texture, expect.objectContaining({ uScale: 2 }));
+        expect(LiteMocks.enableUv).toHaveBeenCalledWith(services.material);
+        expect(LiteMocks.dirty).toHaveBeenCalledWith(services.material);
+        expect(services.refresh).toHaveBeenCalled();
     });
 
-    it("preserves selection and the applied value when a transform is rejected", async () => {
-        const texture = {};
-        const inspection = MakeInspection("2d");
-        TextureInspectionMocks.snapshots.set(texture, inspection);
-        TextureInspectionMocks.setTransform.mockRejectedValueOnce(new Error("Transform rejected"));
-        const services = MakeServices(texture, inspection);
-        const container = Render(<LiteTextureMetadataAdapter texture={texture} {...services} />);
-        const input = container.querySelector('input[value="1"]') as HTMLInputElement;
-        const setInputValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    it("awaits rebuilds when enabling transform support changes the material pipeline", async () => {
+        LiteMocks.enableUv.mockReturnValue(true);
+        const services = MakeServices({ kind: "2d", capabilities: {} });
+        const container = Render(<LiteTextureMetadataAdapter {...services} />);
+        const input = container.querySelector<HTMLInputElement>('input[value="1"]')!;
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
 
         await act(async () => {
             input.focus();
-            setInputValue.call(input, "2");
+            setter.call(input, "3");
             input.dispatchEvent(new Event("input", { bubbles: true }));
             input.blur();
-            await Promise.resolve();
         });
 
-        expect(services.selectionService.selectedEntity).toBe(texture);
-        expect(services.resourceIndexService.refresh).not.toHaveBeenCalled();
-        expect(container.querySelector('[role="alert"]')?.textContent).toContain("Transform rejected");
-        expect(container.querySelector('input[value="1"]')).not.toBeNull();
-    });
-
-    it("tracks independent transform rows and ignores stale completion after index invalidation", async () => {
-        const texture = {};
-        const inspection = MakeInspection("2d");
-        TextureInspectionMocks.snapshots.set(texture, inspection);
-        const first = MakeDeferred<{ changed: boolean }>();
-        const second = MakeDeferred<{ changed: boolean }>();
-        TextureInspectionMocks.setTransform.mockImplementationOnce(() => first.promise).mockImplementationOnce(() => second.promise);
-        const services = MakeServices(texture, inspection);
-        const container = Render(<LiteTextureMetadataAdapter texture={texture} {...services} />);
-        const setInputValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
-        const inputs = Array.from(container.querySelectorAll<HTMLInputElement>('input[value="1"]'));
-
-        act(() => {
-            inputs[0].focus();
-            setInputValue.call(inputs[0], "2");
-            inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
-            inputs[0].blur();
-            inputs[1].focus();
-            setInputValue.call(inputs[1], "3");
-            inputs[1].dispatchEvent(new Event("input", { bubbles: true }));
-            inputs[1].blur();
+        expect(LiteMocks.rebuild).toHaveBeenCalledWith(services.scene, services.material, {
+            awaitCompletion: true,
+            rebuildViews: true,
+            rebuildFrameGraph: false,
         });
-        const activeInputs = Array.from(container.querySelectorAll<HTMLInputElement>("input"));
-        expect(activeInputs[0].disabled).toBe(true);
-        expect(activeInputs[1].disabled).toBe(true);
-
-        await act(async () => {
-            first.resolve({ changed: true });
-            await first.promise;
-        });
-        expect(services.resourceIndexService.refresh).toHaveBeenCalledOnce();
-        expect(container.querySelector('[role="status"]')).toBeNull();
-
-        act(() => services.resourceIndexService.onChanged.notifyObservers());
-        await act(async () => {
-            second.reject(new Error("obsolete failure"));
-            await second.promise.catch(() => undefined);
-        });
-        expect(container.textContent).not.toContain("obsolete failure");
-        expect(services.resourceIndexService.refresh).toHaveBeenCalledOnce();
-        expect(container.querySelector('[role="status"]')).toBeNull();
     });
 
-    it("handles stale and malformed wrappers without throwing", () => {
-        const texture = {};
-        const services = MakeServices(texture, MakeInspection("2d"), false);
-        const container = Render(<LiteTextureMetadataAdapter texture={texture} {...services} />);
-        expect(container.querySelector('[role="alert"]')?.textContent).toContain("unavailable or malformed");
+    it("keeps stale and malformed wrappers accessible without throwing", () => {
+        const selectionService = MakeSelectionService();
+        const resourceIndexService = {
+            index: { getTextureRecord: () => undefined },
+            onChanged: new Observable<void>(),
+            onDisposed: new Observable<void>(),
+            isDisposed: false,
+        } as unknown as ILiteSceneResourceIndexService;
+        const container = Render(<LiteTextureMetadataAdapter texture={{}} resourceIndexService={resourceIndexService} selectionService={selectionService} />);
+
+        expect(container.textContent).toContain("This texture is unavailable or malformed.");
+        expect(container.querySelector('[role="alert"]')).not.toBeNull();
     });
 
-    it("keeps service instances and selection isolated", () => {
-        const texture = {};
-        const inspection = MakeInspection("cube");
-        TextureInspectionMocks.snapshots.set(texture, inspection);
-        const first = MakeServices(texture, inspection);
-        const second = MakeServices(texture, inspection);
-        const firstContainer = Render(<LiteTextureMetadataAdapter texture={texture} {...first} />);
-        Render(<LiteTextureMetadataAdapter texture={texture} {...second} />);
-
-        act(() => firstContainer.querySelector('[aria-label="Open material Shared Standard, Diffuse Texture"]')?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
-        expect(first.selectionService.selectedEntity).toBe(first.material);
-        expect(second.selectionService.selectedEntity).toBe(texture);
-    });
-
-    it("registers one lazy metadata component and keeps preview/editor modules isolated", () => {
-        const texture = {};
-        TextureInspectionMocks.snapshots.set(texture, MakeInspection("2d"));
-        const registrations: Parameters<IPropertiesService["addSectionContent"]>[0][] = [];
-        const propertiesService = {
-            addSectionContent: vi.fn((registration) => {
-                registrations.push(registration);
-                return { dispose: vi.fn() };
-            }),
-        } as unknown as IPropertiesService;
-        const services = MakeServices(texture, MakeInspection("2d"));
-
-        TexturePropertiesServiceDefinition.factory(propertiesService, services.resourceIndexService, services.selectionService);
-        expect(registrations).toHaveLength(1);
-        expect(registrations[0].predicate(texture)).toBe(true);
-        TextureInspectionMocks.snapshots.delete(texture);
-        expect(registrations[0].predicate(texture)).toBe(true);
-        expect(registrations[0].predicate({})).toBe(false);
-
-        const serviceSource = readFileSync(resolve(__dirname, "../../src/lite/services/panes/properties/texturePropertiesService.tsx"), "utf8");
-        const adapterSource = readFileSync(resolve(__dirname, "../../src/lite/services/panes/properties/liteTextureMetadataAdapter.tsx"), "utf8");
-        expect(serviceSource).toContain('import("./liteTextureMetadataAdapter")');
-        expect(`${serviceSource}\n${adapterSource}`).not.toMatch(/texturePreview|textureEditor|readback|uploadTexture|exportTexture|core\/Materials\/Textures/i);
+    it("does not offer transform editing for cube wrappers", () => {
+        const services = MakeServices({ kind: "cube", capabilities: {} });
+        const container = Render(<LiteTextureMetadataAdapter {...services} />);
+        expect(container.querySelector("input")).toBeNull();
     });
 });

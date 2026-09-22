@@ -1,12 +1,17 @@
 import {
-    inspectTexture,
-    setTextureInspectionTransform,
-    type InspectionDatum,
-    type InspectionValue,
+    enableMaterialUvTransform,
+    getTextureCoordinateIndex,
+    getTextureMetadata,
+    getTextureTransform,
+    hasTextureTransform,
+    markMaterialUboDirty,
+    rebuildMaterial,
+    setTextureTransform,
     type Material,
     type SceneContext,
-    type TextureInspection,
-    type TextureInspectionTransform,
+    type Texture2D,
+    type TextureMetadata,
+    type TextureTransform,
 } from "@babylonjs/lite";
 import { type FunctionComponent, useCallback } from "react";
 
@@ -30,25 +35,10 @@ export type LiteTextureMetadataAdapterProps = Readonly<{
     selectionService: ISelectionService;
 }>;
 
-function FormatValue(value: unknown): string {
-    return typeof value === "string" ? value : String(value);
-}
-
-function DatumRow<T>(id: string, label: string, datum: InspectionDatum<T>, format: (value: T) => string = FormatValue): TextureMetadataRow {
-    return datum.state === "known"
-        ? { id, label, value: format(datum.value) }
-        : { id, label, value: null, description: datum.reason ?? "Not retained by the Lite texture wrapper." };
-}
-
-function ValueRow<T>(id: string, label: string, value: InspectionValue<T>, format: (item: T) => string = FormatValue): TextureMetadataRow {
-    switch (value.state) {
-        case "present":
-            return { id, label, value: format(value.value) };
-        case "unsupported":
-            return { id, label, value: null, description: value.reason };
-        case "absent":
-            return { id, label, value: null, description: "Not present." };
-    }
+function OptionalRow(id: string, label: string, value: unknown, units?: string): TextureMetadataRow {
+    return value === undefined
+        ? { id, label, value: null, description: "Not retained by the Lite texture wrapper." }
+        : { id, label, value: typeof value === "string" ? value : String(value), units };
 }
 
 function GetMaterialRecord(resourceIndexService: ILiteSceneResourceIndexService, material: Material): ILiteMaterialResourceRecord | undefined {
@@ -61,18 +51,12 @@ function GetConsumerLinks(
     resourceIndexService: ILiteSceneResourceIndexService,
     selectionService: ISelectionService
 ): readonly TextureMetadataConsumerLink[] {
-    if (!record) {
-        return [];
-    }
-
-    return record.consumers.map((consumer, index) => {
+    return (record?.consumers ?? []).map((consumer, index) => {
         const materialRecord = GetMaterialRecord(resourceIndexService, consumer.material);
-        const binding = materialRecord?.bindings.find((candidate) => candidate.id === consumer.bindingId);
-        const materialName = materialRecord?.inspection.displayName ?? "Unavailable material";
         return {
             id: `consumer-${index}-${consumer.bindingId}`,
-            label: binding?.label ?? consumer.bindingId,
-            value: materialName,
+            label: consumer.bindingId,
+            value: materialRecord?.displayName ?? "Unavailable material",
             navigate: materialRecord
                 ? () => {
                       const currentRecord = resourceIndexService.index.getTextureRecord(texture);
@@ -98,71 +82,66 @@ function GetConsumerScenes(record: ILiteTextureResourceRecord | undefined, resou
 }
 
 function SupportsTransform(record: ILiteTextureResourceRecord | undefined, resourceIndexService: ILiteSceneResourceIndexService): boolean {
-    if (!record || record.inspection.kind !== "2d" || record.inspection.transform.state !== "present") {
+    if (!record || record.metadata.kind !== "2d" || !hasTextureTransform(record.entity as Texture2D)) {
         return false;
     }
-
     return record.consumers.some((consumer) => {
         const materialRecord = GetMaterialRecord(resourceIndexService, consumer.material);
-        const family = materialRecord?.inspection.family;
-        const binding = materialRecord?.bindings.find((candidate) => candidate.id === consumer.bindingId);
         return (
-            (family === "standard" || family === "pbr") &&
-            binding?.value.state === "present" &&
-            binding.value.value.entity === record.entity &&
-            binding.transform.state === "present"
+            (materialRecord?.family === "standard" || materialRecord?.family === "pbr") &&
+            consumer.bindingId !== "standard.reflection2d" &&
+            consumer.bindingId !== "standard.reflectionCube" &&
+            materialRecord.bindings.some((binding) => binding.id === consumer.bindingId && binding.entity === record.entity)
         );
     });
 }
 
-function GetMetadataRows(inspection: TextureInspection, ordinal: number | undefined): readonly TextureMetadataRow[] {
+function GetMetadataRows(metadata: TextureMetadata, ordinal: number | undefined, texture: object): readonly TextureMetadataRow[] {
     const rows: TextureMetadataRow[] = [
         { id: "identity", label: "Identity", value: ordinal === undefined ? "Unindexed texture" : `Texture ${ordinal}` },
-        DatumRow("name", "Name", inspection.displayName),
-        { id: "kind", label: "Kind", value: inspection.kind },
-        DatumRow("origin", "Origin", inspection.origin),
-        { id: "width", label: "Width", value: inspection.width, units: "px" },
-        { id: "height", label: "Height", value: inspection.height, units: "px" },
+        OptionalRow("name", "Name", metadata.name),
+        { id: "kind", label: "Kind", value: metadata.kind },
+        OptionalRow("origin", "Origin", metadata.origin),
+        OptionalRow("width", "Width", metadata.width, "px"),
+        OptionalRow("height", "Height", metadata.height, "px"),
     ];
-
-    if (inspection.kind === "2d-array") {
-        rows.push(DatumRow("layers", "Layers", inspection.depthOrLayers));
-    } else if (inspection.kind === "3d") {
-        rows.push(DatumRow("depth", "Depth", inspection.depthOrLayers));
-    } else if (inspection.kind === "cube") {
-        rows.push(DatumRow("faces", "Faces", inspection.depthOrLayers));
+    if (metadata.kind === "2d-array") {
+        rows.push(OptionalRow("layers", "Layers", metadata.layers));
+    } else if (metadata.kind === "3d") {
+        rows.push(OptionalRow("depth", "Depth", metadata.depth));
+    } else if (metadata.kind === "cube") {
+        rows.push({ id: "faces", label: "Faces", value: "6" });
     }
-
     rows.push(
-        DatumRow("format", "Format", inspection.format),
-        DatumRow("mip-levels", "Mip Levels", inspection.mipLevelCount),
-        { id: "sample-category", label: "Sample Category", value: inspection.sampleCategory },
-        { id: "color-space", label: "Color Space", value: inspection.colorSpace },
-        ValueRow("invert-y", "Invert Y", inspection.invertY),
-        DatumRow("address-u", "Address U", inspection.sampler.addressModeU),
-        DatumRow("address-v", "Address V", inspection.sampler.addressModeV),
-        DatumRow("address-w", "Address W", inspection.sampler.addressModeW),
-        DatumRow("min-filter", "Min Filter", inspection.sampler.minFilter),
-        DatumRow("mag-filter", "Mag Filter", inspection.sampler.magFilter),
-        DatumRow("mipmap-filter", "Mipmap Filter", inspection.sampler.mipmapFilter),
-        DatumRow("anisotropy", "Max Anisotropy", inspection.sampler.maxAnisotropy),
-        DatumRow("dynamic-update", "Dynamic Update", inspection.capabilities.dynamicUpdate),
-        DatumRow("html-readiness", "HTML Readiness", inspection.capabilities.htmlReadiness),
-        DatumRow("render-attachment", "Render Attachment", inspection.capabilities.renderAttachment),
-        { id: "sampled-depth", label: "Sampled Depth", value: inspection.capabilities.sampledDepth },
-        DatumRow("released", "Released", inspection.capabilities.released)
+        OptionalRow("format", "Format", metadata.format),
+        OptionalRow("mip-levels", "Mip Levels", metadata.mipLevelCount),
+        OptionalRow("sample-type", "Sample Type", metadata.sampleType),
+        OptionalRow("color-space", "Color Space", metadata.colorSpace),
+        OptionalRow("invert-y", "Invert Y", metadata.invertY),
+        OptionalRow("address-u", "Address U", metadata.sampler?.addressModeU),
+        OptionalRow("address-v", "Address V", metadata.sampler?.addressModeV),
+        OptionalRow("address-w", "Address W", metadata.sampler?.addressModeW),
+        OptionalRow("min-filter", "Min Filter", metadata.sampler?.minFilter),
+        OptionalRow("mag-filter", "Mag Filter", metadata.sampler?.magFilter),
+        OptionalRow("mipmap-filter", "Mipmap Filter", metadata.sampler?.mipmapFilter),
+        OptionalRow("anisotropy", "Max Anisotropy", metadata.sampler?.maxAnisotropy),
+        OptionalRow("dynamic-update", "Dynamic Update", metadata.capabilities.dynamicUpdate),
+        OptionalRow("render-attachment", "Render Attachment", metadata.capabilities.renderAttachment),
+        OptionalRow("sampled-depth", "Sampled Depth", metadata.capabilities.sampledDepth)
     );
-
-    if (inspection.width === 0 || inspection.height === 0) {
+    if (metadata.kind === "2d") {
+        rows.push(OptionalRow("coordinates", "Coordinate Index", getTextureCoordinateIndex(texture as Texture2D)));
+    }
+    if (metadata.width === 0 || metadata.height === 0) {
         rows.push({ id: "availability", label: "Availability", value: "Transient or unavailable" });
     }
     return rows;
 }
 
 function GetTransformFields(
-    transform: TextureInspectionTransform,
+    transform: TextureTransform,
     operations: Readonly<Record<string, { pending: boolean; error?: string } | undefined>>,
-    commit: (id: string, transform: TextureInspectionTransform) => void
+    commit: (id: string, transform: TextureTransform) => void
 ): readonly MaterialPropertyModel[] {
     const definitions = [
         ["uScale", "U Scale"],
@@ -188,19 +167,16 @@ function GetTransformFields(
 
 /**
  * Lazily adapts one exact Lite texture wrapper to the runtime-neutral metadata component.
- * @param props The selected wrapper and Inspector-owned services.
- * @returns Metadata, consumer links, and supported transform controls.
+ * @param props - The exact texture, resource index, and selection service.
+ * @returns The metadata-only texture properties UI.
  */
 export const LiteTextureMetadataAdapter: FunctionComponent<LiteTextureMetadataAdapterProps> = (props) => {
     const { texture, resourceIndexService, selectionService } = props;
     const getSnapshot = useCallback(() => {
         const record = resourceIndexService.index.getTextureRecord(texture);
-        if (record) {
-            return { inspection: record.inspection, record };
-        }
         try {
-            const inspection = inspectTexture(texture);
-            return inspection ? { inspection, record: undefined } : undefined;
+            const metadata = getTextureMetadata(texture);
+            return metadata ? { metadata, record } : undefined;
         } catch {
             return undefined;
         }
@@ -217,9 +193,10 @@ export const LiteTextureMetadataAdapter: FunctionComponent<LiteTextureMetadataAd
         return <TextureMetadataProperties model={{ rows: [], error: "This texture is unavailable or malformed." }} />;
     }
 
-    const { inspection, record } = snapshot;
+    const { metadata, record } = snapshot;
     const canEditTransform = SupportsTransform(record, resourceIndexService);
-    const commitTransform = (id: string, transform: TextureInspectionTransform) => {
+    const transform = canEditTransform ? getTextureTransform(texture as Texture2D) : undefined;
+    const commitTransform = (id: string, transform: TextureTransform) => {
         runLatestOperation({
             id,
             operationAsync: async () => {
@@ -227,22 +204,58 @@ export const LiteTextureMetadataAdapter: FunctionComponent<LiteTextureMetadataAd
                 if (!currentRecord) {
                     throw new Error("This texture is no longer available in an inspected scene.");
                 }
+                const consumerRecords = currentRecord.consumers.map((consumer) => GetMaterialRecord(resourceIndexService, consumer.material));
+                if (consumerRecords.some((item) => item === undefined || item.scenes.length === 0)) {
+                    throw new Error("The texture has an incomplete owning scene scope.");
+                }
                 const scenes = [...GetConsumerScenes(currentRecord, resourceIndexService)];
-                return await setTextureInspectionTransform({ scenes }, texture, transform);
+                const materialRecords = [
+                    ...new Set(consumerRecords.filter((item): item is ILiteMaterialResourceRecord => item !== undefined && (item.family === "standard" || item.family === "pbr"))),
+                ];
+                if (scenes.length === 0 || materialRecords.length === 0) {
+                    throw new Error("The texture has no complete owning scene scope.");
+                }
+                const currentTransform = getTextureTransform(texture as Texture2D);
+                if (
+                    currentTransform &&
+                    currentTransform.uOffset === transform.uOffset &&
+                    currentTransform.vOffset === transform.vOffset &&
+                    currentTransform.uScale === transform.uScale &&
+                    currentTransform.vScale === transform.vScale &&
+                    currentTransform.uAng === transform.uAng
+                ) {
+                    return false;
+                }
+                const changed = setTextureTransform(texture as Texture2D, transform);
+                if (!changed) {
+                    return false;
+                }
+                await Promise.all(
+                    materialRecords.flatMap((materialRecord) => {
+                        const requiresRebuild = enableMaterialUvTransform(materialRecord.source);
+                        markMaterialUboDirty(materialRecord.source);
+                        return requiresRebuild
+                            ? materialRecord.scenes.map(
+                                  async (scene) =>
+                                      await Promise.resolve(rebuildMaterial(scene, materialRecord.source, { awaitCompletion: true, rebuildViews: true, rebuildFrameGraph: false }))
+                              )
+                            : [];
+                    })
+                );
+                return true;
             },
             onSuccess: () => resourceIndexService.refresh(),
             getErrorMessage: (error) => (error instanceof Error ? error.message : "The texture transform change failed."),
         });
     };
     const model: TextureMetadataModel = {
-        rows: GetMetadataRows(inspection, record?.ordinal),
+        rows: GetMetadataRows(metadata, record?.ordinal, texture),
         consumers: GetConsumerLinks(texture, record, resourceIndexService, selectionService),
-        transform:
-            canEditTransform && inspection.transform.state === "present"
-                ? {
-                      fields: GetTransformFields(inspection.transform.value, operations, commitTransform),
-                  }
-                : undefined,
+        transform: transform
+            ? {
+                  fields: GetTransformFields(transform, operations, commitTransform),
+              }
+            : undefined,
     };
     return <TextureMetadataProperties model={model} />;
 };

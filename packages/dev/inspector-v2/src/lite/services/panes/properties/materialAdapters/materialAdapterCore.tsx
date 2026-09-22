@@ -1,17 +1,4 @@
-import {
-    inspectMaterial,
-    setMaterialInspectionProperty,
-    setMaterialInspectionTexture,
-    type Material,
-    type MaterialInspection,
-    type MaterialInspectionProperty,
-    type MaterialInspectionPropertyId,
-    type MaterialInspectionPropertyValue,
-    type MaterialInspectionSection,
-    type MaterialTextureBinding,
-    type MaterialTextureMutation,
-    type TextureBindingKind,
-} from "@babylonjs/lite";
+import { type Material } from "@babylonjs/lite";
 import { Fragment, type FunctionComponent, useCallback } from "react";
 
 import { MaterialPropertySection, type MaterialMatrix4Value, type MaterialPropertyModel } from "shared-ui-components/fluent/hoc/propertyLines/materialPropertyLine";
@@ -23,12 +10,28 @@ import { usePropertyChangedNotifier } from "../../../../../contexts/propertyCont
 import { type ISelectionService } from "../../../../../services/selectionService";
 import { type ILiteSceneResourceIndexService } from "../../scene/sceneResourceIndexService";
 import { type ILiteMaterialResourceRecord, type ILiteTextureResourceRecord } from "../../scene/sceneResources";
+import {
+    CreateMaterialDescriptorWithFamily,
+    SetMaterialDescriptorPropertyWithFamily,
+    SetMaterialDescriptorTextureWithFamily,
+    type IMaterialDescriptorFamilyDescriptor,
+} from "../descriptors/materialDescriptor";
+import {
+    type IMaterialDescriptor,
+    type IMaterialDescriptorProperty,
+    type MaterialDescriptorPropertyId,
+    type MaterialDescriptorPropertyValue,
+    type MaterialDescriptorSection,
+    type IMaterialTextureBinding,
+    type MaterialTextureMutation,
+    type TextureBindingKind,
+} from "../descriptors/descriptorTypes";
 import { useLatestAsyncOperation } from "../useLatestAsyncOperation";
 
 /** Props shared by each lazily loaded Lite material family adapter. */
 export type LiteMaterialAdapterProps = Readonly<{
     material: Material;
-    section: MaterialInspectionSection;
+    section: MaterialDescriptorSection;
     resourceIndexService: ILiteSceneResourceIndexService;
     selectionService: ISelectionService;
 }>;
@@ -36,15 +39,16 @@ export type LiteMaterialAdapterProps = Readonly<{
 type MaterialFamilyAdapterProps = LiteMaterialAdapterProps &
     Readonly<{
         family: "standard" | "pbr" | "shader" | "node";
-        colorProperties?: ReadonlySet<MaterialInspectionPropertyId>;
-        getBindingSection?: (binding: MaterialTextureBinding) => MaterialInspectionSection;
+        familyDescriptor: IMaterialDescriptorFamilyDescriptor;
+        colorProperties?: ReadonlySet<MaterialDescriptorPropertyId>;
+        getBindingSection?: (binding: IMaterialTextureBinding) => MaterialDescriptorSection;
     }>;
 
-function FormatInspectionValue(value: MaterialInspectionPropertyValue): string {
+function FormatDescriptorValue(value: MaterialDescriptorPropertyValue): string {
     return Array.isArray(value) ? `[${value.join(", ")}]` : String(value);
 }
 
-function GetUnavailablePropertyModel(property: MaterialInspectionProperty): MaterialPropertyModel {
+function GetUnavailablePropertyModel(property: IMaterialDescriptorProperty): MaterialPropertyModel {
     const value = property.value.state === "absent" ? "Not configured" : property.value.state === "unsupported" ? `Unavailable: ${property.value.reason}` : "Unavailable";
     return {
         kind: "readonly",
@@ -59,11 +63,11 @@ function GetTextureDisplayName(record: ILiteTextureResourceRecord | undefined): 
     if (!record) {
         return "Texture";
     }
-    if (record.inspection.displayName.state === "known" && record.inspection.displayName.value) {
-        return record.inspection.displayName.value;
+    if (record.metadata.name) {
+        return record.metadata.name;
     }
 
-    const kind = record.inspection.kind === "cube" ? "Cube" : record.inspection.kind === "3d" ? "3D" : record.inspection.kind === "2d-array" ? "2D Array" : "2D";
+    const kind = record.metadata.kind === "cube" ? "Cube" : record.metadata.kind === "3d" ? "3D" : record.metadata.kind === "2d-array" ? "2D Array" : "2D";
     return `${kind} Texture ${record.ordinal}`;
 }
 
@@ -87,23 +91,22 @@ function GetCandidates(record: ILiteMaterialResourceRecord, resourceIndexService
  * @returns Runtime-neutral property and texture binding rows.
  */
 export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapterProps> = (props) => {
-    const { material, section, resourceIndexService, selectionService, family, colorProperties, getBindingSection } = props;
-    let selectedInspection: MaterialInspection | undefined;
+    const { material, section, resourceIndexService, selectionService, family, familyDescriptor, colorProperties, getBindingSection } = props;
+    let selectedDescriptor: IMaterialDescriptor | undefined;
     try {
-        selectedInspection = inspectMaterial(material);
+        selectedDescriptor = CreateMaterialDescriptorWithFamily(material, familyDescriptor);
     } catch {
         // The selected wrapper may have become stale before the resource index publishes its next snapshot.
     }
-    const source = selectedInspection?.source;
-    const isView = selectedInspection?.isView ?? false;
-    const getInspection = useCallback(() => {
+    const source = selectedDescriptor?.source;
+    const getDescriptor = useCallback(() => {
         if (!source) {
             return undefined;
         }
         const record = resourceIndexService.index.getMaterialRecord(source);
-        return record ? ({ ...record.inspection, isView } satisfies MaterialInspection) : undefined;
-    }, [isView, resourceIndexService, source]);
-    const inspection = useObservableState(getInspection, resourceIndexService.onChanged);
+        return record ? CreateMaterialDescriptorWithFamily(material, familyDescriptor) : undefined;
+    }, [familyDescriptor, material, resourceIndexService, source]);
+    const descriptorSnapshot = useObservableState(getDescriptor, resourceIndexService.onChanged);
     const isResourceIndexDisposed = useCallback(() => resourceIndexService.isDisposed, [resourceIndexService]);
     const [operations, runLatestOperation] = useLatestAsyncOperation(
         material,
@@ -112,11 +115,11 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
     );
     const notifyPropertyChanged = usePropertyChangedNotifier();
 
-    if (!inspection || !source) {
+    if (!descriptorSnapshot || !source) {
         return <TextPropertyLine label="Error" value="This material is no longer available in an inspected scene." />;
     }
-    if (inspection.family !== family) {
-        return <TextPropertyLine label="Error" value={`The material family changed from ${family} to ${inspection.family ?? "unknown"}.`} />;
+    if (descriptorSnapshot.family !== family) {
+        return <TextPropertyLine label="Error" value={`The material family changed from ${family} to ${descriptorSnapshot.family ?? "unknown"}.`} />;
     }
 
     const getCurrentRecord = (): ILiteMaterialResourceRecord => {
@@ -127,14 +130,14 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
         return record;
     };
 
-    const commitProperty = (property: MaterialInspectionProperty, value: MaterialInspectionPropertyValue) => {
+    const commitProperty = (property: IMaterialDescriptorProperty, value: MaterialDescriptorPropertyValue) => {
         const oldValue = property.value.state === "present" ? property.value.value : undefined;
         runLatestOperation({
             id: property.id,
             operationAsync: async () => {
                 const record = getCurrentRecord();
                 const scenes = [...record.scenes];
-                return await setMaterialInspectionProperty({ scenes }, material, property.id, value);
+                return await SetMaterialDescriptorPropertyWithFamily({ scenes }, material, property.id, value, familyDescriptor);
             },
             onSuccess: (result) => {
                 if (result.changed && oldValue !== undefined) {
@@ -146,14 +149,14 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
         });
     };
 
-    const toPropertyModel = (property: MaterialInspectionProperty): MaterialPropertyModel => {
+    const toPropertyModel = (property: IMaterialDescriptorProperty): MaterialPropertyModel => {
         if (property.value.state !== "present" || property.access.access !== "read-write" || property.valueType === "summary") {
             if (property.value.state === "present") {
                 return {
                     kind: "readonly",
                     id: property.id,
                     label: property.label,
-                    value: FormatInspectionValue(property.value.value),
+                    value: FormatDescriptorValue(property.value.value),
                     description: property.access.access === "read-only" ? property.access.reason : undefined,
                 };
             }
@@ -244,11 +247,11 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
         }
     };
 
-    const properties = inspection.properties.filter((property) => property.section === section).map(toPropertyModel);
+    const properties = descriptorSnapshot.properties.filter((property) => property.section === section).map(toPropertyModel);
     const record = resourceIndexService.index.getMaterialRecord(source);
     const candidates = record ? GetCandidates(record, resourceIndexService) : [];
-    const textureBindings = inspection.textureBindings.filter((binding) => (getBindingSection?.(binding) ?? "textures") === section);
-    const toTextureModel = (binding: MaterialTextureBinding): MaterialTextureBindingModel<object> => {
+    const textureBindings = descriptorSnapshot.textureBindings.filter((binding) => (getBindingSection?.(binding) ?? "textures") === section);
+    const toTextureModel = (binding: IMaterialTextureBinding): MaterialTextureBindingModel<object> => {
         const current = binding.value.state === "present" ? binding.value.value.entity : null;
         const bindingOperation = operations[binding.id];
         const pending = bindingOperation?.pending ?? false;
@@ -258,7 +261,7 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
                 operationAsync: async () => {
                     const currentRecord = getCurrentRecord();
                     const scenes = [...currentRecord.scenes];
-                    return await setMaterialInspectionTexture({ scenes }, material, binding.id, mutation);
+                    return await SetMaterialDescriptorTextureWithFamily({ scenes }, material, binding.id, mutation, familyDescriptor);
                 },
                 onSuccess: () => resourceIndexService.refresh(),
                 getErrorMessage: (error) => (error instanceof Error ? error.message : "The material texture change failed."),
@@ -281,14 +284,14 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
             candidates,
             getId: (texture) => String(resourceIndexService.index.getTextureRecord(texture)?.ordinal ?? candidates.indexOf(texture)),
             getDisplayName: (texture) => GetTextureDisplayName(resourceIndexService.index.getTextureRecord(texture)),
-            getKind: (texture) => (resourceIndexService.index.getTextureRecord(texture)?.inspection.kind ?? "unknown") as TextureBindingKind,
+            getKind: (texture) => (resourceIndexService.index.getTextureRecord(texture)?.metadata.kind ?? "unknown") as TextureBindingKind,
             acceptedKinds: binding.acceptedKinds,
             isCandidateAccepted: (texture) => {
                 const textureRecord = resourceIndexService.index.getTextureRecord(texture);
                 return (
                     textureRecord !== undefined &&
-                    binding.acceptedKinds.includes(textureRecord.inspection.kind as TextureBindingKind) &&
-                    textureRecord.inspection.sampleCategory === binding.sampleCategory
+                    binding.acceptedKinds.includes(textureRecord.metadata.kind as TextureBindingKind) &&
+                    (textureRecord.metadata.sampleType === "depth" ? "depth" : "color") === binding.sampleCategory
                 );
             },
             write,
@@ -296,7 +299,7 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
                 current && binding.directions.includes("navigate")
                     ? (texture) => {
                           const currentBinding = resourceIndexService.index.getMaterialRecord(source)?.bindings.find((candidate) => candidate.id === binding.id);
-                          if (!resourceIndexService.isDisposed && currentBinding?.value.state === "present" && currentBinding.value.value.entity === texture) {
+                          if (!resourceIndexService.isDisposed && currentBinding?.entity === texture) {
                               selectionService.selectedEntity = texture;
                           }
                       }
@@ -310,9 +313,9 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
         <Fragment>
             {section === "general" ? (
                 <>
-                    <TextPropertyLine label="Family" value={inspection.family} />
-                    <TextPropertyLine label="Selection" value={inspection.isView ? "MaterialView" : "Material"} />
-                    {inspection.isView ? <TextPropertyLine label="Source" value={inspection.displayName} /> : undefined}
+                    <TextPropertyLine label="Family" value={descriptorSnapshot.family} />
+                    <TextPropertyLine label="Selection" value={descriptorSnapshot.isView ? "MaterialView" : "Material"} />
+                    {descriptorSnapshot.isView ? <TextPropertyLine label="Source" value={descriptorSnapshot.displayName} /> : undefined}
                 </>
             ) : undefined}
             {properties.length ? <MaterialPropertySection model={{ fields: properties }} /> : undefined}

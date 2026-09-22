@@ -8,13 +8,12 @@ import { type ILiteSceneResourceIndexService, LiteSceneResourceIndexServiceIdent
 import { type ILiteTextureResourceRecord } from "./sceneResources";
 
 function GetTextureDisplayName(record: ILiteTextureResourceRecord): string {
-    if (record.inspection.kind === "cube") {
+    if (record.metadata.kind === "cube") {
         return `Texture ${record.ordinal} (Cube)`;
     }
 
-    const texture = record.entity as { width?: unknown; height?: unknown };
-    return typeof texture.width === "number" && typeof texture.height === "number"
-        ? `Texture ${record.ordinal} (${texture.width} x ${texture.height})`
+    return typeof record.metadata.width === "number" && typeof record.metadata.height === "number"
+        ? `Texture ${record.ordinal} (${record.metadata.width} x ${record.metadata.height})`
         : `Texture ${record.ordinal}`;
 }
 

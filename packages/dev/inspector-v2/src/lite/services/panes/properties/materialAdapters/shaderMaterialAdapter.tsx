@@ -1,5 +1,6 @@
 import { type FunctionComponent } from "react";
 
+import { ShaderMaterialDescriptor } from "../descriptors/shaderDescriptor";
 import { LiteMaterialAdapterSection, type LiteMaterialAdapterProps } from "./materialAdapterCore";
 
 /**
@@ -8,5 +9,5 @@ import { LiteMaterialAdapterSection, type LiteMaterialAdapterProps } from "./mat
  * @returns Shader material property content.
  */
 export const ShaderMaterialAdapter: FunctionComponent<LiteMaterialAdapterProps> = (props) => {
-    return <LiteMaterialAdapterSection {...props} family="shader" />;
+    return <LiteMaterialAdapterSection {...props} family="shader" familyDescriptor={ShaderMaterialDescriptor} />;
 };

@@ -1,4 +1,4 @@
-import { inspectTexture } from "@babylonjs/lite";
+import { getTextureMetadata } from "@babylonjs/lite";
 import { createElement, type FunctionComponent } from "react";
 
 import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
@@ -12,12 +12,12 @@ const LiteTextureMetadataAdapter = MakeLazyComponent(async () => (await import("
     spinnerLabel: "Loading texture metadata",
 });
 
-function TryInspectTexture(entity: unknown): entity is object {
+function TryGetTextureMetadata(entity: unknown): entity is object {
     if (typeof entity !== "object" || entity === null) {
         return false;
     }
     try {
-        return inspectTexture(entity) !== undefined;
+        return getTextureMetadata(entity) !== undefined;
     } catch {
         return false;
     }
@@ -34,7 +34,7 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                 if (typeof entity !== "object" || entity === null) {
                     return false;
                 }
-                if (TryInspectTexture(entity) || resourceIndexService.index.getTextureRecord(entity)) {
+                if (TryGetTextureMetadata(entity) || resourceIndexService.index.getTextureRecord(entity)) {
                     recognizedTextures.add(entity);
                     return true;
                 }

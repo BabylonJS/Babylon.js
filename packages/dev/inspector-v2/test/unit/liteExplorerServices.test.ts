@@ -30,6 +30,40 @@ const { PaneRegistrations } = vi.hoisted(() => ({
     PaneRegistrations: [] as { options: import("../../src/services/panes/explorer/explorerPane").ExplorerPaneOptions; dispose: ReturnType<typeof vi.fn> }[],
 }));
 
+vi.mock("@babylonjs/lite", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@babylonjs/lite")>();
+    const field = (name: string) => (material: Record<string, unknown>) => material[name];
+    return {
+        ...original,
+        getMaterialSource: (material: { source?: object }) => material.source ?? material,
+        getMaterialFamily: (material: { source?: { family?: string }; family?: string }) => material.source?.family ?? material.family,
+        getStandardEmissiveTexture: field("emissiveTexture"),
+        getStandardBumpTexture: field("bumpTexture"),
+        getStandardSpecularTexture: field("specularTexture"),
+        getStandardAmbientTexture: field("ambientTexture"),
+        getStandardLightmapTexture: field("lightmapTexture"),
+        getStandardOpacityTexture: field("opacityTexture"),
+        getStandardReflectionTexture: field("reflectionTexture"),
+        getStandardReflectionCubeTexture: field("reflectionCubeTexture"),
+        getPbrMetallicReflectance: field("metallicReflectance"),
+        getPbrClearCoat: field("clearCoat"),
+        getPbrSheen: field("sheen"),
+        getPbrIridescence: field("iridescence"),
+        getPbrAnisotropy: field("anisotropy"),
+        getPbrSubsurface: field("subsurface"),
+        getPbrTransmission: (material: Record<string, any>) => material.subsurface?.refraction,
+        getShaderTexture: (material: Record<string, any>, name: string) => material.textures?.[name],
+        getTextureMetadata: (texture: Record<string, any>) => ({
+            ...texture.metadata,
+            width: texture.width ?? texture.metadata?.width,
+            height: texture.height ?? texture.metadata?.height,
+        }),
+        getTextureCoordinateIndex: (texture: Record<string, unknown>) => texture.coordinateIndex,
+        hasTextureTransform: (texture: Record<string, unknown>) => texture.transform !== undefined,
+        getTextureTransform: (texture: Record<string, unknown>) => texture.transform,
+    };
+});
+
 vi.mock("../../src/services/panes/explorer/explorerPane", () => ({
     CreateExplorerPaneRegistration: (_shellService: unknown, _selectionService: unknown, options: import("../../src/services/panes/explorer/explorerPane").ExplorerPaneOptions) => {
         const dispose = vi.fn();
@@ -60,16 +94,11 @@ import { GetExplorerNodeChildren, type IExplorerService, ExplorerServiceIdentity
 import { type IShellService } from "shared-ui-components/modularTool/services/shellService";
 
 function CreateMaterial(family: string, name: string, texture?: Texture2D): Material {
-    return Object.assign(
-        {
-            name,
-            ...(family === "standard" ? { diffuseTexture: texture ?? null } : { baseColorTexture: texture }),
-        } as Material,
-        {
-            _buildGroup: { _materialFamily: family },
-            _uboVersion: 0,
-        }
-    );
+    return {
+        family,
+        name,
+        ...(family === "standard" ? { diffuseTexture: texture ?? null } : { baseColorTexture: texture }),
+    } as unknown as Material;
 }
 
 function CreateMesh(name: string, material: Material): Mesh {
@@ -93,17 +122,15 @@ function CreateTexture(seed: number, texture?: GPUTexture): Texture2D {
         texture: texture ?? ({ seed, width: 8, height: 4, format: "rgba8unorm", mipLevelCount: 1 } as unknown as GPUTexture),
         view: { seed } as unknown as GPUTextureView,
         sampler: { seed } as unknown as GPUSampler,
-        width: 8,
-        height: 4,
-        _sampleType: "float",
-    };
+        width: texture?.width ?? 8,
+        height: texture?.height ?? 4,
+        metadata: { kind: "2d", width: texture?.width ?? 8, height: texture?.height ?? 4, format: "rgba8unorm", mipLevelCount: 1, sampleType: "float", capabilities: {} },
+    } as unknown as Texture2D;
 }
 
 function CreateCubeTexture(seed: number): CubeTexture {
     return {
-        _texture: { seed, width: 16, height: 16, format: "rgba8unorm", mipLevelCount: 1 } as unknown as GPUTexture,
-        _view: { seed } as unknown as GPUTextureView,
-        _sampler: { seed } as unknown as GPUSampler,
+        metadata: { kind: "cube", width: 16, height: 16, format: "rgba8unorm", mipLevelCount: 1, sampleType: "float", capabilities: {} },
     } as CubeTexture;
 }
 
@@ -241,7 +268,7 @@ describe("Babylon Lite engine explorer service", () => {
             const cloneTexture = CreateTexture(2, sharedGpuTexture);
             const cubeTexture = CreateCubeTexture(3);
             const standard = Object.assign(CreateMaterial("standard", "Standard", sharedTexture), {
-                _reflectionCubeTexture: cubeTexture,
+                reflectionCubeTexture: cubeTexture,
             });
             const shader = Object.assign(CreateMaterial("shader", "Shader"), {
                 uniformDecls: [],
@@ -253,11 +280,7 @@ describe("Babylon Lite engine explorer service", () => {
                 storageBufferDecls: [],
                 attributes: [],
                 defines: [],
-                _textureSlots: new Map([
-                    ["shared", { current: sharedTexture }],
-                    ["sharedAgain", { current: sharedTexture }],
-                    ["clone", { current: cloneTexture }],
-                ]),
+                textures: { shared: sharedTexture, sharedAgain: sharedTexture, clone: cloneTexture },
             });
             const node = Object.assign(CreateMaterial("node", "Node"), {
                 inputs: {
@@ -286,11 +309,11 @@ describe("Babylon Lite engine explorer service", () => {
             expect(snapshotA.materials.map(({ source }) => source)).toEqual([standard, shader, node]);
             expect(snapshotB.materials.map(({ source }) => source)).toEqual([standard]);
             expect(snapshotA.materials[0].scenes).toEqual([sceneA, sceneB]);
-            expect(snapshotA.materials[0].inspection.source).toBe(standard);
+            expect(snapshotA.materials[0]).toMatchObject({ source: standard, family: "standard", displayName: "Standard" });
             expect(snapshotA.textures.map(({ entity }) => entity)).toEqual([sharedTexture, cubeTexture, cloneTexture]);
             expect(snapshotA.textures.map(({ ordinal }) => ordinal)).toEqual([1, 2, 3]);
             expect(snapshotB.textures.map(({ entity }) => entity)).toEqual([sharedTexture, cubeTexture]);
-            expect(index.getTextureRecord(cubeTexture)?.inspection.kind).toBe("cube");
+            expect(index.getTextureRecord(cubeTexture)?.metadata.kind).toBe("cube");
             expect(index.getTextureRecord(sharedTexture)?.consumers).toEqual([
                 { material: standard, bindingId: "standard.diffuse" },
                 { material: shader, bindingId: "shader.sampler:shared" },
@@ -661,7 +684,7 @@ describe("Babylon Lite scene resource explorer services", () => {
         const cubeTexture = CreateCubeTexture(2);
         const customTexture = CreateTexture(3);
         const standard = Object.assign(CreateMaterial("standard", "Standard", sharedTexture), {
-            _reflectionCubeTexture: cubeTexture,
+            reflectionCubeTexture: cubeTexture,
         });
         const shader = Object.assign(CreateMaterial("shader", "Shader"), {
             uniformDecls: [],
@@ -672,10 +695,7 @@ describe("Babylon Lite scene resource explorer services", () => {
             storageBufferDecls: [],
             attributes: [],
             defines: [],
-            _textureSlots: new Map([
-                ["shared", { current: sharedTexture }],
-                ["custom", { current: customTexture }],
-            ]),
+            textures: { shared: sharedTexture, custom: customTexture },
         });
         const node = Object.assign(CreateMaterial("node", "Node"), {
             inputs: {

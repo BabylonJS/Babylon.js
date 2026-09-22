@@ -1,5 +1,6 @@
 import { type FunctionComponent } from "react";
 
+import { NodeMaterialDescriptor } from "../descriptors/nodeDescriptor";
 import { LiteMaterialAdapterSection, type LiteMaterialAdapterProps } from "./materialAdapterCore";
 
 /**
@@ -8,5 +9,5 @@ import { LiteMaterialAdapterSection, type LiteMaterialAdapterProps } from "./mat
  * @returns Node material property content.
  */
 export const NodeMaterialAdapter: FunctionComponent<LiteMaterialAdapterProps> = (props) => {
-    return <LiteMaterialAdapterSection {...props} family="node" getBindingSection={() => "inputs"} />;
+    return <LiteMaterialAdapterSection {...props} family="node" familyDescriptor={NodeMaterialDescriptor} getBindingSection={() => "inputs"} />;
 };

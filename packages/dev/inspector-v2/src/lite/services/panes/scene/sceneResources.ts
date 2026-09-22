@@ -1,86 +1,65 @@
 import {
+    getMaterialFamily,
+    getMaterialSource,
     getRenderingContextKind,
     getRenderingContexts,
-    inspectMaterial,
-    inspectTexture,
+    getTextureCoordinateIndex,
+    getTextureMetadata,
+    getTextureTransform,
+    hasTextureTransform,
     type EngineContext,
     type Material,
-    type MaterialInspection,
-    type MaterialTextureBinding,
-    type MaterialTextureBindingId,
     type SceneContext,
-    type TextureInspection,
+    type Texture2D,
+    type TextureMetadata,
 } from "@babylonjs/lite";
 
-/**
- * A source material reachable from one or more scenes in an inspected Lite engine.
- * @internal
- */
+import { GetLiteMaterialTopologyBindings, type ILiteMaterialTopologyBinding } from "./materialTopologyBindings";
+
+/** A source material reachable from one or more scenes in an inspected Lite engine. @internal */
 export interface ILiteMaterialResourceRecord {
-    /** The exact source material identity. */
     readonly source: Material;
-    /** A safe immutable inspection snapshot for the source. */
-    readonly inspection: MaterialInspection;
-    /** Every indexed scene that references the source. */
+    readonly family: string | undefined;
+    readonly displayName: string;
     readonly scenes: readonly SceneContext[];
-    /** Canonical material bindings in public API order. */
-    readonly bindings: readonly MaterialTextureBinding[];
+    readonly bindings: readonly ILiteMaterialTopologyBinding[];
 }
 
-/**
- * One canonical material binding that consumes a texture wrapper.
- * @internal
- */
+/** One canonical material binding that consumes a texture wrapper. @internal */
 export interface ILiteTextureConsumerRecord {
-    /** The exact source material identity. */
     readonly material: Material;
-    /** The canonical semantic binding identifier. */
-    readonly bindingId: MaterialTextureBindingId;
+    readonly bindingId: string;
 }
 
-/**
- * A texture wrapper reachable from one or more indexed material bindings.
- * @internal
- */
+/** A texture wrapper reachable from one or more indexed material bindings. @internal */
 export interface ILiteTextureResourceRecord {
-    /** The exact Lite texture wrapper identity. */
     readonly entity: object;
-    /** A safe immutable inspection snapshot for the wrapper. */
-    readonly inspection: TextureInspection;
-    /** The stable per-index ordinal assigned when the wrapper is first observed. */
+    readonly metadata: TextureMetadata;
     readonly ordinal: number;
-    /** Every canonical binding edge that consumes the wrapper. */
     readonly consumers: readonly ILiteTextureConsumerRecord[];
 }
 
-/**
- * Material and texture resources reachable from one Lite scene.
- * @internal
- */
+/** Material and texture resources reachable from one Lite scene. @internal */
 export interface ILiteSceneResourceSnapshot {
-    /** The scene represented by this snapshot. */
     readonly scene: SceneContext;
-    /** Source materials in first mesh-reference order. */
     readonly materials: readonly ILiteMaterialResourceRecord[];
-    /** Exact texture wrappers in first material and canonical binding order. */
     readonly textures: readonly ILiteTextureResourceRecord[];
 }
 
-/**
- * A public-state snapshot used to detect resource topology changes.
- * @internal
- */
+/** A public-state snapshot used to detect resource topology changes. @internal */
 export type LiteSceneResourceTopologySnapshot = readonly unknown[];
 
 type MaterialDraft = {
     readonly source: Material;
-    readonly inspection: MaterialInspection;
+    readonly family: string | undefined;
+    readonly displayName: string;
     readonly scenes: SceneContext[];
+    readonly bindings: readonly ILiteMaterialTopologyBinding[];
 };
 
 type TextureDraft = {
     readonly entity: object;
-    readonly inspection: TextureInspection;
+    readonly metadata: TextureMetadata;
     readonly ordinal: number;
     readonly consumers: ILiteTextureConsumerRecord[];
 };
@@ -89,98 +68,71 @@ function IsObject(value: unknown): value is object {
     return typeof value === "object" && value !== null;
 }
 
-function IsMaterialInspection(value: unknown): value is MaterialInspection {
-    return IsObject(value) && "source" in value && IsObject(value.source) && "textureBindings" in value && Array.isArray(value.textureBindings);
-}
-
-function GetPresentTextureEntity(binding: MaterialTextureBinding): object | undefined {
-    if (!IsObject(binding) || !("value" in binding) || !IsObject(binding.value) || binding.value.state !== "present" || !("value" in binding.value)) {
-        return undefined;
-    }
-
-    const value = binding.value.value;
-    return IsObject(value) && "entity" in value && IsObject(value.entity) ? value.entity : undefined;
-}
-
-function AppendInspectionValue(snapshot: unknown[], value: unknown): void {
-    if (!IsObject(value) || !("state" in value)) {
-        snapshot.push("invalid");
-        return;
-    }
-
-    snapshot.push(value.state);
-    if ("reason" in value) {
-        snapshot.push(value.reason);
-    }
-    if ("value" in value) {
-        const inspectionValue = value.value;
-        if (Array.isArray(inspectionValue)) {
-            snapshot.push(...inspectionValue);
-        } else if (IsObject(inspectionValue)) {
-            snapshot.push(
-                "uScale" in inspectionValue ? inspectionValue.uScale : undefined,
-                "vScale" in inspectionValue ? inspectionValue.vScale : undefined,
-                "uOffset" in inspectionValue ? inspectionValue.uOffset : undefined,
-                "vOffset" in inspectionValue ? inspectionValue.vOffset : undefined,
-                "uAng" in inspectionValue ? inspectionValue.uAng : undefined
-            );
-        } else {
-            snapshot.push(inspectionValue);
-        }
-    }
-}
-
-function AppendTextureInspection(snapshot: unknown[], inspection: TextureInspection | undefined): void {
-    if (!inspection) {
-        snapshot.push("stale-texture");
-        return;
-    }
-
-    snapshot.push(inspection.kind, inspection.width, inspection.height, inspection.sampleCategory, inspection.colorSpace);
-    AppendInspectionValue(snapshot, inspection.displayName);
-    AppendInspectionValue(snapshot, inspection.origin);
-    AppendInspectionValue(snapshot, inspection.depthOrLayers);
-    AppendInspectionValue(snapshot, inspection.format);
-    AppendInspectionValue(snapshot, inspection.mipLevelCount);
-    AppendInspectionValue(snapshot, inspection.invertY);
-    AppendInspectionValue(snapshot, inspection.transform);
-    AppendInspectionValue(snapshot, inspection.sampler.addressModeU);
-    AppendInspectionValue(snapshot, inspection.sampler.addressModeV);
-    AppendInspectionValue(snapshot, inspection.sampler.addressModeW);
-    AppendInspectionValue(snapshot, inspection.sampler.minFilter);
-    AppendInspectionValue(snapshot, inspection.sampler.magFilter);
-    AppendInspectionValue(snapshot, inspection.sampler.mipmapFilter);
-    AppendInspectionValue(snapshot, inspection.sampler.maxAnisotropy);
-    AppendInspectionValue(snapshot, inspection.capabilities.dynamicUpdate);
-    AppendInspectionValue(snapshot, inspection.capabilities.htmlReadiness);
-    AppendInspectionValue(snapshot, inspection.capabilities.renderAttachment);
-    AppendInspectionValue(snapshot, inspection.capabilities.released);
-    snapshot.push(inspection.capabilities.sampledDepth);
-}
-
-function GetSceneMaterialInspections(scene: SceneContext): readonly MaterialInspection[] {
+function GetSceneMaterials(scene: SceneContext): readonly Material[] {
     const sources = new Set<Material>();
-    const inspections: MaterialInspection[] = [];
+    const materials: Material[] = [];
     if (!Array.isArray(scene.meshes)) {
-        return inspections;
+        return materials;
     }
 
     for (const mesh of scene.meshes) {
         if (!IsObject(mesh) || !IsObject(mesh.material)) {
             continue;
         }
-
         try {
-            const inspection = inspectMaterial(mesh.material);
-            if (IsMaterialInspection(inspection) && !sources.has(inspection.source)) {
-                sources.add(inspection.source);
-                inspections.push(inspection);
+            const source = getMaterialSource(mesh.material);
+            if (!sources.has(source)) {
+                sources.add(source);
+                materials.push(source);
             }
         } catch {
-            // Ignore malformed or stale materials that the Lite inspection API cannot inspect.
+            // Stale or malformed materials are omitted until a later topology update.
         }
     }
-    return inspections;
+    return materials;
+}
+
+function AppendTextureState(snapshot: unknown[], texture: object): void {
+    try {
+        const metadata = getTextureMetadata(texture);
+        if (!metadata) {
+            snapshot.push("stale-texture");
+            return;
+        }
+        const texture2d = texture as Texture2D;
+        snapshot.push(
+            metadata.kind,
+            metadata.name,
+            metadata.origin,
+            metadata.width,
+            metadata.height,
+            metadata.layers,
+            metadata.depth,
+            metadata.format,
+            metadata.mipLevelCount,
+            metadata.sampleType,
+            metadata.colorSpace,
+            metadata.invertY,
+            metadata.sampler?.addressModeU,
+            metadata.sampler?.addressModeV,
+            metadata.sampler?.addressModeW,
+            metadata.sampler?.minFilter,
+            metadata.sampler?.magFilter,
+            metadata.sampler?.mipmapFilter,
+            metadata.sampler?.maxAnisotropy,
+            metadata.capabilities.renderAttachment,
+            metadata.capabilities.dynamicUpdate,
+            metadata.capabilities.sampledDepth,
+            getTextureCoordinateIndex(texture2d),
+            hasTextureTransform(texture2d)
+        );
+        if (hasTextureTransform(texture2d)) {
+            const transform = getTextureTransform(texture2d);
+            snapshot.push(transform?.uOffset, transform?.vOffset, transform?.uScale, transform?.vScale, transform?.uAng);
+        }
+    } catch {
+        snapshot.push("stale-texture");
+    }
 }
 
 /**
@@ -194,33 +146,30 @@ export class LiteSceneResourceIndex {
     private _textureOrdinals = new WeakMap<object, number>();
     private _nextTextureOrdinal = 1;
 
-    /**
-     * Creates an index for an inspected engine and captures its current resources.
-     * @param _engine The Lite engine owned by this Inspector instance.
-     */
     public constructor(private readonly _engine: EngineContext) {
         this.refresh();
     }
 
-    /**
-     * Rebuilds the resource topology from current public scene and binding state.
-     */
+    /** Rebuilds the resource topology from current public scene and binding state. */
     public refresh(): void {
         const scenes = this._getScenes();
         const sceneMaterials = new Map<SceneContext, readonly Material[]>();
         const materialDrafts = new Map<Material, MaterialDraft>();
 
         for (const scene of scenes) {
-            const inspections = GetSceneMaterialInspections(scene);
-            sceneMaterials.set(
-                scene,
-                inspections.map((inspection) => inspection.source)
-            );
-            for (const inspection of inspections) {
-                let draft = materialDrafts.get(inspection.source);
+            const materials = GetSceneMaterials(scene);
+            sceneMaterials.set(scene, materials);
+            for (const source of materials) {
+                let draft = materialDrafts.get(source);
                 if (!draft) {
-                    draft = { source: inspection.source, inspection, scenes: [] };
-                    materialDrafts.set(inspection.source, draft);
+                    draft = {
+                        source,
+                        family: getMaterialFamily(source),
+                        displayName: source.name || "Material",
+                        scenes: [],
+                        bindings: GetLiteMaterialTopologyBindings(source),
+                    };
+                    materialDrafts.set(source, draft);
                 }
                 draft.scenes.push(scene);
             }
@@ -228,40 +177,29 @@ export class LiteSceneResourceIndex {
 
         const materialRecords = new Map<Material, ILiteMaterialResourceRecord>();
         for (const draft of materialDrafts.values()) {
-            materialRecords.set(draft.source, {
-                source: draft.source,
-                inspection: draft.inspection,
-                scenes: draft.scenes,
-                bindings: draft.inspection.textureBindings,
-            });
+            materialRecords.set(draft.source, draft);
         }
 
         const textureDrafts = new Map<object, TextureDraft>();
         for (const material of materialRecords.values()) {
             for (const binding of material.bindings) {
-                const entity = GetPresentTextureEntity(binding);
-                if (!entity || typeof binding.id !== "string") {
-                    continue;
-                }
-
-                let texture = textureDrafts.get(entity);
+                let texture = textureDrafts.get(binding.entity);
                 if (!texture) {
-                    let inspection: TextureInspection | undefined;
                     try {
-                        inspection = inspectTexture(entity);
+                        const metadata = getTextureMetadata(binding.entity);
+                        if (!metadata) {
+                            continue;
+                        }
+                        texture = {
+                            entity: binding.entity,
+                            metadata,
+                            ordinal: this._getTextureOrdinal(binding.entity),
+                            consumers: [],
+                        };
                     } catch {
                         continue;
                     }
-                    if (!inspection) {
-                        continue;
-                    }
-                    texture = {
-                        entity,
-                        inspection,
-                        ordinal: this._getTextureOrdinal(entity),
-                        consumers: [],
-                    };
-                    textureDrafts.set(entity, texture);
+                    textureDrafts.set(binding.entity, texture);
                 }
                 texture.consumers.push({ material: material.source, bindingId: binding.id });
             }
@@ -269,12 +207,7 @@ export class LiteSceneResourceIndex {
 
         const textureRecords = new Map<object, ILiteTextureResourceRecord>();
         for (const draft of textureDrafts.values()) {
-            textureRecords.set(draft.entity, {
-                entity: draft.entity,
-                inspection: draft.inspection,
-                ordinal: draft.ordinal,
-                consumers: draft.consumers,
-            });
+            textureRecords.set(draft.entity, draft);
         }
 
         const sceneSnapshots = new Map<SceneContext, ILiteSceneResourceSnapshot>();
@@ -287,13 +220,9 @@ export class LiteSceneResourceIndex {
             const textures: ILiteTextureResourceRecord[] = [];
             for (const material of materials) {
                 for (const binding of material.bindings) {
-                    const entity = GetPresentTextureEntity(binding);
-                    if (!entity) {
-                        continue;
-                    }
-                    const record = textureRecords.get(entity);
-                    if (record && !seenTextures.has(entity)) {
-                        seenTextures.add(entity);
+                    const record = textureRecords.get(binding.entity);
+                    if (record && !seenTextures.has(binding.entity)) {
+                        seenTextures.add(binding.entity);
                         textures.push(record);
                     }
                 }
@@ -307,8 +236,8 @@ export class LiteSceneResourceIndex {
     }
 
     /**
-     * Captures the public identities and binding states that determine the index topology.
-     * @returns A snapshot suitable for comparison with {@link AreTopologySnapshotsEqual}.
+     * Captures the public identities and values that drive index and Properties refresh.
+     * @returns A deterministic topology snapshot.
      */
     public getTopologySnapshot(): LiteSceneResourceTopologySnapshot {
         const snapshot: unknown[] = [];
@@ -319,13 +248,11 @@ export class LiteSceneResourceIndex {
                 if (getRenderingContextKind(context) !== "scene") {
                     continue;
                 }
-
                 const scene = context as SceneContext;
                 if (!Array.isArray(scene.meshes)) {
                     snapshot.push("invalid-meshes");
                     continue;
                 }
-
                 snapshot.push(scene.meshes.length);
                 for (const mesh of scene.meshes) {
                     snapshot.push(mesh);
@@ -333,42 +260,13 @@ export class LiteSceneResourceIndex {
                         snapshot.push(mesh?.material);
                         continue;
                     }
-
-                    snapshot.push(mesh.material);
                     try {
-                        const inspection = inspectMaterial(mesh.material);
-                        if (!IsMaterialInspection(inspection)) {
-                            snapshot.push("invalid-material");
-                            continue;
-                        }
-
-                        snapshot.push(inspection.source, inspection.family, inspection.displayName, inspection.textureBindings.length);
-                        for (const binding of inspection.textureBindings) {
-                            snapshot.push(
-                                binding.id,
-                                binding.label,
-                                ...binding.acceptedKinds,
-                                binding.sampleCategory,
-                                binding.viewCategory,
-                                ...binding.directions,
-                                binding.mutation.access
-                            );
-                            if (binding.mutation.access === "read-write") {
-                                snapshot.push(binding.mutation.mutation, binding.mutation.postMutation);
-                            } else {
-                                snapshot.push(binding.mutation.reason);
-                            }
-                            AppendInspectionValue(snapshot, binding.value);
-                            AppendInspectionValue(snapshot, binding.transform);
-                            const entity = GetPresentTextureEntity(binding);
-                            snapshot.push(entity);
-                            if (entity) {
-                                try {
-                                    AppendTextureInspection(snapshot, inspectTexture(entity));
-                                } catch {
-                                    AppendTextureInspection(snapshot, undefined);
-                                }
-                            }
+                        const source = getMaterialSource(mesh.material);
+                        const bindings = GetLiteMaterialTopologyBindings(source);
+                        snapshot.push(mesh.material, source, getMaterialFamily(source), source.name, bindings.length);
+                        for (const binding of bindings) {
+                            snapshot.push(binding.id, binding.entity);
+                            AppendTextureState(snapshot, binding.entity);
                         }
                     } catch {
                         snapshot.push("stale-material");
@@ -379,55 +277,22 @@ export class LiteSceneResourceIndex {
         return snapshot;
     }
 
-    /**
-     * Compares two topology snapshots by ordered value identity.
-     * @param left The earlier snapshot.
-     * @param right The later snapshot.
-     * @returns Whether the snapshots represent the same resource topology.
-     */
     public static AreTopologySnapshotsEqual(left: LiteSceneResourceTopologySnapshot, right: LiteSceneResourceTopologySnapshot): boolean {
-        if (left.length !== right.length) {
-            return false;
-        }
-
-        for (let index = 0; index < left.length; index++) {
-            if (!Object.is(left[index], right[index])) {
-                return false;
-            }
-        }
-        return true;
+        return left.length === right.length && left.every((value, index) => Object.is(value, right[index]));
     }
 
-    /**
-     * Gets the last captured resources for a scene.
-     * @param scene The scene whose resources are requested.
-     * @returns Its indexed snapshot, or an empty snapshot when it is not owned by the engine.
-     */
     public getSceneSnapshot(scene: SceneContext): ILiteSceneResourceSnapshot {
         return this._sceneSnapshots.get(scene) ?? { scene, materials: [], textures: [] };
     }
 
-    /**
-     * Gets the current record for a source material.
-     * @param material The source material identity.
-     * @returns The material record, if currently reachable.
-     */
     public getMaterialRecord(material: Material): ILiteMaterialResourceRecord | undefined {
         return this._materialRecords.get(material);
     }
 
-    /**
-     * Gets the current record for an exact texture wrapper.
-     * @param texture The texture wrapper identity.
-     * @returns The texture record, if currently reachable.
-     */
     public getTextureRecord(texture: object): ILiteTextureResourceRecord | undefined {
         return this._textureRecords.get(texture);
     }
 
-    /**
-     * Releases all strong resource records owned by this index.
-     */
     public dispose(): void {
         this._sceneSnapshots.clear();
         this._materialRecords.clear();

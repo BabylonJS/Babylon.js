@@ -1,9 +1,10 @@
-import { type MaterialInspectionPropertyId, type MaterialInspectionSection, type MaterialTextureBinding } from "@babylonjs/lite";
 import { type FunctionComponent } from "react";
 
+import { type MaterialDescriptorPropertyId, type MaterialDescriptorSection, type IMaterialTextureBinding } from "../descriptors/descriptorTypes";
+import { PbrMaterialDescriptor } from "../descriptors/pbrDescriptor";
 import { LiteMaterialAdapterSection, type LiteMaterialAdapterProps } from "./materialAdapterCore";
 
-const ColorProperties = new Set<MaterialInspectionPropertyId>([
+const ColorProperties = new Set<MaterialDescriptorPropertyId>([
     "pbr.baseColorFactor",
     "pbr.emissiveColor",
     "pbr.metallicReflectanceColor",
@@ -15,7 +16,7 @@ const ColorProperties = new Set<MaterialInspectionPropertyId>([
     "pbr.mode.shadowOnlyColor",
 ]);
 
-function GetBindingSection(binding: MaterialTextureBinding): MaterialInspectionSection {
+function GetBindingSection(binding: IMaterialTextureBinding): MaterialDescriptorSection {
     if (binding.id === "pbr.lightmap") {
         return "lightmap";
     }
@@ -52,5 +53,5 @@ function GetBindingSection(binding: MaterialTextureBinding): MaterialInspectionS
  * @returns PBR material property content.
  */
 export const PbrMaterialAdapter: FunctionComponent<LiteMaterialAdapterProps> = (props) => {
-    return <LiteMaterialAdapterSection {...props} family="pbr" colorProperties={ColorProperties} getBindingSection={GetBindingSection} />;
+    return <LiteMaterialAdapterSection {...props} family="pbr" familyDescriptor={PbrMaterialDescriptor} colorProperties={ColorProperties} getBindingSection={GetBindingSection} />;
 };

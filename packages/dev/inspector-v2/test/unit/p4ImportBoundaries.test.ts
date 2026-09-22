@@ -17,6 +17,8 @@ function ReadSharedSource(path: string): string {
 
 const PreviewOrEditorDependency = /(?:texture|material)(?:Preview|Editor)|pixelReadback|readback|uploadTexture|exportTexture/i;
 const BabylonRuntimeImplementation = /from ["'](?:@dev\/core|core\/(?!index["']))/;
+const RemovedLiteInspectionApi =
+    /\b(?:inspectMaterial|inspectTexture|getMaterialTextureBindings|setMaterialInspectionProperty|setMaterialInspectionTexture|setTextureInspectionTransform|MaterialInspection|TextureInspection|InspectionDatum|InspectionValue)\b/;
 
 describe("P4 Inspector import boundaries", () => {
     it("keeps every material family and texture metadata adapter behind its own lazy entrypoint", () => {
@@ -41,14 +43,37 @@ describe("P4 Inspector import boundaries", () => {
             "lite/services/panes/properties/materialAdapters/materialAdapterCore.tsx",
             "lite/services/panes/properties/liteTextureMetadataAdapter.tsx",
             "lite/services/panes/properties/useLatestAsyncOperation.ts",
+            "lite/services/panes/properties/descriptors/descriptorTypes.ts",
+            "lite/services/panes/properties/descriptors/materialDescriptor.ts",
+            "lite/services/panes/properties/descriptors/standardDescriptor.ts",
+            "lite/services/panes/properties/descriptors/pbrDescriptor.ts",
+            "lite/services/panes/properties/descriptors/shaderDescriptor.ts",
+            "lite/services/panes/properties/descriptors/nodeDescriptor.ts",
+            "lite/services/panes/scene/materialTopologyBindings.ts",
+            "lite/services/panes/scene/sceneResources.ts",
         ].map(ReadInspectorSource);
 
         sources.forEach((source) => {
             expect(source).not.toMatch(PreviewOrEditorDependency);
             expect(source).not.toMatch(BabylonRuntimeImplementation);
+            expect(source).not.toMatch(RemovedLiteInspectionApi);
+            expect(source).not.toMatch(/@babylonjs\/lite\/(?:src|dist)\//);
         });
         expect(sources.filter((source) => source.includes('from "core/index"'))).toEqual([expect.stringContaining('import { type IReadonlyObservable } from "core/index"')]);
         expect(sources.join("\n").match(/from ["']core\/index["']/g)).toHaveLength(1);
+    });
+
+    it("keeps family descriptors Inspector-owned and out of the eager service and topology chunks", () => {
+        const materialService = ReadInspectorSource("lite/services/panes/properties/materialPropertiesService.tsx");
+        const topology = ReadInspectorSource("lite/services/panes/scene/materialTopologyBindings.ts");
+        const families = ["standard", "pbr", "shader", "node"] as const;
+
+        families.forEach((family) => {
+            const adapter = ReadInspectorSource(`lite/services/panes/properties/materialAdapters/${family}MaterialAdapter.tsx`);
+            expect(adapter).toContain(`../descriptors/${family}Descriptor`);
+            expect(materialService).not.toContain(`descriptors/${family}Descriptor`);
+            expect(topology).not.toContain(`descriptors/${family}Descriptor`);
+        });
     });
 
     it("keeps shared material and texture cores runtime-neutral", () => {
