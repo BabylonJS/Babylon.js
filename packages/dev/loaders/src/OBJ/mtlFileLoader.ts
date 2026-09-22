@@ -91,11 +91,15 @@ export class MTLFileLoader {
                 //Create a new material.
                 // value is the name of the material read in the mtl file
 
+                const blockEntityCollection = scene._blockEntityCollection;
                 scene._blockEntityCollection = !!assetContainer;
-                material = new StandardMaterial(value, scene);
-                material._parentContainer = assetContainer;
-                assetContainer?.materials.push(material);
-                scene._blockEntityCollection = false;
+                try {
+                    material = new StandardMaterial(value, scene);
+                    material._parentContainer = assetContainer;
+                    assetContainer?.materials.push(material);
+                } finally {
+                    scene._blockEntityCollection = blockEntityCollection;
+                }
             } else if (key === "kd" && material) {
                 // Diffuse color (color under white light) using RGB values
 
@@ -262,6 +266,7 @@ export class MTLFileLoader {
             textureLoadPromises!.push(deferred.promise);
         }
 
+        const blockEntityCollection = scene._blockEntityCollection;
         scene._blockEntityCollection = !!assetContainer;
         let texture: Texture;
         try {
@@ -273,7 +278,7 @@ export class MTLFileLoader {
             texture._parentContainer = assetContainer;
             assetContainer?.textures.push(texture);
         } finally {
-            scene._blockEntityCollection = false;
+            scene._blockEntityCollection = blockEntityCollection;
         }
 
         // A container is not rendered yet, so delayed loading cannot wait for a material bind.

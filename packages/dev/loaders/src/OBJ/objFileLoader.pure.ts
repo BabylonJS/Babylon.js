@@ -371,11 +371,15 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 if (isLine(mesh)) {
                     let mat = mesh.material;
                     if (!mat) {
+                        const blockEntityCollection = scene._blockEntityCollection;
                         scene._blockEntityCollection = !!this._assetContainer;
-                        mat = new StandardMaterial(mesh.name + "_line", scene);
-                        mat._parentContainer = this._assetContainer;
-                        this._assetContainer?.materials.push(mat);
-                        scene._blockEntityCollection = false;
+                        try {
+                            mat = new StandardMaterial(mesh.name + "_line", scene);
+                            mat._parentContainer = this._assetContainer;
+                            this._assetContainer?.materials.push(mat);
+                        } finally {
+                            scene._blockEntityCollection = blockEntityCollection;
+                        }
                     }
                     // If another mesh is using this material and it is not a line then we need to clone it.
                     const needClone = mat.getBindedMeshes().filter((e) => !isLine(e)).length > 0;
@@ -383,6 +387,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                         // Clone only the material; keep the MTL texture objects shared.
                         const sourceMaterial = mat as StandardMaterial;
                         const { ambientTexture, diffuseTexture, specularTexture, bumpTexture, opacityTexture } = sourceMaterial;
+                        const blockEntityCollection = scene._blockEntityCollection;
                         let lineMaterial: StandardMaterial;
                         try {
                             sourceMaterial.ambientTexture = null;
@@ -395,7 +400,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                             lineMaterial._parentContainer = this._assetContainer;
                             this._assetContainer?.materials.push(lineMaterial);
                         } finally {
-                            scene._blockEntityCollection = false;
+                            scene._blockEntityCollection = blockEntityCollection;
                             sourceMaterial.ambientTexture = ambientTexture;
                             sourceMaterial.diffuseTexture = diffuseTexture;
                             sourceMaterial.specularTexture = specularTexture;

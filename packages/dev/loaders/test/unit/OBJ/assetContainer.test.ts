@@ -161,6 +161,22 @@ describe("OBJ asset containers and texture loading", () => {
         container.dispose();
     });
 
+    it.each([
+        ["MTL, texture, mesh, geometry, and cloned line material", TexturedTriangle + "o line\nusemtl Used\nl 1 2\n", TexturedMaterial],
+        ["generated point-cloud material", "v 0 0 0\nv 1 0 0\n", undefined],
+        ["generated line material", "o line\nv 0 0 0\nv 1 0 0\nl 1 2\n", undefined],
+    ])("preserves an existing blocked scene collection while creating a container with %s", async (_description, data, material) => {
+        if (material) {
+            mockMTL(material);
+        }
+        scene._blockEntityCollection = true;
+
+        const container = await new OBJFileLoader().loadAssetContainerAsync(scene, data, "/assets/");
+
+        expect(scene._blockEntityCollection).toBe(true);
+        container.dispose();
+    });
+
     it("restores the original textures and scene collection when material cloning throws", async () => {
         mockMTL(TexturedMaterial + "map_Ka ambient.png\nmap_Ks specular.png\nmap_bump bump.png\nmap_d opacity.png\n");
         let sourceMaterial: StandardMaterial | undefined;
@@ -174,6 +190,7 @@ describe("OBJ asset containers and texture loading", () => {
             throw new Error("Material clone failed");
         });
         const data = TexturedTriangle + "o line\nusemtl Used\nl 1 2\n";
+        scene._blockEntityCollection = true;
 
         await expect(new OBJFileLoader().loadAssetContainerAsync(scene, data, "/assets/")).rejects.toThrow("Material clone failed");
         const material = sourceMaterial!;
@@ -182,7 +199,7 @@ describe("OBJ asset containers and texture loading", () => {
         expect(material.specularTexture).not.toBeNull();
         expect(material.bumpTexture).not.toBeNull();
         expect(material.opacityTexture).not.toBeNull();
-        expect(scene._blockEntityCollection).toBe(false);
+        expect(scene._blockEntityCollection).toBe(true);
         material.dispose(false, true);
     });
 
