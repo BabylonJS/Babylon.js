@@ -13,6 +13,44 @@
 @group(0) @binding(5) var<storage, read> cov3d : array<u32>; // 4 u32/Gaussian: 3 f16 pairs (Sigma/factor) + f32 factor
 @group(0) @binding(6) var<storage, read> sh : array<u32>; // 8-bit-quantized SH coeffs packed 4/word, GPS_SH_WORDS per Gaussian
 @group(0) @binding(7) var<storage, read> parts : array<GpsPart>; // per-part live world matrix + visibility
+@group(0) @binding(8) var<storage, read> hiZ : array<f32>; // previous-frame Hi-Z pyramid (max view-z), for occlusion
+
+// Flat offset (in floats) of Hi-Z pyramid level `l` (levels concatenated finest-first at level 0).
+fn gpsHiZLevelOffset(l : u32, baseW : u32, baseH : u32) -> u32 {
+    var off = 0u;
+    for (var i = 0u; i < l; i = i + 1u) {
+        off += max(1u, baseW >> i) * max(1u, baseH >> i);
+    }
+    return off;
+}
+
+// True if the Gaussian's screen footprint is fully behind nearer geometry in the previous frame's depth.
+// Picks the pyramid LOD where the footprint spans ~2 texels, samples the 4 AABB-corner texels, takes their
+// max (farthest occluder), and culls if that is still nearer than the Gaussian's center view depth.
+fn gpsHiZOccluded(center : vec2f, footR : f32, viewDepth : f32) -> bool {
+    let baseW = u32(uniforms.hiZInfo.x);
+    let baseH = u32(uniforms.hiZInfo.y);
+    let numLevels = u32(uniforms.hiZInfo.z);
+    let minx = i32(floor(center.x - footR));
+    let maxx = i32(ceil(center.x + footR));
+    let miny = i32(floor(center.y - footR));
+    let maxy = i32(ceil(center.y + footR));
+    let d = f32(max(maxx - minx, maxy - miny) + 1);
+    var lod = i32(ceil(log2(max(d, 1.0) * 0.5)));
+    lod = clamp(lod, 0, i32(numLevels) - 1);
+    let L = u32(lod);
+    let lw = max(1u, baseW >> L);
+    let lh = max(1u, baseH >> L);
+    let tile = 1u << L;
+    let off = gpsHiZLevelOffset(L, baseW, baseH);
+    let tx0 = min(u32(max(minx, 0)) / tile, lw - 1u);
+    let tx1 = min(u32(max(maxx, 0)) / tile, lw - 1u);
+    let ty0 = min(u32(max(miny, 0)) / tile, lh - 1u);
+    let ty1 = min(u32(max(maxy, 0)) / tile, lh - 1u);
+    let zMax = max(max(hiZ[off + ty0 * lw + tx0], hiZ[off + ty0 * lw + tx1]),
+                   max(hiZ[off + ty1 * lw + tx0], hiZ[off + ty1 * lw + tx1]));
+    return zMax < viewDepth;
+}
 
 #if SH_DEGREE > 0
 // Compile-time count of u32 words per Gaussian holding this degree's 8-bit SH coefficients (3 scalar
@@ -137,6 +175,21 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     if (det <= 0.0) {
         return;
     }
+
+    // Hi-Z occlusion cull (uses the previous frame's pyramid): skip Gaussians whose whole screen
+    // footprint is behind nearer geometry — they'd only lose the atomicMin and waste points. weights[g]
+    // is already 0 here, so returning emits no points.
+    if (uniforms.hiZInfo.w > 0.5) {
+        let mid = (a + cc) * 0.5;
+        let rad = length(vec2f((a - cc) * 0.5, b));
+        let footR = 3.0 * sqrt(max(mid + rad, 0.0)); // ~3-sigma footprint radius (px) from the max eigenvalue
+        let cx = (ndc.x * 0.5 + 0.5) * uniforms.resNearFar.x;
+        let cy = (ndc.y * 0.5 + 0.5) * uniforms.resNearFar.y;
+        if (gpsHiZOccluded(vec2f(cx, cy), footR, viewDepth)) {
+            return;
+        }
+    }
+
     // Optional COMPENSATION (depthNorm.w): boost opacity by sqrt(detOrig/detBlur) so the low-pass
     // dilation preserves each splat's total mass, matching the classic material's compensation.
     let compensation = select(1.0, sqrt(max(0.0, detOrig / det)), uniforms.depthNorm.w > 0.5);

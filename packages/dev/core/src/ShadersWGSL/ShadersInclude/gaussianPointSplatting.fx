@@ -21,7 +21,8 @@ struct GpsUniforms {
     params0 : vec4f,    // x=gaussianCount, y=kernelSize, z=pointScale, w=frameSeed
     focal : vec4f,      // x,y = focal length in pixels; z = reverse-Z flag; w unused
     camPosDeg : vec4f,  // xyz = camera world position, w = SH degree
-    depthNorm : vec4f,  // x,y = the model's NDC-z min/max this frame; zw unused
+    depthNorm : vec4f,  // x,y = the model's view-z min/max this frame; z = debugActive; w = compensation
+    hiZInfo : vec4f,    // x=baseWidth, y=baseHeight, z=numLevels, w=occlusion enabled (Hi-Z pyramid)
 };
 
 // One compound part's live transform. Kept out of the covariance (which is baked once, in local

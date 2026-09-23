@@ -22,6 +22,9 @@ struct GpsResolveParams {
 @group(0) @binding(1) var<uniform> params : GpsResolveParams;
 @group(0) @binding(2) var<storage, read_write> imageBuffer : array<atomic<u32>>;
 @group(0) @binding(3) var<storage, read_write> accumDepth : array<f32>;
+@group(0) @binding(4) var<storage, read_write> hiZ : array<f32>; // level 0 of the occlusion pyramid (view-z)
+
+const GPS_HIZ_FAR : f32 = 1e30; // miss value: never occludes (max over a footprint stays >= gaussian depth)
 
 @compute @workgroup_size(8, 8, 1)
 fn main(@builtin(global_invocation_id) gid : vec3u) {
@@ -35,6 +38,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     var hitColor = vec3f(0.0, 0.0, 0.0);
     var hit = 0.0;
     var depth = 1.0;
+    var occlVz = GPS_HIZ_FAR; // view-z of the nearest surface this frame; FAR on a miss (no occluder)
     if (raw != GPS_DEPTH_CLEAR) {
         hitColor = gpsKeyColor(raw);
         hit = 1.0;
@@ -42,8 +46,12 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         // fragDepth matches the scene depth buffer (projZ encodes the reverse-Z / half-Z convention).
         let dq = f32(raw >> 16u) / 65535.0;
         let vz = params.depthNorm.x + dq * (params.depthNorm.y - params.depthNorm.x);
+        occlVz = vz;
         depth = (params.projZ.x * vz + params.projZ.z) / (params.projZ.y * vz + params.projZ.w);
     }
+    // Hi-Z level 0 (this frame's nearest view-z per pixel); the pyramid is max-reduced from it, and next
+    // frame's preprocess reads it to cull occluded Gaussians.
+    hiZ[idx] = occlVz;
 
     let t = select(1.0 / (params.accumFrame + 1.0), 1.0, params.accumFrame < 0.5);
     let prev = accumBuffer[idx];

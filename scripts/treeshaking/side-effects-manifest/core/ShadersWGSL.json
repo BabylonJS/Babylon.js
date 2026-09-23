@@ -219,6 +219,7 @@
         "ShadersWGSL/glowMapGeneration.vertex.ts": ["shader-store-write"],
         "ShadersWGSL/glowMapMerge.fragment.ts": ["shader-store-write"],
         "ShadersWGSL/glowMapMerge.vertex.ts": ["shader-store-write"],
+        "ShadersWGSL/gpsHiZBuild.compute.ts": ["shader-store-write"],
         "ShadersWGSL/gpsPartition.compute.ts": ["shader-store-write"],
         "ShadersWGSL/gpsPreprocess.compute.ts": ["shader-store-write"],
         "ShadersWGSL/gpsResolve.compute.ts": ["shader-store-write"],

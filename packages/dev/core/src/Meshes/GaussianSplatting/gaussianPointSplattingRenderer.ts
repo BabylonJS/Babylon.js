@@ -11,3 +11,4 @@ import "../../ShadersWGSL/gpsScanAdd.compute";
 import "../../ShadersWGSL/gpsPartition.compute";
 import "../../ShadersWGSL/gpsSplat.compute";
 import "../../ShadersWGSL/gpsResolve.compute";
+import "../../ShadersWGSL/gpsHiZBuild.compute";

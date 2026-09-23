@@ -44,6 +44,7 @@ export class GaussianPointSplattingRenderer {
     private _scanSumsCs: ComputeShader;
     private _scanAddCs: ComputeShader;
     private _partitionCs: ComputeShader;
+    private _hiZBuildCs: ComputeShader;
     private _splatCs: ComputeShader;
     private _resolveCs: ComputeShader;
 
@@ -76,6 +77,8 @@ export class GaussianPointSplattingRenderer {
     public isOrthographic = false;
     /** Whether the source material enables antialiasing opacity compensation (classic COMPENSATION). */
     public compensation = false;
+    /** Hi-Z occlusion culling: skip Gaussians fully behind nearer geometry (previous-frame depth pyramid). */
+    public occlusionCulling = true;
 
     // Small GPU-resident scan outputs (allocated once).
     private _pointCount: StorageBuffer;
@@ -86,6 +89,14 @@ export class GaussianPointSplattingRenderer {
     private _imageBuffer: Nullable<StorageBuffer> = null;
     private _accumBuffer: Nullable<StorageBuffer> = null;
     private _accumDepth: Nullable<StorageBuffer> = null;
+    // Hi-Z occlusion pyramid: all mip levels (max view-z) concatenated, level 0 = full res. Rebuilt on
+    // resize. _hiZLevels[l] = { offset (floats), w, h }; the build uniform carries src/dst per level.
+    private _hiZ: Nullable<StorageBuffer> = null;
+    private _hiZLevels: { offset: number; w: number; h: number }[] = [];
+    // One uniform buffer per build level (src/dst are constant per resolution). Distinct buffers are
+    // required because all level dispatches record into one command encoder: a single shared buffer
+    // updated in the loop would leave every dispatch reading only the last-written src/dst.
+    private _hiZBuildParams: UniformBuffer[] = [];
     private _width = 0;
     private _height = 0;
 
@@ -138,6 +149,7 @@ export class GaussianPointSplattingRenderer {
             cov3d: { group: 0, binding: 5 },
             sh: { group: 0, binding: 6 },
             parts: { group: 0, binding: 7 },
+            hiZ: { group: 0, binding: 8 },
         };
         this._createPreprocessCs(0);
 
@@ -152,6 +164,9 @@ export class GaussianPointSplattingRenderer {
         });
         this._partitionCs = new ComputeShader("gpsPartition", engine, "gpsPartition", {
             bindingsMapping: { cdf: { group: 0, binding: 0 }, pointCount: { group: 0, binding: 1 }, partTable: { group: 0, binding: 2 } },
+        });
+        this._hiZBuildCs = new ComputeShader("gpsHiZBuild", engine, "gpsHiZBuild", {
+            bindingsMapping: { hiZ: { group: 0, binding: 0 }, params: { group: 0, binding: 1 } },
         });
 
         const splatBindings: ComputeBindingMapping = {
@@ -169,6 +184,7 @@ export class GaussianPointSplattingRenderer {
             params: { group: 0, binding: 1 },
             imageBuffer: { group: 0, binding: 2 },
             accumDepth: { group: 0, binding: 3 },
+            hiZ: { group: 0, binding: 4 },
         };
         this._resolveCs = new ComputeShader("gpsResolve", engine, "gpsResolve", { bindingsMapping: resolveBindings });
 
@@ -180,6 +196,7 @@ export class GaussianPointSplattingRenderer {
         this._uniforms.addUniform("focal", 4);
         this._uniforms.addUniform("camPosDeg", 4);
         this._uniforms.addUniform("depthNorm", 4);
+        this._uniforms.addUniform("hiZInfo", 4);
 
         this._resolveParams = new UniformBuffer(engine);
         this._resolveParams.addUniform("resolution", 2);
@@ -266,7 +283,8 @@ export class GaussianPointSplattingRenderer {
             this._scanAddCs.isReady() &&
             this._partitionCs.isReady() &&
             this._splatCs.isReady() &&
-            this._resolveCs.isReady()
+            this._resolveCs.isReady() &&
+            this._hiZBuildCs.isReady()
         );
     }
 
@@ -444,6 +462,39 @@ export class GaussianPointSplattingRenderer {
         this._accumDepth?.dispose();
         this._accumDepth = new StorageBuffer(engine, pixelCount * Float32Array.BYTES_PER_ELEMENT);
 
+        // Hi-Z occlusion pyramid: max-view-z mip chain, all levels concatenated (level 0 = full res, each
+        // level halved). Seed to a large FAR value so nothing is culled before a real depth exists.
+        this._hiZLevels = [];
+        let hiZOffset = 0;
+        const numLevels = Math.floor(Math.log2(Math.max(width, height))) + 1;
+        for (let l = 0; l < numLevels; l++) {
+            const lw = Math.max(1, width >> l);
+            const lh = Math.max(1, height >> l);
+            this._hiZLevels.push({ offset: hiZOffset, w: lw, h: lh });
+            hiZOffset += lw * lh;
+        }
+        this._hiZ?.dispose();
+        this._hiZ = new StorageBuffer(engine, hiZOffset * Float32Array.BYTES_PER_ELEMENT);
+        this._hiZ.update(new Float32Array(hiZOffset).fill(1e30));
+
+        // One params buffer per build level (levels 1..N reduce from the finer level below). Offsets/dims
+        // are constant for this resolution, so fill them once here and only bind + dispatch per frame.
+        for (const ub of this._hiZBuildParams) {
+            ub.dispose();
+        }
+        this._hiZBuildParams = [];
+        for (let l = 1; l < numLevels; l++) {
+            const src = this._hiZLevels[l - 1];
+            const dst = this._hiZLevels[l];
+            const ub = new UniformBuffer(engine);
+            ub.addUniform("src", 4);
+            ub.addUniform("dst", 4);
+            ub.updateUInt4("src", src.offset, src.w, src.h, 0);
+            ub.updateUInt4("dst", dst.offset, dst.w, dst.h, 0);
+            ub.update();
+            this._hiZBuildParams.push(ub);
+        }
+
         this.resetAccumulation();
     }
 
@@ -489,6 +540,7 @@ export class GaussianPointSplattingRenderer {
         this._uniforms.updateFloat4("focal", this._focalX, this._focalY, reverseZ, this.isOrthographic ? 1 : 0);
         this._uniforms.updateFloat4("camPosDeg", this._camX, this._camY, this._camZ, this._shDegree);
         this._uniforms.updateFloat4("depthNorm", this._viewZMin, this._viewZMax, this.debugActive, this.compensation ? 1 : 0);
+        this._uniforms.updateFloat4("hiZInfo", width, height, this._hiZLevels.length, this.occlusionCulling ? 1 : 0);
         this._uniforms.update();
 
         this._resolveParams.updateFloat2("resolution", width, height);
@@ -514,6 +566,7 @@ export class GaussianPointSplattingRenderer {
             this._preprocessCs.setStorageBuffer("sh", this._sh!);
         }
         this._preprocessCs.setStorageBuffer("parts", this._parts!);
+        this._preprocessCs.setStorageBuffer("hiZ", this._hiZ!);
         this._preprocessCs.dispatch(groupsG, 1, 1);
 
         this._scanBlocksCs.setStorageBuffer("weights", this._weights!);
@@ -548,7 +601,19 @@ export class GaussianPointSplattingRenderer {
         this._resolveCs.setStorageBuffer("accumDepth", this._accumDepth!);
         this._resolveCs.setUniformBuffer("params", this._resolveParams);
         this._resolveCs.setStorageBuffer("imageBuffer", this._imageBuffer!);
+        this._resolveCs.setStorageBuffer("hiZ", this._hiZ!);
         this._resolveCs.dispatch(Math.ceil(width / 8), Math.ceil(height / 8), 1);
+
+        // Build the Hi-Z pyramid from this frame's depth (level 0 written by resolve) for next frame's
+        // occlusion cull: max-reduce each level from the finer one below it.
+        if (this.occlusionCulling) {
+            for (let l = 1; l < this._hiZLevels.length; l++) {
+                const dst = this._hiZLevels[l];
+                this._hiZBuildCs.setStorageBuffer("hiZ", this._hiZ!);
+                this._hiZBuildCs.setUniformBuffer("params", this._hiZBuildParams[l - 1]);
+                this._hiZBuildCs.dispatch(Math.ceil(dst.w / 8), Math.ceil(dst.h / 8), 1);
+            }
+        }
 
         this._frameIndex++;
         if (this._accumFrame < this.maxAccumFrames) {
@@ -587,6 +652,12 @@ export class GaussianPointSplattingRenderer {
         this._accumDepth = null;
         this._imageBuffer = null;
         this._accumBuffer = null;
+        this._hiZ?.dispose();
+        this._hiZ = null;
+        for (const ub of this._hiZBuildParams) {
+            ub.dispose();
+        }
+        this._hiZBuildParams = [];
         this._parts?.dispose();
         this._parts = null;
         this._partCount = 0;
