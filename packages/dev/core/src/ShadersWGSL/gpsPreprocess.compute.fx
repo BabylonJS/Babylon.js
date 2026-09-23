@@ -9,32 +9,41 @@
 @group(0) @binding(2) var<storage, read_write> weights : array<u32>;
 @group(0) @binding(3) var<storage, read_write> gsData : array<GpsScreen>;
 @group(0) @binding(4) var<uniform> uniforms : GpsUniforms;
-@group(0) @binding(5) var<storage, read> cov3d : array<vec4f>; // 2 vec4 per Gaussian: (S00,S01,S02,S11),(S12,S22,-,-)
-@group(0) @binding(6) var<storage, read> sh : array<f32>; // dequantized SH coeffs, interleaved RGB, shDim*3 floats per Gaussian
+@group(0) @binding(5) var<storage, read> cov3d : array<u32>; // 4 u32/Gaussian: 3 f16 pairs (Sigma/factor) + f32 factor
+@group(0) @binding(6) var<storage, read> sh : array<u32>; // 8-bit-quantized SH coeffs packed 4/word, GPS_SH_WORDS per Gaussian
 @group(0) @binding(7) var<storage, read> parts : array<GpsPart>; // per-part live world matrix + visibility
 
 #if SH_DEGREE > 0
-// Compile-time SH coefficient count (excluding DC) for the asset's degree. Only the bands the asset
-// actually has are compiled in (SH_DEGREE define), mirroring the classic rasterizer's #if SH_DEGREE.
+// Compile-time count of u32 words per Gaussian holding this degree's 8-bit SH coefficients (3 scalar
+// bytes per coeff, 4 bytes per word). Only the bands the asset has are compiled in (SH_DEGREE define),
+// mirroring the classic rasterizer's #if SH_DEGREE. Words = ceil(shDim*3 / 4).
 #if SH_DEGREE == 1
-const GPS_SH_DIM : u32 = 3u;
+const GPS_SH_WORDS : u32 = 3u;  // shDim 3  -> 9 bytes
 #elif SH_DEGREE == 2
-const GPS_SH_DIM : u32 = 8u;
+const GPS_SH_WORDS : u32 = 6u;  // shDim 8  -> 24 bytes
 #elif SH_DEGREE == 3
-const GPS_SH_DIM : u32 = 15u;
+const GPS_SH_WORDS : u32 = 12u; // shDim 15 -> 45 bytes
 #else
-const GPS_SH_DIM : u32 = 24u;
+const GPS_SH_WORDS : u32 = 18u; // shDim 24 -> 72 bytes
 #endif
 
-// One SH coefficient (RGB) for Gaussian at scalar-base `base`, coefficient index `j`.
-fn gpsShCoeff(base : u32, j : u32) -> vec3f {
-    let o = base + j * 3u;
-    return vec3f(sh[o], sh[o + 1u], sh[o + 2u]);
+// One 8-bit SH scalar (byte `s` within the Gaussian's word range) dequantized to [-1, 1], matching the
+// classic decompose(): b * 2/255 - 1.
+fn gpsShByte(baseWord : u32, s : u32) -> f32 {
+    let w = sh[baseWord + (s >> 2u)];
+    let b = (w >> (8u * (s & 3u))) & 0xFFu;
+    return f32(b) * (2.0 / 255.0) - 1.0;
+}
+
+// One SH coefficient (RGB = 3 consecutive bytes) for coefficient index `j`.
+fn gpsShCoeff(baseWord : u32, j : u32) -> vec3f {
+    let s = j * 3u;
+    return vec3f(gpsShByte(baseWord, s), gpsShByte(baseWord, s + 1u), gpsShByte(baseWord, s + 2u));
 }
 
 // View-dependent SH color delta; DC is already baked into the base color.
 fn gpsEvalShDelta(g : u32, dir : vec3f) -> vec3f {
-    let base = g * GPS_SH_DIM * 3u;
+    let base = g * GPS_SH_WORDS;
     let x = dir.x;
     let y = dir.y;
     let z = dir.z;
@@ -109,12 +118,14 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     }
 
     // EWA projection of the 3D covariance to 2D screen space (same construction as the classic
-    // rasterizer's gaussianSplatting()).
-    let c0 = cov3d[2u * g];
-    let c1 = cov3d[2u * g + 1u];
-    let covA = c0.xyz;             // S00, S01, S02
-    let covB = vec3f(c0.w, c1.x, c1.y); // S11, S12, S22
-    let Vrk = mat3x3f(covA.x, covA.y, covA.z, covA.y, covB.x, covB.y, covA.z, covB.y, covB.z);
+    // rasterizer's gaussianSplatting()). The 6 unique Sigma components are stored as f16 pairs
+    // normalized by a per-splat factor (matching the classic's covA/covB + center.w scheme), so f16
+    // keeps full precision regardless of splat scale; rescale by the factor here.
+    let covFactor = bitcast<f32>(cov3d[4u * g + 3u]);
+    let p0 = unpack2x16float(cov3d[4u * g + 0u]) * covFactor; // S00, S01
+    let p1 = unpack2x16float(cov3d[4u * g + 1u]) * covFactor; // S02, S11
+    let p2 = unpack2x16float(cov3d[4u * g + 2u]) * covFactor; // S12, S22
+    let Vrk = mat3x3f(p0.x, p0.y, p1.x, p0.y, p1.y, p2.x, p1.x, p2.x, p2.y);
 
     let focal = uniforms.focal.xy;
     let J = mat3x3f(

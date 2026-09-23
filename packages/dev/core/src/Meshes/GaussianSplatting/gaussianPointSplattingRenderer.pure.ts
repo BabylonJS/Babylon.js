@@ -244,13 +244,13 @@ export class GaussianPointSplattingRenderer {
     /**
      * Uploads decoded splat data into per-Gaussian GPU buffers, replacing any previous data.
      * @param means packed positions, 4 floats per Gaussian (x, y, z, unused)
-     * @param cov3d packed 3D covariance, 8 floats per Gaussian ((S00,S01,S02,S11),(S12,S22,-,-))
+     * @param cov3d packed 3D covariance, 4 u32 per Gaussian (3 f16 pairs of Sigma/factor + f32 factor)
      * @param colorOpacity packed RGBA8 base color + opacity, 1 u32 per Gaussian
-     * @param sh dequantized SH coefficients (interleaved RGB, shDim*3 floats per Gaussian), or null
+     * @param sh 8-bit-quantized SH coefficients packed 4 bytes/u32 (GPS_SH_WORDS per Gaussian), or null
      * @param shDegree spherical-harmonics degree (0 = view-independent color)
      * @param count number of Gaussians
      */
-    public updateSplats(means: Float32Array, cov3d: Float32Array, colorOpacity: Uint32Array, sh: Nullable<Float32Array>, shDegree: number, count: number): void {
+    public updateSplats(means: Float32Array, cov3d: Uint32Array, colorOpacity: Uint32Array, sh: Nullable<Uint32Array>, shDegree: number, count: number): void {
         this._disposeGaussianBuffers();
         this._gaussianCount = count;
         this._shDegree = sh ? shDegree : 0;
@@ -267,8 +267,8 @@ export class GaussianPointSplattingRenderer {
         this._means = new StorageBuffer(engine, count * 4 * Float32Array.BYTES_PER_ELEMENT);
         this._means.update(means);
 
-        // 3D covariance: 2 vec4 per Gaussian — (S00,S01,S02,S11),(S12,S22,-,-).
-        this._cov3d = new StorageBuffer(engine, count * 8 * Float32Array.BYTES_PER_ELEMENT);
+        // 3D covariance: 4 u32 per Gaussian — 3 f16 pairs (Sigma / factor) + the f32 factor.
+        this._cov3d = new StorageBuffer(engine, count * 4 * Uint32Array.BYTES_PER_ELEMENT);
         this._cov3d.update(cov3d);
 
         // SH coefficients (view-dependent color). A tiny placeholder keeps the binding valid at degree 0.

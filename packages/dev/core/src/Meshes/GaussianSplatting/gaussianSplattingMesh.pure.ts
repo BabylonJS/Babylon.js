@@ -16,6 +16,7 @@ import { DecodeBase64ToBinary, EncodeArrayBufferToBase64 } from "core/Misc/strin
 import { Mesh } from "core/Meshes/mesh.pure";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { Logger } from "core/Misc/logger";
+import { ToHalfFloat } from "core/Misc/textureTools";
 import { GaussianSplattingPartProxyMesh } from "./gaussianSplattingPartProxyMesh.pure";
 import { BoundingInfo } from "../../Culling/boundingInfo";
 import { type BaseTexture } from "../../Materials/Textures/baseTexture.pure";
@@ -28,6 +29,21 @@ export { IsGaussianSplattingClassName } from "./gaussianSplatting.functions";
 
 const _GaussianSplattingBytesPerSplat = 32;
 const _GaussianSplattingBytesPerShTexel = 16;
+
+// Scratch for bit-casting a float to its u32 bits (the point renderer's per-splat covariance factor).
+const _F32Scratch = /*#__PURE__*/ new Float32Array(1);
+const _U32Scratch = /*#__PURE__*/ new Uint32Array(_F32Scratch.buffer);
+
+/**
+ * Packs two floats as half-floats into one u32 (low 16 bits = a, high 16 bits = b), for the point
+ * renderer's f16 covariance storage.
+ * @param a value for the low 16 bits
+ * @param b value for the high 16 bits
+ * @returns the packed u32
+ */
+function _Pack2HalfFloat(a: number, b: number): number {
+    return (ToHalfFloat(a) | (ToHalfFloat(b) << 16)) >>> 0;
+}
 
 interface IGaussianSplattingPartSource {
     name: string;
@@ -669,9 +685,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
 
         const means = new Float32Array(count * 4);
-        const cov3d = new Float32Array(count * 8);
+        // 4 u32/Gaussian: 3 f16 pairs of (Sigma / factor) + the f32 factor (see the covariance write).
+        const cov3d = new Uint32Array(count * 4);
         const colorOpacity = new Uint32Array(count);
-        const sh = this._pointDequantizeSh(this._shData ?? undefined, this._shDegree, count);
+        const sh = this._pointPackSh(this._shData ?? undefined, this._shDegree, count);
 
         const quaternion = new Quaternion();
         const rotation = new Matrix();
@@ -718,12 +735,25 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 pMax[b + 2] = mz;
             }
 
-            cov3d[8 * i + 0] = m[0] * m[0] + m[1] * m[1] + m[2] * m[2];
-            cov3d[8 * i + 1] = m[0] * m[4] + m[1] * m[5] + m[2] * m[6];
-            cov3d[8 * i + 2] = m[0] * m[8] + m[1] * m[9] + m[2] * m[10];
-            cov3d[8 * i + 3] = m[4] * m[4] + m[5] * m[5] + m[6] * m[6];
-            cov3d[8 * i + 4] = m[4] * m[8] + m[5] * m[9] + m[6] * m[10];
-            cov3d[8 * i + 5] = m[8] * m[8] + m[9] * m[9] + m[10] * m[10];
+            // Local 3D covariance Sigma = (R*S)(R*S)^T, 6 unique components. Store as f16 normalized by
+            // a per-splat factor = max|component| so f16 keeps full precision at any splat scale (the
+            // shader rescales by the factor). Matches the classic covA/covB + center.w scheme.
+            const s00 = m[0] * m[0] + m[1] * m[1] + m[2] * m[2];
+            const s01 = m[0] * m[4] + m[1] * m[5] + m[2] * m[6];
+            const s02 = m[0] * m[8] + m[1] * m[9] + m[2] * m[10];
+            const s11 = m[4] * m[4] + m[5] * m[5] + m[6] * m[6];
+            const s12 = m[4] * m[8] + m[5] * m[9] + m[6] * m[10];
+            const s22 = m[8] * m[8] + m[9] * m[9] + m[10] * m[10];
+            let factor = Math.max(Math.abs(s00), Math.abs(s01), Math.abs(s02), Math.abs(s11), Math.abs(s12), Math.abs(s22));
+            if (!(factor > 0)) {
+                factor = 1;
+            }
+            const inv = 1 / factor;
+            cov3d[4 * i + 0] = _Pack2HalfFloat(s00 * inv, s01 * inv);
+            cov3d[4 * i + 1] = _Pack2HalfFloat(s02 * inv, s11 * inv);
+            cov3d[4 * i + 2] = _Pack2HalfFloat(s12 * inv, s22 * inv);
+            _F32Scratch[0] = factor;
+            cov3d[4 * i + 3] = _U32Scratch[0];
 
             const cb = _GaussianSplattingBytesPerSplat * i + 24;
             colorOpacity[i] = bytes[cb] | (bytes[cb + 1] << 8) | (bytes[cb + 2] << 16) | (bytes[cb + 3] << 24);
@@ -740,29 +770,31 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Dequantizes the loader's packed SH textures into a tight per-splat float array (interleaved RGB),
-     * matching the classic decode (each byte b maps to b*2/255 - 1).
+     * Repacks the loader's 8-bit SH bytes tightly into u32 words (4 bytes/word, GPS_SH_WORDS per splat),
+     * keeping the classic's 8-bit quantization — the shader dequantizes (b*2/255 - 1) on read. This
+     * matches the classic's VRAM footprint instead of expanding to f32. Null when SH is absent.
      * @param shData packed per-splat SH textures, one per 16 scalar components, or undefined
-     * @param shDegree spherical-harmonics degree (0-3)
+     * @param shDegree spherical-harmonics degree (0-4)
      * @param count number of splats
-     * @returns dequantized interleaved RGB SH coefficients, or null when SH is absent
+     * @returns u32-packed SH bytes, or null when SH is absent
      */
-    private _pointDequantizeSh(shData: Uint8Array[] | undefined, shDegree: number, count: number): Nullable<Float32Array> {
+    private _pointPackSh(shData: Uint8Array[] | undefined, shDegree: number, count: number): Nullable<Uint32Array> {
         if (!shData || shData.length === 0 || shDegree < 1) {
             return null;
         }
         const shDim = shDegree === 1 ? 3 : shDegree === 2 ? 8 : shDegree === 3 ? 15 : 24;
         const scalars = shDim * 3;
-        const out = new Float32Array(count * scalars);
+        const words = Math.ceil(scalars / 4);
+        // Zero-padded so each splat occupies exactly `words` u32; the padding bytes are never read.
+        const bytes = new Uint8Array(count * words * 4);
         for (let i = 0; i < count; i++) {
+            const dst = i * words * 4;
             for (let k = 0; k < scalars; k++) {
-                const textureIndex = (k / 16) | 0;
-                const byteInSplat = k % 16;
-                const tex = shData[textureIndex];
-                out[i * scalars + k] = (tex[i * 16 + byteInSplat] * 2) / 255 - 1;
+                const tex = shData[(k / 16) | 0];
+                bytes[dst + k] = tex[i * 16 + (k % 16)];
             }
         }
-        return out;
+        return new Uint32Array(bytes.buffer);
     }
 
     /** Packs this frame's live per-part world matrices + visibilities and uploads them to the renderer,
