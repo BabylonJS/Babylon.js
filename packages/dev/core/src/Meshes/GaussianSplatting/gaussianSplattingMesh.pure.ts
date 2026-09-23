@@ -6,7 +6,7 @@ import { type Observer } from "core/Misc/observable";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { type Vector2 } from "core/Maths/math.vector";
 import { type Effect } from "core/Materials/effect.pure";
-import { GetGaussianSplattingMaxPartCount } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
+import { GetGaussianSplattingMaxPartCount, GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { GaussianSplattingMeshBase, AllocateShBuffers, type IGaussianSplattingSplatRange } from "./gaussianSplattingMeshBase.pure";
 import { GaussianSplattingSortWorkerCommand } from "./gaussianSplattingSortWorker";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
@@ -869,14 +869,19 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     }
 
     /**
-     * Projects each part's world-space AABB (local AABB transformed by the live part matrix in the
-     * scratch) to find the model's NDC-z span this frame for depth-key normalization.
-     * @param vp column-major view-projection (Matrix.m)
-     * @returns the model's [ndczMin, ndczMax] this frame
+     * Computes the model's VIEW-SPACE depth extent this frame (each part's local AABB transformed by its
+     * live part matrix, then by the view matrix), clamped to the camera's [near, far]. The depth key is
+     * normalized linearly over this range — robust when the camera is inside/close to the model, unlike
+     * projecting to NDC-z (which drops the near extent because corners behind the camera can't be
+     * projected). The extreme view-z of an oriented AABB is always at a corner, so 8 corners suffice.
+     * @param viewM column-major view matrix (Matrix.m); row 2 (m[2],m[6],m[10],m[14]) gives view-space z
+     * @param near camera near plane
+     * @param far camera far plane
+     * @returns the model's [viewZMin, viewZMax] this frame, clamped to [near, far]
      */
-    private _pointNdcZSpan(vp: ArrayLike<number>): [number, number] {
-        let ndczMin = Infinity;
-        let ndczMax = -Infinity;
+    private _pointViewZSpan(viewM: ArrayLike<number>, near: number, far: number): [number, number] {
+        let vzMin = Infinity;
+        let vzMax = -Infinity;
         const scratch = this._pointPartScratch;
         for (let p = 0; p < this._pointPartCount; p++) {
             const wb = p * 40;
@@ -897,22 +902,24 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 const wx = scratch[wb + 0] * lx + scratch[wb + 4] * ly + scratch[wb + 8] * lz + scratch[wb + 12];
                 const wy = scratch[wb + 1] * lx + scratch[wb + 5] * ly + scratch[wb + 9] * lz + scratch[wb + 13];
                 const wz = scratch[wb + 2] * lx + scratch[wb + 6] * ly + scratch[wb + 10] * lz + scratch[wb + 14];
-                const cw = vp[3] * wx + vp[7] * wy + vp[11] * wz + vp[15];
-                if (cw > 1e-6) {
-                    const ndcz = (vp[2] * wx + vp[6] * wy + vp[10] * wz + vp[14]) / cw;
-                    if (ndcz < ndczMin) {
-                        ndczMin = ndcz;
-                    }
-                    if (ndcz > ndczMax) {
-                        ndczMax = ndcz;
-                    }
+                // View-space z (LH: +forward), matching the shader's viewDepth = abs(camspace.z).
+                const vz = viewM[2] * wx + viewM[6] * wy + viewM[10] * wz + viewM[14];
+                if (vz < vzMin) {
+                    vzMin = vz;
+                }
+                if (vz > vzMax) {
+                    vzMax = vz;
                 }
             }
         }
-        if (!(ndczMax > ndczMin)) {
-            return [0, 1];
+        // Clamp to the visible frustum: when the camera is inside the model the nearest corner sits behind
+        // the near plane, so the nearest visible splats start at `near`.
+        vzMin = Math.max(near, vzMin);
+        vzMax = Math.min(far, vzMax);
+        if (!(vzMax > vzMin)) {
+            return [near, far];
         }
-        return [ndczMin, ndczMax];
+        return [vzMin, vzMax];
     }
 
     /** Runs the compute pipeline before the render pass (compute cannot run inside an active pass) and
@@ -940,10 +947,18 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const focalY = (height * projection.m[5]) / 2;
         const camPos = camera.globalPosition;
         this._pointRenderer.reverseDepth = engine.useReverseDepthBuffer;
+        // Orthographic when projection[3][3] == 1 (matches the classic shader's isOrtho test).
+        this._pointRenderer.isOrthographic = Math.abs(projection.m[15] - 1) < 0.001;
+        // Antialiasing opacity compensation follows the source material's setting (classic COMPENSATION).
+        const gsMaterial = this.material as Nullable<GaussianSplattingMaterial>;
+        this._pointRenderer.compensation = gsMaterial?.compensation ?? GaussianSplattingMaterial.Compensation;
 
         this._pointUploadParts();
-        const [ndczMin, ndczMax] = this._pointNdcZSpan(this._pointVpMatrix.m);
-        this._pointRenderer.setCamera(view, this._pointVpMatrix, camera.minZ, camera.maxZ, focalX, focalY, camPos.x, camPos.y, camPos.z, ndczMin, ndczMax);
+        const [vzMin, vzMax] = this._pointViewZSpan(view.m, camera.minZ, camera.maxZ);
+        this._pointRenderer.setCamera(view, this._pointVpMatrix, camera.minZ, camera.maxZ, focalX, focalY, camPos.x, camPos.y, camPos.z, vzMin, vzMax);
+        // Projection z-row (column-major m[10],m[11],m[14],m[15]) so resolve reconstructs ndc.z from the
+        // view-z key for fragDepth — it encodes the reverse-Z / half-Z convention automatically.
+        this._pointRenderer.setProjectionZ(projection.m[10], projection.m[11], projection.m[14], projection.m[15]);
         this._pointRenderer.renderToBuffer(width, height);
 
         const accum = this._pointRenderer.accumBuffer;

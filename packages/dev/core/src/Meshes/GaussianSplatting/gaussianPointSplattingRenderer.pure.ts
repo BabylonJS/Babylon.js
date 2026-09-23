@@ -13,6 +13,9 @@ import { type ComputeBindingMapping } from "core/Engines/Extensions/engine.compu
 const WorkgroupSize = 256;
 const ScanBlockSize = 512; // elements per scan workgroup (256 threads x 2)
 const DepthClearSentinel = 0xffffffff;
+// Point->Gaussian acceleration-table resolution; must match GPS_PARTITION_BUCKETS in the shaders. The
+// table has PartitionBuckets + 1 entries (partition[k] = Gaussian owning point k*total/PartitionBuckets).
+const PartitionBuckets = 65536;
 
 /**
  * Owns the WebGPU compute pipeline and GPU buffers for Gaussian Point Splatting (the stochastic,
@@ -40,6 +43,7 @@ export class GaussianPointSplattingRenderer {
     private _scanBlocksCs: ComputeShader;
     private _scanSumsCs: ComputeShader;
     private _scanAddCs: ComputeShader;
+    private _partitionCs: ComputeShader;
     private _splatCs: ComputeShader;
     private _resolveCs: ComputeShader;
 
@@ -68,10 +72,15 @@ export class GaussianPointSplattingRenderer {
     public reverseDepth = false;
     /** 1 when any per-part debug knob is active (drives the preprocess debug branch); 0 otherwise. */
     public debugActive = 0;
+    /** Whether the active camera is orthographic (selects the ortho Jacobian in computeCov2D). */
+    public isOrthographic = false;
+    /** Whether the source material enables antialiasing opacity compensation (classic COMPENSATION). */
+    public compensation = false;
 
     // Small GPU-resident scan outputs (allocated once).
     private _pointCount: StorageBuffer;
     private _indirectArgs: StorageBuffer;
+    private _partition: StorageBuffer;
 
     // Per-pixel buffers (rebuilt on resize).
     private _imageBuffer: Nullable<StorageBuffer> = null;
@@ -90,9 +99,12 @@ export class GaussianPointSplattingRenderer {
     private _camX = 0;
     private _camY = 0;
     private _camZ = 0;
-    // The model's NDC-z span this frame; the depth key is normalized to it for full 16-bit ordering.
-    private _ndczMin = 0;
-    private _ndczMax = 1;
+    // The model's view-space depth span this frame; the depth key is normalized linearly over it for
+    // full 16-bit ordering, robust to the camera being inside/close to the model.
+    private _viewZMin = 0.1;
+    private _viewZMax = 1000;
+    // Projection z-row (m10, m11, m14, m15) so resolve reconstructs ndc.z from the view-z key.
+    private _projZ = new Float32Array([0, 1, 0, 0]);
     private _frameIndex = 0;
 
     // Per-part live transforms (world matrix + visibility), uploaded each frame. A non-compound mesh
@@ -138,6 +150,9 @@ export class GaussianPointSplattingRenderer {
         this._scanAddCs = new ComputeShader("gpsScanAdd", engine, "gpsScanAdd", {
             bindingsMapping: { cdf: { group: 0, binding: 0 }, blockSums: { group: 0, binding: 1 } },
         });
+        this._partitionCs = new ComputeShader("gpsPartition", engine, "gpsPartition", {
+            bindingsMapping: { cdf: { group: 0, binding: 0 }, pointCount: { group: 0, binding: 1 }, partTable: { group: 0, binding: 2 } },
+        });
 
         const splatBindings: ComputeBindingMapping = {
             cdf: { group: 0, binding: 0 },
@@ -145,6 +160,7 @@ export class GaussianPointSplattingRenderer {
             imageBuffer: { group: 0, binding: 2 },
             uniforms: { group: 0, binding: 3 },
             pointCount: { group: 0, binding: 4 },
+            partTable: { group: 0, binding: 5 },
         };
         this._splatCs = new ComputeShader("gpsSplat", engine, "gpsSplat", { bindingsMapping: splatBindings });
 
@@ -169,8 +185,9 @@ export class GaussianPointSplattingRenderer {
         this._resolveParams.addUniform("resolution", 2);
         this._resolveParams.addUniform("accumFrame", 1);
         this._resolveParams.addUniform("pad0", 1);
-        this._resolveParams.addUniform("depthNorm", 2);
+        this._resolveParams.addUniform("depthNorm", 2); // viewZMin, viewZMax
         this._resolveParams.addUniform("pad1", 2);
+        this._resolveParams.addUniform("projZ", 4); // m10, m11, m14, m15
 
         // pointCount: [totalPoints, indirectGroups, ...]. indirectArgs: [gx, gy, gz] for dispatchIndirect.
         this._pointCount = new StorageBuffer(engine as WebGPUEngine, 4 * Uint32Array.BYTES_PER_ELEMENT);
@@ -181,6 +198,9 @@ export class GaussianPointSplattingRenderer {
             3 * Uint32Array.BYTES_PER_ELEMENT,
             Constants.BUFFER_CREATIONFLAG_STORAGE | Constants.BUFFER_CREATIONFLAG_INDIRECT | Constants.BUFFER_CREATIONFLAG_WRITE
         );
+        // Point->Gaussian acceleration table (rebuilt each frame after the scan). Fixed size (independent
+        // of the Gaussian/point count), so it is allocated once.
+        this._partition = new StorageBuffer(engine as WebGPUEngine, (PartitionBuckets + 1) * Uint32Array.BYTES_PER_ELEMENT);
     }
 
     /**
@@ -191,8 +211,14 @@ export class GaussianPointSplattingRenderer {
      */
     private _createPreprocessCs(shDegree: number): void {
         this._preprocessShDegree = shDegree;
+        // At SH_DEGREE 0 the shader #if's out all SH code, so binding 6 (sh) isn't in the compiled
+        // layout — drop it from the mapping so the bind group matches (it's bound only when degree > 0).
+        const bindings: ComputeBindingMapping = { ...this._preprocessBindings };
+        if (shDegree <= 0) {
+            delete bindings.sh;
+        }
         this._preprocessCs = new ComputeShader("gpsPreprocess", this._engine, "gpsPreprocess", {
-            bindingsMapping: this._preprocessBindings,
+            bindingsMapping: bindings,
             defines: ["#define SH_DEGREE " + shDegree],
         });
     }
@@ -238,6 +264,7 @@ export class GaussianPointSplattingRenderer {
             this._scanBlocksCs.isReady() &&
             this._scanSumsCs.isReady() &&
             this._scanAddCs.isReady() &&
+            this._partitionCs.isReady() &&
             this._splatCs.isReady() &&
             this._resolveCs.isReady()
         );
@@ -310,8 +337,8 @@ export class GaussianPointSplattingRenderer {
      * @param camX camera world position x
      * @param camY camera world position y
      * @param camZ camera world position z
-     * @param ndczMin the model's minimum NDC z this frame (depth-key normalization range)
-     * @param ndczMax the model's maximum NDC z this frame
+     * @param viewZMin the model's minimum view-space depth this frame (depth-key normalization range)
+     * @param viewZMax the model's maximum view-space depth this frame
      */
     public setCamera(
         view: Matrix,
@@ -323,8 +350,8 @@ export class GaussianPointSplattingRenderer {
         camX: number,
         camY: number,
         camZ: number,
-        ndczMin: number,
-        ndczMax: number
+        viewZMin: number,
+        viewZMax: number
     ): void {
         this._view = view;
         this._viewProjection = viewProjection;
@@ -335,8 +362,23 @@ export class GaussianPointSplattingRenderer {
         this._camX = camX;
         this._camY = camY;
         this._camZ = camZ;
-        this._ndczMin = ndczMin;
-        this._ndczMax = ndczMax;
+        this._viewZMin = viewZMin;
+        this._viewZMax = viewZMax;
+    }
+
+    /**
+     * Sets the projection matrix's z-row (column-major m10, m11, m14, m15), used by resolve to map the
+     * view-z depth key back to ndc.z for fragDepth (it encodes the reverse-Z / half-Z convention).
+     * @param m10 projection.m[10]
+     * @param m11 projection.m[11]
+     * @param m14 projection.m[14]
+     * @param m15 projection.m[15]
+     */
+    public setProjectionZ(m10: number, m11: number, m14: number, m15: number): void {
+        this._projZ[0] = m10;
+        this._projZ[1] = m11;
+        this._projZ[2] = m14;
+        this._projZ[3] = m15;
     }
 
     /**
@@ -444,16 +486,17 @@ export class GaussianPointSplattingRenderer {
         // frameSeed wraps to stay exact as a float and to vary the stochastic sampling each frame.
         this._uniforms.updateFloat4("params0", this._gaussianCount, this.kernelSize, this.pointScale, this._frameIndex % 65536);
         const reverseZ = this.reverseDepth ? 1 : 0;
-        this._uniforms.updateFloat4("focal", this._focalX, this._focalY, reverseZ, 0);
+        this._uniforms.updateFloat4("focal", this._focalX, this._focalY, reverseZ, this.isOrthographic ? 1 : 0);
         this._uniforms.updateFloat4("camPosDeg", this._camX, this._camY, this._camZ, this._shDegree);
-        this._uniforms.updateFloat4("depthNorm", this._ndczMin, this._ndczMax, this.debugActive, 0);
+        this._uniforms.updateFloat4("depthNorm", this._viewZMin, this._viewZMax, this.debugActive, this.compensation ? 1 : 0);
         this._uniforms.update();
 
         this._resolveParams.updateFloat2("resolution", width, height);
         this._resolveParams.updateFloat("accumFrame", this._accumFrame);
         this._resolveParams.updateFloat("pad0", reverseZ);
-        this._resolveParams.updateFloat2("depthNorm", this._ndczMin, this._ndczMax);
+        this._resolveParams.updateFloat2("depthNorm", this._viewZMin, this._viewZMax);
         this._resolveParams.updateFloat2("pad1", 0, 0);
+        this._resolveParams.updateFloat4("projZ", this._projZ[0], this._projZ[1], this._projZ[2], this._projZ[3]);
         this._resolveParams.update();
 
         const groupsG = Math.ceil(this._gaussianCount / WorkgroupSize);
@@ -464,7 +507,12 @@ export class GaussianPointSplattingRenderer {
         this._preprocessCs.setStorageBuffer("gsData", this._gsData!);
         this._preprocessCs.setUniformBuffer("uniforms", this._uniforms);
         this._preprocessCs.setStorageBuffer("cov3d", this._cov3d!);
-        this._preprocessCs.setStorageBuffer("sh", this._sh!);
+        // Only bind `sh` when the shader actually uses it (SH_DEGREE > 0). At degree 0 the SH code is
+        // #if'd out, so WebGPU's auto-layout omits binding 6; binding it anyway makes the bind group
+        // incompatible with the layout ("binding index 6 not present") and invalidates the whole pass.
+        if (this._shDegree > 0) {
+            this._preprocessCs.setStorageBuffer("sh", this._sh!);
+        }
         this._preprocessCs.setStorageBuffer("parts", this._parts!);
         this._preprocessCs.dispatch(groupsG, 1, 1);
 
@@ -482,11 +530,18 @@ export class GaussianPointSplattingRenderer {
         this._scanAddCs.setStorageBuffer("blockSums", this._blockSums!);
         this._scanAddCs.dispatch(groupsG, 1, 1);
 
+        // Build the point->Gaussian acceleration table from the finished CDF (one thread per bucket).
+        this._partitionCs.setStorageBuffer("cdf", this._cdf!);
+        this._partitionCs.setStorageBuffer("pointCount", this._pointCount);
+        this._partitionCs.setStorageBuffer("partTable", this._partition);
+        this._partitionCs.dispatch(Math.ceil((PartitionBuckets + 1) / WorkgroupSize), 1, 1);
+
         this._splatCs.setStorageBuffer("cdf", this._cdf!);
         this._splatCs.setStorageBuffer("gsData", this._gsData!);
         this._splatCs.setStorageBuffer("imageBuffer", this._imageBuffer!);
         this._splatCs.setUniformBuffer("uniforms", this._uniforms);
         this._splatCs.setStorageBuffer("pointCount", this._pointCount);
+        this._splatCs.setStorageBuffer("partTable", this._partition);
         this._splatCs.dispatchIndirect(this._indirectArgs);
 
         this._resolveCs.setStorageBuffer("accumBuffer", this._accumBuffer!);
@@ -537,6 +592,7 @@ export class GaussianPointSplattingRenderer {
         this._partCount = 0;
         this._pointCount.dispose();
         this._indirectArgs.dispose();
+        this._partition.dispose();
         this._uniforms.dispose();
         this._resolveParams.dispose();
         this._width = 0;

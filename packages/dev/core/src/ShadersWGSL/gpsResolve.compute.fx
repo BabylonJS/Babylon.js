@@ -12,9 +12,10 @@
 struct GpsResolveParams {
     resolution : vec2f,
     accumFrame : f32,
-    reverseZ : f32, // >0.5 when the scene uses a reverse-Z depth buffer
-    depthNorm : vec2f, // the model's NDC-z min/max this frame (matches preprocess key normalization)
+    reverseZ : f32,    // unused (ndc.z is reconstructed via projZ, which encodes the convention)
+    depthNorm : vec2f, // the model's view-space depth min/max this frame (matches the preprocess key)
     pad : vec2f,
+    projZ : vec4f,     // projection z-row (m10, m11, m14, m15) to map view-z back to ndc.z
 };
 
 @group(0) @binding(0) var<storage, read_write> accumBuffer : array<vec4f>;
@@ -37,11 +38,11 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     if (raw != GPS_DEPTH_CLEAR) {
         hitColor = gpsKeyColor(raw);
         hit = 1.0;
-        // Recover the true NDC z (undo the ordering inversion AND the model-span normalization applied
-        // to the key in preprocess) so fragDepth matches the scene depth buffer.
+        // Recover the view-space depth from the key, then map it to ndc.z via the projection z-row so
+        // fragDepth matches the scene depth buffer (projZ encodes the reverse-Z / half-Z convention).
         let dq = f32(raw >> 16u) / 65535.0;
-        let dlin = select(dq, 1.0 - dq, params.reverseZ > 0.5);
-        depth = params.depthNorm.x + dlin * (params.depthNorm.y - params.depthNorm.x);
+        let vz = params.depthNorm.x + dq * (params.depthNorm.y - params.depthNorm.x);
+        depth = (params.projZ.x * vz + params.projZ.z) / (params.projZ.y * vz + params.projZ.w);
     }
 
     let t = select(1.0 / (params.accumFrame + 1.0), 1.0, params.accumFrame < 0.5);

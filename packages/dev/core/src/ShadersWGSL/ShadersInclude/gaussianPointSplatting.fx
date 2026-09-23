@@ -9,6 +9,11 @@ const GPS_DEPTH_CLEAR : u32 = 0xFFFFFFFFu;
 const GPS_TWO_PI : f32 = 6.2831853071795864;
 const GPS_U32_TO_UNIT : f32 = 2.3283064365386963e-10; // 1 / 2^32
 
+// Point->Gaussian acceleration table resolution: partition[k] holds the Gaussian owning point
+// k*total/GPS_PARTITION_BUCKETS, so the splat kernel seeds its CDF binary search from a narrow range
+// instead of searching all Gaussians (see gpsPartition / gpsSplat). The table has BUCKETS+1 entries.
+const GPS_PARTITION_BUCKETS : u32 = 65536u;
+
 struct GpsUniforms {
     view : mat4x4f,
     viewProjection : mat4x4f,

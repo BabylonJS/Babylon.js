@@ -1,8 +1,35 @@
-// Shared spherical-harmonics evaluation for Gaussian Splatting, used by both the classic rasterizer
-// (texture-fed) and the compute point-splatting renderer (buffer-fed). Each caller assembles the
-// coefficient array `sh` (sh[0] = DC, sh[1..24] = bands 1..4) in its own way, then this evaluates the
-// view-dependent color with per-band weights `_so1.._so4` (1.0 = full; used for the SH-order debug
-// toggles). Only the bands the asset has are compiled in via the SH_DEGREE define.
+// Shared shader math for Gaussian Splatting, used by both the classic rasterizer (texture-fed) and the
+// compute point-splatting renderer (buffer-fed): the EWA covariance projection and the SH evaluation.
+
+// EWA projection of the 3D covariance (Sigma = the symmetric matrix from covA/covB) to the RAW 2D
+// screen-space covariance. Returns cov2d BEFORE the low-pass dilation, so each caller can add its own
+// kernel-size dilation (and, for the classic, the optional COMPENSATION that needs the pre-dilation
+// determinant). `modelView` = view * world (per-part world for a compound); `camspace` = the mean in
+// view space; `isOrtho` selects the orthographic Jacobian.
+fn computeCov2D(covA: vec3f, covB: vec3f, modelView: mat4x4f, camspace: vec3f, focal: vec2f, isOrtho: bool) -> mat3x3f {
+    let Vrk = mat3x3f(
+        covA.x, covA.y, covA.z,
+        covA.y, covB.x, covB.y,
+        covA.z, covB.y, covB.z);
+
+    var J: mat3x3f;
+    if (isOrtho) {
+        J = mat3x3f(focal.x, 0.0, 0.0, 0.0, focal.y, 0.0, 0.0, 0.0, 0.0);
+    } else {
+        J = mat3x3f(
+            focal.x / camspace.z, 0.0, -(focal.x * camspace.x) / (camspace.z * camspace.z),
+            0.0, focal.y / camspace.z, -(focal.y * camspace.y) / (camspace.z * camspace.z),
+            0.0, 0.0, 0.0);
+    }
+
+    let T = transpose(mat3x3f(modelView[0].xyz, modelView[1].xyz, modelView[2].xyz)) * J;
+    return transpose(T) * Vrk * T;
+}
+
+// Shared spherical-harmonics evaluation. Each caller assembles the coefficient array `sh` (sh[0] = DC,
+// sh[1..24] = bands 1..4) in its own way, then this evaluates the view-dependent color with per-band
+// weights `_so1.._so4` (1.0 = full; used for the SH-order debug toggles). Only the bands the asset has
+// are compiled in via the SH_DEGREE define.
 fn computeColorFromSHDegree(dir: vec3f, sh: array<vec3<f32>, 25>, _so1: f32, _so2: f32, _so3: f32, _so4: f32) -> vec3f
 {
     let SH_C0: f32 = 0.28209479;

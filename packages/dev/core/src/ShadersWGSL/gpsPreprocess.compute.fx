@@ -3,7 +3,7 @@
 // the screen-space state the splat kernel needs (pixel mean, conic, Cholesky factor, color, opacity,
 // depth key). Emits a stochastic point count proportional to the Gaussian's screen-space mass.
 #include<gaussianPointSplatting>
-#include<gaussianSplattingSH>
+#include<gaussianSplattingShared>
 
 @group(0) @binding(0) var<storage, read> means : array<vec4f>;
 @group(0) @binding(1) var<storage, read> colorOpacity : array<u32>;
@@ -108,22 +108,20 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let covFactor = bitcast<f32>(cov3d[4u * g + 3u]);
     let p0 = unpack2x16float(cov3d[4u * g + 0u]) * covFactor; // S00, S01
     let p1 = unpack2x16float(cov3d[4u * g + 1u]) * covFactor; // S02, S11
-    let p2 = unpack2x16float(cov3d[4u * g + 2u]) * covFactor; // S12, S22
-    let Vrk = mat3x3f(p0.x, p0.y, p1.x, p0.y, p1.y, p2.x, p1.x, p2.x, p2.y);
+    let p2 = unpack2x16float(cov3d[4u * g + 2u]) * covFactor; // S12, S22 (p0/p1/p2 reused for size cull)
+    let covA = vec3f(p0.x, p0.y, p1.x); // S00, S01, S02
+    let covB = vec3f(p1.y, p2.x, p2.y); // S11, S12, S22
 
-    let focal = uniforms.focal.xy;
-    let J = mat3x3f(
-        focal.x / camspace.z, 0.0, -(focal.x * camspace.x) / (camspace.z * camspace.z),
-        0.0, focal.y / camspace.z, -(focal.y * camspace.y) / (camspace.z * camspace.z),
-        0.0, 0.0, 0.0
-    );
-    // Fold the part's world transform into the projection the same way the classic rasterizer does:
-    // modelView = view * partWorld, then T = transpose(modelView3x3) * J. This is algebraically the
-    // same 2D covariance as baking A*Sigma*A^T on the CPU, but the world stays out of the stored
-    // (local) covariance so parts can move each frame.
+    // Fold the part's world transform into the projection (modelView = view * partWorld) and project to
+    // raw 2D screen space with the SHARED computeCov2D — the identical EWA math the classic rasterizer
+    // uses. Applying the world here (not baking A*Sigma*A^T on the CPU) lets parts move each frame.
+    // focal.w carries the orthographic-camera flag (selects the ortho Jacobian in computeCov2D).
+    let isOrtho = uniforms.focal.w > 0.5;
     let modelView = uniforms.view * partWorld;
-    let T = transpose(mat3x3f(modelView[0].xyz, modelView[1].xyz, modelView[2].xyz)) * J;
-    var cov2d = transpose(T) * Vrk * T;
+    var cov2d = computeCov2D(covA, covB, modelView, camspace.xyz, uniforms.focal.xy, isOrtho);
+
+    // Determinant BEFORE the low-pass dilation, for the optional opacity compensation below.
+    let detOrig = cov2d[0][0] * cov2d[1][1] - cov2d[0][1] * cov2d[0][1];
 
     // Low-pass (antialiasing) dilation, matching the classic rasterizer's kernelSize. The screen-scale
     // that cancels the classic quad's invViewport is baked into the covariance at load (see the mesh's
@@ -139,6 +137,9 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     if (det <= 0.0) {
         return;
     }
+    // Optional COMPENSATION (depthNorm.w): boost opacity by sqrt(detOrig/detBlur) so the low-pass
+    // dilation preserves each splat's total mass, matching the classic material's compensation.
+    let compensation = select(1.0, sqrt(max(0.0, detOrig / det)), uniforms.depthNorm.w > 0.5);
 
     // Conic = inverse 2D covariance; Cholesky L (lower) so a sample = mean + L * N(0,1).
     let invDet = 1.0 / det;
@@ -176,7 +177,7 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     // scale can exceed 1 (0-5 slider), and dilog/correctedBoxMuller below are only defined on [0,1] —
     // the classic just lets alpha blending saturate, so clamping here is the stochastic equivalent.
     var color = baseColor * pdata.dbg3.x;
-    var opacity = clamp(baseOpacity * pdata.vis.x * pdata.dbg2.z, 0.0, 1.0);
+    var opacity = clamp(baseOpacity * pdata.vis.x * pdata.dbg2.z * compensation, 0.0, 1.0);
     let saturate = pdata.dbg2.w > 0.5;
 
     // View-dependent SH: add the higher-degree delta (DC is already baked into the base color). Only
@@ -225,18 +226,16 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     s.pmConicXY = vec4f(px, py, conic.x, conic.y);
     s.conicZChol = vec4f(conic.z, chol0, chol1, chol2);
     s.colorOp = vec4f(color, opacity);
-    // Depth key: order so the NEAREST sample has the smallest key (atomicMin keeps it). Under
-    // reverse-Z (near = large NDC z) invert so nearest still maps to the smallest key. The true NDC z
-    // is recovered in resolve for fragDepth compositing against the (same-convention) depth buffer.
-    // Normalize the depth key to the model's own NDC-z span this frame (not the scene's [0,1]).
-    // The scene far plane can be huge, so raw NDC z gives the model only a few hundred of the 16-bit
-    // key's levels; hundreds of splats then collide on one level and the atomicMin can no longer pick
-    // the nearest, which averages overlapping splats and blurs fine detail. Remapping to the model's
-    // span restores the full 16-bit ordering resolution.
+    // Depth key: order so the NEAREST sample has the smallest key (atomicMin keeps it). Normalize over
+    // the model's OWN depth span this frame (not the scene's [0,1]) — the scene far plane can be huge, so
+    // a full-range key would give the model only a handful of the 16-bit levels and collapse ordering.
+    // Normalize the linear VIEW-space depth over the model's [viewZMin, viewZMax]. Nearer = smaller
+    // viewDepth = smaller key, so atomicMin keeps the nearest sample (no reverse-Z handling needed here;
+    // view depth is always positive-forward). Robust to the camera being inside the model, unlike NDC-z
+    // whose near extent is lost when AABB corners fall behind the camera. resolve reconstructs ndc.z.
     let dmin = uniforms.depthNorm.x;
     let dmax = uniforms.depthNorm.y;
-    let dlin = clamp((ndc.z - dmin) / max(dmax - dmin, 1e-6), 0.0, 1.0);
-    let dord = select(dlin, 1.0 - dlin, uniforms.focal.z > 0.5);
+    let dord = clamp((viewDepth - dmin) / max(dmax - dmin, 1e-6), 0.0, 1.0);
     // depth.y carries the debug opacity-saturate flag (flat disk instead of Gaussian falloff).
     s.depth = vec4u(u32(dord * 65535.0), select(0u, 1u, saturate), 0u, 0u);
     gsData[g] = s;

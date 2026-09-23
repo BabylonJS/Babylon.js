@@ -8,5 +8,6 @@ import "../../ShadersWGSL/gpsPreprocess.compute";
 import "../../ShadersWGSL/gpsScanBlocks.compute";
 import "../../ShadersWGSL/gpsScanSums.compute";
 import "../../ShadersWGSL/gpsScanAdd.compute";
+import "../../ShadersWGSL/gpsPartition.compute";
 import "../../ShadersWGSL/gpsSplat.compute";
 import "../../ShadersWGSL/gpsResolve.compute";

@@ -224,8 +224,8 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     return splat;
 }
 
-// Shared with the compute point-splatting renderer; see ShadersInclude/gaussianSplattingSH.fx.
-#include<gaussianSplattingSH>
+// Shared with the compute point-splatting renderer; see ShadersInclude/gaussianSplattingShared.fx.
+#include<gaussianSplattingShared>
 
 fn decompose(value: u32) -> vec4f
 {
@@ -393,38 +393,12 @@ fn gaussianSplatting(
         return vec4f(0.0, 0.0, 2.0, 1.0);
     }
 
-    let Vrk = mat3x3<f32>(
-        covA.x, covA.y, covA.z, 
-        covA.y, covB.x, covB.y,
-        covA.z, covB.y, covB.z
-    );
-
-    // Detect if projection is orthographic (projectionMatrix[3][3] == 1.0)
+    // Detect if projection is orthographic (projectionMatrix[3][3] == 1.0). Kept here (not just inside
+    // computeCov2D) because the ortho flag is also used below for the quad's scale factor.
     let isOrtho = abs(projectionMatrix[3][3] - 1.0) < 0.001;
-    
-    var J: mat3x3<f32>;
-    if (isOrtho) {
-        // Orthographic projection: no perspective division needed
-        // Just the focal/scale terms without z-dependence
-        J = mat3x3<f32>(
-            focal.x, 0.0, 0.0,
-            0.0, focal.y, 0.0,
-            0.0, 0.0, 0.0
-        );
-    } else {
-        // Perspective projection: original Jacobian with z-dependence
-        J = mat3x3<f32>(
-            focal.x / camspace.z, 0.0, -(focal.x * camspace.x) / (camspace.z * camspace.z),
-            0.0, focal.y / camspace.z, -(focal.y * camspace.y) / (camspace.z * camspace.z),
-            0.0, 0.0, 0.0
-        );
-    }
 
-    let T = transpose(mat3x3<f32>(
-        modelView[0].xyz,
-        modelView[1].xyz,
-        modelView[2].xyz)) * J;
-    var cov2d = transpose(T) * Vrk * T;
+    // Raw (pre-dilation) 2D covariance, shared with the point-splatting compute path.
+    var cov2d = computeCov2D(covA, covB, modelView, camspace.xyz, focal, isOrtho);
 
 #if COMPENSATION
     let c00: f32 = cov2d[0][0];

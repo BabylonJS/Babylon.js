@@ -10,12 +10,14 @@
 @group(0) @binding(2) var<storage, read_write> imageBuffer : array<atomic<u32>>;
 @group(0) @binding(3) var<uniform> uniforms : GpsUniforms;
 @group(0) @binding(4) var<storage, read> pointCount : array<u32>;
+@group(0) @binding(5) var<storage, read> partTable : array<u32>; // point->Gaussian acceleration table
 
-// Largest g in [0, count) with cdf[g] <= p. Zero-weight Gaussians share a CDF value with the next
-// one, so picking the largest index always lands on the point's real owner.
-fn gpsFindGaussian(p : u32, count : u32) -> u32 {
-    var lo = 0u;
-    var hi = count;
+// Largest g in [loInit, hiInit) with cdf[g] <= p. Zero-weight Gaussians share a CDF value with the next
+// one, so picking the largest index always lands on the point's real owner. The [lo, hi) range is seeded
+// from the acceleration table so this searches only the Gaussians spanning one point-bucket.
+fn gpsFindGaussian(p : u32, loInit : u32, hiInit : u32) -> u32 {
+    var lo = loInit;
+    var hi = hiInit;
     loop {
         if (lo + 1u >= hi) {
             break;
@@ -35,12 +37,18 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     // Linear point index from the 2D dispatch grid: rows are tiled at the 65535-workgroup limit
     // (65535 * 256 = 16776960 threads per row) so the total point count can exceed one dimension.
     let p = gid.y * 16776960u + gid.x;
-    if (p >= pointCount[0]) {
+    let total = pointCount[0];
+    if (p >= total) {
         return;
     }
 
     let count = u32(uniforms.params0.x);
-    let g = gpsFindGaussian(p, count);
+    // Seed the CDF search from the acceleration table: bucket = p/total*BUCKETS, then search only the
+    // Gaussians spanning that bucket (widened +/-1 bucket to absorb the f32 rounding in the bucket index).
+    let bucket = min(u32(max(f32(p) / f32(total) * f32(GPS_PARTITION_BUCKETS), 0.0)), GPS_PARTITION_BUCKETS - 1u);
+    let loB = select(bucket - 1u, 0u, bucket == 0u);
+    let hiB = min(bucket + 2u, GPS_PARTITION_BUCKETS);
+    let g = gpsFindGaussian(p, partTable[loB], min(partTable[hiB] + 1u, count));
     let s = gsData[g];
 
     let pixelMean = gpsGetPixelMean(s);
@@ -106,7 +114,9 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let key = gpsPackKey(s.depth.x, gpsPackRGB565(dithered));
     let idx = u32(y) * u32(res.x) + u32(x);
 
-    // Cheap non-atomic pre-check: skip the atomic when this sample cannot be the nearest.
+    // Depth pre-check: skip the atomicMin when this sample cannot beat the current nearest. In dense
+    // overlap most samples lose, so filtering them out cuts atomic contention enough to outweigh the
+    // load — keep this ahead of the write.
     if (atomicLoad(&imageBuffer[idx]) <= key) {
         return;
     }
