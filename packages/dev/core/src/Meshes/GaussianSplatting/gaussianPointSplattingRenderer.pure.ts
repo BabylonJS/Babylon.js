@@ -66,6 +66,8 @@ export class GaussianPointSplattingRenderer {
     public kernelSize = 0.3;
     /** Whether the scene uses a reverse-Z depth buffer (near = large NDC z). */
     public reverseDepth = false;
+    /** 1 when any per-part debug knob is active (drives the preprocess debug branch); 0 otherwise. */
+    public debugActive = 0;
 
     // Small GPU-resident scan outputs (allocated once).
     private _pointCount: StorageBuffer;
@@ -338,16 +340,16 @@ export class GaussianPointSplattingRenderer {
     }
 
     /**
-     * Uploads the live per-part transforms consumed by the preprocess shader. Each part contributes 20
-     * floats: 16 for its column-major world matrix followed by [visibility, 0, 0, 0]. Called every
-     * frame so runtime transforms (gizmo) and part visibility take effect without re-baking; the GPU
-     * buffer is only reallocated when the part count changes.
-     * @param packed part records, `count * 20` floats (world matrix + visibility per part)
+     * Uploads the live per-part records consumed by the preprocess shader. Each part contributes 40
+     * floats: 16 for its column-major world matrix, then [visibility,0,0,0], then 5 debug-LUT vec4 rows
+     * (see GpsPart). Called every frame so runtime transforms (gizmo), part visibility and debug knobs
+     * take effect without re-baking; the GPU buffer is only reallocated when the part count changes.
+     * @param packed part records, `count * 40` floats (world matrix + visibility + 5 debug rows per part)
      * @param count number of parts (at least 1)
      */
     public setPartData(packed: Float32Array, count: number): void {
         const engine = this._engine as WebGPUEngine;
-        const floats = count * 20;
+        const floats = count * 40;
         // Restart accumulation whenever a part moved, changed visibility, or the part set changed —
         // otherwise the progressive buffer blends pre-move frames into the new pose (a ghost trail).
         let changed = !this._parts || this._partCount !== count || this._prevPartData.length !== floats;
@@ -361,7 +363,7 @@ export class GaussianPointSplattingRenderer {
         }
         if (!this._parts || this._partCount !== count) {
             this._parts?.dispose();
-            // GpsPart is mat4x4f + vec4f = 80 bytes (20 floats) per part in std430.
+            // GpsPart is mat4x4f + vec4f + 5 vec4f debug rows = 160 bytes (40 floats) per part in std430.
             this._parts = new StorageBuffer(engine, floats * Float32Array.BYTES_PER_ELEMENT);
             this._partCount = count;
         }
@@ -444,7 +446,7 @@ export class GaussianPointSplattingRenderer {
         const reverseZ = this.reverseDepth ? 1 : 0;
         this._uniforms.updateFloat4("focal", this._focalX, this._focalY, reverseZ, 0);
         this._uniforms.updateFloat4("camPosDeg", this._camX, this._camY, this._camZ, this._shDegree);
-        this._uniforms.updateFloat4("depthNorm", this._ndczMin, this._ndczMax, 0, 0);
+        this._uniforms.updateFloat4("depthNorm", this._ndczMin, this._ndczMax, this.debugActive, 0);
         this._uniforms.update();
 
         this._resolveParams.updateFloat2("resolution", width, height);

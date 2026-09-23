@@ -132,6 +132,31 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
         ];
     }
 
+    /**
+     * Whether any debug feature is currently active (global or per-part). Exposed so an alternate
+     * renderer (the point-splatting compute path) can skip the debug work when nothing is set.
+     */
+    public get isDebugActive(): boolean {
+        return this._isAnyFeatureActive();
+    }
+
+    /**
+     * Returns the resolved per-part debug LUT — the same MAX_PART x 5-row RGBA layout the classic
+     * shader samples from `dbgPartData` (row 0: clipMin.xyz, clipMax.x; row 1: clipMax.yz, minOpacity,
+     * maxOpacity; row 2: minSize, maxSize, opacityScale, opacitySaturate; row 3: shDc, shOrder1..3;
+     * row 4: shOrder4). Lets the point-splatting compute path apply the identical debug knobs without
+     * duplicating the resolution logic. Read-only; does not change any classic render state.
+     * @param partCount the mesh's current part count
+     * @param engine engine used to size the LUT (max supported part count) if not yet known
+     * @returns the resolved LUT floats and the LUT's part-count stride
+     */
+    public getResolvedPartData(partCount: number, engine: AbstractEngine): { data: Float32Array; maxPartCount: number } {
+        if (!this._maxPartCount) {
+            this._maxPartCount = GetGaussianSplattingMaxPartCount(engine);
+        }
+        return { data: this._buildTextureData(partCount), maxPartCount: this._maxPartCount };
+    }
+
     private _isAnyFeatureActive(): boolean {
         return (
             this._clippingBox !== null ||

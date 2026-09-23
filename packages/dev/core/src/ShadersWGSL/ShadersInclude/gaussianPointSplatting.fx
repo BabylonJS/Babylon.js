@@ -25,6 +25,13 @@ struct GpsUniforms {
 struct GpsPart {
     world : mat4x4f, // part world matrix (local -> world), column-major
     vis : vec4f,     // x = part visibility (0..1); yzw unused ('meta' is a reserved WGSL keyword)
+    // Per-part debug LUT rows, mirroring the classic debugger's dbgPartData (pass-through defaults when
+    // debug is inactive). Consumed only when the debugActive flag is set.
+    dbg0 : vec4f,    // clipMin.xyz, clipMax.x
+    dbg1 : vec4f,    // clipMax.y, clipMax.z, minOpacity, maxOpacity
+    dbg2 : vec4f,    // minSize, maxSize, opacityScale, opacitySaturate
+    dbg3 : vec4f,    // shDc, shOrder1, shOrder2, shOrder3
+    dbg4 : vec4f,    // shOrder4, unused, unused, unused
 };
 
 // Inverse of a 3x3 matrix. Identical to core's helperFunctions inverseMat3 (kept local to avoid
@@ -43,18 +50,13 @@ fn gpsInverseMat3(inMatrix : mat3x3f) -> mat3x3f {
             b21 / det, (-a21 * a00 + a01 * a20) / det, (a11 * a00 - a01 * a10) / det);
 }
 
-// Spherical-harmonics basis constants (standard 3DGS ordering). SH_C0 is baked into the DC color.
-const GPS_SH_C1 : f32 = 0.48860251;
-const GPS_SH_C2 : array<f32, 5> = array<f32, 5>(1.092548430, -1.09254843, 0.315391565, -1.09254843, 0.546274215);
-const GPS_SH_C3 : array<f32, 7> = array<f32, 7>(-0.59004358, 2.890611442, -0.45704579, 0.373176332, -0.45704579, 1.445305721, -0.59004358);
-const GPS_SH_C4 : array<f32, 9> = array<f32, 9>(2.5033429418, -1.7701307698, 0.9461746958, -0.6690465436, 0.1057855469, -0.6690465436, 0.4730873479, -1.7701307698, 0.6258357354);
 
 // Per-Gaussian screen-space state produced by gpsPreprocess and consumed by gpsSplat (64 bytes).
 struct GpsScreen {
     pmConicXY : vec4f, // pixelMean.x, pixelMean.y, conic.x, conic.y
     conicZChol : vec4f, // conic.z, chol0, chol1, chol2
     colorOp : vec4f,   // linear color r, g, b, opacity
-    depth : vec4u,     // depthKey, unused, unused, unused
+    depth : vec4u,     // depthKey, opacitySaturate flag (debug), unused, unused
 };
 
 fn gpsGetPixelMean(s : GpsScreen) -> vec2f { return s.pmConicXY.xy; }

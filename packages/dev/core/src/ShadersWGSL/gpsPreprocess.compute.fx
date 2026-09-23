@@ -3,6 +3,7 @@
 // the screen-space state the splat kernel needs (pixel mean, conic, Cholesky factor, color, opacity,
 // depth key). Emits a stochastic point count proportional to the Gaussian's screen-space mass.
 #include<gaussianPointSplatting>
+#include<gaussianSplattingSH>
 
 @group(0) @binding(0) var<storage, read> means : array<vec4f>;
 @group(0) @binding(1) var<storage, read> colorOpacity : array<u32>;
@@ -41,46 +42,28 @@ fn gpsShCoeff(baseWord : u32, j : u32) -> vec3f {
     return vec3f(gpsShByte(baseWord, s), gpsShByte(baseWord, s + 1u), gpsShByte(baseWord, s + 2u));
 }
 
-// View-dependent SH color delta; DC is already baked into the base color.
-fn gpsEvalShDelta(g : u32, dir : vec3f) -> vec3f {
+// Compile-time SH coefficient count (excluding DC) for this asset's degree.
+#if SH_DEGREE == 1
+const GPS_SH_DIM : u32 = 3u;
+#elif SH_DEGREE == 2
+const GPS_SH_DIM : u32 = 8u;
+#elif SH_DEGREE == 3
+const GPS_SH_DIM : u32 = 15u;
+#else
+const GPS_SH_DIM : u32 = 24u;
+#endif
+
+// View-dependent SH color delta. Assembles this Gaussian's coefficients from the packed buffer, then
+// evaluates them with the shared computeColorFromSHDegree (the identical basis math the classic
+// rasterizer uses). DC (coeffs[0]) stays zero — it is already baked into the base color, so only the
+// higher-order delta is returned. The per-band weights so1..so4 drive the SH-order debug toggles.
+fn gpsEvalShDelta(g : u32, dir : vec3f, so1 : f32, so2 : f32, so3 : f32, so4 : f32) -> vec3f {
     let base = g * GPS_SH_WORDS;
-    let x = dir.x;
-    let y = dir.y;
-    let z = dir.z;
-
-    var res = -GPS_SH_C1 * y * gpsShCoeff(base, 0u) + GPS_SH_C1 * z * gpsShCoeff(base, 1u) - GPS_SH_C1 * x * gpsShCoeff(base, 2u);
-
-#if SH_DEGREE > 1
-    let xx = x * x;
-    let yy = y * y;
-    let zz = z * z;
-    res += GPS_SH_C2[0] * (x * y) * gpsShCoeff(base, 3u)
-        + GPS_SH_C2[1] * (y * z) * gpsShCoeff(base, 4u)
-        + GPS_SH_C2[2] * (2.0 * zz - xx - yy) * gpsShCoeff(base, 5u)
-        + GPS_SH_C2[3] * (x * z) * gpsShCoeff(base, 6u)
-        + GPS_SH_C2[4] * (xx - yy) * gpsShCoeff(base, 7u);
-#endif
-#if SH_DEGREE > 2
-    res += GPS_SH_C3[0] * y * (3.0 * xx - yy) * gpsShCoeff(base, 8u)
-        + GPS_SH_C3[1] * (x * y) * z * gpsShCoeff(base, 9u)
-        + GPS_SH_C3[2] * y * (4.0 * zz - xx - yy) * gpsShCoeff(base, 10u)
-        + GPS_SH_C3[3] * z * (2.0 * zz - 3.0 * xx - 3.0 * yy) * gpsShCoeff(base, 11u)
-        + GPS_SH_C3[4] * x * (4.0 * zz - xx - yy) * gpsShCoeff(base, 12u)
-        + GPS_SH_C3[5] * z * (xx - yy) * gpsShCoeff(base, 13u)
-        + GPS_SH_C3[6] * x * (xx - 3.0 * yy) * gpsShCoeff(base, 14u);
-#endif
-#if SH_DEGREE > 3
-    res += GPS_SH_C4[0] * x * y * (xx - yy) * gpsShCoeff(base, 15u)
-        + GPS_SH_C4[1] * y * z * (3.0 * xx - yy) * gpsShCoeff(base, 16u)
-        + GPS_SH_C4[2] * x * y * (7.0 * zz - 1.0) * gpsShCoeff(base, 17u)
-        + GPS_SH_C4[3] * y * z * (7.0 * zz - 3.0) * gpsShCoeff(base, 18u)
-        + GPS_SH_C4[4] * (zz * (35.0 * zz - 30.0) + 3.0) * gpsShCoeff(base, 19u)
-        + GPS_SH_C4[5] * x * z * (7.0 * zz - 3.0) * gpsShCoeff(base, 20u)
-        + GPS_SH_C4[6] * (xx - yy) * (7.0 * zz - 1.0) * gpsShCoeff(base, 21u)
-        + GPS_SH_C4[7] * x * z * (xx - 3.0 * yy) * gpsShCoeff(base, 22u)
-        + GPS_SH_C4[8] * (xx * (xx - 3.0 * yy) - yy * (3.0 * xx - yy)) * gpsShCoeff(base, 23u);
-#endif
-    return res;
+    var coeffs : array<vec3<f32>, 25>;
+    for (var j = 0u; j < GPS_SH_DIM; j = j + 1u) {
+        coeffs[1u + j] = gpsShCoeff(base, j);
+    }
+    return computeColorFromSHDegree(dir, coeffs, so1, so2, so3, so4);
 }
 #endif
 
@@ -97,7 +80,8 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     // The part this splat belongs to (0 for a non-compound mesh). Its world matrix is applied here,
     // per frame, so runtime transforms (gizmo, part add/remove) move the splats without re-baking.
     let partIndex = u32(means[g].w);
-    let partWorld = parts[partIndex].world;
+    let pdata = parts[partIndex];
+    let partWorld = pdata.world;
     let near = uniforms.resNearFar.z;
     let far = uniforms.resNearFar.w;
 
@@ -164,12 +148,40 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let chol2 = sqrt(max(0.0, cc - chol1 * chol1));
 
     let rgba = colorOpacity[g];
-    var color = vec3f(f32(rgba & 0xFFu), f32((rgba >> 8u) & 0xFFu), f32((rgba >> 16u) & 0xFFu)) / 255.0;
-    // Per-part visibility scales opacity (0 hides the part), matching the classic partVisibility path.
-    var opacity = f32((rgba >> 24u) & 0xFFu) / 255.0 * parts[partIndex].vis.x;
+    let baseColor = vec3f(f32(rgba & 0xFFu), f32((rgba >> 8u) & 0xFFu), f32((rgba >> 16u) & 0xFFu)) / 255.0;
+    let baseOpacity = f32((rgba >> 24u) & 0xFFu) / 255.0;
+
+    // Per-part debug knobs, mirroring the classic GaussianSplattingDebugger (dbgPartData). The rows are
+    // pass-through defaults when debug is off, so opacity-scale / SH weights apply branchlessly; the
+    // clip / cull tests (which need extra work) are gated behind the debugActive flag (depthNorm.z).
+    if (uniforms.depthNorm.z > 0.5) {
+        let clipMin = pdata.dbg0.xyz;
+        let clipMax = vec3f(pdata.dbg0.w, pdata.dbg1.x, pdata.dbg1.y);
+        if (any(worldPos < clipMin) || any(worldPos > clipMax)) {
+            return;
+        }
+        if (baseOpacity < pdata.dbg1.z || baseOpacity > pdata.dbg1.w) {
+            return;
+        }
+        // Splat size = pow(|det(Sigma3d)|, 1/6), the geometric mean of the principal radii.
+        let det3d = p0.x * (p1.y * p2.y - p2.x * p2.x) - p0.y * (p0.y * p2.y - p2.x * p1.x) + p1.x * (p0.y * p2.x - p1.y * p1.x);
+        let splatSize = pow(abs(det3d), 1.0 / 6.0);
+        if (splatSize < pdata.dbg2.x || splatSize > pdata.dbg2.y) {
+            return;
+        }
+    }
+
+    // Opacity scale (dbg2.z) and SH DC weight (dbg3.x) are 1.0 when debug is off. Part visibility folds
+    // into opacity too, matching the classic partVisibility path. Clamp to [0,1]: the debug opacity
+    // scale can exceed 1 (0-5 slider), and dilog/correctedBoxMuller below are only defined on [0,1] —
+    // the classic just lets alpha blending saturate, so clamping here is the stochastic equivalent.
+    var color = baseColor * pdata.dbg3.x;
+    var opacity = clamp(baseOpacity * pdata.vis.x * pdata.dbg2.z, 0.0, 1.0);
+    let saturate = pdata.dbg2.w > 0.5;
 
     // View-dependent SH: add the higher-degree delta (DC is already baked into the base color). Only
-    // compiled in when the asset has SH (SH_DEGREE define), matching the classic rasterizer.
+    // compiled in when the asset has SH (SH_DEGREE define), matching the classic rasterizer. The
+    // per-band weights (dbg3.yzw, dbg4.x) drive the SH-order debug toggles (all 1.0 when off).
 #if SH_DEGREE > 0
     {
         // SH coefficients live in the splat's local frame, so bring the world-space eye->splat
@@ -177,16 +189,23 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
         // vertex shader's inverseMat3(worldRot)).
         let worldRot = mat3x3f(partWorld[0].xyz, partWorld[1].xyz, partWorld[2].xyz);
         let dir = normalize(gpsInverseMat3(worldRot) * (worldPos - uniforms.camPosDeg.xyz));
-        color += gpsEvalShDelta(g, dir);
+        color += gpsEvalShDelta(g, dir, pdata.dbg3.y, pdata.dbg3.z, pdata.dbg3.w, pdata.dbg4.x);
     }
 #endif
 
-    // Unbiased 2D splatting: importance = 2*pi*sqrt(det) * dilog(opacity) is the integral of the
-    // target point density -ln(1 - opacity*gaussian). Drawing a Poisson count and emitting all samples
-    // (importance-sampled via correctedBoxMuller) makes per-pixel coverage = 1 - exp(-density) equal
-    // exactly opacity*gaussian, matching the classic alpha blend. pointScale must stay 1 for that
-    // exactness (it only trades noise for cost); temporal accumulation denoises.
-    let importance = GPS_TWO_PI * sqrt(det) * gpsDilog(opacity) * uniforms.params0.z;
+    // Point budget (expected sample count) that makes per-pixel coverage match the target.
+    // Normal (unbiased 2D splatting): coverage = opacity*gaussian, so importance = 2*pi*sqrt(det) *
+    //   dilog(opacity) (the integral of the density -ln(1 - opacity*gaussian)); samples are
+    //   Gaussian-distributed (correctedBoxMuller) in the splat kernel.
+    // Debug opacity-saturate: coverage = opacity FLAT across the footprint (a solid disk). That needs a
+    //   uniform density -ln(1 - opacity) over the Mahalanobis-R^2=8 ellipse (area = pi*R^2*sqrt(det) =
+    //   4*(2*pi)*sqrt(det)); the splat kernel then samples uniformly in that ellipse.
+    var importance : f32;
+    if (saturate) {
+        importance = 4.0 * GPS_TWO_PI * sqrt(det) * (-log(1.0 - min(opacity, 0.999))) * uniforms.params0.z;
+    } else {
+        importance = GPS_TWO_PI * sqrt(det) * gpsDilog(opacity) * uniforms.params0.z;
+    }
     let res = uniforms.resNearFar.xy;
     if (importance < 1e-4) {
         return;
@@ -218,7 +237,8 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let dmax = uniforms.depthNorm.y;
     let dlin = clamp((ndc.z - dmin) / max(dmax - dmin, 1e-6), 0.0, 1.0);
     let dord = select(dlin, 1.0 - dlin, uniforms.focal.z > 0.5);
-    s.depth = vec4u(u32(dord * 65535.0), 0u, 0u, 0u);
+    // depth.y carries the debug opacity-saturate flag (flat disk instead of Gaussian falloff).
+    s.depth = vec4u(u32(dord * 65535.0), select(0u, 1u, saturate), 0u, 0u);
     gsData[g] = s;
 
     weights[g] = numPoints;

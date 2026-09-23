@@ -54,13 +54,23 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     let u1 = gpsUnit(st);
     st = gpsPcg(st);
     let u2 = gpsUnit(st);
-    // Importance-sampled offset (unbiased 2D splatting): with the Poisson count in preprocess and no
-    // per-sample rejection, the atomicMin coverage converges to exactly opacity*gaussian.
-    let z = gpsCorrectedBoxMuller(u1, u2, opacity);
-    // Match the classic quad cutoff: meshPos in [-2,2] with a circular discard at |meshPos|>=2,
-    // i.e. mahalanobis 2*sqrt(2) sigma. Our z is in standard-normal (mahalanobis) units, so |z|<2.83.
-    if (dot(z, z) > 8.0) {
-        return;
+    // Offset in the covariance frame (standard-normal / Mahalanobis units).
+    var z : vec2f;
+    if (s.depth.y == 1u) {
+        // Debug opacity-saturate: sample UNIFORMLY over the Mahalanobis R^2=8 ellipse (flat disk). r =
+        // sqrt(u1)*R gives a uniform areal distribution; r <= R, so no cutoff is needed.
+        let r = sqrt(u1) * 2.8284271; // R = sqrt(8)
+        let ang = GPS_TWO_PI * u2;
+        z = vec2f(r * cos(ang), r * sin(ang));
+    } else {
+        // Importance-sampled offset (unbiased 2D splatting): with the Poisson count in preprocess and no
+        // per-sample rejection, the atomicMin coverage converges to exactly opacity*gaussian.
+        z = gpsCorrectedBoxMuller(u1, u2, opacity);
+        // Match the classic quad cutoff: meshPos in [-2,2] with a circular discard at |meshPos|>=2,
+        // i.e. mahalanobis 2*sqrt(2) sigma. Our z is in standard-normal (mahalanobis) units, so |z|<2.83.
+        if (dot(z, z) > 8.0) {
+            return;
+        }
     }
     let offset = vec2f(chol.x * z.x, chol.y * z.x + chol.z * z.y);
 
@@ -75,7 +85,10 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     // Hard-reject only fully-transparent tail samples (cleanup); the coverage is set by the sample
     // DENSITY (importance sampling), not by a per-sample stochastic emission.
     let d = pixelMean - pixel;
-    let alpha = opacity * gpsGaussianValue(conic, d);
+    // Debug opacity-saturate (s.depth.y): drop the Gaussian falloff so the footprint reads as a flat
+    // disk. Approximate in the stochastic model (sample density is still Gaussian), but visibly fills
+    // the splat as the classic's flat-disk debug does.
+    let alpha = select(opacity * gpsGaussianValue(conic, d), opacity, s.depth.y == 1u);
     if (alpha < 0.00392) { // ~1/255
         return;
     }

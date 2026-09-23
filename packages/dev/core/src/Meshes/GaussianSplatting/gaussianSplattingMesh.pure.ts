@@ -24,6 +24,7 @@ import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 import { type SubMesh } from "core/Meshes/subMesh.pure";
 import { GaussianPointSplattingRenderer } from "./gaussianPointSplattingRenderer.pure";
 import { GaussianPointSplattingBlitMaterial } from "core/Materials/GaussianSplatting/gaussianPointSplattingBlitMaterial.pure";
+import { type GaussianSplattingDebugMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin.pure";
 
 export { IsGaussianSplattingClassName } from "./gaussianSplatting.functions";
 
@@ -301,7 +302,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     private _pointPartCount = 1;
     private _pointPartLocalMin = new Float32Array(3);
     private _pointPartLocalMax = new Float32Array(3);
-    private _pointPartScratch = new Float32Array(20);
+    private _pointPartScratch = new Float32Array(40);
     private _pointDecodedSplatsData: Nullable<ArrayBuffer> = null;
     private readonly _pointVpMatrix = new Matrix();
 
@@ -763,8 +764,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._pointPartCount = partCount;
         this._pointPartLocalMin = pMin;
         this._pointPartLocalMax = pMax;
-        if (this._pointPartScratch.length !== partCount * 20) {
-            this._pointPartScratch = new Float32Array(partCount * 20);
+        if (this._pointPartScratch.length !== partCount * 40) {
+            this._pointPartScratch = new Float32Array(partCount * 40);
         }
         this._pointRenderer!.updateSplats(means, cov3d, colorOpacity, sh, this._shDegree, count);
     }
@@ -797,23 +798,72 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         return new Uint32Array(bytes.buffer);
     }
 
-    /** Packs this frame's live per-part world matrices + visibilities and uploads them to the renderer,
-     * mirroring the classic `partWorld` / `partVisibility` the vertex shader reads. */
+    /** Packs this frame's live per-part records (world matrix + visibility + debug-LUT rows) and uploads
+     * them to the renderer, mirroring the classic `partWorld` / `partVisibility` and the debugger's
+     * `dbgPartData`. Debug knobs are read live from the shared GaussianSplattingDebugMaterialPlugin (the
+     * same one the classic renderer and the viewer already drive), so point mode honors them identically. */
     private _pointUploadParts(): void {
         const count = this._pointPartCount;
-        if (this._pointPartScratch.length !== count * 20) {
-            this._pointPartScratch = new Float32Array(count * 20);
+        if (this._pointPartScratch.length !== count * 40) {
+            this._pointPartScratch = new Float32Array(count * 40);
         }
         const scratch = this._pointPartScratch;
         const compound = this.isCompound;
+
+        // Resolve debug state from the shared debug plugin on this mesh's material (if attached & active).
+        const plugin = this.material?.pluginManager?.getPlugin("GaussianSplattingDebug") as Nullable<GaussianSplattingDebugMaterialPlugin>;
+        const debugActive = !!plugin && plugin.isDebugActive;
+        let lut: Nullable<Float32Array> = null;
+        let lutStride = 0;
+        if (plugin && debugActive) {
+            const resolved = plugin.getResolvedPartData(count, this._scene.getEngine());
+            lut = resolved.data;
+            lutStride = resolved.maxPartCount;
+        }
+        this._pointRenderer!.debugActive = debugActive ? 1 : 0;
+
         for (let i = 0; i < count; i++) {
             const worldM = (compound ? this.getWorldMatrixForPart(i) : this.getWorldMatrix()).m;
             const vis = compound ? this.getPartVisibility(i) : this.visibility;
-            scratch.set(worldM, i * 20);
-            scratch[i * 20 + 16] = vis;
-            scratch[i * 20 + 17] = 0;
-            scratch[i * 20 + 18] = 0;
-            scratch[i * 20 + 19] = 0;
+            const o = i * 40;
+            scratch.set(worldM, o);
+            scratch[o + 16] = vis;
+            scratch[o + 17] = 0;
+            scratch[o + 18] = 0;
+            scratch[o + 19] = 0;
+            // Debug rows 0..4 (o+20 .. o+39). LUT is row-major (row r, part i at (stride*r + i)*4).
+            if (lut) {
+                for (let r = 0; r < 5; r++) {
+                    const src = (lutStride * r + i) * 4;
+                    const dst = o + 20 + r * 4;
+                    scratch[dst] = lut[src];
+                    scratch[dst + 1] = lut[src + 1];
+                    scratch[dst + 2] = lut[src + 2];
+                    scratch[dst + 3] = lut[src + 3];
+                }
+            } else {
+                // Pass-through defaults: no clip, no cull, opacityScale 1, no saturate, SH weights all 1.
+                scratch[o + 20] = -1e9;
+                scratch[o + 21] = -1e9;
+                scratch[o + 22] = -1e9;
+                scratch[o + 23] = 1e9;
+                scratch[o + 24] = 1e9;
+                scratch[o + 25] = 1e9;
+                scratch[o + 26] = 0;
+                scratch[o + 27] = 1;
+                scratch[o + 28] = 0;
+                scratch[o + 29] = 1e9;
+                scratch[o + 30] = 1;
+                scratch[o + 31] = 0;
+                scratch[o + 32] = 1;
+                scratch[o + 33] = 1;
+                scratch[o + 34] = 1;
+                scratch[o + 35] = 1;
+                scratch[o + 36] = 1;
+                scratch[o + 37] = 0;
+                scratch[o + 38] = 0;
+                scratch[o + 39] = 0;
+            }
         }
         this._pointRenderer!.setPartData(scratch, count);
     }
@@ -829,7 +879,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         let ndczMax = -Infinity;
         const scratch = this._pointPartScratch;
         for (let p = 0; p < this._pointPartCount; p++) {
-            const wb = p * 20;
+            const wb = p * 40;
             const lb = p * 3;
             const minx = this._pointPartLocalMin[lb];
             if (!isFinite(minx)) {
