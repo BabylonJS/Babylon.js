@@ -581,6 +581,13 @@
             "dependsOn": ["Materials", "Shaders"]
         },
         {
+            "title": "needDepthPrePass StandardMaterial alpha test (diffuse, opacity texture, vertex, material, instance colour, opacity fresnel)",
+            "playgroundId": "#7EDYVC#5",
+            "referenceImage": "needDepthPrePassStandardAlphaTest.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Shaders", "Textures", "Meshes"]
+        },
+        {
             "title": "Decal map PP",
             "playgroundId": "#9BVW2S#101",
             "referenceImage": "decal-map-pp.png",

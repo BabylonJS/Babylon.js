@@ -27,6 +27,7 @@
         "Shaders/ShadersInclude/decalFragment.ts": ["shader-store-write"],
         "Shaders/ShadersInclude/decalFragmentDeclaration.ts": ["shader-store-write"],
         "Shaders/ShadersInclude/decalVertexDeclaration.ts": ["shader-store-write"],
+        "Shaders/ShadersInclude/defaultFragmentAlpha.ts": ["shader-store-write"],
         "Shaders/ShadersInclude/defaultFragmentDeclaration.ts": ["bare-import", "shader-store-write"],
         "Shaders/ShadersInclude/defaultUboDeclaration.ts": ["bare-import", "shader-store-write"],
         "Shaders/ShadersInclude/defaultVertexDeclaration.ts": ["bare-import", "shader-store-write"],
