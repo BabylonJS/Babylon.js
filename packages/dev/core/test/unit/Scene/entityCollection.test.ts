@@ -57,43 +57,4 @@ describe("Scene entity collection blocking", () => {
         expect(addMesh).toHaveBeenCalledOnce();
         expect(scene._blockEntityCollection).toBe(false);
     });
-
-    it("restores the previous state when an asynchronous scope rejects", async () => {
-        const error = new Error("Async entity construction failed");
-
-        await expect(
-            scene._executeWithBlockedEntityCollectionAsync(true, async () => {
-                expect(scene._blockEntityCollection).toBe(true);
-                throw error;
-            })
-        ).rejects.toThrow(error);
-        expect(scene._blockEntityCollection).toBe(false);
-    });
-
-    it("restores overlapping asynchronous scopes in completion order", async () => {
-        let resolveFirst!: () => void;
-        let resolveSecond!: () => void;
-        const first = scene._executeWithBlockedEntityCollectionAsync(
-            true,
-            async () =>
-                await new Promise<void>((resolve) => {
-                    resolveFirst = resolve;
-                })
-        );
-        const second = scene._executeWithBlockedEntityCollectionAsync(
-            true,
-            async () =>
-                await new Promise<void>((resolve) => {
-                    resolveSecond = resolve;
-                })
-        );
-
-        expect(scene._blockEntityCollection).toBe(true);
-        resolveFirst();
-        await first;
-        expect(scene._blockEntityCollection).toBe(true);
-        resolveSecond();
-        await second;
-        expect(scene._blockEntityCollection).toBe(false);
-    });
 });

@@ -799,15 +799,13 @@ const ImportMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
         if (subMaterials.length > 1) {
             result = new MultiMaterial("multimat" + id, gltfRuntime.scene);
             result.subMaterials = subMaterials;
+            result._parentContainer = gltfRuntime.assetContainer;
+        } else if (subMaterials.length === 1) {
+            result = subMaterials[0] as StandardMaterial;
         } else {
             result = new StandardMaterial("multimat" + id, gltfRuntime.scene);
+            result._parentContainer = gltfRuntime.assetContainer;
         }
-
-        if (subMaterials.length === 1) {
-            result = subMaterials[0] as StandardMaterial;
-        }
-
-        result._parentContainer = gltfRuntime.assetContainer;
 
         if (!newMesh.material) {
             newMesh.material = result;
