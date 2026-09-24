@@ -78,7 +78,11 @@ export class WebXRDefaultExperienceOptions {
      */
     public outputCanvasOptions?: WebXRManagedOutputCanvasOptions;
     /**
-     * optional UI options. This can be used among other to change session mode and reference space type
+     * Options for the default enter/exit UI, including session mode and reference space type.
+     * Set `onError` here to receive XR entry failures (including WebGPU session negotiation failures)
+     * when the default button is used. The application can then notify the user or create a new
+     * WebGL engine and scene; Babylon.js cannot switch an existing scene's rendering backend.
+     * When `disableDefaultUI` is true, handle rejections from `baseExperience.enterXRAsync()` instead.
      */
     public uiOptions?: Partial<WebXREnterExitUIOptions>;
     /**
