@@ -134,7 +134,11 @@ fn main(@builtin(global_invocation_id) gid : vec3u) {
     if (viewDepth <= near) {
         return;
     }
-    let ndc = clip.xyz / clip.w;
+    var ndc = clip.xyz / clip.w;
+    // Temporal-upsampling jitter: sub-pixel NDC shift so this frame's low-res grid samples a different
+    // full-res sub-position (reconstructed in resolve). Zero when not upsampling.
+    ndc.x += uniforms.misc.x;
+    ndc.y += uniforms.misc.y;
     if (ndc.x < -1.3 || ndc.x > 1.3 || ndc.y < -1.3 || ndc.y > 1.3) {
         return;
     }

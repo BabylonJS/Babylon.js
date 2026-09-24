@@ -24,9 +24,9 @@ const PartitionBuckets = 65536;
  *
  * Per-frame pipeline (dispatched before the render pass):
  *   preprocess (1 thread/Gaussian: transform, cull, cache screen state, emit a point weight)
- *   -> scan (Blelloch prefix sum of weights -> CDF + GPU-written indirect dispatch args)
- *   -> splat (indirect, 1 thread/point: binary-search the CDF for its Gaussian, atomicMin its sample)
- *   -> resolve (unpack the packed image buffer into the full-float accumulation buffer, reset it).
+ *   then scan (Blelloch prefix sum of weights into a CDF + GPU-written indirect dispatch args)
+ *   then splat (indirect, 1 thread/point: binary-search the CDF for its Gaussian, atomicMin its sample)
+ *   then resolve (unpack the packed image buffer into the full-float accumulation buffer, reset it).
  *
  * Per-Gaussian buffers are (re)built only on new splat data; per-pixel buffers only on resize.
  * Nothing reads back from the GPU on the render path — the point count reaches the splat dispatch via
@@ -85,10 +85,13 @@ export class GaussianPointSplattingRenderer {
     private _indirectArgs: StorageBuffer;
     private _partition: StorageBuffer;
 
-    // Per-pixel buffers (rebuilt on resize).
+    // Per-pixel buffers. imageBuffer + hiZ are at the (low) RENDER resolution; accum* are at the (full)
+    // OUTPUT resolution — temporal upsampling scatters each low-res result into a jittered full-res pixel.
     private _imageBuffer: Nullable<StorageBuffer> = null;
     private _accumBuffer: Nullable<StorageBuffer> = null;
     private _accumDepth: Nullable<StorageBuffer> = null;
+    // Per full-res pixel: (generation << 16) | active-frame count, for the per-pixel running mean.
+    private _accumCount: Nullable<StorageBuffer> = null;
     // Hi-Z occlusion pyramid: all mip levels (max view-z) concatenated, level 0 = full res. Rebuilt on
     // resize. _hiZLevels[l] = { offset (floats), w, h }; the build uniform carries src/dst per level.
     private _hiZ: Nullable<StorageBuffer> = null;
@@ -97,8 +100,14 @@ export class GaussianPointSplattingRenderer {
     // required because all level dispatches record into one command encoder: a single shared buffer
     // updated in the loop would leave every dispatch reading only the last-written src/dst.
     private _hiZBuildParams: UniformBuffer[] = [];
-    private _width = 0;
+    private _width = 0; // render (low) resolution
     private _height = 0;
+    private _outWidth = 0; // output (full) resolution = accum resolution
+    private _outHeight = 0;
+    // Temporal upsampling: integer upscale factor N and this frame's sub-cell offset (ox,oy) in [0,N).
+    private _upsampleN = 1;
+    private _jitterX = 0;
+    private _jitterY = 0;
 
     // Latest camera state, applied to the uniform buffer each frame.
     private _view: Nullable<Matrix> = null;
@@ -125,8 +134,10 @@ export class GaussianPointSplattingRenderer {
     private _partCount = 0;
     private _prevPartData: Float32Array = new Float32Array(0);
 
-    // Progressive accumulation state.
-    private _accumFrame = 0;
+    // Progressive accumulation state. Generation is bumped on reset so per-pixel counts (in _accumCount,
+    // never cleared) are invalidated without a buffer wipe.
+    private _accumGeneration = 0;
+    private _lastRenderedGeneration = -1; // generation at the previous render; a change means motion this frame
     private _prevVp = new Float32Array(16);
     private _hasPrevVp = false;
 
@@ -185,6 +196,7 @@ export class GaussianPointSplattingRenderer {
             imageBuffer: { group: 0, binding: 2 },
             accumDepth: { group: 0, binding: 3 },
             hiZ: { group: 0, binding: 4 },
+            accumCount: { group: 0, binding: 5 },
         };
         this._resolveCs = new ComputeShader("gpsResolve", engine, "gpsResolve", { bindingsMapping: resolveBindings });
 
@@ -197,13 +209,15 @@ export class GaussianPointSplattingRenderer {
         this._uniforms.addUniform("camPosDeg", 4);
         this._uniforms.addUniform("depthNorm", 4);
         this._uniforms.addUniform("hiZInfo", 4);
+        this._uniforms.addUniform("misc", 4); // xy = temporal-upsampling jitter (NDC); zw reserved
 
         this._resolveParams = new UniformBuffer(engine);
-        this._resolveParams.addUniform("resolution", 2);
-        this._resolveParams.addUniform("accumFrame", 1);
-        this._resolveParams.addUniform("pad0", 1);
+        this._resolveParams.addUniform("resolution", 2); // render (low) res
+        this._resolveParams.addUniform("outResolution", 2); // output (full) res
         this._resolveParams.addUniform("depthNorm", 2); // viewZMin, viewZMax
-        this._resolveParams.addUniform("pad1", 2);
+        this._resolveParams.addUniform("pad0", 2);
+        this._resolveParams.addUniform("upsample", 4); // N, jitterX, jitterY, generation
+        this._resolveParams.addUniform("misc2", 4); // x = maxAccum; yzw reserved
         this._resolveParams.addUniform("projZ", 4); // m10, m11, m14, m15
 
         // pointCount: [totalPoints, indirectGroups, ...]. indirectArgs: [gx, gy, gz] for dispatchIndirect.
@@ -256,6 +270,16 @@ export class GaussianPointSplattingRenderer {
         return this._accumDepth;
     }
 
+    /**
+     * Reads back the total emitted point count from the last dispatched frame (async GPU readback). Used by
+     * the budget-driven auto render-scale controller.
+     * @returns the emitted point count (0 if never dispatched)
+     */
+    public async readPointCountAsync(): Promise<number> {
+        const data = await this._pointCount.read(0, Uint32Array.BYTES_PER_ELEMENT);
+        return new Uint32Array(data.buffer, data.byteOffset, 1)[0];
+    }
+
     /** Current internal render width, in pixels. */
     public get width(): number {
         return this._width;
@@ -264,6 +288,16 @@ export class GaussianPointSplattingRenderer {
     /** Current internal render height, in pixels. */
     public get height(): number {
         return this._height;
+    }
+
+    /** Output (full) width the accumulation buffer is sized to (what the blit samples). */
+    public get outputWidth(): number {
+        return this._outWidth;
+    }
+
+    /** Output (full) height the accumulation buffer is sized to. */
+    public get outputHeight(): number {
+        return this._outHeight;
     }
 
     /** Number of Gaussians currently loaded. */
@@ -338,9 +372,11 @@ export class GaussianPointSplattingRenderer {
         this.resetAccumulation();
     }
 
-    /** Restarts progressive accumulation (e.g. after a camera move, resize, or new data). */
+    /** Restarts progressive accumulation (e.g. after a camera move, resize, or new data). Bumping the
+     * generation invalidates every pixel's accumulated count with no buffer wipe, so each full-res pixel
+     * overwrites cleanly (t=1) on its next visit. */
     public resetAccumulation(): void {
-        this._accumFrame = 0;
+        this._accumGeneration = (this._accumGeneration + 1) & 0xffff;
         this._hasPrevVp = false;
     }
 
@@ -437,79 +473,98 @@ export class GaussianPointSplattingRenderer {
         this._parts.update(packed);
     }
 
-    private _ensurePixelBuffers(width: number, height: number): void {
-        if (width === this._width && height === this._height && this._accumBuffer) {
-            return;
-        }
-        this._width = width;
-        this._height = height;
-
+    private _ensurePixelBuffers(width: number, height: number, outWidth: number, outHeight: number): void {
         const engine = this._engine as WebGPUEngine;
-        const pixelCount = width * height;
+        // Render-res buffers (imageBuffer + Hi-Z) and output-res buffers (accum) are resized independently.
+        // Crucially, a render-res-only change (auto budget flipping the factor N) reallocates the low-res
+        // buffers but does NOT reset the accumulation — the full-res accum stays valid, so the auto scale can
+        // adapt without wiping the progressive result every frame.
+        const renderChanged = width !== this._width || height !== this._height || !this._imageBuffer;
+        const outChanged = outWidth !== this._outWidth || outHeight !== this._outHeight || !this._accumBuffer;
 
-        this._imageBuffer?.dispose();
-        this._imageBuffer = new StorageBuffer(engine, pixelCount * Uint32Array.BYTES_PER_ELEMENT);
-        // Seed the packed image buffer to the depth-clear sentinel; resolve keeps it seeded thereafter.
-        const seed = new Uint32Array(pixelCount);
-        seed.fill(DepthClearSentinel);
-        this._imageBuffer.update(seed);
+        if (renderChanged) {
+            this._width = width;
+            this._height = height;
+            const pixelCount = width * height;
 
-        // accum: premultiplied color (rgb) + accumulated coverage (w).
-        this._accumBuffer?.dispose();
-        this._accumBuffer = new StorageBuffer(engine, pixelCount * 4 * Float32Array.BYTES_PER_ELEMENT);
+            this._imageBuffer?.dispose();
+            this._imageBuffer = new StorageBuffer(engine, pixelCount * Uint32Array.BYTES_PER_ELEMENT);
+            // Seed the packed image buffer to the depth-clear sentinel; resolve keeps it seeded thereafter.
+            const seed = new Uint32Array(pixelCount);
+            seed.fill(DepthClearSentinel);
+            this._imageBuffer.update(seed);
 
-        // accumDepth: resolved surface depth (NDC z), one float per pixel, for fragDepth compositing.
-        this._accumDepth?.dispose();
-        this._accumDepth = new StorageBuffer(engine, pixelCount * Float32Array.BYTES_PER_ELEMENT);
+            // Hi-Z occlusion pyramid at RENDER res (preprocess reads it in render-pixel space). Seed to FAR.
+            this._hiZLevels = [];
+            let hiZOffset = 0;
+            const numLevels = Math.floor(Math.log2(Math.max(width, height))) + 1;
+            for (let l = 0; l < numLevels; l++) {
+                const lw = Math.max(1, width >> l);
+                const lh = Math.max(1, height >> l);
+                this._hiZLevels.push({ offset: hiZOffset, w: lw, h: lh });
+                hiZOffset += lw * lh;
+            }
+            this._hiZ?.dispose();
+            this._hiZ = new StorageBuffer(engine, hiZOffset * Float32Array.BYTES_PER_ELEMENT);
+            this._hiZ.update(new Float32Array(hiZOffset).fill(1e30));
 
-        // Hi-Z occlusion pyramid: max-view-z mip chain, all levels concatenated (level 0 = full res, each
-        // level halved). Seed to a large FAR value so nothing is culled before a real depth exists.
-        this._hiZLevels = [];
-        let hiZOffset = 0;
-        const numLevels = Math.floor(Math.log2(Math.max(width, height))) + 1;
-        for (let l = 0; l < numLevels; l++) {
-            const lw = Math.max(1, width >> l);
-            const lh = Math.max(1, height >> l);
-            this._hiZLevels.push({ offset: hiZOffset, w: lw, h: lh });
-            hiZOffset += lw * lh;
+            for (const ub of this._hiZBuildParams) {
+                ub.dispose();
+            }
+            this._hiZBuildParams = [];
+            for (let l = 1; l < numLevels; l++) {
+                const src = this._hiZLevels[l - 1];
+                const dst = this._hiZLevels[l];
+                const ub = new UniformBuffer(engine);
+                ub.addUniform("src", 4);
+                ub.addUniform("dst", 4);
+                ub.updateUInt4("src", src.offset, src.w, src.h, 0);
+                ub.updateUInt4("dst", dst.offset, dst.w, dst.h, 0);
+                ub.update();
+                this._hiZBuildParams.push(ub);
+            }
         }
-        this._hiZ?.dispose();
-        this._hiZ = new StorageBuffer(engine, hiZOffset * Float32Array.BYTES_PER_ELEMENT);
-        this._hiZ.update(new Float32Array(hiZOffset).fill(1e30));
 
-        // One params buffer per build level (levels 1..N reduce from the finer level below). Offsets/dims
-        // are constant for this resolution, so fill them once here and only bind + dispatch per frame.
-        for (const ub of this._hiZBuildParams) {
-            ub.dispose();
-        }
-        this._hiZBuildParams = [];
-        for (let l = 1; l < numLevels; l++) {
-            const src = this._hiZLevels[l - 1];
-            const dst = this._hiZLevels[l];
-            const ub = new UniformBuffer(engine);
-            ub.addUniform("src", 4);
-            ub.addUniform("dst", 4);
-            ub.updateUInt4("src", src.offset, src.w, src.h, 0);
-            ub.updateUInt4("dst", dst.offset, dst.w, dst.h, 0);
-            ub.update();
-            this._hiZBuildParams.push(ub);
-        }
+        if (outChanged) {
+            this._outWidth = outWidth;
+            this._outHeight = outHeight;
+            const outCount = outWidth * outHeight;
 
-        this.resetAccumulation();
+            // accum: premultiplied color (rgb) + accumulated coverage (w), at OUTPUT resolution.
+            this._accumBuffer?.dispose();
+            this._accumBuffer = new StorageBuffer(engine, outCount * 4 * Float32Array.BYTES_PER_ELEMENT);
+            // accumDepth: resolved surface depth (NDC z), one float per output pixel, for fragDepth compositing.
+            this._accumDepth?.dispose();
+            this._accumDepth = new StorageBuffer(engine, outCount * Float32Array.BYTES_PER_ELEMENT);
+            // accumCount: per output pixel (generation<<16 | active-frame count). Zero-initialized.
+            this._accumCount?.dispose();
+            this._accumCount = new StorageBuffer(engine, outCount * Uint32Array.BYTES_PER_ELEMENT);
+
+            // Only a genuine output-resolution change (window resize / first alloc) invalidates the accum.
+            this.resetAccumulation();
+        }
     }
 
     /**
      * Runs the per-frame GPS compute pipeline for the given viewport, leaving the result in
      * {@link accumBuffer}. Allocates/resizes buffers on demand.
-     * @param width internal render width in pixels
-     * @param height internal render height in pixels
+     * @param width internal render (low) width in pixels
+     * @param height internal render (low) height in pixels
+     * @param outWidth output (full) width the accumulation is reconstructed at
+     * @param outHeight output (full) height
+     * @param upsampleN integer upscale factor (outWidth ~= width * N); 1 = no upsampling
+     * @param jitterX this frame's sub-cell offset x in [0, N)
+     * @param jitterY this frame's sub-cell offset y in [0, N)
      * @returns true if the pipeline dispatched, false if it was not ready / had nothing to draw
      */
-    public renderToBuffer(width: number, height: number): boolean {
+    public renderToBuffer(width: number, height: number, outWidth = width, outHeight = height, upsampleN = 1, jitterX = 0, jitterY = 0): boolean {
         if (width <= 0 || height <= 0) {
             return false;
         }
-        this._ensurePixelBuffers(width, height);
+        this._upsampleN = Math.max(1, Math.round(upsampleN));
+        this._jitterX = jitterX;
+        this._jitterY = jitterY;
+        this._ensurePixelBuffers(width, height, outWidth, outHeight);
 
         if (this._gaussianCount === 0 || !this._parts || !this._view || !this._viewProjection || !this.isReady()) {
             return false;
@@ -526,28 +581,44 @@ export class GaussianPointSplattingRenderer {
             }
         }
         if (moved) {
-            this._accumFrame = 0;
+            this.resetAccumulation();
             this._prevVp.set(vp);
             this._hasPrevVp = true;
         }
+
+        // "Moving" = something reset accumulation this frame (camera or part moved, via generation bump).
+        // While moving, resolve writes a COMPLETE upscaled frame instead of the sparse jittered scatter, so
+        // there is no motion trail from not-yet-revisited full-res pixels; static frames accumulate to full res.
+        const moving = this._accumGeneration !== this._lastRenderedGeneration;
+        this._lastRenderedGeneration = this._accumGeneration;
+
+        // Jitter (NDC) so render pixel (lx,ly) samples full-res (lx*N+ox, ly*N+oy): shift the projected mean
+        // by the sub-cell offset relative to the cell center. Added to ndc.xy in preprocess (uniforms.misc).
+        const n = this._upsampleN;
+        const jitterNdcX = n > 1 ? (-2 * (this._jitterX + 0.5 - n / 2)) / this._outWidth : 0;
+        const jitterNdcY = n > 1 ? (-2 * (this._jitterY + 0.5 - n / 2)) / this._outHeight : 0;
 
         this._uniforms.updateMatrix("view", this._view);
         this._uniforms.updateMatrix("viewProjection", this._viewProjection);
         this._uniforms.updateFloat4("resNearFar", width, height, this._near, this._far);
         // frameSeed wraps to stay exact as a float and to vary the stochastic sampling each frame.
-        this._uniforms.updateFloat4("params0", this._gaussianCount, this.kernelSize, this.pointScale, this._frameIndex % 65536);
+        // kernelSize is a fixed OUTPUT-pixel low-pass dilation; the covariance is in render (low) pixels, so
+        // scale it by (renderW/outW)^2 — otherwise a low-res render dilates splats N^2x too much (blobby).
+        const renderScaleSq = this._outWidth > 0 ? (this._width / this._outWidth) * (this._height / this._outHeight) : 1;
+        this._uniforms.updateFloat4("params0", this._gaussianCount, this.kernelSize * renderScaleSq, this.pointScale, this._frameIndex % 65536);
         const reverseZ = this.reverseDepth ? 1 : 0;
         this._uniforms.updateFloat4("focal", this._focalX, this._focalY, reverseZ, this.isOrthographic ? 1 : 0);
         this._uniforms.updateFloat4("camPosDeg", this._camX, this._camY, this._camZ, this._shDegree);
         this._uniforms.updateFloat4("depthNorm", this._viewZMin, this._viewZMax, this.debugActive, this.compensation ? 1 : 0);
         this._uniforms.updateFloat4("hiZInfo", width, height, this._hiZLevels.length, this.occlusionCulling ? 1 : 0);
+        this._uniforms.updateFloat4("misc", jitterNdcX, jitterNdcY, 0, 0); // xy = temporal-upsampling jitter (NDC)
         this._uniforms.update();
 
-        this._resolveParams.updateFloat2("resolution", width, height);
-        this._resolveParams.updateFloat("accumFrame", this._accumFrame);
-        this._resolveParams.updateFloat("pad0", reverseZ);
+        this._resolveParams.updateFloat2("resolution", width, height); // render (low) res
+        this._resolveParams.updateFloat2("outResolution", this._outWidth, this._outHeight);
         this._resolveParams.updateFloat2("depthNorm", this._viewZMin, this._viewZMax);
-        this._resolveParams.updateFloat2("pad1", 0, 0);
+        this._resolveParams.updateFloat4("upsample", n, this._jitterX, this._jitterY, this._accumGeneration);
+        this._resolveParams.updateFloat4("misc2", this.maxAccumFrames, moving ? 1 : 0, 0, 0);
         this._resolveParams.updateFloat4("projZ", this._projZ[0], this._projZ[1], this._projZ[2], this._projZ[3]);
         this._resolveParams.update();
 
@@ -602,6 +673,8 @@ export class GaussianPointSplattingRenderer {
         this._resolveCs.setUniformBuffer("params", this._resolveParams);
         this._resolveCs.setStorageBuffer("imageBuffer", this._imageBuffer!);
         this._resolveCs.setStorageBuffer("hiZ", this._hiZ!);
+        this._resolveCs.setStorageBuffer("accumCount", this._accumCount!);
+        // Dispatched per RENDER (low) pixel; each scatters into a jittered full-res accum pixel.
         this._resolveCs.dispatch(Math.ceil(width / 8), Math.ceil(height / 8), 1);
 
         // Build the Hi-Z pyramid from this frame's depth (level 0 written by resolve) for next frame's
@@ -616,9 +689,7 @@ export class GaussianPointSplattingRenderer {
         }
 
         this._frameIndex++;
-        if (this._accumFrame < this.maxAccumFrames) {
-            this._accumFrame++;
-        }
+        // Per-pixel active-frame counts live in _accumCount (capped in the resolve shader); no global counter.
         return true;
     }
 
@@ -649,9 +720,11 @@ export class GaussianPointSplattingRenderer {
         this._imageBuffer?.dispose();
         this._accumBuffer?.dispose();
         this._accumDepth?.dispose();
+        this._accumCount?.dispose();
         this._accumDepth = null;
         this._imageBuffer = null;
         this._accumBuffer = null;
+        this._accumCount = null;
         this._hiZ?.dispose();
         this._hiZ = null;
         for (const ub of this._hiZBuildParams) {

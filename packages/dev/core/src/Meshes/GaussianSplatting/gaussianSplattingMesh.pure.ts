@@ -294,6 +294,19 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     // Only the main color pass is swapped — depth, GPU picking, IBL voxelization and prepass keep
     // rasterizing the classic geometry, so the mesh stays a full shadow caster / depth occluder.
     private _pointMode = false;
+    /** Internal render-resolution scale for point splatting. A number (1 = full) renders fewer pixels =
+     * ~scale^2 fewer emitted points, with full resolution reconstructed over frames by jittered temporal
+     * upsampling. `"auto"` (default) drives the scale from a device-tiered point budget: scale =
+     * sqrt(budget / full-res point count), so the per-frame point count converges to the budget. Rounded to
+     * an integer factor N = round(1/scale). */
+    public pointSplattingRenderScale: number | "auto" = "auto";
+    // Budget-driven auto scale state: current integer factor N, an EMA of the full-res point estimate (to
+    // damp per-frame occlusion/Poisson noise so N doesn't churn), and an in-flight guard for the async readback.
+    private _pointAutoN = 2;
+    private _pointFullPointsEma = 0;
+    private _pointBudgetReadPending = false;
+    // Frame counter driving the temporal-upsampling jitter cycle (which full-res sub-cell to sample).
+    private _pointFrameCounter = 0;
     private _pointRenderer: Nullable<GaussianPointSplattingRenderer> = null;
     private _pointBlit: Nullable<GaussianPointSplattingBlitMaterial> = null;
     private _pointBlitMesh: Nullable<Mesh> = null;
@@ -922,6 +935,81 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         return [vzMin, vzMax];
     }
 
+    /**
+     * A stride coprime to `total` near the golden ratio, so `i*stride % total` is a complete but decorrelated
+     * (blue-noise-ish) permutation of [0,total) — used to order the jitter sub-cell visits so partial frames
+     * are spread out rather than swept in raster order.
+     * @param total the cycle length (number of sub-cells, N*N)
+     * @returns a stride coprime to total
+     */
+    private _pointCoprimeStride(total: number): number {
+        if (total <= 2) {
+            return 1;
+        }
+        const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+        let s = Math.max(1, Math.round(total * 0.6180339887));
+        while (gcd(s, total) !== 1) {
+            s++;
+        }
+        return s;
+    }
+
+    /** Device-tiered per-frame point budget for the `"auto"` render scale: desktop 15M, iOS 9M, other
+     * mobile 6M. A fixed device-class heuristic (not derived from actual VRAM/GPU).
+     * @returns the target emitted-point count per frame */
+    private _pointBudget(): number {
+        const isMobile = !!this._scene.getEngine().hostInformation?.isMobile;
+        if (!isMobile) {
+            return 15_000_000;
+        }
+        if (typeof navigator !== "undefined" && navigator.userAgent && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            return 9_000_000;
+        }
+        return 6_000_000;
+    }
+
+    /**
+     * Kicks a throttled async readback of the current point count and converges the auto render factor N so
+     * the per-frame emitted points approach the device budget (scale = sqrt(budget / fullResPoints)).
+     * @param currentN the render factor N used for the frame being measured
+     */
+    private _pointUpdateAutoScale(currentN: number): void {
+        if (this._pointBudgetReadPending || !this._pointRenderer) {
+            return;
+        }
+        this._pointBudgetReadPending = true;
+        void this._pointConvergeAutoScaleAsync(currentN);
+    }
+
+    private async _pointConvergeAutoScaleAsync(currentN: number): Promise<void> {
+        try {
+            const total = await this._pointRenderer!.readPointCountAsync();
+            if (total > 0) {
+                // Smooth the full-res point estimate (points ~ N^-2 -> fullPoints = measured * N^2). The EMA
+                // absorbs per-frame occlusion/Poisson noise (and the one-frame spike when a resize reseeds
+                // Hi-Z), so the factor N doesn't churn.
+                const fullPoints = total * currentN * currentN;
+                this._pointFullPointsEma = this._pointFullPointsEma > 0 ? this._pointFullPointsEma * 0.8 + fullPoints * 0.2 : fullPoints;
+                // Hysteretic budget-CAP controller: raise N to get under budget when over; step down one level
+                // only if the lower level still fits (0.9 margin). Keeps per-frame points <= budget, stable N.
+                const budget = this._pointBudget();
+                const estAtCurrent = this._pointFullPointsEma / (currentN * currentN);
+                let target = currentN;
+                if (estAtCurrent > budget) {
+                    target = Math.ceil(Math.sqrt(this._pointFullPointsEma / budget)); // smallest N under budget
+                } else if (currentN > 1) {
+                    const lower = currentN - 1;
+                    if (this._pointFullPointsEma / (lower * lower) <= budget * 0.9) {
+                        target = lower;
+                    }
+                }
+                this._pointAutoN = Math.max(1, Math.min(8, target));
+            }
+        } finally {
+            this._pointBudgetReadPending = false;
+        }
+    }
+
     /** Runs the compute pipeline before the render pass (compute cannot run inside an active pass) and
      * binds the resolved buffers to the blit material for the color pass. */
     private _pointRunCompute(): void {
@@ -937,8 +1025,24 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             return;
         }
         const engine = this._scene.getEngine();
-        const width = engine.getRenderWidth();
-        const height = engine.getRenderHeight();
+        // Render the point pipeline at a reduced internal resolution (integer factor N = round(1/scale)):
+        // fewer pixels shrink each splat's footprint (~1/N^2 emitted points), the unbiased cost lever. Full
+        // resolution is reconstructed over N^2 frames by jittering the low-res grid across the full-res
+        // sub-cells and accumulating per full-res pixel (temporal upsampling). focalX/Y derive from the low
+        // dims so they scale too.
+        const fullW = engine.getRenderWidth();
+        const fullH = engine.getRenderHeight();
+        const scaleOpt = this.pointSplattingRenderScale;
+        const upsampleN = scaleOpt === "auto" ? this._pointAutoN : Math.max(1, Math.min(8, Math.round(1 / Math.max(scaleOpt, 1e-3))));
+        const width = Math.max(1, Math.ceil(fullW / upsampleN));
+        const height = Math.max(1, Math.ceil(fullH / upsampleN));
+        // This frame's sub-cell offset in [0,N)^2, cycled so N^2 frames cover every full-res pixel. A
+        // coprime-stride permutation decorrelates the visit order (blue-noise-ish) vs a raster sweep.
+        const total = upsampleN * upsampleN;
+        const j = ((this._pointFrameCounter % total) * this._pointCoprimeStride(total)) % total;
+        const jitterX = j % upsampleN;
+        const jitterY = Math.floor(j / upsampleN);
+        this._pointFrameCounter++;
 
         const view = camera.getViewMatrix();
         const projection = camera.getProjectionMatrix();
@@ -959,14 +1063,18 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // Projection z-row (column-major m[10],m[11],m[14],m[15]) so resolve reconstructs ndc.z from the
         // view-z key for fragDepth — it encodes the reverse-Z / half-Z convention automatically.
         this._pointRenderer.setProjectionZ(projection.m[10], projection.m[11], projection.m[14], projection.m[15]);
-        this._pointRenderer.renderToBuffer(width, height);
+        this._pointRenderer.renderToBuffer(width, height, fullW, fullH, upsampleN, jitterX, jitterY);
+
+        if (scaleOpt === "auto") {
+            this._pointUpdateAutoScale(upsampleN);
+        }
 
         const accum = this._pointRenderer.accumBuffer;
         const accumDepth = this._pointRenderer.accumDepthBuffer;
         if (accum && accumDepth) {
             this._pointBlit.setAccumBuffer(accum);
             this._pointBlit.setAccumDepthBuffer(accumDepth);
-            this._pointBlit.setResolution(this._pointRenderer.width, this._pointRenderer.height);
+            this._pointBlit.setResolution(this._pointRenderer.outputWidth, this._pointRenderer.outputHeight);
         }
     }
 
