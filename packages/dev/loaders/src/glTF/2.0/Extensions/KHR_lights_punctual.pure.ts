@@ -68,39 +68,30 @@ export class KHR_lights implements IGLTFLoaderExtension {
             this._loader._allMaterialsDirtyRequired = true;
 
             return await this._loader.loadNodeAsync(context, node, (babylonMesh) => {
-                let babylonLight: Light;
-
                 const light = ArrayItem.Get(extensionContext, this._lights, extension.light);
                 const name = light.name || babylonMesh.name;
 
-                this._loader.babylonScene._blockEntityCollection = !!this._loader._assetContainer;
-
-                switch (light.type) {
-                    case KHRLightsPunctual_LightType.DIRECTIONAL: {
-                        const babylonDirectionalLight = new DirectionalLight(name, Vector3.Backward(), this._loader.babylonScene);
-                        babylonDirectionalLight.position.setAll(0);
-                        babylonLight = babylonDirectionalLight;
-                        break;
+                const babylonLight = this._loader.babylonScene._executeWithBlockedEntityCollection(!!this._loader._assetContainer, () => {
+                    switch (light.type) {
+                        case KHRLightsPunctual_LightType.DIRECTIONAL: {
+                            const babylonDirectionalLight = new DirectionalLight(name, Vector3.Backward(), this._loader.babylonScene);
+                            babylonDirectionalLight.position.setAll(0);
+                            return babylonDirectionalLight;
+                        }
+                        case KHRLightsPunctual_LightType.POINT:
+                            return new PointLight(name, Vector3.Zero(), this._loader.babylonScene);
+                        case KHRLightsPunctual_LightType.SPOT: {
+                            const babylonSpotLight = new SpotLight(name, Vector3.Zero(), Vector3.Backward(), 0, 1, this._loader.babylonScene);
+                            babylonSpotLight.angle = ((light.spot && light.spot.outerConeAngle) || Math.PI / 4) * 2;
+                            babylonSpotLight.innerAngle = ((light.spot && light.spot.innerConeAngle) || 0) * 2;
+                            return babylonSpotLight;
+                        }
+                        default:
+                            throw new Error(`${extensionContext}: Invalid light type (${light.type})`);
                     }
-                    case KHRLightsPunctual_LightType.POINT: {
-                        babylonLight = new PointLight(name, Vector3.Zero(), this._loader.babylonScene);
-                        break;
-                    }
-                    case KHRLightsPunctual_LightType.SPOT: {
-                        const babylonSpotLight = new SpotLight(name, Vector3.Zero(), Vector3.Backward(), 0, 1, this._loader.babylonScene);
-                        babylonSpotLight.angle = ((light.spot && light.spot.outerConeAngle) || Math.PI / 4) * 2;
-                        babylonSpotLight.innerAngle = ((light.spot && light.spot.innerConeAngle) || 0) * 2;
-                        babylonLight = babylonSpotLight;
-                        break;
-                    }
-                    default: {
-                        this._loader.babylonScene._blockEntityCollection = false;
-                        throw new Error(`${extensionContext}: Invalid light type (${light.type})`);
-                    }
-                }
+                });
 
                 babylonLight._parentContainer = this._loader._assetContainer;
-                this._loader.babylonScene._blockEntityCollection = false;
                 light._babylonLight = babylonLight;
 
                 babylonLight.falloffType = Light.FALLOFF_GLTF;

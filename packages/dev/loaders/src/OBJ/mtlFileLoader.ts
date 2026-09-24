@@ -91,15 +91,12 @@ export class MTLFileLoader {
                 //Create a new material.
                 // value is the name of the material read in the mtl file
 
-                const blockEntityCollection = scene._blockEntityCollection;
-                scene._blockEntityCollection = !!assetContainer;
-                try {
+                material = scene._executeWithBlockedEntityCollection(!!assetContainer, () => {
                     material = new StandardMaterial(value, scene);
                     material._parentContainer = assetContainer;
                     assetContainer?.materials.push(material);
-                } finally {
-                    scene._blockEntityCollection = blockEntityCollection;
-                }
+                    return material;
+                });
             } else if (key === "kd" && material) {
                 // Diffuse color (color under white light) using RGB values
 
@@ -266,42 +263,20 @@ export class MTLFileLoader {
             textureLoadPromises!.push(deferred.promise);
         }
 
-        let texture: Texture | undefined;
-        const removeFailedTextureFromCache = () => {
-            const internalTexture = texture?.getInternalTexture();
-            if (!internalTexture) {
-                return;
-            }
-
-            const texturesCache = scene.getEngine().getLoadedTexturesCache();
-            const cacheIndex = texturesCache.indexOf(internalTexture);
-            if (cacheIndex !== -1) {
-                texturesCache.splice(cacheIndex, 1);
-            }
-        };
-
-        const blockEntityCollection = scene._blockEntityCollection;
-        scene._blockEntityCollection = !!assetContainer;
-        try {
-            texture = new Texture(url, scene, {
+        const texture = scene._executeWithBlockedEntityCollection(!!assetContainer, () => {
+            const result = new Texture(url, scene, {
                 invertY: invertTextureY,
                 onLoad: deferred?.resolve,
                 onError: (message, exception) => {
-                    if (texture) {
-                        removeFailedTextureFromCache();
-                    } else {
-                        queueMicrotask(removeFailedTextureFromCache);
-                    }
                     if (deferred) {
                         deferred.reject(new Error(`${url}: ${exception?.message || message || "Failed to load texture"}`));
                     }
                 },
             });
-            texture._parentContainer = assetContainer;
-            assetContainer?.textures.push(texture);
-        } finally {
-            scene._blockEntityCollection = blockEntityCollection;
-        }
+            result._parentContainer = assetContainer;
+            assetContainer?.textures.push(result);
+            return result;
+        });
 
         // A container is not rendered yet, so delayed loading cannot wait for a material bind.
         if (deferred && texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {

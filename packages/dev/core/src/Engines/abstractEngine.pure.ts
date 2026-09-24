@@ -1707,7 +1707,7 @@ export abstract class AbstractEngine {
                 }
 
                 message = (message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : "");
-                texture.onErrorObservable.notifyObservers({ message, exception });
+                texture._setError(message, exception);
                 if (onError) {
                     onError(message, exception);
                 }

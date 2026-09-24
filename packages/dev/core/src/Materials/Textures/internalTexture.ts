@@ -158,6 +158,8 @@ export class InternalTexture extends TextureSampler {
      * Observable called when the texture load is raising an error
      */
     public onErrorObservable = new Observable<Partial<{ message: string; exception: any }>>();
+    /** @internal */
+    public _loadError: Nullable<Partial<{ message: string; exception: any }>> = null;
     /**
      * If this callback is defined it will be called instead of the default _rebuild function
      */
@@ -337,6 +339,12 @@ export class InternalTexture extends TextureSampler {
      */
     public incrementReferences(): void {
         this._references++;
+    }
+
+    /** @internal */
+    public _setError(message?: string, exception?: any): void {
+        this._loadError = { message, exception };
+        this.onErrorObservable.notifyObservers(this._loadError);
     }
 
     /**

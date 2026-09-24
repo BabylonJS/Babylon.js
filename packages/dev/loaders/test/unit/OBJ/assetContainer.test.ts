@@ -58,8 +58,8 @@ describe("OBJ asset containers and texture loading", () => {
                 },
                 fail: () => {
                     const error = { message: "Texture request failed", exception: new Error("404 Not Found") };
+                    texture._setError(error.message, error.exception);
                     onError?.(error.message, error.exception);
-                    texture.onErrorObservable.notifyObservers(error);
                 },
             });
             return texture;

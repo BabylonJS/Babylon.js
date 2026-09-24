@@ -253,6 +253,23 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public _blockEntityCollection = false;
 
     /**
+     * Executes a synchronous action without allowing it to weaken an existing entity-collection block.
+     * @param blockEntityCollection whether the action requires entity collection to be blocked
+     * @param action the action to execute
+     * @returns the action result
+     * @internal
+     */
+    public _executeWithBlockedEntityCollection<T>(blockEntityCollection: boolean, action: () => T): T {
+        const previousBlockEntityCollection = this._blockEntityCollection;
+        this._blockEntityCollection = previousBlockEntityCollection || blockEntityCollection;
+        try {
+            return action();
+        } finally {
+            this._blockEntityCollection = previousBlockEntityCollection;
+        }
+    }
+
+    /**
      * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
      */
     public autoClear = true;
