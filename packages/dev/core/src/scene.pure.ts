@@ -252,6 +252,74 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /** @internal */
     public _blockEntityCollection = false;
 
+    private _entityCollectionBlockScopes: Nullable<Map<number, boolean>> = null;
+    private _entityCollectionBlockScopeId = 0;
+    private _entityCollectionBlockBaseState = false;
+
+    private _beginEntityCollectionBlockScope(blockEntityCollection: boolean): () => void {
+        const scopes = (this._entityCollectionBlockScopes ??= new Map());
+        if (scopes.size === 0) {
+            this._entityCollectionBlockBaseState = this._blockEntityCollection;
+        }
+
+        const scopeId = this._entityCollectionBlockScopeId++;
+        scopes.set(scopeId, blockEntityCollection);
+        this._updateEntityCollectionBlockState();
+
+        return () => {
+            scopes.delete(scopeId);
+            this._updateEntityCollectionBlockState();
+        };
+    }
+
+    private _updateEntityCollectionBlockState(): void {
+        const scopes = this._entityCollectionBlockScopes;
+        if (!scopes?.size) {
+            this._blockEntityCollection = this._entityCollectionBlockBaseState;
+            return;
+        }
+
+        this._blockEntityCollection = this._entityCollectionBlockBaseState;
+        for (const blockEntityCollection of scopes.values()) {
+            if (blockEntityCollection) {
+                this._blockEntityCollection = true;
+                return;
+            }
+        }
+    }
+
+    /**
+     * Executes a synchronous action without allowing it to weaken an existing entity-collection block.
+     * @param blockEntityCollection whether the action requires entity collection to be blocked
+     * @param action the action to execute
+     * @returns the action result
+     * @internal
+     */
+    public _executeWithBlockedEntityCollection<T>(blockEntityCollection: boolean, action: () => T): T {
+        const endScope = this._beginEntityCollectionBlockScope(blockEntityCollection);
+        try {
+            return action();
+        } finally {
+            endScope();
+        }
+    }
+
+    /**
+     * Executes an asynchronous action without allowing it to weaken an existing entity-collection block.
+     * @param blockEntityCollection whether the action requires entity collection to be blocked
+     * @param action the asynchronous action to execute
+     * @returns a promise resolving with the action result
+     * @internal
+     */
+    public async _executeWithBlockedEntityCollectionAsync<T>(blockEntityCollection: boolean, action: () => Promise<T>): Promise<T> {
+        const endScope = this._beginEntityCollectionBlockScope(blockEntityCollection);
+        try {
+            return await action();
+        } finally {
+            endScope();
+        }
+    }
+
     /**
      * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
      */

@@ -66,38 +66,28 @@ export class EXT_lights_area implements IGLTFLoaderExtension {
             this._loader._allMaterialsDirtyRequired = true;
 
             return await this._loader.loadNodeAsync(context, node, (babylonMesh) => {
-                let babylonLight: Light;
-
                 const light = ArrayItem.Get(extensionContext, this._lights, extension.light);
                 const name = light.name || babylonMesh.name;
-
-                this._loader.babylonScene._blockEntityCollection = !!this._loader._assetContainer;
                 const size = light.size !== undefined ? light.size : 1.0;
-
-                switch (light.type) {
-                    case EXTLightsArea_LightType.RECT: {
-                        const width = light.rect?.aspect !== undefined ? light.rect.aspect * size : size;
-                        const height = size;
-                        const babylonRectAreaLight = new RectAreaLight(name, Vector3.Zero(), width, height, this._loader.babylonScene);
-                        babylonLight = babylonRectAreaLight;
-                        break;
+                const babylonLight = this._loader.babylonScene._executeWithBlockedEntityCollection(!!this._loader._assetContainer, () => {
+                    switch (light.type) {
+                        case EXTLightsArea_LightType.RECT: {
+                            const width = light.rect?.aspect !== undefined ? light.rect.aspect * size : size;
+                            const height = size;
+                            return new RectAreaLight(name, Vector3.Zero(), width, height, this._loader.babylonScene);
+                        }
+                        case EXTLightsArea_LightType.DISK: {
+                            // For disk lights, we'll use a rectangle light with the same area to approximate the disk light
+                            // In the future, this could be extended to support actual disk area lights
+                            const newSize = Math.sqrt(size * size * 0.25 * Math.PI); // Area of the disk
+                            return new RectAreaLight(name, Vector3.Zero(), newSize, newSize, this._loader.babylonScene);
+                        }
+                        default:
+                            throw new Error(`${extensionContext}: Invalid area light type (${light.type})`);
                     }
-                    case EXTLightsArea_LightType.DISK: {
-                        // For disk lights, we'll use a rectangle light with the same area to approximate the disk light
-                        // In the future, this could be extended to support actual disk area lights
-                        const newSize = Math.sqrt(size * size * 0.25 * Math.PI); // Area of the disk
-                        const babylonRectAreaLight = new RectAreaLight(name, Vector3.Zero(), newSize, newSize, this._loader.babylonScene);
-                        babylonLight = babylonRectAreaLight;
-                        break;
-                    }
-                    default: {
-                        this._loader.babylonScene._blockEntityCollection = false;
-                        throw new Error(`${extensionContext}: Invalid area light type (${light.type})`);
-                    }
-                }
+                });
 
                 babylonLight._parentContainer = this._loader._assetContainer;
-                this._loader.babylonScene._blockEntityCollection = false;
                 light._babylonLight = babylonLight;
 
                 babylonLight.falloffType = Light.FALLOFF_GLTF;

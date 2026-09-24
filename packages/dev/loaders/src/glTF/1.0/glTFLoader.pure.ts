@@ -288,9 +288,10 @@ const LoadAnimations = (gltfRuntime: IGLTFRuntime) => {
             }
 
             if (!modifyKey) {
-                gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
-                babylonAnimation = new Animation(anim, isBone ? "_matrix" : targetPath, 1, animationType, Animation.ANIMATIONLOOPMODE_CYCLE);
-                gltfRuntime.scene._blockEntityCollection = false;
+                babylonAnimation = gltfRuntime.scene._executeWithBlockedEntityCollection(
+                    !!gltfRuntime.assetContainer,
+                    () => new Animation(anim, isBone ? "_matrix" : targetPath, 1, animationType, Animation.ANIMATIONLOOPMODE_CYCLE)
+                );
             }
 
             // For each frame
@@ -676,10 +677,8 @@ const ImportSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
  */
 const ImportMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], id: string, newMesh: Mesh): Mesh => {
     if (!newMesh) {
-        gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
-        newMesh = new Mesh(node.name || "", gltfRuntime.scene);
+        newMesh = gltfRuntime.scene._executeWithBlockedEntityCollection(!!gltfRuntime.assetContainer, () => new Mesh(node.name || "", gltfRuntime.scene));
         newMesh._parentContainer = gltfRuntime.assetContainer;
-        gltfRuntime.scene._blockEntityCollection = false;
         newMesh.id = id;
     }
 
@@ -795,30 +794,30 @@ const ImportMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
             indexStarts.push(indexStarts.length === 0 ? 0 : indexStarts[indexStarts.length - 1] + indexCounts[indexCounts.length - 2]);
         }
     }
-    let material: StandardMaterial | MultiMaterial;
-    gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
-    if (subMaterials.length > 1) {
-        material = new MultiMaterial("multimat" + id, gltfRuntime.scene);
-        material.subMaterials = subMaterials;
-    } else {
-        material = new StandardMaterial("multimat" + id, gltfRuntime.scene);
-    }
+    gltfRuntime.scene._executeWithBlockedEntityCollection(!!gltfRuntime.assetContainer, () => {
+        let result: StandardMaterial | MultiMaterial;
+        if (subMaterials.length > 1) {
+            result = new MultiMaterial("multimat" + id, gltfRuntime.scene);
+            result.subMaterials = subMaterials;
+        } else {
+            result = new StandardMaterial("multimat" + id, gltfRuntime.scene);
+        }
 
-    if (subMaterials.length === 1) {
-        material = subMaterials[0] as StandardMaterial;
-    }
+        if (subMaterials.length === 1) {
+            result = subMaterials[0] as StandardMaterial;
+        }
 
-    material._parentContainer = gltfRuntime.assetContainer;
+        result._parentContainer = gltfRuntime.assetContainer;
 
-    if (!newMesh.material) {
-        newMesh.material = material;
-    }
+        if (!newMesh.material) {
+            newMesh.material = result;
+        }
 
-    // Apply geometry
-    new Geometry(id, gltfRuntime.scene, vertexData!, false, newMesh);
-    newMesh.computeWorldMatrix(true);
-
-    gltfRuntime.scene._blockEntityCollection = false;
+        // Apply geometry
+        new Geometry(id, gltfRuntime.scene, vertexData!, false, newMesh);
+        newMesh.computeWorldMatrix(true);
+        return result;
+    });
 
     // Apply submeshes
     newMesh.subMeshes = [];
@@ -986,12 +985,15 @@ const ImportNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Nul
     }
     // Cameras
     else if (node.camera && !node.babylonNode && !gltfRuntime.importOnlyMeshes) {
-        const camera: IGLTFCamera = gltfRuntime.cameras[node.camera];
+        const cameraName = node.camera;
+        const camera: IGLTFCamera = gltfRuntime.cameras[cameraName];
 
         if (camera) {
-            gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
             if (camera.type === "orthographic") {
-                const orthoCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
+                const orthoCamera = gltfRuntime.scene._executeWithBlockedEntityCollection(
+                    !!gltfRuntime.assetContainer,
+                    () => new FreeCamera(cameraName, Vector3.Zero(), gltfRuntime.scene, false)
+                );
 
                 orthoCamera.name = node.name || "";
                 orthoCamera.mode = Camera.ORTHOGRAPHIC_CAMERA;
@@ -1002,7 +1004,10 @@ const ImportNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Nul
                 orthoCamera._parentContainer = gltfRuntime.assetContainer;
             } else if (camera.type === "perspective") {
                 const perspectiveCamera: IGLTFCameraPerspective = (<any>camera)[camera.type];
-                const persCamera = new FreeCamera(node.camera, Vector3.Zero(), gltfRuntime.scene, false);
+                const persCamera = gltfRuntime.scene._executeWithBlockedEntityCollection(
+                    !!gltfRuntime.assetContainer,
+                    () => new FreeCamera(cameraName, Vector3.Zero(), gltfRuntime.scene, false)
+                );
 
                 persCamera.name = node.name || "";
                 persCamera.attachControl();
@@ -1019,8 +1024,6 @@ const ImportNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Nul
                 lastNode = persCamera;
                 persCamera._parentContainer = gltfRuntime.assetContainer;
             }
-
-            gltfRuntime.scene._blockEntityCollection = false;
         }
     }
 
@@ -1029,10 +1032,8 @@ const ImportNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Nul
         if (node.babylonNode) {
             return node.babylonNode;
         } else if (lastNode === null) {
-            gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
-            const dummy = new Mesh(node.name || "", gltfRuntime.scene);
+            const dummy = gltfRuntime.scene._executeWithBlockedEntityCollection(!!gltfRuntime.assetContainer, () => new Mesh(node.name || "", gltfRuntime.scene));
             dummy._parentContainer = gltfRuntime.assetContainer;
-            gltfRuntime.scene._blockEntityCollection = false;
             node.babylonNode = dummy;
             lastNode = dummy;
         }
@@ -1584,10 +1585,8 @@ export class GLTFLoaderBase {
 
         const technique: IGLTFTechnique = gltfRuntime.techniques[material.technique];
         if (!technique) {
-            gltfRuntime.scene._blockEntityCollection = !!gltfRuntime.assetContainer;
-            const defaultMaterial = new StandardMaterial(id, gltfRuntime.scene);
+            const defaultMaterial = gltfRuntime.scene._executeWithBlockedEntityCollection(!!gltfRuntime.assetContainer, () => new StandardMaterial(id, gltfRuntime.scene));
             defaultMaterial._parentContainer = gltfRuntime.assetContainer;
-            gltfRuntime.scene._blockEntityCollection = false;
             defaultMaterial.diffuseColor = new Color3(0.5, 0.5, 0.5);
             defaultMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
             onSuccess(defaultMaterial);
