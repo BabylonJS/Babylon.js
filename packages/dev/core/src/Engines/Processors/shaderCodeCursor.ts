@@ -52,22 +52,29 @@ export class ShaderCodeCursor {
                 }
             } else {
                 // Semicolon in the middle of the line
-                const split = line.split(";");
+                const lineCommentIndex = line.indexOf("//");
+                const codePart = lineCommentIndex === -1 ? line : line.substring(0, lineCommentIndex);
+                const lineCommentPart = lineCommentIndex === -1 ? "" : line.substring(lineCommentIndex);
+                const firstLineIndex = this._lines.length;
+                const split = codePart.split(";");
 
                 for (let index = 0; index < split.length; index++) {
-                    let subLine = split[index];
+                    const subLine = split[index].trim();
 
-                    if (!subLine) {
-                        continue;
+                    if (subLine) {
+                        this._lines.push(subLine + (index !== split.length - 1 ? ";" : ""));
+                    } else if (index !== split.length - 1) {
+                        // Preserve intermediate empty statements because their semicolon can be syntactically significant, as in `for (;;)`.
+                        this._lines.push(";");
                     }
+                }
 
-                    subLine = subLine.trim();
-
-                    if (!subLine) {
-                        continue;
+                if (lineCommentPart !== "") {
+                    if (this._lines.length > firstLineIndex) {
+                        this._lines[this._lines.length - 1] += " " + lineCommentPart;
+                    } else {
+                        this._lines.push(lineCommentPart);
                     }
-
-                    this._lines.push(subLine + (index !== split.length - 1 ? ";" : ""));
                 }
             }
         }
