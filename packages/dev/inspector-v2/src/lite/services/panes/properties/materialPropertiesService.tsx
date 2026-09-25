@@ -10,13 +10,13 @@ import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../
 import { type ISelectionService, SelectionServiceIdentity } from "../../../../services/selectionService";
 import { CreateMaterialDescriptorWithFamily } from "./descriptors/materialDescriptor";
 import { type IMaterialDescriptor, type MaterialDescriptorSection } from "./descriptors/descriptorTypes";
-import { type LiteMaterialAdapterProps } from "./materialAdapters/materialAdapterCore";
-import { type ILiteSceneResourceIndexService, LiteSceneResourceIndexServiceIdentity } from "../scene/sceneResourceIndexService";
+import { type MaterialAdapterProps } from "./materialAdapters/materialAdapterCore";
+import { type ISceneResourceIndexService, SceneResourceIndexServiceIdentity } from "../scene/sceneResourceIndexService";
 
 type SupportedMaterialFamily = "standard" | "pbr" | "shader" | "node";
 
 type FamilyConfiguration = Readonly<{
-    component: FunctionComponent<LiteMaterialAdapterProps>;
+    component: FunctionComponent<MaterialAdapterProps>;
     sections: readonly MaterialDescriptorSection[];
 }>;
 
@@ -80,7 +80,7 @@ function GetSectionLabel(section: MaterialDescriptorSection): string {
         .replace("Subsurface ", "Subsurface / ");
 }
 
-function TryDescribeMaterial(entity: unknown, resourceIndexService: ILiteSceneResourceIndexService): IMaterialDescriptor | undefined {
+function TryDescribeMaterial(entity: unknown, resourceIndexService: ISceneResourceIndexService): IMaterialDescriptor | undefined {
     if (typeof entity !== "object" || entity === null) {
         return undefined;
     }
@@ -103,7 +103,7 @@ function IsSupportedFamily(family: string | undefined): family is SupportedMater
     return family === "standard" || family === "pbr" || family === "shader" || family === "node";
 }
 
-const UnknownMaterialProperties: FunctionComponent<{ material: Material; resourceIndexService: ILiteSceneResourceIndexService }> = (props) => {
+const UnknownMaterialProperties: FunctionComponent<{ material: Material; resourceIndexService: ISceneResourceIndexService }> = (props) => {
     const { material, resourceIndexService } = props;
     const getDescriptor = useCallback(() => {
         const selectedDescriptor = TryDescribeMaterial(material, resourceIndexService);
@@ -126,9 +126,9 @@ const UnknownMaterialProperties: FunctionComponent<{ material: Material; resourc
     );
 };
 
-export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ILiteSceneResourceIndexService, ISelectionService]> = {
+export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISceneResourceIndexService, ISelectionService]> = {
     friendlyName: "Babylon Lite Material Properties",
-    consumes: [PropertiesServiceIdentity, LiteSceneResourceIndexServiceIdentity, SelectionServiceIdentity],
+    consumes: [PropertiesServiceIdentity, SceneResourceIndexServiceIdentity, SelectionServiceIdentity],
     factory: (propertiesService, resourceIndexService, selectionService) => {
         const registrations = Object.entries(FamilyConfigurations).map(([family, configuration]) =>
             propertiesService.addSectionContent<Material>({

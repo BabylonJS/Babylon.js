@@ -83,8 +83,8 @@ import {
 } from "../../src/lite/engineExplorerService";
 import { MaterialExplorerServiceDefinition } from "../../src/lite/services/panes/scene/materialExplorerService";
 import { MeshExplorerServiceDefinition } from "../../src/lite/services/panes/scene/meshExplorerService";
-import { LiteSceneResourceIndexServiceDefinition, LiteSceneResourceIndexServiceIdentity } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
-import { LiteSceneResourceIndex } from "../../src/lite/services/panes/scene/sceneResources";
+import { SceneResourceIndexServiceDefinition, SceneResourceIndexServiceIdentity } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
+import { SceneResourceIndex } from "../../src/lite/services/panes/scene/sceneResources";
 import { SpriteLayerExplorerServiceDefinition } from "../../src/lite/services/panes/scene/spriteLayerExplorerService";
 import { TextLayerExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textLayerExplorerService";
 import { TextureExplorerServiceDefinition } from "../../src/lite/services/panes/scene/textureExplorerService";
@@ -302,7 +302,7 @@ describe("Babylon Lite engine explorer service", () => {
                 _kind: "scene",
                 meshes: [CreateMesh("Shared", standard)],
             } as SceneContext;
-            const index = new LiteSceneResourceIndex(CreateResourceEngine([sceneA, sceneB]));
+            const index = new SceneResourceIndex(CreateResourceEngine([sceneA, sceneB]));
             const snapshotA = index.getSceneSnapshot(sceneA);
             const snapshotB = index.getSceneSnapshot(sceneB);
 
@@ -333,7 +333,7 @@ describe("Babylon Lite engine explorer service", () => {
                 _kind: "scene",
                 meshes: [CreateMesh("First", firstMaterial), CreateMesh("Second", secondMaterial)],
             } as SceneContext;
-            const index = new LiteSceneResourceIndex(CreateResourceEngine([scene]));
+            const index = new SceneResourceIndex(CreateResourceEngine([scene]));
             const firstOrdinal = index.getTextureRecord(firstTexture)?.ordinal;
             const secondOrdinal = index.getTextureRecord(secondTexture)?.ordinal;
 
@@ -363,11 +363,11 @@ describe("Babylon Lite engine explorer service", () => {
             } as SceneContext;
             const firstWatcher = CreateTopologyWatcherService();
             const secondWatcher = CreateTopologyWatcherService();
-            const firstService = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([sceneA]) } as IEngineContext, firstWatcher.watcherService)!;
-            const secondService = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([sceneB]) } as IEngineContext, secondWatcher.watcherService)!;
+            const firstService = SceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([sceneA]) } as IEngineContext, firstWatcher.watcherService)!;
+            const secondService = SceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([sceneB]) } as IEngineContext, secondWatcher.watcherService)!;
 
-            expect(LiteSceneResourceIndexServiceDefinition.produces).toEqual([LiteSceneResourceIndexServiceIdentity]);
-            expect(LiteSceneResourceIndexServiceDefinition.consumes).toEqual([EngineContextIdentity, WatcherServiceIdentity]);
+            expect(SceneResourceIndexServiceDefinition.produces).toEqual([SceneResourceIndexServiceIdentity]);
+            expect(SceneResourceIndexServiceDefinition.consumes).toEqual([EngineContextIdentity, WatcherServiceIdentity]);
             expect(firstService.index.getTextureRecord(sharedTexture)?.ordinal).toBe(2);
             expect(secondService.index.getTextureRecord(sharedTexture)?.ordinal).toBe(1);
 
@@ -559,8 +559,8 @@ describe("Babylon Lite scene resource explorer services", () => {
             SelectionServiceIdentity,
             EngineContextIdentity,
         ]);
-        expect(MaterialExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity, LiteSceneResourceIndexServiceIdentity]);
-        expect(TextureExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, LiteSceneResourceIndexServiceIdentity]);
+        expect(MaterialExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, WatcherServiceIdentity, SceneResourceIndexServiceIdentity]);
+        expect(TextureExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, SceneResourceIndexServiceIdentity]);
         expect(TextLayerExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, ExplorerServiceIdentity, WatcherServiceIdentity, EngineContextIdentity]);
         expect(SpriteLayerExplorerServiceDefinition.consumes).toEqual([EngineExplorerServiceIdentity, ExplorerServiceIdentity, WatcherServiceIdentity, EngineContextIdentity]);
     });
@@ -615,7 +615,7 @@ describe("Babylon Lite scene resource explorer services", () => {
         } as unknown as EngineContext;
         (engine as { surfaces: readonly SurfaceContext[] }).surfaces = [engine];
         const topologyWatcher = CreateTopologyWatcherService();
-        const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext, topologyWatcher.watcherService)!;
+        const resourceIndexService = SceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext, topologyWatcher.watcherService)!;
         const registrations = [
             MeshExplorerServiceDefinition.factory(engineExplorerService, explorerService, watcherService, selectionService, { engine } as IEngineContext),
             MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService, resourceIndexService),
@@ -713,7 +713,7 @@ describe("Babylon Lite scene resource explorer services", () => {
         } as SceneContext;
         const engine = CreateResourceEngine([scene]);
         const topologyWatcher = CreateTopologyWatcherService();
-        const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext, topologyWatcher.watcherService)!;
+        const resourceIndexService = SceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext, topologyWatcher.watcherService)!;
 
         MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService, resourceIndexService);
         TextureExplorerServiceDefinition.factory(engineExplorerService, resourceIndexService);
@@ -768,7 +768,7 @@ describe("Babylon Lite scene resource explorer services", () => {
         const contexts: SceneContext[] = [malformedScene];
         const engine = CreateResourceEngine(contexts);
         const topologyWatcher = CreateTopologyWatcherService();
-        const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext, topologyWatcher.watcherService)!;
+        const resourceIndexService = SceneResourceIndexServiceDefinition.factory({ engine } as IEngineContext, topologyWatcher.watcherService)!;
 
         MaterialExplorerServiceDefinition.factory(engineExplorerService, watcherService, resourceIndexService);
         TextureExplorerServiceDefinition.factory(engineExplorerService, resourceIndexService);
@@ -805,7 +805,7 @@ describe("Babylon Lite scene resource explorer services", () => {
         const secondScene = { _kind: "scene", meshes: secondMeshes } as SceneContext;
         const scenes = [firstScene, secondScene];
         const topologyWatcher = CreateTopologyWatcherService();
-        const service = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine(scenes) } as IEngineContext, topologyWatcher.watcherService)!;
+        const service = SceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine(scenes) } as IEngineContext, topologyWatcher.watcherService)!;
         const changed = vi.fn();
         service.onChanged.add(changed);
         const firstTextureOrdinal = service.index.getTextureRecord(firstTexture)?.ordinal;
@@ -874,7 +874,7 @@ describe("Babylon Lite scene resource explorer services", () => {
         const material = CreateMaterial("standard", "Material", texture);
         const scene = { _kind: "scene", meshes: [CreateMesh("Mesh", material)] } as SceneContext;
         const topologyWatcher = CreateTopologyWatcherService();
-        const service = LiteSceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([scene]) } as IEngineContext, topologyWatcher.watcherService)!;
+        const service = SceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([scene]) } as IEngineContext, topologyWatcher.watcherService)!;
         const changed = vi.fn();
         const disposed = vi.fn();
         service.onChanged.add(changed);
@@ -909,10 +909,7 @@ describe("Babylon Lite scene resource explorer services", () => {
                 },
             } as IEngineExplorerService;
             const topologyWatcher = CreateTopologyWatcherService();
-            const resourceIndexService = LiteSceneResourceIndexServiceDefinition.factory(
-                { engine: CreateResourceEngine([scene]) } as IEngineContext,
-                topologyWatcher.watcherService
-            )!;
+            const resourceIndexService = SceneResourceIndexServiceDefinition.factory({ engine: CreateResourceEngine([scene]) } as IEngineContext, topologyWatcher.watcherService)!;
             MaterialExplorerServiceDefinition.factory(
                 engineExplorerService,
                 { watchProperty: vi.fn(() => ({ dispose: vi.fn() })) } as unknown as IWatcherService,

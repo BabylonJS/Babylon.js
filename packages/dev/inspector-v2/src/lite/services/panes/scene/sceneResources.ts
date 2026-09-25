@@ -14,54 +14,54 @@ import {
     type TextureMetadata,
 } from "@babylonjs/lite";
 
-import { GetLiteMaterialTopologyBindings, type ILiteMaterialTopologyBinding } from "./materialTopologyBindings";
+import { GetMaterialTopologyBindings, type IMaterialTopologyBinding } from "./materialTopologyBindings";
 
 /** A source material reachable from one or more scenes in an inspected Lite engine. @internal */
-export interface ILiteMaterialResourceRecord {
+export interface IMaterialResourceRecord {
     readonly source: Material;
     readonly family: string | undefined;
     readonly displayName: string;
     readonly scenes: readonly SceneContext[];
-    readonly bindings: readonly ILiteMaterialTopologyBinding[];
+    readonly bindings: readonly IMaterialTopologyBinding[];
 }
 
 /** One canonical material binding that consumes a texture wrapper. @internal */
-export interface ILiteTextureConsumerRecord {
+export interface ITextureConsumerRecord {
     readonly material: Material;
     readonly bindingId: string;
 }
 
 /** A texture wrapper reachable from one or more indexed material bindings. @internal */
-export interface ILiteTextureResourceRecord {
+export interface ITextureResourceRecord {
     readonly entity: object;
     readonly metadata: TextureMetadata;
     readonly ordinal: number;
-    readonly consumers: readonly ILiteTextureConsumerRecord[];
+    readonly consumers: readonly ITextureConsumerRecord[];
 }
 
 /** Material and texture resources reachable from one Lite scene. @internal */
-export interface ILiteSceneResourceSnapshot {
+export interface ISceneResourceSnapshot {
     readonly scene: SceneContext;
-    readonly materials: readonly ILiteMaterialResourceRecord[];
-    readonly textures: readonly ILiteTextureResourceRecord[];
+    readonly materials: readonly IMaterialResourceRecord[];
+    readonly textures: readonly ITextureResourceRecord[];
 }
 
 /** A public-state snapshot used to detect resource topology changes. @internal */
-export type LiteSceneResourceTopologySnapshot = readonly unknown[];
+export type SceneResourceTopologySnapshot = readonly unknown[];
 
 type MaterialDraft = {
     readonly source: Material;
     readonly family: string | undefined;
     readonly displayName: string;
     readonly scenes: SceneContext[];
-    readonly bindings: readonly ILiteMaterialTopologyBinding[];
+    readonly bindings: readonly IMaterialTopologyBinding[];
 };
 
 type TextureDraft = {
     readonly entity: object;
     readonly metadata: TextureMetadata;
     readonly ordinal: number;
-    readonly consumers: ILiteTextureConsumerRecord[];
+    readonly consumers: ITextureConsumerRecord[];
 };
 
 function IsObject(value: unknown): value is object {
@@ -139,10 +139,10 @@ function AppendTextureState(snapshot: unknown[], texture: object): void {
  * Maintains deterministic, Inspector-owned resource records for one Lite engine.
  * @internal
  */
-export class LiteSceneResourceIndex {
-    private _sceneSnapshots = new Map<SceneContext, ILiteSceneResourceSnapshot>();
-    private _materialRecords = new Map<Material, ILiteMaterialResourceRecord>();
-    private _textureRecords = new Map<object, ILiteTextureResourceRecord>();
+export class SceneResourceIndex {
+    private _sceneSnapshots = new Map<SceneContext, ISceneResourceSnapshot>();
+    private _materialRecords = new Map<Material, IMaterialResourceRecord>();
+    private _textureRecords = new Map<object, ITextureResourceRecord>();
     private _textureOrdinals = new WeakMap<object, number>();
     private _nextTextureOrdinal = 1;
 
@@ -167,7 +167,7 @@ export class LiteSceneResourceIndex {
                         family: getMaterialFamily(source),
                         displayName: source.name || "Material",
                         scenes: [],
-                        bindings: GetLiteMaterialTopologyBindings(source),
+                        bindings: GetMaterialTopologyBindings(source),
                     };
                     materialDrafts.set(source, draft);
                 }
@@ -175,7 +175,7 @@ export class LiteSceneResourceIndex {
             }
         }
 
-        const materialRecords = new Map<Material, ILiteMaterialResourceRecord>();
+        const materialRecords = new Map<Material, IMaterialResourceRecord>();
         for (const draft of materialDrafts.values()) {
             materialRecords.set(draft.source, draft);
         }
@@ -205,19 +205,19 @@ export class LiteSceneResourceIndex {
             }
         }
 
-        const textureRecords = new Map<object, ILiteTextureResourceRecord>();
+        const textureRecords = new Map<object, ITextureResourceRecord>();
         for (const draft of textureDrafts.values()) {
             textureRecords.set(draft.entity, draft);
         }
 
-        const sceneSnapshots = new Map<SceneContext, ILiteSceneResourceSnapshot>();
+        const sceneSnapshots = new Map<SceneContext, ISceneResourceSnapshot>();
         for (const scene of scenes) {
             const materials = (sceneMaterials.get(scene) ?? []).flatMap((source) => {
                 const record = materialRecords.get(source);
                 return record ? [record] : [];
             });
             const seenTextures = new Set<object>();
-            const textures: ILiteTextureResourceRecord[] = [];
+            const textures: ITextureResourceRecord[] = [];
             for (const material of materials) {
                 for (const binding of material.bindings) {
                     const record = textureRecords.get(binding.entity);
@@ -239,7 +239,7 @@ export class LiteSceneResourceIndex {
      * Captures the public identities and values that drive index and Properties refresh.
      * @returns A deterministic topology snapshot.
      */
-    public getTopologySnapshot(): LiteSceneResourceTopologySnapshot {
+    public getTopologySnapshot(): SceneResourceTopologySnapshot {
         const snapshot: unknown[] = [];
         for (const surface of this._engine.surfaces) {
             snapshot.push(surface);
@@ -262,7 +262,7 @@ export class LiteSceneResourceIndex {
                     }
                     try {
                         const source = getMaterialSource(mesh.material);
-                        const bindings = GetLiteMaterialTopologyBindings(source);
+                        const bindings = GetMaterialTopologyBindings(source);
                         snapshot.push(mesh.material, source, getMaterialFamily(source), source.name, bindings.length);
                         for (const binding of bindings) {
                             snapshot.push(binding.id, binding.entity);
@@ -277,19 +277,19 @@ export class LiteSceneResourceIndex {
         return snapshot;
     }
 
-    public static AreTopologySnapshotsEqual(left: LiteSceneResourceTopologySnapshot, right: LiteSceneResourceTopologySnapshot): boolean {
+    public static AreTopologySnapshotsEqual(left: SceneResourceTopologySnapshot, right: SceneResourceTopologySnapshot): boolean {
         return left.length === right.length && left.every((value, index) => Object.is(value, right[index]));
     }
 
-    public getSceneSnapshot(scene: SceneContext): ILiteSceneResourceSnapshot {
+    public getSceneSnapshot(scene: SceneContext): ISceneResourceSnapshot {
         return this._sceneSnapshots.get(scene) ?? { scene, materials: [], textures: [] };
     }
 
-    public getMaterialRecord(material: Material): ILiteMaterialResourceRecord | undefined {
+    public getMaterialRecord(material: Material): IMaterialResourceRecord | undefined {
         return this._materialRecords.get(material);
     }
 
-    public getTextureRecord(texture: object): ILiteTextureResourceRecord | undefined {
+    public getTextureRecord(texture: object): ITextureResourceRecord | undefined {
         return this._textureRecords.get(texture);
     }
 

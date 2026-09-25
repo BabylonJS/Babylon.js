@@ -7,16 +7,16 @@ import { type IEngineExplorerService, EngineExplorerServiceIdentity } from "../.
 import { CreateWatchedNameDisplayInfo } from "../../../explorerDisplayInfo";
 import { type IWatcherService, WatcherServiceIdentity } from "../../../../services/watcherService";
 import { CreateSceneExplorerSectionNode, IsSceneContext } from "./sceneExplorerSection";
-import { type ILiteSceneResourceIndexService, LiteSceneResourceIndexServiceIdentity } from "./sceneResourceIndexService";
+import { type ISceneResourceIndexService, SceneResourceIndexServiceIdentity } from "./sceneResourceIndexService";
 
 function GetMaterialDisplayName(material: Material): string {
     const family = getMaterialFamily(material);
     return material.name ?? (family ? `${family.charAt(0).toUpperCase()}${family.slice(1)} Material` : "Material");
 }
 
-export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplorerService, IWatcherService, ILiteSceneResourceIndexService]> = {
+export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplorerService, IWatcherService, ISceneResourceIndexService]> = {
     friendlyName: "Babylon Lite Material Explorer",
-    consumes: [EngineExplorerServiceIdentity, WatcherServiceIdentity, LiteSceneResourceIndexServiceIdentity],
+    consumes: [EngineExplorerServiceIdentity, WatcherServiceIdentity, SceneResourceIndexServiceIdentity],
     factory: (engineExplorerService, watcherService, resourceIndexService) =>
         engineExplorerService.addRenderingContextNodeProvider({
             order: 100,

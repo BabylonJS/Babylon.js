@@ -24,19 +24,19 @@ import {
 } from "@babylonjs/lite";
 
 /** One Inspector-owned canonical texture edge used by the resource index. @internal */
-export interface ILiteMaterialTopologyBinding {
+export interface IMaterialTopologyBinding {
     readonly id: string;
     readonly entity: object;
 }
 
-function Add(bindings: ILiteMaterialTopologyBinding[], id: string, entity: object | null | undefined): void {
+function Add(bindings: IMaterialTopologyBinding[], id: string, entity: object | null | undefined): void {
     if (entity) {
         bindings.push({ id, entity });
     }
 }
 
-function GetStandardBindings(material: StandardMaterialProps): readonly ILiteMaterialTopologyBinding[] {
-    const bindings: ILiteMaterialTopologyBinding[] = [];
+function GetStandardBindings(material: StandardMaterialProps): readonly IMaterialTopologyBinding[] {
+    const bindings: IMaterialTopologyBinding[] = [];
     Add(bindings, "standard.diffuse", material.diffuseTexture);
     Add(bindings, "standard.emissive", getStandardEmissiveTexture(material));
     Add(bindings, "standard.bump", getStandardBumpTexture(material));
@@ -49,8 +49,8 @@ function GetStandardBindings(material: StandardMaterialProps): readonly ILiteMat
     return bindings;
 }
 
-function GetPbrBindings(material: PbrMaterialProps): readonly ILiteMaterialTopologyBinding[] {
-    const bindings: ILiteMaterialTopologyBinding[] = [];
+function GetPbrBindings(material: PbrMaterialProps): readonly IMaterialTopologyBinding[] {
+    const bindings: IMaterialTopologyBinding[] = [];
     Add(bindings, "pbr.baseColor", material.baseColorTexture);
     Add(bindings, "pbr.normal", material.normalTexture);
     Add(bindings, "pbr.orm", material.ormTexture);
@@ -85,16 +85,16 @@ function GetPbrBindings(material: PbrMaterialProps): readonly ILiteMaterialTopol
     return bindings;
 }
 
-function GetShaderBindings(material: ShaderMaterial): readonly ILiteMaterialTopologyBinding[] {
-    const bindings: ILiteMaterialTopologyBinding[] = [];
+function GetShaderBindings(material: ShaderMaterial): readonly IMaterialTopologyBinding[] {
+    const bindings: IMaterialTopologyBinding[] = [];
     for (const declaration of material.samplerDecls) {
         Add(bindings, `shader.sampler:${declaration.name}`, getShaderTexture(material, declaration.name));
     }
     return bindings;
 }
 
-function GetNodeBindings(material: NodeMaterial): readonly ILiteMaterialTopologyBinding[] {
-    const bindings: ILiteMaterialTopologyBinding[] = [];
+function GetNodeBindings(material: NodeMaterial): readonly IMaterialTopologyBinding[] {
+    const bindings: IMaterialTopologyBinding[] = [];
     for (const [name, input] of Object.entries(material.inputs)) {
         if (input.type === "texture2d") {
             Add(bindings, `node.texture:${name}`, input.texture);
@@ -109,7 +109,7 @@ function GetNodeBindings(material: NodeMaterial): readonly ILiteMaterialTopology
  * @returns Texture edges in canonical family order.
  * @internal
  */
-export function GetLiteMaterialTopologyBindings(material: Material): readonly ILiteMaterialTopologyBinding[] {
+export function GetMaterialTopologyBindings(material: Material): readonly IMaterialTopologyBinding[] {
     switch (getMaterialFamily(material)) {
         case "standard":
             return GetStandardBindings(material as StandardMaterialProps);

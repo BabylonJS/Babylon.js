@@ -13,8 +13,8 @@ import { useObservableState } from "shared-ui-components/modularTool/hooks/obser
 
 import { usePropertyChangedNotifier } from "../../../../../contexts/propertyContext";
 import { type ISelectionService } from "../../../../../services/selectionService";
-import { type ILiteSceneResourceIndexService } from "../../scene/sceneResourceIndexService";
-import { type ILiteMaterialResourceRecord, type ILiteTextureResourceRecord } from "../../scene/sceneResources";
+import { type ISceneResourceIndexService } from "../../scene/sceneResourceIndexService";
+import { type IMaterialResourceRecord, type ITextureResourceRecord } from "../../scene/sceneResources";
 import {
     CreateMaterialDescriptorWithFamily,
     SetMaterialDescriptorPropertyWithFamily,
@@ -34,14 +34,14 @@ import {
 import { useLatestAsyncOperation } from "../useLatestAsyncOperation";
 
 /** Props shared by each lazily loaded Lite material family adapter. */
-export type LiteMaterialAdapterProps = Readonly<{
+export type MaterialAdapterProps = Readonly<{
     material: Material;
     section: MaterialDescriptorSection;
-    resourceIndexService: ILiteSceneResourceIndexService;
+    resourceIndexService: ISceneResourceIndexService;
     selectionService: ISelectionService;
 }>;
 
-type MaterialFamilyAdapterProps = LiteMaterialAdapterProps &
+type MaterialFamilyAdapterProps = MaterialAdapterProps &
     Readonly<{
         family: "standard" | "pbr" | "shader" | "node";
         familyDescriptor: IMaterialDescriptorFamilyDescriptor;
@@ -64,7 +64,7 @@ function GetUnavailablePropertyModel(property: IMaterialDescriptorProperty): Mat
     };
 }
 
-function GetTextureDisplayName(record: ILiteTextureResourceRecord | undefined): string {
+function GetTextureDisplayName(record: ITextureResourceRecord | undefined): string {
     if (!record) {
         return "Texture";
     }
@@ -76,7 +76,7 @@ function GetTextureDisplayName(record: ILiteTextureResourceRecord | undefined): 
     return `${kind} Texture ${record.ordinal}`;
 }
 
-function GetCandidates(record: ILiteMaterialResourceRecord, resourceIndexService: ILiteSceneResourceIndexService): readonly object[] {
+function GetCandidates(record: IMaterialResourceRecord, resourceIndexService: ISceneResourceIndexService): readonly object[] {
     const candidates: object[] = [];
     const seen = new Set<object>();
     for (const scene of record.scenes) {
@@ -95,7 +95,7 @@ function GetCandidates(record: ILiteMaterialResourceRecord, resourceIndexService
  * @param props The selected material, section, and instance-owned services.
  * @returns Runtime-neutral property and texture binding rows.
  */
-export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapterProps> = (props) => {
+export const MaterialAdapterSection: FunctionComponent<MaterialFamilyAdapterProps> = (props) => {
     const { material, section, resourceIndexService, selectionService, family, familyDescriptor, colorProperties, getBindingSection } = props;
     let selectedDescriptor: IMaterialDescriptor | undefined;
     try {
@@ -127,7 +127,7 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
         return <TextPropertyLine label="Error" value={`The material family changed from ${family} to ${descriptorSnapshot.family ?? "unknown"}.`} />;
     }
 
-    const getCurrentRecord = (): ILiteMaterialResourceRecord => {
+    const getCurrentRecord = (): IMaterialResourceRecord => {
         const record = resourceIndexService.index.getMaterialRecord(source);
         if (!record) {
             throw new Error("This material is no longer available in an inspected scene.");

@@ -25,13 +25,13 @@ import { type MaterialPropertyModel } from "shared-ui-components/fluent/hoc/prop
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 import { type ISelectionService } from "../../../../services/selectionService";
-import { type ILiteSceneResourceIndexService } from "../scene/sceneResourceIndexService";
-import { type ILiteMaterialResourceRecord, type ILiteTextureResourceRecord } from "../scene/sceneResources";
+import { type ISceneResourceIndexService } from "../scene/sceneResourceIndexService";
+import { type IMaterialResourceRecord, type ITextureResourceRecord } from "../scene/sceneResources";
 import { useLatestAsyncOperation } from "./useLatestAsyncOperation";
 
-export type LiteTextureMetadataAdapterProps = Readonly<{
+export type TextureMetadataAdapterProps = Readonly<{
     texture: object;
-    resourceIndexService: ILiteSceneResourceIndexService;
+    resourceIndexService: ISceneResourceIndexService;
     selectionService: ISelectionService;
 }>;
 
@@ -41,14 +41,14 @@ function OptionalRow(id: string, label: string, value: unknown, units?: string):
         : { id, label, value: typeof value === "string" ? value : String(value), units };
 }
 
-function GetMaterialRecord(resourceIndexService: ILiteSceneResourceIndexService, material: Material): ILiteMaterialResourceRecord | undefined {
+function GetMaterialRecord(resourceIndexService: ISceneResourceIndexService, material: Material): IMaterialResourceRecord | undefined {
     return resourceIndexService.index.getMaterialRecord(material);
 }
 
 function GetConsumerLinks(
     texture: object,
-    record: ILiteTextureResourceRecord | undefined,
-    resourceIndexService: ILiteSceneResourceIndexService,
+    record: ITextureResourceRecord | undefined,
+    resourceIndexService: ISceneResourceIndexService,
     selectionService: ISelectionService
 ): readonly TextureMetadataConsumerLink[] {
     return (record?.consumers ?? []).map((consumer, index) => {
@@ -71,7 +71,7 @@ function GetConsumerLinks(
     });
 }
 
-function GetConsumerScenes(record: ILiteTextureResourceRecord | undefined, resourceIndexService: ILiteSceneResourceIndexService): readonly SceneContext[] {
+function GetConsumerScenes(record: ITextureResourceRecord | undefined, resourceIndexService: ISceneResourceIndexService): readonly SceneContext[] {
     const scenes = new Set<SceneContext>();
     for (const consumer of record?.consumers ?? []) {
         for (const scene of GetMaterialRecord(resourceIndexService, consumer.material)?.scenes ?? []) {
@@ -81,7 +81,7 @@ function GetConsumerScenes(record: ILiteTextureResourceRecord | undefined, resou
     return [...scenes];
 }
 
-function SupportsTransform(record: ILiteTextureResourceRecord | undefined, resourceIndexService: ILiteSceneResourceIndexService): boolean {
+function SupportsTransform(record: ITextureResourceRecord | undefined, resourceIndexService: ISceneResourceIndexService): boolean {
     if (!record || record.metadata.kind !== "2d" || !hasTextureTransform(record.entity as Texture2D)) {
         return false;
     }
@@ -170,7 +170,7 @@ function GetTransformFields(
  * @param props - The exact texture, resource index, and selection service.
  * @returns The metadata-only texture properties UI.
  */
-export const LiteTextureMetadataAdapter: FunctionComponent<LiteTextureMetadataAdapterProps> = (props) => {
+export const TextureMetadataAdapter: FunctionComponent<TextureMetadataAdapterProps> = (props) => {
     const { texture, resourceIndexService, selectionService } = props;
     const getSnapshot = useCallback(() => {
         const record = resourceIndexService.index.getTextureRecord(texture);
@@ -210,7 +210,7 @@ export const LiteTextureMetadataAdapter: FunctionComponent<LiteTextureMetadataAd
                 }
                 const scenes = [...GetConsumerScenes(currentRecord, resourceIndexService)];
                 const materialRecords = [
-                    ...new Set(consumerRecords.filter((item): item is ILiteMaterialResourceRecord => item !== undefined && (item.family === "standard" || item.family === "pbr"))),
+                    ...new Set(consumerRecords.filter((item): item is IMaterialResourceRecord => item !== undefined && (item.family === "standard" || item.family === "pbr"))),
                 ];
                 if (scenes.length === 0 || materialRecords.length === 0) {
                     throw new Error("The texture has no complete owning scene scope.");

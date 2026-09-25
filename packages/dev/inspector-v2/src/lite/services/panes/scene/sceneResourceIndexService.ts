@@ -4,21 +4,21 @@ import { type ServiceDefinition, type IService } from "shared-ui-components/modu
 
 import { type IEngineContext, EngineContextIdentity } from "../../../engineContext";
 import { type IWatcherService, WatcherServiceIdentity } from "../../../../services/watcherService";
-import { LiteSceneResourceIndex } from "./sceneResources";
+import { SceneResourceIndex } from "./sceneResources";
 
 /**
  * The unique identity for the Inspector-owned Lite scene resource index.
  * @internal
  */
-export const LiteSceneResourceIndexServiceIdentity = Symbol("LiteSceneResourceIndex");
+export const SceneResourceIndexServiceIdentity = Symbol("SceneResourceIndex");
 
 /**
  * Provides the resource index owned by one Lite Inspector instance.
  * @internal
  */
-export interface ILiteSceneResourceIndexService extends IService<typeof LiteSceneResourceIndexServiceIdentity> {
+export interface ISceneResourceIndexService extends IService<typeof SceneResourceIndexServiceIdentity> {
     /** The index for the inspected engine. */
-    readonly index: LiteSceneResourceIndex;
+    readonly index: SceneResourceIndex;
     /** Notifies after the index has applied a topology change. */
     readonly onChanged: IReadonlyObservable<void>;
     /** Notifies once while the service is being disposed. */
@@ -33,12 +33,12 @@ export interface ILiteSceneResourceIndexService extends IService<typeof LiteScen
  * Creates one disposable Lite scene resource index per Inspector service container.
  * @internal
  */
-export const LiteSceneResourceIndexServiceDefinition: ServiceDefinition<[ILiteSceneResourceIndexService], [IEngineContext, IWatcherService]> = {
+export const SceneResourceIndexServiceDefinition: ServiceDefinition<[ISceneResourceIndexService], [IEngineContext, IWatcherService]> = {
     friendlyName: "Babylon Lite Scene Resource Index",
-    produces: [LiteSceneResourceIndexServiceIdentity],
+    produces: [SceneResourceIndexServiceIdentity],
     consumes: [EngineContextIdentity, WatcherServiceIdentity],
     factory: (engineContext, watcherService) => {
-        const index = new LiteSceneResourceIndex(engineContext.engine);
+        const index = new SceneResourceIndex(engineContext.engine);
         const onChanged = new Observable<void>();
         const onDisposed = new Observable<void>();
         let refreshPending = false;
@@ -59,7 +59,7 @@ export const LiteSceneResourceIndexServiceDefinition: ServiceDefinition<[ILiteSc
                     }
                 });
             },
-            LiteSceneResourceIndex.AreTopologySnapshotsEqual
+            SceneResourceIndex.AreTopologySnapshotsEqual
         );
 
         return {

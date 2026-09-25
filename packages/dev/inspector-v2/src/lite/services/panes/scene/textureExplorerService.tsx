@@ -4,10 +4,10 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 
 import { type IEngineExplorerService, EngineExplorerServiceIdentity } from "../../../engineExplorerService";
 import { CreateSceneExplorerSectionNode, IsSceneContext } from "./sceneExplorerSection";
-import { type ILiteSceneResourceIndexService, LiteSceneResourceIndexServiceIdentity } from "./sceneResourceIndexService";
-import { type ILiteTextureResourceRecord } from "./sceneResources";
+import { type ISceneResourceIndexService, SceneResourceIndexServiceIdentity } from "./sceneResourceIndexService";
+import { type ITextureResourceRecord } from "./sceneResources";
 
-function GetTextureDisplayName(record: ILiteTextureResourceRecord): string {
+function GetTextureDisplayName(record: ITextureResourceRecord): string {
     if (record.metadata.kind === "cube") {
         return `Texture ${record.ordinal} (Cube)`;
     }
@@ -17,9 +17,9 @@ function GetTextureDisplayName(record: ILiteTextureResourceRecord): string {
         : `Texture ${record.ordinal}`;
 }
 
-export const TextureExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplorerService, ILiteSceneResourceIndexService]> = {
+export const TextureExplorerServiceDefinition: ServiceDefinition<[], [IEngineExplorerService, ISceneResourceIndexService]> = {
     friendlyName: "Babylon Lite Texture Explorer",
-    consumes: [EngineExplorerServiceIdentity, LiteSceneResourceIndexServiceIdentity],
+    consumes: [EngineExplorerServiceIdentity, SceneResourceIndexServiceIdentity],
     factory: (engineExplorerService, resourceIndexService) =>
         engineExplorerService.addRenderingContextNodeProvider({
             order: 200,

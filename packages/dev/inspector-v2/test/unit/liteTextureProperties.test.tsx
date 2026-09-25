@@ -7,7 +7,7 @@ import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const LiteMocks = vi.hoisted(() => ({
+const InspectionMocks = vi.hoisted(() => ({
     setTransform: vi.fn(),
     enableUv: vi.fn(),
     dirty: vi.fn(),
@@ -22,19 +22,19 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
         getTextureTransform: (texture: Record<string, unknown>) => texture.transform,
         getTextureCoordinateIndex: (texture: Record<string, unknown>) => texture.coordinateIndex,
         hasTextureTransform: (texture: Record<string, unknown>) => texture.transform !== undefined,
-        setTextureTransform: LiteMocks.setTransform,
-        enableMaterialUvTransform: LiteMocks.enableUv,
-        markMaterialUboDirty: LiteMocks.dirty,
-        rebuildMaterial: LiteMocks.rebuild,
+        setTextureTransform: InspectionMocks.setTransform,
+        enableMaterialUvTransform: InspectionMocks.enableUv,
+        markMaterialUboDirty: InspectionMocks.dirty,
+        rebuildMaterial: InspectionMocks.rebuild,
     };
 });
 
 import { type Material, type SceneContext, type TextureMetadata } from "@babylonjs/lite";
 import { Observable } from "core/Misc/observable";
 
-import { LiteTextureMetadataAdapter } from "../../src/lite/services/panes/properties/liteTextureMetadataAdapter";
-import { type ILiteSceneResourceIndexService } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
-import { type ILiteMaterialResourceRecord, type ILiteTextureResourceRecord } from "../../src/lite/services/panes/scene/sceneResources";
+import { TextureMetadataAdapter } from "../../src/lite/services/panes/properties/textureMetadataAdapter";
+import { type ISceneResourceIndexService } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
+import { type IMaterialResourceRecord, type ITextureResourceRecord } from "../../src/lite/services/panes/scene/sceneResources";
 import { type ISelectionService } from "../../src/services/selectionService";
 
 vi.hoisted(() => {
@@ -69,14 +69,14 @@ function MakeServices(metadata: TextureMetadata, kind: "standard" | "pbr" = "sta
         coordinateIndex: 1,
         transform: { uOffset: 0, vOffset: 0, uScale: 1, vScale: 1, uAng: 0 },
     };
-    const materialRecord: ILiteMaterialResourceRecord = {
+    const materialRecord: IMaterialResourceRecord = {
         source: material,
         family: kind,
         displayName: "Material",
         scenes: [scene],
         bindings: [{ id: `${kind}.baseColor`, entity: texture }],
     };
-    const textureRecord: ILiteTextureResourceRecord = {
+    const textureRecord: ITextureResourceRecord = {
         entity: texture,
         metadata,
         ordinal: 4,
@@ -102,7 +102,7 @@ function MakeServices(metadata: TextureMetadata, kind: "standard" | "pbr" = "sta
             disposed = true;
             onDisposed.notifyObservers();
         }),
-    } as unknown as ILiteSceneResourceIndexService;
+    } as unknown as ISceneResourceIndexService;
     return { texture, material, scene, materialRecord, textureRecord, resourceIndexService, selectionService: MakeSelectionService(), refresh };
 }
 
@@ -111,19 +111,19 @@ describe("Babylon Lite texture accessor metadata", () => {
     const containers: HTMLElement[] = [];
 
     beforeEach(() => {
-        LiteMocks.setTransform.mockReset();
-        LiteMocks.setTransform.mockImplementation((texture, transform) => {
+        InspectionMocks.setTransform.mockReset();
+        InspectionMocks.setTransform.mockImplementation((texture, transform) => {
             if (JSON.stringify(texture.transform) === JSON.stringify(transform)) {
                 return false;
             }
             texture.transform = transform;
             return true;
         });
-        LiteMocks.enableUv.mockReset();
-        LiteMocks.enableUv.mockReturnValue(false);
-        LiteMocks.dirty.mockReset();
-        LiteMocks.rebuild.mockReset();
-        LiteMocks.rebuild.mockResolvedValue(undefined);
+        InspectionMocks.enableUv.mockReset();
+        InspectionMocks.enableUv.mockReturnValue(false);
+        InspectionMocks.dirty.mockReset();
+        InspectionMocks.rebuild.mockReset();
+        InspectionMocks.rebuild.mockResolvedValue(undefined);
     });
 
     afterEach(() => {
@@ -163,7 +163,7 @@ describe("Babylon Lite texture accessor metadata", () => {
             capabilities: { dynamicUpdate: false, renderAttachment: false, sampledDepth: false },
         };
         const services = MakeServices(metadata);
-        const container = Render(<LiteTextureMetadataAdapter {...services} />);
+        const container = Render(<TextureMetadataAdapter {...services} />);
         const text = (container.textContent ?? "").replaceAll(/\s/g, "");
 
         expect(text).toContain(expected);
@@ -174,7 +174,7 @@ describe("Babylon Lite texture accessor metadata", () => {
 
     it("renders deterministic unknown and transient metadata states", () => {
         const services = MakeServices({ kind: "2d", width: 0, height: 0, capabilities: {} });
-        const text = (Render(<LiteTextureMetadataAdapter {...services} />).textContent ?? "").replaceAll(/\s/g, "");
+        const text = (Render(<TextureMetadataAdapter {...services} />).textContent ?? "").replaceAll(/\s/g, "");
 
         expect(text).toContain("NameUnavailable");
         expect(text).toContain("FormatUnavailable");
@@ -183,7 +183,7 @@ describe("Babylon Lite texture accessor metadata", () => {
 
     it("navigates to the exact source material consumer", () => {
         const services = MakeServices({ kind: "2d", capabilities: {} });
-        const container = Render(<LiteTextureMetadataAdapter {...services} />);
+        const container = Render(<TextureMetadataAdapter {...services} />);
         const link = container.querySelector('[aria-label^="Open material Material"]');
 
         expect(link).not.toBeNull();
@@ -193,7 +193,7 @@ describe("Babylon Lite texture accessor metadata", () => {
 
     it("commits transforms with complete consumer scope and refreshes applied metadata", async () => {
         const services = MakeServices({ kind: "2d", capabilities: {} });
-        const container = Render(<LiteTextureMetadataAdapter {...services} />);
+        const container = Render(<TextureMetadataAdapter {...services} />);
         const input = container.querySelector<HTMLInputElement>('input[value="1"]')!;
         const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
 
@@ -204,16 +204,16 @@ describe("Babylon Lite texture accessor metadata", () => {
             input.blur();
         });
 
-        expect(LiteMocks.setTransform).toHaveBeenCalledWith(services.texture, expect.objectContaining({ uScale: 2 }));
-        expect(LiteMocks.enableUv).toHaveBeenCalledWith(services.material);
-        expect(LiteMocks.dirty).toHaveBeenCalledWith(services.material);
+        expect(InspectionMocks.setTransform).toHaveBeenCalledWith(services.texture, expect.objectContaining({ uScale: 2 }));
+        expect(InspectionMocks.enableUv).toHaveBeenCalledWith(services.material);
+        expect(InspectionMocks.dirty).toHaveBeenCalledWith(services.material);
         expect(services.refresh).toHaveBeenCalled();
     });
 
     it("awaits rebuilds when enabling transform support changes the material pipeline", async () => {
-        LiteMocks.enableUv.mockReturnValue(true);
+        InspectionMocks.enableUv.mockReturnValue(true);
         const services = MakeServices({ kind: "2d", capabilities: {} });
-        const container = Render(<LiteTextureMetadataAdapter {...services} />);
+        const container = Render(<TextureMetadataAdapter {...services} />);
         const input = container.querySelector<HTMLInputElement>('input[value="1"]')!;
         const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")!.set!;
 
@@ -224,7 +224,7 @@ describe("Babylon Lite texture accessor metadata", () => {
             input.blur();
         });
 
-        expect(LiteMocks.rebuild).toHaveBeenCalledWith(services.scene, services.material, {
+        expect(InspectionMocks.rebuild).toHaveBeenCalledWith(services.scene, services.material, {
             rebuildViews: true,
             rebuildFrameGraph: false,
         });
@@ -237,8 +237,8 @@ describe("Babylon Lite texture accessor metadata", () => {
             onChanged: new Observable<void>(),
             onDisposed: new Observable<void>(),
             isDisposed: false,
-        } as unknown as ILiteSceneResourceIndexService;
-        const container = Render(<LiteTextureMetadataAdapter texture={{}} resourceIndexService={resourceIndexService} selectionService={selectionService} />);
+        } as unknown as ISceneResourceIndexService;
+        const container = Render(<TextureMetadataAdapter texture={{}} resourceIndexService={resourceIndexService} selectionService={selectionService} />);
 
         expect(container.textContent).toContain("This texture is unavailable or malformed.");
         expect(container.querySelector('[role="alert"]')).not.toBeNull();
@@ -246,7 +246,7 @@ describe("Babylon Lite texture accessor metadata", () => {
 
     it("does not offer transform editing for cube wrappers", () => {
         const services = MakeServices({ kind: "cube", capabilities: {} });
-        const container = Render(<LiteTextureMetadataAdapter {...services} />);
+        const container = Render(<TextureMetadataAdapter {...services} />);
         expect(container.querySelector("input")).toBeNull();
     });
 });

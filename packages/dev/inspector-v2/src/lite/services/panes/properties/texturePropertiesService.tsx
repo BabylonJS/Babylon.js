@@ -6,9 +6,9 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../services/panes/properties/propertiesService";
 import { type ISelectionService, SelectionServiceIdentity } from "../../../../services/selectionService";
-import { type ILiteSceneResourceIndexService, LiteSceneResourceIndexServiceIdentity } from "../scene/sceneResourceIndexService";
+import { type ISceneResourceIndexService, SceneResourceIndexServiceIdentity } from "../scene/sceneResourceIndexService";
 
-const LiteTextureMetadataAdapter = MakeLazyComponent(async () => (await import("./liteTextureMetadataAdapter")).LiteTextureMetadataAdapter, {
+const TextureMetadataAdapter = MakeLazyComponent(async () => (await import("./textureMetadataAdapter")).TextureMetadataAdapter, {
     spinnerLabel: "Loading texture metadata",
 });
 
@@ -23,9 +23,9 @@ function TryGetTextureMetadata(entity: unknown): entity is object {
     }
 }
 
-export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ILiteSceneResourceIndexService, ISelectionService]> = {
+export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISceneResourceIndexService, ISelectionService]> = {
     friendlyName: "Babylon Lite Texture Properties",
-    consumes: [PropertiesServiceIdentity, LiteSceneResourceIndexServiceIdentity, SelectionServiceIdentity],
+    consumes: [PropertiesServiceIdentity, SceneResourceIndexServiceIdentity, SelectionServiceIdentity],
     factory: (propertiesService, resourceIndexService, selectionService) => {
         const recognizedTextures = new WeakSet<object>();
         return propertiesService.addSectionContent({
@@ -45,7 +45,7 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                     section: "General",
                     component: ((props) => {
                         const { context } = props;
-                        return createElement(LiteTextureMetadataAdapter, { texture: context, resourceIndexService, selectionService });
+                        return createElement(TextureMetadataAdapter, { texture: context, resourceIndexService, selectionService });
                     }) satisfies FunctionComponent<{ context: object }>,
                 },
             ],

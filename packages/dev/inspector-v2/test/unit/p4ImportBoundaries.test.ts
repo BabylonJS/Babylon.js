@@ -16,7 +16,7 @@ function ReadSharedSource(path: string): string {
 }
 
 const PreviewOrEditorDependency = /(?:texture|material)(?:Preview|Editor)|pixelReadback|readback|uploadTexture|exportTexture/i;
-const BabylonRuntimeImplementation = /from ["'](?:@dev\/core|core\/(?!index["']))/;
+const NativeRuntimeImplementation = /from ["'](?:@dev\/core|core\/(?!index["']))/;
 const RemovedLiteInspectionApi =
     /\b(?:inspectMaterial|inspectTexture|getMaterialTextureBindings|setMaterialInspectionProperty|setMaterialInspectionTexture|setTextureInspectionTransform|MaterialInspection|TextureInspection|InspectionDatum|InspectionValue)\b/;
 const RemovedAwaitedRebuildContract = /\b(?:AwaitedRebuildMaterialOptions|awaitCompletion)\b/;
@@ -31,8 +31,8 @@ describe("P4 Inspector import boundaries", () => {
             expect(materialService).toContain(`import("./materialAdapters/${family}MaterialAdapter")`);
             expect(materialService).not.toMatch(new RegExp(`^import .*materialAdapters/${family}MaterialAdapter`, "m"));
         });
-        expect(textureService).toContain('import("./liteTextureMetadataAdapter")');
-        expect(textureService).not.toMatch(/^import .*liteTextureMetadataAdapter/m);
+        expect(textureService).toContain('import("./textureMetadataAdapter")');
+        expect(textureService).not.toMatch(/^import .*textureMetadataAdapter/m);
     });
 
     it("keeps Lite lazy adapter sources free of Babylon.js implementation and preview/editor dependencies", () => {
@@ -42,7 +42,7 @@ describe("P4 Inspector import boundaries", () => {
             "lite/services/panes/properties/materialAdapters/shaderMaterialAdapter.tsx",
             "lite/services/panes/properties/materialAdapters/nodeMaterialAdapter.tsx",
             "lite/services/panes/properties/materialAdapters/materialAdapterCore.tsx",
-            "lite/services/panes/properties/liteTextureMetadataAdapter.tsx",
+            "lite/services/panes/properties/textureMetadataAdapter.tsx",
             "lite/services/panes/properties/useLatestAsyncOperation.ts",
             "lite/services/panes/properties/descriptors/descriptorTypes.ts",
             "lite/services/panes/properties/descriptors/materialDescriptor.ts",
@@ -56,7 +56,7 @@ describe("P4 Inspector import boundaries", () => {
 
         sources.forEach((source) => {
             expect(source).not.toMatch(PreviewOrEditorDependency);
-            expect(source).not.toMatch(BabylonRuntimeImplementation);
+            expect(source).not.toMatch(NativeRuntimeImplementation);
             expect(source).not.toMatch(RemovedLiteInspectionApi);
             expect(source).not.toMatch(RemovedAwaitedRebuildContract);
             expect(source).not.toMatch(/@babylonjs\/lite\/(?:src|dist)\//);

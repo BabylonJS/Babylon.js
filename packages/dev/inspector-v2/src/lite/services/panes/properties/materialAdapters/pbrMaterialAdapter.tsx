@@ -2,7 +2,7 @@ import { type FunctionComponent } from "react";
 
 import { type MaterialDescriptorPropertyId, type MaterialDescriptorSection, type IMaterialTextureBinding } from "../descriptors/descriptorTypes";
 import { PbrMaterialDescriptor } from "../descriptors/pbrDescriptor";
-import { LiteMaterialAdapterSection, type LiteMaterialAdapterProps } from "./materialAdapterCore";
+import { MaterialAdapterSection, type MaterialAdapterProps } from "./materialAdapterCore";
 
 const ColorProperties = new Set<MaterialDescriptorPropertyId>([
     "pbr.baseColorFactor",
@@ -52,6 +52,6 @@ function GetBindingSection(binding: IMaterialTextureBinding): MaterialDescriptor
  * @param props The selected material section and instance services.
  * @returns PBR material property content.
  */
-export const PbrMaterialAdapter: FunctionComponent<LiteMaterialAdapterProps> = (props) => {
-    return <LiteMaterialAdapterSection {...props} family="pbr" familyDescriptor={PbrMaterialDescriptor} colorProperties={ColorProperties} getBindingSection={GetBindingSection} />;
+export const PbrMaterialAdapter: FunctionComponent<MaterialAdapterProps> = (props) => {
+    return <MaterialAdapterSection {...props} family="pbr" familyDescriptor={PbrMaterialDescriptor} colorProperties={ColorProperties} getBindingSection={GetBindingSection} />;
 };

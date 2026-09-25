@@ -7,7 +7,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const LiteMocks = vi.hoisted(() => ({
+const InspectionMocks = vi.hoisted(() => ({
     markDirty: vi.fn(),
     rebuild: vi.fn(),
     setStandardEmissiveTexture: vi.fn((material: Record<string, unknown>, texture: object | null) => {
@@ -51,9 +51,9 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
         getTextureTransform: (texture: Record<string, unknown>) => texture.transform,
         hasTextureTransform: (texture: Record<string, unknown>) => texture.transform !== undefined,
         hasMaterialUvTransform: () => true,
-        markMaterialUboDirty: LiteMocks.markDirty,
-        rebuildMaterial: LiteMocks.rebuild,
-        setStandardEmissiveTexture: LiteMocks.setStandardEmissiveTexture,
+        markMaterialUboDirty: InspectionMocks.markDirty,
+        rebuildMaterial: InspectionMocks.rebuild,
+        setStandardEmissiveTexture: InspectionMocks.setStandardEmissiveTexture,
     };
 });
 
@@ -67,8 +67,8 @@ import { ShaderMaterialDescriptor } from "../../src/lite/services/panes/properti
 import { StandardMaterialDescriptor } from "../../src/lite/services/panes/properties/descriptors/standardDescriptor";
 import { StandardMaterialAdapter } from "../../src/lite/services/panes/properties/materialAdapters/standardMaterialAdapter";
 import { MaterialPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/materialPropertiesService";
-import { type ILiteSceneResourceIndexService } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
-import { type ILiteMaterialResourceRecord, type ILiteTextureResourceRecord } from "../../src/lite/services/panes/scene/sceneResources";
+import { type ISceneResourceIndexService } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
+import { type IMaterialResourceRecord, type ITextureResourceRecord } from "../../src/lite/services/panes/scene/sceneResources";
 import { type IPropertiesService } from "../../src/services/panes/properties/propertiesService";
 import { type ISelectionService } from "../../src/services/selectionService";
 
@@ -111,7 +111,7 @@ function MakeStandard(overrides: Record<string, unknown> = {}): Material {
     } as unknown as Material;
 }
 
-function MakeResourceService(records: readonly ILiteMaterialResourceRecord[], textures: readonly ILiteTextureResourceRecord[] = []): ILiteSceneResourceIndexService {
+function MakeResourceService(records: readonly IMaterialResourceRecord[], textures: readonly ITextureResourceRecord[] = []): ISceneResourceIndexService {
     const onChanged = new Observable<void>();
     return {
         index: {
@@ -124,7 +124,7 @@ function MakeResourceService(records: readonly ILiteMaterialResourceRecord[], te
         isDisposed: false,
         refresh: vi.fn(() => onChanged.notifyObservers()),
         dispose: vi.fn(),
-    } as unknown as ILiteSceneResourceIndexService;
+    } as unknown as ISceneResourceIndexService;
 }
 
 function MakeSelectionService(): ISelectionService {
@@ -147,10 +147,10 @@ describe("Babylon Lite material accessor descriptors", () => {
     const containers: HTMLElement[] = [];
 
     beforeEach(() => {
-        LiteMocks.markDirty.mockReset();
-        LiteMocks.rebuild.mockReset();
-        LiteMocks.rebuild.mockResolvedValue(undefined);
-        LiteMocks.setStandardEmissiveTexture.mockClear();
+        InspectionMocks.markDirty.mockReset();
+        InspectionMocks.rebuild.mockReset();
+        InspectionMocks.rebuild.mockResolvedValue(undefined);
+        InspectionMocks.setStandardEmissiveTexture.mockClear();
     });
 
     afterEach(() => {
@@ -257,7 +257,7 @@ describe("Babylon Lite material accessor descriptors", () => {
         expect(result).toEqual({ changed: true, mutation: "U", postMutation: "none" });
         expect((view as any).alphaCutOff).toBe(0.7);
         expect((source as any).alphaCutOff).toBe(0.4);
-        expect(LiteMocks.markDirty).toHaveBeenCalledWith(view);
+        expect(InspectionMocks.markDirty).toHaveBeenCalledWith(view);
     });
 
     it("validates complete scene ownership before rebuilding", async () => {
@@ -271,19 +271,19 @@ describe("Babylon Lite material accessor descriptors", () => {
     it("accepts synchronous rebuild completion and awaits asynchronous rebuild failures", async () => {
         const material = MakeStandard();
         const scene = { meshes: [{ material }] } as SceneContext;
-        LiteMocks.rebuild.mockReturnValueOnce(undefined);
+        InspectionMocks.rebuild.mockReturnValueOnce(undefined);
 
         await expect(SetMaterialDescriptorPropertyWithFamily({ scenes: [scene] }, material, "standard.backFaceCulling", false, StandardMaterialDescriptor)).resolves.toEqual({
             changed: true,
             mutation: "R",
             postMutation: "rebuild-material",
         });
-        expect(LiteMocks.rebuild).toHaveBeenLastCalledWith(scene, material, {
+        expect(InspectionMocks.rebuild).toHaveBeenLastCalledWith(scene, material, {
             rebuildViews: true,
             rebuildFrameGraph: false,
         });
 
-        LiteMocks.rebuild.mockRejectedValueOnce(new Error("rebuild failed"));
+        InspectionMocks.rebuild.mockRejectedValueOnce(new Error("rebuild failed"));
         await expect(SetMaterialDescriptorPropertyWithFamily({ scenes: [scene] }, material, "standard.backFaceCulling", true, StandardMaterialDescriptor)).rejects.toThrow(
             "rebuild failed"
         );
@@ -293,14 +293,14 @@ describe("Babylon Lite material accessor descriptors", () => {
         const scene = {} as SceneContext;
         const texture = { metadata: { kind: "2d", sampleType: "float", capabilities: {} } };
         const material = MakeStandard({ emissiveTexture: texture });
-        const materialRecord: ILiteMaterialResourceRecord = {
+        const materialRecord: IMaterialResourceRecord = {
             source: material,
             family: "standard",
             displayName: "Standard source",
             scenes: [scene],
             bindings: [{ id: "standard.emissive", entity: texture }],
         };
-        const textureRecord: ILiteTextureResourceRecord = {
+        const textureRecord: ITextureResourceRecord = {
             entity: texture,
             metadata: texture.metadata,
             ordinal: 1,
@@ -320,7 +320,7 @@ describe("Babylon Lite material accessor descriptors", () => {
     it("registers lazy family predicates without importing family descriptors in the service", () => {
         const families = ["standard", "pbr", "shader", "node"] as const;
         const materials = families.map((family) => ({ family, name: family }) as unknown as Material);
-        const records = materials.map((source): ILiteMaterialResourceRecord => ({ source, family: (source as any).family, displayName: source.name!, scenes: [], bindings: [] }));
+        const records = materials.map((source): IMaterialResourceRecord => ({ source, family: (source as any).family, displayName: source.name!, scenes: [], bindings: [] }));
         const registrations = new Map<string, Parameters<IPropertiesService["addSectionContent"]>[0]>();
         const propertiesService = {
             addSectionContent: vi.fn((content: Parameters<IPropertiesService["addSectionContent"]>[0]) => {

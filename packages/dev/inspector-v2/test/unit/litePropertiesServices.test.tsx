@@ -34,7 +34,7 @@ import { type ISettingsStore, type SettingDescriptor } from "shared-ui-component
 import { BoundProperty, ComputedProperty, DerivedProperty } from "../../src/components/properties/boundProperty";
 import { WatcherContext } from "../../src/contexts/watcherContext";
 import { EngineContextIdentity, type IEngineContext } from "../../src/lite/engineContext";
-import { type ILiteSceneResourceIndexService, LiteSceneResourceIndexServiceIdentity } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
+import { type ISceneResourceIndexService, SceneResourceIndexServiceIdentity } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
 import { EnginePropertiesServiceDefinition } from "../../src/lite/services/panes/properties/enginePropertiesService";
 import { MaterialPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/materialPropertiesService";
 import { RenderingContextPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/renderingContextPropertiesService";
@@ -181,7 +181,7 @@ describe("Babylon Lite properties services", () => {
                 getMaterialRecord: (candidate: Material) => (candidate === material ? { source: material } : undefined),
                 getTextureRecord: (candidate: object) => (candidate === texture ? { entity: texture } : undefined),
             },
-        } as unknown as ILiteSceneResourceIndexService;
+        } as unknown as ISceneResourceIndexService;
 
         const services = [
             EnginePropertiesServiceDefinition.factory(propertiesService, engineContext),
@@ -194,8 +194,8 @@ describe("Babylon Lite properties services", () => {
 
         expect(EnginePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(RenderingContextPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
-        expect(MaterialPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, LiteSceneResourceIndexServiceIdentity, SelectionServiceIdentity]);
-        expect(TexturePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, LiteSceneResourceIndexServiceIdentity, SelectionServiceIdentity]);
+        expect(MaterialPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, SceneResourceIndexServiceIdentity, SelectionServiceIdentity]);
+        expect(TexturePropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, SceneResourceIndexServiceIdentity, SelectionServiceIdentity]);
         expect(TextLayerPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(SpriteLayerPropertiesServiceDefinition.consumes).toEqual([PropertiesServiceIdentity, EngineContextIdentity]);
         expect(registrations.size).toBe(13);
