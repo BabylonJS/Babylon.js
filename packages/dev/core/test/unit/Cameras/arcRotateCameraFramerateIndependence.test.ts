@@ -250,6 +250,15 @@ describe("ArcRotateCamera back-compat parameter combinations", () => {
             expect(computeCurrentFrameDeltas).toHaveBeenCalledOnce();
         });
 
+        it("notifies onAfterCheckInputsObservable once per frame", () => {
+            const observer = vi.fn();
+            camera.onAfterCheckInputsObservable.add(observer);
+
+            camera._checkInputs();
+
+            expect(observer).toHaveBeenCalledOnce();
+        });
+
         it("applies one inertia decay per reference frame", () => {
             camera.inertia = 0.9;
             injectRotationPixels(camera, 10, 0);
