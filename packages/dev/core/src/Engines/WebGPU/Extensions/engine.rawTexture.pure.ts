@@ -359,7 +359,6 @@ export function RegisterEnginesWebGPUExtensionsEngineRawTexture(): void {
             texture._bufferView = data;
         }
 
-        this._textureHelper.updateMipLevelCountForInternalTexture(texture);
         this._textureHelper.createGPUTextureForInternalTexture(texture, width, height, undefined, creationFlags);
 
         this.updateRawTexture3D(texture, data, format, invertY, compression, textureType);

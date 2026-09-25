@@ -81,6 +81,28 @@ const mipmap3DFragmentSource = `
     }
     `;
 
+const mipmap3DLoadFragmentSource = (sampleType: "f32" | "i32" | "u32") => `
+    var img: texture_3d<${sampleType}>;
+
+    varying vSlice: f32;
+
+    @fragment
+    fn main(input: FragmentInputs) -> FragmentOutputs {
+        let dimensions = vec3i(textureDimensions(img, 0));
+        let origin = vec3i(vec2i(input.position.xy) * 2, i32(input.vSlice) * 2);
+        ${sampleType === "f32" ? "var color = vec4f(0.0);" : `var quotient = vec4<${sampleType}>(0); var remainder = vec4<${sampleType}>(0);`}
+        for (var z = 0; z < 2; z++) {
+            for (var y = 0; y < 2; y++) {
+                for (var x = 0; x < 2; x++) {
+                    let texel = textureLoad(img, min(origin + vec3i(x, y, z), dimensions - 1), 0);
+                    ${sampleType === "f32" ? "color += texel;" : `quotient += texel / 8; remainder += texel % 8;`}
+                }
+            }
+        }
+        fragmentOutputs.${sampleType === "f32" ? "color" : "fragData0"} = ${sampleType === "f32" ? "color * 0.125" : `vec4<${sampleType}>(quotient + remainder / 8)`};
+    }
+    `;
+
 const mipmapFragmentSource = `
     var imgSampler: sampler;
     var img: texture_2d<f32>;
@@ -276,6 +298,9 @@ enum PipelineType {
     InvertYPremultiplyAlphaWithOfst = 3,
     ResolveDepth = 4,
     MipMap3D = 5,
+    MipMap3DFloat32 = 6,
+    MipMap3DSint = 7,
+    MipMap3DUint = 8,
 }
 
 enum VideoPipelineType {
@@ -295,6 +320,9 @@ const shadersForPipelineType = [
     { vertex: invertYPreMultiplyAlphaWithOfstVertexSource, fragment: invertYPreMultiplyAlphaWithOfstFragmentSource },
     { vertex: resolveDepthVertexSource, fragment: resolveDepthFragmentSource },
     { vertex: mipmap3DVertexSource, fragment: mipmap3DFragmentSource },
+    { vertex: mipmap3DVertexSource, fragment: mipmap3DLoadFragmentSource("f32") },
+    { vertex: mipmap3DVertexSource, fragment: mipmap3DLoadFragmentSource("i32") },
+    { vertex: mipmap3DVertexSource, fragment: mipmap3DLoadFragmentSource("u32") },
 ];
 
 /**
@@ -407,15 +435,21 @@ export class WebGPUTextureManager {
                 ? 1 << 0
                 : type === PipelineType.MipMap3D
                   ? 1 << 7
-                  : type === PipelineType.InvertYPremultiplyAlpha
-                    ? ((params!.invertY ? 1 : 0) << 1) + ((params!.premultiplyAlpha ? 1 : 0) << 2)
-                    : type === PipelineType.Clear
-                      ? 1 << 3
-                      : type === PipelineType.InvertYPremultiplyAlphaWithOfst
-                        ? ((params!.invertY ? 1 : 0) << 4) + ((params!.premultiplyAlpha ? 1 : 0) << 5)
-                        : type === PipelineType.ResolveDepth
-                          ? 1 << 6
-                          : 0;
+                  : type === PipelineType.MipMap3DFloat32
+                    ? 1 << 8
+                    : type === PipelineType.MipMap3DSint
+                      ? 1 << 9
+                      : type === PipelineType.MipMap3DUint
+                        ? 1 << 10
+                        : type === PipelineType.InvertYPremultiplyAlpha
+                          ? ((params!.invertY ? 1 : 0) << 1) + ((params!.premultiplyAlpha ? 1 : 0) << 2)
+                          : type === PipelineType.Clear
+                            ? 1 << 3
+                            : type === PipelineType.InvertYPremultiplyAlphaWithOfst
+                              ? ((params!.invertY ? 1 : 0) << 4) + ((params!.premultiplyAlpha ? 1 : 0) << 5)
+                              : type === PipelineType.ResolveDepth
+                                ? 1 << 6
+                                : 0;
 
         if (!this._pipelines[format]) {
             this._pipelines[format] = [];
@@ -829,6 +863,10 @@ export class WebGPUTextureManager {
     ): GPUTexture {
         sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
 
+        if (is3D && WebGPUTextureHelper.IsImageBitmap(imageBitmap)) {
+            throw new Error("Uploading an ImageBitmap to a WebGPU 3D texture is not supported.");
+        }
+
         const layerCount = (imageBitmap as any).layers || 1;
         const textureSize = {
             width: imageBitmap.width,
@@ -1063,7 +1101,14 @@ export class WebGPUTextureManager {
         commandEncoder!.pushDebugGroup(`create 3D mipmaps for "${gpuTexture.label}" (${mipLevelCount} levels)`);
 
         const format = gpuTexture.format;
-        const [pipeline, bindGroupLayout] = this._getPipeline(format, PipelineType.MipMap3D);
+        const pipelineType = format.endsWith("uint")
+            ? PipelineType.MipMap3DUint
+            : format.endsWith("sint")
+              ? PipelineType.MipMap3DSint
+              : format === WebGPUConstants.TextureFormat.R32Float || format === WebGPUConstants.TextureFormat.RG32Float || format === WebGPUConstants.TextureFormat.RGBA32Float
+                ? PipelineType.MipMap3DFloat32
+                : PipelineType.MipMap3D;
+        const [pipeline, bindGroupLayout] = this._getPipeline(format, pipelineType);
 
         for (let i = 1; i < mipLevelCount; ++i) {
             const bindGroup =
@@ -1081,10 +1126,7 @@ export class WebGPUTextureManager {
                                 arrayLayerCount: 1,
                             }),
                         },
-                        {
-                            binding: 1,
-                            resource: this._mipmap3DSampler,
-                        },
+                        ...(pipelineType === PipelineType.MipMap3D ? [{ binding: 1, resource: this._mipmap3DSampler }] : []),
                     ],
                 });
             if (hardwareTexture) {
@@ -1185,6 +1227,10 @@ export class WebGPUTextureManager {
             mipmapCount = texture._maxLodLevel;
         } else {
             mipmapCount = hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width, height, texture.is3D ? layerCount : 1) : 1;
+        }
+        if (texture.is3D) {
+            mipmapCount = hasMipMaps ? Math.min(Math.max(1, mipmapCount), WebGPUTextureHelper.ComputeNumMipmapLevels(width, height, layerCount)) : 1;
+            texture.mipLevelCount = mipmapCount;
         }
         if (texture.isCube) {
             const gpuTexture = this.createCubeTexture(
