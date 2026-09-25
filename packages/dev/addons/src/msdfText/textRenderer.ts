@@ -171,6 +171,12 @@ export class TextRenderer implements IDisposable {
     }
 
     private _resizeBuffers(capacity: number) {
+        // The VAO references the buffers being replaced, so it must be recorded again against the new ones.
+        if (this._vertexArrayObject) {
+            (this._engine as ThinEngine).releaseVertexArrayObject(this._vertexArrayObject);
+            (<any>this._vertexArrayObject) = null;
+        }
+
         if (this._worldBuffer) {
             this._worldBuffer.dispose();
             this._worldBuffer = null;
