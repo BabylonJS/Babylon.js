@@ -140,6 +140,7 @@ export function CreatePolygonVertexData(polygon: Mesh, sideOrientation: number, 
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
  * * If you create a double-sided mesh, you can choose what parts of the texture image to crop and stick respectively on the front and the back sides with the parameters `frontUVs` and `backUVs` (Vector4)
  * * Remember you can only change the shape positions, not their number when updating a polygon
+ * * The `smoothingThreshold` option defines the dot product threshold for smoothing the normals of adjacent side faces. The default value of 2 disables smoothing
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param scene defines the hosting scene
@@ -168,7 +169,7 @@ export function CreatePolygon(
     const shape = options.shape;
     const holes = options.holes || [];
     const depth = options.depth || 0;
-    const smoothingThreshold = options.smoothingThreshold || 2;
+    const smoothingThreshold = options.smoothingThreshold ?? 2;
     const contours: Array<Vector2> = [];
     let hole: Array<Vector2>;
 
@@ -200,7 +201,9 @@ export function CreatePolygon(
 /**
  * Creates an extruded polygon mesh, with depth in the Y direction.
  * * You can set different colors and different images to the top, bottom and extruded side by using the parameters `faceColors` (an array of 3 Color3 elements) and `faceUV` (an array of 3 Vector4 elements)
+ * * The `smoothingThreshold` option defines the dot product threshold for smoothing the normals of adjacent side faces. The default value of 2 disables smoothing
  * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/texturePerBoxFace
+ * @see https://playground.babylonjs.com/#TJLZLN#0
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
  * @param scene defines the hosting scene
@@ -213,6 +216,7 @@ export function ExtrudePolygon(
         shape: Vector3[];
         holes?: Vector3[][];
         depth?: number;
+        smoothingThreshold?: number;
         faceUV?: Vector4[];
         faceColors?: Color4[];
         updatable?: boolean;
