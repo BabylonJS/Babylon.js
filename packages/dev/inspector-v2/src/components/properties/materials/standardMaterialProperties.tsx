@@ -9,14 +9,14 @@ import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { MaterialTextureDebugPropertyLine } from "./materialTextureDebugPropertyLine";
 import { type ISelectionService } from "../../../services/selectionService";
-import { BabylonBooleanMaterialPropertyLine, BabylonColor3MaterialPropertyLine, BabylonNumberMaterialPropertyLine } from "./materialPropertyAdapters";
+import { BooleanMaterialPropertyLine, Color3MaterialPropertyLine, NumberMaterialPropertyLine } from "./materialPropertyAdapters";
 
 export const StandardMaterialGeneralProperties: FunctionComponent<{ material: StandardMaterial }> = (props) => {
     const { material } = props;
 
     return (
         <>
-            <BoundProperty component={BabylonBooleanMaterialPropertyLine} label="Disable Lighting" target={material} propertyKey="disableLighting" />
+            <BoundProperty component={BooleanMaterialPropertyLine} label="Disable Lighting" target={material} propertyKey="disableLighting" />
         </>
     );
 };
@@ -297,19 +297,11 @@ export const StandardMaterialLightingAndColorProperties: FunctionComponent<{ sta
 
     return (
         <>
-            <BoundProperty component={BabylonColor3MaterialPropertyLine} label="Diffuse Color" target={standardMaterial} propertyKey="diffuseColor" />
-            <BoundProperty component={BabylonColor3MaterialPropertyLine} label="Specular Color" target={standardMaterial} propertyKey="specularColor" />
-            <BoundProperty
-                component={BabylonNumberMaterialPropertyLine}
-                label="Specular Power"
-                target={standardMaterial}
-                propertyKey="specularPower"
-                min={0}
-                max={128}
-                step={0.1}
-            />
-            <BoundProperty component={BabylonColor3MaterialPropertyLine} label="Emissive Color" target={standardMaterial} propertyKey="emissiveColor" />
-            <BoundProperty component={BabylonColor3MaterialPropertyLine} label="Ambient Color" target={standardMaterial} propertyKey="ambientColor" />
+            <BoundProperty component={Color3MaterialPropertyLine} label="Diffuse Color" target={standardMaterial} propertyKey="diffuseColor" />
+            <BoundProperty component={Color3MaterialPropertyLine} label="Specular Color" target={standardMaterial} propertyKey="specularColor" />
+            <BoundProperty component={NumberMaterialPropertyLine} label="Specular Power" target={standardMaterial} propertyKey="specularPower" min={0} max={128} step={0.1} />
+            <BoundProperty component={Color3MaterialPropertyLine} label="Emissive Color" target={standardMaterial} propertyKey="emissiveColor" />
+            <BoundProperty component={Color3MaterialPropertyLine} label="Ambient Color" target={standardMaterial} propertyKey="ambientColor" />
             <BoundProperty component={SwitchPropertyLine} label="Use Specular Over Alpha" target={standardMaterial} propertyKey="useSpecularOverAlpha" />
         </>
     );

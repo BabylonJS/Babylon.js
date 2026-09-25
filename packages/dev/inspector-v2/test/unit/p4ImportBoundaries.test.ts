@@ -81,6 +81,7 @@ describe("P4 Inspector import boundaries", () => {
     it("keeps shared material and texture cores runtime-neutral", () => {
         const sources = [
             "fluent/hoc/propertyLines/materialPropertyLine.tsx",
+            "fluent/hoc/propertyLines/materialPropertyAdaptersCore.ts",
             "fluent/hoc/propertyLines/materialTextureBindingPropertyLine.tsx",
             "fluent/hoc/propertyLines/textureMetadataProperties.tsx",
         ].map(ReadSharedSource);
@@ -93,10 +94,16 @@ describe("P4 Inspector import boundaries", () => {
 
     it("keeps the legacy Babylon.js adapter independent of Lite while retaining native translation", () => {
         const source = ReadInspectorSource("components/properties/materials/materialPropertyAdapters.tsx");
+        const babylonAdapter = ReadSharedSource("fluent/hoc/propertyLines/materialPropertyAdapters.ts");
+        const liteAdapter = ReadSharedSource("lite/fluent/hoc/propertyLines/materialPropertyAdapters.ts");
 
-        expect(source).toContain('import { Color3 } from "core/Maths/math.color"');
-        expect(source).toContain("new Color3(color.r, color.g, color.b)");
+        expect(source).toContain('import { type Color3 } from "core/Maths/math.color"');
+        expect(babylonAdapter).toContain("new Color3(color.r, color.g, color.b)");
+        expect(liteAdapter).not.toMatch(/from ["'](?:core\/|@dev\/core)/);
         expect(source).not.toContain("@babylonjs/lite");
+        expect(babylonAdapter).not.toContain("@babylonjs/lite");
         expect(source).not.toMatch(PreviewOrEditorDependency);
+        expect(babylonAdapter).not.toMatch(PreviewOrEditorDependency);
+        expect(liteAdapter).not.toMatch(PreviewOrEditorDependency);
     });
 });

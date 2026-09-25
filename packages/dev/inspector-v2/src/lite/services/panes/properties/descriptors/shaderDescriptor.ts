@@ -100,7 +100,7 @@ function NumberConstraint(type: ShaderUniformType): IDescriptorNumberConstraint 
     }
 }
 
-function CopyUniformValue(type: ShaderUniformType, value: number | Readonly<Float32Array>): MaterialDescriptorPropertyValue {
+function CopyUniformValue(type: ShaderUniformType, value: number | Readonly<ArrayLike<number>>): MaterialDescriptorPropertyValue {
     const values = typeof value === "number" ? [value] : value;
     switch (type) {
         case "f32":

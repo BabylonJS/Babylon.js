@@ -2,6 +2,11 @@ import { type Material } from "@babylonjs/lite";
 import { Fragment, type FunctionComponent, useCallback } from "react";
 
 import { MaterialPropertySection, type MaterialMatrix4Value, type MaterialPropertyModel } from "shared-ui-components/fluent/hoc/propertyLines/materialPropertyLine";
+import {
+    CreateBooleanMaterialPropertyModel,
+    CreateColor3MaterialPropertyModel,
+    CreateNumberMaterialPropertyModel,
+} from "shared-ui-components/lite/fluent/hoc/propertyLines/materialPropertyAdapters";
 import { MaterialTextureBindingPropertyLine, type MaterialTextureBindingModel } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
@@ -173,19 +178,19 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
         const value = property.value.value;
         switch (property.valueType) {
             case "boolean":
-                return { ...common, kind: "boolean", value: value as boolean, onChange: (next) => commitProperty(property, next) };
+                return CreateBooleanMaterialPropertyModel({ ...common, label: property.label, value: value as boolean, onChange: (next) => commitProperty(property, next) });
             case "string":
                 return { ...common, kind: "string", value: value as string, onChange: (next) => commitProperty(property, next) };
             case "number":
-                return {
+                return CreateNumberMaterialPropertyModel({
                     ...common,
-                    kind: "number",
+                    label: property.label,
                     value: value as number,
                     onChange: (next) => commitProperty(property, next),
                     min: property.access.number?.min,
                     max: property.access.number?.max,
                     step: property.access.number?.integer ? 1 : undefined,
-                };
+                });
             case "enum": {
                 const options = property.options ?? [];
                 return typeof value === "number"
@@ -211,13 +216,13 @@ export const LiteMaterialAdapterSection: FunctionComponent<MaterialFamilyAdapter
             case "vec3": {
                 const tuple = value as readonly [number, number, number];
                 return colorProperties?.has(property.id)
-                    ? {
+                    ? CreateColor3MaterialPropertyModel({
                           ...common,
-                          kind: "color",
+                          label: property.label,
                           linear: true,
-                          value: { r: tuple[0], g: tuple[1], b: tuple[2] },
-                          onChange: (next) => commitProperty(property, [next.r, next.g, next.b]),
-                      }
+                          value: tuple,
+                          onChange: (next) => commitProperty(property, next),
+                      })
                     : { ...common, kind: "vector3", value: { x: tuple[0], y: tuple[1], z: tuple[2] }, onChange: (next) => commitProperty(property, [next.x, next.y, next.z]) };
             }
             case "vec4": {

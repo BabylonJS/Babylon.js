@@ -12,9 +12,19 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { MaterialPropertySection } from "shared-ui-components/fluent/hoc/propertyLines/materialPropertyLine";
+import {
+    CreateBooleanMaterialPropertyModel as CreateBabylonBooleanModel,
+    CreateColor3MaterialPropertyModel as CreateBabylonColorModel,
+    CreateNumberMaterialPropertyModel as CreateBabylonNumberModel,
+} from "shared-ui-components/fluent/hoc/propertyLines/materialPropertyAdapters";
+import {
+    CreateBooleanMaterialPropertyModel as CreateLiteBooleanModel,
+    CreateColor3MaterialPropertyModel as CreateLiteColorModel,
+    CreateNumberMaterialPropertyModel as CreateLiteNumberModel,
+} from "shared-ui-components/lite/fluent/hoc/propertyLines/materialPropertyAdapters";
 import { MaterialTextureBindingPropertyLine, type MaterialTextureBindingModel } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
 import { TextureMetadataProperties } from "shared-ui-components/fluent/hoc/propertyLines/textureMetadataProperties";
-import { BabylonBooleanMaterialPropertyLine, BabylonColor3MaterialPropertyLine } from "../../src/components/properties/materials/materialPropertyAdapters";
+import { BooleanMaterialPropertyLine, Color3MaterialPropertyLine } from "../../src/components/properties/materials/materialPropertyAdapters";
 
 vi.hoisted(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -282,7 +292,7 @@ describe("material and texture parity cores", () => {
 
     it("translates Babylon.js values in the runtime adapter without changing write semantics", () => {
         const booleanChange = vi.fn();
-        const booleanElement = BabylonBooleanMaterialPropertyLine({ label: "Enabled", value: true, onChange: booleanChange });
+        const booleanElement = BooleanMaterialPropertyLine({ label: "Enabled", value: true, onChange: booleanChange });
         if (!isValidElement<{ model: { onChange: (value: boolean) => void } }>(booleanElement)) {
             throw new Error("Expected the Babylon boolean adapter to render a material property line.");
         }
@@ -290,7 +300,7 @@ describe("material and texture parity cores", () => {
         expect(booleanChange).toHaveBeenCalledWith(false);
 
         const colorChange = vi.fn();
-        const colorElement = BabylonColor3MaterialPropertyLine({ label: "Color", value: new Color3(0.1, 0.2, 0.3), onChange: colorChange });
+        const colorElement = Color3MaterialPropertyLine({ label: "Color", value: new Color3(0.1, 0.2, 0.3), onChange: colorChange });
         if (!isValidElement<{ model: { onChange: (value: { r: number; g: number; b: number }) => void } }>(colorElement)) {
             throw new Error("Expected the Babylon color adapter to render a material property line.");
         }
@@ -298,10 +308,46 @@ describe("material and texture parity cores", () => {
         expect(colorChange).toHaveBeenCalledWith(new Color3(0.4, 0.5, 0.6));
     });
 
+    it("exposes matching controlled material field models for Babylon.js and Lite", () => {
+        const onChange = vi.fn();
+        const boolean = { id: "enabled", label: "Enabled", value: true, onChange };
+        const number = { id: "level", label: "Level", value: 0.5, onChange, min: 0, max: 1 };
+        expect(CreateBabylonBooleanModel(boolean)).toEqual(CreateLiteBooleanModel(boolean));
+        expect(CreateBabylonNumberModel(number)).toEqual(CreateLiteNumberModel(number));
+
+        const babylonColorChange = vi.fn();
+        const liteColorChange = vi.fn();
+        const babylonColor = CreateBabylonColorModel({
+            id: "color",
+            label: "Color",
+            value: new Color3(0.1, 0.2, 0.3),
+            onChange: babylonColorChange,
+            linear: true,
+        });
+        const liteColor = CreateLiteColorModel({
+            id: "color",
+            label: "Color",
+            value: [0.1, 0.2, 0.3],
+            onChange: liteColorChange,
+            linear: true,
+        });
+        expect(babylonColor.kind).toBe("color");
+        expect(liteColor.kind).toBe("color");
+        if (babylonColor.kind !== "color" || liteColor.kind !== "color") {
+            throw new Error("Expected color material models.");
+        }
+        expect(babylonColor.value).toEqual(liteColor.value);
+        babylonColor.onChange({ r: 0.4, g: 0.5, b: 0.6 });
+        liteColor.onChange({ r: 0.4, g: 0.5, b: 0.6 });
+        expect(babylonColorChange).toHaveBeenCalledWith(new Color3(0.4, 0.5, 0.6));
+        expect(liteColorChange).toHaveBeenCalledWith([0.4, 0.5, 0.6]);
+    });
+
     it("keeps P4 shared cores isolated from Babylon runtimes and preview dependencies", () => {
         const root = resolve(import.meta.dirname, "../../..");
         const files = [
             "sharedUiComponents/src/fluent/hoc/propertyLines/materialPropertyLine.tsx",
+            "sharedUiComponents/src/fluent/hoc/propertyLines/materialPropertyAdaptersCore.ts",
             "sharedUiComponents/src/fluent/hoc/propertyLines/materialTextureBindingPropertyLine.tsx",
             "sharedUiComponents/src/fluent/hoc/propertyLines/textureMetadataProperties.tsx",
         ];

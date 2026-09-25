@@ -1,21 +1,26 @@
 import { type FunctionComponent } from "react";
 
-import { Color3 } from "core/Maths/math.color";
+import { type Color3 } from "core/Maths/math.color";
 
 import { MaterialPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/materialPropertyLine";
+import {
+    CreateBooleanMaterialPropertyModel,
+    CreateColor3MaterialPropertyModel,
+    CreateNumberMaterialPropertyModel,
+} from "shared-ui-components/fluent/hoc/propertyLines/materialPropertyAdapters";
 import { type PrimitiveProps } from "shared-ui-components/fluent/primitives/primitive";
 import { type PropertyLineProps } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 
-type BabylonMaterialPropertyLineProps<ValueT> = PrimitiveProps<ValueT> & PropertyLineProps<ValueT>;
+type MaterialPropertyLineProps<ValueT> = PrimitiveProps<ValueT> & PropertyLineProps<ValueT>;
 
 /**
  * Adapts a Babylon.js boolean property to the runtime-neutral material field model.
  * @param props The controlled Babylon.js property.
  * @returns The runtime-neutral field.
  */
-export const BabylonBooleanMaterialPropertyLine: FunctionComponent<BabylonMaterialPropertyLineProps<boolean>> = (props) => {
+export const BooleanMaterialPropertyLine: FunctionComponent<MaterialPropertyLineProps<boolean>> = (props) => {
     const { label, uniqueId, description, disabled, value, onChange } = props;
-    return <MaterialPropertyLine model={{ kind: "boolean", id: uniqueId ?? label, label, description, disabled, value, onChange }} />;
+    return <MaterialPropertyLine model={CreateBooleanMaterialPropertyModel({ id: uniqueId ?? label, label, description, disabled, value, onChange })} />;
 };
 
 /**
@@ -23,11 +28,11 @@ export const BabylonBooleanMaterialPropertyLine: FunctionComponent<BabylonMateri
  * @param props The controlled Babylon.js property and numeric constraints.
  * @returns The runtime-neutral field.
  */
-export const BabylonNumberMaterialPropertyLine: FunctionComponent<
-    BabylonMaterialPropertyLineProps<number> & Readonly<{ min?: number; max?: number; step?: number; unit?: string }>
-> = (props) => {
+export const NumberMaterialPropertyLine: FunctionComponent<MaterialPropertyLineProps<number> & Readonly<{ min?: number; max?: number; step?: number; unit?: string }>> = (
+    props
+) => {
     const { label, uniqueId, description, disabled, value, onChange, min, max, step, unit } = props;
-    return <MaterialPropertyLine model={{ kind: "number", id: uniqueId ?? label, label, description, disabled, value, onChange, min, max, step, unit }} />;
+    return <MaterialPropertyLine model={CreateNumberMaterialPropertyModel({ id: uniqueId ?? label, label, description, disabled, value, onChange, min, max, step, unit })} />;
 };
 
 /**
@@ -35,20 +40,19 @@ export const BabylonNumberMaterialPropertyLine: FunctionComponent<
  * @param props The controlled Babylon.js color property.
  * @returns The runtime-neutral field.
  */
-export const BabylonColor3MaterialPropertyLine: FunctionComponent<BabylonMaterialPropertyLineProps<Color3> & Readonly<{ isLinearMode?: boolean }>> = (props) => {
+export const Color3MaterialPropertyLine: FunctionComponent<MaterialPropertyLineProps<Color3> & Readonly<{ isLinearMode?: boolean }>> = (props) => {
     const { label, uniqueId, description, disabled, value, onChange, isLinearMode } = props;
     return (
         <MaterialPropertyLine
-            model={{
-                kind: "color",
+            model={CreateColor3MaterialPropertyModel({
                 id: uniqueId ?? label,
                 label,
                 description,
                 disabled,
-                value: { r: value.r, g: value.g, b: value.b },
-                onChange: (color) => onChange(new Color3(color.r, color.g, color.b)),
+                value,
+                onChange,
                 linear: isLinearMode,
-            }}
+            })}
         />
     );
 };
