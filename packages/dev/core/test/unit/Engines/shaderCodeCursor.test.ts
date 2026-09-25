@@ -49,6 +49,11 @@ describe("ShaderCodeCursor", () => {
         expect(cursorLines("/*\n# note */ for (\n;\n;\ni++) {")).toEqual(["/*", "# note */ for (;;", "i++) {"]);
     });
 
+    it("does not count parentheses of a directive that follows a block comment close", () => {
+        expect(cursorLines("/*\n# note */ #define F(a) (a\n;\nfloat b = 2.0;")).toEqual(["/*", "# note */ #define F(a) (a", "float b = 2.0;"]);
+        expect(cursorLines("/*\n# note */ /* x */ #define F(a) (a\n;\nfloat b = 2.0;")).toEqual(["/*", "# note */ /* x */ #define F(a) (a", "float b = 2.0;"]);
+    });
+
     it("does not count parentheses of preprocessor lines", () => {
         expect(cursorLines("#define F(a) (a\n;\nfloat b = 2.0;")).toEqual(["#define F(a) (a", "float b = 2.0;"]);
     });

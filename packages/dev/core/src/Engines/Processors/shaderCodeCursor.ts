@@ -29,8 +29,8 @@ export class ShaderCodeCursor {
                 this._lines.push(line);
                 // A "#" inside a block comment is comment text, so keep the comment state in sync, and code after the
                 // comment closes counts as usual. A directive's own parentheses are not part of a for loop header, so
-                // on a line that starts outside a comment the depth is left as it was.
-                const isDirective = !scan.inBlockComment;
+                // when the first code on the line is a directive the depth is left as it was.
+                const isDirective = line[ShaderCodeCursor._FirstCodeIndex(line, scan.inBlockComment)] === "#";
                 const parenthesisDepth = scan.parenthesisDepth;
                 ShaderCodeCursor._ScanCode(scan, line);
                 if (isDirective) {
@@ -95,6 +95,27 @@ export class ShaderCodeCursor {
                 }
             }
         }
+    }
+
+    // Returns the index of the first code character of a line, skipping whitespace and comments, or -1 if there is none.
+    private static _FirstCodeIndex(code: string, inBlockComment: boolean): number {
+        for (let i = 0; i < code.length; i++) {
+            const char = code[i];
+            if (inBlockComment) {
+                if (char === "*" && code[i + 1] === "/") {
+                    inBlockComment = false;
+                    i++;
+                }
+            } else if (char === "/" && code[i + 1] === "*") {
+                inBlockComment = true;
+                i++;
+            } else if (char === "/" && code[i + 1] === "/") {
+                return -1;
+            } else if (char.trim()) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     // Updates the parenthesis depth with the code of a line, skipping comments. Returns true if the code ends in a line comment.
