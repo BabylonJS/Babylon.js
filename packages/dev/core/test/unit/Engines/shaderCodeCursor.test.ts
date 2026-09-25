@@ -45,6 +45,10 @@ describe("ShaderCodeCursor", () => {
         expect(cursorLines("#define A 1 /* (\n( */\n;\nfloat b = 2.0;")).toEqual(["#define A 1 /* (", "( */", "float b = 2.0;"]);
     });
 
+    it("counts code after a block comment closes on a line starting with #", () => {
+        expect(cursorLines("/*\n# note */ for (\n;\n;\ni++) {")).toEqual(["/*", "# note */ for (;;", "i++) {"]);
+    });
+
     it("does not count parentheses of preprocessor lines", () => {
         expect(cursorLines("#define F(a) (a\n;\nfloat b = 2.0;")).toEqual(["#define F(a) (a", "float b = 2.0;"]);
     });

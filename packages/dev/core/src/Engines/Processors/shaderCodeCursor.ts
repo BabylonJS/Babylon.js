@@ -27,11 +27,15 @@ export class ShaderCodeCursor {
             // Prevent removing line break in macros.
             if (line[0] === "#") {
                 this._lines.push(line);
-                // A "#" inside a block comment is comment text, so keep the comment state in sync. A directive's own
-                // parentheses are not part of a for loop header, so the depth is left as it was.
+                // A "#" inside a block comment is comment text, so keep the comment state in sync, and code after the
+                // comment closes counts as usual. A directive's own parentheses are not part of a for loop header, so
+                // on a line that starts outside a comment the depth is left as it was.
+                const isDirective = !scan.inBlockComment;
                 const parenthesisDepth = scan.parenthesisDepth;
                 ShaderCodeCursor._ScanCode(scan, line);
-                scan.parenthesisDepth = parenthesisDepth;
+                if (isDirective) {
+                    scan.parenthesisDepth = parenthesisDepth;
+                }
                 continue;
             }
 
