@@ -40,6 +40,15 @@ describe("ShaderCodeCursor", () => {
         expect(cursorLines("/* ( */\n;\nfloat b = 2.0;")).toEqual(["/* ( */", "float b = 2.0;"]);
     });
 
+    it("tracks block comments through lines starting with #", () => {
+        expect(cursorLines("void main() {\n/*\n# note */\nfor (;;) { break; }\n}")).toEqual(["void main() {", "/*", "# note */", "for (;;", ") { break;", "}", "}"]);
+        expect(cursorLines("#define A 1 /* (\n( */\n;\nfloat b = 2.0;")).toEqual(["#define A 1 /* (", "( */", "float b = 2.0;"]);
+    });
+
+    it("does not count parentheses of preprocessor lines", () => {
+        expect(cursorLines("#define F(a) (a\n;\nfloat b = 2.0;")).toEqual(["#define F(a) (a", "float b = 2.0;"]);
+    });
+
     it("still drops empty statements outside parentheses", () => {
         expect(cursorLines("float a = 1.0;; float b = 2.0;")).toEqual(["float a = 1.0;", "float b = 2.0;"]);
     });

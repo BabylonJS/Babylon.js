@@ -27,6 +27,11 @@ export class ShaderCodeCursor {
             // Prevent removing line break in macros.
             if (line[0] === "#") {
                 this._lines.push(line);
+                // A "#" inside a block comment is comment text, so keep the comment state in sync. A directive's own
+                // parentheses are not part of a for loop header, so the depth is left as it was.
+                const parenthesisDepth = scan.parenthesisDepth;
+                ShaderCodeCursor._ScanCode(scan, line);
+                scan.parenthesisDepth = parenthesisDepth;
                 continue;
             }
 
