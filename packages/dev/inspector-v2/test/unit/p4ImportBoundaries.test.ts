@@ -80,8 +80,8 @@ describe("P4 Inspector import boundaries", () => {
 
     it("keeps shared material and texture cores runtime-neutral", () => {
         const sources = [
-            "fluent/hoc/propertyLines/materialPropertyLine.tsx",
-            "fluent/hoc/propertyLines/materialPropertyAdaptersCore.ts",
+            "fluent/hoc/propertyLines/colorPropertyLineCore.tsx",
+            "fluent/hoc/propertyLines/vectorPropertyLineCore.tsx",
             "fluent/hoc/propertyLines/materialTextureBindingPropertyLine.tsx",
             "fluent/hoc/propertyLines/textureMetadataProperties.tsx",
         ].map(ReadSharedSource);
@@ -92,19 +92,17 @@ describe("P4 Inspector import boundaries", () => {
         });
     });
 
-    it("keeps the legacy Babylon.js adapter independent of Lite while retaining native translation", () => {
-        const source = ReadInspectorSource("components/properties/materials/materialPropertySectionModel.ts");
-        const babylonAdapter = ReadSharedSource("fluent/hoc/propertyLines/materialPropertyAdapters.ts");
-        const liteAdapter = ReadSharedSource("lite/fluent/hoc/propertyLines/materialPropertyAdapters.ts");
-
-        expect(source).toContain('useColor3Property(material, "diffuseColor")');
-        expect(source).toContain("usePropertyChangedNotifier()");
-        expect(babylonAdapter).toContain("new Color3(color.r, color.g, color.b)");
-        expect(liteAdapter).not.toMatch(/from ["'](?:core\/|@dev\/core)/);
+    it("keeps native BJS bindings and Lite derived fields independent", () => {
+        const source = ReadInspectorSource("components/properties/materials/standardMaterialProperties.tsx");
+        const liteSource = ReadInspectorSource("lite/services/panes/properties/materialAdapters/materialAdapterCore.tsx");
+        expect(source).toContain('component={Color3PropertyLine} label="Diffuse Color"');
+        expect(source).toContain('component={SyncedSliderPropertyLine} label="Specular Power"');
+        expect(source).not.toContain("MaterialPropertySection");
         expect(source).not.toContain("@babylonjs/lite");
-        expect(babylonAdapter).not.toContain("@babylonjs/lite");
-        expect(source).not.toMatch(PreviewOrEditorDependency);
-        expect(babylonAdapter).not.toMatch(PreviewOrEditorDependency);
-        expect(liteAdapter).not.toMatch(PreviewOrEditorDependency);
+        expect(liteSource).toContain("component={Color3PropertyLine}");
+        expect(liteSource).toContain("component={TextPropertyLine}");
+        expect(liteSource).toContain("DerivedProperty");
+        expect(liteSource).toContain("ComputedProperty");
+        expect(liteSource).not.toContain("MaterialPropertySection");
     });
 });

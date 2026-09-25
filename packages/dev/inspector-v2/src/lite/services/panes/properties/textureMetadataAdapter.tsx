@@ -13,18 +13,20 @@ import {
     type TextureMetadata,
     type TextureTransform,
 } from "@babylonjs/lite";
+import { Body1 } from "@fluentui/react-components";
 import { type FunctionComponent, useCallback } from "react";
 
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import {
     TextureMetadataProperties,
     type TextureMetadataConsumerLink,
     type TextureMetadataModel,
     type TextureMetadataRow,
 } from "shared-ui-components/fluent/hoc/propertyLines/textureMetadataProperties";
-import { type MaterialPropertyModel } from "shared-ui-components/fluent/hoc/propertyLines/materialPropertyLine";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 import { type ISelectionService } from "../../../../services/selectionService";
+import { DerivedProperty } from "../../../../components/properties/boundProperty";
 import { type ISceneResourceIndexService } from "../scene/sceneResourceIndexService";
 import { type IMaterialResourceRecord, type ITextureResourceRecord } from "../scene/sceneResources";
 import { useLatestAsyncOperation } from "./useLatestAsyncOperation";
@@ -138,32 +140,43 @@ function GetMetadataRows(metadata: TextureMetadata, ordinal: number | undefined,
     return rows;
 }
 
-function GetTransformFields(
-    transform: TextureTransform,
-    operations: Readonly<Record<string, { pending: boolean; error?: string } | undefined>>,
-    commit: (id: string, transform: TextureTransform) => void
-): readonly MaterialPropertyModel[] {
-    const definitions = [
-        ["uScale", "U Scale"],
-        ["vScale", "V Scale"],
-        ["uOffset", "U Offset"],
-        ["vOffset", "V Offset"],
-        ["uAng", "Angle"],
-    ] as const;
-    return definitions.map(([key, label]) => {
-        const id = `transform-${key}`;
-        return {
-            kind: "number",
-            id,
-            label,
-            value: transform[key],
-            disabled: operations[id]?.pending,
-            pending: operations[id]?.pending,
-            error: operations[id]?.error,
-            onChange: (value: number) => commit(id, { ...transform, [key]: value }),
-        };
-    });
-}
+const TransformFields = [
+    ["uScale", "U Scale"],
+    ["vScale", "V Scale"],
+    ["uOffset", "U Offset"],
+    ["vOffset", "V Offset"],
+    ["uAng", "Angle"],
+] as const;
+
+type TextureTransformFieldProps = Readonly<{
+    transform: TextureTransform;
+    field: (typeof TransformFields)[number];
+    pending?: boolean;
+    error?: string;
+    commit: (id: string, transform: TextureTransform) => void;
+}>;
+
+const TextureTransformField: FunctionComponent<TextureTransformFieldProps> = (props) => {
+    const { transform, field, pending, error, commit } = props;
+    const [key, label] = field;
+    const id = `transform-${key}`;
+    return (
+        <div aria-busy={pending}>
+            <DerivedProperty
+                component={NumberInputPropertyLine}
+                target={transform}
+                getValue={(value) => value[key]}
+                setValue={(value, next) => commit(id, { ...value, [key]: next })}
+                label={label}
+                uniqueId={id}
+                disabled={pending}
+                description={error ? `Error: ${error}` : undefined}
+            />
+            {pending ? <Body1 role="status">{`Applying ${label}…`}</Body1> : undefined}
+            {error ? <Body1 role="alert">{error}</Body1> : undefined}
+        </div>
+    );
+};
 
 /**
  * Lazily adapts one exact Lite texture wrapper to the runtime-neutral metadata component.
@@ -256,11 +269,27 @@ export const TextureMetadataAdapter: FunctionComponent<TextureMetadataAdapterPro
     const model: TextureMetadataModel = {
         rows: GetMetadataRows(metadata, record?.ordinal, texture),
         consumers: GetConsumerLinks(texture, record, resourceIndexService, selectionService),
-        transform: transform
-            ? {
-                  fields: GetTransformFields(transform, operations, commitTransform),
-              }
-            : undefined,
     };
-    return <TextureMetadataProperties model={model} />;
+    return (
+        <TextureMetadataProperties
+            model={model}
+            transform={
+                transform
+                    ? TransformFields.map((field) => {
+                          const id = `transform-${field[0]}`;
+                          return (
+                              <TextureTransformField
+                                  key={id}
+                                  transform={transform}
+                                  field={field}
+                                  pending={operations[id]?.pending}
+                                  error={operations[id]?.error}
+                                  commit={commitTransform}
+                              />
+                          );
+                      })
+                    : undefined
+            }
+        />
+    );
 };

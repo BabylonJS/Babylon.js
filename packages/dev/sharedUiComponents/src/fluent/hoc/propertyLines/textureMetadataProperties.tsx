@@ -1,9 +1,8 @@
 import { Body1, makeStyles, tokens } from "@fluentui/react-components";
-import { type FunctionComponent } from "react";
+import { type FunctionComponent, type ReactNode } from "react";
 
 import { BooleanBadgePropertyLine } from "./booleanBadgePropertyLine";
 import { LinkPropertyLine } from "./linkPropertyLine";
-import { MaterialPropertySection, type MaterialPropertySectionModel } from "./materialPropertyLine";
 import { StringifiedPropertyLine } from "./stringifiedPropertyLine";
 import { TextPropertyLine } from "./textPropertyLine";
 
@@ -21,7 +20,6 @@ export type TextureMetadataRow = Readonly<{
 export type TextureMetadataModel = Readonly<{
     rows: readonly TextureMetadataRow[];
     consumers?: readonly TextureMetadataConsumerLink[];
-    transform?: MaterialPropertySectionModel;
     pending?: boolean;
     error?: string;
 }>;
@@ -47,8 +45,8 @@ const useStyles = makeStyles({
  * @param props The immutable metadata snapshot.
  * @returns Texture metadata property lines.
  */
-export const TextureMetadataProperties: FunctionComponent<{ model: TextureMetadataModel }> = (props) => {
-    const { model } = props;
+export const TextureMetadataProperties: FunctionComponent<{ model: TextureMetadataModel; transform?: ReactNode }> = (props) => {
+    const { model, transform } = props;
     const classes = useStyles();
 
     return (
@@ -74,7 +72,7 @@ export const TextureMetadataProperties: FunctionComponent<{ model: TextureMetada
                 );
             })}
             {model.pending ? <Body1 role="status">Applying change…</Body1> : undefined}
-            {model.transform ? <MaterialPropertySection model={model.transform} /> : undefined}
+            {transform}
             {model.consumers?.map((consumer) => (
                 <LinkPropertyLine
                     key={consumer.id}

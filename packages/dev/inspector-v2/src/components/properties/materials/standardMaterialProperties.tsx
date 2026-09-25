@@ -3,14 +3,13 @@ import { type FunctionComponent } from "react";
 import { type StandardMaterial } from "core/Materials/standardMaterial";
 
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { MaterialPropertySection } from "shared-ui-components/fluent/hoc/propertyLines/materialPropertyLine";
+import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { MaterialTextureDebugPropertyLine } from "./materialTextureDebugPropertyLine";
 import { type ISelectionService } from "../../../services/selectionService";
-import { useMaterialPropertySectionModel } from "./materialPropertySectionModel";
 
 export const StandardMaterialGeneralProperties: FunctionComponent<{ material: StandardMaterial }> = (props) => {
     const { material } = props;
@@ -295,11 +294,14 @@ export const StandardMaterialLevelsProperties: FunctionComponent<{ standardMater
  */
 export const StandardMaterialLightingAndColorProperties: FunctionComponent<{ standardMaterial: StandardMaterial }> = (props) => {
     const { standardMaterial } = props;
-    const model = useMaterialPropertySectionModel(standardMaterial);
 
     return (
         <>
-            <MaterialPropertySection model={model} />
+            <BoundProperty component={Color3PropertyLine} label="Diffuse Color" target={standardMaterial} propertyKey="diffuseColor" />
+            <BoundProperty component={Color3PropertyLine} label="Specular Color" target={standardMaterial} propertyKey="specularColor" />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Specular Power" target={standardMaterial} propertyKey="specularPower" min={0} max={128} step={0.1} />
+            <BoundProperty component={Color3PropertyLine} label="Emissive Color" target={standardMaterial} propertyKey="emissiveColor" />
+            <BoundProperty component={Color3PropertyLine} label="Ambient Color" target={standardMaterial} propertyKey="ambientColor" />
             <BoundProperty component={SwitchPropertyLine} label="Use Specular Over Alpha" target={standardMaterial} propertyKey="useSpecularOverAlpha" />
         </>
     );

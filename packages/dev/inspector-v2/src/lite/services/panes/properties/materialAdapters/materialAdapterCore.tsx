@@ -1,17 +1,19 @@
 import { type Material } from "@babylonjs/lite";
-import { Fragment, type FunctionComponent, useCallback } from "react";
+import { Body1 } from "@fluentui/react-components";
+import { Fragment, type FunctionComponent, useCallback, useEffect, useState } from "react";
 
-import { MaterialPropertySection, type MaterialMatrix4Value, type MaterialPropertyModel } from "shared-ui-components/fluent/hoc/propertyLines/materialPropertyLine";
-import {
-    CreateBooleanMaterialPropertyModel,
-    CreateColor3MaterialPropertyModel,
-    CreateNumberMaterialPropertyModel,
-} from "shared-ui-components/lite/fluent/hoc/propertyLines/materialPropertyAdapters";
+import { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { NumberInputPropertyLine, TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { MaterialTextureBindingPropertyLine, type MaterialTextureBindingModel } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
+import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/lite/fluent/hoc/propertyLines/colorPropertyLine";
+import { Vector2PropertyLine, Vector3PropertyLine, Vector4PropertyLine } from "shared-ui-components/lite/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useObservableState } from "shared-ui-components/modularTool/hooks/observableHooks";
 
 import { usePropertyChangedNotifier } from "../../../../../contexts/propertyContext";
+import { ComputedProperty, DerivedProperty } from "../../../../../components/properties/boundProperty";
 import { type ISelectionService } from "../../../../../services/selectionService";
 import { type ISceneResourceIndexService } from "../../scene/sceneResourceIndexService";
 import { type IMaterialResourceRecord, type ITextureResourceRecord } from "../../scene/sceneResources";
@@ -26,6 +28,7 @@ import {
     type IMaterialDescriptorProperty,
     type MaterialDescriptorPropertyId,
     type MaterialDescriptorPropertyValue,
+    type MaterialDescriptorTuple,
     type MaterialDescriptorSection,
     type IMaterialTextureBinding,
     type MaterialTextureMutation,
@@ -53,16 +56,183 @@ function FormatDescriptorValue(value: MaterialDescriptorPropertyValue): string {
     return Array.isArray(value) ? `[${value.join(", ")}]` : String(value);
 }
 
-function GetUnavailablePropertyModel(property: IMaterialDescriptorProperty): MaterialPropertyModel {
-    const value = property.value.state === "absent" ? "Not configured" : property.value.state === "unsupported" ? `Unavailable: ${property.value.reason}` : "Unavailable";
-    return {
-        kind: "readonly",
-        id: property.id,
-        label: property.label,
-        value,
-        description: property.access.access === "read-only" ? property.access.reason : undefined,
-    };
-}
+type Matrix4Value = Extract<MaterialDescriptorTuple, { readonly length: 16 }>;
+
+const Matrix4Field: FunctionComponent<{
+    label: string;
+    uniqueId: string;
+    description?: string;
+    disabled?: boolean;
+    value: Matrix4Value;
+    onChange: (value: Matrix4Value) => void;
+}> = (props) => {
+    const { label, uniqueId, description, disabled, value, onChange } = props;
+    const [draft, setDraft] = useState(value);
+    useEffect(() => setDraft(value), [value]);
+    return (
+        <PropertyLine
+            label={label}
+            uniqueId={uniqueId}
+            description={description}
+            expandedContent={
+                <>
+                    {draft.map((component, index) => (
+                        <NumberInputPropertyLine
+                            key={index}
+                            label={`M${Math.floor(index / 4)}${index % 4}`}
+                            value={component}
+                            disabled={disabled}
+                            onChange={(nextValue) => {
+                                const next = [...draft] as [...Matrix4Value];
+                                next[index] = nextValue;
+                                setDraft(next);
+                                onChange(next);
+                            }}
+                        />
+                    ))}
+                </>
+            }
+        >
+            <Body1>[4 × 4]</Body1>
+        </PropertyLine>
+    );
+};
+
+type MaterialFieldProps = Readonly<{
+    property: IMaterialDescriptorProperty;
+    pending?: boolean;
+    error?: string;
+    isColor: boolean;
+    commit: (property: IMaterialDescriptorProperty, value: MaterialDescriptorPropertyValue) => void;
+}>;
+
+const MaterialField: FunctionComponent<MaterialFieldProps> = (props) => {
+    const { property, pending, error, isColor, commit } = props;
+    const { id, label, value: datum, access } = property;
+    const common = { label, uniqueId: id, disabled: pending, description: error ? `Error: ${error}` : undefined };
+    let control: React.ReactNode;
+    if (datum.state !== "present" || access.access !== "read-write" || property.valueType === "summary") {
+        const value = datum.state === "absent" ? "Not configured" : datum.state === "unsupported" ? `Unavailable: ${datum.reason}` : FormatDescriptorValue(datum.value);
+        control = (
+            <ComputedProperty
+                component={TextPropertyLine}
+                target={property}
+                getValue={() => value}
+                label={label}
+                uniqueId={id}
+                description={access.access === "read-only" ? access.reason : undefined}
+            />
+        );
+    } else {
+        const value = datum.value;
+        const setValue = (_target: IMaterialDescriptorProperty, next: MaterialDescriptorPropertyValue) => commit(property, next);
+        switch (property.valueType) {
+            case "boolean":
+                control = <DerivedProperty component={SwitchPropertyLine} target={property} getValue={() => value as boolean} setValue={setValue} {...common} />;
+                break;
+            case "string":
+                control = <DerivedProperty component={TextInputPropertyLine} target={property} getValue={() => value as string} setValue={setValue} {...common} />;
+                break;
+            case "number":
+                control = (
+                    <DerivedProperty
+                        component={NumberInputPropertyLine}
+                        target={property}
+                        getValue={() => value as number}
+                        setValue={setValue}
+                        {...common}
+                        min={access.number?.min}
+                        max={access.number?.max}
+                        step={access.number?.integer ? 1 : undefined}
+                    />
+                );
+                break;
+            case "enum":
+                control =
+                    typeof value === "number" ? (
+                        <DerivedProperty
+                            component={NumberDropdownPropertyLine}
+                            target={property}
+                            getValue={() => value}
+                            setValue={setValue}
+                            {...common}
+                            options={(property.options ?? []).filter((option): option is { label: string; value: number } => typeof option.value === "number")}
+                        />
+                    ) : (
+                        <DerivedProperty
+                            component={StringDropdownPropertyLine}
+                            target={property}
+                            getValue={() => value as string}
+                            setValue={setValue}
+                            {...common}
+                            options={(property.options ?? []).filter((option): option is { label: string; value: string } => typeof option.value === "string")}
+                        />
+                    );
+                break;
+            case "vec2":
+                control = (
+                    <DerivedProperty
+                        component={Vector2PropertyLine}
+                        target={property}
+                        getValue={() => value as readonly [number, number]}
+                        setValue={(_target, next) => commit(property, "x" in next ? [next.x, next.y] : next)}
+                        {...common}
+                    />
+                );
+                break;
+            case "vec3":
+                control = isColor ? (
+                    <DerivedProperty
+                        component={Color3PropertyLine}
+                        target={property}
+                        getValue={() => value as readonly [number, number, number]}
+                        setValue={(_target, next) => commit(property, "r" in next ? [next.r, next.g, next.b] : next)}
+                        {...common}
+                        isLinearMode
+                    />
+                ) : (
+                    <DerivedProperty
+                        component={Vector3PropertyLine}
+                        target={property}
+                        getValue={() => value as readonly [number, number, number]}
+                        setValue={(_target, next) => commit(property, "x" in next ? [next.x, next.y, next.z] : next)}
+                        {...common}
+                    />
+                );
+                break;
+            case "vec4":
+                control = isColor ? (
+                    <DerivedProperty
+                        component={Color4PropertyLine}
+                        target={property}
+                        getValue={() => value as readonly [number, number, number, number]}
+                        setValue={(_target, next) => commit(property, "r" in next ? [next.r, next.g, next.b, next.a] : next)}
+                        {...common}
+                        isLinearMode
+                    />
+                ) : (
+                    <DerivedProperty
+                        component={Vector4PropertyLine}
+                        target={property}
+                        getValue={() => value as readonly [number, number, number, number]}
+                        setValue={(_target, next) => commit(property, "x" in next ? [next.x, next.y, next.z, next.w] : next)}
+                        {...common}
+                    />
+                );
+                break;
+            case "mat4":
+                control = <DerivedProperty component={Matrix4Field} target={property} getValue={() => value as Matrix4Value} setValue={setValue} {...common} />;
+                break;
+        }
+    }
+    return (
+        <div aria-busy={pending}>
+            {control}
+            {pending ? <Body1 role="status">{`Applying ${label}…`}</Body1> : undefined}
+            {error ? <Body1 role="alert">{error}</Body1> : undefined}
+        </div>
+    );
+};
 
 function GetTextureDisplayName(record: ITextureResourceRecord | undefined): string {
     if (!record) {
@@ -154,105 +324,7 @@ export const MaterialAdapterSection: FunctionComponent<MaterialFamilyAdapterProp
         });
     };
 
-    const toPropertyModel = (property: IMaterialDescriptorProperty): MaterialPropertyModel => {
-        if (property.value.state !== "present" || property.access.access !== "read-write" || property.valueType === "summary") {
-            if (property.value.state === "present") {
-                return {
-                    kind: "readonly",
-                    id: property.id,
-                    label: property.label,
-                    value: FormatDescriptorValue(property.value.value),
-                    description: property.access.access === "read-only" ? property.access.reason : undefined,
-                };
-            }
-            return GetUnavailablePropertyModel(property);
-        }
-
-        const common = {
-            id: property.id,
-            label: property.label,
-            disabled: operations[property.id]?.pending,
-            pending: operations[property.id]?.pending,
-            error: operations[property.id]?.error,
-        };
-        const value = property.value.value;
-        switch (property.valueType) {
-            case "boolean":
-                return CreateBooleanMaterialPropertyModel({ ...common, label: property.label, value: value as boolean, onChange: (next) => commitProperty(property, next) });
-            case "string":
-                return { ...common, kind: "string", value: value as string, onChange: (next) => commitProperty(property, next) };
-            case "number":
-                return CreateNumberMaterialPropertyModel({
-                    ...common,
-                    label: property.label,
-                    value: value as number,
-                    onChange: (next) => commitProperty(property, next),
-                    min: property.access.number?.min,
-                    max: property.access.number?.max,
-                    step: property.access.number?.integer ? 1 : undefined,
-                });
-            case "enum": {
-                const options = property.options ?? [];
-                return typeof value === "number"
-                    ? {
-                          ...common,
-                          kind: "number-options",
-                          value,
-                          options: options as readonly { label: string; value: number }[],
-                          onChange: (next) => commitProperty(property, next),
-                      }
-                    : {
-                          ...common,
-                          kind: "string-options",
-                          value: value as string,
-                          options: options as readonly { label: string; value: string }[],
-                          onChange: (next) => commitProperty(property, next),
-                      };
-            }
-            case "vec2": {
-                const tuple = value as readonly [number, number];
-                return { ...common, kind: "vector2", value: { x: tuple[0], y: tuple[1] }, onChange: (next) => commitProperty(property, [next.x, next.y]) };
-            }
-            case "vec3": {
-                const tuple = value as readonly [number, number, number];
-                return colorProperties?.has(property.id)
-                    ? CreateColor3MaterialPropertyModel({
-                          ...common,
-                          label: property.label,
-                          linear: true,
-                          value: tuple,
-                          onChange: (next) => commitProperty(property, next),
-                      })
-                    : { ...common, kind: "vector3", value: { x: tuple[0], y: tuple[1], z: tuple[2] }, onChange: (next) => commitProperty(property, [next.x, next.y, next.z]) };
-            }
-            case "vec4": {
-                const tuple = value as readonly [number, number, number, number];
-                return colorProperties?.has(property.id)
-                    ? {
-                          ...common,
-                          kind: "color",
-                          linear: true,
-                          value: { r: tuple[0], g: tuple[1], b: tuple[2], a: tuple[3] },
-                          onChange: (next) => commitProperty(property, [next.r, next.g, next.b, next.a ?? tuple[3]]),
-                      }
-                    : {
-                          ...common,
-                          kind: "vector4",
-                          value: { x: tuple[0], y: tuple[1], z: tuple[2], w: tuple[3] },
-                          onChange: (next) => commitProperty(property, [next.x, next.y, next.z, next.w]),
-                      };
-            }
-            case "mat4":
-                return {
-                    ...common,
-                    kind: "matrix4",
-                    value: value as unknown as MaterialMatrix4Value,
-                    onChange: (next) => commitProperty(property, next),
-                };
-        }
-    };
-
-    const properties = descriptorSnapshot.properties.filter((property) => property.section === section).map(toPropertyModel);
+    const properties = descriptorSnapshot.properties.filter((property) => property.section === section);
     const record = resourceIndexService.index.getMaterialRecord(source);
     const candidates = record ? GetCandidates(record, resourceIndexService) : [];
     const textureBindings = descriptorSnapshot.textureBindings.filter((binding) => (getBindingSection?.(binding) ?? "textures") === section);
@@ -323,7 +395,16 @@ export const MaterialAdapterSection: FunctionComponent<MaterialFamilyAdapterProp
                     {descriptorSnapshot.isView ? <TextPropertyLine label="Source" value={descriptorSnapshot.displayName} /> : undefined}
                 </>
             ) : undefined}
-            {properties.length ? <MaterialPropertySection model={{ fields: properties }} /> : undefined}
+            {properties.map((property) => (
+                <MaterialField
+                    key={property.id}
+                    property={property}
+                    pending={operations[property.id]?.pending}
+                    error={operations[property.id]?.error}
+                    isColor={colorProperties?.has(property.id) ?? false}
+                    commit={commitProperty}
+                />
+            ))}
             {textureBindings.map((binding) => (
                 <MaterialTextureBindingPropertyLine key={binding.id} model={toTextureModel(binding)} />
             ))}

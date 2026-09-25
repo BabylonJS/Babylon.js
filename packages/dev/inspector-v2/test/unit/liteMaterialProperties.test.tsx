@@ -317,6 +317,46 @@ describe("Babylon Lite material accessor descriptors", () => {
         expect(selection.selectedEntity).toBe(texture);
     });
 
+    it("uses derived controls for writable fields and preserves per-field pending and errors", async () => {
+        const material = MakeStandard();
+        const scene = { meshes: [{ material }] } as SceneContext;
+        const resources = MakeResourceService([{ source: material, family: "standard", displayName: "Standard source", scenes: [scene], bindings: [] }]);
+        const container = Render(<StandardMaterialAdapter material={material} section="general" resourceIndexService={resources} selectionService={MakeSelectionService()} />);
+        const toggle = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
+        expect(toggle).not.toBeNull();
+        let rejectRebuild: (error: Error) => void = () => {
+            throw new Error("Rebuild was not started.");
+        };
+        InspectionMocks.rebuild.mockImplementationOnce(() => new Promise<void>((_resolve, reject) => (rejectRebuild = reject)));
+        act(() => {
+            toggle?.click();
+        });
+        expect(container.querySelectorAll('[aria-busy="true"]')).toHaveLength(1);
+        expect(container.querySelector('[role="status"]')?.textContent).toContain("Back Face Culling");
+        expect(toggle?.disabled).toBe(true);
+        await act(async () => {
+            await Promise.resolve();
+        });
+        expect(InspectionMocks.rebuild).toHaveBeenCalledOnce();
+        await act(async () => rejectRebuild(new Error("Rebuild failed")));
+        expect(container.querySelector('[role="alert"]')?.textContent).toContain("Rebuild failed");
+        expect(container.querySelectorAll('[aria-busy="true"]')).toHaveLength(0);
+        expect((material as { backFaceCulling: boolean }).backFaceCulling).toBe(false);
+    });
+
+    it("renders Lite color and vector tuples through existing controls", () => {
+        const material = MakeStandard();
+        const scene = {} as SceneContext;
+        const resources = MakeResourceService([{ source: material, family: "standard", displayName: "Standard source", scenes: [scene], bindings: [] }]);
+        const selection = MakeSelectionService();
+        const colors = Render(<StandardMaterialAdapter material={material} section="lighting-colors" resourceIndexService={resources} selectionService={selection} />);
+        expect(colors.textContent).toContain("Diffuse Color");
+        expect(colors.textContent).toContain("Specular Power");
+        const transform = Render(<StandardMaterialAdapter material={material} section="transform" resourceIndexService={resources} selectionService={selection} />);
+        expect(transform.textContent).toContain("UV Scale");
+        expect(transform.textContent).toContain("[1.00, 1.00]");
+    });
+
     it("registers lazy family predicates without importing family descriptors in the service", () => {
         const families = ["standard", "pbr", "shader", "node"] as const;
         const materials = families.map((family) => ({ family, name: family }) as unknown as Material);
