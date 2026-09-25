@@ -14,10 +14,6 @@ export class ShaderCodeCursor {
     set lines(value: string[]) {
         this._lines.length = 0;
 
-        // Open parentheses are carried across lines, so an empty clause keeps its semicolon even when a for loop
-        // header is split over several lines. Block comments are tracked across lines too, so their content is not counted.
-        const scan = { parenthesisDepth: 0, inBlockComment: false };
-
         for (const line of value) {
             // Skip empty lines
             if (!line || line === "\r") {
@@ -27,15 +23,6 @@ export class ShaderCodeCursor {
             // Prevent removing line break in macros.
             if (line[0] === "#") {
                 this._lines.push(line);
-                // A "#" inside a block comment is comment text, so keep the comment state in sync, and code after the
-                // comment closes counts as usual. A directive's own parentheses are not part of a for loop header, so
-                // when the first code on the line is a directive the depth is left as it was.
-                const isDirective = line[ShaderCodeCursor._FirstCodeIndex(line, scan.inBlockComment)] === "#";
-                const parenthesisDepth = scan.parenthesisDepth;
-                ShaderCodeCursor._ScanCode(scan, line);
-                if (isDirective) {
-                    scan.parenthesisDepth = parenthesisDepth;
-                }
                 continue;
             }
 
@@ -48,7 +35,6 @@ export class ShaderCodeCursor {
 
             if (trimmedLine.startsWith("//")) {
                 this._lines.push(line);
-                ShaderCodeCursor._ScanCode(scan, trimmedLine);
                 continue;
             }
 
@@ -58,34 +44,28 @@ export class ShaderCodeCursor {
             if (semicolonIndex === -1) {
                 // No semicolon in the line
                 this._lines.push(trimmedLine);
-                ShaderCodeCursor._ScanCode(scan, trimmedLine);
             } else if (semicolonIndex === trimmedLine.length - 1) {
                 // Single semicolon at the end of the line
                 // If trimmedLine == ";", we must not push, to be backward compatible with the old code!
                 if (trimmedLine.length > 1) {
                     this._lines.push(trimmedLine);
-                    ShaderCodeCursor._ScanCode(scan, trimmedLine);
-                } else if (scan.parenthesisDepth > 0 && this._lines.length > 0) {
-                    // Except inside a for loop header, where it is an empty clause
-                    this._lines[this._lines.length - 1] += ";";
                 }
             } else {
                 // Semicolon in the middle of the line
                 const split = line.split(";");
-                let inComment = false;
+                // Only this line is scanned, so a kept semicolon always goes back right after the fragment it followed in the source.
+                const scan = { parenthesisDepth: 0, inBlockComment: false, inLineComment: false };
 
                 for (let index = 0; index < split.length; index++) {
                     let subLine = split[index];
-                    if (!inComment) {
-                        inComment = ShaderCodeCursor._ScanCode(scan, subLine);
-                    }
+                    ShaderCodeCursor._ScanCode(scan, subLine);
 
                     subLine = subLine.trim();
 
                     if (!subLine) {
                         // An empty statement inside parentheses belongs to a for loop header, as in "for (;;)":
-                        // keep its semicolon on the previous line, or the header loses one.
-                        if (scan.parenthesisDepth > 0 && index !== split.length - 1 && this._lines.length > 0) {
+                        // keep its semicolon on the previous fragment of this line, or the header loses one.
+                        if (scan.parenthesisDepth > 0 && !scan.inLineComment && index !== split.length - 1) {
                             this._lines[this._lines.length - 1] += ";";
                         }
                         continue;
@@ -97,32 +77,9 @@ export class ShaderCodeCursor {
         }
     }
 
-    // Returns the index of the first code character of a line, skipping whitespace and comments, or -1 if there is none.
-    private static _FirstCodeIndex(code: string, inBlockComment: boolean): number {
-        for (let i = 0; i < code.length; i++) {
-            const char = code[i];
-            if (inBlockComment) {
-                if (char === "*" && code[i + 1] === "/") {
-                    inBlockComment = false;
-                    i++;
-                }
-            } else if (char === "/" && code[i + 1] === "*") {
-                inBlockComment = true;
-                i++;
-            } else if (char === "/" && code[i + 1] === "/") {
-                return -1;
-            } else if (char.trim()) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    // Updates the parenthesis depth with the code of a line, skipping comments. Returns true if the code ends in a line comment.
-    private static _ScanCode(scan: { parenthesisDepth: number; inBlockComment: boolean }, code: string): boolean {
-        let depth = scan.parenthesisDepth;
-        let lineComment = false;
-        for (let i = 0; i < code.length; i++) {
+    // Updates the parenthesis depth with a fragment of a line, skipping comments.
+    private static _ScanCode(scan: { parenthesisDepth: number; inBlockComment: boolean; inLineComment: boolean }, code: string): void {
+        for (let i = 0; i < code.length && !scan.inLineComment; i++) {
             const char = code[i];
             if (scan.inBlockComment) {
                 if (char === "*" && code[i + 1] === "/") {
@@ -133,18 +90,12 @@ export class ShaderCodeCursor {
                 scan.inBlockComment = true;
                 i++;
             } else if (char === "/" && code[i + 1] === "/") {
-                lineComment = true;
-                break;
-            } else if (char === "{" || char === "}") {
-                // A for loop header cannot contain a brace, so a brace ends any header and bounds a miscount to the current block.
-                depth = 0;
+                scan.inLineComment = true;
             } else if (char === "(") {
-                depth++;
+                scan.parenthesisDepth++;
             } else if (char === ")") {
-                depth--;
+                scan.parenthesisDepth--;
             }
         }
-        scan.parenthesisDepth = Math.max(0, depth);
-        return lineComment;
     }
 }
