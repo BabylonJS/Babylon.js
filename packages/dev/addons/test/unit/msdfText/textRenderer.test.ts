@@ -58,9 +58,9 @@ describe("TextRenderer", () => {
 
         // NullEngine reports a fixed capacity of 1 for dynamic buffers; report the real byte size like ThinEngine does
         // so the renderer only resizes its instance buffers when it actually runs out of room.
-        const createDynamicVertexBuffer = engine.createDynamicVertexBuffer.bind(engine);
+        const createDynamicVertexBuffer = engine.createDynamicVertexBuffer;
         vi.spyOn(engine, "createDynamicVertexBuffer").mockImplementation((data, label) => {
-            const buffer = createDynamicVertexBuffer(data, label);
+            const buffer = createDynamicVertexBuffer.call(engine, data, label);
             buffer.capacity = typeof data === "number" ? data : (data as Float32Array).byteLength;
             return buffer;
         });
