@@ -167,23 +167,60 @@ test("WebGPU raw 3D mipmaps support integer and unfilterable float textures", as
             for (let z = 0; z < 4; z++) {
                 floatData.set([z * 2, 0, 0, 1], z * 4);
             }
+            const oddData = new Uint8Array(5 * 4);
+            for (let z = 0; z < 5; z++) {
+                oddData.set([z * 40, 0, 0, 1], z * 4);
+            }
+            const signedCases = [
+                [-9, 7, 0, 0, 0, 0, 0, 0],
+                [8, -1, -1, -1, -1, -1, -1, -1],
+            ].map((values) => {
+                const data = new Int8Array(2 * 2 * 2 * 4);
+                values.forEach((value, index) => data.set([value, 0, 0, 1], index * 4));
+                return data;
+            });
+            const signed32Data = new Int32Array(2 * 2 * 2 * 4);
+            signed32Data[0] = 2147483647;
+            signed32Data[4] = -2147483648;
+            const unsigned32Data = new Uint32Array(2 * 2 * 2 * 4);
+            for (let index = 0; index < 8; index++) {
+                unsigned32Data[index * 4] = 4294967295;
+            }
+            const largeFloatData = new Float32Array(2 * 2 * 2 * 4);
+            for (let index = 0; index < 8; index++) {
+                largeFloatData.set([2 ** 126, 0, 0, 1], index * 4);
+            }
 
             device.pushErrorScope("validation");
             const unsigned = engine.createRawTexture3D(unsignedData, 2, 2, 2, format, true, false, samplingMode);
             const signed = engine.createRawTexture3D(signedData, 2, 2, 2, format, true, false, samplingMode, null, constants.TEXTURETYPE_BYTE);
             const float = engine.createRawTexture3D(floatData, 1, 1, 4, constants.TEXTUREFORMAT_RGBA, true, false, samplingMode, null, constants.TEXTURETYPE_FLOAT);
+            const odd = engine.createRawTexture3D(oddData, 1, 1, 5, format, true, false, samplingMode);
+            const oddWidth = engine.createRawTexture3D(oddData, 5, 1, 1, format, true, false, samplingMode);
+            const oddHeight = engine.createRawTexture3D(oddData, 1, 5, 1, format, true, false, samplingMode);
+            const mixed = signedCases.map((data) => engine.createRawTexture3D(data, 2, 2, 2, format, true, false, samplingMode, null, constants.TEXTURETYPE_BYTE));
+            const signed32 = engine.createRawTexture3D(signed32Data, 2, 2, 2, format, true, false, samplingMode, null, constants.TEXTURETYPE_INT);
+            const unsigned32 = engine.createRawTexture3D(unsigned32Data, 2, 2, 2, format, true, false, samplingMode, null, constants.TEXTURETYPE_UNSIGNED_INTEGER);
+            const largeFloat = engine.createRawTexture3D(largeFloatData, 2, 2, 2, constants.TEXTUREFORMAT_RGBA, true, false, samplingMode, null, constants.TEXTURETYPE_FLOAT);
             engine.flushFramebuffer();
 
-            const read = async (texture: InternalTexture, level: number, slice: number) => {
+            const read = async (texture: InternalTexture, level: number, slice: number, x = 0, y = 0) => {
                 const gpuTexture = texture._hardwareTexture?.underlyingResource;
                 if (!gpuTexture) {
                     throw new Error("Raw 3D texture has no GPU resource");
                 }
-                return await engine._textureHelper.readPixels(gpuTexture, 0, 0, 1, 1, gpuTexture.format, slice, level, null, true);
+                return await engine._textureHelper.readPixels(gpuTexture, x, y, 1, 1, gpuTexture.format, slice, level, null, true);
             };
             const unsignedPixels = await read(unsigned, 1, 0);
             const signedPixels = await read(signed, 1, 0);
             const floatPixels = [await read(float, 1, 0), await read(float, 1, 1), await read(float, 2, 0)];
+            const oddPixels = [await read(odd, 1, 0), await read(odd, 1, 1), await read(odd, 2, 0)];
+            const oddWidthPixels = [await read(oddWidth, 1, 0), await read(oddWidth, 1, 0, 1), await read(oddWidth, 2, 0)];
+            const oddHeightPixels = [await read(oddHeight, 1, 0), await read(oddHeight, 1, 0, 0, 1), await read(oddHeight, 2, 0)];
+            const mixedPixels = await Promise.all(mixed.map((texture) => read(texture, 1, 0)));
+            const signed32Pixels = await read(signed32, 1, 0);
+            const unsigned32Pixels = await read(unsigned32, 1, 0);
+            const largeFloatPixels = await read(largeFloat, 1, 0);
 
             const bitmap = await createImageBitmap(document.createElement("canvas"));
             let imageBitmapError = "";
@@ -201,6 +238,13 @@ test("WebGPU raw 3D mipmaps support integer and unfilterable float textures", as
                 unsigned: new Uint8Array(unsignedPixels.buffer, unsignedPixels.byteOffset, 4)[0],
                 signed: new Int8Array(signedPixels.buffer, signedPixels.byteOffset, 4)[0],
                 float: floatPixels.map((pixels) => new Float32Array(pixels.buffer, pixels.byteOffset, 4)[0]),
+                odd: oddPixels.map((pixels) => new Uint8Array(pixels.buffer, pixels.byteOffset, 4)[0]),
+                oddWidth: oddWidthPixels.map((pixels) => new Uint8Array(pixels.buffer, pixels.byteOffset, 4)[0]),
+                oddHeight: oddHeightPixels.map((pixels) => new Uint8Array(pixels.buffer, pixels.byteOffset, 4)[0]),
+                mixed: mixedPixels.map((pixels) => new Int8Array(pixels.buffer, pixels.byteOffset, 4)[0]),
+                signed32: new Int32Array(signed32Pixels.buffer, signed32Pixels.byteOffset, 4)[0],
+                unsigned32: new Uint32Array(unsigned32Pixels.buffer, unsigned32Pixels.byteOffset, 4)[0],
+                largeFloat: new Float32Array(largeFloatPixels.buffer, largeFloatPixels.byteOffset, 4)[0],
                 imageBitmapError,
                 validationError: validationError?.message ?? null,
             };
@@ -210,6 +254,13 @@ test("WebGPU raw 3D mipmaps support integer and unfilterable float textures", as
         expect(result.unsigned).toBe(35);
         expect(result.signed).toBe(-35);
         expect(result.float).toEqual([1, 5, 3]);
+        expect(result.odd).toEqual([30, 130, 80]);
+        expect(result.oddWidth).toEqual([30, 130, 80]);
+        expect(result.oddHeight).toEqual([30, 130, 80]);
+        expect(result.mixed).toEqual([0, 0]);
+        expect(result.signed32).toBe(0);
+        expect(result.unsigned32).toBe(4294967295);
+        expect(result.largeFloat).toBe(2 ** 126);
         expect(result.imageBitmapError).toMatch(/ImageBitmap.*3D texture.*not supported/);
     } finally {
         await page.evaluate(evaluateDisposeEngine);

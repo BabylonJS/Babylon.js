@@ -81,27 +81,102 @@ const mipmap3DFragmentSource = `
     }
     `;
 
-const mipmap3DLoadFragmentSource = (sampleType: "f32" | "i32" | "u32") => `
+const mipmap3DLoadFragmentSource = (sampleType: "f32" | "i32" | "u32") => {
+    const integerHelpers =
+        sampleType === "f32"
+            ? ""
+            : `
+    ${
+        sampleType === "i32"
+            ? `fn finishSignedDivision(quotient: vec4i, remainder: vec4i, divisor: i32) -> vec4i {
+        var result = quotient + remainder / divisor;
+        let residual = remainder % divisor;
+        for (var channel = 0; channel < 4; channel++) {
+            if (result[channel] < 0 && residual[channel] > 0) {
+                result[channel] += 1;
+            } else if (result[channel] > 0 && residual[channel] < 0) {
+                result[channel] -= 1;
+            }
+        }
+        return result;
+    }`
+            : ""
+    }
+
+    fn interpolateInteger(a: vec4<${sampleType}>, b: vec4<${sampleType}>, numerator: i32, divisor: i32) -> vec4<${sampleType}> {
+        let n = ${sampleType}(numerator);
+        let d = ${sampleType}(divisor);
+        let quotient = (a / d) * (d - n) + (b / d) * n;
+        let remainder = (a % d) * (d - n) + (b % d) * n;
+        return ${sampleType === "i32" ? "finishSignedDivision(quotient, remainder, d)" : "quotient + remainder / d"};
+    }
+    `;
+
+    const reduction =
+        sampleType === "f32"
+            ? `
+        let weight = vec3f(fraction) / vec3f(divisor);
+        var color = vec4f(0.0);
+        for (var z = 0; z < 2; z++) {
+            for (var y = 0; y < 2; y++) {
+                for (var x = 0; x < 2; x++) {
+                    let texel = textureLoad(img, min(origin + vec3i(x, y, z), sourceSize - 1), 0);
+                    let weighted = select(1.0 - weight.x, weight.x, x == 1) * select(1.0 - weight.y, weight.y, y == 1) * select(1.0 - weight.z, weight.z, z == 1);
+                    color += texel * weighted;
+                }
+            }
+        }
+        fragmentOutputs.color = color;`
+            : `
+        var color: vec4<${sampleType}>;
+        if ((sourceSize.x % 2 == 0 || sourceSize.x == 1) && (sourceSize.y % 2 == 0 || sourceSize.y == 1) && (sourceSize.z % 2 == 0 || sourceSize.z == 1)) {
+            var quotient = vec4<${sampleType}>(0);
+            var remainder = vec4<${sampleType}>(0);
+            for (var z = 0; z < 2; z++) {
+                for (var y = 0; y < 2; y++) {
+                    for (var x = 0; x < 2; x++) {
+                        let texel = textureLoad(img, min(origin + vec3i(x, y, z), sourceSize - 1), 0);
+                        quotient += texel / 8;
+                        remainder += texel % 8;
+                    }
+                }
+            }
+            color = ${sampleType === "i32" ? "finishSignedDivision(quotient, remainder, 8)" : "quotient + remainder / 8"};
+        } else {
+            var planes: array<vec4<${sampleType}>, 2>;
+            for (var z = 0; z < 2; z++) {
+                var rows: array<vec4<${sampleType}>, 2>;
+                for (var y = 0; y < 2; y++) {
+                    let first = textureLoad(img, min(origin + vec3i(0, y, z), sourceSize - 1), 0);
+                    let second = textureLoad(img, min(origin + vec3i(1, y, z), sourceSize - 1), 0);
+                    rows[y] = interpolateInteger(first, second, fraction.x, divisor.x);
+                }
+                planes[z] = interpolateInteger(rows[0], rows[1], fraction.y, divisor.y);
+            }
+            color = interpolateInteger(planes[0], planes[1], fraction.z, divisor.z);
+        }
+        fragmentOutputs.fragData0 = vec4<${sampleType}>(color);`;
+
+    return `
     var img: texture_3d<${sampleType}>;
 
     varying vSlice: f32;
 
+    ${integerHelpers}
+
     @fragment
     fn main(input: FragmentInputs) -> FragmentOutputs {
-        let dimensions = vec3i(textureDimensions(img, 0));
-        let origin = vec3i(vec2i(input.position.xy) * 2, i32(input.vSlice) * 2);
-        ${sampleType === "f32" ? "var color = vec4f(0.0);" : `var quotient = vec4<${sampleType}>(0); var remainder = vec4<${sampleType}>(0);`}
-        for (var z = 0; z < 2; z++) {
-            for (var y = 0; y < 2; y++) {
-                for (var x = 0; x < 2; x++) {
-                    let texel = textureLoad(img, min(origin + vec3i(x, y, z), dimensions - 1), 0);
-                    ${sampleType === "f32" ? "color += texel;" : `quotient += texel / 8; remainder += texel % 8;`}
-                }
-            }
-        }
-        fragmentOutputs.${sampleType === "f32" ? "color" : "fragData0"} = ${sampleType === "f32" ? "color * 0.125" : `vec4<${sampleType}>(quotient + remainder / 8)`};
+        let sourceSize = vec3i(textureDimensions(img, 0));
+        let destinationSize = max(sourceSize / 2, vec3i(1));
+        let destination = vec3i(vec2i(input.position.xy), i32(input.vSlice));
+        let divisor = destinationSize * 2;
+        let sourcePosition = (destination * 2 + 1) * sourceSize - destinationSize;
+        let origin = sourcePosition / divisor;
+        let fraction = sourcePosition % divisor;
+        ${reduction}
     }
     `;
+};
 
 const mipmapFragmentSource = `
     var imgSampler: sampler;
