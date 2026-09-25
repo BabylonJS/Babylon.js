@@ -130,7 +130,8 @@ export type WebXRLayerSource = "graphics" | "media";
  * @typeParam LayerT the native layer type
  */
 export type WebXRLayerCreationResult<LayerT extends WebXRSpatialLayer, LayerTypeT extends WebXRSpatialLayerType = WebXRSpatialLayerType> =
-    WebXRSpatialLayerWrapper<LayerT, LayerTypeT> | WebXRFallbackLayerWrapper;
+    | WebXRSpatialLayerWrapper<LayerT, LayerTypeT>
+    | WebXRFallbackLayerWrapper;
 
 /**
  * Data supplied to an optional WebXR mesh-fallback implementation.
