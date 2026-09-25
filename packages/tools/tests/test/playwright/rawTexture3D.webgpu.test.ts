@@ -171,6 +171,17 @@ test("WebGPU raw 3D mipmaps support integer and unfilterable float textures", as
             for (let z = 0; z < 5; z++) {
                 oddData.set([z * 40, 0, 0, 1], z * 4);
             }
+            const oddXYData = new Uint8Array(5 * 5 * 4);
+            oddXYData[(1 * 5 + 1) * 4] = 2;
+            const oddXYZData = new Int8Array(5 * 5 * 5 * 4);
+            oddXYZData[(1 * 25 + 1 * 5 + 1) * 4] = -3;
+            const oddSigned32Data = new Int32Array(5 * 5 * 4);
+            oddSigned32Data[(1 * 5 + 1) * 4] = 2147483647;
+            oddSigned32Data[(1 * 5 + 1) * 4 + 1] = -2147483648;
+            oddSigned32Data[0] = -2147483648;
+            oddSigned32Data[1] = 2147483647;
+            const oddUnsigned32Data = new Uint32Array(5 * 5 * 4);
+            oddUnsigned32Data[(1 * 5 + 1) * 4] = 4294967295;
             const signedCases = [
                 [-9, 7, 0, 0, 0, 0, 0, 0],
                 [8, -1, -1, -1, -1, -1, -1, -1],
@@ -198,6 +209,10 @@ test("WebGPU raw 3D mipmaps support integer and unfilterable float textures", as
             const odd = engine.createRawTexture3D(oddData, 1, 1, 5, format, true, false, samplingMode);
             const oddWidth = engine.createRawTexture3D(oddData, 5, 1, 1, format, true, false, samplingMode);
             const oddHeight = engine.createRawTexture3D(oddData, 1, 5, 1, format, true, false, samplingMode);
+            const oddXY = engine.createRawTexture3D(oddXYData, 5, 5, 1, format, true, false, samplingMode);
+            const oddXYZ = engine.createRawTexture3D(oddXYZData, 5, 5, 5, format, true, false, samplingMode, null, constants.TEXTURETYPE_BYTE);
+            const oddSigned32 = engine.createRawTexture3D(oddSigned32Data, 5, 5, 1, format, true, false, samplingMode, null, constants.TEXTURETYPE_INT);
+            const oddUnsigned32 = engine.createRawTexture3D(oddUnsigned32Data, 5, 5, 1, format, true, false, samplingMode, null, constants.TEXTURETYPE_UNSIGNED_INTEGER);
             const mixed = signedCases.map((data) => engine.createRawTexture3D(data, 2, 2, 2, format, true, false, samplingMode, null, constants.TEXTURETYPE_BYTE));
             const signed32 = engine.createRawTexture3D(signed32Data, 2, 2, 2, format, true, false, samplingMode, null, constants.TEXTURETYPE_INT);
             const unsigned32 = engine.createRawTexture3D(unsigned32Data, 2, 2, 2, format, true, false, samplingMode, null, constants.TEXTURETYPE_UNSIGNED_INTEGER);
@@ -217,6 +232,10 @@ test("WebGPU raw 3D mipmaps support integer and unfilterable float textures", as
             const oddPixels = [await read(odd, 1, 0), await read(odd, 1, 1), await read(odd, 2, 0)];
             const oddWidthPixels = [await read(oddWidth, 1, 0), await read(oddWidth, 1, 0, 1), await read(oddWidth, 2, 0)];
             const oddHeightPixels = [await read(oddHeight, 1, 0), await read(oddHeight, 1, 0, 0, 1), await read(oddHeight, 2, 0)];
+            const oddXYPixels = await read(oddXY, 1, 0);
+            const oddXYZPixels = await read(oddXYZ, 1, 0);
+            const oddSigned32Pixels = await read(oddSigned32, 1, 0);
+            const oddUnsigned32Pixels = await read(oddUnsigned32, 1, 0);
             const mixedPixels = await Promise.all(mixed.map((texture) => read(texture, 1, 0)));
             const signed32Pixels = await read(signed32, 1, 0);
             const unsigned32Pixels = await read(unsigned32, 1, 0);
@@ -241,6 +260,10 @@ test("WebGPU raw 3D mipmaps support integer and unfilterable float textures", as
                 odd: oddPixels.map((pixels) => new Uint8Array(pixels.buffer, pixels.byteOffset, 4)[0]),
                 oddWidth: oddWidthPixels.map((pixels) => new Uint8Array(pixels.buffer, pixels.byteOffset, 4)[0]),
                 oddHeight: oddHeightPixels.map((pixels) => new Uint8Array(pixels.buffer, pixels.byteOffset, 4)[0]),
+                oddXY: new Uint8Array(oddXYPixels.buffer, oddXYPixels.byteOffset, 4)[0],
+                oddXYZ: new Int8Array(oddXYZPixels.buffer, oddXYZPixels.byteOffset, 4)[0],
+                oddSigned32: Array.from(new Int32Array(oddSigned32Pixels.buffer, oddSigned32Pixels.byteOffset, 4).slice(0, 2)),
+                oddUnsigned32: new Uint32Array(oddUnsigned32Pixels.buffer, oddUnsigned32Pixels.byteOffset, 4)[0],
                 mixed: mixedPixels.map((pixels) => new Int8Array(pixels.buffer, pixels.byteOffset, 4)[0]),
                 signed32: new Int32Array(signed32Pixels.buffer, signed32Pixels.byteOffset, 4)[0],
                 unsigned32: new Uint32Array(unsigned32Pixels.buffer, unsigned32Pixels.byteOffset, 4)[0],
@@ -257,6 +280,10 @@ test("WebGPU raw 3D mipmaps support integer and unfilterable float textures", as
         expect(result.odd).toEqual([30, 130, 80]);
         expect(result.oddWidth).toEqual([30, 130, 80]);
         expect(result.oddHeight).toEqual([30, 130, 80]);
+        expect(result.oddXY).toBe(1);
+        expect(result.oddXYZ).toBe(-1);
+        expect(result.oddSigned32).toEqual([1073741823, -1073741824]);
+        expect(result.oddUnsigned32).toBe(2415919103);
         expect(result.mixed).toEqual([0, 0]);
         expect(result.signed32).toBe(0);
         expect(result.unsigned32).toBe(4294967295);

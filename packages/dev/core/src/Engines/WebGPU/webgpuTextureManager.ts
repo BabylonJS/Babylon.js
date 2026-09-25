@@ -103,12 +103,58 @@ const mipmap3DLoadFragmentSource = (sampleType: "f32" | "i32" | "u32") => {
             : ""
     }
 
-    fn interpolateInteger(a: vec4<${sampleType}>, b: vec4<${sampleType}>, numerator: i32, divisor: i32) -> vec4<${sampleType}> {
+    // Carry the exact fractional remainder through X, Y and Z before truncating the result.
+    struct Wide {
+        low: vec4u,
+        high: vec4u,
+    };
+
+    struct IntegerValue {
+        whole: vec4<${sampleType}>,
+        remainder: Wide,
+    };
+
+    fn addWide(a: Wide, b: Wide) -> Wide {
+        let low = a.low + b.low;
+        return Wide(low, a.high + b.high + select(vec4u(0), vec4u(1), low < a.low));
+    }
+
+    fn multiplyWide(a: Wide, factor: vec4u) -> Wide {
+        let lowFactor = factor & vec4u(65535u);
+        let highFactor = factor >> vec4u(16u);
+        let lowPart = (a.low & vec4u(65535u)) * lowFactor;
+        let middle = (a.low >> vec4u(16u)) * lowFactor;
+        let upper = (a.low & vec4u(65535u)) * highFactor;
+        let middleSum = (lowPart >> vec4u(16u)) + (middle & vec4u(65535u)) + (upper & vec4u(65535u));
+        let low = (middleSum << vec4u(16u)) | (lowPart & vec4u(65535u));
+        let high = a.high * factor + (a.low >> vec4u(16u)) * highFactor + (middle >> vec4u(16u)) + (upper >> vec4u(16u)) + (middleSum >> vec4u(16u));
+        return Wide(low, high);
+    }
+
+    fn interpolateInteger(a: IntegerValue, b: IntegerValue, numerator: i32, divisor: i32, previousDivisor: Wide) -> IntegerValue {
         let n = ${sampleType}(numerator);
         let d = ${sampleType}(divisor);
-        let quotient = (a / d) * (d - n) + (b / d) * n;
-        let remainder = (a % d) * (d - n) + (b % d) * n;
-        return ${sampleType === "i32" ? "finishSignedDivision(quotient, remainder, d)" : "quotient + remainder / d"};
+        let aRemainder = a.whole % d;
+        let bRemainder = b.whole % d;
+        let weightedRemainder = aRemainder * (d - n) + bRemainder * n;
+        let residual = weightedRemainder % d;
+        var whole = (a.whole / d) * (d - n) + (b.whole / d) * n + weightedRemainder / d ${sampleType === "i32" ? "- select(vec4i(0), vec4i(1), residual < vec4i(0))" : ""};
+        let integerResidual = vec4u(residual ${sampleType === "i32" ? "+ select(vec4i(0), vec4i(d), residual < vec4i(0))" : ""});
+        var remainder = addWide(
+            addWide(multiplyWide(a.remainder, vec4u(u32(d - n))), multiplyWide(b.remainder, vec4u(u32(n)))),
+            multiplyWide(previousDivisor, integerResidual)
+        );
+        let nextDivisor = multiplyWide(previousDivisor, vec4u(u32(d)));
+        for (var channel = 0; channel < 4; channel++) {
+            if (remainder.high[channel] > nextDivisor.high[channel] ||
+                (remainder.high[channel] == nextDivisor.high[channel] && remainder.low[channel] >= nextDivisor.low[channel])) {
+                let borrow = u32(remainder.low[channel] < nextDivisor.low[channel]);
+                remainder.low[channel] -= nextDivisor.low[channel];
+                remainder.high[channel] -= nextDivisor.high[channel] + borrow;
+                whole[channel] += 1;
+            }
+        }
+        return IntegerValue(whole, remainder);
     }
     `;
 
@@ -143,17 +189,30 @@ const mipmap3DLoadFragmentSource = (sampleType: "f32" | "i32" | "u32") => {
             }
             color = ${sampleType === "i32" ? "finishSignedDivision(quotient, remainder, 8)" : "quotient + remainder / 8"};
         } else {
-            var planes: array<vec4<${sampleType}>, 2>;
+            let unitDivisor = Wide(vec4u(1), vec4u(0));
+            let rowDivisor = multiplyWide(unitDivisor, vec4u(u32(divisor.x)));
+            let planeDivisor = multiplyWide(rowDivisor, vec4u(u32(divisor.y)));
+            var planes: array<IntegerValue, 2>;
             for (var z = 0; z < 2; z++) {
-                var rows: array<vec4<${sampleType}>, 2>;
+                var rows: array<IntegerValue, 2>;
                 for (var y = 0; y < 2; y++) {
                     let first = textureLoad(img, min(origin + vec3i(0, y, z), sourceSize - 1), 0);
                     let second = textureLoad(img, min(origin + vec3i(1, y, z), sourceSize - 1), 0);
-                    rows[y] = interpolateInteger(first, second, fraction.x, divisor.x);
+                    rows[y] = interpolateInteger(IntegerValue(first, Wide(vec4u(0), vec4u(0))), IntegerValue(second, Wide(vec4u(0), vec4u(0))), fraction.x, divisor.x, unitDivisor);
                 }
-                planes[z] = interpolateInteger(rows[0], rows[1], fraction.y, divisor.y);
+                planes[z] = interpolateInteger(rows[0], rows[1], fraction.y, divisor.y, rowDivisor);
             }
-            color = interpolateInteger(planes[0], planes[1], fraction.z, divisor.z);
+            let reduced = interpolateInteger(planes[0], planes[1], fraction.z, divisor.z, planeDivisor);
+            color = reduced.whole;
+            ${
+                sampleType === "i32"
+                    ? `for (var channel = 0; channel < 4; channel++) {
+                if (color[channel] < 0 && (reduced.remainder.high[channel] != 0u || reduced.remainder.low[channel] != 0u)) {
+                    color[channel] += 1;
+                }
+            }`
+                    : ""
+            }
         }
         fragmentOutputs.fragData0 = vec4<${sampleType}>(color);`;
 
