@@ -93,11 +93,12 @@ describe("P4 Inspector import boundaries", () => {
     });
 
     it("keeps the legacy Babylon.js adapter independent of Lite while retaining native translation", () => {
-        const source = ReadInspectorSource("components/properties/materials/materialPropertyAdapters.tsx");
+        const source = ReadInspectorSource("components/properties/materials/materialPropertySectionModel.ts");
         const babylonAdapter = ReadSharedSource("fluent/hoc/propertyLines/materialPropertyAdapters.ts");
         const liteAdapter = ReadSharedSource("lite/fluent/hoc/propertyLines/materialPropertyAdapters.ts");
 
-        expect(source).toContain('import { type Color3 } from "core/Maths/math.color"');
+        expect(source).toContain('useColor3Property(material, "diffuseColor")');
+        expect(source).toContain("usePropertyChangedNotifier()");
         expect(babylonAdapter).toContain("new Color3(color.r, color.g, color.b)");
         expect(liteAdapter).not.toMatch(/from ["'](?:core\/|@dev\/core)/);
         expect(source).not.toContain("@babylonjs/lite");

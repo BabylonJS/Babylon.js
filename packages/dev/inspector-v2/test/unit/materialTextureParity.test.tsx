@@ -7,7 +7,7 @@ import { resolve } from "node:path";
 
 import { FluentProvider, webLightTheme } from "@fluentui/react-components";
 import { Color3 } from "core/Maths/math.color";
-import { act, isValidElement, type ReactNode } from "react";
+import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -24,7 +24,6 @@ import {
 } from "shared-ui-components/lite/fluent/hoc/propertyLines/materialPropertyAdapters";
 import { MaterialTextureBindingPropertyLine, type MaterialTextureBindingModel } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
 import { TextureMetadataProperties } from "shared-ui-components/fluent/hoc/propertyLines/textureMetadataProperties";
-import { BooleanMaterialPropertyLine, Color3MaterialPropertyLine } from "../../src/components/properties/materials/materialPropertyAdapters";
 
 vi.hoisted(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
@@ -288,24 +287,6 @@ describe("material and texture parity cores", () => {
         expect(navigate).toHaveBeenCalledOnce();
         expect(container.querySelector("canvas")).toBeNull();
         expect(container.querySelector('input[type="file"]')).toBeNull();
-    });
-
-    it("translates Babylon.js values in the runtime adapter without changing write semantics", () => {
-        const booleanChange = vi.fn();
-        const booleanElement = BooleanMaterialPropertyLine({ label: "Enabled", value: true, onChange: booleanChange });
-        if (!isValidElement<{ model: { onChange: (value: boolean) => void } }>(booleanElement)) {
-            throw new Error("Expected the Babylon boolean adapter to render a material property line.");
-        }
-        booleanElement.props.model.onChange(false);
-        expect(booleanChange).toHaveBeenCalledWith(false);
-
-        const colorChange = vi.fn();
-        const colorElement = Color3MaterialPropertyLine({ label: "Color", value: new Color3(0.1, 0.2, 0.3), onChange: colorChange });
-        if (!isValidElement<{ model: { onChange: (value: { r: number; g: number; b: number }) => void } }>(colorElement)) {
-            throw new Error("Expected the Babylon color adapter to render a material property line.");
-        }
-        colorElement.props.model.onChange({ r: 0.4, g: 0.5, b: 0.6 });
-        expect(colorChange).toHaveBeenCalledWith(new Color3(0.4, 0.5, 0.6));
     });
 
     it("exposes matching controlled material field models for Babylon.js and Lite", () => {
