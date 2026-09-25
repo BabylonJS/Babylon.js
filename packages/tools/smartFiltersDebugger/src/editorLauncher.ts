@@ -1,16 +1,13 @@
 /* eslint-disable no-console */
 import { SmartFilterEditorControl } from "smart-filters-editor-control";
+import { GetSmartFilterEditorOptions } from "./smartFilterCompatibility.js";
 
-const Filter = (window as any).currentSmartFilter;
-const Engine = (window as any).thinEngine;
+const Options = GetSmartFilterEditorOptions(window as Window & { currentSmartFilter?: unknown; thinEngine?: unknown });
 
-if (Filter) {
+if (Options) {
     console.log("A SmartFilter was found in the page, launching the editor");
     // Display the editor
-    SmartFilterEditorControl.Show({
-        engine: Engine,
-        filter: Filter,
-    });
+    SmartFilterEditorControl.Show(Options);
 } else {
     console.log("No SmartFilter was found in the page");
 }
