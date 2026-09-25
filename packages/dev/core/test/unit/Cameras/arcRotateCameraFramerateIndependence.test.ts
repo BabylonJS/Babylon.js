@@ -240,6 +240,39 @@ describe("ArcRotateCamera back-compat parameter combinations", () => {
         engine?.dispose();
     });
 
+    describe("movement processing ownership", () => {
+        it("processes the specialized movement controller once per frame", () => {
+            const computeCurrentFrameDeltas = vi.spyOn(camera.movement, "computeCurrentFrameDeltas");
+            injectRotationPixels(camera, 10, 0);
+
+            camera._checkInputs();
+
+            expect(computeCurrentFrameDeltas).toHaveBeenCalledOnce();
+        });
+
+        it("applies one inertia decay per reference frame", () => {
+            camera.inertia = 0.9;
+            injectRotationPixels(camera, 10, 0);
+
+            camera._checkInputs();
+            expect(camera.alpha).toBeCloseTo(10, 6);
+
+            camera._checkInputs();
+            expect(camera.alpha).toBeCloseTo(19, 6);
+        });
+
+        it("applies one zoom inertia decay per reference frame", () => {
+            camera.inertia = 0.9;
+            injectZoomPixels(camera, 1);
+
+            camera._checkInputs();
+            expect(camera.radius).toBeCloseTo(9, 6);
+
+            camera._checkInputs();
+            expect(camera.radius).toBeCloseTo(8.1, 6);
+        });
+    });
+
     describe("input scaling", () => {
         it("rotation scales linearly with input pixels", () => {
             injectRotationPixels(camera, 1, 0);
