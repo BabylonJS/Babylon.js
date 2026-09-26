@@ -8,6 +8,53 @@ interface ISelectionRevealExportContext {
 }
 
 /**
+ * Builds the graph with the node indices assigned by the source glTF document.
+ * @param triggerIndex source glTF trigger node index
+ * @param revealIndex source glTF reveal node index
+ * @returns the KHR_interactivity graph extension
+ */
+export function BuildKhrSelectionRevealGraph(triggerIndex: number, revealIndex: number) {
+    return {
+        graph: 0,
+        graphs: [
+            {
+                name: "Select to reveal",
+                types: [{ signature: "bool" }, { signature: "int" }, { signature: "ref" }, { signature: "float3" }],
+                declarations: [
+                    {
+                        op: "event/onSelect",
+                        extension: "KHR_node_selectability",
+                        outputValueSockets: {
+                            selectedNode: { type: 2 },
+                            controllerIndex: { type: 1 },
+                            selectionPoint: { type: 3 },
+                            selectionRayOrigin: { type: 3 },
+                            event: { type: 2 },
+                        },
+                    },
+                    { op: "pointer/set" },
+                ],
+                nodes: [
+                    {
+                        declaration: 0,
+                        configuration: { nodeIndex: { value: [triggerIndex] } },
+                        flows: { out: { node: 1, socket: "in" } },
+                    },
+                    {
+                        declaration: 1,
+                        configuration: {
+                            pointer: { value: [`/nodes/${revealIndex}/extensions/KHR_node_visibility/visible`] },
+                            type: { value: [0] },
+                        },
+                        values: { value: { type: 0, value: [true] } },
+                    },
+                ],
+            },
+        ],
+    };
+}
+
+/**
  * Creates a standards-native select-to-reveal behavior for a scene being exported to glTF.
  * Node indices come from the serializer after it has filtered and ordered the scene; names
  * and Babylon unique IDs are deliberately not used as glTF identities.
@@ -46,44 +93,7 @@ export function CreateKhrSelectionRevealTemplate(trigger: AbstractMesh, reveal: 
             context.setNodeExtension(triggerIndex, "KHR_node_selectability", { selectable: true });
             context.setNodeExtension(revealIndex, "KHR_node_visibility", { visible: false });
 
-            return {
-                graph: 0,
-                graphs: [
-                    {
-                        name: "Select to reveal",
-                        types: [{ signature: "bool" }, { signature: "int" }, { signature: "ref" }, { signature: "float3" }],
-                        declarations: [
-                            {
-                                op: "event/onSelect",
-                                extension: "KHR_node_selectability",
-                                outputValueSockets: {
-                                    selectedNode: { type: 2 },
-                                    controllerIndex: { type: 1 },
-                                    selectionPoint: { type: 3 },
-                                    selectionRayOrigin: { type: 3 },
-                                    event: { type: 2 },
-                                },
-                            },
-                            { op: "pointer/set" },
-                        ],
-                        nodes: [
-                            {
-                                declaration: 0,
-                                configuration: { nodeIndex: { value: [triggerIndex] } },
-                                flows: { out: { node: 1, socket: "in" } },
-                            },
-                            {
-                                declaration: 1,
-                                configuration: {
-                                    pointer: { value: [`/nodes/${revealIndex}/extensions/KHR_node_visibility/visible`] },
-                                    type: { value: [0] },
-                                },
-                                values: { value: { type: 0, value: [true] } },
-                            },
-                        ],
-                    },
-                ],
-            };
+            return BuildKhrSelectionRevealGraph(triggerIndex, revealIndex);
         },
     };
 }

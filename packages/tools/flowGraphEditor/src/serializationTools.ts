@@ -661,6 +661,9 @@ export class SerializationTools {
      * @returns detached representability analysis for the exported graph set
      */
     public static async ExportKhrInteractivityAsync(globalState: GlobalState, format: "gltf" | "glb"): Promise<IKHRInteractivityExportAnalysis> {
+        if (globalState.sourceGlb?.authoredBehavior) {
+            throw new Error("The authored GLB was downloaded when the behavior was created. Scene re-export could discard source GLB data.");
+        }
         const scene = globalState.sceneContext?.scene;
         const plan = _CreateKhrExportPlanForImport(globalState);
         if (!plan || !scene) {

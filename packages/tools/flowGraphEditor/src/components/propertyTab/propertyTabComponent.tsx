@@ -219,6 +219,9 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
 
     private async _exportBabylonFlowGraphGlbAsync() {
         try {
+            if (this.props.globalState.sourceGlb?.authoredBehavior) {
+                throw new Error("The authored GLB was downloaded when the behavior was created. Scene re-export could discard source GLB data.");
+            }
             const scene = this.props.globalState.sceneContext?.scene ?? null;
             await SerializationTools.ExportBabylonFlowGraphGlbAsync(this.props.globalState.flowGraph, this.props.globalState, scene);
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Flow graph exported as flowGraph.glb using BABYLON_flow_graph.", false));
@@ -342,6 +345,9 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
     override render() {
         const { classes } = this.props;
         const serializationDisabledReason = SerializationTools.GetSerializationDisabledReason(this.props.globalState);
+        const sourcePreservingExportReason = this.props.globalState.sourceGlb?.authoredBehavior
+            ? "The source-preserving GLB was downloaded when the behavior was created; scene re-export could discard source data"
+            : null;
         if (this.state.currentNode) {
             return <div className={classes.root}>{this.state.currentNode?.renderProperties() || this.state.currentNodePort?.node.renderProperties()}</div>;
         }
@@ -419,18 +425,22 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
                             <Button label="Save" title={serializationDisabledReason ?? "Save"} disabled={!!serializationDisabledReason} onClick={() => this.save()} />
                             <Button
                                 label="Export KHR glTF"
-                                title="Export the preview scene and graph set as glTF with KHR_interactivity"
+                                title={sourcePreservingExportReason ?? "Export the preview scene and graph set as glTF with KHR_interactivity"}
+                                disabled={!!sourcePreservingExportReason}
                                 onClick={() => void this._exportKhrInteractivityAsync("gltf")}
                             />
                             <Button
                                 label="Export KHR GLB"
-                                title="Export the preview scene and graph set as GLB with KHR_interactivity"
+                                title={sourcePreservingExportReason ?? "Export the preview scene and graph set as GLB with KHR_interactivity"}
+                                disabled={!!sourcePreservingExportReason}
                                 onClick={() => void this._exportKhrInteractivityAsync("glb")}
                             />
                             <Button
                                 label="Export BABYLON_flow_graph GLB"
-                                title={serializationDisabledReason ?? "Export the active graph using the Babylon-specific BABYLON_flow_graph extension"}
-                                disabled={!!serializationDisabledReason}
+                                title={
+                                    sourcePreservingExportReason ?? serializationDisabledReason ?? "Export the active graph using the Babylon-specific BABYLON_flow_graph extension"
+                                }
+                                disabled={!!serializationDisabledReason || !!sourcePreservingExportReason}
                                 onClick={() => void this._exportBabylonFlowGraphGlbAsync()}
                             />
                             {this.props.globalState.customSave && (
