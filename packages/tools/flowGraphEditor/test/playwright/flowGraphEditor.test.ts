@@ -2674,6 +2674,8 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await WaitForGraphState(page, "Running");
         await select(2);
         expect(await cues()).toEqual([false, false]);
+        await select(1);
+        await expect.poll(cues).toEqual([true, false]);
     });
 
     test("creates a procedure from a new scene and exports a strict GLB", async ({ page }) => {
