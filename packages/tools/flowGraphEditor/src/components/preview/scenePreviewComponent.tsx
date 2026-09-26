@@ -12,12 +12,29 @@ import { LogEntry } from "../log/logComponent";
 import { ShowToast } from "../toast/toastComponent";
 import { LoadSnippet, type IPlaygroundSnippetResult } from "@tools/snippet-loader";
 import { CaptureFlowGraphSnippetId } from "./flowGraphSnippetCapture";
-import { Body1, Button, Input, Tooltip, makeStyles, tokens } from "@fluentui/react-components";
+import {
+    Body1,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogBody,
+    DialogContent,
+    DialogSurface,
+    DialogTitle,
+    Dropdown,
+    Input,
+    Label,
+    Option,
+    Tooltip,
+    makeStyles,
+    tokens,
+} from "@fluentui/react-components";
 import { CheckmarkRegular } from "@fluentui/react-icons";
 import { ComputeFlowGraphLayout, type IFlowLayoutNode } from "../../graphSystem/flowGraphLayout";
 import { type ISerializedFlowGraphBlock } from "core/FlowGraph/typeDefinitions";
 import { IsFlowGraphEventBlockName } from "../../graphSystem/blockTypeColors";
 import { GetFlowGraphBlockNodeId } from "../../graphSystem/blockNodeData";
+import { CreateKhrSelectionRevealTemplate } from "../../khrSelectionRevealTemplate";
 
 interface IScenePreviewComponentProps {
     globalState: GlobalState;
@@ -32,6 +49,9 @@ interface IScenePreviewComponentState {
     isLoading: boolean;
     error: string;
     sceneObjectCount: number;
+    triggerMeshId: string;
+    revealMeshId: string;
+    showAuthoringDialog: boolean;
 }
 
 interface IStagedKhrInteractivityImport {
@@ -168,7 +188,7 @@ const useStyles = makeStyles({
     loader: { background: tokens.colorNeutralBackground2 },
     inputRow: {
         display: "grid",
-        gridTemplateColumns: "1fr auto",
+        gridTemplateColumns: "minmax(0, 1fr) auto auto",
         gap: tokens.spacingHorizontalXS,
         padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalS} ${tokens.spacingVerticalSNudge}`,
     },
@@ -195,6 +215,12 @@ const useStyles = makeStyles({
         color: tokens.colorPaletteGreenForeground1,
         fontSize: tokens.fontSizeBase300,
     },
+    authoring: {
+        display: "grid",
+        gap: tokens.spacingVerticalS,
+    },
+    authoringSelect: { minWidth: 0, width: "100%" },
+    authoringDialog: { width: "min(420px, calc(100vw - 32px))", maxHeight: "calc(100dvh - 32px)", overflowY: "auto" },
     canvasContainer: {
         position: "relative",
         overflow: "hidden",
@@ -276,6 +302,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             isLoading: false,
             error: "",
             sceneObjectCount: props.globalState.sceneContext?.entries.length ?? 0,
+            triggerMeshId: "",
+            revealMeshId: "",
+            showAuthoringDialog: false,
         };
     }
 
@@ -290,7 +319,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         this._onSceneContextChangedObserver = this.props.globalState.onSceneContextChanged.add((ctx) => {
             if (ctx) {
                 this._watchContext(ctx);
-                this.setState({ sceneObjectCount: ctx.entries.length });
+                this.setState({ sceneObjectCount: ctx.entries.length, triggerMeshId: "", revealMeshId: "", showAuthoringDialog: false });
             }
         });
 
@@ -685,12 +714,13 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
      * Load a scene from a dropped file (glb, gltf, or babylon).
      * @param file - the main scene file
      * @param companionFiles - additional files dropped alongside (bin, textures)
+     * @param preparedByEditor allows the editor's template preparation to hand off a pending load
      */
-    private async _loadFileAsync(file: File, companionFiles?: File[]) {
-        if (this.state.isLoading) {
+    private async _loadFileAsync(file: File, companionFiles?: File[], preparedByEditor = false) {
+        if (this.state.isLoading && !preparedByEditor) {
             return; // Prevent concurrent loads
         }
-        this.setState({ isLoading: true, error: "" });
+        this.setState({ isLoading: true, error: "", showAuthoringDialog: false });
 
         const registeredFiles: string[] = [];
         let stagedEngine: Engine | null = null;
@@ -1095,12 +1125,60 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         }
     };
 
+    private _canCreateKhrSelectionReveal(): boolean {
+        const globalState = this.props.globalState;
+        const coordinator = globalState.coordinator;
+        const graph = coordinator?.flowGraphs[0];
+        if (!globalState.sceneContext?.ownsScene || globalState.hasImportScopedRuntime || !graph || coordinator?.flowGraphs.length !== 1 || graph.getAllBlocks().length !== 0) {
+            return false;
+        }
+        for (let index = 0; index < graph.contextCount; index++) {
+            if (Object.keys(graph.getContext(index).userVariables).length > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private async _createKhrSelectionRevealAsync(): Promise<void> {
+        const ctx = this.props.globalState.sceneContext;
+        const trigger = ctx?.meshes.find((mesh) => String(mesh.uniqueId) === this.state.triggerMeshId);
+        const reveal = ctx?.meshes.find((mesh) => String(mesh.uniqueId) === this.state.revealMeshId);
+        if (!ctx || !trigger || !reveal || !this._canCreateKhrSelectionReveal() || this.state.isLoading) {
+            return;
+        }
+
+        this.setState({ isLoading: true, error: "", showAuthoringDialog: false });
+        try {
+            const serializer = (globalThis as any).BABYLON?.GLTF2Export;
+            if (!serializer) {
+                throw new Error("GLTF2Export is not available.");
+            }
+            const khrInteractivity = CreateKhrSelectionRevealTemplate(trigger, reveal);
+            const data = await serializer.GLBAsync(ctx.scene, "selectionReveal", { khrInteractivity });
+            const glb = data.files["selectionReveal.glb"];
+            if (!(glb instanceof Blob)) {
+                throw new Error("The glTF serializer did not produce a GLB.");
+            }
+            await this._loadFileAsync(new File([glb], "selectionReveal.glb", { type: "model/gltf-binary" }), undefined, true);
+        } catch (err) {
+            const message = `Could not create KHR_interactivity behavior: ${err instanceof Error ? err.message : String(err)}`;
+            this.setState({ isLoading: false, error: message });
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, true));
+        }
+    }
+
     /** @internal */
     override render() {
         const { classes } = this.props;
         const { snippetId, isLoading, error, sceneObjectCount } = this.state;
         const ctx = this.props.globalState.sceneContext;
         const isHostMode = this.props.globalState.sceneSource === "host";
+        const meshes = ctx?.meshes.filter((mesh) => !mesh.isDisposed() && mesh.getTotalVertices() > 0) ?? [];
+        const trigger = meshes.find((mesh) => String(mesh.uniqueId) === this.state.triggerMeshId);
+        const reveal = meshes.find((mesh) => String(mesh.uniqueId) === this.state.revealMeshId);
+        const meshLabel = (mesh: (typeof meshes)[number]) => `${mesh.name || "Mesh"} (#${mesh.uniqueId})`;
+        const canCreate = this._canCreateKhrSelectionReveal();
 
         return (
             <div className={classes.container}>
@@ -1118,6 +1196,16 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                         <Button size="small" appearance="primary" onClick={() => void this.loadSnippetAsync()} disabled={isLoading || !snippetId}>
                             {isLoading ? "..." : "Load"}
                         </Button>
+                        {ctx?.ownsScene && !this.props.globalState.hasImportScopedRuntime && (
+                            <Button
+                                size="small"
+                                title={canCreate ? "Create a glTF selection behavior" : "Start with one empty graph to create a glTF behavior"}
+                                onClick={() => this.setState({ showAuthoringDialog: true })}
+                                disabled={isLoading || !canCreate}
+                            >
+                                New behavior
+                            </Button>
+                        )}
                     </div>
                     {error && <Body1 className={classes.error}>{error}</Body1>}
                     {ctx && (
@@ -1151,6 +1239,70 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     )}
                 </div>
                 {ctx && <div className={classes.summary}>{this._renderCategorySummary(ctx)}</div>}
+                <Dialog open={this.state.showAuthoringDialog} onOpenChange={(_, data) => this.setState({ showAuthoringDialog: data.open })}>
+                    <DialogSurface className={classes.authoringDialog}>
+                        <DialogBody>
+                            <DialogTitle>New glTF selection behavior</DialogTitle>
+                            <DialogContent className={classes.authoring}>
+                                <Body1>Selecting the trigger will reveal the second mesh.</Body1>
+                                <Body1>The preview scene is exported and reloaded as glTF; Babylon-only scene features may be omitted.</Body1>
+                                <Label htmlFor="khr-trigger-mesh">Trigger mesh</Label>
+                                <Dropdown
+                                    id="khr-trigger-mesh"
+                                    aria-label="Trigger mesh"
+                                    className={classes.authoringSelect}
+                                    placeholder="Select trigger mesh"
+                                    value={trigger ? meshLabel(trigger) : ""}
+                                    selectedOptions={trigger ? [String(trigger.uniqueId)] : []}
+                                    onOptionSelect={(_, data) => this.setState({ triggerMeshId: data.optionValue ?? "" })}
+                                >
+                                    {meshes.map((mesh) => (
+                                        <Option key={mesh.uniqueId} value={String(mesh.uniqueId)} text={meshLabel(mesh)}>
+                                            {meshLabel(mesh)}
+                                        </Option>
+                                    ))}
+                                </Dropdown>
+                                <Label htmlFor="khr-reveal-mesh">Mesh to reveal</Label>
+                                <Dropdown
+                                    id="khr-reveal-mesh"
+                                    aria-label="Mesh to reveal"
+                                    className={classes.authoringSelect}
+                                    placeholder="Select mesh to reveal"
+                                    value={reveal ? meshLabel(reveal) : ""}
+                                    selectedOptions={reveal ? [String(reveal.uniqueId)] : []}
+                                    onOptionSelect={(_, data) => this.setState({ revealMeshId: data.optionValue ?? "" })}
+                                >
+                                    {meshes.map((mesh) => (
+                                        <Option key={mesh.uniqueId} value={String(mesh.uniqueId)} text={meshLabel(mesh)}>
+                                            {meshLabel(mesh)}
+                                        </Option>
+                                    ))}
+                                </Dropdown>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={() => this.setState({ showAuthoringDialog: false })}>Cancel</Button>
+                                <Button
+                                    appearance="primary"
+                                    disabled={
+                                        isLoading ||
+                                        !canCreate ||
+                                        !trigger ||
+                                        !reveal ||
+                                        trigger === reveal ||
+                                        trigger.isDescendantOf(reveal) ||
+                                        !trigger.isEnabled() ||
+                                        !trigger.isVisible ||
+                                        !trigger.isPickable ||
+                                        !reveal.isEnabled()
+                                    }
+                                    onClick={() => void this._createKhrSelectionRevealAsync()}
+                                >
+                                    Create behavior
+                                </Button>
+                            </DialogActions>
+                        </DialogBody>
+                    </DialogSurface>
+                </Dialog>
             </div>
         );
     }

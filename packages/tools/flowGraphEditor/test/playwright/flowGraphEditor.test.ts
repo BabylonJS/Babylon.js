@@ -2059,6 +2059,103 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect.poll(async () => await fge.getNodeCount()).toBe(0);
     });
 
+    test("authors a select-to-reveal KHR_interactivity graph from an empty scene", async ({ page }, testInfo) => {
+        test.setTimeout(90_000);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+
+        await page.getByRole("button", { name: "New behavior" }).click();
+        const triggerSelect = page.getByRole("combobox", { name: "Trigger mesh" });
+        const revealSelect = page.getByRole("combobox", { name: "Mesh to reveal" });
+        await expect(triggerSelect).toBeVisible();
+        await triggerSelect.click();
+        await page.getByRole("option", { name: /^box \(#/ }).click();
+        await revealSelect.click();
+        await page.getByRole("option", { name: /^sphere \(#/ }).click();
+        await page.screenshot({ path: testInfo.outputPath("khr-selection-authoring.png"), fullPage: true });
+        await page.getByRole("button", { name: "Create behavior" }).click();
+
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "selectionReveal.glb"');
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Select to reveal"]);
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                        const source = state.khrInteractivityImportResult;
+                        const revealNode = source.glTF.nodes.find((node: any) => node.name === "sphere");
+                        return {
+                            ready: !!source && !!revealNode,
+                            selected: source?.document.graphs[0].source.nodes[0].configuration.nodeIndex.value[0],
+                            revealVisible: revealNode?._primitiveBabylonMeshes?.some((mesh: any) => mesh.isVisible),
+                        };
+                    })
+            )
+            .toMatchObject({ ready: true, revealVisible: false });
+
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await page.evaluate(() => {
+            const Babylon = (globalThis as any).BABYLON;
+            const state = Babylon.FlowGraphEditor._CurrentState;
+            const scene = state.sceneContext.scene;
+            const triggerNode = state.khrInteractivityImportResult.glTF.nodes.find((node: any) => node.name === "box");
+            const pick = new Babylon.PickingInfo();
+            pick.hit = true;
+            pick.pickedMesh = triggerNode._primitiveBabylonMeshes?.[0] ?? triggerNode._babylonTransformNode;
+            pick.pickedPoint = pick.pickedMesh.getAbsolutePosition();
+            scene.simulatePointerDown(pick, { pointerId: 0 });
+            scene.simulatePointerUp(pick, { pointerId: 0 });
+        });
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate(() => {
+                        const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                        const revealNode = state.khrInteractivityImportResult.glTF.nodes.find((node: any) => node.name === "sphere");
+                        return revealNode._primitiveBabylonMeshes?.some((mesh: any) => mesh.isVisible);
+                    })
+            )
+            .toBe(true);
+
+        const downloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename().endsWith(".glb"));
+        await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
+        const download = await downloadPromise;
+        const path = await download.path();
+        expect(path).not.toBeNull();
+        expect(await StrictImportKhrInteractivityAsync(page, "authoredSelection.glb", readFileSync(path!))).toEqual({ graphCount: 1, errorCount: 0 });
+    });
+
+    test("keeps selection authoring usable on a narrow viewport", async ({ page }, testInfo) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+
+        await page.getByRole("button", { name: "New behavior" }).click();
+        const dialog = page.getByRole("dialog", { name: "New glTF selection behavior" });
+        await expect(dialog).toBeVisible();
+        const bounds = await dialog.boundingBox();
+        expect(bounds).not.toBeNull();
+        expect(bounds!.x).toBeGreaterThanOrEqual(0);
+        expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
+
+        const triggerSelect = page.getByRole("combobox", { name: "Trigger mesh" });
+        const revealSelect = page.getByRole("combobox", { name: "Mesh to reveal" });
+        await triggerSelect.click();
+        await page.getByRole("option", { name: /^box \(#/ }).click();
+        await revealSelect.click();
+        await page.getByRole("option", { name: /^box \(#/ }).click();
+        await expect(page.getByRole("button", { name: "Create behavior" })).toBeDisabled();
+        await revealSelect.click();
+        await page.getByRole("option", { name: /^sphere \(#/ }).click();
+        await expect(page.getByRole("button", { name: "Create behavior" })).toBeEnabled();
+        await page.screenshot({ path: testInfo.outputPath("khr-selection-authoring-narrow.png"), fullPage: true });
+        await page.getByRole("button", { name: "Create behavior" }).click();
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Select to reveal"]);
+    });
+
     test("exports and re-imports ratified KHR_interactivity glTF and GLB with actionable diagnostics", async ({ page }) => {
         test.setTimeout(90_000);
         const fge = new FlowGraphEditorPage(page);

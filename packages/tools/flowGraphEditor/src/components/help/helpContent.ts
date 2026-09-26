@@ -460,6 +460,11 @@ export const HelpTopics: IHelpTopic[] = [
         title: "glTF Import and Export",
         sections: [
             {
+                heading: "Authoring a selection behavior",
+                html: `<p>With one empty graph and an editable preview scene, select <strong>New behavior</strong> in the Scene Preview pane. Choose a visible trigger mesh and a second mesh, then select <strong>Create behavior</strong>. The editor creates a standards-based <code>KHR_interactivity</code> graph: selecting the trigger reveals the initially hidden mesh. The generated GLB is reimported for editing and can be exported using the KHR actions below.</p>
+<p>The trigger must remain visible and pickable; the mesh to reveal must be enabled and cannot contain the trigger. This first authoring template replaces the empty graph. The preview is exported and reloaded as glTF, so Babylon-only scene features may be omitted. Imported KHR graphs can still be edited, and unsupported FlowGraph blocks produce export diagnostics.</p>`,
+            },
+            {
                 heading: "Importing from glTF",
                 html: `<p>Drop a <code>.glb</code> or <code>.gltf</code> file on the scene preview pane. If the file contains a <strong>KHR_interactivity</strong> extension, the flow graph is automatically loaded into the editor.</p>
 <p>Files that contain a <strong>BABYLON_flow_graph</strong> custom extension are also detected and imported on drop.</p>
