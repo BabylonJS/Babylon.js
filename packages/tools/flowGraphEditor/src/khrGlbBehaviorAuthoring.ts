@@ -4,6 +4,10 @@ import { BuildKhrSelectionRevealGraph } from "./khrSelectionRevealTemplate";
 const GlbMagic = 0x46546c67;
 const JsonChunk = 0x4e4f534a;
 
+function _IsRecord(value: unknown): value is Record<string, unknown> {
+    return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
 /** The glTF fields needed while adding a behavior to an existing GLB. Other fields are retained. */
 export interface IGlbDocument {
     /** glTF asset metadata. */
@@ -159,18 +163,64 @@ export function PatchKhrSelectionRevealGlb(bytes: Uint8Array, triggerIndex: numb
     ) {
         throw new Error("The source GLB already has a behavior graph.");
     }
-    if (nodes[triggerIndex].extensions?.KHR_node_selectability !== undefined) {
-        throw new Error("The trigger already has a selectability extension.");
+    const triggerSelectability = nodes[triggerIndex].extensions?.KHR_node_selectability;
+    if (triggerSelectability !== undefined && (!_IsRecord(triggerSelectability) || (triggerSelectability.selectable !== undefined && triggerSelectability.selectable !== true))) {
+        throw new Error("The trigger selectability extension is malformed or disables selection.");
     }
-    if (nodes[revealIndex].extensions?.KHR_node_visibility !== undefined) {
-        throw new Error("The reveal already has a visibility extension.");
+    const revealVisibility = nodes[revealIndex].extensions?.KHR_node_visibility;
+    if (revealVisibility !== undefined && (!_IsRecord(revealVisibility) || (revealVisibility.visible !== undefined && typeof revealVisibility.visible !== "boolean"))) {
+        throw new Error("The reveal visibility extension is malformed.");
+    }
+    const parents = Array.from({ length: nodes.length }, () => new Array<number>());
+    for (const [index, node] of nodes.entries()) {
+        if (Array.isArray(node.children)) {
+            for (const child of node.children) {
+                if (Number.isInteger(child) && child >= 0 && child < nodes.length) {
+                    parents[child].push(index);
+                }
+            }
+        }
+    }
+    const pending = [triggerIndex];
+    const checked = new Set<number>();
+    while (pending.length > 0) {
+        const index = pending.pop()!;
+        if (checked.has(index)) {
+            continue;
+        }
+        checked.add(index);
+        const ancestorSelectability = nodes[index].extensions?.KHR_node_selectability;
+        if (
+            ancestorSelectability !== undefined &&
+            (!_IsRecord(ancestorSelectability) ||
+                (ancestorSelectability.selectable !== undefined && typeof ancestorSelectability.selectable !== "boolean") ||
+                ancestorSelectability.selectable === false)
+        ) {
+            throw new Error("The trigger or an ancestor disables selectability.");
+        }
+        const ancestorVisibility = nodes[index].extensions?.KHR_node_visibility;
+        if (
+            ancestorVisibility !== undefined &&
+            (!_IsRecord(ancestorVisibility) ||
+                (ancestorVisibility.visible !== undefined && typeof ancestorVisibility.visible !== "boolean") ||
+                ancestorVisibility.visible === false)
+        ) {
+            throw new Error("The trigger or an ancestor disables visibility.");
+        }
+        for (const parent of parents[index]) {
+            pending.push(parent);
+        }
     }
     document.extensions ??= {};
     document.extensions.KHR_interactivity = BuildKhrSelectionRevealGraph(triggerIndex, revealIndex);
     nodes[triggerIndex].extensions ??= {};
-    nodes[triggerIndex].extensions.KHR_node_selectability = { selectable: true };
+    nodes[triggerIndex].extensions.KHR_node_selectability ??= { selectable: true };
     nodes[revealIndex].extensions ??= {};
-    nodes[revealIndex].extensions.KHR_node_visibility = { visible: false };
+    if (_IsRecord(revealVisibility)) {
+        revealVisibility.visible = false;
+    } else {
+        nodes[revealIndex].extensions.KHR_node_visibility = { visible: false };
+    }
     for (const name of ["KHR_interactivity", "KHR_node_selectability", "KHR_node_visibility"]) {
         document.extensionsUsed ??= [];
         document.extensionsRequired ??= [];
