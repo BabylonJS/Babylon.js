@@ -2095,7 +2095,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect.poll(async () => await fge.getNodeCount()).toBe(0);
     });
 
-    test("reset restores an imported node whose KHR visibility omits the default true value", async ({ page }) => {
+    test("reset restores imported KHR node visibility, selectability, and hoverability defaults", async ({ page }) => {
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
         await fge.assertEditorReady();
@@ -2105,19 +2105,19 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             asset: { version: "2.0" },
             scene: 0,
             scenes: [{ nodes: [0] }],
-            nodes: [{ name: "defaultVisibleNode", mesh: 0, extensions: { KHR_node_visibility: {} } }],
+            nodes: [{ name: "defaultVisibleNode", mesh: 0, extensions: { KHR_node_visibility: {}, KHR_node_selectability: {}, KHR_node_hoverability: {} } }],
             meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
             buffers: [{ byteLength: positions.length, uri: `data:application/octet-stream;base64,${positions.toString("base64")}` }],
             bufferViews: [{ buffer: 0, byteLength: positions.length }],
             accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [0, 0, 0], max: [1, 1, 0] }],
-            extensionsUsed: ["KHR_interactivity", "KHR_node_visibility"],
-            extensionsRequired: ["KHR_interactivity", "KHR_node_visibility"],
+            extensionsUsed: ["KHR_interactivity", "KHR_node_visibility", "KHR_node_selectability", "KHR_node_hoverability"],
+            extensionsRequired: ["KHR_interactivity", "KHR_node_visibility", "KHR_node_selectability", "KHR_node_hoverability"],
             extensions: {
                 KHR_interactivity: {
                     graph: 0,
                     graphs: [
                         {
-                            name: "Hide on start",
+                            name: "Disable node on start",
                             types: [{ signature: "bool" }],
                             declarations: [{ op: "event/onStart" }, { op: "pointer/set" }],
                             nodes: [
@@ -2125,6 +2125,18 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                                 {
                                     declaration: 1,
                                     configuration: { pointer: { value: ["/nodes/0/extensions/KHR_node_visibility/visible"] }, type: { value: [0] } },
+                                    values: { value: { type: 0, value: [false] } },
+                                    flows: { out: { node: 2, socket: "in" } },
+                                },
+                                {
+                                    declaration: 1,
+                                    configuration: { pointer: { value: ["/nodes/0/extensions/KHR_node_selectability/selectable"] }, type: { value: [0] } },
+                                    values: { value: { type: 0, value: [false] } },
+                                    flows: { out: { node: 3, socket: "in" } },
+                                },
+                                {
+                                    declaration: 1,
+                                    configuration: { pointer: { value: ["/nodes/0/extensions/KHR_node_hoverability/hoverable"] }, type: { value: [0] } },
                                     values: { value: { type: 0, value: [false] } },
                                 },
                             ],
@@ -2139,25 +2151,46 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             dataTransfer.items.add(file);
             (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
         }, source);
-        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Hide on start"]);
-        const visibility = () =>
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Disable node on start"]);
+        const nodeState = () =>
             page.evaluate(() => {
                 const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
                 const node = state.khrInteractivityImportResult.glTF.nodes[0];
                 return {
                     sceneUid: state.sceneContext.scene.uid,
                     authoredVisible: node.extensions.KHR_node_visibility.visible,
+                    authoredSelectable: node.extensions.KHR_node_selectability.selectable,
+                    authoredHoverable: node.extensions.KHR_node_hoverability.hoverable,
                     transformVisible: node._babylonTransformNode.isVisible,
                     primitiveVisible: node._primitiveBabylonMeshes[0].isVisible,
+                    primitivePickable: node._primitiveBabylonMeshes[0].isPickable,
+                    primitiveHoverable: node._primitiveBabylonMeshes[0]._isPointerMovePickable,
                 };
             });
-        const initial = await visibility();
-        expect(initial).toMatchObject({ authoredVisible: undefined, transformVisible: true, primitiveVisible: true });
+        const initial = await nodeState();
+        expect(initial).toMatchObject({ authoredVisible: undefined, authoredSelectable: undefined, authoredHoverable: undefined, transformVisible: true, primitiveVisible: true });
+        expect(initial.primitivePickable).toBe(true);
+        expect(initial.primitiveHoverable).toBe(true);
 
         await ClickGraphControl(page, "Start");
-        await expect.poll(async () => await visibility()).toMatchObject({ transformVisible: false, primitiveVisible: false });
+        await expect.poll(async () => await nodeState()).toMatchObject({ transformVisible: false, primitiveVisible: false, primitivePickable: false, primitiveHoverable: false });
         await ClickGraphControl(page, "Reset");
-        await expect.poll(async () => await visibility()).toMatchObject({ sceneUid: initial.sceneUid, authoredVisible: undefined, transformVisible: true, primitiveVisible: true });
+        await expect
+            .poll(async () => await nodeState())
+            .toMatchObject({
+                sceneUid: initial.sceneUid,
+                authoredVisible: undefined,
+                authoredSelectable: undefined,
+                authoredHoverable: undefined,
+                transformVisible: true,
+                primitiveVisible: true,
+                primitivePickable: true,
+                primitiveHoverable: true,
+            });
+        await ClickGraphControl(page, "Start");
+        await expect.poll(async () => await nodeState()).toMatchObject({ primitiveVisible: false, primitivePickable: false, primitiveHoverable: false });
+        await ClickGraphControl(page, "Reset");
+        await expect.poll(async () => await nodeState()).toMatchObject({ primitiveVisible: true, primitivePickable: true, primitiveHoverable: true });
     });
 
     test("authors a select-to-reveal KHR_interactivity graph from an empty scene", async ({ page }, testInfo) => {

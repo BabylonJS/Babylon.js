@@ -24,7 +24,7 @@ import { FlowGraphState } from "core/FlowGraph/flowGraph";
 import { type IFlowGraphValidationResult, FlowGraphValidationSeverity } from "core/FlowGraph/flowGraphValidator";
 
 import { type GlobalState } from "../../globalState";
-import { RestoreKhrNodeVisibility } from "../../khrSceneReset";
+import { RestoreKhrNodeState } from "../../khrSceneReset";
 import { LogEntry } from "../log/logComponent";
 
 interface IGraphControlsProps {
@@ -287,7 +287,7 @@ export const GraphControlsComponent: FunctionComponent<IGraphControlsProps> = (p
             globalState.flowGraph.stop();
             globalState.restoreSavedContexts();
             if (globalState.sceneSource === "file") {
-                RestoreKhrNodeVisibility(globalState.khrInteractivityImportResult);
+                RestoreKhrNodeState(globalState.khrInteractivityImportResult);
             }
             const canReloadScene = globalState.sceneSource === "snippet" || globalState.sceneSource === "default" || (!globalState.sceneSource && !globalState.snippetId);
             if (canReloadScene && globalState.sceneContext) {
