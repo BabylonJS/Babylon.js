@@ -2095,6 +2095,71 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect.poll(async () => await fge.getNodeCount()).toBe(0);
     });
 
+    test("reset restores an imported node whose KHR visibility omits the default true value", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+
+        const positions = Buffer.from(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]).buffer);
+        const source = {
+            asset: { version: "2.0" },
+            scene: 0,
+            scenes: [{ nodes: [0] }],
+            nodes: [{ name: "defaultVisibleNode", mesh: 0, extensions: { KHR_node_visibility: {} } }],
+            meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
+            buffers: [{ byteLength: positions.length, uri: `data:application/octet-stream;base64,${positions.toString("base64")}` }],
+            bufferViews: [{ buffer: 0, byteLength: positions.length }],
+            accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [0, 0, 0], max: [1, 1, 0] }],
+            extensionsUsed: ["KHR_interactivity", "KHR_node_visibility"],
+            extensionsRequired: ["KHR_interactivity", "KHR_node_visibility"],
+            extensions: {
+                KHR_interactivity: {
+                    graph: 0,
+                    graphs: [
+                        {
+                            name: "Hide on start",
+                            types: [{ signature: "bool" }],
+                            declarations: [{ op: "event/onStart" }, { op: "pointer/set" }],
+                            nodes: [
+                                { declaration: 0, flows: { out: { node: 1, socket: "in" } } },
+                                {
+                                    declaration: 1,
+                                    configuration: { pointer: { value: ["/nodes/0/extensions/KHR_node_visibility/visible"] }, type: { value: [0] } },
+                                    values: { value: { type: 0, value: [false] } },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+        };
+        await page.evaluate((gltf) => {
+            const file = new File([JSON.stringify(gltf)], "default-visible.gltf", { type: "model/gltf+json" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
+        }, source);
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Hide on start"]);
+        const visibility = () =>
+            page.evaluate(() => {
+                const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+                const node = state.khrInteractivityImportResult.glTF.nodes[0];
+                return {
+                    sceneUid: state.sceneContext.scene.uid,
+                    authoredVisible: node.extensions.KHR_node_visibility.visible,
+                    transformVisible: node._babylonTransformNode.isVisible,
+                    primitiveVisible: node._primitiveBabylonMeshes[0].isVisible,
+                };
+            });
+        const initial = await visibility();
+        expect(initial).toMatchObject({ authoredVisible: undefined, transformVisible: true, primitiveVisible: true });
+
+        await ClickGraphControl(page, "Start");
+        await expect.poll(async () => await visibility()).toMatchObject({ transformVisible: false, primitiveVisible: false });
+        await ClickGraphControl(page, "Reset");
+        await expect.poll(async () => await visibility()).toMatchObject({ sceneUid: initial.sceneUid, authoredVisible: undefined, transformVisible: true, primitiveVisible: true });
+    });
+
     test("authors a select-to-reveal KHR_interactivity graph from an empty scene", async ({ page }, testInfo) => {
         test.setTimeout(90_000);
         const fge = new FlowGraphEditorPage(page);

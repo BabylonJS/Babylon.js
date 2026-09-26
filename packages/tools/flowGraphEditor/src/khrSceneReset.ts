@@ -9,7 +9,12 @@ import { type IKHRInteractivityImportResult } from "loaders/glTF/2.0/Extensions/
  */
 export function RestoreKhrNodeVisibility(importResult: IKHRInteractivityImportResult | null): void {
     for (const node of importResult?.glTF.nodes ?? []) {
-        const visible = node.extensions?.KHR_node_visibility?.visible;
+        const extension = node.extensions?.KHR_node_visibility;
+        if (!extension) {
+            continue;
+        }
+        // KHR_node_visibility defaults an omitted visible property to true.
+        const visible = extension.visible === undefined ? true : extension.visible;
         if (typeof visible !== "boolean") {
             continue;
         }
