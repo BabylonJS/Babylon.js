@@ -2,7 +2,7 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Scene } from "core/scene";
-import { GetGlbNodeIndex, PatchKhrSelectionRevealGlb, ReadGlbDocument } from "flow-graph-editor/khrGlbBehaviorAuthoring";
+import { GetGlbNodeIndex, PatchKhrSelectionRevealGlb, ReadGlbDocument, type IGlbDocument } from "flow-graph-editor/khrGlbBehaviorAuthoring";
 import { CreateKHRInteractivityDocument } from "loaders/glTF/2.0/Extensions/KHR_interactivity/pure";
 import { describe, expect, it } from "vitest";
 
@@ -37,7 +37,15 @@ function SuffixAfterJson(glb: Uint8Array): Uint8Array {
     return glb.slice(20 + view.getUint32(12, true));
 }
 
-function RichSourceDocument() {
+type RichDocument = IGlbDocument & {
+    asset: { version: string; generator: string };
+    nodes: NonNullable<IGlbDocument["nodes"]>;
+    extensionsUsed: string[];
+    extensionsRequired: string[];
+    extensions: Record<string, unknown>;
+};
+
+function RichSourceDocument(): RichDocument {
     return {
         asset: { version: "2.0", generator: "asset-pipeline" },
         scene: 0,
@@ -102,6 +110,55 @@ describe("lossless GLB selection behavior authoring", () => {
         expect(authored).toEqual(sourceDocument);
     });
 
+    it("reuses valid companion extensions and preserves their nested data", () => {
+        const document = RichSourceDocument();
+        const triggerExtension = { extensions: { EXT_vendor_node: { trainingId: "trigger" } }, extras: { owner: "source" } };
+        const revealExtension = { visible: true, extensions: { EXT_vendor_node: { trainingId: "reveal" } }, extras: { owner: "source" } };
+        document.nodes[1].extensions = { ...document.nodes[1].extensions, KHR_node_selectability: triggerExtension };
+        document.nodes[2].extensions = { KHR_node_visibility: revealExtension };
+        document.extensionsUsed.push("KHR_node_selectability", "KHR_node_visibility", "EXT_vendor_node");
+        document.extensionsRequired.push("KHR_node_selectability");
+        const source = BuildGlb(document, [{ type: BinChunk, data: new Uint8Array([1, 2, 3, 4]) }]);
+
+        const result = PatchKhrSelectionRevealGlb(source, 1, 2);
+        const authored = ReadGlbDocument(result);
+
+        expect(authored.nodes![1].extensions!.KHR_node_selectability).toEqual(triggerExtension);
+        expect(authored.nodes![2].extensions!.KHR_node_visibility).toEqual({ ...revealExtension, visible: false });
+        expect(authored.nodes![1].extensions!.EXT_vendor_meta).toEqual(document.nodes[1].extensions!.EXT_vendor_meta);
+        expect(authored.extensionsUsed).toEqual([...document.extensionsUsed, "KHR_interactivity"]);
+        expect(authored.extensionsRequired).toEqual([...document.extensionsRequired, "KHR_interactivity", "KHR_node_visibility"]);
+        expect(SuffixAfterJson(result)).toEqual(SuffixAfterJson(source));
+        expect(ReadGlbDocument(source)).toEqual(document);
+    });
+
+    it("accepts explicit true selectability and already hidden reveal targets", () => {
+        const document = RichSourceDocument();
+        document.nodes[1].extensions = { KHR_node_selectability: { selectable: true } };
+        document.nodes[2].extensions = { KHR_node_visibility: { visible: false } };
+
+        const authored = ReadGlbDocument(PatchKhrSelectionRevealGlb(BuildGlb(document), 1, 2));
+
+        expect(authored.nodes![1].extensions!.KHR_node_selectability).toEqual({ selectable: true });
+        expect(authored.nodes![2].extensions!.KHR_node_visibility).toEqual({ visible: false });
+
+        document.nodes[2].extensions = { KHR_node_visibility: {} };
+        const omittedDefault = ReadGlbDocument(PatchKhrSelectionRevealGlb(BuildGlb(document), 1, 2));
+        expect(omittedDefault.nodes![2].extensions!.KHR_node_visibility).toEqual({ visible: false });
+    });
+
+    it.each([
+        ["selectability", { KHR_node_selectability: { selectable: false } }],
+        ["visibility", { KHR_node_visibility: { visible: false } }],
+        ["selectability", { KHR_node_selectability: { selectable: "no" } }],
+        ["visibility", { KHR_node_visibility: { visible: "no" } }],
+    ])("rejects a trigger beneath an ancestor with disabled or malformed %s", (state, extensions) => {
+        const document = RichSourceDocument();
+        document.nodes[0].extensions = extensions;
+
+        expect(() => PatchKhrSelectionRevealGlb(BuildGlb(document), 1, 2)).toThrow(state);
+    });
+
     it("rejects existing behavior data, conflicting node extensions, ancestor targets, and invalid indices", () => {
         const document = RichSourceDocument();
         const source = BuildGlb(document);
@@ -120,6 +177,26 @@ describe("lossless GLB selection behavior authoring", () => {
             nodes: [document.nodes[0], { ...document.nodes[1], extensions: { KHR_node_selectability: { selectable: false } } }, document.nodes[2]],
         });
         expect(() => PatchKhrSelectionRevealGlb(conflictingSource, 1, 2)).toThrow("selectability");
+        const malformedSelectability = BuildGlb({
+            ...document,
+            nodes: [document.nodes[0], { ...document.nodes[1], extensions: { KHR_node_selectability: { selectable: "yes" } } }, document.nodes[2]],
+        });
+        expect(() => PatchKhrSelectionRevealGlb(malformedSelectability, 1, 2)).toThrow("selectability");
+        const nullSelectability = BuildGlb({
+            ...document,
+            nodes: [document.nodes[0], { ...document.nodes[1], extensions: { KHR_node_selectability: null } }, document.nodes[2]],
+        });
+        expect(() => PatchKhrSelectionRevealGlb(nullSelectability, 1, 2)).toThrow("selectability");
+        const malformedVisibility = BuildGlb({
+            ...document,
+            nodes: [document.nodes[0], document.nodes[1], { ...document.nodes[2], extensions: { KHR_node_visibility: { visible: "no" } } }],
+        });
+        expect(() => PatchKhrSelectionRevealGlb(malformedVisibility, 1, 2)).toThrow("visibility");
+        const arrayVisibility = BuildGlb({
+            ...document,
+            nodes: [document.nodes[0], document.nodes[1], { ...document.nodes[2], extensions: { KHR_node_visibility: [] } }],
+        });
+        expect(() => PatchKhrSelectionRevealGlb(arrayVisibility, 1, 2)).toThrow("visibility");
         expect(() => PatchKhrSelectionRevealGlb(BuildGlb({ ...document, extensionsUsed: "KHR_materials_variants" }), 1, 2)).toThrow("malformed");
         expect(() => PatchKhrSelectionRevealGlb(BuildGlb({ ...document, nodes: [document.nodes[0], { ...document.nodes[1], extensions: [] }, document.nodes[2]] }), 1, 2)).toThrow(
             "malformed"

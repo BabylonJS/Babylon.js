@@ -3,8 +3,8 @@ import { readFileSync } from "fs";
 import { FlowGraphEditorPage } from "./fge.utils";
 import { AllFlowGraphBlocks } from "../../src/allBlockNames";
 
-function BuildExistingGlbFixture() {
-    const document = {
+function BuildExistingGlbFixture(withCompanionExtensions = false) {
+    const document: any = {
         asset: { version: "2.0", generator: "maintenance-asset-pipeline" },
         scene: 0,
         scenes: [{ name: "Assembly", nodes: [0] }],
@@ -28,6 +28,11 @@ function BuildExistingGlbFixture() {
         extensions: { KHR_materials_variants: { variants: [{ name: "Service" }] }, EXT_vendor_meta: { opaque: [1, 2, 3] } },
         extras: { stableAssetId: "maintenance-asset-9" },
     };
+    if (withCompanionExtensions) {
+        document.nodes[1].extensions.KHR_node_selectability = { extensions: { EXT_vendor_node: { trainingId: "trigger" } } };
+        document.nodes[2].extensions = { KHR_node_visibility: { visible: true, extensions: { EXT_vendor_node: { trainingId: "reveal" } } } };
+        document.extensionsUsed.push("KHR_node_selectability", "KHR_node_visibility", "EXT_vendor_node");
+    }
     const json = Buffer.from(JSON.stringify(document));
     const jsonLength = Math.ceil(json.length / 4) * 4;
     const bin = Buffer.from(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]).buffer);
@@ -2242,7 +2247,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
 
     test("adds a behavior to an existing GLB without reserializing its scene or resources", async ({ page }, testInfo) => {
         test.setTimeout(90_000);
-        const { bytes, document } = BuildExistingGlbFixture();
+        const { bytes, document } = BuildExistingGlbFixture(true);
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
         await fge.assertEditorReady();
@@ -2279,9 +2284,10 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         expect(authoredBytes.subarray(20 + jsonLength)).toEqual(bytes.subarray(20 + bytes.readUInt32LE(12)));
         expect(authored.extensions.KHR_interactivity.graphs[0].nodes[0].configuration.nodeIndex.value).toEqual([1]);
         expect(authored.extensions.KHR_interactivity.graphs[0].nodes[1].configuration.pointer.value).toEqual(["/nodes/2/extensions/KHR_node_visibility/visible"]);
+        expect(authored.nodes[1].extensions.KHR_node_selectability).toEqual(document.nodes[1].extensions.KHR_node_selectability);
+        expect(authored.nodes[2].extensions.KHR_node_visibility).toEqual({ ...document.nodes[2].extensions.KHR_node_visibility, visible: false });
         delete authored.extensions.KHR_interactivity;
-        delete authored.nodes[1].extensions.KHR_node_selectability;
-        delete authored.nodes[2].extensions;
+        authored.nodes[2].extensions.KHR_node_visibility.visible = true;
         authored.extensionsUsed = document.extensionsUsed;
         delete authored.extensionsRequired;
         expect(authored).toEqual(document);
