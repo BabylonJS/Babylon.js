@@ -2309,7 +2309,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         }
     });
 
-    test("binds duplicate-named meshes by exported node identity across a hierarchy", async ({ page }) => {
+    test("binds a multi-primitive trigger beside a duplicate-named mesh by exported node identity", async ({ page }) => {
         test.setTimeout(90_000);
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
@@ -2323,6 +2323,11 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             trigger.name = "part";
             reveal.name = "part";
             reveal.parent = parent;
+            const indexCount = trigger.getTotalIndices();
+            const firstIndexCount = Math.floor(indexCount / 6) * 3;
+            trigger.subMeshes = [];
+            new (globalThis as any).BABYLON.SubMesh(0, 0, trigger.getTotalVertices(), 0, firstIndexCount, trigger);
+            new (globalThis as any).BABYLON.SubMesh(0, 0, trigger.getTotalVertices(), firstIndexCount, indexCount - firstIndexCount, trigger);
             return { trigger: trigger.uniqueId, reveal: reveal.uniqueId };
         });
 
@@ -2347,13 +2352,39 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                 revealName: source.glTF.nodes[revealIndex].name,
                 nested: source.glTF.nodes[parentIndex].children?.includes(revealIndex) ?? false,
                 revealVisible: source.glTF.nodes[revealIndex]._primitiveBabylonMeshes?.some((mesh: any) => mesh.isVisible),
+                triggerPrimitiveCount: source.glTF.meshes[source.glTF.nodes[triggerIndex].mesh].primitives.length,
+                triggerRuntimeClass: source.glTF.nodes[triggerIndex]._babylonTransformNode?.getClassName(),
             };
         });
         expect(exportedIdentity.triggerIndex).not.toBe(exportedIdentity.revealIndex);
-        expect(exportedIdentity).toMatchObject({ triggerName: "part", revealName: "part", nested: true, revealVisible: false });
+        expect(exportedIdentity).toMatchObject({
+            triggerName: "part",
+            revealName: "part",
+            nested: true,
+            revealVisible: false,
+            triggerPrimitiveCount: 2,
+            triggerRuntimeClass: "TransformNode",
+        });
 
         await ClickGraphControl(page, "Start");
         await WaitForGraphState(page, "Running");
+        await page.evaluate((revealIndex) => {
+            const Babylon = (globalThis as any).BABYLON;
+            const state = Babylon.FlowGraphEditor._CurrentState;
+            const mesh = state.khrInteractivityImportResult.glTF.nodes[revealIndex]._primitiveBabylonMeshes[0];
+            const pick = new Babylon.PickingInfo();
+            pick.hit = true;
+            pick.pickedMesh = mesh;
+            pick.pickedPoint = mesh.getAbsolutePosition();
+            state.sceneContext.scene.simulatePointerDown(pick, { pointerId: 0 });
+            state.sceneContext.scene.simulatePointerUp(pick, { pointerId: 0 });
+        }, exportedIdentity.revealIndex);
+        expect(
+            await page.evaluate((revealIndex) => {
+                const node = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.khrInteractivityImportResult.glTF.nodes[revealIndex];
+                return node._primitiveBabylonMeshes.some((mesh: any) => mesh.isVisible);
+            }, exportedIdentity.revealIndex)
+        ).toBe(false);
         await page.evaluate((triggerIndex) => {
             const Babylon = (globalThis as any).BABYLON;
             const state = Babylon.FlowGraphEditor._CurrentState;
