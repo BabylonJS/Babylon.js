@@ -769,6 +769,9 @@ export class SolidParticleSystem implements IDisposable {
         const sp = new SolidParticle(idx, id, idxpos, idxind, model, shapeId, idxInShape, this, bInfo);
         const target = storage ? storage : this.particles;
         target.push(sp);
+        if (!storage) {
+            this._idxOfId[id] = idx;
+        }
         return sp;
     }
 
@@ -1651,7 +1654,10 @@ export class SolidParticleSystem implements IDisposable {
         const particles = this.particles;
         const idx = this._idxOfId[id];
         if (idx !== undefined) {
-            return particles[idx];
+            const indexed = particles[idx];
+            if (indexed && indexed.id == id) {
+                return indexed;
+            }
         }
         let i = 0;
         const nb = this.nbParticles;

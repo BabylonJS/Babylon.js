@@ -1,9 +1,47 @@
 import { Color4 } from "core/Maths/math.color.pure";
-import { type ColorGradient, type FactorGradient, GradientHelper } from "core/Misc/gradients";
+import { type ColorGradient, type FactorGradient, type IValueGradient } from "core/Misc/gradients";
 import { type Particle } from "./particle";
 import { type ThinParticleSystem } from "./thinParticleSystem";
 import { Clamp, Lerp, RandomRange } from "core/Maths/math.scalar.functions";
 import { TmpVectors, Vector3, Vector4 } from "core/Maths/math.vector.pure";
+
+// Result of _GetCurrentGradientToRef, consumed synchronously by the caller below
+// (avoids a callback closure per particle per frame).
+let _GradCurrent: IValueGradient = null!;
+let _GradNext: IValueGradient = null!;
+let _GradScale = 0;
+
+/**
+ * Callback-free equivalent of GradientHelper.GetCurrentGradient; stores the result in _GradCurrent/_GradNext/_GradScale.
+ * @internal
+ */
+export function _GetCurrentGradientToRef(ratio: number, gradients: IValueGradient[]): void {
+    // Use last index if over
+    if (gradients[0].gradient > ratio) {
+        _GradCurrent = gradients[0];
+        _GradNext = gradients[0];
+        _GradScale = 1.0;
+        return;
+    }
+
+    for (let gradientIndex = 0; gradientIndex < gradients.length - 1; gradientIndex++) {
+        const currentGradient = gradients[gradientIndex];
+        const nextGradient = gradients[gradientIndex + 1];
+
+        if (ratio >= currentGradient.gradient && ratio <= nextGradient.gradient) {
+            _GradCurrent = currentGradient;
+            _GradNext = nextGradient;
+            _GradScale = (ratio - currentGradient.gradient) / (nextGradient.gradient - currentGradient.gradient);
+            return;
+        }
+    }
+
+    // Use last index if over
+    const lastIndex = gradients.length - 1;
+    _GradCurrent = gradients[lastIndex];
+    _GradNext = gradients[lastIndex];
+    _GradScale = 1.0;
+}
 
 /** Color */
 
@@ -35,19 +73,20 @@ export function _CreateColorGradientsData(particle: Particle, system: ThinPartic
 
 /** @internal */
 export function _ProcessColorGradients(particle: Particle, system: ThinParticleSystem) {
-    const colorGradients = system._colorGradients;
-    GradientHelper.GetCurrentGradient(system._ratio, colorGradients!, (currentGradient, nextGradient, scale) => {
-        if (currentGradient !== particle._properties.currentColorGradient) {
-            particle._properties.currentColor1.copyFrom(particle._properties.currentColor2);
-            (<ColorGradient>nextGradient).getColorToRef(particle._properties.currentColor2);
-            particle._properties.currentColorGradient = <ColorGradient>currentGradient;
-        }
-        Color4.LerpToRef(particle._properties.currentColor1, particle._properties.currentColor2, scale, particle.color);
+    _GetCurrentGradientToRef(system._ratio, system._colorGradients!);
+    const currentGradient = _GradCurrent;
+    const nextGradient = _GradNext;
+    const scale = _GradScale;
+    if (currentGradient !== particle._properties.currentColorGradient) {
+        particle._properties.currentColor1.copyFrom(particle._properties.currentColor2);
+        (<ColorGradient>nextGradient).getColorToRef(particle._properties.currentColor2);
+        particle._properties.currentColorGradient = <ColorGradient>currentGradient;
+    }
+    Color4.LerpToRef(particle._properties.currentColor1, particle._properties.currentColor2, scale, particle.color);
 
-        if (particle.color.a < 0) {
-            particle.color.a = 0;
-        }
-    });
+    if (particle.color.a < 0) {
+        particle.color.a = 0;
+    }
 }
 
 /** @internal */
@@ -64,14 +103,16 @@ export function _ProcessColor(particle: Particle, system: ThinParticleSystem) {
 
 /** @internal */
 export function _ProcessAngularSpeedGradients(particle: Particle, system: ThinParticleSystem) {
-    GradientHelper.GetCurrentGradient(system._ratio, system._angularSpeedGradients!, (currentGradient, nextGradient, scale) => {
-        if (currentGradient !== particle._properties.currentAngularSpeedGradient) {
-            particle._properties.currentAngularSpeed1 = particle._properties.currentAngularSpeed2;
-            particle._properties.currentAngularSpeed2 = (<FactorGradient>nextGradient).getFactor();
-            particle._properties.currentAngularSpeedGradient = <FactorGradient>currentGradient;
-        }
-        particle.angularSpeed = Lerp(particle._properties.currentAngularSpeed1, particle._properties.currentAngularSpeed2, scale);
-    });
+    _GetCurrentGradientToRef(system._ratio, system._angularSpeedGradients!);
+    const currentGradient = _GradCurrent;
+    const nextGradient = _GradNext;
+    const scale = _GradScale;
+    if (currentGradient !== particle._properties.currentAngularSpeedGradient) {
+        particle._properties.currentAngularSpeed1 = particle._properties.currentAngularSpeed2;
+        particle._properties.currentAngularSpeed2 = (<FactorGradient>nextGradient).getFactor();
+        particle._properties.currentAngularSpeedGradient = <FactorGradient>currentGradient;
+    }
+    particle.angularSpeed = Lerp(particle._properties.currentAngularSpeed1, particle._properties.currentAngularSpeed2, scale);
 }
 
 /** @internal */
@@ -117,32 +158,36 @@ export function _CreateLimitVelocityGradients(particle: Particle, system: ThinPa
 
 /** @internal */
 export function _ProcessVelocityGradients(particle: Particle, system: ThinParticleSystem) {
-    GradientHelper.GetCurrentGradient(system._ratio, system._velocityGradients!, (currentGradient, nextGradient, scale) => {
-        if (currentGradient !== particle._properties.currentVelocityGradient) {
-            particle._properties.currentVelocity1 = particle._properties.currentVelocity2;
-            particle._properties.currentVelocity2 = (<FactorGradient>nextGradient).getFactor();
-            particle._properties.currentVelocityGradient = <FactorGradient>currentGradient;
-        }
-        particle._properties.directionScale *= Lerp(particle._properties.currentVelocity1, particle._properties.currentVelocity2, scale);
-    });
+    _GetCurrentGradientToRef(system._ratio, system._velocityGradients!);
+    const currentGradient = _GradCurrent;
+    const nextGradient = _GradNext;
+    const scale = _GradScale;
+    if (currentGradient !== particle._properties.currentVelocityGradient) {
+        particle._properties.currentVelocity1 = particle._properties.currentVelocity2;
+        particle._properties.currentVelocity2 = (<FactorGradient>nextGradient).getFactor();
+        particle._properties.currentVelocityGradient = <FactorGradient>currentGradient;
+    }
+    particle._properties.directionScale *= Lerp(particle._properties.currentVelocity1, particle._properties.currentVelocity2, scale);
 }
 
 /** @internal */
 export function _ProcessLimitVelocityGradients(particle: Particle, system: ThinParticleSystem) {
-    GradientHelper.GetCurrentGradient(system._ratio, system._limitVelocityGradients!, (currentGradient, nextGradient, scale) => {
-        if (currentGradient !== particle._properties.currentLimitVelocityGradient) {
-            particle._properties.currentLimitVelocity1 = particle._properties.currentLimitVelocity2;
-            particle._properties.currentLimitVelocity2 = (<FactorGradient>nextGradient).getFactor();
-            particle._properties.currentLimitVelocityGradient = <FactorGradient>currentGradient;
-        }
+    _GetCurrentGradientToRef(system._ratio, system._limitVelocityGradients!);
+    const currentGradient = _GradCurrent;
+    const nextGradient = _GradNext;
+    const scale = _GradScale;
+    if (currentGradient !== particle._properties.currentLimitVelocityGradient) {
+        particle._properties.currentLimitVelocity1 = particle._properties.currentLimitVelocity2;
+        particle._properties.currentLimitVelocity2 = (<FactorGradient>nextGradient).getFactor();
+        particle._properties.currentLimitVelocityGradient = <FactorGradient>currentGradient;
+    }
 
-        const limitVelocity = Lerp(particle._properties.currentLimitVelocity1, particle._properties.currentLimitVelocity2, scale);
-        const currentVelocity = particle.direction.length();
+    const limitVelocity = Lerp(particle._properties.currentLimitVelocity1, particle._properties.currentLimitVelocity2, scale);
+    const currentVelocity = particle.direction.length();
 
-        if (currentVelocity > limitVelocity) {
-            particle.direction.scaleInPlace(system.limitVelocityDamping);
-        }
-    });
+    if (currentVelocity > limitVelocity) {
+        particle.direction.scaleInPlace(system.limitVelocityDamping);
+    }
 }
 
 /** @internal */
@@ -198,17 +243,19 @@ export function _CreateDragData(particle: Particle, system: ThinParticleSystem) 
 
 /** @internal */
 export function _ProcessDragGradients(particle: Particle, system: ThinParticleSystem) {
-    GradientHelper.GetCurrentGradient(system._ratio, system._dragGradients!, (currentGradient, nextGradient, scale) => {
-        if (currentGradient !== particle._properties.currentDragGradient) {
-            particle._properties.currentDrag1 = particle._properties.currentDrag2;
-            particle._properties.currentDrag2 = (<FactorGradient>nextGradient).getFactor();
-            particle._properties.currentDragGradient = <FactorGradient>currentGradient;
-        }
+    _GetCurrentGradientToRef(system._ratio, system._dragGradients!);
+    const currentGradient = _GradCurrent;
+    const nextGradient = _GradNext;
+    const scale = _GradScale;
+    if (currentGradient !== particle._properties.currentDragGradient) {
+        particle._properties.currentDrag1 = particle._properties.currentDrag2;
+        particle._properties.currentDrag2 = (<FactorGradient>nextGradient).getFactor();
+        particle._properties.currentDragGradient = <FactorGradient>currentGradient;
+    }
 
-        const drag = Lerp(particle._properties.currentDrag1, particle._properties.currentDrag2, scale);
+    const drag = Lerp(particle._properties.currentDrag1, particle._properties.currentDrag2, scale);
 
-        particle._properties.scaledDirection.scaleInPlace(1.0 - drag);
-    });
+    particle._properties.scaledDirection.scaleInPlace(1.0 - drag);
 }
 
 /** Noise */
@@ -296,35 +343,44 @@ export function _CreateSizeGradientsData(particle: Particle, system: ThinParticl
 /** @internal */
 export function _CreateStartSizeGradientsData(particle: Particle, system: ThinParticleSystem) {
     const ratio = system._actualFrame / system.targetStopDuration;
-    GradientHelper.GetCurrentGradient(ratio, system._startSizeGradients!, (currentGradient, nextGradient, scale) => {
-        if (currentGradient !== system._currentStartSizeGradient) {
-            system._currentStartSize1 = system._currentStartSize2;
-            system._currentStartSize2 = (<FactorGradient>nextGradient).getFactor();
-            system._currentStartSizeGradient = <FactorGradient>currentGradient;
-        }
+    _GetCurrentGradientToRef(ratio, system._startSizeGradients!);
+    const currentGradient = _GradCurrent;
+    const nextGradient = _GradNext;
+    const scale = _GradScale;
+    if (currentGradient !== system._currentStartSizeGradient) {
+        system._currentStartSize1 = system._currentStartSize2;
+        system._currentStartSize2 = (<FactorGradient>nextGradient).getFactor();
+        system._currentStartSizeGradient = <FactorGradient>currentGradient;
+    }
 
-        const value = Lerp(system._currentStartSize1, system._currentStartSize2, scale);
-        particle.scale.scaleInPlace(value);
-    });
+    const value = Lerp(system._currentStartSize1, system._currentStartSize2, scale);
+    particle.scale.scaleInPlace(value);
 }
 
 /** @internal */
 export function _ProcessSizeGradients(particle: Particle, system: ThinParticleSystem) {
-    GradientHelper.GetCurrentGradient(system._ratio, system._sizeGradients!, (currentGradient, nextGradient, scale) => {
-        if (currentGradient !== particle._properties.currentSizeGradient) {
-            particle._properties.currentSize1 = particle._properties.currentSize2;
-            particle._properties.currentSize2 = (<FactorGradient>nextGradient).getFactor();
-            particle._properties.currentSizeGradient = <FactorGradient>currentGradient;
-        }
-        particle.size = Lerp(particle._properties.currentSize1, particle._properties.currentSize2, scale);
-    });
+    _GetCurrentGradientToRef(system._ratio, system._sizeGradients!);
+    const currentGradient = _GradCurrent;
+    const nextGradient = _GradNext;
+    const scale = _GradScale;
+    if (currentGradient !== particle._properties.currentSizeGradient) {
+        particle._properties.currentSize1 = particle._properties.currentSize2;
+        particle._properties.currentSize2 = (<FactorGradient>nextGradient).getFactor();
+        particle._properties.currentSizeGradient = <FactorGradient>currentGradient;
+    }
+    particle.size = Lerp(particle._properties.currentSize1, particle._properties.currentSize2, scale);
 }
 
 /** Ramp */
 
 /** @internal */
 export function _CreateRampData(particle: Particle, _system: ThinParticleSystem) {
-    particle.remapData = new Vector4(0, 1, 0, 1);
+    if (particle.remapData) {
+        // Reuse remap data of recycled particles instead of allocating a Vector4 per call
+        particle.remapData.copyFromFloats(0, 1, 0, 1);
+    } else {
+        particle.remapData = new Vector4(0, 1, 0, 1);
+    }
 }
 
 /** Remap */
@@ -332,23 +388,27 @@ export function _CreateRampData(particle: Particle, _system: ThinParticleSystem)
 /** @internal */
 export function _ProcessRemapGradients(particle: Particle, system: ThinParticleSystem) {
     if (system._colorRemapGradients && system._colorRemapGradients.length > 0) {
-        GradientHelper.GetCurrentGradient(system._ratio, system._colorRemapGradients, (currentGradient, nextGradient, scale) => {
-            const min = Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
-            const max = Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
+        _GetCurrentGradientToRef(system._ratio, system._colorRemapGradients);
+        const currentGradient = _GradCurrent;
+        const nextGradient = _GradNext;
+        const scale = _GradScale;
+        const min = Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+        const max = Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
 
-            particle.remapData.x = min;
-            particle.remapData.y = max - min;
-        });
+        particle.remapData.x = min;
+        particle.remapData.y = max - min;
     }
 
     if (system._alphaRemapGradients && system._alphaRemapGradients.length > 0) {
-        GradientHelper.GetCurrentGradient(system._ratio, system._alphaRemapGradients, (currentGradient, nextGradient, scale) => {
-            const min = Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
-            const max = Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
+        _GetCurrentGradientToRef(system._ratio, system._alphaRemapGradients);
+        const currentGradient = _GradCurrent;
+        const nextGradient = _GradNext;
+        const scale = _GradScale;
+        const min = Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+        const max = Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
 
-            particle.remapData.z = min;
-            particle.remapData.w = max - min;
-        });
+        particle.remapData.z = min;
+        particle.remapData.w = max - min;
     }
 }
 
@@ -357,14 +417,15 @@ export function _ProcessRemapGradients(particle: Particle, system: ThinParticleS
 /** @internal */
 export function _CreateLifeGradientsData(particle: Particle, system: ThinParticleSystem) {
     const ratio = Clamp(system._actualFrame / system.targetStopDuration);
-    GradientHelper.GetCurrentGradient(ratio, system._lifeTimeGradients!, (currentGradient, nextGradient) => {
-        const factorGradient1 = <FactorGradient>currentGradient;
-        const factorGradient2 = <FactorGradient>nextGradient;
-        const lifeTime1 = factorGradient1.getFactor();
-        const lifeTime2 = factorGradient2.getFactor();
-        const gradient = (ratio - factorGradient1.gradient) / (factorGradient2.gradient - factorGradient1.gradient);
-        particle.lifeTime = Lerp(lifeTime1, lifeTime2, gradient);
-    });
+    _GetCurrentGradientToRef(ratio, system._lifeTimeGradients!);
+    const currentGradient = _GradCurrent;
+    const nextGradient = _GradNext;
+    const factorGradient1 = <FactorGradient>currentGradient;
+    const factorGradient2 = <FactorGradient>nextGradient;
+    const lifeTime1 = factorGradient1.getFactor();
+    const lifeTime2 = factorGradient2.getFactor();
+    const gradient = (ratio - factorGradient1.gradient) / (factorGradient2.gradient - factorGradient1.gradient);
+    particle.lifeTime = Lerp(lifeTime1, lifeTime2, gradient);
     system._emitPower = RandomRange(system.minEmitPower, system.maxEmitPower);
 }
 
