@@ -80,6 +80,12 @@ Click the **✕** button on a variable row to delete it. This removes all `GetVa
 
 ### glTF Import / Export
 
+**Creating a KHR_interactivity selection behavior:**
+
+- Start with one empty graph and the editor's default scene (or a Playground scene). Choose **New behavior** in Scene Preview, then select a visible, pickable trigger mesh and a different enabled mesh to reveal.
+- **Create behavior** exports and reloads the preview as a GLB with a standards-based selection graph. Babylon-only scene features may be omitted. **New behavior** is disabled for imported scene files because this export path cannot preserve every source extension.
+- **Reset** restores the initially hidden mesh, so the selection can be replayed without losing current graph edits.
+
 **Importing a glTF with an interactive flow graph:**
 
 - Drag-and-drop a `.glb` or `.gltf` file onto the scene preview pane.
@@ -122,12 +128,12 @@ The **Undo** (↩) and **Redo** (↪) buttons are at the left side of the toolba
 
 ### Execution Controls
 
-| Button | Label     | Description                                                                                                                                                     |
-| ------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ▶      | **Start** | Starts executing the flow graph. Enabled when the graph is stopped or paused.                                                                                   |
-| ⏸      | **Pause** | Pauses execution. The graph can be resumed with Start.                                                                                                          |
-| ⏹      | **Stop**  | Stops execution and resets execution state.                                                                                                                     |
-| ↺      | **Reset** | Stops execution and reloads the scene from its snippet (if one was loaded). If the reload fails, an error is logged and the graph returns to the Stopped state. |
+| Button | Label     | Description                                                                                                                                                                        |
+| ------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ▶      | **Start** | Starts executing the flow graph. Enabled when the graph is stopped or paused.                                                                                                      |
+| ⏸      | **Pause** | Pauses execution. The graph can be resumed with Start.                                                                                                                             |
+| ⏹      | **Stop**  | Stops execution and resets execution state.                                                                                                                                        |
+| ↺      | **Reset** | Stops execution and recreates the default scene, reloads a snippet, or restores imported `KHR_node_visibility` defaults. Other imported scene changes require reopening the asset. |
 
 The **state indicator** next to the controls shows the current graph state: `Stopped`, `Running`, `Paused`, or `Breakpoint`.
 
@@ -496,7 +502,7 @@ The editor includes blocks for controlling audio playback using the Babylon.js A
 - **Use debug blocks liberally** — they're zero-cost when the graph isn't running and give you visibility into data flow.
 - **Step through unfamiliar graphs** — set a breakpoint on the first block and use Step to trace the execution path.
 - **Watch the flow animation** — in debug mode, the animated dots show you the actual order of execution, which can reveal unexpected paths.
-- **Reset vs. Stop** — use Reset when you've modified the scene's state and need a clean slate; use Stop when you just want to halt execution.
+- **Reset vs. Stop** — use Reset to replay the default scene or a loaded snippet, or to restore imported `KHR_node_visibility` defaults; use Stop to halt execution. Reopen an imported asset to restore other scene changes.
 - **Minimap** — when you zoom or pan, a minimap appears in the bottom-right corner showing all nodes, frames, and your current viewport. Click or drag on the minimap to navigate directly to that area. It auto-hides after 1.5 seconds of inactivity.
 
 ---

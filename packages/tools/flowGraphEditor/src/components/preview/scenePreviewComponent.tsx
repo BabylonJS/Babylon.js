@@ -60,6 +60,8 @@ interface IStagedKhrInteractivityImport {
 }
 
 const ImportedBlockWidth = 240;
+// GraphFrame renders collapsed groups at 200 px even when their stored expanded width is larger.
+const ImportedCollapsedFrameWidth = 200;
 const ImportedBlockBaseHeight = 76;
 const ImportedPortHeight = 26;
 const ImportedCompositeGap = 24;
@@ -70,7 +72,7 @@ function _GetImportedBlockHeight(block: ISerializedFlowGraphBlock): number {
     return ImportedBlockBaseHeight + Math.max(inputCount, outputCount) * ImportedPortHeight;
 }
 
-function _CreateKhrInteractivityEditorData(blocks: ISerializedFlowGraphBlock[]) {
+function _CreateKhrInteractivityEditorData(blocks: ISerializedFlowGraphBlock[], graphName: string) {
     const groupKeys = blocks.map((block, index) => {
         const sourceNodeIndex = block.metadata?.khrInteractivity?.nodeIndex;
         return typeof sourceNodeIndex === "number" ? `source:${sourceNodeIndex}` : `block:${index}`;
@@ -85,6 +87,11 @@ function _CreateKhrInteractivityEditorData(blocks: ISerializedFlowGraphBlock[]) 
     }
 
     const groupEntries = [...groups.entries()];
+    const isSelectionRevealTemplate =
+        graphName === "Select to reveal" &&
+        groupEntries.length === 2 &&
+        groupEntries.some(([, group]) => group.blocks[0].metadata.khrInteractivity?.operation.startsWith("event/onSelect")) &&
+        groupEntries.some(([, group]) => group.blocks[0].metadata.khrInteractivity?.operation === "pointer/set");
     const groupIndexByKey = new Map(groupEntries.map(([key], index) => [key, index]));
     const inputOwner = new Map<string, number>();
     const outputOwner = new Map<string, number>();
@@ -133,17 +140,16 @@ function _CreateKhrInteractivityEditorData(blocks: ISerializedFlowGraphBlock[]) 
             }
         }
         const collapsedHeight = ImportedBlockBaseHeight + Math.max(externalInputCount, externalOutputCount) * ImportedPortHeight;
-        const expandedWidth = group.blocks.length * ImportedBlockWidth + Math.max(0, group.blocks.length - 1) * ImportedCompositeGap;
         return {
             id: groupIndex,
-            width: group.blocks.length > 1 ? expandedWidth + ImportedCompositeGap * 2 : expandedWidth,
+            width: group.blocks.length > 1 ? ImportedCollapsedFrameWidth : ImportedBlockWidth,
             height: group.blocks.length > 1 ? collapsedHeight : Math.max(...group.blocks.map(_GetImportedBlockHeight)),
             isEvent: group.blocks.some((block) => IsFlowGraphEventBlockName(block.className)),
             signalOut: [...signalOut],
             dataOut: [...dataOut],
         };
     });
-    const positions = ComputeFlowGraphLayout(layoutNodes);
+    const positions = ComputeFlowGraphLayout(layoutNodes, isSelectionRevealTemplate ? { startX: 40, startY: 40 } : undefined);
     const locations: { blockId: string; x: number; y: number; isCollapsed: boolean }[] = [];
     const frames: any[] = [];
     for (let groupIndex = 0; groupIndex < groupEntries.length; groupIndex++) {
@@ -157,16 +163,17 @@ function _CreateKhrInteractivityEditorData(blocks: ISerializedFlowGraphBlock[]) 
         if (group.blocks.length > 1) {
             const provenance = group.blocks[0].metadata.khrInteractivity;
             const expandedWidth = group.blocks.length * ImportedBlockWidth + (group.blocks.length - 1) * ImportedCompositeGap;
+            const templateFrameName = provenance.operation.startsWith("event/onSelect") ? "Select part" : "Reveal part";
             frames.push({
                 x: position.x - ImportedCompositeGap,
                 y: position.y - 36,
                 width: expandedWidth + ImportedCompositeGap * 2,
                 height: Math.max(...group.blocks.map(_GetImportedBlockHeight)) + 60,
                 color: [0.46, 0.32, 0.65],
-                name: `${provenance.operation} · glTF node ${provenance.nodeIndex}`,
+                name: isSelectionRevealTemplate ? templateFrameName : `${provenance.operation} · glTF node ${provenance.nodeIndex}`,
                 isCollapsed: true,
                 blocks: group.blocks.map((block) => block.uniqueId),
-                comments: provenance.sourcePath,
+                comments: isSelectionRevealTemplate ? "" : provenance.sourcePath,
             });
         }
     }
@@ -646,7 +653,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 allBlocks: [],
                 executionContexts: [],
             };
-            (serializedFlowGraph as any).editorData = _CreateKhrInteractivityEditorData(serializedFlowGraph.allBlocks);
+            (serializedFlowGraph as any).editorData = _CreateKhrInteractivityEditorData(serializedFlowGraph.allBlocks, serializedFlowGraph.name ?? "");
             return serializedFlowGraph;
         });
         const requestedGraphIndex = importResult.document.defaultGraphIndex;
@@ -1129,7 +1136,14 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const globalState = this.props.globalState;
         const coordinator = globalState.coordinator;
         const graph = coordinator?.flowGraphs[0];
-        if (!globalState.sceneContext?.ownsScene || globalState.hasImportScopedRuntime || !graph || coordinator?.flowGraphs.length !== 1 || graph.getAllBlocks().length !== 0) {
+        if (
+            !globalState.sceneContext?.ownsScene ||
+            globalState.sceneSource === "file" ||
+            globalState.hasImportScopedRuntime ||
+            !graph ||
+            coordinator?.flowGraphs.length !== 1 ||
+            graph.getAllBlocks().length !== 0
+        ) {
             return false;
         }
         for (let index = 0; index < graph.contextCount; index++) {
@@ -1179,6 +1193,12 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const reveal = meshes.find((mesh) => String(mesh.uniqueId) === this.state.revealMeshId);
         const meshLabel = (mesh: (typeof meshes)[number]) => `${mesh.name || "Mesh"} (#${mesh.uniqueId})`;
         const canCreate = this._canCreateKhrSelectionReveal();
+        const createTitle =
+            this.props.globalState.sceneSource === "file"
+                ? "Imported scene files cannot be authored yet; re-export may omit their source data and extensions"
+                : canCreate
+                  ? "Create a glTF selection behavior"
+                  : "Start with one empty graph to create a glTF behavior";
 
         return (
             <div className={classes.container}>
@@ -1197,12 +1217,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                             {isLoading ? "..." : "Load"}
                         </Button>
                         {ctx?.ownsScene && !this.props.globalState.hasImportScopedRuntime && (
-                            <Button
-                                size="small"
-                                title={canCreate ? "Create a glTF selection behavior" : "Start with one empty graph to create a glTF behavior"}
-                                onClick={() => this.setState({ showAuthoringDialog: true })}
-                                disabled={isLoading || !canCreate}
-                            >
+                            <Button size="small" title={createTitle} onClick={() => this.setState({ showAuthoringDialog: true })} disabled={isLoading || !canCreate}>
                                 New behavior
                             </Button>
                         )}
@@ -1245,7 +1260,10 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                             <DialogTitle>New glTF selection behavior</DialogTitle>
                             <DialogContent className={classes.authoring}>
                                 <Body1>Selecting the trigger will reveal the second mesh.</Body1>
-                                <Body1>The preview scene is exported and reloaded as glTF; Babylon-only scene features may be omitted.</Body1>
+                                <Body1>
+                                    The preview scene is exported and reloaded as glTF; Babylon-only scene features may be omitted. Imported scene files cannot be authored here
+                                    yet.
+                                </Body1>
                                 <Label htmlFor="khr-trigger-mesh">Trigger mesh</Label>
                                 <Dropdown
                                     id="khr-trigger-mesh"

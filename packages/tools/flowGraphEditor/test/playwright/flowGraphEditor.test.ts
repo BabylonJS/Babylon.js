@@ -1,4 +1,4 @@
-import { test, expect, type Locator, type Page } from "@playwright/test";
+import { test, expect, devices, type Locator, type Page } from "@playwright/test";
 import { readFileSync } from "fs";
 import { FlowGraphEditorPage } from "./fge.utils";
 import { AllFlowGraphBlocks } from "../../src/allBlockNames";
@@ -27,6 +27,38 @@ async function GetGraphState(page: Page): Promise<number> {
         }
         return graph.state;
     });
+}
+
+async function SimulateKhrNodeSelection(page: Page, nodeName: string, pointerId = 0): Promise<void> {
+    await page.evaluate(
+        ({ name, id }) => {
+            const Babylon = (globalThis as any).BABYLON;
+            const state = Babylon.FlowGraphEditor._CurrentState;
+            const node = state.khrInteractivityImportResult.glTF.nodes.find((candidate: any) => candidate.name === name);
+            const mesh = node?._primitiveBabylonMeshes?.[0] ?? node?._babylonTransformNode;
+            if (!mesh) {
+                throw new Error(`No selectable glTF node named ${name}`);
+            }
+            const pick = new Babylon.PickingInfo();
+            pick.hit = true;
+            pick.pickedMesh = mesh;
+            pick.pickedPoint = mesh.getAbsolutePosition();
+            state.sceneContext.scene.simulatePointerDown(pick, { pointerId: id });
+            state.sceneContext.scene.simulatePointerUp(pick, { pointerId: id });
+        },
+        { name: nodeName, id: pointerId }
+    );
+}
+
+async function GetKhrNodeVisibility(page: Page, nodeName: string): Promise<boolean> {
+    return await page.evaluate((name) => {
+        const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
+        const node = state.khrInteractivityImportResult.glTF.nodes.find((candidate: any) => candidate.name === name);
+        if (!node?._primitiveBabylonMeshes?.length) {
+            throw new Error(`No glTF primitive meshes named ${name}`);
+        }
+        return node._primitiveBabylonMeshes.some((mesh: any) => mesh.isVisible);
+    }, nodeName);
 }
 
 async function GetDebugSnapshot(page: Page): Promise<{ isDebugMode: boolean; pendingBlockClassName: string | null; breakpointBlockClassNames: string[] }> {
@@ -1394,6 +1426,8 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
                 scene: 0,
                 scenes: [{ nodes: [0] }],
                 nodes: [{ name: "phaseTenNode" }],
+                extensionsUsed: ["KHR_materials_variants"],
+                extensions: { KHR_materials_variants: { variants: [{ name: "service state" }] } },
             });
             const file = new File([gltf], "phaseTenScene.gltf", { type: "model/gltf+json" });
             const dataTransfer = new DataTransfer();
@@ -1411,6 +1445,8 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             });
         const fileScene = await GetSceneContextSnapshot(page);
         expect(fileScene?.sceneUid).not.toBe(defaultScene?.sceneUid);
+        await expect(page.getByRole("button", { name: "New behavior" })).toBeDisabled();
+        await expect(page.getByRole("button", { name: "New behavior" })).toHaveAttribute("title", /imported scene files/i);
 
         await ClickGraphControl(page, "Reset");
         await WaitForGraphState(page, "Stopped");
@@ -2078,6 +2114,9 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
 
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText('Imported 1 KHR_interactivity graph(s) from "selectionReveal.glb"');
         await expect.poll(async () => await fge.getGraphNames()).toEqual(["Select to reveal"]);
+        await expect(page.getByText("Select part", { exact: true })).toBeInViewport();
+        await expect(page.getByText("Reveal part", { exact: true })).toBeInViewport();
+        await page.screenshot({ path: testInfo.outputPath("khr-selection-created-graph.png"), fullPage: true });
         await expect
             .poll(
                 async () =>
@@ -2094,30 +2133,22 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             )
             .toMatchObject({ ready: true, revealVisible: false });
 
+        await SimulateKhrNodeSelection(page, "box");
+        expect(await GetKhrNodeVisibility(page, "sphere")).toBe(false);
         await ClickGraphControl(page, "Start");
         await WaitForGraphState(page, "Running");
-        await page.evaluate(() => {
-            const Babylon = (globalThis as any).BABYLON;
-            const state = Babylon.FlowGraphEditor._CurrentState;
-            const scene = state.sceneContext.scene;
-            const triggerNode = state.khrInteractivityImportResult.glTF.nodes.find((node: any) => node.name === "box");
-            const pick = new Babylon.PickingInfo();
-            pick.hit = true;
-            pick.pickedMesh = triggerNode._primitiveBabylonMeshes?.[0] ?? triggerNode._babylonTransformNode;
-            pick.pickedPoint = pick.pickedMesh.getAbsolutePosition();
-            scene.simulatePointerDown(pick, { pointerId: 0 });
-            scene.simulatePointerUp(pick, { pointerId: 0 });
-        });
-        await expect
-            .poll(
-                async () =>
-                    await page.evaluate(() => {
-                        const state = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState;
-                        const revealNode = state.khrInteractivityImportResult.glTF.nodes.find((node: any) => node.name === "sphere");
-                        return revealNode._primitiveBabylonMeshes?.some((mesh: any) => mesh.isVisible);
-                    })
-            )
-            .toBe(true);
+        await SimulateKhrNodeSelection(page, "cylinder");
+        expect(await GetKhrNodeVisibility(page, "sphere")).toBe(false);
+        await SimulateKhrNodeSelection(page, "box");
+        await expect.poll(async () => await GetKhrNodeVisibility(page, "sphere")).toBe(true);
+
+        await ClickGraphControl(page, "Reset");
+        await WaitForGraphState(page, "Stopped");
+        await expect.poll(async () => await GetKhrNodeVisibility(page, "sphere")).toBe(false);
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await SimulateKhrNodeSelection(page, "box", 1);
+        await expect.poll(async () => await GetKhrNodeVisibility(page, "sphere")).toBe(true);
 
         const downloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename().endsWith(".glb"));
         await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
@@ -2154,6 +2185,98 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await page.screenshot({ path: testInfo.outputPath("khr-selection-authoring-narrow.png"), fullPage: true });
         await page.getByRole("button", { name: "Create behavior" }).click();
         await expect.poll(async () => await fge.getGraphNames()).toEqual(["Select to reveal"]);
+    });
+
+    test("authors the selection behavior with touch input on a mobile viewport", async ({ browser }, testInfo) => {
+        test.setTimeout(90_000);
+        const context = await browser.newContext({ ...devices["Pixel 7"] });
+        try {
+            const page = await context.newPage();
+            const fge = new FlowGraphEditorPage(page);
+            await fge.goto({ local: true });
+            await fge.assertEditorReady();
+
+            await page.getByRole("button", { name: "New behavior" }).tap();
+            const dialog = page.getByRole("dialog", { name: "New glTF selection behavior" });
+            await expect(dialog).toBeInViewport();
+            await page.getByRole("combobox", { name: "Trigger mesh" }).tap();
+            await page.getByRole("option", { name: /^box \(#/ }).tap();
+            await page.getByRole("combobox", { name: "Mesh to reveal" }).tap();
+            await page.getByRole("option", { name: /^sphere \(#/ }).tap();
+            await page.screenshot({ path: testInfo.outputPath("khr-selection-authoring-touch.png"), fullPage: true });
+            await page.getByRole("button", { name: "Create behavior" }).tap();
+            await expect.poll(async () => await fge.getGraphNames()).toEqual(["Select to reveal"]);
+        } finally {
+            await context.close();
+        }
+    });
+
+    test("binds duplicate-named meshes by exported node identity across a hierarchy", async ({ page }) => {
+        test.setTimeout(90_000);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+
+        const ids = await page.evaluate(() => {
+            const scene = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene;
+            const trigger = scene.getMeshByName("box");
+            const reveal = scene.getMeshByName("sphere");
+            const parent = scene.getMeshByName("cylinder");
+            trigger.name = "part";
+            reveal.name = "part";
+            reveal.parent = parent;
+            return { trigger: trigger.uniqueId, reveal: reveal.uniqueId };
+        });
+
+        await page.getByRole("button", { name: "New behavior" }).click();
+        await page.getByRole("combobox", { name: "Trigger mesh" }).click();
+        await page.getByRole("option", { name: `part (#${ids.trigger})`, exact: true }).click();
+        await page.getByRole("combobox", { name: "Mesh to reveal" }).click();
+        await page.getByRole("option", { name: `part (#${ids.reveal})`, exact: true }).click();
+        await page.getByRole("button", { name: "Create behavior" }).click();
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Select to reveal"]);
+
+        const exportedIdentity = await page.evaluate(() => {
+            const source = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.khrInteractivityImportResult;
+            const graph = source.document.graphs[0].source;
+            const triggerIndex = graph.nodes[0].configuration.nodeIndex.value[0];
+            const revealIndex = Number(graph.nodes[1].configuration.pointer.value[0].split("/")[2]);
+            const parentIndex = source.glTF.nodes.findIndex((node: any) => node.name === "cylinder");
+            return {
+                triggerIndex,
+                revealIndex,
+                triggerName: source.glTF.nodes[triggerIndex].name,
+                revealName: source.glTF.nodes[revealIndex].name,
+                nested: source.glTF.nodes[parentIndex].children?.includes(revealIndex) ?? false,
+                revealVisible: source.glTF.nodes[revealIndex]._primitiveBabylonMeshes?.some((mesh: any) => mesh.isVisible),
+            };
+        });
+        expect(exportedIdentity.triggerIndex).not.toBe(exportedIdentity.revealIndex);
+        expect(exportedIdentity).toMatchObject({ triggerName: "part", revealName: "part", nested: true, revealVisible: false });
+
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await page.evaluate((triggerIndex) => {
+            const Babylon = (globalThis as any).BABYLON;
+            const state = Babylon.FlowGraphEditor._CurrentState;
+            const node = state.khrInteractivityImportResult.glTF.nodes[triggerIndex];
+            const mesh = node._primitiveBabylonMeshes?.[0] ?? node._babylonTransformNode;
+            const pick = new Babylon.PickingInfo();
+            pick.hit = true;
+            pick.pickedMesh = mesh;
+            pick.pickedPoint = mesh.getAbsolutePosition();
+            state.sceneContext.scene.simulatePointerDown(pick, { pointerId: 0 });
+            state.sceneContext.scene.simulatePointerUp(pick, { pointerId: 0 });
+        }, exportedIdentity.triggerIndex);
+        await expect
+            .poll(
+                async () =>
+                    await page.evaluate((revealIndex) => {
+                        const node = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.khrInteractivityImportResult.glTF.nodes[revealIndex];
+                        return node._primitiveBabylonMeshes?.some((mesh: any) => mesh.isVisible);
+                    }, exportedIdentity.revealIndex)
+            )
+            .toBe(true);
     });
 
     test("exports and re-imports ratified KHR_interactivity glTF and GLB with actionable diagnostics", async ({ page }) => {

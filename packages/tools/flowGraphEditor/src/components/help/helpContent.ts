@@ -86,7 +86,7 @@ export const HelpTopics: IHelpTopic[] = [
 <tr><td>▶</td><td><b>Start</b></td><td>Starts executing the flow graph. Enabled when the graph is stopped or paused.</td></tr>
 <tr><td>⏸</td><td><b>Pause</b></td><td>Pauses execution. The graph can be resumed with Start.</td></tr>
 <tr><td>⏹</td><td><b>Stop</b></td><td>Stops execution and resets execution state.</td></tr>
-<tr><td>↺</td><td><b>Reset</b></td><td>Stops execution and recreates the default scene or reloads the loaded snippet.</td></tr>
+<tr><td>↺</td><td><b>Reset</b></td><td>Stops execution and recreates the default scene, reloads a snippet, or restores imported <code>KHR_node_visibility</code> defaults.</td></tr>
 </table>
 <p>The <b>state indicator</b> next to the controls shows the current graph state: <code>Stopped</code>, <code>Running</code>, <code>Paused</code>, or <code>Breakpoint</code>.</p>`,
             },
@@ -462,7 +462,8 @@ export const HelpTopics: IHelpTopic[] = [
             {
                 heading: "Authoring a selection behavior",
                 html: `<p>With one empty graph and an editable preview scene, select <strong>New behavior</strong> in the Scene Preview pane. Choose a visible trigger mesh and a second mesh, then select <strong>Create behavior</strong>. The editor creates a standards-based <code>KHR_interactivity</code> graph: selecting the trigger reveals the initially hidden mesh. The generated GLB is reimported for editing and can be exported using the KHR actions below.</p>
-<p>The trigger must remain visible and pickable; the mesh to reveal must be enabled and cannot contain the trigger. This first authoring template replaces the empty graph. The preview is exported and reloaded as glTF, so Babylon-only scene features may be omitted. Imported KHR graphs can still be edited, and unsupported FlowGraph blocks produce export diagnostics.</p>`,
+<p>The trigger must remain visible and pickable; the mesh to reveal must be enabled and cannot contain the trigger. This first authoring template replaces the empty graph. The preview is exported and reloaded as glTF, so Babylon-only scene features may be omitted. New behavior is disabled for imported scene files because this scene export cannot preserve every source extension. Imported KHR graphs can still be edited, and unsupported FlowGraph blocks produce export diagnostics.</p>
+<p>Reset restores the authored hidden state for this behavior without replacing your current graph edits. For other imported behaviors, Reset restores <code>KHR_node_visibility</code> defaults only; reopen the asset to restore other scene changes.</p>`,
             },
             {
                 heading: "Importing from glTF",
