@@ -3,7 +3,7 @@ import { readFileSync } from "fs";
 import { FlowGraphEditorPage } from "./fge.utils";
 import { AllFlowGraphBlocks } from "../../src/allBlockNames";
 
-function BuildExistingGlbFixture(withCompanionExtensions = false) {
+function BuildExistingGlbFixture(withCompanionExtensions = false, withMultiPrimitiveTrigger = false) {
     const document: any = {
         asset: { version: "2.0", generator: "maintenance-asset-pipeline" },
         scene: 0,
@@ -32,6 +32,11 @@ function BuildExistingGlbFixture(withCompanionExtensions = false) {
         document.nodes[1].extensions.KHR_node_selectability = { extensions: { EXT_vendor_node: { trainingId: "trigger" } } };
         document.nodes[2].extensions = { KHR_node_visibility: { visible: true, extensions: { EXT_vendor_node: { trainingId: "reveal" } } } };
         document.extensionsUsed.push("KHR_node_selectability", "KHR_node_visibility", "EXT_vendor_node");
+    }
+    if (withMultiPrimitiveTrigger) {
+        document.meshes.push({ ...document.meshes[0], primitives: [...document.meshes[0].primitives] });
+        document.meshes[0].primitives.push({ ...document.meshes[0].primitives[0] });
+        document.nodes[2].mesh = 1;
     }
     const json = Buffer.from(JSON.stringify(document));
     const jsonLength = Math.ceil(json.length / 4) * 4;
@@ -2247,7 +2252,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
 
     test("adds a behavior to an existing GLB without reserializing its scene or resources", async ({ page }, testInfo) => {
         test.setTimeout(90_000);
-        const { bytes, document } = BuildExistingGlbFixture(true);
+        const { bytes, document } = BuildExistingGlbFixture(true, true);
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
         await fge.assertEditorReady();
@@ -2293,6 +2298,50 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         expect(authored).toEqual(document);
         expect(await StrictImportKhrInteractivityAsync(page, "strict-existing-assembly.glb", authoredBytes)).toEqual({ graphCount: 1, errorCount: 0 });
         await expect.poll(async () => await fge.getGraphNames()).toEqual(["Select to reveal"]);
+        const importedNodes = await page.evaluate(() => {
+            const nodes = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.khrInteractivityImportResult.glTF.nodes;
+            return {
+                triggerName: nodes[1].name,
+                revealName: nodes[2].name,
+                triggerClass: nodes[1]._babylonTransformNode.getClassName(),
+                triggerPrimitiveCount: nodes[1]._primitiveBabylonMeshes.length,
+                revealClass: nodes[2]._babylonTransformNode.getClassName(),
+                revealPrimitiveCount: nodes[2]._primitiveBabylonMeshes.length,
+            };
+        });
+        expect(importedNodes).toEqual({
+            triggerName: "part",
+            revealName: "part",
+            triggerClass: "TransformNode",
+            triggerPrimitiveCount: 2,
+            revealClass: "Mesh",
+            revealPrimitiveCount: 1,
+        });
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        const selectNode = async (nodeIndex: number, primitiveIndex: number) =>
+            await page.evaluate(
+                ({ nodeIndex, primitiveIndex }) => {
+                    const Babylon = (globalThis as any).BABYLON;
+                    const state = Babylon.FlowGraphEditor._CurrentState;
+                    const mesh = state.khrInteractivityImportResult.glTF.nodes[nodeIndex]._primitiveBabylonMeshes[primitiveIndex];
+                    const pick = new Babylon.PickingInfo();
+                    pick.hit = true;
+                    pick.pickedMesh = mesh;
+                    pick.pickedPoint = mesh.getAbsolutePosition();
+                    state.sceneContext.scene.simulatePointerDown(pick, { pointerId: 0 });
+                    state.sceneContext.scene.simulatePointerUp(pick, { pointerId: 0 });
+                },
+                { nodeIndex, primitiveIndex }
+            );
+        const revealVisible = async () =>
+            await page.evaluate(() =>
+                (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.khrInteractivityImportResult.glTF.nodes[2]._primitiveBabylonMeshes.some((mesh: any) => mesh.isVisible)
+            );
+        await selectNode(2, 0);
+        expect(await revealVisible()).toBe(false);
+        await selectNode(1, 1);
+        await expect.poll(revealVisible).toBe(true);
         await expect(page.getByRole("button", { name: "Export KHR GLB", exact: true })).toBeDisabled();
         await page.screenshot({ path: testInfo.outputPath("khr-existing-glb-authored.png"), fullPage: true });
     });
