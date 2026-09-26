@@ -3,7 +3,7 @@ import { readFileSync } from "fs";
 import { FlowGraphEditorPage } from "./fge.utils";
 import { AllFlowGraphBlocks } from "../../src/allBlockNames";
 
-function BuildExistingGlbFixture(withCompanionExtensions = false, withMultiPrimitiveTrigger = false, withAnimation = false) {
+function BuildExistingGlbFixture(withCompanionExtensions = false, withMultiPrimitiveTrigger = false, withAnimation = false, withSkin = false, withLosslessTokens = false) {
     const document: any = {
         asset: { version: "2.0", generator: "maintenance-asset-pipeline" },
         scene: 0,
@@ -50,9 +50,24 @@ function BuildExistingGlbFixture(withCompanionExtensions = false, withMultiPrimi
             { name: "inspection", samplers: [{ input: 1, output: 2, interpolation: "LINEAR" }], channels: [{ sampler: 0, target: { node: 2, path: "translation" } }] },
         ];
     }
-    const json = Buffer.from(JSON.stringify(document));
+    let bin = Buffer.from(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]).buffer);
+    if (withSkin) {
+        const joints = Buffer.alloc(12);
+        const weights = Buffer.from(new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]).buffer);
+        document.nodes[0].children.push(3, 4);
+        document.nodes.push({ name: "joint" }, { name: "skinned part", mesh: 1, skin: 0 });
+        document.skins = [{ joints: [3], skeleton: 3 }];
+        document.meshes.push({ name: "skinned geometry", primitives: [{ attributes: { POSITION: 0, JOINTS_0: 1, WEIGHTS_0: 2 } }] });
+        document.bufferViews.push({ buffer: 0, byteOffset: 36, byteLength: joints.length }, { buffer: 0, byteOffset: 48, byteLength: weights.length });
+        document.accessors.push({ bufferView: 1, componentType: 5121, count: 3, type: "VEC4" }, { bufferView: 2, componentType: 5126, count: 3, type: "VEC4" });
+        bin = Buffer.concat([bin, joints, weights]);
+        document.buffers[0].byteLength = bin.length;
+    }
+    const jsonText = withLosslessTokens
+        ? JSON.stringify(document).replace('"stableAssetId":"maintenance-asset-9"', '"stableAssetId":9007199254740993').replace('"code":17', '"code":1e+2')
+        : JSON.stringify(document);
+    const json = Buffer.from(jsonText);
     const jsonLength = Math.ceil(json.length / 4) * 4;
-    const bin = Buffer.from(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]).buffer);
     const vendor = Buffer.from([10, 20, 30, 40]);
     const bytes = Buffer.alloc(20 + jsonLength + 8 + bin.length + 8 + vendor.length, 0x20);
     bytes.writeUInt32LE(0x46546c67, 0);
@@ -2385,6 +2400,64 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect.poll(revealVisible).toBe(true);
         await expect(page.getByRole("button", { name: "Export KHR GLB", exact: true })).toBeDisabled();
         await page.screenshot({ path: testInfo.outputPath("khr-existing-glb-authored.png"), fullPage: true });
+    });
+
+    test("does not offer a skinned mesh under its unrelated reparented assembly node", async ({ page }) => {
+        const { bytes } = BuildExistingGlbFixture(false, false, false, true);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await page.evaluate(
+            (data) => {
+                const file = new File([new Uint8Array(data)], "skinned-assembly.glb", { type: "model/gltf-binary" });
+                const transfer = new DataTransfer();
+                transfer.items.add(file);
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            [...bytes]
+        );
+        await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+        const skinOwnership = await page.evaluate(() => {
+            const scene = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sceneContext.scene;
+            const mesh = scene.meshes.find((candidate: any) => candidate.skeleton);
+            return { skinnedMesh: mesh?.name, parentPointers: mesh?.parent?._internalMetadata?.gltf?.pointers, skeletonCount: scene.skeletons.length };
+        });
+        expect(skinOwnership).toMatchObject({ skinnedMesh: "skinned part", parentPointers: ["/nodes/0"], skeletonCount: 1 });
+        await page.getByRole("button", { name: "New behavior" }).click();
+        await page.getByRole("combobox", { name: "Trigger mesh" }).click();
+        await expect(page.getByRole("option", { name: /skinned part/ })).toHaveCount(0);
+        await expect(page.getByRole("option", { name: /glTF node 1/ })).toBeVisible();
+        await expect(page.getByRole("option", { name: /glTF node 2/ })).toBeVisible();
+    });
+
+    test("preserves untouched JSON number tokens in a downloaded source GLB", async ({ page }) => {
+        const { bytes } = BuildExistingGlbFixture(false, false, false, false, true);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await page.evaluate(
+            (data) => {
+                const file = new File([new Uint8Array(data)], "large-id-assembly.glb", { type: "model/gltf-binary" });
+                const transfer = new DataTransfer();
+                transfer.items.add(file);
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            [...bytes]
+        );
+        await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+        await page.getByRole("button", { name: "New behavior" }).click();
+        await page.getByRole("combobox", { name: "Trigger mesh" }).click();
+        await page.getByRole("option", { name: /glTF node 1/ }).click();
+        await page.getByRole("combobox", { name: "Mesh to reveal" }).click();
+        await page.getByRole("option", { name: /glTF node 2/ }).click();
+        const downloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename() === "large-id-assembly-behavior.glb");
+        await page.getByRole("button", { name: "Create behavior" }).click();
+        const authoredBytes = readFileSync((await (await downloadPromise).path())!);
+        const authoredJson = authoredBytes.subarray(20, 20 + authoredBytes.readUInt32LE(12)).toString("utf8");
+        expect(authoredJson).toContain('"stableAssetId":9007199254740993');
+        expect(authoredJson).toContain('"code":1e+2');
+        expect(authoredBytes.subarray(20 + authoredBytes.readUInt32LE(12))).toEqual(bytes.subarray(20 + bytes.readUInt32LE(12)));
+        expect(await StrictImportKhrInteractivityAsync(page, "strict-large-id.glb", authoredBytes)).toEqual({ graphCount: 1, errorCount: 0 });
     });
 
     test("explains why an animated GLB cannot use the selection-only template", async ({ page }, testInfo) => {

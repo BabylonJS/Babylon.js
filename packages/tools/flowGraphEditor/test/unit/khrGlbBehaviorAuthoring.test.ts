@@ -1,4 +1,5 @@
 import { NullEngine } from "core/Engines/nullEngine";
+import { Skeleton } from "core/Bones/skeleton";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Scene } from "core/scene";
@@ -9,8 +10,8 @@ import { describe, expect, it } from "vitest";
 const JsonChunk = 0x4e4f534a;
 const BinChunk = 0x004e4942;
 
-function BuildGlb(document: Record<string, unknown>, chunks: Array<{ type: number; data: Uint8Array }> = []): Uint8Array {
-    const json = new TextEncoder().encode(JSON.stringify(document));
+function BuildGlb(document: Record<string, unknown> | string, chunks: Array<{ type: number; data: Uint8Array }> = []): Uint8Array {
+    const json = new TextEncoder().encode(typeof document === "string" ? document : JSON.stringify(document));
     const paddedJson = new Uint8Array(Math.ceil(json.length / 4) * 4).fill(0x20);
     paddedJson.set(json);
     const totalLength = 12 + 8 + paddedJson.length + chunks.reduce((length, chunk) => length + 8 + chunk.data.length, 0);
@@ -35,6 +36,11 @@ function BuildGlb(document: Record<string, unknown>, chunks: Array<{ type: numbe
 function SuffixAfterJson(glb: Uint8Array): Uint8Array {
     const view = new DataView(glb.buffer, glb.byteOffset, glb.byteLength);
     return glb.slice(20 + view.getUint32(12, true));
+}
+
+function JsonText(glb: Uint8Array): string {
+    const view = new DataView(glb.buffer, glb.byteOffset, glb.byteLength);
+    return new TextDecoder().decode(glb.subarray(20, 20 + view.getUint32(12, true)));
 }
 
 type RichDocument = IGlbDocument & {
@@ -74,6 +80,26 @@ function RichSourceDocument(): RichDocument {
 }
 
 describe("lossless GLB selection behavior authoring", () => {
+    it("keeps untouched numeric and escaped JSON tokens exactly as authored", () => {
+        const document = RichSourceDocument();
+        document.nodes[2].extensions = { KHR_node_visibility: { visible: true, extras: { auditId: "audit-9" } } };
+        const raw = JSON.stringify(document)
+            .replace('"stableAssetId":"maintenance-asset-9"', '"stableAssetId":9007199254740993')
+            .replace('"code":17', '"code":1e+2')
+            .replace('"auditId":"audit-9"', '"auditId":9007199254740995')
+            .replace('"generator":"asset-pipeline"', '"generator":"asset\\u002dpipeline"');
+        const source = BuildGlb(raw);
+
+        const authored = JsonText(PatchKhrSelectionRevealGlb(source, 1, 2));
+
+        expect(authored).toContain('"stableAssetId":9007199254740993');
+        expect(authored).toContain('"code":1e+2');
+        expect(authored).toContain('"auditId":9007199254740995');
+        expect(authored).toContain('"generator":"asset\\u002dpipeline"');
+        expect(JSON.parse(authored).nodes[2].extensions.KHR_node_visibility.visible).toBe(false);
+        expect(JSON.parse(authored).extensions.KHR_interactivity.graphs).toHaveLength(1);
+    });
+
     it("rejects animated assets because a behavior graph would take control of their animations", () => {
         const document = RichSourceDocument();
         document.animations = [{ name: "inspection", samplers: [], channels: [] }];
@@ -242,6 +268,41 @@ describe("lossless GLB selection behavior authoring", () => {
         (primitive as any)._internalMetadata.gltf.pointers.push("/nodes/2");
         expect(GetGlbNodeIndex(primitive, 3)).toBeUndefined();
         expect(GetGlbNodeIndex(parent, 2)).toBeUndefined();
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("does not assign a skinned primitive to an unrelated pointer on its reparented ancestor", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const ancestor = new TransformNode("assembly", scene);
+        const skinnedPrimitive = CreateBox("skinned part", {}, scene);
+        skinnedPrimitive.parent = ancestor;
+        skinnedPrimitive.skeleton = new Skeleton("rig", "rig", scene);
+        (ancestor as any)._internalMetadata = { gltf: { pointers: ["/nodes/0"] } };
+        (skinnedPrimitive as any)._internalMetadata = { gltf: { pointers: ["/meshes/0/primitives/0"] } };
+
+        expect(GetGlbNodeIndex(skinnedPrimitive, 3)).toBeUndefined();
+        (skinnedPrimitive as any)._internalMetadata.gltf.pointers.push("/nodes/2");
+        expect(GetGlbNodeIndex(skinnedPrimitive, 3)).toBe(2);
+
+        scene.dispose();
+        engine.dispose();
+    });
+
+    it("does not infer primitive ownership from a grandparent's glTF pointer", () => {
+        const engine = new NullEngine();
+        const scene = new Scene(engine);
+        const assembly = new TransformNode("assembly", scene);
+        const intermediary = new TransformNode("loader intermediary", scene);
+        const primitive = CreateBox("part", {}, scene);
+        intermediary.parent = assembly;
+        primitive.parent = intermediary;
+        (assembly as any)._internalMetadata = { gltf: { pointers: ["/nodes/0"] } };
+        (primitive as any)._internalMetadata = { gltf: { pointers: ["/meshes/0/primitives/0"] } };
+
+        expect(GetGlbNodeIndex(primitive, 3)).toBeUndefined();
 
         scene.dispose();
         engine.dispose();

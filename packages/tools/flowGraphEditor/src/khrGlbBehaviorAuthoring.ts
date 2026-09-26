@@ -1,4 +1,5 @@
 import { type Node } from "core/node";
+import { applyEdits, modify } from "jsonc-parser";
 import { BuildKhrSelectionRevealGraph } from "./khrSelectionRevealTemplate";
 
 const GlbMagic = 0x46546c67;
@@ -25,7 +26,7 @@ export interface IGlbDocument {
     [key: string]: unknown;
 }
 
-function _ReadGlb(bytes: Uint8Array): { document: IGlbDocument; suffixOffset: number } {
+function _ReadGlb(bytes: Uint8Array): { document: IGlbDocument; jsonText: string; suffixOffset: number } {
     if (bytes.byteLength < 20) {
         throw new Error("GLB header or JSON chunk header is incomplete.");
     }
@@ -56,15 +57,17 @@ function _ReadGlb(bytes: Uint8Array): { document: IGlbDocument; suffixOffset: nu
         offset += 8 + length;
     }
     let document: IGlbDocument;
+    let jsonText: string;
     try {
-        document = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes.subarray(20, suffixOffset))) as IGlbDocument;
+        jsonText = new TextDecoder("utf-8", { fatal: true }).decode(bytes.subarray(20, suffixOffset));
+        document = JSON.parse(jsonText) as IGlbDocument;
     } catch {
         throw new Error("The GLB JSON chunk is invalid.");
     }
     if (!document || typeof document !== "object" || Array.isArray(document) || document.asset?.version !== "2.0") {
         throw new Error("The GLB must contain a glTF 2.0 document.");
     }
-    return { document, suffixOffset };
+    return { document, jsonText, suffixOffset };
 }
 
 /**
@@ -77,13 +80,16 @@ export function ReadGlbDocument(bytes: Uint8Array): IGlbDocument {
 }
 
 /**
- * Finds the glTF node index recorded by the loader, including on a primitive's parent.
+ * Finds the glTF node index recorded by the loader, including on an ordinary primitive's immediate parent.
  * @param node loaded Babylon node
  * @param nodeCount number of nodes in the source glTF document
  * @returns the source glTF node index, if unambiguous
  */
 export function GetGlbNodeIndex(node: Node, nodeCount: number): number | undefined {
-    for (let current: Node | null = node; current; current = current.parent) {
+    for (const current of [node, node.parent]) {
+        if (!current || (current !== node && (node as Node & { skeleton?: unknown }).skeleton)) {
+            break;
+        }
         const pointers = (current as Node & { _internalMetadata?: { gltf?: { pointers?: unknown } } })._internalMetadata?.gltf?.pointers;
         if (!Array.isArray(pointers)) {
             continue;
@@ -111,7 +117,7 @@ export function GetGlbNodeIndex(node: Node, nodeCount: number): number | undefin
  * @returns the authored GLB bytes
  */
 export function PatchKhrSelectionRevealGlb(bytes: Uint8Array, triggerIndex: number, revealIndex: number): Uint8Array {
-    const { document, suffixOffset } = _ReadGlb(bytes);
+    const { document, jsonText: sourceJsonText, suffixOffset } = _ReadGlb(bytes);
     if (document.animations !== undefined && (!Array.isArray(document.animations) || document.animations.length > 0)) {
         throw new Error("Adding a behavior graph would stop the source GLB's animations from playing automatically; animated GLBs need explicit animation behavior.");
     }
@@ -216,28 +222,35 @@ export function PatchKhrSelectionRevealGlb(bytes: Uint8Array, triggerIndex: numb
             pending.push(parent);
         }
     }
-    document.extensions ??= {};
-    document.extensions.KHR_interactivity = BuildKhrSelectionRevealGraph(triggerIndex, revealIndex);
-    nodes[triggerIndex].extensions ??= {};
-    nodes[triggerIndex].extensions.KHR_node_selectability ??= { selectable: true };
-    nodes[revealIndex].extensions ??= {};
-    if (_IsRecord(revealVisibility)) {
-        revealVisibility.visible = false;
-    } else {
-        nodes[revealIndex].extensions.KHR_node_visibility = { visible: false };
+    // Edit only behavior-owned JSON paths. Parsing is used for validation, but serializing the
+    // parsed document would round large numeric extras and rewrite unrelated source tokens.
+    let jsonText = sourceJsonText;
+    const write = (path: Array<string | number>, value: unknown, isArrayInsertion = false) => {
+        jsonText = applyEdits(jsonText, modify(jsonText, path, value, { isArrayInsertion }));
+    };
+    write(["extensions", "KHR_interactivity"], BuildKhrSelectionRevealGraph(triggerIndex, revealIndex));
+    if (triggerSelectability === undefined) {
+        write(["nodes", triggerIndex, "extensions", "KHR_node_selectability"], { selectable: true });
+    }
+    if (revealVisibility === undefined) {
+        write(["nodes", revealIndex, "extensions", "KHR_node_visibility"], { visible: false });
+    } else if (revealVisibility.visible !== false) {
+        write(["nodes", revealIndex, "extensions", "KHR_node_visibility", "visible"], false);
     }
     for (const name of ["KHR_interactivity", "KHR_node_selectability", "KHR_node_visibility"]) {
-        document.extensionsUsed ??= [];
-        document.extensionsRequired ??= [];
-        if (!document.extensionsUsed.includes(name)) {
-            document.extensionsUsed.push(name);
-        }
-        if (!document.extensionsRequired.includes(name)) {
-            document.extensionsRequired.push(name);
+        for (const key of ["extensionsUsed", "extensionsRequired"] as const) {
+            const names = document[key];
+            if (!names) {
+                document[key] = [name];
+                write([key], [name]);
+            } else if (!names.includes(name)) {
+                write([key, names.length], name, true);
+                names.push(name);
+            }
         }
     }
 
-    const encoded = new TextEncoder().encode(JSON.stringify(document));
+    const encoded = new TextEncoder().encode(jsonText);
     const paddedLength = Math.ceil(encoded.length / 4) * 4;
     const suffix = bytes.subarray(suffixOffset);
     const totalLength = 20 + paddedLength + suffix.byteLength;
