@@ -253,6 +253,29 @@ function _ValidateKhrSelectionRevealDocument(document: IGlbDocument, triggerInde
             pending.push(parent);
         }
     }
+    // Setting the reveal node's local visibility cannot override a hidden ancestor.
+    // Keep every source ancestor unchanged and reject targets that cannot be revealed.
+    const pendingRevealAncestors = [...parents[revealIndex]];
+    const checkedRevealAncestors = new Set<number>();
+    while (pendingRevealAncestors.length > 0) {
+        const index = pendingRevealAncestors.pop()!;
+        if (checkedRevealAncestors.has(index)) {
+            continue;
+        }
+        checkedRevealAncestors.add(index);
+        const ancestorVisibility = nodes[index].extensions?.KHR_node_visibility;
+        if (
+            ancestorVisibility !== undefined &&
+            (!_IsRecord(ancestorVisibility) ||
+                (ancestorVisibility.visible !== undefined && typeof ancestorVisibility.visible !== "boolean") ||
+                ancestorVisibility.visible === false)
+        ) {
+            throw new Error("A reveal ancestor disables visibility.");
+        }
+        for (const parent of parents[index]) {
+            pendingRevealAncestors.push(parent);
+        }
+    }
 }
 
 function _WriteBehaviorGlb(
