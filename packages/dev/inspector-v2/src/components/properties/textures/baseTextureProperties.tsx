@@ -14,9 +14,10 @@ import { ChildWindow } from "shared-ui-components/fluent/hoc/childWindow";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { TextureMetadataProperties } from "shared-ui-components/fluent/hoc/propertyLines/textureMetadataProperties";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { TextureUpload } from "shared-ui-components/fluent/hoc/textureUpload";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
@@ -52,11 +53,7 @@ export const BaseTextureGeneralProperties: FunctionComponent<{ texture: BaseText
         <>
             <BoundProperty component={TextInputPropertyLine} label="Display Name" target={texture} propertyKey="displayName" />
             {internalUniqueId != null ? (
-                <TextureMetadataProperties
-                    model={{
-                        rows: [{ id: "InternalUniqueId", label: "Internal Unique ID", value: internalUniqueId, description: "The unique ID of the internal texture." }],
-                    }}
-                />
+                <StringifiedPropertyLine label="Internal Unique ID" description="The unique ID of the internal texture." value={internalUniqueId} />
             ) : (
                 <BooleanBadgePropertyLine label="Internal Unique ID" description="This texture has no internal texture." value={false} />
             )}
@@ -94,36 +91,24 @@ export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: B
 
     return (
         <>
-            <TextureMetadataProperties
-                model={{
-                    rows: [
-                        ...(texture.is2DArray ? [{ id: "Layers", label: "Layers", value: depth?.toString() ?? "?" }] : []),
-                        ...(texture.is3D ? [{ id: "Depth", label: "Depth", value: depth?.toString() ?? "?" }] : []),
-                        { id: "Format", label: "Format", value: displayFormat?.label ?? "unknown" },
-                        ...(!displayFormat?.hideType && !displayFormat?.compressed ? [{ id: "Type", label: "Type", value: displayType?.label ?? "unknown" }] : []),
-                        ...(!!displayFormat?.normalizable && !displayFormat?.compressed && displayType?.normalizable != undefined
-                            ? [{ id: "Normalized", label: "Normalized", value: displayType.normalizable }]
-                            : []),
-                        { id: "Compressed", label: "Compressed", value: displayFormat?.compressed ?? false },
-                        { id: "SrgbBuffers", label: "sRGB Buffers", value: useSRGBBuffer ?? false },
-                    ],
-                }}
-            />
+            {texture.is2DArray && <TextPropertyLine label="Layers" value={depth?.toString() ?? "?"} />}
+            {texture.is3D && <TextPropertyLine label="Depth" value={depth?.toString() ?? "?"} />}
+            <TextPropertyLine label="Format" value={displayFormat?.label ?? "unknown"} />
+            {!displayFormat?.hideType && !displayFormat?.compressed && <TextPropertyLine label="Type" value={displayType?.label ?? "unknown"} />}
+            {!!displayFormat?.normalizable && !displayFormat?.compressed && displayType?.normalizable != undefined && (
+                <BooleanBadgePropertyLine label="Normalized" value={displayType.normalizable} />
+            )}
+            <BooleanBadgePropertyLine label="Compressed" value={displayFormat?.compressed ?? false} />
+            <BooleanBadgePropertyLine label="sRGB Buffers" value={useSRGBBuffer ?? false} />
             <BoundProperty component={BooleanBadgePropertyLine} label="Gamma Space" target={texture} propertyKey="gammaSpace" />
             <BoundProperty component={SwitchPropertyLine} label="Has Alpha" target={texture} propertyKey="hasAlpha" />
             <BoundProperty component={SwitchPropertyLine} label="Alpha from RGB" target={texture} propertyKey="getAlphaFromRGB" />
-            <TextureMetadataProperties
-                model={{
-                    rows: [
-                        { id: "Is3d", label: "3D", value: texture.is3D },
-                        { id: "Is2dArray", label: "2D Array", value: texture.is2DArray },
-                        { id: "IsCube", label: "Cube", value: texture.isCube },
-                        { id: "IsRenderTarget", label: "Render Target", value: texture.isRenderTarget },
-                        { id: "HasMipmaps", label: "Mipmaps", value: !texture.noMipmap },
-                        { id: "Samples", label: "Samples", value: samples.toString() },
-                    ],
-                }}
-            />
+            <BooleanBadgePropertyLine label="3D" value={texture.is3D} />
+            <BooleanBadgePropertyLine label="2D Array" value={texture.is2DArray} />
+            <BooleanBadgePropertyLine label="Cube" value={texture.isCube} />
+            <BooleanBadgePropertyLine label="Render Target" value={texture.isRenderTarget} />
+            <BooleanBadgePropertyLine label="Mipmaps" value={!texture.noMipmap} />
+            <TextPropertyLine label="Samples" value={samples.toString()} />
             <BoundProperty component={SyncedSliderPropertyLine} label="UV Set" target={texture} propertyKey="coordinatesIndex" min={0} max={3} step={1} />
             <BoundProperty component={NumberDropdownPropertyLine} label="Mode" target={texture} propertyKey="coordinatesMode" options={CoordinatesMode} />
             <BoundProperty component={SyncedSliderPropertyLine} label="Level" target={texture} propertyKey="level" min={0} max={2} step={0.01} />
