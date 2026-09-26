@@ -846,7 +846,8 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 try {
                     const document = ReadGlbDocument(new Uint8Array(await file.arrayBuffer()));
                     if (Array.isArray(document.nodes)) {
-                        sourceGlb = { file, companionFiles, nodeCount: document.nodes.length, authoredBehavior, externalResourceUris: GetGlbExternalResourceUris(document) };
+                        const hasAnimations = document.animations !== undefined && (!Array.isArray(document.animations) || document.animations.length > 0);
+                        sourceGlb = { file, companionFiles, nodeCount: document.nodes.length, hasAnimations, authoredBehavior, externalResourceUris: GetGlbExternalResourceUris(document) };
                     }
                 } catch {
                     // The preview can still load files outside this patcher's supported GLB framing.
@@ -1329,15 +1330,19 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             sourceGlb && this.props.globalState.sceneSource === "file"
                 ? `${mesh.name || "Mesh"} (glTF node ${GetGlbNodeIndex(mesh, sourceGlb.nodeCount)})`
                 : `${mesh.name || "Mesh"} (#${mesh.uniqueId})`;
-        const canCreate = this._canCreateKhrBehavior();
+        const sourceHasAnimations = this.props.globalState.sceneSource === "file" && !!sourceGlb?.hasAnimations;
+        const canOpenAuthoring = this._canCreateKhrBehavior();
+        const canCreate = canOpenAuthoring && !sourceHasAnimations;
         const createTitle =
             this.props.globalState.sceneSource === "file" && !sourceGlb
                 ? "Drop a GLB to add a behavior without changing its source scene data"
                 : sourceGlb?.authoredBehavior
                   ? "This GLB already has an authored behavior"
-                  : canCreate
-                    ? "Create a glTF selection behavior"
-                    : "Start with one empty graph to create a glTF behavior";
+                  : sourceHasAnimations
+                    ? "Animated GLBs need explicit animation behavior"
+                    : canCreate
+                      ? "Create a glTF selection behavior"
+                      : "Start with one empty graph to create a glTF behavior";
 
         return (
             <div className={classes.container}>
@@ -1356,7 +1361,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                             {isLoading ? "..." : "Load"}
                         </Button>
                         {ctx?.ownsScene && !this.props.globalState.hasImportScopedRuntime && (
-                            <Button size="small" title={createTitle} onClick={() => this.setState({ showAuthoringDialog: true })} disabled={isLoading || !canCreate}>
+                            <Button size="small" title={createTitle} onClick={() => this.setState({ showAuthoringDialog: true })} disabled={isLoading || !canOpenAuthoring}>
                                 New behavior
                             </Button>
                         )}
@@ -1416,6 +1421,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                                         ? "Select the first part, then the second. The cues appear as you progress; selecting Reset starts over."
                                         : "Selecting the trigger will reveal the second mesh."}
                                 </Body1>
+                                {sourceHasAnimations && (
+                                    <Body1>This GLB has animations. Adding a graph would stop automatic playback; animated GLBs need explicit animation behavior.</Body1>
+                                )}
                                 <Body1>
                                     {this.props.globalState.sceneSource === "file"
                                         ? "The source GLB is patched and downloaded. Its original scene data and binary chunks are retained."

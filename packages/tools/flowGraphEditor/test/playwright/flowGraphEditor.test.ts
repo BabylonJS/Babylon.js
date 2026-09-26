@@ -2563,12 +2563,12 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         let downloads = 0;
         page.on("download", () => downloads++);
         await page.getByRole("button", { name: "New behavior" }).click();
+        await expect(page.getByText(/This GLB has animations.*explicit animation behavior/i)).toBeVisible();
         await page.getByRole("combobox", { name: "Trigger mesh" }).click();
         await page.getByRole("option", { name: /glTF node 1/ }).click();
         await page.getByRole("combobox", { name: "Mesh to reveal" }).click();
         await page.getByRole("option", { name: /glTF node 2/ }).click();
-        await page.getByRole("button", { name: "Create behavior" }).click();
-        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("animated GLBs need explicit animation behavior");
+        await expect(page.getByRole("button", { name: "Create behavior" })).toBeDisabled();
         await page.screenshot({ path: testInfo.outputPath("khr-animated-glb-unsupported.png"), fullPage: true });
         expect(downloads).toBe(0);
         expect(await GetSceneContextSnapshot(page)).toEqual(originalScene);
