@@ -98,6 +98,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
     /** @internal */
     public _emitterWorldMatrix: Matrix;
+
+    /** Owned translation matrix for the vector-emitter path, so a live mesh world matrix is never overwritten in place */
+    private _emitterTranslationMatrix: Matrix;
     /** @internal */
     public _emitterInverseWorldMatrix: Matrix = Matrix.Identity();
 
@@ -179,6 +182,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     public _noiseTextureSize: Nullable<ISize> = null;
     /** @internal */
     public _noiseTextureData: Nullable<Uint8Array> = null;
+    private _noiseTextureFetchInFlight = false;
     private _particles = new Array<Particle>();
     private _epsilon: number;
     private _capacity: number;
@@ -700,13 +704,25 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         // Update
         this.updateFunction = (particles: Particle[]): void => {
-            if (this.noiseTexture) {
-                // We need to get texture data back to CPU
+            if (this.noiseTexture && !this._noiseTextureFetchInFlight) {
+                // We need to get texture data back to CPU. Only issue a new readback when the
+                // previous one has resolved to avoid piling up a promise per frame.
                 this._noiseTextureSize = this.noiseTexture.getSize();
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-                this.noiseTexture.getContent()?.then((data) => {
-                    this._noiseTextureData = data as Uint8Array;
-                });
+                const noiseContent = this.noiseTexture.getContent();
+                if (noiseContent) {
+                    this._noiseTextureFetchInFlight = true;
+                    // eslint-disable-next-line github/no-then
+                    noiseContent.then(
+                        (data) => {
+                            this._noiseTextureData = data as Uint8Array;
+                            this._noiseTextureFetchInFlight = false;
+                        },
+                        () => {
+                            // Allow a retry next frame.
+                            this._noiseTextureFetchInFlight = false;
+                        }
+                    );
+                }
             }
 
             const sameParticleArray = particles === this._particles;
@@ -750,7 +766,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                     // Recycle by swapping with last particle
                     this._emitFromParticle(particle);
                     if (particle._properties.attachedSubEmitters) {
-                        for (const subEmitter of particle._properties.attachedSubEmitters) {
+                        const attachedSubEmitters = particle._properties.attachedSubEmitters;
+                        for (let subEmitterIndex = 0; subEmitterIndex < attachedSubEmitters.length; subEmitterIndex++) {
+                            const subEmitter = attachedSubEmitters[subEmitterIndex];
                             subEmitter.particleSystem.disposeOnStop = true;
                             subEmitter.particleSystem.stop();
                         }
@@ -1791,7 +1809,12 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._emitterWorldMatrix = emitterMesh.getWorldMatrix();
         } else {
             const emitterPosition = <Vector3>this.emitter;
-            this._emitterWorldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
+            // Owned matrix: _emitterWorldMatrix may alias a live mesh world matrix after an emitter switch.
+            if (!this._emitterTranslationMatrix) {
+                this._emitterTranslationMatrix = new Matrix();
+            }
+            Matrix.TranslationToRef(emitterPosition.x, emitterPosition.y, emitterPosition.z, this._emitterTranslationMatrix);
+            this._emitterWorldMatrix = this._emitterTranslationMatrix;
         }
 
         this._emitterWorldMatrix.invertToRef(this._emitterInverseWorldMatrix);
