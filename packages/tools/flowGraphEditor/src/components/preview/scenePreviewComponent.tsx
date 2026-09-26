@@ -35,6 +35,7 @@ import { type ISerializedFlowGraphBlock } from "core/FlowGraph/typeDefinitions";
 import { IsFlowGraphEventBlockName } from "../../graphSystem/blockTypeColors";
 import { GetFlowGraphBlockNodeId } from "../../graphSystem/blockNodeData";
 import { CreateKhrSelectionRevealTemplate } from "../../khrSelectionRevealTemplate";
+import { GetGlbNodeIndex, PatchKhrSelectionRevealGlb, ReadGlbDocument } from "../../khrGlbBehaviorAuthoring";
 
 interface IScenePreviewComponentProps {
     globalState: GlobalState;
@@ -454,6 +455,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         if (this.props.globalState.sceneContext === sceneContext) {
             this.props.globalState.sceneContext = null;
             this.props.globalState.sceneSource = null;
+            this.props.globalState.sourceGlb = null;
         }
     }
 
@@ -517,6 +519,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const sceneContext = new SceneContext(scene, ownsScene);
         this.props.globalState.sceneContext = sceneContext;
         this.props.globalState.sceneSource = source;
+        this.props.globalState.sourceGlb = null;
         this.props.globalState.onSceneContextChanged.notifyObservers(sceneContext);
         this.setState({ sceneObjectCount: sceneContext.entries.length });
         return sceneContext;
@@ -722,10 +725,12 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
      * @param file - the main scene file
      * @param companionFiles - additional files dropped alongside (bin, textures)
      * @param preparedByEditor allows the editor's template preparation to hand off a pending load
+     * @param authoredBehavior whether this file was patched by the source-preserving authoring action
+     * @returns whether the file loaded successfully
      */
-    private async _loadFileAsync(file: File, companionFiles?: File[], preparedByEditor = false) {
+    private async _loadFileAsync(file: File, companionFiles?: File[], preparedByEditor = false, authoredBehavior = false): Promise<boolean> {
         if (this.state.isLoading && !preparedByEditor) {
-            return; // Prevent concurrent loads
+            return false; // Prevent concurrent loads
         }
         this.setState({ isLoading: true, error: "", showAuthoringDialog: false });
 
@@ -821,6 +826,17 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 }
             }
 
+            let sourceGlb: GlobalState["sourceGlb"] = null;
+            if (/\.glb$/i.test(file.name)) {
+                try {
+                    const document = ReadGlbDocument(new Uint8Array(await file.arrayBuffer()));
+                    if (Array.isArray(document.nodes)) {
+                        sourceGlb = { file, companionFiles, nodeCount: document.nodes.length, authoredBehavior };
+                    }
+                } catch {
+                    // The preview can still load files outside this patcher's supported GLB framing.
+                }
+            }
             this._setupEngineRenderLoop(scene, engine);
             if (
                 !stagedGraphState &&
@@ -833,6 +849,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             }
             this.props.globalState.sceneContext = stagedSceneContext;
             this.props.globalState.sceneSource = "file";
+            this.props.globalState.sourceGlb = sourceGlb;
             this.props.globalState.snippetId = "";
             if (stagedGraphState) {
                 SerializationTools.ApplyDeserializedState(stagedGraphState, this.props.globalState);
@@ -859,6 +876,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
             stagedEngine = null;
             this.setState({ isLoading: false, snippetId: "" });
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Loaded "${file.name}" with ${sceneObjectCount} scene objects`, false));
+            return true;
         } catch (err: any) {
             stagedGraphState?.coordinator.dispose();
             if (stagedSceneContext) {
@@ -881,6 +899,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                 error: err.message || "Failed to load file",
             });
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Failed to load file: ${err.message}`, true));
+            return false;
         }
     }
 
@@ -1138,7 +1157,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const graph = coordinator?.flowGraphs[0];
         if (
             !globalState.sceneContext?.ownsScene ||
-            globalState.sceneSource === "file" ||
+            (globalState.sceneSource === "file" && (!globalState.sourceGlb || globalState.sourceGlb.authoredBehavior)) ||
             globalState.hasImportScopedRuntime ||
             !graph ||
             coordinator?.flowGraphs.length !== 1 ||
@@ -1164,6 +1183,30 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
 
         this.setState({ isLoading: true, error: "", showAuthoringDialog: false });
         try {
+            const sourceGlb = this.props.globalState.sourceGlb;
+            if (this.props.globalState.sceneSource === "file" && sourceGlb) {
+                const triggerIndex = GetGlbNodeIndex(trigger, sourceGlb.nodeCount);
+                const revealIndex = GetGlbNodeIndex(reveal, sourceGlb.nodeCount);
+                if (triggerIndex === undefined || revealIndex === undefined) {
+                    throw new Error("Both meshes must resolve to nodes in the source GLB.");
+                }
+                const authoredBytes = PatchKhrSelectionRevealGlb(new Uint8Array(await sourceGlb.file.arrayBuffer()), triggerIndex, revealIndex);
+                const fileName = sourceGlb.file.name.replace(/\.glb$/i, "-behavior.glb");
+                const authoredFile = new File([new Uint8Array(authoredBytes)], fileName, { type: "model/gltf-binary" });
+                if (!(await this._loadFileAsync(authoredFile, sourceGlb.companionFiles, true, true))) {
+                    throw new Error("The authored GLB could not be loaded for preview.");
+                }
+                const downloadUrl = URL.createObjectURL(authoredFile);
+                const link = this.props.globalState.scenePreviewCanvas!.ownerDocument.createElement("a");
+                link.href = downloadUrl;
+                link.download = fileName;
+                this.props.globalState.scenePreviewCanvas!.ownerDocument.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(downloadUrl), 60_000);
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(`Downloaded source-preserving ${fileName}`, false));
+                return;
+            }
             const serializer = (globalThis as any).BABYLON?.GLTF2Export;
             if (!serializer) {
                 throw new Error("GLTF2Export is not available.");
@@ -1188,17 +1231,38 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
         const { snippetId, isLoading, error, sceneObjectCount } = this.state;
         const ctx = this.props.globalState.sceneContext;
         const isHostMode = this.props.globalState.sceneSource === "host";
-        const meshes = ctx?.meshes.filter((mesh) => !mesh.isDisposed() && mesh.getTotalVertices() > 0) ?? [];
+        const sourceGlb = this.props.globalState.sourceGlb;
+        const seenNodeIndices = new Set<number>();
+        const meshes =
+            ctx?.meshes.filter((mesh) => {
+                if (mesh.isDisposed() || mesh.getTotalVertices() === 0) {
+                    return false;
+                }
+                if (this.props.globalState.sceneSource !== "file" || !sourceGlb) {
+                    return true;
+                }
+                const index = GetGlbNodeIndex(mesh, sourceGlb.nodeCount);
+                if (index === undefined || seenNodeIndices.has(index)) {
+                    return false;
+                }
+                seenNodeIndices.add(index);
+                return true;
+            }) ?? [];
         const trigger = meshes.find((mesh) => String(mesh.uniqueId) === this.state.triggerMeshId);
         const reveal = meshes.find((mesh) => String(mesh.uniqueId) === this.state.revealMeshId);
-        const meshLabel = (mesh: (typeof meshes)[number]) => `${mesh.name || "Mesh"} (#${mesh.uniqueId})`;
+        const meshLabel = (mesh: (typeof meshes)[number]) =>
+            sourceGlb && this.props.globalState.sceneSource === "file"
+                ? `${mesh.name || "Mesh"} (glTF node ${GetGlbNodeIndex(mesh, sourceGlb.nodeCount)})`
+                : `${mesh.name || "Mesh"} (#${mesh.uniqueId})`;
         const canCreate = this._canCreateKhrSelectionReveal();
         const createTitle =
-            this.props.globalState.sceneSource === "file"
-                ? "Imported scene files cannot be authored yet; re-export may omit their source data and extensions"
-                : canCreate
-                  ? "Create a glTF selection behavior"
-                  : "Start with one empty graph to create a glTF behavior";
+            this.props.globalState.sceneSource === "file" && !sourceGlb
+                ? "Drop a GLB to add a behavior without changing its source scene data"
+                : sourceGlb?.authoredBehavior
+                  ? "This GLB already has an authored behavior"
+                  : canCreate
+                    ? "Create a glTF selection behavior"
+                    : "Start with one empty graph to create a glTF behavior";
 
         return (
             <div className={classes.container}>
@@ -1261,8 +1325,9 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                             <DialogContent className={classes.authoring}>
                                 <Body1>Selecting the trigger will reveal the second mesh.</Body1>
                                 <Body1>
-                                    The preview scene is exported and reloaded as glTF; Babylon-only scene features may be omitted. Imported scene files cannot be authored here
-                                    yet.
+                                    {this.props.globalState.sceneSource === "file"
+                                        ? "The source GLB is patched and downloaded. Its original scene data and binary chunks are retained."
+                                        : "The preview scene is exported and reloaded as glTF; Babylon-only scene features may be omitted."}
                                 </Body1>
                                 <Label htmlFor="khr-trigger-mesh">Trigger mesh</Label>
                                 <Dropdown
@@ -1308,6 +1373,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                                         !reveal ||
                                         trigger === reveal ||
                                         trigger.isDescendantOf(reveal) ||
+                                        (!!sourceGlb && GetGlbNodeIndex(trigger, sourceGlb.nodeCount) === GetGlbNodeIndex(reveal, sourceGlb.nodeCount)) ||
                                         !trigger.isEnabled() ||
                                         !trigger.isVisible ||
                                         !trigger.isPickable ||

@@ -3,6 +3,53 @@ import { readFileSync } from "fs";
 import { FlowGraphEditorPage } from "./fge.utils";
 import { AllFlowGraphBlocks } from "../../src/allBlockNames";
 
+function BuildExistingGlbFixture() {
+    const document = {
+        asset: { version: "2.0", generator: "maintenance-asset-pipeline" },
+        scene: 0,
+        scenes: [{ name: "Assembly", nodes: [0] }],
+        nodes: [
+            { name: "assembly", children: [1, 2], extras: { stableId: "assembly-1" } },
+            { name: "part", mesh: 0, extras: { stableId: "trigger-17" }, extensions: { EXT_vendor_meta: { code: 17 } } },
+            { name: "part", mesh: 0, translation: [2, 0, 0], extras: { stableId: "target-23" } },
+        ],
+        meshes: [
+            {
+                name: "part geometry",
+                primitives: [{ attributes: { POSITION: 0 }, material: 0, extensions: { KHR_materials_variants: { mappings: [{ material: 1, variants: [0] }] } } }],
+            },
+        ],
+        buffers: [{ byteLength: 36 }],
+        bufferViews: [{ buffer: 0, byteLength: 36 }],
+        accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [0, 0, 0], max: [1, 1, 0] }],
+        materials: [{ name: "Base" }, { name: "Service" }],
+        images: [{ name: "resource-ref", uri: "data:image/png;base64,iVBORw0KGgo=" }],
+        extensionsUsed: ["KHR_materials_variants", "EXT_vendor_meta"],
+        extensions: { KHR_materials_variants: { variants: [{ name: "Service" }] }, EXT_vendor_meta: { opaque: [1, 2, 3] } },
+        extras: { stableAssetId: "maintenance-asset-9" },
+    };
+    const json = Buffer.from(JSON.stringify(document));
+    const jsonLength = Math.ceil(json.length / 4) * 4;
+    const bin = Buffer.from(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]).buffer);
+    const vendor = Buffer.from([10, 20, 30, 40]);
+    const bytes = Buffer.alloc(20 + jsonLength + 8 + bin.length + 8 + vendor.length, 0x20);
+    bytes.writeUInt32LE(0x46546c67, 0);
+    bytes.writeUInt32LE(2, 4);
+    bytes.writeUInt32LE(bytes.length, 8);
+    bytes.writeUInt32LE(jsonLength, 12);
+    bytes.writeUInt32LE(0x4e4f534a, 16);
+    json.copy(bytes, 20);
+    let offset = 20 + jsonLength;
+    bytes.writeUInt32LE(bin.length, offset);
+    bytes.writeUInt32LE(0x004e4942, offset + 4);
+    bin.copy(bytes, offset + 8);
+    offset += 8 + bin.length;
+    bytes.writeUInt32LE(vendor.length, offset);
+    bytes.writeUInt32LE(0x31525458, offset + 4);
+    vendor.copy(bytes, offset + 8);
+    return { bytes, document };
+}
+
 // The FGE starts with an empty graph — no default blocks on the canvas.
 
 function CountSerializedConnections(serializedGraph: any): number {
@@ -2191,6 +2238,93 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect.poll(async () => await nodeState()).toMatchObject({ primitiveVisible: false, primitivePickable: false, primitiveHoverable: false });
         await ClickGraphControl(page, "Reset");
         await expect.poll(async () => await nodeState()).toMatchObject({ primitiveVisible: true, primitivePickable: true, primitiveHoverable: true });
+    });
+
+    test("adds a behavior to an existing GLB without reserializing its scene or resources", async ({ page }, testInfo) => {
+        test.setTimeout(90_000);
+        const { bytes, document } = BuildExistingGlbFixture();
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+
+        await page.evaluate(
+            (data) => {
+                const file = new File([new Uint8Array(data)], "existing-assembly.glb", { type: "model/gltf-binary" });
+                const transfer = new DataTransfer();
+                transfer.items.add(file);
+                const target = document.querySelector("canvas") ?? document.body;
+                target.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            [...bytes]
+        );
+        await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+        await expect(page.getByRole("button", { name: "New behavior" })).toBeEnabled();
+        await page.getByRole("button", { name: "New behavior" }).click();
+        const triggerSelect = page.getByRole("combobox", { name: "Trigger mesh" });
+        const revealSelect = page.getByRole("combobox", { name: "Mesh to reveal" });
+        await triggerSelect.click();
+        await page.getByRole("option", { name: /glTF node 1/ }).click();
+        await revealSelect.click();
+        await page.getByRole("option", { name: /glTF node 2/ }).click();
+        await expect(page.getByRole("button", { name: "Create behavior" })).toBeEnabled();
+        await page.screenshot({ path: testInfo.outputPath("khr-existing-glb-authoring.png"), fullPage: true });
+        const downloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename() === "existing-assembly-behavior.glb");
+        await page.getByRole("button", { name: "Create behavior" }).click();
+        const download = await downloadPromise;
+        const downloadPath = await download.path();
+        expect(downloadPath).not.toBeNull();
+        const authoredBytes = readFileSync(downloadPath!);
+        const jsonLength = authoredBytes.readUInt32LE(12);
+        const authored = JSON.parse(authoredBytes.subarray(20, 20 + jsonLength).toString("utf8"));
+        expect(authoredBytes.subarray(20 + jsonLength)).toEqual(bytes.subarray(20 + bytes.readUInt32LE(12)));
+        expect(authored.extensions.KHR_interactivity.graphs[0].nodes[0].configuration.nodeIndex.value).toEqual([1]);
+        expect(authored.extensions.KHR_interactivity.graphs[0].nodes[1].configuration.pointer.value).toEqual(["/nodes/2/extensions/KHR_node_visibility/visible"]);
+        delete authored.extensions.KHR_interactivity;
+        delete authored.nodes[1].extensions.KHR_node_selectability;
+        delete authored.nodes[2].extensions;
+        authored.extensionsUsed = document.extensionsUsed;
+        delete authored.extensionsRequired;
+        expect(authored).toEqual(document);
+        expect(await StrictImportKhrInteractivityAsync(page, "strict-existing-assembly.glb", authoredBytes)).toEqual({ graphCount: 1, errorCount: 0 });
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Select to reveal"]);
+        await expect(page.getByRole("button", { name: "Export KHR GLB", exact: true })).toBeDisabled();
+        await page.screenshot({ path: testInfo.outputPath("khr-existing-glb-authored.png"), fullPage: true });
+    });
+
+    test("authors an existing GLB with touch input on a mobile viewport", async ({ browser }, testInfo) => {
+        test.setTimeout(90_000);
+        const context = await browser.newContext({ ...devices["Pixel 7"], acceptDownloads: true });
+        try {
+            const page = await context.newPage();
+            const fge = new FlowGraphEditorPage(page);
+            await fge.goto({ local: true });
+            await fge.assertEditorReady();
+            const { bytes } = BuildExistingGlbFixture();
+            await page.evaluate(
+                (data) => {
+                    const file = new File([new Uint8Array(data)], "mobile-assembly.glb", { type: "model/gltf-binary" });
+                    const transfer = new DataTransfer();
+                    transfer.items.add(file);
+                    (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+                },
+                [...bytes]
+            );
+            await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+            await expect(page.getByRole("button", { name: "New behavior" })).toBeEnabled();
+            await page.getByRole("button", { name: "New behavior" }).tap();
+            await page.getByRole("combobox", { name: "Trigger mesh" }).tap();
+            await page.getByRole("option", { name: /glTF node 1/ }).tap();
+            await page.getByRole("combobox", { name: "Mesh to reveal" }).tap();
+            await page.getByRole("option", { name: /glTF node 2/ }).tap();
+            await expect(page.getByRole("button", { name: "Create behavior" })).toBeEnabled();
+            await page.screenshot({ path: testInfo.outputPath("khr-existing-glb-touch.png"), fullPage: true });
+            const downloadPromise = page.waitForEvent("download");
+            await page.getByRole("button", { name: "Create behavior" }).tap();
+            expect((await downloadPromise).suggestedFilename()).toBe("mobile-assembly-behavior.glb");
+            await expect.poll(async () => await fge.getGraphNames()).toEqual(["Select to reveal"]);
+        } finally {
+            await context.close();
+        }
     });
 
     test("authors a select-to-reveal KHR_interactivity graph from an empty scene", async ({ page }, testInfo) => {

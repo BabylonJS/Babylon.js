@@ -939,6 +939,8 @@ export class GlobalState {
     scenePreviewCanvas: Nullable<HTMLCanvasElement> = null;
     /** The source used to create the current preview scene, if known. */
     sceneSource: "default" | "snippet" | "file" | "host" | null = null;
+    /** Original GLB for source-preserving behavior authoring; cleared when the preview source changes. */
+    sourceGlb: { file: File; companionFiles?: File[]; nodeCount: number; authoredBehavior: boolean } | null = null;
     /** Observable triggered when the scene context changes (snippet loaded/disposed) */
     onSceneContextChanged = new Observable<Nullable<SceneContext>>();
 
