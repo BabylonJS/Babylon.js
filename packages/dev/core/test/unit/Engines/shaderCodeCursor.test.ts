@@ -40,6 +40,14 @@ describe("ShaderCodeCursor", () => {
         expect(cursorLines("    #define OPEN (\n;\nfloat b = 2.0;")).toEqual(["#define OPEN (", "float b = 2.0;"]);
     });
 
+    it("keeps a for loop header that follows a statement closed on this line", () => {
+        expect(cursorLines("consume(\nvalue); for (;;) { break; }")).toEqual(["consume(", "value);", "for (;;", ") { break;", "}"]);
+    });
+
+    it("keeps a for loop header that follows a block comment closed on this line", () => {
+        expect(cursorLines("/*\n * // */ for (;;) { break; }")).toEqual(["/*", "* // */ for (;;", ") { break;", "}"]);
+    });
+
     it("still drops empty statements outside parentheses", () => {
         expect(cursorLines("float a = 1.0;; float b = 2.0;")).toEqual(["float a = 1.0;", "float b = 2.0;"]);
     });

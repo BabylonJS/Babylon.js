@@ -1,3 +1,9 @@
+interface IShaderCodeScan {
+    parenthesisDepth: number;
+    inBlockComment: boolean;
+    inLineComment: boolean;
+}
+
 /** @internal */
 export class ShaderCodeCursor {
     private _lines: string[] = [];
@@ -13,12 +19,19 @@ export class ShaderCodeCursor {
 
     set lines(value: string[]) {
         this._lines.length = 0;
+        let inBlockComment = false;
 
         for (const line of value) {
             // Skip empty lines
             if (!line || line === "\r") {
                 continue;
             }
+
+            // Block comments can span lines, so track them across every line
+            const startsInBlockComment = inBlockComment;
+            const lineScan: IShaderCodeScan = { parenthesisDepth: 0, inBlockComment: startsInBlockComment, inLineComment: false };
+            ShaderCodeCursor._ScanCode(lineScan, line);
+            inBlockComment = lineScan.inBlockComment;
 
             // Prevent removing line break in macros.
             if (line[0] === "#") {
@@ -53,8 +66,8 @@ export class ShaderCodeCursor {
             } else {
                 // Semicolon in the middle of the line
                 const split = line.split(";");
-                // Only this line is scanned, so a kept semicolon always goes back right after the fragment it followed in the source.
-                const scan = { parenthesisDepth: 0, inBlockComment: false, inLineComment: false };
+                // Parentheses are only counted in this line, so a kept semicolon always goes back right after the fragment it followed in the source.
+                const scan = { parenthesisDepth: 0, inBlockComment: startsInBlockComment, inLineComment: false };
 
                 for (let index = 0; index < split.length; index++) {
                     let subLine = split[index];
@@ -78,7 +91,7 @@ export class ShaderCodeCursor {
     }
 
     // Updates the parenthesis depth with a fragment of a line, skipping comments.
-    private static _ScanCode(scan: { parenthesisDepth: number; inBlockComment: boolean; inLineComment: boolean }, code: string): void {
+    private static _ScanCode(scan: IShaderCodeScan, code: string): void {
         for (let i = 0; i < code.length && !scan.inLineComment; i++) {
             const char = code[i];
             if (scan.inBlockComment) {
@@ -94,7 +107,8 @@ export class ShaderCodeCursor {
             } else if (char === "(") {
                 scan.parenthesisDepth++;
             } else if (char === ")") {
-                scan.parenthesisDepth--;
+                // A ")" closing a parenthesis opened on an earlier line ends that statement: start again from 0
+                scan.parenthesisDepth = Math.max(0, scan.parenthesisDepth - 1);
             }
         }
     }
