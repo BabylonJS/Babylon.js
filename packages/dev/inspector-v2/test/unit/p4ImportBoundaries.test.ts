@@ -94,11 +94,14 @@ describe("P4 Inspector import boundaries", () => {
 
     it("keeps native BJS bindings and Lite derived fields independent", () => {
         const source = ReadInspectorSource("components/properties/materials/standardMaterialProperties.tsx");
+        const textureRow = ReadInspectorSource("components/properties/materials/materialTextureDebugPropertyLine.tsx");
         const liteSource = ReadInspectorSource("lite/services/panes/properties/materialAdapters/materialAdapterCore.tsx");
         expect(source).toContain('component={Color3PropertyLine} label="Diffuse Color"');
         expect(source).toContain('component={SyncedSliderPropertyLine} label="Specular Power"');
         expect(source).not.toContain("MaterialPropertySection");
         expect(source).not.toContain("@babylonjs/lite");
+        expect(textureRow).toContain("<TextureSelector {...textureProps} />");
+        expect(textureRow).not.toContain("MaterialTextureBindingPropertyLine");
         expect(liteSource).toContain("component={Color3PropertyLine}");
         expect(liteSource).toContain("component={TextPropertyLine}");
         expect(liteSource).toContain("DerivedProperty");

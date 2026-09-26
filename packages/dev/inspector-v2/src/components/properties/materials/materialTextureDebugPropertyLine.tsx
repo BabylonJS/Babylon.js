@@ -6,9 +6,8 @@ import { type BaseTexture } from "core/Materials/Textures/baseTexture";
 import { type Nullable } from "core/types";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
-import { type PropertyLineProps } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
-import { MaterialTextureBindingPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/materialTextureBindingPropertyLine";
-import { type TextureSelectorProps } from "shared-ui-components/fluent/primitives/textureSelector";
+import { type PropertyLineProps, PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { type TextureSelectorProps, TextureSelector } from "shared-ui-components/fluent/primitives/textureSelector";
 import { Switch } from "shared-ui-components/fluent/primitives/switch";
 
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
@@ -148,25 +147,8 @@ export const MaterialTextureDebugPropertyLine: FunctionComponent<MaterialTexture
     ) : undefined;
 
     return (
-        <MaterialTextureBindingPropertyLine
-            model={{
-                id: textureProps.uniqueId ?? textureProps.label,
-                label: textureProps.label,
-                value: texture,
-                candidates: textureProps.scene.textures,
-                getDisplayName: (candidate) => candidate.displayName || candidate.name || `${candidate.getClassName() || "Unnamed Texture"} (${candidate.uniqueId})`,
-                getKind: (candidate) => (candidate.isCube ? "cube" : "2d"),
-                getId: (candidate) => candidate.uniqueId.toString(),
-                acceptedKinds: textureProps.cubeOnly ? ["cube"] : ["2d", "cube"],
-                write: textureProps.onChange
-                    ? {
-                          assign: textureProps.onChange,
-                          clear: textureProps.defaultValue !== undefined ? () => textureProps.onChange?.(textureProps.defaultValue ?? null) : undefined,
-                      }
-                    : undefined,
-                navigate: textureProps.onLink,
-                expandedContent,
-            }}
-        />
+        <PropertyLine {...textureProps} expandedContent={expandedContent}>
+            <TextureSelector {...textureProps} />
+        </PropertyLine>
     );
 };
