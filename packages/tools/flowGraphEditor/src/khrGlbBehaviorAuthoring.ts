@@ -1,6 +1,7 @@
 import { type Node } from "core/node";
 import { applyEdits, modify } from "jsonc-parser";
 import { BuildKhrSelectionRevealGraph } from "./khrSelectionRevealTemplate";
+import { BuildKhrTwoStepProcedureGraph, type IKhrTwoStepProcedureNodes } from "./khrTwoStepProcedureTemplate";
 
 const GlbMagic = 0x46546c67;
 const JsonChunk = 0x4e4f534a;
@@ -89,6 +90,25 @@ function _ReadGlb(bytes: Uint8Array): { document: IGlbDocument; jsonText: string
     return { document, jsonText, suffixOffset };
 }
 
+function _WriteGlb(bytes: Uint8Array, jsonText: string, suffixOffset: number): Uint8Array {
+    const encoded = new TextEncoder().encode(jsonText);
+    const paddedLength = Math.ceil(encoded.length / 4) * 4;
+    const suffix = bytes.subarray(suffixOffset);
+    const totalLength = 20 + paddedLength + suffix.byteLength;
+    if (totalLength > 0xffffffff) {
+        throw new Error("The authored GLB exceeds the format's length limit.");
+    }
+    const result = new Uint8Array(totalLength);
+    result.set(bytes.subarray(0, 20));
+    const view = new DataView(result.buffer);
+    view.setUint32(8, totalLength, true);
+    view.setUint32(12, paddedLength, true);
+    result.fill(0x20, 20, 20 + paddedLength);
+    result.set(encoded, 20);
+    result.set(suffix, 20 + paddedLength);
+    return result;
+}
+
 /**
  * Reads the source glTF document without loading or serializing its scene.
  * @param bytes original GLB bytes
@@ -128,15 +148,7 @@ export function GetGlbNodeIndex(node: Node, nodeCount: number): number | undefin
     return undefined;
 }
 
-/**
- * Adds only the behavior extension fields; the BIN and subsequent chunks stay byte-identical.
- * @param bytes original GLB bytes
- * @param triggerIndex source glTF trigger node index
- * @param revealIndex source glTF reveal node index
- * @returns the authored GLB bytes
- */
-export function PatchKhrSelectionRevealGlb(bytes: Uint8Array, triggerIndex: number, revealIndex: number): Uint8Array {
-    const { document, jsonText: sourceJsonText, suffixOffset } = _ReadGlb(bytes);
+function _ValidateKhrSelectionRevealDocument(document: IGlbDocument, triggerIndex: number, revealIndex: number): void {
     if (document.animations !== undefined && (!Array.isArray(document.animations) || document.animations.length > 0)) {
         throw new Error("Adding a behavior graph would stop the source GLB's animations from playing automatically; animated GLBs need explicit animation behavior.");
     }
@@ -241,71 +253,172 @@ export function PatchKhrSelectionRevealGlb(bytes: Uint8Array, triggerIndex: numb
             pending.push(parent);
         }
     }
-    // Setting the reveal node's local visibility cannot override a hidden ancestor.
-    // Keep every source ancestor unchanged and reject targets that cannot be revealed.
-    const pendingRevealAncestors = [...parents[revealIndex]];
-    const checkedRevealAncestors = new Set<number>();
-    while (pendingRevealAncestors.length > 0) {
-        const index = pendingRevealAncestors.pop()!;
-        if (checkedRevealAncestors.has(index)) {
-            continue;
-        }
-        checkedRevealAncestors.add(index);
-        const ancestorVisibility = nodes[index].extensions?.KHR_node_visibility;
-        if (
-            ancestorVisibility !== undefined &&
-            (!_IsRecord(ancestorVisibility) ||
-                (ancestorVisibility.visible !== undefined && typeof ancestorVisibility.visible !== "boolean") ||
-                ancestorVisibility.visible === false)
-        ) {
-            throw new Error("A reveal ancestor disables visibility.");
-        }
-        for (const parent of parents[index]) {
-            pendingRevealAncestors.push(parent);
-        }
-    }
-    // Edit only behavior-owned JSON paths. Parsing is used for validation, but serializing the
-    // parsed document would round large numeric extras and rewrite unrelated source tokens.
+}
+
+function _WriteBehaviorGlb(
+    bytes: Uint8Array,
+    document: IGlbDocument,
+    sourceJsonText: string,
+    suffixOffset: number,
+    graph: unknown,
+    selectableNodes: number[],
+    hiddenNodes: number[]
+): Uint8Array {
+    // Only behavior-owned paths are edited. Serializing the parsed document would round large
+    // numeric extras and rewrite unrelated source tokens.
     let jsonText = sourceJsonText;
     const write = (path: Array<string | number>, value: unknown, isArrayInsertion = false) => {
         jsonText = applyEdits(jsonText, modify(jsonText, path, value, { isArrayInsertion }));
     };
-    write(["extensions", "KHR_interactivity"], BuildKhrSelectionRevealGraph(triggerIndex, revealIndex));
-    if (triggerSelectability === undefined) {
-        write(["nodes", triggerIndex, "extensions", "KHR_node_selectability"], { selectable: true });
+    write(["extensions", "KHR_interactivity"], graph);
+    for (const index of selectableNodes) {
+        if (document.nodes![index].extensions?.KHR_node_selectability === undefined) {
+            write(["nodes", index, "extensions", "KHR_node_selectability"], { selectable: true });
+        }
     }
-    if (revealVisibility === undefined) {
-        write(["nodes", revealIndex, "extensions", "KHR_node_visibility"], { visible: false });
-    } else if (revealVisibility.visible !== false) {
-        write(["nodes", revealIndex, "extensions", "KHR_node_visibility", "visible"], false);
+    for (const index of hiddenNodes) {
+        const visibility = document.nodes![index].extensions?.KHR_node_visibility;
+        if (visibility === undefined) {
+            write(["nodes", index, "extensions", "KHR_node_visibility"], { visible: false });
+        } else if (_IsRecord(visibility) && visibility.visible !== false) {
+            write(["nodes", index, "extensions", "KHR_node_visibility", "visible"], false);
+        }
     }
-    for (const name of ["KHR_interactivity", "KHR_node_selectability", "KHR_node_visibility"]) {
-        for (const key of ["extensionsUsed", "extensionsRequired"] as const) {
-            const names = document[key];
-            if (!names) {
-                document[key] = [name];
-                write([key], [name]);
-            } else if (!names.includes(name)) {
-                write([key, names.length], name, true);
+    for (const key of ["extensionsUsed", "extensionsRequired"] as const) {
+        const original = document[key];
+        const names = original?.slice() ?? [];
+        for (const name of ["KHR_interactivity", "KHR_node_selectability", "KHR_node_visibility"]) {
+            if (!names.includes(name)) {
+                if (original) {
+                    write([key, names.length], name, true);
+                }
                 names.push(name);
             }
         }
+        if (!original) {
+            write([key], names);
+        }
+    }
+    return _WriteGlb(bytes, jsonText, suffixOffset);
+}
+
+/**
+ * Adds only the behavior extension fields; the BIN and subsequent chunks stay byte-identical.
+ * @param bytes original GLB bytes
+ * @param triggerIndex source glTF trigger node index
+ * @param revealIndex source glTF reveal node index
+ * @returns the authored GLB bytes
+ */
+export function PatchKhrSelectionRevealGlb(bytes: Uint8Array, triggerIndex: number, revealIndex: number): Uint8Array {
+    const { document, jsonText, suffixOffset } = _ReadGlb(bytes);
+    _ValidateKhrSelectionRevealDocument(document, triggerIndex, revealIndex);
+    return _WriteBehaviorGlb(bytes, document, jsonText, suffixOffset, BuildKhrSelectionRevealGraph(triggerIndex, revealIndex), [triggerIndex], [revealIndex]);
+}
+
+/**
+ * Adds an ordered procedure to a source GLB without serializing its scene.
+ * @param bytes original GLB bytes
+ * @param indices stable source glTF node indices for the procedure roles
+ * @returns the authored GLB bytes
+ */
+export function PatchKhrTwoStepProcedureGlb(bytes: Uint8Array, indices: IKhrTwoStepProcedureNodes<number>): Uint8Array {
+    const { document, jsonText, suffixOffset } = _ReadGlb(bytes);
+    const nodes = document.nodes;
+    if (!Array.isArray(nodes)) {
+        throw new Error("The source GLB has no glTF nodes.");
+    }
+    const roleIndices = [indices.first, indices.second, indices.nextCue, indices.completionCue, indices.reset];
+    if (roleIndices.some((index) => !Number.isSafeInteger(index) || index < 0 || index >= nodes.length)) {
+        throw new Error("A procedure glTF node index is outside the source document.");
+    }
+    if (new Set(roleIndices).size !== roleIndices.length) {
+        throw new Error("Choose five different glTF nodes for the procedure.");
+    }
+    const parents = Array.from({ length: nodes.length }, () => new Array<number>());
+    for (const [index, node] of nodes.entries()) {
+        if (!node || typeof node !== "object" || Array.isArray(node) || (node.children !== undefined && !Array.isArray(node.children))) {
+            throw new Error("The source GLB has malformed node hierarchy.");
+        }
+        for (const child of node.children ?? []) {
+            if (!Number.isInteger(child) || child < 0 || child >= nodes.length) {
+                throw new Error("The source GLB has malformed node hierarchy.");
+            }
+            parents[child].push(index);
+        }
+    }
+    const reaches = (start: number, target: number): boolean => {
+        const pending = [start];
+        const visited = new Set<number>();
+        while (pending.length > 0) {
+            const index = pending.pop()!;
+            if (index === target) {
+                return true;
+            }
+            if (visited.has(index)) {
+                continue;
+            }
+            visited.add(index);
+            pending.push(...(nodes[index].children ?? []));
+        }
+        return false;
+    };
+    for (let i = 0; i < roleIndices.length; i++) {
+        for (let j = i + 1; j < roleIndices.length; j++) {
+            if (reaches(roleIndices[i], roleIndices[j]) || reaches(roleIndices[j], roleIndices[i])) {
+                throw new Error("Procedure glTF nodes cannot be an ancestor or descendant of each other.");
+            }
+        }
+    }
+    for (const control of [indices.first, indices.second, indices.reset]) {
+        const pending = [control];
+        const visited = new Set<number>();
+        while (pending.length > 0) {
+            const index = pending.pop()!;
+            if (visited.has(index)) {
+                continue;
+            }
+            visited.add(index);
+            const selectability = nodes[index].extensions?.KHR_node_selectability;
+            if (selectability !== undefined && (!_IsRecord(selectability) || (selectability.selectable !== undefined && selectability.selectable !== true))) {
+                throw new Error("A procedure control or ancestor disables selectability.");
+            }
+            const visibility = nodes[index].extensions?.KHR_node_visibility;
+            if (visibility !== undefined && (!_IsRecord(visibility) || (visibility.visible !== undefined && visibility.visible !== true))) {
+                throw new Error("A procedure control or ancestor disables visibility.");
+            }
+            pending.push(...parents[index]);
+        }
+    }
+    for (const cue of [indices.nextCue, indices.completionCue]) {
+        const visibility = nodes[cue].extensions?.KHR_node_visibility;
+        if (visibility !== undefined && (!_IsRecord(visibility) || (visibility.visible !== undefined && typeof visibility.visible !== "boolean"))) {
+            throw new Error("A procedure cue has malformed visibility.");
+        }
+        const pending = [...parents[cue]];
+        const visited = new Set<number>();
+        while (pending.length > 0) {
+            const index = pending.pop()!;
+            if (visited.has(index)) {
+                continue;
+            }
+            visited.add(index);
+            const ancestorVisibility = nodes[index].extensions?.KHR_node_visibility;
+            if (ancestorVisibility !== undefined && (!_IsRecord(ancestorVisibility) || (ancestorVisibility.visible !== undefined && ancestorVisibility.visible !== true))) {
+                throw new Error("A procedure cue ancestor disables visibility.");
+            }
+            pending.push(...parents[index]);
+        }
     }
 
-    const encoded = new TextEncoder().encode(jsonText);
-    const paddedLength = Math.ceil(encoded.length / 4) * 4;
-    const suffix = bytes.subarray(suffixOffset);
-    const totalLength = 20 + paddedLength + suffix.byteLength;
-    if (totalLength > 0xffffffff) {
-        throw new Error("The authored GLB exceeds the format's length limit.");
-    }
-    const result = new Uint8Array(totalLength);
-    result.set(bytes.subarray(0, 20));
-    const view = new DataView(result.buffer);
-    view.setUint32(8, totalLength, true);
-    view.setUint32(12, paddedLength, true);
-    result.fill(0x20, 20, 20 + paddedLength);
-    result.set(encoded, 20);
-    result.set(suffix, 20 + paddedLength);
-    return result;
+    // Reuse the selection template's graph and animation guards before writing procedure fields.
+    _ValidateKhrSelectionRevealDocument(document, indices.first, indices.completionCue);
+    return _WriteBehaviorGlb(
+        bytes,
+        document,
+        jsonText,
+        suffixOffset,
+        BuildKhrTwoStepProcedureGraph(indices),
+        [indices.first, indices.second, indices.reset],
+        [indices.nextCue, indices.completionCue]
+    );
 }

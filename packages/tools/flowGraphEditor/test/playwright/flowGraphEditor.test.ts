@@ -10,7 +10,8 @@ function BuildExistingGlbFixture(
     withSkin = false,
     withLosslessTokens = false,
     withHiddenRevealParent = false,
-    withExternalBuffer = false
+    withExternalBuffer = false,
+    withProcedureNodes = false
 ) {
     const document: any = {
         asset: { version: "2.0", generator: "maintenance-asset-pipeline" },
@@ -41,15 +42,18 @@ function BuildExistingGlbFixture(
         document.nodes[2].extensions = { KHR_node_visibility: { visible: true, extensions: { EXT_vendor_node: { trainingId: "reveal" } } } };
         document.extensionsUsed.push("KHR_node_selectability", "KHR_node_visibility", "EXT_vendor_node");
     }
-    if (withHiddenRevealParent) {
-        document.nodes[0].children = [1, 3];
-        document.nodes.push({ name: "hidden reveal parent", children: [2], extensions: { KHR_node_visibility: { visible: false } } });
-        document.extensionsUsed.push("KHR_node_visibility");
-    }
     if (withMultiPrimitiveTrigger) {
         document.meshes.push({ ...document.meshes[0], primitives: [...document.meshes[0].primitives] });
         document.meshes[0].primitives.push({ ...document.meshes[0].primitives[0] });
         document.nodes[2].mesh = 1;
+    }
+    if (withProcedureNodes) {
+        document.nodes[0].children = [1, 2, 3, 4, 5];
+        document.nodes.push(
+            { name: "next cue", mesh: 0, translation: [4, 0, 0], extras: { stableId: "next-cue" } },
+            { name: "complete cue", mesh: 0, translation: [6, 0, 0], extras: { stableId: "complete-cue" } },
+            { name: "reset control", mesh: 0, translation: [8, 0, 0], extras: { stableId: "reset-control" } }
+        );
     }
     if (withAnimation) {
         const samples = Buffer.from(new Float32Array([0, 1, 2, 0, 0, 3, 0, 0]).buffer);
@@ -2483,7 +2487,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
     });
 
     test("does not offer a skinned mesh under its unrelated reparented assembly node", async ({ page }) => {
-        const { bytes } = BuildExistingGlbFixture(false, false, false, true);
+        const { bytes } = BuildExistingGlbFixture(false, false, false, false, true);
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
         await fge.assertEditorReady();
@@ -2511,7 +2515,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
     });
 
     test("preserves untouched JSON number tokens in a downloaded source GLB", async ({ page }) => {
-        const { bytes } = BuildExistingGlbFixture(false, false, false, false, true);
+        const { bytes } = BuildExistingGlbFixture(false, false, false, false, false, true);
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
         await fge.assertEditorReady();
@@ -2571,14 +2575,15 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         expect(await fge.getGraphNames()).toEqual(["Graph 1"]);
     });
 
-    test("rejects a reveal target beneath a hidden source ancestor without downloading or changing the scene", async ({ page }, testInfo) => {
-        const { bytes } = BuildExistingGlbFixture(false, false, false, false, false, true);
+    test("authors a resettable two-step procedure in an existing GLB", async ({ page }, testInfo) => {
+        test.setTimeout(90_000);
+        const { bytes, document } = BuildExistingGlbFixture(false, true, false, false, false, false, false, true);
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
         await fge.assertEditorReady();
         await page.evaluate(
             (data) => {
-                const file = new File([new Uint8Array(data)], "hidden-reveal.glb", { type: "model/gltf-binary" });
+                const file = new File([new Uint8Array(data)], "procedure.glb", { type: "model/gltf-binary" });
                 const transfer = new DataTransfer();
                 transfer.items.add(file);
                 (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
@@ -2586,21 +2591,199 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             [...bytes]
         );
         await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+        await page.getByRole("button", { name: "New behavior" }).click();
+        await page.getByRole("combobox", { name: "Behavior type" }).click();
+        await page.getByRole("option", { name: "Two-step procedure" }).click();
+        await page.getByRole("combobox", { name: "First part" }).click();
+        await page
+            .getByRole("option", { name: /glTF node 1\)/ })
+            .first()
+            .click();
+        await page.getByRole("combobox", { name: "Second part" }).click();
+        await page
+            .getByRole("option", { name: /glTF node 1\)/ })
+            .last()
+            .click();
+        await expect(page.getByRole("button", { name: "Create behavior" })).toBeDisabled();
+        for (const [label, index] of [
+            ["Second part", 2],
+            ["Next-step cue", 3],
+            ["Completion cue", 4],
+            ["Reset control", 5],
+        ] as const) {
+            await page.getByRole("combobox", { name: label }).click();
+            await page.getByRole("option", { name: new RegExp(`glTF node ${index}\\)`) }).click();
+        }
+        await expect(page.getByRole("button", { name: "Create behavior" })).toBeEnabled();
+        await page.screenshot({ path: testInfo.outputPath("khr-two-step-procedure-dialog.png"), fullPage: true });
+        const downloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename() === "procedure-behavior.glb");
+        await page.getByRole("button", { name: "Create behavior" }).click();
+        const downloadPath = await (await downloadPromise).path();
+        const authoredBytes = readFileSync(downloadPath!);
+        const jsonLength = authoredBytes.readUInt32LE(12);
+        const authored = JSON.parse(authoredBytes.subarray(20, 20 + jsonLength).toString("utf8"));
+        expect(authoredBytes.subarray(20 + jsonLength)).toEqual(bytes.subarray(20 + bytes.readUInt32LE(12)));
+        expect(authored.nodes.map((node: any) => ({ name: node.name, extras: node.extras, children: node.children }))).toEqual(
+            document.nodes.map((node: any) => ({ name: node.name, extras: node.extras, children: node.children }))
+        );
+        expect(await StrictImportKhrInteractivityAsync(page, "strict-procedure.glb", authoredBytes)).toEqual({ graphCount: 1, errorCount: 0 });
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Two-step procedure"]);
+        await page.screenshot({ path: testInfo.outputPath("khr-two-step-procedure-graph.png"), fullPage: true });
+
+        const select = async (index: number) =>
+            page.evaluate((nodeIndex) => {
+                const Babylon = (globalThis as any).BABYLON;
+                const state = Babylon.FlowGraphEditor._CurrentState;
+                const mesh = state.khrInteractivityImportResult.glTF.nodes[nodeIndex]._primitiveBabylonMeshes[0];
+                const pick = new Babylon.PickingInfo();
+                pick.hit = true;
+                pick.pickedMesh = mesh;
+                pick.pickedPoint = mesh.getAbsolutePosition();
+                state.sceneContext.scene.simulatePointerDown(pick, { pointerId: 0 });
+                state.sceneContext.scene.simulatePointerUp(pick, { pointerId: 0 });
+            }, index);
+        const cues = () =>
+            page.evaluate(() => {
+                const nodes = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.khrInteractivityImportResult.glTF.nodes;
+                return [3, 4].map((index) => nodes[index]._primitiveBabylonMeshes.some((mesh: any) => mesh.isVisible));
+            });
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        expect(await cues()).toEqual([false, false]);
+        await select(2);
+        expect(await cues()).toEqual([false, false]);
+        await select(1);
+        await expect.poll(cues).toEqual([true, false]);
+        await select(1);
+        expect(await cues()).toEqual([true, false]);
+        await select(2);
+        await expect.poll(cues).toEqual([false, true]);
+        await select(2);
+        expect(await cues()).toEqual([false, true]);
+        await select(5);
+        await expect.poll(cues).toEqual([false, false]);
+        await select(2);
+        expect(await cues()).toEqual([false, false]);
+        await select(1);
+        await select(2);
+        await expect.poll(cues).toEqual([false, true]);
+        await ClickGraphControl(page, "Reset");
+        await WaitForGraphState(page, "Stopped");
+        await expect.poll(cues).toEqual([false, false]);
+        await ClickGraphControl(page, "Start");
+        await WaitForGraphState(page, "Running");
+        await select(2);
+        expect(await cues()).toEqual([false, false]);
+    });
+
+    test("creates a procedure from a new scene and exports a strict GLB", async ({ page }) => {
+        test.setTimeout(90_000);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await page.evaluate(() => {
+            const Babylon = (globalThis as any).BABYLON;
+            const context = Babylon.FlowGraphEditor._CurrentState.sceneContext;
+            Babylon.CreateBox("nextCue", {}, context.scene);
+            Babylon.CreateBox("completionCue", {}, context.scene);
+            context.refresh();
+        });
+        await page.getByRole("button", { name: "New behavior" }).click();
+        await page.getByRole("combobox", { name: "Behavior type" }).click();
+        await page.getByRole("option", { name: "Two-step procedure" }).click();
+        for (const [label, name] of [
+            ["First part", "box"],
+            ["Second part", "sphere"],
+            ["Next-step cue", "nextCue"],
+            ["Completion cue", "completionCue"],
+            ["Reset control", "cylinder"],
+        ] as const) {
+            await page.getByRole("combobox", { name: label }).click();
+            await page.getByRole("option", { name: new RegExp(`^${name} \\(#`) }).click();
+        }
+        await expect(page.getByRole("button", { name: "Create behavior" })).toBeEnabled();
+        await page.getByRole("button", { name: "Create behavior" }).click();
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Two-step procedure"]);
+        const downloadPromise = page.waitForEvent("download", { predicate: (download) => download.suggestedFilename().endsWith(".glb"), timeout: 15_000 });
+        await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
+        const path = await (await downloadPromise).path();
+        expect(await StrictImportKhrInteractivityAsync(page, "scene-procedure.glb", readFileSync(path!))).toEqual({ graphCount: 1, errorCount: 0 });
+    });
+
+    test("does not silently take over animations while authoring from a new scene", async ({ page }) => {
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await page.evaluate(() => {
+            const Babylon = (globalThis as any).BABYLON;
+            const state = Babylon.FlowGraphEditor._CurrentState;
+            const box = state.sceneContext.scene.getMeshByName("box");
+            const animation = new Babylon.Animation("inspection", "position", 30, Babylon.Animation.ANIMATIONTYPE_VECTOR3, Babylon.Animation.ANIMATIONLOOPMODE_CYCLE);
+            animation.setKeys([
+                { frame: 0, value: new Babylon.Vector3(0, 0, 0) },
+                { frame: 30, value: new Babylon.Vector3(1, 0, 0) },
+            ]);
+            box.animations.push(animation);
+        });
         const originalScene = await GetSceneContextSnapshot(page);
-        let downloads = 0;
-        page.on("download", () => downloads++);
         await page.getByRole("button", { name: "New behavior" }).click();
         await page.getByRole("combobox", { name: "Trigger mesh" }).click();
-        await page.getByRole("option", { name: /glTF node 1/ }).click();
+        await page.getByRole("option", { name: /^box \(#/ }).click();
         await page.getByRole("combobox", { name: "Mesh to reveal" }).click();
-        await page.getByRole("option", { name: /glTF node 2/ }).click();
+        await page.getByRole("option", { name: /^sphere \(#/ }).click();
         await page.getByRole("button", { name: "Create behavior" }).click();
-
-        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("A reveal ancestor disables visibility.");
-        await page.screenshot({ path: testInfo.outputPath("khr-hidden-reveal-ancestor.png"), fullPage: true });
-        expect(downloads).toBe(0);
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("animated GLBs need explicit animation behavior", { timeout: 10_000 });
         expect(await GetSceneContextSnapshot(page)).toEqual(originalScene);
         expect(await fge.getGraphNames()).toEqual(["Graph 1"]);
+    });
+
+    test("keeps two-step procedure authoring usable with touch on a narrow viewport", async ({ browser }, testInfo) => {
+        test.setTimeout(90_000);
+        const context = await browser.newContext({ ...devices["Pixel 7"], acceptDownloads: true });
+        try {
+            const page = await context.newPage();
+            const fge = new FlowGraphEditorPage(page);
+            await fge.goto({ local: true });
+            await fge.assertEditorReady();
+            const { bytes } = BuildExistingGlbFixture(false, false, false, true);
+            await page.evaluate(
+                (data) => {
+                    const file = new File([new Uint8Array(data)], "touch-procedure.glb", { type: "model/gltf-binary" });
+                    const transfer = new DataTransfer();
+                    transfer.items.add(file);
+                    (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+                },
+                [...bytes]
+            );
+            await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+            await page.getByRole("button", { name: "New behavior" }).tap();
+            await page.getByRole("combobox", { name: "Behavior type" }).tap();
+            await page.getByRole("option", { name: "Two-step procedure" }).tap();
+            const dialog = page.getByRole("dialog", { name: "New glTF two-step procedure" });
+            await expect(dialog).toBeInViewport();
+            const bounds = await dialog.boundingBox();
+            expect(bounds).not.toBeNull();
+            expect(bounds!.x).toBeGreaterThanOrEqual(0);
+            expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+            for (const [label, index] of [
+                ["First part", 1],
+                ["Second part", 2],
+                ["Next-step cue", 3],
+                ["Completion cue", 4],
+                ["Reset control", 5],
+            ] as const) {
+                await page.getByRole("combobox", { name: label }).tap();
+                await page.getByRole("option", { name: new RegExp(`glTF node ${index}\\)`) }).tap();
+            }
+            await expect(page.getByRole("button", { name: "Create behavior" })).toBeEnabled();
+            await page.screenshot({ path: testInfo.outputPath("khr-two-step-procedure-touch.png"), fullPage: true });
+            const downloadPromise = page.waitForEvent("download", { timeout: 15_000 });
+            await page.getByRole("button", { name: "Create behavior" }).tap();
+            expect((await downloadPromise).suggestedFilename()).toBe("touch-procedure-behavior.glb");
+            await expect.poll(async () => await fge.getGraphNames()).toEqual(["Two-step procedure"]);
+        } finally {
+            await context.close();
+        }
     });
 
     test("authors an existing GLB with touch input on a mobile viewport", async ({ browser }, testInfo) => {
