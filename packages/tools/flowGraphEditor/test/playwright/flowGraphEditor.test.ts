@@ -2630,18 +2630,21 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect.poll(async () => await fge.getGraphNames()).toEqual(["Two-step procedure"]);
         await page.screenshot({ path: testInfo.outputPath("khr-two-step-procedure-graph.png"), fullPage: true });
 
-        const select = async (index: number) =>
-            page.evaluate((nodeIndex) => {
-                const Babylon = (globalThis as any).BABYLON;
-                const state = Babylon.FlowGraphEditor._CurrentState;
-                const mesh = state.khrInteractivityImportResult.glTF.nodes[nodeIndex]._primitiveBabylonMeshes[0];
-                const pick = new Babylon.PickingInfo();
-                pick.hit = true;
-                pick.pickedMesh = mesh;
-                pick.pickedPoint = mesh.getAbsolutePosition();
-                state.sceneContext.scene.simulatePointerDown(pick, { pointerId: 0 });
-                state.sceneContext.scene.simulatePointerUp(pick, { pointerId: 0 });
-            }, index);
+        const select = async (index: number, pointerId = 0, pointerType: "mouse" | "xr" | "xr-near" = "mouse") =>
+            page.evaluate(
+                ({ nodeIndex, id, type }) => {
+                    const Babylon = (globalThis as any).BABYLON;
+                    const state = Babylon.FlowGraphEditor._CurrentState;
+                    const mesh = state.khrInteractivityImportResult.glTF.nodes[nodeIndex]._primitiveBabylonMeshes[0];
+                    const pick = new Babylon.PickingInfo();
+                    pick.hit = true;
+                    pick.pickedMesh = mesh;
+                    pick.pickedPoint = mesh.getAbsolutePosition();
+                    state.sceneContext.scene.simulatePointerDown(pick, { pointerId: id, pointerType: type });
+                    state.sceneContext.scene.simulatePointerUp(pick, { pointerId: id, pointerType: type });
+                },
+                { nodeIndex: index, id: pointerId, type: pointerType }
+            );
         const cues = () =>
             page.evaluate(() => {
                 const nodes = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.khrInteractivityImportResult.glTF.nodes;
@@ -2672,10 +2675,25 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await expect.poll(cues).toEqual([false, false]);
         await ClickGraphControl(page, "Start");
         await WaitForGraphState(page, "Running");
-        await select(2);
+        // Transient XR selection may use a new pointer ID for each pinch; near-hand picks use xr-near.
+        await page.evaluate(() => {
+            const Babylon = (globalThis as any).BABYLON;
+            const state = Babylon.FlowGraphEditor._CurrentState;
+            const mesh = state.khrInteractivityImportResult.glTF.nodes[1]._primitiveBabylonMeshes[0];
+            const pick = new Babylon.PickingInfo();
+            pick.hit = true;
+            pick.pickedMesh = mesh;
+            state.sceneContext.scene.simulatePointerMove(pick, { pointerId: 201, pointerType: "xr" });
+        });
         expect(await cues()).toEqual([false, false]);
-        await select(1);
+        await select(2, 202, "xr");
+        expect(await cues()).toEqual([false, false]);
+        await select(1, 203, "xr");
         await expect.poll(cues).toEqual([true, false]);
+        await select(2, 304, "xr-near");
+        await expect.poll(cues).toEqual([false, true]);
+        await select(5, 305, "xr-near");
+        await expect.poll(cues).toEqual([false, false]);
     });
 
     test("creates a procedure from a new scene and exports a strict GLB", async ({ page }) => {
