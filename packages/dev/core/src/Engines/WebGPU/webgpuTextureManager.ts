@@ -52,6 +52,191 @@ const mipmapVertexSource = `
     }
     `;
 
+const mipmap3DVertexSource = `
+    const pos = array<vec2<f32>, 4>( vec2f(-1.0f, 1.0f),  vec2f(1.0f, 1.0f),  vec2f(-1.0f, -1.0f),  vec2f(1.0f, -1.0f));
+    const tex = array<vec2<f32>, 4>( vec2f(0.0f, 0.0f),  vec2f(1.0f, 0.0f),  vec2f(0.0f, 1.0f),  vec2f(1.0f, 1.0f));
+
+    varying vTex: vec2f;
+    varying vSlice: f32;
+
+    @vertex
+    fn main(input : VertexInputs) -> FragmentInputs {
+        vertexOutputs.vTex = tex[input.vertexIndex];
+        vertexOutputs.vSlice = f32(input.instanceIndex);
+        vertexOutputs.position = vec4f(pos[input.vertexIndex], 0.0, 1.0);
+    }
+    `;
+
+const mipmap3DFragmentSource = `
+    var imgSampler: sampler;
+    var img: texture_3d<f32>;
+
+    varying vTex: vec2f;
+    varying vSlice: f32;
+
+    @fragment
+    fn main(input: FragmentInputs) -> FragmentOutputs {
+        let depth = max(1u, textureDimensions(img, 0).z / 2u);
+        fragmentOutputs.color = textureSample(img, imgSampler, vec3f(input.vTex, (input.vSlice + 0.5) / f32(depth)));
+    }
+    `;
+
+const mipmap3DLoadFragmentSource = (sampleType: "f32" | "i32" | "u32") => {
+    const integerHelpers =
+        sampleType === "f32"
+            ? ""
+            : `
+    ${
+        sampleType === "i32"
+            ? `fn finishSignedDivision(quotient: vec4i, remainder: vec4i, divisor: i32) -> vec4i {
+        var result = quotient + remainder / divisor;
+        let residual = remainder % divisor;
+        for (var channel = 0; channel < 4; channel++) {
+            if (result[channel] < 0 && residual[channel] > 0) {
+                result[channel] += 1;
+            } else if (result[channel] > 0 && residual[channel] < 0) {
+                result[channel] -= 1;
+            }
+        }
+        return result;
+    }`
+            : ""
+    }
+
+    // Carry the exact fractional remainder through X, Y and Z before truncating the result.
+    struct Wide {
+        low: vec4u,
+        high: vec4u,
+    };
+
+    struct IntegerValue {
+        whole: vec4<${sampleType}>,
+        remainder: Wide,
+    };
+
+    fn addWide(a: Wide, b: Wide) -> Wide {
+        let low = a.low + b.low;
+        return Wide(low, a.high + b.high + select(vec4u(0), vec4u(1), low < a.low));
+    }
+
+    fn multiplyWide(a: Wide, factor: vec4u) -> Wide {
+        let lowFactor = factor & vec4u(65535u);
+        let highFactor = factor >> vec4u(16u);
+        let lowPart = (a.low & vec4u(65535u)) * lowFactor;
+        let middle = (a.low >> vec4u(16u)) * lowFactor;
+        let upper = (a.low & vec4u(65535u)) * highFactor;
+        let middleSum = (lowPart >> vec4u(16u)) + (middle & vec4u(65535u)) + (upper & vec4u(65535u));
+        let low = (middleSum << vec4u(16u)) | (lowPart & vec4u(65535u));
+        let high = a.high * factor + (a.low >> vec4u(16u)) * highFactor + (middle >> vec4u(16u)) + (upper >> vec4u(16u)) + (middleSum >> vec4u(16u));
+        return Wide(low, high);
+    }
+
+    fn interpolateInteger(a: IntegerValue, b: IntegerValue, numerator: i32, divisor: i32, previousDivisor: Wide) -> IntegerValue {
+        let n = ${sampleType}(numerator);
+        let d = ${sampleType}(divisor);
+        let aRemainder = a.whole % d;
+        let bRemainder = b.whole % d;
+        let weightedRemainder = aRemainder * (d - n) + bRemainder * n;
+        let residual = weightedRemainder % d;
+        var whole = (a.whole / d) * (d - n) + (b.whole / d) * n + weightedRemainder / d ${sampleType === "i32" ? "- select(vec4i(0), vec4i(1), residual < vec4i(0))" : ""};
+        let integerResidual = vec4u(residual ${sampleType === "i32" ? "+ select(vec4i(0), vec4i(d), residual < vec4i(0))" : ""});
+        var remainder = addWide(
+            addWide(multiplyWide(a.remainder, vec4u(u32(d - n))), multiplyWide(b.remainder, vec4u(u32(n)))),
+            multiplyWide(previousDivisor, integerResidual)
+        );
+        let nextDivisor = multiplyWide(previousDivisor, vec4u(u32(d)));
+        for (var channel = 0; channel < 4; channel++) {
+            if (remainder.high[channel] > nextDivisor.high[channel] ||
+                (remainder.high[channel] == nextDivisor.high[channel] && remainder.low[channel] >= nextDivisor.low[channel])) {
+                let borrow = u32(remainder.low[channel] < nextDivisor.low[channel]);
+                remainder.low[channel] -= nextDivisor.low[channel];
+                remainder.high[channel] -= nextDivisor.high[channel] + borrow;
+                whole[channel] += 1;
+            }
+        }
+        return IntegerValue(whole, remainder);
+    }
+    `;
+
+    const reduction =
+        sampleType === "f32"
+            ? `
+        let weight = vec3f(fraction) / vec3f(divisor);
+        var color = vec4f(0.0);
+        for (var z = 0; z < 2; z++) {
+            for (var y = 0; y < 2; y++) {
+                for (var x = 0; x < 2; x++) {
+                    let texel = textureLoad(img, min(origin + vec3i(x, y, z), sourceSize - 1), 0);
+                    let weighted = select(1.0 - weight.x, weight.x, x == 1) * select(1.0 - weight.y, weight.y, y == 1) * select(1.0 - weight.z, weight.z, z == 1);
+                    color += texel * weighted;
+                }
+            }
+        }
+        fragmentOutputs.color = color;`
+            : `
+        var color: vec4<${sampleType}>;
+        if ((sourceSize.x % 2 == 0 || sourceSize.x == 1) && (sourceSize.y % 2 == 0 || sourceSize.y == 1) && (sourceSize.z % 2 == 0 || sourceSize.z == 1)) {
+            var quotient = vec4<${sampleType}>(0);
+            var remainder = vec4<${sampleType}>(0);
+            for (var z = 0; z < 2; z++) {
+                for (var y = 0; y < 2; y++) {
+                    for (var x = 0; x < 2; x++) {
+                        let texel = textureLoad(img, min(origin + vec3i(x, y, z), sourceSize - 1), 0);
+                        quotient += texel / 8;
+                        remainder += texel % 8;
+                    }
+                }
+            }
+            color = ${sampleType === "i32" ? "finishSignedDivision(quotient, remainder, 8)" : "quotient + remainder / 8"};
+        } else {
+            let unitDivisor = Wide(vec4u(1), vec4u(0));
+            let rowDivisor = multiplyWide(unitDivisor, vec4u(u32(divisor.x)));
+            let planeDivisor = multiplyWide(rowDivisor, vec4u(u32(divisor.y)));
+            var planes: array<IntegerValue, 2>;
+            for (var z = 0; z < 2; z++) {
+                var rows: array<IntegerValue, 2>;
+                for (var y = 0; y < 2; y++) {
+                    let first = textureLoad(img, min(origin + vec3i(0, y, z), sourceSize - 1), 0);
+                    let second = textureLoad(img, min(origin + vec3i(1, y, z), sourceSize - 1), 0);
+                    rows[y] = interpolateInteger(IntegerValue(first, Wide(vec4u(0), vec4u(0))), IntegerValue(second, Wide(vec4u(0), vec4u(0))), fraction.x, divisor.x, unitDivisor);
+                }
+                planes[z] = interpolateInteger(rows[0], rows[1], fraction.y, divisor.y, rowDivisor);
+            }
+            let reduced = interpolateInteger(planes[0], planes[1], fraction.z, divisor.z, planeDivisor);
+            color = reduced.whole;
+            ${
+                sampleType === "i32"
+                    ? `for (var channel = 0; channel < 4; channel++) {
+                if (color[channel] < 0 && (reduced.remainder.high[channel] != 0u || reduced.remainder.low[channel] != 0u)) {
+                    color[channel] += 1;
+                }
+            }`
+                    : ""
+            }
+        }
+        fragmentOutputs.fragData0 = vec4<${sampleType}>(color);`;
+
+    return `
+    var img: texture_3d<${sampleType}>;
+
+    varying vSlice: f32;
+
+    ${integerHelpers}
+
+    @fragment
+    fn main(input: FragmentInputs) -> FragmentOutputs {
+        let sourceSize = vec3i(textureDimensions(img, 0));
+        let destinationSize = max(sourceSize / 2, vec3i(1));
+        let destination = vec3i(vec2i(input.position.xy), i32(input.vSlice));
+        let divisor = destinationSize * 2;
+        let sourcePosition = (destination * 2 + 1) * sourceSize - destinationSize;
+        let origin = sourcePosition / divisor;
+        let fraction = sourcePosition % divisor;
+        ${reduction}
+    }
+    `;
+};
+
 const mipmapFragmentSource = `
     var imgSampler: sampler;
     var img: texture_2d<f32>;
@@ -246,6 +431,10 @@ enum PipelineType {
     Clear = 2,
     InvertYPremultiplyAlphaWithOfst = 3,
     ResolveDepth = 4,
+    MipMap3D = 5,
+    MipMap3DFloat32 = 6,
+    MipMap3DSint = 7,
+    MipMap3DUint = 8,
 }
 
 enum VideoPipelineType {
@@ -264,6 +453,10 @@ const shadersForPipelineType = [
     { vertex: clearVertexSource, fragment: clearFragmentSource },
     { vertex: invertYPreMultiplyAlphaWithOfstVertexSource, fragment: invertYPreMultiplyAlphaWithOfstFragmentSource },
     { vertex: resolveDepthVertexSource, fragment: resolveDepthFragmentSource },
+    { vertex: mipmap3DVertexSource, fragment: mipmap3DFragmentSource },
+    { vertex: mipmap3DVertexSource, fragment: mipmap3DLoadFragmentSource("f32") },
+    { vertex: mipmap3DVertexSource, fragment: mipmap3DLoadFragmentSource("i32") },
+    { vertex: mipmap3DVertexSource, fragment: mipmap3DLoadFragmentSource("u32") },
 ];
 
 /**
@@ -333,6 +526,7 @@ export class WebGPUTextureManager {
     private _device: GPUDevice;
     private _bufferManager: WebGPUBufferManager;
     private _mipmapSampler: GPUSampler;
+    private _mipmap3DSampler: GPUSampler;
     private _videoSampler: GPUSampler;
     private _ubCopyWithOfst: GPUBuffer;
     private _pipelines: { [format: string]: Array<[GPURenderPipeline, GPUBindGroupLayout]> } = {};
@@ -357,6 +551,7 @@ export class WebGPUTextureManager {
         }
 
         this._mipmapSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
+        this._mipmap3DSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear, magFilter: WebGPUConstants.FilterMode.Linear });
         this._videoSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
         this._ubCopyWithOfst = this._bufferManager.createBuffer(
             4 * 4,
@@ -372,15 +567,23 @@ export class WebGPUTextureManager {
         const index =
             type === PipelineType.MipMap
                 ? 1 << 0
-                : type === PipelineType.InvertYPremultiplyAlpha
-                  ? ((params!.invertY ? 1 : 0) << 1) + ((params!.premultiplyAlpha ? 1 : 0) << 2)
-                  : type === PipelineType.Clear
-                    ? 1 << 3
-                    : type === PipelineType.InvertYPremultiplyAlphaWithOfst
-                      ? ((params!.invertY ? 1 : 0) << 4) + ((params!.premultiplyAlpha ? 1 : 0) << 5)
-                      : type === PipelineType.ResolveDepth
-                        ? 1 << 6
-                        : 0;
+                : type === PipelineType.MipMap3D
+                  ? 1 << 7
+                  : type === PipelineType.MipMap3DFloat32
+                    ? 1 << 8
+                    : type === PipelineType.MipMap3DSint
+                      ? 1 << 9
+                      : type === PipelineType.MipMap3DUint
+                        ? 1 << 10
+                        : type === PipelineType.InvertYPremultiplyAlpha
+                          ? ((params!.invertY ? 1 : 0) << 1) + ((params!.premultiplyAlpha ? 1 : 0) << 2)
+                          : type === PipelineType.Clear
+                            ? 1 << 3
+                            : type === PipelineType.InvertYPremultiplyAlphaWithOfst
+                              ? ((params!.invertY ? 1 : 0) << 4) + ((params!.premultiplyAlpha ? 1 : 0) << 5)
+                              : type === PipelineType.ResolveDepth
+                                ? 1 << 6
+                                : 0;
 
         if (!this._pipelines[format]) {
             this._pipelines[format] = [];
@@ -794,6 +997,10 @@ export class WebGPUTextureManager {
     ): GPUTexture {
         sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
 
+        if (is3D && WebGPUTextureHelper.IsImageBitmap(imageBitmap)) {
+            throw new Error("Uploading an ImageBitmap to a WebGPU 3D texture is not supported.");
+        }
+
         const layerCount = (imageBitmap as any).layers || 1;
         const textureSize = {
             width: imageBitmap.width,
@@ -803,7 +1010,7 @@ export class WebGPUTextureManager {
 
         const renderAttachmentFlag = renderableTextureFormatToIndex[format] ? WebGPUConstants.TextureUsage.RenderAttachment : 0;
         const isCompressedFormat = WebGPUTextureHelper.IsCompressedFormat(format);
-        const maxNumMipLevels = WebGPUTextureHelper.ComputeNumMipmapLevels(imageBitmap.width, imageBitmap.height);
+        const maxNumMipLevels = WebGPUTextureHelper.ComputeNumMipmapLevels(imageBitmap.width, imageBitmap.height, is3D ? layerCount : 1);
         const effectiveMipLevelCount = hasMipmaps ? Math.min(mipLevelCount ?? maxNumMipLevels, maxNumMipLevels) : 1;
         const usages = usage >= 0 ? usage : WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.CopyDst | WebGPUConstants.TextureUsage.TextureBinding;
 
@@ -1013,6 +1220,91 @@ export class WebGPUTextureManager {
         }
     }
 
+    public generate3DMipmaps(gpuOrHdwTexture: GPUTexture | WebGPUHardwareTexture, mipLevelCount: number, commandEncoder?: GPUCommandEncoder): void {
+        const useOwnCommandEncoder = commandEncoder === undefined;
+        const hardwareTexture = WebGPUTextureHelper.IsHardwareTexture(gpuOrHdwTexture) ? gpuOrHdwTexture : null;
+        const gpuTexture = hardwareTexture ? hardwareTexture.underlyingResource : (gpuOrHdwTexture as GPUTexture);
+        if (!gpuTexture || mipLevelCount <= 1) {
+            return;
+        }
+
+        if (useOwnCommandEncoder) {
+            commandEncoder = this._device.createCommandEncoder({});
+        }
+
+        commandEncoder!.pushDebugGroup(`create 3D mipmaps for "${gpuTexture.label}" (${mipLevelCount} levels)`);
+
+        const format = gpuTexture.format;
+        const pipelineType = format.endsWith("uint")
+            ? PipelineType.MipMap3DUint
+            : format.endsWith("sint")
+              ? PipelineType.MipMap3DSint
+              : format === WebGPUConstants.TextureFormat.R32Float || format === WebGPUConstants.TextureFormat.RG32Float || format === WebGPUConstants.TextureFormat.RGBA32Float
+                ? PipelineType.MipMap3DFloat32
+                : PipelineType.MipMap3D;
+        const [pipeline, bindGroupLayout] = this._getPipeline(format, pipelineType);
+
+        for (let i = 1; i < mipLevelCount; ++i) {
+            const bindGroup =
+                hardwareTexture?._mipmapGenBindGroup?.[0]?.[i - 1] ??
+                this._device.createBindGroup({
+                    layout: bindGroupLayout,
+                    entries: [
+                        {
+                            binding: 0,
+                            resource: gpuTexture.createView({
+                                format,
+                                dimension: WebGPUConstants.TextureViewDimension.E3d,
+                                baseMipLevel: i - 1,
+                                mipLevelCount: 1,
+                                arrayLayerCount: 1,
+                            }),
+                        },
+                        ...(pipelineType === PipelineType.MipMap3D ? [{ binding: 1, resource: this._mipmap3DSampler }] : []),
+                    ],
+                });
+            if (hardwareTexture) {
+                hardwareTexture._mipmapGenBindGroup = hardwareTexture._mipmapGenBindGroup || [];
+                hardwareTexture._mipmapGenBindGroup[0] = hardwareTexture._mipmapGenBindGroup[0] || [];
+                hardwareTexture._mipmapGenBindGroup[0][i - 1] = bindGroup;
+            }
+
+            const renderPassDescriptor: GPURenderPassDescriptor = {
+                label: `BabylonWebGPUDevice${this._engine.uniqueId}_generate3DMipmaps_${format}_level${i}`,
+                colorAttachments: [
+                    {
+                        view: gpuTexture.createView({
+                            format,
+                            dimension: WebGPUConstants.TextureViewDimension.E3d,
+                            baseMipLevel: i,
+                            mipLevelCount: 1,
+                            arrayLayerCount: 1,
+                        }),
+                        depthSlice: 0,
+                        loadOp: WebGPUConstants.LoadOp.Load,
+                        storeOp: WebGPUConstants.StoreOp.Store,
+                    },
+                ],
+            };
+
+            const depth = Math.max(1, gpuTexture.depthOrArrayLayers >> i);
+            for (let slice = 0; slice < depth; ++slice) {
+                renderPassDescriptor.colorAttachments[0]!.depthSlice = slice;
+                const passEncoder = commandEncoder!.beginRenderPass(renderPassDescriptor);
+                passEncoder.setPipeline(pipeline);
+                passEncoder.setBindGroup(0, bindGroup);
+                passEncoder.draw(4, 1, 0, slice);
+                passEncoder.end();
+            }
+        }
+
+        commandEncoder!.popDebugGroup();
+
+        if (useOwnCommandEncoder) {
+            this._device.queue.submit([commandEncoder!.finish()]);
+        }
+    }
+
     public createGPUTextureForInternalTexture(texture: InternalTexture, width?: number, height?: number, depth?: number, creationFlags?: number): WebGPUHardwareTexture {
         if (!texture._hardwareTexture) {
             texture._hardwareTexture = new WebGPUHardwareTexture(this._engine);
@@ -1068,7 +1360,11 @@ export class WebGPUTextureManager {
         if (texture._maxLodLevel !== null) {
             mipmapCount = texture._maxLodLevel;
         } else {
-            mipmapCount = hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width, height) : 1;
+            mipmapCount = hasMipMaps ? WebGPUTextureHelper.ComputeNumMipmapLevels(width, height, texture.is3D ? layerCount : 1) : 1;
+        }
+        if (texture.is3D) {
+            mipmapCount = hasMipMaps ? Math.min(Math.max(1, mipmapCount), WebGPUTextureHelper.ComputeNumMipmapLevels(width, height, layerCount)) : 1;
+            texture.mipLevelCount = mipmapCount;
         }
         if (texture.isCube) {
             const gpuTexture = this.createCubeTexture(
@@ -1119,7 +1415,8 @@ export class WebGPUTextureManager {
                 this._commandEncoderForCreation,
                 gpuTextureWrapper.textureUsages,
                 gpuTextureWrapper.textureAdditionalUsages,
-                label
+                label,
+                texture.is3D ? mipmapCount : undefined
             );
 
             gpuTextureWrapper.set(gpuTexture);
@@ -1381,7 +1678,7 @@ export class WebGPUTextureManager {
     }
 
     public updateMipLevelCountForInternalTexture(texture: InternalTexture, mipLevelCount?: number) {
-        const maxNumMipLevels = WebGPUTextureHelper.ComputeNumMipmapLevels(texture.width, texture.height);
+        const maxNumMipLevels = WebGPUTextureHelper.ComputeNumMipmapLevels(texture.width, texture.height, texture.is3D ? texture.depth : 1);
         if (mipLevelCount !== undefined) {
             texture.mipLevelCount = Math.min(Math.max(1, mipLevelCount), maxNumMipLevels);
         } else if (texture.generateMipMaps) {

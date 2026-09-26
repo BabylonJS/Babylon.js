@@ -135,7 +135,7 @@ export class InternalTexture extends TextureSampler {
     /**
      * Gets the number of mip levels for this texture.
      * Note: This property has the correct value only if the texture was created through
-     * `createRawTexture` or `createRawTexture2DArray`.
+     * `createRawTexture`, `createRawTexture2DArray`, or (on WebGPU) `createRawTexture3D`.
      */
     public mipLevelCount: number = 1;
     /**
