@@ -14,6 +14,8 @@ export interface IGlbDocument {
     asset?: { version?: string };
     /** Source nodes in stable glTF index order. */
     nodes?: Array<{ children?: number[]; extensions?: Record<string, unknown>; [key: string]: unknown }>;
+    /** A graph takes control of every glTF animation in the asset. */
+    animations?: unknown;
     /** Root glTF extensions. */
     extensions?: Record<string, unknown>;
     /** Declared glTF extensions. */
@@ -110,6 +112,9 @@ export function GetGlbNodeIndex(node: Node, nodeCount: number): number | undefin
  */
 export function PatchKhrSelectionRevealGlb(bytes: Uint8Array, triggerIndex: number, revealIndex: number): Uint8Array {
     const { document, suffixOffset } = _ReadGlb(bytes);
+    if (document.animations !== undefined && (!Array.isArray(document.animations) || document.animations.length > 0)) {
+        throw new Error("Adding a behavior graph would stop the source GLB's animations from playing automatically; animated GLBs need explicit animation behavior.");
+    }
     const nodes = document.nodes;
     if (!Array.isArray(nodes)) {
         throw new Error("The source GLB has no glTF nodes.");

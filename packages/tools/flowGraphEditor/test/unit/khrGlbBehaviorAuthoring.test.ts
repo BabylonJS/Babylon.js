@@ -66,7 +66,6 @@ function RichSourceDocument(): RichDocument {
         accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [0, 0, 0], max: [1, 1, 0] }],
         materials: [{ name: "Base" }, { name: "Service" }],
         images: [{ name: "untouched-image", uri: "data:image/png;base64,iVBORw0KGgo=" }],
-        animations: [{ name: "inspection", samplers: [], channels: [] }],
         extensionsUsed: ["KHR_materials_variants", "EXT_vendor_meta"],
         extensionsRequired: ["KHR_materials_variants"],
         extensions: { KHR_materials_variants: { variants: [{ name: "Service" }] }, EXT_vendor_meta: { opaque: [1, 2, 3] } },
@@ -75,6 +74,15 @@ function RichSourceDocument(): RichDocument {
 }
 
 describe("lossless GLB selection behavior authoring", () => {
+    it("rejects animated assets because a behavior graph would take control of their animations", () => {
+        const document = RichSourceDocument();
+        document.animations = [{ name: "inspection", samplers: [], channels: [] }];
+        const source = BuildGlb(document);
+
+        expect(() => PatchKhrSelectionRevealGlb(source, 1, 2)).toThrow("Adding a behavior graph would stop the source GLB's animations from playing automatically");
+        expect(ReadGlbDocument(source)).toEqual(document);
+    });
+
     it("changes only the behavior fields and preserves names, IDs, hierarchy, materials, variants, resources, BIN, and unknown chunks", () => {
         const sourceDocument = RichSourceDocument();
         const bin = new Uint8Array(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]).buffer);
