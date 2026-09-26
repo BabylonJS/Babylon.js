@@ -193,6 +193,40 @@ describe("lossless GLB selection behavior authoring", () => {
         expect(() => PatchKhrSelectionRevealGlb(BuildGlb(document), 1, 2)).toThrow(state);
     });
 
+    it("rejects a reveal target beneath a hidden strict ancestor without changing its source GLB", () => {
+        const document = RichSourceDocument();
+        document.nodes[0].children = [1, 3];
+        document.nodes[2].extensions = { KHR_node_visibility: { visible: true } };
+        document.nodes.push({ name: "hidden reveal parent", children: [2], extensions: { KHR_node_visibility: { visible: false } } });
+        const source = BuildGlb(document);
+        const original = source.slice();
+
+        expect(() => PatchKhrSelectionRevealGlb(source, 1, 2)).toThrow("A reveal ancestor disables visibility.");
+        expect(source).toEqual(original);
+    });
+
+    it("rejects malformed visibility on a reveal ancestor, including one beyond the immediate parent", () => {
+        const document = RichSourceDocument();
+        document.nodes[0].children = [1, 3];
+        document.nodes.push({ name: "outer reveal parent", children: [4], extensions: { KHR_node_visibility: { visible: "no" } } });
+        document.nodes.push({ name: "inner reveal parent", children: [2], extensions: { KHR_node_visibility: { visible: true } } });
+
+        expect(() => PatchKhrSelectionRevealGlb(BuildGlb(document), 1, 2)).toThrow("A reveal ancestor disables visibility.");
+    });
+
+    it("accepts visible reveal ancestors and ignores a hidden branch outside the reveal hierarchy", () => {
+        const document = RichSourceDocument();
+        document.nodes[0].children = [1, 3, 4];
+        document.nodes.push({ name: "visible reveal parent", children: [2], extensions: { KHR_node_visibility: { visible: true } } });
+        document.nodes.push({ name: "unrelated hidden part", extensions: { KHR_node_visibility: { visible: false } } });
+
+        const authored = ReadGlbDocument(PatchKhrSelectionRevealGlb(BuildGlb(document), 1, 2));
+
+        expect(authored.nodes![3]).toEqual(document.nodes[3]);
+        expect(authored.nodes![4]).toEqual(document.nodes[4]);
+        expect(authored.nodes![2].extensions!.KHR_node_visibility).toEqual({ visible: false });
+    });
+
     it("rejects existing behavior data, conflicting node extensions, ancestor targets, and invalid indices", () => {
         const document = RichSourceDocument();
         const source = BuildGlb(document);

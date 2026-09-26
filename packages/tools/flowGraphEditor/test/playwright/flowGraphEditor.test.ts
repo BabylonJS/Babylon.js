@@ -3,7 +3,14 @@ import { readFileSync } from "fs";
 import { FlowGraphEditorPage } from "./fge.utils";
 import { AllFlowGraphBlocks } from "../../src/allBlockNames";
 
-function BuildExistingGlbFixture(withCompanionExtensions = false, withMultiPrimitiveTrigger = false, withAnimation = false, withSkin = false, withLosslessTokens = false) {
+function BuildExistingGlbFixture(
+    withCompanionExtensions = false,
+    withMultiPrimitiveTrigger = false,
+    withAnimation = false,
+    withSkin = false,
+    withLosslessTokens = false,
+    withHiddenRevealParent = false
+) {
     const document: any = {
         asset: { version: "2.0", generator: "maintenance-asset-pipeline" },
         scene: 0,
@@ -32,6 +39,11 @@ function BuildExistingGlbFixture(withCompanionExtensions = false, withMultiPrimi
         document.nodes[1].extensions.KHR_node_selectability = { extensions: { EXT_vendor_node: { trainingId: "trigger" } } };
         document.nodes[2].extensions = { KHR_node_visibility: { visible: true, extensions: { EXT_vendor_node: { trainingId: "reveal" } } } };
         document.extensionsUsed.push("KHR_node_selectability", "KHR_node_visibility", "EXT_vendor_node");
+    }
+    if (withHiddenRevealParent) {
+        document.nodes[0].children = [1, 3];
+        document.nodes.push({ name: "hidden reveal parent", children: [2], extensions: { KHR_node_visibility: { visible: false } } });
+        document.extensionsUsed.push("KHR_node_visibility");
     }
     if (withMultiPrimitiveTrigger) {
         document.meshes.push({ ...document.meshes[0], primitives: [...document.meshes[0].primitives] });
@@ -2486,6 +2498,38 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         await page.getByRole("button", { name: "Create behavior" }).click();
         await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("animated GLBs need explicit animation behavior");
         await page.screenshot({ path: testInfo.outputPath("khr-animated-glb-unsupported.png"), fullPage: true });
+        expect(downloads).toBe(0);
+        expect(await GetSceneContextSnapshot(page)).toEqual(originalScene);
+        expect(await fge.getGraphNames()).toEqual(["Graph 1"]);
+    });
+
+    test("rejects a reveal target beneath a hidden source ancestor without downloading or changing the scene", async ({ page }, testInfo) => {
+        const { bytes } = BuildExistingGlbFixture(false, false, false, false, false, true);
+        const fge = new FlowGraphEditorPage(page);
+        await fge.goto({ local: true });
+        await fge.assertEditorReady();
+        await page.evaluate(
+            (data) => {
+                const file = new File([new Uint8Array(data)], "hidden-reveal.glb", { type: "model/gltf-binary" });
+                const transfer = new DataTransfer();
+                transfer.items.add(file);
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            [...bytes]
+        );
+        await expect.poll(async () => (await GetSceneContextSnapshot(page))?.source).toBe("file");
+        const originalScene = await GetSceneContextSnapshot(page);
+        let downloads = 0;
+        page.on("download", () => downloads++);
+        await page.getByRole("button", { name: "New behavior" }).click();
+        await page.getByRole("combobox", { name: "Trigger mesh" }).click();
+        await page.getByRole("option", { name: /glTF node 1/ }).click();
+        await page.getByRole("combobox", { name: "Mesh to reveal" }).click();
+        await page.getByRole("option", { name: /glTF node 2/ }).click();
+        await page.getByRole("button", { name: "Create behavior" }).click();
+
+        await expect(page.getByRole("log", { name: "Flow graph log" })).toContainText("A reveal ancestor disables visibility.");
+        await page.screenshot({ path: testInfo.outputPath("khr-hidden-reveal-ancestor.png"), fullPage: true });
         expect(downloads).toBe(0);
         expect(await GetSceneContextSnapshot(page)).toEqual(originalScene);
         expect(await fge.getGraphNames()).toEqual(["Graph 1"]);
