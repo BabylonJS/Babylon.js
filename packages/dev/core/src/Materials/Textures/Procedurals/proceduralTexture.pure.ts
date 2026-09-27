@@ -523,6 +523,10 @@ export class ProceduralTexture extends Texture {
         // Update properties
         this._size = size;
         this._generateMipMaps = generateMipMaps;
+
+        // The cached readback belongs to the previous size: drop it so getContent() reads the new texture.
+        this._contentData = null;
+        this._contentUpdateId = -1;
     }
 
     private _checkUniform(uniformName: string): void {
