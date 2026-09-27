@@ -119,14 +119,21 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
             if (currentFrameId !== lastFrameId) {
                 lastFrameId = currentFrameId;
 
-                // Texture size only needs to be fetched once
-                if (!noiseTextureSize) {
-                    noiseTextureSize = texture.getSize();
-                }
+                const textureSize = texture.getSize();
+                // getSize() returns a shared cached object: snapshot the dimensions so a later resize
+                // cannot mutate the pair published together with the buffer.
+                const size = { width: textureSize.width, height: textureSize.height };
 
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 texture.getContent()?.then((data) => {
-                    noiseTextureData = data as Uint8Array;
+                    const buffer = data as Uint8Array;
+                    if (buffer.length !== size.width * size.height * 4) {
+                        // The readback returned a buffer for another size (e.g. the texture was resized
+                        // while the cached readback was pending): discard it and retry on the next frame.
+                        return;
+                    }
+                    noiseTextureSize = size;
+                    noiseTextureData = buffer;
                 });
             }
 

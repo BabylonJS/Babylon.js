@@ -714,7 +714,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 // while none of its previous readbacks is in flight to avoid piling up a promise per frame.
                 const noiseContent = noiseTexture.getContent();
                 if (noiseContent) {
-                    const noiseSize = noiseTexture.getSize();
+                    const textureSize = noiseTexture.getSize();
+                    // getSize() returns a shared cached object: snapshot the dimensions so a later resize
+                    // cannot mutate the pair published together with the buffer.
+                    const noiseSize = { width: textureSize.width, height: textureSize.height };
                     this._noiseTextureFetchInFlight = noiseTexture;
                     // eslint-disable-next-line github/no-then
                     noiseContent.then(
@@ -726,9 +729,15 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                                 // The texture was replaced while the readback was pending: discard the stale buffer.
                                 return;
                             }
+                            const buffer = data as Uint8Array;
+                            if (buffer.length !== noiseSize.width * noiseSize.height * 4) {
+                                // The readback returned a buffer for another size (e.g. the texture was resized
+                                // while the cached readback was pending): discard it and retry on the next update.
+                                return;
+                            }
                             // Publish the buffer and the dimensions captured for this texture together.
                             this._noiseTextureSize = noiseSize;
-                            this._noiseTextureData = data as Uint8Array;
+                            this._noiseTextureData = buffer;
                         },
                         () => {
                             // Allow a retry next frame.

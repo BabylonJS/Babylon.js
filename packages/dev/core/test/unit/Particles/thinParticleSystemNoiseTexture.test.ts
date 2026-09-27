@@ -36,6 +36,56 @@ const createDeferredTexture = (width: number, height: number): DeferredTexture =
 
 const flushMicrotasks = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
+type ResizableDeferredTexture = DeferredTexture & {
+    resize: (width: number, height: number) => void;
+};
+
+// Mimics ProceduralTexture.getContent(): while a readback is cached it returns that promise and
+// schedules the next readback (with the current size) behind it, so the resolved buffer can belong
+// to an older size than getSize() reports.
+const createResizableDeferredTexture = (width: number, height: number): ResizableDeferredTexture => {
+    // Mimic ThinTexture.getSize(): a shared cached object mutated in place when the texture is resized.
+    const cachedSize = { width, height };
+    let contentData: Promise<Uint8Array> | null = null;
+    let resolveReadback: (() => void) | null = null;
+
+    const startReadback = () => {
+        const captured = { width: cachedSize.width, height: cachedSize.height };
+        let resolvePromise: (data: Uint8Array) => void;
+        const promise = new Promise<Uint8Array>((resolve) => (resolvePromise = resolve));
+        resolveReadback = () => resolvePromise(new Uint8Array(captured.width * captured.height * 4));
+        return promise;
+    };
+
+    const texture: ResizableDeferredTexture = {
+        calls: 0,
+        dispose: () => {},
+        resize: (newWidth: number, newHeight: number) => {
+            cachedSize.width = newWidth;
+            cachedSize.height = newHeight;
+        },
+        getContent: () => {
+            texture.calls++;
+            if (contentData) {
+                contentData.then(() => {
+                    contentData = startReadback();
+                });
+                return contentData;
+            }
+            contentData = startReadback();
+            return contentData;
+        },
+        getSize: () => cachedSize,
+        resolve: () => {
+            const resolve = resolveReadback;
+            resolveReadback = null;
+            resolve?.();
+        },
+    };
+
+    return texture;
+};
+
 describe("ThinParticleSystem noise texture readback", () => {
     let engine: NullEngine;
     let scene: Scene;
@@ -116,5 +166,73 @@ describe("ThinParticleSystem noise texture readback", () => {
 
         expect(particleSystem._noiseTextureData?.length).toBe(4 * 4 * 4);
         expect(particleSystem._noiseTextureSize).toEqual({ width: 4, height: 4 });
+    });
+
+    it("does not publish a stale buffer when the same texture is reassigned after a resize", async () => {
+        const textureA = createResizableDeferredTexture(2, 2);
+        const textureB = createDeferredTexture(4, 4);
+
+        // A1 readback is pending at 2x2.
+        particleSystem.noiseTexture = textureA as unknown as ProceduralTexture;
+        particleSystem.updateFunction([]);
+
+        // Switch to B (A1 is still pending).
+        particleSystem.noiseTexture = textureB as unknown as ProceduralTexture;
+        particleSystem.updateFunction([]);
+
+        // Resize A and assign it again: getContent() returns A1's cached promise.
+        textureA.resize(4, 4);
+        particleSystem.noiseTexture = textureA as unknown as ProceduralTexture;
+        particleSystem.updateFunction([]);
+
+        textureA.resolve();
+        await flushMicrotasks();
+
+        // A1's 2x2 buffer must never be published with the captured 4x4 dimensions.
+        const size = particleSystem._noiseTextureSize;
+        const data = particleSystem._noiseTextureData;
+        expect(data === null || (size !== null && data.length === size.width * size.height * 4), `published ${data?.length} bytes for ${size?.width}x${size?.height}`).toBe(true);
+
+        // A retry must be able to publish the buffer matching the current size.
+        particleSystem.updateFunction([]);
+        textureA.resolve();
+        await flushMicrotasks();
+
+        expect(particleSystem._noiseTextureData?.length).toBe(4 * 4 * 4);
+        expect(particleSystem._noiseTextureSize).toEqual({ width: 4, height: 4 });
+    });
+
+    it("keeps the published dimensions stable when the current texture is resized in place", async () => {
+        const textureA = createResizableDeferredTexture(2, 2);
+        particleSystem.noiseTexture = textureA as unknown as ProceduralTexture;
+
+        particleSystem.updateFunction([]);
+        textureA.resolve();
+        await flushMicrotasks();
+
+        expect(particleSystem._noiseTextureSize).toEqual({ width: 2, height: 2 });
+        expect(particleSystem._noiseTextureData?.length).toBe(2 * 2 * 4);
+
+        // Resize the texture while it stays assigned: getSize() mutates its shared cached object.
+        textureA.resize(4, 4);
+        particleSystem.updateFunction([]);
+
+        // The pair published for the old buffer must not change until a matching buffer arrives.
+        expect(particleSystem._noiseTextureSize).toEqual({ width: 2, height: 2 });
+        expect(particleSystem._noiseTextureData?.length).toBe(2 * 2 * 4);
+
+        await flushMicrotasks();
+
+        // The stale cached promise resolves with the old buffer, which is discarded.
+        expect(particleSystem._noiseTextureSize).toEqual({ width: 2, height: 2 });
+        expect(particleSystem._noiseTextureData?.length).toBe(2 * 2 * 4);
+
+        // A retry publishes the buffer matching the new size.
+        particleSystem.updateFunction([]);
+        textureA.resolve();
+        await flushMicrotasks();
+
+        expect(particleSystem._noiseTextureSize).toEqual({ width: 4, height: 4 });
+        expect(particleSystem._noiseTextureData?.length).toBe(4 * 4 * 4);
     });
 });
