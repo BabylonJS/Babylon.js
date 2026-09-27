@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { NullEngine } from "core/Engines/nullEngine";
-import { type ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { Scene } from "core/scene";
 
@@ -230,6 +230,41 @@ describe("ThinParticleSystem noise texture readback", () => {
         // A retry publishes the buffer matching the new size.
         particleSystem.updateFunction([]);
         textureA.resolve();
+        await flushMicrotasks();
+
+        expect(particleSystem._noiseTextureSize).toEqual({ width: 4, height: 4 });
+        expect(particleSystem._noiseTextureData?.length).toBe(4 * 4 * 4);
+    });
+
+    it("advances to the resized texture after a refresh queued before the resize is discarded", async () => {
+        const texture = new ProceduralTexture("noise", 2, scene);
+        vi.spyOn(texture, "readPixels").mockImplementation((_faceIndex?: number, _level?: number, buffer?: ArrayBufferView | null) => {
+            if (buffer) {
+                // The engine reuses a supplied buffer as-is instead of reallocating it.
+                return Promise.resolve(buffer);
+            }
+            const size = texture.getSize();
+            return Promise.resolve(new Uint8Array(size.width * size.height * 4));
+        });
+
+        particleSystem.noiseTexture = texture;
+
+        particleSystem.updateFunction([]);
+        await flushMicrotasks();
+
+        expect(particleSystem._noiseTextureSize).toEqual({ width: 2, height: 2 });
+        expect(particleSystem._noiseTextureData?.length).toBe(2 * 2 * 4);
+
+        // A frame is rendered, so this update queues a refresh on the cached readback.
+        (texture as unknown as { _frameId: number })._frameId++;
+        particleSystem.updateFunction([]);
+
+        // Resize before that queued refresh runs.
+        texture.resize({ width: 4, height: 4 }, false);
+        await flushMicrotasks();
+
+        // The next update must read the resized texture instead of being rejected by the length guard.
+        particleSystem.updateFunction([]);
         await flushMicrotasks();
 
         expect(particleSystem._noiseTextureSize).toEqual({ width: 4, height: 4 });
