@@ -182,7 +182,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     public _noiseTextureSize: Nullable<ISize> = null;
     /** @internal */
     public _noiseTextureData: Nullable<Uint8Array> = null;
-    private _noiseTextureFetchInFlight = false;
+    private _noiseTextureFetchInFlight: Nullable<ProceduralTexture> = null;
     private _particles = new Array<Particle>();
     private _epsilon: number;
     private _capacity: number;
@@ -519,6 +519,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         this._noiseTexture = value;
 
+        // Invalidate the cached readback: a buffer and its dimensions must always come from the same texture.
+        this._noiseTextureSize = null;
+        this._noiseTextureData = null;
+
         if (!value) {
             _RemoveFromQueue(this._noiseCreation);
             _RemoveFromQueue(this._noiseProcessing);
@@ -704,22 +708,33 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
         // Update
         this.updateFunction = (particles: Particle[]): void => {
-            if (this.noiseTexture && !this._noiseTextureFetchInFlight) {
-                // We need to get texture data back to CPU. Only issue a new readback when the
-                // previous one has resolved to avoid piling up a promise per frame.
-                this._noiseTextureSize = this.noiseTexture.getSize();
-                const noiseContent = this.noiseTexture.getContent();
+            const noiseTexture = this.noiseTexture;
+            if (noiseTexture && this._noiseTextureFetchInFlight !== noiseTexture) {
+                // We need to get texture data back to CPU. Only issue a new readback for this texture
+                // while none of its previous readbacks is in flight to avoid piling up a promise per frame.
+                const noiseContent = noiseTexture.getContent();
                 if (noiseContent) {
-                    this._noiseTextureFetchInFlight = true;
+                    const noiseSize = noiseTexture.getSize();
+                    this._noiseTextureFetchInFlight = noiseTexture;
                     // eslint-disable-next-line github/no-then
                     noiseContent.then(
                         (data) => {
+                            if (this._noiseTextureFetchInFlight === noiseTexture) {
+                                this._noiseTextureFetchInFlight = null;
+                            }
+                            if (this.noiseTexture !== noiseTexture) {
+                                // The texture was replaced while the readback was pending: discard the stale buffer.
+                                return;
+                            }
+                            // Publish the buffer and the dimensions captured for this texture together.
+                            this._noiseTextureSize = noiseSize;
                             this._noiseTextureData = data as Uint8Array;
-                            this._noiseTextureFetchInFlight = false;
                         },
                         () => {
                             // Allow a retry next frame.
-                            this._noiseTextureFetchInFlight = false;
+                            if (this._noiseTextureFetchInFlight === noiseTexture) {
+                                this._noiseTextureFetchInFlight = null;
+                            }
                         }
                     );
                 }
