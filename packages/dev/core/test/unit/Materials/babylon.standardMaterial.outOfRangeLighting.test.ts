@@ -26,10 +26,14 @@ import "core/Shaders/default.fragment";
 import "core/Shaders/default.vertex";
 
 // The opt-in range test, and the unchanged in-range attenuation it guards.
-const RangeTest = /dot\(direction,\s*direction\)\s*>=\s*range\s*\*\s*range/;
+const RangeTest = /dot\(direction,\s*direction\)\s*>=\s*range\s*\*\s*range/g;
 const Attenuation = /attenuation\s*=\s*max\(0\.,\s*1\.0\s*-\s*length\(direction\)\s*\/\s*range\);/;
+// computeLighting (point lights), computeIESSpotLighting and computeSpotLighting each get the test.
+const LightFunctionsWithRange = 3;
 
-describe("StandardMaterial point-light range skip", () => {
+const CountRangeTests = (code: string) => (code.match(RangeTest) ?? []).length;
+
+describe("StandardMaterial out-of-range lighting skip", () => {
     let engine: Engine;
     let scene: Scene;
 
@@ -80,21 +84,21 @@ describe("StandardMaterial point-light range skip", () => {
         it("leaves the default shader without the range test", () => {
             const code = run([]);
 
-            expect(code).not.toMatch(RangeTest);
+            expect(CountRangeTests(code)).toBe(0);
             expect(code).toMatch(Attenuation);
         });
 
-        it("adds the range test when the material opts in", () => {
-            const code = run(["#define SKIP_POINTLIGHT_OUTSIDE_RANGE"]);
+        it("adds the range test to point, spot and IES spot lighting when the material opts in", () => {
+            const code = run(["#define SKIP_OUT_OF_RANGE_LIGHTING"]);
 
-            expect(code).toMatch(RangeTest);
+            expect(CountRangeTests(code)).toBe(LightFunctionsWithRange);
             expect(code).toMatch(Attenuation);
         });
 
         it("keeps the full path for NDOTL consumers such as CellMaterial", () => {
-            const code = run(["#define SKIP_POINTLIGHT_OUTSIDE_RANGE", "#define NDOTL"]);
+            const code = run(["#define SKIP_OUT_OF_RANGE_LIGHTING", "#define NDOTL"]);
 
-            expect(code).not.toMatch(RangeTest);
+            expect(CountRangeTests(code)).toBe(0);
         });
     });
 
@@ -107,24 +111,24 @@ describe("StandardMaterial point-light range skip", () => {
         const subMesh = mesh.subMeshes[0];
 
         material.isReadyForSubMesh(mesh, subMesh, false);
-        expect(material.skipPointLightShadingOutsideRange).toBe(false);
-        expect((subMesh.materialDefines as StandardMaterialDefines).SKIP_POINTLIGHT_OUTSIDE_RANGE).toBe(false);
+        expect(material.skipOutOfRangeLighting).toBe(false);
+        expect((subMesh.materialDefines as StandardMaterialDefines).SKIP_OUT_OF_RANGE_LIGHTING).toBe(false);
 
-        material.skipPointLightShadingOutsideRange = true;
+        material.skipOutOfRangeLighting = true;
         material.isReadyForSubMesh(mesh, subMesh, false);
-        expect((subMesh.materialDefines as StandardMaterialDefines).SKIP_POINTLIGHT_OUTSIDE_RANGE).toBe(true);
+        expect((subMesh.materialDefines as StandardMaterialDefines).SKIP_OUT_OF_RANGE_LIGHTING).toBe(true);
 
-        material.skipPointLightShadingOutsideRange = false;
+        material.skipOutOfRangeLighting = false;
         material.isReadyForSubMesh(mesh, subMesh, false);
-        expect((subMesh.materialDefines as StandardMaterialDefines).SKIP_POINTLIGHT_OUTSIDE_RANGE).toBe(false);
+        expect((subMesh.materialDefines as StandardMaterialDefines).SKIP_OUT_OF_RANGE_LIGHTING).toBe(false);
     });
 
     it("round-trips the opt-in through serialization", () => {
         const material = new StandardMaterial("material", scene);
-        material.skipPointLightShadingOutsideRange = true;
+        material.skipOutOfRangeLighting = true;
 
         const parsed = StandardMaterial.Parse(material.serialize(), scene, "");
 
-        expect(parsed.skipPointLightShadingOutsideRange).toBe(true);
+        expect(parsed.skipOutOfRangeLighting).toBe(true);
     });
 });

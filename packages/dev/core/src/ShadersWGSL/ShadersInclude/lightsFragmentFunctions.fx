@@ -19,10 +19,10 @@ fn computeLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4f, diff
 	{
 		var direction: vec3f = lightData.xyz - fragmentInputs.vPositionW;
 
-#if defined(SKIP_POINTLIGHT_OUTSIDE_RANGE) && !defined(NDOTL)
-		// Opt-in (StandardMaterial.skipPointLightShadingOutsideRange): outside the light's range both color terms are
-		// zero, so skip them. Squared distances keep the sqrt and divide off the skipped path. NDOTL callers consume
-		// the unattenuated N dot L and keep the full path.
+#if defined(SKIP_OUT_OF_RANGE_LIGHTING) && !defined(NDOTL)
+		// Opt-in (StandardMaterial.skipOutOfRangeLighting): outside the light's range both color terms are zero, so
+		// skip them. Squared distances keep the sqrt and divide off the skipped path. NDOTL callers consume the
+		// unattenuated N dot L and keep the full path.
 		if (dot(direction, direction) >= range * range) {
 			result.diffuse = vec3f(0.);
 #ifdef SPECULARTERM
@@ -88,6 +88,17 @@ fn computeBasicSpotLighting(viewDirectionW: vec3f, lightVectorW: vec3f, vNormal:
 
 fn computeIESSpotLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4f, lightDirection: vec4f, diffuseColor: vec3f, specularColor: vec3f, range: f32, glossiness: f32, iesLightTexture: texture_2d<f32>, iesLightTextureSampler: sampler) -> lightingInfo {
 	var direction: vec3f = lightData.xyz - fragmentInputs.vPositionW;
+#if defined(SKIP_OUT_OF_RANGE_LIGHTING) && !defined(NDOTL)
+	// Opt-in (StandardMaterial.skipOutOfRangeLighting): see computeLighting.
+	if (dot(direction, direction) >= range * range) {
+		var result: lightingInfo;
+		result.diffuse = vec3f(0.);
+#ifdef SPECULARTERM
+		result.specular = vec3f(0.);
+#endif
+		return result;
+	}
+#endif
 	var lightVectorW: vec3f = normalize(direction);
 	var attenuation: f32 = max(0., 1.0 - length(direction) / range);
 
@@ -116,6 +127,17 @@ fn computeIESSpotLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4
 
 fn computeSpotLighting(viewDirectionW: vec3f, vNormal: vec3f , lightData: vec4f, lightDirection: vec4f, diffuseColor: vec3f, specularColor: vec3f, range: f32, glossiness: f32) -> lightingInfo {
 	var direction: vec3f = lightData.xyz - fragmentInputs.vPositionW;
+#if defined(SKIP_OUT_OF_RANGE_LIGHTING) && !defined(NDOTL)
+	// Opt-in (StandardMaterial.skipOutOfRangeLighting): see computeLighting.
+	if (dot(direction, direction) >= range * range) {
+		var result: lightingInfo;
+		result.diffuse = vec3f(0.);
+#ifdef SPECULARTERM
+		result.specular = vec3f(0.);
+#endif
+		return result;
+	}
+#endif
 	var lightVectorW: vec3f = normalize(direction);
 	var attenuation: f32 = max(0., 1.0 - length(direction) / range);
 

@@ -3839,8 +3839,8 @@
             "dependsOn": ["Lights", "Materials", "Meshes", "NodeMaterial", "PBR"]
         },
         {
-            "title": "StandardMaterial point lights skip shading outside range",
-            "playgroundId": "#5LPD6E",
+            "title": "StandardMaterial skips out-of-range lighting",
+            "playgroundId": "#5LPD6E#1",
             "dependsOn": ["Lights", "Materials", "Meshes"]
         },
         {

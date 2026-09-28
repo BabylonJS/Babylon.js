@@ -150,7 +150,7 @@ export class StandardMaterialDefines extends ImageProcessingDefinesMixin(Standar
     public REFRACTIONMAP_3D = false;
     public REFLECTIONOVERALPHA = false;
     public TWOSIDEDLIGHTING = false;
-    public SKIP_POINTLIGHT_OUTSIDE_RANGE = false;
+    public SKIP_OUT_OF_RANGE_LIGHTING = false;
     public SHADOWFLOAT = false;
     public MORPHTARGETS = false;
     public MORPHTARGETS_POSITION = false;
@@ -535,15 +535,15 @@ export class StandardMaterial extends StandardMaterialBase {
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
     public accessor maxSimultaneousLights: number;
 
-    @serialize("skipPointLightShadingOutsideRange")
-    private _skipPointLightShadingOutsideRange = false;
+    @serialize("skipOutOfRangeLighting")
+    private _skipOutOfRangeLighting = false;
     /**
-     * If set to true, point-light shading is skipped for fragments outside the light range, where the light contributes nothing.
-     * Only lights with a finite range can be skipped. The extra per-fragment test costs time when most fragments are within range
-     * of most lights, so only enable it for sparse point lighting measured on the target devices (default: false).
+     * If set to true, point and spot lights skip their lighting computations for fragments beyond the light range, where they
+     * contribute nothing. Only lights with a finite range are affected. The extra per-fragment test costs time when most fragments
+     * are within range of most lights, so only enable it for sparse lighting measured on the target devices (default: false).
      */
     @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public accessor skipPointLightShadingOutsideRange: boolean;
+    public accessor skipOutOfRangeLighting: boolean;
 
     @serialize("invertNormalMapX")
     private _invertNormalMapX = false;
@@ -762,7 +762,7 @@ export class StandardMaterial extends StandardMaterialBase {
 
         // Lights
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
-        defines.SKIP_POINTLIGHT_OUTSIDE_RANGE = this._skipPointLightShadingOutsideRange;
+        defines.SKIP_OUT_OF_RANGE_LIGHTING = this._skipOutOfRangeLighting;
 
         if (!AreLightsTexturesReady(scene, mesh, this._maxSimultaneousLights, this._disableLighting)) {
             return false;
