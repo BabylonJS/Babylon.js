@@ -1,14 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-    ConnectionPointType as LiteConnectionPointType,
-    type CreateImageTexture,
-    InputBlock as LiteInputBlock,
-    SmartFilter as LiteSmartFilter,
-} from "@babylonjs/smart-filters-lite";
 import { GetTextureInputBlockEditorData, GetTextureInputBlockUrl } from "../../src/graphSystem/getEditorData.js";
 
 type TextureInputBlock = Parameters<typeof GetTextureInputBlockEditorData>[0];
-type LiteTexture = ReturnType<typeof CreateImageTexture>;
 
 describe("texture editor compatibility", () => {
     it("reads editor metadata from a full Smart Filter texture", () => {
@@ -36,23 +29,27 @@ describe("texture editor compatibility", () => {
     });
 
     it("uses safe defaults for a Lite GLTexture", () => {
-        const texture = {
-            handle: {} as LiteTexture["handle"],
-            target: 3553,
-            width: 64,
-            height: 32,
-            isReady: true,
-        } satisfies LiteTexture;
-        const inputBlock = new LiteInputBlock(new LiteSmartFilter("Lite filter"), "Texture input", LiteConnectionPointType.Texture, texture);
+        const inputBlock = {
+            editorData: null,
+            runtimeValue: {
+                value: {
+                    handle: {},
+                    target: 3553,
+                    width: 64,
+                    height: 32,
+                    isReady: true,
+                },
+            },
+        } as unknown as TextureInputBlock;
 
-        expect(GetTextureInputBlockEditorData(inputBlock as unknown as TextureInputBlock)).toEqual({
+        expect(GetTextureInputBlockEditorData(inputBlock)).toEqual({
             url: null,
             urlTypeHint: null,
             anisotropicFilteringLevel: null,
             flipY: true,
             forcedExtension: null,
         });
-        expect(GetTextureInputBlockUrl(inputBlock as unknown as TextureInputBlock)).toBeNull();
+        expect(GetTextureInputBlockUrl(inputBlock)).toBeNull();
     });
 
     it("preserves the full texture URL fallback when editor metadata has no URL", () => {

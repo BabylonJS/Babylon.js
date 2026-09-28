@@ -2,8 +2,6 @@ import { describe, expect, it } from "vitest";
 import { SmartFilter } from "@babylonjs/smart-filters-lite";
 import { GetSmartFilterEditorOptions, IsCompatibleSmartFilter } from "../../src/smartFilterCompatibility.js";
 
-type LiteEngineContext = Parameters<SmartFilter["createRuntimeAsync"]>[0];
-
 class ForeignBundleSmartFilter {
     public readonly name = "Foreign filter";
     public readonly attachedBlocks: unknown[] = [];
@@ -24,27 +22,29 @@ describe("Smart Filter debugger compatibility", () => {
         expect(IsCompatibleSmartFilter(new ForeignBundleSmartFilter())).toBe(true);
     });
 
-    it("passes a Lite engine context through without requiring ThinEngine capabilities", () => {
+    it("omits a Lite engine context from ThinEngine-only editor consumers", () => {
         const filter = new SmartFilter("Lite filter");
         const engineContext = {
-            canvas: {} as LiteEngineContext["canvas"],
-            gl: {} as LiteEngineContext["gl"],
-            caps: {
-                maxTextureSize: 4096,
-                maxTextureUnits: 16,
-                parallelShaderCompile: null,
-                textureFloatRender: true,
-                textureFloatLinearFiltering: true,
-                textureHalfFloatRender: true,
-                textureHalfFloatLinearFiltering: true,
-                needPOTTextures: false,
-            },
-        } satisfies LiteEngineContext;
+            canvas: {},
+            gl: {},
+            caps: {},
+        };
 
         const options = GetSmartFilterEditorOptions({ currentSmartFilter: filter, thinEngine: engineContext });
 
         expect(options?.filter).toBe(filter);
-        expect(options?.engine).toBe(engineContext);
+        expect(options?.engine).toBeUndefined();
+    });
+
+    it("preserves a host engine with the ThinEngine resize capability", () => {
+        const filter = new ForeignBundleSmartFilter();
+        const engine = {
+            resize: () => {},
+        };
+
+        const options = GetSmartFilterEditorOptions({ currentSmartFilter: filter, thinEngine: engine });
+
+        expect(options?.engine).toBe(engine);
     });
 
     it("rejects unrelated page globals", () => {

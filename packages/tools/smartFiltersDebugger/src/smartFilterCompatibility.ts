@@ -6,6 +6,16 @@ type SmartFilterHostWindow = {
 };
 
 type CompatibleSmartFilter = NonNullable<SmartFilterEditorOptions["filter"]>;
+type CompatibleThinEngine = NonNullable<SmartFilterEditorOptions["engine"]>;
+
+/**
+ * Whether a host engine supports the editor operations that require a ThinEngine.
+ * @param value - The value to inspect
+ * @returns Whether the engine can be passed to the editor
+ */
+function IsCompatibleThinEngine(value: unknown): value is CompatibleThinEngine {
+    return !!value && typeof value === "object" && typeof (value as { resize?: unknown }).resize === "function";
+}
 
 /**
  * Whether a value exposes the graph capabilities required by the debugger.
@@ -54,8 +64,10 @@ export function GetSmartFilterEditorOptions(hostWindow: SmartFilterHostWindow): 
         return null;
     }
 
+    const engine = hostWindow.thinEngine;
+
     return {
         filter: hostWindow.currentSmartFilter,
-        engine: hostWindow.thinEngine as SmartFilterEditorOptions["engine"],
+        engine: IsCompatibleThinEngine(engine) ? engine : undefined,
     };
 }
