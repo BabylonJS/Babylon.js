@@ -314,6 +314,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     // Frame counter driving the temporal-upsampling jitter cycle (which full-res sub-cell to sample).
     private _pointFrameCounter = 0;
     private _pointResultReady = false;
+    // Set once the streaming-unsupported warning has been emitted, so it is not repeated every frame.
+    private _pointStreamingWarned = false;
     private _pointRenderer: Nullable<GaussianPointSplattingRenderer> = null;
     private _pointBlit: Nullable<GaussianPointSplattingBlitMaterial> = null;
     private _pointBlitMesh: Nullable<Mesh> = null;
@@ -596,7 +598,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * shadow depth, GPU picking, IBL voxelization and prepass are unaffected — only the main color pass
      * changes. See {@link pointSplattingDepthRenderMode} to route the scene's DepthRenderer through the
      * same compute result. With multiple active cameras, falls back to the classic renderer because the
-     * compute result is camera-specific. WebGPU only.
+     * compute result is camera-specific. Streamed (GPU-decoded) parts are not supported and also fall
+     * back to the classic renderer for the whole mesh. WebGPU only.
      */
     public get pointSplattingRenderMode(): boolean {
         return this._pointMode;
@@ -628,7 +631,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * and fully independent of
      * {@link pointSplattingRenderMode}: both toggles consume the same shared compute, which runs whenever
      * either one is on. Only the DepthRenderer pass is affected — shadows, prepass/geometry AOV and GPU
-     * picking still rasterize the classic geometry. Multiple active cameras use the classic depth path.
+     * picking still rasterize the classic geometry. Multiple active cameras use the classic depth path,
+     * as do meshes hosting streamed (GPU-decoded) parts.
      * WebGPU only.
      */
     public get pointSplattingDepthRenderMode(): boolean {
@@ -654,7 +658,21 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     /** True while either point-splatting mode is on, i.e. while the shared compute must run. */
     private get _pointComputeActive(): boolean {
-        return this._pointMode || this._pointDepthMode;
+        return (this._pointMode || this._pointDepthMode) && !this._pointStreamingUnsupported;
+    }
+
+    /**
+     * True when this mesh hosts a streamed (GPU-decoded) region, which point splatting cannot render.
+     *
+     * A streaming engine decodes straight into the compound's shared GPU atlas and never populates the
+     * retained CPU `_splatsData` (the reserved region stays zeroed padding), but the point-splatting
+     * compute buffers are built exclusively by CPU-decoding `_splatsData`. Rendering point splats for
+     * such a mesh would therefore drop the streamed content entirely, so both point modes fall back to
+     * the classic rasterized path for the whole mesh instead. Re-evaluated per frame, because a stream
+     * can be reserved or removed after the mode was toggled on.
+     */
+    private get _pointStreamingUnsupported(): boolean {
+        return this._hasStreamingPart;
     }
 
     /** Density multiplier for point splatting (higher = denser and slower). */
@@ -1119,6 +1137,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * binds the resolved buffers to the blit material for the color pass. */
     private _pointRunCompute(): void {
         this._pointResultReady = false;
+        if ((this._pointMode || this._pointDepthMode) && this._pointStreamingUnsupported && !this._pointStreamingWarned) {
+            this._pointStreamingWarned = true;
+            Logger.Warn(
+                "GaussianSplattingMesh: point splatting does not support streamed parts (their splats are GPU-decoded and never reach the retained CPU splat data); falling back to the classic renderer."
+            );
+        }
         if (!this._pointComputeActive || !this.isEnabled() || !this._pointRenderer || (this._scene.activeCameras?.length ?? 0) > 1) {
             return;
         }
