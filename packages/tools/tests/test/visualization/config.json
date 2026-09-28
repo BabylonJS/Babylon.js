@@ -3839,6 +3839,16 @@
             "dependsOn": ["Lights", "Materials", "Meshes", "NodeMaterial", "PBR"]
         },
         {
+            "title": "StandardMaterial point lights skip shading outside range",
+            "playgroundId": "#5LPD6E",
+            "dependsOn": ["Lights", "Materials", "Meshes"]
+        },
+        {
+            "title": "CellMaterial point lights with finite range",
+            "playgroundId": "#R8MA0W",
+            "dependsOn": ["LibMaterials", "Lights", "Materials", "Meshes"]
+        },
+        {
             "title": "Clustered Light Serialization",
             "playgroundId": "#QRQPNN#0",
             "referenceImage": "clustered-light-serialization.png",

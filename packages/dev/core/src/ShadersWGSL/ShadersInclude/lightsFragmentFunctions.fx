@@ -19,11 +19,11 @@ fn computeLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4f, diff
 	{
 		var direction: vec3f = lightData.xyz - fragmentInputs.vPositionW;
 
-		attenuation = max(0., 1.0 - length(direction) / range);
-#ifndef NDOTL
-		// Outside the point light's range both color terms are zero. Keep the
-		// full path when a caller also consumes the unattenuated N dot L.
-		if (attenuation == 0.) {
+#if defined(SKIP_POINTLIGHT_OUTSIDE_RANGE) && !defined(NDOTL)
+		// Opt-in (StandardMaterial.skipPointLightShadingOutsideRange): outside the light's range both color terms are
+		// zero, so skip them. Squared distances keep the sqrt and divide off the skipped path. NDOTL callers consume
+		// the unattenuated N dot L and keep the full path.
+		if (dot(direction, direction) >= range * range) {
 			result.diffuse = vec3f(0.);
 #ifdef SPECULARTERM
 			result.specular = vec3f(0.);
@@ -31,6 +31,8 @@ fn computeLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4f, diff
 			return result;
 		}
 #endif
+
+		attenuation = max(0., 1.0 - length(direction) / range);
 		lightVectorW = normalize(direction);
 	}
 	else
