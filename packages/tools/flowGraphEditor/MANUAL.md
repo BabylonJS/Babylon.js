@@ -82,8 +82,9 @@ Click the **✕** button on a variable row to delete it. This removes all `GetVa
 
 **Creating a KHR_interactivity selection behavior:**
 
-- Start with one empty graph and the editor's default scene (or a Playground scene). Choose **New behavior** in Scene Preview, then select a visible, pickable trigger mesh and a different enabled mesh to reveal.
-- **Create behavior** exports and reloads the preview as a GLB with a standards-based selection graph. Babylon-only scene features may be omitted. **New behavior** is disabled for imported scene files because this export path cannot preserve every source extension.
+- Start with one empty graph and the editor's default scene, a Playground scene, or an imported graphless `.glb`. Choose **New behavior** in Scene Preview, then select a visible, pickable trigger mesh and a different enabled mesh to reveal. Imported `.gltf` and `.babylon` scene files do not support **New behavior**.
+- **Create behavior** generates and reloads a GLB with a standards-based selection graph. For an imported `.glb`, it patches and downloads the retained source GLB without reserializing its scene or binary chunks. Keep any external buffer or image files at their referenced paths; they are not included in the GLB download. Default and Playground scenes use glTF scene export, which may omit Babylon-only features.
+- The source-preserving GLB download is the saved authoring result. After it reloads, **Export KHR glTF**, **Export KHR GLB**, and Babylon-specific scene export are disabled for that authored GLB; subsequent graph edits cannot be saved through those actions.
 - **Reset** restores the initially hidden mesh, so the selection can be replayed without losing current graph edits.
 
 **Importing a glTF with an interactive flow graph:**
@@ -100,10 +101,8 @@ Click the **✕** button on a variable row to delete it. This removes all `GetVa
 
 **Exporting:**
 
-- Click **Export glTF (.glb)** in the FILE section of the property panel.
-- If a preview scene is loaded and the serializers package is available, the scene and flow graph are exported together.
-- Otherwise, a minimal `.glb` containing only the flow graph data is created.
-- The exported file uses the **BABYLON_flow_graph** custom extension and can be re-imported into this editor.
+- **Export KHR glTF** and **Export KHR GLB** export imported KHR graph sets when enabled. These actions do not re-export a GLB created by the source-preserving **New behavior** path.
+- **Export BABYLON_flow_graph GLB** in the FILE section saves ordinary Flow Graph JSON in Babylon's custom extension. With a preview scene and the serializers package available, it exports the scene and graph together; otherwise, it creates a minimal graph-only GLB. This action is also disabled after source-preserving authoring.
 
 ### Composite Templates
 
