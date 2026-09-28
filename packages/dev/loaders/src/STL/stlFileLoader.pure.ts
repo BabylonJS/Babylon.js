@@ -85,7 +85,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             // check meshesNames
             if (meshesNames && meshName) {
                 if (meshesNames instanceof Array) {
-                    if (!meshesNames.indexOf(meshName)) {
+                    if (meshesNames.indexOf(meshName) === -1) {
                         continue;
                     }
                 } else {
