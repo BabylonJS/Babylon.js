@@ -847,7 +847,14 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                     const document = ReadGlbDocument(new Uint8Array(await file.arrayBuffer()));
                     if (Array.isArray(document.nodes)) {
                         const hasAnimations = document.animations !== undefined && (!Array.isArray(document.animations) || document.animations.length > 0);
-                        sourceGlb = { file, companionFiles, nodeCount: document.nodes.length, hasAnimations, authoredBehavior, externalResourceUris: GetGlbExternalResourceUris(document) };
+                        sourceGlb = {
+                            file,
+                            companionFiles,
+                            nodeCount: document.nodes.length,
+                            hasAnimations,
+                            authoredBehavior,
+                            externalResourceUris: GetGlbExternalResourceUris(document),
+                        };
                     }
                 } catch {
                     // The preview can still load files outside this patcher's supported GLB framing.
@@ -1367,7 +1374,7 @@ class ScenePreviewInner extends React.Component<IScenePreviewComponentInnerProps
                         )}
                     </div>
                     {error && <Body1 className={classes.error}>{error}</Body1>}
-                    {sourceGlb?.authoredBehavior && externalResourceWarning && <Body1 data-testid="external-resource-warning-status">{externalResourceWarning}</Body1>}
+                    {externalResourceWarning && <Body1 data-testid="external-resource-warning-status">{externalResourceWarning}</Body1>}
                     {ctx && (
                         <div className={classes.status}>
                             <Body1 className={classes.statusCount}>{sceneObjectCount}</Body1> objects in scene context

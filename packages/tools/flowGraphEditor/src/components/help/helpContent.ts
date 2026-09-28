@@ -460,10 +460,10 @@ export const HelpTopics: IHelpTopic[] = [
         title: "glTF Import and Export",
         sections: [
             {
-                heading: "Authoring a selection behavior",
-                html: `<p>With one empty graph and an editable preview scene, select <strong>New behavior</strong> in the Scene Preview pane. Choose a visible trigger mesh and a second mesh, then select <strong>Create behavior</strong>. The editor creates a standards-based <code>KHR_interactivity</code> graph: selecting the trigger reveals the initially hidden mesh. The generated GLB is reimported for editing and can be exported using the KHR actions below.</p>
-<p>The trigger must remain visible and pickable; the mesh to reveal must be enabled and cannot contain the trigger. This first authoring template replaces the empty graph. The preview is exported and reloaded as glTF, so Babylon-only scene features may be omitted. New behavior is disabled for imported scene files because this scene export cannot preserve every source extension. Imported KHR graphs can still be edited, and unsupported FlowGraph blocks produce export diagnostics.</p>
-<p>Reset restores the authored hidden state for this behavior without replacing your current graph edits. For other imported behaviors, Reset restores <code>KHR_node_visibility</code> defaults only; reopen the asset to restore other scene changes.</p>`,
+                heading: "Authoring a behavior",
+                html: `<p>With one empty graph and the default scene, a Playground scene, or a graphless <code>.glb</code>, select <strong>New behavior</strong> in Scene Preview. <strong>Select to reveal</strong> uses a visible, pickable trigger mesh and a different enabled mesh. <strong>Two-step procedure</strong> uses five distinct roles: first part, second part, next-step cue, completion cue, and Reset control. Selecting the parts in order advances the cues; selecting Reset starts over.</p>
+<p><strong>Create behavior</strong> reloads an editable <code>KHR_interactivity</code> GLB. An imported <code>.glb</code> is patched and downloaded without reserializing its scene or binary chunks. Keep any external image or buffer files at their referenced paths; they are not included in the GLB download. Default and Playground scenes use glTF scene export, which may omit Babylon-only features. Imported <code>.gltf</code> and <code>.babylon</code> files do not support New behavior.</p>
+<p>Reset replays the authored behavior without replacing graph edits. It restores source <code>KHR_node_visibility</code>, <code>KHR_node_selectability</code>, and <code>KHR_node_hoverability</code> values, including implicit defaults actually changed by pointer operations. Reopen an imported asset to restore other scene changes.</p>`,
             },
             {
                 heading: "Importing from glTF",
@@ -473,7 +473,7 @@ export const HelpTopics: IHelpTopic[] = [
             },
             {
                 heading: "Exporting KHR_interactivity",
-                html: `<p>Use <strong>Export KHR glTF</strong> or <strong>Export KHR GLB</strong> to export an imported graph set through the standards-compliant <code>KHR_interactivity</code> serializer. The editor validates every logical node and imported composite before export and reports the exact graph, node, or socket that cannot be represented.</p>
+                html: `<p>Use <strong>Export KHR glTF</strong> or <strong>Export KHR GLB</strong> to export an imported graph set. For an imported <code>.glb</code>, <strong>Export KHR GLB</strong> saves representable graph edits into the retained source document without rewriting unrelated scene data or binary chunks. The glTF and Babylon-specific scene export actions are unavailable for that source-preserving path. The editor validates every logical node and imported composite before export and reports edits that cannot be represented.</p>
 <p>Imported multi-block operations must remain structurally intact. Unknown operations supplied by additional glTF extensions remain typed no-op blocks and round-trip without claiming runtime support.</p>
 <p><strong>Export BABYLON_flow_graph GLB</strong> remains a separate Babylon-specific option for ordinary Flow Graph JSON. It does not emit <code>KHR_interactivity</code>.</p>`,
             },

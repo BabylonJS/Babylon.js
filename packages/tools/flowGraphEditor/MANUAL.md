@@ -80,11 +80,12 @@ Click the **✕** button on a variable row to delete it. This removes all `GetVa
 
 ### glTF Import / Export
 
-**Creating a KHR_interactivity selection behavior:**
+**Creating a KHR_interactivity behavior:**
 
-- Start with one empty graph and the editor's default scene (or a Playground scene). Choose **New behavior** in Scene Preview, then select a visible, pickable trigger mesh and a different enabled mesh to reveal.
-- **Create behavior** exports and reloads the preview as a GLB with a standards-based selection graph. Babylon-only scene features may be omitted. **New behavior** is disabled for imported scene files because this export path cannot preserve every source extension.
-- **Reset** restores the initially hidden mesh, so the selection can be replayed without losing current graph edits.
+- Start with one empty graph and the default scene, a Playground scene, or an imported graphless `.glb`. Choose **New behavior** in Scene Preview and select **Select to reveal** or **Two-step procedure**.
+- **Select to reveal** uses a visible, pickable trigger mesh and a different enabled mesh to reveal. **Two-step procedure** uses five distinct roles: first part, second part, next-step cue, completion cue, and Reset control. Selecting the parts in order advances the cues; selecting Reset starts over.
+- **Create behavior** exports and reloads the preview as a GLB. For an imported `.glb`, it patches the source document without reserializing its scene or binary chunks and downloads the authored GLB. Keep any external buffer or image files at their referenced paths; the GLB download does not include them. For a default or Playground scene, Babylon-only features may be omitted during glTF export. Imported `.gltf` and `.babylon` files do not support **New behavior**.
+- **Reset** replays the behavior without losing current graph edits. It restores source `KHR_node_visibility`, `KHR_node_selectability`, and `KHR_node_hoverability` values, including implicit defaults actually changed by pointer operations.
 
 **Importing a glTF with an interactive flow graph:**
 
@@ -92,6 +93,7 @@ Click the **✕** button on a variable row to delete it. This removes all `GetVa
 - If the file contains a **KHR_interactivity** extension, the flow graph is automatically loaded into the editor.
 - If the file contains a **BABYLON_flow_graph** custom extension (created by this editor's export), the flow graph is restored as well.
 - The scene from the file is loaded as the preview scene so block references to meshes, cameras, and lights can be resolved.
+- You can edit a representable imported KHR graph, then use **Export KHR GLB**. For an imported `.glb`, this patches the retained source GLB; unrelated scene data and chunks remain intact. Unsupported edits receive export diagnostics. **Export KHR glTF** and Babylon-specific scene export are unavailable for source-preserving GLB editing.
 
 **Loading a glTF graph without a scene:**
 
@@ -128,12 +130,12 @@ The **Undo** (↩) and **Redo** (↪) buttons are at the left side of the toolba
 
 ### Execution Controls
 
-| Button | Label     | Description                                                                                                                                                                        |
-| ------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ▶      | **Start** | Starts executing the flow graph. Enabled when the graph is stopped or paused.                                                                                                      |
-| ⏸      | **Pause** | Pauses execution. The graph can be resumed with Start.                                                                                                                             |
-| ⏹      | **Stop**  | Stops execution and resets execution state.                                                                                                                                        |
-| ↺      | **Reset** | Stops execution and recreates the default scene, reloads a snippet, or restores imported `KHR_node_visibility` defaults. Other imported scene changes require reopening the asset. |
+| Button | Label     | Description                                                                                                                                                                                                                                                  |
+| ------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ▶      | **Start** | Starts executing the flow graph. Enabled when the graph is stopped or paused.                                                                                                                                                                                |
+| ⏸      | **Pause** | Pauses execution. The graph can be resumed with Start.                                                                                                                                                                                                       |
+| ⏹      | **Stop**  | Stops execution and resets execution state.                                                                                                                                                                                                                  |
+| ↺      | **Reset** | Stops execution and recreates the default scene, reloads a snippet, or restores imported `KHR_node_visibility`, `KHR_node_selectability`, and `KHR_node_hoverability` values changed by the graph. Other imported scene changes require reopening the asset. |
 
 The **state indicator** next to the controls shows the current graph state: `Stopped`, `Running`, `Paused`, or `Breakpoint`.
 
@@ -502,7 +504,7 @@ The editor includes blocks for controlling audio playback using the Babylon.js A
 - **Use debug blocks liberally** — they're zero-cost when the graph isn't running and give you visibility into data flow.
 - **Step through unfamiliar graphs** — set a breakpoint on the first block and use Step to trace the execution path.
 - **Watch the flow animation** — in debug mode, the animated dots show you the actual order of execution, which can reveal unexpected paths.
-- **Reset vs. Stop** — use Reset to replay the default scene or a loaded snippet, or to restore imported `KHR_node_visibility` defaults; use Stop to halt execution. Reopen an imported asset to restore other scene changes.
+- **Reset vs. Stop** — use Reset to replay the default scene or a loaded snippet, or to restore imported KHR visibility, selectability, and hoverability values changed by the graph; use Stop to halt execution. Reopen an imported asset to restore other scene changes.
 - **Minimap** — when you zoom or pan, a minimap appears in the bottom-right corner showing all nodes, frames, and your current viewport. Click or drag on the minimap to navigate directly to that area. It auto-hides after 1.5 seconds of inactivity.
 
 ---

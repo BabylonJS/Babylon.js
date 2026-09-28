@@ -119,6 +119,50 @@ export function ReadGlbDocument(bytes: Uint8Array): IGlbDocument {
 }
 
 /**
+ * Replaces an edited KHR_interactivity graph in its source GLB without reserializing the scene.
+ * The extension must first pass export-plan validation against source indices.
+ * @param bytes source GLB bytes
+ * @param extension edited canonical KHR_interactivity extension
+ * @param extensionsUsed other extensions referenced by the graph
+ * @param extensionsRequired other extensions required by the graph
+ * @returns GLB retaining unrelated source JSON tokens and chunks
+ */
+export function PatchKhrInteractivityGlb(bytes: Uint8Array, extension: unknown, extensionsUsed: readonly string[], extensionsRequired: readonly string[]): Uint8Array {
+    const { document, jsonText: sourceJsonText, suffixOffset } = _ReadGlb(bytes);
+    if (!_IsRecord(document.extensions) || !_IsRecord(document.extensions.KHR_interactivity)) {
+        throw new Error("The source GLB has no KHR_interactivity graph to update.");
+    }
+    if (!_IsRecord(extension) || !Array.isArray(extension.graphs)) {
+        throw new Error("The edited KHR_interactivity extension is malformed.");
+    }
+    if (
+        (document.extensionsUsed !== undefined && (!Array.isArray(document.extensionsUsed) || document.extensionsUsed.some((name) => typeof name !== "string"))) ||
+        (document.extensionsRequired !== undefined && (!Array.isArray(document.extensionsRequired) || document.extensionsRequired.some((name) => typeof name !== "string")))
+    ) {
+        throw new Error("The source GLB has malformed extension declarations.");
+    }
+    let jsonText = sourceJsonText;
+    const write = (path: Array<string | number>, value: unknown, isArrayInsertion = false) => {
+        jsonText = applyEdits(jsonText, modify(jsonText, path, value, { isArrayInsertion }));
+    };
+    write(["extensions", "KHR_interactivity"], extension);
+    for (const [key, names] of [
+        ["extensionsUsed", ["KHR_interactivity", ...extensionsUsed]],
+        ["extensionsRequired", extensionsRequired],
+    ] as const) {
+        const declared = document[key] ?? [];
+        for (const name of names) {
+            if (!declared.includes(name)) {
+                write(document[key] ? [key, declared.length] : [key], document[key] ? name : [name], !!document[key]);
+                declared.push(name);
+                document[key] = declared;
+            }
+        }
+    }
+    return _WriteGlb(bytes, jsonText, suffixOffset);
+}
+
+/**
  * Finds the glTF node index recorded by the loader, including on an ordinary primitive's immediate parent.
  * @param node loaded Babylon node
  * @param nodeCount number of nodes in the source glTF document

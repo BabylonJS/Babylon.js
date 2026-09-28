@@ -810,6 +810,18 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         return source;
     }
 
+    /**
+     * Builds a graph for patching the original glTF document using its existing entity indices.
+     * Companion node extensions are already present in that document and are retained by the patcher.
+     * @returns canonical KHR_interactivity payload with source glTF indices
+     */
+    public buildWithSourceIndices(): IKHRInteractivity {
+        if (!this._options.sourceGLTF) {
+            throw new Error("Source glTF data is required to retain entity indices.");
+        }
+        return this.build(this._createSourceIndexContext());
+    }
+
     private _getSourceGraph(graph: FlowGraph, graphIndex: number): IKHRInteractivity_Graph | undefined {
         const documentGraph = this._options.document?.graphs[graphIndex]?.source;
         if (documentGraph) {
@@ -819,11 +831,10 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
         return provenance?.source ? CloneKHRInteractivityGraph(provenance.source) : undefined;
     }
 
-    private _validateBuildWithSourceIndices(): IKHRInteractivityExportDiagnostic[] {
-        const diagnostics: IKHRInteractivityExportDiagnostic[] = [];
+    private _createSourceIndexContext(): IKHRInteractivitySerializerContext {
         const sourceGLTF = this._options.sourceGLTF;
         const indexOrUndefined = (index: number | undefined): number | undefined => (index !== undefined && index >= 0 ? index : undefined);
-        const context: IKHRInteractivitySerializerContext = {
+        return {
             getNodeCount: () => sourceGLTF?.nodes?.length ?? 0,
             getNodeIndex: (node) => indexOrUndefined(sourceGLTF?.nodes?.findIndex((candidate) => candidate._babylonTransformNode === node)),
             getAnimationIndex: (animation) => indexOrUndefined(sourceGLTF?.animations?.findIndex((candidate) => candidate._babylonAnimationGroup === animation)),
@@ -833,6 +844,11 @@ export class KHRInteractivityExportPlan implements IKHRInteractivityExportProvid
             getRootIndex: (collection, entity) => this._getSourceRootIndex(collection, entity),
             setNodeExtension: () => {},
         };
+    }
+
+    private _validateBuildWithSourceIndices(): IKHRInteractivityExportDiagnostic[] {
+        const diagnostics: IKHRInteractivityExportDiagnostic[] = [];
+        const context = this._createSourceIndexContext();
         this._isPreflight = true;
         try {
             for (const analysis of this._graphAnalyses) {

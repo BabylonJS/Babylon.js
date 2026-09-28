@@ -3,7 +3,15 @@ import { Skeleton } from "core/Bones/skeleton";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Scene } from "core/scene";
-import { GetGlbExternalResourceUris, GetGlbNodeIndex, PatchKhrSelectionRevealGlb, PatchKhrTwoStepProcedureGlb, ReadGlbDocument, type IGlbDocument } from "flow-graph-editor/khrGlbBehaviorAuthoring";
+import {
+    GetGlbExternalResourceUris,
+    GetGlbNodeIndex,
+    PatchKhrInteractivityGlb,
+    PatchKhrSelectionRevealGlb,
+    PatchKhrTwoStepProcedureGlb,
+    ReadGlbDocument,
+    type IGlbDocument,
+} from "flow-graph-editor/khrGlbBehaviorAuthoring";
 import { CreateKHRInteractivityDocument } from "loaders/glTF/2.0/Extensions/KHR_interactivity/pure";
 import { describe, expect, it } from "vitest";
 
@@ -86,6 +94,25 @@ describe("lossless GLB selection behavior authoring", () => {
         document.images = [{ uri: "textures/diffuse.png" }, { uri: "geometry.bin" }, { uri: "DATA:image/png;base64,AA==" }, { bufferView: 0 }] as any;
 
         expect(GetGlbExternalResourceUris(document)).toEqual(["geometry.bin", "textures/diffuse.png"]);
+    });
+
+    it("persists an edited graph in an authored GLB without rewriting unrelated JSON or chunks", () => {
+        const source = PatchKhrSelectionRevealGlb(
+            BuildGlb(JSON.stringify(RichSourceDocument()).replace('"stableAssetId":"maintenance-asset-9"', '"stableAssetId":9007199254740993'), [
+                { type: BinChunk, data: new Uint8Array([1, 2, 3, 4]) },
+            ]),
+            1,
+            2
+        );
+        const extension = ReadGlbDocument(source).extensions!.KHR_interactivity as any;
+        extension.graphs[0].name = "Edited selection";
+
+        const result = PatchKhrInteractivityGlb(source, extension, ["KHR_node_visibility"], ["KHR_node_visibility"]);
+
+        expect(JsonText(result)).toContain('"stableAssetId":9007199254740993');
+        expect(SuffixAfterJson(result)).toEqual(SuffixAfterJson(source));
+        expect(ReadGlbDocument(result).extensions!.KHR_interactivity).toEqual(extension);
+        expect(ReadGlbDocument(source).extensions!.KHR_interactivity).not.toEqual(extension);
     });
 
     const procedure = { first: 1, second: 2, nextCue: 3, completionCue: 4, reset: 5 };

@@ -2425,7 +2425,46 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         expect(await revealVisible()).toBe(false);
         await selectNode(1, 1);
         await expect.poll(revealVisible).toBe(true);
-        await expect(page.getByRole("button", { name: "Export KHR GLB", exact: true })).toBeDisabled();
+        await expect(page.getByRole("button", { name: "Export KHR GLB", exact: true })).toBeEnabled();
+        await page.evaluate(() => {
+            const graph = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.coordinator.flowGraphs[0];
+            const pointerSet = graph.getAllBlocks().find((block: any) => block.metadata?.khrInteractivity?.operation === "pointer/set");
+            if (!pointerSet) {
+                throw new Error("Imported pointer/set block was not found");
+            }
+            pointerSet.getDataInput("value")._defaultValue = false;
+            graph.name = "Edited selection";
+        });
+        const editedDownloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename() === "existing-assembly-behavior-edited.glb");
+        await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
+        const editedDownload = await editedDownloadPromise;
+        const editedBytes = readFileSync((await editedDownload.path())!);
+        const edited = JSON.parse(editedBytes.subarray(20, 20 + editedBytes.readUInt32LE(12)).toString("utf8"));
+        expect(editedBytes.subarray(20 + editedBytes.readUInt32LE(12))).toEqual(authoredBytes.subarray(20 + authoredBytes.readUInt32LE(12)));
+        expect(edited.extensions.KHR_interactivity.graphs[0].name).toBe("Edited selection");
+        expect(edited.extensions.KHR_interactivity.graphs[0].nodes[1].values.value.value).toEqual([false]);
+        expect(await StrictImportKhrInteractivityAsync(page, "strict-edited-assembly.glb", editedBytes)).toEqual({ graphCount: 1, errorCount: 0 });
+        await page.evaluate(
+            (data) => {
+                const transfer = new DataTransfer();
+                transfer.items.add(new File([new Uint8Array(data)], "reopened-assembly.glb", { type: "model/gltf-binary" }));
+                (document.querySelector("canvas") ?? document.body).dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
+            },
+            [...editedBytes]
+        );
+        await expect.poll(async () => await page.evaluate(() => (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.sourceGlb?.file.name)).toBe("reopened-assembly.glb");
+        await expect.poll(async () => await fge.getGraphNames()).toEqual(["Edited selection"]);
+        await page.evaluate(() => {
+            const graph = (globalThis as any).BABYLON.FlowGraphEditor._CurrentState.coordinator.flowGraphs[0];
+            const pointerSet = graph.getAllBlocks().find((block: any) => block.metadata?.khrInteractivity?.operation === "pointer/set");
+            pointerSet.getDataInput("value")._defaultValue = true;
+        });
+        const reopenedDownloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename() === "reopened-assembly-edited.glb");
+        await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
+        const reopenedBytes = readFileSync((await (await reopenedDownloadPromise).path())!);
+        const reopened = JSON.parse(reopenedBytes.subarray(20, 20 + reopenedBytes.readUInt32LE(12)).toString("utf8"));
+        expect(reopened.extensions.KHR_interactivity.graphs[0].nodes[1].values.value.value).toEqual([true]);
+        expect(reopenedBytes.subarray(20 + reopenedBytes.readUInt32LE(12))).toEqual(editedBytes.subarray(20 + editedBytes.readUInt32LE(12)));
         await page.screenshot({ path: testInfo.outputPath("khr-existing-glb-authored.png"), fullPage: true });
     });
 
@@ -2492,7 +2531,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
     });
 
     test("does not offer a skinned mesh under its unrelated reparented assembly node", async ({ page }) => {
-        const { bytes } = BuildExistingGlbFixture(false, false, false, false, true);
+        const { bytes } = BuildExistingGlbFixture(false, false, false, true);
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
         await fge.assertEditorReady();
@@ -2520,7 +2559,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
     });
 
     test("preserves untouched JSON number tokens in a downloaded source GLB", async ({ page }) => {
-        const { bytes } = BuildExistingGlbFixture(false, false, false, false, false, true);
+        const { bytes } = BuildExistingGlbFixture(false, false, false, false, true);
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
         await fge.assertEditorReady();
@@ -2581,7 +2620,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
     });
 
     test("rejects a reveal target beneath a hidden source ancestor without downloading or changing the scene", async ({ page }, testInfo) => {
-        const { bytes } = BuildExistingGlbFixture(false, false, false, false, false, false, true);
+        const { bytes } = BuildExistingGlbFixture(false, false, false, false, false, true);
         const fge = new FlowGraphEditorPage(page);
         await fge.goto({ local: true });
         await fge.assertEditorReady();
@@ -2666,6 +2705,13 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
         expect(await StrictImportKhrInteractivityAsync(page, "strict-procedure.glb", authoredBytes)).toEqual({ graphCount: 1, errorCount: 0 });
         await expect.poll(async () => await fge.getGraphNames()).toEqual(["Two-step procedure"]);
         await page.screenshot({ path: testInfo.outputPath("khr-two-step-procedure-graph.png"), fullPage: true });
+
+        await expect(page.getByRole("button", { name: "Export KHR GLB", exact: true })).toBeEnabled();
+        const savedDownloadPromise = page.waitForEvent("download", (download) => download.suggestedFilename() === "procedure-behavior-edited.glb");
+        await page.getByRole("button", { name: "Export KHR GLB", exact: true }).click();
+        const savedBytes = readFileSync((await (await savedDownloadPromise).path())!);
+        expect(savedBytes.subarray(20 + savedBytes.readUInt32LE(12))).toEqual(authoredBytes.subarray(20 + jsonLength));
+        expect(await StrictImportKhrInteractivityAsync(page, "strict-saved-procedure.glb", savedBytes)).toEqual({ graphCount: 1, errorCount: 0 });
 
         const select = async (index: number, pointerId = 0, pointerType: "mouse" | "xr" | "xr-near" = "mouse") =>
             page.evaluate(
@@ -2802,7 +2848,7 @@ test.describe("Flow Graph Editor — Graph Tabs Preview Files and glTF Import", 
             const fge = new FlowGraphEditorPage(page);
             await fge.goto({ local: true });
             await fge.assertEditorReady();
-            const { bytes } = BuildExistingGlbFixture(false, false, false, true);
+            const { bytes } = BuildExistingGlbFixture(false, false, false, false, false, false, false, true);
             await page.evaluate(
                 (data) => {
                     const file = new File([new Uint8Array(data)], "touch-procedure.glb", { type: "model/gltf-binary" });

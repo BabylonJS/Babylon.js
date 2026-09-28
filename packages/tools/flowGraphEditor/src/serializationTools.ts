@@ -1,4 +1,5 @@
 import { type GlobalState } from "./globalState";
+import { PatchKhrInteractivityGlb } from "./khrGlbBehaviorAuthoring";
 import { type Nullable } from "core/types";
 import { type GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import { GetFlowGraphBlockNodeId } from "./graphSystem/blockNodeData";
@@ -661,9 +662,6 @@ export class SerializationTools {
      * @returns detached representability analysis for the exported graph set
      */
     public static async ExportKhrInteractivityAsync(globalState: GlobalState, format: "gltf" | "glb"): Promise<IKHRInteractivityExportAnalysis> {
-        if (globalState.sourceGlb?.authoredBehavior) {
-            throw new Error("The authored GLB was downloaded when the behavior was created. Scene re-export could discard source GLB data.");
-        }
         const scene = globalState.sceneContext?.scene;
         const plan = _CreateKhrExportPlanForImport(globalState);
         if (!plan || !scene) {
@@ -673,6 +671,18 @@ export class SerializationTools {
         const analysis = plan.analyze();
         if (!analysis.representable) {
             throw _CreateKhrExportError(analysis.diagnostics);
+        }
+        const sourceGlb = globalState.sourceGlb;
+        if (sourceGlb) {
+            if (format !== "glb") {
+                throw new Error("Source-preserving export of an imported GLB is available only as GLB.");
+            }
+            const extension = plan.buildWithSourceIndices();
+            const required = [...(plan.required ? ["KHR_interactivity"] : []), ...plan.additionalExtensionsRequired];
+            const bytes = PatchKhrInteractivityGlb(new Uint8Array(await sourceGlb.file.arrayBuffer()), extension, plan.additionalExtensionsUsed, required);
+            const fileName = sourceGlb.file.name.replace(/\.glb$/i, "-edited.glb");
+            SerializationTools._DownloadBlob(new Blob([new Uint8Array(bytes)], { type: "model/gltf-binary" }), fileName, globalState);
+            return analysis;
         }
         const serializer = (globalThis as any).BABYLON?.GLTF2Export;
         if (!serializer) {

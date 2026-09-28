@@ -201,8 +201,22 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
     private async _exportKhrInteractivityAsync(format: "gltf" | "glb") {
         try {
             const analysis = await SerializationTools.ExportKhrInteractivityAsync(this.props.globalState, format);
-            const message = `Exported ${analysis.nodes.length} KHR_interactivity node(s) as ${format === "glb" ? "flowGraphKHRInteractivity.glb" : "flowGraphKHRInteractivity.gltf"}.`;
+            const fileName =
+                format === "glb" && this.props.globalState.sourceGlb
+                    ? this.props.globalState.sourceGlb.file.name.replace(/\.glb$/i, "-edited.glb")
+                    : format === "glb"
+                      ? "flowGraphKHRInteractivity.glb"
+                      : "flowGraphKHRInteractivity.gltf";
+            const message = `Exported ${analysis.nodes.length} KHR_interactivity node(s) as ${fileName}.`;
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(message, false));
+            if (this.props.globalState.sourceGlb?.externalResourceUris.length) {
+                this.props.globalState.onLogRequiredObservable.notifyObservers(
+                    new LogEntry(
+                        `The exported GLB still needs external resources at their referenced paths: ${this.props.globalState.sourceGlb.externalResourceUris.join(", ")}`,
+                        false
+                    )
+                );
+            }
             ShowToast(this.props.globalState, message, "success");
         } catch (err) {
             const diagnostics = (err as { diagnostics?: { path: string; message: string }[] }).diagnostics;
@@ -345,9 +359,7 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
     override render() {
         const { classes } = this.props;
         const serializationDisabledReason = SerializationTools.GetSerializationDisabledReason(this.props.globalState);
-        const sourcePreservingExportReason = this.props.globalState.sourceGlb?.authoredBehavior
-            ? "The source-preserving GLB was downloaded when the behavior was created; scene re-export could discard source data"
-            : null;
+        const sourcePreservingExportReason = this.props.globalState.sourceGlb ? "Scene re-export could discard source GLB data" : null;
         if (this.state.currentNode) {
             return <div className={classes.root}>{this.state.currentNode?.renderProperties() || this.state.currentNodePort?.node.renderProperties()}</div>;
         }
@@ -431,8 +443,11 @@ class PropertyTabInner extends React.Component<IPropertyTabInnerProps, IProperty
                             />
                             <Button
                                 label="Export KHR GLB"
-                                title={sourcePreservingExportReason ?? "Export the preview scene and graph set as GLB with KHR_interactivity"}
-                                disabled={!!sourcePreservingExportReason}
+                                title={
+                                    this.props.globalState.sourceGlb
+                                        ? "Save representable graph edits into the retained source GLB"
+                                        : "Export the preview scene and graph set as GLB with KHR_interactivity"
+                                }
                                 onClick={() => void this._exportKhrInteractivityAsync("glb")}
                             />
                             <Button
