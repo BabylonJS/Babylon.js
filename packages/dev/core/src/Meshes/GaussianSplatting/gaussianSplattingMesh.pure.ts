@@ -5,6 +5,7 @@ import { type Scene } from "core/scene.pure";
 import { type Observer } from "core/Misc/observable";
 import { Matrix, Quaternion, Vector3 } from "core/Maths/math.vector.pure";
 import { type Vector2 } from "core/Maths/math.vector";
+import { type Material } from "core/Materials/material.pure";
 import { type Effect } from "core/Materials/effect.pure";
 import { GetGaussianSplattingMaxPartCount, GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial.pure";
 import { GaussianSplattingMeshBase, AllocateShBuffers, type IGaussianSplattingSplatRange } from "./gaussianSplattingMeshBase.pure";
@@ -24,6 +25,7 @@ import { type AbstractMesh } from "core/Meshes/abstractMesh.pure";
 import { type SubMesh } from "core/Meshes/subMesh.pure";
 import { GaussianPointSplattingRenderer } from "./gaussianPointSplattingRenderer.pure";
 import { GaussianPointSplattingBlitMaterial } from "core/Materials/GaussianSplatting/gaussianPointSplattingBlitMaterial.pure";
+import { GaussianPointSplattingDepthBlitMaterial } from "core/Materials/GaussianSplatting/gaussianPointSplattingDepthBlitMaterial.pure";
 import { type GaussianSplattingDebugMaterialPlugin } from "core/Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin.pure";
 
 export { IsGaussianSplattingClassName } from "./gaussianSplatting.functions";
@@ -289,11 +291,14 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     protected _partVisibility: number[] = [];
 
     // --- Point-splatting render mode (WebGPU compute) ---
-    // An alternate CAMERA-VIEW color renderer for the same splat data: a stochastic, sort-free compute
+    // An alternate CAMERA-VIEW renderer for the same splat data: a stochastic, sort-free compute
     // pipeline that resolves visibility with a per-pixel atomic depth-min and converges over frames.
-    // Only the main color pass is swapped — depth, GPU picking, IBL voxelization and prepass keep
-    // rasterizing the classic geometry, so the mesh stays a full shadow caster / depth occluder.
+    // The single compute produces BOTH a color buffer and a depth buffer, so the main color pass and the
+    // DepthRenderer pass are independently switchable (_pointMode / _pointDepthMode) on top of one shared
+    // compute. Passes that are not switched on — GPU picking, IBL voxelization, shadows and prepass — keep
+    // rasterizing the classic geometry, so the mesh stays a full shadow caster / depth occluder there.
     private _pointMode = false;
+    private _pointDepthMode = false;
     /** Internal render-resolution scale for point splatting. A number (1 = full) renders fewer pixels =
      * ~scale^2 fewer emitted points, with full resolution reconstructed over frames by jittered temporal
      * upsampling. `"auto"` (default) drives the scale from a device-tiered point budget: scale =
@@ -310,6 +315,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     private _pointRenderer: Nullable<GaussianPointSplattingRenderer> = null;
     private _pointBlit: Nullable<GaussianPointSplattingBlitMaterial> = null;
     private _pointBlitMesh: Nullable<Mesh> = null;
+    private _pointDepthBlit: Nullable<GaussianPointSplattingDepthBlitMaterial> = null;
+    private _pointDepthBlitMesh: Nullable<Mesh> = null;
     private _pointComputeObserver: Nullable<Observer<Scene>> = null;
     private _pointSplatCount = 0;
     private _pointPartCount = 1;
@@ -584,7 +591,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * Whether the camera-view color is rendered with the WebGPU compute point-splatting path instead of
      * the classic sorted quads. Off by default. The mesh keeps its geometry, textures and part data, so
      * shadow depth, GPU picking, IBL voxelization and prepass are unaffected — only the main color pass
-     * changes. WebGPU only.
+     * changes. See {@link pointSplattingDepthRenderMode} to route the scene's DepthRenderer through the
+     * same compute result. WebGPU only.
      */
     public get pointSplattingRenderMode(): boolean {
         return this._pointMode;
@@ -599,14 +607,49 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
         this._pointMode = value;
         if (value) {
-            this._pointEnable();
+            this._pointEnsureCompute();
+            this._pointEnableColorBlit();
         } else {
-            if (this._pointComputeObserver) {
-                this._scene.onBeforeRenderObservable.remove(this._pointComputeObserver);
-                this._pointComputeObserver = null;
-            }
             this._pointBlitMesh?.setEnabled(false);
+            this._pointReleaseComputeIfIdle();
         }
+    }
+
+    /**
+     * Whether the scene's DepthRenderer depth for this mesh comes from the WebGPU compute point-splatting
+     * result (a per-pixel resolved nearest-surface depth matching the displayed point splats) instead of
+     * the classic rasterized ellipsoids. Note that this depth is opaque and converges to the nearest
+     * visible surface — not to the coverage-weighted average the classic path produces under
+     * `DepthRenderer.alphaBlendedDepth`. Off by default,
+     * and fully independent of
+     * {@link pointSplattingRenderMode}: both toggles consume the same shared compute, which runs whenever
+     * either one is on. Only the DepthRenderer pass is affected — shadows, prepass/geometry AOV and GPU
+     * picking still rasterize the classic geometry. WebGPU only.
+     */
+    public get pointSplattingDepthRenderMode(): boolean {
+        return this._pointDepthMode;
+    }
+    public set pointSplattingDepthRenderMode(value: boolean) {
+        if (value === this._pointDepthMode) {
+            return;
+        }
+        if (value && !this._scene.getEngine().isWebGPU) {
+            Logger.Warn("GaussianSplattingMesh: point-splatting depth render mode requires a WebGPU engine; ignoring.");
+            return;
+        }
+        this._pointDepthMode = value;
+        if (value) {
+            this._pointEnsureCompute();
+            this._pointEnableDepthBlit();
+        } else {
+            this._pointDepthBlitMesh?.setEnabled(false);
+            this._pointReleaseComputeIfIdle();
+        }
+    }
+
+    /** True while either point-splatting mode is on, i.e. while the shared compute must run. */
+    private get _pointComputeActive(): boolean {
+        return this._pointMode || this._pointDepthMode;
     }
 
     /** Density multiplier for point splatting (higher = denser and slower). */
@@ -620,40 +663,75 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         }
     }
 
-    /** Lazily builds the compute renderer, blit material + fullscreen compositor mesh, hooks the
-     * per-frame compute, and decodes the current splat data. The compositor is an internal fullscreen
-     * triangle rendered manually from this mesh's main color pass only (see _drawColorPass). It is kept
-     * DISABLED so the scene never selects it as an active mesh — otherwise its raw clip-space geometry
-     * would leak into every geometry pass (depth renderer, IBL G-buffer) as a giant triangle. */
-    private _pointEnable(): void {
+    /** Lazily builds the compute renderer, hooks the per-frame compute, and decodes the current splat
+     * data. Shared by the color and depth point-splatting modes (one compute produces both buffers), so
+     * it is idempotent and called from both setters. */
+    private _pointEnsureCompute(): void {
         const engine = this._scene.getEngine();
         if (!this._pointRenderer) {
             this._pointRenderer = new GaussianPointSplattingRenderer(engine);
-        }
-        if (!this._pointBlit) {
-            this._pointBlit = new GaussianPointSplattingBlitMaterial(this.name + "_pointBlit", this._scene);
-        }
-        if (!this._pointBlitMesh) {
-            const blitMesh = new Mesh(this.name + "_pointBlitMesh", this._scene);
-            const vd = new VertexData();
-            // Fullscreen clip-space triangle; the blit vertex shader passes it through unchanged.
-            vd.positions = [-1, -1, 0, 3, -1, 0, -1, 3, 0];
-            vd.indices = [0, 1, 2];
-            vd.applyToMesh(blitMesh);
-            blitMesh.material = this._pointBlit;
-            blitMesh.doNotSerialize = true;
-            blitMesh.isPickable = false;
-            blitMesh.doNotSyncBoundingInfo = true;
-            // Disabled: rendered only via _drawColorPass, never selected by the scene (no depth/GBR leak).
-            blitMesh.setEnabled(false);
-            blitMesh.reservedDataStore = { hidden: true };
-            blitMesh.computeWorldMatrix(true);
-            this._pointBlitMesh = blitMesh;
         }
         this._pointDecodedSplatsData = null; // force a decode
         this._pointSyncData();
         if (!this._pointComputeObserver) {
             this._pointComputeObserver = this._scene.onBeforeRenderObservable.add(() => this._pointRunCompute());
+        }
+    }
+
+    /** Tears down the shared compute once neither point-splatting mode needs it anymore. */
+    private _pointReleaseComputeIfIdle(): void {
+        if (this._pointComputeActive) {
+            return;
+        }
+        if (this._pointComputeObserver) {
+            this._scene.onBeforeRenderObservable.remove(this._pointComputeObserver);
+            this._pointComputeObserver = null;
+        }
+    }
+
+    /** Builds the internal fullscreen compositor mesh used by a blit pass. It is an internal fullscreen
+     * triangle rendered manually from this mesh's own passes (see _drawColorPass), and is kept DISABLED
+     * so the scene never selects it as an active mesh — otherwise its raw clip-space geometry would leak
+     * into every geometry pass (depth renderer, IBL G-buffer) as a giant triangle.
+     * @param name the compositor mesh name
+     * @param material the blit material to render it with
+     * @returns the created compositor mesh
+     */
+    private _pointCreateBlitMesh(name: string, material: Material): Mesh {
+        const blitMesh = new Mesh(name, this._scene);
+        const vd = new VertexData();
+        // Fullscreen clip-space triangle; the blit vertex shader passes it through unchanged.
+        vd.positions = [-1, -1, 0, 3, -1, 0, -1, 3, 0];
+        vd.indices = [0, 1, 2];
+        vd.applyToMesh(blitMesh);
+        blitMesh.material = material;
+        blitMesh.doNotSerialize = true;
+        blitMesh.isPickable = false;
+        blitMesh.doNotSyncBoundingInfo = true;
+        // Disabled: rendered only via _drawColorPass, never selected by the scene (no depth/GBR leak).
+        blitMesh.setEnabled(false);
+        blitMesh.reservedDataStore = { hidden: true };
+        blitMesh.computeWorldMatrix(true);
+        return blitMesh;
+    }
+
+    /** Lazily builds the color blit material + compositor mesh (main color pass only). */
+    private _pointEnableColorBlit(): void {
+        if (!this._pointBlit) {
+            this._pointBlit = new GaussianPointSplattingBlitMaterial(this.name + "_pointBlit", this._scene);
+        }
+        if (!this._pointBlitMesh) {
+            this._pointBlitMesh = this._pointCreateBlitMesh(this.name + "_pointBlitMesh", this._pointBlit);
+        }
+    }
+
+    /** Lazily builds the depth blit material + compositor mesh (DepthRenderer pass only). */
+    private _pointEnableDepthBlit(): void {
+        if (!this._pointDepthBlit) {
+            this._pointDepthBlit = new GaussianPointSplattingDepthBlitMaterial(this.name + "_pointDepthBlit", this._scene);
+        }
+        if (!this._pointDepthBlitMesh) {
+            this._pointDepthBlitMesh = this._pointCreateBlitMesh(this.name + "_pointDepthBlitMesh", this._pointDepthBlit);
         }
     }
 
@@ -1013,7 +1091,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     /** Runs the compute pipeline before the render pass (compute cannot run inside an active pass) and
      * binds the resolved buffers to the blit material for the color pass. */
     private _pointRunCompute(): void {
-        if (!this._pointMode || !this.isEnabled() || !this._pointRenderer || !this._pointBlit) {
+        if (!this._pointComputeActive || !this.isEnabled() || !this._pointRenderer) {
             return;
         }
         this._pointSyncData();
@@ -1072,9 +1150,30 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const accum = this._pointRenderer.accumBuffer;
         const accumDepth = this._pointRenderer.accumDepthBuffer;
         if (accum && accumDepth) {
-            this._pointBlit.setAccumBuffer(accum);
-            this._pointBlit.setAccumDepthBuffer(accumDepth);
-            this._pointBlit.setResolution(this._pointRenderer.outputWidth, this._pointRenderer.outputHeight);
+            if (this._pointMode && this._pointBlit) {
+                this._pointBlit.setAccumBuffer(accum);
+                this._pointBlit.setAccumDepthBuffer(accumDepth);
+                this._pointBlit.setResolution(this._pointRenderer.outputWidth, this._pointRenderer.outputHeight);
+            }
+            if (this._pointDepthMode && this._pointDepthBlit) {
+                this._pointDepthBlit.setAccumBuffer(accum);
+                this._pointDepthBlit.setAccumDepthBuffer(accumDepth);
+                this._pointDepthBlit.setResolution(this._pointRenderer.outputWidth, this._pointRenderer.outputHeight);
+                // Same projection z-row the resolve used, so the blit inverts accumDepth back to clip-space z.
+                this._pointDepthBlit.setProjectionZ(projection.m[10], projection.m[11], projection.m[14], projection.m[15]);
+                // (minZ, minZ + maxZ) normalization, computed exactly as the classic Gaussian Splatting depth
+                // material does (GaussianSplattingMaterial._BindEffectUniforms), so both paths emit the same metric.
+                let minZ: number, maxZ: number;
+                if (camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
+                    minZ = !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
+                    maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
+                } else {
+                    minZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? camera.minZ : engine.isNDCHalfZRange ? 0 : camera.minZ;
+                    maxZ = engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : camera.maxZ;
+                }
+                this._pointDepthBlit.setDepthValues(minZ, minZ + maxZ);
+                this._pointDepthBlit.setReverseDepth(engine.useReverseDepthBuffer);
+            }
         }
     }
 
@@ -1090,13 +1189,33 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         return engine.currentRenderPassId === mainId && !this.getMaterialForRenderPass(engine.currentRenderPassId);
     }
 
+    /**
+     * True only while rendering into an enabled DepthRenderer owned by the ACTIVE camera. The compute's
+     * accumDepth is only valid for the active camera, so depth renderers attached to any other camera (and
+     * DepthRenderers constructed directly, which are not registered in scene._depthRenderer) fall back to
+     * the classic rasterized depth.
+     * @returns whether the current render pass is the active camera's depth renderer pass
+     */
+    private _isPointDepthPass(): boolean {
+        const depthRenderers = this._scene._depthRenderer;
+        const camera = this._scene.activeCamera;
+        if (!depthRenderers || !camera) {
+            return false;
+        }
+        const renderer = depthRenderers[camera.uniqueId];
+        if (!renderer || !renderer.enabled) {
+            return false;
+        }
+        return renderer.getDepthMap().renderPassIds.indexOf(this._scene.getEngine().currentRenderPassId) !== -1;
+    }
+
     protected override _drawColorPass(mesh: Mesh, subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         // In point mode, the internal compositor draws the camera-view color for the main color pass
-        // only; the classic quads are skipped. Every other pass (depth, GPU picking, prepass, IBL
-        // voxelization — identified by a render-pass material override or a non-main render pass id)
-        // still rasterizes the classic geometry, so depth/shadow are unaffected. The compositor is
-        // rendered here (not as an active scene mesh) so its geometry never leaks into those passes;
-        // its effect is prepared explicitly because the scene's active-mesh flow never touches it.
+        // only; the classic quads are skipped. Every other pass (GPU picking, prepass, IBL voxelization —
+        // identified by a render-pass material override or a non-main render pass id) still rasterizes the
+        // classic geometry, so shadows are unaffected. The compositor is rendered here (not as an active
+        // scene mesh) so its geometry never leaks into those passes; its effect is prepared explicitly
+        // because the scene's active-mesh flow never touches it.
         if (this._pointMode && this._pointBlitMesh && this._isPointMainColorPass()) {
             const blitMesh = this._pointBlitMesh;
             if (blitMesh.subMeshes.length > 0) {
@@ -1109,6 +1228,19 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             }
             return this;
         }
+        // Independently of the color mode, the depth compositor writes the resolved point-splat depth into
+        // the active camera's depth map. Until its effect compiles we fall through to the classic depth
+        // rasterization rather than leaving a hole in the map.
+        if (this._pointDepthMode && this._pointDepthBlitMesh && this._isPointDepthPass()) {
+            const depthBlitMesh = this._pointDepthBlitMesh;
+            if (depthBlitMesh.subMeshes.length > 0 && this._pointDepthBlit?.isReady(depthBlitMesh, false, depthBlitMesh.subMeshes[0])) {
+                // The depth renderer may have left ALPHA_COMBINE set (alphaBlendedDepth); the point-splat
+                // depth is a single resolved opaque surface, so blending must be off.
+                this._scene.getEngine().setAlphaMode(Constants.ALPHA_DISABLE);
+                depthBlitMesh.render(depthBlitMesh.subMeshes[0], false, depthBlitMesh);
+                return this;
+            }
+        }
         return super._drawColorPass(mesh, subMesh, enableAlphaMode, effectiveMeshReplacement);
     }
 
@@ -1120,10 +1252,15 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         this._pointRenderer?.dispose();
         this._pointBlit?.dispose();
         this._pointBlitMesh?.dispose();
+        this._pointDepthBlit?.dispose();
+        this._pointDepthBlitMesh?.dispose();
         this._pointRenderer = null;
         this._pointBlit = null;
         this._pointBlitMesh = null;
+        this._pointDepthBlit = null;
+        this._pointDepthBlitMesh = null;
         this._pointMode = false;
+        this._pointDepthMode = false;
     }
 
     /**

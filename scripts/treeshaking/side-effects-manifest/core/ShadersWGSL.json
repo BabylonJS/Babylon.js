@@ -206,6 +206,7 @@
         "ShadersWGSL/fxaa.vertex.ts": ["shader-store-write"],
         "ShadersWGSL/gaussianPointSplattingBlit.fragment.ts": ["shader-store-write"],
         "ShadersWGSL/gaussianPointSplattingBlit.vertex.ts": ["shader-store-write"],
+        "ShadersWGSL/gaussianPointSplattingDepthBlit.fragment.ts": ["shader-store-write"],
         "ShadersWGSL/gaussianSplatting.fragment.ts": ["shader-store-write"],
         "ShadersWGSL/gaussianSplatting.vertex.ts": ["shader-store-write"],
         "ShadersWGSL/gaussianSplattingDepth.fragment.ts": ["shader-store-write"],

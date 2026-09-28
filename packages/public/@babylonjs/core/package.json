@@ -275,6 +275,7 @@
         "Loading/Plugins/babylonFileLoader.js",
         "Materials/Background/backgroundMaterial.js",
         "Materials/GaussianSplatting/gaussianPointSplattingBlitMaterial.js",
+        "Materials/GaussianSplatting/gaussianPointSplattingDepthBlitMaterial.js",
         "Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin.js",
         "Materials/GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin.js",
         "Materials/GaussianSplatting/gaussianSplattingMaterial.js",

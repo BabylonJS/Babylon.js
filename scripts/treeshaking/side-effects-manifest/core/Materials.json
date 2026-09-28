@@ -3,6 +3,7 @@
     "files": {
         "Materials/Background/backgroundMaterial.ts": ["top-level-call"],
         "Materials/GaussianSplatting/gaussianPointSplattingBlitMaterial.ts": ["bare-import"],
+        "Materials/GaussianSplatting/gaussianPointSplattingDepthBlitMaterial.ts": ["bare-import"],
         "Materials/GaussianSplatting/gaussianSplattingDebugMaterialPlugin.ts": ["top-level-call"],
         "Materials/GaussianSplatting/gaussianSplattingGpuPickingMaterialPlugin.ts": ["top-level-call"],
         "Materials/GaussianSplatting/gaussianSplattingMaterial.ts": ["bare-import", "top-level-call"],
