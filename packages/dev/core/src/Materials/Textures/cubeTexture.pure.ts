@@ -451,7 +451,8 @@ export class CubeTexture extends BaseTexture {
                     errorHandler,
                     this._format,
                     this._forcedExtension,
-                    this._createPolynomials
+                    this._createPolynomials,
+                    this._buffer
                 );
             } else {
                 this._texture = this._getEngine()!.createCubeTexture(

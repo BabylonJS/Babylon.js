@@ -1,18 +1,16 @@
 
+### Addons
+
+- Atmosphere: only attach the PBR material plugin to materials in the atmosphere's scene - by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18934](https://github.com/BabylonJS/Babylon.js/pull/18934))
+
 ### Core
 
-- Add normalized occlusion query visibility API - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#18919](https://github.com/BabylonJS/Babylon.js/pull/18919))
-- Frame graph: support Gaussian splats, sprites, and particles in geometry rendering - by [Popov72](https://github.com/Popov72) ([#18930](https://github.com/BabylonJS/Babylon.js/pull/18930))
-- WGSL: pass shadowTexture to computeShadowWithCSMPCF1 in the cascade blend branch - [_Bug Fix_] by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18920](https://github.com/BabylonJS/Babylon.js/pull/18920))
-- Avoid blob URL round-trip for in-memory ImageBitmap sources - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18924](https://github.com/BabylonJS/Babylon.js/pull/18924))
-- Fix Gaussian splatting with horizontal fixed FOV - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#18921](https://github.com/BabylonJS/Babylon.js/pull/18921))
-- Fix WebGPU occlusion query begin sequencing - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#18918](https://github.com/BabylonJS/Babylon.js/pull/18918))
-- Fix: static Gaussian Splatting part disappears after compacting a streaming compound - by [raymondyfei](https://github.com/raymondyfei) ([#18917](https://github.com/BabylonJS/Babylon.js/pull/18917))
+- StandardMaterial: depth pre-pass honours every alpha source, and alphaCutOff is bound for all alpha-tested materials - by [increasinglyHuman](https://github.com/increasinglyHuman) ([#18936](https://github.com/BabylonJS/Babylon.js/pull/18936))
+- Complete cube / prefiltered texture load contract - [_Bug Fix_] by [bkaradzic-microsoft](https://github.com/bkaradzic-microsoft) ([#18874](https://github.com/BabylonJS/Babylon.js/pull/18874))
+- Add root motion for animation groups: RootMotionClip and RootMotionController - by [Pryme8](https://github.com/Pryme8) ([#18908](https://github.com/BabylonJS/Babylon.js/pull/18908))
+- Use nearest sampling for Gaussian Splatting data textures - by [luokn](https://github.com/luokn) ([#18933](https://github.com/BabylonJS/Babylon.js/pull/18933))
+- Fix WGSL vPartIndex redefinition when combining Gaussian Splatting material plugins - by [raymondyfei](https://github.com/raymondyfei) ([#18931](https://github.com/BabylonJS/Babylon.js/pull/18931))
 
-### Inspector
+### Loaders
 
-- Inspector v2: Display mesh bounding box dimensions - [_New Feature_] by [Jeggery](https://github.com/Jeggery) ([#18875](https://github.com/BabylonJS/Babylon.js/pull/18875))
-
-### Node Render Graph Editor
-
-- Frame graph: support Gaussian splats, sprites, and particles in geometry rendering - by [Popov72](https://github.com/Popov72) ([#18930](https://github.com/BabylonJS/Babylon.js/pull/18930))
+- OBJFileLoader: Fix AssetContainer handling and add opt-in texture loading waits - by [noname0310](https://github.com/noname0310) ([#18895](https://github.com/BabylonJS/Babylon.js/pull/18895))

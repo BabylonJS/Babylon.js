@@ -15,6 +15,7 @@ declare module "../../Engines/abstractEngine.pure" {
          * @param format defines the format of the data
          * @param forcedExtension defines the extension to use to pick the right loader
          * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
+         * @param buffer defines the data buffer to load instead of loading the rootUrl
          * @returns the cube texture as an InternalTexture
          */
         createPrefilteredCubeTexture(
@@ -26,7 +27,8 @@ declare module "../../Engines/abstractEngine.pure" {
             onError?: Nullable<(message?: string, exception?: any) => void>,
             format?: number,
             forcedExtension?: any,
-            createPolynomials?: boolean
+            createPolynomials?: boolean,
+            buffer?: Nullable<ArrayBufferView>
         ): InternalTexture;
     }
 }

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { FreeCamera } from "core/Cameras/freeCamera";
 import { TargetCamera } from "core/Cameras/targetCamera";
+import { CameraMovement } from "core/Cameras/cameraMovement";
 import { TargetCameraMovement } from "core/Cameras/targetCameraMovement";
 import { Vector3 } from "core/Maths/math.vector";
 import { NullEngine } from "core/Engines/nullEngine";
@@ -38,6 +39,16 @@ describe("TargetCameraMovement", () => {
         it("base TargetCamera also gets a TargetCameraMovement", () => {
             const target = new TargetCamera("target", new Vector3(0, 0, 0), scene!);
             expect(target.movement).toBeInstanceOf(TargetCameraMovement);
+        });
+
+        it("continues to process a replacement CameraMovement", () => {
+            const target = new TargetCamera("target", new Vector3(0, 0, 0), scene!);
+            target.movement = new CameraMovement(scene!, target.position);
+            target.cameraRotation.x = 0.1;
+
+            target._checkInputs();
+
+            expect(target.rotation.x).toBeCloseTo(0.1, 5);
         });
     });
 

@@ -30,7 +30,8 @@ export function RegisterEnginePrefilteredCubeTexture(): void {
         onError: Nullable<(message?: string, exception?: any) => void> = null,
         format?: number,
         forcedExtension: any = null,
-        createPolynomials: boolean = true
+        createPolynomials: boolean = true,
+        buffer: Nullable<ArrayBufferView> = null
     ): InternalTexture {
         const callbackAsync = async (loadData: any) => {
             if (!loadData) {
@@ -125,6 +126,22 @@ export function RegisterEnginePrefilteredCubeTexture(): void {
         };
 
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        return this.createCubeTexture(rootUrl, scene, null, false, callbackAsync, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset);
+        return this.createCubeTexture(
+            rootUrl,
+            scene,
+            null,
+            false,
+            callbackAsync,
+            onError,
+            format,
+            forcedExtension,
+            createPolynomials,
+            lodScale,
+            lodOffset,
+            null,
+            undefined,
+            false,
+            buffer
+        );
     };
 }

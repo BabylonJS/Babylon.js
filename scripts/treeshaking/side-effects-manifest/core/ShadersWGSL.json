@@ -21,6 +21,7 @@
         "ShadersWGSL/ShadersInclude/decalFragment.ts": ["shader-store-write"],
         "ShadersWGSL/ShadersInclude/decalFragmentDeclaration.ts": ["shader-store-write"],
         "ShadersWGSL/ShadersInclude/decalVertexDeclaration.ts": ["shader-store-write"],
+        "ShadersWGSL/ShadersInclude/defaultFragmentAlpha.ts": ["shader-store-write"],
         "ShadersWGSL/ShadersInclude/defaultUboDeclaration.ts": ["bare-import", "shader-store-write"],
         "ShadersWGSL/ShadersInclude/depthPrePass.ts": ["shader-store-write"],
         "ShadersWGSL/ShadersInclude/diffusionProfile.ts": ["shader-store-write"],

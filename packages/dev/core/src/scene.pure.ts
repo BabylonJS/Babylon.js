@@ -84,6 +84,7 @@ import { type SubMesh } from "./Meshes/subMesh.pure";
 import { type Node } from "./node";
 import { type Animation } from "./Animations/animation.pure";
 import { type Animatable } from "./Animations/animatable.core";
+import { type IRuntimeAnimationWrite } from "./Animations/runtimeAnimation";
 import { type Texture } from "./Materials/Textures/texture.pure";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
@@ -250,6 +251,23 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     /** @internal */
     public _blockEntityCollection = false;
+
+    /**
+     * Executes a synchronous action without allowing it to weaken an existing entity-collection block.
+     * @param blockEntityCollection whether the action requires entity collection to be blocked
+     * @param action the action to execute
+     * @returns the action result
+     * @internal
+     */
+    public _executeWithBlockedEntityCollection<T>(blockEntityCollection: boolean, action: () => T): T {
+        const previousBlockEntityCollection = this._blockEntityCollection;
+        this._blockEntityCollection = previousBlockEntityCollection || blockEntityCollection;
+        try {
+            return action();
+        } finally {
+            this._blockEntityCollection = previousBlockEntityCollection;
+        }
+    }
 
     /**
      * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
@@ -1795,6 +1813,20 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     /** @internal */
     public _activeAnimatables = new Array<Animatable>();
+    /**
+     * @internal
+     * The writes of the runtime animations since the last animation step's bindings were processed - between steps
+     * and in the current or last step - in the order they were made: the first _animationWriteCount entries, the rest
+     * being reused. What the animations wrote, kept whatever became of them since, for as long as the bindings they
+     * registered are pending or just processed.
+     */
+    public _animationWrites = new Array<IRuntimeAnimationWrite>();
+    /** @internal How many of _animationWrites are in use. */
+    public _animationWriteCount = 0;
+    /** @internal How many of them, at the front, the last animation step's bindings processed; the next step lets them go. */
+    public _animationStepWriteCount = 0;
+    /** @internal Whether the current or last animation step evaluated the active animatables, which none does while animations are disabled. */
+    public _animationStepEvaluated = false;
 
     private _transformMatrix = Matrix.Zero();
     private _sceneUbo: UniformBuffer;
@@ -5833,6 +5865,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._renderTargets.dispose();
         this._materialsRenderTargets.dispose();
         this._registeredForLateAnimationBindings.dispose();
+        this._animationWrites.length = 0;
+        this._animationWriteCount = 0;
+        this._animationStepWriteCount = 0;
         this._meshesForIntersections.dispose();
         this._toBeDisposed.length = 0;
 

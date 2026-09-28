@@ -581,6 +581,13 @@
             "dependsOn": ["Materials", "Shaders"]
         },
         {
+            "title": "needDepthPrePass StandardMaterial alpha test (diffuse, opacity texture, vertex, material, instance colour, opacity fresnel)",
+            "playgroundId": "#7EDYVC#5",
+            "referenceImage": "needDepthPrePassStandardAlphaTest.png",
+            "excludedEngines": ["webgl1"],
+            "dependsOn": ["Materials", "Shaders", "Textures", "Meshes"]
+        },
+        {
             "title": "Decal map PP",
             "playgroundId": "#9BVW2S#101",
             "referenceImage": "decal-map-pp.png",
@@ -2935,7 +2942,7 @@
         },
         {
             "title": "Fluid rendering GPU particle system per-particle size",
-            "playgroundId": "#M9FSIH#1",
+            "playgroundId": "#M9FSIH#5",
             "referenceImage": "fluidGpuParticleSystemPerParticleSize.png",
             "renderCount": 60,
             "excludedEngines": ["webgl1"],
@@ -2943,7 +2950,7 @@
         },
         {
             "title": "Fluid rendering GPU particle system uniform size",
-            "playgroundId": "#M9FSIH#1",
+            "playgroundId": "#M9FSIH#5",
             "replace": "UsePerParticleSizeAttribute = true;, UsePerParticleSizeAttribute = false;",
             "referenceImage": "fluidGpuParticleSystemUniformSize.png",
             "renderCount": 60,
@@ -2952,7 +2959,7 @@
         },
         {
             "title": "Fluid rendering GPU particle system per-particle size with asymmetric scale",
-            "playgroundId": "#M9FSIH#4",
+            "playgroundId": "#M9FSIH#6",
             "referenceImage": "fluidGpuParticleSystemPerParticleSizeAsymmetricScale.png",
             "renderCount": 60,
             "excludedEngines": ["webgl1"],
@@ -2960,7 +2967,7 @@
         },
         {
             "title": "Fluid rendering GPU particle system uniform size with asymmetric scale",
-            "playgroundId": "#M9FSIH#4",
+            "playgroundId": "#M9FSIH#6",
             "replace": "UsePerParticleSizeAttribute = true;, UsePerParticleSizeAttribute = false;",
             "referenceImage": "fluidGpuParticleSystemUniformSizeAsymmetricScale.png",
             "renderCount": 60,

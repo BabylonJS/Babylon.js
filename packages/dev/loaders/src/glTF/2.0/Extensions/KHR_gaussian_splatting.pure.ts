@@ -108,10 +108,8 @@ export class KHR_gaussian_splatting implements IGLTFLoaderExtension {
             // attribute data). The base loader wires the node's transform node from this assign call
             // synchronously, so it must happen before the first await. The splat data is uploaded afterwards.
             const scene = loader.babylonScene;
-            scene._blockEntityCollection = !!loader._assetContainer;
-            const gaussianSplattingMesh = new GaussianSplattingMesh(name, null, scene);
+            const gaussianSplattingMesh = scene._executeWithBlockedEntityCollection(!!loader._assetContainer, () => new GaussianSplattingMesh(name, null, scene));
             gaussianSplattingMesh._parentContainer = loader._assetContainer;
-            scene._blockEntityCollection = false;
 
             GLTFLoader.AddPointerMetadata(gaussianSplattingMesh, context);
             loader.parent.onMeshLoadedObservable.notifyObservers(gaussianSplattingMesh);
