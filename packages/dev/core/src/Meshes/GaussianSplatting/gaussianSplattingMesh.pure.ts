@@ -299,11 +299,12 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     // rasterizing the classic geometry, so the mesh stays a full shadow caster / depth occluder there.
     private _pointMode = false;
     private _pointDepthMode = false;
+    private _pointScale = 1;
     /** Internal render-resolution scale for point splatting. A number (1 = full) renders fewer pixels =
      * ~scale^2 fewer emitted points, with full resolution reconstructed over frames by jittered temporal
-     * upsampling. `"auto"` (default) drives the scale from a device-tiered point budget: scale =
-     * sqrt(budget / full-res point count), so the per-frame point count converges to the budget. Rounded to
-     * an integer factor N = round(1/scale). */
+     * upsampling. `"auto"` (default) targets a device-tiered point budget: scale =
+     * sqrt(budget / full-res point count). The integer upscale factor N = round(1/scale) is capped at 8,
+     * so particularly dense scenes can still exceed the budget. */
     public pointSplattingRenderScale: number | "auto" = "auto";
     // Budget-driven auto scale state: current integer factor N, an EMA of the full-res point estimate (to
     // damp per-frame occlusion/Poisson noise so N doesn't churn), and an in-flight guard for the async readback.
@@ -312,6 +313,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     private _pointBudgetReadPending = false;
     // Frame counter driving the temporal-upsampling jitter cycle (which full-res sub-cell to sample).
     private _pointFrameCounter = 0;
+    private _pointResultReady = false;
     private _pointRenderer: Nullable<GaussianPointSplattingRenderer> = null;
     private _pointBlit: Nullable<GaussianPointSplattingBlitMaterial> = null;
     private _pointBlitMesh: Nullable<Mesh> = null;
@@ -325,6 +327,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     private _pointPartScratch = new Float32Array(40);
     private _pointDecodedSplatsData: Nullable<ArrayBuffer> = null;
     private readonly _pointVpMatrix = new Matrix();
+    private readonly _pointDepthSpan: [number, number] = [0, 0];
 
     /**
      * Per-part active source-splat range overrides, indexed by part index, in GLOBAL source-splat
@@ -592,7 +595,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * the classic sorted quads. Off by default. The mesh keeps its geometry, textures and part data, so
      * shadow depth, GPU picking, IBL voxelization and prepass are unaffected — only the main color pass
      * changes. See {@link pointSplattingDepthRenderMode} to route the scene's DepthRenderer through the
-     * same compute result. WebGPU only.
+     * same compute result. With multiple active cameras, falls back to the classic renderer because the
+     * compute result is camera-specific. WebGPU only.
      */
     public get pointSplattingRenderMode(): boolean {
         return this._pointMode;
@@ -624,7 +628,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * and fully independent of
      * {@link pointSplattingRenderMode}: both toggles consume the same shared compute, which runs whenever
      * either one is on. Only the DepthRenderer pass is affected — shadows, prepass/geometry AOV and GPU
-     * picking still rasterize the classic geometry. WebGPU only.
+     * picking still rasterize the classic geometry. Multiple active cameras use the classic depth path.
+     * WebGPU only.
      */
     public get pointSplattingDepthRenderMode(): boolean {
         return this._pointDepthMode;
@@ -654,9 +659,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
 
     /** Density multiplier for point splatting (higher = denser and slower). */
     public get pointSplattingScale(): number {
-        return this._pointRenderer?.pointScale ?? 1;
+        return this._pointScale;
     }
     public set pointSplattingScale(value: number) {
+        this._pointScale = value;
         if (this._pointRenderer) {
             this._pointRenderer.pointScale = value;
             this._pointRenderer.resetAccumulation();
@@ -670,6 +676,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const engine = this._scene.getEngine();
         if (!this._pointRenderer) {
             this._pointRenderer = new GaussianPointSplattingRenderer(engine);
+            this._pointRenderer.pointScale = this._pointScale;
         }
         this._pointDecodedSplatsData = null; // force a decode
         this._pointSyncData();
@@ -993,8 +1000,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 const wx = scratch[wb + 0] * lx + scratch[wb + 4] * ly + scratch[wb + 8] * lz + scratch[wb + 12];
                 const wy = scratch[wb + 1] * lx + scratch[wb + 5] * ly + scratch[wb + 9] * lz + scratch[wb + 13];
                 const wz = scratch[wb + 2] * lx + scratch[wb + 6] * ly + scratch[wb + 10] * lz + scratch[wb + 14];
-                // View-space z (LH: +forward), matching the shader's viewDepth = abs(camspace.z).
-                const vz = viewM[2] * wx + viewM[6] * wy + viewM[10] * wz + viewM[14];
+                // View-space forward depth is positive for both handedness conventions.
+                const viewZ = viewM[2] * wx + viewM[6] * wy + viewM[10] * wz + viewM[14];
+                const vz = this._scene.useRightHandedSystem ? -viewZ : viewZ;
                 if (vz < vzMin) {
                     vzMin = vz;
                 }
@@ -1008,9 +1016,13 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         vzMin = Math.max(near, vzMin);
         vzMax = Math.min(far, vzMax);
         if (!(vzMax > vzMin)) {
-            return [near, far];
+            this._pointDepthSpan[0] = near;
+            this._pointDepthSpan[1] = far;
+        } else {
+            this._pointDepthSpan[0] = vzMin;
+            this._pointDepthSpan[1] = vzMax;
         }
-        return [vzMin, vzMax];
+        return this._pointDepthSpan;
     }
 
     /**
@@ -1024,15 +1036,28 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         if (total <= 2) {
             return 1;
         }
-        const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
         let s = Math.max(1, Math.round(total * 0.6180339887));
-        while (gcd(s, total) !== 1) {
+        let a = s;
+        let b = total;
+        while (b !== 0) {
+            const remainder = a % b;
+            a = b;
+            b = remainder;
+        }
+        while (a !== 1) {
             s++;
+            a = s;
+            b = total;
+            while (b !== 0) {
+                const remainder = a % b;
+                a = b;
+                b = remainder;
+            }
         }
         return s;
     }
 
-    /** Device-tiered per-frame point budget for the `"auto"` render scale: desktop 15M, iOS 9M, other
+    /** Device-tiered per-frame point target for the `"auto"` render scale: desktop 15M, iOS 9M, other
      * mobile 6M. A fixed device-class heuristic (not derived from actual VRAM/GPU).
      * @returns the target emitted-point count per frame */
     private _pointBudget(): number {
@@ -1068,8 +1093,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 // Hi-Z), so the factor N doesn't churn.
                 const fullPoints = total * currentN * currentN;
                 this._pointFullPointsEma = this._pointFullPointsEma > 0 ? this._pointFullPointsEma * 0.8 + fullPoints * 0.2 : fullPoints;
-                // Hysteretic budget-CAP controller: raise N to get under budget when over; step down one level
-                // only if the lower level still fits (0.9 margin). Keeps per-frame points <= budget, stable N.
+                // Raise N when over budget; step down only if the lower level still fits (0.9 margin).
+                // N stays at most 8, so this is a best-effort target rather than a hard point-count cap.
                 const budget = this._pointBudget();
                 const estAtCurrent = this._pointFullPointsEma / (currentN * currentN);
                 let target = currentN;
@@ -1083,6 +1108,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 }
                 this._pointAutoN = Math.max(1, Math.min(8, target));
             }
+        } catch (error) {
+            Logger.Error(`GaussianSplattingMesh: point-splatting budget readback failed: ${String(error)}`);
         } finally {
             this._pointBudgetReadPending = false;
         }
@@ -1091,7 +1118,8 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     /** Runs the compute pipeline before the render pass (compute cannot run inside an active pass) and
      * binds the resolved buffers to the blit material for the color pass. */
     private _pointRunCompute(): void {
-        if (!this._pointComputeActive || !this.isEnabled() || !this._pointRenderer) {
+        this._pointResultReady = false;
+        if (!this._pointComputeActive || !this.isEnabled() || !this._pointRenderer || (this._scene.activeCameras?.length ?? 0) > 1) {
             return;
         }
         this._pointSyncData();
@@ -1141,7 +1169,10 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // Projection z-row (column-major m[10],m[11],m[14],m[15]) so resolve reconstructs ndc.z from the
         // view-z key for fragDepth — it encodes the reverse-Z / half-Z convention automatically.
         this._pointRenderer.setProjectionZ(projection.m[10], projection.m[11], projection.m[14], projection.m[15]);
-        this._pointRenderer.renderToBuffer(width, height, fullW, fullH, upsampleN, jitterX, jitterY);
+        if (!this._pointRenderer.renderToBuffer(width, height, fullW, fullH, upsampleN, jitterX, jitterY)) {
+            return;
+        }
+        this._pointResultReady = true;
 
         if (scaleOpt === "auto") {
             this._pointUpdateAutoScale(upsampleN);
@@ -1216,7 +1247,14 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // classic geometry, so shadows are unaffected. The compositor is rendered here (not as an active
         // scene mesh) so its geometry never leaks into those passes; its effect is prepared explicitly
         // because the scene's active-mesh flow never touches it.
-        if (this._pointMode && this._pointBlitMesh && this._isPointMainColorPass()) {
+        if (
+            this._pointMode &&
+            this._pointResultReady &&
+            this._pointBlitMesh &&
+            this._pointBlitMesh.subMeshes.length > 0 &&
+            this._pointBlit?.isReady(this._pointBlitMesh, false, this._pointBlitMesh.subMeshes[0]) &&
+            this._isPointMainColorPass()
+        ) {
             const blitMesh = this._pointBlitMesh;
             if (blitMesh.subMeshes.length > 0) {
                 // Render in replacement mode (pass the mesh as effectiveMeshReplacement) so the DISABLED
@@ -1231,7 +1269,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         // Independently of the color mode, the depth compositor writes the resolved point-splat depth into
         // the active camera's depth map. Until its effect compiles we fall through to the classic depth
         // rasterization rather than leaving a hole in the map.
-        if (this._pointDepthMode && this._pointDepthBlitMesh && this._isPointDepthPass()) {
+        if (this._pointDepthMode && this._pointResultReady && this._pointDepthBlitMesh && this._isPointDepthPass()) {
             const depthBlitMesh = this._pointDepthBlitMesh;
             if (depthBlitMesh.subMeshes.length > 0 && this._pointDepthBlit?.isReady(depthBlitMesh, false, depthBlitMesh.subMeshes[0])) {
                 // The depth renderer may have left ALPHA_COMBINE set (alphaBlendedDepth); the point-splat

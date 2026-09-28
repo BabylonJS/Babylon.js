@@ -9,3 +9,6 @@ RegisterGaussianSplattingMesh();
 
 import "../thinInstanceMesh";
 import "./gaussianSplattingPartProxyMesh";
+import "./gaussianPointSplattingRenderer";
+import "../../Materials/GaussianSplatting/gaussianPointSplattingBlitMaterial";
+import "../../Materials/GaussianSplatting/gaussianPointSplattingDepthBlitMaterial";

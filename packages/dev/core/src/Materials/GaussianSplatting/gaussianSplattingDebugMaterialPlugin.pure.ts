@@ -111,6 +111,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
     private _dbgPartDataTexture: Nullable<RawTexture> = null;
     private _textureDirty: boolean = false;
     private _maxPartCount: number = 0;
+    private _resolvedPartData: Nullable<{ partCount: number; data: Float32Array; maxPartCount: number }> = null;
 
     /**
      * Creates a new GaussianSplattingDebugMaterialPlugin.
@@ -154,7 +155,10 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
         if (!this._maxPartCount) {
             this._maxPartCount = GetGaussianSplattingMaxPartCount(engine);
         }
-        return { data: this._buildTextureData(partCount), maxPartCount: this._maxPartCount };
+        if (!this._resolvedPartData || this._resolvedPartData.partCount !== partCount) {
+            this._resolvedPartData = { partCount, data: this._buildTextureData(partCount), maxPartCount: this._maxPartCount };
+        }
+        return this._resolvedPartData;
     }
 
     private _isAnyFeatureActive(): boolean {
@@ -185,6 +189,7 @@ export class GaussianSplattingDebugMaterialPlugin extends MaterialPluginBase {
     private _markDirty(): void {
         this.markAllDefinesAsDirty();
         this._textureDirty = true;
+        this._resolvedPartData = null;
     }
 
     // ----- Public API -----

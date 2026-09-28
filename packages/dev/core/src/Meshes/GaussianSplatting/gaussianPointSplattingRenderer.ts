@@ -4,6 +4,7 @@
  */
 export * from "./gaussianPointSplattingRenderer.pure";
 
+import "../../Engines/WebGPU/Extensions/engine.computeShader";
 import "../../ShadersWGSL/gpsPreprocess.compute";
 import "../../ShadersWGSL/gpsScanBlocks.compute";
 import "../../ShadersWGSL/gpsScanSums.compute";
