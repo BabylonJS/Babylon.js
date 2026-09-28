@@ -36,7 +36,7 @@ fn gpsFindGaussian(p : u32, loInit : u32, hiInit : u32) -> u32 {
 fn main(@builtin(global_invocation_id) gid : vec3u) {
     // Linear point index from the 2D dispatch grid: rows are tiled at the 65535-workgroup limit
     // (65535 * 256 = 16776960 threads per row) so the total point count can exceed one dimension.
-    let p = gid.y * 16776960u + gid.x;
+    let p = gid.y * 65535u * 256u + gid.x;
     let total = pointCount[0];
     if (p >= total) {
         return;

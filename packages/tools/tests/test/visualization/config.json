@@ -2,6 +2,15 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Point Splatting Right-Handed Depth",
+            "playgroundId": "#F39YWU#2",
+            "referenceImage": "gsplat-point-rh-depth.png",
+            "renderCount": 96,
+            "excludedEngines": ["webgl1", "webgl2"],
+            "dependsOn": ["GaussianSplatting", "Meshes", "Rendering"],
+            "excludeFromPerformance": true
+        },
+        {
             "title": "Gaussian Splatting GLTF",
             "playgroundId": "#WSAFDA#0",
             "referenceImage": "gsplat-splat-gltf.png",

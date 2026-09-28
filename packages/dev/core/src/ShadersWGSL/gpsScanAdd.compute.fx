@@ -5,7 +5,7 @@
 
 @compute @workgroup_size(256, 1, 1)
 fn main(@builtin(global_invocation_id) gid : vec3u) {
-    let i = gid.x;
+    let i = gid.y * 65535u * 256u + gid.x;
     if (i >= arrayLength(&cdf)) {
         return;
     }

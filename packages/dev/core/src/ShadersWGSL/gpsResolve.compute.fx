@@ -14,7 +14,7 @@ struct GpsResolveParams {
     pad0 : vec2f,
     upsample : vec4f,      // x=N (upscale factor), y=jitterX, z=jitterY, w=generation
     misc2 : vec4f,         // x=maxAccum
-    projZ : vec4f,         // projection z-row (m10, m11, m14, m15) to map view-z back to ndc.z
+    projZ : vec4f,         // projection z-row (m10 and m11 sign-adjusted for RH) to map positive view-z back to ndc.z
 };
 
 @group(0) @binding(0) var<storage, read_write> accumBuffer : array<vec4f>;

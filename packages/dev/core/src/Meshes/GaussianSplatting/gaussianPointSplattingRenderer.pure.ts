@@ -12,6 +12,7 @@ import { type ComputeBindingMapping } from "core/Engines/Extensions/engine.compu
 
 const WorkgroupSize = 256;
 const ScanBlockSize = 512; // elements per scan workgroup (256 threads x 2)
+const MaxDispatchGroupsPerDimension = 65535;
 const DepthClearSentinel = 0xffffffff;
 // Point->Gaussian acceleration-table resolution; must match GPS_PARTITION_BUCKETS in the shaders. The
 // table has PartitionBuckets + 1 entries (partition[k] = Gaussian owning point k*total/PartitionBuckets).
@@ -69,8 +70,8 @@ export class GaussianPointSplattingRenderer {
     public pointScale = 1.0;
     /** 2D covariance dilation (sub-pixel antialiasing kernel), in pixels^2. */
     public kernelSize = 0.3;
-    /** Whether the scene uses a reverse-Z depth buffer (near = large NDC z). */
-    public reverseDepth = false;
+    /** Whether view-space forward is negative (right-handed scenes). */
+    public rightHandedSystem = false;
     /** 1 when any per-part debug knob is active (drives the preprocess debug branch); 0 otherwise. */
     public debugActive = 0;
     /** Whether the active camera is orthographic (selects the ortho Jacobian in computeCov2D). */
@@ -123,7 +124,7 @@ export class GaussianPointSplattingRenderer {
     // full 16-bit ordering, robust to the camera being inside/close to the model.
     private _viewZMin = 0.1;
     private _viewZMax = 1000;
-    // Projection z-row (m10, m11, m14, m15) so resolve reconstructs ndc.z from the view-z key.
+    // Projection z-row (m10, m11, m14, m15) so resolve reconstructs ndc.z from the positive-forward view-z key.
     private _projZ = new Float32Array([0, 1, 0, 0]);
     private _frameIndex = 0;
 
@@ -141,7 +142,7 @@ export class GaussianPointSplattingRenderer {
     private _prevVp = new Float32Array(16);
     private _hasPrevVp = false;
 
-    /** Maximum number of frames blended into the accumulation buffer (caps the running-mean weight). */
+    /** Maximum number of frames blended into the accumulation buffer (clamped to 1..65535). */
     public maxAccumFrames = 255;
 
     /**
@@ -558,7 +559,7 @@ export class GaussianPointSplattingRenderer {
      * @returns true if the pipeline dispatched, false if it was not ready / had nothing to draw
      */
     public renderToBuffer(width: number, height: number, outWidth = width, outHeight = height, upsampleN = 1, jitterX = 0, jitterY = 0): boolean {
-        if (width <= 0 || height <= 0) {
+        if (width <= 0 || height <= 0 || outWidth <= 0 || outHeight <= 0) {
             return false;
         }
         this._upsampleN = Math.max(1, Math.round(upsampleN));
@@ -603,14 +604,13 @@ export class GaussianPointSplattingRenderer {
         this._uniforms.updateFloat4("resNearFar", width, height, this._near, this._far);
         // frameSeed wraps to stay exact as a float and to vary the stochastic sampling each frame.
         // kernelSize is a fixed OUTPUT-pixel low-pass dilation; the covariance is in render (low) pixels, so
-        // scale it by (renderW/outW)^2 — otherwise a low-res render dilates splats N^2x too much (blobby).
-        const renderScaleSq = this._outWidth > 0 ? (this._width / this._outWidth) * (this._height / this._outHeight) : 1;
-        this._uniforms.updateFloat4("params0", this._gaussianCount, this.kernelSize * renderScaleSq, this.pointScale, this._frameIndex % 65536);
-        const reverseZ = this.reverseDepth ? 1 : 0;
-        this._uniforms.updateFloat4("focal", this._focalX, this._focalY, reverseZ, this.isOrthographic ? 1 : 0);
+        // scale it by the render-to-output area ratio — otherwise a low-res render dilates splats N^2x too much (blobby).
+        const renderAreaRatio = (this._width / this._outWidth) * (this._height / this._outHeight);
+        this._uniforms.updateFloat4("params0", this._gaussianCount, this.kernelSize * renderAreaRatio, this.pointScale, this._frameIndex % 65536);
+        this._uniforms.updateFloat4("focal", this._focalX, this._focalY, 0, this.isOrthographic ? 1 : 0);
         this._uniforms.updateFloat4("camPosDeg", this._camX, this._camY, this._camZ, this._shDegree);
         this._uniforms.updateFloat4("depthNorm", this._viewZMin, this._viewZMax, this.debugActive, this.compensation ? 1 : 0);
-        this._uniforms.updateFloat4("hiZInfo", width, height, this._hiZLevels.length, this.occlusionCulling ? 1 : 0);
+        this._uniforms.updateFloat4("hiZInfo", width, height, this._hiZLevels.length, this.occlusionCulling && !moving ? 1 : 0);
         this._uniforms.updateFloat4("misc", jitterNdcX, jitterNdcY, 0, 0); // xy = temporal-upsampling jitter (NDC)
         this._uniforms.update();
 
@@ -618,8 +618,9 @@ export class GaussianPointSplattingRenderer {
         this._resolveParams.updateFloat2("outResolution", this._outWidth, this._outHeight);
         this._resolveParams.updateFloat2("depthNorm", this._viewZMin, this._viewZMax);
         this._resolveParams.updateFloat4("upsample", n, this._jitterX, this._jitterY, this._accumGeneration);
-        this._resolveParams.updateFloat4("misc2", this.maxAccumFrames, moving ? 1 : 0, 0, 0);
-        this._resolveParams.updateFloat4("projZ", this._projZ[0], this._projZ[1], this._projZ[2], this._projZ[3]);
+        this._resolveParams.updateFloat4("misc2", Math.max(1, Math.min(65535, Math.floor(this.maxAccumFrames))), moving ? 1 : 0, 0, 0);
+        const zSign = this.rightHandedSystem ? -1 : 1;
+        this._resolveParams.updateFloat4("projZ", this._projZ[0] * zSign, this._projZ[1] * zSign, this._projZ[2], this._projZ[3]);
         this._resolveParams.update();
 
         const groupsG = Math.ceil(this._gaussianCount / WorkgroupSize);
@@ -638,12 +639,12 @@ export class GaussianPointSplattingRenderer {
         }
         this._preprocessCs.setStorageBuffer("parts", this._parts!);
         this._preprocessCs.setStorageBuffer("hiZ", this._hiZ!);
-        this._preprocessCs.dispatch(groupsG, 1, 1);
+        this._preprocessCs.dispatch(Math.min(groupsG, MaxDispatchGroupsPerDimension), Math.ceil(groupsG / MaxDispatchGroupsPerDimension), 1);
 
         this._scanBlocksCs.setStorageBuffer("weights", this._weights!);
         this._scanBlocksCs.setStorageBuffer("cdf", this._cdf!);
         this._scanBlocksCs.setStorageBuffer("blockSums", this._blockSums!);
-        this._scanBlocksCs.dispatch(this._numBlocks, 1, 1);
+        this._scanBlocksCs.dispatch(Math.min(this._numBlocks, MaxDispatchGroupsPerDimension), Math.ceil(this._numBlocks / MaxDispatchGroupsPerDimension), 1);
 
         this._scanSumsCs.setStorageBuffer("blockSums", this._blockSums!);
         this._scanSumsCs.setStorageBuffer("pointCount", this._pointCount);
@@ -652,7 +653,7 @@ export class GaussianPointSplattingRenderer {
 
         this._scanAddCs.setStorageBuffer("cdf", this._cdf!);
         this._scanAddCs.setStorageBuffer("blockSums", this._blockSums!);
-        this._scanAddCs.dispatch(groupsG, 1, 1);
+        this._scanAddCs.dispatch(Math.min(groupsG, MaxDispatchGroupsPerDimension), Math.ceil(groupsG / MaxDispatchGroupsPerDimension), 1);
 
         // Build the point->Gaussian acceleration table from the finished CDF (one thread per bucket).
         this._partitionCs.setStorageBuffer("cdf", this._cdf!);
@@ -727,6 +728,7 @@ export class GaussianPointSplattingRenderer {
         this._accumCount = null;
         this._hiZ?.dispose();
         this._hiZ = null;
+        this._hiZLevels = [];
         for (const ub of this._hiZBuildParams) {
             ub.dispose();
         }
@@ -741,5 +743,7 @@ export class GaussianPointSplattingRenderer {
         this._resolveParams.dispose();
         this._width = 0;
         this._height = 0;
+        this._outWidth = 0;
+        this._outHeight = 0;
     }
 }

@@ -9,7 +9,8 @@
 @compute @workgroup_size(256, 1, 1)
 fn main(@builtin(local_invocation_id) lid : vec3u, @builtin(workgroup_id) wid : vec3u) {
     let t = lid.x;
-    let base = wid.x * 512u;
+    let block = wid.y * 65535u + wid.x;
+    let base = block * 512u;
     let n = arrayLength(&weights);
     let i0 = base + 2u * t;
     let i1 = base + 2u * t + 1u;
@@ -20,7 +21,7 @@ fn main(@builtin(local_invocation_id) lid : vec3u, @builtin(workgroup_id) wid : 
     let total = gpsScanExclusive512(t);
 
     if (t == 0u) {
-        blockSums[wid.x] = total;
+        blockSums[block] = total;
     }
     if (i0 < n) {
         cdf[i0] = gpsScanTemp[2u * t];

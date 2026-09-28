@@ -107,7 +107,7 @@ fn gpsEvalShDelta(g : u32, dir : vec3f, so1 : f32, so2 : f32, so3 : f32, so4 : f
 
 @compute @workgroup_size(256, 1, 1)
 fn main(@builtin(global_invocation_id) gid : vec3u) {
-    let g = gid.x;
+    let g = gid.y * 65535u * 256u + gid.x;
     let count = u32(uniforms.params0.x);
     if (g >= count) {
         return;

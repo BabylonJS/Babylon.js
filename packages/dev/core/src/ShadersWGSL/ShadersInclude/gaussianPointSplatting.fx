@@ -19,7 +19,7 @@ struct GpsUniforms {
     viewProjection : mat4x4f,
     resNearFar : vec4f, // x=width, y=height, z=near, w=far
     params0 : vec4f,    // x=gaussianCount, y=kernelSize, z=pointScale, w=frameSeed
-    focal : vec4f,      // x,y = focal length in pixels; z = reverse-Z flag; w unused
+    focal : vec4f,      // x,y = focal length in pixels; z unused; w = orthographic flag
     camPosDeg : vec4f,  // xyz = camera world position, w = SH degree
     depthNorm : vec4f,  // x,y = the model's view-z min/max this frame; z = debugActive; w = compensation
     hiZInfo : vec4f,    // x=baseWidth, y=baseHeight, z=numLevels, w=occlusion enabled (Hi-Z pyramid)
@@ -92,12 +92,6 @@ fn gpsPackKey(depthKey : u32, colorKey : u32) -> u32 {
 
 fn gpsKeyColor(key : u32) -> vec3f {
     return gpsUnpackRGB565(key & 0xFFFFu);
-}
-
-// Nearest view-space depth maps to the smallest key. viewZ is expected positive-forward (LH).
-fn gpsQuantizeDepth(viewZ : f32, near : f32, far : f32) -> u32 {
-    let n = clamp((viewZ - near) / max(1e-6, far - near), 0.0, 1.0);
-    return u32(n * 65535.0);
 }
 
 // --- Random sampling (PCG hash) ---
@@ -187,12 +181,6 @@ fn gpsPoisson(seed : u32, lambda : f32) -> u32 {
     kf += invS * (-(1.0 / 36.0) * w - (1.0 / 72.0) * w3);
     kf += invL * (-(8.0 / 405.0) + (7.0 / 810.0) * w2 + (1.0 / 270.0) * w4);
     return u32(max(i32(round(kf)), 0));
-}
-
-// Round x to an integer, carrying the fraction stochastically (rand in [0,1)).
-fn gpsStochasticRound(x : f32, rand : f32) -> u32 {
-    let f = floor(x);
-    return u32(f) + select(0u, 1u, rand < (x - f));
 }
 
 // exp(-1/2 d^T conic d), conic = inverse 2D covariance packed as (c00, c01, c11).

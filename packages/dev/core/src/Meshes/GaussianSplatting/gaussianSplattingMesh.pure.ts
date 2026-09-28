@@ -324,6 +324,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
     private _pointComputeObserver: Nullable<Observer<Scene>> = null;
     private _pointSplatCount = 0;
     private _pointPartCount = 1;
+    private _pointDecodedPartCount = 0;
     private _pointPartLocalMin = new Float32Array(3);
     private _pointPartLocalMax = new Float32Array(3);
     private _pointPartScratch = new Float32Array(40);
@@ -600,6 +601,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
      * same compute result. With multiple active cameras, falls back to the classic renderer because the
      * compute result is camera-specific. Streamed (GPU-decoded) parts are not supported and also fall
      * back to the classic renderer for the whole mesh. WebGPU only.
+     * @see https://playground.babylonjs.com/#F39YWU#1
      */
     public get pointSplattingRenderMode(): boolean {
         return this._pointMode;
@@ -766,10 +768,11 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const data = this._splatsData;
         const vc = data ? (data.byteLength / _GaussianSplattingBytesPerSplat) | 0 : 0;
         const pc = this.isCompound ? this.partCount : 1;
-        if (data === this._pointDecodedSplatsData && vc === this._pointSplatCount && pc === this._pointPartCount) {
+        if (data === this._pointDecodedSplatsData && vc === this._pointSplatCount && pc === this._pointDecodedPartCount) {
             return;
         }
         this._pointDecodedSplatsData = data;
+        this._pointDecodedPartCount = pc;
         if (!data || vc === 0) {
             this._pointSplatCount = 0;
             return;
@@ -792,7 +795,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const flipY = this._flipY ? -1 : 1;
         const partIndices = this.isCompound ? this._partIndices : null;
 
-        let partCount = 1;
+        let partCount = this.isCompound ? this.partCount : 1;
         if (partIndices) {
             for (let i = 0; i < count; i++) {
                 if (partIndices[i] + 1 > partCount) {
@@ -1180,7 +1183,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
         const focalX = (width * projection.m[0]) / 2;
         const focalY = (height * projection.m[5]) / 2;
         const camPos = camera.globalPosition;
-        this._pointRenderer.reverseDepth = engine.useReverseDepthBuffer;
+        this._pointRenderer.rightHandedSystem = this._scene.useRightHandedSystem;
         // Orthographic when projection[3][3] == 1 (matches the classic shader's isOrtho test).
         this._pointRenderer.isOrthographic = Math.abs(projection.m[15] - 1) < 0.001;
         // Antialiasing opacity compensation follows the source material's setting (classic COMPENSATION).
@@ -1280,15 +1283,9 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
             this._isPointMainColorPass()
         ) {
             const blitMesh = this._pointBlitMesh;
-            if (blitMesh.subMeshes.length > 0) {
-                // Render in replacement mode (pass the mesh as effectiveMeshReplacement) so the DISABLED
-                // compositor still draws itself — a disabled mesh's renderSelf is otherwise false, which
-                // is exactly why it drew nothing before. Keeping it disabled is what stops the scene from
-                // selecting it into the depth renderer / IBL G-buffer (no leaked triangle). Mesh.render
-                // prepares the effect itself and no-ops until it is ready.
-                blitMesh.render(blitMesh.subMeshes[0], enableAlphaMode, blitMesh);
-            }
-            return this;
+            // Render in replacement mode so the disabled compositor still draws itself.
+            blitMesh.render(blitMesh.subMeshes[0], enableAlphaMode, blitMesh);
+            return mesh;
         }
         // Independently of the color mode, the depth compositor writes the resolved point-splat depth into
         // the active camera's depth map. Until its effect compiles we fall through to the classic depth
@@ -1300,7 +1297,7 @@ export class GaussianSplattingMesh extends GaussianSplattingMeshBase {
                 // depth is a single resolved opaque surface, so blending must be off.
                 this._scene.getEngine().setAlphaMode(Constants.ALPHA_DISABLE);
                 depthBlitMesh.render(depthBlitMesh.subMeshes[0], false, depthBlitMesh);
-                return this;
+                return mesh;
             }
         }
         return super._drawColorPass(mesh, subMesh, enableAlphaMode, effectiveMeshReplacement);
