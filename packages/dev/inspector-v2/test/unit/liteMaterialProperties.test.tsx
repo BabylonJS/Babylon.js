@@ -13,6 +13,15 @@ const InspectionMocks = vi.hoisted(() => ({
     setStandardEmissiveTexture: vi.fn((material: Record<string, unknown>, texture: object | null) => {
         material.emissiveTexture = texture ?? undefined;
     }),
+    setStandardReflectionCubeTexture: vi.fn((material: Record<string, unknown>, texture: object | null) => {
+        material.reflectionCubeTexture = texture ?? undefined;
+    }),
+    setShaderUniform: vi.fn((material: Record<string, any>, name: string, value: number | number[]) => {
+        material.uniforms[name] = value;
+    }),
+    setShaderTexture: vi.fn((material: Record<string, any>, name: string, texture: object | null) => {
+        material.textures[name] = texture;
+    }),
 }));
 
 vi.mock("@babylonjs/lite", async (importOriginal) => {
@@ -54,18 +63,19 @@ vi.mock("@babylonjs/lite", async (importOriginal) => {
         markMaterialUboDirty: InspectionMocks.markDirty,
         rebuildMaterial: InspectionMocks.rebuild,
         setStandardEmissiveTexture: InspectionMocks.setStandardEmissiveTexture,
+        setStandardReflectionCubeTexture: InspectionMocks.setStandardReflectionCubeTexture,
+        setShaderUniform: InspectionMocks.setShaderUniform,
+        setShaderTexture: InspectionMocks.setShaderTexture,
     };
 });
 
 import { type Material, type SceneContext } from "@babylonjs/lite";
 import { Observable } from "core/Misc/observable";
 
-import { CreateMaterialDescriptorWithFamily, SetMaterialDescriptorPropertyWithFamily } from "../../src/lite/services/panes/properties/descriptors/materialDescriptor";
-import { NodeMaterialDescriptor } from "../../src/lite/services/panes/properties/descriptors/nodeDescriptor";
-import { PbrMaterialDescriptor } from "../../src/lite/services/panes/properties/descriptors/pbrDescriptor";
-import { ShaderMaterialDescriptor } from "../../src/lite/services/panes/properties/descriptors/shaderDescriptor";
-import { StandardMaterialDescriptor } from "../../src/lite/services/panes/properties/descriptors/standardDescriptor";
 import { StandardMaterialAdapter } from "../../src/lite/services/panes/properties/materialAdapters/standardMaterialAdapter";
+import { PbrMaterialAdapter } from "../../src/lite/services/panes/properties/materialAdapters/pbrMaterialAdapter";
+import { ShaderMaterialAdapter } from "../../src/lite/services/panes/properties/materialAdapters/shaderMaterialAdapter";
+import { NodeMaterialAdapter } from "../../src/lite/services/panes/properties/materialAdapters/nodeMaterialAdapter";
 import { MaterialPropertiesServiceDefinition } from "../../src/lite/services/panes/properties/materialPropertiesService";
 import { type ISceneResourceIndexService } from "../../src/lite/services/panes/scene/sceneResourceIndexService";
 import { type IMaterialResourceRecord, type ITextureResourceRecord } from "../../src/lite/services/panes/scene/sceneResources";
@@ -142,7 +152,7 @@ function MakeSelectionService(): ISelectionService {
     } as ISelectionService;
 }
 
-describe("Babylon Lite material accessor descriptors", () => {
+describe("Babylon Lite material properties", () => {
     const roots: Root[] = [];
     const containers: HTMLElement[] = [];
 
@@ -151,6 +161,9 @@ describe("Babylon Lite material accessor descriptors", () => {
         InspectionMocks.rebuild.mockReset();
         InspectionMocks.rebuild.mockResolvedValue(undefined);
         InspectionMocks.setStandardEmissiveTexture.mockClear();
+        InspectionMocks.setStandardReflectionCubeTexture.mockClear();
+        InspectionMocks.setShaderUniform.mockClear();
+        InspectionMocks.setShaderTexture.mockClear();
     });
 
     afterEach(() => {
@@ -168,128 +181,7 @@ describe("Babylon Lite material accessor descriptors", () => {
         return container;
     }
 
-    it("builds Inspector-owned Standard descriptors including cube reflection", () => {
-        const cube = { metadata: { kind: "cube", capabilities: {} } };
-        const material = MakeStandard({ reflectionCubeTexture: cube });
-        const descriptor = CreateMaterialDescriptorWithFamily(material, StandardMaterialDescriptor);
-
-        expect(descriptor.family).toBe("standard");
-        expect(descriptor.properties.map((property) => property.id)).toContain("standard.diffuseColor");
-        expect(descriptor.textureBindings).toHaveLength(9);
-        expect(descriptor.textureBindings.find((binding) => binding.id === "standard.reflectionCube")).toMatchObject({
-            value: { state: "present", value: { entity: cube, kind: "cube" } },
-            directions: ["replace", "clear", "navigate"],
-        });
-    });
-
-    it("builds all 21 canonical PBR bindings and finalized family sections", () => {
-        const texture = { metadata: { kind: "2d", sampleType: "float", capabilities: {} }, transform: { uOffset: 0, vOffset: 0, uScale: 1, vScale: 1, uAng: 0 } };
-        const material = {
-            family: "pbr",
-            name: "PBR",
-            lightmapTexture: texture,
-            baseColorTexture: texture,
-            baseColorFactor: [1, 1, 1, 1],
-            emissiveColor: [0, 0, 0],
-            metallicReflectance: { texture },
-            clearCoat: { isEnabled: true, texture },
-            sheen: { isEnabled: true, texture },
-            iridescence: { isEnabled: true, texture },
-            anisotropy: { isEnabled: true, texture },
-            unlit: [1, 1, 1],
-            subsurface: {
-                translucency: { colorTexture: texture, intensityTexture: texture },
-                thickness: { texture },
-                refraction: { intensity: 1, texture },
-            },
-        } as unknown as Material;
-        const descriptor = CreateMaterialDescriptorWithFamily(material, PbrMaterialDescriptor);
-
-        expect(descriptor.textureBindings).toHaveLength(21);
-        expect(new Set(descriptor.textureBindings.map((binding) => binding.id)).size).toBe(21);
-        expect(descriptor.properties.map((property) => property.section)).toEqual(
-            expect.arrayContaining(["clear-coat", "sheen", "iridescence", "anisotropy", "subsurface-translucency", "transmission", "special-modes"])
-        );
-    });
-
-    it("derives Shader and Node rows from public declarations and handles", () => {
-        const texture = { metadata: { kind: "2d", sampleType: "float", capabilities: {} } };
-        const shader = {
-            family: "shader",
-            name: "Shader",
-            uniformDecls: [{ name: "gain", type: "f32" }],
-            samplerDecls: [{ name: "albedo", sampleType: "float", viewDimension: "2d" }],
-            uniforms: { gain: 0.5 },
-            textures: { albedo: texture },
-            attributes: [],
-            storageBufferDecls: [],
-            defines: [],
-        } as unknown as Material;
-        const node = {
-            family: "node",
-            name: "Node",
-            inputs: {
-                strength: { type: "f32", value: 0.8 },
-                albedo: { type: "texture2d", texture },
-            },
-        } as unknown as Material;
-
-        const shaderSnapshot = CreateMaterialDescriptorWithFamily(shader, ShaderMaterialDescriptor);
-        const nodeSnapshot = CreateMaterialDescriptorWithFamily(node, NodeMaterialDescriptor);
-        expect(shaderSnapshot.properties.find((property) => property.label === "gain")?.value).toEqual({ state: "present", value: 0.5 });
-        expect(shaderSnapshot.textureBindings.map((binding) => binding.id)).toEqual(["shader.sampler:albedo"]);
-        expect(nodeSnapshot.properties.find((property) => property.label === "strength")?.value).toEqual({ state: "present", value: 0.8 });
-        expect(nodeSnapshot.textureBindings.map((binding) => binding.id)).toEqual(["node.texture:albedo"]);
-    });
-
-    it("keeps source identity while inspecting and mutating the selected MaterialView", async () => {
-        const scene = {} as SceneContext;
-        const source = MakeStandard({ name: "Source" });
-        const view = Object.assign(Object.create(source), { source, name: "View", alphaCutOff: 0.6 }) as Material;
-        const descriptor = CreateMaterialDescriptorWithFamily(view, StandardMaterialDescriptor);
-
-        expect(descriptor.source).toBe(source);
-        expect(descriptor.isView).toBe(true);
-        expect(descriptor.displayName).toBe("View");
-        expect(descriptor.properties.find((property) => property.id === "standard.alphaCutOff")?.value).toEqual({ state: "present", value: 0.6 });
-
-        const result = await SetMaterialDescriptorPropertyWithFamily({ scenes: [scene] }, view, "standard.alphaCutOff", 0.7, StandardMaterialDescriptor);
-        expect(result).toEqual({ changed: true, mutation: "U", postMutation: "none" });
-        expect((view as any).alphaCutOff).toBe(0.7);
-        expect((source as any).alphaCutOff).toBe(0.4);
-        expect(InspectionMocks.markDirty).toHaveBeenCalledWith(view);
-    });
-
-    it("validates complete scene ownership before rebuilding", async () => {
-        const material = MakeStandard();
-        await expect(SetMaterialDescriptorPropertyWithFamily({ scenes: [] }, material, "standard.backFaceCulling", false, StandardMaterialDescriptor)).rejects.toThrow(
-            "at least one owning scene"
-        );
-        expect((material as any).backFaceCulling).toBe(true);
-    });
-
-    it("accepts synchronous rebuild completion and awaits asynchronous rebuild failures", async () => {
-        const material = MakeStandard();
-        const scene = { meshes: [{ material }] } as SceneContext;
-        InspectionMocks.rebuild.mockReturnValueOnce(undefined);
-
-        await expect(SetMaterialDescriptorPropertyWithFamily({ scenes: [scene] }, material, "standard.backFaceCulling", false, StandardMaterialDescriptor)).resolves.toEqual({
-            changed: true,
-            mutation: "R",
-            postMutation: "rebuild-material",
-        });
-        expect(InspectionMocks.rebuild).toHaveBeenLastCalledWith(scene, material, {
-            rebuildViews: true,
-            rebuildFrameGraph: false,
-        });
-
-        InspectionMocks.rebuild.mockRejectedValueOnce(new Error("rebuild failed"));
-        await expect(SetMaterialDescriptorPropertyWithFamily({ scenes: [scene] }, material, "standard.backFaceCulling", true, StandardMaterialDescriptor)).rejects.toThrow(
-            "rebuild failed"
-        );
-    });
-
-    it("renders shared controls and exact texture navigation from accessor descriptors", () => {
+    it("renders native-accessor controls and exact texture navigation", () => {
         const scene = {} as SceneContext;
         const texture = { metadata: { kind: "2d", sampleType: "float", capabilities: {} } };
         const material = MakeStandard({ emissiveTexture: texture });
@@ -315,6 +207,40 @@ describe("Babylon Lite material accessor descriptors", () => {
         expect(open).not.toBeNull();
         act(() => open?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
         expect(selection.selectedEntity).toBe(texture);
+    });
+
+    it("uses direct Standard texture slots for clear, rebuild, and cube navigation", async () => {
+        const texture = { metadata: { kind: "2d", sampleType: "float", capabilities: {} } };
+        const cube = { metadata: { kind: "cube", sampleType: "float", capabilities: {} } };
+        const material = MakeStandard({ emissiveTexture: texture, reflectionCubeTexture: cube });
+        const record: IMaterialResourceRecord = {
+            source: material,
+            family: "standard",
+            displayName: "Standard source",
+            scenes: [{ meshes: [{ material }] } as SceneContext],
+            bindings: [
+                { id: "standard.emissive", entity: texture },
+                { id: "standard.reflectionCube", entity: cube },
+            ],
+        };
+        const textures: ITextureResourceRecord[] = [texture, cube].map((entity, ordinal) => ({
+            entity,
+            metadata: entity.metadata,
+            ordinal: ordinal + 1,
+            consumers: [{ material, bindingId: ordinal ? "standard.reflectionCube" : "standard.emissive" }],
+        }));
+        const resources = MakeResourceService([record], textures);
+        const selection = MakeSelectionService();
+        const container = Render(<StandardMaterialAdapter material={material} section="textures" resourceIndexService={resources} selectionService={selection} />);
+        act(() => container.querySelector<HTMLButtonElement>('[aria-label="Clear Emissive Texture"]')?.click());
+        await act(async () => {
+            await Promise.resolve();
+        });
+        expect(InspectionMocks.setStandardEmissiveTexture).toHaveBeenCalledWith(material, null);
+        expect(InspectionMocks.rebuild).toHaveBeenCalledWith(record.scenes[0], material, { rebuildViews: true, rebuildFrameGraph: false });
+        act(() => container.querySelector<HTMLElement>('[aria-label^="Reflection Cube Texture: open"]')?.click());
+        expect(selection.selectedEntity).toBe(cube);
+        expect(InspectionMocks.setStandardReflectionCubeTexture).not.toHaveBeenCalled();
     });
 
     it("uses derived controls for writable fields and preserves per-field pending and errors", async () => {
@@ -344,6 +270,39 @@ describe("Babylon Lite material accessor descriptors", () => {
         expect((material as { backFaceCulling: boolean }).backFaceCulling).toBe(false);
     });
 
+    it("writes selected MaterialView fields without mutating the indexed source", async () => {
+        const source = MakeStandard({ name: "Source" });
+        const view = Object.assign(Object.create(source), { source, name: "View", alphaCutOff: 0.6 }) as Material;
+        const scene = { meshes: [{ material: view }] } as SceneContext;
+        const resources = MakeResourceService([{ source, family: "standard", displayName: "Source", scenes: [scene], bindings: [] }]);
+        const container = Render(<StandardMaterialAdapter material={view} section="transparency" resourceIndexService={resources} selectionService={MakeSelectionService()} />);
+        const input = container.querySelector<HTMLInputElement>('input[value="0.6"]');
+        expect(input).not.toBeNull();
+        const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+        await act(async () => {
+            input?.focus();
+            setValue.call(input, "0.7");
+            input?.dispatchEvent(new Event("input", { bubbles: true }));
+            input?.blur();
+            await Promise.resolve();
+        });
+        expect((view as { alphaCutOff: number }).alphaCutOff).toBe(0.7);
+        expect((source as { alphaCutOff: number }).alphaCutOff).toBe(0.4);
+        expect(InspectionMocks.markDirty).toHaveBeenCalledWith(view);
+    });
+
+    it("rejects rebuild edits when the indexed material has no owning scene", async () => {
+        const material = MakeStandard();
+        const resources = MakeResourceService([{ source: material, family: "standard", displayName: "Standard source", scenes: [], bindings: [] }]);
+        const container = Render(<StandardMaterialAdapter material={material} section="general" resourceIndexService={resources} selectionService={MakeSelectionService()} />);
+        await act(async () => {
+            container.querySelector<HTMLInputElement>('input[type="checkbox"]')?.click();
+            await Promise.resolve();
+        });
+        expect((material as { backFaceCulling: boolean }).backFaceCulling).toBe(true);
+        expect(container.querySelector('[role="alert"]')?.textContent).toContain("at least one owning scene");
+    });
+
     it("renders Lite color and vector tuples through existing controls", () => {
         const material = MakeStandard();
         const scene = {} as SceneContext;
@@ -355,6 +314,132 @@ describe("Babylon Lite material accessor descriptors", () => {
         const transform = Render(<StandardMaterialAdapter material={material} section="transform" resourceIndexService={resources} selectionService={selection} />);
         expect(transform.textContent).toContain("UV Scale");
         expect(transform.textContent).toContain("[1.00, 1.00]");
+    });
+
+    it("renders PBR fields directly and keeps one-way modes read-only", async () => {
+        const material = { family: "pbr", name: "PBR", doubleSided: false, shadowOnly: true } as unknown as Material;
+        const scene = { meshes: [{ material }] } as SceneContext;
+        const resources = MakeResourceService([{ source: material, family: "pbr", displayName: "PBR", scenes: [scene], bindings: [] }]);
+        const selection = MakeSelectionService();
+        const general = Render(<PbrMaterialAdapter material={material} section="general" resourceIndexService={resources} selectionService={selection} />);
+        expect(general.textContent).toContain("Double Sided");
+        await act(async () => {
+            general.querySelector<HTMLInputElement>('input[type="checkbox"]')?.click();
+            await Promise.resolve();
+        });
+        expect((material as { doubleSided: boolean }).doubleSided).toBe(true);
+        expect(InspectionMocks.rebuild).toHaveBeenCalledWith(scene, material, { rebuildViews: true, rebuildFrameGraph: false });
+        const modes = Render(<PbrMaterialAdapter material={material} section="special-modes" resourceIndexService={resources} selectionService={selection} />);
+        expect(modes.textContent).toContain("Shadow Only");
+        expect(modes.querySelector("input")).toBeNull();
+    });
+
+    it("keeps PBR texture slots with unsupported clear directions navigable", () => {
+        const texture = { metadata: { kind: "2d", sampleType: "float", capabilities: {} } };
+        const material = {
+            family: "pbr",
+            name: "PBR",
+            metallicReflectance: { texture },
+            lightmapTexture: texture,
+        } as unknown as Material;
+        const scene = { meshes: [{ material }] } as SceneContext;
+        const resources = MakeResourceService(
+            [
+                {
+                    source: material,
+                    family: "pbr",
+                    displayName: "PBR",
+                    scenes: [scene],
+                    bindings: [
+                        { id: "pbr.metallicReflectance", entity: texture },
+                        { id: "pbr.lightmap", entity: texture },
+                    ],
+                },
+            ],
+            [{ entity: texture, metadata: texture.metadata, ordinal: 1, consumers: [{ material, bindingId: "pbr.metallicReflectance" }] }]
+        );
+        const selection = MakeSelectionService();
+        const metallic = Render(<PbrMaterialAdapter material={material} section="metallic-reflectance" resourceIndexService={resources} selectionService={selection} />);
+        expect(metallic.querySelector('[aria-label="Clear Metallic Reflectance Texture"]')).toBeNull();
+        act(() => metallic.querySelector<HTMLElement>('[aria-label^="Metallic Reflectance Texture: open"]')?.click());
+        expect(selection.selectedEntity).toBe(texture);
+        const lightmap = Render(<PbrMaterialAdapter material={material} section="lightmap" resourceIndexService={resources} selectionService={selection} />);
+        expect(lightmap.querySelector('[aria-label="Clear Lightmap Texture"]')).toBeNull();
+    });
+
+    it("discovers Shader uniforms and samplers without mutating the live vector on edit", async () => {
+        const original = new Float32Array([1, 2]);
+        const texture = { metadata: { kind: "2d", sampleType: "float", capabilities: {} } };
+        const shader = {
+            family: "shader",
+            name: "Shader",
+            uniformDecls: [{ name: "offset", type: "vec2<f32>" }],
+            samplerDecls: [{ name: "albedo", sampleType: "float", viewDimension: "2d" }],
+            uniforms: { offset: original },
+            textures: { albedo: texture },
+        } as unknown as Material;
+        const scene = { meshes: [{ material: shader }] } as SceneContext;
+        const record: IMaterialResourceRecord = {
+            source: shader,
+            family: "shader",
+            displayName: "Shader",
+            scenes: [scene],
+            bindings: [{ id: "shader.sampler:albedo", entity: texture }],
+        };
+        const resources = MakeResourceService(
+            [record],
+            [{ entity: texture, metadata: texture.metadata, ordinal: 1, consumers: [{ material: shader, bindingId: "shader.sampler:albedo" }] }]
+        );
+        const selection = MakeSelectionService();
+        const inputs = Render(<ShaderMaterialAdapter material={shader} section="inputs" resourceIndexService={resources} selectionService={selection} />);
+        expect(inputs.textContent).toContain("offset");
+        act(() => inputs.querySelector<HTMLButtonElement>('[aria-label="Expand/Collapse property"]')?.click());
+        const edit = inputs.querySelectorAll<HTMLInputElement>("input")[0];
+        expect(edit).toBeDefined();
+        const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+        await act(async () => {
+            edit.focus();
+            setValue.call(edit, "3");
+            edit.dispatchEvent(new Event("input", { bubbles: true }));
+            edit.blur();
+            await Promise.resolve();
+        });
+        expect(original[0]).toBe(1);
+        expect(InspectionMocks.setShaderUniform).toHaveBeenCalledWith(shader, "offset", expect.arrayContaining([3, 2]));
+        const bindings = Render(<ShaderMaterialAdapter material={shader} section="textures" resourceIndexService={resources} selectionService={selection} />);
+        act(() => bindings.querySelector<HTMLElement>('[aria-label^="albedo: open"]')?.click());
+        expect(selection.selectedEntity).toBe(texture);
+    });
+
+    it("discovers sorted Node inputs and their texture links without descriptors", () => {
+        const texture = { metadata: { kind: "2d", sampleType: "float", capabilities: {} } };
+        const node = {
+            family: "node",
+            name: "Node",
+            inputs: {
+                strength: { type: "f32", value: 0.8 },
+                albedo: { type: "texture2d", texture },
+            },
+        } as unknown as Material;
+        const scene = { meshes: [{ material: node }] } as SceneContext;
+        const record: IMaterialResourceRecord = {
+            source: node,
+            family: "node",
+            displayName: "Node",
+            scenes: [scene],
+            bindings: [{ id: "node.texture:albedo", entity: texture }],
+        };
+        const resources = MakeResourceService(
+            [record],
+            [{ entity: texture, metadata: texture.metadata, ordinal: 1, consumers: [{ material: node, bindingId: "node.texture:albedo" }] }]
+        );
+        const selection = MakeSelectionService();
+        const container = Render(<NodeMaterialAdapter material={node} section="inputs" resourceIndexService={resources} selectionService={selection} />);
+        expect(container.textContent).toContain("strength");
+        expect(container.textContent).toContain("albedo");
+        expect(container.textContent!.indexOf("albedo")).toBeLessThan(container.textContent!.indexOf("strength"));
+        act(() => container.querySelector<HTMLElement>('[aria-label^="albedo: open"]')?.click());
+        expect(selection.selectedEntity).toBe(texture);
     });
 
     it("registers lazy family predicates without importing family descriptors in the service", () => {

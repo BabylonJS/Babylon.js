@@ -1,4 +1,4 @@
-import { type Material } from "@babylonjs/lite";
+import { getMaterialFamily, getMaterialSource, isMaterialView, type Material } from "@babylonjs/lite";
 import { createElement, type FunctionComponent, useCallback } from "react";
 
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
@@ -8,16 +8,15 @@ import { type ServiceDefinition } from "shared-ui-components/modularTool/modular
 
 import { type IPropertiesService, PropertiesServiceIdentity } from "../../../../services/panes/properties/propertiesService";
 import { type ISelectionService, SelectionServiceIdentity } from "../../../../services/selectionService";
-import { CreateMaterialDescriptorWithFamily } from "./descriptors/materialDescriptor";
-import { type IMaterialDescriptor, type MaterialDescriptorSection } from "./descriptors/descriptorTypes";
-import { type MaterialAdapterProps } from "./materialAdapters/materialAdapterCore";
+import { type MaterialAdapterProps } from "./materialAdapters/materialAdapterTypes";
 import { type ISceneResourceIndexService, SceneResourceIndexServiceIdentity } from "../scene/sceneResourceIndexService";
 
 type SupportedMaterialFamily = "standard" | "pbr" | "shader" | "node";
+type MaterialSection = MaterialAdapterProps["section"];
 
 type FamilyConfiguration = Readonly<{
     component: FunctionComponent<MaterialAdapterProps>;
-    sections: readonly MaterialDescriptorSection[];
+    sections: readonly MaterialSection[];
 }>;
 
 const StandardMaterialAdapter = MakeLazyComponent(async () => (await import("./materialAdapters/standardMaterialAdapter")).StandardMaterialAdapter, {
@@ -71,7 +70,7 @@ const FamilyConfigurations: Readonly<Record<SupportedMaterialFamily, FamilyConfi
     },
 };
 
-function GetSectionLabel(section: MaterialDescriptorSection): string {
+function GetSectionLabel(section: MaterialSection): string {
     return section
         .split("-")
         .map((part) => part[0].toUpperCase() + part.slice(1))
@@ -80,20 +79,22 @@ function GetSectionLabel(section: MaterialDescriptorSection): string {
         .replace("Subsurface ", "Subsurface / ");
 }
 
-function TryDescribeMaterial(entity: unknown, resourceIndexService: ISceneResourceIndexService): IMaterialDescriptor | undefined {
+type MaterialIdentity = Readonly<{ source: Material; family: string | undefined; displayName: string; isView: boolean }>;
+
+function TryDescribeMaterial(entity: unknown, resourceIndexService: ISceneResourceIndexService): MaterialIdentity | undefined {
     if (typeof entity !== "object" || entity === null) {
         return undefined;
     }
     try {
-        const descriptorSnapshot = CreateMaterialDescriptorWithFamily(entity as Material);
-        return typeof descriptorSnapshot === "object" &&
-            descriptorSnapshot !== null &&
-            typeof descriptorSnapshot.source === "object" &&
-            descriptorSnapshot.source !== null &&
-            Array.isArray(descriptorSnapshot.properties) &&
-            resourceIndexService.index.getMaterialRecord(descriptorSnapshot.source)
-            ? descriptorSnapshot
-            : undefined;
+        const material = entity as Material;
+        const source = getMaterialSource(material);
+        if (typeof source !== "object" || source === null || !resourceIndexService.index.getMaterialRecord(source)) {
+            return undefined;
+        }
+        const family = getMaterialFamily(source);
+        const name = (material as { name?: unknown }).name;
+        const displayName = typeof name === "string" && name.length > 0 ? name : family ? `${family[0].toUpperCase()}${family.slice(1)} Material` : "Material";
+        return { source, family, displayName, isView: isMaterialView(material) };
     } catch {
         return undefined;
     }
@@ -105,23 +106,23 @@ function IsSupportedFamily(family: string | undefined): family is SupportedMater
 
 const UnknownMaterialProperties: FunctionComponent<{ material: Material; resourceIndexService: ISceneResourceIndexService }> = (props) => {
     const { material, resourceIndexService } = props;
-    const getDescriptor = useCallback(() => {
-        const selectedDescriptor = TryDescribeMaterial(material, resourceIndexService);
-        const record = selectedDescriptor && resourceIndexService.index.getMaterialRecord(selectedDescriptor.source);
-        return record && selectedDescriptor ? selectedDescriptor : undefined;
+    const getMaterialIdentity = useCallback(() => {
+        const identity = TryDescribeMaterial(material, resourceIndexService);
+        const record = identity && resourceIndexService.index.getMaterialRecord(identity.source);
+        return record && identity ? identity : undefined;
     }, [material, resourceIndexService]);
-    const descriptorSnapshot = useObservableState(getDescriptor, resourceIndexService.onChanged);
+    const identity = useObservableState(getMaterialIdentity, resourceIndexService.onChanged);
 
-    if (!descriptorSnapshot) {
+    if (!identity) {
         return <TextPropertyLine label="Error" value="This material is unavailable." />;
     }
 
     return (
         <>
-            <TextPropertyLine label="Name" value={descriptorSnapshot.displayName} />
-            <TextPropertyLine label="Family" value={descriptorSnapshot.family ?? "Unknown"} />
-            <TextPropertyLine label="Selection" value={descriptorSnapshot.isView ? "MaterialView" : "Material"} />
-            {descriptorSnapshot.isView ? <TextPropertyLine label="Source" value={descriptorSnapshot.displayName} /> : undefined}
+            <TextPropertyLine label="Name" value={identity.displayName} />
+            <TextPropertyLine label="Family" value={identity.family ?? "Unknown"} />
+            <TextPropertyLine label="Selection" value={identity.isView ? "MaterialView" : "Material"} />
+            {identity.isView ? <TextPropertyLine label="Source" value={identity.displayName} /> : undefined}
         </>
     );
 };
@@ -151,8 +152,8 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             propertiesService.addSectionContent<Material>({
                 key: "Babylon Lite Unknown Material Properties",
                 predicate: (entity: unknown): entity is Material => {
-                    const descriptorSnapshot = TryDescribeMaterial(entity, resourceIndexService);
-                    return descriptorSnapshot !== undefined && !IsSupportedFamily(descriptorSnapshot.family);
+                    const identity = TryDescribeMaterial(entity, resourceIndexService);
+                    return identity !== undefined && !IsSupportedFamily(identity.family);
                 },
                 content: [
                     {

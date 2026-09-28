@@ -41,15 +41,12 @@ describe("P4 Inspector import boundaries", () => {
             "lite/services/panes/properties/materialAdapters/pbrMaterialAdapter.tsx",
             "lite/services/panes/properties/materialAdapters/shaderMaterialAdapter.tsx",
             "lite/services/panes/properties/materialAdapters/nodeMaterialAdapter.tsx",
-            "lite/services/panes/properties/materialAdapters/materialAdapterCore.tsx",
+            "lite/services/panes/properties/materialAdapters/materialAdapterTypes.ts",
+            "lite/services/panes/properties/materialAdapters/useDirectMaterialOperations.ts",
+            "lite/services/panes/properties/materialAdapters/directTextureBinding.tsx",
+            "lite/services/panes/properties/materialAdapters/dynamicMaterialField.tsx",
             "lite/services/panes/properties/textureMetadataAdapter.tsx",
             "lite/services/panes/properties/useLatestAsyncOperation.ts",
-            "lite/services/panes/properties/descriptors/descriptorTypes.ts",
-            "lite/services/panes/properties/descriptors/materialDescriptor.ts",
-            "lite/services/panes/properties/descriptors/standardDescriptor.ts",
-            "lite/services/panes/properties/descriptors/pbrDescriptor.ts",
-            "lite/services/panes/properties/descriptors/shaderDescriptor.ts",
-            "lite/services/panes/properties/descriptors/nodeDescriptor.ts",
             "lite/services/panes/scene/materialTopologyBindings.ts",
             "lite/services/panes/scene/sceneResources.ts",
         ].map(ReadInspectorSource);
@@ -65,17 +62,11 @@ describe("P4 Inspector import boundaries", () => {
         expect(sources.join("\n").match(/from ["']core\/index["']/g)).toHaveLength(1);
     });
 
-    it("keeps family descriptors Inspector-owned and out of the eager service and topology chunks", () => {
+    it("keeps family-specific field and binding logic out of the eager service and topology chunks", () => {
         const materialService = ReadInspectorSource("lite/services/panes/properties/materialPropertiesService.tsx");
         const topology = ReadInspectorSource("lite/services/panes/scene/materialTopologyBindings.ts");
-        const families = ["standard", "pbr", "shader", "node"] as const;
-
-        families.forEach((family) => {
-            const adapter = ReadInspectorSource(`lite/services/panes/properties/materialAdapters/${family}MaterialAdapter.tsx`);
-            expect(adapter).toContain(`../descriptors/${family}Descriptor`);
-            expect(materialService).not.toContain(`descriptors/${family}Descriptor`);
-            expect(topology).not.toContain(`descriptors/${family}Descriptor`);
-        });
+        expect(materialService).not.toMatch(/(?:descriptors\/|materialAdapterCore|directTextureBinding|dynamicMaterialField)/);
+        expect(topology).not.toMatch(/(?:descriptors\/|materialAdapters\/)/);
     });
 
     it("keeps shared material and texture cores runtime-neutral", () => {
@@ -96,7 +87,10 @@ describe("P4 Inspector import boundaries", () => {
         const source = ReadInspectorSource("components/properties/materials/standardMaterialProperties.tsx");
         const textureRow = ReadInspectorSource("components/properties/materials/materialTextureDebugPropertyLine.tsx");
         const textureProperties = ReadInspectorSource("components/properties/textures/baseTextureProperties.tsx");
-        const liteSource = ReadInspectorSource("lite/services/panes/properties/materialAdapters/materialAdapterCore.tsx");
+        const liteSource = ["standard", "pbr", "shader", "node"]
+            .map((family) => ReadInspectorSource(`lite/services/panes/properties/materialAdapters/${family}MaterialAdapter.tsx`))
+            .join("\n");
+        const dynamicField = ReadInspectorSource("lite/services/panes/properties/materialAdapters/dynamicMaterialField.tsx");
         expect(source).toContain('component={Color3PropertyLine} label="Diffuse Color"');
         expect(source).toContain('component={SyncedSliderPropertyLine} label="Specular Power"');
         expect(source).not.toContain("MaterialPropertySection");
@@ -106,9 +100,10 @@ describe("P4 Inspector import boundaries", () => {
         expect(textureProperties).toContain('<StringifiedPropertyLine label="Internal Unique ID"');
         expect(textureProperties).not.toContain("TextureMetadataProperties");
         expect(liteSource).toContain("component={Color3PropertyLine}");
-        expect(liteSource).toContain("component={TextPropertyLine}");
         expect(liteSource).toContain("DerivedProperty");
         expect(liteSource).toContain("ComputedProperty");
+        expect(dynamicField).toContain("DerivedProperty");
         expect(liteSource).not.toContain("MaterialPropertySection");
+        expect(liteSource).not.toContain("../descriptors/");
     });
 });
